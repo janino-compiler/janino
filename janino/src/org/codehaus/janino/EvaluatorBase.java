@@ -252,7 +252,10 @@ public class EvaluatorBase {
         }
 
         // Create a ClassLoader that loads the generated classes.
-        return new ByteArrayClassLoader(classes);
+        return new ByteArrayClassLoader(
+            classes,                                      // classes
+            this.classLoaderIClassLoader.getClassLoader() // parent
+        );
     }
 
     /**
