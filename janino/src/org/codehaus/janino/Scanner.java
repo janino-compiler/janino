@@ -297,9 +297,7 @@ public class Scanner {
         public String getIdentifier() throws ScanException { throw new ScanException("Not an identifier token"); }
 
         public boolean isLiteral() { return false; }
-        public Class getLiteralType() throws ScanException { throw new ScanException("Not a literal token"); }
         public Object getLiteralValue() throws ScanException { throw new ScanException("Not a literal token"); }
-        public Object getNegatedLiteralValue() throws ScanException { throw new ScanException("Not a literal token"); }
 
         public boolean isOperator() { return false; }
         public boolean isOperator(String o) { return false; }
@@ -347,10 +345,22 @@ public class Scanner {
     }
 
     /**
+     * This value represents the "magic" literal "2147483648" which is only
+     * allowed in a negated context.
+     */
+    public static final Integer MAGIC_INTEGER = new Integer(Integer.MIN_VALUE);
+
+    /**
+     * This value represents the "magic" literal "9223372036854775808L" which is only
+     * allowed in a negated context.
+     */
+    public static final Long MAGIC_LONG = new Long(Long.MIN_VALUE);
+
+    /**
      * The type of the <code>value</code> parameter determines the type of the literal
      * token:
      * <table>
-     *   <tr><th>Type/value returned by {@link #getLiteralValue()} and {@link #getNegatedLiteralValue()}</th><th>Literal</th></tr>
+     *   <tr><th>Type/value returned by {@link #getLiteralValue()}</th><th>Literal</th></tr>
      *   <tr><td>{@link String}</td><td>STRING literal</td></tr>
      *   <tr><td>{@link Character}</td><td>CHAR literal</td></tr>
      *   <tr><td>{@link Integer}</td><td>INT literal</td></tr>
@@ -361,70 +371,26 @@ public class Scanner {
      *   <tr><td><code>null</code></td><td>NULL literal</td></tr>
      * </table>
      */
-    public abstract class LiteralToken extends Token {
-        private final Class literalType;
+    public final class LiteralToken extends Token {
+        private final Object value;
 
-        public LiteralToken(Class literalType) {
-            this.literalType = literalType;
+        public LiteralToken(Object value) {
+            this.value = value;
         }
 
         // Implement {@link Literal}.
-        public final boolean isLiteral()      { return true; }
-        public final Class   getLiteralType() { return this.literalType; }
+        public final boolean isLiteral() { return true; }
+        public Object getLiteralValue()  { return this.value; }
 
-        /**
-         * The literals "2147483648" and "9223372036854775808L" only have a
-         * negated value and thus throw a {@link Scanner.ScanException} if this method is
-         * invoked.
-         */
-        public abstract Object getLiteralValue() throws ScanException;
-
-        /**
-         * Numeric literals have a negated value, the others throw a
-         * {@link Scanner.ScanException}.
-         */
-        public Object getNegatedLiteralValue() throws ScanException {
-            throw new ScanException("Literal " + this.toString() + " cannot be negated");
+        public String toString() {
+            return Scanner.literalValueToString(this.value);
         }
-
-        // Force subclasses to implement "toString()".
-        public abstract String toString();
     }
-
-    /**
-     * Base class for literal tokens that have a determined value at creation
-     * time (all but <code>void</code>, <code>2147483648</code> and
-     * <code>9223372036854775808L</code>).
-     */
-    public abstract class ValuedLiteralToken extends LiteralToken {
-        protected final Object value;
-
-        public ValuedLiteralToken(Class literalType, Object value) {
-            super(literalType);
-            this.value = value;
-        }
-        public final Object getLiteralValue() { return this.value; }
-    }
-
-    /**
-     * Base class for numeric literal tokens (integer, long, float, double).
-     */
-    public abstract class NumericLiteralToken extends ValuedLiteralToken {
-        protected final Number negatedValue;
-
-        public NumericLiteralToken(Class literalType, Number value, Number negatedValue) {
-            super(literalType, value);
-            this.negatedValue = negatedValue;
-        }
-        public final Object getNegatedLiteralValue() { return this.negatedValue; }
-    }
-
-    public final class StringLiteralToken extends ValuedLiteralToken {
-        public StringLiteralToken(String s) { super(String.class, s); }
-        public String toString()            {
+    public static String literalValueToString(Object v) {
+        if (v instanceof String) {
             StringBuffer sb = new StringBuffer();
             sb.append('"');
-            String s = (String) this.value;
+            String s = (String) v;
             for (int i = 0; i < s.length(); ++i) {
                 char c = s.charAt(i);
 
@@ -437,41 +403,34 @@ public class Scanner {
             sb.append('"');
             return sb.toString();
         }
-    }
-    public final class CharacterLiteralToken extends ValuedLiteralToken {
-        public CharacterLiteralToken(char c) { super(Character.TYPE, new Character(c)); }
-        public String toString() {
-            char c = ((Character) this.value).charValue();
+        if (v instanceof Character) {
+            char c = ((Character) v).charValue();
             if (c == '\'') return "'\\''";
             StringBuffer sb = new StringBuffer("'");
             Scanner.escapeCharacter(c, sb);
             return sb.append('\'').toString();
         }
-    }
-    public final class IntegerLiteralToken extends NumericLiteralToken {
-        public IntegerLiteralToken(int i) { super(Integer.TYPE, new Integer(i), new Integer(-i)); }
-        public String toString()          { return this.value.toString(); }
-    }
-    public final class LongLiteralToken extends NumericLiteralToken {
-        public LongLiteralToken(long l) { super(Long.TYPE, new Long(l), new Long(-l)); }
-        public String toString()        { return this.value.toString() + 'L'; }
-    }
-    public final class FloatLiteralToken extends NumericLiteralToken {
-        public FloatLiteralToken(float f) { super(Float.TYPE, new Float(f), new Float(-f)); }
-        public String toString()          { return this.value.toString() + 'F'; }
-    }
-    public final class DoubleLiteralToken extends NumericLiteralToken {
-        public DoubleLiteralToken(double d) { super(Double.TYPE, new Double(d), new Double(-d)); }
-        public String toString()            { return this.value.toString() + 'D'; }
-    }
-    public final class BooleanLiteralToken extends ValuedLiteralToken {
-        public BooleanLiteralToken(boolean b) { super(Boolean.TYPE, b ? Boolean.TRUE : Boolean.FALSE); }
-        public String toString()              { return this.value.toString(); }
-    }
-    public final class NullLiteralToken extends LiteralToken {
-        public NullLiteralToken()       { super(Void.TYPE); }
-        public Object getLiteralValue() { return null; }
-        public String toString()        { return "null"; }
+        if (v instanceof Integer) {
+            if (v == Scanner.MAGIC_INTEGER) return "2147483648";
+            return v.toString();
+        }
+        if (v instanceof Long) {
+            if (v == Scanner.MAGIC_LONG) return "9223372036854775808L";
+            return v.toString() + 'L';
+        }
+        if (v instanceof Float) {
+            return v.toString() + 'F';
+        }
+        if (v instanceof Double) {
+            return v.toString() + 'D';
+        }
+        if (v instanceof Boolean) {
+            return v.toString();
+        }
+        if (v == null) {
+            return "null";
+        }
+        throw new RuntimeException("Unexpected value type \"" + v.getClass().getName() + "\"");
     }
 
     public class OperatorToken extends Token {
@@ -605,10 +564,9 @@ public class Scanner {
                 sb.append((char) this.nextChar);
             }
             String s = sb.toString();
-            if (s.equals("true") || s.equals("false")) {
-                return new BooleanLiteralToken("true".equals(s));
-            }
-            if (s.equals("null")) return new NullLiteralToken();
+            if (s.equals("true")) return new LiteralToken(Boolean.TRUE);
+            if (s.equals("false")) return new LiteralToken(Boolean.FALSE);
+            if (s.equals("null")) return new LiteralToken(null);
             {
                 String v = (String) Scanner.JAVA_KEYWORDS.get(s);
                 if (v != null) return new KeywordToken(v);
@@ -642,7 +600,7 @@ public class Scanner {
                 sb.append(unescapeCharacterLiteral());
             }
             this.readNextChar();
-            return new StringLiteralToken(sb.toString());
+            return new LiteralToken(sb.toString());
         }
 
         // Scan character literal.
@@ -652,7 +610,7 @@ public class Scanner {
             if (this.nextChar != '\'') throw new ScanException("Closing single quote missing");
             this.readNextChar();
 
-            return new CharacterLiteralToken(lit);
+            return new LiteralToken(new Character(lit));
         }
 
         // Scan separator / operator.
@@ -864,11 +822,7 @@ public class Scanner {
         case 10:
             // Special case: Decimal literal 2^31 must only appear in "negated" context, i.e.
             // "-2147483648" is a valid long literal, but "2147483648" is not.
-            if (s.equals("2147483648")) return new LiteralToken(Integer.TYPE) {
-                public Object getLiteralValue() throws ScanException { throw new ScanException("This value may only appear in a negated literal"); }
-                public Object getNegatedLiteralValue()               { return new Integer(Integer.MIN_VALUE); }
-                public String toString()                             { return s; }
-            };
+            if (s.equals("2147483648")) return new LiteralToken(Scanner.MAGIC_INTEGER);
             try {
                 x = Integer.parseInt(s);
             } catch (NumberFormatException e) {
@@ -897,7 +851,7 @@ public class Scanner {
         default:
             throw new RuntimeException("Illegal radix " + radix);
         }
-        return new IntegerLiteralToken(x);
+        return new LiteralToken(new Integer(x));
     }
 
     private LiteralToken stringToLongLiteralToken(final String s, int radix) throws ScanException {
@@ -907,11 +861,7 @@ public class Scanner {
         case 10:
             // Special case: Decimal literal 2^63 must only appear in "negated" context, i.e.
             // "-9223372036854775808" is a valid long literal, but "9223372036854775808" is not.
-            if (s.equals("9223372036854775808")) return new LiteralToken(Long.TYPE) {
-                public Object getLiteralValue() throws ScanException { throw new ScanException("This value may only appear in a negated literal"); }
-                public Object getNegatedLiteralValue()               { return new Long(Long.MIN_VALUE); }
-                public String toString()                             { return "9223372036854775808L"; }
-            };
+            if (s.equals("9223372036854775808")) return new LiteralToken(Scanner.MAGIC_LONG);
     
             try {
                 x = Long.parseLong(s);
@@ -941,7 +891,7 @@ public class Scanner {
         default:
             throw new RuntimeException("Illegal radix " + radix);
         }
-        return new LongLiteralToken(x);
+        return new LiteralToken(new Long(x));
     }
 
     private LiteralToken stringToFloatLiteralToken(final String s) throws ScanException {
@@ -952,7 +902,7 @@ public class Scanner {
             throw new ScanException("Value of float literal \"" + s + "\" is out of range");
         }
 
-        return new FloatLiteralToken(f);
+        return new LiteralToken(new Float(f));
     }
 
     private LiteralToken stringToDoubleLiteralToken(final String s) throws ScanException {
@@ -963,7 +913,7 @@ public class Scanner {
             throw new ScanException("Value of double literal \"" + s + "\" is out of range");
         }
 
-        return new DoubleLiteralToken(d);
+        return new LiteralToken(new Double(d));
     }
 
     private char unescapeCharacterLiteral() throws ScanException, IOException {

@@ -4122,8 +4122,8 @@ public class Java {
 
         /**
          * Attempts to evaluate the negated value of a constant {@link Java.Rvalue}.
-         * This is particularly relevant for the smalles value of a numeric
-         * literal.
+         * This is particularly relevant for the smallest value of an integer or
+         * long literal.
          *
          * @return null if value is not constant; otherwise a String, Byte,
          * Short, Integer, Boolean, Character, Float, Long or Double
@@ -7853,64 +7853,54 @@ public class Java {
     }
 
     public static final class Literal extends Rvalue {
-        public Literal(Scanner.Token token) {
-            super(token.getLocation());
-            this.token = token;
+        private final Object value;
+
+        public Literal(Scanner.Location location, Object value) {
+            super(location);
+            this.value = value;
         }
 
         // Implement "Atom."
         public IClass getType() throws CompileException {
-            IClassLoader icl = Java.getIClassLoader();
-            Class clazz;
-            try {
-                clazz = this.token.getLiteralType();
-            } catch (Scanner.ScanException e) {
-                Java.compileError(e.getMessage(), this.token.getLocation());
-                clazz = int.class;
-            }
-            if (clazz == int.class    ) return IClass.INT;
-            if (clazz == long.class   ) return IClass.LONG;
-            if (clazz == float.class  ) return IClass.FLOAT;
-            if (clazz == double.class ) return IClass.DOUBLE;
-            if (clazz == String.class ) return icl.STRING;
-            if (clazz == char.class   ) return IClass.CHAR;
-            if (clazz == boolean.class) return IClass.BOOLEAN;
-            if (clazz == void.class   ) return IClass.VOID;
+            if (this.value instanceof Integer  ) return IClass.INT;
+            if (this.value instanceof Long     ) return IClass.LONG;
+            if (this.value instanceof Float    ) return IClass.FLOAT;
+            if (this.value instanceof Double   ) return IClass.DOUBLE;
+            if (this.value instanceof String   ) return Java.getIClassLoader().STRING;
+            if (this.value instanceof Character) return IClass.CHAR;
+            if (this.value instanceof Boolean  ) return IClass.BOOLEAN;
+            if (this.value == null             ) return IClass.VOID;
             throw new RuntimeException();
         }
-        public String toString() { return this.token.toString(); }
+        public String toString() { return Scanner.literalValueToString(this.value); }
 
         // Implement "Rvalue".
         public IClass compileGet() throws CompileException {
-            try {
-                return Java.pushConstant((Located) this, this.token.getLiteralValue());
-            } catch (Scanner.ScanException ex) {
-                Java.compileError(ex.getMessage(), this.getLocation());
-                return IClass.INT;
-            }
+            if (
+                this.value == Scanner.MAGIC_INTEGER ||
+                this.value == Scanner.MAGIC_LONG
+            ) Java.compileError("This literal value may only appear in a negated context", this.getLocation());
+            return Java.pushConstant((Located) this, this.value);
         }
 
         public Object getConstantValue2() throws CompileException {
-            try {
-                Object res = this.token.getLiteralValue();
-                return res == null ? Rvalue.CONSTANT_VALUE_NULL : res;
-            } catch (Scanner.ScanException ex) {
-                Java.compileError(ex.getMessage(), this.getLocation());
-                return null;
-            }
+            if (
+                this.value == Scanner.MAGIC_INTEGER ||
+                this.value == Scanner.MAGIC_LONG
+            ) Java.compileError("This literal value may only appear in a negated context", this.getLocation());
+            return this.value == null ? Rvalue.CONSTANT_VALUE_NULL : this.value;
         }
         public Object getNegatedConstantValue() throws CompileException {
-            try {
-                return this.token.getNegatedLiteralValue();
-            } catch (Scanner.ScanException ex) {
-                Java.compileError(ex.getMessage(), this.getLocation());
-                return null;
-            }
+            if (this.value instanceof Integer) return new Integer(-((Integer) this.value).intValue()   );
+            if (this.value instanceof Long   ) return new Long   (-((Long   ) this.value).longValue()  );
+            if (this.value instanceof Float  ) return new Float  (-((Float  ) this.value).floatValue() );
+            if (this.value instanceof Double ) return new Double (-((Double ) this.value).doubleValue());
+
+            Java.compileError("Cannot negate this literal", this.getLocation());
+            return null;
         }
 
         public final void visit(Visitor visitor) { visitor.visitLiteral(this); }
-
-        private final Scanner.Token token;
     }
 
     public static final class ConstantValue extends Rvalue {

@@ -2523,8 +2523,9 @@ public class Parser {
     }
 
     public Java.Atom parseLiteral() throws ParseException, Scanner.ScanException, IOException {
-        if (!this.scanner.peek().isLiteral()) this.throwParseException("Literal expected");
-        return new Java.Literal(this.scanner.read());
+        Scanner.Token t = this.scanner.read();
+        if (!t.isLiteral()) this.throwParseException("Literal expected");
+        return new Java.Literal(t.getLocation(), t.getLiteralValue());
     }
 
     /**
