@@ -58,9 +58,21 @@ public class ResourceFinderIClassLoader extends IClassLoader {
     }
 
     protected IClass findIClass(String descriptor) {
+
+        // Find the class file resource.
         String className = Descriptor.toClassName(descriptor);
-        InputStream is = this.resourceFinder.findResourceAsStream(className.replace('.', '/') + ".class");
-        if (is == null) return null;
+        ResourceFinder.Resource classFileResource = this.resourceFinder.findResource(className.replace('.', '/') + ".class");
+        if (classFileResource == null) return null;
+
+        // Open the class file resource.
+        InputStream is;
+        try {
+            is = classFileResource.open();
+        } catch (IOException ex) {
+            throw new RuntimeException("Opening resource \"" + classFileResource.getFileName() + "\": " + ex.getMessage());
+        }
+
+        // Load the IClass from the class file.
         IClass iClass;
         try {
             iClass = new ClassFileIClass(new ClassFile(is), this);

@@ -34,25 +34,63 @@
 
 package org.codehaus.janino.util.resource;
 
-import java.io.InputStream;
-import java.net.URL;
+import java.io.*;
 
 /**
  * Finds a resource by name.
  */
-public interface ResourceFinder {
+public abstract class ResourceFinder {
 
     /**
      * Find a resource by name and open it for reading
-     * @param resourceName Slash-separated name that identifies the resource
+     * 
+     * @param resourceName
+     *            Slash-separated name that identifies the resource
      * @return <code>null</code> if the resource could not be found
      */
-    InputStream findResourceAsStream(String resourceName);
+    public final InputStream findResourceAsStream(String resourceName) throws IOException {
+        Resource resource = this.findResource(resourceName);
+        if (resource == null) return null;
+        return resource.open();
+    }
 
     /**
-     * Find a resource by name and return a URL that refers to it.
+     * Find a resource by name and return it as a {@link ResourceFinder.Resource} object.
+     * 
      * @param resourceName Slash-separated name that identifies the resource
      * @return <code>null</code> if the resource could not be found
      */
-    URL findResource(String resourceName);
+    public abstract Resource findResource(String resourceName);
+
+    /**
+     * Representation of a resource than was found by a {@link ResourceFinder}.
+     */
+    public interface Resource {
+
+        /**
+         * Opens the resource. The caller is responsible for closing the
+         * {@link java.io.InputStream}.
+         */
+        InputStream open() throws IOException;
+
+        /**
+         * Returns a decorative "file name" that can be used for reporting
+         * errors and the like. It does not necessarily map to a file in the
+         * local file system!
+         */
+        String getFileName();
+    }
+
+    /**
+     * Representation of a resource that is a {@link java.io.File}.
+     */
+    public static class FileResource implements Resource {
+        public FileResource(File file) { this.file = file; }
+        public String getFileName() { return this.file.toString(); }
+        public InputStream open() throws IOException { return new FileInputStream(this.file); }
+
+        public File getFile() { return this.file; }
+
+        private final File file;
+    }
 }

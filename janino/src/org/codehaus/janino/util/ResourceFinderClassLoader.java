@@ -35,7 +35,6 @@
 package org.codehaus.janino.util;
 
 import java.io.*;
-import java.net.URL;
 
 import org.codehaus.janino.util.resource.ResourceFinder;
 
@@ -63,8 +62,17 @@ public class ResourceFinderClassLoader extends ClassLoader {
     protected Class findClass(String className) throws ClassNotFoundException {
 
         // Find the resource containing the class bytecode.
-        InputStream is = this.resourceFinder.findResourceAsStream(className.replace('.', '/') + ".class");
-        if (is == null) throw new ClassNotFoundException(className);
+        String classFileResourceName = className.replace('.', '/') + ".class";
+        ResourceFinder.Resource classFileResource = this.resourceFinder.findResource(classFileResourceName);
+        if (classFileResource == null) throw new ClassNotFoundException(className);
+
+        // Open the class file resource.
+        InputStream is;
+        try {
+            is = classFileResource.open();
+        } catch (IOException ex) {
+            throw new RuntimeException("Openeing class file resource \"" + classFileResource.getFileName() + "\": " + ex.getMessage());
+        }
 
         // Read bytecode from the resource into a byte array.
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -96,9 +104,5 @@ public class ResourceFinderClassLoader extends ClassLoader {
         }
 
         return clazz;
-    }
-
-    public URL findResource(String resourceName) {
-        return this.resourceFinder.findResource(resourceName);
     }
 }

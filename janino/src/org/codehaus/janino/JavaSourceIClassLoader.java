@@ -34,11 +34,8 @@
 
 package org.codehaus.janino;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.util.Iterator;
-import java.util.Set;
+import java.io.*;
+import java.util.*;
 
 import org.codehaus.janino.util.ClassFile;
 import org.codehaus.janino.util.TunnelException;
@@ -107,15 +104,15 @@ final class JavaSourceIClassLoader extends IClassLoader {
         try {
 
             // Find source file.
-            URL sourceURL = this.sourceFinder.findResource(ClassFile.getSourceResourceName(className));
-            if (sourceURL == null) return null;
-            if (JavaSourceIClassLoader.DEBUG) System.out.println("sourceURL=" + sourceURL);
+            ResourceFinder.Resource sourceResource = this.sourceFinder.findResource(ClassFile.getSourceResourceName(className));
+            if (sourceResource == null) return null;
+            if (JavaSourceIClassLoader.DEBUG) System.out.println("sourceURL=" + sourceResource);
 
             // Scan and parse the source file.
             Java.CompilationUnit cu;
-            InputStream inputStream = sourceURL.openStream();
+            InputStream inputStream = sourceResource.open();
             try {
-                Scanner scanner = new Scanner(sourceURL.getFile(), inputStream, this.optionalCharacterEncoding);
+                Scanner scanner = new Scanner(sourceResource.getFileName(), inputStream, this.optionalCharacterEncoding);
                 Parser parser = new Parser(scanner);
                 cu = parser.parseCompilationUnit();
             } finally {
@@ -127,7 +124,7 @@ final class JavaSourceIClassLoader extends IClassLoader {
 
             // Find the class/interface declaration in the com
             IClass res = cu.findClass(className);
-            if (res == null) throw new Parser.ParseException("Source file \"" + sourceURL.getFile() + "\" does not declare class \"" + className + "\"", (Location) null);
+            if (res == null) throw new Parser.ParseException("Source file \"" + sourceResource.getFileName() + "\" does not declare class \"" + className + "\"", (Location) null);
             this.defineIClass(res);
             return res;
         } catch (Scanner.ScanException e) {

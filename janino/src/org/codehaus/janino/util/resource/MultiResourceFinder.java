@@ -34,15 +34,13 @@
 
 package org.codehaus.janino.util.resource;
 
-import java.io.InputStream;
-import java.net.URL;
 import java.util.*;
 
 /**
  * A {@link org.codehaus.janino.util.resource.ResourceFinder} that finds its resources through a collection of
  * other {@link org.codehaus.janino.util.resource.ResourceFinder}s.
  */
-public class MultiResourceFinder implements ResourceFinder {
+public class MultiResourceFinder extends ResourceFinder {
     private final Collection resourceFinders; // One for each entry
 
     /**
@@ -54,21 +52,12 @@ public class MultiResourceFinder implements ResourceFinder {
 
     // Implement ResourceFinder.
 
-    public InputStream findResourceAsStream(String resourceName) {
+    public ResourceFinder.Resource findResource(String resourceName) {
         for (Iterator it = this.resourceFinders.iterator(); it.hasNext();) {
             ResourceFinder rf = (ResourceFinder) it.next();
-            InputStream is = rf.findResourceAsStream(resourceName);
-//System.err.println("*** " + resourceName + " in " + rf + "? => " + is);
-            if (is != null) return is;
-        }
-        return null;
-    }
-    public URL findResource(String resourceName) {
-        for (Iterator it = this.resourceFinders.iterator(); it.hasNext();) {
-            ResourceFinder rf = (ResourceFinder) it.next();
-            URL url = rf.findResource(resourceName);
+            ResourceFinder.Resource resource = rf.findResource(resourceName);
 //System.err.println("*** " + resourceName + " in " + rf + "? => " + url);
-            if (url != null) return url;
+            if (resource != null) return resource;
         }
         return null;
     }
@@ -78,8 +67,7 @@ public class MultiResourceFinder implements ResourceFinder {
      * for some reason.
      */
     public static final ResourceFinder EMPTY_RESOURCE_FINDER = new ResourceFinder() {
-        public InputStream findResourceAsStream(String resourceName) { return null; }
-        public URL findResource(String resourceName) { return null; }
+        public ResourceFinder.Resource findResource(String resourceName) { return null; }
         public String toString() { return "invalid entry"; }
     };
 }

@@ -34,18 +34,13 @@
 
 package org.codehaus.janino.util.resource;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
+import java.io.*;
+import java.util.zip.*;
 
 /**
  * A {@link org.codehaus.janino.util.resource.ResourceFinder} that finds resources in a ZIP file.
  */
-public class ZipFileResourceFinder implements ResourceFinder {
+public class ZipFileResourceFinder extends ResourceFinder {
     private final ZipFile zipFile;
 
     public ZipFileResourceFinder(ZipFile zipFile) {
@@ -55,21 +50,16 @@ public class ZipFileResourceFinder implements ResourceFinder {
 
     // Implement ResourceFinder.
 
-    public InputStream findResourceAsStream(String resourceName) {
-        ZipEntry ze = this.zipFile.getEntry(resourceName);
+    public ResourceFinder.Resource findResource(final String resourceName) {
+        final ZipEntry ze = this.zipFile.getEntry(resourceName);
         if (ze == null) return null;
-        try {
-            return this.zipFile.getInputStream(ze);
-        } catch (IOException e) {
-            return null;
-        }
-    }
-    public URL findResource(String resourceName) {
-        if (this.zipFile.getEntry(resourceName) == null) return null;
-        try {
-            return new URL("zip", null, this.zipFile.getName().replace(File.separatorChar, '/') + '!' + resourceName);
-        } catch (MalformedURLException e) {
-            throw new RuntimeException();
-        }
+        return new ResourceFinder.Resource() {
+            public InputStream open() throws IOException {
+                return ZipFileResourceFinder.this.zipFile.getInputStream(ze);
+            }
+            public String getFileName() {
+                return ZipFileResourceFinder.this.zipFile.getName() + ':' + resourceName;
+            }
+        };
     }
 }

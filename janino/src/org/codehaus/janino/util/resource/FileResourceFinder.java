@@ -35,31 +35,19 @@
 package org.codehaus.janino.util.resource;
 
 import java.io.*;
-import java.net.MalformedURLException;
-import java.net.URL;
 
 /**
  * This class specializes the {@link org.codehaus.janino.util.resource.ResourceFinder}
  * for finding resources in {@link java.io.File}s.
+ * <p>
+ * It finds {@link ResourceFinder.FileResource}s instead of simple
+ * {@link ResourceFinder.Resource}s.
  */
-public abstract class FileResourceFinder implements ResourceFinder {
-    public final InputStream findResourceAsStream(String resourceName) {
+public abstract class FileResourceFinder extends ResourceFinder {
+    public final ResourceFinder.Resource findResource(String resourceName) {
         File file = this.findResourceAsFile(resourceName);
         if (file == null) return null;
-        try {
-            return new FileInputStream(file);
-        } catch (IOException e) {
-            return null;
-        }
-    }
-    public final URL findResource(String resourceName) {
-        File file = this.findResourceAsFile(resourceName);
-        if (file == null) return null;
-        try {
-            return new URL("file", null, file.getPath());
-        } catch (MalformedURLException e) {
-            return null;
-        }
+        return new ResourceFinder.FileResource(file);
     }
 
     /**

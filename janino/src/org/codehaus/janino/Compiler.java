@@ -36,7 +36,6 @@ package org.codehaus.janino;
 
 import java.util.*;
 import java.io.*;
-import java.net.URL;
 
 import org.codehaus.janino.util.*;
 import org.codehaus.janino.util.enum.EnumeratorFormatException;
@@ -621,18 +620,13 @@ public class Compiler {
             }
 
             // Search source path for uncompiled class.
-            File sourceFile = null;
+            File sourceFile;
             {
-                URL sourceURL = this.sourceFinder.findResource(ClassFile.getSourceResourceName(className));
-                if (sourceURL != null) {
-                    if (Compiler.DEBUG) System.out.println("sourceURL=" + sourceURL);
-                    if (!sourceURL.getProtocol().equals("file")) throw new RuntimeException();
-                    sourceFile = new File(sourceURL.getFile());
-                }
+                ResourceFinder.Resource sourceResource = this.sourceFinder.findResource(ClassFile.getSourceResourceName(className));
+                if (sourceResource == null) return null;
+                if (!(sourceResource instanceof ResourceFinder.FileResource)) throw new RuntimeException();
+                sourceFile = ((ResourceFinder.FileResource) sourceResource).getFile();
             }
-
-            // Give up if there is no source file.
-            if (sourceFile == null) return null;
 
             if (Compiler.this.rebuild) {
 
