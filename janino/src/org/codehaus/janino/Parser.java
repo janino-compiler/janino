@@ -147,11 +147,13 @@ public class Parser {
             Location loc = this.scanner.peek().getLocation();
             String packageName = join(this.parseQualifiedIdentifier(), ".");
             Parser.verifyStringIsConventionalPackageName(packageName, loc);
-            compilationUnit.setPackage(packageName);
+            compilationUnit.setPackageDeclaration(new Java.PackageDeclaration(loc, packageName));
             if (!this.scanner.read().isOperator(";")) this.throwParseException("Semicolon expected after \"package\" directive");
         }
 
-        while (this.scanner.peek().isKeyword("import")) this.parseImportDeclaration(compilationUnit);
+        while (this.scanner.peek().isKeyword("import")) {
+            compilationUnit.addImportDeclaration(this.parseImportDeclaration());
+        }
 
         while (!this.scanner.peek().isEOF()) {
             Java.PackageMemberTypeDeclaration tltd = (Java.PackageMemberTypeDeclaration) this.parseTypeDeclaration(compilationUnit);
@@ -169,25 +171,22 @@ public class Parser {
      *                        ';'
      * </pre>
      */
-    public void parseImportDeclaration(Java.CompilationUnit compilationUnit) throws ParseException, Scanner.ScanException, IOException {
-        if (!this.scanner.read().isKeyword("import")) this.throwParseException("\"import\" expected");
+    public Java.ImportDeclaration parseImportDeclaration() throws ParseException, Scanner.ScanException, IOException {
+        if (!this.scanner.peek().isKeyword("import")) this.throwParseException("\"import\" expected");
+        Location loc = this.scanner.read().getLocation();
         if (!this.scanner.peek().isIdentifier()) this.throwParseException("Identifier expected after \"import\"");
         List l = new ArrayList();
         l.add(this.scanner.read().getIdentifier());
         for (;;) {
             if (this.scanner.peek().isOperator(";")) {
-                compilationUnit.addSingleTypeImport(
-                this.scanner.read().getLocation(),              // location
-                    (String[]) l.toArray(new String[l.size()]) // identifiers
-                );
-                break;
+                this.scanner.read();
+                return new Java.SingleTypeImportDeclaration(loc, (String[]) l.toArray(new String[l.size()]));
             }
             if (!this.scanner.read().isOperator(".")) this.throwParseException("\";\" or \".\" expected after identifier in \"import\" directive");
             if (this.scanner.peek().isOperator("*")) {
                 this.scanner.read();
-                compilationUnit.addTypeImportOnDemand((String[]) l.toArray(new String[l.size()]));
-                if (!this.scanner.read().isOperator(";")) this.throwParseException("Semicolon expected after \"import\" directive");
-                break;
+                if (!this.scanner.read().isOperator(";")) this.throwParseException("Semicolon expected at end of type-import-on-demoand declaration");
+                return new Java.TypeImportOnDemandDeclaration(loc, (String[]) l.toArray(new String[l.size()]));
             }
             if (!this.scanner.peek().isIdentifier()) this.throwParseException("Identifier or \"*\" expected after \".\" in \"import\" directive");
             l.add(this.scanner.read().getIdentifier());

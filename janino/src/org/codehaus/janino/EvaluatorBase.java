@@ -76,7 +76,9 @@ public class EvaluatorBase {
         Scanner              scanner
     ) throws Scanner.ScanException, Parser.ParseException, IOException {
         Parser parser = new Parser(scanner);
-        while (scanner.peek().isKeyword("import")) parser.parseImportDeclaration(compilationUnit);
+        while (scanner.peek().isKeyword("import")) {
+            compilationUnit.addImportDeclaration(parser.parseImportDeclaration());
+        }
     }
 
     /**

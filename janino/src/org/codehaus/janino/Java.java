@@ -271,47 +271,39 @@ public class Java {
         // Implement "Scope".
         public Scope getEnclosingScope() { return null; }
 
-        public void setPackage(String packagE) {
-            this.optionalPackage = packagE;
+        public void setPackageDeclaration(PackageDeclaration packageDeclaration) {
+            if (this.optionalPackageDeclaration != null) throw new RuntimeException("Re-setting package declaration");
+            this.optionalPackageDeclaration = packageDeclaration;
         }
 
-        /**
-         * A "single type import" is an IMPORT statement that imports a single
-         * type, like "import java.util.HashMap;".
-         * 
-         * @param identifiers Type name components, e.g. <code>new String[] { "java", "util", "HashMap" }</code>
-         */
-        public void addSingleTypeImport(
-            Location location,
-            String[] identifiers
-        ) throws Parser.ParseException {
-            String li = identifiers[identifiers.length - 1];
-            String[] ss = (String[]) this.singleTypeImports.get(li);
-            if (ss != null) {
-                if (!Java.join(ss, ".").equals(Java.join(identifiers, "."))) throw new Parser.ParseException("Class \"" + li + "\" was first imported from \"" + Java.join(ss, ".") + "\", now again from \"" + Java.join(identifiers, ".") + "\"", location);
-            } else {
-                this.singleTypeImports.put(li, identifiers);
+        public void addImportDeclaration(ImportDeclaration id) throws Parser.ParseException {
+
+            // Check for conflicting single-type import.
+            if (id instanceof SingleTypeImportDeclaration) {
+                String[] ss = ((SingleTypeImportDeclaration) id).getIdentifiers();
+                String name = ss[ss.length - 1];
+                for (Iterator it = this.importDeclarations.iterator(); it.hasNext();) {
+                    ImportDeclaration id2 = (ImportDeclaration) it.next();
+                    if (id2 instanceof SingleTypeImportDeclaration) {
+                        String[] ss2 = ((SingleTypeImportDeclaration) id2).getIdentifiers();
+                        if (ss2[ss2.length - 1].equals(name)) {
+                            if (!Java.join(ss, ".").equals(Java.join(ss2, "."))) id.throwParseException("Class \"" + name + "\" was first imported from \"" + Java.join(ss, ".") + "\", now again from \"" + Java.join(ss2, ".") + "\"");
+                        }
+                    }
+                }
             }
+            this.importDeclarations.add(id);
         }
-        /**
-         * A "type import on demand" is an IMPORT statement that imports all types
-         * of a package in one go, like "import java.util.*;".
-         * 
-         * @param identifiers Package name components, e.g. <code>new String[] { "java", "util" }</code>
-         */
-        public void addTypeImportOnDemand(String[] identifiers) {
-            this.importedPackages.add(identifiers);
-        }
+
         public void addPackageMemberTypeDeclaration(PackageMemberTypeDeclaration pmtd) {
-            this.packageMemberTypeDeclarations.put(pmtd.getName(), pmtd);
+            this.packageMemberTypeDeclarations.add(pmtd);
         }
 
         /**
          * Get all classes and interfaces declared in this compilation unit.
          */
         public PackageMemberTypeDeclaration[] getPackageMemberTypeDeclarations() {
-            Collection pmtds = this.packageMemberTypeDeclarations.values();
-            return (PackageMemberTypeDeclaration[]) pmtds.toArray(new PackageMemberTypeDeclaration[pmtds.size()]);
+            return (PackageMemberTypeDeclaration[]) this.packageMemberTypeDeclarations.toArray(new PackageMemberTypeDeclaration[this.packageMemberTypeDeclarations.size()]);
         }
 
         /**
@@ -322,9 +314,13 @@ public class Java {
         public IClass findClass(String className) {
 
             // Examine package name.
-            if (this.optionalPackage != null) {
-                if (!className.startsWith(this.optionalPackage + '.')) return null;
-                className = className.substring(this.optionalPackage.length() + 1);
+            String packageName = (
+                this.optionalPackageDeclaration == null ? null :
+                this.optionalPackageDeclaration.getPackageName()
+            );
+            if (packageName != null) {
+                if (!className.startsWith(packageName + '.')) return null;
+                className = className.substring(packageName.length() + 1);
             }
 
             StringTokenizer st = new StringTokenizer(className, "$");
@@ -342,7 +338,11 @@ public class Java {
          * @return <code>null</code> if a package member type with that name is not declared in this compilation unit
          */
         public PackageMemberTypeDeclaration getPackageMemberTypeDeclaration(String name) {
-            return (PackageMemberTypeDeclaration) this.packageMemberTypeDeclarations.get(name);
+            for (Iterator it = this.packageMemberTypeDeclarations.iterator(); it.hasNext();) {
+                PackageMemberTypeDeclaration pmtd = (PackageMemberTypeDeclaration) it.next();
+                if (pmtd.getName().equals(name)) return pmtd;
+            }
+            return null;
         }
 
         /**
@@ -374,9 +374,41 @@ public class Java {
             }
         }
         private void compile() throws CompileException {
-            for (Iterator it = this.packageMemberTypeDeclarations.values().iterator(); it.hasNext();) {
+            for (Iterator it = this.packageMemberTypeDeclarations.iterator(); it.hasNext();) {
                 ((PackageMemberTypeDeclaration) it.next()).compile();
             }
+        }
+
+        /**
+         * Check if the given name was imported through a "single type import", e.g.<pre>
+         *     import java.util.Map</pre>
+         * 
+         * @return the fully qualified name or <code>null</code>
+         */
+        public String[] getSingleTypeImport(String name) {
+            for (Iterator it = this.importDeclarations.iterator(); it.hasNext();) {
+                ImportDeclaration id = (ImportDeclaration) it.next();
+                if (id instanceof SingleTypeImportDeclaration) {
+                    String[] ss = ((SingleTypeImportDeclaration) id).getIdentifiers();
+                    if (ss[ss.length - 1].equals(name)) return ss;
+                }
+            }
+            return null;
+        }
+
+        /**
+         * If the given name was declared in a simple type import, load that class.
+         */
+        public IClass importSingleType(String simpleTypeName, Location location) throws CompileException {
+            String[] ss = this.getSingleTypeImport(simpleTypeName);
+            if (ss == null) return null;
+
+            IClass iClass = Java.loadFullyQualifiedClass(ss);
+            if (iClass == null) {
+                Java.compileError("Imported class \"" + Java.join(ss, ".") + "\" could not be loaded", location);
+                return Java.getIClassLoader().OBJECT;
+            }
+            return iClass;
         }
 
         /**
@@ -392,10 +424,15 @@ public class Java {
             if (importedClass != null) return importedClass;
 
             // Cache miss...
-            for (Iterator i = new MultiIterator(
-                new String[] { "java", "lang" },
-                this.importedPackages
-            ); i.hasNext();) {
+            List packages = new ArrayList();
+            packages.add(new String[] { "java", "lang" });
+            for (Iterator i = this.importDeclarations.iterator(); i.hasNext();) {
+                ImportDeclaration id = (ImportDeclaration) i.next();
+                if (id instanceof TypeImportOnDemandDeclaration) {
+                    packages.add(((TypeImportOnDemandDeclaration) id).getIdentifiers());
+                }
+            }
+            for (Iterator i = packages.iterator(); i.hasNext();) {
                 String[] ss = (String[]) i.next();
                 String[] ss2 = new String[ss.length + 1];
                 System.arraycopy(ss, 0, ss2, 0, ss.length);
@@ -418,10 +455,59 @@ public class Java {
             visitor.visitCompilationUnit(this);
         }
 
-        String     optionalPackage               = null;            // null == no PACKAGE directive
-        final List importedPackages              = new ArrayList(); // String[]
-        final Map  singleTypeImports             = new HashMap();   // Identifier => Identifier[]
-        final Map  packageMemberTypeDeclarations = new HashMap();   // String declaredName => PackageMemberTypeDeclaration
+        PackageDeclaration optionalPackageDeclaration    = null;
+        final List         importDeclarations            = new ArrayList(); // ImportDeclaration
+        final List         packageMemberTypeDeclarations = new ArrayList(); // PackageMemberTypeDeclaration
+    }
+
+    /**
+     * Represents a package declaration like<pre>
+     *     package com.acme.tools;</pre>
+     */
+    public static class PackageDeclaration extends Located {
+        public PackageDeclaration(Location location, String packageName) {
+            super(location);
+            this.packageName = packageName;
+        }
+        public String getPackageName() { return this.packageName; }
+        private final String packageName;
+    }
+
+    public abstract static class ImportDeclaration extends Located {
+        public ImportDeclaration(Location location) {
+            super(location);
+        }
+        public abstract void visit(Visitor visitor);
+    }
+
+    /**
+     * Represents a single type import like<pre>
+     *     import java.util.Map;</pre>
+     */
+    public static class SingleTypeImportDeclaration extends ImportDeclaration {
+        public SingleTypeImportDeclaration(Location location, String[] identifiers) {
+            super(location);
+            this.identifiers = identifiers;
+        }
+        public String[] getIdentifiers() { return this.identifiers; }
+        public final void visit(Visitor visitor) { visitor.visitSingleTypeImportDeclaration(this); }
+
+        private final String[] identifiers;
+    }
+
+    /**
+     * Represents a type-import-on-demand like<pre>
+     *     import java.util.*;</pre>
+     */
+    public static class TypeImportOnDemandDeclaration extends ImportDeclaration {
+        public TypeImportOnDemandDeclaration(Location location, String[] identifiers) {
+            super(location);
+            this.identifiers = identifiers;
+        }
+        public String[] getIdentifiers() { return this.identifiers; }
+        public final void visit(Visitor visitor) { visitor.visitTypeImportOnDemandDeclaration(this); }
+
+        private final String[] identifiers;
     }
 
     public static IClassLoader getIClassLoader() {
@@ -1217,7 +1303,10 @@ public class Java {
             )) != 0) this.throwParseException("Modifiers \"protected\", \"private\" and \"static\" not allowed in package member class declaration");
 
             // Check for conflict with single-type-import (7.6).
-            if (declaringCompilationUnit.singleTypeImports.containsKey(name)) throwParseException("Package member class declaration \"" + name + "\" conflicts with single-type-import \"" + Java.join((String[]) declaringCompilationUnit.singleTypeImports.get(name), ".") + "\"");
+            {
+                String[] ss = declaringCompilationUnit.getSingleTypeImport(name);
+                if (ss != null) throwParseException("Package member class declaration \"" + name + "\" conflicts with single-type-import \"" + Java.join(ss, ".") + "\"");
+            }
 
             // Check for redefinition within compilation unit (7.6).
             {
@@ -1236,7 +1325,7 @@ public class Java {
             String className = this.getName();
 
             CompilationUnit compilationUnit = (CompilationUnit) this.getEnclosingScope();
-            if (compilationUnit.optionalPackage != null) className = compilationUnit.optionalPackage + '.' + className;
+            if (compilationUnit.optionalPackageDeclaration != null) className = compilationUnit.optionalPackageDeclaration.getPackageName() + '.' + className;
 
             return className;
         }
@@ -1495,7 +1584,10 @@ public class Java {
             )) != 0) throwParseException("Modifiers \"protected\", \"private\" and \"static\" not allowed in package member interface declaration");
 
             // Check for conflict with single-type-import (JLS 7.6).
-            if (declaringCompilationUnit.singleTypeImports.containsKey(name)) throwParseException("Package member interface declaration \"" + name + "\" conflicts with single-type-import \"" + Java.join((String[]) declaringCompilationUnit.singleTypeImports.get(name), ".") + "\"");
+            {
+                String[] ss = declaringCompilationUnit.getSingleTypeImport(name);
+                if (ss != null) throwParseException("Package member interface declaration \"" + name + "\" conflicts with single-type-import \"" + Java.join(ss, ".") + "\"");
+            }
 
             // Check for redefinition within compilation unit (JLS 7.6).
             {
@@ -1509,7 +1601,7 @@ public class Java {
             String className = this.getName();
 
             CompilationUnit compilationUnit = (CompilationUnit) this.getEnclosingScope();
-            if (compilationUnit.optionalPackage != null) className = compilationUnit.optionalPackage + '.' + className;
+            if (compilationUnit.optionalPackageDeclaration != null) className = compilationUnit.optionalPackageDeclaration.getPackageName() + '.' + className;
 
             return className;
         }
@@ -3881,12 +3973,9 @@ public class Java {
                 if (scopeCompilationUnit != null) {
 
                     // 6.5.5.1.4a Single-type import.
-                    String[] ss = (String[]) scopeCompilationUnit.singleTypeImports.get(simpleTypeName);
-                    if (ss != null) {
-                        IClass iClass = Java.loadFullyQualifiedClass(ss);
-                        if (iClass != null) return iClass;
-                        this.compileError("Imported class \"" + Java.join(ss, ".") + "\" could not be loaded");
-                        return Java.getIClassLoader().OBJECT;
+                    {
+                        IClass importedClass = scopeCompilationUnit.importSingleType(simpleTypeName, this.getLocation());
+                        if (importedClass != null) return importedClass;
                     }
 
                     // 6.5.5.1.4b Type declared in same compilation unit.
@@ -3899,7 +3988,10 @@ public class Java {
                 // 6.5.5.1.5 Type declared in other compilation unit of same
                 // package.
                 {
-                    String pkg = scopeCompilationUnit.optionalPackage;
+                    String pkg = (
+                        scopeCompilationUnit.optionalPackageDeclaration == null ? null :
+                        scopeCompilationUnit.optionalPackageDeclaration.getPackageName()
+                    );
                     IClassLoader icl = Java.getIClassLoader();
                     IClass result = icl.loadIClass(Descriptor.fromClassName(
                         pkg == null ?
@@ -4524,19 +4616,8 @@ public class Java {
         
         // 6.5.2.BL1.B1.B3.1 Single-type-import.
         if (scopeCompilationUnit != null) {
-            String[] ss = (String[]) scopeCompilationUnit.singleTypeImports.get(identifier);
-            if (ss != null) {
-                IClass iClass = Java.loadFullyQualifiedClass(ss);
-                if (iClass == null) {
-                    Java.compileError("Cannot load imported class \"" + Java.join(ss, ".") + "\"", location);
-                    return new Atom(location) {
-                        public IClass getType() { return Java.getIClassLoader().OBJECT; }
-                        public String toString() { return identifier; }
-                        public final void visit(Visitor visitor) {}
-                    };
-                }
-                return new SimpleType(location, iClass);
-            }
+            IClass iClass = scopeCompilationUnit.importSingleType(identifier, location);
+            if (iClass != null) return new SimpleType(location, iClass);
         }
         
         // 6.5.2.BL1.B1.B3.2 Package member class/interface declared in this compilation unit.
@@ -4548,9 +4629,9 @@ public class Java {
         // 6.5.2.BL1.B1.B4 Class or interface declared in same package.
         if (scopeCompilationUnit != null) {
             String className = (
-                scopeCompilationUnit.optionalPackage == null ?
+                scopeCompilationUnit.optionalPackageDeclaration == null ?
                 identifier :
-                scopeCompilationUnit.optionalPackage + '.' + identifier
+                scopeCompilationUnit.optionalPackageDeclaration.getPackageName() + '.' + identifier
             );
             IClass result = Java.getIClassLoader().loadIClass(Descriptor.fromClassName(className));
             if (result != null) return new SimpleType(location, result);
@@ -5294,8 +5375,8 @@ public class Java {
                 int lhsCS = this.lhs.compileContext();
                 IClass rhsType = this.rhs.compileGetValue();
                 IClass lhsType = this.lhs.getType();
-				Object rhsCV = this.rhs.getConstantValue();
-				Java.assignmentConversion(
+                Object rhsCV = this.rhs.getConstantValue();
+                Java.assignmentConversion(
                     (Located) this, // located
                     rhsType,        // sourceType
                     lhsType,        // targetType
@@ -5968,7 +6049,7 @@ public class Java {
 
                 // Determine the expression type.
                 do {
-                	IClass rhsType = ((Rvalue) ops.next()).getType();
+                    IClass rhsType = ((Rvalue) ops.next()).getType();
                     if (this.op == "+" && rhsType == icl.STRING) return icl.STRING;
                     lhsType = Java.binaryNumericPromotionType((Locatable) this, lhsType, rhsType);
                 } while (ops.hasNext());
@@ -6167,7 +6248,7 @@ public class Java {
                 // Unroll the constant operands.
                 List cvs = new ArrayList();
                 for (Iterator it = this.unrollLeftAssociation(); it.hasNext();) {
-                	Object cv = ((Rvalue) it.next()).getConstantValue();
+                    Object cv = ((Rvalue) it.next()).getConstantValue();
                     if (cv == null) return null;
                     cvs.add(cv);
                 }
@@ -7997,7 +8078,7 @@ public class Java {
             return IClass.DOUBLE;
         }
         if (value instanceof String) {
-        	String s = (String) value;
+            String s = (String) value;
             if (s.length() < (65536 / 3)) {
                 Java.writeLDC(located, located.addConstantStringInfo((String) value));
                 return Java.getIClassLoader().STRING;

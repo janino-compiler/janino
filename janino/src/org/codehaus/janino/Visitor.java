@@ -40,15 +40,25 @@ package org.codehaus.janino;
  */
 public interface Visitor {
     void visitCompilationUnit(Java.CompilationUnit cu);
+
+    // ImportDeclaration-derived.
+    void visitSingleTypeImportDeclaration(Java.SingleTypeImportDeclaration stid);
+    void visitTypeImportOnDemandDeclaration(Java.TypeImportOnDemandDeclaration tiodd);
+
+    // TypeDeclaration-derived.
     void visitAnonymousClassDeclaration(Java.AnonymousClassDeclaration acd);
     void visitLocalClassDeclaration(Java.LocalClassDeclaration lcd);
     void visitPackageMemberClassDeclaration(Java.PackageMemberClassDeclaration pmcd);
     void visitMemberInterfaceDeclaration(Java.MemberInterfaceDeclaration mid);
     void visitPackageMemberInterfaceDeclaration(Java.PackageMemberInterfaceDeclaration pmid);
     void visitMemberClassDeclaration(Java.MemberClassDeclaration mcd);
+
+    // AbstractTypeBodyDeclaration-derived.
     void visitConstructorDeclarator(Java.ConstructorDeclarator cd);
     void visitInitializer(Java.Initializer i);
     void visitMethodDeclarator(Java.MethodDeclarator md);
+
+    // Statement-derived.
     void visitFieldDeclarator(Java.FieldDeclarator fd);
     void visitLabeledStatement(Java.LabeledStatement ls);
     void visitBlock(Java.Block b);
@@ -67,8 +77,12 @@ public interface Visitor {
     void visitContinueStatement(Java.ContinueStatement cs);
     void visitEmptyStatement(Java.EmptyStatement es);
     void visitLocalClassDeclarationStatement(Java.LocalClassDeclarationStatement lcds);
+
+    // Others.
     void visitVariableDeclarator(Java.VariableDeclarator vd);
     void visitFormalParameter(Java.FormalParameter fp);
+
+    // Atom-derived.
     void visitNewAnonymousClassInstance(Java.NewAnonymousClassInstance naci);
     void visitMethodInvocation(Java.MethodInvocation mi);
     void visitAlternateConstructorInvocation(Java.AlternateConstructorInvocation aci);

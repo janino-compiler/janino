@@ -39,7 +39,6 @@ import java.util.Iterator;
 
 import org.codehaus.janino.util.AutoIndentWriter;
 
-
 /**
  * A visitor that unparses (un-compiles) an AST to a {@link Writer}. See
  * {@link #main(String[])} for a usage example.
@@ -76,19 +75,23 @@ public class UnparseVisitor implements Visitor {
     }
 
     public void visitCompilationUnit(Java.CompilationUnit cu) {
-        if (cu.optionalPackage != null) {
-            this.pw.println("package " + cu.optionalPackage + ';');
+        if (cu.optionalPackageDeclaration != null) {
+            this.pw.println("package " + cu.optionalPackageDeclaration.getPackageName() + ';');
         }
-        for (Iterator it = cu.importedPackages.iterator(); it.hasNext();) {
-            this.pw.println("import " + Java.join((String[]) it.next(), ".") + ".*;");
+        for (Iterator it = cu.importDeclarations.iterator(); it.hasNext();) {
+            ((Java.ImportDeclaration) it.next()).visit(this);
         }
-        for (Iterator it = cu.singleTypeImports.values().iterator(); it.hasNext();) {
-            this.pw.println("import " + Java.join((String[]) it.next(), ".") + ';');
-        }
-        for (Iterator it = cu.packageMemberTypeDeclarations.values().iterator(); it.hasNext();) {
+        for (Iterator it = cu.packageMemberTypeDeclarations.iterator(); it.hasNext();) {
             ((Java.PackageMemberTypeDeclaration) it.next()).visit(this);
             this.pw.println();
         }
+    }
+
+    public void visitSingleTypeImportDeclaration(Java.SingleTypeImportDeclaration stid) {
+        this.pw.println("import " + Java.join(stid.getIdentifiers(), ".") + ';');
+    }
+    public void visitTypeImportOnDemandDeclaration(Java.TypeImportOnDemandDeclaration tiodd) {
+        this.pw.println("import " + Java.join(tiodd.getIdentifiers(), ".") + ".*;");
     }
 
     public void visitLocalClassDeclaration(Java.LocalClassDeclaration lcd) {
