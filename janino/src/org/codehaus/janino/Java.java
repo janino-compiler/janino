@@ -605,7 +605,7 @@ public class Java {
      * "package member types" because they are immediate members of a package, e.g.
      * "java.lang.String".
      */
-    interface PackageMemberTypeDeclaration extends NamedTypeDeclaration {
+    public interface PackageMemberTypeDeclaration extends NamedTypeDeclaration {
     }
 
     /**
@@ -2061,7 +2061,7 @@ public class Java {
             sb.append(')');
             return sb.toString();
         }
-    
+
         public final void visit(Visitor visitor) { visitor.visitConstructorDeclarator(this); }
     }
 
@@ -2491,7 +2491,7 @@ public class Java {
                     if (!previousStatementCanCompleteNormally) {
                         bs.compileError("Statement is unreachable");
                         break;
-                    } 
+                    }
                     previousStatementCanCompleteNormally = bs.compile();
                 }
                 return previousStatementCanCompleteNormally;
@@ -2830,7 +2830,7 @@ public class Java {
                     for (int i = 0; i < this.optionalUpdate.length; ++i) {
                         this.optionalUpdate[i].compile();
                     }
-                } 
+                }
 
                 // Compile condition.
                 toCondition.set();
@@ -3123,7 +3123,7 @@ public class Java {
                     if (cv == null) {
                         rv.compileError("Value of \"case\" label does not pose a constant value");
                         cv = new Integer(99);
-                    } 
+                    }
 
                     // Verify that case label is assignable to the type of the switch expression.
                     IClass rvType = rv.getType();
@@ -3210,7 +3210,7 @@ public class Java {
                     if (!canCompleteNormally) {
                         bs.compileError("Statement is unreachable");
                         break;
-                    } 
+                    }
                     canCompleteNormally = bs.compile();
                 }
             }
@@ -3250,9 +3250,9 @@ public class Java {
             this.blockStatements = blockStatements;
         }
 
-        final List caseLabels = new ArrayList(); // Rvalue
-        boolean    hasDefaultLabel = false;
-        List       blockStatements; // BlockStatement
+        public final List caseLabels = new ArrayList(); // Rvalue
+        public boolean    hasDefaultLabel = false;
+        public List       blockStatements; // BlockStatement
     }
 
     public final static class SynchronizedStatement extends Statement {
@@ -3484,7 +3484,7 @@ public class Java {
             if (this.optionalReturnValue == null) {
                 this.compileError("Method must return a value");
                 return false;
-            } 
+            }
             IClass type = this.optionalReturnValue.compileGetValue();
             Java.assignmentConversion(
                 (Located) this,                     // located
@@ -3608,7 +3608,7 @@ public class Java {
                 if (brokenStatement == null) {
                     this.compileError("\"break\" statement is not enclosed by a breakable statement");
                     return false;
-                } 
+                }
             } else {
                 for (
                     Scope s = this.enclosingScope;
@@ -3626,7 +3626,7 @@ public class Java {
                 if (brokenStatement == null) {
                     this.compileError("Statement \"break " + this.optionalLabel + "\" is not enclosed by a breakable statement with label \"" + this.optionalLabel + "\"");
                     return false;
-                } 
+                }
             }
 
             Java.leaveStatements(
@@ -3677,7 +3677,7 @@ public class Java {
                 if (continuedStatement == null) {
                     this.compileError("\"continue\" statement is not enclosed by a continuable statement");
                     return false;
-                } 
+                }
             } else {
                 for (
                     Scope s = this.enclosingScope;
@@ -3692,7 +3692,7 @@ public class Java {
                             if (!(st instanceof ContinuableStatement)) {
                                 st.compileError("Labeled statement is not continuable");
                                 return false;
-                            } 
+                            }
                             continuedStatement = (ContinuableStatement) st;
                             break;
                         }
@@ -3701,7 +3701,7 @@ public class Java {
                 if (continuedStatement == null) {
                     this.compileError("Statement \"continue " + this.optionalLabel + "\" is not enclosed by a continuable statement with label \"" + this.optionalLabel + "\"");
                     return false;
-                } 
+                }
             }
 
             continuedStatement.bodyHasContinue = true;
@@ -3752,7 +3752,7 @@ public class Java {
         for (Scope s = from; s != to; s = s.getEnclosingScope()) {
             if (s instanceof BlockStatement) {
                 ((BlockStatement) s).leave(optionalStackValueType);
-            } 
+            }
         }
     }
 
@@ -3800,7 +3800,7 @@ public class Java {
                     public String toString() { return Atom.this.toString(); }
                     public void visit(Visitor visitor) {}
                 };
-            } 
+            }
             return result;
         }
         public final Rvalue toRvalueOrCE() throws CompileException {
@@ -3813,7 +3813,7 @@ public class Java {
                     public String toString() { return Atom.this.toString(); }
                     public void visit(Visitor visitor) {}
                 };
-            } 
+            }
             return result;
         }
         public final Lvalue toLvalueOrCE() throws CompileException {
@@ -3827,7 +3827,7 @@ public class Java {
                     public String toString() { return Atom.this.toString(); }
                     public void visit(Visitor visitor) {}
                 };
-            } 
+            }
             return result;
         }
 
@@ -3913,7 +3913,7 @@ public class Java {
         public static final int DOUBLE  = 7;
         public static final int BOOLEAN = 8;
 
-        private final int index;
+        public final int index;
     }
 
     public static final class ReferenceType extends Type {
@@ -4043,14 +4043,14 @@ public class Java {
 
         public final void visit(Visitor visitor) { visitor.visitReferenceType(this); }
 
-        private final String[] identifiers;
-        private final Scope    scope;
+        public final String[] identifiers;
+        public final Scope    scope;
     }
 
     // Helper class for JLS 15.9.1
     public static final class RvalueMemberType extends Type {
-        private final Rvalue rvalue;
-        private final String identifier;
+        public final Rvalue rvalue;
+        public final String identifier;
 
         public RvalueMemberType(
             Location location,
@@ -4131,7 +4131,7 @@ public class Java {
             if (cv != null) {
                 Java.pushConstant((Located) this, cv);
                 return this.getType();
-            } 
+            }
 
             this.compileContext();
             return this.compileGet();
@@ -4313,19 +4313,23 @@ public class Java {
         }
 
         // Override "Atom.toType()".
+        private Type type = null;
         public Type toType() {
-            return new Type(this.getLocation()) {
-                public boolean isType() throws CompileException {
-                    return AmbiguousName.this.reclassify().isType();
-                }
-                public IClass getType() throws CompileException {
-                    return AmbiguousName.this.reclassify().toTypeOrCE().getType();
-                }
-                public String toString() {
-                    return AmbiguousName.this.toString();
-                }
-                public final void visit(Visitor visitor) { AmbiguousName.this.visit(visitor); }
-            };
+            if (this.type == null) {
+                this.type = new Type(this.getLocation()) {
+                    public boolean isType() throws CompileException {
+                        return AmbiguousName.this.reclassify().isType();
+                    }
+                    public IClass getType() throws CompileException {
+                        return AmbiguousName.this.reclassify().toTypeOrCE().getType();
+                    }
+                    public String toString() {
+                        return AmbiguousName.this.toString();
+                    }
+                    public final void visit(Visitor visitor) { AmbiguousName.this.visit(visitor); }
+                };
+            }
+            return this.type;
         }
 
         // Compile time members.
@@ -4358,7 +4362,7 @@ public class Java {
         public String toString() {
             return Java.join(this.identifiers, ".", 0, this.n);
         }
-    
+
         /*private*/ Atom reclassify() throws CompileException {
             if (this.reclassified == null) {
                 this.reclassified = Java.reclassifyName(
@@ -4373,9 +4377,9 @@ public class Java {
 
         public final void visit(Visitor visitor) { visitor.visitAmbiguousName(this); }
 
-        private final Scope    scope;
-        private final String[] identifiers;
-        private final int      n;
+        public final Scope    scope;
+        public final String[] identifiers;
+        final int             n;
     }
 
     // Helper class for 6.5.2.1.7, 6.5.2.2.1
@@ -4414,13 +4418,13 @@ public class Java {
         final String[]   identifiers,
         int              n
     ) throws CompileException {
-    
+
         if (n == 1) return Java.reclassifyName(
             location,
             scope,
             identifiers[0]
         );
-    
+
         // 6.5.2.2
         Atom lhs = Java.reclassifyName(
             location,
@@ -4428,7 +4432,7 @@ public class Java {
             identifiers, n - 1
         );
         String rhs = identifiers[n - 1];
-    
+
         // 6.5.2.2.1
         if (Java.DEBUG) System.out.println("lhs = " + lhs);
         if (lhs instanceof Package) {
@@ -4438,17 +4442,17 @@ public class Java {
 
             return new Package(location, className);
         }
-    
+
         // 6.5.2.2.3.2 EXPRESSION.length
         if (rhs.equals("length") && lhs.getType().isArray()) {
             return new ArrayLength(location, lhs.toRvalueOrCE());
         }
-    
+
         IClass lhsType = lhs.getType();
-    
+
         // Notice: Don't need to check for 6.5.2.2.2.1 TYPE.METHOD and 6.5.2.2.3.1
         // EXPRESSION.METHOD here because that has been done before.
-    
+
         {
             IClass.IField field = Java.findIField(lhsType, rhs, location);
             if (field != null) {
@@ -4457,20 +4461,20 @@ public class Java {
                 return new FieldAccess(location, lhs, field);
             }
         }
-    
+
         IClass[] classes = lhsType.getDeclaredIClasses();
         for (int i = 0; i < classes.length; ++i) {
             final IClass memberType = classes[i];
             String name = Descriptor.toClassName(memberType.getDescriptor());
             name = name.substring(name.lastIndexOf('$') + 1);
             if (name.equals(rhs)) {
-    
+
                 // 6.5.2.2.2.3 TYPE.TYPE
                 // 6.5.2.2.3.3 EXPRESSION.TYPE
                 return new SimpleType(location, memberType);
             }
         }
-    
+
         Java.compileError("\"" + rhs + "\" is neither a method, a field, nor a member class of \"" + lhsType + "\"", location);
         return new Atom(location) {
             public IClass getType() { return Java.getIClassLoader().OBJECT; }
@@ -4511,9 +4515,9 @@ public class Java {
             while (!(s instanceof CompilationUnit)) s = s.getEnclosingScope();
             scopeCompilationUnit = (CompilationUnit) s;
         }
-    
+
         // 6.5.2.1.BL1
-        
+
         // 6.5.2.BL1.B1.B1.1/6.5.6.1.1 Local variable.
         // 6.5.2.BL1.B1.B1.2/6.5.6.1.1 Parameter.
         {
@@ -4579,19 +4583,19 @@ public class Java {
                     Java.Type ct = new SimpleType(scopeTypeDeclaration.getLocation(), (IClass) td);
                     Atom lhs;
                     if (scopeTBD.isStatic()) {
-        
+
                         // Field access in static method context.
                         lhs = ct;
                     } else
                     {
-        
+
                         // Field access in non-static method context.
                         if (f.isStatic()) {
-        
+
                             // Access to static field.
                             lhs = ct;
                         } else {
-        
+
                             // Access to non-static field.
                             lhs = new QualifiedThisReference(location, (Scope) scopeTBD, ct);
                         }
@@ -4603,32 +4607,32 @@ public class Java {
 
         // Hack: "java" MUST be a package, not a class.
         if (identifier.equals("java")) return new Package(location, identifier);
-        
+
         // 6.5.2.BL1.B1.B2.1 Local class.
         for (Scope s = scope; s instanceof Block; s = s.getEnclosingScope()) {
             Block b = (Block) s;
             LocalClassDeclaration lcd = b.getLocalClassDeclaration(identifier);
             if (lcd != null) return new SimpleType(location, lcd);
         }
-        
+
         // 6.5.2.BL1.B1.B2.2 Member type.
         if (scopeTypeDeclaration != null) {
             IClass memberType = Java.findMemberType((IClass) scopeTypeDeclaration, identifier, location);
             if (memberType != null) return new SimpleType(location, memberType);
         }
-        
+
         // 6.5.2.BL1.B1.B3.1 Single-type-import.
         if (scopeCompilationUnit != null) {
             IClass iClass = scopeCompilationUnit.importSingleType(identifier, location);
             if (iClass != null) return new SimpleType(location, iClass);
         }
-        
+
         // 6.5.2.BL1.B1.B3.2 Package member class/interface declared in this compilation unit.
         if (scopeCompilationUnit != null) {
             PackageMemberTypeDeclaration pmtd = scopeCompilationUnit.getPackageMemberTypeDeclaration(identifier);
             if (pmtd != null) return new SimpleType(location, (IClass) pmtd);
         }
-        
+
         // 6.5.2.BL1.B1.B4 Class or interface declared in same package.
         if (scopeCompilationUnit != null) {
             String className = (
@@ -4639,7 +4643,7 @@ public class Java {
             IClass result = Java.getIClassLoader().loadIClass(Descriptor.fromClassName(className));
             if (result != null) return new SimpleType(location, result);
         }
-        
+
         // 6.5.2.BL1.B1.B5, 6.5.2.BL1.B1.B6 Type-import-on-demand.
         if (scopeCompilationUnit != null) {
             IClass importedClass = scopeCompilationUnit.importTypeOnDemand(identifier, location);
@@ -4647,7 +4651,7 @@ public class Java {
                 return new SimpleType(location, importedClass);
             }
         }
-        
+
         // 6.5.2.BL1.B1.B7 Package name
         return new Package(location, identifier);
     }
@@ -4786,7 +4790,7 @@ public class Java {
      * Representation of an access to the current object or an enclosing instance.
      */
     public static final class ThisReference extends Rvalue {
-    
+
         /**
          * Access the declaring class.
          * @param location
@@ -4796,11 +4800,11 @@ public class Java {
             super(location);
             this.scope = scope;
         }
-    
-        private final Scope scope;
-    
+
+        final Scope scope;
+
         // Compile time members.
-    
+
         public ThisReference(
             Location location,
             IClass   iClass
@@ -4809,23 +4813,23 @@ public class Java {
             this.scope  = null;
             this.iClass = iClass;
         }
-    
+
         private IClass iClass = null;
-    
+
         // Implement "Atom".
         public IClass getType() throws CompileException {
             return this.getIClass();
         }
         public String toString() { return "this"; }
-    
+
         // Implement "Rvalue".
         public IClass compileGet() throws CompileException {
             Java.referenceThis((Located) this);
             return this.getIClass();
         }
-    
+
         // Internal helpers.
-    
+
         private IClass getIClass() throws CompileException {
             if (this.iClass == null) {
 
@@ -4847,12 +4851,12 @@ public class Java {
 
         public final void visit(Visitor visitor) { visitor.visitThisReference(this); }
     }
-    
+
     /**
      * Representation of an access to the current object or an enclosing instance.
      */
     public static final class QualifiedThisReference extends Rvalue {
-    
+
         /**
          * Access the given enclosing instance of the declaring class.
          * @param location
@@ -4872,16 +4876,16 @@ public class Java {
             this.scope         = scope;
             this.qualification = qualification;
         }
-    
-        private final Scope scope;
-        final Type          qualification;
-    
+
+        final Scope scope;
+        final Type  qualification;
+
         // Compile time members.
-    
+
         private ClassDeclaration    declaringClass = null;
         private TypeBodyDeclaration declaringTypeBodyDeclaration = null;
         private IClass              targetIClass = null;
-    
+
         public QualifiedThisReference(
             Location           location,
             ClassDeclaration   declaringClass,
@@ -4898,7 +4902,7 @@ public class Java {
             this.declaringTypeBodyDeclaration = optionalDeclaringFunction;
             this.targetIClass                 = targetIClass;
         }
-    
+
         // Implement "Atom".
         public IClass getType() throws CompileException {
             return this.getTargetIClass();
@@ -4906,7 +4910,7 @@ public class Java {
         public String toString() {
             return this.qualification.toString() + ".this";
         }
-    
+
         // Implement "Rvalue".
         public IClass compileGet() throws CompileException {
             Java.referenceThis(
@@ -4917,25 +4921,25 @@ public class Java {
             );
             return this.getTargetIClass();
         }
-    
+
         // Internal helpers.
-    
+
         private ClassDeclaration getDeclaringClass() throws CompileException {
             if (this.declaringClass == null) {
                 this.getDeclaringTypeBodyDeclaration();
             }
             return this.declaringClass;
         }
-    
+
         private TypeBodyDeclaration getDeclaringTypeBodyDeclaration() throws CompileException {
             if (this.declaringTypeBodyDeclaration == null) {
-    
+
                 // Compile error if in static function context.
                 Scope s;
                 for (s = this.scope; !(s instanceof TypeBodyDeclaration); s = s.getEnclosingScope());
                 this.declaringTypeBodyDeclaration = (TypeBodyDeclaration) s;
                 if (this.declaringTypeBodyDeclaration.isStatic()) this.compileError("No current instance available in static method");
-    
+
                 // Determine declaring type.
                 this.declaringClass = (ClassDeclaration) this.declaringTypeBodyDeclaration.getDeclaringType();
             }
@@ -4943,7 +4947,7 @@ public class Java {
         }
 
         private IClass getTargetIClass() throws CompileException {
-    
+
             // Determine target type.
             if (this.targetIClass == null) {
                 this.targetIClass = this.qualification.getType();
@@ -5035,8 +5039,8 @@ public class Java {
     }
 
     public static final class ClassLiteral extends Rvalue {
-        private final AbstractTypeDeclaration declaringType;
-        final Type                            type;
+        final AbstractTypeDeclaration declaringType;
+        final Type                    type;
 
         public ClassLiteral(
             Location location,
@@ -5090,7 +5094,7 @@ public class Java {
             }
 
             // Non-primitive class literal.
-                
+
             // Check if synthetic method "static Class class$(String className)" is already
             // declared.
             boolean classDollarMethodDeclared = false;
@@ -5190,7 +5194,7 @@ public class Java {
                 }
                 public final void visit(Visitor visitor) {}
             };
-                
+
             return new ConditionalExpression(
                 loc,                    // location
                 new BinaryOperation(    // lhs
@@ -5222,7 +5226,7 @@ public class Java {
 
         private void declareClassDollarMethod() {
             final IClassLoader icl = Java.getIClassLoader();
-            
+
             // Method "class$" is not yet declared; declare it like
             //
             //   static java.lang.Class class$(java.lang.String className) {
@@ -5253,7 +5257,7 @@ public class Java {
 
             // try {
             TryStatement ts = new TryStatement(loc, (Scope) cdmd);
-        
+
             // return Class.forName(className);
             MethodInvocation mi = new MethodInvocation(
                 loc,           // location
@@ -5265,7 +5269,7 @@ public class Java {
                 }
             );
             ts.setBody(new ReturnStatement(loc, (Scope) ts, mi));
-        
+
             IClass classNotFoundExceptionIClass = icl.loadIClass("Ljava/lang/ClassNotFoundException;");
             if (classNotFoundExceptionIClass == null) throw new RuntimeException();
 
@@ -5811,7 +5815,7 @@ public class Java {
                         public final void visit(Visitor visitor) {}
                     };
                     return;
-                } 
+                }
                 this.value = new FieldAccess(
                     this.getLocation(),
                     this.lhs,
@@ -6435,7 +6439,7 @@ public class Java {
             );
 
             do {
-                Rvalue operand = (Rvalue) operands.next(); 
+                Rvalue operand = (Rvalue) operands.next();
 
                 if (type == null) {
                     type = operand.compileGetValue();
@@ -6491,11 +6495,11 @@ public class Java {
             );
 
             do {
-                Rvalue operand = (Rvalue) operands.next(); 
+                Rvalue operand = (Rvalue) operands.next();
 
                 IClass operandType = operand.getType();
                 IClassLoader icl = Java.getIClassLoader();
-    
+
                 // String concatenation?
                 if (operator == "+" && (type == icl.STRING || operandType == icl.STRING)) {
 
@@ -6587,7 +6591,7 @@ public class Java {
             );
 
             do {
-                Rvalue operand = (Rvalue) operands.next(); 
+                Rvalue operand = (Rvalue) operands.next();
 
                 if (type == null) {
                     type = operand.compileGetValue();
@@ -6721,7 +6725,7 @@ public class Java {
         protected final ClassDeclaration      declaringClass;
         protected final ConstructorDeclarator declaringConstructor;
         protected final Rvalue[]              arguments;
-    
+
         protected ConstructorInvocation(
             Location              location,
             ClassDeclaration      declaringClass,
@@ -6733,13 +6737,13 @@ public class Java {
             this.declaringConstructor  = declaringConstructor;
             this.arguments             = arguments;
         }
-    
+
         public abstract void compile() throws CompileException;
-    
+
         // Implement Atom:
         public IClass getType() { throw new RuntimeException(); }
     }
-    
+
     public final static class AlternateConstructorInvocation extends ConstructorInvocation {
         public AlternateConstructorInvocation(
             Location              location,
@@ -6766,10 +6770,10 @@ public class Java {
 
         public void visit(Visitor visitor) { visitor.visitAlternateConstructorInvocation(this); }
     }
-    
+
     public final static class SuperConstructorInvocation extends ConstructorInvocation {
         final Rvalue optionalQualification;
-    
+
         public SuperConstructorInvocation(
             Location              location,
             ClassDeclaration      declaringClass,
@@ -6780,7 +6784,7 @@ public class Java {
             super(location, declaringClass, declaringConstructor, arguments);
             this.optionalQualification = optionalQualification;
         }
-    
+
         // Implement Atom
         public String toString() { return "super()"; }
 
@@ -6965,8 +6969,12 @@ public class Java {
         }
 
         // Implement "Atom".
+        private IClass.IMethod iMethod;
         public IClass getType() throws CompileException {
-            return this.findIMethod().getReturnType();
+            if (this.iMethod == null) {
+                this.iMethod = this.findIMethod();
+            }
+            return this.iMethod.getReturnType();
         }
         public String toString() {
             StringBuffer sb = new StringBuffer();
@@ -7074,7 +7082,7 @@ public class Java {
             for (Scope s = this.scope; !(s instanceof CompilationUnit); s = s.getEnclosingScope()) {
                 if (s instanceof TypeDeclaration) {
                     TypeDeclaration td = (TypeDeclaration) s;
-        
+
                     // Find methods with specified name.
                     IClass.IMethod iMethod = Java.findIMethod(
                         (Located) this,               // located
@@ -7086,7 +7094,7 @@ public class Java {
                         this.methodName,              // methodName
                         this.arguments                // arguments
                     );
-        
+
                     // Check exceptions that the method may throw.
                     IClass[] thrownExceptions = iMethod.getThrownExceptions();
                     for (int i = 0; i < thrownExceptions.length; ++i) {
@@ -7096,7 +7104,7 @@ public class Java {
                             this.scope           // scope
                         );
                     }
-        
+
                     return iMethod;
                 }
             }
@@ -7136,7 +7144,7 @@ public class Java {
             if (fd == null) {
                 this.compileError("Cannot invoke superclass method in non-method scope");
                 return IClass.INT;
-            } 
+            }
             if ((fd.modifiers & Mod.STATIC) != 0) this.compileError("Cannot invoke superclass method in static context");
             Java.load((Located) this, (IClass) fd.getDeclaringType(), 0);
 
@@ -7422,7 +7430,7 @@ public class Java {
                         theNonAbstractMethod = m;
                     }
                     if (!it.hasNext()) break;
-    
+
                     m = (IClass.IMethod) it.next();
                     IClass[] pts = m.getParameterTypes();
                     for (int i = 0; i < pts.length; ++i) {
@@ -7493,10 +7501,10 @@ public class Java {
     }
 
     public static final class NewClassInstance extends Rvalue {
-        private final Scope      scope;
-        protected final Rvalue   optionalQualification;
-        protected final Type     type;
-        protected final Rvalue[] arguments;
+        public final Scope    scope;
+        public final Rvalue   optionalQualification;
+        public final Type     type;
+        public final Rvalue[] arguments;
 
         public NewClassInstance(
             Location location,
@@ -7585,11 +7593,11 @@ public class Java {
                     // TODO: KLUDGE
                     IClass optionalOuterIClass = this.iClass.getDeclaringIClass();
                     if (optionalOuterIClass == null) {
-    
+
                         // No enclosing instance needed for the new object.
                         optionalEnclosingInstance = new ThisReference(this.getLocation(), this.scope);
                     } else {
-    
+
                         // Find an appropriate enclosing instance for the new object among
                         // the enclosing instances of the current object (JLS
                         // 15.9.2.BL1.B3.B1.B2).
@@ -7618,7 +7626,7 @@ public class Java {
     }
 
     public static final class NewAnonymousClassInstance extends Rvalue {
-        private final Scope             scope;
+        final Scope                     scope;
         final Rvalue                    optionalQualification;
         final AnonymousClassDeclaration anonymousClassDeclaration;
         final Rvalue[]                  arguments;
@@ -7636,7 +7644,7 @@ public class Java {
             this.anonymousClassDeclaration = anonymousClassDeclaration;
             this.arguments                 = arguments;
         }
-    
+
         // Implement "Atom".
         public IClass getType() throws CompileException {
             return this.anonymousClassDeclaration;
@@ -7753,8 +7761,8 @@ public class Java {
     }
 
     static final class ParameterAccess extends Rvalue {
-        private final FunctionDeclarator declaringFunction;
-        private final String             name;
+        public final FunctionDeclarator declaringFunction;
+        public final String             name;
 
         public ParameterAccess(
             Location           location,
@@ -7937,7 +7945,7 @@ public class Java {
     }
 
     public static final class Literal extends Rvalue {
-        private final Object value;
+        public final Object value;
 
         public Literal(Location location, Object value) {
             super(location);
@@ -7988,13 +7996,13 @@ public class Java {
     }
 
     public static final class ConstantValue extends Rvalue {
-        private final Object constantValue;
+        public final Object constantValue;
 
         public ConstantValue(Location location, Object constantValue) {
             super(location);
             this.constantValue = constantValue == null ? Rvalue.CONSTANT_VALUE_NULL : constantValue;
         }
-    
+
         // Implement "Atom."
         public IClass getType() {
             IClass res = (
@@ -8017,7 +8025,7 @@ public class Java {
         public IClass compileGet() {
             return Java.pushConstant((Located) this, this.constantValue);
         }
-    
+
         public Object getConstantValue2() throws CompileException {
             return this.constantValue;
         }
@@ -8135,7 +8143,7 @@ public class Java {
         }
     }
 
-    private static class LocalVariable {
+    public static class LocalVariable {
         public LocalVariable(
             boolean finaL,
             IClass  type,
@@ -8145,9 +8153,9 @@ public class Java {
             this.type                    = type;
             this.localVariableArrayIndex = localVariableArrayIndex;
         }
-        private final boolean finaL;
-        private final IClass  type;
-        private final short   localVariableArrayIndex;
+        public final boolean finaL;
+        public final IClass  type;
+        public final short   localVariableArrayIndex;
     }
 
     /**
@@ -8417,13 +8425,13 @@ public class Java {
 
             // JLS 5.1.4.6: From any array type to type "Object".
             if (targetType == icl.OBJECT) return true;
-    
+
             // JLS 5.1.4.7: From any array type to type "Cloneable".
             if (targetType == icl.CLONEABLE) return true;
-    
+
             // JLS 5.1.4.8: From any array type to type "java.io.Serializable".
             if (targetType == icl.SERIALIZABLE) return true;
-    
+
             // JLS 5.1.4.9: From SC[] to TC[] while SC if widening reference convertible to TC.
             if (
                 targetType.isArray() &&
@@ -8582,42 +8590,42 @@ public class Java {
     ) throws CompileException {
         if (sourceType.isPrimitive()) return false;
         if (sourceType == targetType) return false;
-    
+
         // 5.1.5.1
         if (sourceType.isAssignableFrom(targetType)) return true;
-    
+
         // 5.1.5.2
         if (
             targetType.isInterface() &&
             !sourceType.isFinal() &&
             !targetType.isAssignableFrom(sourceType)
         ) return true;
-    
+
         // 5.1.5.3
         if (
             sourceType == Java.getIClassLoader().OBJECT &&
             targetType.isArray()
         ) return true;
-    
+
         // 5.1.5.4
         if (
             sourceType == Java.getIClassLoader().OBJECT &&
             targetType.isInterface()
         ) return true;
-    
+
         // 5.1.5.5
         if (
             sourceType.isInterface() &&
             !targetType.isFinal()
         ) return true;
-    
+
         // 5.1.5.6
         if (
             sourceType.isInterface() &&
             targetType.isFinal() &&
             sourceType.isAssignableFrom(targetType)
         ) return true;
-    
+
         // 5.1.5.7
         // TODO: Check for redefinition of methods with same signature but different return type.
         if (
@@ -8625,7 +8633,7 @@ public class Java {
             targetType.isInterface() &&
             !targetType.isAssignableFrom(sourceType)
         ) return true;
-    
+
         // 5.1.5.8
         if (sourceType.isArray() && targetType.isArray()) {
             IClass st = sourceType.getComponentType();
@@ -8925,21 +8933,21 @@ public class Java {
         String   name,
         Location location
     ) throws Java.CompileException {
-        
+
         // Search for a field with the given name in the current class.
         IClass.IField[] fields = iClass.getDeclaredIFields();
         for (int i = 0; i < fields.length; ++i) {
             final IClass.IField f = fields[i];
             if (name.equals(f.getName())) return f;
         }
-        
+
         // Examine superclass.
         IClass.IField f = null;
         {
             IClass superclass = iClass.getSuperclass();
             if (superclass != null) f = Java.findIField(superclass, name, location);
         }
-        
+
         // Examine interfaces.
         IClass[] ifs = iClass.getInterfaces();
         for (int i = 0; i < ifs.length; ++i) {
@@ -8987,7 +8995,7 @@ public class Java {
      * a {@link CompileException}, but it may as well decide to return normally. Consequently,
      * the calling code must be prepared that {@link #compileError(String, Location)}
      * returns normally, and must attempt to continue compiling.
-     * 
+     *
      * @param message The message to report
      * @param optionalLocation The location to report
      */
@@ -9007,7 +9015,7 @@ public class Java {
      * <p>
      * The <code>handle</code> argument qulifies the warning and is typically used by
      * the {@link WarningHandler} to suppress individual warnings.
-     * 
+     *
      * @param handle
      * @param message
      * @param optionalLocation
