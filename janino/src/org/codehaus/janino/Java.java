@@ -1735,8 +1735,8 @@ public class Java {
             // Add the code context as a code attribute to the MethodInfo.
             final short lntani = (
                 Java.getDebuggingInformation().contains(DebuggingInformation.LINES) ?
-                (short) 0 :
-                classFile.addConstantUtf8Info("LineNumberTable")
+                classFile.addConstantUtf8Info("LineNumberTable") :
+                (short) 0
             );
             mi.addAttribute(new ClassFile.AttributeInfo(classFile.addConstantUtf8Info("Code")) {
                 protected void storeBody(DataOutputStream dos) throws IOException {
