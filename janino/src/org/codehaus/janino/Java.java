@@ -1257,7 +1257,7 @@ public class Java {
 
         // Implement "IClass".
         protected IClass getSuperclass2() {
-            return Java.getIClassLoader().OBJECT;
+            return null;
         }
         protected IClass[] getInterfaces2() throws CompileException {
             IClass[] res = new IClass[this.extendedTypes.length];
@@ -7168,6 +7168,19 @@ public class Java {
         // Check superinterfaces.
         IClass[] interfaces = type.getInterfaces();
         for (int i = 0; i < interfaces.length; ++i) Java.getIMethods(interfaces[i], methodName, v);
+
+        // JLS2 6.4.3
+        if (superclass == null && interfaces.length == 0 && type.isInterface()) {
+            IClass.IMethod[] oms = Java.getIClassLoader().OBJECT.getDeclaredIMethods();
+            for (int i = 0; i < oms.length; ++i) {
+                IClass.IMethod om = oms[i];
+                if (
+                    om.getName().equals(methodName)
+                    && !om.isStatic()
+                    && om.getAccess() == IClass.PUBLIC
+                ) v.add(om);
+            }
+        }
     }
 
     /**
