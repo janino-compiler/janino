@@ -39,8 +39,6 @@
 
 	<property file="build.properties"/>
 
-	<!-- targets -->
-
 	<target name="compile" description="Compile the source">
 		<delete dir="${build}"/>
 		<mkdir dir="${build}"/>
