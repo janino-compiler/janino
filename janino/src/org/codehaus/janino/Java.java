@@ -3863,10 +3863,11 @@ public class Java {
                 String simpleTypeName = this.identifiers[0];
 
                 // 6.5.5.1.1 Local class.
-                for (Scope s = this.scope; s instanceof Block; s = s.getEnclosingScope()) {
-                    Block b = (Block) s;
-                    LocalClassDeclaration lcd = b.getLocalClassDeclaration(simpleTypeName);
-                    if (lcd != null) return lcd;
+                for (Scope s = this.scope; s != null; s = s.getEnclosingScope()) {
+                    if (s instanceof Block) {
+                        LocalClassDeclaration lcd = ((Block) s).getLocalClassDeclaration(simpleTypeName);
+                        if (lcd != null) return lcd;
+                    }
                 }
 
                 // 6.5.5.1.2 Member type.
