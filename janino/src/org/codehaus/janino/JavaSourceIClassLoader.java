@@ -64,7 +64,7 @@ final class JavaSourceIClassLoader extends IClassLoader {
     }
 
     /**
-     * @param type field descriptor of the {@IClass} to load, e.g. "Lpkg1/pkg2/Outer$Inner;"
+     * @param type field descriptor of the {@link IClass} to load, e.g. "Lpkg1/pkg2/Outer$Inner;"
      * @throws TunnelException wraps a {@link Scanner.ScanException}
      * @throws TunnelException wraps a {@link Parser.ParseException}
      * @throws TunnelException wraps a {@link IOException}

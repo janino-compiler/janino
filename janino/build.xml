@@ -60,9 +60,9 @@
 		<jar jarfile="lib/janino.jar" basedir="${build}"/>
 
 		<zip destfile="${janino_zip}">
-			<zipfileset file="lib/janino.jar" prefix="lib"/>
-			<zipfileset dir="${javadoc}" prefix="javadoc"/>
-			<zipfileset dir="${src}" prefix="src-${version}"/>
+			<zipfileset file="lib/janino.jar" prefix="janino-${version}/lib"/>
+			<zipfileset dir="${javadoc}" prefix="janino-${version}/javadoc"/>
+			<zipfileset dir="${src}" prefix="janino-${version}/src"/>
 		</zip>
 	</target>
 </project>

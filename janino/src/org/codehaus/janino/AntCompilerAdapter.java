@@ -29,38 +29,39 @@ import org.codehaus.janino.util.*;
 import org.codehaus.janino.util.enum.EnumeratorFormatException;
 
 /**
- * A simple {@link CompilerAdapter} for the "ant" tool that silently ignores most of the
- * configuration parameters and attempts to compile all given source files into class files.
+ * A simple {@link org.apache.tools.ant.taskdefs.compilers.CompilerAdapter} for the "ant" tool
+ * that silently ignores most of the configuration parameters and attempts to compile all given
+ * source files into class files.
  */
 public class AntCompilerAdapter extends DefaultCompilerAdapter {
 
     /**
-     * Compile all source files in {@link #compileList} individually and write class
-     * files in directory {@link #destDir}.
+     * Compile all source files in {@link DefaultCompilerAdapter#compileList} individually and
+     * write class files in directory {@link DefaultCompilerAdapter#destDir}.
      * <p>
      * The following fields of {@link DefaultCompilerAdapter} are honored:
      * <ul>
-     *   <li>{@link #compileList} - the set of Java<sup>TM</sup> source files to compile
-     *   <li>{@link #destDir} - where to store the class files
-     *   <li>{@link #compileSourcepath} - where to look for more Java<sup>TM</sup> source files
-     *   <li>{@link #compileClasspath} - where to look for required classes
-     *   <li>{@link #extdirs}
-     *   <li>{@link #bootclasspath}
-     *   <li>{@link #encoding} - how the Java<sup>TM</sup> source files are encoded
-     *   <li>{@link #verbose}
-     *   <li>{@link #debug}
+     *   <li>{@link DefaultCompilerAdapter#compileList} - the set of Java<sup>TM</sup> source files to compile
+     *   <li>{@link DefaultCompilerAdapter#destDir} - where to store the class files
+     *   <li>{@link DefaultCompilerAdapter#compileSourcepath} - where to look for more Java<sup>TM</sup> source files
+     *   <li>{@link DefaultCompilerAdapter#compileClasspath} - where to look for required classes
+     *   <li>{@link DefaultCompilerAdapter#extdirs}
+     *   <li>{@link DefaultCompilerAdapter#bootclasspath}
+     *   <li>{@link DefaultCompilerAdapter#encoding} - how the Java<sup>TM</sup> source files are encoded
+     *   <li>{@link DefaultCompilerAdapter#verbose}
+     *   <li>{@link DefaultCompilerAdapter#debug}
      *   <li>{@link org.apache.tools.ant.taskdefs.Javac#getDebugLevel()}
-     *   <li>{@link #src}
+     *   <li>{@link DefaultCompilerAdapter#src}
      * </ul>
      * The following fields of {@link DefaultCompilerAdapter} are not honored at this time:
      * <ul>
-     *   <li>{@link #depend}
-     *   <li>{@link #deprecation}
-     *   <li>{@link #includeAntRuntime}
-     *   <li>{@link #includeJavaRuntime}
-     *   <li>{@link #location}
-     *   <li>{@link #optimize}
-     *   <li>{@link #target}
+     *   <li>{@link DefaultCompilerAdapter#depend}
+     *   <li>{@link DefaultCompilerAdapter#deprecation}
+     *   <li>{@link DefaultCompilerAdapter#includeAntRuntime}
+     *   <li>{@link DefaultCompilerAdapter#includeJavaRuntime}
+     *   <li>{@link DefaultCompilerAdapter#location}
+     *   <li>{@link DefaultCompilerAdapter#optimize}
+     *   <li>{@link DefaultCompilerAdapter#target}
      * </ul>
      * @return "true" on success
      */
