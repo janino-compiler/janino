@@ -251,7 +251,7 @@ public class ExpressionEvaluator extends EvaluatorBase {
                     new Java.ReferenceType(       // optionalTarget
                         scanner.peek().getLocation(),
                         (Java.Scope) block,
-                        new String[] { "net", "janino", "util", "PrimitiveWrapper" }
+                        new String[] { "org", "codehaus", "janino", "util", "PrimitiveWrapper" }
                     ),
                     "wrap",
                     new Java.Rvalue[] { value }   // arguments
