@@ -123,6 +123,7 @@ import java.util.*;
  *   <li>Wrapping of private fields and methods of inner classes into "acces$...()" methods is not yet implemented; you must change private methods to non-private (e.g. to "package access", or, for documentation purposes, to "/*private&#42;/"), otherwise you get ugly errors from the JVM when it loads the calling class
  *   <li><code>assert</code> (a JDK 1.4 language feature) is not yet implemented
  *   <li>The upcoming JDK 1.5 language features are not yet implemented
+ *   <li>Checking of "definite assignment" (JLS2 16) is not executed
  * </ul>
  */
 
