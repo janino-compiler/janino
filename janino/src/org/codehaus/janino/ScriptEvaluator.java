@@ -237,14 +237,14 @@ public class ScriptEvaluator extends EvaluatorBase {
      * <p>
      * <code>parameterNames</code> and <code>parameterTypes</code> must have the same length.
      * <p>
-     * The <code>optionalClassLoader</code> serves two purposes:
+     * The <code>optionalParentClassLoader</code> serves two purposes:
      * <ul>
      *   <li>It is used to look for classes referenced by the script.
      *   <li>It is used to load the generated Java<sup>TM</sup> class
      *   into the JVM; directly if it is a subclass of {@link ByteArrayClassLoader},
      *   or by creation of a temporary {@link ByteArrayClassLoader} if not.
      * </ul>
-     * A <code>null</code> <code>optionalClassLoader</code> means to use the current
+     * A <code>null</code> <code>optionalParentClassLoader</code> means to use the current
      * thread's context class loader.
      * <p>
      * A number of constructors exist that provide useful default values for the various

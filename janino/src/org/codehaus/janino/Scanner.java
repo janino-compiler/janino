@@ -153,6 +153,19 @@ public class Scanner {
     }
 
     /**
+     * Creates a {@link Scanner} that counts lines and columns from non-default initial
+     * values.
+     */
+    public Scanner(
+        String optionalFileName,
+        Reader in,
+        short  initialLineNumber,        // "1" is a good idea
+        short  initialColumnNumber       // "0" is a good idea
+    ) throws ScanException, IOException {
+        this(optionalFileName, in, false, initialLineNumber, initialColumnNumber);
+    }
+
+    /**
      * Some public constructors open a file on-the-fly. For these constructors it is
      * important that this private constructor closes the {@link Reader} if
      * it throws an exception.
