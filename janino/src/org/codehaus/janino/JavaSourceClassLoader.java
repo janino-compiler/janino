@@ -178,6 +178,7 @@ public class JavaSourceClassLoader extends ClassLoader {
      * @param parentClassLoader See {@link ClassLoader}
      * @param optionalSourcePath A collection of directories that are searched for Java<sup>TM</sup> source files in the given order 
      * @param optionalCharacterEncoding The encoding of the Java<sup>TM</sup> source files (<code>null</code> for platform default encoding)
+     * @param debuggingInformation What kind of debugging information to generate
      */
     public JavaSourceClassLoader(
         ClassLoader          parentClassLoader,
@@ -185,14 +186,34 @@ public class JavaSourceClassLoader extends ClassLoader {
         String               optionalCharacterEncoding,
         DebuggingInformation debuggingInformation
     ) {
-        super(parentClassLoader);
-
-        // Process the source path.
-        ResourceFinder sourceFinder = (
-            optionalSourcePath == null ?
-            (ResourceFinder) new DirectoryResourceFinder(new File(".")) :
-            (ResourceFinder) new PathResourceFinder(optionalSourcePath)
+        this(
+            parentClassLoader,         // parentClassLoader
+            (                          // sourceFinder
+                optionalSourcePath == null ?
+                (ResourceFinder) new DirectoryResourceFinder(new File(".")) :
+                (ResourceFinder) new PathResourceFinder(optionalSourcePath)
+            ),
+            optionalCharacterEncoding, // optionalCharacterEncoding
+            debuggingInformation       // debuggingInformation
         );
+    }
+
+    /**
+     * Set up a {@link JavaSourceClassLoader} that finds Java<sup>TM</sup> source code through
+     * a given {@link ResourceFinder}.
+     * 
+     * @param parentClassLoader See {@link ClassLoader}
+     * @param sourceFinder Used to locate additional source files 
+     * @param optionalCharacterEncoding The encoding of the Java<sup>TM</sup> source files (<code>null</code> for platform default encoding)
+     * @param debuggingInformation What kind of debugging information to generate
+     */
+    public JavaSourceClassLoader(
+        ClassLoader          parentClassLoader,
+        ResourceFinder       sourceFinder,
+        String               optionalCharacterEncoding,
+        DebuggingInformation debuggingInformation
+    ) {
+        super(parentClassLoader);
 
         this.iClassLoader = new JavaSourceIClassLoader(
             sourceFinder,
