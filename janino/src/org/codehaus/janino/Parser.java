@@ -766,7 +766,8 @@ public class Parser {
     /**
      * <pre>
      *   MethodDeclaratorRest :=
-     *     FormalParameters |
+     *     FormalParameters
+     *     { '[' ']' }
      *     [ 'throws' ReferenceTypeList ]
      *     ( ';' | MethodBody )
      * </pre>
@@ -784,6 +785,8 @@ public class Parser {
         Java.FormalParameter[] formalParameters = this.parseFormalParameters(
             declaringType // enclosingScope
         );
+
+        for (int i = this.parseBracketsOpt(); i > 0; --i) type = new Java.ArrayType(type);
 
         Java.ReferenceType[] thrownExceptions;
         if (this.scanner.peek().isKeyword("throws")) {
