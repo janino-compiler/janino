@@ -519,7 +519,7 @@ public class UnparseVisitor implements Visitor {
             ((Java.MethodDeclarator) it.next()).visit(this);
             this.pw.println();
         }
-        for (Iterator it = atd.declaredClassesAndInterfaces.values().iterator(); it.hasNext();) {
+        for (Iterator it = atd.declaredClassesAndInterfaces.iterator(); it.hasNext();) {
             ((Java.MemberTypeDeclaration) it.next()).visit(this);
             this.pw.println();
         }

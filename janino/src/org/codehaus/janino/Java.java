@@ -668,8 +668,8 @@ public class Java {
         private   final Location location;
         protected final Scope    enclosingScope;
         protected final short    modifiers;
-        final List               declaredMethods = new ArrayList(); // MethodDeclarator
-        final Map                declaredClassesAndInterfaces = new HashMap(); // String declaredName => MemberTypeDeclaration
+        final List               declaredMethods              = new ArrayList(); // MethodDeclarator
+        final List               declaredClassesAndInterfaces = new ArrayList(); // MemberTypeDeclaration
 
         public AbstractTypeDeclaration(
             Location location,
@@ -692,13 +692,17 @@ public class Java {
 
         // Implement TypeDeclaration.
         public void addMemberTypeDeclaration(MemberTypeDeclaration mcoid) {
-            this.declaredClassesAndInterfaces.put(mcoid.getName(), mcoid);
+            this.declaredClassesAndInterfaces.add(mcoid);
         }
         public Collection getMemberTypeDeclarations() {
-            return this.declaredClassesAndInterfaces.values();
+            return this.declaredClassesAndInterfaces;
         }
         public MemberTypeDeclaration getMemberTypeDeclaration(String name) {
-            return (MemberTypeDeclaration) this.declaredClassesAndInterfaces.get(name);
+            for (Iterator it = this.declaredClassesAndInterfaces.iterator(); it.hasNext();) {
+                MemberTypeDeclaration mtd = (MemberTypeDeclaration) it.next();
+                if (mtd.getName().equals(name)) return mtd;
+            }
+            return null;
         }
         public String createLocalTypeName(String localTypeName) {
             return (
@@ -736,8 +740,7 @@ public class Java {
             return res;
         }
         protected IClass[] getDeclaredIClasses2() {
-            Collection dcai = this.declaredClassesAndInterfaces.values();
-            return (IClass[]) dcai.toArray(new IClass[dcai.size()]);
+            return (IClass[]) this.declaredClassesAndInterfaces.toArray(new IClass[this.declaredClassesAndInterfaces.size()]);
         }
         protected IClass getDeclaringIClass2() { return null; }
         protected IClass getOuterIClass2() throws Java.CompileException { return null; }
