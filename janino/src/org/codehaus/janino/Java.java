@@ -73,7 +73,7 @@ public class Java {
      * location in the source code.
      */
     public interface Locatable {
-        public Scanner.Location getLocation();
+        public Location getLocation();
 
         /**
          * Throw a {@link Parser.ParseException} with the given message and this
@@ -87,14 +87,14 @@ public class Java {
          * Issue a compile error with the given message and this object's location.
          * 
          * @param message The message to report
-         * @see Java#compileError(String, Scanner.Location)
+         * @see Java#compileError(String, Location)
          */
         public void compileError(String message) throws CompileException;
     }
     private static abstract class Located implements Locatable {
-        private final Scanner.Location location;
+        private final Location location;
 
-        protected Located(Scanner.Location location) {
+        protected Located(Location location) {
             this.location = location;
         }
 
@@ -104,7 +104,7 @@ public class Java {
 
         // Implement "Locatable".
 
-        public Scanner.Location getLocation() { return this.location; }
+        public Location getLocation() { return this.location; }
         public void throwParseException(String message) throws Parser.ParseException {
             throw new Parser.ParseException(message, this.location);
         }
@@ -282,8 +282,8 @@ public class Java {
          * @param identifiers Type name components, e.g. <code>new String[] { "java", "util", "HashMap" }</code>
          */
         public void addSingleTypeImport(
-            Scanner.Location location,
-            String[]         identifiers
+            Location location,
+            String[] identifiers
         ) throws Parser.ParseException {
             String li = identifiers[identifiers.length - 1];
             String[] ss = (String[]) this.singleTypeImports.get(li);
@@ -384,7 +384,7 @@ public class Java {
          * 6.5.5.1.6 Type-import-on-demand declaration.
          * @return <code>null</code> if the given <code>simpleTypeName</code> cannot be resolved through any of the import-on-demand directives
          */
-        public IClass importTypeOnDemand(String simpleTypeName, Scanner.Location location) throws CompileException {
+        public IClass importTypeOnDemand(String simpleTypeName, Location location) throws CompileException {
 
             // Check cache. (A cache for unimportable types is not required, because
             // the class is importable 99.9%.)
@@ -579,16 +579,16 @@ public class Java {
     }
 
     public abstract static class AbstractTypeDeclaration extends IClass implements TypeDeclaration {
-        private   final Scanner.Location location;
-        protected final Scope            enclosingScope;
-        protected final short            modifiers;
-        final List             declaredMethods = new ArrayList(); // MethodDeclarator
-        final Map              declaredClassesAndInterfaces = new HashMap(); // String declaredName => MemberTypeDeclaration
+        private   final Location location;
+        protected final Scope    enclosingScope;
+        protected final short    modifiers;
+        final List               declaredMethods = new ArrayList(); // MethodDeclarator
+        final Map                declaredClassesAndInterfaces = new HashMap(); // String declaredName => MemberTypeDeclaration
 
         public AbstractTypeDeclaration(
-            Scanner.Location location,
-            Scope            enclosingScope,
-            short            modifiers
+            Location location,
+            Scope    enclosingScope,
+            short    modifiers
         ) {
             this.location       = location;
             this.enclosingScope = enclosingScope;
@@ -632,7 +632,7 @@ public class Java {
         }
 
         // Implement "Locatable".
-        public Scanner.Location getLocation() { return this.location; }
+        public Location getLocation() { return this.location; }
         public void throwParseException(String message) throws Parser.ParseException {
             throw new Parser.ParseException(message, this.location);
         }
@@ -675,9 +675,9 @@ public class Java {
         final List variableDeclaratorsAndInitializers = new ArrayList(); // TypeBodyDeclaration
 
         public ClassDeclaration(
-            Scanner.Location location,
-            Scope            enclosingScope,
-            short            modifiers
+            Location location,
+            Scope    enclosingScope,
+            short    modifiers
         ) throws Parser.ParseException {
             super(location, enclosingScope, modifiers);
         }
@@ -936,9 +936,9 @@ public class Java {
         private /*final*/ String className; // Effective class name.
 
         public AnonymousClassDeclaration(
-            Scanner.Location location,
-            Scope            enclosingScope,
-            Type             baseType
+            Location location,
+            Scope    enclosingScope,
+            Type     baseType
         ) throws Parser.ParseException {
             super(
                 location,                         // location
@@ -1010,12 +1010,12 @@ public class Java {
         final Type[] implementedTypes;
 
         public NamedClassDeclaration(
-            Scanner.Location location,
-            Scope            enclosingScope,
-            short            modifiers,
-            String           name,
-            Type             optionalExtendedType,
-            Type[]           implementedTypes
+            Location location,
+            Scope    enclosingScope,
+            short    modifiers,
+            String   name,
+            Type     optionalExtendedType,
+            Type[]   implementedTypes
         ) throws Parser.ParseException {
             super(location, enclosingScope, modifiers);
             this.name                 = name;
@@ -1045,7 +1045,7 @@ public class Java {
 
     public static final class MemberClassDeclaration extends NamedClassDeclaration implements MemberTypeDeclaration, InnerClassDeclaration {
         public MemberClassDeclaration(
-            Scanner.Location     location,
+            Location             location,
             NamedTypeDeclaration declaringType,
             short                modifiers,
             String               name,
@@ -1116,12 +1116,12 @@ public class Java {
         private final String className;
 
         public LocalClassDeclaration(
-            Scanner.Location location,
-            Block            declaringBlock,
-            short            modifiers,
-            String           name,
-            Type             optionalExtendedType,
-            Type[]           implementedTypes
+            Location location,
+            Block    declaringBlock,
+            short    modifiers,
+            String   name,
+            Type     optionalExtendedType,
+            Type[]   implementedTypes
         ) throws Parser.ParseException {
             super(
                 location,               // location
@@ -1193,12 +1193,12 @@ public class Java {
 
     public static final class PackageMemberClassDeclaration extends NamedClassDeclaration implements PackageMemberTypeDeclaration {
         public PackageMemberClassDeclaration(
-            Scanner.Location location,
-            CompilationUnit  declaringCompilationUnit,
-            short            modifiers,
-            String           name,
-            Type             optionalExtendedType,
-            Type[]           implementedTypes
+            Location        location,
+            CompilationUnit declaringCompilationUnit,
+            short           modifiers,
+            String          name,
+            Type            optionalExtendedType,
+            Type[]          implementedTypes
         ) throws Parser.ParseException {
             super(
                 location,                         // location
@@ -1248,11 +1248,11 @@ public class Java {
         protected /*final*/ String name;
 
         protected InterfaceDeclaration(
-            Scanner.Location location,
-            Scope            enclosingScope,
-            short            modifiers,
-            String           name,
-            Type[]           extendedTypes
+            Location location,
+            Scope    enclosingScope,
+            short    modifiers,
+            String   name,
+            Type[]   extendedTypes
         ) throws Parser.ParseException {
             super(
                 location,
@@ -1428,7 +1428,7 @@ public class Java {
 
     public static final class MemberInterfaceDeclaration extends InterfaceDeclaration implements MemberTypeDeclaration {
         public MemberInterfaceDeclaration(
-            Scanner.Location     location,
+            Location             location,
             NamedTypeDeclaration declaringType,
             short                modifiers,
             String               name,
@@ -1473,11 +1473,11 @@ public class Java {
 
     public static final class PackageMemberInterfaceDeclaration extends InterfaceDeclaration implements PackageMemberTypeDeclaration {
         public PackageMemberInterfaceDeclaration(
-            Scanner.Location location,
-            CompilationUnit  declaringCompilationUnit,
-            short            modifiers,
-            String           name,
-            Type[]           extendedTypes
+            Location        location,
+            CompilationUnit declaringCompilationUnit,
+            short           modifiers,
+            String          name,
+            Type[]          extendedTypes
         ) throws Parser.ParseException {
             super(
                 location,                         // location
@@ -1537,9 +1537,9 @@ public class Java {
         final boolean         statiC;
 
         protected AbstractTypeBodyDeclaration(
-            Scanner.Location location,
-            TypeDeclaration  declaringType,
-            boolean statiC
+            Location        location,
+            TypeDeclaration declaringType,
+            boolean         statiC
         ) {
             super(location);
             this.declaringType = declaringType;
@@ -1568,9 +1568,9 @@ public class Java {
         Block block = null;
 
         public Initializer(
-            Scanner.Location location,
-            TypeDeclaration  declaringType,
-            boolean          statiC
+            Location        location,
+            TypeDeclaration declaringType,
+            boolean         statiC
         ) {
             super(location, declaringType, statiC);
         }
@@ -1609,7 +1609,7 @@ public class Java {
         Block                   optionalBody = null;
 
         public FunctionDeclarator(
-            Scanner.Location  location,
+            Location          location,
             TypeDeclaration   declaringType,
             short             modifiers,
             Type              type,
@@ -1769,7 +1769,7 @@ public class Java {
         ConstructorInvocation             optionalExplicitConstructorInvocation = null;
 
         public ConstructorDeclarator(
-            Scanner.Location  location,
+            Location          location,
             ClassDeclaration  declaringClass,
             short             modifiers,
             FormalParameter[] formalParameters,
@@ -1972,7 +1972,7 @@ public class Java {
 
     public final static class MethodDeclarator extends FunctionDeclarator {
         public MethodDeclarator(
-            Scanner.Location              location,
+            Location                      location,
             final AbstractTypeDeclaration declaringType,
             short                         modifiers,
             Type                          type,
@@ -2070,7 +2070,7 @@ public class Java {
         VariableDeclarator[]                  variableDeclarators = null;
 
         public FieldDeclarator(
-            Scanner.Location        location,
+            Location                location,
             AbstractTypeDeclaration declaringType,
             short                   modifiers,
             Type                    type
@@ -2219,10 +2219,10 @@ public class Java {
         Rvalue       optionalInitializer = null;
 
         public VariableDeclarator(
-            Scanner.Location location,
-            String           name,
-            int              brackets,
-            Rvalue           optionalInitializer
+            Location location,
+            String   name,
+            int      brackets,
+            Rvalue   optionalInitializer
         ) {
             super(location);
             this.name                = name;
@@ -2298,8 +2298,8 @@ public class Java {
         protected final Scope enclosingScope;
 
         protected Statement(
-            Scanner.Location location,
-            Scope            enclosingScope
+            Location location,
+            Scope    enclosingScope
         ) {
             super(location);
             this.enclosingScope = enclosingScope;
@@ -2318,9 +2318,9 @@ public class Java {
 
     public final static class LabeledStatement extends BreakableStatement {
         public LabeledStatement(
-            Scanner.Location location,
-            Scope            enclosingScope,
-            String           label
+            Location location,
+            Scope    enclosingScope,
+            String   label
         ) {
             super(location, enclosingScope);
             this.label = label;
@@ -2351,8 +2351,8 @@ public class Java {
         final List statements = new ArrayList(); // BlockStatement
 
         public Block(
-            Scanner.Location location,
-            Scope            enclosingScope
+            Location location,
+            Scope    enclosingScope
         ) {
             super(location, enclosingScope);
         }
@@ -2463,8 +2463,8 @@ public class Java {
      */
     public static abstract class BreakableStatement extends Statement {
         protected BreakableStatement(
-            Scanner.Location location,
-            Scope            enclosingScope
+            Location location,
+            Scope    enclosingScope
         ) {
             super(location, enclosingScope);
         }
@@ -2491,8 +2491,8 @@ public class Java {
 
     public static abstract class ContinuableStatement extends BreakableStatement {
         protected ContinuableStatement(
-            Scanner.Location location,
-            Scope            enclosingScope
+            Location location,
+            Scope    enclosingScope
         ) {
             super(location, enclosingScope);
         }
@@ -2547,11 +2547,11 @@ public class Java {
          * an "else" clause, a dummy {@link Java.EmptyStatement} should be passed.
          */
         public IfStatement(
-            Scanner.Location location,
-            Scope            enclosingScope,
-            Rvalue           condition,
-            BlockStatement   thenStatement,
-            BlockStatement   optionalElseStatement
+            Location       location,
+            Scope          enclosingScope,
+            Rvalue         condition,
+            BlockStatement thenStatement,
+            BlockStatement optionalElseStatement
         ) {
             super(location, enclosingScope);
             this.condition             = condition;
@@ -2660,8 +2660,8 @@ public class Java {
 
     public final static class ForStatement extends ContinuableStatement {
         public ForStatement(
-            Scanner.Location location,
-            Scope            enclosingScope
+            Location location,
+            Scope    enclosingScope
         ) {
 
             // Trick: Insert a "Block" between the enclosing scope and the
@@ -2756,9 +2756,9 @@ public class Java {
 
     public final static class WhileStatement extends ContinuableStatement {
         public WhileStatement(
-            Scanner.Location location,
-            Scope            enclosingScope,
-            Rvalue           condition
+            Location location,
+            Scope    enclosingScope,
+            Rvalue   condition
         ) {
             super(location, enclosingScope);
             this.condition = condition;
@@ -2812,8 +2812,8 @@ public class Java {
         Block          optionalFinally = null;
 
         public TryStatement(
-            Scanner.Location location,
-            Scope            enclosingScope
+            Location location,
+            Scope    enclosingScope
         ) {
             super(location, enclosingScope);
         }
@@ -2984,8 +2984,8 @@ public class Java {
      */
     public static final class SwitchStatement extends BreakableStatement {
         public SwitchStatement(
-            Scanner.Location location,
-            Scope            enclosingScope
+            Location location,
+            Scope    enclosingScope
         ) {
             super(location, enclosingScope);
         }
@@ -3140,7 +3140,7 @@ public class Java {
     }
 
     public static class SwitchBlockStatementGroup extends Located {
-        public SwitchBlockStatementGroup(Scanner.Location location) {
+        public SwitchBlockStatementGroup(Location location) {
             super(location);
         }
 
@@ -3162,9 +3162,9 @@ public class Java {
 
     public final static class SynchronizedStatement extends Statement {
         public SynchronizedStatement(
-            Scanner.Location location,
-            Scope            enclosingScope,
-            Rvalue           expression
+            Location location,
+            Scope    enclosingScope,
+            Rvalue   expression
         ) {
             super(location, enclosingScope);
             this.expression = expression;
@@ -3241,8 +3241,8 @@ public class Java {
 
     public final static class DoStatement extends ContinuableStatement {
         public DoStatement(
-            Scanner.Location location,
-            Scope            enclosingScope
+            Location location,
+            Scope    enclosingScope
         ) {
             super(location, enclosingScope);
         }
@@ -3292,7 +3292,7 @@ public class Java {
          * @param modifiers Only "final" allowed.
          */
         public LocalVariableDeclarationStatement(
-            Scanner.Location     location,
+            Location             location,
             Block                declaringBlock,
             short                modifiers,
             Type                 type,
@@ -3353,9 +3353,9 @@ public class Java {
 
     public final static class ReturnStatement extends Statement {
         public ReturnStatement(
-            Scanner.Location location,
-            Scope            enclosingScope,
-            Rvalue           optionalReturnValue
+            Location location,
+            Scope    enclosingScope,
+            Rvalue   optionalReturnValue
         ) {
             super(location, enclosingScope);
             this.optionalReturnValue = optionalReturnValue;
@@ -3412,9 +3412,9 @@ public class Java {
 
     public final static class ThrowStatement extends Statement {
         public ThrowStatement(
-            Scanner.Location location,
-            Scope            enclosingScope,
-            Rvalue           expression
+            Location location,
+            Scope    enclosingScope,
+            Rvalue   expression
         ) {
             super(location, enclosingScope);
             this.expression = expression;
@@ -3483,9 +3483,9 @@ public class Java {
      */
     public final static class BreakStatement extends Statement {
         public BreakStatement(
-            Scanner.Location location,
-            Scope            enclosingScope,
-            String           optionalLabel
+            Location location,
+            Scope    enclosingScope,
+            String   optionalLabel
         ) {
             super(location, enclosingScope);
             this.optionalLabel = optionalLabel;
@@ -3552,9 +3552,9 @@ public class Java {
      */
     public final static class ContinueStatement extends Statement {
         public ContinueStatement(
-            Scanner.Location location,
-            Scope            enclosingScope,
-            String           optionalLabel
+            Location location,
+            Scope    enclosingScope,
+            String   optionalLabel
         ) {
             super(location, enclosingScope);
             this.optionalLabel = optionalLabel;
@@ -3627,8 +3627,8 @@ public class Java {
      */
     public final static class EmptyStatement extends Statement {
         public EmptyStatement(
-            Scanner.Location location,
-            Scope            enclosingScope
+            Location location,
+            Scope    enclosingScope
         ) {
             super(location, enclosingScope);
         }
@@ -3666,7 +3666,7 @@ public class Java {
      * {@link Java.Lvalue}.
      */
     public static abstract class Atom extends Located {
-        public Atom(Scanner.Location location) {
+        public Atom(Location location) {
             super(location);
         }
 
@@ -3748,7 +3748,7 @@ public class Java {
      * Representation of a Java<sup>TM</sup> type.
      */
     public static abstract class Type extends Atom {
-        protected Type(Scanner.Location location) {
+        protected Type(Location location) {
             super(location);
         }
         public Type toType() { return this; }
@@ -3757,7 +3757,7 @@ public class Java {
     public static final class SimpleType extends Type {
         private final IClass iClass;
 
-        public SimpleType(Scanner.Location location, IClass iClass) {
+        public SimpleType(Location location, IClass iClass) {
             super(location);
             this.iClass = iClass;
         }
@@ -3772,7 +3772,7 @@ public class Java {
      * equaivalent to a "primitive type") (JLS 4.2).
      */
     public static final class BasicType extends Type {
-        public BasicType(Scanner.Location location, int index) {
+        public BasicType(Location location, int index) {
             super(location);
             this.index = index;
         }
@@ -3823,9 +3823,9 @@ public class Java {
 
     public static final class ReferenceType extends Type {
         public ReferenceType(
-            Scanner.Location location,
-            Scope            scope,
-            String[]         identifiers
+            Location location,
+            Scope    scope,
+            String[] identifiers
         ) {
             super(location);
             this.scope       = scope;
@@ -3958,9 +3958,9 @@ public class Java {
         private final String identifier;
 
         public RvalueMemberType(
-            Scanner.Location location,
-            Rvalue           rvalue,
-            String           identifier
+            Location location,
+            Rvalue   rvalue,
+            String   identifier
         ) {
             super(location);
             this.rvalue     = rvalue;
@@ -4010,7 +4010,7 @@ public class Java {
      */
     public static abstract class Rvalue extends Atom {
         protected Rvalue(
-            Scanner.Location location
+            Location location
         ) {
             super(location);
         }
@@ -4141,7 +4141,7 @@ public class Java {
      * branches.
      */
     public static abstract class BooleanRvalue extends Rvalue {
-        protected BooleanRvalue(Scanner.Location location) {
+        protected BooleanRvalue(Location location) {
             super(location);
         }
 
@@ -4178,7 +4178,7 @@ public class Java {
      * left-hand-side of an assignment.
      */
     public static abstract class Lvalue extends Rvalue {
-        protected Lvalue(Scanner.Location location) {
+        protected Lvalue(Location location) {
             super(location);
         }
 
@@ -4199,17 +4199,17 @@ public class Java {
      */
     public static final class AmbiguousName extends Lvalue {
         public AmbiguousName(
-            Scanner.Location location,
-            Scope            scope,
-            String[]         identifiers
+            Location location,
+            Scope    scope,
+            String[] identifiers
         ) {
             this(location, scope, identifiers, identifiers.length);
         }
         public AmbiguousName(
-            Scanner.Location location,
-            Scope            scope,
-            String[]         identifiers,
-            int              n
+            Location location,
+            Scope    scope,
+            String[] identifiers,
+            int      n
         ) {
             super(location);
             this.scope       = scope;
@@ -4285,7 +4285,7 @@ public class Java {
 
     // Helper class for 6.5.2.1.7, 6.5.2.2.1
     static final class Package extends Atom {
-        public Package(Scanner.Location location, String name) {
+        public Package(Location location, String name) {
             super(location);
             this.name = name;
         }
@@ -4314,7 +4314,7 @@ public class Java {
      * @throws CompileException
      */
     private static Atom reclassifyName(
-        Scanner.Location location,
+        Location         location,
         Scope            scope,
         final String[]   identifiers,
         int              n
@@ -4393,9 +4393,9 @@ public class Java {
      * @throws CompileException
      */
     private static Atom reclassifyName(
-        Scanner.Location location,
-        Scope            scope,
-        final String     identifier
+        Location     location,
+        Scope        scope,
+        final String identifier
     ) throws CompileException {
 
         // Determine scope type body declaration, type and compilation unit.
@@ -4573,8 +4573,8 @@ public class Java {
      */
     static final class LocalVariableAccess extends Lvalue {
         public LocalVariableAccess(
-            Scanner.Location location,
-            LocalVariable    localVariable
+            Location      location,
+            LocalVariable localVariable
         ) {
             super(location);
             this.localVariable = localVariable;
@@ -4606,9 +4606,9 @@ public class Java {
      */
     static final class FieldAccess extends Lvalue {
         public FieldAccess(
-            Scanner.Location location,
-            Atom             lhs,
-            IClass.IField    field
+            Location      location,
+            Atom          lhs,
+            IClass.IField field
         ) {
             super(location);
             this.lhs   = lhs;
@@ -4669,8 +4669,8 @@ public class Java {
 
     static final class ArrayLength extends Rvalue {
         public ArrayLength(
-            Scanner.Location location,
-            Rvalue           lhs
+            Location location,
+            Rvalue   lhs
         ) {
             super(location);
             this.lhs = lhs;
@@ -4708,7 +4708,7 @@ public class Java {
          * @param location
          * @param scope
          */
-        public ThisReference(Scanner.Location location, Scope scope) {
+        public ThisReference(Location location, Scope scope) {
             super(location);
             this.scope = scope;
         }
@@ -4718,8 +4718,8 @@ public class Java {
         // Compile time members.
     
         public ThisReference(
-            Scanner.Location location,
-            IClass           iClass
+            Location location,
+            IClass   iClass
         ) {
             super(location);
             this.scope  = null;
@@ -4776,9 +4776,9 @@ public class Java {
          * @param qualification
          */
         public QualifiedThisReference(
-            Scanner.Location location,
-            Scope            scope,
-            Type             qualification
+            Location location,
+            Scope    scope,
+            Type     qualification
         ) {
             super(location);
 
@@ -4799,7 +4799,7 @@ public class Java {
         private IClass              targetIClass = null;
     
         public QualifiedThisReference(
-            Scanner.Location   location,
+            Location           location,
             ClassDeclaration   declaringClass,
             FunctionDeclarator optionalDeclaringFunction,
             IClass             targetIClass
@@ -4955,9 +4955,9 @@ public class Java {
         final Type                            type;
 
         public ClassLiteral(
-            Scanner.Location location,
-            Scope            enclosingScope,
-            Type             type
+            Location location,
+            Scope    enclosingScope,
+            Type     type
         ) {
             super(location);
             Scope s;
@@ -4975,7 +4975,7 @@ public class Java {
         public String toString() { return this.type.toString() + ".class"; }
         // Implement "Rvalue".
         public IClass compileGet() throws CompileException {
-            Scanner.Location loc = this.getLocation();
+            Location loc = this.getLocation();
             final IClassLoader icl = Java.getIClassLoader();
             IClass iClass = this.type.getType();
 
@@ -5149,7 +5149,7 @@ public class Java {
             //       }
             //   }
             //
-            Scanner.Location loc = this.getLocation();
+            Location loc = this.getLocation();
             Type stringType = new SimpleType(loc, icl.STRING);
             Type classType = new SimpleType(loc, icl.CLASS);
 
@@ -5228,10 +5228,10 @@ public class Java {
 
     public static final class Assignment extends Rvalue {
         public Assignment(
-            Scanner.Location location,
-            Lvalue           lhs,
-            String           operator,
-            Rvalue           rhs
+            Location location,
+            Lvalue   lhs,
+            String   operator,
+            Rvalue   rhs
         ) {
             super(location);
             this.lhs      = lhs;
@@ -5346,10 +5346,10 @@ public class Java {
 
     public static final class ConditionalExpression extends Rvalue {
         public ConditionalExpression(
-            Scanner.Location location,
-            Rvalue           lhs,
-            Rvalue           mhs,
-            Rvalue           rhs
+            Location location,
+            Rvalue   lhs,
+            Rvalue   mhs,
+            Rvalue   rhs
         ) {
             super(location);
             this.lhs = lhs;
@@ -5452,13 +5452,13 @@ public class Java {
      * or decrement.
      */
     public static final class Crement extends Rvalue {
-        public Crement(Scanner.Location location, String operator, Lvalue operand) {
+        public Crement(Location location, String operator, Lvalue operand) {
             super(location);
             this.pre      = true;
             this.operator = operator;
             this.operand  = operand;
         }
-        public Crement(Scanner.Location location, Lvalue operand, String operator) {
+        public Crement(Location location, Lvalue operand, String operator) {
             super(location);
             this.pre      = false;
             this.operator = operator;
@@ -5612,9 +5612,9 @@ public class Java {
      */
     public static final class ArrayAccessExpression extends Lvalue {
         public ArrayAccessExpression(
-            Scanner.Location location,
-            Rvalue           lhs,
-            Rvalue           index
+            Location location,
+            Rvalue   lhs,
+            Rvalue   index
         ) {
             super(location);
             this.lhs = lhs;
@@ -5669,9 +5669,9 @@ public class Java {
      */
     public static final class FieldAccessExpression extends Lvalue {
         public FieldAccessExpression(
-            Scanner.Location location,
-            Atom             lhs,
-            String           fieldName
+            Location location,
+            Atom     lhs,
+            String   fieldName
         ) {
             super(location);
             this.lhs       = lhs;
@@ -5746,9 +5746,9 @@ public class Java {
      */
     public static final class UnaryOperation extends BooleanRvalue {
         public UnaryOperation(
-            Scanner.Location location,
-            String           operator,
-            Rvalue           operand
+            Location location,
+            String   operator,
+            Rvalue   operand
         ) {
             super(location);
             this.operator = operator;
@@ -5849,9 +5849,9 @@ public class Java {
 
     public static final class Instanceof extends Rvalue {
         public Instanceof(
-            Scanner.Location location,
-            Rvalue           lhs,
-            Type             rhs // ReferenceType or ArrayType
+            Location location,
+            Rvalue   lhs,
+            Type     rhs // ReferenceType or ArrayType
         ) {
             super(location);
             this.lhs = lhs;
@@ -5906,10 +5906,10 @@ public class Java {
      */
     public static final class BinaryOperation extends BooleanRvalue {
         public BinaryOperation(
-            Scanner.Location location,
-            Rvalue           lhs,
-            String           op,
-            Rvalue           rhs
+            Location location,
+            Rvalue   lhs,
+            String   op,
+            Rvalue   rhs
         ) {
             super(location);
             this.lhs = lhs;
@@ -6537,9 +6537,9 @@ public class Java {
 
     public static final class Cast extends Rvalue {
         public Cast(
-            Scanner.Location location,
-            Type             targetType,
-            Rvalue           value
+            Location location,
+            Type     targetType,
+            Rvalue   value
         ) {
             super(location);
             this.targetType = targetType;
@@ -6593,7 +6593,7 @@ public class Java {
     public final static class ParenthesizedExpression extends Lvalue {
         final Rvalue value;
 
-        public ParenthesizedExpression(Scanner.Location location, Rvalue value) {
+        public ParenthesizedExpression(Location location, Rvalue value) {
             super(location);
             this.value = value;
         }
@@ -6639,7 +6639,7 @@ public class Java {
         protected final Rvalue[]              arguments;
     
         protected ConstructorInvocation(
-            Scanner.Location      location,
+            Location              location,
             ClassDeclaration      declaringClass,
             ConstructorDeclarator declaringConstructor,
             Rvalue[]              arguments
@@ -6658,7 +6658,7 @@ public class Java {
     
     public final static class AlternateConstructorInvocation extends ConstructorInvocation {
         public AlternateConstructorInvocation(
-            Scanner.Location      location,
+            Location              location,
             ClassDeclaration      declaringClass,
             ConstructorDeclarator declaringConstructor,
             Rvalue[]              arguments
@@ -6687,7 +6687,7 @@ public class Java {
         final Rvalue optionalQualification;
     
         public SuperConstructorInvocation(
-            Scanner.Location      location,
+            Location              location,
             ClassDeclaration      declaringClass,
             ConstructorDeclarator declaringConstructor,
             Rvalue                optionalQualification,
@@ -6869,11 +6869,11 @@ public class Java {
 
     public static final class MethodInvocation extends Invocation {
         public MethodInvocation(
-            Scanner.Location location,
-            Scope            enclosingScope,
-            Atom             optionalTarget,
-            String           methodName,
-            Rvalue[]         arguments
+            Location location,
+            Scope    enclosingScope,
+            Atom     optionalTarget,
+            String   methodName,
+            Rvalue[] arguments
         ) {
             super(location, enclosingScope, arguments);
             this.optionalTarget = optionalTarget;
@@ -7027,10 +7027,10 @@ public class Java {
 
     public static final class SuperclassMethodInvocation extends Invocation {
         public SuperclassMethodInvocation(
-            Scanner.Location location,
-            Scope            enclosingScope,
-            String           methodName,
-            Rvalue[]         arguments
+            Location location,
+            Scope    enclosingScope,
+            String   methodName,
+            Rvalue[] arguments
         ) {
             super(location, enclosingScope, arguments);
             this.methodName = methodName;
@@ -7104,9 +7104,9 @@ public class Java {
 
     public static abstract class Invocation extends Rvalue {
         protected Invocation(
-            Scanner.Location location,
-            Scope            scope,
-            Rvalue[]         arguments
+            Location location,
+            Scope    scope,
+            Rvalue[] arguments
         ) {
             super(location);
             this.scope     = scope;
@@ -7415,11 +7415,11 @@ public class Java {
         protected final Rvalue[] arguments;
 
         public NewClassInstance(
-            Scanner.Location location,
-            Scope            scope,
-            Rvalue           optionalQualification,
-            Type             type,
-            Rvalue[]         arguments
+            Location location,
+            Scope    scope,
+            Rvalue   optionalQualification,
+            Type     type,
+            Rvalue[] arguments
         ) {
             super(location);
             this.scope                 = scope;
@@ -7433,11 +7433,11 @@ public class Java {
         protected IClass iClass = null;
 
         public NewClassInstance(
-            Scanner.Location location,
-            Scope            scope,
-            Rvalue           optionalQualification,
-            IClass           iClass,
-            Rvalue[]         arguments
+            Location location,
+            Scope    scope,
+            Rvalue   optionalQualification,
+            IClass   iClass,
+            Rvalue[] arguments
         ) {
             super(location);
             this.scope                 = scope;
@@ -7540,7 +7540,7 @@ public class Java {
         final Rvalue[]                  arguments;
 
         public NewAnonymousClassInstance(
-            Scanner.Location          location,
+            Location                  location,
             Scope                     scope,
             Rvalue                    optionalQualification,
             AnonymousClassDeclaration anonymousClassDeclaration,
@@ -7584,7 +7584,7 @@ public class Java {
 
             // Determine formal parameters of anonymous constructor.
             FormalParameter[] fps;
-            Scanner.Location loc = this.getLocation();
+            Location loc = this.getLocation();
             {
                 List l = new ArrayList(); // FormalParameter
 
@@ -7673,7 +7673,7 @@ public class Java {
         private final String             name;
 
         public ParameterAccess(
-            Scanner.Location   location,
+            Location           location,
             FunctionDeclarator declaringFunction,
             String             name
         ) {
@@ -7700,10 +7700,10 @@ public class Java {
 
     public static final class NewArray extends Rvalue {
         public NewArray(
-            Scanner.Location location,
-            Type             type,
-            Rvalue[]         dimExprs,
-            int              dims
+            Location location,
+            Type     type,
+            Rvalue[] dimExprs,
+            int      dims
         ) {
             super(location);
             this.type     = type;
@@ -7805,9 +7805,9 @@ public class Java {
         final Rvalue[]  values;
 
         public ArrayInitializer(
-            Scanner.Location location,
-            ArrayType        arrayType,
-            Rvalue[]         values
+            Location  location,
+            ArrayType arrayType,
+            Rvalue[]  values
         ) {
             super(location);
             this.arrayType = arrayType;
@@ -7855,7 +7855,7 @@ public class Java {
     public static final class Literal extends Rvalue {
         private final Object value;
 
-        public Literal(Scanner.Location location, Object value) {
+        public Literal(Location location, Object value) {
             super(location);
             this.value = value;
         }
@@ -7906,7 +7906,7 @@ public class Java {
     public static final class ConstantValue extends Rvalue {
         private final Object constantValue;
 
-        public ConstantValue(Scanner.Location location, Object constantValue) {
+        public ConstantValue(Location location, Object constantValue) {
             super(location);
             this.constantValue = constantValue == null ? Rvalue.CONSTANT_VALUE_NULL : constantValue;
         }
@@ -8731,11 +8731,11 @@ public class Java {
     /**
      * An exception that reflects an error during compilation.
      *
-     * This exception is associated with a particular {@link Scanner.Location
+     * This exception is associated with a particular {@link Location
      * Location} in the source code.
      */
     public static class CompileException extends Scanner.LocatedException {
-        public CompileException(String message, Scanner.Location optionalLocation) {
+        public CompileException(String message, Location optionalLocation) {
             super(message, optionalLocation);
         }
     }
@@ -8837,9 +8837,9 @@ public class Java {
      * @return <code>null</code> if no field is found
      */
     static IClass.IField findIField(
-        IClass           iClass,
-        String           name,
-        Scanner.Location location
+        IClass   iClass,
+        String   name,
+        Location location
     ) throws Java.CompileException {
         
         // Search for a field with the given name in the current class.
@@ -8874,9 +8874,9 @@ public class Java {
      * @return <code>null</code> if no type with the given name is found
      */
     static IClass findMemberType(
-        IClass           iClass,
-        String           name,
-        Scanner.Location location
+        IClass   iClass,
+        String   name,
+        Location location
     ) throws Java.CompileException {
         IClass[] types = iClass.findMemberType(name);
         if (types.length == 0) return null;
@@ -8889,7 +8889,7 @@ public class Java {
     }
 
     /**
-     * Equivalent to {@link #compileError(String, Scanner.Location)} with a
+     * Equivalent to {@link #compileError(String, Location)} with a
      * <code>null</code> location argument.
      */
     public static void compileError(String message) throws CompileException {
@@ -8901,13 +8901,13 @@ public class Java {
      * {@link ErrorHandler} that was installed through
      * {@link #setCompileErrorHandler(Java.ErrorHandler)}. Such a handler typically throws
      * a {@link CompileException}, but it may as well decide to return normally. Consequently,
-     * the calling code must be prepared that {@link #compileError(String, Scanner.Location)}
+     * the calling code must be prepared that {@link #compileError(String, Location)}
      * returns normally, and must attempt to continue compiling.
      * 
      * @param message The message to report
      * @param optionalLocation The location to report
      */
-    public static void compileError(String message, Scanner.Location optionalLocation) throws CompileException {
+    public static void compileError(String message, Location optionalLocation) throws CompileException {
         ErrorHandler eh = (ErrorHandler) Java.compileErrorHandler.get();
         if (eh != null) {
             eh.handleError(message, optionalLocation);
@@ -8928,7 +8928,7 @@ public class Java {
      * @param message
      * @param optionalLocation
      */
-    public static void warning(String handle, String message, Scanner.Location optionalLocation) {
+    public static void warning(String handle, String message, Location optionalLocation) {
         WarningHandler wh = (WarningHandler) Java.warningHandler.get();
         if (wh != null) {
             if (StringPattern.matches(Java.getOptionalWarningHandlePatterns(), handle)) {
@@ -8941,7 +8941,7 @@ public class Java {
      * Interface type for {@link Java#setCompileErrorHandler(Java.ErrorHandler)}.
      */
     public interface ErrorHandler {
-        void handleError(String message, Scanner.Location optionalLocation) throws CompileException;
+        void handleError(String message, Location optionalLocation) throws CompileException;
     }
 
     /**
@@ -8960,7 +8960,7 @@ public class Java {
      * Interface type for {@link Java#setWarningHandler(Java.WarningHandler)}.
      */
     public interface WarningHandler {
-        void handleWarning(String handle, String message, Scanner.Location optionalLocation);
+        void handleWarning(String handle, String message, Location optionalLocation);
     }
 
     /**

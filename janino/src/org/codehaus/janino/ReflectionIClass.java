@@ -247,7 +247,7 @@ class ReflectionIClass extends IClass {
                 try {
                     return this.field.get(null);
                 } catch (IllegalAccessException ex) {
-                    throw new Java.CompileException("Field \"" + this.field.getName() + "\" is not accessible", (Scanner.Location) null);
+                    throw new Java.CompileException("Field \"" + this.field.getName() + "\" is not accessible", (Location) null);
                 }
             }
             return null;

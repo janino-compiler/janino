@@ -97,7 +97,7 @@ public class EvaluatorBase {
      * @throws IOException
      */
     protected Java.PackageMemberClassDeclaration addPackageMemberClassDeclaration(
-        Scanner.Location     location,
+        Location             location,
         Java.CompilationUnit compilationUnit,
         String               className,
         Class                optionalExtendedType,
@@ -140,7 +140,7 @@ public class EvaluatorBase {
      * @throws IOException
      */
     protected Java.Block addClassMethodBlockDeclaration(
-        Scanner.Location     location,
+        Location             location,
         Java.CompilationUnit compilationUnit,
         String               className,
         Class                optionalExtendedType,
@@ -191,8 +191,8 @@ public class EvaluatorBase {
      * Wrap a reflection {@link Class} in a {@link Java.Type} object.
      */
     protected Java.Type classToType(
-        Scanner.Location location,
-        final Class      optionalClass
+        Location    location,
+        final Class optionalClass
     ) {
         if (optionalClass == null) return null;
 
@@ -206,8 +206,8 @@ public class EvaluatorBase {
      * Convert an array of {@link Class}es into an array of{@link Java.Type}s.
      */
     protected Java.Type[] classesToTypes(
-        Scanner.Location location,
-        Class[]          classes
+        Location location,
+        Class[]  classes
     ) {
         Java.Type[] types = new Java.Type[classes.length];
         for (int i = 0; i < classes.length; ++i) {
@@ -221,9 +221,9 @@ public class EvaluatorBase {
      * {@link Java.FormalParameter}s.
      */
     protected Java.FormalParameter[] makeFormalParameters(
-        Scanner.Location location,
-        String[]         parameterNames,
-        Class[]          parameterTypes
+        Location location,
+        String[] parameterNames,
+        Class[]  parameterTypes
     ) {
         Java.FormalParameter[] res = new Java.FormalParameter[parameterNames.length];
         for (int i = 0; i < res.length; ++i) {

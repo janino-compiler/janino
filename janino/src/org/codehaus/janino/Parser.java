@@ -144,7 +144,7 @@ public class Parser {
 
         if (this.scanner.peek().isKeyword("package")) {
             this.scanner.read();
-            Scanner.Location loc = this.scanner.peek().getLocation();
+            Location loc = this.scanner.peek().getLocation();
             String packageName = join(this.parseQualifiedIdentifier(), ".");
             Parser.verifyStringIsConventionalPackageName(packageName, loc);
             compilationUnit.setPackage(packageName);
@@ -315,7 +315,7 @@ public class Parser {
         short      modifiers
     ) throws ParseException, Scanner.ScanException, IOException {
         if (!this.scanner.peek().isIdentifier()) this.throwParseException("Class name expected after \"class\"");
-        Scanner.Location location = this.scanner.peek().getLocation();
+        Location location = this.scanner.peek().getLocation();
         String className = this.scanner.read().getIdentifier();
         Parser.verifyIdentifierIsConventionalClassOrInterfaceName(className, location);
 
@@ -436,7 +436,7 @@ public class Parser {
 
         // "void" method declaration.
         if (this.scanner.peek().isKeyword("void")) {
-            Scanner.Location location = this.scanner.read().getLocation();
+            Location location = this.scanner.read().getLocation();
             if (!this.scanner.peek().isIdentifier()) this.throwParseException("Method name expected after \"void\"");
             String name = this.scanner.read().getIdentifier();
             classDeclaration.declaredMethods.add(this.parseMethodDeclaratorRest(
@@ -484,7 +484,7 @@ public class Parser {
         // Member method or field.
         Java.Type memberType = this.parseType((Java.Scope) classDeclaration);
         if (!this.scanner.peek().isIdentifier()) this.throwParseException("Identifier expected in member declaration");
-        Scanner.Location location = this.scanner.peek().getLocation();
+        Location location = this.scanner.peek().getLocation();
         String memberName = this.scanner.read().getIdentifier();
 
         // Method declarator.
@@ -528,7 +528,7 @@ public class Parser {
         short      modifiers
     ) throws ParseException, Scanner.ScanException, IOException {
         if (!this.scanner.peek().isIdentifier()) this.throwParseException("Interface name expected after \"interface\"");
-        Scanner.Location location = this.scanner.peek().getLocation();
+        Location location = this.scanner.peek().getLocation();
         String interfaceName = this.scanner.read().getIdentifier();
         Parser.verifyIdentifierIsConventionalClassOrInterfaceName(interfaceName, location);
 
@@ -601,7 +601,7 @@ public class Parser {
 
             // "void" method declaration.
             if (this.scanner.peek().isKeyword("void")) {
-                Scanner.Location location = this.scanner.read().getLocation();
+                Location location = this.scanner.read().getLocation();
                 if (!this.scanner.peek().isIdentifier()) this.throwParseException("Method name expected after \"void\"");
                 String name = this.scanner.read().getIdentifier();
                 interfaceDeclaration.declaredMethods.add(this.parseMethodDeclaratorRest(
@@ -635,7 +635,7 @@ public class Parser {
                 Java.Type memberType = this.parseType(interfaceDeclaration);
                 if (!this.scanner.peek().isIdentifier()) this.throwParseException("Identifier expected in member declaration");
                 String memberName = this.scanner.peek().getIdentifier();
-                Scanner.Location location = this.scanner.read().getLocation();
+                Location location = this.scanner.read().getLocation();
 
                 // Method declarator.
                 if (this.scanner.peek().isOperator("(")) {
@@ -685,7 +685,7 @@ public class Parser {
         Java.ClassDeclaration declaringClass,
         short                 modifiers
     ) throws ParseException, Scanner.ScanException, IOException {
-        Scanner.Location location = this.scanner.read().getLocation();
+        Location location = this.scanner.read().getLocation();
 
         // Parse formal parameters.
         Java.FormalParameter[] formalParameters = this.parseFormalParameters(
@@ -779,7 +779,7 @@ public class Parser {
         Java.Type                    type,
         String                       name
     ) throws ParseException, Scanner.ScanException, IOException {
-        Scanner.Location location = this.scanner.peek().getLocation();
+        Location location = this.scanner.peek().getLocation();
 
         Parser.verifyIdentifierIsConventionalMethodName(name, location);
 
@@ -851,7 +851,7 @@ public class Parser {
         Java.ArrayType arrayType
     ) throws ParseException, Scanner.ScanException, IOException {
         if (!this.scanner.peek().isOperator("{")) this.throwParseException("\"{\" expected");
-        Scanner.Location location = this.scanner.read().getLocation();
+        Location location = this.scanner.read().getLocation();
         Java.Type componentType = arrayType.getComponentType();
         List l = new ArrayList(); // Rvalue
         while (!this.scanner.peek().isOperator("}")) {
@@ -909,7 +909,7 @@ public class Parser {
         Java.Type type = this.parseType(enclosingScope);
 
         if (!this.scanner.peek().isIdentifier()) this.throwParseException("Formal parameter name expected");
-        Scanner.Location location = this.scanner.peek().getLocation();
+        Location location = this.scanner.peek().getLocation();
         String name = this.scanner.read().getIdentifier();
         Parser.verifyIdentifierIsConventionalLocalVariableOrParameterName(name, location);
 
@@ -1026,7 +1026,7 @@ public class Parser {
 
         // 'final' Type LocalVariableDeclarators ';'
         if (this.scanner.peek().isKeyword("final")) {
-            Scanner.Location location = this.scanner.read().getLocation();
+            Location location = this.scanner.read().getLocation();
             Java.Type variableType = this.parseType((Java.Scope) enclosingBlock);
             Java.LocalVariableDeclarationStatement lvds = new Java.LocalVariableDeclarationStatement(
                 location,                           // location
@@ -1141,7 +1141,7 @@ public class Parser {
         Java.Type  type,
         String     name
     ) throws ParseException, Scanner.ScanException, IOException  {
-        Scanner.Location loc = this.scanner.peek().getLocation();
+        Location loc = this.scanner.peek().getLocation();
         int brackets = this.parseBracketsOpt();
         for (int i = 0; i < brackets; ++i) type = new Java.ArrayType(type);
         Java.Rvalue initializer = null;
@@ -1231,7 +1231,7 @@ public class Parser {
         Java.Scope enclosingScope
     ) throws ParseException, Scanner.ScanException, IOException {
         if (!this.scanner.peek().isKeyword("if")) this.throwParseException("\"if\" expected");
-        Scanner.Location location = this.scanner.read().getLocation();
+        Location location = this.scanner.read().getLocation();
         if (!this.scanner.read().isOperator("(")) this.throwParseException("Opening parenthesis expected after \"if\"");
         final Java.Rvalue condition = this.parseExpression(enclosingScope).toRvalueOrPE();
         if (!this.scanner.read().isOperator(")")) this.throwParseException("Closing parenthesis expected after \"if\" condition");
@@ -1267,7 +1267,7 @@ public class Parser {
         Java.Scope enclosingScope
     ) throws ParseException, Scanner.ScanException, IOException {
         if (!this.scanner.peek().isKeyword("for")) this.throwParseException("\"for\" expected");
-        Scanner.Location location = this.scanner.read().getLocation();
+        Location location = this.scanner.read().getLocation();
 
         Java.ForStatement forStatement = new Java.ForStatement(location, enclosingScope);
 
@@ -1395,7 +1395,7 @@ public class Parser {
         Java.Scope enclosingScope
     ) throws ParseException, Scanner.ScanException, IOException {
         if (!this.scanner.peek().isKeyword("while")) this.throwParseException("\"while\" expected");
-        Scanner.Location location = this.scanner.read().getLocation();
+        Location location = this.scanner.read().getLocation();
 
         if (!this.scanner.read().isOperator("(")) this.throwParseException("Opening parenthesis expected after \"while\"");
         Java.WhileStatement whileStatement = new Java.WhileStatement(
@@ -1542,7 +1542,7 @@ public class Parser {
         Java.Scope enclosingScope
     ) throws ParseException, Scanner.ScanException, IOException {
         if (!this.scanner.peek().isKeyword("synchronized")) this.throwParseException("\"synchronized\" expected");
-        Scanner.Location location = this.scanner.read().getLocation();
+        Location location = this.scanner.read().getLocation();
         if (!this.scanner.read().isOperator("(")) this.throwParseException("Opening parenthesis expected");
         Java.SynchronizedStatement synchronizedStatement = new Java.SynchronizedStatement(
             location,
@@ -1565,7 +1565,7 @@ public class Parser {
         Java.Scope enclosingScope
     ) throws ParseException, Scanner.ScanException, IOException {
         if (!this.scanner.peek().isKeyword("return")) this.throwParseException("\"return\" expected");
-        Scanner.Location location = this.scanner.read().getLocation();
+        Location location = this.scanner.read().getLocation();
         Java.Rvalue returnValue = this.scanner.peek().isOperator(";") ? null : this.parseExpression(enclosingScope).toRvalueOrPE();
         if (!this.scanner.read().isOperator(";")) this.throwParseException("Semicolon expected at end of \"return\" statement");
         return new Java.ReturnStatement(location, enclosingScope, returnValue);
@@ -1580,7 +1580,7 @@ public class Parser {
         Java.Scope enclosingScope
     ) throws ParseException, Scanner.ScanException, IOException {
         if (!this.scanner.peek().isKeyword("throw")) this.throwParseException("\"throw\" expected");
-        Scanner.Location location = this.scanner.read().getLocation();
+        Location location = this.scanner.read().getLocation();
         final Java.Rvalue expression = this.parseExpression(enclosingScope).toRvalueOrPE();
         if (!this.scanner.read().isOperator(";")) this.throwParseException("Semicolon expected");
 
@@ -1600,7 +1600,7 @@ public class Parser {
         Java.Scope enclosingScope
     ) throws ParseException, Scanner.ScanException, IOException {
         if (!this.scanner.peek().isKeyword("break")) this.throwParseException("\"break\" expected");
-        Scanner.Location location = this.scanner.read().getLocation();
+        Location location = this.scanner.read().getLocation();
         String optionalLabel = null;
         if (this.scanner.peek().isIdentifier()) optionalLabel = this.scanner.read().getIdentifier();
         if (!this.scanner.read().isOperator(";")) this.throwParseException("Semicolon expected at end of \"break\" statement");
@@ -1616,7 +1616,7 @@ public class Parser {
         Java.Scope enclosingScope
     ) throws ParseException, Scanner.ScanException, IOException {
         if (!this.scanner.peek().isKeyword("continue")) this.throwParseException("\"continue\" expected");
-        Scanner.Location location = this.scanner.read().getLocation();
+        Location location = this.scanner.read().getLocation();
         String optionalLabel = null;
         if (this.scanner.peek().isIdentifier()) optionalLabel = this.scanner.read().getIdentifier();
         if (!this.scanner.read().isOperator(";")) this.throwParseException("Semicolon expected at end of \"continue\" statement");
@@ -1745,7 +1745,7 @@ public class Parser {
         Java.Atom a = this.parseConditionalExpression(enclosingScope);
         if (this.scanner.peek().isOperator(new String[] { "=", "+=", "-=", "*=", "/=", "&=", "|=", "^=", "%=", "<<=", ">>=", ">>>=" })) {
             String operator = this.scanner.peek().getOperator();
-            Scanner.Location location = this.scanner.read().getLocation();
+            Location location = this.scanner.read().getLocation();
             final Java.Lvalue lhs = a.toLvalueOrPE();
             final Java.Rvalue rhs = this.parseAssignmentExpression(enclosingScope).toRvalueOrPE();
             return new Java.Assignment(location, lhs, operator, rhs);
@@ -1764,7 +1764,7 @@ public class Parser {
     ) throws ParseException, Scanner.ScanException, IOException  {
         Java.Atom a = this.parseConditionalOrExpression(enclosingScope);
         if (!this.scanner.peek().isOperator("?")) return a;
-        Scanner.Location location = this.scanner.read().getLocation();
+        Location location = this.scanner.read().getLocation();
 
         Java.Rvalue lhs = a.toRvalueOrPE();
         Java.Rvalue mhs = this.parseExpression(enclosingScope).toRvalueOrPE();
@@ -2115,7 +2115,7 @@ public class Parser {
         }
 
         if (this.scanner.peek().isIdentifier()) {
-            Scanner.Location location = this.scanner.peek().getLocation();
+            Location location = this.scanner.peek().getLocation();
             String[] qi = this.parseQualifiedIdentifier();
             if (this.scanner.peek().isOperator("(")) {
                 // Name Arguments
@@ -2164,7 +2164,7 @@ public class Parser {
         }
 
         if (this.scanner.peek().isKeyword("this")) {
-            Scanner.Location location = this.scanner.read().getLocation();
+            Location location = this.scanner.read().getLocation();
             if (this.scanner.peek().isOperator("(")) {
 
                 // 'this' Arguments
@@ -2230,7 +2230,7 @@ public class Parser {
 
         // 'new'
         if (this.scanner.peek().isKeyword("new")) {
-            Scanner.Location location = this.scanner.read().getLocation();
+            Location location = this.scanner.read().getLocation();
             Java.Type type = this.parseType(enclosingScope);
             if (type instanceof Java.ArrayType) {
                 // 'new' ArrayType ArrayInitializer
@@ -2306,7 +2306,7 @@ public class Parser {
             ) {
                 // 'void' '.' 'class'
                 this.scanner.read();
-                Scanner.Location location = this.scanner.read().getLocation();
+                Location location = this.scanner.read().getLocation();
                 return new Java.ClassLiteral(location, enclosingScope, new Java.BasicType(location, Java.BasicType.VOID));
             }
             this.throwParseException("\"void\" encountered in wrong context");
@@ -2364,7 +2364,7 @@ public class Parser {
                 );
             }
             if (this.scanner.peek().isKeyword("super")) {
-                Scanner.Location location = this.scanner.read().getLocation();
+                Location location = this.scanner.read().getLocation();
                 if (this.scanner.peek().isOperator("(")) {
 
                     // '.' 'super' Arguments
@@ -2401,7 +2401,7 @@ public class Parser {
             if (this.scanner.peek().isKeyword("new")) {
                 // '.' 'new' Identifier Arguments [ ClassBody ]
                 Java.Rvalue lhs = atom.toRvalue();
-                Scanner.Location location = this.scanner.read().getLocation();
+                Location location = this.scanner.read().getLocation();
                 String identifier = this.scanner.read().getIdentifier();
                 Java.Type type = new Java.RvalueMemberType(
                     location,  // location
@@ -2443,7 +2443,7 @@ public class Parser {
         }
         if (this.scanner.peek().isOperator("[")) {
             // '[' Expression ']'
-            Scanner.Location location = this.scanner.read().getLocation();
+            Location location = this.scanner.read().getLocation();
             Java.Rvalue index = this.parseExpression(enclosingScope).toRvalueOrPE();
             if (!this.scanner.read().isOperator("]")) this.throwParseException("\"]\" expected");
             return new Java.ArrayAccessExpression(
@@ -2546,7 +2546,7 @@ public class Parser {
      * Issue a warning if the given string does not comply with the package naming conventions
      * (JLS2 6.8.1).
      */
-    private static void verifyStringIsConventionalPackageName(String s, Scanner.Location loc) {
+    private static void verifyStringIsConventionalPackageName(String s, Location loc) {
         if (!Character.isLowerCase(s.charAt(0))) {
             Java.warning("UPN", "Package name \"" + s + "\" does not begin with a lower-case letter (see JLS2 6.8.1)", loc);
             return;
@@ -2565,7 +2565,7 @@ public class Parser {
      * Issue a warning if the given identifier does not comply with the class and interface type
      * naming conventions (JLS2 6.8.2).
      */
-    private static void verifyIdentifierIsConventionalClassOrInterfaceName(String id, Scanner.Location loc) {
+    private static void verifyIdentifierIsConventionalClassOrInterfaceName(String id, Location loc) {
         if (!Character.isUpperCase(id.charAt(0))) {
             Java.warning("UCOIN1", "Class or interface name \"" + id + "\" does not begin with an upper-case letter (see JLS2 6.8.2)", loc);
             return;
@@ -2583,7 +2583,7 @@ public class Parser {
      * Issue a warning if the given identifier does not comply with the method naming conventions
      * (JLS2 6.8.3).
      */
-    private static void verifyIdentifierIsConventionalMethodName(String id, Scanner.Location loc) {
+    private static void verifyIdentifierIsConventionalMethodName(String id, Location loc) {
         if (!Character.isLowerCase(id.charAt(0))) {
             Java.warning("UMN1", "Method name \"" + id + "\" does not begin with a lower-case letter (see JLS2 6.8.3)", loc);
             return;
@@ -2601,7 +2601,7 @@ public class Parser {
      * Issue a warning if the given identifier does not comply with the field naming conventions
      * (JLS2 6.8.4) and constant naming conventions (JLS2 6.8.5).
      */
-    private static void verifyIdentifierIsConventionalFieldName(String id, Scanner.Location loc) {
+    private static void verifyIdentifierIsConventionalFieldName(String id, Location loc) {
 
         // In practice, a field is not always a constant iff it is static-final. So let's
         // always tolerate both field and constant names.
@@ -2632,7 +2632,7 @@ public class Parser {
      * Issue a warning if the given identifier does not comply with the local variable and
      * parameter naming conventions (JLS2 6.8.6).
      */
-    private static void verifyIdentifierIsConventionalLocalVariableOrParameterName(String id, Scanner.Location loc) {
+    private static void verifyIdentifierIsConventionalLocalVariableOrParameterName(String id, Location loc) {
         if (!Character.isLowerCase(id.charAt(0))) {
             Java.warning("ULVN1", "Local variable name \"" + id + "\" does not begin with a lower-case letter (see JLS2 6.8.6)", loc);
             return;
@@ -2651,11 +2651,11 @@ public class Parser {
     /**
      * An exception that reflects an error during parsing.
      *
-     * This exception is associated with a particular {@link Scanner.Location
+     * This exception is associated with a particular {@link Location
      * Location} in the source code.
      */
     public static class ParseException extends Scanner.LocatedException {
-        ParseException(String message, Scanner.Location location) {
+        ParseException(String message, Location location) {
             super(message, location);
         }
     }

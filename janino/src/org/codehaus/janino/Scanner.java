@@ -974,29 +974,6 @@ public class Scanner {
 //System.out.println("'" + (char) nextChar + "' = " + (int) nextChar);
     }
 
-    public static class Location {
-        private Location(String optionalFileName, short lineNumber, short columnNumber) {
-            this.optionalFileName = optionalFileName;
-            this.lineNumber       = lineNumber;
-            this.columnNumber     = columnNumber;
-        }
-        public String getFileName() { return this.optionalFileName; }
-        public short getLineNumber() { return this.lineNumber; }
-        public short getColumnNumber() { return this.columnNumber; }
-        public String toString() {
-            StringBuffer sb = new StringBuffer();
-            if (this.optionalFileName != null) {
-                sb.append("File ").append(this.optionalFileName).append(", ");
-            }
-            sb.append("Line ").append(this.lineNumber).append(", ");
-            sb.append("Column ").append(this.columnNumber);
-            return sb.toString();
-        }
-        private /*final*/ String optionalFileName;
-        private /*final*/ short  lineNumber;
-        private /*final*/ short  columnNumber;
-    }
-
     private static final boolean DEBUG = false;
 
     private /*final*/ String     optionalFileName;
@@ -1053,7 +1030,7 @@ public class Scanner {
     }
 
     public static class LocatedException extends Exception {
-        LocatedException(String message, Scanner.Location optionalLocation) {
+        LocatedException(String message, Location optionalLocation) {
             super(message);
             this.optionalLocation = optionalLocation;
         }
@@ -1067,13 +1044,13 @@ public class Scanner {
         }
 
         /**
-         * Returns the {@link Scanner.Location} object specified at
+         * Returns the {@link Location} object specified at
          * construction time (may be <code>null</code>).
          */
-        public Scanner.Location getLocation() {
+        public Location getLocation() {
             return this.optionalLocation;
         }
 
-        private final Scanner.Location optionalLocation;
+        private final Location optionalLocation;
     }
 }

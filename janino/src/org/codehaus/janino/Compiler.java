@@ -160,7 +160,7 @@ public class Compiler {
         // Set up a custom error handler that reports compile errors on "System.err".
         final int[] compileExceptionCount = new int[1];
         Java.setCompileErrorHandler(new Java.ErrorHandler() {
-            public void handleError(String message, Scanner.Location optionalLocation) throws Java.CompileException {
+            public void handleError(String message, Location optionalLocation) throws Java.CompileException {
                 if (optionalLocation != null) System.err.print(optionalLocation + ": ");
                 System.err.println("Error: " + message);
                 compiler.setStoringClassFiles(false);
@@ -170,7 +170,7 @@ public class Compiler {
 
         // Set up a warning handler that reports warnings on "System.err".
         Java.setWarningHandler(new Java.WarningHandler() {
-            public void handleWarning(String handle, String message, Scanner.Location optionalLocation) {
+            public void handleWarning(String handle, String message, Location optionalLocation) {
                 if (optionalLocation != null) System.err.print(optionalLocation + ": ");
                 System.err.println("Warning " + handle + ": " + message);
             }

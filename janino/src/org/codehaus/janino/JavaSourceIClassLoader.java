@@ -127,7 +127,7 @@ final class JavaSourceIClassLoader extends IClassLoader {
 
             // Find the class/interface declaration in the com
             IClass res = cu.findClass(className);
-            if (res == null) throw new Parser.ParseException("Source file \"" + sourceURL.getFile() + "\" does not declare class \"" + className + "\"", (Scanner.Location) null);
+            if (res == null) throw new Parser.ParseException("Source file \"" + sourceURL.getFile() + "\" does not declare class \"" + className + "\"", (Location) null);
             this.defineIClass(res);
             return res;
         } catch (Scanner.ScanException e) {
