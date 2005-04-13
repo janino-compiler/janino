@@ -51,6 +51,22 @@ public class EvaluatorBase {
 
     /**
      * Construct with the given {@link ClassLoader}.
+     * <p>
+     * Notice that from version 2.1.0 to 2.2.0, the parameter was renamed from
+     * <code>optionalClassLoader</code> to <code>optionalparentClassLoader</code>
+     * together with an incompatible semantic change:
+     * <dl>
+     *   <dt>2.1.0
+     *   <dd>If the <code>optionalClassLoader</code> was a
+     *   {@link ByteArrayClassLoader}, the generated classes were loaded into it,
+     *   otherwise a new {@link ByteArrayClassLoader} was created with the
+     *   <code>optionalClassLoader</code> as the parent {@link ClassLoader}.
+     *   <dt>2.2.0
+     *   <dd>A new {@link ByteArrayClassLoader} is always created with the
+     *   <code>optionalClassLoader</code> as the parent {@link ClassLoader}.
+     * </dl>
+     * The old behavior was regarded as ugly because it depends on an argument's
+     * type.
      *  
      * @param optionalParentClassLoader null == use current thread's context class loader
      */
@@ -198,9 +214,11 @@ public class EvaluatorBase {
     ) {
         if (optionalClass == null) return null;
 
+        IClass iClass = this.classLoaderIClassLoader.loadIClass(Descriptor.fromClassName(optionalClass.getName()));
+        if (iClass == null) throw new RuntimeException("Cannot load class \"" + optionalClass.getName() + "\" through the given ClassLoader");
         return new Java.SimpleType(
             location,
-            this.classLoaderIClassLoader.loadIClass(Descriptor.fromClassName(optionalClass.getName()))
+            iClass
         );
     }
 
