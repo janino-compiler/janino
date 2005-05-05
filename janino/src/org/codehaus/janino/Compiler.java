@@ -38,7 +38,7 @@ import java.util.*;
 import java.io.*;
 
 import org.codehaus.janino.util.*;
-import org.codehaus.janino.util.enum.EnumeratorFormatException;
+import org.codehaus.janino.util.enumerator.EnumeratorFormatException;
 import org.codehaus.janino.util.resource.JarDirectoriesResourceFinder;
 import org.codehaus.janino.util.resource.PathResourceFinder;
 import org.codehaus.janino.util.resource.ResourceFinder;

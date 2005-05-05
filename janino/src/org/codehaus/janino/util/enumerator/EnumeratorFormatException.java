@@ -32,11 +32,11 @@
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.codehaus.janino.util.enum;
+package org.codehaus.janino.util.enumerator;
 
 /**
- * Represents a problem related to parsing {@link org.codehaus.janino.util.enum.Enumerator}s
- * and {@link org.codehaus.janino.util.enum.EnumeratorSet}s, in analogy with
+ * Represents a problem related to parsing {@link org.codehaus.janino.util.enumerator.Enumerator}s
+ * and {@link org.codehaus.janino.util.enumerator.EnumeratorSet}s, in analogy with
  * {@link EnumeratorFormatException}.
  */
 public class EnumeratorFormatException extends Exception {

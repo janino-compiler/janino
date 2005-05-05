@@ -41,7 +41,7 @@ import java.util.*;
 
 import org.codehaus.janino.util.ClassFile;
 import org.codehaus.janino.util.TunnelException;
-import org.codehaus.janino.util.enum.EnumeratorFormatException;
+import org.codehaus.janino.util.enumerator.EnumeratorFormatException;
 import org.codehaus.janino.util.resource.DirectoryResourceFinder;
 import org.codehaus.janino.util.resource.PathResourceFinder;
 import org.codehaus.janino.util.resource.ResourceFinder;

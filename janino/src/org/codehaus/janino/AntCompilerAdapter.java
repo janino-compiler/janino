@@ -41,7 +41,7 @@ import java.io.IOException;
 import org.apache.tools.ant.taskdefs.compilers.*;
 import org.apache.tools.ant.types.Path;
 import org.codehaus.janino.util.*;
-import org.codehaus.janino.util.enum.EnumeratorFormatException;
+import org.codehaus.janino.util.enumerator.EnumeratorFormatException;
 
 /**
  * A simple {@link org.apache.tools.ant.taskdefs.compilers.CompilerAdapter} for the "ant" tool

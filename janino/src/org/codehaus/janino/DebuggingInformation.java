@@ -34,7 +34,7 @@
 
 package org.codehaus.janino;
 
-import org.codehaus.janino.util.enum.*;
+import org.codehaus.janino.util.enumerator.*;
 
 public class DebuggingInformation extends EnumeratorSet {
     public static final DebuggingInformation SOURCE = new DebuggingInformation(1);

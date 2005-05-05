@@ -32,7 +32,7 @@
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.codehaus.janino.util.enum;
+package org.codehaus.janino.util.enumerator;
 
 import java.lang.reflect.*;
 import java.util.*;
