@@ -1478,14 +1478,16 @@ public class Java {
                     VariableDeclarator vd = fd.variableDeclarators[j];
                     Type type = fd.type;
                     for (int k = 0; k < vd.brackets; ++k) type = new ArrayType(type);
+                    Object ocv = (
+                        (fd.modifiers & Mod.FINAL) != 0 &&
+                        vd.optionalInitializer != null
+                    ) ? vd.optionalInitializer.getConstantValue() : null;
+                    if (ocv == Rvalue.CONSTANT_VALUE_NULL) ocv = null;
                     cf.addFieldInfo(
                         fd.modifiers,                   // accessFlags
                         vd.name,                        // fieldName
                         type.getType().getDescriptor(), // fieldTypeFD
-                        (                               // optionalConstantValue
-                            (fd.modifiers & Mod.FINAL) != 0 &&
-                            vd.optionalInitializer != null
-                        ) ? vd.optionalInitializer.getConstantValue() : null
+                        ocv                             // optionalConstantValue
                     );
                 }
             }
@@ -4507,11 +4509,11 @@ public class Java {
             if (s instanceof TypeBodyDeclaration) {
                 scopeTBD = (TypeBodyDeclaration) s;
                 s = s.getEnclosingScope();
-          }
-          if (s instanceof TypeDeclaration) {
+            }
+            if (s instanceof TypeDeclaration) {
                 scopeTypeDeclaration = (TypeDeclaration) s;
                 s = s.getEnclosingScope();
-          }
+            }
             while (!(s instanceof CompilationUnit)) s = s.getEnclosingScope();
             scopeCompilationUnit = (CompilationUnit) s;
         }
