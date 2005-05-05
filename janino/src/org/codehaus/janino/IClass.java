@@ -34,12 +34,7 @@
 
 package org.codehaus.janino;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * A simplified equivalent to "java.lang.reflect".
@@ -111,6 +106,56 @@ public abstract class IClass {
     }
     protected IMethod[] declaredIMethods = null;
     protected abstract IMethod[] getDeclaredIMethods2();
+
+    /**
+     * Returns all methods with the given name declared in the class or
+     * interface (but not inherited methods).<br>
+     * Returns an empty array if no methods with that name are declared.
+     * 
+     * @return an array of {@link IMethod}s that must not be modified
+     */
+    public final IMethod[] getDeclaredIMethods(String methodName) {
+        if (this.declaredIMethodCache == null) {
+            Map m = new HashMap();
+
+            // Fill the map with "IMethod"s and "List"s.
+            IMethod[] dims = getDeclaredIMethods();
+            for (int i = 0; i < dims.length; i++) {
+                IMethod dim = dims[i];
+                String mn = dim.getName();
+                Object o = m.get(mn);
+                if (o == null) {
+                    m.put(mn, dim);
+                } else
+                if (o instanceof IMethod) {
+                    List l = new ArrayList();
+                    l.add(o);
+                    l.add(dim);
+                    m.put(mn, l);
+                } else {
+                    ((List) o).add(dim);
+                }
+            }
+
+            // Convert "IMethod"s and "List"s to "IMethod[]"s.
+            for (Iterator it = m.entrySet().iterator(); it.hasNext();) {
+                Map.Entry me = (Map.Entry) it.next();
+                Object v = me.getValue();
+                if (v instanceof IMethod) {
+                    me.setValue(new IMethod[] { (IMethod) v });
+                } else {
+                    List l = (List) v;
+                    me.setValue(l.toArray(new IMethod[l.size()]));
+                }
+            }
+            this.declaredIMethodCache = m;
+        }
+        
+        IMethod[] methods = (IMethod[]) this.declaredIMethodCache.get(methodName);
+        return methods == null ? IClass.NO_IMETHODS : methods;
+    }
+    /*package*/ Map declaredIMethodCache = null;
+    public static final IMethod[] NO_IMETHODS = new IMethod[0];
 
     /**
      * Returns the fields of a class or interface (but not inherited

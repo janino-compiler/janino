@@ -3915,7 +3915,7 @@ public class Java {
         public static final int DOUBLE  = 7;
         public static final int BOOLEAN = 8;
 
-        public final int index;
+        public /*final*/ int index;
     }
 
     public static final class ReferenceType extends Type {
@@ -5310,7 +5310,10 @@ public class Java {
             cdmd.setBody(body);
 
             this.declaringType.declaredMethods.add(cdmd);
+
+            // Invalidate several caches.
             this.declaringType.declaredIMethods = null;
+            this.declaringType.declaredIMethodCache = null;
         }
 
         public final void visit(Visitor visitor) { visitor.visitClassLiteral(this); }
@@ -7265,10 +7268,9 @@ public class Java {
     ) throws CompileException {
 
         // Check methods declared by this type.
-        IClass.IMethod[] ims = type.getDeclaredIMethods();
-        for (int i = 0; i < ims.length; ++i) {
-            IClass.IMethod im = ims[i];
-            if (im.getName().equals(methodName)) v.add(im);
+        {
+            IClass.IMethod[] ims = type.getDeclaredIMethods(methodName);
+            for (int i = 0; i < ims.length; ++i) v.add(ims[i]);
         }
 
         // Check superclass.
@@ -7281,14 +7283,10 @@ public class Java {
 
         // JLS2 6.4.3
         if (superclass == null && interfaces.length == 0 && type.isInterface()) {
-            IClass.IMethod[] oms = Java.getIClassLoader().OBJECT.getDeclaredIMethods();
+            IClass.IMethod[] oms = Java.getIClassLoader().OBJECT.getDeclaredIMethods(methodName);
             for (int i = 0; i < oms.length; ++i) {
                 IClass.IMethod om = oms[i];
-                if (
-                    om.getName().equals(methodName)
-                    && !om.isStatic()
-                    && om.getAccess() == IClass.PUBLIC
-                ) v.add(om);
+                if (!om.isStatic() && om.getAccess() == IClass.PUBLIC) v.add(om);
             }
         }
     }
