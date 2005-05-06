@@ -2718,7 +2718,7 @@ public class Java {
                     CodeContext.Offset end = this.newUnsetOffset();
                     this.condition.compileBoolean(eso, Java.Rvalue.JUMP_IF_FALSE);
                     tsccn = this.thenStatement.compile();
-                    if (tsccn) this.writeBranch(Opcode.GOTO, end);
+                    if (tsccn) Java.getCodeContext().writeBranch((short) -1, Opcode.GOTO, end);
                     eso.set();
                     esccn = es.compile();
                     end.set();
@@ -3163,8 +3163,7 @@ public class Java {
 
             // Generate TABLESWITCH or LOOKUPSWITCH instruction.
             CodeContext.Offset switchOffset = this.newOffset();
-            if (caseLabelMap.isEmpty() ||
-            2 * caseLabelMap.size() >= (
+            if (!caseLabelMap.isEmpty() && 2 * caseLabelMap.size() >= (
                 ((Integer) caseLabelMap.lastKey()).intValue() -
                 ((Integer) caseLabelMap.firstKey()).intValue()
             )) {
