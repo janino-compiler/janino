@@ -8069,21 +8069,30 @@ public class Java {
             return IClass.LONG;
         }
         if (value instanceof Float) {
-            float fv = ((Float) value).floatValue();
-            if (fv == 0.0F || fv == 1.0F || fv == 2.0F) {
-                located.writeOpcode(Opcode.FCONST_0 + (int) fv);
-            } else {
-                Java.writeLDC(located, located.addConstantFloatInfo(fv));
+            if (value.equals(Java.FLOAT_0)) { // POSITIVE zero!
+                located.writeOpcode(Opcode.FCONST_0);
+            } else
+            if (value.equals(Java.FLOAT_1)) {
+                located.writeOpcode(Opcode.FCONST_1);
+            } else
+            if (value.equals(Java.FLOAT_2)) {
+                located.writeOpcode(Opcode.FCONST_2);
+            } else
+            {
+                Java.writeLDC(located, located.addConstantFloatInfo(((Float) value).floatValue()));
             }
             return IClass.FLOAT;
         }
         if (value instanceof Double) {
-            double dv = ((Double) value).doubleValue();
-            if (dv == 0.0 || dv == 1.0) {
-                located.writeOpcode(Opcode.DCONST_0 + (int) dv);
-            } else {
+            if (value.equals(Java.DOUBLE_0)) { // Notice: This is POSITIVE zero!
+                located.writeOpcode(Opcode.DCONST_0);
+            } else
+            if (value.equals(Java.DOUBLE_1)) {
+                located.writeOpcode(Opcode.DCONST_1);
+            } else
+            {
                 located.writeOpcode(Opcode.LDC2_W);
-                located.writeConstantDoubleInfo(dv);
+                located.writeConstantDoubleInfo(((Double) value).doubleValue());
             }
             return IClass.DOUBLE;
         }
@@ -8131,6 +8140,11 @@ public class Java {
         }
         throw new RuntimeException("Unknown literal type \"" + value.getClass().getName() + "\"");
     }
+    private static final Float FLOAT_0 = new Float(0.0F); // POSITIVE zero!
+    private static final Float FLOAT_1 = new Float(1.0F);
+    private static final Float FLOAT_2 = new Float(2.0F);
+    private static final Double DOUBLE_0 = new Double(0.0); // POSITIVE zero!
+    private static final Double DOUBLE_1 = new Double(1.0);
 
     private static void writeLDC(Located located, short index) {
         if (index <= 255) {
