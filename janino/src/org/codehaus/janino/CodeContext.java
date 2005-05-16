@@ -260,16 +260,16 @@ public class CodeContext {
             stackSizes[offset] = (byte) stackSize;
 
             // Analyze current opcode.
-            int opcode = 0xff & code[offset];
+            byte opcode = code[offset];
             int operandOffset = offset + 1;
             short props;
             if (opcode == Opcode.WIDE) {
-                opcode = 0xff & code[operandOffset++];
-                props = Opcode.WIDE_OPCODE_PROPERTIES[opcode];
+                opcode = code[operandOffset++];
+                props = Opcode.WIDE_OPCODE_PROPERTIES[0xff & opcode];
             } else {
-                props = Opcode.OPCODE_PROPERTIES[opcode];
+                props = Opcode.OPCODE_PROPERTIES[0xff & opcode];
             }
-            if (props == Opcode.INVALID_OPCODE) throw new RuntimeException(functionName + ": Invalid opcode " + opcode + " at offset " + offset);
+            if (props == Opcode.INVALID_OPCODE) throw new RuntimeException(functionName + ": Invalid opcode " + (0xff & opcode) + " at offset " + offset);
 
             switch (props & Opcode.SD_MASK) {
 
