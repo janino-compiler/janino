@@ -147,7 +147,7 @@ public class AntCompilerAdapter extends DefaultCompilerAdapter {
         } catch (Parser.ParseException e) {
             System.out.println(e.getMessage());
             return false;
-        } catch (Java.CompileException e) {
+        } catch (CompileException e) {
             System.out.println(e.getMessage());
             return false;
         } catch (IOException e) {

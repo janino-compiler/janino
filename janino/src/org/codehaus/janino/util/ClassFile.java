@@ -1242,7 +1242,7 @@ public class ClassFile {
             super(attributeNameIndex);
         }
 
-        private static AttributeInfo loadBody(short attributeNameIndex, DataInputStream dis) throws IOException {
+        private static AttributeInfo loadBody(short attributeNameIndex, DataInputStream dis) {
             return new SyntheticAttribute(
                 attributeNameIndex // attributeNameIndex
             );
@@ -1382,7 +1382,7 @@ public class ClassFile {
             super(attributeNameIndex);
         }
 
-        private static AttributeInfo loadBody(short attributeNameIndex, DataInputStream dis) throws IOException {
+        private static AttributeInfo loadBody(short attributeNameIndex, DataInputStream dis) {
             return new DeprecatedAttribute(attributeNameIndex);
         }
 

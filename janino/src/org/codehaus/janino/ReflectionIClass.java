@@ -87,7 +87,7 @@ class ReflectionIClass extends IClass {
         if (declaringClass == null) return null;
         return this.classToIClass(declaringClass);
     }
-    protected IClass getOuterIClass2() throws Java.CompileException {
+    protected IClass getOuterIClass2() throws CompileException {
         if (Modifier.isStatic(this.clazz.getModifiers())) return null;
         return this.getDeclaringIClass();
     }
@@ -155,15 +155,15 @@ class ReflectionIClass extends IClass {
         }
 
         // Implement "IConstructor".
-        public IClass[] getParameterTypes() throws Java.CompileException {
+        public IClass[] getParameterTypes() throws CompileException {
             IClass[] parameterTypes = ReflectionIClass.this.classesToIClasses(this.constructor.getParameterTypes());
 
             // The JAVADOC of java.lang.reflect.Constructor does not document it, but
             // "getParameterTypes()" includes the synthetic "enclosing instance" parameter.
             IClass outerClass = ReflectionIClass.this.getOuterIClass();
             if (outerClass != null) {
-                if (parameterTypes.length < 1) throw new Java.CompileException("Constructor \"" + this.constructor + "\" lacks synthetic enclosing instance parameter", null);
-                if (parameterTypes[0] != outerClass) throw new Java.CompileException("Enclosing instance parameter of constructor \"" + this.constructor + "\" has wrong type -- \"" + parameterTypes[0] + "\" vs. \"" + outerClass + "\"", null);
+                if (parameterTypes.length < 1) throw new CompileException("Constructor \"" + this.constructor + "\" lacks synthetic enclosing instance parameter", null);
+                if (parameterTypes[0] != outerClass) throw new CompileException("Enclosing instance parameter of constructor \"" + this.constructor + "\" has wrong type -- \"" + parameterTypes[0] + "\" vs. \"" + outerClass + "\"", null);
                 IClass[] tmp = new IClass[parameterTypes.length - 1];
                 System.arraycopy(parameterTypes, 1, tmp, 0, tmp.length);
                 parameterTypes = tmp;
@@ -236,7 +236,7 @@ class ReflectionIClass extends IClass {
                 getName()
             );
         }
-        public Object getConstantValue() throws Java.CompileException {
+        public Object getConstantValue() throws CompileException {
             int mod = this.field.getModifiers();
             Class clazz = this.field.getType();
             if (
@@ -247,7 +247,7 @@ class ReflectionIClass extends IClass {
                 try {
                     return this.field.get(null);
                 } catch (IllegalAccessException ex) {
-                    throw new Java.CompileException("Field \"" + this.field.getName() + "\" is not accessible", (Location) null);
+                    throw new CompileException("Field \"" + this.field.getName() + "\" is not accessible", (Location) null);
                 }
             }
             return null;

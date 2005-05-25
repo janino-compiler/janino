@@ -79,7 +79,7 @@ public class Compiler {
         String               optionalCharacterEncoding = null;
         boolean              verbose = false;
         DebuggingInformation debuggingInformation = DebuggingInformation.LINES.add(DebuggingInformation.SOURCE);
-        StringPattern[]      warningHandlePatterns = null;
+        StringPattern[]      optionalWarningHandlePatterns = null;
         boolean              rebuild = false;
 
         // Process command line options.
@@ -120,7 +120,7 @@ public class Compiler {
                 }
             } else
             if (arg.startsWith("-warn:")) {
-                warningHandlePatterns = StringPattern.parseCombinedPattern(arg.substring(6));
+                optionalWarningHandlePatterns = StringPattern.parseCombinedPattern(arg.substring(6));
             } else
             if (arg.equals("-rebuild")) {
                 rebuild = true;
@@ -152,37 +152,15 @@ public class Compiler {
             optionalCharacterEncoding,
             verbose,
             debuggingInformation,
-            warningHandlePatterns,
+            optionalWarningHandlePatterns,
             rebuild
         );
 
-        // Set up a custom error handler that reports compile errors on "System.err".
-        final int[] compileExceptionCount = new int[1];
-        Java.setCompileErrorHandler(new Java.ErrorHandler() {
-            public void handleError(String message, Location optionalLocation) throws Java.CompileException {
-                if (optionalLocation != null) System.err.print(optionalLocation + ": ");
-                System.err.println("Error: " + message);
-                compiler.setStoringClassFiles(false);
-                if (++compileExceptionCount[0] >= 20) throw new Java.CompileException("Too many compile errors", null);
-            }
-        });
-
-        // Set up a warning handler that reports warnings on "System.err".
-        Java.setWarningHandler(new Java.WarningHandler() {
-            public void handleWarning(String handle, String message, Location optionalLocation) {
-                if (optionalLocation != null) System.err.print(optionalLocation + ": ");
-                System.err.println("Warning " + handle + ": " + message);
-            }
-        });
-
         // Compile source files.
         try {
-            compiler.compile(sourceFiles);
+            if (!compiler.compile(sourceFiles)) System.exit(1);
         } catch (Exception e) {
             System.err.println(e.toString());
-            System.exit(1);
-        }
-        if (compileExceptionCount[0] > 0) {
             System.exit(1);
         }
     }
@@ -222,11 +200,11 @@ public class Compiler {
     private /*final*/ String               optionalCharacterEncoding;
     private /*final*/ Benchmark            benchmark;
     private /*final*/ DebuggingInformation debuggingInformation;
-    private /*final*/ StringPattern[]      optionalWarningHandlePatterns;
+    private /*final*/ WarningHandler       warningHandler;
     private /*final*/ boolean              rebuild;
 
     private /*final*/ IClassLoader iClassLoader;
-    private final ArrayList    parsedCompilationUnits = new ArrayList();
+    private final ArrayList    parsedCompilationUnits = new ArrayList(); // UnitCompiler
     private boolean            storingClassFiles = true;
 
     /**
@@ -324,7 +302,13 @@ public class Compiler {
         this.optionalCharacterEncoding     = optionalCharacterEncoding;
         this.benchmark                     = new Benchmark(verbose);
         this.debuggingInformation          = debuggingInformation;
-        this.optionalWarningHandlePatterns = optionalWarningHandlePatterns;
+        this.warningHandler                = new FilterWarningHandler(optionalWarningHandlePatterns, new WarningHandler() {
+            public void handleWarning(String handle, String message, Location optionalLocation) {
+                if (optionalLocation != null) System.err.print(optionalLocation + ": ");
+                System.err.println("Warning " + handle + ": " + message);
+            }
+        });
+
         this.rebuild                       = rebuild;
 
         // Set up the IClassLoader.
@@ -416,32 +400,48 @@ public class Compiler {
      * files may contain arbitrary references among each other (even circular
      * ones). In the latter case, only the source files on the source path
      * may contain circular references, not the <code>sourceFiles</code>.
+     *
+     * @return <code>false</code> if compile errors have occurred
      */
-    public void compile(File[] sourceFiles)
-    throws Scanner.ScanException, Parser.ParseException, Java.CompileException, IOException {
+    public boolean compile(File[] sourceFiles)
+    throws Scanner.ScanException, Parser.ParseException, CompileException, IOException {
         this.benchmark.report("Source files", sourceFiles);
+
+        // Set up a custom error handler that reports compile errors on "System.err".
+        final int[] compileExceptionCount = new int[1];
+        UnitCompiler.ErrorHandler compileErrorHandler = new UnitCompiler.ErrorHandler() {
+            public void handleError(String message, Location optionalLocation) throws CompileException {
+                if (optionalLocation != null) System.err.print(optionalLocation + ": ");
+                System.err.println("Error: " + message);
+                Compiler.this.setStoringClassFiles(false);
+                if (++compileExceptionCount[0] >= 20) throw new CompileException("Too many compile errors", null);
+            }
+        };
 
         this.benchmark.beginReporting();
         try {
-            Java.setWarningHandlePatterns(this.optionalWarningHandlePatterns);
 
             // Parse all source files.
             this.parsedCompilationUnits.clear();
             for (int i = 0; i < sourceFiles.length; ++i) {
                 if (Compiler.DEBUG) System.out.println("Compiling \"" + sourceFiles[i] + "\"");
-                this.parsedCompilationUnits.add(this.parseCompilationUnit(
+                this.parsedCompilationUnits.add(new UnitCompiler(this.parseCompilationUnit(
                     sourceFiles[i].getPath(),
                     new BufferedInputStream(new FileInputStream(sourceFiles[i])),
                     this.optionalCharacterEncoding
-                ));
+                ), this.iClassLoader));
             }
     
             // Compile all parsed compilation units. The vector of parsed CUs may
             // grow while they are being compiled, but eventually all CUs will
             // be compiled.
             for (int i = 0; i < this.parsedCompilationUnits.size(); ++i) {
-                Java.CompilationUnit cu = (Java.CompilationUnit) this.parsedCompilationUnits.get(i);
+                UnitCompiler unitCompiler = (UnitCompiler) this.parsedCompilationUnits.get(i);
+                Java.CompilationUnit cu = unitCompiler.compilationUnit;
                 File sourceFile = new File(cu.getFileName());
+
+                unitCompiler.setCompileErrorHandler(compileErrorHandler);
+                unitCompiler.setWarningHandler(this.warningHandler);
 
                 this.benchmark.beginReporting("Compiling compilation unit \"" + sourceFile + "\"");
                 ClassFile[] classFiles;
@@ -449,7 +449,7 @@ public class Compiler {
     
                     // Compile the compilation unit.
                     try {
-                        classFiles = cu.compile(this.iClassLoader, this.debuggingInformation);
+                        classFiles = unitCompiler.compileUnit(this.debuggingInformation);
                     } catch (TunnelException ex) {
                         Throwable t = ex.getDelegate();
                         if (t instanceof Scanner.ScanException) throw (Scanner.ScanException) t;
@@ -478,6 +478,8 @@ public class Compiler {
         } finally {
             this.benchmark.endReporting("Compiled " + this.parsedCompilationUnits.size() + " compilation unit(s)");
         }
+
+        return compileExceptionCount[0] == 0;
     }
 
     /**
@@ -493,9 +495,12 @@ public class Compiler {
     ) throws Scanner.ScanException, Parser.ParseException, IOException {
         Scanner scanner = new Scanner(fileName, inputStream, optionalCharacterEncoding);
         try {
+            Parser parser = new Parser(scanner);
+            parser.setWarningHandler(this.warningHandler);
+
             this.benchmark.beginReporting("Parsing \"" + fileName + "\"");
             try {
-                return new Parser(scanner).parseCompilationUnit();
+				return parser.parseCompilationUnit();
             } finally {
                 this.benchmark.endReporting();
             }
@@ -611,8 +616,8 @@ public class Compiler {
 
             // Check the already-parsed compilation units.
             for (int i = 0; i < Compiler.this.parsedCompilationUnits.size(); ++i) {
-                Java.CompilationUnit cu = (Java.CompilationUnit) Compiler.this.parsedCompilationUnits.get(i);
-                IClass res = cu.findClass(className);
+                UnitCompiler uc = (UnitCompiler) Compiler.this.parsedCompilationUnits.get(i);
+                IClass res = uc.findClass(className);
                 if (res != null) {
                     this.defineIClass(res);
                     return res;
@@ -687,10 +692,11 @@ public class Compiler {
             }
 
             // Remember compilation unit for later compilation.
-            Compiler.this.parsedCompilationUnits.add(cu);
+            UnitCompiler uc = new UnitCompiler(cu, Compiler.this.iClassLoader);
+			Compiler.this.parsedCompilationUnits.add(uc);
 
             // Define the class.
-            IClass res = cu.findClass(className);
+            IClass res = uc.findClass(className);
             if (res == null) {
 
                 // This is a really complicated case: We may find a source file on the source

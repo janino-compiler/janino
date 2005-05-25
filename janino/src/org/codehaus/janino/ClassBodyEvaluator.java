@@ -65,7 +65,7 @@ public class ClassBodyEvaluator extends EvaluatorBase {
      */
     public ClassBodyEvaluator(
         String classBody
-    ) throws Java.CompileException, Parser.ParseException, Scanner.ScanException, IOException {
+    ) throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
         this(
             new Scanner(null, new java.io.StringReader(classBody)), // scanner
             null                                                    // optionalParentClassLoader
@@ -78,7 +78,7 @@ public class ClassBodyEvaluator extends EvaluatorBase {
     public ClassBodyEvaluator(
         String      optionalFileName,
         InputStream is
-    ) throws Java.CompileException, Parser.ParseException, Scanner.ScanException, IOException {
+    ) throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
         this(
             new Scanner(optionalFileName, is), // scanner
             null                               // optionalParentClassLoader
@@ -91,7 +91,7 @@ public class ClassBodyEvaluator extends EvaluatorBase {
     public ClassBodyEvaluator(
         String   optionalFileName,
         Reader   reader
-    ) throws Java.CompileException, Parser.ParseException, Scanner.ScanException, IOException {
+    ) throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
         this(
             new Scanner(optionalFileName, reader), // scanner
             null                                   // optionalParentClassLoader
@@ -104,7 +104,7 @@ public class ClassBodyEvaluator extends EvaluatorBase {
     public ClassBodyEvaluator(
         Scanner     scanner,
         ClassLoader optionalParentClassLoader
-    ) throws Java.CompileException, Parser.ParseException, Scanner.ScanException, IOException {
+    ) throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
         this(
             scanner,                  // scanner
             (Class) null,             // optionalExtendedType
@@ -121,7 +121,7 @@ public class ClassBodyEvaluator extends EvaluatorBase {
         Class       optionalExtendedType,
         Class[]     implementedTypes,
         ClassLoader optionalParentClassLoader
-    ) throws Java.CompileException, Parser.ParseException, Scanner.ScanException, IOException {
+    ) throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
         this(
             scanner,                               // scanner
             ClassBodyEvaluator.DEFAULT_CLASS_NAME, // className
@@ -159,7 +159,7 @@ public class ClassBodyEvaluator extends EvaluatorBase {
         Class       optionalExtendedType,
         Class[]     implementedTypes,
         ClassLoader optionalParentClassLoader
-    ) throws Java.CompileException, Parser.ParseException, Scanner.ScanException, IOException {
+    ) throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
         super(optionalParentClassLoader);
         Java.CompilationUnit compilationUnit = new Java.CompilationUnit(scanner.peek().getLocation().getFileName());
         
@@ -221,7 +221,7 @@ public class ClassBodyEvaluator extends EvaluatorBase {
         Scanner     scanner,
         Class       optionalBaseType,
         ClassLoader optionalClassLoader
-    ) throws Java.CompileException, Parser.ParseException, Scanner.ScanException, IOException {
+    ) throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
         return ClassBodyEvaluator.createFastClassBodyEvaluator(
             scanner,                               // scanner
             ClassBodyEvaluator.DEFAULT_CLASS_NAME, // className
@@ -258,7 +258,7 @@ public class ClassBodyEvaluator extends EvaluatorBase {
         Class       optionalExtendedType,
         Class[]     implementedTypes,
         ClassLoader optionalParentClassLoader
-    ) throws Java.CompileException, Parser.ParseException, Scanner.ScanException, IOException {
+    ) throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
         Class c = new ClassBodyEvaluator(
             scanner,                  // scanner
             className,                // className
@@ -269,7 +269,7 @@ public class ClassBodyEvaluator extends EvaluatorBase {
         try {
             return c.newInstance();
         } catch (InstantiationException e) {
-            throw new Java.CompileException("Cannot instantiate abstract class -- one or more method implementations are missing", null);
+            throw new CompileException("Cannot instantiate abstract class -- one or more method implementations are missing", null);
         } catch (IllegalAccessException e) {
             // SNO - type and default constructor of generated class are PUBLIC.
             throw new RuntimeException(e.toString());

@@ -606,6 +606,13 @@ public class CodeContext {
         }
     }
 
+    /**
+     * Inserts a sequence of bytes at the current insertion position. Creates
+     * {@link LineNumberOffset}s as necessary.
+     * 
+     * @param lineNumber The line number that corresponds to the byte code, or -1
+     * @param b
+     */
     public void write(short lineNumber, byte[] b) {
         if (b.length == 0) return;
 

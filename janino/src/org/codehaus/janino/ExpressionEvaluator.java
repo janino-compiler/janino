@@ -97,7 +97,7 @@ public class ExpressionEvaluator extends EvaluatorBase {
         Class    optionalExpressionType,
         String[] parameterNames,
         Class[]  parameterTypes
-    ) throws Java.CompileException, Parser.ParseException, Scanner.ScanException, IOException {
+    ) throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
         this(
             expression,
             optionalExpressionType,
@@ -119,7 +119,7 @@ public class ExpressionEvaluator extends EvaluatorBase {
         Class[]     parameterTypes,
         Class[]     thrownExceptions,
         ClassLoader optionalParentClassLoader     // null == use current thread's context class loader
-    ) throws Java.CompileException, Parser.ParseException, Scanner.ScanException, IOException {
+    ) throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
         this(
             expression,                     // expression
             optionalExpressionType,         // optionalExpressionType
@@ -146,7 +146,7 @@ public class ExpressionEvaluator extends EvaluatorBase {
         Class       optionalExtendedType,
         Class[]     implementedTypes,
         ClassLoader optionalParentClassLoader    // null == use current thread's context class loader
-    ) throws Java.CompileException, Parser.ParseException, Scanner.ScanException, IOException {
+    ) throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
         this(
             new Scanner(null, new StringReader(expression)), // scanner
             ExpressionEvaluator.DEFAULT_CLASS_NAME,          // className
@@ -220,7 +220,7 @@ public class ExpressionEvaluator extends EvaluatorBase {
         Class[]     parameterTypes,
         Class[]     thrownExceptions,
         ClassLoader optionalParentClassLoader    // null == use current thread's context class loader
-    ) throws Scanner.ScanException, Parser.ParseException, Java.CompileException, IOException {
+    ) throws Scanner.ScanException, Parser.ParseException, CompileException, IOException {
         super(optionalParentClassLoader);
         if (parameterNames.length != parameterTypes.length) throw new RuntimeException("Lengths of \"parameterNames\" and \"parameterTypes\" do not match");
 
@@ -343,7 +343,7 @@ public class ExpressionEvaluator extends EvaluatorBase {
         Class       interfaceToImplement,
         String[]    parameterNames,
         ClassLoader optionalClassLoader
-    ) throws Java.CompileException, Parser.ParseException, Scanner.ScanException, IOException {
+    ) throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
         return ExpressionEvaluator.createFastExpressionEvaluator(
             new Scanner(null, new StringReader(expression)), // scanner
             ExpressionEvaluator.DEFAULT_CLASS_NAME,          // className
@@ -376,7 +376,7 @@ public class ExpressionEvaluator extends EvaluatorBase {
         Class       interfaceToImplement,
         String[]    parameterNames,
         ClassLoader optionalParentClassLoader
-    ) throws Java.CompileException, Parser.ParseException, Scanner.ScanException, IOException {
+    ) throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
         if (!interfaceToImplement.isInterface()) throw new RuntimeException("\"" + interfaceToImplement + "\" is not an interface");
 
         Method[] methods = interfaceToImplement.getDeclaredMethods();

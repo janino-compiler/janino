@@ -119,7 +119,7 @@ public class ClassFileIClass extends IClass {
         return ifs;
     }
 
-    protected IClass[] getDeclaredIClasses2() throws Java.CompileException {
+    protected IClass[] getDeclaredIClasses2() throws CompileException {
         ClassFile.InnerClassesAttribute ica = this.classFile.getInnerClassesAttribute();
         if (ica == null) return new IClass[0];
 
@@ -131,15 +131,14 @@ public class ClassFileIClass extends IClass {
                 try {
                     res.add(this.resolveClass(e.innerClassInfoIndex));
                 } catch (ClassNotFoundException ex) {
-                    Java.compileError(ex.getMessage());
-                    return new IClass[0];
+                    throw new CompileException(ex.getMessage(), null);
                 }
             } 
         }
         return (IClass[]) res.toArray(new IClass[res.size()]);
     }
 
-    protected IClass getDeclaringIClass2() throws Java.CompileException {
+    protected IClass getDeclaringIClass2() throws CompileException {
         ClassFile.InnerClassesAttribute ica = this.classFile.getInnerClassesAttribute();
         if (ica == null) return null;
 
@@ -152,15 +151,14 @@ public class ClassFileIClass extends IClass {
                 try {
                     return this.resolveClass(e.outerClassInfoIndex);
                 } catch (ClassNotFoundException ex) {
-                    Java.compileError(ex.getMessage());
-                    return null;
+                    throw new CompileException(ex.getMessage(), null);
                 }
             } 
         }
         return null;
     }
 
-    protected IClass getOuterIClass2() throws Java.CompileException {
+    protected IClass getOuterIClass2() throws CompileException {
         ClassFile.InnerClassesAttribute ica = this.classFile.getInnerClassesAttribute();
         if (ica == null) return null;
 
@@ -180,8 +178,7 @@ public class ClassFileIClass extends IClass {
                     try {
                         return this.resolveClass(e.outerClassInfoIndex);
                     } catch (ClassNotFoundException ex) {
-                        Java.compileError(ex.getMessage());
-                        return null;
+                        throw new CompileException(ex.getMessage(), null);
                     }
                 }
             } 
@@ -189,13 +186,12 @@ public class ClassFileIClass extends IClass {
         return null;
     }
 
-    protected IClass getSuperclass2() throws Java.CompileException {
+    protected IClass getSuperclass2() throws CompileException {
         if (this.classFile.superclass == 0) return null;
         try {
             return this.resolveClass(this.classFile.superclass);
         } catch (ClassNotFoundException e) {
-            Java.compileError(e.getMessage());
-            return Java.getIClassLoader().OBJECT;
+            throw new CompileException(e.getMessage(), null);
         }
     }
 
@@ -207,7 +203,7 @@ public class ClassFileIClass extends IClass {
         return (this.accessFlags & Mod.FINAL) != 0;
     }
 
-    protected IClass[] getInterfaces2() throws Java.CompileException {
+    protected IClass[] getInterfaces2() throws CompileException {
         return this.resolveClasses(this.classFile.interfaces);
     }
 
@@ -303,24 +299,22 @@ public class ClassFileIClass extends IClass {
     }
     private final Map resolvedClasses = new HashMap(); // String descriptor => IClass
 
-    private IClass[] resolveClasses(short[] ifs) throws Java.CompileException {
+    private IClass[] resolveClasses(short[] ifs) throws CompileException {
         IClass[] result = new IClass[ifs.length];
         for (int i = 0; i < result.length; ++i) {
             try {
                 result[i] = this.resolveClass(ifs[i]);
             } catch (ClassNotFoundException e) {
-                Java.compileError(e.getMessage());
-                return new IClass[0];
+                throw new CompileException(e.getMessage(), null);
             }
         }
         return result;
     }
 
     /**
-     * Turn a {@link MethodInfo} into an {@link IInvocable}. This includes the checking and the
+     * Turn a {@link ClassFile.MethodInfo} into an {@link IInvocable}. This includes the checking and the
      * removal of the magic first parameter of an inner class constructor.
      * @param methodInfo
-     * @return
      * @throws ClassNotFoundException
      */
     private IInvocable resolveMethod(final ClassFile.MethodInfo methodInfo) throws ClassNotFoundException {
@@ -362,7 +356,7 @@ public class ClassFileIClass extends IClass {
 
         if (name.equals("<init>")) {
             result = new IClass.IConstructor() {
-                public IClass[] getParameterTypes() throws Java.CompileException {
+                public IClass[] getParameterTypes() throws CompileException {
 
                     // Process magic first parameter of inner class constructor.
                     IClass outerIClass = ClassFileIClass.this.getOuterIClass();
@@ -376,17 +370,17 @@ public class ClassFileIClass extends IClass {
 
                     return parameterTypes;
                 }
-                public IClass[] getThrownExceptions() throws Java.CompileException { return thrownExceptions; }
+                public IClass[] getThrownExceptions() throws CompileException { return thrownExceptions; }
                 public int getAccess() { return access; }
             };
         } else {
             result = new IClass.IMethod() {
                 public String getName() { return name; }
-                public IClass getReturnType() throws Java.CompileException { return returnType; }
+                public IClass getReturnType() throws CompileException { return returnType; }
                 public boolean isStatic() { return (methodInfo.getAccessFlags() & Mod.STATIC) != 0; }
                 public boolean isAbstract() { return (methodInfo.getAccessFlags() & Mod.ABSTRACT) != 0; }
-                public IClass[] getParameterTypes() throws Java.CompileException { return parameterTypes; }
-                public IClass[] getThrownExceptions() throws Java.CompileException { return thrownExceptions; }
+                public IClass[] getParameterTypes() throws CompileException { return parameterTypes; }
+                public IClass[] getThrownExceptions() throws CompileException { return thrownExceptions; }
                 public int getAccess() { return access; }
             };
         }
@@ -438,9 +432,9 @@ public class ClassFileIClass extends IClass {
         );
 
         result = new IField() {
-            public Object getConstantValue() throws Java.CompileException { return optionalConstantValue; }
+            public Object getConstantValue() throws CompileException { return optionalConstantValue; }
             public String getName() { return name; }
-            public IClass getType() throws Java.CompileException { return type; }
+            public IClass getType() throws CompileException { return type; }
             public boolean isStatic() { return (fieldInfo.getAccessFlags() & Mod.STATIC) != 0; }
             public int getAccess() { return access; }
         };

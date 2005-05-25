@@ -68,7 +68,7 @@ public class SimpleCompiler extends EvaluatorBase {
     public SimpleCompiler(
         String optionalFileName,
         Reader in
-    ) throws IOException, Scanner.ScanException, Parser.ParseException, Java.CompileException {
+    ) throws IOException, Scanner.ScanException, Parser.ParseException, CompileException {
         this(
             new Scanner(optionalFileName, in), // scanner
             (ClassLoader) null                 // optionalParentClassLoader
@@ -78,7 +78,7 @@ public class SimpleCompiler extends EvaluatorBase {
     public SimpleCompiler(
         String      optionalFileName,
         InputStream is
-    ) throws IOException, Scanner.ScanException, Parser.ParseException, Java.CompileException {
+    ) throws IOException, Scanner.ScanException, Parser.ParseException, CompileException {
         this(
             new Scanner(optionalFileName, is), // scanner
             (ClassLoader) null                 // optionalParentClassLoader
@@ -87,7 +87,7 @@ public class SimpleCompiler extends EvaluatorBase {
 
     public SimpleCompiler(
         String fileName
-    ) throws IOException, Scanner.ScanException, Parser.ParseException, Java.CompileException {
+    ) throws IOException, Scanner.ScanException, Parser.ParseException, CompileException {
         this(
             new Scanner(fileName), // scanner
             (ClassLoader) null     // optionalParentClassLoader
@@ -104,7 +104,7 @@ public class SimpleCompiler extends EvaluatorBase {
     public SimpleCompiler(
         Scanner     scanner,
         ClassLoader optionalParentClassLoader
-    ) throws IOException, Scanner.ScanException, Parser.ParseException, Java.CompileException {
+    ) throws IOException, Scanner.ScanException, Parser.ParseException, CompileException {
         super(optionalParentClassLoader);
 
         // Parse the compilation unit.

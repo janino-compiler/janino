@@ -52,7 +52,7 @@ final class JavaSourceIClassLoader extends IClassLoader {
 
     private final ResourceFinder sourceFinder;
     private final String         optionalCharacterEncoding;
-    private final Set            uncompiledCompilationUnits; // Java.CompilationUnit
+    private final Set            uncompiledCompilationUnits; // UnitCompiler
 
     /**
      * Notice that the <code>uncompiledCompilationUnits</code> set is both read and written
@@ -64,7 +64,7 @@ final class JavaSourceIClassLoader extends IClassLoader {
     public JavaSourceIClassLoader(
         ResourceFinder sourceFinder,
         String         optionalCharacterEncoding,
-        Set            uncompiledCompilationUnits,
+        Set            uncompiledCompilationUnits, // UnitCompiler
         IClassLoader   optionalParentIClassLoader
     ) {
         super(optionalParentIClassLoader);
@@ -93,8 +93,8 @@ final class JavaSourceIClassLoader extends IClassLoader {
     
         // Check the already-parsed compilation units.
         for (Iterator it = this.uncompiledCompilationUnits.iterator(); it.hasNext();) {
-            Java.CompilationUnit cu = (Java.CompilationUnit) it.next();
-            IClass res = cu.findClass(className);
+            UnitCompiler uc = (UnitCompiler) it.next();
+            IClass res = uc.findClass(className);
             if (res != null) {
                 this.defineIClass(res);
                 return res;
@@ -109,21 +109,21 @@ final class JavaSourceIClassLoader extends IClassLoader {
             if (JavaSourceIClassLoader.DEBUG) System.out.println("sourceURL=" + sourceResource);
 
             // Scan and parse the source file.
-            Java.CompilationUnit cu;
+            UnitCompiler uc;
             InputStream inputStream = sourceResource.open();
             try {
                 Scanner scanner = new Scanner(sourceResource.getFileName(), inputStream, this.optionalCharacterEncoding);
                 Parser parser = new Parser(scanner);
-                cu = parser.parseCompilationUnit();
+                uc = new UnitCompiler(parser.parseCompilationUnit(), this);
             } finally {
                 try { inputStream.close(); } catch (IOException ex) {}
             }
 
             // Remember compilation unit for later compilation.
-            this.uncompiledCompilationUnits.add(cu);
+            this.uncompiledCompilationUnits.add(uc);
 
             // Find the class/interface declaration in the com
-            IClass res = cu.findClass(className);
+            IClass res = uc.findClass(className);
             if (res == null) throw new Parser.ParseException("Source file \"" + sourceResource.getFileName() + "\" does not declare class \"" + className + "\"", (Location) null);
             this.defineIClass(res);
             return res;

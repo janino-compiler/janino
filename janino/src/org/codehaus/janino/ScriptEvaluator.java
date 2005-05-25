@@ -97,7 +97,7 @@ public class ScriptEvaluator extends EvaluatorBase {
      */
     public ScriptEvaluator(
         String   script
-    ) throws Java.CompileException, Parser.ParseException, Scanner.ScanException, IOException {
+    ) throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
         this(script, Void.TYPE, new String[0], new Class[0], new Class[0]);
     }
 
@@ -108,7 +108,7 @@ public class ScriptEvaluator extends EvaluatorBase {
     public ScriptEvaluator(
         String   script,
         Class    returnType
-    ) throws Java.CompileException, Parser.ParseException, Scanner.ScanException, IOException {
+    ) throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
         this(script, returnType, new String[0], new Class[0], new Class[0]);
     }
 
@@ -121,7 +121,7 @@ public class ScriptEvaluator extends EvaluatorBase {
         Class    returnType,
         String[] parameterNames,
         Class[]  parameterTypes
-    ) throws Java.CompileException, Parser.ParseException, Scanner.ScanException, IOException {
+    ) throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
         this(script, returnType, parameterNames, parameterTypes, new Class[0]);
     }
 
@@ -135,7 +135,7 @@ public class ScriptEvaluator extends EvaluatorBase {
         String[] parameterNames,
         Class[]  parameterTypes,
         Class[]  thrownExceptions
-    ) throws Java.CompileException, Parser.ParseException, Scanner.ScanException, IOException {
+    ) throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
         this(
             new Scanner(null, new java.io.StringReader(script)), // scanner
             returnType,                                          // returnType
@@ -158,7 +158,7 @@ public class ScriptEvaluator extends EvaluatorBase {
         Class[]     parameterTypes,
         Class[]     thrownExceptions,
         ClassLoader optionalClassLoader // null = use current thread's context class loader
-    ) throws Java.CompileException, Parser.ParseException, Scanner.ScanException, IOException {
+    ) throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
         this(
             new Scanner(optionalFileName, is),
             returnType, parameterNames, parameterTypes, thrownExceptions,
@@ -178,7 +178,7 @@ public class ScriptEvaluator extends EvaluatorBase {
         Class[]     parameterTypes,
         Class[]     thrownExceptions,
         ClassLoader optionalClassLoader // null = use current thread's context class loader
-    ) throws Java.CompileException, Parser.ParseException, Scanner.ScanException, IOException {
+    ) throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
         this(
             new Scanner(optionalFileName, reader),
             returnType, parameterNames, parameterTypes, thrownExceptions,
@@ -199,7 +199,7 @@ public class ScriptEvaluator extends EvaluatorBase {
         Class[]     parameterTypes,
         Class[]     thrownExceptions,
         ClassLoader optionalParentClassLoader // null = use current thread's context class loader
-    ) throws Java.CompileException, Parser.ParseException, Scanner.ScanException, IOException {
+    ) throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
         this(
             scanner,                        // scanner
             (Class) null,                   // optionalExtendedType
@@ -226,7 +226,7 @@ public class ScriptEvaluator extends EvaluatorBase {
         Class[]     parameterTypes,
         Class[]     thrownExceptions,
         ClassLoader optionalParentClassLoader // null = use current thread's context class loader
-    ) throws Java.CompileException, Parser.ParseException, Scanner.ScanException, IOException {
+    ) throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
         this(
             scanner,                             // scanner
             ScriptEvaluator.DEFAULT_CLASS_NAME,  // className
@@ -289,7 +289,7 @@ public class ScriptEvaluator extends EvaluatorBase {
         Class[]     parameterTypes,
         Class[]     thrownExceptions,
         ClassLoader optionalParentClassLoader // null = use current thread's context class loader
-    ) throws Scanner.ScanException, Parser.ParseException, Java.CompileException, IOException {
+    ) throws Scanner.ScanException, Parser.ParseException, CompileException, IOException {
         super(optionalParentClassLoader);
         if (parameterNames.length != parameterTypes.length) throw new RuntimeException("Lengths of \"parameterNames\" and \"parameterTypes\" do not match");
 
@@ -373,7 +373,7 @@ public class ScriptEvaluator extends EvaluatorBase {
         Class       interfaceToImplement,
         String[]    parameterNames,
         ClassLoader optionalClassLoader
-    ) throws Java.CompileException, Parser.ParseException, Scanner.ScanException, IOException {
+    ) throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
         return ScriptEvaluator.createFastScriptEvaluator(
             scanner,                            // scanner
             ScriptEvaluator.DEFAULT_CLASS_NAME, // className
@@ -406,7 +406,7 @@ public class ScriptEvaluator extends EvaluatorBase {
         Class       interfaceToImplement,
         String[]    parameterNames,
         ClassLoader optionalParentClassLoader
-    ) throws Java.CompileException, Parser.ParseException, Scanner.ScanException, IOException {
+    ) throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
         if (!interfaceToImplement.isInterface()) throw new RuntimeException("\"" + interfaceToImplement + "\" is not an interface");
 
         Method[] methods = interfaceToImplement.getDeclaredMethods();

@@ -172,24 +172,32 @@ public abstract class IClass {
     protected abstract IField[] getDeclaredIFields2();
 
     /**
+     * Returns the synthetic fields of an anonymous or local class, in
+     * the order in which they are passed to all constructors.
+     */
+    public IField[] getSyntheticIFields() {
+        return new IField[0];
+    }
+
+    /**
      * Returns the classes and interfaces declared as members of the class
      * (but not inherited classes and interfaces).<br>
      * Returns an empty array for an array, primitive type or "void".
      */
-    public final IClass[] getDeclaredIClasses() throws Java.CompileException {
+    public final IClass[] getDeclaredIClasses() throws CompileException {
         if (this.declaredIClasses == null) {
             this.declaredIClasses = this.getDeclaredIClasses2();
         }
         return this.declaredIClasses;
     }
     private IClass[] declaredIClasses = null;
-    protected abstract IClass[] getDeclaredIClasses2() throws Java.CompileException;
+    protected abstract IClass[] getDeclaredIClasses2() throws CompileException;
 
     /**
      * If this class is a member class, return the declaring class, otherwise return
      * <code>null</code>.
      */
-    public final IClass getDeclaringIClass() throws Java.CompileException {
+    public final IClass getDeclaringIClass() throws CompileException {
         if (!this.declaringIClassIsCached) {
             this.declaringIClass = this.getDeclaringIClass2();
             this.declaringIClassIsCached = true;
@@ -198,7 +206,7 @@ public abstract class IClass {
     }
     private boolean declaringIClassIsCached = false;
     private IClass declaringIClass = null;
-    protected abstract IClass getDeclaringIClass2() throws Java.CompileException;
+    protected abstract IClass getDeclaringIClass2() throws CompileException;
 
     /**
      * The following types have an "outer class":
@@ -208,7 +216,7 @@ public abstract class IClass {
      *   <li>Non-static member classes
      * </ul>
      */
-    public final IClass getOuterIClass() throws Java.CompileException {
+    public final IClass getOuterIClass() throws CompileException {
         if (!this.outerIClassIsCached) {
             this.outerIClass = this.getOuterIClass2();
             this.outerIClassIsCached = true;
@@ -217,24 +225,24 @@ public abstract class IClass {
     }
     private boolean outerIClassIsCached = false;
     private IClass outerIClass = null;
-    protected abstract IClass getOuterIClass2() throws Java.CompileException;
+    protected abstract IClass getOuterIClass2() throws CompileException;
 
     /**
      * Returns the superclass of the class.<br>
      * Returns "null" for class "Object", interfaces, arrays, primitive types
      * and "void".
      */
-    public final IClass getSuperclass() throws Java.CompileException {
+    public final IClass getSuperclass() throws CompileException {
         if (!this.superclassIsCached) {
             this.superclass = this.getSuperclass2();
             this.superclassIsCached = true;
-            if (this.superclass != null && this.superclass.isSubclassOf(this)) throw new Java.CompileException("Class circularity detected for \"" + Descriptor.toClassName(this.getDescriptor()) + "\"", null);
+            if (this.superclass != null && this.superclass.isSubclassOf(this)) throw new CompileException("Class circularity detected for \"" + Descriptor.toClassName(this.getDescriptor()) + "\"", null);
         }
         return this.superclass;
     }
     private boolean superclassIsCached = false;
     private IClass superclass = null;
-    protected abstract IClass getSuperclass2() throws Java.CompileException;
+    protected abstract IClass getSuperclass2() throws CompileException;
 
     /**
      * Whether the class may be accessed from outside its package (JVMS 4.1 access_flags)
@@ -253,17 +261,17 @@ public abstract class IClass {
      * Returns "Cloneable" and "Serializable" for arrays.<br>
      * Returns an empty array for primitive types and "void".
      */
-    public final IClass[] getInterfaces() throws Java.CompileException {
+    public final IClass[] getInterfaces() throws CompileException {
         if (this.interfaces == null) {
             this.interfaces = this.getInterfaces2();
             for (int i = 0; i < this.interfaces.length; ++i) {
-                if (this.interfaces[i].implementsInterface(this)) throw new Java.CompileException("Interface circularity detected for \"" + Descriptor.toClassName(this.getDescriptor()) + "\"", null);
+                if (this.interfaces[i].implementsInterface(this)) throw new CompileException("Interface circularity detected for \"" + Descriptor.toClassName(this.getDescriptor()) + "\"", null);
             }
         }
         return this.interfaces;
     }
     private IClass[] interfaces = null;
-    protected abstract IClass[] getInterfaces2() throws Java.CompileException;
+    protected abstract IClass[] getInterfaces2() throws CompileException;
 
     /**
      * Whether the class may be instantiated (JVMS 4.1 access_flags)
@@ -336,29 +344,97 @@ public abstract class IClass {
 
     /**
      * Determine if "this" is assignable from "that". This is true if "this"
-     * is identical with "that", or if "this" is assignable from "that"'s
-     * superclass (if any), or if "this" is assignable from any of the
-     * interfaces which "that" implements.
+     * is identical with "that" (JLS2 5.1.1), or if "that" is
+     * widening-primitive-convertible to "this" (JLS2 5.1.2), or if "that" is
+     * widening-reference-convertible to "this" (JLS2 5.1.4).
      */
-    public boolean isAssignableFrom(IClass that) throws Java.CompileException {
+    public boolean isAssignableFrom(IClass that) throws CompileException {
 
-        // Identity conversion, JLS 5.1.1
+        // Identity conversion, JLS2 5.1.1
         if (this == that) return true;
 
-        // Widening primitive conversion, JLS 5.1.2
-        if (Java.isWideningPrimitiveConvertible(that, this)) return true;
+        // Widening primitive conversion, JLS2 5.1.2
+        {
+            String ds = that.getDescriptor() + this.getDescriptor();
+    		if (ds.length() == 2 && IClass.PRIMITIVE_WIDENING_CONVERSIONS.contains(ds)) return true;
+        }
 
-        // Widening reference conversion, JLS 5.1.4
-        if (Java.isWideningReferenceConvertible(that, this)) return true;
+        // Widening reference conversion, JLS2 5.1.4
+        {
 
+            // JLS 5.1.4.1: Target type is superclass of source class type.
+            if (that.isSubclassOf(this)) return true;
+    
+            // JLS 5.1.4.2: Source class type implements target interface type.
+            // JLS 5.1.4.4: Source interface type implements target interface type.
+            if (that.implementsInterface(this)) return true;
+    
+            // JLS 5.1.4.3 Convert "null" literal to any reference type.
+            if (that == IClass.VOID && !this.isPrimitive()) return true;
+    
+            // JLS 5.1.4.5: From any interface to type "Object".
+            if (that.isInterface() && this.getDescriptor().equals(Descriptor.OBJECT)) return true;
+    
+            if (that.isArray()) {
+    
+                // JLS 5.1.4.6: From any array type to type "Object".
+                if (this.getDescriptor().equals(Descriptor.OBJECT)) return true;
+    
+                // JLS 5.1.4.7: From any array type to type "Cloneable".
+                if (this.getDescriptor().equals(Descriptor.CLONEABLE)) return true;
+    
+                // JLS 5.1.4.8: From any array type to type "java.io.Serializable".
+                if (this.getDescriptor().equals(Descriptor.SERIALIZABLE)) return true;
+    
+                // JLS 5.1.4.9: From SC[] to TC[] while SC if widening reference convertible to TC.
+                if (this.isArray()) {
+                    IClass thisCT = this.getComponentType();
+                    IClass thatCT = that.getComponentType();
+                    if (!thisCT.isPrimitive() && thisCT.isAssignableFrom(thatCT)) return true;
+                }
+            }
+        }
         return false;
+    }
+
+    private static final Set PRIMITIVE_WIDENING_CONVERSIONS = new HashSet();
+    static {
+        String[] pwcs = new String[] {
+            Descriptor.BYTE  + Descriptor.SHORT,
+
+            Descriptor.BYTE  + Descriptor.INT,
+            Descriptor.SHORT + Descriptor.INT,
+            Descriptor.CHAR  + Descriptor.INT,
+    
+            Descriptor.BYTE  + Descriptor.LONG,
+            Descriptor.SHORT + Descriptor.LONG,
+            Descriptor.CHAR  + Descriptor.LONG,
+            Descriptor.INT   + Descriptor.LONG,
+    
+            Descriptor.BYTE  + Descriptor.FLOAT,
+            Descriptor.SHORT + Descriptor.FLOAT,
+            Descriptor.CHAR  + Descriptor.FLOAT,
+            Descriptor.INT   + Descriptor.FLOAT,
+    
+            Descriptor.LONG  + Descriptor.FLOAT,
+    
+            Descriptor.BYTE  + Descriptor.DOUBLE,
+            Descriptor.SHORT + Descriptor.DOUBLE,
+            Descriptor.CHAR  + Descriptor.DOUBLE,
+            Descriptor.INT   + Descriptor.DOUBLE,
+    
+            Descriptor.LONG  + Descriptor.DOUBLE,
+    
+            Descriptor.FLOAT + Descriptor.DOUBLE,
+        };
+        for (int i = 0; i < pwcs.length; ++i) IClass.PRIMITIVE_WIDENING_CONVERSIONS.add(pwcs[i]);
     }
 
     /**
      * Returns <code>true</code> if this class is an immediate or non-immediate
      * subclass of <code>that</code> class.
      */
-    public boolean isSubclassOf(IClass that) throws Java.CompileException {
+    public boolean isSubclassOf(IClass that) throws CompileException {
         for (IClass sc = this.getSuperclass(); sc != null; sc = sc.getSuperclass()) {
             if (sc == that) return true;
         }
@@ -372,7 +448,7 @@ public abstract class IClass {
      * If <code>this</code> represents an interface: Return <code>true</code> if this
      * interface directly or indirectly extends <code>that</code> interface.
      */
-    public boolean implementsInterface(IClass that) throws Java.CompileException {
+    public boolean implementsInterface(IClass that) throws CompileException {
         for (IClass c = this; c != null; c = c.getSuperclass()) {
             IClass[] tis = c.getInterfaces();
             for (int i = 0; i < tis.length; ++i) {
@@ -424,7 +500,7 @@ public abstract class IClass {
      * Examines superclasses, interfaces and enclosing type declarations.
      * @return an array of {@link IClass}es inunspecified order, possibly of length zero
      */
-    IClass[] findMemberType(String optionalName) throws Java.CompileException {
+    IClass[] findMemberType(String optionalName) throws CompileException {
         IClass[] res = (IClass[]) this.memberTypeCache.get(optionalName);
         if (res == null) {
 
@@ -441,7 +517,7 @@ public abstract class IClass {
     }
     private final Map memberTypeCache = new HashMap(); // String name => IClass[]
     private static final IClass[] ZERO_ICLASSES = new IClass[0];
-    private void findMemberType(String optionalName, Collection result) throws Java.CompileException {
+    private void findMemberType(String optionalName, Collection result) throws CompileException {
 
         // Search for a type with the given name in the current class.
         IClass[] memberTypes = this.getDeclaredIClasses();
@@ -511,11 +587,11 @@ public abstract class IClass {
         // Implement IMember.
         public abstract int getAccess();
         public IClass       getDeclaringIClass() { return IClass.this; }
-        public abstract IClass[] getParameterTypes() throws Java.CompileException;
-        public abstract String   getDescriptor() throws Java.CompileException;
-        public abstract IClass[] getThrownExceptions() throws Java.CompileException;
+        public abstract IClass[] getParameterTypes() throws CompileException;
+        public abstract String   getDescriptor() throws CompileException;
+        public abstract IClass[] getThrownExceptions() throws CompileException;
 
-        public boolean isMoreSpecificThan(IInvocable that) throws Java.CompileException {
+        public boolean isMoreSpecificThan(IInvocable that) throws CompileException {
             if (IClass.DEBUG) System.out.print("\"" + this + "\".isMoreSpecificThan(\"" + that + "\") => ");
             if (!that.getDeclaringIClass().isAssignableFrom(this.getDeclaringIClass())) {
                 if (IClass.DEBUG) System.out.println("falsE");
@@ -533,7 +609,7 @@ public abstract class IClass {
             if (IClass.DEBUG) System.out.println("true");
             return true;
         }
-        public boolean isLessSpecificThan(IInvocable that) throws Java.CompileException {
+        public boolean isLessSpecificThan(IInvocable that) throws CompileException {
             return that.isMoreSpecificThan(this);
         }
         public abstract String toString();
@@ -545,13 +621,13 @@ public abstract class IClass {
          * return value of this method does not include the optionally leading "synthetic
          * parameters".
          */
-        public abstract IClass[] getParameterTypes() throws Java.CompileException;
+        public abstract IClass[] getParameterTypes() throws CompileException;
 
         /**
          * Opposed to {@link #getParameterTypes()}, the method descriptor returned by this
          * method does include the optionally leading synthetic parameters.
          */
-        public String getDescriptor() throws Java.CompileException {
+        public String getDescriptor() throws CompileException {
             return new MethodDescriptor(IClass.getDescriptors(this.getParameterTypes()), Descriptor.VOID).toString();
         }
         public String toString() {
@@ -563,7 +639,7 @@ public abstract class IClass {
                     if (i > 0) sb.append(", ");
                     sb.append(parameterTypes[i].toString());
                 }
-            } catch (Java.CompileException ex) {
+            } catch (CompileException ex) {
                 sb.append("<invalid type>");
             }
             sb.append(')');
@@ -573,9 +649,9 @@ public abstract class IClass {
     public abstract class IMethod extends IInvocable {
         public abstract boolean isStatic();
         public abstract boolean isAbstract();
-        public abstract IClass  getReturnType() throws Java.CompileException;
+        public abstract IClass  getReturnType() throws CompileException;
         public abstract String  getName();
-        public String getDescriptor() throws Java.CompileException {
+        public String getDescriptor() throws CompileException {
             return new MethodDescriptor(
                 IClass.getDescriptors(this.getParameterTypes()),
                 getReturnType().getDescriptor()
@@ -585,7 +661,7 @@ public abstract class IClass {
             StringBuffer sb = new StringBuffer();
             try {
                 sb.append(this.getReturnType().toString());
-            } catch (Java.CompileException ex) {
+            } catch (CompileException ex) {
                 sb.append("<invalid type>");
             }
             sb.append(' ');
@@ -599,7 +675,7 @@ public abstract class IClass {
                     if (i > 0) sb.append(", ");
                     sb.append(parameterTypes[i].toString());
                 }
-            } catch (Java.CompileException ex) {
+            } catch (CompileException ex) {
                 sb.append("<invalid type>");
             }
             sb.append(')');
@@ -613,12 +689,12 @@ public abstract class IClass {
         public IClass           getDeclaringIClass() { return IClass.this; }
 
         public abstract boolean isStatic();
-        public abstract IClass  getType() throws Java.CompileException;
+        public abstract IClass  getType() throws CompileException;
         public abstract String  getName();
-        public String getDescriptor() throws Java.CompileException {
+        public String getDescriptor() throws CompileException {
             return getType().getDescriptor();
         }
-        public abstract Object  getConstantValue() throws Java.CompileException;
+        public abstract Object  getConstantValue() throws CompileException;
         public String toString() { return this.getName(); }
     }
 }

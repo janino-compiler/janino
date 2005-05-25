@@ -111,8 +111,6 @@ public class EvaluatorBase {
      * @param implementedTypes
      * @return The created {@link Java.ClassDeclaration} object
      * @throws Parser.ParseException
-     * @throws Scanner.ScanException
-     * @throws IOException
      */
     protected Java.PackageMemberClassDeclaration addPackageMemberClassDeclaration(
         Location             location,
@@ -154,8 +152,6 @@ public class EvaluatorBase {
      * @param thrownExceptions
      * @return The created {@link Java.Block} object
      * @throws Parser.ParseException
-     * @throws Scanner.ScanException
-     * @throws IOException
      */
     protected Java.Block addClassMethodBlockDeclaration(
         Location             location,
@@ -263,21 +259,21 @@ public class EvaluatorBase {
      * @param compilationUnit The parsed compilation unit
      * @param debuggingInformation What kind of debugging information to generate in the class file
      * @return The {@link ClassLoader} into which the compiled classes were defined
-     * @throws Java.CompileException
+     * @throws CompileException
      */
     protected ClassLoader compileAndLoad(
         Java.CompilationUnit compilationUnit,
         DebuggingInformation debuggingInformation
-    ) throws Java.CompileException {
+    ) throws CompileException {
         if (EvaluatorBase.DEBUG) {
             UnparseVisitor.unparse(compilationUnit, new OutputStreamWriter(System.out));
         }
 
         // Compile compilation unit to class files.
-        ClassFile[] classFiles = compilationUnit.compile(
-            this.classLoaderIClassLoader, // iClassLoader
-            debuggingInformation          // debuggingInformation
-        );
+        ClassFile[] classFiles = new UnitCompiler(
+            compilationUnit,
+            this.classLoaderIClassLoader
+        ).compileUnit(debuggingInformation);
 
         // Convert the class files to bytes and store them in a Map.
         Map classes = new HashMap(); // String className => byte[] data
@@ -300,14 +296,14 @@ public class EvaluatorBase {
      * @param debuggingInformation TODO
      * @param newClassName The fully qualified class name
      * @return The loaded class
-     * @throws Java.CompileException
+     * @throws CompileException
      * @throws ClassNotFoundException A class with the given name was not declared in the compilation unit
      */
     protected Class compileAndLoad(
         Java.CompilationUnit compilationUnit,
         DebuggingInformation debuggingInformation,
         String               newClassName
-    ) throws Java.CompileException, ClassNotFoundException {
+    ) throws CompileException, ClassNotFoundException {
         return this.compileAndLoad(compilationUnit, debuggingInformation).loadClass(newClassName);
     }
 

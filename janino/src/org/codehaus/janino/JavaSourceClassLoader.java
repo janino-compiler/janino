@@ -230,7 +230,7 @@ public class JavaSourceClassLoader extends ClassLoader {
      * @throws ClassNotFoundException
      * @throws TunnelException wraps a {@link Scanner.ScanException}
      * @throws TunnelException wraps a {@link Parser.ParseException}
-     * @throws TunnelException wraps a {@link Java.CompileException}
+     * @throws TunnelException wraps a {@link CompileException}
      * @throws TunnelException wraps a {@link IOException}
      */
     protected Class findClass(String name) throws ClassNotFoundException {
@@ -241,11 +241,11 @@ public class JavaSourceClassLoader extends ClassLoader {
         if (cf == null) {
 
             // Check parsed, but uncompiled compilation units.
-            Java.CompilationUnit compilationUnitToCompile = null;
+            UnitCompiler compilationUnitToCompile = null;
             for (Iterator i = this.uncompiledCompilationUnits.iterator(); i.hasNext();) {
-                Java.CompilationUnit cu = (Java.CompilationUnit) i.next();
-                if (cu.findClass(name) != null) {
-                    compilationUnitToCompile = cu;
+                UnitCompiler uc = (UnitCompiler) i.next();
+                if (uc.findClass(name) != null) {
+                    compilationUnitToCompile = uc;
                     break;
                 }
             }
@@ -258,9 +258,9 @@ public class JavaSourceClassLoader extends ClassLoader {
                 if (this.iClassLoader.loadIClass(Descriptor.fromClassName(name)) == null) throw new ClassNotFoundException(name);
 
                 for (Iterator i = this.uncompiledCompilationUnits.iterator(); i.hasNext();) {
-                    Java.CompilationUnit cu = (Java.CompilationUnit) i.next();
-                    if (cu.findClass(name) != null) {
-                        compilationUnitToCompile = cu;
+                    UnitCompiler uc = (UnitCompiler) i.next();
+                    if (uc.findClass(name) != null) {
+                        compilationUnitToCompile = uc;
                         break;
                     }
                 }
@@ -270,8 +270,8 @@ public class JavaSourceClassLoader extends ClassLoader {
             // Compile the compilation unit.
             ClassFile[] cfs;
             try {
-                cfs = compilationUnitToCompile.compile(this.iClassLoader, this.debuggingInformation);
-            } catch (Java.CompileException e) {
+                cfs = compilationUnitToCompile.compileUnit(this.debuggingInformation);
+            } catch (CompileException e) {
                 throw new TunnelException(e);
             }
 
@@ -284,7 +284,7 @@ public class JavaSourceClassLoader extends ClassLoader {
                     if (cf != null) throw new RuntimeException(); // SNO: Multiple CFs with the same name.
                     cf = cfs[i];
                 } else {
-                    if (this.precompiledClasses.containsKey(cfs[i].getThisClassName())) throw new TunnelException(new Java.CompileException("Class or interface \"" + name + "\" is defined in more than one compilation unit", null));
+                    if (this.precompiledClasses.containsKey(cfs[i].getThisClassName())) throw new TunnelException(new CompileException("Class or interface \"" + name + "\" is defined in more than one compilation unit", null));
                     this.precompiledClasses.put(cfs[i].getThisClassName(), cfs[i]);
                 }
             }
@@ -312,7 +312,7 @@ public class JavaSourceClassLoader extends ClassLoader {
     /**
      * Collection of parsed, but uncompiled compilation units.
      */
-    private final Set uncompiledCompilationUnits = new HashSet(); // Java.CompilationUnit
+    private final Set uncompiledCompilationUnits = new HashSet(); // UnitCompiler
 
     /**
      * Map of classes that were parsed and compiled into class files, but not yet loaded into the

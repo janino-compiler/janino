@@ -146,7 +146,7 @@ public class Parser {
             this.scanner.read();
             Location loc = this.scanner.peek().getLocation();
             String packageName = join(this.parseQualifiedIdentifier(), ".");
-            Parser.verifyStringIsConventionalPackageName(packageName, loc);
+            this.verifyStringIsConventionalPackageName(packageName, loc);
             compilationUnit.setPackageDeclaration(new Java.PackageDeclaration(loc, packageName));
             if (!this.scanner.read().isOperator(";")) this.throwParseException("Semicolon expected after \"package\" directive");
         }
@@ -316,7 +316,7 @@ public class Parser {
         if (!this.scanner.peek().isIdentifier()) this.throwParseException("Class name expected after \"class\"");
         Location location = this.scanner.peek().getLocation();
         String className = this.scanner.read().getIdentifier();
-        Parser.verifyIdentifierIsConventionalClassOrInterfaceName(className, location);
+        this.verifyIdentifierIsConventionalClassOrInterfaceName(className, location);
 
         Java.ReferenceType optionalExtendedType = null;
         if (this.scanner.peek().isKeyword("extends")) {
@@ -530,7 +530,7 @@ public class Parser {
         if (!this.scanner.peek().isIdentifier()) this.throwParseException("Interface name expected after \"interface\"");
         Location location = this.scanner.peek().getLocation();
         String interfaceName = this.scanner.read().getIdentifier();
-        Parser.verifyIdentifierIsConventionalClassOrInterfaceName(interfaceName, location);
+        this.verifyIdentifierIsConventionalClassOrInterfaceName(interfaceName, location);
 
         Java.ReferenceType[] extendedTypes = new Java.ReferenceType[0];
         if (this.scanner.peek().isKeyword("extends")) {
@@ -781,7 +781,7 @@ public class Parser {
     ) throws ParseException, Scanner.ScanException, IOException {
         Location location = this.scanner.peek().getLocation();
 
-        Parser.verifyIdentifierIsConventionalMethodName(name, location);
+        this.verifyIdentifierIsConventionalMethodName(name, location);
 
         Java.FormalParameter[] formalParameters = this.parseFormalParameters(
             declaringType // enclosingScope
@@ -911,7 +911,7 @@ public class Parser {
         if (!this.scanner.peek().isIdentifier()) this.throwParseException("Formal parameter name expected");
         Location location = this.scanner.peek().getLocation();
         String name = this.scanner.read().getIdentifier();
-        Parser.verifyIdentifierIsConventionalLocalVariableOrParameterName(name, location);
+        this.verifyIdentifierIsConventionalLocalVariableOrParameterName(name, location);
 
         for (int i = this.parseBracketsOpt(); i > 0; --i) type = new Java.ArrayType(type);
         return new Java.FormalParameter(finaL, type, name);
@@ -922,7 +922,7 @@ public class Parser {
      *   BracketsOpt := { '[' ']' }
      * </pre>
      */
-    int parseBracketsOpt() throws ParseException, Scanner.ScanException, IOException {
+    int parseBracketsOpt() throws Scanner.ScanException, IOException {
         int res = 0;
         while (
             this.scanner.peek().          isOperator("[") &&
@@ -1080,7 +1080,7 @@ public class Parser {
         List l = new ArrayList();
         for (;;) {
             Java.VariableDeclarator vd = this.parseVariableDeclarator(enclosingScope, type);
-            Parser.verifyIdentifierIsConventionalLocalVariableOrParameterName(vd.getName(), vd.getLocation());
+            this.verifyIdentifierIsConventionalLocalVariableOrParameterName(vd.getName(), vd.getLocation());
             l.add(vd);
             if (!this.scanner.peek().isOperator(",")) break;
             this.scanner.read();
@@ -1103,14 +1103,14 @@ public class Parser {
         List l = new ArrayList();
 
         Java.VariableDeclarator vd = this.parseVariableDeclaratorRest(enclosingScope, type, name);
-        Parser.verifyIdentifierIsConventionalFieldName(vd.getName(), vd.getLocation());
+        this.verifyIdentifierIsConventionalFieldName(vd.getName(), vd.getLocation());
         l.add(vd);
 
         while (this.scanner.peek().isOperator(",")) {
             this.scanner.read();
 
             vd = this.parseVariableDeclarator(enclosingScope, type);
-            Parser.verifyIdentifierIsConventionalFieldName(vd.getName(), vd.getLocation());
+            this.verifyIdentifierIsConventionalFieldName(vd.getName(), vd.getLocation());
             l.add(vd);
         }
         return (Java.VariableDeclarator[]) l.toArray(new Java.VariableDeclarator[l.size()]);
@@ -2546,16 +2546,16 @@ public class Parser {
      * Issue a warning if the given string does not comply with the package naming conventions
      * (JLS2 6.8.1).
      */
-    private static void verifyStringIsConventionalPackageName(String s, Location loc) {
+    private void verifyStringIsConventionalPackageName(String s, Location loc) {
         if (!Character.isLowerCase(s.charAt(0))) {
-            Java.warning("UPN", "Package name \"" + s + "\" does not begin with a lower-case letter (see JLS2 6.8.1)", loc);
+            this.warning("UPN", "Package name \"" + s + "\" does not begin with a lower-case letter (see JLS2 6.8.1)", loc);
             return;
         }
 
         for (int i = 0; i < s.length(); ++i) {
             char c = s.charAt(i);
             if (!Character.isLowerCase(c) && c != '_' && c != '.') {
-                Java.warning("PPN", "Poorly chosen package name \"" + s + "\" contains bad character '" + c + "'", loc);
+                this.warning("PPN", "Poorly chosen package name \"" + s + "\" contains bad character '" + c + "'", loc);
                 return;
             }
         }
@@ -2565,15 +2565,15 @@ public class Parser {
      * Issue a warning if the given identifier does not comply with the class and interface type
      * naming conventions (JLS2 6.8.2).
      */
-    private static void verifyIdentifierIsConventionalClassOrInterfaceName(String id, Location loc) {
+    private void verifyIdentifierIsConventionalClassOrInterfaceName(String id, Location loc) {
         if (!Character.isUpperCase(id.charAt(0))) {
-            Java.warning("UCOIN1", "Class or interface name \"" + id + "\" does not begin with an upper-case letter (see JLS2 6.8.2)", loc);
+            this.warning("UCOIN1", "Class or interface name \"" + id + "\" does not begin with an upper-case letter (see JLS2 6.8.2)", loc);
             return;
         } 
         for (int i = 0; i < id.length(); ++i) {
             char c = id.charAt(i);
             if (!Character.isLetter(c) && !Character.isDigit(c)) {
-                Java.warning("UCOIN", "Class or interface name \"" + id + "\" contains unconventional character \"" + c + "\" (see JLS2 6.8.2)", loc);
+                this.warning("UCOIN", "Class or interface name \"" + id + "\" contains unconventional character \"" + c + "\" (see JLS2 6.8.2)", loc);
                 return;
             } 
         }
@@ -2583,15 +2583,15 @@ public class Parser {
      * Issue a warning if the given identifier does not comply with the method naming conventions
      * (JLS2 6.8.3).
      */
-    private static void verifyIdentifierIsConventionalMethodName(String id, Location loc) {
+    private void verifyIdentifierIsConventionalMethodName(String id, Location loc) {
         if (!Character.isLowerCase(id.charAt(0))) {
-            Java.warning("UMN1", "Method name \"" + id + "\" does not begin with a lower-case letter (see JLS2 6.8.3)", loc);
+            this.warning("UMN1", "Method name \"" + id + "\" does not begin with a lower-case letter (see JLS2 6.8.3)", loc);
             return;
         } 
         for (int i = 0; i < id.length(); ++i) {
             char c = id.charAt(i);
             if (!Character.isLetter(c) && !Character.isDigit(c)) {
-                Java.warning("UMN", "Method name \"" + id + "\" contains unconventional character \"" + c + "\" (see JLS2 6.8.3)", loc);
+                this.warning("UMN", "Method name \"" + id + "\" contains unconventional character \"" + c + "\" (see JLS2 6.8.3)", loc);
                 return;
             } 
         }
@@ -2601,7 +2601,7 @@ public class Parser {
      * Issue a warning if the given identifier does not comply with the field naming conventions
      * (JLS2 6.8.4) and constant naming conventions (JLS2 6.8.5).
      */
-    private static void verifyIdentifierIsConventionalFieldName(String id, Location loc) {
+    private void verifyIdentifierIsConventionalFieldName(String id, Location loc) {
 
         // In practice, a field is not always a constant iff it is static-final. So let's
         // always tolerate both field and constant names.
@@ -2610,7 +2610,7 @@ public class Parser {
             for (int i = 0; i < id.length(); ++i) {
                 char c = id.charAt(i);
                 if (!Character.isUpperCase(c) && !Character.isDigit(c) && c != '_') {
-                    Java.warning("UCN", "Constant name \"" + id + "\" contains unconventional character \"" + c + "\" (see JLS2 6.8.5)", loc);
+                    this.warning("UCN", "Constant name \"" + id + "\" contains unconventional character \"" + c + "\" (see JLS2 6.8.5)", loc);
                     return;
                 } 
             }
@@ -2619,12 +2619,12 @@ public class Parser {
             for (int i = 0; i < id.length(); ++i) {
                 char c = id.charAt(i);
                 if (!Character.isLetter(c) && !Character.isDigit(c)) {
-                    Java.warning("UFN", "Field name \"" + id + "\" contains unconventional character \"" + c + "\" (see JLS2 6.8.4)", loc);
+                    this.warning("UFN", "Field name \"" + id + "\" contains unconventional character \"" + c + "\" (see JLS2 6.8.4)", loc);
                     return;
                 } 
             }
         } else {
-            Java.warning("UFN1", "\"" + id + "\" is neither a conventional field name (JLS2 6.8.4) nor a conventional constant name (JLS2 6.8.5)", loc);
+            this.warning("UFN1", "\"" + id + "\" is neither a conventional field name (JLS2 6.8.4) nor a conventional constant name (JLS2 6.8.5)", loc);
         }
     }
 
@@ -2632,18 +2632,46 @@ public class Parser {
      * Issue a warning if the given identifier does not comply with the local variable and
      * parameter naming conventions (JLS2 6.8.6).
      */
-    private static void verifyIdentifierIsConventionalLocalVariableOrParameterName(String id, Location loc) {
+    private void verifyIdentifierIsConventionalLocalVariableOrParameterName(String id, Location loc) {
         if (!Character.isLowerCase(id.charAt(0))) {
-            Java.warning("ULVN1", "Local variable name \"" + id + "\" does not begin with a lower-case letter (see JLS2 6.8.6)", loc);
+            this.warning("ULVN1", "Local variable name \"" + id + "\" does not begin with a lower-case letter (see JLS2 6.8.6)", loc);
             return;
         } 
         for (int i = 0; i < id.length(); ++i) {
             char c = id.charAt(i);
             if (!Character.isLetter(c) && !Character.isDigit(c)) {
-                Java.warning("ULVN", "Local variable name \"" + id + "\" contains unconventional character \"" + c + "\" (see JLS2 6.8.6)", loc);
+                this.warning("ULVN", "Local variable name \"" + id + "\" contains unconventional character \"" + c + "\" (see JLS2 6.8.6)", loc);
                 return;
             } 
         }
+    }
+
+    /**
+     * By default, warnings are discarded, but an application my install a (thread-local)
+     * {@link WarningHandler}.
+     */
+    public void setWarningHandler(WarningHandler warningHandler) {
+        this.warningHandler = warningHandler;
+    }
+
+    // Used for elaborate warning handling.
+    private WarningHandler warningHandler = null;
+
+    /**
+     * Issues a warning with the given message an location an returns. This is done through
+     * a {@link WarningHandler} that was installed through
+     * {@link #setWarningHandler(WarningHandler)}.
+     * <p>
+     * The <code>handle</code> argument qulifies the warning and is typically used by
+     * the {@link WarningHandler} to suppress individual warnings.
+     *
+     * @param handle
+     * @param message
+     * @param optionalLocation
+     */
+    private void warning(String handle, String message, Location optionalLocation) {
+        WarningHandler wh = this.warningHandler;
+        if (wh != null) wh.handleWarning(handle, message, optionalLocation);
     }
 
     private final Scanner scanner;
