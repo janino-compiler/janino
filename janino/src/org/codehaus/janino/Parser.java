@@ -402,7 +402,7 @@ public class Parser {
      *       ConstructorDeclarator |
      *       Type Identifier (
      *         MethodDeclaratorRest |
-     *         FieldDeclaratorsRest
+     *         FieldDeclaratorsRest ';'
      *       )
      *     )
      *
@@ -510,6 +510,7 @@ public class Parser {
             memberType,      // type
             memberName       // name
         );
+        if (!this.scanner.read().isOperator(";")) this.throwParseException("Semicolon expected at end of field declaration");
         fd.setVariableDeclarators(vds);
         classDeclaration.addVariableDeclaratorOrInitializer(fd);
     }
