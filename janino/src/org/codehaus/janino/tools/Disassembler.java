@@ -711,8 +711,8 @@ public class Disassembler {
                     out.indent(); {
                         out.println("attribute_name = \"" + attributeName + "\"");
                         out.print("info = { ");
-                        for (int i = 0; i < info.length; ++i) {
-                            out.print("0x" + Integer.toHexString(0xff & info[i]) + ", ");
+                        for (int i = 0; i < this.info.length; ++i) {
+                            out.print("0x" + Integer.toHexString(0xff & this.info[i]) + ", ");
                         }
                         out.println("}");
                     } out.unindent();
@@ -733,20 +733,20 @@ public class Disassembler {
                 out.println("attribute_name = \"LocalVariableTable\"");
                 out.println("local_variable_table = {");
                 out.indent(); {
-                    for (int i = 0; i < data.length; i += 5) {
-                        out.print("start_pc = " + data[i] + ", length = " + data[i + 1] + ", ");
+                    for (int i = 0; i < this.data.length; i += 5) {
+                        out.print("start_pc = " + this.data[i] + ", length = " + this.data[i + 1] + ", ");
 
-                        short nameIndex = data[i + 2];
+                        short nameIndex = this.data[i + 2];
                         out.print("name_index = " + nameIndex + " (");
                         Disassembler.printConstantPoolEntry(nameIndex);
                         out.print("), ");
 
-                        short descriptorIndex = data[i + 3];
+                        short descriptorIndex = this.data[i + 3];
                         out.print("descriptor_index = " + descriptorIndex + " (");
                         Disassembler.printConstantPoolEntry(descriptorIndex);
                         out.print("), ");
 
-                        out.println("index = " + data[i + 4]);
+                        out.println("index = " + this.data[i + 4]);
                     }
                 } out.unindent();
                 out.println("}");
@@ -754,16 +754,16 @@ public class Disassembler {
             out.print("}");
         }
         public void findLocalVariable(short index, int instructionOffset) {
-            for (int i = 0; i < data.length; i += 5) {
-                short startPC = data[i];
-                short length  = data[i + 1];
+            for (int i = 0; i < this.data.length; i += 5) {
+                short startPC = this.data[i];
+                short length  = this.data[i + 1];
                 if (
                     instructionOffset >= startPC &&
                     instructionOffset <= startPC + length &&
-                    index == data[i + 4]
+                    index == this.data[i + 4]
                 ) {
-                    short nameIndex       = data[i + 2];
-                    short descriptorIndex = data[i + 3];
+                    short nameIndex       = this.data[i + 2];
+                    short descriptorIndex = this.data[i + 3];
                     out.print("name_index = " + nameIndex + " (");
                     Disassembler.printConstantPoolEntry(nameIndex);
                     out.print("), ");
@@ -802,14 +802,14 @@ public class Disassembler {
             this.catchType = catchType;
         }
         public void print() {
-            out.print("start_pc = " + startPC + ", end_pc = " + endPC + ", handler_pc = " + handlerPC + ", catch_type = " + catchType + " (");
-            if (catchType == 0) {
+            out.print("start_pc = " + this.startPC + ", end_pc = " + this.endPC + ", handler_pc = " + this.handlerPC + ", catch_type = " + this.catchType + " (");
+            if (this.catchType == 0) {
                 out.print("finally");
             } else {
-                if (catchType < 0 || catchType >= constantPool.length) {
-                    out.print("Constant pool index " + catchType + " out of range");
+                if (this.catchType < 0 || this.catchType >= constantPool.length) {
+                    out.print("Constant pool index " + this.catchType + " out of range");
                 } else {
-                    Disassembler.printConstantPoolEntry(catchType);
+                    Disassembler.printConstantPoolEntry(this.catchType);
                 }
             }
             out.print(")");
@@ -1293,8 +1293,8 @@ public class Disassembler {
             this.mnemonic = mnemonic;
             this.operands = operands;
         }
-        public String    getMnemonic() { return mnemonic; }
-        public Operand[] getOperands() { return operands; }
+        public String    getMnemonic() { return this.mnemonic; }
+        public Operand[] getOperands() { return this.operands; }
 
         private final String    mnemonic;
         private final Operand[] operands;
@@ -1325,8 +1325,8 @@ public class Disassembler {
             super.write(str, off, len);
         }
         public void println() { super.println(); this.atBOL = true; }
-        public void indent() { ++indentation; }
-        public void unindent() { --indentation; }
+        public void indent() { ++this.indentation; }
+        public void unindent() { --this.indentation; }
 
         private void handleIndentation() {
             if (this.atBOL) {
@@ -1353,7 +1353,7 @@ public class Disassembler {
         public void print() {
             out.print(this.value);
         }
-        public String getValue() { return value; }
+        public String getValue() { return this.value; }
         private String value;
     }
 
@@ -1362,16 +1362,16 @@ public class Disassembler {
     private static class CountingInputStream extends InputStream {
         public CountingInputStream(InputStream is) { this.is = is; }
         public int read() throws IOException {
-            int res = is.read();
-            if (res != -1) ++count;
+            int res = this.is.read();
+            if (res != -1) ++this.count;
             return res;
         }
         public int read(byte[] b, int off, int len) throws IOException {
             int res = super.read(b, off, len);
-            if (res != -1) count += res;
+            if (res != -1) this.count += res;
             return res;
         }
-        public long getCount() { return count; }
+        public long getCount() { return this.count; }
 
         private InputStream is;
         private long count = 0L;

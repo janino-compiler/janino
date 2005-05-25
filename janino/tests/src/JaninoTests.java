@@ -265,7 +265,7 @@ class ExpressionTest extends TestCase {
      * value.
      */
     protected void runTest() throws Throwable {
-        ExpressionEvaluator ee = new ExpressionEvaluator(expression, Boolean.TYPE, new String[0], new Class[0]);
+        ExpressionEvaluator ee = new ExpressionEvaluator(this.expression, Boolean.TYPE, new String[0], new Class[0]);
         Object result = ee.evaluate(new Object[0]);
         assertTrue("Resulting expression is \"false\"", ((Boolean) result).booleanValue());
     }
@@ -305,28 +305,28 @@ class ScriptTest extends TestCase {
     protected void runTest() throws Throwable {
         ScriptEvaluator se;
         try {
-            se = new ScriptEvaluator(script, mode == RETURNS_TRUE ? Boolean.TYPE : Void.TYPE);
+            se = new ScriptEvaluator(this.script, this.mode == RETURNS_TRUE ? Boolean.TYPE : Void.TYPE);
         } catch (IOException ex) {
-            if (mode == THROWS_IO_EXCEPTION) return;
+            if (this.mode == THROWS_IO_EXCEPTION) return;
             throw ex;
         } catch (Scanner.ScanException ex) {
-            if (mode == THROWS_SCAN_EXCEPTION) return;
+            if (this.mode == THROWS_SCAN_EXCEPTION) return;
             throw ex;
         } catch (Parser.ParseException ex) {
-            if (mode == THROWS_PARSE_EXCEPTION) return;
+            if (this.mode == THROWS_PARSE_EXCEPTION) return;
             throw ex;
-        } catch (Java.CompileException ex) {
-            if (mode == THROWS_COMPILE_EXCEPTION) return;
+        } catch (CompileException ex) {
+            if (this.mode == THROWS_COMPILE_EXCEPTION) return;
             throw ex;
         }
 
-        if (mode == THROWS_IO_EXCEPTION) fail("Should have thrown IOException");
-        if (mode == THROWS_SCAN_EXCEPTION) fail("Should have thrown Scanner.ScanException");
-        if (mode == THROWS_PARSE_EXCEPTION) fail("Should have thrown Parser.ParseException");
-        if (mode == THROWS_COMPILE_EXCEPTION) fail("Should have thrown Java.CompileException");
+        if (this.mode == THROWS_IO_EXCEPTION) fail("Should have thrown IOException");
+        if (this.mode == THROWS_SCAN_EXCEPTION) fail("Should have thrown Scanner.ScanException");
+        if (this.mode == THROWS_PARSE_EXCEPTION) fail("Should have thrown Parser.ParseException");
+        if (this.mode == THROWS_COMPILE_EXCEPTION) fail("Should have thrown Java.CompileException");
 
         Object result = se.evaluate(new Object[0]);
-        if (mode == RETURNS_TRUE) {
+        if (this.mode == RETURNS_TRUE) {
             assertTrue("Script did not return \"true\"", ((Boolean) result).booleanValue());
         }
     }
