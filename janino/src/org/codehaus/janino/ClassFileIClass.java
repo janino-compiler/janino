@@ -432,11 +432,11 @@ public class ClassFileIClass extends IClass {
         );
 
         result = new IField() {
-            public Object getConstantValue() throws CompileException { return optionalConstantValue; }
-            public String getName() { return name; }
-            public IClass getType() throws CompileException { return type; }
-            public boolean isStatic() { return (fieldInfo.getAccessFlags() & Mod.STATIC) != 0; }
-            public int getAccess() { return access; }
+            public Object  getConstantValue() throws CompileException { return optionalConstantValue; }
+            public String  getName()                                  { return name; }
+            public IClass  getType() throws CompileException          { return type; }
+            public boolean isStatic()                                 { return (fieldInfo.getAccessFlags() & Mod.STATIC) != 0; }
+            public int     getAccess()                                { return access; }
         };
         this.resolvedFields.put(fieldInfo, result);
         return result;
