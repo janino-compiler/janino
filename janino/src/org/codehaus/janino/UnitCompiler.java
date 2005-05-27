@@ -890,8 +890,6 @@ public class UnitCompiler {
         return true;
     }
     /*private*/ boolean compile2(Java.IfStatement is) throws CompileException {
-        boolean tsccn, esccn;
-
         Object cv = this.getConstantValue(is.condition);
         Java.BlockStatement es = is.optionalElseStatement != null ? is.optionalElseStatement : new Java.EmptyStatement(is.thenStatement.getLocation(), is.thenStatement.getEnclosingScope());
         if (cv instanceof Boolean) {
@@ -944,10 +942,10 @@ public class UnitCompiler {
                 CodeContext.Offset eso = this.codeContext.new Offset();
                 CodeContext.Offset end = this.codeContext.new Offset();
                 this.compileBoolean(is.condition, eso, Java.Rvalue.JUMP_IF_FALSE);
-                tsccn = this.compile(is.thenStatement);
+                boolean tsccn = this.compile(is.thenStatement);
                 if (tsccn) this.writeBranch(Opcode.GOTO, end);
                 eso.set();
-                esccn = this.compile(es);
+                boolean esccn = this.compile(es);
                 end.set();
                 return tsccn || esccn;
             } else {
@@ -955,7 +953,7 @@ public class UnitCompiler {
                 // if (expr) stmt else ;
                 CodeContext.Offset end = this.codeContext.new Offset();
                 this.compileBoolean(is.condition, end, Java.Rvalue.JUMP_IF_FALSE);
-                tsccn = this.compile(is.thenStatement);
+                this.compile(is.thenStatement);
                 end.set();
                 return true;
             }
@@ -965,7 +963,7 @@ public class UnitCompiler {
                 // if (expr) ; else stmt
                 CodeContext.Offset end = this.codeContext.new Offset();
                 this.compileBoolean(is.condition, end, Java.Rvalue.JUMP_IF_TRUE);
-                esccn = this.compile(es);
+                this.compile(es);
                 end.set();
                 return true;
             } else {
@@ -2821,7 +2819,7 @@ public class UnitCompiler {
             (bo.op == "==" || bo.op == "!=") &&
             this.getConstantValue(bo.lhs) == Java.Rvalue.CONSTANT_VALUE_NULL &&
             this.getConstantValue(bo.rhs) == Java.Rvalue.CONSTANT_VALUE_NULL
-        ) return new Boolean(bo.op == "==");
+        ) return Boolean.valueOf(bo.op == "==");
 
         // "|", "^", "&", "*", "/", "%", "+", "-".
         if (
@@ -3310,7 +3308,7 @@ public class UnitCompiler {
             }
 
             // Determine scope compilationUnit.
-            if (s != null) while (!(s instanceof Java.CompilationUnit)) s = s.getEnclosingScope();
+            while (!(s instanceof Java.CompilationUnit)) s = s.getEnclosingScope();
             scopeCompilationUnit = (Java.CompilationUnit) s;
         }
 
