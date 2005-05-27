@@ -276,13 +276,11 @@ public class UnitCompiler {
         // enclosing instance.)
         if (!tbd.isStatic()) {
             final int nesting = UnitCompiler.getOuterClasses(acd).size();
-            acd.defineSyntheticField(this.resolve(acd).new IField() {
-                public Object  getConstantValue() { return null; }
-                public String  getName()          { return "this$" + (nesting - 2); }
-                public IClass  getType()          { return UnitCompiler.this.resolve(tbd.getDeclaringType()); }
-                public boolean isStatic()         { return false; }
-                public int     getAccess()        { return IClass.PACKAGE; }
-            });
+            acd.defineSyntheticField(new SimpleIField(
+                this.resolve(acd),
+                "this$" + (nesting - 2),
+                UnitCompiler.this.resolve(tbd.getDeclaringType())
+            ));
         }
         this.compile2((Java.ClassDeclaration) acd);
     }
@@ -297,13 +295,11 @@ public class UnitCompiler {
             final int nesting = ocs.size();
             if (nesting >= 2) {
                 final IClass enclosingInstanceType = this.resolve((Java.AbstractTypeDeclaration) ocs.get(1));
-                lcd.defineSyntheticField(this.resolve(lcd).new IField() {
-                    public Object  getConstantValue()                { return null; }
-                    public String  getName()                         { return "this$" + (nesting - 2); }
-                    public IClass  getType() throws CompileException { return enclosingInstanceType; }
-                    public boolean isStatic()                        { return false; }
-                    public int     getAccess()                       { return IClass.PACKAGE; }
-                });
+                lcd.defineSyntheticField(new SimpleIField(
+                    this.resolve(lcd),
+                    "this$" + (nesting - 2),
+                    enclosingInstanceType
+                ));
             }
         }
 
@@ -314,13 +310,11 @@ public class UnitCompiler {
         // Define a synthetic "this$..." field for a non-static member class.
         if ((mcd.modifiers & Mod.STATIC) == 0) {
             final int nesting = UnitCompiler.getOuterClasses(mcd).size();
-            mcd.defineSyntheticField(this.resolve(mcd).new IField() {
-                public Object  getConstantValue() { return null; }
-                public String  getName()          { return "this$" + (nesting - 2); }
-                public IClass  getType()          { return UnitCompiler.this.resolve(mcd.getDeclaringType()); }
-                public boolean isStatic()         { return false; }
-                public int     getAccess()        { return IClass.PACKAGE; }
-            });
+            mcd.defineSyntheticField(new SimpleIField(
+                this.resolve(mcd),
+                "this$" + (nesting - 2),
+                UnitCompiler.this.resolve(mcd.getDeclaringType())
+            ));
         }
         this.compile2((Java.NamedClassDeclaration) mcd);
     }
@@ -4347,13 +4341,11 @@ public class UnitCompiler {
                 } else {
                     if (!lv.finaL) this.compileError("Cannot access non-final local variable \"" + identifier + "\" from inner class");
                     final IClass lvType = lv.type;
-                    IClass.IField iField = this.resolve(icd).new IField() {
-                        public Object  getConstantValue() { return null; }
-                        public String  getName()          { return "val$" + identifier; }
-                        public IClass  getType()          { return lvType; }
-                        public boolean isStatic()         { return false; }
-                        public int     getAccess()        { return IClass.PACKAGE; }
-                    };
+                    IClass.IField iField = new SimpleIField(
+                        this.resolve(icd),
+                        "val$" + identifier,
+                        lvType
+                    );
                     icd.defineSyntheticField(iField);
                     return new Java.FieldAccess(
                         location,                        // location
@@ -5127,13 +5119,11 @@ public class UnitCompiler {
             IClass iic = this.resolve((Java.AbstractTypeDeclaration) inner);
             final Java.TypeDeclaration outer = (Java.TypeDeclaration) path.get(i + 1);
             final IClass oic = this.resolve((Java.AbstractTypeDeclaration) outer);
-            inner.defineSyntheticField(iic.new IField() {
-                public Object  getConstantValue() { return null; }
-                public String  getName()          { return fieldName; }
-                public IClass  getType()          { return oic; }
-                public boolean isStatic()         { return false; }
-                public int     getAccess()        { return IClass.PACKAGE; }
-            });
+            inner.defineSyntheticField(new SimpleIField(
+                iic,
+                fieldName,
+                oic
+            ));
             this.writeOpcode(located, Opcode.GETFIELD);
             this.writeConstantFieldrefInfo(
                 located,
@@ -6631,6 +6621,30 @@ public class UnitCompiler {
             return at;
         }
     }
+
+    /**
+     * Short-hand implementation of {@link IClass.IField} that implements a
+     * non-constant, non-static, package-accessible field.
+     */
+    public static class SimpleIField extends IClass.IField {
+        private final String name;
+        private final IClass type;
+
+        public SimpleIField(
+            IClass declaringIClass,
+            String name,
+            IClass type
+        ) {
+            declaringIClass.super();
+            this.name = name;
+            this.type = type;
+        }
+        public Object  getConstantValue() { return null; }
+        public String  getName()          { return this.name; }
+        public IClass  getType()          { return this.type; }
+        public boolean isStatic()         { return false; }
+        public int     getAccess()        { return IClass.PACKAGE; }
+    };
 
     // Used to write byte code while compiling one constructor/method.
     private CodeContext codeContext = null;
