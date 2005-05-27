@@ -73,6 +73,10 @@ public abstract class Enumerator {
         return that.getClass() == this.getClass() && this.value == ((Enumerator) that).value;
     }
 
+    public int hashCode() {
+        return this.value;
+    }
+
     /**
      * Examines the given {@link Class} and its superclasses for <code>public static final</code>
      * fields of the same type as <code>this</code>, and maps their names to their values.

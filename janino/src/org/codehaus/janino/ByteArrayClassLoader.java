@@ -113,6 +113,19 @@ public class ByteArrayClassLoader extends ClassLoader {
         }
         return true;
     }
+    public int hashCode() {
+        int hc = this.getParent().hashCode();
+
+        for (Iterator it = this.classes.entrySet().iterator(); it.hasNext();) {
+            Map.Entry me = (Map.Entry) it.next();
+            hc ^= me.getKey().hashCode();
+            byte[] ba = (byte[]) me.getValue();
+            for (int i = 0; i < ba.length; ++i) {
+                hc = (31 * hc) ^ ba[i];
+            }
+        }
+        return hc;
+    }
 
     private final Map classes; // String className => byte[] data
 }

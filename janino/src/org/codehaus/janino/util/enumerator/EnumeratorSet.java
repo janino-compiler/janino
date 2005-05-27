@@ -117,6 +117,10 @@ public abstract class EnumeratorSet {
         return that.getClass() == this.getClass() && this.values == ((EnumeratorSet) that).values;
     }
 
+    public int hashCode() {
+        return this.values;
+    }
+
     /**
      * Examines the given {@link Class} and its superclasses for <code>public static final</code>
      * fields of the same type as <code>this</code>, and maps their names to their values.
