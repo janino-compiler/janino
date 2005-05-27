@@ -272,10 +272,10 @@ public class Compiler {
         this.benchmark.report("Boot class path",         optionalBootClassPath        );
         this.benchmark.report("Destination directory",   optionalDestinationDirectory );
         this.benchmark.report("Character encoding",      optionalCharacterEncoding    );
-        this.benchmark.report("Verbose",                 new Boolean(verbose)         );
+        this.benchmark.report("Verbose",                 Boolean.valueOf(verbose)     );
         this.benchmark.report("Debugging information",   debuggingInformation         );
         this.benchmark.report("Warning handle patterns", optionalWarningHandlePatterns);
-        this.benchmark.report("Rebuild",                 new Boolean(rebuild)         );
+        this.benchmark.report("Rebuild",                 Boolean.valueOf(rebuild)     );
     }
 
     /**
