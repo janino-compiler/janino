@@ -251,7 +251,10 @@ public class ExpressionEvaluator extends EvaluatorBase {
         if (optionalExpressionType == Void.TYPE) {
 
             // ExpressionEvaluator with a expression type "void" is a simple expression statement.
-            block.addStatement(parser.parseExpressionStatement((Java.Scope) block));
+            block.addStatement(new Java.ExpressionStatement(
+                parser.parseExpression(block).toRvalueOrPE(),
+                block
+            ));
         } else {
 
             // Compute expression value
