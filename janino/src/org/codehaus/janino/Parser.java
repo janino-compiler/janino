@@ -1031,7 +1031,7 @@ public class Parser {
             Java.LocalVariableDeclarationStatement lvds = new Java.LocalVariableDeclarationStatement(
                 location,                           // location
                 enclosingBlock,                     // declaringBlock
-                (short) Mod.FINAL,                  // modifiers
+                Mod.FINAL,                          // modifiers
                 variableType,                       // type
                 this.parseLocalVariableDeclarators( // variableDeclarators
                     (Java.Scope) enclosingBlock, // enclosingScope
