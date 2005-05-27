@@ -63,7 +63,7 @@ public class DemoBase {
                 type == Integer.TYPE   ? Integer.class   :
                 type == Long.TYPE      ? Long.class      :
                 type == Float.TYPE     ? Float.class     :
-                type == Double.TYPE    ? Double.class    : type
+                type == Double.TYPE    ? Double.class    : Void.TYPE
             );
         }
 
@@ -104,18 +104,16 @@ public class DemoBase {
         }
 
         // Automagically convert primitive type names.
-        s = (
-            s.equals("void"   ) ? "V" :
-            s.equals("boolean") ? "Z" :
-            s.equals("char"   ) ? "C" :
-            s.equals("byte"   ) ? "B" :
-            s.equals("short"  ) ? "S" :
-            s.equals("int"    ) ? "I" :
-            s.equals("long"   ) ? "J" :
-            s.equals("float"  ) ? "F" :
-            s.equals("double" ) ? "D" :
-            s
-        );
+        if (s.equals("void"   )) { s = "V"; } else
+        if (s.equals("boolean")) { s = "Z"; } else
+        if (s.equals("char"   )) { s = "C"; } else
+        if (s.equals("byte"   )) { s = "B"; } else
+        if (s.equals("short"  )) { s = "S"; } else
+        if (s.equals("int"    )) { s = "I"; } else
+        if (s.equals("long"   )) { s = "J"; } else
+        if (s.equals("float"  )) { s = "F"; } else
+        if (s.equals("double" )) { s = "D"; }
+
         while (--brackets >= 0) s = '[' + s;
         try {
             return Class.forName(s);
