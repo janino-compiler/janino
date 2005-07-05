@@ -4173,7 +4173,14 @@ public class UnitCompiler {
                     if (
                         (fd.modifiers & Mod.FINAL) != 0 &&
                         vd.optionalInitializer != null
-                    ) return UnitCompiler.this.getConstantValue(vd.optionalInitializer);
+                    ) {
+                        Object constantInitializerValue = UnitCompiler.this.getConstantValue(vd.optionalInitializer);
+                        if (constantInitializerValue != null) return UnitCompiler.this.assignmentConversion(
+                            (Java.Located) vd.optionalInitializer, // located
+                            constantInitializerValue,              // value
+                            this.getType()                         // targetType
+                        );
+                    }
                     return null;
                 }
             };
@@ -5620,13 +5627,13 @@ public class UnitCompiler {
     }
 
     /**
-     * Implements "assignment conversion" (5.2).
+     * Implements "assignment conversion" (JLS2 5.2).
      */
     private void assignmentConversion(
         Java.Located located,
-        IClass  sourceType,
-        IClass  targetType,
-        Object  optionalConstantValue
+        IClass       sourceType,
+        IClass       targetType,
+        Object       optionalConstantValue
     ) throws CompileException {
         if (UnitCompiler.DEBUG) System.out.println("assignmentConversion(" + sourceType + ", " + targetType + ", " + optionalConstantValue + ")");
 
@@ -5648,6 +5655,83 @@ public class UnitCompiler {
         }
 
         this.compileError("Assignment conversion not possible from type \"" + sourceType + "\" to type \"" + targetType + "\"", located.getLocation());
+    }
+
+    /**
+     * Implements "assignment conversion" (JLS2 5.2) on a constant value.
+     */
+    private Object assignmentConversion(
+        Java.Located located,
+        Object       value,
+        IClass       targetType
+    ) throws CompileException {
+        Object result;
+
+        if (targetType == IClass.BYTE) {
+            result = value instanceof Byte ? value : null;
+        } else
+        if (targetType == IClass.SHORT) {
+            result = (
+                value instanceof Short ? value :
+                value instanceof Byte  ? new Short(((Number) value).shortValue()) :
+                null
+            );
+        } else
+        if (targetType == IClass.INT) {
+            result = (
+                value instanceof Integer ? value :
+                (
+                    value instanceof Byte
+                    || value instanceof Short
+                ) ? new Integer(((Number) value).intValue()) :
+                value instanceof Character ? new Integer(((Character) value).charValue()) :
+                null
+            );
+        } else
+        if (targetType == IClass.LONG) {
+            result = (
+                value instanceof Long ? value :
+                (
+                    value instanceof Byte
+                    || value instanceof Short
+                    || value instanceof Integer
+                ) ? new Long(((Number) value).longValue()) :
+                value instanceof Character ? new Long(((Character) value).charValue()) :
+                null
+            );
+        } else
+        if (targetType == IClass.FLOAT) {
+            result = (
+                value instanceof Float ? value :
+                (
+                    value instanceof Byte
+                    || value instanceof Short
+                    || value instanceof Integer
+                    || value instanceof Long
+                ) ? new Float(((Number) value).floatValue()) :
+                value instanceof Character ? new Float(((Character) value).charValue()) :
+                null
+            );
+        } else
+        if (targetType == IClass.DOUBLE) {
+            result = (
+                value instanceof Double ? value :
+                (
+                    value instanceof Byte
+                    || value instanceof Short
+                    || value instanceof Integer
+                    || value instanceof Long
+                    || value instanceof Float
+                ) ? new Double(((Number) value).doubleValue()) :
+                value instanceof Character ? new Double(((Character) value).charValue()) :
+                null
+            );
+        } else
+        {
+            result = null;
+        }
+        if (result == null) this.compileError("Cannot convert constant of type \"" + value.getClass().getName() + "\" to type \"" + targetType.toString() + "\"", located.getLocation());
+        return result;
     }
 
     /**
@@ -5935,7 +6019,7 @@ public class UnitCompiler {
     }, UnitCompiler.PRIMITIVE_NARROWING_CONVERSIONS); }
 
     /**
-     * Check if "constant primitive assignment conversion" (JLS 5.2) is possible.
+     * Check if "constant primitive assignment conversion" (JLS 5.2, paragraph 1) is possible.
      * @param constantValue The constant value that is to be converted
      * @param targetType The type to convert to
      */
