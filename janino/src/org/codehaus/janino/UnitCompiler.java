@@ -5660,75 +5660,100 @@ public class UnitCompiler {
     /**
      * Implements "assignment conversion" (JLS2 5.2) on a constant value.
      */
-    private Object assignmentConversion(
+    /*private*/ Object assignmentConversion(
         Java.Located located,
         Object       value,
         IClass       targetType
     ) throws CompileException {
-        Object result;
+        Object result = null;
 
+        if (targetType == IClass.BOOLEAN) {
+            if (value instanceof Boolean) result = value;
+        } else
+        if (targetType == this.iClassLoader.STRING) {
+            if (value instanceof String) result = value;
+        } else
         if (targetType == IClass.BYTE) {
-            result = value instanceof Byte ? value : null;
+            if (value instanceof Byte) {
+                result = value;
+            } else
+            if (value instanceof Short || value instanceof Integer) {
+                int x = ((Number) value).intValue();
+                if (x >= Byte.MIN_VALUE && x <= Byte.MAX_VALUE) result = new Byte((byte) x);
+            } else
+            if (value instanceof Character) {
+                int x = ((Character) value).charValue();
+                if (x >= Byte.MIN_VALUE && x <= Byte.MAX_VALUE) result = new Byte((byte) x);
+            }
         } else
         if (targetType == IClass.SHORT) {
-            result = (
-                value instanceof Short ? value :
-                value instanceof Byte  ? new Short(((Number) value).shortValue()) :
-                null
-            );
+            if (value instanceof Byte) {
+                result = new Short(((Number) value).shortValue());
+            } else
+            if (value instanceof Short) {
+                result = value;
+            } else
+            if (value instanceof Character) {
+                int x = ((Character) value).charValue();
+                if (x >= Short.MIN_VALUE && x <= Short.MAX_VALUE) result = new Short((short) x);
+            } else
+            if (value instanceof Integer) {
+                int x = ((Integer) value).intValue();
+                if (x >= Short.MIN_VALUE && x <= Short.MAX_VALUE) result = new Short((short) x);
+            }
+        } else
+        if (targetType == IClass.CHAR) {
+            if (value instanceof Short) {
+                result = value;
+            } else
+            if (value instanceof Byte || value instanceof Short || value instanceof Integer) {
+                int x = ((Number) value).intValue();
+                if (x >= Character.MIN_VALUE && x <= Character.MAX_VALUE) result = new Character((char) x);
+            }
         } else
         if (targetType == IClass.INT) {
-            result = (
-                value instanceof Integer ? value :
-                (
-                    value instanceof Byte
-                    || value instanceof Short
-                ) ? new Integer(((Number) value).intValue()) :
-                value instanceof Character ? new Integer(((Character) value).charValue()) :
-                null
-            );
+            if (value instanceof Integer) {
+                result = value;
+            } else
+            if (value instanceof Byte || value instanceof Short) {
+                result = new Integer(((Number) value).intValue());
+            } else
+            if (value instanceof Character) {
+                result = new Integer(((Character) value).charValue());
+            }
         } else
         if (targetType == IClass.LONG) {
-            result = (
-                value instanceof Long ? value :
-                (
-                    value instanceof Byte
-                    || value instanceof Short
-                    || value instanceof Integer
-                ) ? new Long(((Number) value).longValue()) :
-                value instanceof Character ? new Long(((Character) value).charValue()) :
-                null
-            );
+            if (value instanceof Long) {
+                result = value;
+            } else
+            if (value instanceof Byte || value instanceof Short || value instanceof Integer) {
+                result = new Long(((Number) value).longValue());
+            } else
+            if (value instanceof Character) {
+                result = new Long(((Character) value).charValue());
+            }
         } else
         if (targetType == IClass.FLOAT) {
-            result = (
-                value instanceof Float ? value :
-                (
-                    value instanceof Byte
-                    || value instanceof Short
-                    || value instanceof Integer
-                    || value instanceof Long
-                ) ? new Float(((Number) value).floatValue()) :
-                value instanceof Character ? new Float(((Character) value).charValue()) :
-                null
-            );
+            if (value instanceof Float) {
+                result = value;
+            } else
+            if (value instanceof Byte || value instanceof Short || value instanceof Integer || value instanceof Long) {
+                result = new Float(((Number) value).floatValue());
+            } else
+            if (value instanceof Character) {
+                result = new Float(((Character) value).charValue());
+            }
         } else
         if (targetType == IClass.DOUBLE) {
-            result = (
-                value instanceof Double ? value :
-                (
-                    value instanceof Byte
-                    || value instanceof Short
-                    || value instanceof Integer
-                    || value instanceof Long
-                    || value instanceof Float
-                ) ? new Double(((Number) value).doubleValue()) :
-                value instanceof Character ? new Double(((Character) value).charValue()) :
-                null
-            );
-        } else
-        {
-            result = null;
+            if (value instanceof Double) {
+                result = value;
+            } else
+            if (value instanceof Byte || value instanceof Short || value instanceof Integer || value instanceof Long || value instanceof Float) {
+                result = new Double(((Number) value).doubleValue());
+            } else
+            if (value instanceof Character) {
+                result = new Double(((Character) value).charValue());
+            }
         }
         if (result == null) this.compileError("Cannot convert constant of type \"" + value.getClass().getName() + "\" to type \"" + targetType.toString() + "\"", located.getLocation());
         return result;
