@@ -1989,7 +1989,7 @@ public class Java {
     }
 
     /**
-     * Representation of an access to the current object or an enclosing instance.
+     * Representation of an access to the innermost enclosing instance.
      */
     public static final class ThisReference extends Rvalue {
 
@@ -2006,15 +2006,6 @@ public class Java {
         final Scope scope;
 
         // Compile time members.
-
-        public ThisReference(
-            Location location,
-            IClass   iClass
-        ) {
-            super(location);
-            this.scope  = null;
-            this.iClass = iClass;
-        }
 
         IClass iClass = null;
 
