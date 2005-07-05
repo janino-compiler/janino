@@ -1322,13 +1322,13 @@ public class UnitCompiler {
         // Do flow analysis.
         if (UnitCompiler.DEBUG) {
             try {
-                codeContext.flowAnalysis(this.toString());
+                codeContext.flowAnalysis(fd.toString());
             } catch (RuntimeException ex) {
                 ex.printStackTrace();
                 ;
             }
         } else {
-            codeContext.flowAnalysis(this.toString());
+            codeContext.flowAnalysis(fd.toString());
         }
 
         // Add the code context as a code attribute to the MethodInfo.
