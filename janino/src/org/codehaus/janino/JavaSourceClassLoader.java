@@ -57,7 +57,7 @@ import org.codehaus.janino.util.resource.ResourceFinder;
 public class JavaSourceClassLoader extends ClassLoader {
 
     public interface ProtectionDomainFactory {
-        ProtectionDomain getProtectionDomain(String name);
+        ProtectionDomain getProtectionDomain(String name) throws Exception;
     }
     
     /**
@@ -309,12 +309,20 @@ public class JavaSourceClassLoader extends ClassLoader {
         byte[] ba = bos.toByteArray();
 
         // Load the byte code into the virtual machine.
+        ProtectionDomain domain = null;
         if (this.protectionDomainFactory != null) {
             String sourceName = ClassFile.getSourceResourceName(cf.getThisClassName());
-            ProtectionDomain domain = this.protectionDomainFactory.getProtectionDomain(sourceName);
-            if (domain != null) return this.defineClass(name, ba, 0, ba.length, domain);
+            try {
+                domain = this.protectionDomainFactory.getProtectionDomain(sourceName);
+            } catch (Exception ex) {
+                throw new ClassNotFoundException(name, ex);
+            }
         }
-        return this.defineClass(name, ba, 0, ba.length);
+        return (
+            domain != null ?
+            this.defineClass(name, ba, 0, ba.length, domain) :
+            this.defineClass(name, ba, 0, ba.length)
+        );
     }
 
     public void setProtectionDomainFactory(ProtectionDomainFactory protectionDomainFactory) {
