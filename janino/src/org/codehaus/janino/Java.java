@@ -1723,7 +1723,7 @@ public class Java {
         public static final int DOUBLE  = 7;
         public static final int BOOLEAN = 8;
 
-        public final int index;
+        public /*final*/ int index;
     }
 
     public static final class ReferenceType extends Type {

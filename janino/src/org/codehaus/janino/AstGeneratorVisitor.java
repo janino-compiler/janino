@@ -157,7 +157,7 @@ public class AstGeneratorVisitor implements Visitor.ComprehensiveVisitor {
         write();
         
         // generator methods
-        acd.baseType.visit(this);
+        acd.baseType.visit((Visitor.TypeVisitor) this);
 
         generateClassDeclarationBodyMethods(acd);
     }
@@ -182,7 +182,7 @@ public class AstGeneratorVisitor implements Visitor.ComprehensiveVisitor {
 
         // generator methods
         if(lcd.optionalExtendedType!=null) {
-            lcd.optionalExtendedType.visit(this);
+            lcd.optionalExtendedType.visit((Visitor.TypeVisitor) this);
         }
 
         generateTypes(lcd.implementedTypes);
@@ -209,7 +209,7 @@ public class AstGeneratorVisitor implements Visitor.ComprehensiveVisitor {
 
         generateTypes(pmcd.implementedTypes);
         if(pmcd.optionalExtendedType!=null) {
-            pmcd.optionalExtendedType.visit(this);
+            pmcd.optionalExtendedType.visit((Visitor.TypeVisitor) this);
         }
 
         generateClassDeclarationBodyMethods(pmcd);
@@ -291,7 +291,7 @@ public class AstGeneratorVisitor implements Visitor.ComprehensiveVisitor {
         write();
         
         if(mcd.optionalExtendedType!=null) {
-            mcd.optionalExtendedType.visit(this);
+            mcd.optionalExtendedType.visit((Visitor.TypeVisitor) this);
         }
         generateTypes(mcd.implementedTypes);
         generateClassDeclarationBodyMethods(mcd);
@@ -326,7 +326,7 @@ public class AstGeneratorVisitor implements Visitor.ComprehensiveVisitor {
         generateTypes(cd.thrownExceptions);
 
         if(cd.optionalExplicitConstructorInvocation!=null) {
-            cd.optionalExplicitConstructorInvocation.visit(this);
+            cd.optionalExplicitConstructorInvocation.visit((Visitor.ConstructorInvocationVisitor) this);
         }
         if(cd.optionalBody!=null) {
             cd.optionalBody.visit(this);
@@ -384,7 +384,7 @@ public class AstGeneratorVisitor implements Visitor.ComprehensiveVisitor {
         write();
 
         if(md.type!=null) {
-            md.type.visit(this);
+            md.type.visit((Visitor.TypeVisitor) this);
         }
         generateTypes(md.thrownExceptions);
         generateFormalParameters(md.formalParameters);
@@ -408,7 +408,7 @@ public class AstGeneratorVisitor implements Visitor.ComprehensiveVisitor {
         write("}");
         write();
 
-        fd.type.visit(this);
+        fd.type.visit((Visitor.TypeVisitor) this);
         generateVariableDeclarators(fd.variableDeclarators);
     }
 
@@ -457,7 +457,7 @@ public class AstGeneratorVisitor implements Visitor.ComprehensiveVisitor {
         write("}");
         write();
         
-        es.rvalue.visit(this);
+        es.rvalue.visit((Visitor.RvalueVisitor) this);
     }
 
     public void visitIfStatement(Java.IfStatement is) {
@@ -473,7 +473,7 @@ public class AstGeneratorVisitor implements Visitor.ComprehensiveVisitor {
         write("}");
         write();
         
-        is.condition.visit(this);
+        is.condition.visit((Visitor.RvalueVisitor) this);
         is.thenStatement.visit(this);
         if(is.optionalElseStatement!=null) {
             is.optionalElseStatement.visit(this);
@@ -499,7 +499,7 @@ public class AstGeneratorVisitor implements Visitor.ComprehensiveVisitor {
             fs.optionalInit.visit(this);
         }
         if(fs.optionalCondition!=null) {
-            fs.optionalCondition.visit(this);
+            fs.optionalCondition.visit((Visitor.RvalueVisitor) this);
         }
         generateRvalues(fs.optionalUpdate);
         if(fs.body!=null) {
@@ -521,7 +521,7 @@ public class AstGeneratorVisitor implements Visitor.ComprehensiveVisitor {
         write("}");
         write();
         
-        ws.condition.visit(this);
+        ws.condition.visit((Visitor.RvalueVisitor) this);
         if(ws.body!=null) {
             ws.body.visit(this);
         }
@@ -581,7 +581,7 @@ public class AstGeneratorVisitor implements Visitor.ComprehensiveVisitor {
         write("}");
         write();
         
-        ss.condition.visit(this);
+        ss.condition.visit((Visitor.RvalueVisitor) this);
         
         for(Iterator it = ss.sbsgs.iterator(); it.hasNext();) {
             generateSwitchBlockStatementGroup((Java.SwitchBlockStatementGroup) it.next());
@@ -602,7 +602,7 @@ public class AstGeneratorVisitor implements Visitor.ComprehensiveVisitor {
         write();
         
         //
-        ss.expression.visit(this);
+        ss.expression.visit((Visitor.RvalueVisitor) this);
         ss.body.visit(this);
     }
 
@@ -620,7 +620,7 @@ public class AstGeneratorVisitor implements Visitor.ComprehensiveVisitor {
         write();
         
         ds.body.visit(this);
-        ds.condition.visit(this);
+        ds.condition.visit((Visitor.RvalueVisitor) this);
     }
 
     public void visitLocalVariableDeclarationStatement(Java.LocalVariableDeclarationStatement lvds) {
@@ -636,7 +636,7 @@ public class AstGeneratorVisitor implements Visitor.ComprehensiveVisitor {
         write("}");
         write();
         
-        lvds.type.visit(this);
+        lvds.type.visit((Visitor.TypeVisitor) this);
         generateVariableDeclarators(lvds.variableDeclarators);
     }
 
@@ -652,7 +652,7 @@ public class AstGeneratorVisitor implements Visitor.ComprehensiveVisitor {
         
         //
         if(rs.optionalReturnValue!=null) {
-            rs.optionalReturnValue.visit(this);
+            rs.optionalReturnValue.visit((Visitor.RvalueVisitor) this);
         }
     }
 
@@ -665,7 +665,7 @@ public class AstGeneratorVisitor implements Visitor.ComprehensiveVisitor {
         write("}");
         write();
         
-        ts.expression.visit(this);
+        ts.expression.visit((Visitor.RvalueVisitor) this);
     }
 
     public void visitBreakStatement(Java.BreakStatement bs) {
@@ -720,7 +720,7 @@ public class AstGeneratorVisitor implements Visitor.ComprehensiveVisitor {
         write();
 
         if(vd.optionalInitializer!=null) {
-            vd.optionalInitializer.visit(this);
+            vd.optionalInitializer.visit((Visitor.RvalueVisitor) this);
         }
     }
 
@@ -732,7 +732,7 @@ public class AstGeneratorVisitor implements Visitor.ComprehensiveVisitor {
         write("}");
         write();
 
-        fp.type.visit(this);
+        fp.type.visit((Visitor.TypeVisitor) this);
     }
 
     public void visitNewAnonymousClassInstance(Java.NewAnonymousClassInstance naci) {
@@ -747,7 +747,7 @@ public class AstGeneratorVisitor implements Visitor.ComprehensiveVisitor {
         write();
 
         if(naci.optionalQualification!=null) {
-            naci.optionalQualification.visit(this);
+            naci.optionalQualification.visit((Visitor.RvalueVisitor) this);
         }
         naci.anonymousClassDeclaration.visit(this);
         generateRvalues(naci.arguments);
@@ -806,7 +806,7 @@ public class AstGeneratorVisitor implements Visitor.ComprehensiveVisitor {
         write();
 
         if(sci.optionalQualification!=null) {
-            sci.optionalQualification.visit(this);
+            sci.optionalQualification.visit((Visitor.RvalueVisitor) this);
         }
         generateRvalues(sci.arguments);
     }
@@ -828,9 +828,9 @@ public class AstGeneratorVisitor implements Visitor.ComprehensiveVisitor {
         write();
 
         if(nci.optionalQualification!=null) {
-            nci.optionalQualification.visit(this);
+            nci.optionalQualification.visit((Visitor.RvalueVisitor) this);
         }
-        nci.type.visit(this);
+        nci.type.visit((Visitor.TypeVisitor) this);
         generateRvalues(nci.arguments);
     }
 
@@ -847,8 +847,8 @@ public class AstGeneratorVisitor implements Visitor.ComprehensiveVisitor {
         write("}");
         write();
 
-        a.lhs.visit(this);
-        a.rhs.visit(this);
+        a.lhs.visit((Visitor.LvalueVisitor) this);
+        a.rhs.visit((Visitor.RvalueVisitor) this);
     }
 
     public void visitArrayInitializer(Java.ArrayInitializer ai) {
@@ -933,7 +933,7 @@ public class AstGeneratorVisitor implements Visitor.ComprehensiveVisitor {
         write("}");
         write();
 
-        rmt.rvalue.visit(this);
+        rmt.rvalue.visit((Visitor.RvalueVisitor) this);
     }
 
     public void visitArrayType(Java.ArrayType at) {
@@ -947,7 +947,7 @@ public class AstGeneratorVisitor implements Visitor.ComprehensiveVisitor {
         write("}");
         write();
 
-        at.componentType.visit(this);
+        at.componentType.visit((Visitor.TypeVisitor) this);
     }
 
     public void visitAmbiguousName(Java.AmbiguousName an) {
@@ -1029,7 +1029,7 @@ public class AstGeneratorVisitor implements Visitor.ComprehensiveVisitor {
         write("}");
         write();
 
-        al.lhs.visit(this);
+        al.lhs.visit((Visitor.RvalueVisitor) this);
     }
 
     public void visitThisReference(Java.ThisReference tr) {
@@ -1057,7 +1057,7 @@ public class AstGeneratorVisitor implements Visitor.ComprehensiveVisitor {
         write("}");
         write();
 
-        qtr.qualification.visit(this);
+        qtr.qualification.visit((Visitor.TypeVisitor) this);
     }
 
     public void visitClassLiteral(Java.ClassLiteral cl) {
@@ -1072,7 +1072,7 @@ public class AstGeneratorVisitor implements Visitor.ComprehensiveVisitor {
         write("}");
         write();
 
-        cl.type.visit(this);
+        cl.type.visit((Visitor.TypeVisitor) this);
     }
 
     public void visitConditionalExpression(Java.ConditionalExpression ce) {
@@ -1089,9 +1089,9 @@ public class AstGeneratorVisitor implements Visitor.ComprehensiveVisitor {
         write("}");
         write();
 
-        ce.lhs.visit(this);
-        ce.mhs.visit(this);
-        ce.rhs.visit(this);
+        ce.lhs.visit((Visitor.RvalueVisitor) this);
+        ce.mhs.visit((Visitor.RvalueVisitor) this);
+        ce.rhs.visit((Visitor.RvalueVisitor) this);
     }
 
     public void visitCrement(Java.Crement c) {
@@ -1113,7 +1113,7 @@ public class AstGeneratorVisitor implements Visitor.ComprehensiveVisitor {
         write("}");
         write();
 
-        c.operand.visit(this);
+        c.operand.visit((Visitor.LvalueVisitor) this);
     }
 
     public void visitArrayAccessExpression(Java.ArrayAccessExpression aae) {
@@ -1132,8 +1132,8 @@ public class AstGeneratorVisitor implements Visitor.ComprehensiveVisitor {
         write("}");
         write();
 
-        aae.lhs.visit(this);
-        aae.index.visit(this);
+        aae.lhs.visit((Visitor.RvalueVisitor) this);
+        aae.index.visit((Visitor.RvalueVisitor) this);
     }
 
     public void visitFieldAccessExpression(Java.FieldAccessExpression fae) {
@@ -1164,7 +1164,7 @@ public class AstGeneratorVisitor implements Visitor.ComprehensiveVisitor {
         write("}");
         write();
 
-        uo.operand.visit(this);
+        uo.operand.visit((Visitor.RvalueVisitor) this);
     }
 
     public void visitInstanceof(Java.Instanceof io) {
@@ -1180,8 +1180,8 @@ public class AstGeneratorVisitor implements Visitor.ComprehensiveVisitor {
         write("}");
         write();
 
-        io.lhs.visit(this);
-        io.rhs.visit(this);
+        io.lhs.visit((Visitor.RvalueVisitor) this);
+        io.rhs.visit((Visitor.TypeVisitor) this);
     }
 
     public void visitBinaryOperation(Java.BinaryOperation bo) {
@@ -1199,8 +1199,8 @@ public class AstGeneratorVisitor implements Visitor.ComprehensiveVisitor {
         write("}");
         write();
 
-        bo.lhs.visit(this);
-        bo.rhs.visit(this);
+        bo.lhs.visit((Visitor.RvalueVisitor) this);
+        bo.rhs.visit((Visitor.RvalueVisitor) this);
     }
 
     public void visitCast(Java.Cast c) {
@@ -1216,8 +1216,8 @@ public class AstGeneratorVisitor implements Visitor.ComprehensiveVisitor {
         write("}");
         write();
 
-        c.targetType.visit(this);
-        c.value.visit(this);
+        c.targetType.visit((Visitor.TypeVisitor) this);
+        c.value.visit((Visitor.RvalueVisitor) this);
     }
 
     public void visitSuperclassMethodInvocation(Java.SuperclassMethodInvocation smi) {
@@ -1263,7 +1263,7 @@ public class AstGeneratorVisitor implements Visitor.ComprehensiveVisitor {
         write("}");
         write();
 
-        na.type.visit(this);
+        na.type.visit((Visitor.TypeVisitor) this);
         generateRvalues(na.dimExprs);
     }
 
@@ -1343,7 +1343,7 @@ public class AstGeneratorVisitor implements Visitor.ComprehensiveVisitor {
         write("}");
         write();
 
-        pe.value.visit(this);
+        pe.value.visit((Visitor.RvalueVisitor) this);
     }
 
     
@@ -1417,7 +1417,7 @@ public class AstGeneratorVisitor implements Visitor.ComprehensiveVisitor {
 
         // generate methods
         for(int i = 0; i < types.length; i++) {
-            types[i].visit(this);
+            types[i].visit((Visitor.TypeVisitor) this);
         }
     }
 
@@ -1495,7 +1495,7 @@ public class AstGeneratorVisitor implements Visitor.ComprehensiveVisitor {
         
         //
         for(Iterator it = sbsg.caseLabels.iterator(); it.hasNext();) {
-            ((Java.Rvalue) it.next()).visit(this);
+            ((Java.Rvalue) it.next()).visit((Visitor.RvalueVisitor) this);
         }
         for(Iterator it = sbsg.blockStatements.iterator(); it.hasNext();) {
             ((Java.BlockStatement) it.next()).visit(this);
@@ -1523,7 +1523,7 @@ public class AstGeneratorVisitor implements Visitor.ComprehensiveVisitor {
         write();
         
         for(int i = 0; i < values.length; i++) {
-            values[i].visit(this);
+            values[i].visit((Visitor.RvalueVisitor) this);
         }
     }
 

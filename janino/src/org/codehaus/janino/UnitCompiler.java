@@ -2824,7 +2824,7 @@ public class UnitCompiler {
             (bo.op == "==" || bo.op == "!=") &&
             this.getConstantValue(bo.lhs) == Java.Rvalue.CONSTANT_VALUE_NULL &&
             this.getConstantValue(bo.rhs) == Java.Rvalue.CONSTANT_VALUE_NULL
-        ) return Boolean.valueOf(bo.op == "==");
+        ) return bo.op == "==" ? Boolean.TRUE : Boolean.FALSE;
 
         // "|", "^", "&", "*", "/", "%", "+", "-".
         if (
