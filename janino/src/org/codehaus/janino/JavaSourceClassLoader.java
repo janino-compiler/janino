@@ -39,6 +39,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 
+import java.security.ProtectionDomain;
+
 import org.codehaus.janino.util.ClassFile;
 import org.codehaus.janino.util.TunnelException;
 import org.codehaus.janino.util.enumerator.EnumeratorFormatException;
@@ -54,6 +56,10 @@ import org.codehaus.janino.util.resource.ResourceFinder;
  */
 public class JavaSourceClassLoader extends ClassLoader {
 
+    public interface ProtectionDomainFactory {
+        ProtectionDomain getProtectionDomain(String name);
+    }
+    
     /**
      * Read Java<sup>TM</sup> source code for a given class name, scan, parse, compile and load
      * it into the virtual machine, and invoke its "main()" method.
@@ -303,11 +309,21 @@ public class JavaSourceClassLoader extends ClassLoader {
         byte[] ba = bos.toByteArray();
 
         // Load the byte code into the virtual machine.
+        if (this.protectionDomainFactory != null) {
+            String sourceName = ClassFile.getSourceResourceName(cf.getThisClassName());
+            ProtectionDomain domain = this.protectionDomainFactory.getProtectionDomain(sourceName);
+            if (domain != null) return this.defineClass(name, ba, 0, ba.length, domain);
+        }
         return this.defineClass(name, ba, 0, ba.length);
+    }
+
+    public void setProtectionDomainFactory(ProtectionDomainFactory protectionDomainFactory) {
+        this.protectionDomainFactory = protectionDomainFactory;
     }
 
     private final IClassLoader         iClassLoader;
     private final DebuggingInformation debuggingInformation;
+    private ProtectionDomainFactory    protectionDomainFactory;
 
     /**
      * Collection of parsed, but uncompiled compilation units.
