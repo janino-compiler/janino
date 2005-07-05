@@ -2377,16 +2377,27 @@ public class UnitCompiler {
         if (mi.optionalTarget == null) {
 
             // JLS2 6.5.7.1, 15.12.4.1.1.1
-            Java.Scope s;
-            for (s = mi.scope; !(s instanceof Java.TypeBodyDeclaration); s = s.getEnclosingScope());
-            Java.TypeBodyDeclaration scopeTBD = (Java.TypeBodyDeclaration) s;
+            Java.TypeBodyDeclaration scopeTBD;
+            Java.ClassDeclaration    scopeClassDeclaration;
+            {
+                Java.Scope s;
+                for (s = mi.scope; !(s instanceof Java.TypeBodyDeclaration); s = s.getEnclosingScope());
+                scopeTBD = (Java.TypeBodyDeclaration) s;
+                if (!(s instanceof Java.ClassDeclaration)) s = s.getEnclosingScope();
+                scopeClassDeclaration = (Java.ClassDeclaration) s;
+            }
             if (iMethod.isStatic()) {
                 // JLS2 15.12.4.1.1.1.1
                 ;
             } else {
                 // JLS2 15.12.4.1.1.1.2
                 if (scopeTBD.isStatic()) this.compileError("Instance method \"" + mi.methodName + "\" cannot be invoked in static context", mi.getLocation());
-                this.referenceThis((Java.Located) mi);
+                this.referenceThis(
+                    (Java.Located) mi,           // located
+                    scopeClassDeclaration,       // declaringClass
+                    scopeTBD,                    // declaringTypeBodyDeclaration
+                    iMethod.getDeclaringIClass() // targetIClass
+                );
             }
         } else {
 
@@ -2529,7 +2540,7 @@ public class UnitCompiler {
                     // 15.9.2.BL1.B3.B1.B2).
                     Java.ClassDeclaration innerClass = (Java.ClassDeclaration) s;
                     optionalEnclosingInstance = new Java.QualifiedThisReference(
-                            nci.getLocation(),      // location
+                        nci.getLocation(),          // location
                         innerClass,                 // declaringClass
                         optionalFunctionDeclarator, // optionalFunctionDeclarator
                         optionalOuterIClass         // targetIClass
@@ -3690,8 +3701,8 @@ public class UnitCompiler {
                     new Java.FieldAccess(         // lhs
                         cd.getLocation(),       // location
                         new Java.ThisReference( // lhs
-                            cd.getLocation(),               // location
-                            this.resolve(cd.declaringClass) // iClass
+                            cd.getLocation(),              // location
+                            (Java.Scope) cd.declaringClass // scope
                         ),
                         sf                      // field
                     ),
@@ -5071,7 +5082,7 @@ public class UnitCompiler {
         Java.Located             located,
         Java.ClassDeclaration    declaringClass,
         Java.TypeBodyDeclaration declaringTypeBodyDeclaration,
-        IClass              targetIClass
+        IClass                   targetIClass
     ) throws CompileException {
         List path = UnitCompiler.getOuterClasses(declaringClass);
 
