@@ -122,6 +122,7 @@ public class EvaluatorBase {
         Java.PackageMemberClassDeclaration tlcd = new Java.PackageMemberClassDeclaration(
             location,                                         // location
             compilationUnit,                                  // declaringCompilationUnit
+            null,                                             // optionalDocComment
             Mod.PUBLIC,                                       // modifiers
             className,                                        // name
             this.classToType(location, optionalExtendedType), // optionalExtendedType
@@ -179,14 +180,15 @@ public class EvaluatorBase {
         Java.MethodDeclarator md = new Java.MethodDeclarator(
             location,                                        // location
             cd,                                              // declaringClassOrInterface
+            null,                                            // optionalDocComment
             (                                                // modifiers
                 staticMethod ?
                 (short) (Mod.PUBLIC | Mod.STATIC) :
                 (short) Mod.PUBLIC
             ),
-            this.classToType(location, returnType),         // type
+            this.classToType(location, returnType),          // type
             methodName,                                      // name
-            this.makeFormalParameters(                      // formalParameters
+            this.makeFormalParameters(                       // formalParameters
                 location,
                 parameterNames, parameterTypes
             ),

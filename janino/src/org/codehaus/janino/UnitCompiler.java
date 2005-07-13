@@ -156,6 +156,7 @@ public class UnitCompiler {
             Java.MethodDeclarator classInitializationMethod = new Java.MethodDeclarator(
                 cd.getLocation(),            // location
                 cd,                          // declaringType
+                null,                        // optionalDocComment
                 (short) (                    // modifiers
                     Mod.STATIC |
                     Mod.PUBLIC
@@ -360,6 +361,7 @@ public class UnitCompiler {
             Java.MethodDeclarator interfaceInitializationMethod = new Java.MethodDeclarator(
                 id.getLocation(),            // location
                 id,                          // declaringType
+                null,                        // optionalDocComment
                 (short) (                    // modifiers
                     Mod.STATIC |
                     Mod.PUBLIC
@@ -2026,6 +2028,7 @@ public class UnitCompiler {
                 Java.FieldDeclarator fd = new Java.FieldDeclarator(
                     loc,              // location
                     cl.declaringType, // declaringType
+                    null,             // optionalDocComment
                     Mod.STATIC,       // modifiers
                     classType         // type
                 );
@@ -2604,6 +2607,7 @@ public class UnitCompiler {
         final Java.ConstructorDeclarator anonymousConstructor = new Java.ConstructorDeclarator(
             loc,         // location
             acd,         // declaringClass
+            null,        // optionalDocComment
             Mod.PACKAGE, // modifiers
             fps,         // formalParameters
             tets         // thrownExceptions
@@ -5437,6 +5441,7 @@ public class UnitCompiler {
         Java.MethodDeclarator cdmd = new Java.MethodDeclarator(
             loc,                               // location
             cl.declaringType,                  // declaringType
+            null,                              // optionalDocComment
             Mod.STATIC,                        // modifiers
             classType,                         // type
             "class$",                          // name

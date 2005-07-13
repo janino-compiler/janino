@@ -233,21 +233,24 @@ public class Parser {
     public Java.NamedTypeDeclaration parseClassOrInterfaceDeclaration(
         Java.Scope enclosingScope
     ) throws ParseException, Scanner.ScanException, IOException {
+        String optionalDocComment = this.scanner.doc();
         short modifiers = this.parseModifiersOpt();
 
         Java.NamedTypeDeclaration res;
         if (this.scanner.peek().isKeyword("class")) {
             this.scanner.read();
             res = this.parseClassDeclarationRest(
-                enclosingScope,
-                modifiers
+                enclosingScope,     // enclosingScope
+                optionalDocComment, // optionalDocComment
+                modifiers           // modifiers
             );
         } else
         if (this.scanner.peek().isKeyword("interface")) {
             this.scanner.read();
             res = this.parseInterfaceDeclarationRest(
-                enclosingScope,
-                modifiers
+                enclosingScope,     // enclosingScope
+                optionalDocComment, // optionalDocComment
+                modifiers           // modifiers
             );
         } else
         {
@@ -311,6 +314,7 @@ public class Parser {
      */
     public Java.NamedClassDeclaration parseClassDeclarationRest(
         Java.Scope enclosingScope,
+        String     optionalDocComment,
         short      modifiers
     ) throws ParseException, Scanner.ScanException, IOException {
         if (!this.scanner.peek().isIdentifier()) this.throwParseException("Class name expected after \"class\"");
@@ -335,6 +339,7 @@ public class Parser {
             namedClassDeclaration = new Java.PackageMemberClassDeclaration(
                 location,                              // location
                 (Java.CompilationUnit) enclosingScope, // declaringCompilationUnit
+                optionalDocComment,                    // optionalDocComment
                 modifiers,                             // modifiers
                 className,                             // name
                 optionalExtendedType,                  // optinalExtendedType
@@ -345,6 +350,7 @@ public class Parser {
             namedClassDeclaration = new Java.MemberClassDeclaration(
                 location,                                   // location
                 (Java.NamedTypeDeclaration) enclosingScope, // declaringType
+                optionalDocComment,                         // optionalDocComment
                 modifiers,                                  // modifiers
                 className,                                  // name
                 optionalExtendedType,                       // optionalExtendedType
@@ -355,6 +361,7 @@ public class Parser {
             namedClassDeclaration = new Java.LocalClassDeclaration(
                 location,                    // location
                 (Java.Block) enclosingScope, // declaringBlock
+                optionalDocComment,          // optionalDocComment
                 modifiers,                   // modifiers
                 className,                   // name
                 optionalExtendedType,        // optionalExtendedType
@@ -416,6 +423,7 @@ public class Parser {
             return;
         }
 
+        String optionalDocComment = this.scanner.doc();
         short modifiers = this.parseModifiersOpt();
 
         // Initializer?
@@ -440,6 +448,7 @@ public class Parser {
             String name = this.scanner.read().getIdentifier();
             classDeclaration.declaredMethods.add(this.parseMethodDeclaratorRest(
                 classDeclaration,                                  // declaringType
+                optionalDocComment,                                // optionalDocComment
                 modifiers,                                         // modifiers
                 new Java.BasicType(location, Java.BasicType.VOID), // type
                 name                                               // name
@@ -452,6 +461,7 @@ public class Parser {
             this.scanner.read();
             classDeclaration.addMemberTypeDeclaration((Java.MemberTypeDeclaration) this.parseClassDeclarationRest(
                 (Java.Scope) classDeclaration, // enclosingScope
+                optionalDocComment,            // optionalDocComment
                 modifiers                      // modifiers
             ));
             return;
@@ -462,6 +472,7 @@ public class Parser {
             this.scanner.read();
             classDeclaration.addMemberTypeDeclaration((Java.MemberTypeDeclaration) this.parseInterfaceDeclarationRest(
                 classDeclaration,                // enclosingScope
+                optionalDocComment,              // optionalDocComment
                 (short) (modifiers | Mod.STATIC) // modifiers
             ));
             return;
@@ -474,8 +485,9 @@ public class Parser {
             this.scanner.peekNextButOne().isOperator("(")
         ) {
             classDeclaration.addConstructor(this.parseConstructorDeclarator(
-                classDeclaration, // declaringClass
-                modifiers         // modifiers
+                classDeclaration,   // declaringClass
+                optionalDocComment, // optionalDocComment
+                modifiers           // modifiers
             ));
             return;
         }
@@ -489,20 +501,22 @@ public class Parser {
         // Method declarator.
         if (this.scanner.peek().isOperator("(")) {
             classDeclaration.declaredMethods.add(this.parseMethodDeclaratorRest(
-                classDeclaration, // declaringType
-                modifiers,        // modifiers
-                memberType,       // type
-                memberName        // name
+                classDeclaration,   // declaringType
+                optionalDocComment, // optionalDocComment
+                modifiers,          // modifiers
+                memberType,         // type
+                memberName          // name
             ));
             return;
         }
 
         // Field declarator.
         Java.FieldDeclarator fd = new Java.FieldDeclarator(
-            location,                         // location
-            classDeclaration,                 // declaringType
-            modifiers,                        // modifiers
-            memberType                        // type
+            location,           // location
+            classDeclaration,   // declaringType
+            optionalDocComment, // optionalDocComment
+            modifiers,          // modifiers
+            memberType          // type
         );
 
         Java.VariableDeclarator[] vds = this.parseFieldDeclaratorsRest(
@@ -525,6 +539,7 @@ public class Parser {
      */
     public Java.InterfaceDeclaration parseInterfaceDeclarationRest(
         Java.Scope enclosingScope,
+        String     optionalDocComment,
         short      modifiers
     ) throws ParseException, Scanner.ScanException, IOException {
         if (!this.scanner.peek().isIdentifier()) this.throwParseException("Interface name expected after \"interface\"");
@@ -543,6 +558,7 @@ public class Parser {
             interfaceDeclaration = new Java.PackageMemberInterfaceDeclaration(
                 location,                              // location
                 (Java.CompilationUnit) enclosingScope, // declaringCompilationUnit
+                optionalDocComment,                    // optionalDocComment
                 modifiers,                             // modifiers
                 interfaceName,                         // name
                 extendedTypes                          // extendedTypes
@@ -552,6 +568,7 @@ public class Parser {
             interfaceDeclaration = new Java.MemberInterfaceDeclaration(
                 location,                                   // location
                 (Java.NamedTypeDeclaration) enclosingScope, // declaringType
+                optionalDocComment,                         // optionalDocComment
                 modifiers,                                  // modifiers
                 interfaceName,                              // name
                 extendedTypes                               // extendedTypes
@@ -597,6 +614,7 @@ public class Parser {
                 continue;
             }
 
+            String optionalDocComment = this.scanner.doc();
             short modifiers = this.parseModifiersOpt();
 
             // "void" method declaration.
@@ -606,6 +624,7 @@ public class Parser {
                 String name = this.scanner.read().getIdentifier();
                 interfaceDeclaration.declaredMethods.add(this.parseMethodDeclaratorRest(
                     interfaceDeclaration,                              // declaringType
+                    optionalDocComment,                                // optionalDocComment
                     (short) (modifiers | Mod.ABSTRACT | Mod.PUBLIC),   // modifiers
                     new Java.BasicType(location, Java.BasicType.VOID), // type
                     name                                               // name
@@ -616,8 +635,9 @@ public class Parser {
             if (this.scanner.peek().isKeyword("class")) {
                 this.scanner.read();
                 interfaceDeclaration.addMemberTypeDeclaration((Java.MemberTypeDeclaration) this.parseClassDeclarationRest(
-                    interfaceDeclaration, // enclosingScope
-                    (short) (modifiers | Mod.STATIC | Mod.PUBLIC)
+                    interfaceDeclaration,                         // enclosingScope
+                    optionalDocComment,                           // optionalDocComment
+                    (short) (modifiers | Mod.STATIC | Mod.PUBLIC) // modifiers
                 ));
             } else
 
@@ -625,8 +645,9 @@ public class Parser {
             if (this.scanner.peek().isKeyword("interface")) {
                 this.scanner.read();
                 interfaceDeclaration.addMemberTypeDeclaration((Java.MemberTypeDeclaration) this.parseInterfaceDeclarationRest(
-                    interfaceDeclaration, // enclosingScope
-                    (short) (modifiers | Mod.STATIC | Mod.PUBLIC)
+                    interfaceDeclaration,                         // enclosingScope
+                    optionalDocComment,                           // optionalDocComment
+                    (short) (modifiers | Mod.STATIC | Mod.PUBLIC) // modifiers
                 ));
             } else
 
@@ -641,6 +662,7 @@ public class Parser {
                 if (this.scanner.peek().isOperator("(")) {
                     interfaceDeclaration.declaredMethods.add(this.parseMethodDeclaratorRest(
                         interfaceDeclaration,                            // declaringType
+                        optionalDocComment,                              // optionalDocComment
                         (short) (modifiers | Mod.ABSTRACT | Mod.PUBLIC), // modifiers
                         memberType,                                      // type
                         memberName                                       // name
@@ -652,6 +674,7 @@ public class Parser {
                     Java.FieldDeclarator fd = new Java.FieldDeclarator(
                         location,                          // location
                         interfaceDeclaration,              // declaringType
+                        optionalDocComment,                // optionalDocComment
                         (short) (                          // modifiers
                             modifiers |
                             Mod.PUBLIC | Mod.STATIC | Mod.FINAL
@@ -683,6 +706,7 @@ public class Parser {
      */
     public Java.ConstructorDeclarator parseConstructorDeclarator(
         Java.ClassDeclaration declaringClass,
+        String                optionalDocComment,
         short                 modifiers
     ) throws ParseException, Scanner.ScanException, IOException {
         Location location = this.scanner.read().getLocation();
@@ -703,11 +727,12 @@ public class Parser {
 
         // Create ConstructorDeclarator object.
         Java.ConstructorDeclarator cd = new Java.ConstructorDeclarator(
-            location,
-            declaringClass,
-            modifiers,
-            formalParameters,
-            thrownExceptions
+            location,           // location
+            declaringClass,     // declaringClass
+            optionalDocComment, // optionalDocComment
+            modifiers,          // modifiers
+            formalParameters,   // formalParameters
+            thrownExceptions    // thrownExceptions
         );
 
         // Parse constructor body.
@@ -775,6 +800,7 @@ public class Parser {
      */
     public Java.MethodDeclarator parseMethodDeclaratorRest(
         Java.AbstractTypeDeclaration declaringType,
+        String                       optionalDocComment,
         short                        modifiers,
         Java.Type                    type,
         String                       name
@@ -798,13 +824,14 @@ public class Parser {
         }
 
         Java.MethodDeclarator md = new Java.MethodDeclarator(
-            location,
-            declaringType,
-            modifiers,
-            type,
-            name,
-            formalParameters,
-            thrownExceptions
+            location,           // location
+            declaringType,      // declaringType
+            optionalDocComment, // optionalDocComment
+            modifiers,          // modifiers
+            type,               // type
+            name,               // name
+            formalParameters,   // formalParameters
+            thrownExceptions    // thrownExceptions
         );
         if (this.scanner.peek().isOperator(";")) {
             if ((modifiers & (Mod.ABSTRACT | Mod.NATIVE)) == 0) this.throwParseException("Non-abstract, non-native method must have a body");
@@ -1016,9 +1043,13 @@ public class Parser {
 
         // Local class declaration?
         if (this.scanner.peek().isKeyword("class")) {
+            // JAVADOC[TM] ignores doc comments for local classes, but we
+            // don't...
+            String optionalDocComment = this.scanner.doc();
             this.scanner.read();
             final Java.LocalClassDeclaration lcd = (Java.LocalClassDeclaration) this.parseClassDeclarationRest(
                 (Java.Scope) enclosingBlock,      // enclosingScope
+                optionalDocComment,               // optionalDocComment
                 (short) (Mod.FINAL | Mod.PRIVATE) // modifiers
             );
             return new Java.LocalClassDeclarationStatement((Java.Scope) enclosingBlock, lcd);

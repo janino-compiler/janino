@@ -439,6 +439,7 @@ public class Java {
                 ConstructorDeclarator defaultConstructor = new ConstructorDeclarator(
                     this.getLocation(),          // location
                     this,                        // declaringClass
+                    null,                        // optionalDocComment
                     Mod.PUBLIC,                  // modifiers
                     new Java.FormalParameter[0], // formalParameters
                     new Java.Type[0]             // thrownExceptions
@@ -487,19 +488,22 @@ public class Java {
     }
 
     public abstract static class NamedClassDeclaration extends ClassDeclaration implements NamedTypeDeclaration {
+        final String           optionalDocComment;
         protected final String name;
-        final Type   optionalExtendedType;
-        final Type[] implementedTypes;
+        final Type             optionalExtendedType;
+        final Type[]           implementedTypes;
 
         public NamedClassDeclaration(
             Location location,
             Scope    enclosingScope,
+            String   optionalDocComment,
             short    modifiers,
             String   name,
             Type     optionalExtendedType,
             Type[]   implementedTypes
         ) {
             super(location, enclosingScope, modifiers);
+            this.optionalDocComment   = optionalDocComment;
             this.name                 = name;
             this.optionalExtendedType = optionalExtendedType;
             this.implementedTypes     = implementedTypes;
@@ -513,6 +517,7 @@ public class Java {
         public MemberClassDeclaration(
             Location             location,
             NamedTypeDeclaration declaringType,
+            String               optionalDocComment,
             short                modifiers,
             String               name,
             Type                 optionalExtendedType,
@@ -521,6 +526,7 @@ public class Java {
             super(
                 location,              // location
                 (Scope) declaringType, // enclosingScope
+                optionalDocComment,    // optionalDocComment
                 modifiers,             // modifiers
                 name,                  // name
                 optionalExtendedType,  // optionalExtendedType
@@ -559,6 +565,7 @@ public class Java {
         public LocalClassDeclaration(
             Location location,
             Block    declaringBlock,
+            String   optionalDocComment,
             short    modifiers,
             String   name,
             Type     optionalExtendedType,
@@ -567,6 +574,7 @@ public class Java {
             super(
                 location,               // location
                 (Scope) declaringBlock, // enclosingScope
+                optionalDocComment,     // optionalDocComment
                 modifiers,              // modifiers
                 name,                   // name
                 optionalExtendedType,   // optionalExtendedType
@@ -612,6 +620,7 @@ public class Java {
         public PackageMemberClassDeclaration(
             Location        location,
             CompilationUnit declaringCompilationUnit,
+            String          optionalDocComment,
             short           modifiers,
             String          name,
             Type            optionalExtendedType,
@@ -620,6 +629,7 @@ public class Java {
             super(
                 location,                         // location
                 (Scope) declaringCompilationUnit, // enclosingScope
+                optionalDocComment,               // optionalDocComment
                 modifiers,                        // modifiers
                 name,                             // name
                 optionalExtendedType,             // optionalExtendedType
@@ -665,11 +675,13 @@ public class Java {
     }
 
     public abstract static class InterfaceDeclaration extends AbstractTypeDeclaration implements NamedTypeDeclaration {
+        final String               optionalDocComment;
         protected /*final*/ String name;
 
         protected InterfaceDeclaration(
             Location location,
             Scope    enclosingScope,
+            String   optionalDocComment,
             short    modifiers,
             String   name,
             Type[]   extendedTypes
@@ -679,8 +691,9 @@ public class Java {
                 enclosingScope,
                 modifiers
             );
-            this.name = name;
-            this.extendedTypes = extendedTypes;
+            this.optionalDocComment = optionalDocComment;
+            this.name               = name;
+            this.extendedTypes      = extendedTypes;
         }
 
         public String getName() { return this.name; }
@@ -704,6 +717,7 @@ public class Java {
         public MemberInterfaceDeclaration(
             Location             location,
             NamedTypeDeclaration declaringType,
+            String               optionalDocComment,
             short                modifiers,
             String               name,
             Type[]               extendedTypes
@@ -711,6 +725,7 @@ public class Java {
             super(
                 location,              // location
                 (Scope) declaringType, // enclosingScope
+                optionalDocComment,    // optionalDocComment
                 modifiers,             // modifiers
                 name,                  // name
                 extendedTypes          // extendedTypes
@@ -747,6 +762,7 @@ public class Java {
         public PackageMemberInterfaceDeclaration(
             Location        location,
             CompilationUnit declaringCompilationUnit,
+            String          optionalDocComment,
             short           modifiers,
             String          name,
             Type[]          extendedTypes
@@ -754,6 +770,7 @@ public class Java {
             super(
                 location,                         // location
                 (Scope) declaringCompilationUnit, // enclosingScope
+                optionalDocComment,               // optionalDocComment
                 modifiers,                        // modifiers
                 name,                             // name
                 extendedTypes                     // extendedTypes
@@ -868,7 +885,8 @@ public class Java {
      * {@link Java.MethodDeclarator}.
      */
     public abstract static class FunctionDeclarator extends AbstractTypeBodyDeclaration {
-        protected final short           modifiers;
+        final String            optionalDocComment;
+        protected final short   modifiers;
         final Type              type;
         final String            name;
         final FormalParameter[] formalParameters;
@@ -878,6 +896,7 @@ public class Java {
         public FunctionDeclarator(
             Location          location,
             TypeDeclaration   declaringType,
+            String            optionalDocComment,
             short             modifiers,
             Type              type,
             String            name,
@@ -885,11 +904,12 @@ public class Java {
             Type[]            thrownExceptions
         ) {
             super(location, declaringType, (modifiers & Mod.STATIC) != 0);
-            this.modifiers        = modifiers;
-            this.type             = type;
-            this.name             = name;
-            this.formalParameters = formalParameters;
-            this.thrownExceptions = thrownExceptions;
+            this.optionalDocComment = optionalDocComment;
+            this.modifiers          = modifiers;
+            this.type               = type;
+            this.name               = name;
+            this.formalParameters   = formalParameters;
+            this.thrownExceptions   = thrownExceptions;
         }
 
         public void setBody(Block body) {
@@ -921,6 +941,7 @@ public class Java {
         public ConstructorDeclarator(
             Location          location,
             ClassDeclaration  declaringClass,
+            String            optionalDocComment,
             short             modifiers,
             FormalParameter[] formalParameters,
             Type[]            thrownExceptions
@@ -928,6 +949,7 @@ public class Java {
             super(
                 location,                                // location
                 declaringClass,                          // declaringType
+                optionalDocComment,                      // optionalDocComment
                 modifiers,                               // modifiers
                 new BasicType(location, BasicType.VOID), // type
                 "<init>",                                // name
@@ -968,6 +990,7 @@ public class Java {
         public MethodDeclarator(
             Location                      location,
             final AbstractTypeDeclaration declaringType,
+            String                        optionalDocComment,
             short                         modifiers,
             Type                          type,
             String                        name,
@@ -975,13 +998,14 @@ public class Java {
             Type[]                        thrownExceptions
         ) {
             super(
-                location,         // location
-                declaringType,    // declaringType
-                modifiers,        // modifiers
-                type,             // type
-                name,             // name
-                formalParameters, // formalParameters
-                thrownExceptions  // thrownExceptions
+                location,           // location
+                declaringType,      // declaringType
+                optionalDocComment, // optionalDocComment
+                modifiers,          // modifiers
+                type,               // type
+                name,               // name
+                formalParameters,   // formalParameters
+                thrownExceptions    // thrownExceptions
             );
         }
 
@@ -1008,14 +1032,16 @@ public class Java {
      * code that initializes the field.
      */
     public static final class FieldDeclarator extends Statement implements TypeBodyDeclaration {
+        final String                  optionalDocComment;
         final AbstractTypeDeclaration declaringType;
-        final short                           modifiers;
-        final Type                            type;
-        VariableDeclarator[]                  variableDeclarators = null;
+        final short                   modifiers;
+        final Type                    type;
+        VariableDeclarator[]          variableDeclarators = null;
 
         public FieldDeclarator(
             Location                location,
             AbstractTypeDeclaration declaringType,
+            String                  optionalDocComment,
             short                   modifiers,
             Type                    type
         ) {
@@ -1023,9 +1049,10 @@ public class Java {
                 location,
                 (Scope) declaringType // enclosingScope
             );
-            this.modifiers     = modifiers;
-            this.declaringType = declaringType;
-            this.type          = type;
+            this.optionalDocComment = optionalDocComment;
+            this.modifiers          = modifiers;
+            this.declaringType      = declaringType;
+            this.type               = type;
         }
         public void setVariableDeclarators(VariableDeclarator[] variableDeclarators) {
             this.variableDeclarators = variableDeclarators;

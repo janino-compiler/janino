@@ -110,6 +110,7 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
         this.unparseInterfaceDeclaration(pmid);
     }
     public void visitConstructorDeclarator(Java.ConstructorDeclarator cd) {
+        this.unparseDocComment(cd.optionalDocComment);
         this.unparseModifiers(cd.modifiers);
         this.pw.print(((Java.NamedClassDeclaration) cd.declaringType).name);
         this.unparseFunctionDeclaratorRest(cd);
@@ -128,6 +129,7 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
         }
     }
     public void visitMethodDeclarator(Java.MethodDeclarator md) {
+        this.unparseDocComment(md.optionalDocComment);
         this.unparseModifiers(md.modifiers);
         ((Java.Atom) md.type).visit(this);
         this.pw.print(' ' + md.name);
@@ -140,6 +142,7 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
         }
     }
     public void visitFieldDeclarator(Java.FieldDeclarator fd) {
+        this.unparseDocComment(fd.optionalDocComment);
         this.unparseModifiers(fd.modifiers);
         ((Java.Atom) fd.type).visit(this);
         this.pw.print(' ');
@@ -458,6 +461,7 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
     // Helpers
 
     private void unparseNamedClassDeclaration(Java.NamedClassDeclaration ncd) {
+        this.unparseDocComment(ncd.optionalDocComment);
         this.unparseModifiers(ncd.modifiers);
         this.pw.print("class " + ncd.name);
         if (ncd.optionalExtendedType != null) {
@@ -502,6 +506,7 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
         }
     }
     private void unparseInterfaceDeclaration(Java.InterfaceDeclaration id) {
+        this.unparseDocComment(id.optionalDocComment);
         this.unparseModifiers(id.modifiers);
         this.pw.print("interface " + id.name);
         if (id.extendedTypes.length > 0) this.pw.print(" extends " + Java.join(id.extendedTypes, ", "));
@@ -532,6 +537,19 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
         }
         this.pw.print(')');
         if (fd.thrownExceptions.length > 0) this.pw.print(" throws " + Java.join(fd.thrownExceptions, ", "));
+    }
+    private void unparseDocComment(String optionalDocComment) {
+        if (optionalDocComment != null) {
+            this.pw.println();
+            this.pw.print("/**");
+            this.aiw.setPrefix(" *");
+            try {
+                this.pw.print(optionalDocComment);
+            } finally {
+                this.aiw.setPrefix(null);
+            }
+            this.pw.println(" */");
+        }
     }
     private void unparseModifiers(short modifiers) {
         if (modifiers != 0) {

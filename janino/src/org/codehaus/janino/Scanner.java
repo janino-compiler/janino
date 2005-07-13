@@ -225,7 +225,7 @@ public class Scanner {
 
             this.readNextChar();
             this.nextToken       = this.internalRead();
-            this.nextButOneToken = this.internalRead();
+            this.nextButOneToken = null;
         } catch (ScanException e) {
             if (closeReaderOnConstructorException) try { in.close(); } catch (IOException e2) {}
             throw e;
@@ -249,8 +249,12 @@ public class Scanner {
      */
     public Token read() throws ScanException, IOException {
         Token res = this.nextToken;
-        this.nextToken       = this.nextButOneToken;
-        this.nextButOneToken = this.internalRead();
+        if (this.nextButOneToken != null) {
+            this.nextToken = this.nextButOneToken;
+            this.nextButOneToken = null;
+        } else {
+            this.nextToken = this.internalRead();
+        }
         return res;
     }
 
@@ -266,8 +270,18 @@ public class Scanner {
      * Peek the next but one token, neither remove the next nor the next
      * but one token from the input.
      */
-    public Token peekNextButOne() {
+    public Token peekNextButOne() throws ScanException, IOException {
+        if (this.nextButOneToken == null) this.nextButOneToken = this.internalRead();
         return this.nextButOneToken;
+    }
+
+    /**
+     * Get the text of the doc comment (a.k.a. "JAVADOC comment") preceeding
+     * the next token.
+     * @return <code>null</code> if the next token is not preceeded by a doc comment
+     */
+    public String doc() {
+        return this.docComment;
     }
 
     public abstract class Token {
@@ -491,55 +505,186 @@ public class Scanner {
     }
 
     private Token internalRead() throws ScanException, IOException {
-        if (this.nextChar == -1) { return new EOFToken(); }
+        this.docComment = null;
 
-        // Skip whitespace and comments.
+        // Skip whitespace and process comments.
+        int          state = 0;
+        StringBuffer dcsb  = null; // For doc comment
+
+        PROCESS_COMMENTS:
         for (;;) {
+            switch (state) {
+    
+            case 0: // Outside any comment
+                if (this.nextChar == -1) {
+                    return new EOFToken();
+                } else
+                if (Character.isWhitespace((char) this.nextChar)) {
+                    ;
+                } else
+                if (this.nextChar == '/') {
+                    state = 1;
+                } else
+                {
+                    break PROCESS_COMMENTS;
+                }
+                break;
 
-            // Eat whitespace.
-            while (Character.isWhitespace((char) this.nextChar)) {
-                this.readNextChar();
-                if (this.nextChar == -1) { return new EOFToken(); }
+            case 1:  // After "/"
+                if (this.nextChar == -1) {
+                    return new OperatorToken("/");
+                } else
+                if (this.nextChar == '=') {
+                    this.readNextChar();
+                    return new OperatorToken("/=");
+                } else
+                if (this.nextChar == '/') {
+                    state = 2;
+                } else
+                if (this.nextChar == '*') {
+                    state = 3;
+                } else
+                {
+                    return new OperatorToken("/");
+                }
+                break;
+
+            case 2: // After "//..."
+                if (this.nextChar == -1) {
+                    return new EOFToken();
+                } else
+                if (this.nextChar == '\r' || this.nextChar == '\n') {
+                    state = 0;
+                } else
+                {
+                    ;
+                }
+                break;
+
+            case 3: // After "/*"
+                if (this.nextChar == -1) {
+                    throw new ScanException("EOF in traditional comment");
+                } else
+                if (this.nextChar == '*') {
+                    state = 4;
+                } else
+                {
+                    state = 9;
+                }
+                break;
+
+            case 4: // After "/**"
+                if (this.nextChar == -1) {
+                    throw new ScanException("EOF in doc comment");
+                } else
+                if (this.nextChar == '/') {
+                    state = 0;
+                } else
+                {
+//                  if (this.docComment != null) warning("More than one doc comment"); 
+                    dcsb = new StringBuffer();
+                    dcsb.append((char) this.nextChar);
+                    state = (this.nextChar == '\r' || this.nextChar == '\n') ? 6 : 5;
+                }
+                break;
+
+            case 5: // After "/**..."
+                if (this.nextChar == -1) {
+                    throw new ScanException("EOF in doc comment");
+                } else
+                if (this.nextChar == '*') {
+                    state = 8;
+                } else
+                if (this.nextChar == '\r' || this.nextChar == '\n') {
+                    dcsb.append((char) this.nextChar);
+                    state = 6;
+                } else
+                {
+                    dcsb.append((char) this.nextChar);
+                }
+                break;
+
+            case 6: // After "/**...\n"
+                if (this.nextChar == -1) {
+                    throw new ScanException("EOF in doc comment");
+                } else
+                if (this.nextChar == '*') {
+                    state = 7;
+                } else
+                if (this.nextChar == '\r' || this.nextChar == '\n') {
+                    dcsb.append((char) this.nextChar);
+                } else
+                if (this.nextChar == ' ' || this.nextChar == '\t') {
+                    ;
+                } else
+                {
+                    dcsb.append((char) this.nextChar);
+                    state = 5;
+                }
+                break;
+
+            case 7: // After "/**...\n *"
+                if (this.nextChar == -1) {
+                    throw new ScanException("EOF in doc comment");
+                } else
+                if (this.nextChar == '*') {
+                    ;
+                } else
+                if (this.nextChar == '/') {
+                    this.docComment = dcsb.toString();
+                    state = 0;
+                } else
+                {
+                    dcsb.append((char) this.nextChar);
+                    state = 5;
+                }
+                break;
+
+            case 8: // After "/**...*"
+                if (this.nextChar == -1) {
+                    throw new ScanException("EOF in doc comment");
+                } else
+                if (this.nextChar == '/') {
+                    this.docComment = dcsb.toString();
+                    state = 0;
+                } else
+                if (this.nextChar == '*') {
+                    dcsb.append('*');
+                } else
+                {
+                    dcsb.append('*');
+                    dcsb.append((char) this.nextChar);
+                    state = 5;
+                }
+                break;
+
+            case 9: // After "/*..."
+                if (this.nextChar == -1) {
+                    throw new ScanException("EOF in traditional comment");
+                } else
+                if (this.nextChar == '*') {
+                    state = 10;
+                } else
+                {
+                    ;
+                }
+                break;
+
+            case 10: // After "/*...*"
+                if (this.nextChar == -1) {
+                    throw new ScanException("EOF in traditional comment");
+                } else
+                if (this.nextChar == '/') {
+                    state = 0;
+                } else
+                if (this.nextChar == '*') {
+                    ;
+                } else
+                {
+                    state = 9;
+                }
             }
-
-            // Skip comment.
-            if (this.nextChar != '/') break;
             this.readNextChar();
-            switch (this.nextChar) {
-
-            case -1:
-            default:
-                return new OperatorToken("/");
-
-            case '=':
-                this.readNextChar();
-                return new OperatorToken("/=");
-
-            case '/':
-                for (;;) {
-                    this.readNextChar();
-                    if (this.nextChar == -1) { return new EOFToken(); }
-                    if (this.nextChar == '\r' || this.nextChar == '\n') break;
-                }
-                break;
-
-            case '*':
-                boolean gotStar = false;
-                for (;;) {
-                    this.readNextChar();
-                    if (this.nextChar == -1) throw new ScanException("EOF in C-style comment");
-                    if (this.nextChar == '*') {
-                        gotStar = true;
-                    } else
-                    if (gotStar && this.nextChar == '/') {
-                        this.readNextChar();
-                        break;
-                    } else {
-                        gotStar = false;
-                    }
-                }
-                break;
-            }
         }
 
         /*
@@ -548,8 +693,6 @@ public class Scanner {
          */
         this.tokenLineNumber   = this.nextCharLineNumber;
         this.tokenColumnNumber = this.nextCharColumnNumber;
-
-        if (this.nextChar == -1) return new EOFToken();
 
         // Scan identifier.
         if (Character.isJavaIdentifierStart((char) this.nextChar)) {
@@ -986,6 +1129,7 @@ public class Scanner {
     private Token nextToken, nextButOneToken;
     private short tokenLineNumber;
     private short tokenColumnNumber;
+    private String docComment = null; // The optional JAVADOC comment preceeding the "nextToken".
 
     private static final Map JAVA_KEYWORDS = new HashMap();
     static {
