@@ -233,7 +233,7 @@ class ReflectionIClass extends IClass {
             return (
                 Descriptor.toString(this.getDeclaringIClass().getDescriptor()) +
                 "." +
-                getName()
+                this.getName()
             );
         }
         public Object getConstantValue() throws CompileException {

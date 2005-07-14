@@ -65,26 +65,26 @@ public class ScriptDemo extends DemoBase {
                 parameterTypes = DemoBase.stringToTypes(args[++i]);
             } else
             if (arg.equals("-help")) {
-                usage();
+                ScriptDemo.usage();
                 System.exit(0);
             } else
             {
                 System.err.println("Invalid command line option \"" + arg + "\".");
-                usage();
+                ScriptDemo.usage();
                 System.exit(0);
             }
         }
 
         if (parameterTypes.length != parameterNames.length) {
             System.err.println("Parameter type count and parameter name count do not match.");
-            usage();
+            ScriptDemo.usage();
             System.exit(1);
         }
 
         // One command line argument for each parameter.
         if (args.length - i != parameterNames.length) {
             System.err.println("Argument and parameter count do not match.");
-            usage();
+            ScriptDemo.usage();
             System.exit(1);
         }
 

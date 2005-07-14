@@ -163,7 +163,7 @@ public class StringPattern {
                 if (pattern.length() == i + 1) return true; // Optimization for trailing '*'.
                 pattern = pattern.substring(i + 1);
                 for (; i <= text.length(); ++i) {
-                    if (wildmatch(pattern, text.substring(i))) return true;
+                    if (StringPattern.wildmatch(pattern, text.substring(i))) return true;
                 }
                 return false;
 

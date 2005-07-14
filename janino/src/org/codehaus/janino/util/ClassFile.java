@@ -96,6 +96,10 @@ public class ClassFile {
         ));
     }
 
+    public void addDeprecatedAttribute() {
+        this.attributes.add(new DeprecatedAttribute(this.addConstantUtf8Info("Deprecated")));
+    }
+
     /**
      * Find the "InnerClasses" attribute of this class file
      * @return <code>null</code> if this class has no "InnerClasses" attribute
@@ -219,7 +223,7 @@ public class ClassFile {
             throw new RuntimeException("\"" + Descriptor.toString(typeFD) + "\" is neither a class nor an array");
         }
 
-        return this.addToConstantPool(new ConstantClassInfo(addConstantUtf8Info(s)));
+        return this.addToConstantPool(new ConstantClassInfo(this.addConstantUtf8Info(s)));
     }
 
     /**
@@ -233,8 +237,8 @@ public class ClassFile {
         String fieldFD
     ) {
         return this.addToConstantPool(new ConstantFieldrefInfo(
-            addConstantClassInfo(classFD),
-            addConstantNameAndTypeInfo(fieldName, fieldFD)
+            this.addConstantClassInfo(classFD),
+            this.addConstantNameAndTypeInfo(fieldName, fieldFD)
         ));
     }
 
@@ -249,8 +253,8 @@ public class ClassFile {
         String methodMD
     ) {
         return this.addToConstantPool(new ConstantMethodrefInfo(
-            addConstantClassInfo(classFD),
-            addConstantNameAndTypeInfo(methodName, methodMD)
+            this.addConstantClassInfo(classFD),
+            this.addConstantNameAndTypeInfo(methodName, methodMD)
         ));
     }
 
@@ -265,8 +269,8 @@ public class ClassFile {
         String methodMD
     ) {
         return this.addToConstantPool(new ConstantInterfaceMethodrefInfo(
-            addConstantClassInfo(classFD),
-            addConstantNameAndTypeInfo(methodName, methodMD)
+            this.addConstantClassInfo(classFD),
+            this.addConstantNameAndTypeInfo(methodName, methodMD)
         ));
     }
 
@@ -276,7 +280,7 @@ public class ClassFile {
      * @see <a href="http://java.sun.com/docs/books/vmspec/2nd-edition/html/ClassFile.doc.html#29297">JVM specification, section 4.4.3</a>
      */
     public short addConstantStringInfo(String string) {
-        return this.addToConstantPool(new ConstantStringInfo(addConstantUtf8Info(string)));
+        return this.addToConstantPool(new ConstantStringInfo(this.addConstantUtf8Info(string)));
     }
 
     /**
@@ -322,8 +326,8 @@ public class ClassFile {
      */
     private short addConstantNameAndTypeInfo(String name, String descriptor) {
         return this.addToConstantPool(new ConstantNameAndTypeInfo(
-            addConstantUtf8Info(name),
-            addConstantUtf8Info(descriptor)
+            this.addConstantUtf8Info(name),
+            this.addConstantUtf8Info(descriptor)
         ));
     }
 
@@ -341,29 +345,29 @@ public class ClassFile {
      */
     private short addConstantSIFLDInfo(Object cv) {
         if (cv instanceof String) {
-            return addConstantStringInfo((String) cv);
+            return this.addConstantStringInfo((String) cv);
         } else
         if (
             cv instanceof Byte    ||
             cv instanceof Short   ||
             cv instanceof Integer
         ) {
-            return addConstantIntegerInfo(((Number) cv).intValue());
+            return this.addConstantIntegerInfo(((Number) cv).intValue());
         } else
         if (cv instanceof Boolean) {
-            return addConstantIntegerInfo(((Boolean) cv).booleanValue() ? 1 : 0);
+            return this.addConstantIntegerInfo(((Boolean) cv).booleanValue() ? 1 : 0);
         } else
         if (cv instanceof Character) {
-            return addConstantIntegerInfo(((Character) cv).charValue());
+            return this.addConstantIntegerInfo(((Character) cv).charValue());
         } else
         if (cv instanceof Float) {
-            return addConstantFloatInfo(((Float) cv).floatValue());
+            return this.addConstantFloatInfo(((Float) cv).floatValue());
         } else
         if (cv instanceof Long) {
-            return addConstantLongInfo(((Long) cv).longValue());
+            return this.addConstantLongInfo(((Long) cv).longValue());
         } else
         if (cv instanceof Double) {
-            return addConstantDoubleInfo(((Double) cv).doubleValue());
+            return this.addConstantDoubleInfo(((Double) cv).doubleValue());
         } else
         {
             throw new RuntimeException("Unexpected constant value type \"" + cv.getClass().getName() + "\"");
@@ -382,7 +386,7 @@ public class ClassFile {
         return res;
     }
 
-    public void addFieldInfo(
+    public FieldInfo addFieldInfo(
         short  accessFlags,
         String fieldName,
         String fieldTypeFD,
@@ -395,12 +399,14 @@ public class ClassFile {
                 this.addConstantSIFLDInfo(optionalConstantValue)
             ));
         }
-        this.fieldInfos.add(new FieldInfo(
+        FieldInfo fi = new FieldInfo(
             accessFlags,                           // accessFlags
             this.addConstantUtf8Info(fieldName),   // nameIndex
             this.addConstantUtf8Info(fieldTypeFD), // descriptorIndex
             attributes                             // attributes
-        ));
+        );
+        this.fieldInfos.add(fi);
+        return fi;
     }
 
     public MethodInfo addMethodInfo(
@@ -1034,6 +1040,10 @@ public class ClassFile {
         public short           getDescriptorIndex() { return this.descriptorIndex; }
         public AttributeInfo[] getAttributes()      { return (AttributeInfo[]) this.attributes.toArray(new AttributeInfo[this.attributes.size()]); }
 
+        public void addAttribute(AttributeInfo attribute) {
+            this.attributes.add(attribute);
+        }
+
         public void store(DataOutputStream dos) throws IOException {
             dos.writeShort(this.accessFlags);                // access_flags
             dos.writeShort(this.nameIndex);                  // name_index
@@ -1378,7 +1388,7 @@ public class ClassFile {
      * Representation of a "Deprecated" attribute (see JVMS 4.7.10).
      */
     public static class DeprecatedAttribute extends AttributeInfo {
-        DeprecatedAttribute(short attributeNameIndex) {
+        public DeprecatedAttribute(short attributeNameIndex) {
             super(attributeNameIndex);
         }
 

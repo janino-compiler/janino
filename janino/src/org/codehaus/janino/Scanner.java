@@ -740,7 +740,7 @@ public class Scanner {
             if (this.nextChar == -1) throw new ScanException("EOF in string literal");
             if (this.nextChar == '\r' || this.nextChar == '\n') throw new ScanException("Line break in string literal");
             while (this.nextChar != '"') {
-                sb.append(unescapeCharacterLiteral());
+                sb.append(this.unescapeCharacterLiteral());
             }
             this.readNextChar();
             return new LiteralToken(sb.toString());
@@ -749,7 +749,7 @@ public class Scanner {
         // Scan character literal.
         if (this.nextChar == '\'') {
             this.readNextChar();
-            char lit = unescapeCharacterLiteral();
+            char lit = this.unescapeCharacterLiteral();
             if (this.nextChar != '\'') throw new ScanException("Closing single quote missing");
             this.readNextChar();
 

@@ -69,26 +69,26 @@ public class ExpressionDemo extends DemoBase {
                 thrownExceptions = DemoBase.stringToTypes(args[++i]);
             } else
             if (arg.equals("-help")) {
-                usage();
+                ExpressionDemo.usage();
                 System.exit(0);
             } else
             {
                 System.err.println("Invalid command line option \"" + arg + "\".");
-                usage();
+                ExpressionDemo.usage();
                 System.exit(0);
             }
         }
 
         if (parameterTypes.length != parameterNames.length) {
             System.err.println("Parameter type count and parameter name count do not match.");
-            usage();
+            ExpressionDemo.usage();
             System.exit(1);
         }
 
         // One command line argument for each parameter.
         if (args.length - i != parameterNames.length) {
             System.err.println("Parameter value count and parameter name count do not match.");
-            usage();
+            ExpressionDemo.usage();
             System.exit(1);
         }
 
