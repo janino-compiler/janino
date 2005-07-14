@@ -262,18 +262,19 @@ public class Java {
 
     public interface DocCommentable {
 
-    	/**
-    	 * Returns the doc comment of the object or <code>null</code>.
-    	 */
-    	String  getDocComment();
+        /**
+         * Returns the doc comment of the object or <code>null</code>.
+         */
+        String  getDocComment();
 
-    	/**
-    	 * Returns <code>true</code> if the object has a doc comment and
-    	 * the <code>&#64#deprecated</code> tag appears in the doc
-    	 * comment.
-    	 */
-    	boolean hasDeprecatedDocTag();
+        /**
+         * Returns <code>true</code> if the object has a doc comment and
+         * the <code>&#64#deprecated</code> tag appears in the doc
+         * comment.
+         */
+        boolean hasDeprecatedDocTag();
     }
+
     /**
      * Represents a class or interface declaration on compilation unit level. These are called
      * "package member types" because they are immediate members of a package, e.g.
@@ -527,8 +528,8 @@ public class Java {
         public String toString() { return this.name; }
 
         // Implement DocCommentable.
-		public String getDocComment() { return this.optionalDocComment; }
-		public boolean hasDeprecatedDocTag() { return this.optionalDocComment != null && this.optionalDocComment.indexOf("@deprecated") != -1; }
+        public String getDocComment() { return this.optionalDocComment; }
+        public boolean hasDeprecatedDocTag() { return this.optionalDocComment != null && this.optionalDocComment.indexOf("@deprecated") != -1; }
     }
 
     public static final class MemberClassDeclaration extends NamedClassDeclaration implements MemberTypeDeclaration, InnerClassDeclaration {
@@ -731,8 +732,8 @@ public class Java {
         IClass[] interfaces = null;
 
         // Implement DocCommentable.
-		public String getDocComment() { return this.optionalDocComment; }
-		public boolean hasDeprecatedDocTag() { return this.optionalDocComment != null && this.optionalDocComment.indexOf("@deprecated") != -1; }
+        public String getDocComment() { return this.optionalDocComment; }
+        public boolean hasDeprecatedDocTag() { return this.optionalDocComment != null && this.optionalDocComment.indexOf("@deprecated") != -1; }
     }
 
     public static final class MemberInterfaceDeclaration extends InterfaceDeclaration implements MemberTypeDeclaration {
@@ -955,8 +956,8 @@ public class Java {
         final HashMap                   parameters = new HashMap();   // String name => LocalVariable
 
         // Implement DocCommentable.
-		public String getDocComment() { return this.optionalDocComment; }
-		public boolean hasDeprecatedDocTag() { return this.optionalDocComment != null && this.optionalDocComment.indexOf("@deprecated") != -1; }
+        public String getDocComment() { return this.optionalDocComment; }
+        public boolean hasDeprecatedDocTag() { return this.optionalDocComment != null && this.optionalDocComment.indexOf("@deprecated") != -1; }
     }
 
     public static final class ConstructorDeclarator extends FunctionDeclarator {
@@ -1105,8 +1106,8 @@ public class Java {
         public final void visit(Visitor.BlockStatementVisitor visitor) { visitor.visitFieldDeclarator(this); }
 
         // Implement DocCommentable.
-		public String getDocComment() { return this.optionalDocComment; }
-		public boolean hasDeprecatedDocTag() { return this.optionalDocComment != null && this.optionalDocComment.indexOf("@deprecated") != -1; }
+        public String getDocComment() { return this.optionalDocComment; }
+        public boolean hasDeprecatedDocTag() { return this.optionalDocComment != null && this.optionalDocComment.indexOf("@deprecated") != -1; }
     }
 
     public final static class VariableDeclarator extends Located {

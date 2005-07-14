@@ -97,42 +97,42 @@ public class Visitor {
     }
     
     interface TypeVisitor {
-    	void visitArrayType(Java.ArrayType at);
-    	void visitBasicType(Java.BasicType bt);
-    	void visitReferenceType(Java.ReferenceType rt);
-    	void visitRvalueMemberType(Java.RvalueMemberType rmt);
-    	void visitSimpleType(Java.SimpleType st);
+        void visitArrayType(Java.ArrayType at);
+        void visitBasicType(Java.BasicType bt);
+        void visitReferenceType(Java.ReferenceType rt);
+        void visitRvalueMemberType(Java.RvalueMemberType rmt);
+        void visitSimpleType(Java.SimpleType st);
     }
     
     interface RvalueVisitor extends LvalueVisitor {
-    	void visitArrayInitializer(Java.ArrayInitializer ai);
-    	void visitArrayLength(Java.ArrayLength al);
-    	void visitAssignment(Java.Assignment a);
-    	void visitUnaryOperation(Java.UnaryOperation uo);
-    	void visitBinaryOperation(Java.BinaryOperation bo);
-    	void visitCast(Java.Cast c);
-    	void visitClassLiteral(Java.ClassLiteral cl);
-    	void visitConditionalExpression(Java.ConditionalExpression ce);
-    	void visitConstantValue(Java.ConstantValue cv);
-    	void visitCrement(Java.Crement c);
-    	void visitInstanceof(Java.Instanceof io);
-    	void visitMethodInvocation(Java.MethodInvocation mi);
-    	void visitSuperclassMethodInvocation(Java.SuperclassMethodInvocation smi);
-    	void visitLiteral(Java.Literal l);
-    	void visitNewAnonymousClassInstance(Java.NewAnonymousClassInstance naci);
-    	void visitNewArray(Java.NewArray na);
-    	void visitNewClassInstance(Java.NewClassInstance nci);
-    	void visitParameterAccess(Java.ParameterAccess pa);
-    	void visitQualifiedThisReference(Java.QualifiedThisReference qtr);
-    	void visitThisReference(Java.ThisReference tr);
+        void visitArrayInitializer(Java.ArrayInitializer ai);
+        void visitArrayLength(Java.ArrayLength al);
+        void visitAssignment(Java.Assignment a);
+        void visitUnaryOperation(Java.UnaryOperation uo);
+        void visitBinaryOperation(Java.BinaryOperation bo);
+        void visitCast(Java.Cast c);
+        void visitClassLiteral(Java.ClassLiteral cl);
+        void visitConditionalExpression(Java.ConditionalExpression ce);
+        void visitConstantValue(Java.ConstantValue cv);
+        void visitCrement(Java.Crement c);
+        void visitInstanceof(Java.Instanceof io);
+        void visitMethodInvocation(Java.MethodInvocation mi);
+        void visitSuperclassMethodInvocation(Java.SuperclassMethodInvocation smi);
+        void visitLiteral(Java.Literal l);
+        void visitNewAnonymousClassInstance(Java.NewAnonymousClassInstance naci);
+        void visitNewArray(Java.NewArray na);
+        void visitNewClassInstance(Java.NewClassInstance nci);
+        void visitParameterAccess(Java.ParameterAccess pa);
+        void visitQualifiedThisReference(Java.QualifiedThisReference qtr);
+        void visitThisReference(Java.ThisReference tr);
     }
     
     interface LvalueVisitor {
-    	void visitAmbiguousName(Java.AmbiguousName an);
-    	void visitArrayAccessExpression(Java.ArrayAccessExpression aae);
-    	void visitFieldAccess(Java.FieldAccess fa);
-    	void visitFieldAccessExpression(Java.FieldAccessExpression fae);
-    	void visitLocalVariableAccess(Java.LocalVariableAccess lva);
-    	void visitParenthesizedExpression(Java.ParenthesizedExpression pe);
+        void visitAmbiguousName(Java.AmbiguousName an);
+        void visitArrayAccessExpression(Java.ArrayAccessExpression aae);
+        void visitFieldAccess(Java.FieldAccess fa);
+        void visitFieldAccessExpression(Java.FieldAccessExpression fae);
+        void visitLocalVariableAccess(Java.LocalVariableAccess lva);
+        void visitParenthesizedExpression(Java.ParenthesizedExpression pe);
     }
 }

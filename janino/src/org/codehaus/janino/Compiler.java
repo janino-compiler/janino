@@ -500,7 +500,7 @@ public class Compiler {
 
             this.benchmark.beginReporting("Parsing \"" + fileName + "\"");
             try {
-				return parser.parseCompilationUnit();
+                return parser.parseCompilationUnit();
             } finally {
                 this.benchmark.endReporting();
             }
@@ -693,7 +693,7 @@ public class Compiler {
 
             // Remember compilation unit for later compilation.
             UnitCompiler uc = new UnitCompiler(cu, Compiler.this.iClassLoader);
-			Compiler.this.parsedCompilationUnits.add(uc);
+            Compiler.this.parsedCompilationUnits.add(uc);
 
             // Define the class.
             IClass res = uc.findClass(className);

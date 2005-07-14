@@ -110,7 +110,7 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
         this.unparseInterfaceDeclaration(pmid);
     }
     public void visitConstructorDeclarator(Java.ConstructorDeclarator cd) {
-        this.unparseDocComment(cd.optionalDocComment);
+        this.unparseDocComment(cd);
         this.unparseModifiers(cd.modifiers);
         this.pw.print(((Java.NamedClassDeclaration) cd.declaringType).name);
         this.unparseFunctionDeclaratorRest(cd);
@@ -129,7 +129,7 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
         }
     }
     public void visitMethodDeclarator(Java.MethodDeclarator md) {
-        this.unparseDocComment(md.optionalDocComment);
+        this.unparseDocComment(md);
         this.unparseModifiers(md.modifiers);
         ((Java.Atom) md.type).visit(this);
         this.pw.print(' ' + md.name);
@@ -142,7 +142,7 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
         }
     }
     public void visitFieldDeclarator(Java.FieldDeclarator fd) {
-        this.unparseDocComment(fd.optionalDocComment);
+        this.unparseDocComment(fd);
         this.unparseModifiers(fd.modifiers);
         ((Java.Atom) fd.type).visit(this);
         this.pw.print(' ');
@@ -461,7 +461,7 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
     // Helpers
 
     private void unparseNamedClassDeclaration(Java.NamedClassDeclaration ncd) {
-        this.unparseDocComment(ncd.optionalDocComment);
+        this.unparseDocComment(ncd);
         this.unparseModifiers(ncd.modifiers);
         this.pw.print("class " + ncd.name);
         if (ncd.optionalExtendedType != null) {
@@ -506,7 +506,7 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
         }
     }
     private void unparseInterfaceDeclaration(Java.InterfaceDeclaration id) {
-        this.unparseDocComment(id.optionalDocComment);
+        this.unparseDocComment(id);
         this.unparseModifiers(id.modifiers);
         this.pw.print("interface " + id.name);
         if (id.extendedTypes.length > 0) this.pw.print(" extends " + Java.join(id.extendedTypes, ", "));
@@ -538,7 +538,8 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
         this.pw.print(')');
         if (fd.thrownExceptions.length > 0) this.pw.print(" throws " + Java.join(fd.thrownExceptions, ", "));
     }
-    private void unparseDocComment(String optionalDocComment) {
+    private void unparseDocComment(Java.DocCommentable dc) {
+        String optionalDocComment = dc.getDocComment();
         if (optionalDocComment != null) {
             this.pw.println();
             this.pw.print("/**");

@@ -356,7 +356,7 @@ public abstract class IClass {
         // Widening primitive conversion, JLS2 5.1.2
         {
             String ds = that.getDescriptor() + this.getDescriptor();
-    		if (ds.length() == 2 && IClass.PRIMITIVE_WIDENING_CONVERSIONS.contains(ds)) return true;
+            if (ds.length() == 2 && IClass.PRIMITIVE_WIDENING_CONVERSIONS.contains(ds)) return true;
         }
 
         // Widening reference conversion, JLS2 5.1.4
