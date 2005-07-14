@@ -260,6 +260,20 @@ public class Java {
         void visit(Visitor.TypeDeclarationVisitor visitor);
     }
 
+    public interface DocCommentable {
+
+    	/**
+    	 * Returns the doc comment of the object or <code>null</code>.
+    	 */
+    	String  getDocComment();
+
+    	/**
+    	 * Returns <code>true</code> if the object has a doc comment and
+    	 * the <code>&#64#deprecated</code> tag appears in the doc
+    	 * comment.
+    	 */
+    	boolean hasDeprecatedDocTag();
+    }
     /**
      * Represents a class or interface declaration on compilation unit level. These are called
      * "package member types" because they are immediate members of a package, e.g.
@@ -487,8 +501,8 @@ public class Java {
         public String toString() { return "ANONYMOUS"; }
     }
 
-    public abstract static class NamedClassDeclaration extends ClassDeclaration implements NamedTypeDeclaration {
-        final String           optionalDocComment;
+    public abstract static class NamedClassDeclaration extends ClassDeclaration implements NamedTypeDeclaration, DocCommentable {
+        private final String   optionalDocComment;
         protected final String name;
         final Type             optionalExtendedType;
         final Type[]           implementedTypes;
@@ -511,6 +525,10 @@ public class Java {
 
         public String getName() { return this.name; }
         public String toString() { return this.name; }
+
+        // Implement DocCommentable.
+		public String getDocComment() { return this.optionalDocComment; }
+		public boolean hasDeprecatedDocTag() { return this.optionalDocComment != null && this.optionalDocComment.indexOf("@deprecated") != -1; }
     }
 
     public static final class MemberClassDeclaration extends NamedClassDeclaration implements MemberTypeDeclaration, InnerClassDeclaration {
@@ -646,7 +664,7 @@ public class Java {
             // Check for conflict with single-type-import (7.6).
             {
                 String[] ss = declaringCompilationUnit.getSingleTypeImport(name);
-                if (ss != null) throwParseException("Package member class declaration \"" + name + "\" conflicts with single-type-import \"" + Java.join(ss, ".") + "\"");
+                if (ss != null) this.throwParseException("Package member class declaration \"" + name + "\" conflicts with single-type-import \"" + Java.join(ss, ".") + "\"");
             }
 
             // Check for redefinition within compilation unit (7.6).
@@ -674,8 +692,8 @@ public class Java {
         public final void visit(Visitor.TypeDeclarationVisitor visitor) { visitor.visitPackageMemberClassDeclaration(this); }
     }
 
-    public abstract static class InterfaceDeclaration extends AbstractTypeDeclaration implements NamedTypeDeclaration {
-        final String               optionalDocComment;
+    public abstract static class InterfaceDeclaration extends AbstractTypeDeclaration implements NamedTypeDeclaration, DocCommentable {
+        private final String       optionalDocComment;
         protected /*final*/ String name;
 
         protected InterfaceDeclaration(
@@ -711,6 +729,10 @@ public class Java {
 
         // Set during "compile()".
         IClass[] interfaces = null;
+
+        // Implement DocCommentable.
+		public String getDocComment() { return this.optionalDocComment; }
+		public boolean hasDeprecatedDocTag() { return this.optionalDocComment != null && this.optionalDocComment.indexOf("@deprecated") != -1; }
     }
 
     public static final class MemberInterfaceDeclaration extends InterfaceDeclaration implements MemberTypeDeclaration {
@@ -781,12 +803,12 @@ public class Java {
                 Mod.PROTECTED |
                 Mod.PRIVATE |
                 Mod.STATIC
-            )) != 0) throwParseException("Modifiers \"protected\", \"private\" and \"static\" not allowed in package member interface declaration");
+            )) != 0) this.throwParseException("Modifiers \"protected\", \"private\" and \"static\" not allowed in package member interface declaration");
 
             // Check for conflict with single-type-import (JLS 7.6).
             {
                 String[] ss = declaringCompilationUnit.getSingleTypeImport(name);
-                if (ss != null) throwParseException("Package member interface declaration \"" + name + "\" conflicts with single-type-import \"" + Java.join(ss, ".") + "\"");
+                if (ss != null) this.throwParseException("Package member interface declaration \"" + name + "\" conflicts with single-type-import \"" + Java.join(ss, ".") + "\"");
             }
 
             // Check for redefinition within compilation unit (JLS 7.6).
@@ -884,13 +906,13 @@ public class Java {
      * Abstract base class for {@link Java.ConstructorDeclarator} and
      * {@link Java.MethodDeclarator}.
      */
-    public abstract static class FunctionDeclarator extends AbstractTypeBodyDeclaration {
-        final String            optionalDocComment;
+    public abstract static class FunctionDeclarator extends AbstractTypeBodyDeclaration implements DocCommentable {
+        private final String    optionalDocComment;
         protected final short   modifiers;
         final Type              type;
         final String            name;
         final FormalParameter[] formalParameters;
-        protected final Type[]          thrownExceptions;
+        protected final Type[]  thrownExceptions;
         Block                   optionalBody = null;
 
         public FunctionDeclarator(
@@ -931,6 +953,10 @@ public class Java {
         // Set by "compile()".
         IClass                  returnType = null;
         final HashMap                   parameters = new HashMap();   // String name => LocalVariable
+
+        // Implement DocCommentable.
+		public String getDocComment() { return this.optionalDocComment; }
+		public boolean hasDeprecatedDocTag() { return this.optionalDocComment != null && this.optionalDocComment.indexOf("@deprecated") != -1; }
     }
 
     public static final class ConstructorDeclarator extends FunctionDeclarator {
@@ -1031,8 +1057,8 @@ public class Java {
      * initialization of the field. In other words, "compile()" generates the
      * code that initializes the field.
      */
-    public static final class FieldDeclarator extends Statement implements TypeBodyDeclaration {
-        final String                  optionalDocComment;
+    public static final class FieldDeclarator extends Statement implements TypeBodyDeclaration, DocCommentable {
+        private final String          optionalDocComment;
         final AbstractTypeDeclaration declaringType;
         final short                   modifiers;
         final Type                    type;
@@ -1077,6 +1103,10 @@ public class Java {
 
         public final void visit(Visitor.TypeBodyDeclarationVisitor visitor) { visitor.visitFieldDeclarator(this); }
         public final void visit(Visitor.BlockStatementVisitor visitor) { visitor.visitFieldDeclarator(this); }
+
+        // Implement DocCommentable.
+		public String getDocComment() { return this.optionalDocComment; }
+		public boolean hasDeprecatedDocTag() { return this.optionalDocComment != null && this.optionalDocComment.indexOf("@deprecated") != -1; }
     }
 
     public final static class VariableDeclarator extends Located {
@@ -1764,7 +1794,7 @@ public class Java {
             this.identifiers = identifiers;
         }
 
-        public String toString() { return join(this.identifiers, "."); }
+        public String toString() { return Java.join(this.identifiers, "."); }
 
         public final void visit(Visitor.AtomVisitor visitor) { visitor.visitReferenceType(this); }
         public final void visit(Visitor.TypeVisitor visitor) { visitor.visitReferenceType(this); }
