@@ -39,6 +39,6 @@ package org.codehaus.janino.util.iterator;
  * indicate that it has encountered an element that cannot be iterated.
  */
 public class UniterableElementException extends RuntimeException {
+    /** */
     public UniterableElementException() {}
-    public UniterableElementException(String message) { super(message); }
 }
