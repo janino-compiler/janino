@@ -61,13 +61,13 @@ public class Descriptor {
     }
     public static short size(String d) {
         if (d.equals(Descriptor.VOID)) return 0;
-        if (hasSize1(d)) return 1;
-        if (hasSize2(d)) return 2;
-        throw new RuntimeException("No size defined for type \"" + toString(d) + "\"");
+        if (Descriptor.hasSize1(d)) return 1;
+        if (Descriptor.hasSize2(d)) return 2;
+        throw new RuntimeException("No size defined for type \"" + Descriptor.toString(d) + "\"");
     }
     public static boolean hasSize1(String d) {
         if (d.length() == 1) return "BCFISZ".indexOf(d) != -1;
-        return isReference(d);
+        return Descriptor.isReference(d);
     }
     public static boolean hasSize2(String d) {
         return d.equals(Descriptor.LONG) || d.equals(Descriptor.DOUBLE);
@@ -82,13 +82,13 @@ public class Descriptor {
             sb.append("(");
             while (idx < d.length() && d.charAt(idx) != ')') {
                 if (idx != 1) sb.append(", ");
-                idx = toString(d, idx, sb);
+                idx = Descriptor.toString(d, idx, sb);
             }
             if (idx >= d.length()) throw new RuntimeException("Invalid descriptor \"" + d + "\"");
             sb.append(") => ");
             ++idx;
         }
-        toString(d, idx, sb);
+        Descriptor.toString(d, idx, sb);
         return sb.toString();
     }
     private static int toString(String d, int idx, StringBuffer sb) {

@@ -291,7 +291,7 @@ public class CodeContext {
                 --stackSize;
                 /* FALL THROUGH */
             case Opcode.SD_GETSTATIC:
-                stackSize += determineFieldSize((short) (
+                stackSize += this.determineFieldSize((short) (
                     (code[operandOffset] << 8) + (0xff & code[operandOffset + 1])
                 ));
                 break;
@@ -300,7 +300,7 @@ public class CodeContext {
                 --stackSize;
                 /* FALL THROUGH */
             case Opcode.SD_PUTSTATIC:
-                stackSize -= determineFieldSize((short) (
+                stackSize -= this.determineFieldSize((short) (
                     (code[operandOffset] << 8) + (0xff & code[operandOffset + 1])
                 ));
                 break;
@@ -311,7 +311,7 @@ public class CodeContext {
                 --stackSize;
                 /* FALL THROUGH */
             case Opcode.SD_INVOKESTATIC:
-                stackSize -= determineArgumentsSize((short) (
+                stackSize -= this.determineArgumentsSize((short) (
                     (code[operandOffset] << 8) + (0xff & code[operandOffset + 1])
                 ));
                 break;
@@ -370,7 +370,7 @@ public class CodeContext {
                     System.out.println(code[operandOffset]);
                     System.out.println(code[operandOffset + 1]);
                 }
-                flowAnalysis(
+                this.flowAnalysis(
                     functionName,
                     code, codeSize,
                     offset + (
@@ -394,7 +394,7 @@ public class CodeContext {
                     ((0xff & code[operandOffset++])     )
                 );
                 if (stackSizes[targetOffset] == CodeContext.UNEXAMINED) {
-                    flowAnalysis(
+                    this.flowAnalysis(
                         functionName,
                         code, codeSize,
                         targetOffset,
@@ -405,7 +405,7 @@ public class CodeContext {
                 break;
 
             case Opcode.OP1_BO4:
-                flowAnalysis(
+                this.flowAnalysis(
                     functionName,
                     code, codeSize,
                     offset + (
@@ -420,7 +420,7 @@ public class CodeContext {
 
             case Opcode.OP1_LOOKUPSWITCH:
                 while ((operandOffset & 3) != 0) ++operandOffset;
-                flowAnalysis(
+                this.flowAnalysis(
                     functionName,
                     code, codeSize,
                     offset + (
@@ -439,7 +439,7 @@ public class CodeContext {
                 );
                 for (int i = 0; i < npairs; ++i) {
                     operandOffset += 4;
-                    flowAnalysis(
+                    this.flowAnalysis(
                         functionName,
                         code, codeSize,
                         offset + (
@@ -455,7 +455,7 @@ public class CodeContext {
 
             case Opcode.OP1_TABLESWITCH:
                 while ((operandOffset & 3) != 0) ++operandOffset;
-                flowAnalysis(
+                this.flowAnalysis(
                     functionName,
                     code, codeSize,
                     offset + (
@@ -479,7 +479,7 @@ public class CodeContext {
                     ((0xff & code[operandOffset++])      )
                 );
                 for (int i = low; i <= hi; ++i) {
-                    flowAnalysis(
+                    this.flowAnalysis(
                         functionName,
                         code, codeSize,
                         offset + (
@@ -651,7 +651,7 @@ public class CodeContext {
     }
 
     public void writeBranch(short lineNumber, int opcode, final Offset dst) {
-        this.relocatables.add(new Branch(newOffset(), dst));
+        this.relocatables.add(new Branch(this.newOffset(), dst));
         this.write(lineNumber, new byte[] { (byte) opcode, -1, -1 });
     }
 

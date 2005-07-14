@@ -119,7 +119,7 @@ public abstract class IClass {
             Map m = new HashMap();
 
             // Fill the map with "IMethod"s and "List"s.
-            IMethod[] dims = getDeclaredIMethods();
+            IMethod[] dims = this.getDeclaredIMethods();
             for (int i = 0; i < dims.length; i++) {
                 IMethod dim = dims[i];
                 String mn = dim.getName();
@@ -654,7 +654,7 @@ public abstract class IClass {
         public String getDescriptor() throws CompileException {
             return new MethodDescriptor(
                 IClass.getDescriptors(this.getParameterTypes()),
-                getReturnType().getDescriptor()
+                this.getReturnType().getDescriptor()
             ).toString();
         }
         public String toString() {
@@ -692,7 +692,7 @@ public abstract class IClass {
         public abstract IClass  getType() throws CompileException;
         public abstract String  getName();
         public String getDescriptor() throws CompileException {
-            return getType().getDescriptor();
+            return this.getType().getDescriptor();
         }
         public abstract Object  getConstantValue() throws CompileException;
         public String toString() { return this.getName(); }
