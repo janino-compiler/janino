@@ -45,7 +45,7 @@ import org.codehaus.janino.util.*;
  * associated with exactly one compilation unit which it compiles.
  */
 public class UnitCompiler {
-	private static final boolean DEBUG = false;
+    private static final boolean DEBUG = false;
 
     public UnitCompiler(
         Java.CompilationUnit compilationUnit,
@@ -76,7 +76,7 @@ public class UnitCompiler {
     // ------------ TypeDeclaration.compile() -------------
 
     private void compile(Java.TypeDeclaration td) throws CompileException {
-    	Visitor.TypeDeclarationVisitor tdv = new Visitor.TypeDeclarationVisitor() {
+        Visitor.TypeDeclarationVisitor tdv = new Visitor.TypeDeclarationVisitor() {
             public void visitAnonymousClassDeclaration        (Java.AnonymousClassDeclaration acd)          { try { UnitCompiler.this.compile2(acd ); } catch (CompileException e) { throw new TunnelException(e); } }
             public void visitLocalClassDeclaration            (Java.LocalClassDeclaration lcd)              { try { UnitCompiler.this.compile2(lcd ); } catch (CompileException e) { throw new TunnelException(e); } }
             public void visitPackageMemberClassDeclaration    (Java.PackageMemberClassDeclaration pmcd)     { try { UnitCompiler.this.compile2(pmcd); } catch (CompileException e) { throw new TunnelException(e); } }
@@ -151,6 +151,11 @@ public class UnitCompiler {
             cf.addSourceFileAttribute(sourceFileName);
         }
 
+        // Add "Deprecated" attribute (JVMS 4.7.10)
+        if (cd instanceof Java.DocCommentable) {
+            if (((Java.DocCommentable) cd).hasDeprecatedDocTag()) cf.addDeprecatedAttribute();
+        }
+
         // Optional: Generate and compile class initialization method.
         {
             Java.MethodDeclarator classInitializationMethod = new Java.MethodDeclarator(
@@ -210,29 +215,7 @@ public class UnitCompiler {
         for (Iterator it = cd.variableDeclaratorsAndInitializers.iterator(); it.hasNext();) {
             Java.TypeBodyDeclaration tbd = (Java.TypeBodyDeclaration) it.next();
             if (!(tbd instanceof Java.FieldDeclarator)) continue;
-
-            Java.FieldDeclarator fd = (Java.FieldDeclarator) tbd;
-            for (int j = 0; j < fd.variableDeclarators.length; ++j) {
-                Java.VariableDeclarator vd = fd.variableDeclarators[j];
-                Java.Type type = fd.type;
-                for (int k = 0; k < vd.brackets; ++k) type = new Java.ArrayType(type);
-
-                Object cv = null;
-                if (
-                    (fd.modifiers & (Mod.STATIC | Mod.FINAL)) == (Mod.STATIC | Mod.FINAL) &&
-                    vd.optionalInitializer != null
-                ) {
-                    cv = this.getConstantValue(vd.optionalInitializer);
-                    if (cv == Java.Rvalue.CONSTANT_VALUE_NULL) cv = null;
-                }
-
-                cf.addFieldInfo(
-                    fd.modifiers,                       // modifiers
-                    vd.name,                            // fieldName
-                    this.getType(type).getDescriptor(), // fieldTypeFD
-                    cv                                  // optionalConstantValue
-                );
-            }
+            this.addFields((Java.FieldDeclarator) tbd, cf);
         }
 
         // Synthetic fields.
@@ -265,6 +248,39 @@ public class UnitCompiler {
 
         // Add the generated class file to a thread-local store.
         this.generatedClassFiles.add(cf);
+    }
+
+    /**
+     * Create {@link ClassFile.FieldInfo}s for all fields declared by the
+     * given {@link Java.FieldDeclarator}.
+     */
+    private void addFields(Java.FieldDeclarator fd, ClassFile cf) throws CompileException {
+        for (int j = 0; j < fd.variableDeclarators.length; ++j) {
+            Java.VariableDeclarator vd = fd.variableDeclarators[j];
+            Java.Type type = fd.type;
+            for (int k = 0; k < vd.brackets; ++k) type = new Java.ArrayType(type);
+
+            Object ocv = null;
+            if (
+                (fd.modifiers & Mod.FINAL) != 0 &&
+                vd.optionalInitializer != null
+            ) {
+                ocv = this.getConstantValue(vd.optionalInitializer);
+                if (ocv == Java.Rvalue.CONSTANT_VALUE_NULL) ocv = null;
+            }
+
+            ClassFile.FieldInfo fi = cf.addFieldInfo(
+                fd.modifiers,                       // modifiers
+                vd.name,                            // fieldName
+                this.getType(type).getDescriptor(), // fieldTypeFD
+                ocv                                 // optionalConstantValue
+            );
+
+            // Add "Deprecated" attribute (JVMS 4.7.10)
+            if (fd.hasDeprecatedDocTag()) {
+                fi.addAttribute(new ClassFile.DeprecatedAttribute(cf.addConstantUtf8Info("Deprecated")));
+            }
+        }
     }
 
     public void compile2(Java.AnonymousClassDeclaration acd) throws CompileException {
@@ -356,6 +372,9 @@ public class UnitCompiler {
             cf.addSourceFileAttribute(sourceFileName);
         }
 
+        // Add "Deprecated" attribute (JVMS 4.7.10)
+        if (id.hasDeprecatedDocTag()) cf.addDeprecatedAttribute();
+
         // Interface initialization method.
         if (!id.constantDeclarations.isEmpty()) {
             Java.MethodDeclarator interfaceInitializationMethod = new Java.MethodDeclarator(
@@ -397,23 +416,7 @@ public class UnitCompiler {
         for (int i = 0; i < id.constantDeclarations.size(); ++i) {
             Java.BlockStatement bs = (Java.BlockStatement) id.constantDeclarations.get(i);
             if (!(bs instanceof Java.FieldDeclarator)) continue;
-            Java.FieldDeclarator fd = (Java.FieldDeclarator) bs;
-            for (int j = 0; j < fd.variableDeclarators.length; ++j) {
-                Java.VariableDeclarator vd = fd.variableDeclarators[j];
-                Java.Type type = fd.type;
-                for (int k = 0; k < vd.brackets; ++k) type = new Java.ArrayType(type);
-                Object ocv = (
-                    (fd.modifiers & Mod.FINAL) != 0 &&
-                    vd.optionalInitializer != null
-                ) ? this.getConstantValue(vd.optionalInitializer) : null;
-                if (ocv == Java.Rvalue.CONSTANT_VALUE_NULL) ocv = null;
-                cf.addFieldInfo(
-                    fd.modifiers,                       // accessFlags
-                    vd.name,                            // fieldName
-                    this.getType(type).getDescriptor(), // fieldTypeFD
-                    ocv                                 // optionalConstantValue
-                );
-            }
+            this.addFields((Java.FieldDeclarator) bs, cf);
         }
 
         // Member types.
@@ -1225,12 +1228,25 @@ public class UnitCompiler {
             this.toIInvocable(fd).getDescriptor() // methodMD
         );
 
+        // Add "Exceptions" attribute (JVMS 4.7.4).
+        {
+            final short eani = classFile.addConstantUtf8Info("Exceptions");
+            short[] tecciis = new short[fd.thrownExceptions.length];
+            for (int i = 0; i < fd.thrownExceptions.length; ++i) {
+                tecciis[i] = classFile.addConstantClassInfo(this.getType(fd.thrownExceptions[i]).getDescriptor());
+            }
+            mi.addAttribute(new ClassFile.ExceptionsAttribute(eani, tecciis));
+        }
+
+        // Add "Deprecated" attribute (JVMS 4.7.10)
+        if (fd.hasDeprecatedDocTag()) {
+            mi.addAttribute(new ClassFile.DeprecatedAttribute(classFile.addConstantUtf8Info("Deprecated")));
+        }
+
         if ((fd.modifiers & (Mod.ABSTRACT | Mod.NATIVE)) != 0) return;
 
         // Create CodeContext.
-        final CodeContext codeContext = new CodeContext(
-            mi.getClassFile()
-        );
+        final CodeContext codeContext = new CodeContext(mi.getClassFile());
 
         CodeContext savedCodeContext = this.replaceCodeContext(codeContext);
         try {
@@ -1344,16 +1360,6 @@ public class UnitCompiler {
                 codeContext.storeCodeAttributeBody(dos, lntani);
             }
         });
-
-        // Add "Exceptions" attribute (JVMS 4.7.4).
-        {
-            final short eani = classFile.addConstantUtf8Info("Exceptions");
-            short[] tecciis = new short[fd.thrownExceptions.length];
-            for (int i = 0; i < fd.thrownExceptions.length; ++i) {
-                tecciis[i] = classFile.addConstantClassInfo(this.getType(fd.thrownExceptions[i]).getDescriptor());
-            }
-            mi.addAttribute(new ClassFile.ExceptionsAttribute(eani, tecciis));
-        }
     }
 
     // ------------------ Rvalue.compile() ----------------
@@ -2390,11 +2396,13 @@ public class UnitCompiler {
                 scopeClassDeclaration = (Java.ClassDeclaration) s;
             }
             if (iMethod.isStatic()) {
+                this.warning("IASM", "Implicit access to static method \"" + iMethod.toString() + "\"", mi.getLocation());
                 // JLS2 15.12.4.1.1.1.1
                 ;
             } else {
+                this.warning("IANSM", "Implicit access to non-static method \"" + iMethod.toString() + "\"", mi.getLocation());
                 // JLS2 15.12.4.1.1.1.2
-                if (scopeTBD.isStatic()) this.compileError("Instance method \"" + mi.methodName + "\" cannot be invoked in static context", mi.getLocation());
+                if (scopeTBD.isStatic()) this.compileError("Instance method \"" + iMethod.toString() + "\" cannot be invoked in static context", mi.getLocation());
                 this.referenceThis(
                     (Java.Located) mi,           // located
                     scopeClassDeclaration,       // declaringClass
@@ -4960,7 +4968,7 @@ public class UnitCompiler {
                     IClass[] mts = new IClass[atd.declaredClassesAndInterfaces.size()];
                     int i = 0;
                     for (Iterator it = atd.declaredClassesAndInterfaces.iterator(); it.hasNext();) {
-                    	mts[i++] = UnitCompiler.this.resolve((Java.AbstractTypeDeclaration) it.next());
+                        mts[i++] = UnitCompiler.this.resolve((Java.AbstractTypeDeclaration) it.next());
                     }
                     this.declaredClasses = mts;
                 }
@@ -5227,9 +5235,9 @@ public class UnitCompiler {
     }
 
     /*package*/ IClass.IConstructor toIConstructor(final Java.ConstructorDeclarator cd) {
-    	if (cd.iConstructor != null) return cd.iConstructor;
+        if (cd.iConstructor != null) return cd.iConstructor;
 
-    	cd.iConstructor = this.resolve((Java.AbstractTypeDeclaration) cd.getDeclaringType()).new IConstructor() {
+        cd.iConstructor = this.resolve((Java.AbstractTypeDeclaration) cd.getDeclaringType()).new IConstructor() {
 
             // Implement IMember.
             public int getAccess() {
@@ -5302,12 +5310,12 @@ public class UnitCompiler {
                 return sb.append(')').toString();
             }
         };
-    	return cd.iConstructor;
+        return cd.iConstructor;
     }
 
     public IClass.IMethod toIMethod(final Java.MethodDeclarator md) {
-    	if (md.iMethod != null) return md.iMethod;
-    	md.iMethod = this.resolve((Java.AbstractTypeDeclaration) md.getDeclaringType()).new IMethod() {
+        if (md.iMethod != null) return md.iMethod;
+        md.iMethod = this.resolve((Java.AbstractTypeDeclaration) md.getDeclaringType()).new IMethod() {
 
             // Implement IMember.
             public int getAccess() {
@@ -5350,19 +5358,19 @@ public class UnitCompiler {
             }
             public String getName() { return md.getName(); }
         };
-    	return md.iMethod;
+        return md.iMethod;
     }
 
     private IClass.IInvocable toIInvocable(Java.FunctionDeclarator fd) {
-    	if (fd instanceof Java.ConstructorDeclarator) {
-    		return this.toIConstructor((Java.ConstructorDeclarator) fd);
-    	} else
-    	if (fd instanceof Java.MethodDeclarator) {
-    		return this.toIMethod((Java.MethodDeclarator) fd);
-    	} else
-    	{
-    		throw new RuntimeException();
-    	}
+        if (fd instanceof Java.ConstructorDeclarator) {
+            return this.toIConstructor((Java.ConstructorDeclarator) fd);
+        } else
+        if (fd instanceof Java.MethodDeclarator) {
+            return this.toIMethod((Java.MethodDeclarator) fd);
+        } else
+        {
+            throw new RuntimeException();
+        }
     }
 
     /**
@@ -5558,7 +5566,7 @@ public class UnitCompiler {
                 this.writeOpcode(located, Opcode.FCONST_0 + (int) fv);
             } else
             {
-				this.writeLDC(located, this.addConstantFloatInfo(fv));
+                this.writeLDC(located, this.addConstantFloatInfo(fv));
             }
             return IClass.FLOAT;
         }
@@ -5572,7 +5580,7 @@ public class UnitCompiler {
             } else
             {
                 this.writeOpcode(located, Opcode.LDC2_W);
-				this.writeConstantDoubleInfo(located, dv);
+                this.writeConstantDoubleInfo(located, dv);
             }
             return IClass.DOUBLE;
         }
@@ -6092,7 +6100,7 @@ public class UnitCompiler {
         IClass  sourceType,
         IClass  targetType
     ) throws CompileException {
-        if (!isNarrowingReferenceConvertible(sourceType, targetType)) return false;
+        if (!this.isNarrowingReferenceConvertible(sourceType, targetType)) return false;
 
         this.writeOpcode(located, Opcode.CHECKCAST);
         this.writeConstantClassInfo(located, targetType.getDescriptor());
@@ -6200,7 +6208,7 @@ public class UnitCompiler {
         Java.Located       located,
         Java.LocalVariable localVariable
     ) {
-        load(
+        this.load(
             located,
             localVariable.type,
             localVariable.localVariableArrayIndex
