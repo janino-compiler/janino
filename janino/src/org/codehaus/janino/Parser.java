@@ -112,6 +112,7 @@ import java.util.*;
  *   <li>References between uncompiled compilation units
  *   <li>Line number tables a la "-g:lines"
  *   <li>Source file information a la "-g:source"
+ *   <li>Handling of <code>&#64;deprecated</code> doc comment tag
  * </ul>
  *
  * <a name="limitations"></a>
@@ -145,7 +146,7 @@ public class Parser {
         if (this.scanner.peek().isKeyword("package")) {
             this.scanner.read();
             Location loc = this.scanner.peek().getLocation();
-            String packageName = join(this.parseQualifiedIdentifier(), ".");
+            String packageName = Parser.join(this.parseQualifiedIdentifier(), ".");
             this.verifyStringIsConventionalPackageName(packageName, loc);
             compilationUnit.setPackageDeclaration(new Java.PackageDeclaration(loc, packageName));
             if (!this.scanner.read().isOperator(";")) this.throwParseException("Semicolon expected after \"package\" directive");
@@ -234,10 +235,12 @@ public class Parser {
         Java.Scope enclosingScope
     ) throws ParseException, Scanner.ScanException, IOException {
         String optionalDocComment = this.scanner.doc();
+
         short modifiers = this.parseModifiersOpt();
 
         Java.NamedTypeDeclaration res;
         if (this.scanner.peek().isKeyword("class")) {
+            if (optionalDocComment == null) this.warning("CDCM", "Class doc comment missing", this.scanner.peek().getLocation());
             this.scanner.read();
             res = this.parseClassDeclarationRest(
                 enclosingScope,     // enclosingScope
@@ -246,6 +249,7 @@ public class Parser {
             );
         } else
         if (this.scanner.peek().isKeyword("interface")) {
+            if (optionalDocComment == null) this.warning("IDCM", "Interface doc comment missing", this.scanner.peek().getLocation());
             this.scanner.read();
             res = this.parseInterfaceDeclarationRest(
                 enclosingScope,     // enclosingScope
@@ -444,6 +448,7 @@ public class Parser {
         // "void" method declaration.
         if (this.scanner.peek().isKeyword("void")) {
             Location location = this.scanner.read().getLocation();
+            if (optionalDocComment == null) this.warning("MDCM", "Method doc comment missing", location);
             if (!this.scanner.peek().isIdentifier()) this.throwParseException("Method name expected after \"void\"");
             String name = this.scanner.read().getIdentifier();
             classDeclaration.declaredMethods.add(this.parseMethodDeclaratorRest(
@@ -458,6 +463,7 @@ public class Parser {
 
         // Member class.
         if (this.scanner.peek().isKeyword("class")) {
+            if (optionalDocComment == null) this.warning("MCDCM", "Member class doc comment missing", this.scanner.peek().getLocation());
             this.scanner.read();
             classDeclaration.addMemberTypeDeclaration((Java.MemberTypeDeclaration) this.parseClassDeclarationRest(
                 (Java.Scope) classDeclaration, // enclosingScope
@@ -469,6 +475,7 @@ public class Parser {
 
         // Member interface.
         if (this.scanner.peek().isKeyword("interface")) {
+            if (optionalDocComment == null) this.warning("MIDCM", "Member interface doc comment missing", this.scanner.peek().getLocation());
             this.scanner.read();
             classDeclaration.addMemberTypeDeclaration((Java.MemberTypeDeclaration) this.parseInterfaceDeclarationRest(
                 classDeclaration,                // enclosingScope
@@ -484,6 +491,7 @@ public class Parser {
             this.scanner.peek().isIdentifier(((Java.NamedClassDeclaration) classDeclaration).getName()) &&
             this.scanner.peekNextButOne().isOperator("(")
         ) {
+            if (optionalDocComment == null) this.warning("CDCM", "Constructor doc comment missing", this.scanner.peek().getLocation());
             classDeclaration.addConstructor(this.parseConstructorDeclarator(
                 classDeclaration,   // declaringClass
                 optionalDocComment, // optionalDocComment
@@ -500,6 +508,7 @@ public class Parser {
 
         // Method declarator.
         if (this.scanner.peek().isOperator("(")) {
+            if (optionalDocComment == null) this.warning("MDCM", "Method doc comment missing", this.scanner.peek().getLocation());
             classDeclaration.declaredMethods.add(this.parseMethodDeclaratorRest(
                 classDeclaration,   // declaringType
                 optionalDocComment, // optionalDocComment
@@ -511,6 +520,7 @@ public class Parser {
         }
 
         // Field declarator.
+        if (optionalDocComment == null) this.warning("FDCM", "Field doc comment missing", this.scanner.peek().getLocation());
         Java.FieldDeclarator fd = new Java.FieldDeclarator(
             location,           // location
             classDeclaration,   // declaringType
@@ -619,6 +629,7 @@ public class Parser {
 
             // "void" method declaration.
             if (this.scanner.peek().isKeyword("void")) {
+                if (optionalDocComment == null) this.warning("MDCM", "Method doc comment missing", this.scanner.peek().getLocation());
                 Location location = this.scanner.read().getLocation();
                 if (!this.scanner.peek().isIdentifier()) this.throwParseException("Method name expected after \"void\"");
                 String name = this.scanner.read().getIdentifier();
@@ -633,6 +644,7 @@ public class Parser {
 
             // Member class.
             if (this.scanner.peek().isKeyword("class")) {
+                if (optionalDocComment == null) this.warning("MCDCM", "Member class doc comment missing", this.scanner.peek().getLocation());
                 this.scanner.read();
                 interfaceDeclaration.addMemberTypeDeclaration((Java.MemberTypeDeclaration) this.parseClassDeclarationRest(
                     interfaceDeclaration,                         // enclosingScope
@@ -643,6 +655,7 @@ public class Parser {
 
             // Member interface.
             if (this.scanner.peek().isKeyword("interface")) {
+                if (optionalDocComment == null) this.warning("MIDCM", "Member interface doc comment missing", this.scanner.peek().getLocation());
                 this.scanner.read();
                 interfaceDeclaration.addMemberTypeDeclaration((Java.MemberTypeDeclaration) this.parseInterfaceDeclarationRest(
                     interfaceDeclaration,                         // enclosingScope
@@ -660,6 +673,7 @@ public class Parser {
 
                 // Method declarator.
                 if (this.scanner.peek().isOperator("(")) {
+                    if (optionalDocComment == null) this.warning("MDCM", "Method doc comment missing", this.scanner.peek().getLocation());
                     interfaceDeclaration.declaredMethods.add(this.parseMethodDeclaratorRest(
                         interfaceDeclaration,                            // declaringType
                         optionalDocComment,                              // optionalDocComment
@@ -671,6 +685,7 @@ public class Parser {
 
                 // Field declarator.
                 {
+                    if (optionalDocComment == null) this.warning("FDCM", "Field doc comment missing", this.scanner.peek().getLocation());
                     Java.FieldDeclarator fd = new Java.FieldDeclarator(
                         location,                          // location
                         interfaceDeclaration,              // declaringType
@@ -1046,6 +1061,8 @@ public class Parser {
             // JAVADOC[TM] ignores doc comments for local classes, but we
             // don't...
             String optionalDocComment = this.scanner.doc();
+            if (optionalDocComment == null) this.warning("LCDCM", "Local class doc comment missing", this.scanner.peek().getLocation());
+
             this.scanner.read();
             final Java.LocalClassDeclaration lcd = (Java.LocalClassDeclaration) this.parseClassDeclarationRest(
                 (Java.Scope) enclosingBlock,      // enclosingScope
