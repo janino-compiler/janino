@@ -37,10 +37,18 @@ package org.codehaus.janino;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Representation of a "method descriptor" (JVMS 4.3.3).
+ */
 public class MethodDescriptor {
+
+    /** The field descriptors of the method parameters. */
     public final String[] parameterFDs;
+
+    /** The field descriptor of the method return value. */
     public final String   returnFD;
 
+    /** */
     public MethodDescriptor(String[] parameterFDs, String returnFD) {
         this.parameterFDs = parameterFDs;
         this.returnFD     = returnFD;
@@ -73,6 +81,9 @@ public class MethodDescriptor {
         this.returnFD = s.substring(++from);
     }
 
+    /**
+     * Returns the "method descriptor" (JVMS 4.3.3).
+     */
     public String toString() {
         StringBuffer sb = new StringBuffer("(");
         for (int i = 0; i < this.parameterFDs.length; ++i) sb.append(this.parameterFDs[i]);
