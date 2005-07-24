@@ -2739,7 +2739,7 @@ public class Java {
     }
 
     public static final class Literal extends Rvalue {
-        public final Object value;
+        public final Object value; // The "null" literal has "value == null".
 
         public Literal(Location location, Object value) {
             super(location);
