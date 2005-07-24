@@ -441,7 +441,20 @@ public class UnitCompiler {
     }
 
     /**
-     * @return <tt>false</tt> if this statement cannot complete normally (14.20)
+     * Checks whether this statement can complete normally (JLS2 14.20)
+     */
+    private boolean canCompleteNormally(Java.BlockStatement bs) throws CompileException {
+        CodeContext savedCodeContext = this.replaceCodeContext(this.createDummyCodeContext());
+        try {
+            return this.compile(bs);
+        } finally {
+            this.replaceCodeContext(savedCodeContext);
+        }
+    }
+
+    /**
+     * @return <tt>false</tt> if this statement cannot complete normally (JLS2
+     * 14.20)
      */
     private boolean compile(Java.BlockStatement bs) throws CompileException {
         final boolean[] res = new boolean[1];
@@ -894,6 +907,7 @@ public class UnitCompiler {
         if (cv instanceof Boolean) {
 
             // Constant condition.
+            this.fakeCompile(is.condition);
             Java.BlockStatement seeingStatement, blindStatement;
             if (((Boolean) cv).booleanValue()) {
                 seeingStatement = is.thenStatement;
@@ -907,24 +921,15 @@ public class UnitCompiler {
             boolean ssccn = this.compile(seeingStatement);
             if (ssccn) return true;
 
-            // Hm... the "seeing statement" cannot complete normally. So, in order
-            // to determine whether the IF statement ccn, we need to compile the
-            // "blind statement" to a fake code attribute to find out whether
-            // it can complete normally.
-            boolean bsccn;
-            CodeContext savedCodeContext = this.replaceCodeContext(this.createDummyCodeContext());
-            try {
-                bsccn = this.compile(blindStatement);
-            } finally {
-                this.replaceCodeContext(savedCodeContext);
-            }
-
-            // Neither the seeing nor the blind statement ccn.
-            if (!bsccn) return false;
+            // Hm... the "seeing statement" cannot complete normally. So, in
+            // order to determine whether the IF statement can complete
+            // normally, we need to check whether the "blind statement" can
+            // complete normally.
+            if (!this.canCompleteNormally(blindStatement)) return false;
 
             // We have a very complicated case here: The blind statement can complete
             // normally, but the seeing statement can't. This makes the following
-            // code physically unreachable, but JLS 14.20 says that this should not
+            // code physically unreachable, but JLS2 14.20 says that this should not
             // be considered an error.
             // Calling "followingStatementsAreDead()" on the enclosing Block
             // keeps it from generating unreachable code.
@@ -1365,6 +1370,19 @@ public class UnitCompiler {
     // ------------------ Rvalue.compile() ----------------
 
     /**
+     * Call to check whether the given {@link Java.Rvalue} compiles or not.
+     */
+    private void fakeCompile(Java.Rvalue rv) throws CompileException {
+        CodeContext savedCodeContext = this.replaceCodeContext(this.createDummyCodeContext());
+        try {
+            this.compileContext(rv);
+            this.compileGet(rv);
+        } finally {
+            this.replaceCodeContext(savedCodeContext);
+        }
+    }
+
+    /**
      * Some {@link Java.Rvalue}s compile more efficiently when their value
      * is not needed, e.g. "i++".
      */
@@ -1589,20 +1607,11 @@ public class UnitCompiler {
         }
     }
     /*private*/ void compileBoolean2(
-        Java.Rvalue rv,
+        Java.Rvalue        rv,
         CodeContext.Offset dst,        // Where to jump.
         boolean            orientation // JUMP_IF_TRUE or JUMP_IF_FALSE.
     ) throws CompileException {
-        Object cv = this.getConstantValue(rv);
-        if (cv instanceof Boolean) {
-            if (orientation == Java.Rvalue.JUMP_IF_FALSE ^ ((Boolean) cv).booleanValue()) {
-                this.writeBranch(rv, Opcode.GOTO, dst);
-            }
-            return;
-        }
-
         if (this.compileGetValue(rv) != IClass.BOOLEAN) this.compileError("Not a boolean expression", rv.getLocation());
-
         this.writeBranch(rv, orientation == Java.Rvalue.JUMP_IF_TRUE ? Opcode.IFNE : Opcode.IFEQ, dst);
     }
     /*private*/ void compileBoolean2(
@@ -1619,20 +1628,9 @@ public class UnitCompiler {
     }
     /*private*/ void compileBoolean2(
         Java.BinaryOperation bo,
-        CodeContext.Offset dst,        // Where to jump.
-        boolean            orientation // JUMP_IF_TRUE or JUMP_IF_FALSE.
+        CodeContext.Offset   dst,        // Where to jump.
+        boolean              orientation // JUMP_IF_TRUE or JUMP_IF_FALSE.
     ) throws CompileException {
-
-        // Constant expression?
-        {
-            Object cv = this.getConstantValue(bo);
-            if (cv instanceof Boolean) {
-                if (orientation == Java.Rvalue.JUMP_IF_FALSE ^ ((Boolean) cv).booleanValue()) {
-                    this.writeBranch(bo, Opcode.GOTO, dst);
-                }
-                return;
-            }
-        }
 
         if (bo.op == "|" || bo.op == "^" || bo.op == "&") {
             this.compileBoolean2((Java.Rvalue) bo, dst, orientation);
@@ -1640,6 +1638,30 @@ public class UnitCompiler {
         }
 
         if (bo.op == "||" || bo.op == "&&") {
+            Object lhsCV = this.getConstantValue(bo.lhs);
+            if (lhsCV instanceof Boolean) {
+                if (((Boolean) lhsCV).booleanValue() ^ bo.op == "||") {
+                    // "true && a", "false || a"
+                    this.compileBoolean(bo.rhs, dst, Java.Rvalue.JUMP_IF_TRUE ^ orientation == Java.Rvalue.JUMP_IF_FALSE);
+                } else {
+                    // "false && a", "true || a"
+                    this.compileBoolean(bo.lhs, dst, Java.Rvalue.JUMP_IF_TRUE ^ orientation == Java.Rvalue.JUMP_IF_FALSE);
+                    this.fakeCompile(bo.rhs);
+                }
+                return;
+            }
+            Object rhsCV = this.getConstantValue(bo.rhs);
+            if (rhsCV instanceof Boolean) {
+                if (((Boolean) rhsCV).booleanValue() ^ bo.op == "||") {
+                    // "a && true", "a || false"
+                    this.compileBoolean(bo.lhs, dst, Java.Rvalue.JUMP_IF_TRUE ^ orientation == Java.Rvalue.JUMP_IF_FALSE);
+                } else {
+                    // "a && false", "a || true"
+                    this.pop((Java.Located) bo.lhs, this.compileGetValue(bo.lhs));
+                    this.compileBoolean(bo.rhs, dst, Java.Rvalue.JUMP_IF_TRUE ^ orientation == Java.Rvalue.JUMP_IF_FALSE);
+                }
+                return;
+            }
             if (bo.op == "||" ^ orientation == Java.Rvalue.JUMP_IF_FALSE) {
                 this.compileBoolean(bo.lhs, dst, Java.Rvalue.JUMP_IF_TRUE ^ orientation == Java.Rvalue.JUMP_IF_FALSE);
                 this.compileBoolean(bo.rhs, dst, Java.Rvalue.JUMP_IF_TRUE ^ orientation == Java.Rvalue.JUMP_IF_FALSE);
@@ -1889,18 +1911,6 @@ public class UnitCompiler {
         }
     }
     /*private*/ IClass compileGet2(Java.BooleanRvalue brv) throws CompileException {
-
-        // Constant value?
-        Object cv = this.getConstantValue(brv);
-        if (cv instanceof Boolean) {
-            this.writeOpcode(brv, (
-                ((Boolean) cv).booleanValue() ?
-                Opcode.ICONST_1 :
-                Opcode.ICONST_0
-            ));
-            return IClass.BOOLEAN;
-        }
-
         CodeContext.Offset isTrue = this.codeContext.new Offset();
         this.compileBoolean(brv, isTrue, Java.Rvalue.JUMP_IF_TRUE);
         this.writeOpcode(brv, Opcode.ICONST_0);
@@ -2725,7 +2735,7 @@ public class UnitCompiler {
             l.value == Scanner.MAGIC_INTEGER ||
             l.value == Scanner.MAGIC_LONG
         ) this.compileError("This literal value may only appear in a negated context", l.getLocation());
-        return this.pushConstant((Java.Located) l, l.value);
+        return this.pushConstant((Java.Located) l, l.value == null ? Java.Rvalue.CONSTANT_VALUE_NULL : l.value);
     }
     /*private*/ IClass compileGet2(Java.ConstantValue cv) {
         return this.pushConstant((Java.Located) cv, cv.constantValue);
@@ -2739,6 +2749,7 @@ public class UnitCompiler {
     private IClass compileGetValue(Java.Rvalue rv) throws CompileException {
         Object cv = this.getConstantValue(rv);
         if (cv != null) {
+            this.fakeCompile(rv);
             this.pushConstant((Java.Located) rv, cv);
             return this.getType(rv);
         }
@@ -2937,27 +2948,18 @@ public class UnitCompiler {
             return lhs;
         }
 
-        // "&&" and "||" with constant LHS or RHS operand.
+        // "&&" and "||" with constant LHS operand.
         if (
             bo.op == "&&" ||
             bo.op == "||"
         ) {
             Object lhsValue = this.getConstantValue(bo.lhs);
-            Object rhsValue = this.getConstantValue(bo.rhs);
             if (lhsValue instanceof Boolean) {
                 boolean lhsBV = ((Boolean) lhsValue).booleanValue();
                 return (
                     bo.op == "&&" ?
-                    (lhsBV ? rhsValue : Boolean.FALSE) :
-                    (lhsBV ? Boolean.TRUE : rhsValue)
-                );
-            }
-            if (rhsValue instanceof Boolean) {
-                boolean rhsBV = ((Boolean) rhsValue).booleanValue();
-                return (
-                    bo.op == "&&" ?
-                    (rhsBV ? lhsValue : Boolean.FALSE) :
-                    (rhsBV ? Boolean.TRUE : lhsValue)
+                    (lhsBV ? this.getConstantValue(bo.rhs) : Boolean.FALSE) :
+                    (lhsBV ? Boolean.TRUE : this.getConstantValue(bo.rhs))
                 );
             }
         }
@@ -5105,7 +5107,7 @@ public class UnitCompiler {
     ) throws CompileException {
         List path = UnitCompiler.getOuterClasses(declaringClass);
 
-        if (declaringTypeBodyDeclaration.isStatic()) this.compileError("No current instance available instatic context", located.getLocation());
+        if (declaringTypeBodyDeclaration.isStatic()) this.compileError("No current instance available in static context", located.getLocation());
 
         int j;
         TARGET_FOUND: {
