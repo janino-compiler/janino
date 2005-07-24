@@ -77,6 +77,7 @@
 			<zipfileset file="lib/janino.jar" prefix="janino-${version}/lib"/>
 			<zipfileset dir="${javadoc}" prefix="janino-${version}/javadoc"/>
 			<zipfileset dir="${src}" prefix="janino-${version}/src"/>
+			<zipfileset file="build.*" prefix="janino-${version}"/>
 		</zip>
 	</target>
 </project>
