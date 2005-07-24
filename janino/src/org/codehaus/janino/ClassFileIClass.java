@@ -400,7 +400,13 @@ public class ClassFileIClass extends IClass {
         final String descriptor = this.classFile.getConstantUtf8(fieldInfo.getDescriptorIndex());
         final IClass type = this.resolveClass(descriptor);
 
-        // Determine optional constant value.
+        // Determine optional "constant value" of the field (JLS2 15.28, bullet
+        // 12). If a field has a "ConstantValue" attribute, we assume that it
+        // has a constant value. Notice that this assumption is not always
+        // correct, because typical Java<sup>TM</sup> compilers do not
+        // generate a "ConstantValue" attribute for fields like
+        // "int RED = 0", because "0" is the default value for an integer
+        // field.
         ClassFile.ConstantValueAttribute cva = null;
         ClassFile.AttributeInfo[] ais = fieldInfo.getAttributes();
         for (int i = 0; i < ais.length; ++i) {
@@ -410,6 +416,7 @@ public class ClassFileIClass extends IClass {
                 break;
             }
         }
+
         Object ocv = null;
         if (cva != null) {
             ClassFile.ConstantPoolInfo cpi = this.classFile.getConstantPoolInfo(cva.getConstantValueIndex());

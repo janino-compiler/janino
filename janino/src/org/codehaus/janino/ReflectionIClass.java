@@ -236,6 +236,19 @@ class ReflectionIClass extends IClass {
                 this.getName()
             );
         }
+        /**
+         * This implementation of {@link IClass.IField#getConstantValue()} is
+         * not completely correct:
+         * <ul>
+         *   <li>
+         *   It treats non-static fields as non-constant
+         *   <li>
+         *   Even fields with a <i>non-constant</i> initializer are identified
+         *   as constant. (The value of that field may be different in a
+         *   different JVM instance -- the classical example is
+         *   {@link File#separator}.)
+         * </ul>
+         */
         public Object getConstantValue() throws CompileException {
             int mod = this.field.getModifiers();
             Class clazz = this.field.getType();

@@ -691,10 +691,14 @@ public abstract class IClass {
         public abstract boolean isStatic();
         public abstract IClass  getType() throws CompileException;
         public abstract String  getName();
-        public String getDescriptor() throws CompileException {
-            return this.getType().getDescriptor();
-        }
+        public String           getDescriptor() throws CompileException { return this.getType().getDescriptor(); }
+
+        /**
+         * Returns the value of the field if it is a compile-time constant
+         * value, i.e. the field is FINAL and its initializer is a constant
+         * expression (JLS2 15.28, bullet 12).
+         */
         public abstract Object  getConstantValue() throws CompileException;
-        public String toString() { return this.getName(); }
+        public String           toString() { return this.getName(); }
     }
 }

@@ -351,7 +351,15 @@ public class Compiler {
         //
         // In my environment, the latter is slightly faster. No figures about
         // resource usage yet.
-        if (false) {
+        //
+        // In applications where the generated classes are not loaded into the
+        // same JVM instance, we should avoid to use the
+        // ClassLoaderIClassLoader, because that assumes that final fields have
+        // a constant value, even if not compile-time-constant but only
+        // initialization-time constant. The classical example is
+        // "File.separator", which is non-blank final, but not compile-time-
+        // constant.
+        if (true) {
             IClassLoader icl;
             icl = new ResourceFinderIClassLoader(bootClassPathResourceFinder, null);
             icl = new ResourceFinderIClassLoader(extensionDirectoriesResourceFinder, icl);
