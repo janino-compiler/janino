@@ -6548,15 +6548,15 @@ public class UnitCompiler {
      * @return The index of the variable
      */
     private Java.LocalVariable defineLocalVariable(
-        Java.Block b,
+        Java.Block    b,
         Java.Located  located,
-        boolean finaL,
-        IClass   type,
-        String   name
+        boolean       finaL,
+        IClass        type,
+        String        name
     ) throws CompileException {
 
         // Check for local variable redefinition.
-        for (Java.Scope s = this.compilationUnit; s instanceof Java.Statement; s = s.getEnclosingScope()) {
+        for (Java.Scope s = b; s instanceof Java.Statement; s = s.getEnclosingScope()) {
             if (s instanceof Java.Block) {
                 if (((Java.Block) s).localVariables.containsKey(name)) this.compileError("Redefinition of local variable \"" + name + "\"", located.getLocation());
             }
