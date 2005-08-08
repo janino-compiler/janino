@@ -956,7 +956,7 @@ public class ClassFile {
             try {
                 dos.writeUTF(this.s);
             } catch (UTFDataFormatException e) {
-                throw new IOException("String constant too long to store in class file");
+                throw new ClassFormatError("String constant too long to store in class file");
             }
         }
         public boolean equals(Object o) {
@@ -1127,7 +1127,7 @@ public class ClassFile {
             };
         }
 
-        if (bais.available() > 0) throw new IOException((ba.length - bais.available()) + " bytes of trailing garbage in body of attribute \"" + attributeName + "\"");
+        if (bais.available() > 0) throw new ClassFormatError((ba.length - bais.available()) + " bytes of trailing garbage in body of attribute \"" + attributeName + "\"");
 
         return result;
     }

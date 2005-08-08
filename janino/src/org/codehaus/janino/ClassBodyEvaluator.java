@@ -65,11 +65,18 @@ public class ClassBodyEvaluator extends EvaluatorBase {
      */
     public ClassBodyEvaluator(
         String classBody
-    ) throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
-        this(
-            new Scanner(null, new java.io.StringReader(classBody)), // scanner
-            null                                                    // optionalParentClassLoader
-        );
+    ) throws CompileException, Parser.ParseException, Scanner.ScanException {
+        super((ClassLoader) null);
+        try {
+            this.scanParseCompileLoad(
+                new Scanner(null, new StringReader(classBody)), // scanner
+                ClassBodyEvaluator.DEFAULT_CLASS_NAME,                  // className
+                (Class) null,                                           // optionalExtendedType
+                new Class[0]                                            // implementedTypes
+            );
+        } catch (IOException ex) {
+            throw new RuntimeException("SNO: StringReader throws IOException!?");
+        }
     }
 
     /**
@@ -79,9 +86,12 @@ public class ClassBodyEvaluator extends EvaluatorBase {
         String      optionalFileName,
         InputStream is
     ) throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
-        this(
-            new Scanner(optionalFileName, is), // scanner
-            null                               // optionalParentClassLoader
+        super((ClassLoader) null);
+        this.scanParseCompileLoad(
+            new Scanner(optionalFileName, is),     // scanner
+            ClassBodyEvaluator.DEFAULT_CLASS_NAME, // className,
+            (Class) null,                          // optionalExtendedType
+            new Class[0]                           // implementedTypes
         );
     }
 
@@ -92,9 +102,12 @@ public class ClassBodyEvaluator extends EvaluatorBase {
         String   optionalFileName,
         Reader   reader
     ) throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
-        this(
+        super((ClassLoader) null);
+        this.scanParseCompileLoad(
             new Scanner(optionalFileName, reader), // scanner
-            null                                   // optionalParentClassLoader
+            ClassBodyEvaluator.DEFAULT_CLASS_NAME, // className
+            (Class) null,                          // optionalExtendedType
+            new Class[0]                           // implementedTypes
         );
     }
 
@@ -105,11 +118,12 @@ public class ClassBodyEvaluator extends EvaluatorBase {
         Scanner     scanner,
         ClassLoader optionalParentClassLoader
     ) throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
-        this(
-            scanner,                  // scanner
-            (Class) null,             // optionalExtendedType
-            new Class[0],             // implementedTypes
-            optionalParentClassLoader // optionalParentClassLoader
+        super(optionalParentClassLoader);
+        this.scanParseCompileLoad(
+            scanner,                               // scanner
+            ClassBodyEvaluator.DEFAULT_CLASS_NAME, // className
+            (Class) null,                          // optionalExtendedType
+            new Class[0]                           // implementedTypes
         );
     }
 
@@ -122,12 +136,12 @@ public class ClassBodyEvaluator extends EvaluatorBase {
         Class[]     implementedTypes,
         ClassLoader optionalParentClassLoader
     ) throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
-        this(
+        super(optionalParentClassLoader);
+        this.scanParseCompileLoad(
             scanner,                               // scanner
             ClassBodyEvaluator.DEFAULT_CLASS_NAME, // className
             optionalExtendedType,                  // optionalExtendedType
-            implementedTypes,                      // implementedTypes
-            optionalParentClassLoader              // optionalParentClassLoader
+            implementedTypes                       // implementedTypes
         );
     }
 
@@ -161,6 +175,15 @@ public class ClassBodyEvaluator extends EvaluatorBase {
         ClassLoader optionalParentClassLoader
     ) throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
         super(optionalParentClassLoader);
+        this.scanParseCompileLoad(scanner, className, optionalExtendedType, implementedTypes);
+    }
+
+    private void scanParseCompileLoad(
+        Scanner     scanner,
+        String      className,
+        Class       optionalExtendedType,
+        Class[]     implementedTypes
+    ) throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
         Java.CompilationUnit compilationUnit = new Java.CompilationUnit(scanner.peek().getLocation().getFileName());
         
         // Parse import declarations.
@@ -284,5 +307,5 @@ public class ClassBodyEvaluator extends EvaluatorBase {
         return this.clazz;
     }
 
-    private final Class clazz;
+    private Class clazz;
 }

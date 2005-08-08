@@ -35,8 +35,7 @@
 package org.codehaus.janino;
 
 import java.io.*;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import org.codehaus.janino.util.TeeReader;
 
@@ -584,7 +583,11 @@ public class Scanner {
 //                  if (this.docComment != null) warning("More than one doc comment"); 
                     dcsb = new StringBuffer();
                     dcsb.append((char) this.nextChar);
-                    state = (this.nextChar == '\r' || this.nextChar == '\n') ? 6 : 5;
+                    state = (
+                        (this.nextChar == '\r' || this.nextChar == '\n') ? 6
+                        : this.nextChar == '*' ? 8
+                        : 5
+                    );
                 }
                 break;
 
@@ -1096,8 +1099,12 @@ public class Scanner {
     }
 
     // Read one character and store in "nextChar".
-    private void readNextChar() throws IOException {
-        this.nextChar = this.in.read();
+    private void readNextChar() throws IOException, ScanException {
+        try {
+            this.nextChar = this.in.read();
+        } catch (UnicodeUnescapeException ex) {
+            throw new ScanException(ex.getMessage());
+        }
         if (this.nextChar == '\r') {
             ++this.nextCharLineNumber;
             this.nextCharColumnNumber = 0;

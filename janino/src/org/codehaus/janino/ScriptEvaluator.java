@@ -97,8 +97,24 @@ public class ScriptEvaluator extends EvaluatorBase {
      */
     public ScriptEvaluator(
         String   script
-    ) throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
-        this(script, Void.TYPE, new String[0], new Class[0], new Class[0]);
+    ) throws CompileException, Parser.ParseException, Scanner.ScanException {
+        super((ClassLoader) null);
+        try {
+            this.scanParseCompileLoad(
+                new Scanner(null, new StringReader(script)), // scanner
+                ScriptEvaluator.DEFAULT_CLASS_NAME,          // className
+                (Class) null,                                // optionalExtendedType
+                new Class[0],                                // implementedTypes
+                true,                                        // staticMethod
+                Void.TYPE,                                   // returnType
+                ScriptEvaluator.DEFAULT_METHOD_NAME,         // methodName
+                new String[0],                               // parameterNames
+                new Class[0],                                // parameterTypes
+                new Class[0]                                 // thrownExceptions
+            );
+        } catch (IOException ex) {
+            throw new RuntimeException("SNO: StringReader throws IOException!?");
+        }
     }
 
     /**
@@ -108,8 +124,24 @@ public class ScriptEvaluator extends EvaluatorBase {
     public ScriptEvaluator(
         String   script,
         Class    returnType
-    ) throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
-        this(script, returnType, new String[0], new Class[0], new Class[0]);
+    ) throws CompileException, Parser.ParseException, Scanner.ScanException {
+        super((ClassLoader) null);
+        try {
+            this.scanParseCompileLoad(
+                new Scanner(null, new StringReader(script)), // scanner
+                ScriptEvaluator.DEFAULT_CLASS_NAME,          // className
+                (Class) null,                                // optionalExtendedType
+                new Class[0],                                // implementedTypes
+                true,                                        // staticMethod
+                returnType,                                  // returnType
+                ScriptEvaluator.DEFAULT_METHOD_NAME,         // methodName
+                new String[0],                               // parameterNames
+                new Class[0],                                // parameterTypes
+                new Class[0]                                 // thrownExceptions
+            );
+        } catch (IOException ex) {
+            throw new RuntimeException("SNO: StringReader throws IOException!?");
+        }
     }
 
     /**
@@ -121,8 +153,24 @@ public class ScriptEvaluator extends EvaluatorBase {
         Class    returnType,
         String[] parameterNames,
         Class[]  parameterTypes
-    ) throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
-        this(script, returnType, parameterNames, parameterTypes, new Class[0]);
+    ) throws CompileException, Parser.ParseException, Scanner.ScanException {
+        super((ClassLoader) null);
+        try {
+            this.scanParseCompileLoad(
+                new Scanner(null, new StringReader(script)), // scanner
+                ScriptEvaluator.DEFAULT_CLASS_NAME,          // className
+                (Class) null,                                // optionalExtendedType
+                new Class[0],                                // implementedTypes
+                true,                                        // staticMethod
+                returnType,                                  // returnType
+                ScriptEvaluator.DEFAULT_METHOD_NAME,         // methodName
+                parameterNames,                              // parameterNames
+                parameterTypes,                              // parameterTypes
+                new Class[0]                                 // thrownExceptions
+            );
+        } catch (IOException ex) {
+            throw new RuntimeException("SNO: StringReader throws IOException!?");
+        }
     }
 
     /**
@@ -135,15 +183,24 @@ public class ScriptEvaluator extends EvaluatorBase {
         String[] parameterNames,
         Class[]  parameterTypes,
         Class[]  thrownExceptions
-    ) throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
-        this(
-            new Scanner(null, new java.io.StringReader(script)), // scanner
-            returnType,                                          // returnType
-            parameterNames,                                      // parameterNames
-            parameterTypes,                                      // parameterTypes
-            thrownExceptions,                                    // thrownExceptions
-            (ClassLoader) null                                   // optionalParentClassLoader
-        );
+    ) throws CompileException, Parser.ParseException, Scanner.ScanException {
+        super((ClassLoader) null);
+        try {
+            this.scanParseCompileLoad(
+                new Scanner(null, new StringReader(script)), // scanner
+                ScriptEvaluator.DEFAULT_CLASS_NAME,          // className
+                (Class) null,                                // optionalExtendedType
+                new Class[0],                                // implementedTypes
+                true,                                        // staticMethod
+                returnType,                                  // returnType
+                ScriptEvaluator.DEFAULT_METHOD_NAME,         // methodName
+                parameterNames,                              // parameterName
+                parameterTypes,                              // parameterTypes
+                thrownExceptions                             // thrownExceptions
+            );
+        } catch (IOException ex) {
+            throw new RuntimeException("SNO: StringReader throws IOException!?");
+        }
     }
 
     /**
@@ -157,12 +214,20 @@ public class ScriptEvaluator extends EvaluatorBase {
         String[]    parameterNames,
         Class[]     parameterTypes,
         Class[]     thrownExceptions,
-        ClassLoader optionalClassLoader // null = use current thread's context class loader
+        ClassLoader optionalParentClassLoader // null = use current thread's context class loader
     ) throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
-        this(
-            new Scanner(optionalFileName, is),
-            returnType, parameterNames, parameterTypes, thrownExceptions,
-            optionalClassLoader
+        super(optionalParentClassLoader);
+        this.scanParseCompileLoad(
+            new Scanner(optionalFileName, is),   // scanner
+            ScriptEvaluator.DEFAULT_CLASS_NAME,  // className
+            (Class) null,                        // optionalExtendedType
+            new Class[0],                        // implementedTypes
+            true,                                // staticMethod
+            returnType,                          // returnType
+            ScriptEvaluator.DEFAULT_METHOD_NAME, // methodName
+            parameterNames,                      // parameterName
+            parameterTypes,                      // parameterTypes
+            thrownExceptions                     // thrownExceptions
         );
     }
 
@@ -177,12 +242,20 @@ public class ScriptEvaluator extends EvaluatorBase {
         String[]    parameterNames,
         Class[]     parameterTypes,
         Class[]     thrownExceptions,
-        ClassLoader optionalClassLoader // null = use current thread's context class loader
+        ClassLoader optionalParentClassLoader // null = use current thread's context class loader
     ) throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
-        this(
-            new Scanner(optionalFileName, reader),
-            returnType, parameterNames, parameterTypes, thrownExceptions,
-            optionalClassLoader
+        super(optionalParentClassLoader);
+        this.scanParseCompileLoad(
+            new Scanner(optionalFileName, reader), // scanner
+            ScriptEvaluator.DEFAULT_CLASS_NAME,    // className
+            (Class) null,                          // optionalExtendedType
+            new Class[0],                          // implementedTypes
+            true,                                  // staticMethod
+            returnType,                            // returnType
+            ScriptEvaluator.DEFAULT_METHOD_NAME,   // methodName
+            parameterNames,                        // parameterNames
+            parameterTypes,                        // parameterTypes
+            thrownExceptions                       // thrownExceptions
         );
     }
 
@@ -200,14 +273,18 @@ public class ScriptEvaluator extends EvaluatorBase {
         Class[]     thrownExceptions,
         ClassLoader optionalParentClassLoader // null = use current thread's context class loader
     ) throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
-        this(
-            scanner,                        // scanner
-            (Class) null,                   // optionalExtendedType
-            new Class[0],                   // implementedInterfaces
-            returnType,                     // returnType
-            parameterNames, parameterTypes, // parameterNames, parameterTypes
-            thrownExceptions,               // thrownExceptions
-            optionalParentClassLoader       // optionalParentClassLoader
+        super(optionalParentClassLoader);
+        this.scanParseCompileLoad(
+            scanner,                             // scanner
+            ScriptEvaluator.DEFAULT_CLASS_NAME,  // className
+            (Class) null,                        // optionalExtendedType
+            new Class[0],                        // implementedTypes
+            true,                                // staticMethod
+            returnType,                          // returnType
+            ScriptEvaluator.DEFAULT_METHOD_NAME, // methodName
+            parameterNames,                      // parameterNames
+            parameterTypes,                      // parameterTypes
+            thrownExceptions                     // thrownExceptions
         );
     }
 
@@ -227,7 +304,8 @@ public class ScriptEvaluator extends EvaluatorBase {
         Class[]     thrownExceptions,
         ClassLoader optionalParentClassLoader // null = use current thread's context class loader
     ) throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
-        this(
+        super(optionalParentClassLoader);
+        this.scanParseCompileLoad(
             scanner,                             // scanner
             ScriptEvaluator.DEFAULT_CLASS_NAME,  // className
             optionalExtendedType,                // optionalExtendedType
@@ -235,9 +313,9 @@ public class ScriptEvaluator extends EvaluatorBase {
             true,                                // staticMethod
             returnType,                          // returnType
             ScriptEvaluator.DEFAULT_METHOD_NAME, // methodName
-            parameterNames, parameterTypes,      // parameterNames, parameterTypes
-            thrownExceptions,                    // thrownExceptions
-            optionalParentClassLoader            // optionalParentClassLoader
+            parameterNames,                      // parameterName
+            parameterTypes,                      // parameterTypes
+            thrownExceptions                     // thrownExceptions
         );
     }
 
@@ -291,6 +369,32 @@ public class ScriptEvaluator extends EvaluatorBase {
         ClassLoader optionalParentClassLoader // null = use current thread's context class loader
     ) throws Scanner.ScanException, Parser.ParseException, CompileException, IOException {
         super(optionalParentClassLoader);
+        this.scanParseCompileLoad(
+            scanner,              // scanner
+            className,            // className
+            optionalExtendedType, // optionalExtendedType
+            implementedTypes,     // implementedTypes
+            staticMethod,         // staticMethod
+            returnType,           // returnType
+            methodName,           // methodName
+            parameterNames,       // parameterNames
+            parameterTypes,       // parameterTypes
+            thrownExceptions      // thrownExceptions
+        );
+    }
+
+    private void scanParseCompileLoad(
+        Scanner     scanner,
+        String      className,
+        Class       optionalExtendedType,
+        Class[]     implementedTypes,
+        boolean     staticMethod,
+        Class       returnType,
+        String      methodName,
+        String[]    parameterNames,
+        Class[]     parameterTypes,
+        Class[]     thrownExceptions
+    ) throws Scanner.ScanException, Parser.ParseException, CompileException, IOException {
         if (parameterNames.length != parameterTypes.length) throw new RuntimeException("Lengths of \"parameterNames\" and \"parameterTypes\" do not match");
 
         // Create a temporary compilation unit.
@@ -365,14 +469,14 @@ public class ScriptEvaluator extends EvaluatorBase {
      * @param scanner Source of script tokens
      * @param interfaceToImplement Must declare exactly one method
      * @param parameterNames
-     * @param optionalClassLoader
+     * @param optionalParentClassLoader
      * @return an object that implements the given interface
      */
     public static Object createFastScriptEvaluator(
         Scanner     scanner,
         Class       interfaceToImplement,
         String[]    parameterNames,
-        ClassLoader optionalClassLoader
+        ClassLoader optionalParentClassLoader
     ) throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
         return ScriptEvaluator.createFastScriptEvaluator(
             scanner,                            // scanner
@@ -380,7 +484,7 @@ public class ScriptEvaluator extends EvaluatorBase {
             null,                               // optionalExtendedType
             interfaceToImplement,               // interfaceToImplement
             parameterNames,                     // parameterNames
-            optionalClassLoader                 // optionalClassLoader
+            optionalParentClassLoader           // optionalParentClassLoader
         );
     }
 
@@ -476,5 +580,5 @@ public class ScriptEvaluator extends EvaluatorBase {
         return this.method;
     }
 
-    private final Method method;
+    private Method method;
 }

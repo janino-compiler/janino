@@ -32,8 +32,6 @@
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import java.io.IOException;
-
 import org.codehaus.janino.*;
 
 import junit.framework.TestCase;
@@ -54,7 +52,7 @@ public class JaninoTests {
 
             suite3.aet("3.1 Unicode", "'\\u00e4' == 'ä'");
             suite3.ast("3.2 Lexical Translations", "3--4", ScriptTest.THROWS_PARSE_EXCEPTION);
-            suite3.ast("3.3 Unicode Escapes/1", "aaa\\u123gbbb", ScriptTest.THROWS_IO_EXCEPTION);
+            suite3.ast("3.3 Unicode Escapes/1", "aaa\\u123gbbb", ScriptTest.THROWS_SCAN_EXCEPTION);
             suite3.aet("3.3 Unicode Escapes/2", "\"\\u0041\".equals(\"A\")");
             suite3.aet("3.3 Unicode Escapes/3", "\"\\uu0041\".equals(\"A\")");
             suite3.aet("3.3 Unicode Escapes/4", "\"\\uuu0041\".equals(\"A\")");
@@ -282,10 +280,9 @@ class ScriptTest extends TestCase {
 
     public static final int COMPILE_AND_EXECUTE      = 0;
     public static final int RETURNS_TRUE             = 1;
-    public static final int THROWS_IO_EXCEPTION      = 2;
-    public static final int THROWS_SCAN_EXCEPTION    = 3;
-    public static final int THROWS_PARSE_EXCEPTION   = 4;
-    public static final int THROWS_COMPILE_EXCEPTION = 5;
+    public static final int THROWS_SCAN_EXCEPTION    = 2;
+    public static final int THROWS_PARSE_EXCEPTION   = 3;
+    public static final int THROWS_COMPILE_EXCEPTION = 4;
 
     public ScriptTest(String name, String script) {
         this(name, script, COMPILE_AND_EXECUTE);
@@ -306,9 +303,6 @@ class ScriptTest extends TestCase {
         ScriptEvaluator se;
         try {
             se = new ScriptEvaluator(this.script, this.mode == RETURNS_TRUE ? Boolean.TYPE : Void.TYPE);
-        } catch (IOException ex) {
-            if (this.mode == THROWS_IO_EXCEPTION) return;
-            throw ex;
         } catch (Scanner.ScanException ex) {
             if (this.mode == THROWS_SCAN_EXCEPTION) return;
             throw ex;
@@ -320,7 +314,6 @@ class ScriptTest extends TestCase {
             throw ex;
         }
 
-        if (this.mode == THROWS_IO_EXCEPTION) fail("Should have thrown IOException");
         if (this.mode == THROWS_SCAN_EXCEPTION) fail("Should have thrown Scanner.ScanException");
         if (this.mode == THROWS_PARSE_EXCEPTION) fail("Should have thrown Parser.ParseException");
         if (this.mode == THROWS_COMPILE_EXCEPTION) fail("Should have thrown Java.CompileException");

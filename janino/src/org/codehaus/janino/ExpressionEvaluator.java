@@ -97,15 +97,24 @@ public class ExpressionEvaluator extends EvaluatorBase {
         Class    optionalExpressionType,
         String[] parameterNames,
         Class[]  parameterTypes
-    ) throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
-        this(
-            expression,
-            optionalExpressionType,
-            parameterNames,
-            parameterTypes,
-            new Class[0],      // thrownExceptions
-            (ClassLoader) null // optionalParentClassLoader
-        );
+    ) throws CompileException, Parser.ParseException, Scanner.ScanException {
+        super((ClassLoader) null);
+        try {
+            this.scanParseCompileLoad(
+                new Scanner(null, new StringReader(expression)), // scanner
+                ExpressionEvaluator.DEFAULT_CLASS_NAME,          // className
+                (Class) null,                                    // optionalExtendedType
+                new Class[0],                                    // implementedTypes
+                true,                                            // staticMethod
+                optionalExpressionType,                          // optionalExpressionType
+                ExpressionEvaluator.DEFAULT_METHOD_NAME,         // methodName
+                parameterNames,                                  // parameterNames
+                parameterTypes,                                  // parameterTypes
+                new Class[0]                                     // thrownExceptions
+            );
+        } catch (IOException ex) {
+            throw new RuntimeException("SNO: StringReader throws IOException!?");
+        }
     }
 
     /**
@@ -119,16 +128,24 @@ public class ExpressionEvaluator extends EvaluatorBase {
         Class[]     parameterTypes,
         Class[]     thrownExceptions,
         ClassLoader optionalParentClassLoader     // null == use current thread's context class loader
-    ) throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
-        this(
-            expression,                     // expression
-            optionalExpressionType,         // optionalExpressionType
-            parameterNames, parameterTypes, // parameterNames, parameterTypes
-            thrownExceptions,               // thrownExceptions
-            (Class) null,                   // optionalExtendedType
-            new Class[0],                   // implementedTypes
-            optionalParentClassLoader       // optionalParentClassLoader
-        );
+    ) throws CompileException, Parser.ParseException, Scanner.ScanException {
+        super(optionalParentClassLoader);
+        try {
+            this.scanParseCompileLoad(
+                new Scanner(null, new StringReader(expression)), // scanner
+                ExpressionEvaluator.DEFAULT_CLASS_NAME,          // className
+                (Class) null,                                    // optionalExtendedType
+                new Class[0],                                    // implementedTypes
+                true,                                            // staticMethod
+                optionalExpressionType,                          // optionalExpressionType
+                ExpressionEvaluator.DEFAULT_METHOD_NAME,         // methodName
+                parameterNames,                                  // parameterNames
+                parameterTypes,                                  // parameterTypes
+                thrownExceptions                                 // thrownExceptions
+            );
+        } catch (IOException ex) {
+            throw new RuntimeException("SNO: StringReader throws IOException!?");
+        }
     }
 
     /**
@@ -146,18 +163,24 @@ public class ExpressionEvaluator extends EvaluatorBase {
         Class       optionalExtendedType,
         Class[]     implementedTypes,
         ClassLoader optionalParentClassLoader    // null == use current thread's context class loader
-    ) throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
-        this(
-            new Scanner(null, new StringReader(expression)), // scanner
-            ExpressionEvaluator.DEFAULT_CLASS_NAME,          // className
-            optionalExtendedType, implementedTypes,          // optionalExtendedType, implementedTypes
-            true,                                            // staticMethod
-            optionalExpressionType,                          // optionalExpressionType
-            ExpressionEvaluator.DEFAULT_METHOD_NAME,         // methodName
-            parameterNames, parameterTypes,                  // parameterNames, parameterTypes
-            thrownExceptions,                                // thrownExceptions
-            optionalParentClassLoader                        // optionalParentClassLoader
-        );
+    ) throws CompileException, Parser.ParseException, Scanner.ScanException {
+        super(optionalParentClassLoader);
+        try {
+            this.scanParseCompileLoad(
+                new Scanner(null, new StringReader(expression)), // scanner
+                ExpressionEvaluator.DEFAULT_CLASS_NAME,          // className
+                optionalExtendedType,                            // optionalExtendedType
+                implementedTypes,                                // implementedTypes
+                true,                                            // staticMethod
+                optionalExpressionType,                          // optionalExpressionType
+                ExpressionEvaluator.DEFAULT_METHOD_NAME,         // methodName
+                parameterNames,                                  // parameterNames
+                parameterTypes,                                  // parameterTypes
+                thrownExceptions                                 // thrownExceptions
+            );
+        } catch (IOException ex) {
+            throw new RuntimeException("SNO: StringReader throws IOException!?");
+        }
     }
 
     /**
@@ -222,6 +245,32 @@ public class ExpressionEvaluator extends EvaluatorBase {
         ClassLoader optionalParentClassLoader    // null == use current thread's context class loader
     ) throws Scanner.ScanException, Parser.ParseException, CompileException, IOException {
         super(optionalParentClassLoader);
+        this.scanParseCompileLoad(
+            scanner,                // scanner
+            className,              // className
+            optionalExtendedType,   // optionalExtendedType
+            implementedTypes,       // implementedTypes
+            staticMethod,           // staticMethod
+            optionalExpressionType, // optionalExpressionType
+            methodName,             // methodName
+            parameterNames,         // parameterNames
+            parameterTypes,         // parameterTypes
+            thrownExceptions        // thrownExceptions
+        );
+    }
+
+    private void scanParseCompileLoad(
+        Scanner     scanner,
+        String      className,
+        Class       optionalExtendedType,
+        Class[]     implementedTypes,
+        boolean     staticMethod,
+        Class       optionalExpressionType, // null == automagically wrap the expression result
+        String      methodName,
+        String[]    parameterNames,
+        Class[]     parameterTypes,
+        Class[]     thrownExceptions
+    ) throws Scanner.ScanException, Parser.ParseException, CompileException, IOException {
         if (parameterNames.length != parameterTypes.length) throw new RuntimeException("Lengths of \"parameterNames\" and \"parameterTypes\" do not match");
 
         // Create a temporary compilation unit.
@@ -346,15 +395,19 @@ public class ExpressionEvaluator extends EvaluatorBase {
         Class       interfaceToImplement,
         String[]    parameterNames,
         ClassLoader optionalClassLoader
-    ) throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
-        return ExpressionEvaluator.createFastExpressionEvaluator(
-            new Scanner(null, new StringReader(expression)), // scanner
-            ExpressionEvaluator.DEFAULT_CLASS_NAME,          // className
-            null,                                            // optionalExtendedType
-            interfaceToImplement,                            // interfaceToImplement
-            parameterNames,                                  // parameterNames
-            optionalClassLoader                              // optionalClassLoader
-        );
+    ) throws CompileException, Parser.ParseException, Scanner.ScanException {
+        try {
+            return ExpressionEvaluator.createFastExpressionEvaluator(
+                new Scanner(null, new StringReader(expression)), // scanner
+                ExpressionEvaluator.DEFAULT_CLASS_NAME,          // className
+                null,                                            // optionalExtendedType
+                interfaceToImplement,                            // interfaceToImplement
+                parameterNames,                                  // parameterNames
+                optionalClassLoader                              // optionalClassLoader
+            );
+        } catch (IOException ex) {
+            throw new RuntimeException("SNO: StringReader throws IOException!?");
+        }
     }
 
     /**
@@ -448,5 +501,5 @@ public class ExpressionEvaluator extends EvaluatorBase {
         return this.method;
     }
 
-    private final Method method;
+    private Method method;
 }

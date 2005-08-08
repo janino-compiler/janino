@@ -34,16 +34,18 @@
 
 package org.codehaus.janino;
 
-import java.io.FilterReader;
-import java.io.IOException;
-import java.io.Reader;
-import java.io.StringReader;
+import java.io.*;
 
 /**
  * A {@link FilterReader} that unescapes the "Unicode Escapes"
  * as described in
  * <a href="http://java.sun.com/docs/books/jls/second_edition/html/lexical.doc.html#100850">the
  * Java Language Specification, 2nd edition</a>.
+ * <p>
+ * Notice that it is possible to formulate invalid escape sequences, e.g.
+ * "&#92;u123g" ("g" is not a valid hex character). This is handled by
+ * throwing a {@link java.lang.RuntimeException}-derived
+ * {@link org.codehaus.janino.UnicodeUnescapeException}.
  */
 public class UnicodeUnescapeReader extends FilterReader {
 
@@ -56,6 +58,8 @@ public class UnicodeUnescapeReader extends FilterReader {
 
     /**
      * Override {@link FilterReader#read()}.
+     * 
+     * @throws UnicodeUnescapeException Invalid escape sequence encountered
      */
     public int read() throws IOException {
         int c;
@@ -86,17 +90,17 @@ public class UnicodeUnescapeReader extends FilterReader {
         // Skip redundant "u"s.
         do {
             c = this.in.read();
-            if (c == -1) throw new IOException("Incomplete escape sequence");
+            if (c == -1) throw new UnicodeUnescapeException("Incomplete escape sequence");
         } while (c == 'u');
 
         // Decode escape sequence.
         char[] ca = new char[4];
         ca[0] = (char) c;
-        if (this.in.read(ca, 1, 3) != 3) throw new IOException("Incomplete escape sequence");
+        if (this.in.read(ca, 1, 3) != 3) throw new UnicodeUnescapeException("Incomplete escape sequence");
         try {
             return 0xffff & Integer.parseInt(new String(ca), 16);
         } catch (NumberFormatException ex) {
-            throw new IOException("Invalid escape sequence \"\\u" + new String(ca) + "\"");
+            throw new UnicodeUnescapeException("Invalid escape sequence \"\\u" + new String(ca) + "\"");
         }
     }
 
