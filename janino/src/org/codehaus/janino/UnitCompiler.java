@@ -2070,9 +2070,9 @@ public class UnitCompiler {
         // return (class$X != null) ? class$X : (class$X = class$("X"));
         Java.Type declaringClassOrInterfaceType = new Java.SimpleType(loc, this.resolve(cl.declaringType));
         Java.Lvalue classDollarFieldAccess = new Java.FieldAccessExpression(
-            loc,                                     // location
-            new Java.SimpleType(loc, this.resolve(cl.declaringType)), // lhs
-            classDollarFieldName                     // fieldName
+            loc,                           // location
+            declaringClassOrInterfaceType, // lhs
+            classDollarFieldName           // fieldName
         );
         return this.compileGet(new Java.ConditionalExpression(
             loc,                                  // location
@@ -2304,7 +2304,14 @@ public class UnitCompiler {
         }
 
         if (uo.operator == "-") {
-            IClass operandType = this.compileGetValue(uo.operand);
+            IClass operandType;
+            if (uo.operand instanceof Java.Literal) {
+                Java.Literal l = (Java.Literal) uo.operand;
+                operandType = this.getType2(l);
+                this.pushConstant((Java.Located) uo, this.getNegatedConstantValue2(l));
+            } else {
+                operandType = this.compileGetValue(uo.operand);
+            }
 
             IClass promotedType = this.unaryNumericPromotion((Java.Located) uo, operandType);
             this.writeOpcode(uo, Opcode.INEG + UnitCompiler.ilfd(promotedType));
@@ -2749,7 +2756,7 @@ public class UnitCompiler {
     private IClass compileGetValue(Java.Rvalue rv) throws CompileException {
         Object cv = this.getConstantValue(rv);
         if (cv != null) {
-            this.fakeCompile(rv);
+            this.fakeCompile(rv); // To check that, e.g., "a" compiles in "true || a".
             this.pushConstant((Java.Located) rv, cv);
             return this.getType(rv);
         }
@@ -4660,9 +4667,9 @@ public class UnitCompiler {
      * @throws CompileException
      */
     private IClass.IInvocable findMostSpecificIInvocable(
-            Java.Located                   located,
+        Java.Located              located,
         final IClass.IInvocable[] iInvocables,
-        Java.Rvalue[]                  arguments
+        Java.Rvalue[]             arguments
     ) throws CompileException {
         if (iInvocables.length == 0) throw new RuntimeException();
 
@@ -5096,6 +5103,7 @@ public class UnitCompiler {
             }
             public boolean isInterface() { return atd instanceof Java.InterfaceDeclaration; }
         };
+
         return atd.resolvedType;
     }
 
