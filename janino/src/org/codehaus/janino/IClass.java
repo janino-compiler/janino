@@ -168,7 +168,7 @@ public abstract class IClass {
         }
         return this.declaredIFields;
     }
-    private IField[] declaredIFields = null;
+    protected IField[] declaredIFields = null;
     protected abstract IField[] getDeclaredIFields2();
 
     /**

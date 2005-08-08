@@ -429,7 +429,7 @@ public class Java {
             this.variableDeclaratorsAndInitializers.add(tbd);
 
             // Clear resolved type cache.
-            this.resolvedType = null;
+            if (this.resolvedType != null) this.resolvedType.declaredIFields = null;
         }
 
         // Compile time members.
@@ -722,7 +722,7 @@ public class Java {
             this.constantDeclarations.add(fd);
 
             // Clear resolved type cache.
-            this.resolvedType = null;
+            if (this.resolvedType != null) this.resolvedType.declaredIFields = null;
         }
 
         /*final*/ Type[] extendedTypes;
