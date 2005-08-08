@@ -34,13 +34,8 @@
 
 package org.codehaus.janino;
 
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Stack;
+import java.io.*;
+import java.util.*;
 
 import org.codehaus.janino.util.ClassFile;
 

@@ -36,7 +36,7 @@ package org.codehaus.janino.util.resource;
 
 import java.io.*;
 import java.util.*;
-import java.util.zip.ZipFile;
+import java.util.zip.*;
 
 import org.codehaus.janino.util.iterator.*;
 

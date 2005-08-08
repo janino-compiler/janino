@@ -34,10 +34,7 @@
 
 package org.codehaus.janino.util;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
+import java.util.*;
 
 /**
  * An {@link java.util.Iterator} that traverses a {@link java.util.Collection} of

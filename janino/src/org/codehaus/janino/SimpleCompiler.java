@@ -35,7 +35,7 @@
 package org.codehaus.janino;
 
 import java.io.*;
-import java.lang.reflect.Method;
+import java.lang.reflect.*;
 
 /**
  * A simplified version of {@link Compiler} that can compile only a single

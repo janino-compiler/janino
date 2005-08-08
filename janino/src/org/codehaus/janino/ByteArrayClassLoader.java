@@ -34,9 +34,7 @@
 
 package org.codehaus.janino;
 
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
 /**
  * This {@link ClassLoader} allows for the loading of a set of Java<sup>TM</sup> classes

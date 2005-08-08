@@ -34,9 +34,7 @@
 
 package org.codehaus.janino.util;
 
-import java.io.FilterWriter;
-import java.io.IOException;
-import java.io.Writer;
+import java.io.*;
 
 /**
  * A {@link java.io.FilterWriter} that automatically indents lines by looking at

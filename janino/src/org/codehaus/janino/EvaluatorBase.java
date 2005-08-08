@@ -34,10 +34,8 @@
 
 package org.codehaus.janino;
 
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.util.HashMap;
-import java.util.Map;
+import java.io.*;
+import java.util.*;
 
 import org.codehaus.janino.util.ClassFile;
 

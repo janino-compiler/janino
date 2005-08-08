@@ -34,7 +34,7 @@
 
 package org.codehaus.janino.util;
 
-import java.util.ArrayList;
+import java.util.*;
 
 /**
  * Implementation of a UNIX shell-like string pattern algorithm.

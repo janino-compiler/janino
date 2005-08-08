@@ -35,7 +35,7 @@
 package org.codehaus.janino;
 
 import java.io.*;
-import java.util.Iterator;
+import java.util.*;
 
 import org.codehaus.janino.util.AutoIndentWriter;
 

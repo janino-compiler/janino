@@ -35,8 +35,7 @@
 package org.codehaus.janino.tools;
 
 import java.io.*;
-import java.text.FieldPosition;
-import java.text.MessageFormat;
+import java.text.*;
 import java.util.*;
 
 /**

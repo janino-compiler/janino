@@ -34,7 +34,7 @@
 
 package org.codehaus.janino.util.iterator;
 
-import java.util.Iterator;
+import java.util.*;
 
 /**
  * An {@link java.util.Iterator} that retrieves its elements from a delegate

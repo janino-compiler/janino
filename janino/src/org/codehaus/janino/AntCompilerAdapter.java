@@ -34,8 +34,7 @@
 
 package org.codehaus.janino;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 
 
 import org.apache.tools.ant.taskdefs.compilers.*;

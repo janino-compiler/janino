@@ -34,8 +34,7 @@
 
 package org.codehaus.janino;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * Representation of a "method descriptor" (JVMS 4.3.3).

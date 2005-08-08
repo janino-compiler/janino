@@ -35,18 +35,14 @@
 package org.codehaus.janino;
 
 import java.io.*;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import java.lang.reflect.*;
 import java.util.*;
 
 import java.security.ProtectionDomain;
 
-import org.codehaus.janino.util.ClassFile;
-import org.codehaus.janino.util.TunnelException;
-import org.codehaus.janino.util.enumerator.EnumeratorFormatException;
-import org.codehaus.janino.util.resource.DirectoryResourceFinder;
-import org.codehaus.janino.util.resource.PathResourceFinder;
-import org.codehaus.janino.util.resource.ResourceFinder;
+import org.codehaus.janino.util.*;
+import org.codehaus.janino.util.enumerator.*;
+import org.codehaus.janino.util.resource.*;
 
 
 /**
