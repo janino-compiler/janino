@@ -1290,8 +1290,14 @@ public class Java {
         public ExpressionStatement(
             Rvalue rvalue,
             Scope  enclosingScope
-        ) {
+        ) throws Parser.ParseException {
             super(rvalue.getLocation(), enclosingScope);
+            if (!(
+                rvalue instanceof Java.Assignment
+                || rvalue instanceof Java.Crement
+                || rvalue instanceof Java.MethodInvocation
+                || rvalue instanceof Java.NewClassInstance
+            )) this.throwParseException("This kind of expression is not allowed in an expression statement");
             this.rvalue = rvalue;
         }
         final Rvalue rvalue;
