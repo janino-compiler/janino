@@ -37,7 +37,6 @@ package org.codehaus.janino;
 import java.io.*;
 import java.util.*;
 
-import org.codehaus.janino.Java.TypeDeclaration;
 import org.codehaus.janino.util.*;
 
 /**
@@ -3716,25 +3715,29 @@ public class UnitCompiler {
             IClass.IField sf = (IClass.IField) it.next();
             Java.LocalVariable syntheticParameter = (Java.LocalVariable) cd.syntheticParameters.get(sf.getName());
             if (syntheticParameter == null) throw new RuntimeException("SNO: Synthetic parameter for synthetic field \"" + sf.getName() + "\" not found");
-            this.compile(new Java.ExpressionStatement(
-                new Java.Assignment(  // rvalue
-                    cd.getLocation(),             // location
-                    new Java.FieldAccess(         // lhs
-                        cd.getLocation(),       // location
-                        new Java.ThisReference( // lhs
-                            cd.getLocation(),              // location
-                            (Java.Scope) cd.declaringClass // scope
+            try {
+                this.compile(new Java.ExpressionStatement(
+                    new Java.Assignment(  // rvalue
+                        cd.getLocation(),             // location
+                        new Java.FieldAccess(         // lhs
+                            cd.getLocation(),       // location
+                            new Java.ThisReference( // lhs
+                                cd.getLocation(),              // location
+                                (Java.Scope) cd.declaringClass // scope
+                            ),
+                            sf                      // field
                         ),
-                        sf                      // field
+                        "=",                          // operator
+                        new Java.LocalVariableAccess( // rhs
+                            cd.getLocation(),  // location
+                            syntheticParameter // localVariable
+                        )
                     ),
-                    "=",                          // operator
-                    new Java.LocalVariableAccess( // rhs
-                        cd.getLocation(),  // location
-                        syntheticParameter // localVariable
-                    )
-                ),
-                (Java.Scope) cd       // enclosingScope
-            ));
+                    (Java.Scope) cd       // enclosingScope
+                ));
+            } catch (Parser.ParseException e) {
+                throw new RuntimeException("S.N.O.");
+            }
         }
     }
 
@@ -4343,11 +4346,11 @@ public class UnitCompiler {
             if (s instanceof Java.TypeBodyDeclaration) {
                 scopeTBD = (Java.TypeBodyDeclaration) s;
                 s = s.getEnclosingScope();
-          }
-          if (s instanceof Java.TypeDeclaration) {
+            }
+            if (s instanceof Java.TypeDeclaration) {
                 scopeTypeDeclaration = (Java.AbstractTypeDeclaration) s;
                 s = s.getEnclosingScope();
-          }
+            }
             while (!(s instanceof Java.CompilationUnit)) s = s.getEnclosingScope();
             scopeCompilationUnit = (Java.CompilationUnit) s;
         }
@@ -6454,7 +6457,7 @@ public class UnitCompiler {
         }
 
         StringTokenizer st = new StringTokenizer(className, "$");
-        TypeDeclaration td = this.compilationUnit.getPackageMemberTypeDeclaration(st.nextToken());
+        Java.TypeDeclaration td = this.compilationUnit.getPackageMemberTypeDeclaration(st.nextToken());
         if (td == null) return null;
         while (st.hasMoreTokens()) {
             td = td.getMemberTypeDeclaration(st.nextToken());
