@@ -40,6 +40,12 @@ import junit.framework.Test;
 
 
 public class JaninoTests {
+    public static final int COMPILE_AND_EXECUTE      = 0;
+    public static final int RETURNS_TRUE             = 1;
+    public static final int THROWS_SCAN_EXCEPTION    = 2;
+    public static final int THROWS_PARSE_EXCEPTION   = 3;
+    public static final int THROWS_COMPILE_EXCEPTION = 4;
+
     public static Test suite() {
         TestSuite suite;
 
@@ -51,8 +57,8 @@ public class JaninoTests {
             suite.addTest(suite3);
 
             suite3.aet("3.1 Unicode", "'\\u00e4' == 'ה'");
-            suite3.ast("3.2 Lexical Translations", "3--4", ScriptTest.THROWS_PARSE_EXCEPTION);
-            suite3.ast("3.3 Unicode Escapes/1", "aaa\\u123gbbb", ScriptTest.THROWS_SCAN_EXCEPTION);
+            suite3.ast("3.2 Lexical Translations", "3--4", JaninoTests.THROWS_PARSE_EXCEPTION);
+            suite3.ast("3.3 Unicode Escapes/1", "aaa\\u123gbbb", JaninoTests.THROWS_SCAN_EXCEPTION);
             suite3.aet("3.3 Unicode Escapes/2", "\"\\u0041\".equals(\"A\")");
             suite3.aet("3.3 Unicode Escapes/3", "\"\\uu0041\".equals(\"A\")");
             suite3.aet("3.3 Unicode Escapes/4", "\"\\uuu0041\".equals(\"A\")");
@@ -63,32 +69,32 @@ public class JaninoTests {
             suite3.aet("3.7 Comments/1", "7/* */==7");
             suite3.aet("3.7 Comments/2", "7/**/==7");
             suite3.aet("3.7 Comments/3", "7/***/==7");
-            suite3.ast("3.7 Comments/4", "7/*/==7", ScriptTest.THROWS_SCAN_EXCEPTION);
+            suite3.ast("3.7 Comments/4", "7/*/==7", JaninoTests.THROWS_SCAN_EXCEPTION);
             suite3.aet("3.7 Comments/5", "7/*\r*/==7");
             suite3.aet("3.7 Comments/6", "7//\r==7");
             suite3.aet("3.7 Comments/7", "7//\n==7");
             suite3.aet("3.7 Comments/8", "7//\r\n==7");
             suite3.aet("3.7 Comments/9", "7//\n\r==7");
-            suite3.ast("3.7 Comments/10", "7// /*\n\rXXX*/==7", ScriptTest.THROWS_PARSE_EXCEPTION);
+            suite3.ast("3.7 Comments/10", "7// /*\n\rXXX*/==7", JaninoTests.THROWS_PARSE_EXCEPTION);
             suite3.ast("3.8 Identifiers/1", "int a;");
             suite3.ast("3.8 Identifiers/2", "int ההה;");
             suite3.ast("3.8 Identifiers/3", "int \\u0391;"); // Greek alpha
             suite3.ast("3.8 Identifiers/4", "int _aaa;");
             suite3.ast("3.8 Identifiers/5", "int $aaa;");
-            suite3.ast("3.8 Identifiers/6", "int 9aaa;", ScriptTest.THROWS_PARSE_EXCEPTION);
-            suite3.ast("3.8 Identifiers/7", "int const;", ScriptTest.THROWS_PARSE_EXCEPTION);
+            suite3.ast("3.8 Identifiers/6", "int 9aaa;", JaninoTests.THROWS_PARSE_EXCEPTION);
+            suite3.ast("3.8 Identifiers/7", "int const;", JaninoTests.THROWS_PARSE_EXCEPTION);
             suite3.aet("3.10.1 Integer Literals/1", "17 == 17L");
             suite3.aet("3.10.1 Integer Literals/2", "255 == 0xFFl");
             suite3.aet("3.10.1 Integer Literals/3", "17 == 021L");
-            suite3.ast("3.10.1 Integer Literals/4", "17 == 029", ScriptTest.THROWS_PARSE_EXCEPTION);
+            suite3.ast("3.10.1 Integer Literals/4", "17 == 029", JaninoTests.THROWS_PARSE_EXCEPTION);
             suite3.aet("3.10.1 Integer Literals/5", "2 * 2147483647 == -2");
             suite3.aet("3.10.1 Integer Literals/6", "2 * -2147483648 == 0");
-            suite3.ast("3.10.1 Integer Literals/7", "2147483648;", ScriptTest.THROWS_COMPILE_EXCEPTION);
-            suite3.ast("3.10.1 Integer Literals/8", "9223372036854775807L;");
-            suite3.ast("3.10.1 Integer Literals/9", "9223372036854775808L;", ScriptTest.THROWS_COMPILE_EXCEPTION);
-            suite3.ast("3.10.1 Integer Literals/10", "9223372036854775809L;", ScriptTest.THROWS_SCAN_EXCEPTION);
-            suite3.ast("3.10.1 Integer Literals/11", "-9223372036854775808L;");
-            suite3.ast("3.10.1 Integer Literals/12", "-9223372036854775809L;", ScriptTest.THROWS_SCAN_EXCEPTION);
+            suite3.aet("3.10.1 Integer Literals/7", "2147483648", JaninoTests.THROWS_COMPILE_EXCEPTION);
+            suite3.aet("3.10.1 Integer Literals/8", "9223372036854775807L", JaninoTests.COMPILE_AND_EXECUTE);
+            suite3.aet("3.10.1 Integer Literals/9", "9223372036854775808L", JaninoTests.THROWS_COMPILE_EXCEPTION);
+            suite3.aet("3.10.1 Integer Literals/10", "9223372036854775809L", JaninoTests.THROWS_SCAN_EXCEPTION);
+            suite3.aet("3.10.1 Integer Literals/11", "-9223372036854775808L", JaninoTests.COMPILE_AND_EXECUTE);
+            suite3.aet("3.10.1 Integer Literals/12", "-9223372036854775809L", JaninoTests.THROWS_SCAN_EXCEPTION);
 //          suite3.ast("3.10.2 Floating-Point Literals", "");
 //          suite3.ast("3.10.3 Boolean Literals", "");
 //          suite3.ast("3.10.4 Character Literals", "");
@@ -194,8 +200,11 @@ public class JaninoTests {
             SimpleTestSuite suite14 = new SimpleTestSuite("14 Blocks and Statements");
             suite.addTest(suite14);
 
-//          suite14.ast("14.1 Normal and Abrupt Completion of Statements", "");
-//          ...
+            suite14.ast("14.8 Expression Statements/1", "int a; a = 8; ++a; a++; if (a != 10) return false; --a; a--; return a == 8;", JaninoTests.RETURNS_TRUE);
+            suite14.ast("14.8 Expression Statements/2", "System.currentTimeMillis();");
+            suite14.ast("14.8 Expression Statements/3", "new Object();");
+            suite14.ast("14.8 Expression Statements/4", "new Object[3];", JaninoTests.THROWS_PARSE_EXCEPTION);
+            suite14.ast("14.8 Expression Statements/5", "int a; a;", JaninoTests.THROWS_PARSE_EXCEPTION);
         }
 
         // 15 Expressions
@@ -231,6 +240,13 @@ class SimpleTestSuite extends TestSuite {
     }
 
     /**
+     * Shorthand for "add expression test".
+     */
+    public void aet(String title, String expression, int mode) {
+        this.addTest(new ExpressionTest(title, expression, mode));
+    }
+
+    /**
      * Shorthand for "add script test".
      */
     public void ast(String title, String script) {
@@ -251,11 +267,17 @@ class SimpleTestSuite extends TestSuite {
  */
 class ExpressionTest extends TestCase {
     private String expression;
+    int      mode;
 
     public ExpressionTest(String name, String expression) {
+        this(name, expression, JaninoTests.RETURNS_TRUE);
+    }
+
+    public ExpressionTest(String name, String expression, int mode) {
         // Notice: JUnit 3.8.1 gets confused if the name contains "(" and/or ",".
         super(name);
         this.expression = expression;
+        this.mode = mode;
     }
 
     /**
@@ -263,11 +285,29 @@ class ExpressionTest extends TestCase {
      * value.
      */
     protected void runTest() throws Throwable {
-        ExpressionEvaluator ee = new ExpressionEvaluator(this.expression, Boolean.TYPE, new String[0], new Class[0]);
-        Object result = ee.evaluate(new Object[0]);
-        assertTrue("Resulting expression is \"false\"", ((Boolean) result).booleanValue());
-    }
+        ExpressionEvaluator ee;
+        try {
+            ee = new ExpressionEvaluator(this.expression, null, new String[0], new Class[0]);
+        } catch (Scanner.ScanException ex) {
+            if (this.mode == JaninoTests.THROWS_SCAN_EXCEPTION) return;
+            throw ex;
+        } catch (Parser.ParseException ex) {
+            if (this.mode == JaninoTests.THROWS_PARSE_EXCEPTION) return;
+            throw ex;
+        } catch (CompileException ex) {
+            if (this.mode == JaninoTests.THROWS_COMPILE_EXCEPTION) return;
+            throw ex;
+        }
 
+        if (this.mode == JaninoTests.THROWS_SCAN_EXCEPTION) fail("Should have thrown Scanner.ScanException");
+        if (this.mode == JaninoTests.THROWS_PARSE_EXCEPTION) fail("Should have thrown Parser.ParseException");
+        if (this.mode == JaninoTests.THROWS_COMPILE_EXCEPTION) fail("Should have thrown Java.CompileException");
+
+        Object result = ee.evaluate(new Object[0]);
+        if (this.mode == JaninoTests.RETURNS_TRUE) {
+            assertTrue("Resulting expression is \"false\"", ((Boolean) result).booleanValue());
+        }
+    }
 }
 
 /**
@@ -278,14 +318,8 @@ class ScriptTest extends TestCase {
     private String script;
     int      mode;
 
-    public static final int COMPILE_AND_EXECUTE      = 0;
-    public static final int RETURNS_TRUE             = 1;
-    public static final int THROWS_SCAN_EXCEPTION    = 2;
-    public static final int THROWS_PARSE_EXCEPTION   = 3;
-    public static final int THROWS_COMPILE_EXCEPTION = 4;
-
     public ScriptTest(String name, String script) {
-        this(name, script, COMPILE_AND_EXECUTE);
+        this(name, script, JaninoTests.COMPILE_AND_EXECUTE);
     }
 
     public ScriptTest(String name, String script, int mode) {
@@ -302,24 +336,24 @@ class ScriptTest extends TestCase {
     protected void runTest() throws Throwable {
         ScriptEvaluator se;
         try {
-            se = new ScriptEvaluator(this.script, this.mode == RETURNS_TRUE ? Boolean.TYPE : Void.TYPE);
+            se = new ScriptEvaluator(this.script, this.mode == JaninoTests.RETURNS_TRUE ? Boolean.TYPE : Void.TYPE);
         } catch (Scanner.ScanException ex) {
-            if (this.mode == THROWS_SCAN_EXCEPTION) return;
+            if (this.mode == JaninoTests.THROWS_SCAN_EXCEPTION) return;
             throw ex;
         } catch (Parser.ParseException ex) {
-            if (this.mode == THROWS_PARSE_EXCEPTION) return;
+            if (this.mode == JaninoTests.THROWS_PARSE_EXCEPTION) return;
             throw ex;
         } catch (CompileException ex) {
-            if (this.mode == THROWS_COMPILE_EXCEPTION) return;
+            if (this.mode == JaninoTests.THROWS_COMPILE_EXCEPTION) return;
             throw ex;
         }
 
-        if (this.mode == THROWS_SCAN_EXCEPTION) fail("Should have thrown Scanner.ScanException");
-        if (this.mode == THROWS_PARSE_EXCEPTION) fail("Should have thrown Parser.ParseException");
-        if (this.mode == THROWS_COMPILE_EXCEPTION) fail("Should have thrown Java.CompileException");
+        if (this.mode == JaninoTests.THROWS_SCAN_EXCEPTION) fail("Should have thrown Scanner.ScanException");
+        if (this.mode == JaninoTests.THROWS_PARSE_EXCEPTION) fail("Should have thrown Parser.ParseException");
+        if (this.mode == JaninoTests.THROWS_COMPILE_EXCEPTION) fail("Should have thrown Java.CompileException");
 
         Object result = se.evaluate(new Object[0]);
-        if (this.mode == RETURNS_TRUE) {
+        if (this.mode == JaninoTests.RETURNS_TRUE) {
             assertTrue("Script did not return \"true\"", ((Boolean) result).booleanValue());
         }
     }
