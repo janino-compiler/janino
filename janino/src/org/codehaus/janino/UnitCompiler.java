@@ -241,7 +241,7 @@ public class UnitCompiler {
                 innerClassInfoIndex, // innerClassInfoIndex
                 outerClassInfoIndex, // outerClassInfoIndex
                 innerNameIndex,      // innerNameIndex
-                cd.modifiers         // innerClassAccessFlags
+                atd.modifiers        // innerClassAccessFlags
             ));
         }
 
