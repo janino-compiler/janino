@@ -135,7 +135,7 @@ public class Disassembler {
                     } else {
                         cpi.print();
                     }
-                    out.println(",");
+                    out.println();
                 }
             } out.unindent();
             out.println("}");
@@ -160,12 +160,8 @@ public class Disassembler {
             out.indent(); {
                 short interfacesCount = dis.readShort();
                 for (short i = 0; i < interfacesCount; ++i) {
-                    short interfacE = dis.readShort();
-                    out.print(interfacE + " (");
-                    out.indent(); {
-                        Disassembler.printConstantPoolEntry(interfacE);
-                    } out.unindent();
-                    out.println("),");
+                    Disassembler.printConstantPoolEntry(null, dis.readShort());
+                    out.println();
                 }
             } out.unindent();
             out.println("}");
@@ -175,7 +171,7 @@ public class Disassembler {
                 short fieldsCount = dis.readShort();
                 for (short i = 0; i < fieldsCount; ++i) {
                     disasmFieldInfo(dis);
-                    out.println(",");
+                    out.println();
                 }
             } out.unindent();
             out.println("}");
@@ -185,7 +181,7 @@ public class Disassembler {
                 short methodsCount = dis.readShort();
                 for (short i = 0; i < methodsCount; ++i) {
                     disasmMethodInfo(dis);
-                    out.println(",");
+                    out.println();
                 }
             } out.unindent();
             out.println("}");
@@ -195,7 +191,7 @@ public class Disassembler {
                 short attributesCount = dis.readShort();
                 for (short i = 0; i < attributesCount; ++i) {
                     disasmAttributeInfo(dis);
-                    out.println(",");
+                    out.println();
                 }
             } out.unindent();
             out.println("}");
@@ -211,13 +207,9 @@ public class Disassembler {
                 final short nameIndex = dis.readShort();
                 return new ConstantPoolInfo() {
                     public void print() {
-                        if (verbose) {
-                            out.print("CONSTANT_Class_info { name_index = " + nameIndex + " (");
-                            Disassembler.printConstantPoolEntry(nameIndex);
-                            out.print(") }");
-                        } else {
-                            Disassembler.printConstantPoolEntry(nameIndex);
-                        }
+                        out.print("CONSTANT_Class_info { ");
+                        Disassembler.printConstantPoolEntry("name_index", nameIndex);
+                        out.print(" }");
                     }
                 };
             }
@@ -227,23 +219,14 @@ public class Disassembler {
                 final short nameAndTypeIndex = dis.readShort();
                 return new ConstantPoolInfo() {
                     public void print() {
-                        if (verbose) {
-                            out.println("CONSTANT_Fieldref_info {");
-                            out.indent(); {
-                                out.print("class_index = " + classIndex + " (");
-                                Disassembler.printConstantPoolEntry(classIndex);
-                                out.println(")");
-    
-                                out.print("name_and_type_index = " + nameAndTypeIndex + " (");
-                                Disassembler.printConstantPoolEntry(nameAndTypeIndex);
-                                out.println(")");
-                            } out.unindent();
-                            out.print("}");
-                        } else {
-                            Disassembler.printConstantPoolEntry(classIndex);
-                            out.print('.');
-                            Disassembler.printConstantPoolEntry(nameAndTypeIndex);
-                        }
+                        out.println("CONSTANT_Fieldref_info {");
+                        out.indent(); {
+                            Disassembler.printConstantPoolEntry("class_index", classIndex);
+                            out.println();
+                            Disassembler.printConstantPoolEntry("name_and_type_index", nameAndTypeIndex);
+                            out.println();
+                        } out.unindent();
+                        out.print("}");
                     }
                 };
             }
@@ -253,23 +236,14 @@ public class Disassembler {
                 final short nameAndTypeIndex = dis.readShort();
                 return new ConstantPoolInfo() {
                     public void print() {
-                        if (verbose) {
-                            out.println("CONSTANT_Methodref_info {");
-                            out.indent(); {
-                                out.print("class_index = " + classIndex + " (");
-                                Disassembler.printConstantPoolEntry(classIndex);
-                                out.println(")");
-    
-                                out.print("name_and_type_index = " + nameAndTypeIndex + " (");
-                                Disassembler.printConstantPoolEntry(nameAndTypeIndex);
-                                out.println(")");
-                            } out.unindent();
-                            out.print("}");
-                        } else {
-                            Disassembler.printConstantPoolEntry(classIndex);
-                            out.print('.');
-                            Disassembler.printConstantPoolEntry(nameAndTypeIndex);
-                        }
+                        out.println("CONSTANT_Methodref_info {");
+                        out.indent(); {
+                            Disassembler.printConstantPoolEntry("class_index", classIndex);
+                            out.println();
+                            Disassembler.printConstantPoolEntry("name_and_type_index", nameAndTypeIndex);
+                            out.println();
+                        } out.unindent();
+                        out.print("}");
                     }
                 };
             }
@@ -279,23 +253,14 @@ public class Disassembler {
                 final short nameAndTypeIndex = dis.readShort();
                 return new ConstantPoolInfo() {
                     public void print() {
-                        if (verbose) {
-                            out.println("CONSTANT_InterfaceMethodref_info {");
-                            out.indent(); {
-                                out.print("class_index = " + classIndex + " (");
-                                Disassembler.printConstantPoolEntry(classIndex);
-                                out.println(")");
-    
-                                out.print("name_and_type_index = " + nameAndTypeIndex + " (");
-                                Disassembler.printConstantPoolEntry(nameAndTypeIndex);
-                                out.println(")");
-                            } out.unindent();
-                            out.print("}");
-                        } else {
-                            Disassembler.printConstantPoolEntry(classIndex);
-                            out.print('.');
-                            Disassembler.printConstantPoolEntry(nameAndTypeIndex);
-                        }
+                        out.println("CONSTANT_InterfaceMethodref_info {");
+                        out.indent(); {
+                            Disassembler.printConstantPoolEntry("class_index", classIndex);
+                            out.println();
+                            Disassembler.printConstantPoolEntry("name_and_type_index", nameAndTypeIndex);
+                            out.println();
+                        } out.unindent();
+                        out.print("}");
                     }
                 };
             }
@@ -368,23 +333,14 @@ public class Disassembler {
                 final short descriptorIndex = dis.readShort();
                 return new ConstantPoolInfo() {
                     public void print() {
-                        if (verbose) {
-                            out.println("CONSTANT_NameAndType_info {");
-                            out.indent(); {
-                                out.print("name_index = " + nameIndex + " (");
-                                Disassembler.printConstantPoolEntry(nameIndex);
-                                out.println(")");
-    
-                                out.print("descriptor_index = " + descriptorIndex + " (");
-                                Disassembler.printConstantPoolEntry(descriptorIndex);
-                                out.println(")");
-                            } out.unindent();
-                            out.print("}");
-                        } else {
-                            Disassembler.printConstantPoolEntry(nameIndex);
-                            out.print(' ');
-                            Disassembler.printConstantPoolEntry(descriptorIndex);
-                        }
+                        out.println("CONSTANT_NameAndType_info {");
+                        out.indent(); {
+                            Disassembler.printConstantPoolEntry("name_index", nameIndex);
+                            out.println();
+                            Disassembler.printConstantPoolEntry("descriptor_index", descriptorIndex);
+                            out.println();
+                        } out.unindent();
+                        out.print("}");
                     }
                 };
             }
@@ -415,22 +371,18 @@ public class Disassembler {
         out.indent(); {
             out.println("access_flags = " + decodeAccess(dis.readShort()));
 
-            short nameIndex = dis.readShort();
-            out.print("name_index = " + nameIndex + " (");
-            Disassembler.printConstantPoolEntry(nameIndex);
-            out.println(")");
+            Disassembler.printConstantPoolEntry("name_index", dis.readShort());
+            out.println();
 
-            short descriptorIndex = dis.readShort();
-            out.print("descriptor_index = " + descriptorIndex + " (");
-            Disassembler.printConstantPoolEntry(descriptorIndex);
-            out.println(")");
+            Disassembler.printConstantPoolEntry("descriptor_index", dis.readShort());
+            out.println();
 
             out.println("attributes[] = {");
             out.indent(); {
                 short attributesCount = dis.readShort();
                 for (short i = 0; i < attributesCount; ++i) {
                     disasmAttributeInfo(dis);
-                    out.println(",");
+                    out.println();
                 }
             } out.unindent();
             out.println("}");
@@ -443,26 +395,18 @@ public class Disassembler {
         out.indent(); {
             out.println("access_flags = " + decodeAccess(dis.readShort()));
 
-            short nameIndex = dis.readShort();
-            out.print("name_index = " + nameIndex + " (");
-            out.indent(); {
-                Disassembler.printConstantPoolEntry(nameIndex);
-            } out.unindent();
-            out.println(")");
+            Disassembler.printConstantPoolEntry("name_index", dis.readShort());
+            out.println();
 
-            short descriptorIndex = dis.readShort();
-            out.print("descriptor_index = " + descriptorIndex + " (");
-            out.indent(); {
-                Disassembler.printConstantPoolEntry(descriptorIndex);
-            } out.unindent();
-            out.println(")");
+            Disassembler.printConstantPoolEntry("descriptor_index", dis.readShort());
+            out.println();
 
             out.println("attributes[] = {");
             out.indent(); {
                 short attributesCount = dis.readShort();
                 for (short i = 0; i < attributesCount; ++i) {
                     disasmAttributeInfo(dis);
-                    out.println(",");
+                    out.println();
                 }
             } out.unindent();
             out.println("}");
@@ -502,7 +446,7 @@ public class Disassembler {
 
         // Check for extraneous bytes.
         int av = bais.available();
-        if (av > 0) throw new RuntimeException(av + " extraneous bytes in attribute");
+        if (av > 0) throw new RuntimeException(av + " extraneous bytes in attribute \"" + attributeName + "\"");
 
         return res;
     }
@@ -561,7 +505,7 @@ public class Disassembler {
                         out.indent(); {
                             for (int i = 0; i < exceptionTable.length; ++i) {
                                 exceptionTable[i].print();
-                                out.println(",");
+                                out.println();
                             }
                         } out.unindent();
                         out.println("}");
@@ -570,7 +514,7 @@ public class Disassembler {
                         out.indent(); {
                             for (int i = 0; i < attributes.length; ++i) {
                                 attributes[i].print();
-                                out.println(",");
+                                out.println();
                             }
                         } out.unindent();
                         out.println("}");
@@ -613,28 +557,24 @@ public class Disassembler {
                             for (int i = 0; i < data.length; i += 4) {
                                 out.println("{");
                                 out.indent(); {
-                                    short innerClassInfoIndex = data[i];
-                                    out.print("inner_class_info_index = " + innerClassInfoIndex + " (");
-                                    Disassembler.printConstantPoolEntry(innerClassInfoIndex);
-                                    out.println("),");
+                                    Disassembler.printConstantPoolEntry("inner_class_info_index", data[i]);
+                                    out.println();
     
                                     short outerClassInfoIndex = data[i + 1];
-                                    out.print("outer_class_info_index = " + outerClassInfoIndex + " (");
                                     if (outerClassInfoIndex == 0) {
-                                        out.print("not a member");
+                                        out.print("(not a member)");
                                     } else {
-                                        Disassembler.printConstantPoolEntry(outerClassInfoIndex);
+                                        Disassembler.printConstantPoolEntry("outer_class_info_index", outerClassInfoIndex);
                                     }
-                                    out.println("),");
+                                    out.println();
     
                                     short innerNameIndex = data[i + 2];
-                                    out.print("inner_name_index = " + innerNameIndex + " (");
                                     if (innerNameIndex == 0) {
-                                        out.print("anonymous");
+                                        out.print("(anonymous)");
                                     } else {
-                                        Disassembler.printConstantPoolEntry(innerNameIndex);
+                                        Disassembler.printConstantPoolEntry("inner_name_index", innerNameIndex);
                                     }
-                                    out.println("),");
+                                    out.println();
     
                                     out.println("inner_class_access_flags = " + decodeAccess(data[i + 3]));
                                 } out.unindent();
@@ -661,9 +601,8 @@ public class Disassembler {
                     out.println("{");
                     out.indent(); {
                         out.println("attribute_name = \"SourceFile\"");
-                        out.print("sourcefile_index = " + sourceFileIndex + " (");
-                        Disassembler.printConstantPoolEntry(sourceFileIndex);
-                        out.println(")");
+                        Disassembler.printConstantPoolEntry("sourcefile_index", sourceFileIndex);
+                        out.println();
                     } out.unindent();
                     out.print("}");
                 }
@@ -734,18 +673,14 @@ public class Disassembler {
                 out.println("local_variable_table = {");
                 out.indent(); {
                     for (int i = 0; i < this.data.length; i += 5) {
-                        out.print("start_pc = " + this.data[i] + ", length = " + this.data[i + 1] + ", ");
-
-                        short nameIndex = this.data[i + 2];
-                        out.print("name_index = " + nameIndex + " (");
-                        Disassembler.printConstantPoolEntry(nameIndex);
-                        out.print("), ");
-
-                        short descriptorIndex = this.data[i + 3];
-                        out.print("descriptor_index = " + descriptorIndex + " (");
-                        Disassembler.printConstantPoolEntry(descriptorIndex);
-                        out.print("), ");
-
+                        out.print("start_pc = " + this.data[i]);
+                        out.print(", ");
+                        out.print("length = " + this.data[i + 1]);
+                        out.print(", ");
+                        Disassembler.printConstantPoolEntry("name_index", this.data[i + 2]);
+                        out.print(", ");
+                        Disassembler.printConstantPoolEntry("descriptor_index", this.data[i + 3]);
+                        out.print(", ");
                         out.println("index = " + this.data[i + 4]);
                     }
                 } out.unindent();
@@ -762,14 +697,9 @@ public class Disassembler {
                     instructionOffset <= startPC + length &&
                     index == this.data[i + 4]
                 ) {
-                    short nameIndex       = this.data[i + 2];
-                    short descriptorIndex = this.data[i + 3];
-                    out.print("name_index = " + nameIndex + " (");
-                    Disassembler.printConstantPoolEntry(nameIndex);
-                    out.print("), ");
-                    out.print("descriptor_index = " + descriptorIndex + " (");
-                    Disassembler.printConstantPoolEntry(descriptorIndex);
-                    out.print(")");
+                    Disassembler.printConstantPoolEntry("name_index", this.data[i + 2]);
+                    out.print(", ");
+                    Disassembler.printConstantPoolEntry("descriptor_index", this.data[i + 3]);
                     return;
                 }
             }
@@ -1280,6 +1210,21 @@ public class Disassembler {
             out.print("CONSTANT POOL INDEX OUT OF RANGE");
         }
         if (verbose) out.print(")");
+    }
+
+    private static void printConstantPoolEntry(String label, short index) {
+        if (verbose) {
+            if (label != null) out.print(label + " = ");
+            out.print(index + " (");
+            Disassembler.printConstantPoolEntry(index);
+            out.print(")");
+        } else {
+            if (label != null) {
+                if (label.endsWith("_index")) label = label.substring(0, label.length() - 6);
+                out.print(label + " = ");
+            }
+            Disassembler.printConstantPoolEntry(index);
+        }
     }
 
     private static class Instruction {
