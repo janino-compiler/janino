@@ -106,7 +106,7 @@ public class ScriptEvaluator extends EvaluatorBase {
                 (Class) null,                                // optionalExtendedType
                 new Class[0],                                // implementedTypes
                 true,                                        // staticMethod
-                Void.TYPE,                                   // returnType
+                void.class,                                  // returnType
                 ScriptEvaluator.DEFAULT_METHOD_NAME,         // methodName
                 new String[0],                               // parameterNames
                 new Class[0],                                // parameterTypes
@@ -440,6 +440,32 @@ public class ScriptEvaluator extends EvaluatorBase {
             throw new RuntimeException(ex.toString());
         }
         if (this.method == null) throw new RuntimeException("Method \"" + methodName + "\" not found");
+    }
+
+    /**
+     * Simplified version of
+     * {@link #createFastScriptEvaluator(Scanner, Class, String[], ClassLoader)}.
+     * 
+     * @param script Contains the sequence of script tokens
+     * @param interfaceToImplement Must declare exactly the one method that defines the expression's signature
+     * @param parameterNames The expression references the parameters through these names
+     * @return an object that implements the given interface and extends the <code>optionalExtendedType</code>
+     */
+    public static Object createFastScriptEvaluator(
+        String   script,
+        Class    interfaceToImplement,
+        String[] parameterNames
+    ) throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
+        try {
+            return ScriptEvaluator.createFastScriptEvaluator(
+                new Scanner(null, new StringReader(script)), // scanner
+                interfaceToImplement,                        // interfaceToImplement
+                parameterNames,                              // parameterNames
+                null                                         // optionalParentClassLoader
+            );
+        } catch (IOException ex) {
+            throw new RuntimeException("SNO: StringReader throws IOException!?");
+        }
     }
 
     /**
