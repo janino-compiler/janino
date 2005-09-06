@@ -44,7 +44,7 @@ import org.codehaus.janino.*;
 public class ScriptDemo extends DemoBase {
     public static void main(String[] args) throws Exception {
         String   script         = "System.out.println(\"Hello \" + a);";
-        Class    returnType     = Void.TYPE;
+        Class    returnType     = void.class;
         String[] parameterNames = { "a", };
         Class[]  parameterTypes = { String.class, };
 

@@ -58,7 +58,7 @@ public class ClassBodyDemo extends DemoBase {
         );
 
         Class c = new ClassBodyEvaluator(script).evaluate();
-        Method m = c.getMethod("add", new Class[] { Integer.TYPE, Integer.TYPE });
+        Method m = c.getMethod("add", new Class[] { int.class, int.class });
         Integer res = (Integer) m.invoke(null, new Object[] {
             new Integer(7),
             new Integer(11),

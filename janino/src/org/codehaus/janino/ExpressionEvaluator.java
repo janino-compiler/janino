@@ -297,7 +297,7 @@ public class ExpressionEvaluator extends EvaluatorBase {
         );
 
         Parser parser = new Parser(scanner);
-        if (optionalExpressionType == Void.TYPE) {
+        if (optionalExpressionType == void.class) {
 
             // ExpressionEvaluator with a expression type "void" is a simple expression statement.
             block.addStatement(new Java.ExpressionStatement(

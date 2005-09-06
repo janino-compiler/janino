@@ -56,14 +56,14 @@ public class DemoBase {
         // Wrap primitive parameters.
         if (type.isPrimitive()) {
             type = (
-                type == Boolean.TYPE   ? Boolean.class   :
-                type == Character.TYPE ? Character.class :
-                type == Byte.TYPE      ? Byte.class      :
-                type == Short.TYPE     ? Short.class     :
-                type == Integer.TYPE   ? Integer.class   :
-                type == Long.TYPE      ? Long.class      :
-                type == Float.TYPE     ? Float.class     :
-                type == Double.TYPE    ? Double.class    : Void.TYPE
+                type == boolean.class ? Boolean.class   :
+                type == char.class    ? Character.class :
+                type == byte.class    ? Byte.class      :
+                type == short.class   ? Short.class     :
+                type == int.class     ? Integer.class   :
+                type == long.class    ? Long.class      :
+                type == float.class   ? Float.class     :
+                type == double.class  ? Double.class    : void.class
             );
         }
 
@@ -92,15 +92,15 @@ public class DemoBase {
 
         if (brackets == 0) {
             // "Class.forName("C")" does not work.
-            if (s.equals("void"   )) return Void.TYPE;
-            if (s.equals("boolean")) return Boolean.TYPE;
-            if (s.equals("char"   )) return Character.TYPE;
-            if (s.equals("byte"   )) return Byte.TYPE;
-            if (s.equals("short"  )) return Short.TYPE;
-            if (s.equals("int"    )) return Integer.TYPE;
-            if (s.equals("long"   )) return Long.TYPE;
-            if (s.equals("float"  )) return Float.TYPE;
-            if (s.equals("double" )) return Double.TYPE;
+            if (s.equals("void"   )) return void.class;
+            if (s.equals("boolean")) return boolean.class;
+            if (s.equals("char"   )) return char.class;
+            if (s.equals("byte"   )) return byte.class;
+            if (s.equals("short"  )) return short.class;
+            if (s.equals("int"    )) return int.class;
+            if (s.equals("long"   )) return long.class;
+            if (s.equals("float"  )) return float.class;
+            if (s.equals("double" )) return double.class;
         }
 
         // Automagically convert primitive type names.

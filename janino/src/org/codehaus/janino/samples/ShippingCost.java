@@ -56,9 +56,9 @@ public class ShippingCost {
         // Create "ExpressionEvaluator" object.
         ExpressionEvaluator ee = new ExpressionEvaluator(
             "total >= 100.0 ? 0.0 : 7.95", // expression
-            Double.TYPE,                   // optionalExpressionType
+            double.class,                  // optionalExpressionType
             new String[] { "total" },      // parameterNames,
-            new Class[] { Double.TYPE },   // parameterTypes
+            new Class[] { double.class },  // parameterTypes
             new Class[0],                  // thrownExceptions
             null                           // optionalClassLoader
         );

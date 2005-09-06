@@ -46,7 +46,7 @@ public class ExpressionDemo extends DemoBase {
         String   expression             = "total >= 100.0 ? 0.0 : 7.95";
         Class    optionalExpressionType = null;
         String[] parameterNames         = { "total", };
-        Class[]  parameterTypes         = { Double.TYPE, };
+        Class[]  parameterTypes         = { double.class, };
         Class[]  thrownExceptions       = new Class[0];
 
         int i;

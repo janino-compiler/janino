@@ -336,7 +336,7 @@ class ScriptTest extends TestCase {
     protected void runTest() throws Throwable {
         ScriptEvaluator se;
         try {
-            se = new ScriptEvaluator(this.script, this.mode == JaninoTests.RETURNS_TRUE ? Boolean.TYPE : Void.TYPE);
+            se = new ScriptEvaluator(this.script, this.mode == JaninoTests.RETURNS_TRUE ? boolean.class : Void.TYPE);
         } catch (Scanner.ScanException ex) {
             if (this.mode == JaninoTests.THROWS_SCAN_EXCEPTION) return;
             throw ex;

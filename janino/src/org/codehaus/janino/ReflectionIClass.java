@@ -115,13 +115,13 @@ class ReflectionIClass extends IClass {
     }
     public boolean isPrimitiveNumeric() {
         return (
-            this.clazz == Byte.TYPE      ||
-            this.clazz == Short.TYPE     ||
-            this.clazz == Integer.TYPE   ||
-            this.clazz == Long.TYPE      ||
-            this.clazz == Character.TYPE ||
-            this.clazz == Float.TYPE     ||
-            this.clazz == Double.TYPE
+            this.clazz == byte.class   ||
+            this.clazz == short.class  ||
+            this.clazz == int.class    ||
+            this.clazz == long.class   ||
+            this.clazz == char.class   ||
+            this.clazz == float.class  ||
+            this.clazz == double.class
         );
     }
 
