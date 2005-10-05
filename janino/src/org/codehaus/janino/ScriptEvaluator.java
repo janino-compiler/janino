@@ -383,17 +383,20 @@ public class ScriptEvaluator extends EvaluatorBase {
         );
     }
 
+    /**
+     * Workhorse method used by all {@link ScriptEvaluator} constructors.
+     */
     private void scanParseCompileLoad(
-        Scanner     scanner,
-        String      className,
-        Class       optionalExtendedType,
-        Class[]     implementedTypes,
-        boolean     staticMethod,
-        Class       returnType,
-        String      methodName,
-        String[]    parameterNames,
-        Class[]     parameterTypes,
-        Class[]     thrownExceptions
+        Scanner  scanner,
+        String   className,
+        Class    optionalExtendedType,
+        Class[]  implementedTypes,
+        boolean  staticMethod,
+        Class    returnType,
+        String   methodName,
+        String[] parameterNames,
+        Class[]  parameterTypes,
+        Class[]  thrownExceptions
     ) throws Scanner.ScanException, Parser.ParseException, CompileException, IOException {
         if (parameterNames.length != parameterTypes.length) throw new RuntimeException("Lengths of \"parameterNames\" and \"parameterTypes\" do not match");
 
@@ -585,6 +588,9 @@ public class ScriptEvaluator extends EvaluatorBase {
      *   parameter of
      *   {@link org.codehaus.janino.ScriptEvaluator#ScriptEvaluator(String,
      *   Class, String[], Class[])}.
+     * </p>
+     * <p>
+     *   This method is thread-safe.
      * </p>
      *
      * @param parameterValues The concrete parameter values.

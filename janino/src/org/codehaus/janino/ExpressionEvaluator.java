@@ -482,6 +482,9 @@ public class ExpressionEvaluator extends EvaluatorBase {
      *   (e.g. "int.class"), the return value is returned through a wrapper
      *   object ("Integer").
      * </p>
+     * <p>
+     *   This method is thread-safe.
+     * </p>
      *
      * @param parameterValues The concrete parameter values.
      */
