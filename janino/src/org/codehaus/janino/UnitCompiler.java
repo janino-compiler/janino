@@ -1163,9 +1163,9 @@ public class UnitCompiler {
                 cc.body.localVariables.put(
                     cc.caughtException.name,
                     new Java.LocalVariable(
-                        false,                 // finaL
-                        caughtExceptionType,   // type
-                        exceptionObjectLvIndex // localVariableIndex
+                        false,                        // finaL
+                        caughtExceptionType,          // type
+                        exceptionObjectLvIndex        // localVariableIndex
                     )
                 );
 
@@ -2895,60 +2895,52 @@ public class UnitCompiler {
                 if (lhs instanceof Double || rhs instanceof Double) {
                     double lhsD = ((Number) lhs).doubleValue();
                     double rhsD = ((Number) rhs).doubleValue();
-                    lhs = new Double(
-                        bo.op == "|" ? -1 :
-                        bo.op == "&" ? -1 :
-                        bo.op == "/" ? lhsD / rhsD :
-                        bo.op == "%" ? lhsD % rhsD :
-                        bo.op == "+" ? lhsD + rhsD :
-                        bo.op == "-" ? lhsD - rhsD :
-                        -1
-                    );
+                    double cvD;
+                    if (bo.op == "*") cvD = lhsD * rhsD; else
+                    if (bo.op == "/") cvD = lhsD / rhsD; else
+                    if (bo.op == "%") cvD = lhsD % rhsD; else
+                    if (bo.op == "+") cvD = lhsD + rhsD; else
+                    if (bo.op == "-") cvD = lhsD - rhsD; else return null;
+                    lhs = new Double(cvD);
                 } else
                 if (lhs instanceof Float || rhs instanceof Float) {
                     float lhsF = ((Number) lhs).floatValue();
                     float rhsF = ((Number) rhs).floatValue();
-                    lhs = new Float(
-                        bo.op == "|" ? -1 :
-                        bo.op == "^" ? -1 :
-                        bo.op == "&" ? -1 :
-                        bo.op == "*" ? lhsF * rhsF :
-                        bo.op == "/" ? lhsF / rhsF :
-                        bo.op == "%" ? lhsF % rhsF :
-                        bo.op == "+" ? lhsF + rhsF :
-                        bo.op == "-" ? lhsF - rhsF :
-                        -1
-                    );
+                    float cvF;
+                    if (bo.op == "*") cvF = lhsF * rhsF; else
+                    if (bo.op == "/") cvF = lhsF / rhsF; else
+                    if (bo.op == "%") cvF = lhsF % rhsF; else
+                    if (bo.op == "+") cvF = lhsF + rhsF; else
+                    if (bo.op == "-") cvF = lhsF - rhsF; else return null;
+                    lhs = new Float(cvF);
                 } else
                 if (lhs instanceof Long || rhs instanceof Long) {
                     long lhsL = ((Number) lhs).longValue();
                     long rhsL = ((Number) rhs).longValue();
-                    lhs = new Long(
-                        bo.op == "|" ? lhsL | rhsL :
-                        bo.op == "^" ? lhsL ^ rhsL :
-                        bo.op == "&" ? lhsL & rhsL :
-                        bo.op == "*" ? lhsL * rhsL :
-                        bo.op == "/" ? lhsL / rhsL :
-                        bo.op == "%" ? lhsL % rhsL :
-                        bo.op == "+" ? lhsL + rhsL :
-                        bo.op == "-" ? lhsL - rhsL :
-                        -1
-                    );
+                    long cvL;
+                    if (bo.op == "|") cvL = lhsL | rhsL; else
+                    if (bo.op == "^") cvL = lhsL ^ rhsL; else
+                    if (bo.op == "&") cvL = lhsL & rhsL; else
+                    if (bo.op == "*") cvL = lhsL * rhsL; else
+                    if (bo.op == "/") cvL = lhsL / rhsL; else
+                    if (bo.op == "%") cvL = lhsL % rhsL; else
+                    if (bo.op == "+") cvL = lhsL + rhsL; else
+                    if (bo.op == "-") cvL = lhsL - rhsL; else return null;
+                    lhs = new Long(cvL);
                 } else
                 {
                     int lhsI = ((Number) lhs).intValue();
                     int rhsI = ((Number) rhs).intValue();
-                    lhs = new Integer(
-                            bo.op == "|" ? lhsI | rhsI :
-                            bo.op == "^" ? lhsI ^ rhsI :
-                            bo.op == "&" ? lhsI & rhsI :
-                            bo.op == "*" ? lhsI * rhsI :
-                            bo.op == "/" ? lhsI / rhsI :
-                            bo.op == "%" ? lhsI % rhsI :
-                            bo.op == "+" ? lhsI + rhsI :
-                            bo.op == "-" ? lhsI - rhsI :
-                        -1
-                    );
+                    int cvI;
+                    if (bo.op == "|") cvI = lhsI | rhsI; else
+                    if (bo.op == "^") cvI = lhsI ^ rhsI; else
+                    if (bo.op == "&") cvI = lhsI & rhsI; else
+                    if (bo.op == "*") cvI = lhsI * rhsI; else
+                    if (bo.op == "/") cvI = lhsI / rhsI; else
+                    if (bo.op == "%") cvI = lhsI % rhsI; else
+                    if (bo.op == "+") cvI = lhsI + rhsI; else
+                    if (bo.op == "-") cvI = lhsI - rhsI; else return null;
+                    lhs = new Integer(cvI);
                 }
             }
             return lhs;
@@ -4571,10 +4563,10 @@ public class UnitCompiler {
      * Notice that the returned {@link IClass.IMethod} may be declared in an enclosing type.
      */
     private IClass.IMethod findIMethod(
-        Java.Located      located,
-        IClass       targetType,
-        final String methodName,
-        Java.Rvalue[]     arguments
+        Java.Located  located,
+        IClass        targetType,
+        final String  methodName,
+        Java.Rvalue[] arguments
     ) throws CompileException {
         for (IClass ic = targetType; ic != null; ic = ic.getDeclaringIClass()) {
             List l = new ArrayList();
@@ -6647,7 +6639,7 @@ public class UnitCompiler {
     private short addConstantStringInfo(String value) {
         return this.codeContext.getClassFile().addConstantStringInfo(value);
     }
-/* UNUSED
+    /* UNUSED
     private void writeConstantIntegerInfo(Java.Locatable l, int value) {
         this.codeContext.writeShort(
             l.getLocation().getLineNumber(),
