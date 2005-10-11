@@ -679,6 +679,15 @@ public abstract class IClass {
                 sb.append("<invalid type>");
             }
             sb.append(')');
+            try {
+                IClass[] tes = this.getThrownExceptions();
+                if (tes.length > 0) {
+                    sb.append(" throws ").append(tes[0]);
+                    for (int i = 1; i < tes.length; ++i) sb.append(", ").append(tes[i]);
+                }
+            } catch (CompileException ex) {
+                sb.append("<invalid thrown exception type>");
+            }
             return sb.toString();
         }
     }
