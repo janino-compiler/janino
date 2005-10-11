@@ -1296,6 +1296,7 @@ public class Java {
                 rvalue instanceof Java.Assignment
                 || rvalue instanceof Java.Crement
                 || rvalue instanceof Java.MethodInvocation
+                || rvalue instanceof Java.SuperclassMethodInvocation
                 || rvalue instanceof Java.NewClassInstance
             )) this.throwParseException("This kind of expression is not allowed in an expression statement");
             this.rvalue = rvalue;
@@ -2776,9 +2777,9 @@ public class Java {
 
     public static class LocalVariable {
         public LocalVariable(
-            boolean finaL,
-            IClass  type,
-            short   localVariableArrayIndex
+            boolean            finaL,
+            IClass             type,
+            short              localVariableArrayIndex
         ) {
             this.finaL                   = finaL;
             this.type                    = type;
