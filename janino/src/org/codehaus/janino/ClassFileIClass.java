@@ -91,6 +91,11 @@ public class ClassFileIClass extends IClass {
 
         for (Iterator it = this.classFile.methodInfos.iterator(); it.hasNext();) {
             ClassFile.MethodInfo mi = (ClassFile.MethodInfo) it.next();
+
+            // Skip JDK 1.5 synthetic methods (e.g. those generated for
+            // covariant return values).
+            if ((mi.getAccessFlags() & Mod.SYNTHETIC) != 0) continue;
+
             IInvocable ii;
             try {
                 ii = this.resolveMethod(mi);

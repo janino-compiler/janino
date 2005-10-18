@@ -202,7 +202,8 @@ public class ClassFile {
             (majorVersion == ClassFile.MAJOR_VERSION_JDK_1_1 && minorVersion == ClassFile.MINOR_VERSION_JDK_1_1) ||
             (majorVersion == ClassFile.MAJOR_VERSION_JDK_1_2 && minorVersion == ClassFile.MINOR_VERSION_JDK_1_2) ||
             (majorVersion == ClassFile.MAJOR_VERSION_JDK_1_3 && minorVersion == ClassFile.MINOR_VERSION_JDK_1_3) ||
-            (majorVersion == ClassFile.MAJOR_VERSION_JDK_1_4 && minorVersion == ClassFile.MINOR_VERSION_JDK_1_4)
+            (majorVersion == ClassFile.MAJOR_VERSION_JDK_1_4 && minorVersion == ClassFile.MINOR_VERSION_JDK_1_4) ||
+            (majorVersion == ClassFile.MAJOR_VERSION_JDK_1_5 && minorVersion == ClassFile.MINOR_VERSION_JDK_1_5)
         );
     }
 
@@ -638,6 +639,8 @@ public class ClassFile {
     public final static short MINOR_VERSION_JDK_1_3 = 0;
     public final static short MAJOR_VERSION_JDK_1_4 = 48;
     public final static short MINOR_VERSION_JDK_1_4 = 0;
+    public final static short MAJOR_VERSION_JDK_1_5 = 49;
+    public final static short MINOR_VERSION_JDK_1_5 = 0;
 
     private short        majorVersion;
     private short        minorVersion;

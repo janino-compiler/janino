@@ -60,6 +60,11 @@ public class Mod {
     public final static short ABSTRACT     = 0x0400;
     public final static short STRICTFP     = 0x0800;
 
+    // Poorly documented JDK 1.5 modifiers:
+    public final static short SYNTHETIC    = 0x1000;
+    public final static short ANNOTATION   = 0x2000;
+    public final static short ENUM         = 0x4000;
+
     public static String shortToString(short sh) {
         String res = "";
         for (int i = 0; i < Mod.mappings.length; i += 2) {

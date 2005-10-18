@@ -34,6 +34,7 @@
 
 package org.codehaus.janino;
 
+import java.util.*;
 import java.lang.reflect.*;
 
 /**
@@ -62,11 +63,18 @@ class ReflectionIClass extends IClass {
 
     protected IMethod[] getDeclaredIMethods2() {
         Method[] methods = this.clazz.getDeclaredMethods();
-        IMethod[] result = new IMethod[methods.length];
+        List iMethods = new ArrayList();
         for (int i = 0; i < methods.length; ++i) {
-            result[i] = new ReflectionIMethod(methods[i]);
+            Method m = methods[i];
+
+            // Skip JDK 1.5 synthetic methods (e.g. those generated for
+            // covariant return values).
+            if ((m.getModifiers() & Mod.SYNTHETIC) != 0) continue;
+
+            // Wrap java.reflection.Method in an IMethod.
+            iMethods.add(new ReflectionIMethod(m));
         }
-        return result;
+        return (IMethod[]) iMethods.toArray(new IMethod[iMethods.size()]);
     }
 
     protected IField[] getDeclaredIFields2() {
