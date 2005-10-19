@@ -79,10 +79,10 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
             this.pw.println("package " + cu.optionalPackageDeclaration.packageName + ';');
         }
         for (Iterator it = cu.importDeclarations.iterator(); it.hasNext();) {
-            ((Java.ImportDeclaration) it.next()).visit(this);
+            ((Java.ImportDeclaration) it.next()).accept(this);
         }
         for (Iterator it = cu.packageMemberTypeDeclarations.iterator(); it.hasNext();) {
-            ((Java.PackageMemberTypeDeclaration) it.next()).visit(this);
+            ((Java.PackageMemberTypeDeclaration) it.next()).accept(this);
             this.pw.println();
         }
     }
@@ -117,26 +117,26 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
         this.pw.print(' ');
         if (cd.optionalExplicitConstructorInvocation != null) {
             this.pw.println('{');
-            ((Java.Atom) cd.optionalExplicitConstructorInvocation).visit(this);
+            ((Java.Atom) cd.optionalExplicitConstructorInvocation).accept(this);
             this.pw.println(';');
             for (Iterator it = cd.optionalBody.statements.iterator(); it.hasNext();) {
-                ((Java.BlockStatement) it.next()).visit(this);
+                ((Java.BlockStatement) it.next()).accept(this);
                 this.pw.println();
             }
             this.pw.print('}');
         } else {
-            cd.optionalBody.visit(this);
+            cd.optionalBody.accept(this);
         }
     }
     public void visitMethodDeclarator(Java.MethodDeclarator md) {
         this.unparseDocComment(md);
         this.unparseModifiers(md.modifiers);
-        ((Java.Atom) md.type).visit(this);
+        ((Java.Atom) md.type).accept(this);
         this.pw.print(' ' + md.name);
         this.unparseFunctionDeclaratorRest(md);
         if (md.optionalBody != null) {
             this.pw.print(' ');
-            md.optionalBody.visit(this);
+            md.optionalBody.accept(this);
         } else {
             this.pw.print(';');
         }
@@ -144,7 +144,7 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
     public void visitFieldDeclaration(Java.FieldDeclaration fd) {
         this.unparseDocComment(fd);
         this.unparseModifiers(fd.modifiers);
-        ((Java.Atom) fd.type).visit(this);
+        ((Java.Atom) fd.type).accept(this);
         this.pw.print(' ');
         for (int i = 0; i < fd.variableDeclarators.length; ++i) {
             if (i > 0) this.pw.print(", ");
@@ -154,12 +154,12 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
     }
     public void visitInitializer(Java.Initializer i) {
         if (i.statiC) this.pw.print("static ");
-        i.block.visit(this);
+        i.block.accept(this);
     }
     public void visitBlock(Java.Block b) {
         this.pw.println('{');
         for (Iterator it = b.statements.iterator(); it.hasNext();) {
-            ((Java.BlockStatement) it.next()).visit(this);
+            ((Java.BlockStatement) it.next()).accept(this);
             this.pw.println();
         }
         this.pw.print('}');
@@ -176,60 +176,60 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
     }
     public void visitDoStatement(Java.DoStatement ds) {
         this.pw.print("do ");
-        ds.body.visit(this);
+        ds.body.accept(this);
         this.pw.print("while (");
-        ((Java.Atom) ds.condition).visit(this);
+        ((Java.Atom) ds.condition).accept(this);
         this.pw.print(");");
     }
     public void visitEmptyStatement(Java.EmptyStatement es) {
         this.pw.print(';');
     }
     public void visitExpressionStatement(Java.ExpressionStatement es) {
-        ((Java.Atom) es.rvalue).visit(this);
+        ((Java.Atom) es.rvalue).accept(this);
         this.pw.print(';');
     }
     public void visitForStatement(Java.ForStatement fs) {
         this.pw.print("for (");
         if (fs.optionalInit != null) {
-            fs.optionalInit.visit(this);
+            fs.optionalInit.accept(this);
         } else { 
             this.pw.print(';');
         }
         if (fs.optionalCondition != null) {
             this.pw.print(' ');
-            ((Java.Atom) fs.optionalCondition).visit(this);
+            ((Java.Atom) fs.optionalCondition).accept(this);
         } 
         this.pw.print(';');
         if (fs.optionalUpdate != null) {
             this.pw.print(' ');
             for (int i = 0; i < fs.optionalUpdate.length; ++i) {
                 if (i > 0) this.pw.print(", ");
-                ((Java.Atom) fs.optionalUpdate[i]).visit(this);
+                ((Java.Atom) fs.optionalUpdate[i]).accept(this);
             }
         }
         this.pw.print(") ");
-        fs.body.visit(this);
+        fs.body.accept(this);
     }
     public void visitIfStatement(Java.IfStatement is) {
         this.pw.print("if (");
-        ((Java.Atom) is.condition).visit(this);
+        ((Java.Atom) is.condition).accept(this);
         this.pw.print(") ");
-        is.thenStatement.visit(this);
+        is.thenStatement.accept(this);
         if (is.optionalElseStatement != null) {
             this.pw.print(" else ");
-            is.optionalElseStatement.visit(this);
+            is.optionalElseStatement.accept(this);
         }
     }
     public void visitLabeledStatement(Java.LabeledStatement ls) {
         this.pw.println(ls.label + ':');
-        ls.body.visit(this);
+        ls.body.accept(this);
     }
     public void visitLocalClassDeclarationStatement(Java.LocalClassDeclarationStatement lcds) {
-        lcds.lcd.visit(this);
+        lcds.lcd.accept(this);
     }
     public void visitLocalVariableDeclarationStatement(Java.LocalVariableDeclarationStatement lvds) {
         this.unparseModifiers(lvds.modifiers);
-        ((Java.Atom) lvds.type).visit(this);
+        ((Java.Atom) lvds.type).accept(this);
         this.pw.print(' ');
         this.unparseVariableDeclarator(lvds.variableDeclarators[0]);
         for (int i = 1; i < lvds.variableDeclarators.length; ++i) {
@@ -242,7 +242,7 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
         this.pw.print("return");
         if (rs.optionalReturnValue != null) {
             this.pw.print(' ');
-            ((Java.Atom) rs.optionalReturnValue).visit(this);
+            ((Java.Atom) rs.optionalReturnValue).accept(this);
         } 
         this.pw.print(';');
     }
@@ -255,7 +255,7 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
                 for (Iterator it2 = sbgs.caseLabels.iterator(); it2.hasNext();) {
                     Java.Rvalue rv = (Java.Rvalue) it2.next();
                     this.pw.print("case ");
-                    ((Java.Atom) rv).visit(this);
+                    ((Java.Atom) rv).accept(this);
                     this.pw.println(':');
                 }
                 if (sbgs.hasDefaultLabel) this.pw.println("default:");
@@ -263,7 +263,7 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
                 this.aiw.indent();
             }
             for (Iterator it2 = sbgs.blockStatements.iterator(); it2.hasNext();) {
-                ((Java.BlockStatement) it2.next()).visit(this);
+                ((Java.BlockStatement) it2.next()).accept(this);
                 this.pw.println();
             }
         }
@@ -271,52 +271,52 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
     }
     public void visitSynchronizedStatement(Java.SynchronizedStatement ss) {
         this.pw.print("synchronized (");
-        ((Java.Atom) ss.expression).visit(this);
+        ((Java.Atom) ss.expression).accept(this);
         this.pw.print(") ");
-        ss.body.visit(this);
+        ss.body.accept(this);
     }
     public void visitThrowStatement(Java.ThrowStatement ts) {
         this.pw.print("throw ");
-        ((Java.Atom) ts.expression).visit(this);
+        ((Java.Atom) ts.expression).accept(this);
         this.pw.print(';');
     }
     public void visitTryStatement(Java.TryStatement ts) {
         this.pw.print("try ");
-        ts.body.visit(this);
+        ts.body.accept(this);
         for (Iterator it = ts.catchClauses.iterator(); it.hasNext();) {
             Java.CatchClause cc = (Java.CatchClause) it.next();
             this.pw.print(" catch (");
             this.unparseFormalParameter(cc.caughtException);
             this.pw.print(") ");
-            cc.body.visit(this);
+            cc.body.accept(this);
         }
         if (ts.optionalFinally != null) {
             this.pw.print(" finally ");
-            ts.optionalFinally.visit(this);
+            ts.optionalFinally.accept(this);
         }
     }
     public void visitWhileStatement(Java.WhileStatement ws) {
         this.pw.print("while (");
-        ((Java.Atom) ws.condition).visit(this);
+        ((Java.Atom) ws.condition).accept(this);
         this.pw.print(") ");
-        ws.body.visit(this);
+        ws.body.accept(this);
     }
     public void unparseVariableDeclarator(Java.VariableDeclarator vd) {
         this.pw.print(vd.name);
         for (int i = 0; i < vd.brackets; ++i) this.pw.print("[]");
         if (vd.optionalInitializer != null) {
             this.pw.print(" = ");
-            ((Java.Atom) vd.optionalInitializer).visit(this);
+            ((Java.Atom) vd.optionalInitializer).accept(this);
         }
     }
     public void unparseFormalParameter(Java.FormalParameter fp) {
         if (fp.finaL) this.pw.print("final ");
-        ((Java.Atom) fp.type).visit(this);
+        ((Java.Atom) fp.type).accept(this);
         this.pw.print(' ' + fp.name);
     }
     public void visitMethodInvocation(Java.MethodInvocation mi) {
         if (mi.optionalTarget != null) {
-            mi.optionalTarget.visit(this);
+            mi.optionalTarget.accept(this);
             this.pw.print('.');
         }
         this.pw.print(mi.methodName);
@@ -328,7 +328,7 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
     }
     public void visitSuperConstructorInvocation(Java.SuperConstructorInvocation sci) {
         if (sci.optionalQualification != null) {
-            ((Java.Atom) sci.optionalQualification).visit(this);
+            ((Java.Atom) sci.optionalQualification).accept(this);
             this.pw.print('.');
         }
         this.pw.print("super");
@@ -336,66 +336,66 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
     }
     public void visitNewClassInstance(Java.NewClassInstance nci) {
         if (nci.optionalQualification != null) {
-            ((Java.Atom) nci.optionalQualification).visit(this);
+            ((Java.Atom) nci.optionalQualification).accept(this);
             this.pw.print('.');
         }
         this.pw.print("new " + nci.type.toString());
         this.unparseFunctionInvocationArguments(nci.arguments);
     }
     public void visitAssignment(Java.Assignment a) {
-        ((Java.Atom) a.lhs).visit(this);
+        ((Java.Atom) a.lhs).accept(this);
         this.pw.print(' ' + a.operator + ' ');
-        ((Java.Atom) a.rhs).visit(this);
+        ((Java.Atom) a.rhs).accept(this);
     }
     public void visitArrayInitializer(Java.ArrayInitializer ai) {
         this.pw.print("new ");
-        ai.arrayType.visit(this);
+        ai.arrayType.accept(this);
         this.pw.println(" {");
         for (int i = 0; i < ai.values.length; ++i) {
-            ((Java.Atom) ai.values[i]).visit(this);
+            ((Java.Atom) ai.values[i]).accept(this);
             this.pw.println(',');
         }
         this.pw.print('}');
     }
     public void visitAmbiguousName(Java.AmbiguousName an) { this.pw.print(an.toString()); }
     public void visitArrayAccessExpression(Java.ArrayAccessExpression aae) {
-        ((Java.Atom) aae.lhs).visit(this);
+        ((Java.Atom) aae.lhs).accept(this);
         this.pw.print('[');
-        ((Java.Atom) aae.index).visit(this);
+        ((Java.Atom) aae.index).accept(this);
         this.pw.print(']');
     }
     public void visitArrayLength(Java.ArrayLength al) {
-        ((Java.Atom) al.lhs).visit(this);
+        ((Java.Atom) al.lhs).accept(this);
         this.pw.print(".length");
     }
     public void visitArrayType(Java.ArrayType at) {
-        ((Java.Atom) at.componentType).visit(this);
+        ((Java.Atom) at.componentType).accept(this);
         this.pw.print("[]");
     }
     public void visitBasicType(Java.BasicType bt) {
         this.pw.print(bt.toString());
     }
     public void visitBinaryOperation(Java.BinaryOperation bo) {
-        ((Java.Atom) bo.lhs).visit(this);
+        ((Java.Atom) bo.lhs).accept(this);
         this.pw.print(' ' + bo.op + ' ');
-        ((Java.Atom) bo.rhs).visit(this);
+        ((Java.Atom) bo.rhs).accept(this);
     }
     public void visitCast(Java.Cast c) {
         this.pw.print('(');
-        ((Java.Atom) c.targetType).visit(this);
+        ((Java.Atom) c.targetType).accept(this);
         this.pw.print(") ");
-        ((Java.Atom) c.value).visit(this);
+        ((Java.Atom) c.value).accept(this);
     }
     public void visitClassLiteral(Java.ClassLiteral cl) {
-        ((Java.Atom) cl.type).visit(this);
+        ((Java.Atom) cl.type).accept(this);
         this.pw.print(".class");
     }
     public void visitConditionalExpression(Java.ConditionalExpression ce) {
-        ((Java.Atom) ce.lhs).visit(this);
+        ((Java.Atom) ce.lhs).accept(this);
         this.pw.print(" ? ");
-        ((Java.Atom) ce.mhs).visit(this);
+        ((Java.Atom) ce.mhs).accept(this);
         this.pw.print(" : ");
-        ((Java.Atom) ce.rhs).visit(this);
+        ((Java.Atom) ce.rhs).accept(this);
     }
     public void visitConstantValue(Java.ConstantValue cv) { this.pw.print(cv.toString()); }
     public void visitCrement(Java.Crement c) {
@@ -406,26 +406,26 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
         );
     }
     public void visitFieldAccess(Java.FieldAccess fa) {
-        fa.lhs.visit(this);
+        fa.lhs.accept(this);
         this.pw.print('.' + fa.field.getName());
     }
     public void visitFieldAccessExpression(Java.FieldAccessExpression fae) {
-        fae.lhs.visit(this);
+        fae.lhs.accept(this);
         this.pw.print('.' + fae.fieldName);
     }
     public void visitInstanceof(Java.Instanceof io) {
-        ((Java.Atom) io.lhs).visit(this);
+        ((Java.Atom) io.lhs).accept(this);
         this.pw.print(" instanceof ");
-        ((Java.Atom) io.rhs).visit(this);
+        ((Java.Atom) io.rhs).accept(this);
     }
     public void visitLiteral(Java.Literal l) { this.pw.print(l.toString()); }
     public void visitLocalVariableAccess(Java.LocalVariableAccess lva) { this.pw.print(lva.toString()); }
     public void visitNewArray(Java.NewArray na) {
         this.pw.print("new ");
-        ((Java.Atom) na.type).visit(this);
+        ((Java.Atom) na.type).accept(this);
         for (int i = 0; i < na.dimExprs.length; ++i) {
             this.pw.print('[');
-            ((Java.Atom) na.dimExprs[i]).visit(this);
+            ((Java.Atom) na.dimExprs[i]).accept(this);
             this.pw.print(']');
         }
         for (int i = 0; i < na.dims; ++i) {
@@ -435,7 +435,7 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
     public void visitPackage(Java.Package p) { this.pw.print(p.toString()); }
     public void visitParameterAccess(Java.ParameterAccess pa) { this.pw.print(pa.toString()); }
     public void visitQualifiedThisReference(Java.QualifiedThisReference qtr) {
-        ((Java.Atom) qtr.qualification).visit(this);
+        ((Java.Atom) qtr.qualification).accept(this);
         this.pw.print(".this");
     }
     public void visitReferenceType(Java.ReferenceType rt) { this.pw.print(rt.toString()); }
@@ -450,11 +450,11 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
     }
     public void visitUnaryOperation(Java.UnaryOperation uo) {
         this.pw.print(uo.operator);
-        ((Java.Atom) uo.operand).visit(this);
+        ((Java.Atom) uo.operand).accept(this);
     }
     public void visitParenthesizedExpression(Java.ParenthesizedExpression pe) {
         this.pw.print('(');
-        ((Java.Atom) pe.value).visit(this);
+        ((Java.Atom) pe.value).accept(this);
         this.pw.print(')');
     }
 
@@ -466,7 +466,7 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
         this.pw.print("class " + ncd.name);
         if (ncd.optionalExtendedType != null) {
             this.pw.print(" extends ");
-            ((Java.Atom) ncd.optionalExtendedType).visit(this);
+            ((Java.Atom) ncd.optionalExtendedType).accept(this);
         } 
         if (ncd.implementedTypes.length > 0) this.pw.print(" implements " + Java.join(ncd.implementedTypes, ", "));
         this.pw.println(" {");
@@ -474,20 +474,20 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
         this.pw.print('}');
     }
     public void visitAnonymousClassDeclaration(Java.AnonymousClassDeclaration acd) {
-        ((Java.Atom) acd.baseType).visit(this);
+        ((Java.Atom) acd.baseType).accept(this);
         this.pw.println(" {");
         this.unparseClassDeclarationBody(acd);
         this.pw.print('}');
     }
     public void visitNewAnonymousClassInstance(Java.NewAnonymousClassInstance naci) {
         if (naci.optionalQualification != null) {
-            ((Java.Atom) naci.optionalQualification).visit(this);
+            ((Java.Atom) naci.optionalQualification).accept(this);
             this.pw.print('.');
         }
         this.pw.print("new " + naci.anonymousClassDeclaration.baseType.toString() + '(');
         for (int i = 0; i < naci.arguments.length; ++i) {
             if (i > 0) this.pw.print(", ");
-            ((Java.Atom) naci.arguments[i]).visit(this);
+            ((Java.Atom) naci.arguments[i]).accept(this);
         }
         this.pw.println(") {");
         this.unparseClassDeclarationBody(naci.anonymousClassDeclaration);
@@ -496,12 +496,12 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
     // Multi-line!
     private void unparseClassDeclarationBody(Java.ClassDeclaration cd) {
         for (Iterator it = cd.constructors.iterator(); it.hasNext();) {
-            ((Java.ConstructorDeclarator) it.next()).visit(this);
+            ((Java.ConstructorDeclarator) it.next()).accept(this);
             this.pw.println();
         }
         this.unparseAbstractTypeDeclarationBody(cd);
         for (Iterator it = cd.variableDeclaratorsAndInitializers.iterator(); it.hasNext();) {
-            ((Java.TypeBodyDeclaration) it.next()).visit(this);
+            ((Java.TypeBodyDeclaration) it.next()).accept(this);
             this.pw.println();
         }
     }
@@ -513,7 +513,7 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
         this.pw.println(" {");
         this.unparseAbstractTypeDeclarationBody(id);
         for (Iterator it = id.constantDeclarations.iterator(); it.hasNext();) {
-            ((Java.TypeBodyDeclaration) it.next()).visit(this);
+            ((Java.TypeBodyDeclaration) it.next()).accept(this);
             this.pw.println();
         }
         this.pw.print('}');
@@ -521,11 +521,11 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
     // Multi-line!
     private void unparseAbstractTypeDeclarationBody(Java.AbstractTypeDeclaration atd) {
         for (Iterator it = atd.declaredMethods.iterator(); it.hasNext();) {
-            ((Java.MethodDeclarator) it.next()).visit(this);
+            ((Java.MethodDeclarator) it.next()).accept(this);
             this.pw.println();
         }
         for (Iterator it = atd.declaredClassesAndInterfaces.iterator(); it.hasNext();) {
-            ((Java.TypeBodyDeclaration) it.next()).visit(this);
+            ((Java.TypeBodyDeclaration) it.next()).accept(this);
             this.pw.println();
         }
     }
@@ -561,7 +561,7 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
         this.pw.print('(');
         for (int i = 0; i < arguments.length; ++i) {
             if (i > 0) this.pw.print(", ");
-            ((Java.Atom) arguments[i]).visit(this);
+            ((Java.Atom) arguments[i]).accept(this);
         }
         this.pw.print(')');
     }

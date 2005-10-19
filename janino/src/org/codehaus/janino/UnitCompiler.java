@@ -84,7 +84,7 @@ public class UnitCompiler {
             public void visitMemberClassDeclaration           (Java.MemberClassDeclaration mcd)             { try { UnitCompiler.this.compile2(mcd ); } catch (CompileException e) { throw new TunnelException(e); } }
         };
         try {
-            td.visit(tdv);
+            td.accept(tdv);
         } catch (TunnelException e) {
             throw (CompileException) e.getDelegate();
         }
@@ -479,7 +479,7 @@ public class UnitCompiler {
             public void visitLocalClassDeclarationStatement   (Java.LocalClassDeclarationStatement    lcds) { try { res[0] = UnitCompiler.this.compile2(lcds); } catch (CompileException e) { throw new TunnelException(e); } }
         };
         try {
-            bs.visit(bsv);
+            bs.accept(bsv);
             return res[0];
         } catch (TunnelException e) {
             throw (CompileException) e.getDelegate();
@@ -1416,7 +1416,7 @@ public class UnitCompiler {
             public void visitParenthesizedExpression   (Java.ParenthesizedExpression    pe  ) { try { UnitCompiler.this.compile2(pe  ); } catch (CompileException e) { throw new TunnelException(e); } }
         };
         try {
-            rv.visit(rvv);
+            rv.accept(rvv);
         } catch (TunnelException e) {
             throw (CompileException) e.getDelegate();
         }
@@ -1512,7 +1512,7 @@ public class UnitCompiler {
             public void visitSuperConstructorInvocation    (Java.SuperConstructorInvocation     sci) { try { UnitCompiler.this.compile2(sci); } catch (CompileException e) { throw new TunnelException(e); } }
         };
         try {
-            ci.visit(civ);
+            ci.accept(civ);
         } catch (TunnelException e) {
             throw (CompileException) e.getDelegate();
         }
@@ -1600,7 +1600,7 @@ public class UnitCompiler {
             public void visitParenthesizedExpression   (Java.ParenthesizedExpression    pe  ) { try { UnitCompiler.this.compileBoolean2(pe  , dst, orientation); } catch (CompileException e) { throw new TunnelException(e); } }
         };
         try {
-            rv.visit(rvv);
+            rv.accept(rvv);
         } catch (TunnelException e) {
             throw (CompileException) e.getDelegate();
         }
@@ -1814,7 +1814,7 @@ public class UnitCompiler {
             public void visitParenthesizedExpression   (Java.ParenthesizedExpression    pe  ) { try { res[0] = UnitCompiler.this.compileContext2(pe  ); } catch (CompileException e) { throw new TunnelException(e); } }
         };
         try {
-            rv.visit(rvv);
+            rv.accept(rvv);
             return res[0];
         } catch (TunnelException e) {
             throw (CompileException) e.getDelegate();
@@ -1903,7 +1903,7 @@ public class UnitCompiler {
             public void visitParenthesizedExpression   (Java.ParenthesizedExpression    pe  ) { try { res[0] = UnitCompiler.this.compileGet2(pe  ); } catch (CompileException e) { throw new TunnelException(e); } }
         };
         try {
-            rv.visit(rvv);
+            rv.accept(rvv);
             return res[0];
         } catch (TunnelException e) {
             throw (CompileException) e.getDelegate();
@@ -2818,7 +2818,7 @@ public class UnitCompiler {
             public void visitParenthesizedExpression   (Java.ParenthesizedExpression    pe  ) { try { res[0] = UnitCompiler.this.getConstantValue2(pe  ); } catch (CompileException e) { throw new TunnelException(e); } }
         };
         try {
-            rv.visit(rvv);
+            rv.accept(rvv);
             rv.constantValue = res[0];
             return rv.constantValue;
         } catch (TunnelException e) {
@@ -3034,7 +3034,7 @@ public class UnitCompiler {
             public void visitParenthesizedExpression   (Java.ParenthesizedExpression    pe  ) { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(pe  ); } catch (CompileException e) { throw new TunnelException(e); } }
         };
         try {
-            rv.visit(rvv);
+            rv.accept(rvv);
             return res[0];
         } catch (TunnelException e) {
             throw (CompileException) e.getDelegate();
@@ -3093,7 +3093,7 @@ public class UnitCompiler {
             public void visitLocalClassDeclarationStatement   (Java.LocalClassDeclarationStatement    lcds) {       res[0] = UnitCompiler.this.generatesCode2(lcds);                                                                }
         };
         try {
-            bs.visit(bsv);
+            bs.accept(bsv);
             return res[0];
         } catch (TunnelException e) {
             throw (CompileException) e.getDelegate();
@@ -3157,7 +3157,7 @@ public class UnitCompiler {
             public void visitEmptyStatement                   (Java.EmptyStatement                    es  ) { UnitCompiler.this.leave2(es,   optionalStackValueType); }
             public void visitLocalClassDeclarationStatement   (Java.LocalClassDeclarationStatement    lcds) { UnitCompiler.this.leave2(lcds, optionalStackValueType); }
         };
-        bs.visit(bsv);
+        bs.accept(bsv);
     }
     public void leave2(Java.BlockStatement bs, IClass optionalStackValueType) { ; }
     public void leave2(Java.SynchronizedStatement ss, IClass optionalStackValueType) {
@@ -3200,7 +3200,7 @@ public class UnitCompiler {
             public void visitParenthesizedExpression(Java.ParenthesizedExpression pe ) { try { UnitCompiler.this.compileSet2(pe ); } catch (CompileException e) { throw new TunnelException(e); } }
         };
         try {
-            lv.visit(lvv);
+            lv.accept(lvv);
         } catch (TunnelException e) {
             throw (CompileException) e.getDelegate();
         }
@@ -3283,7 +3283,7 @@ public class UnitCompiler {
             public void visitParenthesizedExpression       (Java.ParenthesizedExpression        pe  ) { try { res[0] = UnitCompiler.this.getType2(pe  ); } catch (CompileException e) { throw new TunnelException(e); } }
         };
         try {
-            a.visit(av);
+            a.accept(av);
             return res[0] != null ? res[0] : this.iClassLoader.OBJECT;
         } catch (TunnelException e) {
             throw (CompileException) e.getDelegate();
@@ -3649,7 +3649,7 @@ public class UnitCompiler {
             public void visitParenthesizedExpression       (Java.ParenthesizedExpression        pe  ) {       res[0] = UnitCompiler.this.isType2(pe  );                                                                }
         };
         try {
-            a.visit(av);
+            a.accept(av);
             return res[0];
         } catch (TunnelException e) {
             throw (CompileException) e.getDelegate();
@@ -3677,8 +3677,8 @@ public class UnitCompiler {
             return new Java.Rvalue(a.getLocation()) {
                 public IClass compileGet() { return UnitCompiler.this.iClassLoader.OBJECT; }
                 public String toString() { return a.toString(); }
-                public void visit(Visitor.AtomVisitor visitor) {}
-                public void visit(Visitor.RvalueVisitor visitor) {}
+                public void accept(Visitor.AtomVisitor visitor) {}
+                public void accept(Visitor.RvalueVisitor visitor) {}
             };
         }
         return result;
@@ -3690,9 +3690,9 @@ public class UnitCompiler {
             return new Java.Lvalue(a.getLocation()) {
                 public IClass compileGet() { return UnitCompiler.this.iClassLoader.OBJECT; }
                 public String toString() { return a.toString(); }
-                public void visit(Visitor.AtomVisitor visitor) {}
-                public void visit(Visitor.RvalueVisitor visitor) {}
-                public void visit(Visitor.LvalueVisitor visitor) {}
+                public void accept(Visitor.AtomVisitor visitor) {}
+                public void accept(Visitor.RvalueVisitor visitor) {}
+                public void accept(Visitor.LvalueVisitor visitor) {}
             };
         }
         return result;
@@ -4311,7 +4311,7 @@ public class UnitCompiler {
         this.compileError("\"" + rhs + "\" is neither a method, a field, nor a member class of \"" + lhsType + "\"", location);
         return new Java.Atom(location) {
             public String toString() { return Java.join(identifiers, "."); }
-            public final void visit(Visitor.AtomVisitor visitor) {}
+            public final void accept(Visitor.AtomVisitor visitor) {}
         };
     }
 
@@ -4502,8 +4502,8 @@ public class UnitCompiler {
                 fae.value = new Java.Rvalue(fae.getLocation()) {
 //                    public IClass compileGet() throws CompileException { return this.iClassLoader.OBJECT; }
                     public String toString() { return "???"; }
-                    public final void visit(Visitor.AtomVisitor visitor) {}
-                    public final void visit(Visitor.RvalueVisitor visitor) {}
+                    public final void accept(Visitor.AtomVisitor visitor) {}
+                    public final void accept(Visitor.RvalueVisitor visitor) {}
                 };
                 return;
             }

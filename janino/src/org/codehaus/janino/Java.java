@@ -190,7 +190,7 @@ public class Java {
         public ImportDeclaration(Location location) {
             super(location);
         }
-        public abstract void visit(Visitor.ComprehensiveVisitor visitor);
+        public abstract void accept(Visitor.ComprehensiveVisitor visitor);
     }
 
     /**
@@ -204,7 +204,7 @@ public class Java {
             super(location);
             this.identifiers = identifiers;
         }
-        public final void visit(Visitor.ComprehensiveVisitor visitor) { visitor.visitSingleTypeImportDeclaration(this); }
+        public final void accept(Visitor.ComprehensiveVisitor visitor) { visitor.visitSingleTypeImportDeclaration(this); }
     }
 
     /**
@@ -218,7 +218,7 @@ public class Java {
             super(location);
             this.identifiers = identifiers;
         }
-        public final void visit(Visitor.ComprehensiveVisitor visitor) { visitor.visitTypeImportOnDemandDeclaration(this); }
+        public final void accept(Visitor.ComprehensiveVisitor visitor) { visitor.visitTypeImportOnDemandDeclaration(this); }
     }
 
     public interface TypeDeclaration extends Locatable, Scope {
@@ -244,7 +244,7 @@ public class Java {
          */
         String createAnonymousClassName();
 
-        void visit(Visitor.TypeDeclarationVisitor visitor);
+        void accept(Visitor.TypeDeclarationVisitor visitor);
     }
 
     public interface DocCommentable {
@@ -480,7 +480,7 @@ public class Java {
             this.className = immediatelyEnclosingTypeDeclaration.createAnonymousClassName();
         }
 
-        public final void visit(Visitor.TypeDeclarationVisitor visitor) {
+        public final void accept(Visitor.TypeDeclarationVisitor visitor) {
             visitor.visitAnonymousClassDeclaration(this);
         }
 
@@ -563,8 +563,8 @@ public class Java {
             );
         }
 
-        public void visit(Visitor.TypeDeclarationVisitor visitor) { visitor.visitMemberClassDeclaration(this); }
-        public void visit(Visitor.TypeBodyDeclarationVisitor visitor) { visitor.visitMemberClassDeclaration(this); }
+        public void accept(Visitor.TypeDeclarationVisitor visitor) { visitor.visitMemberClassDeclaration(this); }
+        public void accept(Visitor.TypeBodyDeclarationVisitor visitor) { visitor.visitMemberClassDeclaration(this); }
     }
 
     public static final class LocalClassDeclaration extends NamedClassDeclaration implements InnerClassDeclaration {
@@ -621,7 +621,7 @@ public class Java {
             return this.className;
         }
 
-        public final void visit(Visitor.TypeDeclarationVisitor visitor) { visitor.visitLocalClassDeclaration(this); }
+        public final void accept(Visitor.TypeDeclarationVisitor visitor) { visitor.visitLocalClassDeclaration(this); }
     }
 
     public static final class PackageMemberClassDeclaration extends NamedClassDeclaration implements PackageMemberTypeDeclaration {
@@ -679,7 +679,7 @@ public class Java {
             return className;
         }
 
-        public final void visit(Visitor.TypeDeclarationVisitor visitor) { visitor.visitPackageMemberClassDeclaration(this); }
+        public final void accept(Visitor.TypeDeclarationVisitor visitor) { visitor.visitPackageMemberClassDeclaration(this); }
     }
 
     public abstract static class InterfaceDeclaration extends AbstractTypeDeclaration implements NamedTypeDeclaration, DocCommentable {
@@ -768,8 +768,8 @@ public class Java {
             return (this.modifiers & Mod.STATIC) != 0;
         }
 
-        public final void visit(Visitor.TypeDeclarationVisitor visitor) { visitor.visitMemberInterfaceDeclaration(this); }
-        public final void visit(Visitor.TypeBodyDeclarationVisitor visitor) { visitor.visitMemberInterfaceDeclaration(this); }
+        public final void accept(Visitor.TypeDeclarationVisitor visitor) { visitor.visitMemberInterfaceDeclaration(this); }
+        public final void accept(Visitor.TypeBodyDeclarationVisitor visitor) { visitor.visitMemberInterfaceDeclaration(this); }
     }
 
     public static final class PackageMemberInterfaceDeclaration extends InterfaceDeclaration implements PackageMemberTypeDeclaration {
@@ -820,7 +820,7 @@ public class Java {
             return className;
         }
 
-        public final void visit(Visitor.TypeDeclarationVisitor visitor) { visitor.visitPackageMemberInterfaceDeclaration(this); }
+        public final void accept(Visitor.TypeDeclarationVisitor visitor) { visitor.visitPackageMemberInterfaceDeclaration(this); }
     }
 
     /**
@@ -835,7 +835,7 @@ public class Java {
     public interface TypeBodyDeclaration extends Locatable, Scope {
         TypeDeclaration getDeclaringType();
         boolean         isStatic();
-        void            visit(Visitor.TypeBodyDeclarationVisitor visitor);
+        void            accept(Visitor.TypeBodyDeclarationVisitor visitor);
     }
 
     public abstract static class AbstractTypeBodyDeclaration extends Located implements TypeBodyDeclaration {
@@ -890,8 +890,8 @@ public class Java {
 
         // Implement BlockStatement.
 
-        public final void visit(Visitor.TypeBodyDeclarationVisitor visitor) { visitor.visitInitializer(this); }
-        public final void visit(Visitor.BlockStatementVisitor visitor) { visitor.visitInitializer(this); }
+        public final void accept(Visitor.TypeBodyDeclarationVisitor visitor) { visitor.visitInitializer(this); }
+        public final void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitInitializer(this); }
     }
 
     /**
@@ -995,7 +995,7 @@ public class Java {
             return sb.toString();
         }
 
-        public final void visit(Visitor.TypeBodyDeclarationVisitor visitor) { visitor.visitConstructorDeclarator(this); }
+        public final void accept(Visitor.TypeBodyDeclarationVisitor visitor) { visitor.visitConstructorDeclarator(this); }
     }
 
     public final static class MethodDeclarator extends FunctionDeclarator {
@@ -1033,7 +1033,7 @@ public class Java {
             return sb.toString();
         }
 
-        public final void visit(Visitor.TypeBodyDeclarationVisitor visitor) { visitor.visitMethodDeclarator(this); }
+        public final void accept(Visitor.TypeBodyDeclarationVisitor visitor) { visitor.visitMethodDeclarator(this); }
 
         IClass.IMethod iMethod = null;
     }
@@ -1087,8 +1087,8 @@ public class Java {
             return sb.toString();
         }
 
-        public final void visit(Visitor.TypeBodyDeclarationVisitor visitor) { visitor.visitFieldDeclaration(this); }
-        public final void visit(Visitor.BlockStatementVisitor visitor) { visitor.visitFieldDeclaration(this); }
+        public final void accept(Visitor.TypeBodyDeclarationVisitor visitor) { visitor.visitFieldDeclaration(this); }
+        public final void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitFieldDeclaration(this); }
 
         // Implement DocCommentable.
         public String getDocComment() { return this.optionalDocComment; }
@@ -1140,7 +1140,7 @@ public class Java {
      * Base of all statements that can appear in a block.
      */
     public interface BlockStatement extends Locatable, Scope {
-        void visit(Visitor.BlockStatementVisitor visitor);
+        void accept(Visitor.BlockStatementVisitor visitor);
     }
 
     public static abstract class Statement extends Located implements BlockStatement {
@@ -1177,7 +1177,7 @@ public class Java {
 
         // Compile time members:
 
-        public final void visit(Visitor.BlockStatementVisitor visitor) { visitor.visitLabeledStatement(this); }
+        public final void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitLabeledStatement(this); }
     }
 
     /**
@@ -1233,7 +1233,7 @@ public class Java {
             this.keepCompiling = false;
         }
 
-        public final void visit(Visitor.BlockStatementVisitor visitor) { visitor.visitBlock(this); }
+        public final void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitBlock(this); }
 
         HashMap localVariables = new HashMap(); // String name => LocalVariable
         boolean keepCompiling;
@@ -1289,7 +1289,7 @@ public class Java {
 
         // Compile time members:
 
-        public final void visit(Visitor.BlockStatementVisitor visitor) { visitor.visitExpressionStatement(this); }
+        public final void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitExpressionStatement(this); }
     }
 
     public final static class LocalClassDeclarationStatement extends Statement {
@@ -1302,7 +1302,7 @@ public class Java {
         }
         public final LocalClassDeclaration lcd;
 
-        public final void visit(Visitor.BlockStatementVisitor visitor) { visitor.visitLocalClassDeclarationStatement(this); }
+        public final void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitLocalClassDeclarationStatement(this); }
     }
 
     public final static class IfStatement extends Statement {
@@ -1330,7 +1330,7 @@ public class Java {
 
         // Compile time members:
 
-        public final void visit(Visitor.BlockStatementVisitor visitor) { visitor.visitIfStatement(this); }
+        public final void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitIfStatement(this); }
     }
 
     public final static class ForStatement extends ContinuableStatement {
@@ -1369,7 +1369,7 @@ public class Java {
 
         // Compile time members:
 
-        public final void visit(Visitor.BlockStatementVisitor visitor) { visitor.visitForStatement(this); }
+        public final void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitForStatement(this); }
     }
 
     public final static class WhileStatement extends ContinuableStatement {
@@ -1392,7 +1392,7 @@ public class Java {
         // Compile time members:
 
 
-        public final void visit(Visitor.BlockStatementVisitor visitor) { visitor.visitWhileStatement(this); }
+        public final void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitWhileStatement(this); }
     }
 
     public final static class TryStatement extends Statement {
@@ -1419,7 +1419,7 @@ public class Java {
 
         // Compile time members:
 
-        public final void visit(Visitor.BlockStatementVisitor visitor) { visitor.visitTryStatement(this); }
+        public final void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitTryStatement(this); }
 
         // Preserves "leave stack".
         short stackValueLvIndex;
@@ -1463,7 +1463,7 @@ public class Java {
 
         // Compile time members:
 
-        public final void visit(Visitor.BlockStatementVisitor visitor) { visitor.visitSwitchStatement(this); }
+        public final void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitSwitchStatement(this); }
     }
     static class Padder extends CodeContext.Inserter implements CodeContext.FixUp {
         public Padder(CodeContext codeContext) {
@@ -1520,7 +1520,7 @@ public class Java {
 
         // Compile time members:
 
-        public final void visit(Visitor.BlockStatementVisitor visitor) { visitor.visitSynchronizedStatement(this); }
+        public final void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitSynchronizedStatement(this); }
 
         short monitorLvIndex = -1;
     }
@@ -1545,7 +1545,7 @@ public class Java {
 
         // Compile time members:
 
-        public final void visit(Visitor.BlockStatementVisitor visitor) { visitor.visitDoStatement(this); }
+        public final void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitDoStatement(this); }
     }
 
     public final static class LocalVariableDeclarationStatement extends Statement {
@@ -1574,7 +1574,7 @@ public class Java {
 
         // Compile time members:
 
-        public final void visit(Visitor.BlockStatementVisitor visitor) { visitor.visitLocalVariableDeclarationStatement(this); }
+        public final void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitLocalVariableDeclarationStatement(this); }
     }
 
     public final static class ReturnStatement extends Statement {
@@ -1591,7 +1591,7 @@ public class Java {
 
         // Compile time members:
 
-        public final void visit(Visitor.BlockStatementVisitor visitor) { visitor.visitReturnStatement(this); }
+        public final void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitReturnStatement(this); }
     }
 
     public final static class ThrowStatement extends Statement {
@@ -1608,7 +1608,7 @@ public class Java {
 
         // Compile time members:
 
-        public final void visit(Visitor.BlockStatementVisitor visitor) { visitor.visitThrowStatement(this); }
+        public final void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitThrowStatement(this); }
     }
 
     /**
@@ -1628,7 +1628,7 @@ public class Java {
 
         // Compile time members:
 
-        public final void visit(Visitor.BlockStatementVisitor visitor) { visitor.visitBreakStatement(this); }
+        public final void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitBreakStatement(this); }
     }
 
     /**
@@ -1649,7 +1649,7 @@ public class Java {
 
         // Compile time members:
 
-        public final void visit(Visitor.BlockStatementVisitor visitor) { visitor.visitContinueStatement(this); }
+        public final void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitContinueStatement(this); }
     }
 
     /**
@@ -1663,7 +1663,7 @@ public class Java {
             super(location, enclosingScope);
         }
 
-        public final void visit(Visitor.BlockStatementVisitor visitor) { visitor.visitEmptyStatement(this); }
+        public final void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitEmptyStatement(this); }
     }
 
     /**
@@ -1700,7 +1700,7 @@ public class Java {
         }
 
 
-        public abstract void visit(Visitor.AtomVisitor visitor);
+        public abstract void accept(Visitor.AtomVisitor visitor);
     }
 
     /**
@@ -1712,7 +1712,7 @@ public class Java {
         }
         public Type toType() { return this; }
 
-        public abstract void visit(Visitor.TypeVisitor visitor);
+        public abstract void accept(Visitor.TypeVisitor visitor);
     }
 
     public static final class SimpleType extends Type {
@@ -1724,8 +1724,8 @@ public class Java {
         }
         public String toString() { return this.iClass.toString(); }
 
-        public final void visit(Visitor.AtomVisitor visitor) { visitor.visitSimpleType(this); }
-        public final void visit(Visitor.TypeVisitor visitor) { visitor.visitSimpleType(this); }
+        public final void accept(Visitor.AtomVisitor visitor) { visitor.visitSimpleType(this); }
+        public final void accept(Visitor.TypeVisitor visitor) { visitor.visitSimpleType(this); }
     };
 
     /**
@@ -1755,8 +1755,8 @@ public class Java {
             }
         }
 
-        public final void visit(Visitor.TypeVisitor visitor) { visitor.visitBasicType(this); }
-        public final void visit(Visitor.AtomVisitor visitor) { visitor.visitBasicType(this); }
+        public final void accept(Visitor.TypeVisitor visitor) { visitor.visitBasicType(this); }
+        public final void accept(Visitor.AtomVisitor visitor) { visitor.visitBasicType(this); }
 
         public static final int VOID    = 0;
         public static final int BYTE    = 1;
@@ -1785,8 +1785,8 @@ public class Java {
 
         public String toString() { return Java.join(this.identifiers, "."); }
 
-        public final void visit(Visitor.AtomVisitor visitor) { visitor.visitReferenceType(this); }
-        public final void visit(Visitor.TypeVisitor visitor) { visitor.visitReferenceType(this); }
+        public final void accept(Visitor.AtomVisitor visitor) { visitor.visitReferenceType(this); }
+        public final void accept(Visitor.TypeVisitor visitor) { visitor.visitReferenceType(this); }
     }
 
     // Helper class for JLS 15.9.1
@@ -1806,8 +1806,8 @@ public class Java {
 
         public String toString() { return this.identifier; }
 
-        public final void visit(Visitor.AtomVisitor visitor) { visitor.visitRvalueMemberType(this); }
-        public final void visit(Visitor.TypeVisitor visitor) { visitor.visitRvalueMemberType(this); }
+        public final void accept(Visitor.AtomVisitor visitor) { visitor.visitRvalueMemberType(this); }
+        public final void accept(Visitor.TypeVisitor visitor) { visitor.visitRvalueMemberType(this); }
     }
 
 
@@ -1826,8 +1826,8 @@ public class Java {
             return this.componentType.toString() + "[]";
         }
 
-        public final void visit(Visitor.AtomVisitor visitor) { visitor.visitArrayType(this); }
-        public final void visit(Visitor.TypeVisitor visitor) { visitor.visitArrayType(this); }
+        public final void accept(Visitor.AtomVisitor visitor) { visitor.visitArrayType(this); }
+        public final void accept(Visitor.TypeVisitor visitor) { visitor.visitArrayType(this); }
     }
 
     /**
@@ -1848,7 +1848,7 @@ public class Java {
         Object              constantValue = Java.Rvalue.CONSTANT_VALUE_UNKNOWN;
         public static final Object CONSTANT_VALUE_NULL = new Throwable();
 
-        public abstract void visit(Visitor.RvalueVisitor rvv);
+        public abstract void accept(Visitor.RvalueVisitor rvv);
 
         public final static boolean JUMP_IF_TRUE  = true;
         public final static boolean JUMP_IF_FALSE = false;
@@ -1876,7 +1876,7 @@ public class Java {
 
         public Lvalue toLvalue() { return this; }
 
-        public abstract void visit(Visitor.LvalueVisitor lvv);
+        public abstract void accept(Visitor.LvalueVisitor lvv);
     }
 
     /**
@@ -1919,8 +1919,8 @@ public class Java {
                     public String toString() {
                         return AmbiguousName.this.toString();
                     }
-                    public final void visit(Visitor.TypeVisitor visitor) { new ReferenceType(AmbiguousName.this.getLocation(), AmbiguousName.this.scope, AmbiguousName.this.identifiers).visit(visitor); }
-                    public final void visit(Visitor.AtomVisitor visitor) { AmbiguousName.this.visit(visitor); }
+                    public final void accept(Visitor.TypeVisitor visitor) { new ReferenceType(AmbiguousName.this.getLocation(), AmbiguousName.this.scope, AmbiguousName.this.identifiers).accept(visitor); }
+                    public final void accept(Visitor.AtomVisitor visitor) { AmbiguousName.this.accept(visitor); }
                 };
             }
             return this.type;
@@ -1934,9 +1934,9 @@ public class Java {
 
         Atom reclassified = null;
 
-        public final void visit(Visitor.AtomVisitor visitor) { visitor.visitAmbiguousName(this); }
-        public final void visit(Visitor.RvalueVisitor visitor) { visitor.visitAmbiguousName(this); }
-        public final void visit(Visitor.LvalueVisitor visitor) { visitor.visitAmbiguousName(this); }
+        public final void accept(Visitor.AtomVisitor visitor) { visitor.visitAmbiguousName(this); }
+        public final void accept(Visitor.RvalueVisitor visitor) { visitor.visitAmbiguousName(this); }
+        public final void accept(Visitor.LvalueVisitor visitor) { visitor.visitAmbiguousName(this); }
 
         public final Scope    scope;
         public final String[] identifiers;
@@ -1953,7 +1953,7 @@ public class Java {
         }
         public String toString() { return this.name; }
 
-        public final void visit(Visitor.AtomVisitor visitor) { visitor.visitPackage(this); }
+        public final void accept(Visitor.AtomVisitor visitor) { visitor.visitPackage(this); }
     }
 
     /**
@@ -1974,9 +1974,9 @@ public class Java {
 
         public String toString() { return this.localVariable.toString(); }
 
-        public final void visit(Visitor.LvalueVisitor visitor) { visitor.visitLocalVariableAccess(this); }
-        public final void visit(Visitor.RvalueVisitor visitor) { visitor.visitLocalVariableAccess(this); }
-        public final void visit(Visitor.AtomVisitor visitor) { visitor.visitLocalVariableAccess(this); }
+        public final void accept(Visitor.LvalueVisitor visitor) { visitor.visitLocalVariableAccess(this); }
+        public final void accept(Visitor.RvalueVisitor visitor) { visitor.visitLocalVariableAccess(this); }
+        public final void accept(Visitor.AtomVisitor visitor) { visitor.visitLocalVariableAccess(this); }
     }
 
     /**
@@ -2002,9 +2002,9 @@ public class Java {
         // Implement "Atom".
         public String toString() { return this.lhs.toString() + '.' + this.field.toString(); }
 
-        public final void visit(Visitor.AtomVisitor visitor) { visitor.visitFieldAccess(this); }
-        public final void visit(Visitor.RvalueVisitor visitor) { visitor.visitFieldAccess(this); }
-        public final void visit(Visitor.LvalueVisitor visitor) { visitor.visitFieldAccess(this); }
+        public final void accept(Visitor.AtomVisitor visitor) { visitor.visitFieldAccess(this); }
+        public final void accept(Visitor.RvalueVisitor visitor) { visitor.visitFieldAccess(this); }
+        public final void accept(Visitor.LvalueVisitor visitor) { visitor.visitFieldAccess(this); }
     }
 
     public static final class ArrayLength extends Rvalue {
@@ -2023,8 +2023,8 @@ public class Java {
         // Implement "Atom".
         public String toString() { return this.lhs.toString() + ".length"; }
 
-        public final void visit(Visitor.AtomVisitor visitor) { visitor.visitArrayLength(this); }
-        public final void visit(Visitor.RvalueVisitor visitor) { visitor.visitArrayLength(this); }
+        public final void accept(Visitor.AtomVisitor visitor) { visitor.visitArrayLength(this); }
+        public final void accept(Visitor.RvalueVisitor visitor) { visitor.visitArrayLength(this); }
     }
 
     /**
@@ -2051,8 +2051,8 @@ public class Java {
         // Implement "Atom".
         public String toString() { return "this"; }
 
-        public final void visit(Visitor.AtomVisitor visitor) { visitor.visitThisReference(this); }
-        public final void visit(Visitor.RvalueVisitor visitor) { visitor.visitThisReference(this); }
+        public final void accept(Visitor.AtomVisitor visitor) { visitor.visitThisReference(this); }
+        public final void accept(Visitor.RvalueVisitor visitor) { visitor.visitThisReference(this); }
     }
 
     /**
@@ -2111,8 +2111,8 @@ public class Java {
             return this.qualification.toString() + ".this";
         }
 
-        public final void visit(Visitor.AtomVisitor visitor) { visitor.visitQualifiedThisReference(this); }
-        public final void visit(Visitor.RvalueVisitor visitor) { visitor.visitQualifiedThisReference(this); }
+        public final void accept(Visitor.AtomVisitor visitor) { visitor.visitQualifiedThisReference(this); }
+        public final void accept(Visitor.RvalueVisitor visitor) { visitor.visitQualifiedThisReference(this); }
     }
 
     public static final class ClassLiteral extends Rvalue {
@@ -2136,8 +2136,8 @@ public class Java {
         //Implement "Atom".
         public String toString() { return this.type.toString() + ".class"; }
 
-        public final void visit(Visitor.AtomVisitor visitor) { visitor.visitClassLiteral(this); }
-        public final void visit(Visitor.RvalueVisitor visitor) { visitor.visitClassLiteral(this); }
+        public final void accept(Visitor.AtomVisitor visitor) { visitor.visitClassLiteral(this); }
+        public final void accept(Visitor.RvalueVisitor visitor) { visitor.visitClassLiteral(this); }
     }
 
     public static final class Assignment extends Rvalue {
@@ -2162,8 +2162,8 @@ public class Java {
         // Implement "Atom".
         public String toString() { return this.lhs.toString() + ' ' + this.operator + ' ' + this.rhs.toString(); }
 
-        public final void visit(Visitor.AtomVisitor visitor) { visitor.visitAssignment(this); }
-        public final void visit(Visitor.RvalueVisitor visitor) { visitor.visitAssignment(this); }
+        public final void accept(Visitor.AtomVisitor visitor) { visitor.visitAssignment(this); }
+        public final void accept(Visitor.RvalueVisitor visitor) { visitor.visitAssignment(this); }
     }
 
     public static final class ConditionalExpression extends Rvalue {
@@ -2182,8 +2182,8 @@ public class Java {
         // Implement "Atom".
         public String toString() { return this.lhs.toString() + " ? " + this.mhs.toString() + " : " + this.rhs.toString(); }
 
-        public final void visit(Visitor.AtomVisitor visitor) { visitor.visitConditionalExpression(this); }
-        public final void visit(Visitor.RvalueVisitor visitor) { visitor.visitConditionalExpression(this); }
+        public final void accept(Visitor.AtomVisitor visitor) { visitor.visitConditionalExpression(this); }
+        public final void accept(Visitor.RvalueVisitor visitor) { visitor.visitConditionalExpression(this); }
 
         public final Rvalue lhs, mhs, rhs;
     }
@@ -2221,8 +2221,8 @@ public class Java {
             );
         }
 
-        public final void visit(Visitor.AtomVisitor visitor) { visitor.visitCrement(this); }
-        public final void visit(Visitor.RvalueVisitor visitor) { visitor.visitCrement(this); }
+        public final void accept(Visitor.AtomVisitor visitor) { visitor.visitCrement(this); }
+        public final void accept(Visitor.RvalueVisitor visitor) { visitor.visitCrement(this); }
     }
 
     /**
@@ -2247,9 +2247,9 @@ public class Java {
         // Implement "Atom".
         public String toString() { return this.lhs.toString() + '[' + this.index + ']'; }
 
-        public final void visit(Visitor.AtomVisitor visitor) { visitor.visitArrayAccessExpression(this); }
-        public final void visit(Visitor.RvalueVisitor visitor) { visitor.visitArrayAccessExpression(this); }
-        public final void visit(Visitor.LvalueVisitor visitor) { visitor.visitArrayAccessExpression(this); }
+        public final void accept(Visitor.AtomVisitor visitor) { visitor.visitArrayAccessExpression(this); }
+        public final void accept(Visitor.RvalueVisitor visitor) { visitor.visitArrayAccessExpression(this); }
+        public final void accept(Visitor.LvalueVisitor visitor) { visitor.visitArrayAccessExpression(this); }
     }
 
     /**
@@ -2275,9 +2275,9 @@ public class Java {
         // Implement "Atom".
         public String toString() { return this.lhs.toString() + '.' + this.fieldName; }
 
-        public final void visit(Visitor.AtomVisitor visitor) { visitor.visitFieldAccessExpression(this); }
-        public final void visit(Visitor.RvalueVisitor visitor) { visitor.visitFieldAccessExpression(this); }
-        public final void visit(Visitor.LvalueVisitor visitor) { visitor.visitFieldAccessExpression(this); }
+        public final void accept(Visitor.AtomVisitor visitor) { visitor.visitFieldAccessExpression(this); }
+        public final void accept(Visitor.RvalueVisitor visitor) { visitor.visitFieldAccessExpression(this); }
+        public final void accept(Visitor.LvalueVisitor visitor) { visitor.visitFieldAccessExpression(this); }
 
         Rvalue value = null;
     }
@@ -2299,8 +2299,8 @@ public class Java {
         // Implement "Atom".
         public String toString() { return this.operator + this.operand.toString(); }
 
-        public final void visit(Visitor.AtomVisitor visitor) { visitor.visitUnaryOperation(this); }
-        public final void visit(Visitor.RvalueVisitor visitor) { visitor.visitUnaryOperation(this); }
+        public final void accept(Visitor.AtomVisitor visitor) { visitor.visitUnaryOperation(this); }
+        public final void accept(Visitor.RvalueVisitor visitor) { visitor.visitUnaryOperation(this); }
 
         public final String operator;
         public final Rvalue operand;
@@ -2325,8 +2325,8 @@ public class Java {
         // Implement "Atom".
         public String toString() { return this.lhs.toString() + " instanceof " + this.rhs.toString(); }
 
-        public final void visit(Visitor.AtomVisitor visitor) { visitor.visitInstanceof(this); }
-        public final void visit(Visitor.RvalueVisitor visitor) { visitor.visitInstanceof(this); }
+        public final void accept(Visitor.AtomVisitor visitor) { visitor.visitInstanceof(this); }
+        public final void accept(Visitor.RvalueVisitor visitor) { visitor.visitInstanceof(this); }
     }
 
     /**
@@ -2385,8 +2385,8 @@ public class Java {
             return new ReverseListIterator(operands.listIterator(operands.size()));
         }
 
-        public final void visit(Visitor.AtomVisitor visitor) { visitor.visitBinaryOperation(this); }
-        public final void visit(Visitor.RvalueVisitor visitor) { visitor.visitBinaryOperation(this); }
+        public final void accept(Visitor.AtomVisitor visitor) { visitor.visitBinaryOperation(this); }
+        public final void accept(Visitor.RvalueVisitor visitor) { visitor.visitBinaryOperation(this); }
     }
 
     public static final class Cast extends Rvalue {
@@ -2408,8 +2408,8 @@ public class Java {
         // Implement "Atom".
         public String toString() { return '(' + this.targetType.toString() + ") " + this.value.toString(); }
 
-        public final void visit(Visitor.AtomVisitor visitor) { visitor.visitCast(this); }
-        public final void visit(Visitor.RvalueVisitor visitor) { visitor.visitCast(this); }
+        public final void accept(Visitor.AtomVisitor visitor) { visitor.visitCast(this); }
+        public final void accept(Visitor.RvalueVisitor visitor) { visitor.visitCast(this); }
     }
 
     public final static class ParenthesizedExpression extends Lvalue {
@@ -2423,9 +2423,9 @@ public class Java {
         public String toString() {
             return '(' + this.value.toString() + ')';
         }
-        public void visit(Visitor.AtomVisitor visitor) { visitor.visitParenthesizedExpression(this); }
-        public void visit(Visitor.RvalueVisitor visitor) { visitor.visitParenthesizedExpression(this); }
-        public void visit(Visitor.LvalueVisitor visitor) { visitor.visitParenthesizedExpression(this); }
+        public void accept(Visitor.AtomVisitor visitor) { visitor.visitParenthesizedExpression(this); }
+        public void accept(Visitor.RvalueVisitor visitor) { visitor.visitParenthesizedExpression(this); }
+        public void accept(Visitor.LvalueVisitor visitor) { visitor.visitParenthesizedExpression(this); }
     }
 
     public static abstract class ConstructorInvocation extends Atom {
@@ -2445,7 +2445,7 @@ public class Java {
             this.arguments             = arguments;
         }
 
-        public abstract void visit(Visitor.ConstructorInvocationVisitor visitor);
+        public abstract void accept(Visitor.ConstructorInvocationVisitor visitor);
     }
 
     public final static class AlternateConstructorInvocation extends ConstructorInvocation {
@@ -2461,8 +2461,8 @@ public class Java {
         // Implement Atom
         public String toString() { return "this()"; }
 
-        public void visit(Visitor.AtomVisitor visitor) { visitor.visitAlternateConstructorInvocation(this); }
-        public void visit(Visitor.ConstructorInvocationVisitor visitor) { visitor.visitAlternateConstructorInvocation(this); }
+        public void accept(Visitor.AtomVisitor visitor) { visitor.visitAlternateConstructorInvocation(this); }
+        public void accept(Visitor.ConstructorInvocationVisitor visitor) { visitor.visitAlternateConstructorInvocation(this); }
     }
 
     public final static class SuperConstructorInvocation extends ConstructorInvocation {
@@ -2482,8 +2482,8 @@ public class Java {
         // Implement Atom
         public String toString() { return "super()"; }
 
-        public void visit(Visitor.AtomVisitor visitor) { visitor.visitSuperConstructorInvocation(this); }
-        public void visit(Visitor.ConstructorInvocationVisitor visitor) { visitor.visitSuperConstructorInvocation(this); }
+        public void accept(Visitor.AtomVisitor visitor) { visitor.visitSuperConstructorInvocation(this); }
+        public void accept(Visitor.ConstructorInvocationVisitor visitor) { visitor.visitSuperConstructorInvocation(this); }
     }
 
     public static final class MethodInvocation extends Invocation {
@@ -2516,8 +2516,8 @@ public class Java {
             return sb.toString();
         }
 
-        public final void visit(Visitor.AtomVisitor visitor) { visitor.visitMethodInvocation(this); }
-        public final void visit(Visitor.RvalueVisitor visitor) { visitor.visitMethodInvocation(this); }
+        public final void accept(Visitor.AtomVisitor visitor) { visitor.visitMethodInvocation(this); }
+        public final void accept(Visitor.RvalueVisitor visitor) { visitor.visitMethodInvocation(this); }
     }
 
     public static final class SuperclassMethodInvocation extends Invocation {
@@ -2534,8 +2534,8 @@ public class Java {
         // Implement "Atom".
         public String toString() { return "super." + this.methodName + "()"; }
 
-        public final void visit(Visitor.AtomVisitor visitor) { visitor.visitSuperclassMethodInvocation(this); }
-        public final void visit(Visitor.RvalueVisitor visitor) { visitor.visitSuperclassMethodInvocation(this); }
+        public final void accept(Visitor.AtomVisitor visitor) { visitor.visitSuperclassMethodInvocation(this); }
+        public final void accept(Visitor.RvalueVisitor visitor) { visitor.visitSuperclassMethodInvocation(this); }
 
         public final String methodName;
     }
@@ -2611,8 +2611,8 @@ public class Java {
             return sb.toString();
         }
 
-        public final void visit(Visitor.AtomVisitor visitor) { visitor.visitNewClassInstance(this); }
-        public final void visit(Visitor.RvalueVisitor visitor) { visitor.visitNewClassInstance(this); }
+        public final void accept(Visitor.AtomVisitor visitor) { visitor.visitNewClassInstance(this); }
+        public final void accept(Visitor.RvalueVisitor visitor) { visitor.visitNewClassInstance(this); }
     }
 
     public static final class NewAnonymousClassInstance extends Rvalue {
@@ -2643,8 +2643,8 @@ public class Java {
             return sb.toString();
         }
 
-        public final void visit(Visitor.AtomVisitor visitor) { visitor.visitNewAnonymousClassInstance(this); }
-        public final void visit(Visitor.RvalueVisitor visitor) { visitor.visitNewAnonymousClassInstance(this); }
+        public final void accept(Visitor.AtomVisitor visitor) { visitor.visitNewAnonymousClassInstance(this); }
+        public final void accept(Visitor.RvalueVisitor visitor) { visitor.visitNewAnonymousClassInstance(this); }
     }
 
     public static final class ParameterAccess extends Rvalue {
@@ -2664,8 +2664,8 @@ public class Java {
         // Implement Atom
         public String toString() { return this.name; }
 
-        public final void visit(Visitor.AtomVisitor visitor) { visitor.visitParameterAccess(this); }
-        public final void visit(Visitor.RvalueVisitor visitor) { visitor.visitParameterAccess(this); }
+        public final void accept(Visitor.AtomVisitor visitor) { visitor.visitParameterAccess(this); }
+        public final void accept(Visitor.RvalueVisitor visitor) { visitor.visitParameterAccess(this); }
     }
 
     public static final class NewArray extends Rvalue {
@@ -2688,8 +2688,8 @@ public class Java {
         // Implement "Atom".
         public String toString() { return "new " + this.type.toString() + "[]..."; }
 
-        public final void visit(Visitor.AtomVisitor visitor) { visitor.visitNewArray(this); }
-        public final void visit(Visitor.RvalueVisitor visitor) { visitor.visitNewArray(this); }
+        public final void accept(Visitor.AtomVisitor visitor) { visitor.visitNewArray(this); }
+        public final void accept(Visitor.RvalueVisitor visitor) { visitor.visitNewArray(this); }
     }
 
     /**
@@ -2715,8 +2715,8 @@ public class Java {
         // Implement "Atom".
         public String toString() { return "{ ... }"; }
 
-        public final void visit(Visitor.AtomVisitor visitor) { visitor.visitArrayInitializer(this); }
-        public final void visit(Visitor.RvalueVisitor visitor) { visitor.visitArrayInitializer(this); }
+        public final void accept(Visitor.AtomVisitor visitor) { visitor.visitArrayInitializer(this); }
+        public final void accept(Visitor.RvalueVisitor visitor) { visitor.visitArrayInitializer(this); }
     }
 
     public static final class Literal extends Rvalue {
@@ -2730,8 +2730,8 @@ public class Java {
         // Implement "Atom".
         public String toString() { return Scanner.literalValueToString(this.value); }
 
-        public final void visit(Visitor.AtomVisitor visitor) { visitor.visitLiteral(this); }
-        public final void visit(Visitor.RvalueVisitor visitor) { visitor.visitLiteral(this); }
+        public final void accept(Visitor.AtomVisitor visitor) { visitor.visitLiteral(this); }
+        public final void accept(Visitor.RvalueVisitor visitor) { visitor.visitLiteral(this); }
     }
 
     public static final class ConstantValue extends Rvalue {
@@ -2745,8 +2745,8 @@ public class Java {
         // Implement "Atom".
         public String toString() { return this.constantValue.toString(); }
 
-        public final void visit(Visitor.AtomVisitor visitor) { visitor.visitConstantValue(this); }
-        public final void visit(Visitor.RvalueVisitor visitor) { visitor.visitConstantValue(this); }
+        public final void accept(Visitor.AtomVisitor visitor) { visitor.visitConstantValue(this); }
+        public final void accept(Visitor.RvalueVisitor visitor) { visitor.visitConstantValue(this); }
     }
 
     public static class LocalVariable {
