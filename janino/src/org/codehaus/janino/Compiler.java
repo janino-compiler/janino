@@ -446,7 +446,8 @@ public class Compiler {
             for (int i = 0; i < this.parsedCompilationUnits.size(); ++i) {
                 UnitCompiler unitCompiler = (UnitCompiler) this.parsedCompilationUnits.get(i);
                 Java.CompilationUnit cu = unitCompiler.compilationUnit;
-                File sourceFile = new File(cu.getFileName());
+                if (cu.optionalFileName == null) throw new RuntimeException();
+                File sourceFile = new File(cu.optionalFileName);
 
                 unitCompiler.setCompileErrorHandler(compileErrorHandler);
                 unitCompiler.setWarningHandler(this.warningHandler);
