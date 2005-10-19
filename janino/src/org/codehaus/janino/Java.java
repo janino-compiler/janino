@@ -76,7 +76,7 @@ public class Java {
          */
         public void throwParseException(String message) throws Parser.ParseException;
     }
-    static abstract class Located implements Locatable {
+    public static abstract class Located implements Locatable {
         private final Location location;
 
         protected Located(Location location) {
@@ -95,20 +95,13 @@ public class Java {
      * Holds the result of {@link Parser#parseCompilationUnit}.
      */
     public static final class CompilationUnit implements Scope {
-        private /*final*/ String optionalFileName;
+        public /*final*/          String optionalFileName;
+        public PackageDeclaration optionalPackageDeclaration    = null;
+        public final List         importDeclarations            = new ArrayList(); // ImportDeclaration
+        public final List         packageMemberTypeDeclarations = new ArrayList(); // PackageMemberTypeDeclaration
 
-        /**
-         * @param optionalFileName only for {@link #getFileName()}
-         */
         public CompilationUnit(String optionalFileName) {
             this.optionalFileName = optionalFileName;
-        }
-
-        /**
-         * @return the <code>optionalFileName</code> given at construction.
-         */
-        public String getFileName() {
-            return this.optionalFileName;
         }
 
         // Implement "Scope".
@@ -123,12 +116,12 @@ public class Java {
 
             // Check for conflicting single-type import.
             if (id instanceof SingleTypeImportDeclaration) {
-                String[] ss = ((SingleTypeImportDeclaration) id).getIdentifiers();
+                String[] ss = ((SingleTypeImportDeclaration) id).identifiers;
                 String name = ss[ss.length - 1];
                 for (Iterator it = this.importDeclarations.iterator(); it.hasNext();) {
                     ImportDeclaration id2 = (ImportDeclaration) it.next();
                     if (id2 instanceof SingleTypeImportDeclaration) {
-                        String[] ss2 = ((SingleTypeImportDeclaration) id2).getIdentifiers();
+                        String[] ss2 = ((SingleTypeImportDeclaration) id2).identifiers;
                         if (ss2[ss2.length - 1].equals(name)) {
                             if (!Java.join(ss, ".").equals(Java.join(ss2, "."))) id.throwParseException("Class \"" + name + "\" was first imported from \"" + Java.join(ss, ".") + "\", now again from \"" + Java.join(ss2, ".") + "\"");
                         }
@@ -172,16 +165,12 @@ public class Java {
             for (Iterator it = this.importDeclarations.iterator(); it.hasNext();) {
                 ImportDeclaration id = (ImportDeclaration) it.next();
                 if (id instanceof SingleTypeImportDeclaration) {
-                    String[] ss = ((SingleTypeImportDeclaration) id).getIdentifiers();
+                    String[] ss = ((SingleTypeImportDeclaration) id).identifiers;
                     if (ss[ss.length - 1].equals(name)) return ss;
                 }
             }
             return null;
         }
-
-        PackageDeclaration optionalPackageDeclaration    = null;
-        final List         importDeclarations            = new ArrayList(); // ImportDeclaration
-        final List         packageMemberTypeDeclarations = new ArrayList(); // PackageMemberTypeDeclaration
     }
 
     /**
@@ -189,12 +178,12 @@ public class Java {
      *     package com.acme.tools;</pre>
      */
     public static class PackageDeclaration extends Located {
+        public final String packageName;
+
         public PackageDeclaration(Location location, String packageName) {
             super(location);
             this.packageName = packageName;
         }
-        public String getPackageName() { return this.packageName; }
-        private final String packageName;
     }
 
     public abstract static class ImportDeclaration extends Located {
@@ -209,14 +198,13 @@ public class Java {
      *     import java.util.Map;</pre>
      */
     public static class SingleTypeImportDeclaration extends ImportDeclaration {
+        public final String[] identifiers;
+
         public SingleTypeImportDeclaration(Location location, String[] identifiers) {
             super(location);
             this.identifiers = identifiers;
         }
-        public String[] getIdentifiers() { return this.identifiers; }
         public final void visit(Visitor.ComprehensiveVisitor visitor) { visitor.visitSingleTypeImportDeclaration(this); }
-
-        private final String[] identifiers;
     }
 
     /**
@@ -224,14 +212,13 @@ public class Java {
      *     import java.util.*;</pre>
      */
     public static class TypeImportOnDemandDeclaration extends ImportDeclaration {
+        public final String[] identifiers;
+
         public TypeImportOnDemandDeclaration(Location location, String[] identifiers) {
             super(location);
             this.identifiers = identifiers;
         }
-        public String[] getIdentifiers() { return this.identifiers; }
         public final void visit(Visitor.ComprehensiveVisitor visitor) { visitor.visitTypeImportOnDemandDeclaration(this); }
-
-        private final String[] identifiers;
     }
 
     public interface TypeDeclaration extends Locatable, Scope {
@@ -287,14 +274,14 @@ public class Java {
      * Represents a class or interface declaration where the immediately enclosing scope is
      * another class or interface declaration.
      */
-    interface MemberTypeDeclaration extends NamedTypeDeclaration, TypeBodyDeclaration {
+    public interface MemberTypeDeclaration extends NamedTypeDeclaration, TypeBodyDeclaration {
     }
 
     /**
      * Represents the declaration of a class or an interface that has a name. (All type
      * declarations are named, except for anonymous classes.)
      */
-    interface NamedTypeDeclaration extends TypeDeclaration {
+    public interface NamedTypeDeclaration extends TypeDeclaration {
 
         /**
          * Returns the declared (not the fully qualified) name of the class or interface.
@@ -343,8 +330,8 @@ public class Java {
         private   final Location location;
         protected final Scope    enclosingScope;
         protected final short    modifiers;
-        final List               declaredMethods              = new ArrayList(); // MethodDeclarator
-        final List               declaredClassesAndInterfaces = new ArrayList(); // MemberTypeDeclaration
+        public final List        declaredMethods              = new ArrayList(); // MethodDeclarator
+        public final List        declaredClassesAndInterfaces = new ArrayList(); // MemberTypeDeclaration
 
         /*package*/ IClass resolvedType = null;
 
@@ -411,8 +398,8 @@ public class Java {
     }
 
     public abstract static class ClassDeclaration extends AbstractTypeDeclaration {
-        final List constructors = new ArrayList(); // ConstructorDeclarator
-        final List variableDeclaratorsAndInitializers = new ArrayList(); // TypeBodyDeclaration
+        public final List constructors = new ArrayList(); // ConstructorDeclarator
+        public final List variableDeclaratorsAndInitializers = new ArrayList(); // TypeBodyDeclaration
 
         public ClassDeclaration(
             Location location,
@@ -471,7 +458,7 @@ public class Java {
     }
 
     public static final class AnonymousClassDeclaration extends ClassDeclaration implements InnerClassDeclaration {
-        /*final*/ Type   baseType;  // Base class or interface
+        public /*final*/ Type   baseType;  // Base class or interface
 
         private /*final*/ String className; // Effective class name.
 
@@ -503,10 +490,10 @@ public class Java {
     }
 
     public abstract static class NamedClassDeclaration extends ClassDeclaration implements NamedTypeDeclaration, DocCommentable {
-        private final String   optionalDocComment;
-        protected final String name;
-        final Type             optionalExtendedType;
-        final Type[]           implementedTypes;
+        private final String optionalDocComment;
+        public final String  name;
+        public final Type    optionalExtendedType;
+        public final Type[]  implementedTypes;
 
         public NamedClassDeclaration(
             Location location,
@@ -524,8 +511,10 @@ public class Java {
             this.implementedTypes     = implementedTypes;
         }
 
-        public String getName() { return this.name; }
         public String toString() { return this.name; }
+
+        // Implement NamedTypeDeclaration.
+        public String getName() { return this.name; }
 
         // Implement DocCommentable.
         public String getDocComment() { return this.optionalDocComment; }
@@ -685,7 +674,7 @@ public class Java {
             String className = this.getName();
 
             CompilationUnit compilationUnit = (CompilationUnit) this.getEnclosingScope();
-            if (compilationUnit.optionalPackageDeclaration != null) className = compilationUnit.optionalPackageDeclaration.getPackageName() + '.' + className;
+            if (compilationUnit.optionalPackageDeclaration != null) className = compilationUnit.optionalPackageDeclaration.packageName + '.' + className;
 
             return className;
         }
@@ -694,8 +683,8 @@ public class Java {
     }
 
     public abstract static class InterfaceDeclaration extends AbstractTypeDeclaration implements NamedTypeDeclaration, DocCommentable {
-        private final String       optionalDocComment;
-        protected /*final*/ String name;
+        private final String    optionalDocComment;
+        public /*final*/ String name;
 
         protected InterfaceDeclaration(
             Location location,
@@ -715,21 +704,23 @@ public class Java {
             this.extendedTypes      = extendedTypes;
         }
 
-        public String getName() { return this.name; }
         public String toString() { return this.name; }
 
-        public void addConstantDeclaration(FieldDeclarator fd) {
+        public void addConstantDeclaration(FieldDeclaration fd) {
             this.constantDeclarations.add(fd);
 
             // Clear resolved type cache.
             if (this.resolvedType != null) this.resolvedType.declaredIFields = null;
         }
 
-        /*final*/ Type[] extendedTypes;
-        final List   constantDeclarations = new ArrayList(); // FieldDeclarator
+        public /*final*/ Type[] extendedTypes;
+        public final List       constantDeclarations = new ArrayList(); // FieldDeclaration
 
         // Set during "compile()".
         IClass[] interfaces = null;
+
+        // Implement NamedTypeDeclaration.
+        public String getName() { return this.name; }
 
         // Implement DocCommentable.
         public String getDocComment() { return this.optionalDocComment; }
@@ -824,7 +815,7 @@ public class Java {
             String className = this.getName();
 
             CompilationUnit compilationUnit = (CompilationUnit) this.getEnclosingScope();
-            if (compilationUnit.optionalPackageDeclaration != null) className = compilationUnit.optionalPackageDeclaration.getPackageName() + '.' + className;
+            if (compilationUnit.optionalPackageDeclaration != null) className = compilationUnit.optionalPackageDeclaration.packageName + '.' + className;
 
             return className;
         }
@@ -880,7 +871,7 @@ public class Java {
      * Representation of an instance (JLS2 8.6) or static initializer (JLS2 8.7).
      */
     public final static class Initializer extends AbstractTypeBodyDeclaration implements BlockStatement {
-        Block block = null;
+        public Block block = null;
 
         public Initializer(
             Location        location,
@@ -908,13 +899,13 @@ public class Java {
      * {@link Java.MethodDeclarator}.
      */
     public abstract static class FunctionDeclarator extends AbstractTypeBodyDeclaration implements DocCommentable {
-        private final String    optionalDocComment;
-        protected final short   modifiers;
-        final Type              type;
-        final String            name;
-        final FormalParameter[] formalParameters;
-        protected final Type[]  thrownExceptions;
-        Block                   optionalBody = null;
+        private final String           optionalDocComment;
+        public final short             modifiers;
+        final Type                     type;
+        public final String            name;
+        public final FormalParameter[] formalParameters;
+        protected final Type[]         thrownExceptions;
+        public Block                   optionalBody = null;
 
         public FunctionDeclarator(
             Location          location,
@@ -945,15 +936,9 @@ public class Java {
             return this.getDeclaringType();
         }
 
-        public short getModifiers() { return this.modifiers; }
-
-        public String getName() { return this.name; }
-
-        public FormalParameter[] getFormalParameters() { return this.formalParameters; }
-
         // Set by "compile()".
         IClass                  returnType = null;
-        final HashMap                   parameters = new HashMap();   // String name => LocalVariable
+        final HashMap           parameters = new HashMap();   // String name => LocalVariable
 
         // Implement DocCommentable.
         public String getDocComment() { return this.optionalDocComment; }
@@ -961,9 +946,9 @@ public class Java {
     }
 
     public static final class ConstructorDeclarator extends FunctionDeclarator {
-        final ClassDeclaration    declaringClass;
-        IClass.IConstructor iConstructor = null;
-        ConstructorInvocation             optionalExplicitConstructorInvocation = null;
+        final ClassDeclaration       declaringClass;
+        IClass.IConstructor          iConstructor = null;
+        public ConstructorInvocation optionalExplicitConstructorInvocation = null;
 
         public ConstructorDeclarator(
             Location          location,
@@ -1001,7 +986,7 @@ public class Java {
         public String toString() {
             StringBuffer sb = new StringBuffer(this.declaringClass.getClassName());
             sb.append('(');
-            FormalParameter[] fps = this.getFormalParameters();
+            FormalParameter[] fps = this.formalParameters;
             for (int i = 0; i < fps.length; ++i) {
                 if (i > 0) sb.append(", ");
                 sb.append(fps[i].toString());
@@ -1037,9 +1022,9 @@ public class Java {
         }
 
         public String toString() {
-            StringBuffer sb = new StringBuffer(this.getName());
+            StringBuffer sb = new StringBuffer(this.name);
             sb.append('(');
-            FormalParameter[] fps = this.getFormalParameters();
+            FormalParameter[] fps = this.formalParameters;
             for (int i = 0; i < fps.length; ++i) {
                 if (i > 0) sb.append(", ");
                 sb.append(fps[i].toString());
@@ -1058,14 +1043,14 @@ public class Java {
      * initialization of the field. In other words, "compile()" generates the
      * code that initializes the field.
      */
-    public static final class FieldDeclarator extends Statement implements TypeBodyDeclaration, DocCommentable {
+    public static final class FieldDeclaration extends Statement implements TypeBodyDeclaration, DocCommentable {
         private final String          optionalDocComment;
         final AbstractTypeDeclaration declaringType;
         final short                   modifiers;
-        final Type                    type;
-        VariableDeclarator[]          variableDeclarators = null;
+        public final Type             type;
+        public VariableDeclarator[]   variableDeclarators = null;
 
-        public FieldDeclarator(
+        public FieldDeclaration(
             Location                location,
             AbstractTypeDeclaration declaringType,
             String                  optionalDocComment,
@@ -1102,8 +1087,8 @@ public class Java {
             return sb.toString();
         }
 
-        public final void visit(Visitor.TypeBodyDeclarationVisitor visitor) { visitor.visitFieldDeclarator(this); }
-        public final void visit(Visitor.BlockStatementVisitor visitor) { visitor.visitFieldDeclarator(this); }
+        public final void visit(Visitor.TypeBodyDeclarationVisitor visitor) { visitor.visitFieldDeclaration(this); }
+        public final void visit(Visitor.BlockStatementVisitor visitor) { visitor.visitFieldDeclaration(this); }
 
         // Implement DocCommentable.
         public String getDocComment() { return this.optionalDocComment; }
@@ -1111,9 +1096,9 @@ public class Java {
     }
 
     public final static class VariableDeclarator extends Located {
-        final String name;
-        final int    brackets;
-        Rvalue       optionalInitializer = null;
+        public final String name;
+        public final int    brackets;
+        public final Rvalue optionalInitializer;
 
         public VariableDeclarator(
             Location location,
@@ -1129,7 +1114,6 @@ public class Java {
             // Used both by field declarations an local variable declarations, so naming
             // conventions checking (JLS2 6.8) cannot be done here.
         }
-        public String getName() { return this.name; }
     }
 
     public static final class FormalParameter {
@@ -1147,9 +1131,9 @@ public class Java {
             return this.type.toString() + ' ' + this.name;
         }
 
-        final boolean finaL;
-        final Type    type;
-        final String  name;
+        final boolean     finaL;
+        public final Type type;
+        final String      name;
     }
 
     /**
@@ -1189,7 +1173,7 @@ public class Java {
         }
 
         /*final*/ String label;
-        Statement    body = null;
+        public Statement body = null;
 
         // Compile time members:
 
@@ -1202,7 +1186,7 @@ public class Java {
      * The statements that the block defines are executed in sequence.
      */
     public final static class Block extends Statement {
-        final List statements = new ArrayList(); // BlockStatement
+        public final List statements = new ArrayList(); // BlockStatement
 
         public Block(
             Location location,
@@ -1283,7 +1267,7 @@ public class Java {
         }
 
         protected CodeContext.Offset whereToContinue = null;
-        protected boolean              bodyHasContinue = false;
+        protected boolean            bodyHasContinue = false;
     }
 
     public final static class ExpressionStatement extends Statement {
@@ -1301,7 +1285,7 @@ public class Java {
             )) this.throwParseException("This kind of expression is not allowed in an expression statement");
             this.rvalue = rvalue;
         }
-        final Rvalue rvalue;
+        public final Rvalue rvalue;
 
         // Compile time members:
 
@@ -1316,7 +1300,7 @@ public class Java {
             super(lcd.getLocation(), enclosingScope);
             this.lcd = lcd;
         }
-        final LocalClassDeclaration lcd;
+        public final LocalClassDeclaration lcd;
 
         public final void visit(Visitor.BlockStatementVisitor visitor) { visitor.visitLocalClassDeclarationStatement(this); }
     }
@@ -1340,9 +1324,9 @@ public class Java {
             this.optionalElseStatement = optionalElseStatement;
         }
 
-        final Rvalue         condition;
-        final BlockStatement thenStatement;
-        final BlockStatement optionalElseStatement;
+        public final Rvalue         condition;
+        public final BlockStatement thenStatement;
+        public final BlockStatement optionalElseStatement;
 
         // Compile time members:
 
@@ -1377,11 +1361,11 @@ public class Java {
             this.body              = body;
         }
 
-        public final Block     implicitBlock;
-        BlockStatement optionalInit      = null;
-        Rvalue         optionalCondition = null;
-        Rvalue[]       optionalUpdate    = null;
-        BlockStatement body;
+        public final Block    implicitBlock;
+        public BlockStatement optionalInit      = null;
+        public Rvalue         optionalCondition = null;
+        public Rvalue[]       optionalUpdate    = null;
+        public BlockStatement body;
 
         // Compile time members:
 
@@ -1402,8 +1386,8 @@ public class Java {
             this.body = body;
         }
 
-        final Rvalue   condition;
-        BlockStatement body = null;
+        public final Rvalue   condition;
+        public BlockStatement body = null;
 
         // Compile time members:
 
@@ -1412,9 +1396,9 @@ public class Java {
     }
 
     public final static class TryStatement extends Statement {
-        BlockStatement body            = null;
-        final List     catchClauses    = new ArrayList(); // CatchClause
-        Block          optionalFinally = null;
+        public BlockStatement body            = null;
+        public final List     catchClauses    = new ArrayList(); // CatchClause
+        public Block          optionalFinally = null;
 
         public TryStatement(
             Location location,
@@ -1429,14 +1413,8 @@ public class Java {
         public void addCatchClause(CatchClause catchClause) {
             this.catchClauses.add(catchClause);
         }
-        public List getCatchClauses() {
-            return this.catchClauses;
-        }
         public void setFinally(Block finallY) {
             this.optionalFinally = finallY;
-        }
-        public Block getFinally() {
-            return this.optionalFinally;
         }
 
         // Compile time members:
@@ -1458,8 +1436,8 @@ public class Java {
             this.body            = body;
         }
 
-        final FormalParameter caughtException;
-        final Block           body;
+        public final FormalParameter caughtException;
+        public final Block           body;
     }
 
     /**
@@ -1480,8 +1458,8 @@ public class Java {
             this.sbsgs.add(sbsg);
         }
 
-        Rvalue     condition = null;
-        final List sbsgs = new ArrayList(); // SwitchBlockStatementGroup
+        public Rvalue     condition = null;
+        public final List sbsgs = new ArrayList(); // SwitchBlockStatementGroup
 
         // Compile time members:
 
@@ -1537,8 +1515,8 @@ public class Java {
             this.body = body;
         }
 
-        final Rvalue   expression;
-        BlockStatement body         = null;
+        public final Rvalue   expression;
+        public BlockStatement body         = null;
 
         // Compile time members:
 
@@ -1562,8 +1540,8 @@ public class Java {
             this.condition = condition;
         }
 
-        BlockStatement body      = null;
-        Rvalue         condition = null;
+        public BlockStatement body      = null;
+        public Rvalue         condition = null;
 
         // Compile time members:
 
@@ -1589,10 +1567,10 @@ public class Java {
             this.variableDeclarators = variableDeclarators;
         }
 
-        final Block        declaringBlock;
-        final short                modifiers;
-        final Type                 type;
-        final VariableDeclarator[] variableDeclarators;
+        final Block                       declaringBlock;
+        public final short                modifiers;
+        public final Type                 type;
+        public final VariableDeclarator[] variableDeclarators;
 
         // Compile time members:
 
@@ -1609,7 +1587,7 @@ public class Java {
             this.optionalReturnValue = optionalReturnValue;
         }
 
-        final Rvalue optionalReturnValue;
+        public final Rvalue optionalReturnValue;
 
         // Compile time members:
 
@@ -1626,7 +1604,7 @@ public class Java {
             this.expression = expression;
         }
 
-        final Rvalue expression;
+        public final Rvalue expression;
 
         // Compile time members:
 
@@ -1646,7 +1624,7 @@ public class Java {
             this.optionalLabel = optionalLabel;
         }
 
-        final String optionalLabel;
+        public final String optionalLabel;
 
         // Compile time members:
 
@@ -1667,7 +1645,7 @@ public class Java {
             this.optionalLabel = optionalLabel;
         }
 
-        final String optionalLabel;
+        public final String optionalLabel;
 
         // Compile time members:
 
@@ -1738,7 +1716,7 @@ public class Java {
     }
 
     public static final class SimpleType extends Type {
-        final IClass iClass;
+        public final IClass iClass;
 
         public SimpleType(Location location, IClass iClass) {
             super(location);
@@ -1755,6 +1733,8 @@ public class Java {
      * equaivalent to a "primitive type") (JLS 4.2).
      */
     public static final class BasicType extends Type {
+        public /*final*/ int index;
+
         public BasicType(Location location, int index) {
             super(location);
             this.index = index;
@@ -1787,11 +1767,12 @@ public class Java {
         public static final int FLOAT   = 6;
         public static final int DOUBLE  = 7;
         public static final int BOOLEAN = 8;
-
-        public /*final*/ int index;
     }
 
     public static final class ReferenceType extends Type {
+        public final String[] identifiers;
+        public final Scope    scope;
+
         public ReferenceType(
             Location location,
             Scope    scope,
@@ -1806,9 +1787,6 @@ public class Java {
 
         public final void visit(Visitor.AtomVisitor visitor) { visitor.visitReferenceType(this); }
         public final void visit(Visitor.TypeVisitor visitor) { visitor.visitReferenceType(this); }
-
-        public final String[] identifiers;
-        public final Scope    scope;
     }
 
     // Helper class for JLS 15.9.1
@@ -1837,12 +1815,11 @@ public class Java {
      * Representation of a Java<sup>TM</sup> array type (JLS 10.1).
      */
     public static final class ArrayType extends Type {
+        public final Type componentType;
+
         public ArrayType(Type componentType) {
             super(componentType.getLocation());
             this.componentType = componentType;
-        }
-        public Type getComponentType() {
-            return this.componentType;
         }
 
         public String toString() {
@@ -1851,8 +1828,6 @@ public class Java {
 
         public final void visit(Visitor.AtomVisitor visitor) { visitor.visitArrayType(this); }
         public final void visit(Visitor.TypeVisitor visitor) { visitor.visitArrayType(this); }
-
-        final Type componentType;
     }
 
     /**
@@ -1944,7 +1919,7 @@ public class Java {
                     public String toString() {
                         return AmbiguousName.this.toString();
                     }
-                    public final void visit(Visitor.TypeVisitor visitor) { throw new RuntimeException(); }
+                    public final void visit(Visitor.TypeVisitor visitor) { new ReferenceType(AmbiguousName.this.getLocation(), AmbiguousName.this.scope, AmbiguousName.this.identifiers).visit(visitor); }
                     public final void visit(Visitor.AtomVisitor visitor) { AmbiguousName.this.visit(visitor); }
                 };
             }
@@ -1969,23 +1944,24 @@ public class Java {
     }
 
     // Helper class for 6.5.2.1.7, 6.5.2.2.1
-    static final class Package extends Atom {
+    public static final class Package extends Atom {
+        public final String name;
+
         public Package(Location location, String name) {
             super(location);
             this.name = name;
         }
-        public String getName() { return this.name; }
         public String toString() { return this.name; }
 
         public final void visit(Visitor.AtomVisitor visitor) { visitor.visitPackage(this); }
-
-        final String name;
     }
 
     /**
      * Representation of a local variable access.
      */
-    static final class LocalVariableAccess extends Lvalue {
+    public static final class LocalVariableAccess extends Lvalue {
+        public /*final*/ LocalVariable localVariable;
+
         public LocalVariableAccess(
             Location      location,
             LocalVariable localVariable
@@ -1993,8 +1969,6 @@ public class Java {
             super(location);
             this.localVariable = localVariable;
         }
-
-        /*final*/ LocalVariable localVariable;
 
         // Compile time members.
 
@@ -2009,7 +1983,10 @@ public class Java {
      * Representation of an access to a field of a class or an interface. (Does not implement the
      * "array length" expression, e.g. "ia.length".)
      */
-    static final class FieldAccess extends Lvalue {
+    public static final class FieldAccess extends Lvalue {
+        public final Atom          lhs;
+        public final IClass.IField field;
+
         public FieldAccess(
             Location      location,
             Atom          lhs,
@@ -2019,9 +1996,6 @@ public class Java {
             this.lhs   = lhs;
             this.field = field;
         }
-
-        final Atom          lhs;
-        final IClass.IField field;
 
         // Compile time members.
 
@@ -2033,7 +2007,7 @@ public class Java {
         public final void visit(Visitor.LvalueVisitor visitor) { visitor.visitFieldAccess(this); }
     }
 
-    static final class ArrayLength extends Rvalue {
+    public static final class ArrayLength extends Rvalue {
         public ArrayLength(
             Location location,
             Rvalue   lhs
@@ -2042,7 +2016,7 @@ public class Java {
             this.lhs = lhs;
         }
 
-        final Rvalue lhs;
+        public final Rvalue lhs;
 
         // Compile time members.
 
@@ -2085,6 +2059,9 @@ public class Java {
      * Representation of an access to the current object or an enclosing instance.
      */
     public static final class QualifiedThisReference extends Rvalue {
+        public final Scope scope;
+        public final Type  qualification;
+
 
         /**
          * Access the given enclosing instance of the declaring class.
@@ -2105,9 +2082,6 @@ public class Java {
             this.scope         = scope;
             this.qualification = qualification;
         }
-
-        final Scope scope;
-        final Type  qualification;
 
         // Compile time members.
 
@@ -2143,7 +2117,7 @@ public class Java {
 
     public static final class ClassLiteral extends Rvalue {
         final AbstractTypeDeclaration declaringType;
-        final Type                    type;
+        public final Type             type;
 
         public ClassLiteral(
             Location location,
@@ -2179,9 +2153,9 @@ public class Java {
             this.rhs      = rhs;
         }
 
-        final Lvalue lhs;
-        final String operator;
-        final Rvalue rhs;
+        public final Lvalue lhs;
+        public final String operator;
+        public final Rvalue rhs;
 
         // Compile time members.
 
@@ -2211,7 +2185,7 @@ public class Java {
         public final void visit(Visitor.AtomVisitor visitor) { visitor.visitConditionalExpression(this); }
         public final void visit(Visitor.RvalueVisitor visitor) { visitor.visitConditionalExpression(this); }
 
-        final Rvalue lhs, mhs, rhs;
+        public final Rvalue lhs, mhs, rhs;
     }
 
     /**
@@ -2232,9 +2206,9 @@ public class Java {
             this.operand  = operand;
         }
 
-        final boolean pre;
-        final String  operator;
-        final Lvalue  operand;
+        public final boolean pre;
+        public final String  operator;
+        public final Lvalue  operand;
 
         // Compile time members.
 
@@ -2255,6 +2229,9 @@ public class Java {
      * This class implements an array access.
      */
     public static final class ArrayAccessExpression extends Lvalue {
+        public final Rvalue lhs;
+        public final Rvalue index;
+
         public ArrayAccessExpression(
             Location location,
             Rvalue   lhs,
@@ -2264,9 +2241,6 @@ public class Java {
             this.lhs = lhs;
             this.index = index;
         }
-
-        final Rvalue lhs;
-        final Rvalue index;
 
         // Compile time members:
 
@@ -2283,6 +2257,9 @@ public class Java {
      * expression "xy.length".
      */
     public static final class FieldAccessExpression extends Lvalue {
+        public final Atom   lhs;
+        public final String fieldName;
+
         public FieldAccessExpression(
             Location location,
             Atom     lhs,
@@ -2292,9 +2269,6 @@ public class Java {
             this.lhs       = lhs;
             this.fieldName = fieldName;
         }
-
-        final Atom   lhs;
-        final String fieldName;
 
         // Compile time members:
 
@@ -2328,8 +2302,8 @@ public class Java {
         public final void visit(Visitor.AtomVisitor visitor) { visitor.visitUnaryOperation(this); }
         public final void visit(Visitor.RvalueVisitor visitor) { visitor.visitUnaryOperation(this); }
 
-        final String operator;
-        final Rvalue operand;
+        public final String operator;
+        public final Rvalue operand;
     }
 
     public static final class Instanceof extends Rvalue {
@@ -2343,8 +2317,8 @@ public class Java {
             this.rhs = rhs;
         }
 
-        final Rvalue lhs;
-        final Type   rhs;
+        public final Rvalue lhs;
+        public final Type   rhs;
 
         // Compile time members.
 
@@ -2378,9 +2352,9 @@ public class Java {
             this.rhs = rhs;
         }
 
-        final Rvalue lhs;
-        final String op;
-        final Rvalue rhs;
+        public final Rvalue lhs;
+        public final String op;
+        public final Rvalue rhs;
 
         // Compile time members.
 
@@ -2426,8 +2400,8 @@ public class Java {
             this.value      = value;
         }
 
-        final Type   targetType;
-        final Rvalue value;
+        public final Type   targetType;
+        public final Rvalue value;
 
         // Compile time members.
 
@@ -2439,7 +2413,7 @@ public class Java {
     }
 
     public final static class ParenthesizedExpression extends Lvalue {
-        final Rvalue value;
+        public final Rvalue value;
 
         public ParenthesizedExpression(Location location, Rvalue value) {
             super(location);
@@ -2457,7 +2431,7 @@ public class Java {
     public static abstract class ConstructorInvocation extends Atom {
         protected final ClassDeclaration      declaringClass;
         protected final ConstructorDeclarator declaringConstructor;
-        protected final Rvalue[]              arguments;
+        public final Rvalue[]                 arguments;
 
         protected ConstructorInvocation(
             Location              location,
@@ -2492,7 +2466,7 @@ public class Java {
     }
 
     public final static class SuperConstructorInvocation extends ConstructorInvocation {
-        final Rvalue optionalQualification;
+        public final Rvalue optionalQualification;
 
         public SuperConstructorInvocation(
             Location              location,
@@ -2513,6 +2487,9 @@ public class Java {
     }
 
     public static final class MethodInvocation extends Invocation {
+        public final Atom   optionalTarget; // null == simple method name.
+        public final String methodName;
+
         public MethodInvocation(
             Location location,
             Scope    enclosingScope,
@@ -2541,9 +2518,6 @@ public class Java {
 
         public final void visit(Visitor.AtomVisitor visitor) { visitor.visitMethodInvocation(this); }
         public final void visit(Visitor.RvalueVisitor visitor) { visitor.visitMethodInvocation(this); }
-
-        final Atom   optionalTarget; // null == simple method name.
-        final String methodName;
     }
 
     public static final class SuperclassMethodInvocation extends Invocation {
@@ -2563,7 +2537,7 @@ public class Java {
         public final void visit(Visitor.AtomVisitor visitor) { visitor.visitSuperclassMethodInvocation(this); }
         public final void visit(Visitor.RvalueVisitor visitor) { visitor.visitSuperclassMethodInvocation(this); }
 
-        final String methodName;
+        public final String methodName;
     }
 
     public static abstract class Invocation extends Rvalue {
@@ -2577,8 +2551,8 @@ public class Java {
             this.arguments = arguments;
         }
 
-        protected final Scope    scope;
-        protected final Rvalue[] arguments;
+        protected final Scope scope;
+        public final Rvalue[] arguments;
     }
 
     public static final class NewClassInstance extends Rvalue {
@@ -2642,10 +2616,10 @@ public class Java {
     }
 
     public static final class NewAnonymousClassInstance extends Rvalue {
-        final Scope                     scope;
-        final Rvalue                    optionalQualification;
-        final AnonymousClassDeclaration anonymousClassDeclaration;
-        final Rvalue[]                  arguments;
+        final Scope                            scope;
+        public final Rvalue                    optionalQualification;
+        public final AnonymousClassDeclaration anonymousClassDeclaration;
+        public final Rvalue[]                  arguments;
 
         public NewAnonymousClassInstance(
             Location                  location,
@@ -2673,7 +2647,7 @@ public class Java {
         public final void visit(Visitor.RvalueVisitor visitor) { visitor.visitNewAnonymousClassInstance(this); }
     }
 
-    static final class ParameterAccess extends Rvalue {
+    public static final class ParameterAccess extends Rvalue {
         public final FunctionDeclarator declaringFunction;
         public final String             name;
 
@@ -2695,6 +2669,10 @@ public class Java {
     }
 
     public static final class NewArray extends Rvalue {
+        public final Type     type;
+        public final Rvalue[] dimExprs;
+        public final int      dims;
+
         public NewArray(
             Location location,
             Type     type,
@@ -2712,10 +2690,6 @@ public class Java {
 
         public final void visit(Visitor.AtomVisitor visitor) { visitor.visitNewArray(this); }
         public final void visit(Visitor.RvalueVisitor visitor) { visitor.visitNewArray(this); }
-
-        final Type     type;
-        final Rvalue[] dimExprs;
-        final int      dims;
     }
 
     /**
@@ -2725,8 +2699,8 @@ public class Java {
      * constant) values.
      */
     public static final class ArrayInitializer extends Rvalue {
-        final ArrayType arrayType;
-        final Rvalue[]  values;
+        final ArrayType        arrayType;
+        public final Rvalue[]  values;
 
         public ArrayInitializer(
             Location  location,

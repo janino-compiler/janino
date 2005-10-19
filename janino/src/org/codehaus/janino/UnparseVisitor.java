@@ -76,7 +76,7 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
 
     public void unparseCompilationUnit(Java.CompilationUnit cu) {
         if (cu.optionalPackageDeclaration != null) {
-            this.pw.println("package " + cu.optionalPackageDeclaration.getPackageName() + ';');
+            this.pw.println("package " + cu.optionalPackageDeclaration.packageName + ';');
         }
         for (Iterator it = cu.importDeclarations.iterator(); it.hasNext();) {
             ((Java.ImportDeclaration) it.next()).visit(this);
@@ -88,10 +88,10 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
     }
 
     public void visitSingleTypeImportDeclaration(Java.SingleTypeImportDeclaration stid) {
-        this.pw.println("import " + Java.join(stid.getIdentifiers(), ".") + ';');
+        this.pw.println("import " + Java.join(stid.identifiers, ".") + ';');
     }
     public void visitTypeImportOnDemandDeclaration(Java.TypeImportOnDemandDeclaration tiodd) {
-        this.pw.println("import " + Java.join(tiodd.getIdentifiers(), ".") + ".*;");
+        this.pw.println("import " + Java.join(tiodd.identifiers, ".") + ".*;");
     }
 
     public void visitLocalClassDeclaration(Java.LocalClassDeclaration lcd) {
@@ -141,7 +141,7 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
             this.pw.print(';');
         }
     }
-    public void visitFieldDeclarator(Java.FieldDeclarator fd) {
+    public void visitFieldDeclaration(Java.FieldDeclaration fd) {
         this.unparseDocComment(fd);
         this.unparseModifiers(fd.modifiers);
         ((Java.Atom) fd.type).visit(this);

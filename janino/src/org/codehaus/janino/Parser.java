@@ -407,13 +407,13 @@ public class Parser {
      *     ';' |
      *     ModifiersOpt (
      *       Block |                                    // Instance (JLS2 8.6) or static initializer (JLS2 8.7)
-     *       'void' Identifier MethodDeclaratorRest |
+     *       'void' Identifier MethodDeclarationRest |
      *       'class' ClassDeclarationRest |
      *       'interface' InterfaceDeclarationRest |
      *       ConstructorDeclarator |
      *       Type Identifier (
-     *         MethodDeclaratorRest |
-     *         FieldDeclaratorsRest ';'
+     *         MethodDeclarationRest |
+     *         FieldDeclarationRest ';'
      *       )
      *     )
      *
@@ -451,7 +451,7 @@ public class Parser {
             if (optionalDocComment == null) this.warning("MDCM", "Method doc comment missing", location);
             if (!this.scanner.peek().isIdentifier()) this.throwParseException("Method name expected after \"void\"");
             String name = this.scanner.read().getIdentifier();
-            classDeclaration.declaredMethods.add(this.parseMethodDeclaratorRest(
+            classDeclaration.declaredMethods.add(this.parseMethodDeclarationRest(
                 classDeclaration,                                  // declaringType
                 optionalDocComment,                                // optionalDocComment
                 modifiers,                                         // modifiers
@@ -509,7 +509,7 @@ public class Parser {
         // Method declarator.
         if (this.scanner.peek().isOperator("(")) {
             if (optionalDocComment == null) this.warning("MDCM", "Method doc comment missing", this.scanner.peek().getLocation());
-            classDeclaration.declaredMethods.add(this.parseMethodDeclaratorRest(
+            classDeclaration.declaredMethods.add(this.parseMethodDeclarationRest(
                 classDeclaration,   // declaringType
                 optionalDocComment, // optionalDocComment
                 modifiers,          // modifiers
@@ -521,7 +521,7 @@ public class Parser {
 
         // Field declarator.
         if (optionalDocComment == null) this.warning("FDCM", "Field doc comment missing", this.scanner.peek().getLocation());
-        Java.FieldDeclarator fd = new Java.FieldDeclarator(
+        Java.FieldDeclaration fd = new Java.FieldDeclaration(
             location,           // location
             classDeclaration,   // declaringType
             optionalDocComment, // optionalDocComment
@@ -529,7 +529,7 @@ public class Parser {
             memberType          // type
         );
 
-        Java.VariableDeclarator[] vds = this.parseFieldDeclaratorsRest(
+        Java.VariableDeclarator[] vds = this.parseFieldDeclarationRest(
             (Java.Scope) fd, // enclosingScope
             memberType,      // type
             memberName       // name
@@ -597,12 +597,12 @@ public class Parser {
      *   InterfaceBody := '{' {
      *     ';' |
      *     ModifiersOpt (
-     *       'void' Identifier MethodDeclaratorRest |
+     *       'void' Identifier MethodDeclarationRest |
      *       'class' ClassDeclarationRest |
      *       'interface' InterfaceDeclarationRest |
      *       Type Identifier (
-     *         MethodDeclaratorRest |
-     *         FieldDeclaratorsRest
+     *         MethodDeclarationRest |
+     *         FieldDeclarationRest
      *       )
      *     )
      *   } '}'
@@ -633,7 +633,7 @@ public class Parser {
                 Location location = this.scanner.read().getLocation();
                 if (!this.scanner.peek().isIdentifier()) this.throwParseException("Method name expected after \"void\"");
                 String name = this.scanner.read().getIdentifier();
-                interfaceDeclaration.declaredMethods.add(this.parseMethodDeclaratorRest(
+                interfaceDeclaration.declaredMethods.add(this.parseMethodDeclarationRest(
                     interfaceDeclaration,                              // declaringType
                     optionalDocComment,                                // optionalDocComment
                     (short) (modifiers | Mod.ABSTRACT | Mod.PUBLIC),   // modifiers
@@ -674,7 +674,7 @@ public class Parser {
                 // Method declarator.
                 if (this.scanner.peek().isOperator("(")) {
                     if (optionalDocComment == null) this.warning("MDCM", "Method doc comment missing", this.scanner.peek().getLocation());
-                    interfaceDeclaration.declaredMethods.add(this.parseMethodDeclaratorRest(
+                    interfaceDeclaration.declaredMethods.add(this.parseMethodDeclarationRest(
                         interfaceDeclaration,                            // declaringType
                         optionalDocComment,                              // optionalDocComment
                         (short) (modifiers | Mod.ABSTRACT | Mod.PUBLIC), // modifiers
@@ -686,7 +686,7 @@ public class Parser {
                 // Field declarator.
                 {
                     if (optionalDocComment == null) this.warning("FDCM", "Field doc comment missing", this.scanner.peek().getLocation());
-                    Java.FieldDeclarator fd = new Java.FieldDeclarator(
+                    Java.FieldDeclaration fd = new Java.FieldDeclaration(
                         location,                          // location
                         interfaceDeclaration,              // declaringType
                         optionalDocComment,                // optionalDocComment
@@ -696,7 +696,7 @@ public class Parser {
                         ),
                         memberType                         // type
                     );
-                    Java.VariableDeclarator[] vds = this.parseFieldDeclaratorsRest(
+                    Java.VariableDeclarator[] vds = this.parseFieldDeclarationRest(
                         (Java.Scope) fd, // enclosingScope
                         memberType,      // type
                         memberName       // name
@@ -806,14 +806,14 @@ public class Parser {
 
     /**
      * <pre>
-     *   MethodDeclaratorRest :=
+     *   MethodDeclarationRest :=
      *     FormalParameters
      *     { '[' ']' }
      *     [ 'throws' ReferenceTypeList ]
      *     ( ';' | MethodBody )
      * </pre>
      */
-    public Java.MethodDeclarator parseMethodDeclaratorRest(
+    public Java.MethodDeclarator parseMethodDeclarationRest(
         Java.AbstractTypeDeclaration declaringType,
         String                       optionalDocComment,
         short                        modifiers,
@@ -894,7 +894,7 @@ public class Parser {
     ) throws ParseException, Scanner.ScanException, IOException {
         if (!this.scanner.peek().isOperator("{")) this.throwParseException("\"{\" expected");
         Location location = this.scanner.read().getLocation();
-        Java.Type componentType = arrayType.getComponentType();
+        Java.Type componentType = arrayType.componentType;
         List l = new ArrayList(); // Rvalue
         while (!this.scanner.peek().isOperator("}")) {
             l.add(this.parseVariableInitializer(
@@ -1128,7 +1128,7 @@ public class Parser {
         List l = new ArrayList();
         for (;;) {
             Java.VariableDeclarator vd = this.parseVariableDeclarator(enclosingScope, type);
-            this.verifyIdentifierIsConventionalLocalVariableOrParameterName(vd.getName(), vd.getLocation());
+            this.verifyIdentifierIsConventionalLocalVariableOrParameterName(vd.name, vd.getLocation());
             l.add(vd);
             if (!this.scanner.peek().isOperator(",")) break;
             this.scanner.read();
@@ -1138,12 +1138,12 @@ public class Parser {
 
     /**
      * <pre>
-     *   FieldDeclaratorsRest :=
+     *   FieldDeclarationRest :=
      *     VariableDeclaratorRest
      *     { ',' VariableDeclarator }
      * </pre>
      */
-    public Java.VariableDeclarator[] parseFieldDeclaratorsRest(
+    public Java.VariableDeclarator[] parseFieldDeclarationRest(
         Java.Scope enclosingScope,
         Java.Type  type,
         String     name
@@ -1151,14 +1151,14 @@ public class Parser {
         List l = new ArrayList();
 
         Java.VariableDeclarator vd = this.parseVariableDeclaratorRest(enclosingScope, type, name);
-        this.verifyIdentifierIsConventionalFieldName(vd.getName(), vd.getLocation());
+        this.verifyIdentifierIsConventionalFieldName(vd.name, vd.getLocation());
         l.add(vd);
 
         while (this.scanner.peek().isOperator(",")) {
             this.scanner.read();
 
             vd = this.parseVariableDeclarator(enclosingScope, type);
-            this.verifyIdentifierIsConventionalFieldName(vd.getName(), vd.getLocation());
+            this.verifyIdentifierIsConventionalFieldName(vd.name, vd.getLocation());
             l.add(vd);
         }
         return (Java.VariableDeclarator[]) l.toArray(new Java.VariableDeclarator[l.size()]);
@@ -1526,8 +1526,8 @@ public class Parser {
             tryStatement.setFinally(this.parseBlock(tryStatement));
         }
         if (
-            tryStatement.getCatchClauses().size() == 0 &&
-            tryStatement.getFinally() == null
+            tryStatement.catchClauses.size() == 0 &&
+            tryStatement.optionalFinally == null
         ) this.throwParseException("\"try\" statement must have at least one \"catch\" clause or a \"finally\" clause");
         return tryStatement;
     }

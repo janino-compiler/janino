@@ -47,7 +47,7 @@ public class Visitor {
         void visitTypeImportOnDemandDeclaration(Java.TypeImportOnDemandDeclaration tiodd);
     }
     
-    interface TypeDeclarationVisitor {
+    public interface TypeDeclarationVisitor {
         void visitAnonymousClassDeclaration(Java.AnonymousClassDeclaration acd);
         void visitLocalClassDeclaration(Java.LocalClassDeclaration lcd);
         void visitPackageMemberClassDeclaration(Java.PackageMemberClassDeclaration pmcd);
@@ -56,18 +56,18 @@ public class Visitor {
         void visitMemberClassDeclaration(Java.MemberClassDeclaration mcd);
     }
     
-    interface TypeBodyDeclarationVisitor {
+    public interface TypeBodyDeclarationVisitor {
         void visitMemberInterfaceDeclaration(Java.MemberInterfaceDeclaration mid);
         void visitMemberClassDeclaration(Java.MemberClassDeclaration mcd);
         void visitConstructorDeclarator(Java.ConstructorDeclarator cd);
         void visitInitializer(Java.Initializer i);
         void visitMethodDeclarator(Java.MethodDeclarator md);
-        void visitFieldDeclarator(Java.FieldDeclarator fd);
+        void visitFieldDeclaration(Java.FieldDeclaration fd);
     }
     
-    interface BlockStatementVisitor {
+    public interface BlockStatementVisitor {
         void visitInitializer(Java.Initializer i);
-        void visitFieldDeclarator(Java.FieldDeclarator fd);
+        void visitFieldDeclaration(Java.FieldDeclaration fd);
         void visitLabeledStatement(Java.LabeledStatement ls);
         void visitBlock(Java.Block b);
         void visitExpressionStatement(Java.ExpressionStatement es);
@@ -87,16 +87,16 @@ public class Visitor {
         void visitLocalClassDeclarationStatement(Java.LocalClassDeclarationStatement lcds);
     }
     
-    interface AtomVisitor extends RvalueVisitor, TypeVisitor, ConstructorInvocationVisitor {
+    public interface AtomVisitor extends RvalueVisitor, TypeVisitor, ConstructorInvocationVisitor {
         void visitPackage(Java.Package p);
     }
     
-    interface ConstructorInvocationVisitor {
+    public interface ConstructorInvocationVisitor {
         void visitAlternateConstructorInvocation(Java.AlternateConstructorInvocation aci);
         void visitSuperConstructorInvocation(Java.SuperConstructorInvocation sci);
     }
     
-    interface TypeVisitor {
+    public interface TypeVisitor {
         void visitArrayType(Java.ArrayType at);
         void visitBasicType(Java.BasicType bt);
         void visitReferenceType(Java.ReferenceType rt);
@@ -104,7 +104,7 @@ public class Visitor {
         void visitSimpleType(Java.SimpleType st);
     }
     
-    interface RvalueVisitor extends LvalueVisitor {
+    public interface RvalueVisitor extends LvalueVisitor {
         void visitArrayInitializer(Java.ArrayInitializer ai);
         void visitArrayLength(Java.ArrayLength al);
         void visitAssignment(Java.Assignment a);
@@ -127,7 +127,7 @@ public class Visitor {
         void visitThisReference(Java.ThisReference tr);
     }
     
-    interface LvalueVisitor {
+    public interface LvalueVisitor {
         void visitAmbiguousName(Java.AmbiguousName an);
         void visitArrayAccessExpression(Java.ArrayAccessExpression aae);
         void visitFieldAccess(Java.FieldAccess fa);

@@ -213,8 +213,8 @@ public class UnitCompiler {
         // Class and instance variables.
         for (Iterator it = cd.variableDeclaratorsAndInitializers.iterator(); it.hasNext();) {
             Java.TypeBodyDeclaration tbd = (Java.TypeBodyDeclaration) it.next();
-            if (!(tbd instanceof Java.FieldDeclarator)) continue;
-            this.addFields((Java.FieldDeclarator) tbd, cf);
+            if (!(tbd instanceof Java.FieldDeclaration)) continue;
+            this.addFields((Java.FieldDeclaration) tbd, cf);
         }
 
         // Synthetic fields.
@@ -251,9 +251,9 @@ public class UnitCompiler {
 
     /**
      * Create {@link ClassFile.FieldInfo}s for all fields declared by the
-     * given {@link Java.FieldDeclarator}.
+     * given {@link Java.FieldDeclaration}.
      */
-    private void addFields(Java.FieldDeclarator fd, ClassFile cf) throws CompileException {
+    private void addFields(Java.FieldDeclaration fd, ClassFile cf) throws CompileException {
         for (int j = 0; j < fd.variableDeclarators.length; ++j) {
             Java.VariableDeclarator vd = fd.variableDeclarators[j];
             Java.Type type = fd.type;
@@ -414,8 +414,8 @@ public class UnitCompiler {
         // Class variables.
         for (int i = 0; i < id.constantDeclarations.size(); ++i) {
             Java.BlockStatement bs = (Java.BlockStatement) id.constantDeclarations.get(i);
-            if (!(bs instanceof Java.FieldDeclarator)) continue;
-            this.addFields((Java.FieldDeclarator) bs, cf);
+            if (!(bs instanceof Java.FieldDeclaration)) continue;
+            this.addFields((Java.FieldDeclaration) bs, cf);
         }
 
         // Member types.
@@ -459,7 +459,7 @@ public class UnitCompiler {
         final boolean[] res = new boolean[1];
         Visitor.BlockStatementVisitor bsv = new Visitor.BlockStatementVisitor() {
             public void visitInitializer                      (Java.Initializer                       i   ) { try { res[0] = UnitCompiler.this.compile2(i   ); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitFieldDeclarator                  (Java.FieldDeclarator                   fd  ) { try { res[0] = UnitCompiler.this.compile2(fd  ); } catch (CompileException e) { throw new TunnelException(e); } }
+            public void visitFieldDeclaration                  (Java.FieldDeclaration                   fd  ) { try { res[0] = UnitCompiler.this.compile2(fd  ); } catch (CompileException e) { throw new TunnelException(e); } }
             public void visitLabeledStatement                 (Java.LabeledStatement                  ls  ) { try { res[0] = UnitCompiler.this.compile2(ls  ); } catch (CompileException e) { throw new TunnelException(e); } }
             public void visitBlock                            (Java.Block                             b   ) { try { res[0] = UnitCompiler.this.compile2(b   ); } catch (CompileException e) { throw new TunnelException(e); } }
             public void visitExpressionStatement              (Java.ExpressionStatement               es  ) { try { res[0] = UnitCompiler.this.compile2(es  ); } catch (CompileException e) { throw new TunnelException(e); } }
@@ -867,7 +867,7 @@ public class UnitCompiler {
         this.compile(ee.rvalue);
         return true;
     }
-    /*private*/ boolean compile2(Java.FieldDeclarator fd) throws CompileException {
+    /*private*/ boolean compile2(Java.FieldDeclaration fd) throws CompileException {
         for (int i = 0; i < fd.variableDeclarators.length; ++i) {
             Java.VariableDeclarator vd = fd.variableDeclarators[i];
 
@@ -1998,7 +1998,7 @@ public class UnitCompiler {
         {
             for (Iterator it = cl.declaringType.declaredMethods.iterator(); it.hasNext();) {
                 Java.MethodDeclarator md = (Java.MethodDeclarator) it.next();
-                if (md.getName().equals("class$")) {
+                if (md.name.equals("class$")) {
                     classDollarMethodDeclared = true;
                     break;
                 }
@@ -2027,8 +2027,8 @@ public class UnitCompiler {
             BLOCK_STATEMENTS: for (Iterator it = statics.iterator(); it.hasNext();) {
                 Java.TypeBodyDeclaration tbd = (Java.TypeBodyDeclaration) it.next();
                 if (!tbd.isStatic()) continue;
-                if (tbd instanceof Java.FieldDeclarator) {
-                    Java.FieldDeclarator fd = (Java.FieldDeclarator) tbd;
+                if (tbd instanceof Java.FieldDeclaration) {
+                    Java.FieldDeclaration fd = (Java.FieldDeclaration) tbd;
                     IClass.IField[] fds = this.getIFields(fd);
                     for (int j = 0; j < fds.length; ++j) {
                         if (fds[j].getName().equals(classDollarFieldName)) {
@@ -2040,7 +2040,7 @@ public class UnitCompiler {
             }
             if (!hasClassDollarField) {
                 Java.Type classType = new Java.SimpleType(loc, icl.CLASS);
-                Java.FieldDeclarator fd = new Java.FieldDeclarator(
+                Java.FieldDeclaration fd = new Java.FieldDeclaration(
                     loc,              // location
                     cl.declaringType, // declaringType
                     null,             // optionalDocComment
@@ -3073,7 +3073,7 @@ public class UnitCompiler {
         final boolean[] res = new boolean[1];
         Visitor.BlockStatementVisitor bsv = new Visitor.BlockStatementVisitor() {
             public void visitInitializer                      (Java.Initializer                       i   ) { try { res[0] = UnitCompiler.this.generatesCode2(i   ); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitFieldDeclarator                  (Java.FieldDeclarator                   fd  ) { try { res[0] = UnitCompiler.this.generatesCode2(fd  ); } catch (CompileException e) { throw new TunnelException(e); } }
+            public void visitFieldDeclaration                  (Java.FieldDeclaration                   fd  ) { try { res[0] = UnitCompiler.this.generatesCode2(fd  ); } catch (CompileException e) { throw new TunnelException(e); } }
             public void visitLabeledStatement                 (Java.LabeledStatement                  ls  ) {       res[0] = UnitCompiler.this.generatesCode2(ls  );                                                                }
             public void visitBlock                            (Java.Block                             b   ) { try { res[0] = UnitCompiler.this.generatesCode2(b   ); } catch (CompileException e) { throw new TunnelException(e); } }
             public void visitExpressionStatement              (Java.ExpressionStatement               es  ) {       res[0] = UnitCompiler.this.generatesCode2(es  );                                                                }
@@ -3109,7 +3109,7 @@ public class UnitCompiler {
         }
         return false;
     }
-    public boolean generatesCode2(Java.FieldDeclarator fd) throws CompileException {
+    public boolean generatesCode2(Java.FieldDeclaration fd) throws CompileException {
         // Code is only generated if at least one of the declared variables has a
         // non-constant-final initializer.
         for (int i = 0; i < fd.variableDeclarators.length; ++i) {
@@ -3138,7 +3138,7 @@ public class UnitCompiler {
     private void leave(Java.BlockStatement bs, final IClass optionalStackValueType) {
         Visitor.BlockStatementVisitor bsv = new Visitor.BlockStatementVisitor() {
             public void visitInitializer                      (Java.Initializer                       i   ) { UnitCompiler.this.leave2(i,    optionalStackValueType); }
-            public void visitFieldDeclarator                  (Java.FieldDeclarator                   fd  ) { UnitCompiler.this.leave2(fd,   optionalStackValueType); }
+            public void visitFieldDeclaration                  (Java.FieldDeclaration                   fd  ) { UnitCompiler.this.leave2(fd,   optionalStackValueType); }
             public void visitLabeledStatement                 (Java.LabeledStatement                  ls  ) { UnitCompiler.this.leave2(ls,   optionalStackValueType); }
             public void visitBlock                            (Java.Block                             b   ) { UnitCompiler.this.leave2(b,    optionalStackValueType); }
             public void visitExpressionStatement              (Java.ExpressionStatement               es  ) { UnitCompiler.this.leave2(es,   optionalStackValueType); }
@@ -3370,7 +3370,7 @@ public class UnitCompiler {
             {
                 String pkg = (
                     scopeCompilationUnit.optionalPackageDeclaration == null ? null :
-                    scopeCompilationUnit.optionalPackageDeclaration.getPackageName()
+                    scopeCompilationUnit.optionalPackageDeclaration.packageName
                 );
                 IClassLoader icl = this.iClassLoader;
                 IClass result = icl.loadIClass(Descriptor.fromClassName(
@@ -4156,7 +4156,7 @@ public class UnitCompiler {
         );
     }
 
-    /*package*/ IClass.IField[] getIFields(final Java.FieldDeclarator fd) {
+    /*package*/ IClass.IField[] getIFields(final Java.FieldDeclaration fd) {
         IClass.IField[] res = new IClass.IField[fd.variableDeclarators.length];
         for (int i = 0; i < res.length; ++i) {
             final Java.VariableDeclarator vd = fd.variableDeclarators[i];
@@ -4208,7 +4208,7 @@ public class UnitCompiler {
      * Determine the non-constant-final initializer of the given {@link Java.VariableDeclarator}.
      * @return <code>null</code> if the variable is declared without an initializer or if the initializer is constant-final
      */
-    Java.Rvalue getNonConstantFinalInitializer(Java.FieldDeclarator fd, Java.VariableDeclarator vd) throws CompileException {
+    Java.Rvalue getNonConstantFinalInitializer(Java.FieldDeclaration fd, Java.VariableDeclarator vd) throws CompileException {
 
         // Check if optional initializer exists.
         if (vd.optionalInitializer == null) return null;
@@ -4269,7 +4269,7 @@ public class UnitCompiler {
         // 6.5.2.2.1
         if (UnitCompiler.DEBUG) System.out.println("lhs = " + lhs);
         if (lhs instanceof Java.Package) {
-            String className = ((Java.Package) lhs).getName() + '.' + rhs;
+            String className = ((Java.Package) lhs).name + '.' + rhs;
             IClass result = this.iClassLoader.loadIClass(Descriptor.fromClassName(className));
             if (result != null) return new Java.SimpleType(location, result);
 
@@ -4467,7 +4467,7 @@ public class UnitCompiler {
             String className = (
                 scopeCompilationUnit.optionalPackageDeclaration == null ?
                 identifier :
-                scopeCompilationUnit.optionalPackageDeclaration.getPackageName() + '.' + identifier
+                scopeCompilationUnit.optionalPackageDeclaration.packageName + '.' + identifier
             );
             IClass result = this.iClassLoader.loadIClass(Descriptor.fromClassName(className));
             if (result != null) return new Java.SimpleType(location, result);
@@ -5016,8 +5016,8 @@ public class UnitCompiler {
                     // Determine variable declarators of type declaration.
                     for (int i = 0; i < cd.variableDeclaratorsAndInitializers.size(); ++i) {
                         Java.BlockStatement vdoi = (Java.BlockStatement) cd.variableDeclaratorsAndInitializers.get(i);
-                        if (vdoi instanceof Java.FieldDeclarator) {
-                            Java.FieldDeclarator fd = (Java.FieldDeclarator) vdoi;
+                        if (vdoi instanceof Java.FieldDeclaration) {
+                            Java.FieldDeclaration fd = (Java.FieldDeclaration) vdoi;
                             IClass.IField[] flds = UnitCompiler.this.getIFields(fd);
                             for (int j = 0; j < flds.length; ++j) l.add(flds[j]);
                         }
@@ -5031,8 +5031,8 @@ public class UnitCompiler {
                     // Determine static fields.
                     for (int i = 0; i < id.constantDeclarations.size(); ++i) {
                         Java.BlockStatement bs = (Java.BlockStatement) id.constantDeclarations.get(i);
-                        if (bs instanceof Java.FieldDeclarator) {
-                            Java.FieldDeclarator fd = (Java.FieldDeclarator) bs;
+                        if (bs instanceof Java.FieldDeclaration) {
+                            Java.FieldDeclaration fd = (Java.FieldDeclaration) bs;
                             IClass.IField[] flds = UnitCompiler.this.getIFields(fd);
                             for (int j = 0; j < flds.length; ++j) l.add(flds[j]);
                         }
@@ -5275,7 +5275,7 @@ public class UnitCompiler {
                     IClass.IField sf = (IClass.IField) it.next();
                     if (sf.getName().startsWith("val$")) l.add(sf.getType().getDescriptor());
                 }
-                Java.FormalParameter[] fps = cd.getFormalParameters();
+                Java.FormalParameter[] fps = cd.formalParameters;
                 for (int i = 0; i < fps.length; ++i) {
                     l.add(UnitCompiler.this.getType(fps[i].type).getDescriptor());
                 }
@@ -5284,7 +5284,7 @@ public class UnitCompiler {
             }
 
             public IClass[] getParameterTypes() throws CompileException {
-                Java.FormalParameter[] fps = cd.getFormalParameters();
+                Java.FormalParameter[] fps = cd.formalParameters;
                 IClass[] res = new IClass[fps.length];
                 for (int i = 0; i < fps.length; ++i) {
                     res[i] = UnitCompiler.this.getType(fps[i].type);
@@ -5303,7 +5303,7 @@ public class UnitCompiler {
                 StringBuffer sb = new StringBuffer();
                 sb.append(cd.getDeclaringType().getClassName());
                 sb.append('(');
-                Java.FormalParameter[] fps = cd.getFormalParameters();
+                Java.FormalParameter[] fps = cd.formalParameters;
                 for (int i = 0; i < fps.length; ++i) {
                     if (i != 0) sb.append(", ");
                     try {
@@ -5340,7 +5340,7 @@ public class UnitCompiler {
 
             // Implement IInvocable.
             public IClass[] getParameterTypes() throws CompileException {
-                Java.FormalParameter[] fps = md.getFormalParameters();
+                Java.FormalParameter[] fps = md.formalParameters;
                 IClass[] res = new IClass[fps.length];
                 for (int i = 0; i < fps.length; ++i) {
                     res[i] = UnitCompiler.this.getType(fps[i].type);
@@ -5356,12 +5356,12 @@ public class UnitCompiler {
             }
 
             // Implement IMethod.
-            public boolean isStatic() { return (md.getModifiers() & Mod.STATIC) != 0; }
-            public boolean isAbstract() { return (md.getDeclaringType() instanceof Java.InterfaceDeclaration) || (md.getModifiers() & Mod.ABSTRACT) != 0; }
+            public boolean isStatic() { return (md.modifiers & Mod.STATIC) != 0; }
+            public boolean isAbstract() { return (md.getDeclaringType() instanceof Java.InterfaceDeclaration) || (md.modifiers & Mod.ABSTRACT) != 0; }
             public IClass getReturnType() throws CompileException {
                 return UnitCompiler.this.getReturnType(md);
             }
-            public String getName() { return md.getName(); }
+            public String getName() { return md.name; }
         };
         return md.iMethod;
     }
@@ -5411,7 +5411,7 @@ public class UnitCompiler {
         for (Iterator i = this.compilationUnit.importDeclarations.iterator(); i.hasNext();) {
             Java.ImportDeclaration id = (Java.ImportDeclaration) i.next();
             if (id instanceof Java.TypeImportOnDemandDeclaration) {
-                packages.add(((Java.TypeImportOnDemandDeclaration) id).getIdentifiers());
+                packages.add(((Java.TypeImportOnDemandDeclaration) id).identifiers);
             }
         }
         for (Iterator i = packages.iterator(); i.hasNext();) {
@@ -6441,7 +6441,7 @@ public class UnitCompiler {
         // Examine package name.
         String packageName = (
             this.compilationUnit.optionalPackageDeclaration == null ? null :
-            this.compilationUnit.optionalPackageDeclaration.getPackageName()
+            this.compilationUnit.optionalPackageDeclaration.packageName
         );
         if (packageName != null) {
             if (!className.startsWith(packageName + '.')) return null;
