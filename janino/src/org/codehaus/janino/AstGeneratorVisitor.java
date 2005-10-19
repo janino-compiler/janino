@@ -76,16 +76,16 @@ public class AstGeneratorVisitor implements Visitor.ComprehensiveVisitor {
 
         write("public class "+name+" implements "+AstCompilationUnitGenerator.class.getName()+" {");
         level++;
-        write("public static final String FILE_NAME = \""+cu.getFileName()+"\";");
+        write("public static final String FILE_NAME = \""+cu.optionalFileName+"\";");
         write();
 
         write("public Java.CompilationUnit generate() throws Exception {");
         level++;
 
-        write("Java.CompilationUnit cu = new Java.CompilationUnit(\"" + cu.getFileName() + "\");");
+        write("Java.CompilationUnit cu = new Java.CompilationUnit(\"" + cu.optionalFileName + "\");");
 
         if(cu.optionalPackageDeclaration != null) {
-            write("cu.setPackageDeclaration(new Java.PackageDeclaration("+getLocation(cu.optionalPackageDeclaration)+", \""+cu.optionalPackageDeclaration.getPackageName()+"\"));");
+            write("cu.setPackageDeclaration(new Java.PackageDeclaration("+getLocation(cu.optionalPackageDeclaration)+", \""+cu.optionalPackageDeclaration.packageName+"\"));");
         }
 
         for(Iterator it = cu.importDeclarations.iterator(); it.hasNext();) {
@@ -126,7 +126,7 @@ public class AstGeneratorVisitor implements Visitor.ComprehensiveVisitor {
     public void visitSingleTypeImportDeclaration(Java.SingleTypeImportDeclaration stid) {
         write("private Java.SingleTypeImportDeclaration generateImportDeclaration"+getSuffix(stid)+"() throws Exception {");
         level++;
-        write("return new Java.SingleTypeImportDeclaration("+getLocation(stid)+", "+arrayToString(stid.getIdentifiers())+");");
+        write("return new Java.SingleTypeImportDeclaration("+getLocation(stid)+", "+arrayToString(stid.identifiers)+");");
         level--;
         write("}");
         write();
@@ -135,7 +135,7 @@ public class AstGeneratorVisitor implements Visitor.ComprehensiveVisitor {
     public void visitTypeImportOnDemandDeclaration(Java.TypeImportOnDemandDeclaration tiodd) {
         write("private Java.TypeImportOnDemandDeclaration generateImportDeclaration"+getSuffix(tiodd)+"() throws Exception {");
         level++;
-        write("return new Java.TypeImportOnDemandDeclaration("+getLocation(tiodd)+", "+arrayToString(tiodd.getIdentifiers())+");");
+        write("return new Java.TypeImportOnDemandDeclaration("+getLocation(tiodd)+", "+arrayToString(tiodd.identifiers)+");");
         level--;
         write("}");
         write();
@@ -228,8 +228,8 @@ public class AstGeneratorVisitor implements Visitor.ComprehensiveVisitor {
         generateAbstractTypeDeclarationBody(mid);
 
         for(Iterator it = mid.constantDeclarations.iterator(); it.hasNext();) {
-            Java.FieldDeclarator fd = (Java.FieldDeclarator) it.next();
-            write("declaration.addConstantDeclaration(generateFieldDeclarator"+getSuffix(fd)+"(declaration));");
+            Java.FieldDeclaration fd = (Java.FieldDeclaration) it.next();
+            write("declaration.addConstantDeclaration(generateFieldDeclaration"+getSuffix(fd)+"(declaration));");
         }
         
         write("return declaration;");
@@ -241,7 +241,7 @@ public class AstGeneratorVisitor implements Visitor.ComprehensiveVisitor {
         generateAbstractTypeDeclarationBodyMethods(mid);
         
         for(Iterator it = mid.constantDeclarations.iterator(); it.hasNext();) {
-            ((Java.FieldDeclarator) it.next()).visit((Visitor.TypeBodyDeclarationVisitor) this);
+            ((Java.FieldDeclaration) it.next()).visit((Visitor.TypeBodyDeclarationVisitor) this);
         }
     }
 
@@ -256,8 +256,8 @@ public class AstGeneratorVisitor implements Visitor.ComprehensiveVisitor {
         generateAbstractTypeDeclarationBody(pmid);
 
         for(Iterator it = pmid.constantDeclarations.iterator(); it.hasNext();) {
-            Java.FieldDeclarator fd = (Java.FieldDeclarator) it.next();
-            write("declaration.addConstantDeclaration(generateFieldDeclarator"+getSuffix(fd)+"(declaration));");
+            Java.FieldDeclaration fd = (Java.FieldDeclaration) it.next();
+            write("declaration.addConstantDeclaration(generateFieldDeclaration"+getSuffix(fd)+"(declaration));");
         }
         
         write("return declaration;");
@@ -270,7 +270,7 @@ public class AstGeneratorVisitor implements Visitor.ComprehensiveVisitor {
         generateAbstractTypeDeclarationBodyMethods(pmid);
         
         for(Iterator it = pmid.constantDeclarations.iterator(); it.hasNext();) {
-            ((Java.FieldDeclarator) it.next()).visit((Visitor.TypeBodyDeclarationVisitor) this);
+            ((Java.FieldDeclaration) it.next()).visit((Visitor.TypeBodyDeclarationVisitor) this);
         }
     }
 
@@ -334,7 +334,7 @@ public class AstGeneratorVisitor implements Visitor.ComprehensiveVisitor {
     }
 
     public void visitInitializer(Java.Initializer i) {
-        write("private Java.Initializer generateFieldDeclarator"+getSuffix(i)+"(Java.TypeDeclaration declaringType) throws Exception {");
+        write("private Java.Initializer generateFieldDeclaration"+getSuffix(i)+"(Java.TypeDeclaration declaringType) throws Exception {");
         level++;
         
         write("Java.Initializer declaration = " +
@@ -393,11 +393,11 @@ public class AstGeneratorVisitor implements Visitor.ComprehensiveVisitor {
         }
     }
 
-    public void visitFieldDeclarator(Java.FieldDeclarator fd) {
-        write("private Java.FieldDeclarator generateFieldDeclarator"+getSuffix(fd)+"(Java.AbstractTypeDeclaration declaringType) throws Exception {");
+    public void visitFieldDeclaration(Java.FieldDeclaration fd) {
+        write("private Java.FieldDeclaration generateFieldDeclaration"+getSuffix(fd)+"(Java.AbstractTypeDeclaration declaringType) throws Exception {");
         level++;
 
-        write("Java.FieldDeclarator declaration = new Java.FieldDeclarator("+getLocation(fd)+", "+
+        write("Java.FieldDeclaration declaration = new Java.FieldDeclaration("+getLocation(fd)+", "+
                 "declaringType, "+getModifiers(fd.modifiers)+", " +
                 "generateType"+getSuffix(fd.type)+"(declaringType)" +
                 ");");
@@ -976,7 +976,7 @@ public class AstGeneratorVisitor implements Visitor.ComprehensiveVisitor {
         
         write("private Java.Package generatePackage"+getSuffix(p)+"() throws Exception {");
         level++;
-        write("return new Java.Package("+getLocation(p)+", \""+p.getName()+"\");");
+        write("return new Java.Package("+getLocation(p)+", \""+p.name+"\");");
         level--;
         write("}");
         write();
@@ -1359,7 +1359,7 @@ public class AstGeneratorVisitor implements Visitor.ComprehensiveVisitor {
         
         for(Iterator it = cd.variableDeclaratorsAndInitializers.iterator(); it.hasNext();) {
             Java.TypeBodyDeclaration tbd = (Java.TypeBodyDeclaration) it.next();
-            write("declaration.addVariableDeclaratorOrInitializer(generateFieldDeclarator"+getSuffix(tbd)+"(declaration));");
+            write("declaration.addVariableDeclaratorOrInitializer(generateFieldDeclaration"+getSuffix(tbd)+"(declaration));");
         }
     }
     
