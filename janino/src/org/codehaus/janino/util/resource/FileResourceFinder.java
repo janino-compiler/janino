@@ -40,14 +40,14 @@ import java.io.*;
  * This class specializes the {@link org.codehaus.janino.util.resource.ResourceFinder}
  * for finding resources in {@link java.io.File}s.
  * <p>
- * It finds {@link ResourceFinder.FileResource}s instead of simple
- * {@link ResourceFinder.Resource}s.
+ * It finds {@link FileResource}s instead of simple
+ * {@link Resource}s.
  */
 public abstract class FileResourceFinder extends ResourceFinder {
-    public final ResourceFinder.Resource findResource(String resourceName) {
+    public final Resource findResource(String resourceName) {
         File file = this.findResourceAsFile(resourceName);
         if (file == null) return null;
-        return new ResourceFinder.FileResource(file);
+        return new FileResource(file);
     }
 
     /**
