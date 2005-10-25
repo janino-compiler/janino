@@ -39,7 +39,7 @@ import java.util.*;
 
 import org.codehaus.janino.util.ClassFile;
 import org.codehaus.janino.util.TunnelException;
-import org.codehaus.janino.util.resource.ResourceFinder;
+import org.codehaus.janino.util.resource.*;
 
 
 /**
@@ -104,7 +104,7 @@ final class JavaSourceIClassLoader extends IClassLoader {
         try {
 
             // Find source file.
-            ResourceFinder.Resource sourceResource = this.sourceFinder.findResource(ClassFile.getSourceResourceName(className));
+            Resource sourceResource = this.sourceFinder.findResource(ClassFile.getSourceResourceName(className));
             if (sourceResource == null) return null;
             if (JavaSourceIClassLoader.DEBUG) System.out.println("sourceURL=" + sourceResource);
 

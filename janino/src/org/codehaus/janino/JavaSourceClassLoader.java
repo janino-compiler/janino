@@ -70,7 +70,7 @@ public class JavaSourceClassLoader extends ClassLoader {
      * </pre>
      */
     public static void main(String[] args) {
-        File[]               optionalSourcePath = { new File(".") };
+        File[]               optionalSourcePath = null;
         String               optionalCharacterEncoding = null;
         DebuggingInformation debuggingInformation = DebuggingInformation.LINES.add(DebuggingInformation.SOURCE);
 

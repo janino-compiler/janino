@@ -37,16 +37,20 @@ package org.codehaus.janino;
 import org.codehaus.janino.util.StringPattern;
 
 public class FilterWarningHandler implements WarningHandler {
-    private final StringPattern[] handlePatterns;
+    private final StringPattern[] optionalHandlePatterns;
     private final WarningHandler delegate;
 
-    public FilterWarningHandler(StringPattern[] handlePatterns, WarningHandler delegate) {
-        this.handlePatterns = handlePatterns;
+    /**
+     * If <code>optionalHandlePatterns</code> is passed as <code>null</code>,
+     * then no warning ever matches.
+     */
+    public FilterWarningHandler(StringPattern[] optionalHandlePatterns, WarningHandler delegate) {
+        this.optionalHandlePatterns = optionalHandlePatterns;
         this.delegate = delegate;
     }
 
     public void handleWarning(String handle, String message, Location optionalLocation) {
-        if (StringPattern.matches(this.handlePatterns, handle)) {
+        if (StringPattern.matches(this.optionalHandlePatterns, handle)) {
             this.delegate.handleWarning(handle, message, optionalLocation);
         }
     }
