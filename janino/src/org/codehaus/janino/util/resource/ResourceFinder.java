@@ -55,7 +55,7 @@ public abstract class ResourceFinder {
     }
 
     /**
-     * Find a resource by name and return it as a {@link ResourceFinder.Resource} object.
+     * Find a resource by name and return it as a {@link Resource} object.
      * 
      * @param resourceName Slash-separated name that identifies the resource
      * @return <code>null</code> if the resource could not be found
@@ -63,34 +63,9 @@ public abstract class ResourceFinder {
     public abstract Resource findResource(String resourceName);
 
     /**
-     * Representation of a resource than was found by a {@link ResourceFinder}.
+     * A {@link ResourceFinder} that never finds a resource.
      */
-    public interface Resource {
-
-        /**
-         * Opens the resource. The caller is responsible for closing the
-         * {@link java.io.InputStream}.
-         */
-        InputStream open() throws IOException;
-
-        /**
-         * Returns a decorative "file name" that can be used for reporting
-         * errors and the like. It does not necessarily map to a file in the
-         * local file system!
-         */
-        String getFileName();
-    }
-
-    /**
-     * Representation of a resource that is a {@link java.io.File}.
-     */
-    public static class FileResource implements Resource {
-        public FileResource(File file) { this.file = file; }
-        public String getFileName() { return this.file.toString(); }
-        public InputStream open() throws IOException { return new FileInputStream(this.file); }
-
-        public File getFile() { return this.file; }
-
-        private final File file;
-    }
+    public static final ResourceFinder NO_RESOURCE_FINDER = new ResourceFinder() {
+        public Resource findResource(String resourceName) { return null; }
+    };
 }

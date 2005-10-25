@@ -36,7 +36,7 @@ package org.codehaus.janino.util;
 
 import java.io.*;
 
-import org.codehaus.janino.util.resource.ResourceFinder;
+import org.codehaus.janino.util.resource.*;
 
 
 /**
@@ -63,7 +63,7 @@ public class ResourceFinderClassLoader extends ClassLoader {
 
         // Find the resource containing the class bytecode.
         String classFileResourceName = className.replace('.', '/') + ".class";
-        ResourceFinder.Resource classFileResource = this.resourceFinder.findResource(classFileResourceName);
+        Resource classFileResource = this.resourceFinder.findResource(classFileResourceName);
         if (classFileResource == null) throw new ClassNotFoundException(className);
 
         // Open the class file resource.

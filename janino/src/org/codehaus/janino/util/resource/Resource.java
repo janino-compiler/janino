@@ -34,40 +34,31 @@
 
 package org.codehaus.janino.util.resource;
 
-import java.util.*;
+import java.io.*;
+
 
 /**
- * A {@link org.codehaus.janino.util.resource.ResourceFinder} that finds its resources through a collection of
- * other {@link org.codehaus.janino.util.resource.ResourceFinder}s.
+ * Representation of a resource that was found by a {@link ResourceFinder}.
  */
-public class MultiResourceFinder extends ResourceFinder {
-    private final Collection resourceFinders; // One for each entry
+public interface Resource {
 
     /**
-     * @param resourceFinders The entries of the "path"
+     * Opens the resource. The caller is responsible for closing the
+     * {@link java.io.InputStream}.
      */
-    public MultiResourceFinder(Collection resourceFinders) {
-        this.resourceFinders = resourceFinders;
-    }
-
-    // Implement ResourceFinder.
-
-    public Resource findResource(String resourceName) {
-        for (Iterator it = this.resourceFinders.iterator(); it.hasNext();) {
-            ResourceFinder rf = (ResourceFinder) it.next();
-            Resource resource = rf.findResource(resourceName);
-//System.err.println("*** " + resourceName + " in " + rf + "? => " + url);
-            if (resource != null) return resource;
-        }
-        return null;
-    }
+    InputStream open() throws IOException;
 
     /**
-     * This one's useful when a resource finder is required, but cannot be created
-     * for some reason.
+     * Returns a decorative "file name" that can be used for reporting
+     * errors and the like. It does not necessarily map to a file in the
+     * local file system!
      */
-    public static final ResourceFinder EMPTY_RESOURCE_FINDER = new ResourceFinder() {
-        public Resource findResource(String resourceName) { return null; }
-        public String toString() { return "invalid entry"; }
-    };
+    String getFileName();
+
+    /**
+     * Returns the time of the last modification, in milliseconds since
+     * 1970, or <code>0L</code> if the time of the last modification cannot
+     * be determined.
+     */
+    long lastModified();
 }

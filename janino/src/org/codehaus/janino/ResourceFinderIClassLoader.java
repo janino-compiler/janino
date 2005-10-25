@@ -37,7 +37,7 @@ package org.codehaus.janino;
 import java.io.*;
 
 import org.codehaus.janino.util.ClassFile;
-import org.codehaus.janino.util.resource.ResourceFinder;
+import org.codehaus.janino.util.resource.*;
 
 
 /**
@@ -61,7 +61,7 @@ public class ResourceFinderIClassLoader extends IClassLoader {
 
         // Find the class file resource.
         String className = Descriptor.toClassName(descriptor);
-        ResourceFinder.Resource classFileResource = this.resourceFinder.findResource(className.replace('.', '/') + ".class");
+        Resource classFileResource = this.resourceFinder.findResource(className.replace('.', '/') + ".class");
         if (classFileResource == null) return null;
 
         // Open the class file resource.

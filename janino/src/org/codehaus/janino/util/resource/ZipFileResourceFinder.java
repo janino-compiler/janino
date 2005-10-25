@@ -50,15 +50,19 @@ public class ZipFileResourceFinder extends ResourceFinder {
 
     // Implement ResourceFinder.
 
-    public ResourceFinder.Resource findResource(final String resourceName) {
+    public Resource findResource(final String resourceName) {
         final ZipEntry ze = this.zipFile.getEntry(resourceName);
         if (ze == null) return null;
-        return new ResourceFinder.Resource() {
+        return new Resource() {
             public InputStream open() throws IOException {
                 return ZipFileResourceFinder.this.zipFile.getInputStream(ze);
             }
             public String getFileName() {
                 return ZipFileResourceFinder.this.zipFile.getName() + ':' + resourceName;
+            }
+            public long lastModified() {
+            	long l = ze.getTime();
+            	return l == -1L ? 0L : l;
             }
         };
     }
