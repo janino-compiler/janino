@@ -4955,7 +4955,7 @@ public class UnitCompiler {
         return null;
     }
 
-    /*private*/ IClass resolve(Java.TypeDeclaration td) {
+    /*private*/ IClass resolve(final Java.TypeDeclaration td) {
         final Java.AbstractTypeDeclaration atd = (Java.AbstractTypeDeclaration) td;
         if (atd.resolvedType == null) atd.resolvedType = new IClass() {
             protected IClass.IMethod[] getDeclaredIMethods2() {
@@ -5056,11 +5056,10 @@ public class UnitCompiler {
                 }
                 if (atd instanceof Java.NamedClassDeclaration) {
                     Java.NamedClassDeclaration ncd = (Java.NamedClassDeclaration) atd;
-                    return (
-                        ncd.optionalExtendedType == null ?
-                        UnitCompiler.this.iClassLoader.OBJECT:
-                        UnitCompiler.this.getType(ncd.optionalExtendedType)
-                    );
+                    if (ncd.optionalExtendedType == null) return UnitCompiler.this.iClassLoader.OBJECT;
+                    IClass superclass = UnitCompiler.this.getType(ncd.optionalExtendedType);
+                    if (superclass.isInterface()) UnitCompiler.this.compileError("\"" + superclass.toString() + "\" is an interface; classes can only extend a class", td.getLocation());
+                    return superclass;
                 }
                 return null;
             }
@@ -5076,6 +5075,7 @@ public class UnitCompiler {
                     IClass[] res = new IClass[ncd.implementedTypes.length];
                     for (int i = 0; i < res.length; ++i) {
                         res[i] = UnitCompiler.this.getType(ncd.implementedTypes[i]);
+                        if (!res[i].isInterface()) UnitCompiler.this.compileError("\"" + res[i].toString() + "\" is not an interface; classes can only implement interfaces", td.getLocation());
                     }
                     return res;
                 } else
@@ -5084,6 +5084,7 @@ public class UnitCompiler {
                     IClass[] res = new IClass[id.extendedTypes.length];
                     for (int i = 0; i < res.length; ++i) {
                         res[i] = UnitCompiler.this.getType(id.extendedTypes[i]);
+                        if (!res[i].isInterface()) UnitCompiler.this.compileError("\"" + res[i].toString() + "\" is not an interface; interfaces can only extend interfaces", td.getLocation());
                     }
                     return res;
                 } else {
@@ -6477,7 +6478,7 @@ public class UnitCompiler {
      * @param message The message to report
      * @param optionalLocation The location to report
      */
-    private void compileError(String message, Location optionalLocation) throws CompileException {
+    /*private*/ void compileError(String message, Location optionalLocation) throws CompileException {
         ErrorHandler eh = this.compileErrorHandler;
         if (eh != null) {
             eh.handleError(message, optionalLocation);
