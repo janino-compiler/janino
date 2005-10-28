@@ -300,8 +300,10 @@ public class Compiler {
     }
     static class SimpleWarningHandler implements WarningHandler {
         public void handleWarning(String handle, String message, Location optionalLocation) {
-            if (optionalLocation != null) System.err.print(optionalLocation + ": ");
-            System.err.println("Warning " + handle + ": " + message);
+            StringBuffer sb = new StringBuffer();
+            if (optionalLocation != null) sb.append(optionalLocation).append(": ");
+            sb.append("Warning ").append(handle).append(": ").append(message);
+            System.err.println(sb.toString());
         }
     }
 
@@ -443,14 +445,29 @@ public class Compiler {
      */
     public boolean compile(File[] sourceFiles)
     throws Scanner.ScanException, Parser.ParseException, CompileException, IOException {
-        this.benchmark.report("Source files", sourceFiles);
+        Resource[] sourceFileResources = new Resource[sourceFiles.length];
+        for (int i = 0; i < sourceFiles.length; ++i) sourceFileResources[i] = new FileResource(sourceFiles[i]);
+        return this.compile(sourceFileResources);
+    }
+
+    /**
+     * See {@link #compile(File[])}.
+     * 
+     * @param sourceResources Contain the compilation units to compile
+     * @return <code>false</code> if compile errors have occurred
+     */
+    public boolean compile(Resource[] sourceResources)
+    throws Scanner.ScanException, Parser.ParseException, CompileException, IOException {
+        this.benchmark.report("Source files", sourceResources);
 
         // Set up a custom error handler that reports compile errors on "System.err".
         final int[] compileExceptionCount = new int[1];
         UnitCompiler.ErrorHandler compileErrorHandler = new UnitCompiler.ErrorHandler() {
             public void handleError(String message, Location optionalLocation) throws CompileException {
-                if (optionalLocation != null) System.err.print(optionalLocation + ": ");
-                System.err.println("Error: " + message);
+                StringBuffer sb = new StringBuffer();
+                if (optionalLocation != null) sb.append(optionalLocation).append(": ");
+                sb.append("Error: ").append(message);
+                System.err.println(sb.toString());
                 Compiler.this.setStoringClassFiles(false);
                 if (++compileExceptionCount[0] >= 20) throw new CompileException("Too many compile errors", null);
             }
@@ -461,12 +478,12 @@ public class Compiler {
 
             // Parse all source files.
             this.parsedCompilationUnits.clear();
-            for (int i = 0; i < sourceFiles.length; ++i) {
-                if (Compiler.DEBUG) System.out.println("Compiling \"" + sourceFiles[i] + "\"");
+            for (int i = 0; i < sourceResources.length; ++i) {
+                if (Compiler.DEBUG) System.out.println("Compiling \"" + sourceResources[i] + "\"");
                 this.parsedCompilationUnits.add(new UnitCompiler(this.parseCompilationUnit(
-                    sourceFiles[i].getPath(),
-                    new BufferedInputStream(new FileInputStream(sourceFiles[i])),
-                    this.optionalCharacterEncoding
+                    sourceResources[i].getFileName(),                   // fileName
+                    new BufferedInputStream(sourceResources[i].open()), // inputStream
+                    this.optionalCharacterEncoding                          // optionalCharacterEncoding
                 ), this.iClassLoader));
             }
     
@@ -585,11 +602,15 @@ public class Compiler {
     private void storeClassFile(ClassFile classFile, final File sourceFile) throws IOException {
     	String classFileResourceName = classFile.getThisClassName().replace('.', '/') + ".class";
 
+        // Determine where to create the class file.
     	ResourceCreator rc;
     	if (this.optionalClassFileResourceCreator != null) {
     		rc = this.optionalClassFileResourceCreator;
     	} else {
-    		rc = new FileResourceCreator() {
+
+            // If the JAVAC option "-d" is given, place the class file next
+            // to the source file, irrespective of the package name.
+            rc = new FileResourceCreator() {
 				protected File getFile(String resourceName) {
 					return new File(
 					    sourceFile.getParentFile(),
