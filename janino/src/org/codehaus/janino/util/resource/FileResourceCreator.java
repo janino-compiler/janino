@@ -39,7 +39,7 @@ import java.io.*;
 /**
  * Stores a stream of bytes in a named resource.
  */
-public abstract class FileResourceCreator extends ResourceCreator {
+public abstract class FileResourceCreator implements ResourceCreator {
 
     public final OutputStream createResource(String resourceName) throws IOException {
     	File file = this.getFile(resourceName);

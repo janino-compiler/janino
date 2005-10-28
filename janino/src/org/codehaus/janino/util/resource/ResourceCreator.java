@@ -39,7 +39,7 @@ import java.io.*;
 /**
  * Stores a stream of bytes in a named resource.
  */
-public abstract class ResourceCreator {
+public interface ResourceCreator {
 
 	/**
 	 * Create the designated resource.
