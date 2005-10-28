@@ -64,6 +64,8 @@ public class ZipFileResourceFinder extends ResourceFinder {
             	long l = ze.getTime();
             	return l == -1L ? 0L : l;
             }
+
+            public String toString() { return this.getFileName(); }
         };
     }
 }
