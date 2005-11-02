@@ -67,12 +67,18 @@ public class JavaSourceClassLoader extends ClassLoader {
      *     <i>option</i>:
      *       -sourcepath <i>colon-separated-list-of-source-directories</i> 
      *       -encoding <i>character-encoding</i>
+     *       -g                           Generate all debugging info");
+     *       -g:none                      Generate no debugging info");
+     *       -g:{lines,vars,source}       Generate only some debugging info");
+     *       -cache <i>dir</i>                      Cache compiled classes here");
+
      * </pre>
      */
     public static void main(String[] args) {
         File[]               optionalSourcePath = null;
         String               optionalCharacterEncoding = null;
         DebuggingInformation debuggingInformation = DebuggingInformation.LINES.add(DebuggingInformation.SOURCE);
+        String               optionalCacheDirName = null;
 
         // Scan command line options.
         int i;
@@ -99,6 +105,9 @@ public class JavaSourceClassLoader extends ClassLoader {
                     debuggingInformation = DebuggingInformation.NONE;
                 }
             } else
+            if ("-cache".equals(arg)) {
+                optionalCacheDirName = args[++i]; 
+            } else
             if ("-help".equals(arg)) {
                 System.out.println("Usage:"); 
                 System.out.println("  java [ <java-option> ] " + JavaSourceClassLoader.class.getName() + " [ <option>] ... <class-name> [ <arg> ] ..."); 
@@ -111,6 +120,7 @@ public class JavaSourceClassLoader extends ClassLoader {
                 System.out.println("    -g                     Generate all debugging info");
                 System.out.println("    -g:none                Generate no debugging info");
                 System.out.println("    -g:{lines,vars,source} Generate only some debugging info");
+                System.out.println("    -cache <dir>           Cache compiled classes here");
                 System.exit(0); 
             } else
             {
@@ -130,13 +140,25 @@ public class JavaSourceClassLoader extends ClassLoader {
         String[] mainArgs = new String[args.length - i];
         System.arraycopy(args, i, mainArgs, 0, args.length - i);
 
-        // Set up a JavaSourceClassLoader.
-        ClassLoader cl = new JavaSourceClassLoader(
-            ClassLoader.getSystemClassLoader(),
-            optionalSourcePath,
-            optionalCharacterEncoding,
-            debuggingInformation
-        );
+        // Set up a JavaSourceClassLoader or a CachingJavaSourceClassLoader.
+        ClassLoader cl;
+        if (optionalCacheDirName == null) {
+            cl = new JavaSourceClassLoader(
+                ClassLoader.getSystemClassLoader(),
+                optionalSourcePath,
+                optionalCharacterEncoding,
+                debuggingInformation
+            );
+        } else {
+            File cacheDirectory = new File(optionalCacheDirName);
+            cl = new CachingJavaSourceClassLoader(
+                ClassLoader.getSystemClassLoader(),
+                optionalSourcePath,
+                optionalCharacterEncoding,
+                cacheDirectory,
+                debuggingInformation
+            );
+        }
 
         // Load the given class.
         Class clazz;
@@ -229,6 +251,7 @@ public class JavaSourceClassLoader extends ClassLoader {
 
     /**
      * Implementation of {@link ClassLoader#findClass(String)}.
+     * 
      * @throws ClassNotFoundException
      * @throws TunnelException wraps a {@link Scanner.ScanException}
      * @throws TunnelException wraps a {@link Parser.ParseException}
@@ -237,8 +260,52 @@ public class JavaSourceClassLoader extends ClassLoader {
      */
     protected Class findClass(String name) throws ClassNotFoundException {
 
+        // Find the ClassFile object.
+        ClassFile cf;
+        try {
+            cf = this.findClassFile(name);
+        } catch (Scanner.ScanException ex) {
+            throw new TunnelException(ex);
+        } catch (Parser.ParseException ex) {
+            throw new TunnelException(ex);
+        } catch (CompileException ex) {
+            throw new TunnelException(ex);
+        } catch (IOException ex) {
+            throw new TunnelException(ex);
+        }
+        if (cf == null) throw new ClassNotFoundException(name);
+
+        // Load the byte code into the virtual machine.
+        ProtectionDomain domain = null;
+        if (this.protectionDomainFactory != null) {
+            String sourceName = ClassFile.getSourceResourceName(cf.getThisClassName());
+            try {
+                domain = this.protectionDomainFactory.getProtectionDomain(sourceName);
+            } catch (Exception ex) {
+                throw new ClassNotFoundException(name, ex);
+            }
+        }
+
+        byte[] ba = cf.toByteArray();
+        return (
+            domain != null ?
+            this.defineClass(name, ba, 0, ba.length, domain) :
+            this.defineClass(name, ba, 0, ba.length)
+        );
+    }
+
+    /**
+     * @return <code>null</code> if a class file could not be found
+     */
+    protected ClassFile findClassFile(String className) throws
+        Scanner.ScanException,
+        Parser.ParseException,
+        CompileException,
+        IOException
+    {
+
         // Check precompiled classes (classes that were parsed and compiled, but were not yet needed).
-        ClassFile cf = (ClassFile) this.precompiledClasses.get(name);
+        ClassFile cf = (ClassFile) this.precompiledClasses.get(className);
 
         if (cf == null) {
 
@@ -246,7 +313,7 @@ public class JavaSourceClassLoader extends ClassLoader {
             UnitCompiler compilationUnitToCompile = null;
             for (Iterator i = this.uncompiledCompilationUnits.iterator(); i.hasNext();) {
                 UnitCompiler uc = (UnitCompiler) i.next();
-                if (uc.findClass(name) != null) {
+                if (uc.findClass(className) != null) {
                     compilationUnitToCompile = uc;
                     break;
                 }
@@ -257,11 +324,11 @@ public class JavaSourceClassLoader extends ClassLoader {
 
                 // Find and parse the right compilation unit, and add it to
                 // "this.uncompiledCompilationUnits".
-                if (this.iClassLoader.loadIClass(Descriptor.fromClassName(name)) == null) throw new ClassNotFoundException(name);
+                if (this.iClassLoader.loadIClass(Descriptor.fromClassName(className)) == null) return null;
 
                 for (Iterator i = this.uncompiledCompilationUnits.iterator(); i.hasNext();) {
                     UnitCompiler uc = (UnitCompiler) i.next();
-                    if (uc.findClass(name) != null) {
+                    if (uc.findClass(className) != null) {
                         compilationUnitToCompile = uc;
                         break;
                     }
@@ -282,43 +349,17 @@ public class JavaSourceClassLoader extends ClassLoader {
 
             // Get the generated class file.
             for (int i = 0; i < cfs.length; ++i) {
-                if (cfs[i].getThisClassName().equals(name)) {
+                if (cfs[i].getThisClassName().equals(className)) {
                     if (cf != null) throw new RuntimeException(); // SNO: Multiple CFs with the same name.
                     cf = cfs[i];
                 } else {
-                    if (this.precompiledClasses.containsKey(cfs[i].getThisClassName())) throw new TunnelException(new CompileException("Class or interface \"" + name + "\" is defined in more than one compilation unit", null));
+                    if (this.precompiledClasses.containsKey(cfs[i].getThisClassName())) throw new TunnelException(new CompileException("Class or interface \"" + className + "\" is defined in more than one compilation unit", null));
                     this.precompiledClasses.put(cfs[i].getThisClassName(), cfs[i]);
                 }
             }
             if (cf == null) throw new RuntimeException(); // SNO: Compilation of CU does not generate CF with requested name.
         }
-
-        if (cf == null) throw new ClassNotFoundException(name);
-
-        // Store the class file's byte code into a byte array.
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        try {
-            cf.store(bos);
-        } catch (IOException ex) {
-            throw new RuntimeException(); // SNO: ByteArrayOutputStream thows IOException,
-        }
-        byte[] ba = bos.toByteArray();
-
-        // Load the byte code into the virtual machine.
-        ProtectionDomain domain = null;
-        if (this.protectionDomainFactory != null) {
-            String sourceName = ClassFile.getSourceResourceName(cf.getThisClassName());
-            try {
-                domain = this.protectionDomainFactory.getProtectionDomain(sourceName);
-            } catch (Exception ex) {
-                throw new ClassNotFoundException(name, ex);
-            }
-        }
-        return (
-            domain != null ?
-            this.defineClass(name, ba, 0, ba.length, domain) :
-            this.defineClass(name, ba, 0, ba.length)
-        );
+        return cf;
     }
 
     public void setProtectionDomainFactory(ProtectionDomainFactory protectionDomainFactory) {
