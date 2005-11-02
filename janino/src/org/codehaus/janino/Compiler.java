@@ -585,10 +585,10 @@ public class Compiler {
      */
     public static File getClassFile(String className, File sourceFile, File optionalDestinationDirectory) {
         if (optionalDestinationDirectory != null) {
-            return new File(optionalDestinationDirectory, className.replace('.', File.separatorChar) + ".class");
+            return new File(optionalDestinationDirectory, ClassFile.getClassFileResourceName(className));
         } else {
             int idx = className.lastIndexOf('.');
-            return new File(sourceFile.getParentFile(), className.substring(idx + 1) + ".class");
+            return new File(sourceFile.getParentFile(), ClassFile.getClassFileResourceName(className.substring(idx + 1)));
         }
     }
 
@@ -600,7 +600,7 @@ public class Compiler {
      * @param optionalDestinationDirectory
      */
     private void storeClassFile(ClassFile classFile, final File sourceFile) throws IOException {
-    	String classFileResourceName = classFile.getThisClassName().replace('.', '/') + ".class";
+    	String classFileResourceName = ClassFile.getClassFileResourceName(classFile.getThisClassName());
 
         // Determine where to create the class file.
     	ResourceCreator rc;
@@ -693,15 +693,12 @@ public class Compiler {
             // Find an existing class file.
             Resource classFileResource;
             if (Compiler.this.optionalClassFileResourceFinder != null) {
-                classFileResource = Compiler.this.optionalClassFileResourceFinder.findResource(
-                    className.replace('.', '/') + ".class"
-                );
+                classFileResource = Compiler.this.optionalClassFileResourceFinder.findResource(ClassFile.getClassFileResourceName(className));
             } else {
                 if (!(sourceResource instanceof FileResource)) return null;
-                File sourceFile = ((FileResource) sourceResource).getFile();
                 File classFile = new File(
-                    sourceFile.getParentFile(),
-                    className.substring(className.lastIndexOf('.') + 1) + ".class"
+                    ((FileResource) sourceResource).getFile().getParentFile(),
+                    ClassFile.getClassFileResourceName(className.substring(className.lastIndexOf('.') + 1))
                 );
                 classFileResource = classFile.exists() ? new FileResource(classFile) : null;
             }

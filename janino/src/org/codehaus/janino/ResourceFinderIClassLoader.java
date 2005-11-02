@@ -58,10 +58,10 @@ public class ResourceFinderIClassLoader extends IClassLoader {
     }
 
     protected IClass findIClass(String descriptor) {
+        String className = Descriptor.toClassName(descriptor);
 
         // Find the class file resource.
-        String className = Descriptor.toClassName(descriptor);
-        Resource classFileResource = this.resourceFinder.findResource(className.replace('.', '/') + ".class");
+        Resource classFileResource = this.resourceFinder.findResource(ClassFile.getClassFileResourceName(className));
         if (classFileResource == null) return null;
 
         // Open the class file resource.

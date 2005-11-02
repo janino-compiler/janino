@@ -62,8 +62,7 @@ public class ResourceFinderClassLoader extends ClassLoader {
     protected Class findClass(String className) throws ClassNotFoundException {
 
         // Find the resource containing the class bytecode.
-        String classFileResourceName = className.replace('.', '/') + ".class";
-        Resource classFileResource = this.resourceFinder.findResource(classFileResourceName);
+        Resource classFileResource = this.resourceFinder.findResource(ClassFile.getClassFileResourceName(className));
         if (classFileResource == null) throw new ClassNotFoundException(className);
 
         // Open the class file resource.
