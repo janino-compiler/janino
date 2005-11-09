@@ -608,7 +608,9 @@ public class UnitCompiler {
             }
         }
 
-        if (!constantTrueCondition) {
+        if (constantTrueCondition) {
+            ws.whereToContinue.set();
+        } else {
             this.writeBranch(ws, Opcode.GOTO, ws.whereToContinue);
         }
 
@@ -617,17 +619,21 @@ public class UnitCompiler {
         boolean bodyCCN = this.compile(ws.body);
 
         // Compile condition.
-        if (!constantTrueCondition || bodyCCN || ws.bodyHasContinue) {
-            ws.whereToContinue.set();
-            this.compileBoolean(ws.condition, bodyOffset, Java.Rvalue.JUMP_IF_TRUE);
+        if (constantTrueCondition) {
+            if (bodyCCN) this.writeBranch(ws, Opcode.GOTO, bodyOffset);
+        } else {
+            if (bodyCCN || ws.bodyHasContinue) {
+                ws.whereToContinue.set();
+                this.compileBoolean(ws.condition, bodyOffset, Java.Rvalue.JUMP_IF_TRUE);
+            }
         }
 
-        boolean canCompleteNormally = !constantTrueCondition;
         if (ws.whereToBreak != null) {
             ws.whereToBreak.set();
-            canCompleteNormally = true;
+            return true;
+        } else {
+            return !constantTrueCondition;
         }
-        return canCompleteNormally;
     }
     /*private*/ final boolean compile2(Java.LabeledStatement ls) throws CompileException {
         boolean canCompleteNormally = this.compile(ls.body);
