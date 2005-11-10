@@ -507,6 +507,10 @@ public class UnitCompiler {
         }
     }
     /*private*/ boolean compile2(Java.DoStatement ds) throws CompileException {
+        if (Boolean.TRUE.equals(this.getConstantValue(ds.condition))) {
+            return this.compileUnconditionalLoop(ds, ds.body, null);
+        }
+
         ds.whereToContinue = this.codeContext.new Offset();
         ds.bodyHasContinue = false;
 
@@ -519,59 +523,39 @@ public class UnitCompiler {
         ds.whereToContinue.set();
         this.compileBoolean(ds.condition, bodyOffset, Java.Rvalue.JUMP_IF_TRUE);
 
-        boolean constantTrueCondition = false;
-        {
-            Object cv = this.getConstantValue(ds.condition);
-            if (cv != null && cv instanceof Boolean) {
-                constantTrueCondition = ((Boolean) cv).booleanValue();
-            }
-        }
+        if (ds.whereToBreak != null) ds.whereToBreak.set();
 
-        boolean canCompleteNormally = !constantTrueCondition;
-        if (ds.whereToBreak != null) {
-            ds.whereToBreak.set();
-            canCompleteNormally = true;
-        }
-        return canCompleteNormally;
+        return true;
     }
     /*private*/ boolean compile2(Java.ForStatement fs) throws CompileException {
-        fs.whereToContinue = this.codeContext.new Offset();
-        fs.bodyHasContinue = false;
-
-        boolean constantTrueCondition = false;
-
         this.codeContext.saveLocalVariables();
         try {
+
+            // Compile init.
             if (fs.optionalInit != null) this.compile(fs.optionalInit);
 
-            // Check for constant condition.
-            if (fs.optionalCondition == null) {
-                constantTrueCondition = true;
-            } else {
-                Object cv = this.getConstantValue(fs.optionalCondition);
-                if (cv instanceof Boolean) {
-                    if (!((Boolean) cv).booleanValue()) this.compileError("Body of \"for\" statement is unreachable", fs.getLocation());
-                    constantTrueCondition = true;
-                }
-            }
+            if (
+                fs.optionalCondition == null
+                || Boolean.TRUE.equals(this.getConstantValue(fs.optionalCondition))
+            ) return this.compileUnconditionalLoop(fs, fs.body, fs.optionalUpdate);
 
             CodeContext.Offset toCondition = this.codeContext.new Offset();
-            if (constantTrueCondition) {
-                ; // GOTO condition not necessary in this case.
-            } else {
-                this.writeBranch(fs, Opcode.GOTO, toCondition);
-            }
+            this.writeBranch(fs, Opcode.GOTO, toCondition);
 
+            // Compile body.
+            fs.whereToContinue = this.codeContext.new Offset();
+            fs.bodyHasContinue = false;
             CodeContext.Offset bodyOffset = this.codeContext.newOffset();
-            if (
-                !this.compile(fs.body) &&
-                !fs.bodyHasContinue &&
-                fs.optionalUpdate != null
-            ) this.compileError("For update is unreachable", fs.getLocation());
+            boolean bodyCCN = this.compile(fs.body);
 
             // Compile update.
             fs.whereToContinue.set();
             if (fs.optionalUpdate != null) {
+                if (!bodyCCN && !fs.bodyHasContinue) {
+                    this.compileError("For update is unreachable", fs.getLocation());
+                    return true;
+                }
+
                 for (int i = 0; i < fs.optionalUpdate.length; ++i) {
                     this.compile(fs.optionalUpdate[i]);
                 }
@@ -579,62 +563,80 @@ public class UnitCompiler {
 
             // Compile condition.
             toCondition.set();
-            if (constantTrueCondition) {
-                this.writeBranch(fs, Opcode.GOTO, bodyOffset);
-            } else {
-                this.compileBoolean(fs.optionalCondition, bodyOffset, Java.Rvalue.JUMP_IF_TRUE);
-            }
+            this.compileBoolean(fs.optionalCondition, bodyOffset, Java.Rvalue.JUMP_IF_TRUE);
         } finally {
             this.codeContext.restoreLocalVariables();
         }
 
-        boolean canCompleteNormally = !constantTrueCondition;
-        if (fs.whereToBreak != null) {
-            fs.whereToBreak.set();
-            canCompleteNormally = true;
-        }
-        return canCompleteNormally;
+        if (fs.whereToBreak != null) fs.whereToBreak.set();
+
+        return true;
     }
     /*private*/ boolean compile2(Java.WhileStatement ws) throws CompileException {
+        if (Boolean.TRUE.equals(this.getConstantValue(ws.condition))) {
+            return this.compileUnconditionalLoop(ws, ws.body, null);
+        }
+
         ws.whereToContinue = this.codeContext.new Offset();
         ws.bodyHasContinue = false;
-
-        boolean constantTrueCondition = false;
-        {
-            Object cv = this.getConstantValue(ws.condition);
-            if (cv != null && cv instanceof Boolean) {
-                if (!((Boolean) cv).booleanValue()) this.compileError("Body of \"while\" statement is unreachable", ws.getLocation());
-                constantTrueCondition = true;
-            }
-        }
-
-        if (constantTrueCondition) {
-            ws.whereToContinue.set();
-        } else {
-            this.writeBranch(ws, Opcode.GOTO, ws.whereToContinue);
-        }
+        this.writeBranch(ws, Opcode.GOTO, ws.whereToContinue);
 
         // Compile body.
         CodeContext.Offset bodyOffset = this.codeContext.newOffset();
         boolean bodyCCN = this.compile(ws.body);
 
         // Compile condition.
-        if (constantTrueCondition) {
-            if (bodyCCN) this.writeBranch(ws, Opcode.GOTO, bodyOffset);
-        } else {
-            if (bodyCCN || ws.bodyHasContinue) {
-                ws.whereToContinue.set();
-                this.compileBoolean(ws.condition, bodyOffset, Java.Rvalue.JUMP_IF_TRUE);
-            }
+        if (bodyCCN || ws.bodyHasContinue) {
+            ws.whereToContinue.set();
+            this.compileBoolean(ws.condition, bodyOffset, Java.Rvalue.JUMP_IF_TRUE);
         }
 
-        if (ws.whereToBreak != null) {
-            ws.whereToBreak.set();
-            return true;
-        } else {
-            return !constantTrueCondition;
-        }
+        if (ws.whereToBreak != null) ws.whereToBreak.set();
+        return true;
     }
+    /*private*/ boolean compileUnconditionalLoop(
+        Java.ContinuableStatement cs,
+        Java.BlockStatement       body,
+        Java.Rvalue[]             optionalUpdate
+    ) throws CompileException {
+        if (optionalUpdate != null) return this.compileUnconditionalLoopWithUpdate(cs, body, optionalUpdate);
+
+        cs.whereToContinue = this.codeContext.newOffset();
+        cs.bodyHasContinue = false;
+
+        // Compile body.
+        if (this.compile(body)) this.writeBranch(cs, Opcode.GOTO, cs.whereToContinue);
+
+        if (cs.whereToBreak == null) return false;
+        cs.whereToBreak.set();
+        return true;
+    }
+    /*private*/ boolean compileUnconditionalLoopWithUpdate(
+        Java.ContinuableStatement cs,
+        Java.BlockStatement       body,
+        Java.Rvalue[]             update
+    ) throws CompileException {
+        cs.whereToContinue = this.codeContext.new Offset();
+        cs.bodyHasContinue = false;
+
+        // Compile body.
+        CodeContext.Offset bodyOffset = this.codeContext.newOffset();
+        boolean bodyCCN = this.compile(body);
+
+        // Compile the "update".
+        cs.whereToContinue.set();
+        if (!bodyCCN && !cs.bodyHasContinue) {
+            this.compileError("Loop update is unreachable", update[0].getLocation());
+            return cs.whereToBreak != null;
+        }
+        for (int i = 0; i < update.length; ++i) this.compile(update[i]);
+        this.writeBranch(cs, Opcode.GOTO, bodyOffset);
+
+        if (cs.whereToBreak == null) return false;
+        cs.whereToBreak.set();
+        return true;
+    }
+
     /*private*/ final boolean compile2(Java.LabeledStatement ls) throws CompileException {
         boolean canCompleteNormally = this.compile(ls.body);
         if (ls.whereToBreak != null) {
