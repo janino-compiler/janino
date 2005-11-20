@@ -41,6 +41,9 @@ package org.codehaus.janino;
 public class ClassLoaderIClassLoader extends IClassLoader {
     private static final boolean DEBUG = false;
 
+    /**
+     * @param classLoader The delegate that loads the classes.
+     */
     public ClassLoaderIClassLoader(ClassLoader classLoader) {
         super(
             null   // optionalParentIClassLoader
