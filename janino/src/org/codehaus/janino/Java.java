@@ -2085,24 +2085,25 @@ public class Java {
 
         // Compile time members.
 
-        ClassDeclaration    declaringClass = null;
+        ClassDeclaration    declaringClass               = null;
         TypeBodyDeclaration declaringTypeBodyDeclaration = null;
-        IClass              targetIClass = null;
+        IClass              targetIClass                 = null;
 
         public QualifiedThisReference(
-            Location           location,
-            ClassDeclaration   declaringClass,
-            FunctionDeclarator optionalDeclaringFunction,
-            IClass             targetIClass
+            Location            location,
+            ClassDeclaration    declaringClass,
+            TypeBodyDeclaration declaringTypeBodyDeclaration,
+            IClass              targetIClass
         ) {
             super(location);
-            if (declaringClass == null) throw new NullPointerException();
-            if (targetIClass   == null) throw new NullPointerException();
+            if (declaringClass               == null) throw new NullPointerException();
+            if (declaringTypeBodyDeclaration == null) throw new NullPointerException();
+            if (targetIClass                 == null) throw new NullPointerException();
 
             this.scope                        = null;
             this.qualification                = null;
             this.declaringClass               = declaringClass;
-            this.declaringTypeBodyDeclaration = optionalDeclaringFunction;
+            this.declaringTypeBodyDeclaration = declaringTypeBodyDeclaration;
             this.targetIClass                 = targetIClass;
         }
 

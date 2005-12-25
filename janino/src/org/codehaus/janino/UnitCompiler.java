@@ -1315,7 +1315,7 @@ public class UnitCompiler {
                         qualification = new Java.QualifiedThisReference(
                             cd.getLocation(),        // location
                             cd.declaringClass,       // declaringClass
-                            cd,                      // optionalFunctionDeclarator
+                            cd,                      // declaringTypeBodyDeclaration
                             outerClassOfSuperclass   // targetIClass
                         );
                     }
@@ -1551,7 +1551,7 @@ public class UnitCompiler {
                 optionalEnclosingInstance = new Java.QualifiedThisReference(
                     sci.getLocation(),        // location
                     sci.declaringClass,       // declaringClass
-                    sci.declaringConstructor, // optionalFunctionDeclarator
+                    sci.declaringConstructor, // declaringTypeBodyDeclaration
                     outerIClassOfSuperclass   // targetClass
                 );
             }
@@ -2548,37 +2548,39 @@ public class UnitCompiler {
             optionalEnclosingInstance = nci.optionalQualification;
         } else {
             Java.Scope s = nci.scope;
-            Java.FunctionDeclarator optionalFunctionDeclarator = null;
-            for (; !(s instanceof Java.TypeDeclaration); s = s.getEnclosingScope()) {
-                if (s instanceof Java.FunctionDeclarator) {
-                    optionalFunctionDeclarator = (Java.FunctionDeclarator) s;
-                    if ((optionalFunctionDeclarator.modifiers & Mod.STATIC) != 0) break;
-                }
-            }
-            if (!(s instanceof Java.ClassDeclaration)) {
+            for (; !(s instanceof Java.TypeBodyDeclaration); s = s.getEnclosingScope());
+            Java.TypeBodyDeclaration enclosingTypeBodyDeclaration = (Java.TypeBodyDeclaration) s;
+            Java.TypeDeclaration enclosingTypeDeclaration = (Java.TypeDeclaration) s.getEnclosingScope();
 
-                // No enclosing instance in interface method or static function context (JLS 15.9.2.BL1.B3.B1.B1).
+            if (
+                !(enclosingTypeDeclaration instanceof Java.ClassDeclaration)
+                || enclosingTypeBodyDeclaration.isStatic()
+            ) {
+
+                // No enclosing instance in
+                //  + interface method declaration or
+                //  + static type body declaration (here: method or initializer or field declarator)
+                // context (JLS 15.9.2.BL1.B3.B1.B1).
                 optionalEnclosingInstance = null;
             } else {
 
                 // Determine the type of the enclosing instance for the new object.
-                // TODO: KLUDGE
                 IClass optionalOuterIClass = nci.iClass.getDeclaringIClass();
                 if (optionalOuterIClass == null) {
 
-                    // No enclosing instance needed for the new object.
+                    // No enclosing instance needed for a top-level class object.
                     optionalEnclosingInstance = new Java.ThisReference(nci.getLocation(), nci.scope);
                 } else {
 
-                    // Find an appropriate enclosing instance for the new object among
+                    // Find an appropriate enclosing instance for the new inner class object among
                     // the enclosing instances of the current object (JLS
                     // 15.9.2.BL1.B3.B1.B2).
-                    Java.ClassDeclaration innerClass = (Java.ClassDeclaration) s;
+                    Java.ClassDeclaration outerClassDeclaration = (Java.ClassDeclaration) enclosingTypeDeclaration;
                     optionalEnclosingInstance = new Java.QualifiedThisReference(
-                        nci.getLocation(),          // location
-                        innerClass,                 // declaringClass
-                        optionalFunctionDeclarator, // optionalFunctionDeclarator
-                        optionalOuterIClass         // targetIClass
+                        nci.getLocation(),            // location
+                        outerClassDeclaration,        // declaringClass
+                        enclosingTypeBodyDeclaration, // declaringTypeBodyDeclaration
+                        optionalOuterIClass           // targetIClass
                     );
                 }
             }
