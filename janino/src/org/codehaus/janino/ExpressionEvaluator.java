@@ -2,7 +2,7 @@
 /*
  * Janino - An embedded Java[TM] compiler
  *
- * Copyright (c) 2005, Arno Unkrig
+ * Copyright (c) 2006, Arno Unkrig
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -307,14 +307,14 @@ public class ExpressionEvaluator extends EvaluatorBase {
         } else {
 
             // Compute expression value
-            Java.Rvalue value = parser.parseExpression((Java.Scope) block).toRvalueOrPE();
+            Java.Rvalue value = parser.parseExpression((Java.BlockStatement) block).toRvalueOrPE();
 
             // Special case: A "null" expression type means return type "Object" and automatic
             // wrapping of primitive types.
             if (optionalExpressionType == null) {
                 value = new Java.MethodInvocation(
                     scanner.peek().getLocation(), // location
-                    (Java.Scope) block,           // enclosingScope
+                    (Java.BlockStatement) block,  // enclosingBlockStatement
                     new Java.ReferenceType(       // optionalTarget
                         scanner.peek().getLocation(),
                         (Java.Scope) block,

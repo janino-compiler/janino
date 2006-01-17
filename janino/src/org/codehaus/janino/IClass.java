@@ -2,7 +2,7 @@
 /*
  * Janino - An embedded Java[TM] compiler
  *
- * Copyright (c) 2005, Arno Unkrig
+ * Copyright (c) 2006, Arno Unkrig
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -562,10 +562,10 @@ public abstract class IClass {
     public interface IMember {
 
         /**
-         * @return One of {@link #PRIVATE}, {@link #PROTECTED},
-         * {@link #PACKAGE} and {@link #PUBLIC}.
+         * @return One of {@link Access#PRIVATE}, {@link Access#PROTECTED},
+         * {@link Access#DEFAULT} and {@link Access#PUBLIC}.
          */
-        int getAccess();
+        Access getAccess();
 
         /**
          * Returns the {@link IClass} that declares this {@link IClass.IMember}.
@@ -573,20 +573,11 @@ public abstract class IClass {
         IClass getDeclaringIClass();
     }
 
-    /** Return value for {@link IClass.IMember#getAccess}. */
-    public static final int PRIVATE   = 0;
-    /** Return value for {@link IMember#getAccess}. */
-    public static final int PROTECTED = 1;
-    /** Return value for {@link IMember#getAccess}. */
-    public static final int PACKAGE   = 2;
-    /** Return value for {@link IMember#getAccess}. */
-    public static final int PUBLIC    = 3;
-
     public abstract class IInvocable implements IMember {
 
         // Implement IMember.
-        public abstract int getAccess();
-        public IClass       getDeclaringIClass() { return IClass.this; }
+        public abstract Access   getAccess();
+        public IClass            getDeclaringIClass() { return IClass.this; }
         public abstract IClass[] getParameterTypes() throws CompileException;
         public abstract String   getDescriptor() throws CompileException;
         public abstract IClass[] getThrownExceptions() throws CompileException;
@@ -694,7 +685,7 @@ public abstract class IClass {
     public abstract class IField implements IMember {
 
         // Implement IMember.
-        public abstract int     getAccess();
+        public abstract Access  getAccess();
         public IClass           getDeclaringIClass() { return IClass.this; }
 
         public abstract boolean isStatic();

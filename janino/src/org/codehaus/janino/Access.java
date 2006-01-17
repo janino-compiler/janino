@@ -32,25 +32,24 @@
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.codehaus.janino.util.iterator;
+package org.codehaus.janino;
 
-import java.util.*;
+import org.codehaus.janino.util.enumerator.Enumerator;
+import org.codehaus.janino.util.enumerator.EnumeratorFormatException;
 
 /**
- * An {@link java.util.Iterator} that transforms its elements on-the-fly.
+ * Return value for {@link IClass.IMember#getAccess}.
+ * JLS2 6.6
  */
-public abstract class TransformingIterator extends FilterIterator {
-    public TransformingIterator(Iterator delegate) {
-        super(delegate);
-    }
+public final class Access extends Enumerator {
+    public static final Access PRIVATE   = new Access("private");
+    public static final Access PROTECTED = new Access("protected");
+    public static final Access DEFAULT   = new Access("/*default*/");
+    public static final Access PUBLIC    = new Access("public");
 
-    public final Object next() {
-        return this.transform(this.delegate.next());
+    // These MUST be declared exactly like this:
+    private Access(String name) { super(name); }
+    public static Access fromString(String name) throws EnumeratorFormatException {
+        return (Access) Enumerator.fromString(name, Access.class);
     }
-
-    /**
-     * Derived classes must implement this method such that it does the
-     * desired transformation.
-     */
-    protected abstract Object transform(Object o);
 }

@@ -2,7 +2,7 @@
 /*
  * Janino - An embedded Java[TM] compiler
  *
- * Copyright (c) 2005, Arno Unkrig
+ * Copyright (c) 2006, Arno Unkrig
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -428,9 +428,9 @@ public class ScriptEvaluator extends EvaluatorBase {
         Class c;
         try {
             c = this.compileAndLoad(
-                compilationUnit,                                             // compilationUnit
-                DebuggingInformation.SOURCE.add(DebuggingInformation.LINES), // debuggingInformation
-                className                                                    // className
+                compilationUnit,                                    // compilationUnit
+                DebuggingInformation.DEFAULT_DEBUGGING_INFORMATION, // debuggingInformation
+                className                                           // className
             );
         } catch (ClassNotFoundException e) {
             throw new RuntimeException();

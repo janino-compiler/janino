@@ -2,7 +2,7 @@
 /*
  * Janino - An embedded Java[TM] compiler
  *
- * Copyright (c) 2005, Arno Unkrig
+ * Copyright (c) 2006, Arno Unkrig
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -69,16 +69,16 @@ public class Compiler {
      * Command line interface.
      */
     public static void main(String[] args) {
-        File                 optionalDestinationDirectory = null;
-        File[]               optionalSourcePath = null;
-        File[]               classPath = new File[] { new File(".") };
-        File[]               optionalExtDirs = null;
-        File[]               optionalBootClassPath = null;
-        String               optionalCharacterEncoding = null;
-        boolean              verbose = false;
-        DebuggingInformation debuggingInformation = DebuggingInformation.LINES.add(DebuggingInformation.SOURCE);
-        StringPattern[]      optionalWarningHandlePatterns = null;
-        boolean              rebuild = false;
+        File            optionalDestinationDirectory = null;
+        File[]          optionalSourcePath = null;
+        File[]          classPath = new File[] { new File(".") };
+        File[]          optionalExtDirs = null;
+        File[]          optionalBootClassPath = null;
+        String          optionalCharacterEncoding = null;
+        boolean         verbose = false;
+        EnumeratorSet   debuggingInformation = DebuggingInformation.DEFAULT_DEBUGGING_INFORMATION;
+        StringPattern[] optionalWarningHandlePatterns = null;
+        boolean         rebuild = false;
 
         // Process command line options.
         int i;
@@ -111,9 +111,9 @@ public class Compiler {
             } else
             if (arg.startsWith("-g:")) {
                 try {
-                    debuggingInformation = new DebuggingInformation(arg.substring(3).toUpperCase());
+                    debuggingInformation = new EnumeratorSet(DebuggingInformation.class, arg.substring(3));
                 } catch (EnumeratorFormatException ex) {
-                    System.err.println("Invalid debugging option \"" + arg + "\"");
+                    System.err.println("Invalid debugging option \"" + arg + "\", only \"" + DebuggingInformation.ALL + "\" allowed");
                     System.exit(1);
                 }
             } else
@@ -194,12 +194,12 @@ public class Compiler {
         "The default encoding in this environment is \"" + new InputStreamReader(new ByteArrayInputStream(new byte[0])).getEncoding() + "\".",
     };
 
-    private /*final*/ ResourceFinder       optionalClassFileResourceFinder; // null == finds existing class files next to source file
-    private /*final*/ ResourceCreator      optionalClassFileResourceCreator; // null == create class file next to source file
-    private /*final*/ String               optionalCharacterEncoding;
-    private /*final*/ Benchmark            benchmark;
-    private /*final*/ DebuggingInformation debuggingInformation;
-    private /*final*/ WarningHandler       warningHandler;
+    private /*final*/ ResourceFinder  optionalClassFileResourceFinder; // null == finds existing class files next to source file
+    private /*final*/ ResourceCreator optionalClassFileResourceCreator; // null == create class file next to source file
+    private /*final*/ String          optionalCharacterEncoding;
+    private /*final*/ Benchmark       benchmark;
+    private /*final*/ EnumeratorSet   debuggingInformation;
+    private /*final*/ WarningHandler  warningHandler;
 
     private /*final*/ IClassLoader iClassLoader;
     private final ArrayList    parsedCompilationUnits = new ArrayList(); // UnitCompiler
@@ -247,16 +247,16 @@ public class Compiler {
      * </ul>
      */
     public Compiler(
-        final File[]         optionalSourcePath,
-        final File[]         classPath,
-        final File[]         optionalExtDirs,
-        final File[]         optionalBootClassPath,
-        final File           optionalDestinationDirectory,
-        final String         optionalCharacterEncoding,
-        boolean              verbose,
-        DebuggingInformation debuggingInformation,
-        StringPattern[]      optionalWarningHandlePatterns,
-        boolean              rebuild
+        final File[]    optionalSourcePath,
+        final File[]    classPath,
+        final File[]    optionalExtDirs,
+        final File[]    optionalBootClassPath,
+        final File      optionalDestinationDirectory,
+        final String    optionalCharacterEncoding,
+        boolean         verbose,
+        EnumeratorSet   debuggingInformation,
+        StringPattern[] optionalWarningHandlePatterns,
+        boolean         rebuild
     ) {
         this(
             new PathResourceFinder(                   // sourceFinder
@@ -324,17 +324,17 @@ public class Compiler {
      * @param optionalCharacterEncoding
      * @param verbose
      * @param debuggingInformation a combination of <code>Java.DEBUGGING_...</code>
-     * @param warningHandle used to issue warnings
+     * @param warningHandler used to issue warnings
      */
     public Compiler(
-        ResourceFinder       sourceFinder,
-        IClassLoader         iClassLoader,
-        ResourceFinder       optionalClassFileResourceFinder,
-        ResourceCreator      optionalClassFileResourceCreator,
-        final String         optionalCharacterEncoding,
-        boolean              verbose,
-        DebuggingInformation debuggingInformation,
-        WarningHandler       warningHandler
+        ResourceFinder  sourceFinder,
+        IClassLoader    iClassLoader,
+        ResourceFinder  optionalClassFileResourceFinder,
+        ResourceCreator optionalClassFileResourceCreator,
+        final String    optionalCharacterEncoding,
+        boolean         verbose,
+        EnumeratorSet   debuggingInformation,
+        WarningHandler  warningHandler
     ) {
     	this.optionalClassFileResourceFinder  = optionalClassFileResourceFinder;
     	this.optionalClassFileResourceCreator = optionalClassFileResourceCreator;
@@ -597,7 +597,6 @@ public class Compiler {
      * as necessary.
      * @param classFile
      * @param sourceFile Required to compute class file path if no destination directory given
-     * @param optionalDestinationDirectory
      */
     private void storeClassFile(ClassFile classFile, final File sourceFile) throws IOException {
     	String classFileResourceName = ClassFile.getClassFileResourceName(classFile.getThisClassName());

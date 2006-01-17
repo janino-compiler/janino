@@ -2,7 +2,7 @@
 /*
  * Janino - An embedded Java[TM] compiler
  *
- * Copyright (c) 2005, Arno Unkrig
+ * Copyright (c) 2006, Arno Unkrig
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -75,10 +75,10 @@ public class JavaSourceClassLoader extends ClassLoader {
      * </pre>
      */
     public static void main(String[] args) {
-        File[]               optionalSourcePath = null;
-        String               optionalCharacterEncoding = null;
-        DebuggingInformation debuggingInformation = DebuggingInformation.LINES.add(DebuggingInformation.SOURCE);
-        String               optionalCacheDirName = null;
+        File[]        optionalSourcePath = null;
+        String        optionalCharacterEncoding = null;
+        EnumeratorSet debuggingInformation = DebuggingInformation.DEFAULT_DEBUGGING_INFORMATION;
+        String        optionalCacheDirName = null;
 
         // Scan command line options.
         int i;
@@ -100,7 +100,7 @@ public class JavaSourceClassLoader extends ClassLoader {
             } else
             if (arg.startsWith("-g:")) {
                 try {
-                    debuggingInformation = new DebuggingInformation(arg.substring(3).toUpperCase());
+                    debuggingInformation = new EnumeratorSet(DebuggingInformation.class, arg.substring(3));
                 } catch (EnumeratorFormatException ex) {
                     debuggingInformation = DebuggingInformation.NONE;
                 }
@@ -205,10 +205,10 @@ public class JavaSourceClassLoader extends ClassLoader {
      * @param debuggingInformation What kind of debugging information to generate
      */
     public JavaSourceClassLoader(
-        ClassLoader          parentClassLoader,
-        File[]               optionalSourcePath,
-        String               optionalCharacterEncoding,
-        DebuggingInformation debuggingInformation
+        ClassLoader   parentClassLoader,
+        File[]        optionalSourcePath,
+        String        optionalCharacterEncoding,
+        EnumeratorSet debuggingInformation
     ) {
         this(
             parentClassLoader,         // parentClassLoader
@@ -232,10 +232,10 @@ public class JavaSourceClassLoader extends ClassLoader {
      * @param debuggingInformation What kind of debugging information to generate
      */
     public JavaSourceClassLoader(
-        ClassLoader          parentClassLoader,
-        ResourceFinder       sourceFinder,
-        String               optionalCharacterEncoding,
-        DebuggingInformation debuggingInformation
+        ClassLoader    parentClassLoader,
+        ResourceFinder sourceFinder,
+        String         optionalCharacterEncoding,
+        EnumeratorSet  debuggingInformation
     ) {
         super(parentClassLoader);
 
@@ -366,9 +366,9 @@ public class JavaSourceClassLoader extends ClassLoader {
         this.protectionDomainFactory = protectionDomainFactory;
     }
 
-    private final IClassLoader         iClassLoader;
-    private final DebuggingInformation debuggingInformation;
-    private ProtectionDomainFactory    protectionDomainFactory;
+    private final IClassLoader      iClassLoader;
+    private final EnumeratorSet     debuggingInformation;
+    private ProtectionDomainFactory protectionDomainFactory;
 
     /**
      * Collection of parsed, but uncompiled compilation units.

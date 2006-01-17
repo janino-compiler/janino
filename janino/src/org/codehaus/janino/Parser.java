@@ -2,7 +2,7 @@
 /*
  * Janino - An embedded Java[TM] compiler
  *
- * Copyright (c) 2005, Arno Unkrig
+ * Copyright (c) 2006, Arno Unkrig
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -113,15 +113,15 @@ import java.util.*;
  *   <li>Line number tables a la "-g:lines"
  *   <li>Source file information a la "-g:source"
  *   <li>Handling of <code>&#64;deprecated</code> doc comment tag
+ *   <li>Accessibility checking
  * </ul>
  *
  * <a name="limitations"></a>
  * Limitations:
  *
  * <ul>
- *   <li>Access control (<code>public</code>, <code>protected</code> and <code>private</code>) is not checked at compile-time; you will get JVM errors at run-time instead if you call a method that you should not
  *   <li>Local variable information information for debugging is not yet implemented (i.e. "-g:vars" is ignored)
- *   <li>Wrapping of private fields and methods of inner classes into "acces$...()" methods is not yet implemented; you must change private methods to non-private (e.g. to "package access", or, for documentation purposes, to "/*private&#42;/"), otherwise you get ugly errors from the JVM when it loads the calling class
+ *   <li>Wrapping of private fields and methods of inner classes into "acces$...()" methods is not yet implemented; you must change private non-static methods to, e.g., "/*private&#42;/", otherwise you get a "Compiler limitation: ..." error
  *   <li><code>assert</code> (a JDK 1.4 language feature) is not yet implemented
  *   <li>The upcoming JDK 1.5 language features are not yet implemented
  *   <li>Checking of "definite assignment" (JLS2 16) is not executed
@@ -530,9 +530,9 @@ public class Parser {
         );
 
         Java.VariableDeclarator[] vds = this.parseFieldDeclarationRest(
-            (Java.Scope) fd, // enclosingScope
-            memberType,      // type
-            memberName       // name
+            (Java.BlockStatement) fd, // enclosingBlockStatement
+            memberType,               // type
+            memberName                // name
         );
         if (!this.scanner.read().isOperator(";")) this.throwParseException("Semicolon expected at end of field declaration");
         fd.setVariableDeclarators(vds);
@@ -697,9 +697,9 @@ public class Parser {
                         memberType                         // type
                     );
                     Java.VariableDeclarator[] vds = this.parseFieldDeclarationRest(
-                        (Java.Scope) fd, // enclosingScope
-                        memberType,      // type
-                        memberName       // name
+                        (Java.BlockStatement) fd, // enclosingBlockStatement
+                        memberType,               // type
+                        memberName                // name
                     );
                     fd.setVariableDeclarators(vds);
                     interfaceDeclaration.addConstantDeclaration(fd);
@@ -785,8 +785,8 @@ public class Parser {
                         (short) 0,                          // modifiers
                         variableType,                       // type
                         this.parseLocalVariableDeclarators( // variableDeclarators
-                            (Java.Scope) body, // enclosingScope
-                            variableType       // type
+                            (Java.BlockStatement) body, // enclosingBlockStatement
+                            variableType                // type
                         )
                     );
                     if (!this.scanner.read().isOperator(";")) this.throwParseException("Semicolon expected after local variable declarator");
@@ -869,17 +869,17 @@ public class Parser {
      * </pre>
      */
     public Java.Rvalue parseVariableInitializer(
-        Java.Scope enclosingScope,
-        Java.Type  type
+        Java.BlockStatement enclosingBlockStatement,
+        Java.Type           type
     ) throws ParseException, Scanner.ScanException, IOException {
         if (this.scanner.peek().isOperator("{")) {
             if (!(type instanceof Java.ArrayType)) this.throwParseException("Cannot initialize non-array type \"" + type + "\" with an array");
             return this.parseArrayInitializer(
-                enclosingScope,
+                enclosingBlockStatement,
                 (Java.ArrayType) type
             );
         }
-        return this.parseExpression(enclosingScope).toRvalueOrPE();
+        return this.parseExpression(enclosingBlockStatement).toRvalueOrPE();
     }
 
     /**
@@ -889,8 +889,8 @@ public class Parser {
      * </pre>
      */
     public Java.Rvalue parseArrayInitializer(
-        Java.Scope     enclosingScope,
-        Java.ArrayType arrayType
+        Java.BlockStatement enclosingBlockStatement,
+        Java.ArrayType      arrayType
     ) throws ParseException, Scanner.ScanException, IOException {
         if (!this.scanner.peek().isOperator("{")) this.throwParseException("\"{\" expected");
         Location location = this.scanner.read().getLocation();
@@ -898,7 +898,7 @@ public class Parser {
         List l = new ArrayList(); // Rvalue
         while (!this.scanner.peek().isOperator("}")) {
             l.add(this.parseVariableInitializer(
-                enclosingScope,
+                enclosingBlockStatement,
                 componentType
             ));
             if (this.scanner.peek().isOperator("}")) break;
@@ -1054,7 +1054,7 @@ public class Parser {
                 "return", "throw", "break", "continue"
             }) ||
             this.scanner.peek().isOperator(new String[] { "{", ";" })
-        ) return this.parseStatement((Java.Scope) enclosingBlock);
+        ) return this.parseStatement((Java.BlockStatement) enclosingBlock);
 
         // Local class declaration?
         if (this.scanner.peek().isKeyword("class")) {
@@ -1082,8 +1082,8 @@ public class Parser {
                 Mod.FINAL,                          // modifiers
                 variableType,                       // type
                 this.parseLocalVariableDeclarators( // variableDeclarators
-                    (Java.Scope) enclosingBlock, // enclosingScope
-                    variableType                 // type
+                    (Java.BlockStatement) enclosingBlock, // enclosingBlockStatement
+                    variableType                          // type
                 )
             );
             if (!this.scanner.read().isOperator(";")) this.throwParseException("Semicolon expected after local variable declarator");
@@ -1108,8 +1108,8 @@ public class Parser {
             (short) 0,                          // modifiers
             variableType,                       // type
             this.parseLocalVariableDeclarators( // variableDeclarators
-                (Java.Scope) enclosingBlock, // enclosingScope
-                variableType                 // type
+                (Java.BlockStatement) enclosingBlock, // enclosingBlockStatement
+                variableType                          // type
             )
         );
         if (!this.scanner.read().isOperator(";")) this.throwParseException("Semicolon expected after local variable declarator");
@@ -1122,12 +1122,12 @@ public class Parser {
      * </pre>
      */
     public Java.VariableDeclarator[] parseLocalVariableDeclarators(
-        Java.Scope enclosingScope,
-        Java.Type  type
+        Java.BlockStatement enclosingBlockStatement,
+        Java.Type           type
     ) throws ParseException, Scanner.ScanException, IOException {
         List l = new ArrayList();
         for (;;) {
-            Java.VariableDeclarator vd = this.parseVariableDeclarator(enclosingScope, type);
+            Java.VariableDeclarator vd = this.parseVariableDeclarator(enclosingBlockStatement, type);
             this.verifyIdentifierIsConventionalLocalVariableOrParameterName(vd.name, vd.getLocation());
             l.add(vd);
             if (!this.scanner.peek().isOperator(",")) break;
@@ -1144,20 +1144,20 @@ public class Parser {
      * </pre>
      */
     public Java.VariableDeclarator[] parseFieldDeclarationRest(
-        Java.Scope enclosingScope,
-        Java.Type  type,
-        String     name
+        Java.BlockStatement enclosingBlockStatement,
+        Java.Type           type,
+        String              name
     ) throws ParseException, Scanner.ScanException, IOException {
         List l = new ArrayList();
 
-        Java.VariableDeclarator vd = this.parseVariableDeclaratorRest(enclosingScope, type, name);
+        Java.VariableDeclarator vd = this.parseVariableDeclaratorRest(enclosingBlockStatement, type, name);
         this.verifyIdentifierIsConventionalFieldName(vd.name, vd.getLocation());
         l.add(vd);
 
         while (this.scanner.peek().isOperator(",")) {
             this.scanner.read();
 
-            vd = this.parseVariableDeclarator(enclosingScope, type);
+            vd = this.parseVariableDeclarator(enclosingBlockStatement, type);
             this.verifyIdentifierIsConventionalFieldName(vd.name, vd.getLocation());
             l.add(vd);
         }
@@ -1170,12 +1170,12 @@ public class Parser {
      * </pre>
      */
     public Java.VariableDeclarator parseVariableDeclarator(
-        Java.Scope enclosingScope,
-        Java.Type  type
+        Java.BlockStatement enclosingBlockStatement,
+        Java.Type           type
     ) throws ParseException, Scanner.ScanException, IOException {
         if (!this.scanner.peek().isIdentifier()) this.throwParseException("Variable name expected");
         String variableName = this.scanner.read().getIdentifier();
-        return this.parseVariableDeclaratorRest(enclosingScope, type, variableName);
+        return this.parseVariableDeclaratorRest(enclosingBlockStatement, type, variableName);
     }
 
     /**
@@ -1185,9 +1185,9 @@ public class Parser {
      * Used by field declarations and local variable declarations.
      */
     public Java.VariableDeclarator parseVariableDeclaratorRest(
-        Java.Scope enclosingScope,
-        Java.Type  type,
-        String     name
+        Java.BlockStatement enclosingBlockStatement,
+        Java.Type           type,
+        String              name
     ) throws ParseException, Scanner.ScanException, IOException  {
         Location loc = this.scanner.peek().getLocation();
         int brackets = this.parseBracketsOpt();
@@ -1195,7 +1195,7 @@ public class Parser {
         Java.Rvalue initializer = null;
         if (this.scanner.peek().isOperator("=")) {
             this.scanner.read();
-            initializer = this.parseVariableInitializer(enclosingScope, type);
+            initializer = this.parseVariableInitializer(enclosingBlockStatement, type);
         }
         return new Java.VariableDeclarator(loc, name, brackets, initializer);
     }
@@ -1221,31 +1221,31 @@ public class Parser {
      * </pre>
      */
     public Java.Statement parseStatement(
-        Java.Scope enclosingScope
+        Java.BlockStatement enclosingBlockStatement
     ) throws ParseException, Scanner.ScanException, IOException {
         if (
             this.scanner.peek().isIdentifier() &&
             this.scanner.peekNextButOne().isOperator(":")
         ) {
-            return this.parseLabeledStatement(enclosingScope);
+            return this.parseLabeledStatement(enclosingBlockStatement);
         }
 
         Scanner.Token t = this.scanner.peek();
         Java.Statement stmt = (
-            t.isOperator("{")           ? this.parseBlock(enclosingScope) :
-            t.isKeyword("if")           ? this.parseIfStatement(enclosingScope) :
-            t.isKeyword("for")          ? this.parseForStatement(enclosingScope) :
-            t.isKeyword("while")        ? this.parseWhileStatement(enclosingScope) :
-            t.isKeyword("do")           ? this.parseDoStatement(enclosingScope) :
-            t.isKeyword("try")          ? this.parseTryStatement(enclosingScope) :
-            t.isKeyword("switch")       ? this.parseSwitchStatement(enclosingScope) :
-            t.isKeyword("synchronized") ? this.parseSynchronizedStatement(enclosingScope) :
-            t.isKeyword("return")       ? this.parseReturnStatement(enclosingScope) :
-            t.isKeyword("throw")        ? this.parseThrowStatement(enclosingScope) :
-            t.isKeyword("break")        ? this.parseBreakStatement(enclosingScope) :
-            t.isKeyword("continue")     ? this.parseContinueStatement(enclosingScope) :
-            t.isOperator(";")           ? this.parseEmptyStatement(enclosingScope) :
-            this.parseExpressionStatement(enclosingScope)
+            t.isOperator("{")           ? this.parseBlock(enclosingBlockStatement) :
+            t.isKeyword("if")           ? this.parseIfStatement(enclosingBlockStatement) :
+            t.isKeyword("for")          ? this.parseForStatement(enclosingBlockStatement) :
+            t.isKeyword("while")        ? this.parseWhileStatement(enclosingBlockStatement) :
+            t.isKeyword("do")           ? this.parseDoStatement(enclosingBlockStatement) :
+            t.isKeyword("try")          ? this.parseTryStatement(enclosingBlockStatement) :
+            t.isKeyword("switch")       ? this.parseSwitchStatement(enclosingBlockStatement) :
+            t.isKeyword("synchronized") ? this.parseSynchronizedStatement(enclosingBlockStatement) :
+            t.isKeyword("return")       ? this.parseReturnStatement(enclosingBlockStatement) :
+            t.isKeyword("throw")        ? this.parseThrowStatement(enclosingBlockStatement) :
+            t.isKeyword("break")        ? this.parseBreakStatement(enclosingBlockStatement) :
+            t.isKeyword("continue")     ? this.parseContinueStatement(enclosingBlockStatement) :
+            t.isOperator(";")           ? this.parseEmptyStatement(enclosingBlockStatement) :
+            this.parseExpressionStatement(enclosingBlockStatement)
         );
         if (stmt == null) this.throwParseException("\"" + t.getKeyword() + "\" NYI");
 
@@ -1276,25 +1276,25 @@ public class Parser {
      * </pre>
      */
     public Java.Statement parseIfStatement(
-        Java.Scope enclosingScope
+        Java.BlockStatement enclosingBlockStatement
     ) throws ParseException, Scanner.ScanException, IOException {
         if (!this.scanner.peek().isKeyword("if")) this.throwParseException("\"if\" expected");
         Location location = this.scanner.read().getLocation();
         if (!this.scanner.read().isOperator("(")) this.throwParseException("Opening parenthesis expected after \"if\"");
-        final Java.Rvalue condition = this.parseExpression(enclosingScope).toRvalueOrPE();
+        final Java.Rvalue condition = this.parseExpression(enclosingBlockStatement).toRvalueOrPE();
         if (!this.scanner.read().isOperator(")")) this.throwParseException("Closing parenthesis expected after \"if\" condition");
 
-        Java.Statement thenStatement = this.parseStatement(enclosingScope);
+        Java.Statement thenStatement = this.parseStatement(enclosingBlockStatement);
 
         Java.Statement elseStatement = null;
         if (this.scanner.peek().isKeyword("else")) {
             this.scanner.read();
-            elseStatement = this.parseStatement(enclosingScope);
+            elseStatement = this.parseStatement(enclosingBlockStatement);
         }
 
         return new Java.IfStatement(
             location,
-            enclosingScope,
+            enclosingBlockStatement,
             condition,
             thenStatement,
             elseStatement
@@ -1331,13 +1331,13 @@ public class Parser {
 
         Java.Rvalue forCondition = null;
         if (!this.scanner.peek().isOperator(";")) {
-            forCondition = this.parseExpression((Java.Scope) forStatement).toRvalueOrPE();
+            forCondition = this.parseExpression((Java.BlockStatement) forStatement).toRvalueOrPE();
         }
         if (!this.scanner.read().isOperator(";")) this.throwParseException("Semicolon expected after \"for\" condition");
 
         Java.Rvalue[] forUpdate = null;
         if (!this.scanner.peek().isOperator(")")) {
-            forUpdate = this.parseExpressionList((Java.Scope) forStatement);
+            forUpdate = this.parseExpressionList((Java.BlockStatement) forStatement);
         }
         if (!this.scanner.read().isOperator(")")) this.throwParseException("Closing parenthesis expected after \"for\" update");
 
@@ -1345,7 +1345,7 @@ public class Parser {
             forInit,
             forCondition,
             forUpdate,
-            this.parseStatement((Java.Scope) forStatement)
+            this.parseStatement((Java.BlockStatement) forStatement)
         );
 
         return forStatement;
@@ -1379,13 +1379,13 @@ public class Parser {
                 modifiers,                          // modifiers
                 variableType,                       // type
                 this.parseLocalVariableDeclarators( // variableDeclarators
-                    (Java.Scope) enclosingBlock, // enclosingScope
-                    variableType                 // type
+                    (Java.BlockStatement) enclosingBlock, // enclosingBlockStatement
+                    variableType                          // type
                 )
             );
         }
 
-        Java.Atom a = this.parseExpression((Java.Scope) enclosingBlock);
+        Java.Atom a = this.parseExpression((Java.BlockStatement) enclosingBlock);
 
         // Expression LocalVariableDeclarators
         if (this.scanner.peek().isIdentifier()) {
@@ -1396,8 +1396,8 @@ public class Parser {
                 Mod.NONE,                           // modifiers
                 variableType,                       // type
                 this.parseLocalVariableDeclarators( // variableDeclarators
-                    (Java.Scope) enclosingBlock, // enclosingScope
-                    variableType                 // type
+                    (Java.BlockStatement) enclosingBlock, // enclosingBlockStatement
+                    variableType                          // type
                 )
             );
         }
@@ -1418,9 +1418,9 @@ public class Parser {
         for (;;) {
             l.add(new Java.ExpressionStatement(
                 this.parseExpression(       // rvalue
-                    (Java.Scope) enclosingBlock
+                    (Java.BlockStatement) enclosingBlock
                 ).toRvalueOrPE(),
-                (Java.Scope) enclosingBlock // enclosingScope
+                (Java.Scope) enclosingBlock // enclosingBlockStatement
             ));
             if (!this.scanner.peek().isOperator(",")) break;
             this.scanner.read();
@@ -1440,16 +1440,16 @@ public class Parser {
      * </pre>
      */
     public Java.Statement parseWhileStatement(
-        Java.Scope enclosingScope
+        Java.BlockStatement enclosingBlockStatement
     ) throws ParseException, Scanner.ScanException, IOException {
         if (!this.scanner.peek().isKeyword("while")) this.throwParseException("\"while\" expected");
         Location location = this.scanner.read().getLocation();
 
         if (!this.scanner.read().isOperator("(")) this.throwParseException("Opening parenthesis expected after \"while\"");
         Java.WhileStatement whileStatement = new Java.WhileStatement(
-            location,                                           // location
-            enclosingScope,                                     // enclosingScope
-            this.parseExpression(enclosingScope).toRvalueOrPE() // condition
+            location,
+            enclosingBlockStatement,
+            this.parseExpression(enclosingBlockStatement).toRvalueOrPE()
         );
         if (!this.scanner.read().isOperator(")")) this.throwParseException("Closing parenthesis expected after \"while\" condition");
 
@@ -1463,19 +1463,19 @@ public class Parser {
      * </pre>
      */
     public Java.Statement parseDoStatement(
-        Java.Scope enclosingScope
+        Java.BlockStatement enclosingBlockStatement
     ) throws ParseException, Scanner.ScanException, IOException {
         if (!this.scanner.peek().isKeyword("do")) this.throwParseException("\"do\" expected");
         Java.DoStatement doStatement = new Java.DoStatement(
             this.scanner.read().getLocation(),
-            enclosingScope
+            enclosingBlockStatement
         );
 
         doStatement.setBody(this.parseStatement(doStatement));
 
         if (!this.scanner.read().isKeyword("while")) this.throwParseException("\"while\" expected after body of \"do\" statement");
         if (!this.scanner.read().isOperator("(")) this.throwParseException("Opening parenthesis expected after \"while\"");
-        doStatement.setCondition(this.parseExpression(enclosingScope).toRvalueOrPE());
+        doStatement.setCondition(this.parseExpression(doStatement).toRvalueOrPE());
         if (!this.scanner.read().isOperator(")")) this.throwParseException("Closing parenthesis expected after \"while\" condition");
         if (!this.scanner.read().isOperator(";")) this.throwParseException("Semicolon expected at end of \"do\" statement");
 
@@ -1562,7 +1562,7 @@ public class Parser {
             do {
                 if (this.scanner.peek().isKeyword("case")) {
                     this.scanner.read();
-                    sbsg.addSwitchLabel(this.parseExpression((Java.Scope) block).toRvalueOrPE());
+                    sbsg.addSwitchLabel(this.parseExpression((Java.BlockStatement) block).toRvalueOrPE());
                 } else
                 if (this.scanner.peek().isKeyword("default")) {
                     this.scanner.read();
@@ -1587,15 +1587,15 @@ public class Parser {
      * </pre>
      */
     public Java.Statement parseSynchronizedStatement(
-        Java.Scope enclosingScope
+        Java.BlockStatement enclosingBlockStatement
     ) throws ParseException, Scanner.ScanException, IOException {
         if (!this.scanner.peek().isKeyword("synchronized")) this.throwParseException("\"synchronized\" expected");
         Location location = this.scanner.read().getLocation();
         if (!this.scanner.read().isOperator("(")) this.throwParseException("Opening parenthesis expected");
         Java.SynchronizedStatement synchronizedStatement = new Java.SynchronizedStatement(
             location,
-            enclosingScope,
-            this.parseExpression(enclosingScope).toRvalueOrPE()
+            enclosingBlockStatement,
+            this.parseExpression(enclosingBlockStatement).toRvalueOrPE()
         );
         if (!this.scanner.read().isOperator(")")) this.throwParseException("Closing parenthesis expected");
 
@@ -1610,13 +1610,13 @@ public class Parser {
      * </pre>
      */
     public Java.Statement parseReturnStatement(
-        Java.Scope enclosingScope
+        Java.BlockStatement enclosingBlockStatement
     ) throws ParseException, Scanner.ScanException, IOException {
         if (!this.scanner.peek().isKeyword("return")) this.throwParseException("\"return\" expected");
         Location location = this.scanner.read().getLocation();
-        Java.Rvalue returnValue = this.scanner.peek().isOperator(";") ? null : this.parseExpression(enclosingScope).toRvalueOrPE();
+        Java.Rvalue returnValue = this.scanner.peek().isOperator(";") ? null : this.parseExpression(enclosingBlockStatement).toRvalueOrPE();
         if (!this.scanner.read().isOperator(";")) this.throwParseException("Semicolon expected at end of \"return\" statement");
-        return new Java.ReturnStatement(location, enclosingScope, returnValue);
+        return new Java.ReturnStatement(location, enclosingBlockStatement, returnValue);
     }
 
     /**
@@ -1625,16 +1625,16 @@ public class Parser {
      * </pre>
      */
     public Java.Statement parseThrowStatement(
-        Java.Scope enclosingScope
+        Java.BlockStatement enclosingBlockStatement
     ) throws ParseException, Scanner.ScanException, IOException {
         if (!this.scanner.peek().isKeyword("throw")) this.throwParseException("\"throw\" expected");
         Location location = this.scanner.read().getLocation();
-        final Java.Rvalue expression = this.parseExpression(enclosingScope).toRvalueOrPE();
+        final Java.Rvalue expression = this.parseExpression(enclosingBlockStatement).toRvalueOrPE();
         if (!this.scanner.read().isOperator(";")) this.throwParseException("Semicolon expected");
 
         return new Java.ThrowStatement(
             location,
-            enclosingScope,
+            enclosingBlockStatement,
             expression
         );
     }
@@ -1690,11 +1690,11 @@ public class Parser {
      * </pre>
      */
     public Java.Rvalue[] parseExpressionList(
-        Java.Scope enclosingScope
+        Java.BlockStatement enclosingBlockStatement
     ) throws ParseException, Scanner.ScanException, IOException {
         List l = new ArrayList();
         for (;;) {
-            l.add(this.parseExpression(enclosingScope).toRvalueOrPE());
+            l.add(this.parseExpression(enclosingBlockStatement).toRvalueOrPE());
             if (!this.scanner.peek().isOperator(",")) break;
             this.scanner.read();
         }
@@ -1772,9 +1772,9 @@ public class Parser {
      * </pre>
      */
     public Java.Atom parseExpression(
-        Java.Scope enclosingScope
+        Java.BlockStatement enclosingBlockStatement
     ) throws ParseException, Scanner.ScanException, IOException  {
-        return this.parseAssignmentExpression(enclosingScope);
+        return this.parseAssignmentExpression(enclosingBlockStatement);
     }
 
     /**
@@ -1788,14 +1788,14 @@ public class Parser {
      * </pre>
      */
     public Java.Atom parseAssignmentExpression(
-        Java.Scope enclosingScope
+        Java.BlockStatement enclosingBlockStatement
     ) throws ParseException, Scanner.ScanException, IOException  {
-        Java.Atom a = this.parseConditionalExpression(enclosingScope);
+        Java.Atom a = this.parseConditionalExpression(enclosingBlockStatement);
         if (this.scanner.peek().isOperator(new String[] { "=", "+=", "-=", "*=", "/=", "&=", "|=", "^=", "%=", "<<=", ">>=", ">>>=" })) {
             String operator = this.scanner.peek().getOperator();
             Location location = this.scanner.read().getLocation();
             final Java.Lvalue lhs = a.toLvalueOrPE();
-            final Java.Rvalue rhs = this.parseAssignmentExpression(enclosingScope).toRvalueOrPE();
+            final Java.Rvalue rhs = this.parseAssignmentExpression(enclosingBlockStatement).toRvalueOrPE();
             return new Java.Assignment(location, lhs, operator, rhs);
         }
         return a;
@@ -1808,16 +1808,16 @@ public class Parser {
      * </pre>
      */
     public Java.Atom parseConditionalExpression(
-        Java.Scope enclosingScope
+        Java.BlockStatement enclosingBlockStatement
     ) throws ParseException, Scanner.ScanException, IOException  {
-        Java.Atom a = this.parseConditionalOrExpression(enclosingScope);
+        Java.Atom a = this.parseConditionalOrExpression(enclosingBlockStatement);
         if (!this.scanner.peek().isOperator("?")) return a;
         Location location = this.scanner.read().getLocation();
 
         Java.Rvalue lhs = a.toRvalueOrPE();
-        Java.Rvalue mhs = this.parseExpression(enclosingScope).toRvalueOrPE();
+        Java.Rvalue mhs = this.parseExpression(enclosingBlockStatement).toRvalueOrPE();
         if (!this.scanner.read().isOperator(":")) this.throwParseException("\":\" expected");
-        Java.Rvalue rhs = this.parseConditionalExpression(enclosingScope).toRvalueOrPE();
+        Java.Rvalue rhs = this.parseConditionalExpression(enclosingBlockStatement).toRvalueOrPE();
         return new Java.ConditionalExpression(location, lhs, mhs, rhs);
     }
 
@@ -1828,15 +1828,15 @@ public class Parser {
      * </pre>
      */
     public Java.Atom parseConditionalOrExpression(
-        Java.Scope enclosingScope
+        Java.BlockStatement enclosingBlockStatement
     ) throws ParseException, Scanner.ScanException, IOException  {
-        Java.Atom a = this.parseConditionalAndExpression(enclosingScope);
+        Java.Atom a = this.parseConditionalAndExpression(enclosingBlockStatement);
         while (this.scanner.peek().isOperator("||")) {
             a = new Java.BinaryOperation(
                 this.scanner.read().getLocation(),
                 a.toRvalueOrPE(),
                 "||",
-                this.parseConditionalAndExpression(enclosingScope).toRvalueOrPE()
+                this.parseConditionalAndExpression(enclosingBlockStatement).toRvalueOrPE()
             );
         }
         return a;
@@ -1849,15 +1849,15 @@ public class Parser {
      * </pre>
      */
     public Java.Atom parseConditionalAndExpression(
-        Java.Scope enclosingScope
+        Java.BlockStatement enclosingBlockStatement
     ) throws ParseException, Scanner.ScanException, IOException  {
-        Java.Atom a = this.parseInclusiveOrExpression(enclosingScope);
+        Java.Atom a = this.parseInclusiveOrExpression(enclosingBlockStatement);
         while (this.scanner.peek().isOperator("&&")) {
             a = new Java.BinaryOperation(
                 this.scanner.read().getLocation(),
                 a.toRvalueOrPE(),
                 "&&",
-                this.parseInclusiveOrExpression(enclosingScope).toRvalueOrPE()
+                this.parseInclusiveOrExpression(enclosingBlockStatement).toRvalueOrPE()
             );
         }
         return a;
@@ -1870,15 +1870,15 @@ public class Parser {
      * </pre>
      */
     public Java.Atom parseInclusiveOrExpression(
-        Java.Scope enclosingScope
+        Java.BlockStatement enclosingBlockStatement
     ) throws ParseException, Scanner.ScanException, IOException  {
-        Java.Atom a = this.parseExclusiveOrExpression(enclosingScope);
+        Java.Atom a = this.parseExclusiveOrExpression(enclosingBlockStatement);
         while (this.scanner.peek().isOperator("|")) {
             a = new Java.BinaryOperation(
                 this.scanner.read().getLocation(),
                 a.toRvalueOrPE(),
                 "|",
-                this.parseExclusiveOrExpression(enclosingScope).toRvalueOrPE()
+                this.parseExclusiveOrExpression(enclosingBlockStatement).toRvalueOrPE()
             );
         }
         return a;
@@ -1891,15 +1891,15 @@ public class Parser {
      * </pre>
      */
     public Java.Atom parseExclusiveOrExpression(
-        Java.Scope enclosingScope
+        Java.BlockStatement enclosingBlockStatement
     ) throws ParseException, Scanner.ScanException, IOException  {
-        Java.Atom a = this.parseAndExpression(enclosingScope);
+        Java.Atom a = this.parseAndExpression(enclosingBlockStatement);
         while (this.scanner.peek().isOperator("^")) {
             a = new Java.BinaryOperation(
                 this.scanner.read().getLocation(),
                 a.toRvalueOrPE(),
                 "^",
-                this.parseAndExpression(enclosingScope).toRvalueOrPE()
+                this.parseAndExpression(enclosingBlockStatement).toRvalueOrPE()
             );
         }
         return a;
@@ -1912,15 +1912,15 @@ public class Parser {
      * </pre>
      */
     public Java.Atom parseAndExpression(
-        Java.Scope enclosingScope
+        Java.BlockStatement enclosingBlockStatement
     ) throws ParseException, Scanner.ScanException, IOException  {
-        Java.Atom a = this.parseEqualityExpression(enclosingScope);
+        Java.Atom a = this.parseEqualityExpression(enclosingBlockStatement);
         while (this.scanner.peek().isOperator("&")) {
             a = new Java.BinaryOperation(
                 this.scanner.read().getLocation(),
                 a.toRvalueOrPE(),
                 "&",
-                this.parseEqualityExpression(enclosingScope).toRvalueOrPE()
+                this.parseEqualityExpression(enclosingBlockStatement).toRvalueOrPE()
             );
         }
         return a;
@@ -1933,16 +1933,16 @@ public class Parser {
      * </pre>
      */
     public Java.Atom parseEqualityExpression(
-        Java.Scope enclosingScope
+        Java.BlockStatement enclosingBlockStatement
     ) throws ParseException, Scanner.ScanException, IOException  {
-        Java.Atom a = this.parseRelationalExpression(enclosingScope);
+        Java.Atom a = this.parseRelationalExpression(enclosingBlockStatement);
 
         while (this.scanner.peek().isOperator(new String[] { "==", "!=" })) {
             a = new Java.BinaryOperation(
                 this.scanner.peek().getLocation(),
                 a.toRvalueOrPE(),
                 this.scanner.read().getOperator(),
-                this.parseRelationalExpression(enclosingScope).toRvalueOrPE()
+                this.parseRelationalExpression(enclosingBlockStatement).toRvalueOrPE()
             );
         }
         return a;
@@ -1958,16 +1958,16 @@ public class Parser {
      * </pre>
      */
     public Java.Atom parseRelationalExpression(
-        Java.Scope enclosingScope
+        Java.BlockStatement enclosingBlockStatement
     ) throws ParseException, Scanner.ScanException, IOException  {
-        Java.Atom a = this.parseShiftExpression(enclosingScope);
+        Java.Atom a = this.parseShiftExpression(enclosingBlockStatement);
 
         for (;;) {
             if (this.scanner.peek().isKeyword("instanceof")) {
                 a = new Java.Instanceof(
                     this.scanner.read().getLocation(),
                     a.toRvalueOrPE(),
-                    this.parseType(enclosingScope)
+                    this.parseType(enclosingBlockStatement)
                 );
             } else
             if (this.scanner.peek().isOperator(new String[] { "<", ">", "<=", ">=" })) {
@@ -1975,7 +1975,7 @@ public class Parser {
                     this.scanner.peek().getLocation(),
                     a.toRvalueOrPE(),
                     this.scanner.read().getOperator(),
-                    this.parseShiftExpression(enclosingScope).toRvalueOrPE()
+                    this.parseShiftExpression(enclosingBlockStatement).toRvalueOrPE()
                 );
             } else {
                 return a;
@@ -1990,16 +1990,16 @@ public class Parser {
      * </pre>
      */
     public Java.Atom parseShiftExpression(
-        Java.Scope enclosingScope
+        Java.BlockStatement enclosingBlockStatement
     ) throws ParseException, Scanner.ScanException, IOException  {
-        Java.Atom a = this.parseAdditiveExpression(enclosingScope);
+        Java.Atom a = this.parseAdditiveExpression(enclosingBlockStatement);
 
         while (this.scanner.peek().isOperator(new String[] { "<<", ">>", ">>>" })) {
             a = new Java.BinaryOperation(
                 this.scanner.peek().getLocation(),
                 a.toRvalueOrPE(),
                 this.scanner.read().getOperator(),
-                this.parseAdditiveExpression(enclosingScope).toRvalueOrPE()
+                this.parseAdditiveExpression(enclosingBlockStatement).toRvalueOrPE()
             );
         }
         return a;
@@ -2012,16 +2012,16 @@ public class Parser {
      * </pre>
      */
     public Java.Atom parseAdditiveExpression(
-        Java.Scope enclosingScope
+        Java.BlockStatement enclosingBlockStatement
     ) throws ParseException, Scanner.ScanException, IOException  {
-        Java.Atom a = this.parseMultiplicativeExpression(enclosingScope);
+        Java.Atom a = this.parseMultiplicativeExpression(enclosingBlockStatement);
 
         while (this.scanner.peek().isOperator(new String[] { "+", "-" })) {
             a = new Java.BinaryOperation(
                 this.scanner.peek().getLocation(),
                 a.toRvalueOrPE(),
                 this.scanner.read().getOperator(),
-                this.parseMultiplicativeExpression(enclosingScope).toRvalueOrPE()
+                this.parseMultiplicativeExpression(enclosingBlockStatement).toRvalueOrPE()
             );
         }
         return a;
@@ -2034,16 +2034,16 @@ public class Parser {
      * </pre>
      */
     public Java.Atom parseMultiplicativeExpression(
-        Java.Scope enclosingScope
+        Java.BlockStatement enclosingBlockStatement
     ) throws ParseException, Scanner.ScanException, IOException {
-        Java.Atom a = this.parseUnaryExpression(enclosingScope);
+        Java.Atom a = this.parseUnaryExpression(enclosingBlockStatement);
 
         while (this.scanner.peek().isOperator(new String[] { "*", "/", "%" })) {
             a = new Java.BinaryOperation(
                 this.scanner.peek().getLocation(),
                 a.toRvalueOrPE(),
                 this.scanner.read().getOperator(),
-                this.parseUnaryExpression(enclosingScope).toRvalueOrPE()
+                this.parseUnaryExpression(enclosingBlockStatement).toRvalueOrPE()
             );
         }
         return a;
@@ -2060,13 +2060,13 @@ public class Parser {
      * </pre>
      */
     public Java.Atom parseUnaryExpression(
-        Java.Scope enclosingScope
+        Java.BlockStatement enclosingBlockStatement
     ) throws ParseException, Scanner.ScanException, IOException {
         if (this.scanner.peek().isOperator(new String[] { "++", "--" })) {
             return new Java.Crement(
                 this.scanner.peek().getLocation(),                            // location
                 this.scanner.read().getOperator(),                            // operator
-                this.parseUnaryExpression(enclosingScope).toLvalueOrPE() // operand
+                this.parseUnaryExpression(enclosingBlockStatement).toLvalueOrPE() // operand
             );
         }
 
@@ -2074,14 +2074,14 @@ public class Parser {
             return new Java.UnaryOperation(
                 this.scanner.peek().getLocation(),
                 this.scanner.read().getOperator(),
-                this.parseUnaryExpression(enclosingScope).toRvalueOrPE()
+                this.parseUnaryExpression(enclosingBlockStatement).toRvalueOrPE()
             );
         }
 
-        Java.Atom a = this.parsePrimary(enclosingScope);
+        Java.Atom a = this.parsePrimary(enclosingBlockStatement);
 
         while (this.scanner.peek().isOperator(new String[] { ".", "[" })) {
-            a = this.parseSelector(enclosingScope, a);
+            a = this.parseSelector(enclosingBlockStatement, a);
         }
 
         while (this.scanner.peek().isOperator(new String[] { "++", "--" })) {
@@ -2120,23 +2120,23 @@ public class Parser {
      * </pre>
      */
     public Java.Atom parsePrimary(
-        Java.Scope enclosingScope
+        Java.BlockStatement enclosingBlockStatement
     ) throws ParseException, Scanner.ScanException, IOException {
         if (this.scanner.peek().isOperator("(")) {
             this.scanner.read();
             if (this.scanner.peek().isKeyword(new String[] { "boolean", "char", "byte", "short", "int", "long", "float", "double", })) {
                 // '(' PrimitiveType { '[]' } ')' UnaryExpression
-                Java.Type type = this.parseType(enclosingScope);
+                Java.Type type = this.parseType(enclosingBlockStatement);
                 int brackets = this.parseBracketsOpt();
                 if (!this.scanner.read().isOperator(")")) this.throwParseException("Closing parenthesis expected");
                 for (int i = 0; i < brackets; ++i) type = new Java.ArrayType(type);
                 return new Java.Cast(
                     this.scanner.peek().getLocation(),
                     type,
-                    this.parseUnaryExpression(enclosingScope).toRvalueOrPE()
+                    this.parseUnaryExpression(enclosingBlockStatement).toRvalueOrPE()
                 );
             }
-            Java.Atom a = this.parseExpression(enclosingScope);
+            Java.Atom a = this.parseExpression(enclosingBlockStatement);
             if (!this.scanner.read().isOperator(")")) this.throwParseException("Closing parenthesis expected");
 
             if (
@@ -2149,7 +2149,7 @@ public class Parser {
                 return new Java.Cast(
                     this.scanner.peek().getLocation(),
                     a.toTypeOrPE(),
-                    this.parseUnaryExpression(enclosingScope).toRvalueOrPE()
+                    this.parseUnaryExpression(enclosingBlockStatement).toRvalueOrPE()
                 );
             }
 
@@ -2169,15 +2169,15 @@ public class Parser {
                 // Name Arguments
                 return new Java.MethodInvocation(
                     this.scanner.peek().getLocation(),              // location
-                    enclosingScope,                                 // enclosingScope
+                    enclosingBlockStatement,                                 // enclosingScope
                     qi.length == 1 ? null : new Java.AmbiguousName( // optionalTarget
                         location,       // location
-                        enclosingScope, // scope
+                        enclosingBlockStatement, // scope
                         qi,             // identifiers
                         qi.length - 1   // n
                     ),
                     qi[qi.length - 1],                              // methodName
-                    this.parseArguments(enclosingScope)             // arguments
+                    this.parseArguments(enclosingBlockStatement)             // arguments
                 );
             }
             if (
@@ -2188,7 +2188,7 @@ public class Parser {
                 // Name '[]' { '[]' } '.' 'class'
                 Java.Type res = new Java.ReferenceType(
                     location,       // location
-                    enclosingScope, // scope
+                    enclosingBlockStatement, // scope
                     qi              // identifiers
                 );
                 int brackets = this.parseBracketsOpt();
@@ -2198,7 +2198,7 @@ public class Parser {
                     this.scanner.peekNextButOne().isKeyword("class")
                 ) {
                     this.scanner.read();
-                    return new Java.ClassLiteral(this.scanner.read().getLocation(), enclosingScope, res);
+                    return new Java.ClassLiteral(this.scanner.read().getLocation(), enclosingBlockStatement, res);
                 } else {
                     return res;
                 }
@@ -2206,7 +2206,7 @@ public class Parser {
             // Name
             return new Java.AmbiguousName(
                 this.scanner.peek().getLocation(), // location
-                enclosingScope,                    // scope
+                enclosingBlockStatement,                    // scope
                 qi                                 // identifiers
             );
         }
@@ -2217,16 +2217,16 @@ public class Parser {
 
                 // 'this' Arguments
                 // Alternate constructor invocation (JLS 8.8.5.1)
-                Java.Scope s = enclosingScope;
+                Java.Scope s = enclosingBlockStatement;
                 while (!(s instanceof Java.FunctionDeclarator)) s = s.getEnclosingScope();
                 if (!(s instanceof Java.ConstructorDeclarator)) this.throwParseException("Alternate constructor invocation only allowed in constructor context");
                 Java.ConstructorDeclarator declaringConstructor = (Java.ConstructorDeclarator) s;
                 Java.ClassDeclaration      declaringClass = (Java.ClassDeclaration) declaringConstructor.getDeclaringType();
                 return new Java.AlternateConstructorInvocation(
-                    location,                                              // location
-                    declaringClass,                                        // declaringClass
-                    declaringConstructor,                                  // declaringConstructor
-                    this.parseArguments((Java.Scope) declaringConstructor) // arguments
+                    location,                                    // location
+                    declaringClass,                              // declaringClass
+                    declaringConstructor,                        // declaringConstructor
+                    this.parseArguments(enclosingBlockStatement) // arguments
                 );
             } else
             {
@@ -2234,7 +2234,7 @@ public class Parser {
                 // 'this'
                 return new Java.ThisReference(
                     location,       // location
-                    enclosingScope  // scope
+                    enclosingBlockStatement  // scope
                 );
             }
         }
@@ -2245,16 +2245,16 @@ public class Parser {
 
                 // 'super' Arguments
                 // Unqualified superclass constructor invocation (JLS 8.8.5.1)
-                Java.Scope s = enclosingScope;
+                Java.Scope s = enclosingBlockStatement;
                 while (!(s instanceof Java.FunctionDeclarator)) s = s.getEnclosingScope();
                 if (!(s instanceof Java.ConstructorDeclarator)) this.throwParseException("Unqualified superclass constructor invocation only allowed in constructor context");                Java.ConstructorDeclarator declaringConstructor = (Java.ConstructorDeclarator) s;
                 Java.ClassDeclaration      declaringClass = (Java.ClassDeclaration) declaringConstructor.getDeclaringType();
                 return new Java.SuperConstructorInvocation(
-                    this.scanner.peek().getLocation(),                      // location
-                    declaringClass,                                         // declaringClass
-                    declaringConstructor,                                   // declaringConstructor
-                    (Java.Rvalue) null,                                     // optionalQualification
-                    this.parseArguments((Java.Scope) declaringConstructor)  // arguments
+                    this.scanner.peek().getLocation(),            // location
+                    declaringClass,                               // declaringClass
+                    declaringConstructor,                         // declaringConstructor
+                    (Java.Rvalue) null,                           // optionalQualification
+                    this.parseArguments(enclosingBlockStatement)  // arguments
                 );
             }
             if (!this.scanner.read().isOperator(".")) this.throwParseException("\".\" expected after \"super\"");
@@ -2265,9 +2265,9 @@ public class Parser {
                 // 'super' '.' Identifier Arguments
                 return new Java.SuperclassMethodInvocation(
                     this.scanner.peek().getLocation(),  // location
-                    enclosingScope,                     // enclosingScope
+                    enclosingBlockStatement,                     // enclosingScope
                     name,                               // methodName
-                    this.parseArguments(enclosingScope) // arguments
+                    this.parseArguments(enclosingBlockStatement) // arguments
                 );
             } else {
 
@@ -2279,11 +2279,11 @@ public class Parser {
         // 'new'
         if (this.scanner.peek().isKeyword("new")) {
             Location location = this.scanner.read().getLocation();
-            Java.Type type = this.parseType(enclosingScope);
+            Java.Type type = this.parseType(enclosingBlockStatement);
             if (type instanceof Java.ArrayType) {
                 // 'new' ArrayType ArrayInitializer
                 return this.parseArrayInitializer(
-                    enclosingScope,
+                    enclosingBlockStatement,
                     (Java.ArrayType) type
                 );
             }
@@ -2292,18 +2292,18 @@ public class Parser {
                 this.scanner.peek().isOperator("(")
             ) {
                 // 'new' ReferenceType Arguments [ ClassBody ]
-                Java.Rvalue[] arguments = this.parseArguments(enclosingScope);
+                Java.Rvalue[] arguments = this.parseArguments(enclosingBlockStatement);
                 if (this.scanner.peek().isOperator("{")) {
                     // 'new' ReferenceType Arguments ClassBody
                     final Java.AnonymousClassDeclaration anonymousClassDeclaration = new Java.AnonymousClassDeclaration(
                         this.scanner.peek().getLocation(), // location
-                        enclosingScope,                    // enclosingScope
+                        enclosingBlockStatement,                    // enclosingScope
                         type                               // baseType
                     );
                     this.parseClassBody(anonymousClassDeclaration);
                     return new Java.NewAnonymousClassInstance(
                         location,                  // location
-                        enclosingScope,            // scope
+                        enclosingBlockStatement,            // scope
                         (Java.Rvalue) null,        // optionalQualification
                         anonymousClassDeclaration, // anonymousClassDeclaration
                         arguments                  // arguments
@@ -2312,7 +2312,7 @@ public class Parser {
                     // 'new' ReferenceType Arguments
                     return new Java.NewClassInstance(
                         location,           // location
-                        enclosingScope,     // scope
+                        enclosingBlockStatement,     // scope
                         (Java.Rvalue) null, // optionalQualification
                         type,               // type
                         arguments           // arguments
@@ -2323,14 +2323,14 @@ public class Parser {
             return new Java.NewArray(
                 location,                           // location
                 type,                               // type
-                this.parseDimExprs(enclosingScope), // dimExprs
+                this.parseDimExprs(enclosingBlockStatement), // dimExprs
                 this.parseBracketsOpt()             // dims
             );
         }
 
         // BasicType
         if (this.scanner.peek().isKeyword(new String[] { "boolean", "char", "byte", "short", "int", "long", "float", "double", })) {
-            Java.Type res = this.parseType(enclosingScope);
+            Java.Type res = this.parseType(enclosingBlockStatement);
             int brackets = this.parseBracketsOpt();
             for (int i = 0; i < brackets; ++i) res = new Java.ArrayType(res);
             if (
@@ -2339,7 +2339,7 @@ public class Parser {
             ) {
                 // BasicType { '[]' } '.' 'class'
                 this.scanner.read();
-                return new Java.ClassLiteral(this.scanner.read().getLocation(), enclosingScope, res);
+                return new Java.ClassLiteral(this.scanner.read().getLocation(), enclosingBlockStatement, res);
             }
             // BasicType { '[]' }
             return res;
@@ -2355,7 +2355,7 @@ public class Parser {
                 // 'void' '.' 'class'
                 this.scanner.read();
                 Location location = this.scanner.read().getLocation();
-                return new Java.ClassLiteral(location, enclosingScope, new Java.BasicType(location, Java.BasicType.VOID));
+                return new Java.ClassLiteral(location, enclosingBlockStatement, new Java.BasicType(location, Java.BasicType.VOID));
             }
             this.throwParseException("\"void\" encountered in wrong context");
         }
@@ -2379,8 +2379,8 @@ public class Parser {
      * </pre>
      */
     public Java.Atom parseSelector(
-        Java.Scope enclosingScope,
-        Java.Atom  atom
+        Java.BlockStatement enclosingBlockStatement,
+        Java.Atom           atom
     ) throws ParseException, Scanner.ScanException, IOException {
         if (this.scanner.peek().isOperator(".")) {
             this.scanner.read();
@@ -2389,16 +2389,17 @@ public class Parser {
                 if (this.scanner.peek().isOperator("(")) {
                     // '.' Identifier Arguments
                     return new Java.MethodInvocation(
-                        this.scanner.peek().getLocation(),  // location
-                        enclosingScope,                     // enclosingScope
-                        atom.toRvalueOrPE(),                // optionalTarget
-                        identifier,                         // methodName
-                        this.parseArguments(enclosingScope) // arguments
+                        this.scanner.peek().getLocation(),           // location
+                        enclosingBlockStatement,                     // enclosingScope
+                        atom.toRvalueOrPE(),                         // optionalTarget
+                        identifier,                                  // methodName
+                        this.parseArguments(enclosingBlockStatement) // arguments
                     );
                 }
                 // '.' Identifier
                 return new Java.FieldAccessExpression(
                     this.scanner.peek().getLocation(), // location
+                    enclosingBlockStatement,           // enclosingBlockStatement
                     atom.toRvalueOrPE(),               // lhs
                     identifier                         // fieldName
                 );
@@ -2407,7 +2408,7 @@ public class Parser {
                 // '.' 'this'
                 return new Java.QualifiedThisReference(
                     this.scanner.read().getLocation(), // location
-                    enclosingScope,                    // scope
+                    enclosingBlockStatement,                    // scope
                     atom.toTypeOrPE()                  // qualification
                 );
             }
@@ -2417,7 +2418,7 @@ public class Parser {
 
                     // '.' 'super' Arguments
                     // Qualified superclass constructor invocation (JLS 8.8.5.1) (LHS is an Rvalue)
-                    Java.Scope s = enclosingScope.getEnclosingScope();
+                    Java.Scope s = enclosingBlockStatement.getEnclosingScope();
                     if (!(s instanceof Java.ConstructorDeclarator)) this.throwParseException("Qualified superclass constructor does not appear in constructor scope");
                     Java.ConstructorDeclarator declaringConstructor = (Java.ConstructorDeclarator) s;
                     Java.ClassDeclaration declaringClass = (Java.ClassDeclaration) s.getEnclosingScope();
@@ -2426,7 +2427,7 @@ public class Parser {
                         declaringClass,                     // declaringClass
                         declaringConstructor,               // declaringConstructor
                         atom.toRvalueOrPE(),                // optionalQualification
-                        this.parseArguments(enclosingScope) // arguments
+                        this.parseArguments(enclosingBlockStatement) // arguments
                     );
                 }
                 if (!this.scanner.read().isOperator(".")) this.throwParseException("\"(\" or \".\" expected after \"super\"");
@@ -2456,18 +2457,18 @@ public class Parser {
                     lhs,       // rValue
                     identifier // identifier
                 );
-                Java.Rvalue[] arguments = this.parseArguments(enclosingScope);
+                Java.Rvalue[] arguments = this.parseArguments(enclosingBlockStatement);
                 if (this.scanner.peek().isOperator("{")) {
                     // '.' 'new' Identifier Arguments ClassBody (LHS is an Rvalue)
                     final Java.AnonymousClassDeclaration anonymousClassDeclaration = new Java.AnonymousClassDeclaration(
                         this.scanner.peek().getLocation(), // location
-                        enclosingScope,                    // enclosingScope
+                        enclosingBlockStatement,                    // enclosingScope
                         type                               // baseType
                     );
                     this.parseClassBody(anonymousClassDeclaration);
                     return new Java.NewAnonymousClassInstance(
                         location,                  // location
-                        enclosingScope,            // scope
+                        enclosingBlockStatement,            // scope
                         lhs,                       // optionalQualification
                         anonymousClassDeclaration, // anonymousClassDeclaration
                         arguments                  // arguments
@@ -2476,7 +2477,7 @@ public class Parser {
                     // '.' 'new' Identifier Arguments (LHS is an Rvalue)
                     return new Java.NewClassInstance(
                         location,       // location
-                        enclosingScope, // scope
+                        enclosingBlockStatement, // scope
                         lhs,            // optionalQualification
                         type,           // referenceType
                         arguments       // arguments
@@ -2485,14 +2486,14 @@ public class Parser {
             }
             if (this.scanner.peek().isKeyword("class")) {
                 // '.' 'class'
-                return new Java.ClassLiteral(this.scanner.read().getLocation(), enclosingScope, atom.toTypeOrPE());
+                return new Java.ClassLiteral(this.scanner.read().getLocation(), enclosingBlockStatement, atom.toTypeOrPE());
             }
             this.throwParseException("Unexpected selector \"" + this.scanner.peek() + "\" after \".\"");
         }
         if (this.scanner.peek().isOperator("[")) {
             // '[' Expression ']'
             Location location = this.scanner.read().getLocation();
-            Java.Rvalue index = this.parseExpression(enclosingScope).toRvalueOrPE();
+            Java.Rvalue index = this.parseExpression(enclosingBlockStatement).toRvalueOrPE();
             if (!this.scanner.read().isOperator("]")) this.throwParseException("\"]\" expected");
             return new Java.ArrayAccessExpression(
                 location,        // location
@@ -2510,14 +2511,14 @@ public class Parser {
      * </pre>
      */
     public Java.Rvalue[] parseDimExprs(
-        Java.Scope enclosingScope
+        Java.BlockStatement enclosingBlockStatement
     ) throws ParseException, Scanner.ScanException, IOException {
         List l = new ArrayList();
-        l.add(this.parseDimExpr(enclosingScope));
+        l.add(this.parseDimExpr(enclosingBlockStatement));
         while (
             this.scanner.peek().isOperator("[") &&
             !this.scanner.peekNextButOne().isOperator("]")
-        ) l.add(this.parseDimExpr(enclosingScope));
+        ) l.add(this.parseDimExpr(enclosingBlockStatement));
         return (Java.Rvalue[]) l.toArray(new Java.Rvalue[l.size()]);
     }
 
@@ -2527,10 +2528,10 @@ public class Parser {
      * </pre>
      */
     public Java.Rvalue parseDimExpr(
-        Java.Scope enclosingScope
+        Java.BlockStatement enclosingBlockStatement
     ) throws Scanner.ScanException, ParseException, IOException {
         if (!this.scanner.read().isOperator("[")) this.throwParseException("Dimension expression (\"[...]\") expected");
-        Java.Rvalue res = this.parseExpression(enclosingScope).toRvalueOrPE();
+        Java.Rvalue res = this.parseExpression(enclosingBlockStatement).toRvalueOrPE();
         if (!this.scanner.read().isOperator("]")) this.throwParseException("\"]\" expected");
         return res;
     }
@@ -2541,14 +2542,14 @@ public class Parser {
      * </pre>
      */
     public Java.Rvalue[] parseArguments(
-        Java.Scope enclosingScope
+        Java.BlockStatement enclosingBlockStatement
     ) throws ParseException, Scanner.ScanException, IOException {
         if (!this.scanner.read().isOperator("(")) this.throwParseException("Opening parenthesis expected");
         if (this.scanner.peek().isOperator(")")) {
             this.scanner.read();
             return new Java.Rvalue[0];
         }
-        Java.Rvalue[] arguments = this.parseArgumentList(enclosingScope);
+        Java.Rvalue[] arguments = this.parseArgumentList(enclosingBlockStatement);
         if (!this.scanner.read().isOperator(")")) this.throwParseException("Closing parenthesis after argument list expected");
         return arguments;
     }
@@ -2559,11 +2560,11 @@ public class Parser {
      * </pre>
      */
     public Java.Rvalue[] parseArgumentList(
-        Java.Scope enclosingScope
+        Java.BlockStatement enclosingBlockStatement
     ) throws ParseException, Scanner.ScanException, IOException {
         List l = new ArrayList();
         for (;;) {
-            l.add(this.parseExpression(enclosingScope).toRvalueOrPE());
+            l.add(this.parseExpression(enclosingBlockStatement).toRvalueOrPE());
             if (!this.scanner.peek().isOperator(",")) break;
             this.scanner.read();
         }
@@ -2582,12 +2583,12 @@ public class Parser {
      * </pre>
      */
     public Java.Statement parseExpressionStatement(
-        Java.Scope enclosingScope
+        Java.BlockStatement enclosingBlockStatement
     ) throws ParseException, Scanner.ScanException, IOException {
-        Java.Rvalue rv = this.parseExpression(enclosingScope).toRvalueOrPE();
+        Java.Rvalue rv = this.parseExpression(enclosingBlockStatement).toRvalueOrPE();
         if (!this.scanner.read().isOperator(";")) this.throwParseException("Semicolon at and of expression statement expected");
 
-        return new Java.ExpressionStatement(rv, enclosingScope);
+        return new Java.ExpressionStatement(rv, enclosingBlockStatement);
     }
 
     /**

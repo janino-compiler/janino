@@ -2,7 +2,7 @@
 /*
  * Janino - An embedded Java[TM] compiler
  *
- * Copyright (c) 2005, Arno Unkrig
+ * Copyright (c) 2006, Arno Unkrig
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -41,6 +41,7 @@ import org.apache.tools.ant.taskdefs.compilers.*;
 import org.apache.tools.ant.types.Path;
 import org.codehaus.janino.util.*;
 import org.codehaus.janino.util.enumerator.EnumeratorFormatException;
+import org.codehaus.janino.util.enumerator.EnumeratorSet;
 
 /**
  * A simple {@link org.apache.tools.ant.taskdefs.compilers.CompilerAdapter} for the "ant" tool
@@ -50,33 +51,34 @@ import org.codehaus.janino.util.enumerator.EnumeratorFormatException;
 public class AntCompilerAdapter extends DefaultCompilerAdapter {
 
     /**
-     * Compile all source files in {@link DefaultCompilerAdapter#compileList} individually and
-     * write class files in directory {@link DefaultCompilerAdapter#destDir}.
+     * Compile all source files in <code>DefaultCompilerAdapter.compileList</code> individually and
+     * write class files in directory <code>DefaultCompilerAdapter.destDir</code>.
      * <p>
      * The following fields of {@link DefaultCompilerAdapter} are honored:
      * <ul>
-     *   <li>{@link DefaultCompilerAdapter#compileList} - the set of Java<sup>TM</sup> source files to compile
-     *   <li>{@link DefaultCompilerAdapter#destDir} - where to store the class files
-     *   <li>{@link DefaultCompilerAdapter#compileSourcepath} - where to look for more Java<sup>TM</sup> source files
-     *   <li>{@link DefaultCompilerAdapter#compileClasspath} - where to look for required classes
-     *   <li>{@link DefaultCompilerAdapter#extdirs}
-     *   <li>{@link DefaultCompilerAdapter#bootclasspath}
-     *   <li>{@link DefaultCompilerAdapter#encoding} - how the Java<sup>TM</sup> source files are encoded
-     *   <li>{@link DefaultCompilerAdapter#verbose}
-     *   <li>{@link DefaultCompilerAdapter#debug}
-     *   <li>{@link org.apache.tools.ant.taskdefs.Javac#getDebugLevel()}
-     *   <li>{@link DefaultCompilerAdapter#src}
+     *   <li><code>DefaultCompilerAdapter.compileList</code> - the set of Java<sup>TM</sup> source files to compile
+     *   <li><code>DefaultCompilerAdapter.destDir</code> - where to store the class files
+     *   <li><code>DefaultCompilerAdapter.compileSourcepath</code> - where to look for more Java<sup>TM</sup> source files
+     *   <li><code>DefaultCompilerAdapter.compileClasspath</code> - where to look for required classes
+     *   <li><code>DefaultCompilerAdapter.extdirs</code>
+     *   <li><code>DefaultCompilerAdapter.bootclasspath</code>
+     *   <li><code>DefaultCompilerAdapter.encoding</code> - how the Java<sup>TM</sup> source files are encoded
+     *   <li><code>DefaultCompilerAdapter.verbose</code>
+     *   <li><code>DefaultCompilerAdapter.debug</code>
+     *   <li><code>org.apache.tools.ant.taskdefs.Javac.getDebugLevel()</code>
+     *   <li><code>DefaultCompilerAdapter.src</code>
      * </ul>
      * The following fields of {@link DefaultCompilerAdapter} are not honored at this time:
      * <ul>
-     *   <li>{@link DefaultCompilerAdapter#depend}
-     *   <li>{@link DefaultCompilerAdapter#deprecation}
-     *   <li>{@link DefaultCompilerAdapter#includeAntRuntime}
-     *   <li>{@link DefaultCompilerAdapter#includeJavaRuntime}
-     *   <li>{@link DefaultCompilerAdapter#location}
-     *   <li>{@link DefaultCompilerAdapter#optimize}
-     *   <li>{@link DefaultCompilerAdapter#target}
+     *   <li><code>DefaultCompilerAdapter.depend</code>
+     *   <li><code>DefaultCompilerAdapter.deprecation</code>
+     *   <li><code>DefaultCompilerAdapter.includeAntRuntime</code>
+     *   <li><code>DefaultCompilerAdapter.includeJavaRuntime</code>
+     *   <li><code>DefaultCompilerAdapter.location</code>
+     *   <li><code>DefaultCompilerAdapter.optimize</code>
+     *   <li><code>DefaultCompilerAdapter.target</code>
      * </ul>
+     * 
      * @return "true" on success
      */
     public boolean execute() {
@@ -110,16 +112,16 @@ public class AntCompilerAdapter extends DefaultCompilerAdapter {
         boolean verbose = this.verbose;
 
         // Determine debugging information.
-        DebuggingInformation debuggingInformation;
+        EnumeratorSet debuggingInformation;
         if (!this.debug) {
             debuggingInformation = DebuggingInformation.NONE;
         } else {
             String debugLevel = this.attributes.getDebugLevel();
             if (debugLevel == null) {
-                debuggingInformation = DebuggingInformation.LINES.add(DebuggingInformation.SOURCE);
+                debuggingInformation = DebuggingInformation.DEFAULT_DEBUGGING_INFORMATION;
             } else {
                 try {
-                    debuggingInformation = new DebuggingInformation(debugLevel.toUpperCase());
+                    debuggingInformation = new EnumeratorSet(DebuggingInformation.class, debugLevel);
                 } catch (EnumeratorFormatException ex) {
                     debuggingInformation = DebuggingInformation.NONE;
                 }

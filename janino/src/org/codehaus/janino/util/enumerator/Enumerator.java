@@ -2,7 +2,7 @@
 /*
  * Janino - An embedded Java[TM] compiler
  *
- * Copyright (c) 2005, Arno Unkrig
+ * Copyright (c) 2006, Arno Unkrig
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -34,99 +34,93 @@
 
 package org.codehaus.janino.util.enumerator;
 
-import java.lang.reflect.*;
 import java.util.*;
 
 /**
- * A class that represents an enumerated value. Its main feature is its
- * {@link #toString()} method, which reconstructs the clear text value
- * through reflection.
+ * A class that represents an enumerated value. Its main features are its {@link #toString()} and
+ * {@link #fromString(String, Class)} method, which map names to values and vice versa.
  * <p>
  * To use this class, derive from it and define one or more
  * <code>public static final</code> fields, as follows:
  * <pre>
- * public class Color extends Enumerator {
- *     public static final Color RED   = new Color(0);
- *     public static final Color GREEN = new Color(1);
- *     public static final Color BLUE  = new Color(2);
+ * public final class Suit extends Enumerator {
+ * 
+ *     // Exactly N instances of "Suit" exist to represent the N possible values.
+ *     public static final Suit CLUBS    = new Suit("clubs");
+ *     public static final Suit DIAMONDS = new Suit("diamonds");
+ *     public static final Suit HEARTS   = new Suit("hearts");
+ *     public static final Suit SPADES   = new Suit("spades");
  *
- *     public Color(String s) throws EnumeratorFormatException { super(s); }
- *
- *     private Color(int value) { super(value); }
+ *     // Optional, if you want to use EumeratorSet arithmetics.
+ *     public static final EnumeratorSet NONE = new EnumeratorSet(Suit      ).setName("none");
+ *     public static final EnumeratorSet ALL  = new EnumeratorSet(Suit, true).setName("all");
+ * 
+ *     // These MUST be declared exactly like this:
+ *     private Suit(String name) { super(name); }
+ *     public static Suit fromString(String name) throws EnumeratorFormatException {
+ *         return (Suit) Enumerator.fromString(name, Suit.class);
+ *     }
  * }
  * </pre>
+ * 
+ * @see <a href="http://java.sun.com/developer/Books/effectivejava/Chapter5.pdf">Effective Java, Item 21</a>
  */
 public abstract class Enumerator {
-    private final int value;
+    /*package*/ final String name;
+    private static final Map instances           = new HashMap(); // Class enumeratorClass => String name => Enumerator
 
     /**
      * Initialize the enumerator to the given value.
      */
-    protected Enumerator(int value) {
-        this.value = value;
+    protected Enumerator(String name) {
+        this.name = name;
+
+        Enumerator.getInstances(this.getClass()).put(name, this);
     }
 
     /**
      * Check the object's value
      */
     public boolean equals(Object that) {
-        return that.getClass() == this.getClass() && this.value == ((Enumerator) that).value;
+        return this == that;
     }
 
     public int hashCode() {
-        return this.value;
+        return this.name.hashCode();
     }
 
     /**
-     * Examines the given {@link Class} and its superclasses for <code>public static final</code>
-     * fields of the same type as <code>this</code>, and maps their names to their values.
-     * @return {@link String} name => {@link Integer} values
+     * Returns a mapping of name to Enumerator for the given enumeratorClass.
      */
-    private Map getMapping() {
-        Class clazz = this.getClass();
+    /*package*/ static Map getInstances(Class enumeratorClass) {
+        Map m = (Map) Enumerator.instances.get(enumeratorClass);
+        if (m != null) return m;
 
-        // Look up the mappings cache.
-        {
-            Map m = (Map) Enumerator.mappings.get(clazz);
-            if (m != null) return m;
-        }
-
-        // Cache miss, create a new mapping.
-        Map m = new HashMap();
-        Field[] fields = clazz.getFields();
-        for (int i = 0; i < fields.length; ++i) {
-            Field f = fields[i];
-            if (
-                f.getType() == clazz &&
-                (f.getModifiers() & (Modifier.STATIC | Modifier.FINAL)) == (Modifier.STATIC | Modifier.FINAL)
-            ) {
-                try {
-                    Enumerator e = (Enumerator) f.get(null);
-                    m.put(f.getName(), new Integer(e.value));
-                } catch (IllegalAccessException ex) {
-                    throw new RuntimeException("SNO: Field \"" + f + "\" is inaccessible");
-                }
-            }
-        }
-
-        // Cache it.
-        Enumerator.mappings.put(this.getClass(), m);
+        m = new HashMap();
+        Enumerator.instances.put(enumeratorClass, m);
         return m;
     }
-    private static final Map mappings = new HashMap(); // Class => Map String name => Integer value
 
     /**
      * Initialize an {@link Enumerator} from a string.
      * <p>
      * The given string is converted into a value by looking at the class's
      * <code>public static final</code> fields which have the same type as the class itself.
+     * <p>
+     * Derived classes should invoke this method as follows:<pre>
+     * public class Suit extends Enumerator {
+     *     ...
+     *     public static Suit fromString(String name) throws EnumeratorFormatException {
+     *         return (Suit) Enumerator.fromString(name, Suit.class);
+     *     }
+     * }</pre>
      * 
      * @throws EnumeratorFormatException if the string cannot be identified
      */
-    protected Enumerator(String s) throws EnumeratorFormatException {
-        Integer v = (Integer) this.getMapping().get(s);
-        if (v == null) throw new EnumeratorFormatException(s);
-        this.value = v.intValue();
+    protected static final Enumerator fromString(String name, Class enumeratorClass) throws EnumeratorFormatException {
+        Enumerator value = (Enumerator) Enumerator.getInstances(enumeratorClass).get(name);
+        if (value == null) throw new EnumeratorFormatException(name);
+        return value;
     }
 
     /**
@@ -137,12 +131,6 @@ public abstract class Enumerator {
      * matches the object's value.
      */
     public String toString() {
-        for (Iterator esi = this.getMapping().entrySet().iterator(); esi.hasNext();) {
-            Map.Entry me = (Map.Entry) esi.next();
-            if (this.value == ((Integer) me.getValue()).intValue()) {
-                return (String) me.getKey();
-            }
-        }
-        return Integer.toString(this.value);
+        return this.name;
     }
 }

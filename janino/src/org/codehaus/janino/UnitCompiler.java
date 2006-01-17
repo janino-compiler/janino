@@ -2,7 +2,7 @@
 /*
  * Janino - An embedded Java[TM] compiler
  *
- * Copyright (c) 2005, Arno Unkrig
+ * Copyright (c) 2006, Arno Unkrig
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -38,6 +38,7 @@ import java.io.*;
 import java.util.*;
 
 import org.codehaus.janino.util.*;
+import org.codehaus.janino.util.enumerator.EnumeratorSet;
 
 /**
  * This class actually implements the Java<sup>TM</sup> compiler. It is
@@ -59,7 +60,7 @@ public class UnitCompiler {
      * interfaces defined in the compilation unit.
      */
     public ClassFile[] compileUnit(
-        DebuggingInformation debuggingInformation
+        EnumeratorSet debuggingInformation
     ) throws CompileException {
         this.generatedClassFiles  = new ArrayList();
         this.debuggingInformation = debuggingInformation;
@@ -459,7 +460,7 @@ public class UnitCompiler {
         final boolean[] res = new boolean[1];
         Visitor.BlockStatementVisitor bsv = new Visitor.BlockStatementVisitor() {
             public void visitInitializer                      (Java.Initializer                       i   ) { try { res[0] = UnitCompiler.this.compile2(i   ); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitFieldDeclaration                  (Java.FieldDeclaration                   fd  ) { try { res[0] = UnitCompiler.this.compile2(fd  ); } catch (CompileException e) { throw new TunnelException(e); } }
+            public void visitFieldDeclaration                 (Java.FieldDeclaration                  fd  ) { try { res[0] = UnitCompiler.this.compile2(fd  ); } catch (CompileException e) { throw new TunnelException(e); } }
             public void visitLabeledStatement                 (Java.LabeledStatement                  ls  ) { try { res[0] = UnitCompiler.this.compile2(ls  ); } catch (CompileException e) { throw new TunnelException(e); } }
             public void visitBlock                            (Java.Block                             b   ) { try { res[0] = UnitCompiler.this.compile2(b   ); } catch (CompileException e) { throw new TunnelException(e); } }
             public void visitExpressionStatement              (Java.ExpressionStatement               es  ) { try { res[0] = UnitCompiler.this.compile2(es  ); } catch (CompileException e) { throw new TunnelException(e); } }
@@ -594,7 +595,7 @@ public class UnitCompiler {
         if (ws.whereToBreak != null) ws.whereToBreak.set();
         return true;
     }
-    /*private*/ boolean compileUnconditionalLoop(
+    private boolean compileUnconditionalLoop(
         Java.ContinuableStatement cs,
         Java.BlockStatement       body,
         Java.Rvalue[]             optionalUpdate
@@ -611,7 +612,7 @@ public class UnitCompiler {
         cs.whereToBreak.set();
         return true;
     }
-    /*private*/ boolean compileUnconditionalLoopWithUpdate(
+    private boolean compileUnconditionalLoopWithUpdate(
         Java.ContinuableStatement cs,
         Java.BlockStatement       body,
         Java.Rvalue[]             update
@@ -894,6 +895,10 @@ public class UnitCompiler {
                 fieldType,                         // destinationType
                 this.getConstantValue(initializer) // optionalConstantValue
             );
+
+            // No need to check accessibility here.
+            ;
+
             if ((fd.modifiers & Mod.STATIC) != 0) {
                 this.writeOpcode(fd, Opcode.PUTSTATIC);
             } else {
@@ -1936,6 +1941,7 @@ public class UnitCompiler {
         return this.load((Java.Located) lva, lva.localVariable);
     }
     /*private*/ IClass compileGet2(Java.FieldAccess fa) throws CompileException {
+        this.checkAccessible(fa.field, fa.enclosingBlockStatement);
         if (fa.field.isStatic()) {
             this.writeOpcode(fa, Opcode.GETSTATIC);
         } else {
@@ -2078,6 +2084,7 @@ public class UnitCompiler {
         Java.Type declaringClassOrInterfaceType = new Java.SimpleType(loc, this.resolve(cl.declaringType));
         Java.Lvalue classDollarFieldAccess = new Java.FieldAccessExpression(
             loc,                           // location
+            cl.enclosingBlockStatement,    // enclosingBlockStatement
             declaringClassOrInterfaceType, // lhs
             classDollarFieldName           // fieldName
         );
@@ -2096,7 +2103,7 @@ public class UnitCompiler {
                 "=",                       // operator
                 new Java.MethodInvocation( // rhs
                     loc,                           // location
-                    (Java.Scope) cl.declaringType, // scope
+                    cl.enclosingBlockStatement,    // enclosingBlockStatement
                     declaringClassOrInterfaceType, // optionalTarget
                     "class$",                      // methodName
                     new Java.Rvalue[] {            // arguments
@@ -2414,7 +2421,7 @@ public class UnitCompiler {
             Java.ClassDeclaration    scopeClassDeclaration;
             {
                 Java.Scope s;
-                for (s = mi.scope; !(s instanceof Java.TypeBodyDeclaration); s = s.getEnclosingScope());
+                for (s = mi.enclosingBlockStatement; !(s instanceof Java.TypeBodyDeclaration); s = s.getEnclosingScope());
                 scopeTBD = (Java.TypeBodyDeclaration) s;
                 if (!(s instanceof Java.ClassDeclaration)) s = s.getEnclosingScope();
                 scopeClassDeclaration = (Java.ClassDeclaration) s;
@@ -2444,7 +2451,7 @@ public class UnitCompiler {
                 // TODO: Wrapper methods for private methods of enclosing / enclosed types.
                 if (
                     this.getType(targetValue) != iMethod.getDeclaringIClass() &&
-                    iMethod.getAccess() == IClass.PRIVATE
+                    iMethod.getAccess() == Access.PRIVATE
                 ) this.compileError("Invocation of private methods of enclosing or enclosed type NYI; please change the access of method \"" + iMethod.getName() + "()\" from \"private\" to \"/*private*/\"", mi.getLocation());
 
                 this.compileGetValue(targetValue);
@@ -2471,6 +2478,7 @@ public class UnitCompiler {
         }
 
         // Invoke!
+        this.checkAccessible(iMethod, mi.enclosingBlockStatement);
         if (iMethod.getDeclaringIClass().isInterface()) {
             this.writeOpcode(mi, Opcode.INVOKEINTERFACE);
             this.writeConstantInterfaceMethodrefInfo(
@@ -2487,7 +2495,7 @@ public class UnitCompiler {
         } else {
             this.writeOpcode(mi, (
                 iMethod.isStatic()                    ? Opcode.INVOKESTATIC :
-                iMethod.getAccess() == IClass.PRIVATE ? Opcode.INVOKESPECIAL :
+                iMethod.getAccess() == Access.PRIVATE ? Opcode.INVOKESPECIAL :
                 Opcode.INVOKEVIRTUAL
             ));
             this.writeConstantMethodrefInfo(
@@ -2503,7 +2511,7 @@ public class UnitCompiler {
         IClass.IMethod iMethod = this.findIMethod(scmi);
 
         Java.Scope s;
-        for (s = scmi.scope; s instanceof Java.Statement; s = s.getEnclosingScope());
+        for (s = scmi.enclosingBlockStatement; s instanceof Java.Statement; s = s.getEnclosingScope());
         Java.FunctionDeclarator fd = s instanceof Java.FunctionDeclarator ? (Java.FunctionDeclarator) s : null;
         if (fd == null) {
             this.compileError("Cannot invoke superclass method in non-method scope", scmi.getLocation());
@@ -3083,7 +3091,7 @@ public class UnitCompiler {
         final boolean[] res = new boolean[1];
         Visitor.BlockStatementVisitor bsv = new Visitor.BlockStatementVisitor() {
             public void visitInitializer                      (Java.Initializer                       i   ) { try { res[0] = UnitCompiler.this.generatesCode2(i   ); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitFieldDeclaration                  (Java.FieldDeclaration                   fd  ) { try { res[0] = UnitCompiler.this.generatesCode2(fd  ); } catch (CompileException e) { throw new TunnelException(e); } }
+            public void visitFieldDeclaration                 (Java.FieldDeclaration                  fd  ) { try { res[0] = UnitCompiler.this.generatesCode2(fd  ); } catch (CompileException e) { throw new TunnelException(e); } }
             public void visitLabeledStatement                 (Java.LabeledStatement                  ls  ) {       res[0] = UnitCompiler.this.generatesCode2(ls  );                                                                }
             public void visitBlock                            (Java.Block                             b   ) { try { res[0] = UnitCompiler.this.generatesCode2(b   ); } catch (CompileException e) { throw new TunnelException(e); } }
             public void visitExpressionStatement              (Java.ExpressionStatement               es  ) {       res[0] = UnitCompiler.this.generatesCode2(es  );                                                                }
@@ -3148,7 +3156,7 @@ public class UnitCompiler {
     private void leave(Java.BlockStatement bs, final IClass optionalStackValueType) {
         Visitor.BlockStatementVisitor bsv = new Visitor.BlockStatementVisitor() {
             public void visitInitializer                      (Java.Initializer                       i   ) { UnitCompiler.this.leave2(i,    optionalStackValueType); }
-            public void visitFieldDeclaration                  (Java.FieldDeclaration                   fd  ) { UnitCompiler.this.leave2(fd,   optionalStackValueType); }
+            public void visitFieldDeclaration                 (Java.FieldDeclaration                  fd  ) { UnitCompiler.this.leave2(fd,   optionalStackValueType); }
             public void visitLabeledStatement                 (Java.LabeledStatement                  ls  ) { UnitCompiler.this.leave2(ls,   optionalStackValueType); }
             public void visitBlock                            (Java.Block                             b   ) { UnitCompiler.this.leave2(b,    optionalStackValueType); }
             public void visitExpressionStatement              (Java.ExpressionStatement               es  ) { UnitCompiler.this.leave2(es,   optionalStackValueType); }
@@ -3226,6 +3234,7 @@ public class UnitCompiler {
         );
     }
     /*private*/ void compileSet2(Java.FieldAccess fa) throws CompileException {
+        this.checkAccessible(fa.field, fa.enclosingBlockStatement);
         this.writeOpcode(fa, (
             fa.field.isStatic() ?
             Opcode.PUTSTATIC :
@@ -3672,6 +3681,102 @@ public class UnitCompiler {
         return this.isType(this.reclassify(an));
     }
 
+    /**
+     * Check whether the given {@link IClass.IMember} is accessible in the given context,
+     * according to JLS 6.6. Issues a {@link #compileError(String)} if not.
+     */
+    private void checkAccessible(
+        IClass.IMember      member,
+        Java.BlockStatement contextBlockStatement
+    ) throws CompileException {
+
+        // At this point, the member is PUBLIC, DEFAULT, PROECTEDED or PRIVATE accessible.
+
+        // PUBLIC members are always accessible.
+        if (member.getAccess() == Access.PUBLIC) return;
+
+        // At this point, the member is DEFAULT, PROECTEDED or PRIVATE accessible.
+
+        // Determine the declaring classes for the member and the context block statement.
+        IClass iClassDeclaringMember = member.getDeclaringIClass();
+        IClass iClassDeclaringContextBlockStatement;
+        for (Java.Scope s = contextBlockStatement.getEnclosingScope();; s = s.getEnclosingScope()) {
+            if (s instanceof Java.TypeDeclaration) {
+                iClassDeclaringContextBlockStatement = this.resolve((Java.TypeDeclaration) s);
+                break;
+            }
+        }
+
+        // Access is always allowed for block statements declared in the same class as the member.
+        if (iClassDeclaringContextBlockStatement == iClassDeclaringMember) return;
+
+        // Determine the enclosing top level class declarations for the member and the context
+        // block statement.
+        IClass topLevelIClassEnclosingMember = iClassDeclaringMember;
+        for (IClass c = iClassDeclaringMember; c != null; c = c.getDeclaringIClass()) {
+            topLevelIClassEnclosingMember = c;
+        }
+        IClass topLevelIClassEnclosingContextBlockStatement = iClassDeclaringContextBlockStatement;
+        for (IClass c = iClassDeclaringContextBlockStatement; c != null; c = c.getDeclaringIClass()) {
+            topLevelIClassEnclosingContextBlockStatement = c;
+        }
+
+        // Check whether the member and the context block statement are enclosed by the same
+        // top-level type.
+        if (topLevelIClassEnclosingMember == topLevelIClassEnclosingContextBlockStatement) {
+            if (
+                member instanceof IClass.IInvocable
+                && member.getAccess() == Access.PRIVATE
+                && (member instanceof IClass.IConstructor || !((IClass.IMethod) member).isStatic())
+            ) {
+                this.compileError("Compiler limitation: Access to private constructor or non-static method \"" + member + "\" declared in the same enclosing top-level type \"" + topLevelIClassEnclosingContextBlockStatement + "\" not supported. It is recommended to change its declaration from \"private\" to \"/*private*/\".", contextBlockStatement.getLocation());
+            }
+            return;
+        }
+        if (member.getAccess() == Access.PRIVATE) {
+            this.compileError("Private member \"" + member + "\" cannot be accessed from type \"" + iClassDeclaringContextBlockStatement + "\".", contextBlockStatement.getLocation());
+            return;
+        }
+
+        // At this point, the member is DEFAULT or PROECTEDED accessible.
+
+        // Determine the packages for the member and the context block statement.
+        String memberPackage;
+        {
+            String d = topLevelIClassEnclosingMember.getDescriptor();
+            int idx = d.lastIndexOf('.');
+            memberPackage = idx == -1 ? null : d.substring(0, idx);
+        }
+        String contextBlockStatementPackage;
+        {
+            String d = topLevelIClassEnclosingContextBlockStatement.getDescriptor();
+            int idx = d.lastIndexOf('.');
+            contextBlockStatementPackage = idx == -1 ? null : d.substring(0, idx);
+        }
+
+        // Check whether the member and the context block statement are declared in the same
+        // package.
+        if (memberPackage == null ? contextBlockStatementPackage == null : memberPackage.equals(contextBlockStatementPackage)) {
+            return;
+        }
+        if (member.getAccess() == Access.DEFAULT) {
+            this.compileError("Member \"" + member + "\" with \"" + member.getAccess() + "\" visibility cannot be accessed from type \"" + iClassDeclaringContextBlockStatement + "\".", contextBlockStatement.getLocation());
+            return;
+        }
+
+        // At this point, the member is PROECTEDED accessible.
+
+        // Check whether the class declaring the context block statement is a subclass of the
+        // class declaring the member.
+        for (IClass c = iClassDeclaringContextBlockStatement;; c = c.getDeclaringIClass()) {
+            if (c == null) {
+                this.compileError("Protected member \"" + member + "\" cannot be accessed from type \"" + iClassDeclaringContextBlockStatement + "\", which is neither declared in the same package as or is a subclass of \"" + iClassDeclaringMember + "\".", contextBlockStatement.getLocation());
+                return;
+            }
+            if (c == iClassDeclaringMember) return;
+        }
+    }
+
     private final Java.Type toTypeOrCE(Java.Atom a) throws CompileException {
         Java.Type result = a.toType();
         if (result == null) {
@@ -3723,6 +3828,7 @@ public class UnitCompiler {
                         cd.getLocation(),             // location
                         new Java.FieldAccess(         // lhs
                             cd.getLocation(),       // location
+                            cd.optionalBody, // enclosingBlockStatement
                             new Java.ThisReference( // lhs
                                 cd.getLocation(),              // location
                                 (Java.Scope) cd.declaringClass // scope
@@ -4173,16 +4279,16 @@ public class UnitCompiler {
             res[i] = this.resolve(fd.declaringType).new IField() {
 
                 // Implement IMember.
-                public int getAccess() {
+                public Access getAccess() {
                     switch (fd.modifiers & Mod.PPP) {
                     case Mod.PRIVATE:
-                        return IClass.PRIVATE;
+                        return Access.PRIVATE;
                     case Mod.PROTECTED:
-                        return IClass.PROTECTED;
+                        return Access.PROTECTED;
                     case Mod.PACKAGE:
-                        return IClass.PACKAGE;
+                        return Access.DEFAULT;
                     case Mod.PUBLIC:
-                        return IClass.PUBLIC;
+                        return Access.PUBLIC;
                     default:
                         throw new RuntimeException("Invalid access");
                     }
@@ -4256,10 +4362,10 @@ public class UnitCompiler {
      * @throws CompileException
      */
     private Java.Atom reclassifyName(
-        Location         location,
-        Java.Scope            scope,
-        final String[]   identifiers,
-        int              n
+        Location       location,
+        Java.Scope     scope,
+        final String[] identifiers,
+        int            n
     ) throws CompileException {
 
         if (n == 1) return this.reclassifyName(
@@ -4301,7 +4407,12 @@ public class UnitCompiler {
             if (field != null) {
                 // 6.5.2.2.2.2 TYPE.FIELD
                 // 6.5.2.2.3.2 EXPRESSION.FIELD
-                return new Java.FieldAccess(location, lhs, field);
+                return new Java.FieldAccess(
+                    location,
+                    (Java.BlockStatement) scope, // enclosingBlockStatement
+                    lhs,
+                    field
+                );
             }
         }
 
@@ -4334,7 +4445,7 @@ public class UnitCompiler {
      */
     private Java.Atom reclassifyName(
         Location     location,
-        Java.Scope        scope,
+        Java.Scope   scope,
         final String identifier
     ) throws CompileException {
 
@@ -4363,10 +4474,14 @@ public class UnitCompiler {
         // 6.5.2.BL1.B1.B1.2/6.5.6.1.1 Parameter.
         {
             Java.InnerClassDeclaration icd = null;
+            Java.BlockStatement ebs = null;
             for (Java.Scope s = scope; !(s instanceof Java.CompilationUnit); s = s.getEnclosingScope()) {
                 if (s instanceof Java.InnerClassDeclaration) {
                     icd = (Java.InnerClassDeclaration) s;
                     continue;
+                }
+                if (ebs == null && s instanceof Java.BlockStatement) {
+                    ebs = (Java.BlockStatement) s;
                 }
 
                 Java.LocalVariable lv = null;
@@ -4393,6 +4508,7 @@ public class UnitCompiler {
                     icd.defineSyntheticField(iField);
                     return new Java.FieldAccess(
                         location,                        // location
+                        ebs,                             // enclosingBlockStatement
                         new Java.QualifiedThisReference( // lhs
                             location,                                        // location
                             (Java.Scope) scopeTBD,                           // scope
@@ -4405,7 +4521,12 @@ public class UnitCompiler {
         }
 
         // 6.5.2.BL1.B1.B1.3/6.5.6.1.2.1 Field.
+        Java.BlockStatement ebs = null;
         for (Java.Scope s = scope; !(s instanceof Java.CompilationUnit); s = s.getEnclosingScope()) {
+            if (s instanceof Java.BlockStatement) {
+                ebs = (Java.BlockStatement) s;
+                continue;
+            }
             if (s instanceof Java.TypeDeclaration) {
                 final IClass etd = UnitCompiler.this.resolve((Java.AbstractTypeDeclaration) s);
                 final IClass.IField f = this.findIField(etd, identifier, location);
@@ -4439,7 +4560,12 @@ public class UnitCompiler {
                             lhs = new Java.QualifiedThisReference(location, (Java.Scope) scopeTBD, ct);
                         }
                     }
-                    return new Java.FieldAccess(location, lhs, f);
+                    return new Java.FieldAccess(
+                        location,
+                        ebs, // enclosingBlockStatement
+                        lhs,
+                        f
+                    );
                 }
             }
         }
@@ -4519,6 +4645,7 @@ public class UnitCompiler {
             }
             fae.value = new Java.FieldAccess(
                 fae.getLocation(),
+                fae.enclosingBlockStatement, // enclosingBlockStatement
                 fae.lhs,
                 iField
             );
@@ -4534,7 +4661,7 @@ public class UnitCompiler {
      * @return The selected {@link IClass.IMethod} or <code>null</code>
      */
     private IClass.IMethod findIMethod(Java.MethodInvocation mi) throws CompileException {
-        for (Java.Scope s = mi.scope; !(s instanceof Java.CompilationUnit); s = s.getEnclosingScope()) {
+        for (Java.Scope s = mi.enclosingBlockStatement; !(s instanceof Java.CompilationUnit); s = s.getEnclosingScope()) {
             if (s instanceof Java.TypeDeclaration) {
                 Java.TypeDeclaration td = (Java.TypeDeclaration) s;
 
@@ -4556,7 +4683,7 @@ public class UnitCompiler {
                     this.checkThrownException(
                         (Java.Located) mi,   // located
                         thrownExceptions[i], // type
-                        mi.scope             // scope
+                        mi.enclosingBlockStatement             // scope
                     );
                 }
 
@@ -4600,7 +4727,7 @@ public class UnitCompiler {
             public boolean  isAbstract()                                  { return false; }
             public IClass[] getParameterTypes() throws CompileException   { return new IClass[0]; }
             public IClass[] getThrownExceptions() throws CompileException { return new IClass[0]; }
-            public int      getAccess()                                   { return IClass.PUBLIC; }
+            public Access   getAccess()                                   { return Access.PUBLIC; }
         };
     }
 
@@ -4638,14 +4765,14 @@ public class UnitCompiler {
             IClass.IMethod[] oms = this.iClassLoader.OBJECT.getDeclaredIMethods(methodName);
             for (int i = 0; i < oms.length; ++i) {
                 IClass.IMethod om = oms[i];
-                if (!om.isStatic() && om.getAccess() == IClass.PUBLIC) v.add(om);
+                if (!om.isStatic() && om.getAccess() == Access.PUBLIC) v.add(om);
             }
         }
     }
 
     private IClass.IMethod findIMethod(Java.SuperclassMethodInvocation scmi) throws CompileException {
         Java.ClassDeclaration declaringClass;
-        for (Java.Scope s = scmi.scope;; s = s.getEnclosingScope()) {
+        for (Java.Scope s = scmi.enclosingBlockStatement;; s = s.getEnclosingScope()) {
             if (s instanceof Java.FunctionDeclarator) {
                 Java.FunctionDeclarator fd = (Java.FunctionDeclarator) s;
                 if ((fd.modifiers & Mod.STATIC) != 0) this.compileError("Superclass method cannot be invoked in static context", scmi.getLocation());
@@ -4730,7 +4857,7 @@ public class UnitCompiler {
             if (iInvocables[0] instanceof IClass.IConstructor) {
                 return iInvocables[0].getDeclaringIClass().new IConstructor() {
                     public IClass[] getParameterTypes()   { return argumentTypes; }
-                    public int      getAccess()           { return IClass.PUBLIC; }
+                    public Access   getAccess()           { return Access.PUBLIC; }
                     public IClass[] getThrownExceptions() { return new IClass[0]; }
                 };
             } else
@@ -4740,7 +4867,7 @@ public class UnitCompiler {
                     public boolean  isAbstract()          { return false; }
                     public IClass   getReturnType()       { return IClass.INT; }
                     public String   getName()             { return ((IClass.IMethod) iInvocables[0]).getName(); }
-                    public int      getAccess()           { return IClass.PUBLIC; }
+                    public Access   getAccess()           { return Access.PUBLIC; }
                     public IClass[] getParameterTypes()   { return argumentTypes; }
                     public IClass[] getThrownExceptions() { return new IClass[0]; }
                 };
@@ -4849,7 +4976,7 @@ public class UnitCompiler {
                 public IClass   getReturnType() throws CompileException     { return im.getReturnType(); }
                 public boolean  isAbstract()                                { return true; }
                 public boolean  isStatic()                                  { return false; }
-                public int      getAccess()                                 { return im.getAccess(); }
+                public Access   getAccess()                                 { return im.getAccess(); }
                 public IClass[] getParameterTypes() throws CompileException { return im.getParameterTypes(); }
                 public IClass[] getThrownExceptions()                       { return tes; }
             };
@@ -5256,16 +5383,16 @@ public class UnitCompiler {
         cd.iConstructor = this.resolve((Java.AbstractTypeDeclaration) cd.getDeclaringType()).new IConstructor() {
 
             // Implement IMember.
-            public int getAccess() {
+            public Access getAccess() {
                 switch (cd.modifiers & Mod.PPP) {
                 case Mod.PRIVATE:
-                    return IClass.PRIVATE;
+                    return Access.PRIVATE;
                 case Mod.PROTECTED:
-                    return IClass.PROTECTED;
+                    return Access.PROTECTED;
                 case Mod.PACKAGE:
-                    return IClass.PACKAGE;
+                    return Access.DEFAULT;
                 case Mod.PUBLIC:
-                    return IClass.PUBLIC;
+                    return Access.PUBLIC;
                 default:
                     throw new RuntimeException("Invalid access");
                 }
@@ -5334,16 +5461,16 @@ public class UnitCompiler {
         md.iMethod = this.resolve((Java.AbstractTypeDeclaration) md.getDeclaringType()).new IMethod() {
 
             // Implement IMember.
-            public int getAccess() {
+            public Access getAccess() {
                 switch (md.modifiers & Mod.PPP) {
                 case Mod.PRIVATE:
-                    return IClass.PRIVATE;
+                    return Access.PRIVATE;
                 case Mod.PROTECTED:
-                    return IClass.PROTECTED;
+                    return Access.PROTECTED;
                 case Mod.PACKAGE:
-                    return IClass.PACKAGE;
+                    return Access.DEFAULT;
                 case Mod.PUBLIC:
-                    return IClass.PUBLIC;
+                    return Access.PUBLIC;
                 default:
                     throw new RuntimeException("Invalid access");
                 }
@@ -5480,11 +5607,11 @@ public class UnitCompiler {
 
         // return Class.forName(className);
         Java.MethodInvocation mi = new Java.MethodInvocation(
-            loc,                // location
-            (Java.Scope) ts,    // enclosingScope
-            classType,          // optionalTarget
-            "forName",          // methodName
-            new Java.Rvalue[] { // arguments
+            loc,                      // location
+            (Java.BlockStatement) ts, // enclosingBlockStatement
+            classType,                // optionalTarget
+            "forName",                // methodName
+            new Java.Rvalue[] {       // arguments
                 new Java.AmbiguousName(loc, (Java.Scope) ts, new String[] { "className" } )
             }
         );
@@ -5512,7 +5639,7 @@ public class UnitCompiler {
             new Java.Rvalue[] {                                   // arguments
                 new Java.MethodInvocation(
                     loc,                                                                // location
-                    (Java.Scope) b,                                                     // enclosingScope
+                    (Java.BlockStatement) b,                                            // enclosingScope
                     new Java.AmbiguousName(loc, (Java.Scope) b, new String[] { "ex"} ), // optionalTarget
                     "getMessage",                                                       // methodName
                     new Java.Rvalue[0]                                                  // arguments
@@ -6792,7 +6919,7 @@ public class UnitCompiler {
         public String  getName()          { return this.name; }
         public IClass  getType()          { return this.type; }
         public boolean isStatic()         { return false; }
-        public int     getAccess()        { return IClass.PACKAGE; }
+        public Access  getAccess()        { return Access.DEFAULT; }
     };
 
     // Used to write byte code while compiling one constructor/method.
@@ -6806,7 +6933,7 @@ public class UnitCompiler {
 
     /*package*/ final Java.CompilationUnit compilationUnit;
 
-    private List                 generatedClassFiles;
-    private IClassLoader         iClassLoader;
-    private DebuggingInformation debuggingInformation;
+    private List          generatedClassFiles;
+    private IClassLoader  iClassLoader;
+    private EnumeratorSet debuggingInformation;
 }

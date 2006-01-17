@@ -2,7 +2,7 @@
 /*
  * Janino - An embedded Java[TM] compiler
  *
- * Copyright (c) 2005, Arno Unkrig
+ * Copyright (c) 2006, Arno Unkrig
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -113,7 +113,7 @@ public class SimpleCompiler extends EvaluatorBase {
         // Compile the classes and load them.
         this.classLoader = this.compileAndLoad(
             compilationUnit,
-            DebuggingInformation.SOURCE.add(DebuggingInformation.LINES)
+            DebuggingInformation.DEFAULT_DEBUGGING_INFORMATION
         );
     }
 

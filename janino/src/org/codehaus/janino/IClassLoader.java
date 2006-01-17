@@ -2,7 +2,7 @@
 /*
  * Janino - An embedded Java[TM] compiler
  *
- * Copyright (c) 2005, Arno Unkrig
+ * Copyright (c) 2006, Arno Unkrig
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -163,7 +163,7 @@ public abstract class IClassLoader {
      * Find a new {@link IClass} by descriptor; return <code>null</code> if a class
      * for that <code>descriptor</code> could not be found.
      * <p>
-     * Like {@link java.lang.ClassLoader#findClass(String)}, this method
+     * Like <code>java.lang.ClassLoader.findClass(String)</code>, this method
      * must
      * <ul>
      *   <li>Get an {@link IClass} object from somewhere for the given type

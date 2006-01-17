@@ -32,25 +32,13 @@
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.codehaus.janino.util.iterator;
-
-import java.util.*;
+package org.codehaus.janino.util.enumerator;
 
 /**
- * An {@link java.util.Iterator} that transforms its elements on-the-fly.
+ * Indicates that an attempt was made to add or remove values of different type to an
+ * {@link org.codehaus.janino.util.enumerator.EnumeratorSet}.
  */
-public abstract class TransformingIterator extends FilterIterator {
-    public TransformingIterator(Iterator delegate) {
-        super(delegate);
-    }
-
-    public final Object next() {
-        return this.transform(this.delegate.next());
-    }
-
-    /**
-     * Derived classes must implement this method such that it does the
-     * desired transformation.
-     */
-    protected abstract Object transform(Object o);
+public class EnumeratorSetTypeException extends RuntimeException {
+    public EnumeratorSetTypeException()               {}
+    public EnumeratorSetTypeException(String message) { super(message); }
 }

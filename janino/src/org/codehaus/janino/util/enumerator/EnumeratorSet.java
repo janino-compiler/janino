@@ -2,7 +2,7 @@
 /*
  * Janino - An embedded Java[TM] compiler
  *
- * Copyright (c) 2005, Arno Unkrig
+ * Copyright (c) 2006, Arno Unkrig
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -34,164 +34,254 @@
 
 package org.codehaus.janino.util.enumerator;
 
-import java.lang.reflect.*;
 import java.util.*;
 
 /**
- * A class that represents a set of enumerated values.
+ * A class that represents an immutable set of {@link Enumerator}s.
  * <p>
  * Its main features are its constructor, which initializes the object from a clear-text string,
- * and its {@link #toString()} method, which reconstructs the clear text values. Both is done
- * through reflection.
+ * and its {@link #toString()} method, which reconstructs the clear text values.
  * <p>
- * Use this class as follows:
- * <pre>
- * public class Food extends EnumeratorSet {
- *     public static final Food BEEF    = new Food(1);
- *     public static final Food LETTUCE = new Food(2);
- *     public static final Food BREAD   = new Food(4);
- *
- *     public static final Food NONE    = new Food(0);
- *     public static final Food ALL     = new Food(7);
- *
- *     public Food(String s) throws EnumeratorFormatException { super(s); }
- *     public Food add(Food that) { return new Food(super.add(that)); }
- *     public Food remove(Food that) { return new Food(super.remove(that)); }
- *
- *     private Food(int values) { super(values); }
- * }
- * </pre>
+ * Sample code can be found in the documentation of {@link Enumerator}.
  */
-public abstract class EnumeratorSet {
-    private final int values;
+public class EnumeratorSet {
+    private final Class enumeratorClass;
+    private final Set   values;  // Enumerator-derived class
+    /*package*/ String  optionalName = null;
+
+    private EnumeratorSet(Class enumeratorClass, Set values) {
+        this.enumeratorClass = enumeratorClass;
+        this.values          = values;
+    }
 
     /**
-     * Initialize the enumerator to the given OR'ed set of values.
+     * Construct an empty set for values of the given {@link Enumerator}-derived type.
      */
-    protected EnumeratorSet(int values) {
-        this.values = values;
+    public EnumeratorSet(Class enumeratorClass) {
+        this(enumeratorClass, new HashSet());
     }
 
     /**
-     * Add to the object's values the given OR'ed set of values.
+     * Construct a set for values of the given {@link Enumerator}-derived type. If the
+     * <code>full</code> flag is <code>true</code>, all possible values are added to the set.
      */
-    protected int add(EnumeratorSet that) {
-        return this.values | that.values;
+    public EnumeratorSet(Class enumeratorClass, boolean full) {
+        this(enumeratorClass, new HashSet());
+        if (full) this.values.addAll(Enumerator.getInstances(enumeratorClass).values());
     }
 
     /**
-     * Remove an OR'ed set of values from the object's values.
-     */
-    protected int remove(EnumeratorSet that) {
-        return this.values & ~that.values;
-    }
-
-    /**
-     * Check if the object contains any of the given values.
-     */
-    public boolean contains(EnumeratorSet that) {
-        if (this.getClass() != that.getClass()) throw new RuntimeException("EnumeratorSet class mismatch");
-        return (this.values & that.values) != 0;
-    }
-
-    /**
-     * Check if the object contain any of the given values.
-     */
-    public boolean containsAnyOf(EnumeratorSet that) {
-        if (this.getClass() != that.getClass()) throw new RuntimeException("EnumeratorSet class mismatch");
-        return (this.values & that.values) != 0;
-    }
-
-    /**
-     * Check if the object contain all of the given values.
-     */
-    public boolean containsAllOf(EnumeratorSet that) {
-        if (this.getClass() != that.getClass()) throw new RuntimeException("EnumeratorSet class mismatch");
-        return (this.values & that.values) == that.values;
-    }
-
-    /**
-     * Check the values' identity.
-     */
-    public boolean equals(Object that) {
-        return that.getClass() == this.getClass() && this.values == ((EnumeratorSet) that).values;
-    }
-
-    public int hashCode() {
-        return this.values;
-    }
-
-    /**
-     * Examines the given {@link Class} and its superclasses for <code>public static final</code>
-     * fields of the same type as <code>this</code>, and maps their names to their values.
-     * @return {@link String} name => {@link Integer} values
-     */
-    private Map getMapping() {
-        Class clazz = this.getClass();
-
-        // Look up the mappings cache.
-        {
-            Map m = (Map) EnumeratorSet.mappings.get(clazz);
-            if (m != null) return m;
-        }
-
-        // Cache miss, create a new mapping.
-        Map m = new HashMap();
-        Field[] fields = clazz.getFields();
-        for (int i = 0; i < fields.length; ++i) {
-            Field f = fields[i];
-            if (
-                f.getType() == clazz &&
-                (f.getModifiers() & (Modifier.STATIC | Modifier.FINAL)) == (Modifier.STATIC | Modifier.FINAL)
-            ) {
-                try {
-                    EnumeratorSet es = (EnumeratorSet) f.get(null);
-                    m.put(f.getName(), new Integer(es.values));
-                } catch (IllegalAccessException ex) {
-                    throw new RuntimeException("SNO: Field \"" + f + "\" is inaccessible");
-                }
-            }
-        }
-
-        // Cache it.
-        EnumeratorSet.mappings.put(this.getClass(), m);
-        return m;
-    }
-    private static final Map mappings = new HashMap(); // Class => Map String name => Integer value
-
-    /**
-     * Initialize an {@link EnumeratorSet} from a string.
+     * Construct a set for values of the given {@link Enumerator}-derived type and initialize it
+     * from a string.
      * <p>
-     * Equivalent to <code>EnumeratorSet(s, ",")</code>.
+     * Equivalent to <code>EnumeratorSet(enumeratorClass, s, ",")</code>.
      */
-    protected EnumeratorSet(String s) throws EnumeratorFormatException {
-        this(s, ",");
+    public EnumeratorSet(Class enumeratorClass, String s) throws EnumeratorFormatException {
+        this(enumeratorClass, s, ",");
     }
 
     /**
-     * Initialize an {@link EnumeratorSet} from a string.
+     * Construct a set for values of the given {@link Enumerator}-derived type and initialize it
+     * from a string.
      * <p>
-     * The given string is parsed into tokens; each token is converted into a value by looking
-     * at the class's <code>public static final</code> fields which have the same type as
-     * the class itself. The values are OR'ed together.
+     * The given string is parsed into tokens; each token is converted into a value as
+     * {@link Enumerator#fromString(String, Class)} does and added to this set. Named {@link EnumeratorSet}s
+     * declared in the <code>enumeratorClass</code> are also recognized and added. If the string names exactly one
+     * of those {@link EnumeratorSet}s declared in the <code>enumeratorClass</code>, then the resulting set
+     * inherits the name of theat {@link EnumeratorSet}.
      * 
      * @throws EnumeratorFormatException if a token cannot be identified
      */
-    protected EnumeratorSet(
+    public EnumeratorSet(
+        Class   enumeratorClass,
         String  s,
         String  delimiter
     ) throws EnumeratorFormatException {
-        Map m = this.getMapping();
+        Set vs = new HashSet();
+
+        Map des  = Enumerator.getInstances(enumeratorClass);
+        Map dess = EnumeratorSet.getNamedEnumeratorSets(enumeratorClass);
 
         StringTokenizer st = new StringTokenizer(s, delimiter);
-        int values = 0;
         while (st.hasMoreTokens()) {
-            String token = st.nextToken();
-            Integer vs = (Integer) m.get(token);
-            if (vs == null) throw new EnumeratorFormatException(token);
-            values |= vs.intValue();
+            String name = st.nextToken();
+            Enumerator value = (Enumerator) des.get(name);
+            if (value != null) {
+                vs.add(value);
+                continue;
+            }
+
+            EnumeratorSet es = (EnumeratorSet) dess.get(name);
+            if (es != null) {
+                if (vs.isEmpty()) {
+                    vs = es.values;
+                    this.optionalName = es.optionalName;
+                } else
+                {
+                    vs.addAll(es.values);
+                }
+                continue;
+            }
+
+            throw new EnumeratorFormatException(name);
         }
-        this.values = values;
+
+        this.enumeratorClass = enumeratorClass;
+        this.values = vs;
+    }
+
+    /**
+     * Construct a copy of the given set.
+     */
+    public EnumeratorSet(EnumeratorSet that) {
+        this(that.enumeratorClass, that.values);
+    }
+
+    /**
+     * Add the given value to the set.
+     * 
+     * @throws EnumeratorSetTypeException if this set was constructed for a different {@link Enumerator}-derived type
+     */
+    public EnumeratorSet add(Enumerator value) {
+        if (value.getClass() != this.enumeratorClass) throw new EnumeratorSetTypeException("Cannot add value of type \"" + value.getClass() + "\" to set of different type \"" + this.enumeratorClass + "\"");
+        Set vs = new HashSet(this.values);
+        vs.add(value);
+        return new EnumeratorSet(this.enumeratorClass, vs);
+    }
+
+    /**
+     * Add the values of the given set to this set.
+     * 
+     * @throws EnumeratorSetTypeException if this set was constructed for a different {@link Enumerator}-derived type
+     */
+    public EnumeratorSet add(EnumeratorSet that) {
+        if (that.enumeratorClass != this.enumeratorClass) throw new EnumeratorSetTypeException("Cannot add set of type \"" + that.enumeratorClass + "\" to set of different type \"" + this.enumeratorClass + "\"");
+        Set vs;
+        if (this.values.isEmpty()) {
+            vs = that.values;
+        } else
+        if (that.values.isEmpty()) {
+            vs = this.values;
+        } else
+        {
+            vs = new HashSet(this.values);
+            vs.addAll(that.values);
+        }
+        return new EnumeratorSet(this.enumeratorClass, vs);
+    }
+
+    /**
+     * Remove the given value from the set.
+     * 
+     * @return the reduced set
+     * 
+     * @throws EnumeratorSetTypeException if this set was constructed for a different {@link Enumerator}-derived type
+     */
+    public EnumeratorSet remove(Enumerator value) {
+        if (value.getClass() != this.enumeratorClass) throw new EnumeratorSetTypeException("Cannot remove value of type \"" + value.getClass() + "\" from set of different type \"" + this.enumeratorClass + "\"");
+        if (!this.values.contains(value)) return this;
+        Set vs = new HashSet(this.values);
+        vs.remove(value);
+        return new EnumeratorSet(this.enumeratorClass, vs);
+    }
+
+    /**
+     * Remove the values of the given set from this set.
+     * 
+     * @return true if this set changed as a result of the call
+     * 
+     * @throws EnumeratorSetTypeException if this set was constructed for a different {@link Enumerator}-derived type
+     */
+    public EnumeratorSet remove(EnumeratorSet that) {
+        if (that.enumeratorClass != this.enumeratorClass) throw new EnumeratorSetTypeException("Cannot remove set of type \"" + that.enumeratorClass + "\" from set of different type \"" + this.enumeratorClass + "\"");
+        Set vs = new HashSet(this.values);
+        vs.removeAll(that.values);
+        return new EnumeratorSet(this.enumeratorClass, vs);
+    }
+
+    /**
+     * Check whether this set contains the given value
+     * 
+     * @throws EnumeratorSetTypeException if this set was constructed for a different {@link Enumerator}-derived type
+     */
+    public boolean contains(Enumerator value) {
+        if (value.getClass() != this.enumeratorClass) throw new EnumeratorSetTypeException("Cannot check value of type \"" + value.getClass() + "\" within set of different type \"" + this.enumeratorClass + "\"");
+        return this.values.contains(value);
+    }
+
+    /**
+     * Check if this set contains any of the values of the given set.
+     * <p>
+     * Returns <code>false</code> if either of the two sets is empty.
+     * 
+     * @throws EnumeratorSetTypeException if this set was constructed for a different {@link Enumerator}-derived type
+     */
+    public boolean containsAnyOf(EnumeratorSet that) {
+        if (that.enumeratorClass != this.enumeratorClass) throw new EnumeratorSetTypeException("Cannot compare set of type \"" + that.enumeratorClass + "\" with set of different type \"" + this.enumeratorClass + "\"");
+        for (Iterator it = that.values.iterator(); it.hasNext();) {
+            if (this.values.contains(it.next())) return true;
+        }
+        return false;
+    }
+
+    /**
+     * Check if this set contains all values of the given set.
+     * 
+     * @throws EnumeratorSetTypeException if this set was constructed for a different {@link Enumerator}-derived type
+     */
+    public boolean containsAllOf(EnumeratorSet that) {
+        if (that.enumeratorClass != this.enumeratorClass) throw new EnumeratorSetTypeException("Cannot compare set of type \"" + that.enumeratorClass + "\" with set of different type \"" + this.enumeratorClass + "\"");
+        return this.values.containsAll(that.values);
+    }
+
+    /**
+     * An {@link EnumeratorSet} can optionally be assigned a name, which is used by
+     * {@link #toString()}.
+     * 
+     * @return this object
+     */
+    public EnumeratorSet setName(String optionalName) {
+
+        // Check for non-change.
+        if (
+            (this.optionalName == optionalName)
+            || (this.optionalName != null && this.optionalName.equals(optionalName))
+        ) return this;
+
+        // Track all named EnumeratorSet instances.
+        Map namedEnumeratorSets = EnumeratorSet.getNamedEnumeratorSets(this.enumeratorClass);
+        if (this.optionalName != null) namedEnumeratorSets.remove(this.optionalName);
+        this.optionalName = optionalName;
+        if (this.optionalName != null) namedEnumeratorSets.put(this.optionalName, this);
+
+        return this;
+    }
+
+    /**
+     * Returns a map of all {@link EnumeratorSet}s instantiated for the given <code>enumeratorClass</code>.
+     * 
+     * @return String name => EnumeratorSet
+     */
+    private static Map getNamedEnumeratorSets(Class enumeratorClass) {
+        Map m = (Map) EnumeratorSet.namedEnumeratorSets.get(enumeratorClass);
+        if (m == null) {
+            m = new HashMap();
+            EnumeratorSet.namedEnumeratorSets.put(enumeratorClass, m);
+        }
+        return m;
+    }
+    private static final Map namedEnumeratorSets = new HashMap(); // Class enumeratorClass => String name => EnumeratorSet
+
+    /**
+     * Check the values' identity. Notice that the objects' names (see {@link #setName(String)} is
+     * not considered.
+     */
+    public boolean equals(Object that) {
+        return that instanceof EnumeratorSet && this.values.equals(((EnumeratorSet) that).values);
+    }
+
+    public int hashCode() {
+        return this.values.hashCode();
     }
 
     /**
@@ -206,33 +296,26 @@ public abstract class EnumeratorSet {
     /**
      * Convert an {@link EnumeratorSet} into a clear-text string.
      * <p>
-     * Examine the object through reflection for <code>public static final</code>
-     * fields that have the same type as this object, and collect the names of all fields who's
-     * values are contained in the object's values. Return the names of these fields, concatenated
-     * with the given <code>delimiter</code>.
+     * If this {@link EnumeratorSet} has a name (see {@link #setName(String)}, then this name is
+     * returned.
+     * <p>
+     * Otherwise, if this [@link EnumeratorSet} is empty, an empty {@link String} is returned.
+     * <p>
+     * Otherwise, the values' names are concatenated, separated by the given delimiter, and returned.
      */
     public String toString(String delimiter) {
-        int v = this.values;
-        StringBuffer sb = new StringBuffer();
 
-        String zeroName = null;
-        for (Iterator esi = this.getMapping().entrySet().iterator(); esi.hasNext();) {
-            Map.Entry me = (Map.Entry) esi.next();
-            int fv = ((Integer) me.getValue()).intValue();
-            if (fv == 0) {
-                zeroName = (String) me.getKey();
-            } else {
-                if ((v & fv) == fv) {
-                    if (sb.length() > 0) sb.append(delimiter);
-                    sb.append((String) me.getKey());
-                    v &= ~fv;
-                }
-            }
-        }
-        if (this.values == 0) return zeroName == null ? "0" : zeroName;
-        if (v != 0) {
-            if (sb.length() > 0) sb.append(delimiter);
-            sb.append(v);
+        // If this EnumeratorSet has a name, then everything is very simple.
+        if (this.optionalName != null) return this.optionalName;
+
+        // Return "" for an empty set.
+        Iterator it = this.values.iterator();
+        if (!it.hasNext()) return "";
+
+        // Concatenate the enumerators' names.
+        StringBuffer sb = new StringBuffer(((Enumerator) it.next()).name);
+        while (it.hasNext()) {
+            sb.append(delimiter).append(((Enumerator) it.next()).name);
         }
         return sb.toString();
     }

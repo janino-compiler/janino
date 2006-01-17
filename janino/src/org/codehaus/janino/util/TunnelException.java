@@ -2,7 +2,7 @@
 /*
  * Janino - An embedded Java[TM] compiler
  *
- * Copyright (c) 2005, Arno Unkrig
+ * Copyright (c) 2006, Arno Unkrig
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -43,7 +43,7 @@ import java.io.*;
  * This class is useful if you want to throw a non-{@link RuntimeException}-derived
  * Exception, but cannot declare it in the "throws" clause of your method, because your method
  * overrides a method of a base class. The classical example is
- * {@link ClassLoader#findClass(String)}, which allows only
+ * <code>ClassLoader.findClass(String)</code>, which allows only
  * {@link ClassNotFoundException} to be thrown, but you want to implement a more
  * elaborate exception handling.
  * <p>

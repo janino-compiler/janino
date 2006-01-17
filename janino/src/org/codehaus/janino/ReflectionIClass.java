@@ -2,7 +2,7 @@
 /*
  * Janino - An embedded Java[TM] compiler
  *
- * Copyright (c) 2005, Arno Unkrig
+ * Copyright (c) 2006, Arno Unkrig
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -152,13 +152,13 @@ class ReflectionIClass extends IClass {
         public ReflectionIConstructor(Constructor constructor) { this.constructor = constructor; }
 
         // Implement IMember.
-        public int getAccess() {
+        public Access getAccess() {
             int mod = this.constructor.getModifiers();
             return (
-                Modifier.isPrivate(mod)   ? IClass.PRIVATE   :
-                Modifier.isProtected(mod) ? IClass.PROTECTED :
-                Modifier.isPublic(mod)    ? IClass.PUBLIC    :
-                IClass.PACKAGE
+                Modifier.isPrivate(mod)   ? Access.PRIVATE   :
+                Modifier.isProtected(mod) ? Access.PROTECTED :
+                Modifier.isPublic(mod)    ? Access.PUBLIC    :
+                Access.DEFAULT
             );
         }
 
@@ -189,13 +189,13 @@ class ReflectionIClass extends IClass {
         public ReflectionIMethod(Method method) { this.method = method; }
 
         // Implement IMember.
-        public int getAccess() {
+        public Access getAccess() {
             int mod = this.method.getModifiers();
             return (
-                Modifier.isPrivate(mod)   ? IClass.PRIVATE   :
-                Modifier.isProtected(mod) ? IClass.PROTECTED :
-                Modifier.isPublic(mod)    ? IClass.PUBLIC    :
-                IClass.PACKAGE
+                Modifier.isPrivate(mod)   ? Access.PRIVATE   :
+                Modifier.isProtected(mod) ? Access.PROTECTED :
+                Modifier.isPublic(mod)    ? Access.PUBLIC    :
+                Access.DEFAULT
             );
         }
 
@@ -219,13 +219,13 @@ class ReflectionIClass extends IClass {
         public ReflectionIField(Field field) { this.field = field; }
 
         // Implement IMember.
-        public int getAccess() {
+        public Access getAccess() {
             int mod = this.field.getModifiers();
             return (
-                Modifier.isPrivate(mod)   ? IClass.PRIVATE   :
-                Modifier.isProtected(mod) ? IClass.PROTECTED :
-                Modifier.isPublic(mod)    ? IClass.PUBLIC    :
-                IClass.PACKAGE
+                Modifier.isPrivate(mod)   ? Access.PRIVATE   :
+                Modifier.isProtected(mod) ? Access.PROTECTED :
+                Modifier.isPublic(mod)    ? Access.PUBLIC    :
+                Access.DEFAULT
             );
         }
 
@@ -254,7 +254,7 @@ class ReflectionIClass extends IClass {
          *   Even fields with a <i>non-constant</i> initializer are identified
          *   as constant. (The value of that field may be different in a
          *   different JVM instance -- the classical example is
-         *   {@link File#separator}.)
+         *   {@link java.io.File#separator}.)
          * </ul>
          */
         public Object getConstantValue() throws CompileException {

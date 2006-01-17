@@ -2,7 +2,7 @@
 /*
  * Janino - An embedded Java[TM] compiler
  *
- * Copyright (c) 2005, Arno Unkrig
+ * Copyright (c) 2006, Arno Unkrig
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -1382,9 +1382,7 @@ public class Java {
             this.condition = condition;
         }
 
-        public void setBody(BlockStatement body) {
-            this.body = body;
-        }
+        public void setBody(BlockStatement body) { this.body = body; }
 
         public final Rvalue   condition;
         public BlockStatement body = null;
@@ -1533,12 +1531,8 @@ public class Java {
             super(location, enclosingScope);
         }
 
-        public void setBody(BlockStatement body) {
-            this.body = body;
-        }
-        public void setCondition(Rvalue condition) {
-            this.condition = condition;
-        }
+        public void setBody(BlockStatement body) { this.body = body; }
+        public void setCondition(Rvalue condition) { this.condition = condition; }
 
         public BlockStatement body      = null;
         public Rvalue         condition = null;
@@ -1907,21 +1901,7 @@ public class Java {
         private Type type = null;
         public Type toType() {
             if (this.type == null) {
-                this.type = new Type(this.getLocation()) {
-/*
-                    public boolean isType() throws CompileException {
-                        return AmbiguousName.this.reclassify().isType();
-                    }
-                    public IClass getType() throws CompileException {
-                        return AmbiguousName.this.reclassify().toTypeOrCE().getType();
-                    }
-*/
-                    public String toString() {
-                        return AmbiguousName.this.toString();
-                    }
-                    public final void accept(Visitor.TypeVisitor visitor) { new ReferenceType(AmbiguousName.this.getLocation(), AmbiguousName.this.scope, AmbiguousName.this.identifiers).accept(visitor); }
-                    public final void accept(Visitor.AtomVisitor visitor) { AmbiguousName.this.accept(visitor); }
-                };
+                this.type = new ReferenceType(this.getLocation(), this.scope, this.identifiers);
             }
             return this.type;
         }
@@ -1984,17 +1964,20 @@ public class Java {
      * "array length" expression, e.g. "ia.length".)
      */
     public static final class FieldAccess extends Lvalue {
-        public final Atom          lhs;
-        public final IClass.IField field;
+        public final BlockStatement enclosingBlockStatement;
+        public final Atom           lhs;
+        public final IClass.IField  field;
 
         public FieldAccess(
-            Location      location,
-            Atom          lhs,
-            IClass.IField field
+            Location       location,
+            BlockStatement enclosingBlockStatement,
+            Atom           lhs,
+            IClass.IField  field
         ) {
             super(location);
-            this.lhs   = lhs;
-            this.field = field;
+            this.enclosingBlockStatement = enclosingBlockStatement;
+            this.lhs                     = lhs;
+            this.field                   = field;
         }
 
         // Compile time members.
@@ -2118,16 +2101,18 @@ public class Java {
 
     public static final class ClassLiteral extends Rvalue {
         final AbstractTypeDeclaration declaringType;
+        final BlockStatement          enclosingBlockStatement;
         public final Type             type;
 
         public ClassLiteral(
-            Location location,
-            Scope    enclosingScope,
-            Type     type
+            Location       location,
+            BlockStatement enclosingBlockStatement,
+            Type           type
         ) {
             super(location);
+            this.enclosingBlockStatement = enclosingBlockStatement;
             Scope s;
-            for (s = enclosingScope; !(s instanceof AbstractTypeDeclaration); s = s.getEnclosingScope());
+            for (s = enclosingBlockStatement; !(s instanceof AbstractTypeDeclaration); s = s.getEnclosingScope());
             this.declaringType = (AbstractTypeDeclaration) s;
             this.type          = type;
         }
@@ -2258,17 +2243,20 @@ public class Java {
      * expression "xy.length".
      */
     public static final class FieldAccessExpression extends Lvalue {
-        public final Atom   lhs;
-        public final String fieldName;
+        public final BlockStatement enclosingBlockStatement;
+        public final Atom           lhs;
+        public final String         fieldName;
 
         public FieldAccessExpression(
-            Location location,
-            Atom     lhs,
-            String   fieldName
+            Location       location,
+            BlockStatement enclosingBlockStatement,
+            Atom           lhs,
+            String         fieldName
         ) {
             super(location);
-            this.lhs       = lhs;
-            this.fieldName = fieldName;
+            this.enclosingBlockStatement = enclosingBlockStatement;
+            this.lhs                     = lhs;
+            this.fieldName               = fieldName;
         }
 
         // Compile time members:
@@ -2492,13 +2480,13 @@ public class Java {
         public final String methodName;
 
         public MethodInvocation(
-            Location location,
-            Scope    enclosingScope,
-            Atom     optionalTarget,
-            String   methodName,
-            Rvalue[] arguments
+            Location       location,
+            BlockStatement enclosingBlockDeclaration,
+            Atom           optionalTarget,
+            String         methodName,
+            Rvalue[]       arguments
         ) {
-            super(location, enclosingScope, arguments);
+            super(location, enclosingBlockDeclaration, arguments);
             this.optionalTarget = optionalTarget;
             this.methodName     = methodName;
         }
@@ -2523,12 +2511,12 @@ public class Java {
 
     public static final class SuperclassMethodInvocation extends Invocation {
         public SuperclassMethodInvocation(
-            Location location,
-            Scope    enclosingScope,
-            String   methodName,
-            Rvalue[] arguments
+            Location       location,
+            BlockStatement enclosingBlockStatement,
+            String         methodName,
+            Rvalue[]       arguments
         ) {
-            super(location, enclosingScope, arguments);
+            super(location, enclosingBlockStatement, arguments);
             this.methodName = methodName;
         }
 
@@ -2543,17 +2531,17 @@ public class Java {
 
     public static abstract class Invocation extends Rvalue {
         protected Invocation(
-            Location location,
-            Scope    scope,
-            Rvalue[] arguments
+            Location       location,
+            BlockStatement enclosingBlockDeclaration,
+            Rvalue[]       arguments
         ) {
             super(location);
-            this.scope     = scope;
-            this.arguments = arguments;
+            this.enclosingBlockStatement = enclosingBlockDeclaration;
+            this.arguments                 = arguments;
         }
 
-        protected final Scope scope;
-        public final Rvalue[] arguments;
+        protected final BlockStatement enclosingBlockStatement;
+        public final Rvalue[]          arguments;
     }
 
     public static final class NewClassInstance extends Rvalue {

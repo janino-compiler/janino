@@ -2,7 +2,7 @@
 /*
  * Janino - An embedded Java[TM] compiler
  *
- * Copyright (c) 2005, Arno Unkrig
+ * Copyright (c) 2006, Arno Unkrig
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,6 +37,7 @@ package org.codehaus.janino;
 import java.io.*;
 
 import org.codehaus.janino.util.ClassFile;
+import org.codehaus.janino.util.enumerator.EnumeratorSet;
 import org.codehaus.janino.util.resource.*;
 
 /**
@@ -47,7 +48,7 @@ import org.codehaus.janino.util.resource.*;
  * The application provides access to the resource storeage through a pair of
  * a {@link org.codehaus.janino.util.resource.ResourceFinder} and a
  * {@link org.codehaus.janino.util.resource.ResourceCreator} (see
- * {@link #CachingJavaSourceClassLoader(ClassLoader, ResourceFinder, String, ResourceFinder, ResourceCreator, DebuggingInformation)}.
+ * {@link #CachingJavaSourceClassLoader(ClassLoader, ResourceFinder, String, ResourceFinder, ResourceCreator, EnumeratorSet)}.
  * <p>
  * See {@link org.codehaus.janino.JavaSourceClassLoader#main(String[])} for
  * an example how to use this class.
@@ -58,17 +59,17 @@ public class CachingJavaSourceClassLoader extends JavaSourceClassLoader {
     private final ResourceFinder  sourceFinder;
 
     /**
-     * See {@link #CachingJavaSourceClassLoader(ClassLoader, ResourceFinder, String, ResourceFinder, ResourceCreator, DebuggingInformation)}.
+     * See {@link #CachingJavaSourceClassLoader(ClassLoader, ResourceFinder, String, ResourceFinder, ResourceCreator, EnumeratorSet)}.
      *
      * @param optionalSourcePath Directories to scan for source files
      * @param cacheDirectory Directory to use for caching generated class files
      */
     public CachingJavaSourceClassLoader(
-        ClassLoader          parentClassLoader,
-        File[]               optionalSourcePath,
-        String               optionalCharacterEncoding,
-        File                 cacheDirectory,
-        DebuggingInformation debuggingInformation
+        ClassLoader   parentClassLoader,
+        File[]        optionalSourcePath,
+        String        optionalCharacterEncoding,
+        File          cacheDirectory,
+        EnumeratorSet debuggingInformation
     ) {
         this(
             parentClassLoader,                            // parentClassLoader
@@ -105,12 +106,12 @@ public class CachingJavaSourceClassLoader extends JavaSourceClassLoader {
      * @param debuggingInformation          What debugging information to include into the generated class files
      */
     public CachingJavaSourceClassLoader(
-        ClassLoader          parentClassLoader,
-        ResourceFinder       sourceFinder,
-        String               optionalCharacterEncoding,
-        ResourceFinder       classFileCacheResourceFinder,
-        ResourceCreator      classFileCacheResourceCreator,
-        DebuggingInformation debuggingInformation
+        ClassLoader     parentClassLoader,
+        ResourceFinder  sourceFinder,
+        String          optionalCharacterEncoding,
+        ResourceFinder  classFileCacheResourceFinder,
+        ResourceCreator classFileCacheResourceCreator,
+        EnumeratorSet   debuggingInformation
     ) {
         super(parentClassLoader, sourceFinder, optionalCharacterEncoding, debuggingInformation);
         this.classFileCacheResourceFinder  = classFileCacheResourceFinder;

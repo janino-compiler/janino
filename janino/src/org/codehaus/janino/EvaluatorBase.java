@@ -2,7 +2,7 @@
 /*
  * Janino - An embedded Java[TM] compiler
  *
- * Copyright (c) 2005, Arno Unkrig
+ * Copyright (c) 2006, Arno Unkrig
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -38,6 +38,7 @@ import java.io.*;
 import java.util.*;
 
 import org.codehaus.janino.util.ClassFile;
+import org.codehaus.janino.util.enumerator.EnumeratorSet;
 
 
 /**
@@ -263,7 +264,7 @@ public class EvaluatorBase {
      */
     protected ClassLoader compileAndLoad(
         Java.CompilationUnit compilationUnit,
-        DebuggingInformation debuggingInformation
+        EnumeratorSet        debuggingInformation
     ) throws CompileException {
         if (EvaluatorBase.DEBUG) {
             UnparseVisitor.unparse(compilationUnit, new OutputStreamWriter(System.out));
@@ -301,7 +302,7 @@ public class EvaluatorBase {
      */
     protected Class compileAndLoad(
         Java.CompilationUnit compilationUnit,
-        DebuggingInformation debuggingInformation,
+        EnumeratorSet        debuggingInformation,
         String               newClassName
     ) throws CompileException, ClassNotFoundException {
         return this.compileAndLoad(compilationUnit, debuggingInformation).loadClass(newClassName);

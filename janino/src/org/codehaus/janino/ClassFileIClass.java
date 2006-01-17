@@ -2,7 +2,7 @@
 /*
  * Janino - An embedded Java[TM] compiler
  *
- * Copyright (c) 2005, Arno Unkrig
+ * Copyright (c) 2006, Arno Unkrig
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -348,11 +348,11 @@ public class ClassFileIClass extends IClass {
 
         // Determine access.
         short af = methodInfo.getAccessFlags();
-        final int access = (
-            (af & Mod.PUBLIC   ) != 0 ? IClass.PUBLIC    :
-            (af & Mod.PROTECTED) != 0 ? IClass.PROTECTED :
-            (af & Mod.PRIVATE  ) != 0 ? IClass.PRIVATE   :
-            IClass.PACKAGE
+        final Access access = (
+            (af & Mod.PUBLIC   ) != 0 ? Access.PUBLIC    :
+            (af & Mod.PROTECTED) != 0 ? Access.PROTECTED :
+            (af & Mod.PRIVATE  ) != 0 ? Access.PRIVATE   :
+            Access.DEFAULT
         );
 
         if (name.equals("<init>")) {
@@ -372,7 +372,7 @@ public class ClassFileIClass extends IClass {
                     return parameterTypes;
                 }
                 public IClass[] getThrownExceptions() throws CompileException { return thrownExceptions; }
-                public int getAccess() { return access; }
+                public Access getAccess() { return access; }
             };
         } else {
             result = new IClass.IMethod() {
@@ -382,7 +382,7 @@ public class ClassFileIClass extends IClass {
                 public boolean isAbstract() { return (methodInfo.getAccessFlags() & Mod.ABSTRACT) != 0; }
                 public IClass[] getParameterTypes() throws CompileException { return parameterTypes; }
                 public IClass[] getThrownExceptions() throws CompileException { return thrownExceptions; }
-                public int getAccess() { return access; }
+                public Access getAccess() { return access; }
             };
         }
         this.resolvedMethods.put(methodInfo, result);
@@ -432,11 +432,11 @@ public class ClassFileIClass extends IClass {
 
         // Determine access.
         short af = fieldInfo.getAccessFlags();
-        final int access = (
-            (af & Mod.PUBLIC   ) != 0 ? IClass.PUBLIC    :
-            (af & Mod.PROTECTED) != 0 ? IClass.PROTECTED :
-            (af & Mod.PRIVATE  ) != 0 ? IClass.PRIVATE   :
-            IClass.PACKAGE
+        final Access access = (
+            (af & Mod.PUBLIC   ) != 0 ? Access.PUBLIC    :
+            (af & Mod.PROTECTED) != 0 ? Access.PROTECTED :
+            (af & Mod.PRIVATE  ) != 0 ? Access.PRIVATE   :
+            Access.DEFAULT
         );
 
         result = new IField() {
@@ -444,7 +444,7 @@ public class ClassFileIClass extends IClass {
             public String  getName()                                  { return name; }
             public IClass  getType() throws CompileException          { return type; }
             public boolean isStatic()                                 { return (fieldInfo.getAccessFlags() & Mod.STATIC) != 0; }
-            public int     getAccess()                                { return access; }
+            public Access  getAccess()                                { return access; }
         };
         this.resolvedFields.put(fieldInfo, result);
         return result;

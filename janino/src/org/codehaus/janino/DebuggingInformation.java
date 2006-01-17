@@ -2,7 +2,7 @@
 /*
  * Janino - An embedded Java[TM] compiler
  *
- * Copyright (c) 2005, Arno Unkrig
+ * Copyright (c) 2006, Arno Unkrig
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,25 +36,24 @@ package org.codehaus.janino;
 
 import org.codehaus.janino.util.enumerator.*;
 
-public class DebuggingInformation extends EnumeratorSet {
-    public static final DebuggingInformation SOURCE = new DebuggingInformation(1);
-    public static final DebuggingInformation LINES  = new DebuggingInformation(2);
-    public static final DebuggingInformation VARS   = new DebuggingInformation(4);
+public class DebuggingInformation extends Enumerator {
+    public static final DebuggingInformation SOURCE = new DebuggingInformation("source");
+    public static final DebuggingInformation LINES  = new DebuggingInformation("lines");
+    public static final DebuggingInformation VARS   = new DebuggingInformation("vars");
 
-    public static final DebuggingInformation NONE   = new DebuggingInformation(0);
-    public static final DebuggingInformation ALL    = new DebuggingInformation(7);
+    public static final EnumeratorSet NONE = new EnumeratorSet(DebuggingInformation.class      ).setName("none");
+    public static final EnumeratorSet ALL  = new EnumeratorSet(DebuggingInformation.class, true).setName("all");
 
-    public DebuggingInformation(String s) throws EnumeratorFormatException {
-        super(s);
+    public static final EnumeratorSet DEFAULT_DEBUGGING_INFORMATION = (
+        new EnumeratorSet(DebuggingInformation.class)
+        .add(DebuggingInformation.LINES)
+        .add(DebuggingInformation.SOURCE)
+    );
+
+    private DebuggingInformation(String name) {
+        super(name);
     }
-
-    public DebuggingInformation add(DebuggingInformation that) {
-        return new DebuggingInformation(super.add(that));
+    public static DebuggingInformation fromString(String name) throws EnumeratorFormatException {
+        return (DebuggingInformation) Enumerator.fromString(name, DebuggingInformation.class);
     }
-
-    public DebuggingInformation remove(DebuggingInformation that) {
-        return new DebuggingInformation(super.remove(that));
-    }
-
-    private DebuggingInformation(int values) { super(values); }
 }
