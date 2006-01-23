@@ -195,7 +195,7 @@ public class AstGeneratorVisitor implements Visitor.ComprehensiveVisitor {
         this.level++;
         
         write("Java.PackageMemberClassDeclaration declaration = " +
-                "new Java.PackageMemberClassDeclaration("+getLocation(pmcd)+", cu, null, "+getModifiers(pmcd.modifiers)+", \""+pmcd.name+"\", " +
+                "new Java.PackageMemberClassDeclaration("+getLocation(pmcd)+", cu, "+printStringLiteral(pmcd.getDocComment())+", "+getModifiers(pmcd.modifiers)+", \""+pmcd.name+"\", " +
                 (pmcd.optionalExtendedType==null ? "null" : "generateType"+getSuffix(pmcd.optionalExtendedType)+"(cu)")+", "+
                 getGenerateTypes(pmcd.implementedTypes, "cu")+");");
         write();
@@ -221,7 +221,7 @@ public class AstGeneratorVisitor implements Visitor.ComprehensiveVisitor {
         this.level++;
         
         write("Java.MemberInterfaceDeclaration declaration = " +
-                "new Java.MemberInterfaceDeclaration("+getLocation(mid)+", declaringType, null, "+
+                "new Java.MemberInterfaceDeclaration("+getLocation(mid)+", declaringType, "+printStringLiteral(mid.getDocComment())+", "+
                         getModifiers(mid.modifiers)+", \""+mid.name+"\", " +
                         getGenerateTypes(mid.extendedTypes, "declaringType")+");");
 
@@ -250,7 +250,7 @@ public class AstGeneratorVisitor implements Visitor.ComprehensiveVisitor {
         this.level++;
         
         write("Java.PackageMemberInterfaceDeclaration declaration = " +
-                "new Java.PackageMemberInterfaceDeclaration(null, cu, null, "+getModifiers(pmid.modifiers)+", \""+pmid.name+"\", " +
+                "new Java.PackageMemberInterfaceDeclaration(null, cu, "+printStringLiteral(pmid.getDocComment())+", "+getModifiers(pmid.modifiers)+", \""+pmid.name+"\", " +
                         getGenerateTypes(pmid.extendedTypes, "cu")+");");
 
         generateAbstractTypeDeclarationBody(pmid);
@@ -279,7 +279,7 @@ public class AstGeneratorVisitor implements Visitor.ComprehensiveVisitor {
         this.level++;
         
         write("Java.MemberClassDeclaration declaration = new Java.MemberClassDeclaration("+getLocation(mcd)+
-                ", declaringType, null, "+ getModifiers(mcd.modifiers)+", \""+mcd.name+"\", " +
+                ", declaringType, "+printStringLiteral(mcd.getDocComment())+", "+ getModifiers(mcd.modifiers)+", \""+mcd.name+"\", " +
                 (mcd.optionalExtendedType==null ? "null" : "generateType"+getSuffix(mcd.optionalExtendedType)+"(declaringType)")+", " +
                 getGenerateTypes(mcd.implementedTypes, "declaringType")+");");
 
@@ -302,7 +302,7 @@ public class AstGeneratorVisitor implements Visitor.ComprehensiveVisitor {
         this.level++;
         
         write("Java.ConstructorDeclarator declaration = new Java.ConstructorDeclarator(" + getLocation(cd)+", " +
-                "declaringClass, null, "+ getModifiers(cd.modifiers)+", " +
+                "declaringClass, "+printStringLiteral(cd.getDocComment())+", "+ getModifiers(cd.modifiers)+", " +
                 (cd.formalParameters==null ? "null" : 
                     (cd.formalParameters.length==0 ? "new Java.FormalParameter[0]" :
                         "generateFormalParameters"+getSuffix(cd.formalParameters)+"(declaringClass)"))+", " +
@@ -362,7 +362,7 @@ public class AstGeneratorVisitor implements Visitor.ComprehensiveVisitor {
 
         if(md.optionalBody==null) {
             write("return new Java.MethodDeclarator("+getLocation(md)+", "+
-                    "declaringType, null, "+getModifiers(md.modifiers)+", " +
+                    "declaringType, "+printStringLiteral(md.getDocComment())+", "+getModifiers(md.modifiers)+", " +
                     (md.type==null ? "null" : "generateType"+getSuffix(md.type)+"(declaringType)")+", \""+md.name+"\", " +
                     (md.formalParameters==null ? "null" : 
                         (md.formalParameters.length==0 ? "new Java.FormalParameter[0]" : 
@@ -371,7 +371,7 @@ public class AstGeneratorVisitor implements Visitor.ComprehensiveVisitor {
             
         } else {
             write("Java.MethodDeclarator declaration = new Java.MethodDeclarator("+getLocation(md)+", "+
-                    "declaringType, null, "+getModifiers(md.modifiers)+", " +
+                    "declaringType, "+printStringLiteral(md.getDocComment())+", "+getModifiers(md.modifiers)+", " +
                     (md.type==null ? "null" : "generateType"+getSuffix(md.type)+"(declaringType)")+", \""+md.name+"\", " +
                     (md.formalParameters==null ? "null" : 
                         (md.formalParameters.length==0 ? "new Java.FormalParameter[0]" : 
@@ -401,7 +401,7 @@ public class AstGeneratorVisitor implements Visitor.ComprehensiveVisitor {
         this.level++;
 
         write("Java.FieldDeclaration declaration = new Java.FieldDeclaration("+getLocation(fd)+", "+
-                "declaringType, null, "+getModifiers(fd.modifiers)+", " +
+                "declaringType, "+printStringLiteral(fd.getDocComment())+", "+getModifiers(fd.modifiers)+", " +
                 "generateType"+getSuffix(fd.type)+"(declaringType)" +
                 ");");
         write("declaration.setVariableDeclarators(generateVariableDeclarators"+getSuffix(fd.variableDeclarators)+"(declaration, declaration));");
@@ -1645,6 +1645,21 @@ public class AstGeneratorVisitor implements Visitor.ComprehensiveVisitor {
         return (values==null ? "null" : 
             (values.length==0 ? "new Java.Rvalue[0]" : "generateRvalues"+getSuffix(values)+"("+scope+")"));
     }
-    
+
+    private String printStringLiteral(String s) {
+        if (s == null) return "null";
+        StringBuffer sb = new StringBuffer("\"");
+        for (int i = 0; i < s.length(); ++i) {
+            char c = s.charAt(i);
+            int idx = "\r\n\t\\\"\b".indexOf(c);
+            if (idx != -1) {
+                sb.append('\\').append("rnt\\\"b".charAt(idx));
+            } else {
+                sb.append(c);
+            }
+        }
+        sb.append('"');
+        return sb.toString();
+    }
 }
 
