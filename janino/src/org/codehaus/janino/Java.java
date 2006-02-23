@@ -1231,6 +1231,9 @@ public class Java {
          */
         /*private*/ void followingStatementsAreDead() {
             this.keepCompiling = false;
+
+            Java.Scope s = this.getEnclosingScope();
+            if (s instanceof Java.Block) ((Java.Block) s).followingStatementsAreDead();
         }
 
         public final void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitBlock(this); }
