@@ -2416,6 +2416,7 @@ public class UnitCompiler {
     /*private*/ IClass compileGet2(Java.MethodInvocation mi) throws CompileException {
         IClass.IMethod iMethod = this.findIMethod(mi);
 
+        IClass targetType;
         if (mi.optionalTarget == null) {
 
             // JLS2 6.5.7.1, 15.12.4.1.1.1
@@ -2443,11 +2444,15 @@ public class UnitCompiler {
                     iMethod.getDeclaringIClass() // targetIClass
                 );
             }
+            targetType = this.resolve(scopeClassDeclaration);
         } else {
 
             // 6.5.7.2
             boolean staticContext = this.isType(mi.optionalTarget);
-            if (!staticContext) {
+            if (staticContext) {
+                targetType = this.getType(this.toTypeOrCE(mi.optionalTarget));
+            } else
+            {
                 Java.Rvalue targetValue = this.toRvalueOrCE(mi.optionalTarget);
 
                 // TODO: Wrapper methods for private methods of enclosing / enclosed types.
@@ -2456,7 +2461,7 @@ public class UnitCompiler {
                     iMethod.getAccess() == Access.PRIVATE
                 ) this.compileError("Invocation of private methods of enclosing or enclosed type NYI; please change the access of method \"" + iMethod.getName() + "()\" from \"private\" to \"/*private*/\"", mi.getLocation());
 
-                this.compileGetValue(targetValue);
+                targetType = this.compileGetValue(targetValue);
             }
             if (iMethod.isStatic()) {
                 if (!staticContext) {
@@ -2484,7 +2489,7 @@ public class UnitCompiler {
         if (iMethod.getDeclaringIClass().isInterface()) {
             this.writeOpcode(mi, Opcode.INVOKEINTERFACE);
             this.writeConstantInterfaceMethodrefInfo(
-                mi,
+                mi,                                           // locatable
                 iMethod.getDeclaringIClass().getDescriptor(), // classFD
                 iMethod.getName(),                            // methodName
                 iMethod.getDescriptor()                       // methodMD
@@ -2495,16 +2500,18 @@ public class UnitCompiler {
             this.writeByte(mi, count);
             this.writeByte(mi, 0);
         } else {
-            this.writeOpcode(mi, (
+            byte opcode = (
                 iMethod.isStatic()                    ? Opcode.INVOKESTATIC :
                 iMethod.getAccess() == Access.PRIVATE ? Opcode.INVOKESPECIAL :
                 Opcode.INVOKEVIRTUAL
-            ));
+            );
+            this.writeOpcode(mi, opcode);
+            if (opcode != Opcode.INVOKEVIRTUAL) targetType = iMethod.getDeclaringIClass();
             this.writeConstantMethodrefInfo(
-                mi,
-                iMethod.getDeclaringIClass().getDescriptor(), // classFD
-                iMethod.getName(),                            // methodName
-                iMethod.getDescriptor()                       // methodMD
+                mi,                         // locatable
+                targetType.getDescriptor(), // classFD
+                iMethod.getName(),          // methodName
+                iMethod.getDescriptor()     // methodMD
             );
         }
         return iMethod.getReturnType();
