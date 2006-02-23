@@ -1156,38 +1156,40 @@ public class UnitCompiler {
             // Notice: Must be same size as "this.stackValueLvIndex".
             short exceptionObjectLvIndex = this.codeContext.allocateLocalVariable((short) 2);
 
-            for (int i = 0; i < ts.catchClauses.size(); ++i) {
-                Java.CatchClause cc = (Java.CatchClause) ts.catchClauses.get(i);
-                IClass caughtExceptionType = this.getType(cc.caughtException.type);
-                this.codeContext.addExceptionTableEntry(
-                    beginningOfBody,                    // startPC
-                    afterBody,                          // endPC
-                    this.codeContext.newOffset(),       // handlerPC
-                    caughtExceptionType.getDescriptor() // catchTypeFD
-                );
-                this.store(
-                    (Java.Located) ts,     // located
-                    caughtExceptionType,   // lvType
-                    exceptionObjectLvIndex // lvIndex
-                );
-
-                // Kludge: Treat the exception variable like a local
-                // variable of the catch clause body.
-                cc.body.localVariables.put(
-                    cc.caughtException.name,
-                    new Java.LocalVariable(
-                        false,                        // finaL
-                        caughtExceptionType,          // type
-                        exceptionObjectLvIndex        // localVariableIndex
-                    )
-                );
-
-                if (this.compile(cc.body)) {
-                    canCompleteNormally = true;
-                    if (
-                        i < ts.catchClauses.size() - 1 ||
-                        ts.optionalFinally != null
-                    ) this.writeBranch(ts, Opcode.GOTO, afterStatement);
+            if (beginningOfBody.offset != afterBody.offset) { // Avoid zero-length exception table entries.
+                for (int i = 0; i < ts.catchClauses.size(); ++i) {
+                    Java.CatchClause cc = (Java.CatchClause) ts.catchClauses.get(i);
+                    IClass caughtExceptionType = this.getType(cc.caughtException.type);
+                    this.codeContext.addExceptionTableEntry(
+                        beginningOfBody,                    // startPC
+                        afterBody,                          // endPC
+                        this.codeContext.newOffset(),       // handlerPC
+                        caughtExceptionType.getDescriptor() // catchTypeFD
+                    );
+                    this.store(
+                        (Java.Located) ts,     // located
+                        caughtExceptionType,   // lvType
+                        exceptionObjectLvIndex // lvIndex
+                    );
+    
+                    // Kludge: Treat the exception variable like a local
+                    // variable of the catch clause body.
+                    cc.body.localVariables.put(
+                        cc.caughtException.name,
+                        new Java.LocalVariable(
+                            false,                        // finaL
+                            caughtExceptionType,          // type
+                            exceptionObjectLvIndex        // localVariableIndex
+                        )
+                    );
+    
+                    if (this.compile(cc.body)) {
+                        canCompleteNormally = true;
+                        if (
+                            i < ts.catchClauses.size() - 1 ||
+                            ts.optionalFinally != null
+                        ) this.writeBranch(ts, Opcode.GOTO, afterStatement);
+                    }
                 }
             }
             if (ts.optionalFinally != null) {
