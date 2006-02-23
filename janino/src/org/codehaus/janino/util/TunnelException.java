@@ -49,7 +49,7 @@ import java.io.*;
  * <p>
  * To make clear which exceptions wrapped in {@link TunnelException} your method would throw, it
  * is recommended that you declare them with a "<code>throws </code>{@link TunnelException}" clause and that
- * you document them in JAVADOC with <code>@<b></b>throws</code> clauses like this:
+ * you document them in JAVADOC with <code>&#64;throws</code> clauses like this:
  * <pre>
  * &#47;**
  *  * ...
