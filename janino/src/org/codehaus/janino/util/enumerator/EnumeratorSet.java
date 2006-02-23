@@ -299,7 +299,7 @@ public class EnumeratorSet {
      * If this {@link EnumeratorSet} has a name (see {@link #setName(String)}, then this name is
      * returned.
      * <p>
-     * Otherwise, if this [@link EnumeratorSet} is empty, an empty {@link String} is returned.
+     * Otherwise, if this {@link EnumeratorSet} is empty, an empty {@link String} is returned.
      * <p>
      * Otherwise, the values' names are concatenated, separated by the given delimiter, and returned.
      */

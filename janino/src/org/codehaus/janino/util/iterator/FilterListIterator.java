@@ -37,7 +37,7 @@ package org.codehaus.janino.util.iterator;
 import java.util.*;
 
 /**
- * An @link java.util.ListIterator that retrieves its elements from a delegate
+ * An {@link java.util.ListIterator} that retrieves its elements from a delegate
  * {@link java.util.ListIterator}. The default implementation simply passes
  * all method invocations to the delegate.
  */
