@@ -2740,7 +2740,7 @@ public class Parser {
     /**
      * Convenience method for throwing a ParseException.
      */
-    private final void throwParseException(String message) throws ParseException {
+    protected final void throwParseException(String message) throws ParseException {
         throw new ParseException(message, this.scanner.peek().getLocation());
     }
 
