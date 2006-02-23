@@ -1904,7 +1904,15 @@ public class Java {
         private Type type = null;
         public Type toType() {
             if (this.type == null) {
-                this.type = new ReferenceType(this.getLocation(), this.scope, this.identifiers);
+                String[] sa;
+                if (this.identifiers.length == this.n) {
+                    sa = this.identifiers;
+                } else
+                {
+                    sa = new String[this.n];
+                    System.arraycopy(this.identifiers, 0, sa, 0, this.n);
+                }
+                this.type = new ReferenceType(this.getLocation(), this.scope, sa);
             }
             return this.type;
         }
