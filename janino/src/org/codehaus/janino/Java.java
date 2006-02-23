@@ -1131,9 +1131,9 @@ public class Java {
             return this.type.toString() + ' ' + this.name;
         }
 
-        final boolean     finaL;
-        public final Type type;
-        final String      name;
+        public final boolean finaL;
+        public final Type    type;
+        public final String  name;
     }
 
     /**
