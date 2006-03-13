@@ -527,8 +527,9 @@ public class Java {
     }
 
     /**
-     * Lazily determines and returns the enclosing {@link Scope} of the given
-     * {@link TypeDeclaration}.
+     * Lazily determines and returns the enclosing
+     * {@link org.codehaus.janino.Java.Scope} of the given
+     * {@link org.codehaus.janino.Java.TypeDeclaration}.
      */
     public static final class EnclosingScopeOfTypeDeclaration implements Scope {
         private final TypeDeclaration typeDeclaration;
@@ -1709,8 +1710,8 @@ public class Java {
         }
 
         /**
-         * Sets {@link #enclosingScope} for this object and all subordinate
-         * {@link Type} objects.
+         * Sets the enclosing scope for this object and all subordinate
+         * {@link org.codehaus.janino.Java.Type} objects.
          */
         public void setEnclosingScope(final Scope enclosingScope) {
             if (this.enclosingScope != null && enclosingScope != this.enclosingScope) throw new RuntimeException("Enclosing scope already set for type \"" + this.toString() + "\" at " + this.getLocation());
@@ -1856,8 +1857,8 @@ public class Java {
         }
 
         /**
-         * Sets {@link #enclosingBlockStatement} for this object and all subordinate
-         * {@link Rvalue} objects.
+         * Sets enclosing block statement for this object and all subordinate
+         * {@link org.codehaus.janino.Java.Rvalue} objects.
          */
         public final void setEnclosingBlockStatement(final Java.BlockStatement enclosingBlockStatement) {
             this.accept((Visitor.RvalueVisitor) new Traverser() {

@@ -35,8 +35,6 @@
 package org.codehaus.janino.util;
 
 import org.codehaus.janino.*;
-import org.codehaus.janino.Java.CompilationUnit;
-import org.codehaus.janino.Java.SwitchStatement;
 
 import java.util.*;
 
@@ -53,8 +51,8 @@ import java.util.*;
  */
 public class Traverser {
     public final Visitor.ComprehensiveVisitor cv = new Visitor.ComprehensiveVisitor() {
-    	public final void visitSingleTypeImportDeclaration(CompilationUnit.SingleTypeImportDeclaration stid)             { Traverser.this.traverseSingleTypeImportDeclaration(stid); }
-        public final void visitTypeImportOnDemandDeclaration(CompilationUnit.TypeImportOnDemandDeclaration tiodd)        { Traverser.this.traverseTypeImportOnDemandDeclaration(tiodd); }
+    	public final void visitSingleTypeImportDeclaration(Java.CompilationUnit.SingleTypeImportDeclaration stid)             { Traverser.this.traverseSingleTypeImportDeclaration(stid); }
+        public final void visitTypeImportOnDemandDeclaration(Java.CompilationUnit.TypeImportOnDemandDeclaration tiodd)        { Traverser.this.traverseTypeImportOnDemandDeclaration(tiodd); }
         public final void visitAnonymousClassDeclaration(Java.AnonymousClassDeclaration acd)                  { Traverser.this.traverseAnonymousClassDeclaration(acd); }
         public final void visitLocalClassDeclaration(Java.LocalClassDeclaration lcd)                          { Traverser.this.traverseLocalClassDeclaration(lcd); }
         public final void visitPackageMemberClassDeclaration(Java.PackageMemberClassDeclaration pmcd)         { Traverser.this.traversePackageMemberClassDeclaration(pmcd); }
@@ -126,22 +124,22 @@ public class Traverser {
         // the compilation unit and is thus not traversed.
 
         for (Iterator it = cu.importDeclarations.iterator(); it.hasNext();) {
-            ((CompilationUnit.ImportDeclaration) it.next()).accept(this.cv);
+            ((Java.CompilationUnit.ImportDeclaration) it.next()).accept(this.cv);
         }
         for (Iterator it = cu.packageMemberTypeDeclarations.iterator(); it.hasNext();) {
             ((Java.PackageMemberTypeDeclaration) it.next()).accept(this.cv);
         }
     }
 
-    public void traverseSingleTypeImportDeclaration(CompilationUnit.SingleTypeImportDeclaration stid) {
+    public void traverseSingleTypeImportDeclaration(Java.CompilationUnit.SingleTypeImportDeclaration stid) {
         this.traverseImportDeclaration(stid);
     }
 
-    public void traverseTypeImportOnDemandDeclaration(CompilationUnit.TypeImportOnDemandDeclaration tiodd) {
+    public void traverseTypeImportOnDemandDeclaration(Java.CompilationUnit.TypeImportOnDemandDeclaration tiodd) {
         this.traverseImportDeclaration(tiodd);
     }
 
-    public void traverseImportDeclaration(CompilationUnit.ImportDeclaration id) {
+    public void traverseImportDeclaration(Java.CompilationUnit.ImportDeclaration id) {
         this.traverseLocated(id);
     }
 
@@ -245,7 +243,7 @@ public class Traverser {
     public void traverseSwitchStatement(Java.SwitchStatement ss) {
         ss.condition.accept((Visitor.RvalueVisitor) this.cv);
         for (Iterator it = ss.sbsgs.iterator(); it.hasNext();) {
-            SwitchStatement.SwitchBlockStatementGroup sbsg = (SwitchStatement.SwitchBlockStatementGroup) it.next();
+            Java.SwitchStatement.SwitchBlockStatementGroup sbsg = (Java.SwitchStatement.SwitchBlockStatementGroup) it.next();
             for (Iterator it2 = sbsg.caseLabels.iterator(); it2.hasNext();) {
                 ((Java.Rvalue) it2.next()).accept((Visitor.RvalueVisitor) this.cv);
             }

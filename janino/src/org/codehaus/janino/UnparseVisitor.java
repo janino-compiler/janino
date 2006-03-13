@@ -37,10 +37,6 @@ package org.codehaus.janino;
 import java.io.*;
 import java.util.*;
 
-import org.codehaus.janino.Java.ClassDeclaration;
-import org.codehaus.janino.Java.CompilationUnit;
-import org.codehaus.janino.Java.FunctionDeclarator;
-import org.codehaus.janino.Java.SwitchStatement;
 import org.codehaus.janino.util.AutoIndentWriter;
 
 /**
@@ -83,7 +79,7 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
             this.pw.println("package " + cu.optionalPackageDeclaration.packageName + ';');
         }
         for (Iterator it = cu.importDeclarations.iterator(); it.hasNext();) {
-            ((CompilationUnit.ImportDeclaration) it.next()).accept(this);
+            ((Java.CompilationUnit.ImportDeclaration) it.next()).accept(this);
         }
         for (Iterator it = cu.packageMemberTypeDeclarations.iterator(); it.hasNext();) {
             ((Java.PackageMemberTypeDeclaration) it.next()).accept(this);
@@ -91,10 +87,10 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
         }
     }
 
-    public void visitSingleTypeImportDeclaration(CompilationUnit.SingleTypeImportDeclaration stid) {
+    public void visitSingleTypeImportDeclaration(Java.CompilationUnit.SingleTypeImportDeclaration stid) {
         this.pw.println("import " + Java.join(stid.identifiers, ".") + ';');
     }
-    public void visitTypeImportOnDemandDeclaration(CompilationUnit.TypeImportOnDemandDeclaration tiodd) {
+    public void visitTypeImportOnDemandDeclaration(Java.CompilationUnit.TypeImportOnDemandDeclaration tiodd) {
         this.pw.println("import " + Java.join(tiodd.identifiers, ".") + ".*;");
     }
 
@@ -116,7 +112,7 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
     public void visitConstructorDeclarator(Java.ConstructorDeclarator cd) {
         this.unparseDocComment(cd);
         this.unparseModifiers(cd.modifiers);
-        ClassDeclaration declaringClass = cd.getDeclaringClass();
+        Java.ClassDeclaration declaringClass = cd.getDeclaringClass();
         this.pw.print(declaringClass instanceof Java.NamedClassDeclaration ? ((Java.NamedClassDeclaration) declaringClass).name : "UNNAMED");
         this.unparseFunctionDeclaratorRest(cd);
         this.pw.print(' ');
@@ -254,7 +250,7 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
     public void visitSwitchStatement(Java.SwitchStatement ss) {
         this.pw.println("switch (" + ss.condition + ") {");
         for (Iterator it = ss.sbsgs.iterator(); it.hasNext();) {
-            SwitchStatement.SwitchBlockStatementGroup sbgs = (SwitchStatement.SwitchBlockStatementGroup) it.next();
+            Java.SwitchStatement.SwitchBlockStatementGroup sbgs = (Java.SwitchStatement.SwitchBlockStatementGroup) it.next();
             this.aiw.unindent();
             try {
                 for (Iterator it2 = sbgs.caseLabels.iterator(); it2.hasNext();) {
@@ -314,7 +310,7 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
             ((Java.Atom) vd.optionalInitializer).accept(this);
         }
     }
-    public void unparseFormalParameter(FunctionDeclarator.FormalParameter fp) {
+    public void unparseFormalParameter(Java.FunctionDeclarator.FormalParameter fp) {
         if (fp.finaL) this.pw.print("final ");
         ((Java.Atom) fp.type).accept(this);
         this.pw.print(' ' + fp.name);

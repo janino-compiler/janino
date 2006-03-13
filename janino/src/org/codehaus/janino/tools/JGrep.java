@@ -378,9 +378,9 @@ public class JGrep {
 */
     };
 
-    private final IClassLoader iClassLoader;
-    private final String       optionalCharacterEncoding;
-    private final Benchmark    benchmark;
+    private /*final*/ IClassLoader iClassLoader;
+    private /*final*/ String       optionalCharacterEncoding;
+    private /*final*/ Benchmark    benchmark;
 
     public JGrep(
         File[]  classPath,
@@ -581,8 +581,8 @@ public class JGrep {
                         }
 
                         private void match(Java.Invocation invocation, IClass.IMethod method) throws CompileException {
-                            for (Iterator it = methodInvocationTargets.iterator(); it.hasNext();) {
-                                MethodInvocationTarget mit = (MethodInvocationTarget) it.next();
+                            for (Iterator it2 = methodInvocationTargets.iterator(); it2.hasNext();) {
+                                MethodInvocationTarget mit = (MethodInvocationTarget) it2.next();
                                 mit.apply(uc, invocation, method);
                             }
                         }

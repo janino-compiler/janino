@@ -37,7 +37,6 @@ package org.codehaus.janino;
 import java.io.*;
 import java.util.*;
 
-import org.codehaus.janino.Java.FunctionDeclarator;
 import org.codehaus.janino.util.ClassFile;
 import org.codehaus.janino.util.enumerator.EnumeratorSet;
 
@@ -237,16 +236,16 @@ public class EvaluatorBase {
 
     /**
      * Convert name and {@link Class}-base parameters into an array of
-     * {@link FunctionDeclarator.FormalParameter}s.
+     * {@link org.codehaus.janino.Java.FunctionDeclarator.FormalParameter}s.
      */
-    protected FunctionDeclarator.FormalParameter[] makeFormalParameters(
+    protected Java.FunctionDeclarator.FormalParameter[] makeFormalParameters(
         Location location,
         String[] parameterNames,
         Class[]  parameterTypes
     ) {
-        FunctionDeclarator.FormalParameter[] res = new FunctionDeclarator.FormalParameter[parameterNames.length];
+        Java.FunctionDeclarator.FormalParameter[] res = new Java.FunctionDeclarator.FormalParameter[parameterNames.length];
         for (int i = 0; i < res.length; ++i) {
-            res[i] = new FunctionDeclarator.FormalParameter(
+            res[i] = new Java.FunctionDeclarator.FormalParameter(
                 location,                                      // location
                 true,                                          // finaL
                 this.classToType(location, parameterTypes[i]), // type

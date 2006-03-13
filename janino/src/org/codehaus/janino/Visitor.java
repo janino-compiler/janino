@@ -34,8 +34,6 @@
 
 package org.codehaus.janino;
 
-import org.codehaus.janino.Java.CompilationUnit;
-
 /**
  * Basis for the "visitor" pattern as described in "Gamma, Helm, Johnson,
  * Vlissides: Design Patterns".
@@ -45,8 +43,8 @@ public class Visitor {
     extends TypeDeclarationVisitor, TypeBodyDeclarationVisitor, BlockStatementVisitor, AtomVisitor {
     
         // ImportDeclaration-derived.
-        void visitSingleTypeImportDeclaration(CompilationUnit.SingleTypeImportDeclaration stid);
-        void visitTypeImportOnDemandDeclaration(CompilationUnit.TypeImportOnDemandDeclaration tiodd);
+        void visitSingleTypeImportDeclaration(Java.CompilationUnit.SingleTypeImportDeclaration stid);
+        void visitTypeImportOnDemandDeclaration(Java.CompilationUnit.TypeImportOnDemandDeclaration tiodd);
     }
     
     public interface TypeDeclarationVisitor {

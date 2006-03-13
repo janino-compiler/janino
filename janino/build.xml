@@ -46,7 +46,7 @@
 		<javac
 			fork="yes"
 			executable="${jdk_1_2_2_home}/bin/javac"
-			srcdir="${src}"
+			srcdir="${src}" excludes="org/codehaus/janino/AstGeneratorVisitor.java"
 			destdir="${build}"
 		/>
 	</target>
