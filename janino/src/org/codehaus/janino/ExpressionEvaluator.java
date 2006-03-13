@@ -300,25 +300,20 @@ public class ExpressionEvaluator extends EvaluatorBase {
         if (optionalExpressionType == void.class) {
 
             // ExpressionEvaluator with a expression type "void" is a simple expression statement.
-            block.addStatement(new Java.ExpressionStatement(
-                parser.parseExpression(block).toRvalueOrPE(),
-                block
-            ));
+            block.addStatement(new Java.ExpressionStatement(parser.parseExpression().toRvalueOrPE()));
         } else {
 
             // Compute expression value
-            Java.Rvalue value = parser.parseExpression((Java.BlockStatement) block).toRvalueOrPE();
+            Java.Rvalue value = parser.parseExpression().toRvalueOrPE();
 
             // Special case: A "null" expression type means return type "Object" and automatic
             // wrapping of primitive types.
             if (optionalExpressionType == null) {
                 value = new Java.MethodInvocation(
                     scanner.peek().getLocation(), // location
-                    (Java.BlockStatement) block,  // enclosingBlockStatement
                     new Java.ReferenceType(       // optionalTarget
-                        scanner.peek().getLocation(),
-                        (Java.Scope) block,
-                        new String[] { "org", "codehaus", "janino", "util", "PrimitiveWrapper" }
+                        scanner.peek().getLocation(),                                            // location
+                        new String[] { "org", "codehaus", "janino", "util", "PrimitiveWrapper" } // identifiers
                     ),
                     "wrap",
                     new Java.Rvalue[] { value }   // arguments
@@ -329,7 +324,6 @@ public class ExpressionEvaluator extends EvaluatorBase {
             // Add a return statement.
             block.addStatement(new Java.ReturnStatement(
                 scanner.peek().getLocation(), // location
-                block,                        // enclosingBlock
                 value                         // returnValue
             ));
         }

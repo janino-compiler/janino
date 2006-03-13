@@ -36,6 +36,7 @@ package org.codehaus.janino;
 
 import java.util.*;
 
+import org.codehaus.janino.util.*;
 import org.codehaus.janino.util.iterator.*;
 
 
@@ -54,10 +55,6 @@ public class Java {
     private Java() {} // Don't instantiate me.
 
     public interface Scope {
-
-        /**
-         * @return Enclusing scope or "null".
-         */
         public Scope getEnclosingScope();
     }
 
@@ -105,23 +102,23 @@ public class Java {
         }
 
         // Implement "Scope".
-        public Scope getEnclosingScope() { return null; }
+        public Scope getEnclosingScope() { throw new RuntimeException("A compilation unit has no enclosing scope"); }
 
         public void setPackageDeclaration(PackageDeclaration packageDeclaration) {
             if (this.optionalPackageDeclaration != null) throw new RuntimeException("Re-setting package declaration");
             this.optionalPackageDeclaration = packageDeclaration;
         }
 
-        public void addImportDeclaration(ImportDeclaration id) throws Parser.ParseException {
+        public void addImportDeclaration(CompilationUnit.ImportDeclaration id) throws Parser.ParseException {
 
             // Check for conflicting single-type import.
-            if (id instanceof SingleTypeImportDeclaration) {
-                String[] ss = ((SingleTypeImportDeclaration) id).identifiers;
+            if (id instanceof CompilationUnit.SingleTypeImportDeclaration) {
+                String[] ss = ((CompilationUnit.SingleTypeImportDeclaration) id).identifiers;
                 String name = ss[ss.length - 1];
                 for (Iterator it = this.importDeclarations.iterator(); it.hasNext();) {
-                    ImportDeclaration id2 = (ImportDeclaration) it.next();
-                    if (id2 instanceof SingleTypeImportDeclaration) {
-                        String[] ss2 = ((SingleTypeImportDeclaration) id2).identifiers;
+                    CompilationUnit.ImportDeclaration id2 = (CompilationUnit.ImportDeclaration) it.next();
+                    if (id2 instanceof CompilationUnit.SingleTypeImportDeclaration) {
+                        String[] ss2 = ((CompilationUnit.SingleTypeImportDeclaration) id2).identifiers;
                         if (ss2[ss2.length - 1].equals(name)) {
                             if (!Java.join(ss, ".").equals(Java.join(ss2, "."))) id.throwParseException("Class \"" + name + "\" was first imported from \"" + Java.join(ss, ".") + "\", now again from \"" + Java.join(ss2, ".") + "\"");
                         }
@@ -133,6 +130,7 @@ public class Java {
 
         public void addPackageMemberTypeDeclaration(PackageMemberTypeDeclaration pmtd) {
             this.packageMemberTypeDeclarations.add(pmtd);
+            pmtd.setDeclaringCompilationUnit(this);
         }
 
         /**
@@ -163,13 +161,48 @@ public class Java {
          */
         public String[] getSingleTypeImport(String name) {
             for (Iterator it = this.importDeclarations.iterator(); it.hasNext();) {
-                ImportDeclaration id = (ImportDeclaration) it.next();
-                if (id instanceof SingleTypeImportDeclaration) {
-                    String[] ss = ((SingleTypeImportDeclaration) id).identifiers;
+                CompilationUnit.ImportDeclaration id = (CompilationUnit.ImportDeclaration) it.next();
+                if (id instanceof CompilationUnit.SingleTypeImportDeclaration) {
+                    String[] ss = ((CompilationUnit.SingleTypeImportDeclaration) id).identifiers;
                     if (ss[ss.length - 1].equals(name)) return ss;
                 }
             }
             return null;
+        }
+
+        /**
+         * Represents a type-import-on-demand like<pre>
+         *     import java.util.*;</pre>
+         */
+        public static class TypeImportOnDemandDeclaration extends ImportDeclaration {
+            public final String[] identifiers;
+        
+            public TypeImportOnDemandDeclaration(Location location, String[] identifiers) {
+                super(location);
+                this.identifiers = identifiers;
+            }
+            public final void accept(Visitor.ComprehensiveVisitor visitor) { visitor.visitTypeImportOnDemandDeclaration(this); }
+        }
+
+        /**
+         * Represents a single type import like<pre>
+         *     import java.util.Map;</pre>
+         */
+        public static class SingleTypeImportDeclaration extends ImportDeclaration {
+            public final String[] identifiers;
+        
+            public SingleTypeImportDeclaration(Location location, String[] identifiers) {
+                super(location);
+                this.identifiers = identifiers;
+            }
+            public final void accept(Visitor.ComprehensiveVisitor visitor) { visitor.visitSingleTypeImportDeclaration(this); }
+        }
+
+        public abstract static class ImportDeclaration extends Java.Located {
+            public ImportDeclaration(Location location) {
+                super(location);
+            }
+            public abstract void accept(Visitor.ComprehensiveVisitor visitor);
         }
     }
 
@@ -184,41 +217,6 @@ public class Java {
             super(location);
             this.packageName = packageName;
         }
-    }
-
-    public abstract static class ImportDeclaration extends Located {
-        public ImportDeclaration(Location location) {
-            super(location);
-        }
-        public abstract void accept(Visitor.ComprehensiveVisitor visitor);
-    }
-
-    /**
-     * Represents a single type import like<pre>
-     *     import java.util.Map;</pre>
-     */
-    public static class SingleTypeImportDeclaration extends ImportDeclaration {
-        public final String[] identifiers;
-
-        public SingleTypeImportDeclaration(Location location, String[] identifiers) {
-            super(location);
-            this.identifiers = identifiers;
-        }
-        public final void accept(Visitor.ComprehensiveVisitor visitor) { visitor.visitSingleTypeImportDeclaration(this); }
-    }
-
-    /**
-     * Represents a type-import-on-demand like<pre>
-     *     import java.util.*;</pre>
-     */
-    public static class TypeImportOnDemandDeclaration extends ImportDeclaration {
-        public final String[] identifiers;
-
-        public TypeImportOnDemandDeclaration(Location location, String[] identifiers) {
-            super(location);
-            this.identifiers = identifiers;
-        }
-        public final void accept(Visitor.ComprehensiveVisitor visitor) { visitor.visitTypeImportOnDemandDeclaration(this); }
     }
 
     public interface TypeDeclaration extends Locatable, Scope {
@@ -268,6 +266,8 @@ public class Java {
      * "java.lang.String".
      */
     public interface PackageMemberTypeDeclaration extends NamedTypeDeclaration {
+        void setDeclaringCompilationUnit(CompilationUnit declaringCompilationUnit);
+        CompilationUnit getDeclaringCompilationUnit();
     }
 
     /**
@@ -328,35 +328,38 @@ public class Java {
 
     public abstract static class AbstractTypeDeclaration implements TypeDeclaration {
         private   final Location location;
-        protected final Scope    enclosingScope;
         protected final short    modifiers;
         public final List        declaredMethods              = new ArrayList(); // MethodDeclarator
         public final List        declaredClassesAndInterfaces = new ArrayList(); // MemberTypeDeclaration
+        private Scope enclosingScope = null;
 
         /*package*/ IClass resolvedType = null;
 
         public AbstractTypeDeclaration(
             Location location,
-            Scope    enclosingScope,
             short    modifiers
         ) {
-            this.location       = location;
+            this.location  = location;
+            this.modifiers = modifiers;
+        }
+
+        public void setEnclosingScope(Scope enclosingScope) {
+            if (this.enclosingScope != null && enclosingScope != this.enclosingScope) throw new RuntimeException("Enclosing scope is already set for type declaration \"" + this.toString() + "\" at " + this.getLocation());
             this.enclosingScope = enclosingScope;
-            this.modifiers      = modifiers;
+        }
+        public Scope getEnclosingScope() {
+            return this.enclosingScope;
         }
 
         public void addDeclaredMethod(MethodDeclarator method) {
             this.declaredMethods.add(method);
-        }
-
-        // Implement "Scope".
-        public Scope getEnclosingScope() {
-            return this.enclosingScope;
+            method.setDeclaringType(this);
         }
 
         // Implement TypeDeclaration.
         public void addMemberTypeDeclaration(MemberTypeDeclaration mcoid) {
             this.declaredClassesAndInterfaces.add(mcoid);
+            mcoid.setDeclaringType(this);
         }
         public Collection getMemberTypeDeclarations() {
             return this.declaredClassesAndInterfaces;
@@ -403,17 +406,18 @@ public class Java {
 
         public ClassDeclaration(
             Location location,
-            Scope    enclosingScope,
             short    modifiers
         ) {
-            super(location, enclosingScope, modifiers);
+            super(location, modifiers);
         }
 
         public void addConstructor(ConstructorDeclarator cd) {
             this.constructors.add(cd);
+            cd.setDeclaringType(this);
         }
         public void addVariableDeclaratorOrInitializer(TypeBodyDeclaration tbd) {
             this.variableDeclaratorsAndInitializers.add(tbd);
+            tbd.setDeclaringType(this);
 
             // Clear resolved type cache.
             if (this.resolvedType != null) this.resolvedType.declaredIFields = null;
@@ -439,14 +443,15 @@ public class Java {
         ConstructorDeclarator[] getConstructors() {
             if (this.constructors.isEmpty()) {
                 ConstructorDeclarator defaultConstructor = new ConstructorDeclarator(
-                    this.getLocation(),          // location
-                    this,                        // declaringClass
-                    null,                        // optionalDocComment
-                    Mod.PUBLIC,                  // modifiers
-                    new Java.FormalParameter[0], // formalParameters
-                    new Java.Type[0]             // thrownExceptions
+                    this.getLocation(),                        // location
+                    null,                                      // optionalDocComment
+                    Mod.PUBLIC,                                // modifiers
+                    new FunctionDeclarator.FormalParameter[0], // formalParameters
+                    new Type[0],                               // thrownExceptions
+                    null,                                      // optionalExplicitConstructorInvocation
+                    new Block(this.getLocation())              // optionalBody
                 );
-                defaultConstructor.setBody(new Block(this.getLocation(), (Scope) this));
+                defaultConstructor.setDeclaringType(this);
                 return new ConstructorDeclarator[] { defaultConstructor };
             }
 
@@ -458,26 +463,17 @@ public class Java {
     }
 
     public static final class AnonymousClassDeclaration extends ClassDeclaration implements InnerClassDeclaration {
-        public /*final*/ Type   baseType;  // Base class or interface
-
-        private /*final*/ String className; // Effective class name.
+        public final Type baseType;  // Base class or interface
 
         public AnonymousClassDeclaration(
             Location location,
-            Scope    enclosingScope,
             Type     baseType
         ) {
             super(
                 location,                         // location
-                enclosingScope,                   // enclosingScope
                 (short) (Mod.PRIVATE | Mod.FINAL) // modifiers
             );
-            this.baseType = baseType;
-
-            Scope s = this.getEnclosingScope();
-            for (; !(s instanceof TypeDeclaration); s = s.getEnclosingScope());
-            TypeDeclaration immediatelyEnclosingTypeDeclaration = (TypeDeclaration) s;
-            this.className = immediatelyEnclosingTypeDeclaration.createAnonymousClassName();
+            (this.baseType = baseType).setEnclosingScope(new EnclosingScopeOfTypeDeclaration(this));
         }
 
         public final void accept(Visitor.TypeDeclarationVisitor visitor) {
@@ -485,8 +481,16 @@ public class Java {
         }
 
         // Implement TypeDeclaration.
-        public String getClassName() { return this.className; }
-        public String toString() { return "ANONYMOUS"; }
+        public String getClassName() {
+            if (this.myName == null) {
+                Scope s = this.getEnclosingScope();
+                for (; !(s instanceof TypeDeclaration); s = s.getEnclosingScope());
+                this.myName = ((TypeDeclaration) s).createAnonymousClassName();
+            }
+            return this.myName;
+        }
+        private String myName = null;
+        public String toString() { return this.getClassName(); }
     }
 
     public abstract static class NamedClassDeclaration extends ClassDeclaration implements NamedTypeDeclaration, DocCommentable {
@@ -497,18 +501,19 @@ public class Java {
 
         public NamedClassDeclaration(
             Location location,
-            Scope    enclosingScope,
             String   optionalDocComment,
             short    modifiers,
             String   name,
             Type     optionalExtendedType,
             Type[]   implementedTypes
         ) {
-            super(location, enclosingScope, modifiers);
+            super(location, modifiers);
             this.optionalDocComment   = optionalDocComment;
             this.name                 = name;
             this.optionalExtendedType = optionalExtendedType;
+            if (optionalExtendedType != null) optionalExtendedType.setEnclosingScope(new EnclosingScopeOfTypeDeclaration(this));
             this.implementedTypes     = implementedTypes;
+            for (int i = 0; i < implementedTypes.length; ++i) implementedTypes[i].setEnclosingScope(new EnclosingScopeOfTypeDeclaration(this));
         }
 
         public String toString() { return this.name; }
@@ -521,10 +526,21 @@ public class Java {
         public boolean hasDeprecatedDocTag() { return this.optionalDocComment != null && this.optionalDocComment.indexOf("@deprecated") != -1; }
     }
 
+    /**
+     * Lazily determines and returns the enclosing {@link Scope} of the given
+     * {@link TypeDeclaration}.
+     */
+    public static final class EnclosingScopeOfTypeDeclaration implements Scope {
+        private final TypeDeclaration typeDeclaration;
+        public EnclosingScopeOfTypeDeclaration(TypeDeclaration typeDeclaration) {
+            this.typeDeclaration = typeDeclaration;
+        }
+        public Scope getEnclosingScope() { return this.typeDeclaration.getEnclosingScope(); }
+    }
+
     public static final class MemberClassDeclaration extends NamedClassDeclaration implements MemberTypeDeclaration, InnerClassDeclaration {
         public MemberClassDeclaration(
             Location             location,
-            NamedTypeDeclaration declaringType,
             String               optionalDocComment,
             short                modifiers,
             String               name,
@@ -533,20 +549,18 @@ public class Java {
         ) throws Parser.ParseException {
             super(
                 location,              // location
-                (Scope) declaringType, // enclosingScope
                 optionalDocComment,    // optionalDocComment
                 modifiers,             // modifiers
                 name,                  // name
                 optionalExtendedType,  // optionalExtendedType
                 implementedTypes       // implementedTypes
             );
-
-            // Check for redefinition of member type.
-            MemberTypeDeclaration mcoid = declaringType.getMemberTypeDeclaration(name);
-            if (mcoid != null) this.throwParseException("Redeclaration of class \"" + name + "\", previously declared in " + mcoid.getLocation());
         }
 
         // Implement TypeBodyDeclaration.
+        public void setDeclaringType(TypeDeclaration declaringType) {
+            this.setEnclosingScope(declaringType);
+        }
         public TypeDeclaration getDeclaringType() {
             return (TypeDeclaration) this.getEnclosingScope();
         }
@@ -568,11 +582,8 @@ public class Java {
     }
 
     public static final class LocalClassDeclaration extends NamedClassDeclaration implements InnerClassDeclaration {
-        private final String className;
-
         public LocalClassDeclaration(
             Location location,
-            Block    declaringBlock,
             String   optionalDocComment,
             short    modifiers,
             String   name,
@@ -581,26 +592,12 @@ public class Java {
         ) throws Parser.ParseException {
             super(
                 location,               // location
-                (Scope) declaringBlock, // enclosingScope
                 optionalDocComment,     // optionalDocComment
                 modifiers,              // modifiers
                 name,                   // name
                 optionalExtendedType,   // optionalExtendedType
                 implementedTypes        // implementedTypes
             );
-
-            // Check for redefinition.
-            for (Scope s = declaringBlock; s instanceof Block; s = s.getEnclosingScope()) {
-                Block b = (Block) s;
-                LocalClassDeclaration lcd = b.getLocalClassDeclaration(name);
-                if (lcd != null) this.throwParseException("Redeclaration of local class \"" + name + "\"; previously declared in " + lcd.getLocation());
-            }
-
-            // Determine effective class name.
-            Scope s = this.getEnclosingScope();
-            while (!(s instanceof TypeDeclaration)) s = s.getEnclosingScope();
-            TypeDeclaration immediatelyEnclosingTypeDeclaration = (TypeDeclaration) s;
-            this.className = immediatelyEnclosingTypeDeclaration.createLocalTypeName(name);
         }
 
         // Implement ClassDeclaration.
@@ -618,7 +615,9 @@ public class Java {
 
         // Implement TypeDeclaration.
         public String getClassName() {
-            return this.className;
+            for (Scope s = this.getEnclosingScope();; s = s.getEnclosingScope()) {
+                if (s instanceof Java.TypeDeclaration) return ((Java.TypeDeclaration) s).getClassName() + '$' + this.name;
+            }
         }
 
         public final void accept(Visitor.TypeDeclarationVisitor visitor) { visitor.visitLocalClassDeclaration(this); }
@@ -626,17 +625,15 @@ public class Java {
 
     public static final class PackageMemberClassDeclaration extends NamedClassDeclaration implements PackageMemberTypeDeclaration {
         public PackageMemberClassDeclaration(
-            Location        location,
-            CompilationUnit declaringCompilationUnit,
-            String          optionalDocComment,
-            short           modifiers,
-            String          name,
-            Type            optionalExtendedType,
-            Type[]          implementedTypes
+            Location location,
+            String   optionalDocComment,
+            short    modifiers,
+            String   name,
+            Type     optionalExtendedType,
+            Type[]   implementedTypes
         ) throws Parser.ParseException {
             super(
                 location,                         // location
-                (Scope) declaringCompilationUnit, // enclosingScope
                 optionalDocComment,               // optionalDocComment
                 modifiers,                        // modifiers
                 name,                             // name
@@ -650,18 +647,14 @@ public class Java {
                 Mod.PRIVATE |
                 Mod.STATIC
             )) != 0) this.throwParseException("Modifiers \"protected\", \"private\" and \"static\" not allowed in package member class declaration");
+        }
 
-            // Check for conflict with single-type-import (7.6).
-            {
-                String[] ss = declaringCompilationUnit.getSingleTypeImport(name);
-                if (ss != null) this.throwParseException("Package member class declaration \"" + name + "\" conflicts with single-type-import \"" + Java.join(ss, ".") + "\"");
-            }
-
-            // Check for redefinition within compilation unit (7.6).
-            {
-                PackageMemberTypeDeclaration pmtd = declaringCompilationUnit.getPackageMemberTypeDeclaration(name);
-                if (pmtd != null) this.throwParseException("Redeclaration of class \"" + name + "\", previously declared in " + pmtd.getLocation());
-            }
+        // Implement PackageMemberTypeDeclaration.
+        public void setDeclaringCompilationUnit(CompilationUnit declaringCompilationUnit) {
+            this.setEnclosingScope(declaringCompilationUnit);
+        }
+        public CompilationUnit getDeclaringCompilationUnit() {
+            return (CompilationUnit) this.getEnclosingScope();
         }
 
         // Implement ClassDeclaration.
@@ -688,26 +681,23 @@ public class Java {
 
         protected InterfaceDeclaration(
             Location location,
-            Scope    enclosingScope,
             String   optionalDocComment,
             short    modifiers,
             String   name,
             Type[]   extendedTypes
         ) {
-            super(
-                location,
-                enclosingScope,
-                modifiers
-            );
+            super(location, modifiers);
             this.optionalDocComment = optionalDocComment;
             this.name               = name;
             this.extendedTypes      = extendedTypes;
+            for (int i = 0; i < extendedTypes.length; ++i) extendedTypes[i].setEnclosingScope(new EnclosingScopeOfTypeDeclaration(this));
         }
 
         public String toString() { return this.name; }
 
         public void addConstantDeclaration(FieldDeclaration fd) {
             this.constantDeclarations.add(fd);
+            fd.setDeclaringType(this);
 
             // Clear resolved type cache.
             if (this.resolvedType != null) this.resolvedType.declaredIFields = null;
@@ -730,7 +720,6 @@ public class Java {
     public static final class MemberInterfaceDeclaration extends InterfaceDeclaration implements MemberTypeDeclaration {
         public MemberInterfaceDeclaration(
             Location             location,
-            NamedTypeDeclaration declaringType,
             String               optionalDocComment,
             short                modifiers,
             String               name,
@@ -738,16 +727,11 @@ public class Java {
         ) throws Parser.ParseException {
             super(
                 location,              // location
-                (Scope) declaringType, // enclosingScope
                 optionalDocComment,    // optionalDocComment
                 modifiers,             // modifiers
                 name,                  // name
                 extendedTypes          // extendedTypes
             );
-
-            // Check for redefinition of member type.
-            MemberTypeDeclaration mcoid = declaringType.getMemberTypeDeclaration(name);
-            if (mcoid != null) this.throwParseException("Redeclaration of interface \"" + name + "\", previously declared in " + mcoid.getLocation());
         }
 
         // Implement TypeDeclaration.
@@ -761,6 +745,7 @@ public class Java {
         }
 
         // Implement TypeBodyDeclaration.
+        public void setDeclaringType(TypeDeclaration declaringType) { this.setEnclosingScope(declaringType); }
         public TypeDeclaration getDeclaringType() {
             return (TypeDeclaration) this.getEnclosingScope();
         }
@@ -775,7 +760,6 @@ public class Java {
     public static final class PackageMemberInterfaceDeclaration extends InterfaceDeclaration implements PackageMemberTypeDeclaration {
         public PackageMemberInterfaceDeclaration(
             Location        location,
-            CompilationUnit declaringCompilationUnit,
             String          optionalDocComment,
             short           modifiers,
             String          name,
@@ -783,7 +767,6 @@ public class Java {
         ) throws Parser.ParseException {
             super(
                 location,                         // location
-                (Scope) declaringCompilationUnit, // enclosingScope
                 optionalDocComment,               // optionalDocComment
                 modifiers,                        // modifiers
                 name,                             // name
@@ -796,18 +779,15 @@ public class Java {
                 Mod.PRIVATE |
                 Mod.STATIC
             )) != 0) this.throwParseException("Modifiers \"protected\", \"private\" and \"static\" not allowed in package member interface declaration");
+        }
 
-            // Check for conflict with single-type-import (JLS 7.6).
-            {
-                String[] ss = declaringCompilationUnit.getSingleTypeImport(name);
-                if (ss != null) this.throwParseException("Package member interface declaration \"" + name + "\" conflicts with single-type-import \"" + Java.join(ss, ".") + "\"");
-            }
+        // Implement PackageMemberTypeDeclaration.
+        public void setDeclaringCompilationUnit(CompilationUnit declaringCompilationUnit) {
+            this.setEnclosingScope(declaringCompilationUnit);
+        }
 
-            // Check for redefinition within compilation unit (JLS 7.6).
-            {
-                PackageMemberTypeDeclaration pmtd = declaringCompilationUnit.getPackageMemberTypeDeclaration(name);
-                if (pmtd != null) this.throwParseException("Redeclaration of interface \"" + name + "\", previously declared in " + pmtd.getLocation());
-            }
+        public CompilationUnit getDeclaringCompilationUnit() {
+            return (CompilationUnit) this.getEnclosingScope();
         }
 
         // Implement TypeDeclaration.
@@ -833,26 +813,29 @@ public class Java {
      * </ul>
      */
     public interface TypeBodyDeclaration extends Locatable, Scope {
+        void            setDeclaringType(TypeDeclaration declaringType);
         TypeDeclaration getDeclaringType();
         boolean         isStatic();
         void            accept(Visitor.TypeBodyDeclarationVisitor visitor);
     }
 
     public abstract static class AbstractTypeBodyDeclaration extends Located implements TypeBodyDeclaration {
-        final TypeDeclaration declaringType;
-        final boolean         statiC;
+        private TypeDeclaration declaringType;
+        final boolean           statiC;
 
         protected AbstractTypeBodyDeclaration(
-            Location        location,
-            TypeDeclaration declaringType,
-            boolean         statiC
+            Location location,
+            boolean  statiC
         ) {
             super(location);
-            this.declaringType = declaringType;
-            this.statiC        = statiC;
+            this.statiC = statiC;
         }
 
         // Implement TypeBodyDeclaration.
+        public void setDeclaringType(TypeDeclaration declaringType) {
+            if (this.declaringType != null && declaringType != null) throw new RuntimeException("Declaring type for type body declaration \"" + this.toString() + "\"at " + this.getLocation() + " is already set");
+            this.declaringType = declaringType;
+        }
         public TypeDeclaration getDeclaringType() {
             return this.declaringType;
         }
@@ -861,9 +844,12 @@ public class Java {
             return this.statiC;
         }
 
-        // Implement Scope.
+        // Implement BlockStatement.
+        public void setEnclosingScope(Scope enclosingScope) {
+            this.declaringType = (TypeDeclaration) enclosingScope;
+        }
         public Scope getEnclosingScope() {
-            return (Scope) this.declaringType;
+            return this.declaringType;
         }
     }
 
@@ -871,22 +857,16 @@ public class Java {
      * Representation of an instance (JLS2 8.6) or static initializer (JLS2 8.7).
      */
     public final static class Initializer extends AbstractTypeBodyDeclaration implements BlockStatement {
-        public Block block = null;
+        public final Block block;
 
         public Initializer(
-            Location        location,
-            TypeDeclaration declaringType,
-            boolean         statiC
+            Location location,
+            boolean  statiC,
+            Block    block
         ) {
-            super(location, declaringType, statiC);
+            super(location, statiC);
+            (this.block = block).setEnclosingScope(this);
         }
-
-        public void setBlock(Block block) {
-            if (this.block != null) throw new RuntimeException();
-            this.block = block;
-        }
-
-        // Compile time members.
 
         // Implement BlockStatement.
 
@@ -905,30 +885,29 @@ public class Java {
         public final String            name;
         public final FormalParameter[] formalParameters;
         protected final Type[]         thrownExceptions;
-        public Block                   optionalBody = null;
+        public final Block             optionalBody;
 
         public FunctionDeclarator(
             Location          location,
-            TypeDeclaration   declaringType,
             String            optionalDocComment,
             short             modifiers,
             Type              type,
             String            name,
             FormalParameter[] formalParameters,
-            Type[]            thrownExceptions
+            Type[]            thrownExceptions,
+            Block             optionalBody
         ) {
-            super(location, declaringType, (modifiers & Mod.STATIC) != 0);
+            super(location, (modifiers & Mod.STATIC) != 0);
             this.optionalDocComment = optionalDocComment;
             this.modifiers          = modifiers;
-            this.type               = type;
+            (this.type               = type).setEnclosingScope(this);
             this.name               = name;
             this.formalParameters   = formalParameters;
+            for (int i = 0; i < formalParameters.length; ++i) formalParameters[i].type.setEnclosingScope(this);
             this.thrownExceptions   = thrownExceptions;
-        }
-
-        public void setBody(Block body) {
-            if (this.optionalBody != null) throw new RuntimeException("Body must be set exactly once");
-            this.optionalBody = body;
+            for (int i = 0; i < thrownExceptions.length; ++i) thrownExceptions[i].setEnclosingScope(this);
+            this.optionalBody       = optionalBody;
+            if (optionalBody != null) optionalBody.setEnclosingScope(this);
         }
 
         // Implement "Scope".
@@ -937,44 +916,68 @@ public class Java {
         }
 
         // Set by "compile()".
-        IClass                  returnType = null;
-        final HashMap           parameters = new HashMap();   // String name => LocalVariable
+        IClass returnType = null;
 
         // Implement DocCommentable.
         public String getDocComment() { return this.optionalDocComment; }
         public boolean hasDeprecatedDocTag() { return this.optionalDocComment != null && this.optionalDocComment.indexOf("@deprecated") != -1; }
+
+        public static final class FormalParameter extends Java.Located {
+            public final boolean finaL;
+            public final Type    type;
+            public final String  name;
+        
+            public FormalParameter(
+                Location location,
+                boolean  finaL,
+                Type     type,
+                String   name
+            ) {
+                super(location);
+                this.finaL = finaL;
+                this.type  = type;
+                this.name  = name;
+            }
+        
+            public String toString() {
+                return this.type.toString() + ' ' + this.name;
+            }
+        
+            // Compile time members.
+        
+            public Java.LocalVariable localVariable = null;
+        }
     }
 
     public static final class ConstructorDeclarator extends FunctionDeclarator {
-        final ClassDeclaration       declaringClass;
         IClass.IConstructor          iConstructor = null;
-        public ConstructorInvocation optionalExplicitConstructorInvocation = null;
+        public ConstructorInvocation optionalConstructorInvocation = null;
 
         public ConstructorDeclarator(
-            Location          location,
-            ClassDeclaration  declaringClass,
-            String            optionalDocComment,
-            short             modifiers,
-            FormalParameter[] formalParameters,
-            Type[]            thrownExceptions
+            Location                             location,
+            String                               optionalDocComment,
+            short                                modifiers,
+            FunctionDeclarator.FormalParameter[] formalParameters,
+            Type[]                               thrownExceptions,
+            ConstructorInvocation                optionalConstructorInvocation,
+            Block                                optionalBody
         ) {
             super(
                 location,                                // location
-                declaringClass,                          // declaringType
                 optionalDocComment,                      // optionalDocComment
                 modifiers,                               // modifiers
                 new BasicType(location, BasicType.VOID), // type
                 "<init>",                                // name
                 formalParameters,                        // formalParameters
-                thrownExceptions                         // thrownExceptions
+                thrownExceptions,                        // thrownExceptions
+                optionalBody                             // optionalBody
             );
-
-            this.declaringClass = declaringClass;
+            this.optionalConstructorInvocation = optionalConstructorInvocation;
+            if (optionalConstructorInvocation != null) optionalConstructorInvocation.setEnclosingScope(this);
         }
-        public void setExplicitConstructorInvocation(
-            ConstructorInvocation explicitConstructorInvocation
-        ) {
-            this.optionalExplicitConstructorInvocation = explicitConstructorInvocation;
+
+        public ClassDeclaration getDeclaringClass() {
+            return (ClassDeclaration) this.getEnclosingScope();
         }
 
         // Compile time members.
@@ -984,9 +987,9 @@ public class Java {
         // Implement "FunctionDeclarator":
 
         public String toString() {
-            StringBuffer sb = new StringBuffer(this.declaringClass.getClassName());
+            StringBuffer sb = new StringBuffer(this.getDeclaringClass().getClassName());
             sb.append('(');
-            FormalParameter[] fps = this.formalParameters;
+            FunctionDeclarator.FormalParameter[] fps = this.formalParameters;
             for (int i = 0; i < fps.length; ++i) {
                 if (i > 0) sb.append(", ");
                 sb.append(fps[i].toString());
@@ -1000,31 +1003,31 @@ public class Java {
 
     public final static class MethodDeclarator extends FunctionDeclarator {
         public MethodDeclarator(
-            Location                      location,
-            final AbstractTypeDeclaration declaringType,
-            String                        optionalDocComment,
-            short                         modifiers,
-            Type                          type,
-            String                        name,
-            FormalParameter[]             formalParameters,
-            Type[]                        thrownExceptions
+            Location                             location,
+            String                               optionalDocComment,
+            short                                modifiers,
+            Type                                 type,
+            String                               name,
+            FunctionDeclarator.FormalParameter[] formalParameters,
+            Type[]                               thrownExceptions,
+            Block                                optionalBody
         ) {
             super(
                 location,           // location
-                declaringType,      // declaringType
                 optionalDocComment, // optionalDocComment
                 modifiers,          // modifiers
                 type,               // type
                 name,               // name
                 formalParameters,   // formalParameters
-                thrownExceptions    // thrownExceptions
+                thrownExceptions,   // thrownExceptions
+                optionalBody
             );
         }
 
         public String toString() {
             StringBuffer sb = new StringBuffer(this.name);
             sb.append('(');
-            FormalParameter[] fps = this.formalParameters;
+            FunctionDeclarator.FormalParameter[] fps = this.formalParameters;
             for (int i = 0; i < fps.length; ++i) {
                 if (i > 0) sb.append(", ");
                 sb.append(fps[i].toString());
@@ -1044,35 +1047,35 @@ public class Java {
      * code that initializes the field.
      */
     public static final class FieldDeclaration extends Statement implements TypeBodyDeclaration, DocCommentable {
-        private final String          optionalDocComment;
-        final AbstractTypeDeclaration declaringType;
-        final short                   modifiers;
-        public final Type             type;
-        public VariableDeclarator[]   variableDeclarators = null;
+        private final String              optionalDocComment;
+        final short                       modifiers;
+        public final Type                 type;
+        public final VariableDeclarator[] variableDeclarators;
 
         public FieldDeclaration(
-            Location                location,
-            AbstractTypeDeclaration declaringType,
-            String                  optionalDocComment,
-            short                   modifiers,
-            Type                    type
+            Location             location,
+            String               optionalDocComment,
+            short                modifiers,
+            Type                 type,
+            VariableDeclarator[] variableDeclarators
         ) {
-            super(
-                location,
-                (Scope) declaringType // enclosingScope
-            );
-            this.optionalDocComment = optionalDocComment;
-            this.modifiers          = modifiers;
-            this.declaringType      = declaringType;
-            this.type               = type;
-        }
-        public void setVariableDeclarators(VariableDeclarator[] variableDeclarators) {
+            super(location);
+            this.optionalDocComment  = optionalDocComment;
+            this.modifiers           = modifiers;
+            (this.type                = type).setEnclosingScope(this);
             this.variableDeclarators = variableDeclarators;
+            for (int i = 0; i < variableDeclarators.length; ++i) {
+                VariableDeclarator vd = variableDeclarators[i];
+                if (vd.optionalInitializer != null) Java.setEnclosingBlockStatement(vd.optionalInitializer, this);
+            }
         }
 
         // Implement TypeBodyDeclaration.
+        public void setDeclaringType(TypeDeclaration declaringType) {
+            this.setEnclosingScope(declaringType);
+        }
         public TypeDeclaration getDeclaringType() {
-            return this.declaringType;
+            return (TypeDeclaration) this.getEnclosingScope();
         }
         public boolean isStatic() {
             return (this.modifiers & Mod.STATIC) != 0;
@@ -1094,17 +1097,33 @@ public class Java {
         public String getDocComment() { return this.optionalDocComment; }
         public boolean hasDeprecatedDocTag() { return this.optionalDocComment != null && this.optionalDocComment.indexOf("@deprecated") != -1; }
     }
+    private static void setEnclosingBlockStatement(
+        ArrayInitializerOrRvalue aiorv,
+        BlockStatement           enclosingBlockStatement
+    ) {
+        if (aiorv instanceof Rvalue) {
+            ((Rvalue) aiorv).setEnclosingBlockStatement(enclosingBlockStatement);
+        } else
+        if (aiorv instanceof ArrayInitializer) {
+            ArrayInitializerOrRvalue[] values = ((ArrayInitializer) aiorv).values;
+            for (int i = 0; i < values.length; ++i) Java.setEnclosingBlockStatement(values[i], enclosingBlockStatement);
+        } else
+        {
+            throw new RuntimeException("Unexpected array or initializer class " + aiorv.getClass().getName());
+        }
+    }
 
+    // Used by FieldDeclaration and LocalVariableDeclarationStatement.
     public final static class VariableDeclarator extends Located {
-        public final String name;
-        public final int    brackets;
-        public final Rvalue optionalInitializer;
+        public final String                   name;
+        public final int                      brackets;
+        public final ArrayInitializerOrRvalue optionalInitializer;
 
         public VariableDeclarator(
-            Location location,
-            String   name,
-            int      brackets,
-            Rvalue   optionalInitializer
+            Location                 location,
+            String                   name,
+            int                      brackets,
+            ArrayInitializerOrRvalue optionalInitializer
         ) {
             super(location);
             this.name                = name;
@@ -1114,66 +1133,59 @@ public class Java {
             // Used both by field declarations an local variable declarations, so naming
             // conventions checking (JLS2 6.8) cannot be done here.
         }
-    }
-
-    public static final class FormalParameter {
-        public FormalParameter(
-            boolean finaL,
-            Type    type,
-            String  name
-        ) {
-            this.finaL = finaL;
-            this.type  = type;
-            this.name  = name;
-        }
 
         public String toString() {
-            return this.type.toString() + ' ' + this.name;
+            StringBuffer sb = new StringBuffer();
+            sb.append(this.name);
+            for (int i = 0; i < this.brackets; ++i) sb.append("[]");
+            if (this.optionalInitializer != null) sb.append(" = ").append(this.optionalInitializer);
+            return sb.toString();
         }
 
-        public final boolean finaL;
-        public final Type    type;
-        public final String  name;
+        // Compile time members.
+
+        // Used only if the variable declarator declares a local variable.
+        public LocalVariable localVariable = null;
     }
 
     /**
      * Base of all statements that can appear in a block.
      */
     public interface BlockStatement extends Locatable, Scope {
+        void setEnclosingScope(Scope enclosingScope);
+        Scope getEnclosingScope();
+
         void accept(Visitor.BlockStatementVisitor visitor);
     }
 
     public static abstract class Statement extends Located implements BlockStatement {
-        protected final Scope enclosingScope;
+        private Scope enclosingScope = null;
 
-        protected Statement(
-            Location location,
-            Scope    enclosingScope
-        ) {
+        protected Statement(Location location) {
             super(location);
-            this.enclosingScope = enclosingScope;
         }
 
-        // Implement "Scope".
+        // Implement "BlockStatement".
+        public void setEnclosingScope(Scope enclosingScope) {
+            if (this.enclosingScope != null && enclosingScope != this.enclosingScope) throw new RuntimeException("Enclosing scope is already set for statement \"" + this.toString() + "\" at " + this.getLocation());
+            this.enclosingScope = enclosingScope;
+        }
         public Scope getEnclosingScope() { return this.enclosingScope; }
     }
 
     public final static class LabeledStatement extends BreakableStatement {
+        public final String    label;
+        public final Statement body;
+
         public LabeledStatement(
-            Location location,
-            Scope    enclosingScope,
-            String   label
+            Location  location,
+            String    label,
+            Statement body
         ) {
-            super(location, enclosingScope);
+            super(location);
             this.label = label;
+            (this.body  = body).setEnclosingScope(this);
         }
-
-        public void setBody(Statement body) {
-            this.body = body;
-        }
-
-        /*final*/ String label;
-        public Statement body = null;
 
         // Compile time members:
 
@@ -1188,17 +1200,25 @@ public class Java {
     public final static class Block extends Statement {
         public final List statements = new ArrayList(); // BlockStatement
 
-        public Block(
-            Location location,
-            Scope    enclosingScope
-        ) {
-            super(location, enclosingScope);
+        public Block(Location location) {
+            super(location);
         }
 
         public void addStatement(BlockStatement statement) {
             this.statements.add(statement);
+            statement.setEnclosingScope(this);
+        }
+        // This one's for some very special compiler trickery...
+        /*private*/ void addButDontEncloseStatement(BlockStatement statement) {
+            this.statements.add(statement);
         }
         public void addStatements(
+            List statements // BlockStatement
+        ) {
+            this.statements.addAll(statements);
+            for (Iterator it = statements.iterator(); it.hasNext();) ((BlockStatement) it.next()).setEnclosingScope(this);
+        }
+        public void addButDontEncloseStatements(
             List statements // BlockStatement
         ) {
             this.statements.addAll(statements);
@@ -1207,15 +1227,7 @@ public class Java {
             return (BlockStatement[]) this.statements.toArray(new BlockStatement[this.statements.size()]);
         }
 
-
         // Compile time members.
-
-        // Fills while the block is being compiled.
-        final Map declaredLocalClasses = new HashMap(); // String declaredName => LocalClassDeclaration
-
-        public LocalClassDeclaration getLocalClassDeclaration(String name) {
-            return (LocalClassDeclaration) this.declaredLocalClasses.get(name);
-        }
 
         /**
          * JLS 14.10 specifies that under certain circumstances it is not an error that
@@ -1238,7 +1250,6 @@ public class Java {
 
         public final void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitBlock(this); }
 
-        HashMap localVariables = new HashMap(); // String name => LocalVariable
         boolean keepCompiling;
     }
 
@@ -1251,22 +1262,16 @@ public class Java {
      * "while"), labeled statements, and the "switch" statement.
      */
     public static abstract class BreakableStatement extends Statement {
-        protected BreakableStatement(
-            Location location,
-            Scope    enclosingScope
-        ) {
-            super(location, enclosingScope);
+        protected BreakableStatement(Location location) {
+            super(location);
         }
 
         CodeContext.Offset whereToBreak = null;
     }
 
     public static abstract class ContinuableStatement extends BreakableStatement {
-        protected ContinuableStatement(
-            Location location,
-            Scope    enclosingScope
-        ) {
-            super(location, enclosingScope);
+        protected ContinuableStatement(Location location) {
+            super(location);
         }
 
         protected CodeContext.Offset whereToContinue = null;
@@ -1274,11 +1279,8 @@ public class Java {
     }
 
     public final static class ExpressionStatement extends Statement {
-        public ExpressionStatement(
-            Rvalue rvalue,
-            Scope  enclosingScope
-        ) throws Parser.ParseException {
-            super(rvalue.getLocation(), enclosingScope);
+        public ExpressionStatement(Rvalue rvalue) throws Parser.ParseException {
+            super(rvalue.getLocation());
             if (!(
                 rvalue instanceof Java.Assignment
                 || rvalue instanceof Java.Crement
@@ -1286,7 +1288,7 @@ public class Java {
                 || rvalue instanceof Java.SuperclassMethodInvocation
                 || rvalue instanceof Java.NewClassInstance
             )) this.throwParseException("This kind of expression is not allowed in an expression statement");
-            this.rvalue = rvalue;
+            (this.rvalue = rvalue).setEnclosingBlockStatement(this);
         }
         public final Rvalue rvalue;
 
@@ -1296,14 +1298,12 @@ public class Java {
     }
 
     public final static class LocalClassDeclarationStatement extends Statement {
-        public LocalClassDeclarationStatement(
-            Scope                      enclosingScope,
-            Java.LocalClassDeclaration lcd
-        ) {
-            super(lcd.getLocation(), enclosingScope);
-            this.lcd = lcd;
-        }
         public final LocalClassDeclaration lcd;
+
+        public LocalClassDeclarationStatement(Java.LocalClassDeclaration lcd) {
+            super(lcd.getLocation());
+            (this.lcd = lcd).setEnclosingScope(this);
+        }
 
         public final void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitLocalClassDeclarationStatement(this); }
     }
@@ -1316,15 +1316,15 @@ public class Java {
          */
         public IfStatement(
             Location       location,
-            Scope          enclosingScope,
             Rvalue         condition,
             BlockStatement thenStatement,
             BlockStatement optionalElseStatement
         ) {
-            super(location, enclosingScope);
-            this.condition             = condition;
-            this.thenStatement         = thenStatement;
+            super(location);
+            (this.condition             = condition).setEnclosingBlockStatement(this);
+            (this.thenStatement         = thenStatement).setEnclosingScope(this);
             this.optionalElseStatement = optionalElseStatement;
+            if (optionalElseStatement != null) optionalElseStatement.setEnclosingScope(this);
         }
 
         public final Rvalue         condition;
@@ -1337,38 +1337,29 @@ public class Java {
     }
 
     public final static class ForStatement extends ContinuableStatement {
+        public final BlockStatement optionalInit;
+        public final Rvalue         optionalCondition;
+        public final Rvalue[]       optionalUpdate;
+        public final BlockStatement body;
+
         public ForStatement(
             Location location,
-            Scope    enclosingScope
-        ) {
-
-            // Trick: Insert a "Block" between the enclosing scope and the
-            // "for" statement.
-            super(location, new Block(location, enclosingScope));
-            this.implicitBlock = (Block) this.enclosingScope;
-            this.body = new Block(
-                location,
-                this      // enclosingScope
-            );
-        }
-
-        public void set(
             BlockStatement optionalInit,
             Rvalue         optionalCondition,
             Rvalue[]       optionalUpdate,
             BlockStatement body
         ) {
-            this.optionalInit      = optionalInit;
+            super(location);
+            this.optionalInit = optionalInit;
+            if (optionalInit != null) optionalInit.setEnclosingScope(this);
             this.optionalCondition = optionalCondition;
-            this.optionalUpdate    = optionalUpdate;
-            this.body              = body;
+            if (optionalCondition != null) optionalCondition.setEnclosingBlockStatement(this);
+            this.optionalUpdate = optionalUpdate;
+            if (optionalUpdate != null) {
+                for (int i = 0; i < optionalUpdate.length; ++i) optionalUpdate[i].setEnclosingBlockStatement(this);
+            }
+            (this.body = body).setEnclosingScope(this);
         }
-
-        public final Block    implicitBlock;
-        public BlockStatement optionalInit      = null;
-        public Rvalue         optionalCondition = null;
-        public Rvalue[]       optionalUpdate    = null;
-        public BlockStatement body;
 
         // Compile time members:
 
@@ -1376,19 +1367,18 @@ public class Java {
     }
 
     public final static class WhileStatement extends ContinuableStatement {
+        public final Rvalue         condition;
+        public final BlockStatement body;
+
         public WhileStatement(
-            Location location,
-            Scope    enclosingScope,
-            Rvalue   condition
+            Location       location,
+            Rvalue         condition,
+            BlockStatement body
         ) {
-            super(location, enclosingScope);
-            this.condition = condition;
+            super(location);
+            (this.condition = condition).setEnclosingBlockStatement(this);
+            (this.body = body).setEnclosingScope(this);
         }
-
-        public void setBody(BlockStatement body) { this.body = body; }
-
-        public final Rvalue   condition;
-        public BlockStatement body = null;
 
         // Compile time members:
 
@@ -1397,25 +1387,22 @@ public class Java {
     }
 
     public final static class TryStatement extends Statement {
-        public BlockStatement body            = null;
-        public final List     catchClauses    = new ArrayList(); // CatchClause
-        public Block          optionalFinally = null;
+        public final BlockStatement body;
+        public final List           catchClauses; // CatchClause
+        public final Block          optionalFinally;
 
         public TryStatement(
-            Location location,
-            Scope    enclosingScope
+            Location       location,
+            BlockStatement body,
+            List           catchClauses, // CatchClause
+            Block          optionalFinally
         ) {
-            super(location, enclosingScope);
-        }
-
-        public void setBody(BlockStatement body) {
-            this.body = body;
-        }
-        public void addCatchClause(CatchClause catchClause) {
-            this.catchClauses.add(catchClause);
-        }
-        public void setFinally(Block finallY) {
-            this.optionalFinally = finallY;
+            super(location);
+            (this.body            = body).setEnclosingScope(this);
+            this.catchClauses    = catchClauses;
+            for (Iterator it = catchClauses.iterator(); it.hasNext();) ((CatchClause) it.next()).setEnclosingTryStatement(this);
+            this.optionalFinally = optionalFinally;
+            if (optionalFinally != null) optionalFinally.setEnclosingScope(this);
         }
 
         // Compile time members:
@@ -1428,39 +1415,71 @@ public class Java {
         CodeContext.Offset finallyOffset = null;
     }
 
-    public static class CatchClause {
+    public static class CatchClause extends Located implements Scope {
+        public final FunctionDeclarator.FormalParameter caughtException;
+        public final Block                              body;
+        private TryStatement                            enclosingTryStatement = null;
+
         public CatchClause(
-            FormalParameter caughtException,
-            Block           body
+            Location                           location,
+            FunctionDeclarator.FormalParameter caughtException,
+            Block                              body
         ) {
-            this.caughtException = caughtException;
-            this.body            = body;
+            super(location);
+            (this.caughtException = caughtException).type.setEnclosingScope(this);
+            (this.body            = body).setEnclosingScope(this);
         }
 
-        public final FormalParameter caughtException;
-        public final Block           body;
+        public void setEnclosingTryStatement(TryStatement enclosingTryStatement) {
+            if (this.enclosingTryStatement != null && enclosingTryStatement != this.enclosingTryStatement) throw new RuntimeException("Enclosing TYR statement already set for catch clause " + this.toString() + " at " + this.getLocation());
+            this.enclosingTryStatement = enclosingTryStatement;
+        }
+        public Scope getEnclosingScope() { return this.enclosingTryStatement; }
     }
 
     /**
      * 14.10 The "switch" Statement
      */
     public static final class SwitchStatement extends BreakableStatement {
+        public final Rvalue condition;
+        public final List   sbsgs; // SwitchBlockStatementGroup
+
         public SwitchStatement(
             Location location,
-            Scope    enclosingScope
+            Rvalue   condition,
+            List     sbsgs
         ) {
-            super(location, enclosingScope);
+            super(location);
+            (this.condition = condition).setEnclosingBlockStatement(this);
+            this.sbsgs     = sbsgs;
+            for (Iterator it = sbsgs.iterator(); it.hasNext();) {
+                SwitchBlockStatementGroup sbsg = ((SwitchBlockStatementGroup) it.next());
+                for (Iterator it2 = sbsg.caseLabels.iterator(); it2.hasNext();) {
+                    ((Rvalue) (it2.next())).setEnclosingBlockStatement(this);
+                }
+                for (Iterator it2 = sbsg.blockStatements.iterator(); it2.hasNext();) {
+                    ((BlockStatement) (it2.next())).setEnclosingScope(this);
+                }
+            }
         }
 
-        public void setCondition(Rvalue condition) {
-            this.condition = condition;
+        public static class SwitchBlockStatementGroup extends Java.Located {
+            public final List    caseLabels; // Rvalue
+            public final boolean hasDefaultLabel;
+            public final List    blockStatements; // BlockStatement
+        
+            public SwitchBlockStatementGroup(
+                Location location,
+                List     caseLabels,      // Rvalue
+                boolean  hasDefaultLabel,
+                List     blockStatements  // BlockStatement
+            ) {
+                super(location);
+                this.caseLabels      = caseLabels;
+                this.hasDefaultLabel = hasDefaultLabel;
+                this.blockStatements = blockStatements;
+            }
         }
-        public void addSwitchBlockStatementGroup(SwitchBlockStatementGroup sbsg) {
-            this.sbsgs.add(sbsg);
-        }
-
-        public Rvalue     condition = null;
-        public final List sbsgs = new ArrayList(); // SwitchBlockStatementGroup
 
         // Compile time members:
 
@@ -1481,43 +1500,19 @@ public class Java {
         }
     }
 
-    public static class SwitchBlockStatementGroup extends Located {
-        public SwitchBlockStatementGroup(Location location) {
-            super(location);
-        }
-
-        public void addSwitchLabel(Rvalue value) {
-            this.caseLabels.add(value);
-        }
-        public void addDefaultSwitchLabel() throws Parser.ParseException {
-            if (this.hasDefaultLabel) this.throwParseException("Duplicate \"default\" switch label");
-            this.hasDefaultLabel = true;
-        }
-        public void setBlockStatements(List blockStatements) {
-            this.blockStatements = blockStatements;
-        }
-
-        public final List caseLabels = new ArrayList(); // Rvalue
-        public boolean    hasDefaultLabel = false;
-        public List       blockStatements; // BlockStatement
-    }
-
     public final static class SynchronizedStatement extends Statement {
+        public final Rvalue         expression;
+        public final BlockStatement body;
+
         public SynchronizedStatement(
-            Location location,
-            Scope    enclosingScope,
-            Rvalue   expression
+            Location       location,
+            Rvalue         expression,
+            BlockStatement body
         ) {
-            super(location, enclosingScope);
-            this.expression = expression;
+            super(location);
+            (this.expression = expression).setEnclosingBlockStatement(this);
+            (this.body       = body).setEnclosingScope(this);
         }
-
-        public void setBody(BlockStatement body) {
-            this.body = body;
-        }
-
-        public final Rvalue   expression;
-        public BlockStatement body         = null;
 
         // Compile time members:
 
@@ -1527,18 +1522,18 @@ public class Java {
     }
 
     public final static class DoStatement extends ContinuableStatement {
+        public final BlockStatement body;
+        public final Rvalue         condition;
+
         public DoStatement(
-            Location location,
-            Scope    enclosingScope
+            Location       location,
+            BlockStatement body,
+            Rvalue         condition
         ) {
-            super(location, enclosingScope);
+            super(location);
+            (this.body      = body).setEnclosingScope(this);
+            (this.condition = condition).setEnclosingBlockStatement(this);
         }
-
-        public void setBody(BlockStatement body) { this.body = body; }
-        public void setCondition(Rvalue condition) { this.condition = condition; }
-
-        public BlockStatement body      = null;
-        public Rvalue         condition = null;
 
         // Compile time members:
 
@@ -1546,42 +1541,52 @@ public class Java {
     }
 
     public final static class LocalVariableDeclarationStatement extends Statement {
+        public final short                modifiers;
+        public final Type                 type;
+        public final VariableDeclarator[] variableDeclarators;
 
         /**
          * @param modifiers Only "final" allowed.
          */
         public LocalVariableDeclarationStatement(
             Location             location,
-            Block                declaringBlock,
             short                modifiers,
             Type                 type,
             VariableDeclarator[] variableDeclarators
         ) {
-            super(location, declaringBlock);
-            this.declaringBlock      = declaringBlock;
+            super(location);
             this.modifiers           = modifiers;
-            this.type                = type;
+            (this.type                = type).setEnclosingScope(this);
             this.variableDeclarators = variableDeclarators;
+            for (int i = 0; i < variableDeclarators.length; ++i) {
+                VariableDeclarator vd = variableDeclarators[i];
+                if (vd.optionalInitializer != null) Java.setEnclosingBlockStatement(vd.optionalInitializer, this);
+            }
         }
-
-        final Block                       declaringBlock;
-        public final short                modifiers;
-        public final Type                 type;
-        public final VariableDeclarator[] variableDeclarators;
 
         // Compile time members:
 
         public final void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitLocalVariableDeclarationStatement(this); }
+
+        public String toString() {
+            StringBuffer sb = new StringBuffer();
+            if (this.modifiers != 0) sb.append(Mod.shortToString(this.modifiers)).append(' ');
+            sb.append(this.type).append(' ').append(this.variableDeclarators[0].toString());
+            for (int i = 1; i < this.variableDeclarators.length; ++i) {
+                sb.append(", ").append(this.variableDeclarators[i].toString());
+            }
+            return sb.append(';').toString();
+        }
     }
 
     public final static class ReturnStatement extends Statement {
         public ReturnStatement(
             Location location,
-            Scope    enclosingScope,
             Rvalue   optionalReturnValue
         ) {
-            super(location, enclosingScope);
+            super(location);
             this.optionalReturnValue = optionalReturnValue;
+            if (optionalReturnValue != null) optionalReturnValue.setEnclosingBlockStatement(this);
         }
 
         public final Rvalue optionalReturnValue;
@@ -1594,11 +1599,10 @@ public class Java {
     public final static class ThrowStatement extends Statement {
         public ThrowStatement(
             Location location,
-            Scope    enclosingScope,
             Rvalue   expression
         ) {
-            super(location, enclosingScope);
-            this.expression = expression;
+            super(location);
+            (this.expression = expression).setEnclosingBlockStatement(this);
         }
 
         public final Rvalue expression;
@@ -1612,16 +1616,15 @@ public class Java {
      * Representation of the Java<sup>TM</sup> "break" statement (JLS 14.14).
      */
     public final static class BreakStatement extends Statement {
+        public final String optionalLabel;
+
         public BreakStatement(
             Location location,
-            Scope    enclosingScope,
             String   optionalLabel
         ) {
-            super(location, enclosingScope);
+            super(location);
             this.optionalLabel = optionalLabel;
         }
-
-        public final String optionalLabel;
 
         // Compile time members:
 
@@ -1635,10 +1638,9 @@ public class Java {
     public final static class ContinueStatement extends Statement {
         public ContinueStatement(
             Location location,
-            Scope    enclosingScope,
             String   optionalLabel
         ) {
-            super(location, enclosingScope);
+            super(location);
             this.optionalLabel = optionalLabel;
         }
 
@@ -1653,11 +1655,8 @@ public class Java {
      * Represents the "empty statement", i.e. the blank semicolon.
      */
     public final static class EmptyStatement extends Statement {
-        public EmptyStatement(
-            Location location,
-            Scope    enclosingScope
-        ) {
-            super(location, enclosingScope);
+        public EmptyStatement(Location location) {
+            super(location);
         }
 
         public final void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitEmptyStatement(this); }
@@ -1696,7 +1695,6 @@ public class Java {
             return result;
         }
 
-
         public abstract void accept(Visitor.AtomVisitor visitor);
     }
 
@@ -1704,8 +1702,22 @@ public class Java {
      * Representation of a Java<sup>TM</sup> type.
      */
     public static abstract class Type extends Atom {
+        private Scope enclosingScope = null;
+
         protected Type(Location location) {
             super(location);
+        }
+
+        /**
+         * Sets {@link #enclosingScope} for this object and all subordinate
+         * {@link Type} objects.
+         */
+        public void setEnclosingScope(final Scope enclosingScope) {
+            if (this.enclosingScope != null && enclosingScope != this.enclosingScope) throw new RuntimeException("Enclosing scope already set for type \"" + this.toString() + "\" at " + this.getLocation());
+            this.enclosingScope = enclosingScope;
+        }
+        public Scope getEnclosingScope() {
+            return this.enclosingScope;
         }
         public Type toType() { return this; }
 
@@ -1768,15 +1780,12 @@ public class Java {
 
     public static final class ReferenceType extends Type {
         public final String[] identifiers;
-        public final Scope    scope;
 
         public ReferenceType(
             Location location,
-            Scope    scope,
             String[] identifiers
         ) {
             super(location);
-            this.scope       = scope;
             this.identifiers = identifiers;
         }
 
@@ -1791,6 +1800,9 @@ public class Java {
         public final Rvalue rvalue;
         public final String identifier;
 
+        /**
+         * Notice: The <code>rvalue</code> is not a subordinate object!
+         */
         public RvalueMemberType(
             Location location,
             Rvalue   rvalue,
@@ -1819,6 +1831,10 @@ public class Java {
             this.componentType = componentType;
         }
 
+        public void setEnclosingScope(final Scope enclosingScope) {
+            super.setEnclosingScope(enclosingScope);
+            this.componentType.setEnclosingScope(enclosingScope);
+        }
         public String toString() {
             return this.componentType.toString() + "[]";
         }
@@ -1832,13 +1848,39 @@ public class Java {
      * a value, but cannot be assigned to: An expression that can be the
      * right-hand-side of an assignment.
      */
-    public static abstract class Rvalue extends Atom {
-        protected Rvalue(
-            Location location
-        ) {
+    public static abstract class Rvalue extends Atom implements ArrayInitializerOrRvalue {
+        private Java.BlockStatement enclosingBlockStatement = null;
+
+        protected Rvalue(Location location) {
             super(location);
         }
 
+        /**
+         * Sets {@link #enclosingBlockStatement} for this object and all subordinate
+         * {@link Rvalue} objects.
+         */
+        public final void setEnclosingBlockStatement(final Java.BlockStatement enclosingBlockStatement) {
+            this.accept((Visitor.RvalueVisitor) new Traverser() {
+                public void traverseRvalue(Java.Rvalue rv) {
+                    if (rv.enclosingBlockStatement != null && enclosingBlockStatement != rv.enclosingBlockStatement) throw new RuntimeException("Enclosing block statement for rvalue \"" + rv + "\" at " + rv.getLocation() + " is already set");
+                    rv.enclosingBlockStatement = enclosingBlockStatement;
+                    super.traverseRvalue(rv);
+                }
+                public void traverseAnonymousClassDeclaration(Java.AnonymousClassDeclaration acd) {
+                    acd.setEnclosingScope(enclosingBlockStatement);
+                    ;
+                }
+                public void traverseType(Java.Type t) {
+                    if (t.enclosingScope != null && enclosingBlockStatement != t.enclosingScope) throw new RuntimeException("Enclosing scope already set for type \"" + this.toString() + "\" at " + t.getLocation());
+                    t.enclosingScope = enclosingBlockStatement;
+//                    t.setEnclosingScope(enclosingBlockStatement);
+                    super.traverseType(t);
+                }
+            }.cv);
+        }
+        public Java.BlockStatement getEnclosingBlockStatement() {
+            return this.enclosingBlockStatement;
+        }
         public Rvalue toRvalue() { return this; }
 
         static final Object CONSTANT_VALUE_UNKNOWN = new Object();
@@ -1881,21 +1923,21 @@ public class Java {
      * but overrides Atom's "to...()" methods.
      */
     public static final class AmbiguousName extends Lvalue {
+        public final String[] identifiers;
+        public final int      n;
+
         public AmbiguousName(
             Location location,
-            Scope    scope,
             String[] identifiers
         ) {
-            this(location, scope, identifiers, identifiers.length);
+            this(location, identifiers, identifiers.length);
         }
         public AmbiguousName(
             Location location,
-            Scope    scope,
             String[] identifiers,
             int      n
         ) {
             super(location);
-            this.scope       = scope;
             this.identifiers = identifiers;
             this.n           = n;
         }
@@ -1904,15 +1946,10 @@ public class Java {
         private Type type = null;
         public Type toType() {
             if (this.type == null) {
-                String[] sa;
-                if (this.identifiers.length == this.n) {
-                    sa = this.identifiers;
-                } else
-                {
-                    sa = new String[this.n];
-                    System.arraycopy(this.identifiers, 0, sa, 0, this.n);
-                }
-                this.type = new ReferenceType(this.getLocation(), this.scope, sa);
+                String[] is = new String[this.n];
+                System.arraycopy(this.identifiers, 0, is, 0, this.n);
+                this.type = new ReferenceType(this.getLocation(), is);
+                this.type.setEnclosingScope(this.getEnclosingBlockStatement());
             }
             return this.type;
         }
@@ -1928,10 +1965,6 @@ public class Java {
         public final void accept(Visitor.AtomVisitor visitor) { visitor.visitAmbiguousName(this); }
         public final void accept(Visitor.RvalueVisitor visitor) { visitor.visitAmbiguousName(this); }
         public final void accept(Visitor.LvalueVisitor visitor) { visitor.visitAmbiguousName(this); }
-
-        public final Scope    scope;
-        public final String[] identifiers;
-        final int             n;
     }
 
     // Helper class for 6.5.2.1.7, 6.5.2.2.1
@@ -1948,7 +1981,7 @@ public class Java {
     }
 
     /**
-     * Representation of a local variable access.
+     * Representation of a local variable access -- used during compilation.
      */
     public static final class LocalVariableAccess extends Lvalue {
         public /*final*/ LocalVariable localVariable;
@@ -1975,20 +2008,17 @@ public class Java {
      * "array length" expression, e.g. "ia.length".)
      */
     public static final class FieldAccess extends Lvalue {
-        public final BlockStatement enclosingBlockStatement;
         public final Atom           lhs;
         public final IClass.IField  field;
 
         public FieldAccess(
             Location       location,
-            BlockStatement enclosingBlockStatement,
             Atom           lhs,
             IClass.IField  field
         ) {
             super(location);
-            this.enclosingBlockStatement = enclosingBlockStatement;
-            this.lhs                     = lhs;
-            this.field                   = field;
+            this.lhs   = lhs;
+            this.field = field;
         }
 
         // Compile time members.
@@ -2031,12 +2061,9 @@ public class Java {
          * @param location
          * @param scope
          */
-        public ThisReference(Location location, Scope scope) {
+        public ThisReference(Location location) {
             super(location);
-            this.scope = scope;
         }
-
-        final Scope scope;
 
         // Compile time members.
 
@@ -2053,27 +2080,18 @@ public class Java {
      * Representation of an access to the current object or an enclosing instance.
      */
     public static final class QualifiedThisReference extends Rvalue {
-        public final Scope scope;
-        public final Type  qualification;
-
+        public final Type qualification;
 
         /**
          * Access the given enclosing instance of the declaring class.
-         * @param location
-         * @param scope
-         * @param qualification
          */
         public QualifiedThisReference(
             Location location,
-            Scope    scope,
             Type     qualification
         ) {
             super(location);
 
-            if (scope         == null) throw new NullPointerException();
             if (qualification == null) throw new NullPointerException();
-
-            this.scope         = scope;
             this.qualification = qualification;
         }
 
@@ -2083,23 +2101,23 @@ public class Java {
         TypeBodyDeclaration declaringTypeBodyDeclaration = null;
         IClass              targetIClass                 = null;
 
-        public QualifiedThisReference(
-            Location            location,
-            ClassDeclaration    declaringClass,
-            TypeBodyDeclaration declaringTypeBodyDeclaration,
-            IClass              targetIClass
-        ) {
-            super(location);
-            if (declaringClass               == null) throw new NullPointerException();
-            if (declaringTypeBodyDeclaration == null) throw new NullPointerException();
-            if (targetIClass                 == null) throw new NullPointerException();
-
-            this.scope                        = null;
-            this.qualification                = null;
-            this.declaringClass               = declaringClass;
-            this.declaringTypeBodyDeclaration = declaringTypeBodyDeclaration;
-            this.targetIClass                 = targetIClass;
-        }
+        // Used at compile time.
+//        public QualifiedThisReference(
+//            Location            location,
+//            ClassDeclaration    declaringClass,
+//            TypeBodyDeclaration declaringTypeBodyDeclaration,
+//            IClass              targetIClass
+//        ) {
+//            super(location);
+//            if (declaringClass               == null) throw new NullPointerException();
+//            if (declaringTypeBodyDeclaration == null) throw new NullPointerException();
+//            if (targetIClass                 == null) throw new NullPointerException();
+//
+//            this.qualification                = null;
+//            this.declaringClass               = declaringClass;
+//            this.declaringTypeBodyDeclaration = declaringTypeBodyDeclaration;
+//            this.targetIClass                 = targetIClass;
+//        }
 
         // Implement "Atom".
         public String toString() {
@@ -2111,21 +2129,14 @@ public class Java {
     }
 
     public static final class ClassLiteral extends Rvalue {
-        final AbstractTypeDeclaration declaringType;
-        final BlockStatement          enclosingBlockStatement;
-        public final Type             type;
+        public final Type type;
 
         public ClassLiteral(
-            Location       location,
-            BlockStatement enclosingBlockStatement,
-            Type           type
+            Location location,
+            Type     type
         ) {
             super(location);
-            this.enclosingBlockStatement = enclosingBlockStatement;
-            Scope s;
-            for (s = enclosingBlockStatement; !(s instanceof AbstractTypeDeclaration); s = s.getEnclosingScope());
-            this.declaringType = (AbstractTypeDeclaration) s;
-            this.type          = type;
+            this.type = type;
         }
 
         // Compile time members.
@@ -2254,20 +2265,17 @@ public class Java {
      * expression "xy.length".
      */
     public static final class FieldAccessExpression extends Lvalue {
-        public final BlockStatement enclosingBlockStatement;
-        public final Atom           lhs;
+        public final Atom   lhs;
         public final String         fieldName;
 
         public FieldAccessExpression(
             Location       location,
-            BlockStatement enclosingBlockStatement,
             Atom           lhs,
             String         fieldName
         ) {
             super(location);
-            this.enclosingBlockStatement = enclosingBlockStatement;
-            this.lhs                     = lhs;
-            this.fieldName               = fieldName;
+            this.lhs       = lhs;
+            this.fieldName = fieldName;
         }
 
         // Compile time members:
@@ -2428,41 +2436,41 @@ public class Java {
         public void accept(Visitor.LvalueVisitor visitor) { visitor.visitParenthesizedExpression(this); }
     }
 
-    public static abstract class ConstructorInvocation extends Atom {
-        protected final ClassDeclaration      declaringClass;
-        protected final ConstructorDeclarator declaringConstructor;
-        public final Rvalue[]                 arguments;
+    public static abstract class ConstructorInvocation extends Atom implements BlockStatement {
+        public final Rvalue[] arguments;
+        private Scope         enclosingScope = null;
 
         protected ConstructorInvocation(
-            Location              location,
-            ClassDeclaration      declaringClass,
-            ConstructorDeclarator declaringConstructor,
-            Rvalue[]              arguments
+            Location location,
+            Rvalue[] arguments
         ) {
             super(location);
-            this.declaringClass        = declaringClass;
-            this.declaringConstructor  = declaringConstructor;
-            this.arguments             = arguments;
+            this.arguments = arguments;
+            for (int i = 0; i < arguments.length; ++i) arguments[i].setEnclosingBlockStatement(this);
         }
 
-        public abstract void accept(Visitor.ConstructorInvocationVisitor visitor);
+        // Implement BlockStatement
+        public void setEnclosingScope(Scope enclosingScope) {
+            if (this.enclosingScope != null && enclosingScope != null) throw new RuntimeException("Enclosing scope is already set for statement \"" + this.toString() + "\" at " + this.getLocation());
+            this.enclosingScope = enclosingScope;
+        }
+        public Scope getEnclosingScope() { return this.enclosingScope; }
     }
 
     public final static class AlternateConstructorInvocation extends ConstructorInvocation {
         public AlternateConstructorInvocation(
-            Location              location,
-            ClassDeclaration      declaringClass,
-            ConstructorDeclarator declaringConstructor,
-            Rvalue[]              arguments
+            Location location,
+            Rvalue[] arguments
         ) {
-            super(location, declaringClass, declaringConstructor, arguments);
+            super(location, arguments);
         }
 
-        // Implement Atom
+        // Implement Atom.
         public String toString() { return "this()"; }
+        public void accept(Visitor.AtomVisitor visitor) { ((Visitor.BlockStatementVisitor) visitor).visitAlternateConstructorInvocation(this); }
 
-        public void accept(Visitor.AtomVisitor visitor) { visitor.visitAlternateConstructorInvocation(this); }
-        public void accept(Visitor.ConstructorInvocationVisitor visitor) { visitor.visitAlternateConstructorInvocation(this); }
+        // Implement BlockStatement.
+        public void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitAlternateConstructorInvocation(this); }
     }
 
     public final static class SuperConstructorInvocation extends ConstructorInvocation {
@@ -2470,20 +2478,20 @@ public class Java {
 
         public SuperConstructorInvocation(
             Location              location,
-            ClassDeclaration      declaringClass,
-            ConstructorDeclarator declaringConstructor,
             Rvalue                optionalQualification,
             Rvalue[]              arguments
         ) {
-            super(location, declaringClass, declaringConstructor, arguments);
+            super(location, arguments);
             this.optionalQualification = optionalQualification;
+            if (optionalQualification != null) optionalQualification.setEnclosingBlockStatement(this);
         }
 
-        // Implement Atom
+        // Implement Atom.
         public String toString() { return "super()"; }
+        public void accept(Visitor.AtomVisitor visitor) { ((Visitor.BlockStatementVisitor) visitor).visitSuperConstructorInvocation(this); }
 
-        public void accept(Visitor.AtomVisitor visitor) { visitor.visitSuperConstructorInvocation(this); }
-        public void accept(Visitor.ConstructorInvocationVisitor visitor) { visitor.visitSuperConstructorInvocation(this); }
+        // Implement BlockStatement.
+        public void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitSuperConstructorInvocation(this); }
     }
 
     public static final class MethodInvocation extends Invocation {
@@ -2491,13 +2499,12 @@ public class Java {
         public final String methodName;
 
         public MethodInvocation(
-            Location       location,
-            BlockStatement enclosingBlockDeclaration,
-            Atom           optionalTarget,
-            String         methodName,
-            Rvalue[]       arguments
+            Location location,
+            Atom     optionalTarget,
+            String   methodName,
+            Rvalue[] arguments
         ) {
-            super(location, enclosingBlockDeclaration, arguments);
+            super(location, arguments);
             this.optionalTarget = optionalTarget;
             this.methodName     = methodName;
         }
@@ -2523,11 +2530,10 @@ public class Java {
     public static final class SuperclassMethodInvocation extends Invocation {
         public SuperclassMethodInvocation(
             Location       location,
-            BlockStatement enclosingBlockStatement,
             String         methodName,
             Rvalue[]       arguments
         ) {
-            super(location, enclosingBlockStatement, arguments);
+            super(location, arguments);
             this.methodName = methodName;
         }
 
@@ -2541,35 +2547,29 @@ public class Java {
     }
 
     public static abstract class Invocation extends Rvalue {
+        public final Rvalue[] arguments;
+
         protected Invocation(
-            Location       location,
-            BlockStatement enclosingBlockDeclaration,
-            Rvalue[]       arguments
+            Location location,
+            Rvalue[] arguments
         ) {
             super(location);
-            this.enclosingBlockStatement = enclosingBlockDeclaration;
-            this.arguments                 = arguments;
+            this.arguments = arguments;
         }
-
-        protected final BlockStatement enclosingBlockStatement;
-        public final Rvalue[]          arguments;
     }
 
     public static final class NewClassInstance extends Rvalue {
-        public final Scope    scope;
         public final Rvalue   optionalQualification;
         public final Type     type;
         public final Rvalue[] arguments;
 
         public NewClassInstance(
             Location location,
-            Scope    scope,
             Rvalue   optionalQualification,
             Type     type,
             Rvalue[] arguments
         ) {
             super(location);
-            this.scope                 = scope;
             this.optionalQualification = optionalQualification;
             this.type                  = type;
             this.arguments             = arguments;
@@ -2581,13 +2581,11 @@ public class Java {
 
         public NewClassInstance(
             Location location,
-            Scope    scope,
             Rvalue   optionalQualification,
             IClass   iClass,
             Rvalue[] arguments
         ) {
             super(location);
-            this.scope                 = scope;
             this.optionalQualification = optionalQualification;
             this.type                  = null;
             this.arguments             = arguments;
@@ -2616,20 +2614,17 @@ public class Java {
     }
 
     public static final class NewAnonymousClassInstance extends Rvalue {
-        final Scope                            scope;
         public final Rvalue                    optionalQualification;
         public final AnonymousClassDeclaration anonymousClassDeclaration;
         public final Rvalue[]                  arguments;
 
         public NewAnonymousClassInstance(
             Location                  location,
-            Scope                     scope,
             Rvalue                    optionalQualification,
             AnonymousClassDeclaration anonymousClassDeclaration,
             Rvalue[]                  arguments
         ) {
             super(location);
-            this.scope                     = scope;
             this.optionalQualification     = optionalQualification;
             this.anonymousClassDeclaration = anonymousClassDeclaration;
             this.arguments                 = arguments;
@@ -2639,7 +2634,7 @@ public class Java {
         public String toString() {
             StringBuffer sb = new StringBuffer();
             if (this.optionalQualification != null) sb.append(this.optionalQualification.toString()).append('.');
-            sb.append("new ").append(this.anonymousClassDeclaration.toString()).append("() { ... }");
+            sb.append("new ").append(this.anonymousClassDeclaration.baseType.toString()).append("() { ... }");
             return sb.toString();
         }
 
@@ -2647,22 +2642,20 @@ public class Java {
         public final void accept(Visitor.RvalueVisitor visitor) { visitor.visitNewAnonymousClassInstance(this); }
     }
 
+    // Used during compile-time.
     public static final class ParameterAccess extends Rvalue {
-        public final FunctionDeclarator declaringFunction;
-        public final String             name;
+        public final FunctionDeclarator.FormalParameter formalParameter;
 
         public ParameterAccess(
-            Location           location,
-            FunctionDeclarator declaringFunction,
-            String             name
+            Location             location,
+            FunctionDeclarator.FormalParameter formalParameter
         ) {
             super(location);
-            this.declaringFunction = declaringFunction;
-            this.name = name;
+            this.formalParameter   = formalParameter;
         }
 
         // Implement Atom
-        public String toString() { return this.name; }
+        public String toString() { return this.formalParameter.name; }
 
         public final void accept(Visitor.AtomVisitor visitor) { visitor.visitParameterAccess(this); }
         public final void accept(Visitor.RvalueVisitor visitor) { visitor.visitParameterAccess(this); }
@@ -2687,9 +2680,32 @@ public class Java {
 
         // Implement "Atom".
         public String toString() { return "new " + this.type.toString() + "[]..."; }
-
         public final void accept(Visitor.AtomVisitor visitor) { visitor.visitNewArray(this); }
+
+        // Implement "Rvalue".
         public final void accept(Visitor.RvalueVisitor visitor) { visitor.visitNewArray(this); }
+    }
+
+    public static final class NewInitializedArray extends Rvalue {
+        public final ArrayType        arrayType;
+        public final ArrayInitializer arrayInitializer;
+
+        public NewInitializedArray(
+            Location         location,
+            ArrayType        arrayType,
+            ArrayInitializer arrayInitializer
+        ) {
+            super(location);
+            this.arrayType        = arrayType;
+            this.arrayInitializer = arrayInitializer;
+        }
+
+        // Implement "Atom".
+        public String toString() { return "new " + this.arrayType.toString() + " { ... }"; }
+        public final void accept(Visitor.AtomVisitor visitor) { visitor.visitNewInitializedArray(this); }
+
+        // Implement "Rvalue".
+        public final void accept(Visitor.RvalueVisitor visitor) { visitor.visitNewInitializedArray(this); }
     }
 
     /**
@@ -2698,25 +2714,19 @@ public class Java {
      * Allocates an array and initializes its members with (not necessarily
      * constant) values.
      */
-    public static final class ArrayInitializer extends Rvalue {
-        final ArrayType        arrayType;
-        public final Rvalue[]  values;
+    public static final class ArrayInitializer extends Located implements ArrayInitializerOrRvalue {
+        public final ArrayInitializerOrRvalue[]  values;
 
         public ArrayInitializer(
-            Location  location,
-            ArrayType arrayType,
-            Rvalue[]  values
+            Location                   location,
+            ArrayInitializerOrRvalue[] values
         ) {
             super(location);
-            this.arrayType = arrayType;
-            this.values    = values;
+            this.values = values;
         }
+    }
 
-        // Implement "Atom".
-        public String toString() { return "{ ... }"; }
-
-        public final void accept(Visitor.AtomVisitor visitor) { visitor.visitArrayInitializer(this); }
-        public final void accept(Visitor.RvalueVisitor visitor) { visitor.visitArrayInitializer(this); }
+    public interface ArrayInitializerOrRvalue {
     }
 
     public static final class Literal extends Rvalue {
@@ -2749,19 +2759,21 @@ public class Java {
         public final void accept(Visitor.RvalueVisitor visitor) { visitor.visitConstantValue(this); }
     }
 
+    /**
+     * Used during resolution.
+     */
     public static class LocalVariable {
-        public LocalVariable(
-            boolean            finaL,
-            IClass             type,
-            short              localVariableArrayIndex
-        ) {
-            this.finaL                   = finaL;
-            this.type                    = type;
-            this.localVariableArrayIndex = localVariableArrayIndex;
-        }
         public final boolean finaL;
         public final IClass  type;
-        public final short   localVariableArrayIndex;
+        public short         localVariableArrayIndex = -1; // Used during compilation
+
+        public LocalVariable(
+            boolean finaL,
+            IClass  type
+        ) {
+            this.finaL = finaL;
+            this.type  = type;
+        }
     }
 
     public static String join(Object[] a, String separator) {

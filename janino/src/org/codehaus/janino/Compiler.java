@@ -71,7 +71,7 @@ public class Compiler {
     public static void main(String[] args) {
         File            optionalDestinationDirectory = null;
         File[]          optionalSourcePath = null;
-        File[]          classPath = new File[] { new File(".") };
+        File[]          classPath = { new File(".") };
         File[]          optionalExtDirs = null;
         File[]          optionalBootClassPath = null;
         String          optionalCharacterEncoding = null;
@@ -336,8 +336,8 @@ public class Compiler {
         EnumeratorSet   debuggingInformation,
         WarningHandler  warningHandler
     ) {
-    	this.optionalClassFileResourceFinder  = optionalClassFileResourceFinder;
-    	this.optionalClassFileResourceCreator = optionalClassFileResourceCreator;
+        this.optionalClassFileResourceFinder  = optionalClassFileResourceFinder;
+        this.optionalClassFileResourceCreator = optionalClassFileResourceCreator;
         this.optionalCharacterEncoding        = optionalCharacterEncoding;
         this.benchmark                        = new Benchmark(verbose);
         this.debuggingInformation             = debuggingInformation;
@@ -599,26 +599,26 @@ public class Compiler {
      * @param sourceFile Required to compute class file path if no destination directory given
      */
     private void storeClassFile(ClassFile classFile, final File sourceFile) throws IOException {
-    	String classFileResourceName = ClassFile.getClassFileResourceName(classFile.getThisClassName());
+        String classFileResourceName = ClassFile.getClassFileResourceName(classFile.getThisClassName());
 
         // Determine where to create the class file.
-    	ResourceCreator rc;
-    	if (this.optionalClassFileResourceCreator != null) {
-    		rc = this.optionalClassFileResourceCreator;
-    	} else {
+        ResourceCreator rc;
+        if (this.optionalClassFileResourceCreator != null) {
+            rc = this.optionalClassFileResourceCreator;
+        } else {
 
             // If the JAVAC option "-d" is given, place the class file next
             // to the source file, irrespective of the package name.
             rc = new FileResourceCreator() {
-				protected File getFile(String resourceName) {
-					return new File(
-					    sourceFile.getParentFile(),
+                protected File getFile(String resourceName) {
+                    return new File(
+                        sourceFile.getParentFile(),
                         resourceName.substring(resourceName.lastIndexOf('/') + 1)
                     );
-				}
-			};
-    	}
-    	OutputStream os = rc.createResource(classFileResourceName);
+                }
+            };
+        }
+        OutputStream os = rc.createResource(classFileResourceName);
         try {
             classFile.store(os);
         } catch (IOException ex) {

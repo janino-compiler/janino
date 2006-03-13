@@ -52,8 +52,8 @@ import java.util.*;
  *     public static final Suit SPADES   = new Suit("spades");
  *
  *     // Optional, if you want to use EumeratorSet arithmetics.
- *     public static final EnumeratorSet NONE = new EnumeratorSet(Suit      ).setName("none");
- *     public static final EnumeratorSet ALL  = new EnumeratorSet(Suit, true).setName("all");
+ *     public static final EnumeratorSet NONE = new EnumeratorSet(Suit.class      ).setName("none");
+ *     public static final EnumeratorSet ALL  = new EnumeratorSet(Suit.class, true).setName("all");
  * 
  *     // These MUST be declared exactly like this:
  *     private Suit(String name) { super(name); }
@@ -67,7 +67,7 @@ import java.util.*;
  */
 public abstract class Enumerator {
     /*package*/ final String name;
-    private static final Map instances           = new HashMap(); // Class enumeratorClass => String name => Enumerator
+    private static final Map instances = new HashMap(); // Class enumeratorClass => String name => Enumerator
 
     /**
      * Initialize the enumerator to the given value.
@@ -104,8 +104,8 @@ public abstract class Enumerator {
     /**
      * Initialize an {@link Enumerator} from a string.
      * <p>
-     * The given string is converted into a value by looking at the class's
-     * <code>public static final</code> fields which have the same type as the class itself.
+     * The given string is converted into a value by looking at all instances of the given type
+     * created so far.
      * <p>
      * Derived classes should invoke this method as follows:<pre>
      * public class Suit extends Enumerator {

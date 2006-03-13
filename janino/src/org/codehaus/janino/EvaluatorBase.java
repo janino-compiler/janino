@@ -37,6 +37,7 @@ package org.codehaus.janino;
 import java.io.*;
 import java.util.*;
 
+import org.codehaus.janino.Java.FunctionDeclarator;
 import org.codehaus.janino.util.ClassFile;
 import org.codehaus.janino.util.enumerator.EnumeratorSet;
 
@@ -118,9 +119,13 @@ public class EvaluatorBase {
         Class                optionalExtendedType,
         Class[]              implementedTypes
     ) throws Parser.ParseException {
+        int idx = className.lastIndexOf('.');
+        if (idx != -1) {
+            compilationUnit.setPackageDeclaration(new Java.PackageDeclaration(location, className.substring(0, idx)));
+            className = className.substring(idx + 1);
+        }
         Java.PackageMemberClassDeclaration tlcd = new Java.PackageMemberClassDeclaration(
             location,                                         // location
-            compilationUnit,                                  // declaringCompilationUnit
             null,                                             // optionalDocComment
             Mod.PUBLIC,                                       // modifiers
             className,                                        // name
@@ -176,9 +181,9 @@ public class EvaluatorBase {
         );
 
         // Add method declaration.
+        Java.Block b = new Java.Block(location);
         Java.MethodDeclarator md = new Java.MethodDeclarator(
             location,                                        // location
-            cd,                                              // declaringClassOrInterface
             null,                                            // optionalDocComment
             (                                                // modifiers
                 staticMethod ?
@@ -191,13 +196,10 @@ public class EvaluatorBase {
                 location,
                 parameterNames, parameterTypes
             ),
-            this.classesToTypes(location, thrownExceptions) // thrownExceptions
+            this.classesToTypes(location, thrownExceptions), // thrownExceptions
+            b                                                // optionalBody
         );
         cd.addDeclaredMethod(md);
-
-        // Add block as method body.
-        Java.Block b = new Java.Block(location, (Java.Scope) md);
-        md.setBody(b);
 
         return b;
     }
@@ -235,16 +237,17 @@ public class EvaluatorBase {
 
     /**
      * Convert name and {@link Class}-base parameters into an array of
-     * {@link Java.FormalParameter}s.
+     * {@link FunctionDeclarator.FormalParameter}s.
      */
-    protected Java.FormalParameter[] makeFormalParameters(
+    protected FunctionDeclarator.FormalParameter[] makeFormalParameters(
         Location location,
         String[] parameterNames,
         Class[]  parameterTypes
     ) {
-        Java.FormalParameter[] res = new Java.FormalParameter[parameterNames.length];
+        FunctionDeclarator.FormalParameter[] res = new FunctionDeclarator.FormalParameter[parameterNames.length];
         for (int i = 0; i < res.length; ++i) {
-            res[i] = new Java.FormalParameter(
+            res[i] = new FunctionDeclarator.FormalParameter(
+                location,                                      // location
                 true,                                          // finaL
                 this.classToType(location, parameterTypes[i]), // type
                 parameterNames[i]                              // name

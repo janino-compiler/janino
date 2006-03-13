@@ -62,6 +62,11 @@ public class StringPattern {
         this.pattern = pattern;
     }
 
+    public StringPattern(String pattern) {
+        this.mode    = StringPattern.INCLUDE;
+        this.pattern = pattern;
+    }
+
     public int getMode() { return this.mode; }
 
     /**

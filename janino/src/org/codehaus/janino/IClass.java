@@ -498,7 +498,7 @@ public abstract class IClass {
      * returned array is greater than one.
      * <p>
      * Examines superclasses, interfaces and enclosing type declarations.
-     * @return an array of {@link IClass}es inunspecified order, possibly of length zero
+     * @return an array of {@link IClass}es in unspecified order, possibly of length zero
      */
     IClass[] findMemberType(String optionalName) throws CompileException {
         IClass[] res = (IClass[]) this.memberTypeCache.get(optionalName);

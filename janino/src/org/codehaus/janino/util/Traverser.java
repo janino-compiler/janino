@@ -35,6 +35,9 @@
 package org.codehaus.janino.util;
 
 import org.codehaus.janino.*;
+import org.codehaus.janino.Java.CompilationUnit;
+import org.codehaus.janino.Java.SwitchStatement;
+
 import java.util.*;
 
 /**
@@ -49,9 +52,9 @@ import java.util.*;
  *     }</pre>
  */
 public class Traverser {
-    private final Visitor.ComprehensiveVisitor cv = new Visitor.ComprehensiveVisitor() {
-    	public final void visitSingleTypeImportDeclaration(Java.SingleTypeImportDeclaration stid)             { Traverser.this.traverseSingleTypeImportDeclaration(stid); }
-        public final void visitTypeImportOnDemandDeclaration(Java.TypeImportOnDemandDeclaration tiodd)        { Traverser.this.traverseTypeImportOnDemandDeclaration(tiodd); }
+    public final Visitor.ComprehensiveVisitor cv = new Visitor.ComprehensiveVisitor() {
+    	public final void visitSingleTypeImportDeclaration(CompilationUnit.SingleTypeImportDeclaration stid)             { Traverser.this.traverseSingleTypeImportDeclaration(stid); }
+        public final void visitTypeImportOnDemandDeclaration(CompilationUnit.TypeImportOnDemandDeclaration tiodd)        { Traverser.this.traverseTypeImportOnDemandDeclaration(tiodd); }
         public final void visitAnonymousClassDeclaration(Java.AnonymousClassDeclaration acd)                  { Traverser.this.traverseAnonymousClassDeclaration(acd); }
         public final void visitLocalClassDeclaration(Java.LocalClassDeclaration lcd)                          { Traverser.this.traverseLocalClassDeclaration(lcd); }
         public final void visitPackageMemberClassDeclaration(Java.PackageMemberClassDeclaration pmcd)         { Traverser.this.traversePackageMemberClassDeclaration(pmcd); }
@@ -80,7 +83,6 @@ public class Traverser {
         public final void visitEmptyStatement(Java.EmptyStatement es)                                         { Traverser.this.traverseEmptyStatement(es); }
         public final void visitLocalClassDeclarationStatement(Java.LocalClassDeclarationStatement lcds)       { Traverser.this.traverseLocalClassDeclarationStatement(lcds); }
         public final void visitPackage(Java.Package p)                                                        { Traverser.this.traversePackage(p); }
-        public final void visitArrayInitializer(Java.ArrayInitializer ai)                                     { Traverser.this.traverseArrayInitializer(ai); }
         public final void visitArrayLength(Java.ArrayLength al)                                               { Traverser.this.traverseArrayLength(al); }
         public final void visitAssignment(Java.Assignment a)                                                  { Traverser.this.traverseAssignment(a); }
         public final void visitUnaryOperation(Java.UnaryOperation uo)                                         { Traverser.this.traverseUnaryOperation(uo); }
@@ -96,6 +98,7 @@ public class Traverser {
         public final void visitLiteral(Java.Literal l)                                                        { Traverser.this.traverseLiteral(l); }
         public final void visitNewAnonymousClassInstance(Java.NewAnonymousClassInstance naci)                 { Traverser.this.traverseNewAnonymousClassInstance(naci); }
         public final void visitNewArray(Java.NewArray na)                                                     { Traverser.this.traverseNewArray(na); }
+        public final void visitNewInitializedArray(Java.NewInitializedArray nia)                              { Traverser.this.traverseNewInitializedArray(nia); }
         public final void visitNewClassInstance(Java.NewClassInstance nci)                                    { Traverser.this.traverseNewClassInstance(nci); }
         public final void visitParameterAccess(Java.ParameterAccess pa)                                       { Traverser.this.traverseParameterAccess(pa); }
         public final void visitQualifiedThisReference(Java.QualifiedThisReference qtr)                        { Traverser.this.traverseQualifiedThisReference(qtr); }
@@ -123,22 +126,22 @@ public class Traverser {
         // the compilation unit and is thus not traversed.
 
         for (Iterator it = cu.importDeclarations.iterator(); it.hasNext();) {
-            ((Java.ImportDeclaration) it.next()).accept(this.cv);
+            ((CompilationUnit.ImportDeclaration) it.next()).accept(this.cv);
         }
         for (Iterator it = cu.packageMemberTypeDeclarations.iterator(); it.hasNext();) {
             ((Java.PackageMemberTypeDeclaration) it.next()).accept(this.cv);
         }
     }
 
-    public void traverseSingleTypeImportDeclaration(Java.SingleTypeImportDeclaration stid) {
+    public void traverseSingleTypeImportDeclaration(CompilationUnit.SingleTypeImportDeclaration stid) {
         this.traverseImportDeclaration(stid);
     }
 
-    public void traverseTypeImportOnDemandDeclaration(Java.TypeImportOnDemandDeclaration tiodd) {
+    public void traverseTypeImportOnDemandDeclaration(CompilationUnit.TypeImportOnDemandDeclaration tiodd) {
         this.traverseImportDeclaration(tiodd);
     }
 
-    public void traverseImportDeclaration(Java.ImportDeclaration id) {
+    public void traverseImportDeclaration(CompilationUnit.ImportDeclaration id) {
         this.traverseLocated(id);
     }
 
@@ -168,7 +171,7 @@ public class Traverser {
     }
 
     public void traverseConstructorDeclarator(Java.ConstructorDeclarator cd) {
-        if (cd.optionalExplicitConstructorInvocation != null) cd.optionalExplicitConstructorInvocation.accept((Visitor.ConstructorInvocationVisitor) this.cv);
+        if (cd.optionalConstructorInvocation != null) cd.optionalConstructorInvocation.accept((Visitor.BlockStatementVisitor) this.cv);
         this.traverseFunctionDeclarator(cd);
     }
 
@@ -183,11 +186,10 @@ public class Traverser {
 
     public void traverseFieldDeclaration(Java.FieldDeclaration fd) {
         fd.type.accept((Visitor.TypeVisitor) this.cv);
-
-        // Notice: The variable declarators (e.g. "a = 3, b = 4") are
-        // considered an integral part of the field declarator and are thus
-        // not travelled.
-
+        for (int i = 0; i < fd.variableDeclarators.length; ++i) {
+            Java.ArrayInitializerOrRvalue optionalInitializer = fd.variableDeclarators[i].optionalInitializer;
+            if (optionalInitializer != null) this.traverseArrayInitializerOrRvalue(optionalInitializer);
+        }
         this.traverseStatement(fd);
     }
 
@@ -243,7 +245,7 @@ public class Traverser {
     public void traverseSwitchStatement(Java.SwitchStatement ss) {
         ss.condition.accept((Visitor.RvalueVisitor) this.cv);
         for (Iterator it = ss.sbsgs.iterator(); it.hasNext();) {
-            Java.SwitchBlockStatementGroup sbsg = (Java.SwitchBlockStatementGroup) it.next();
+            SwitchStatement.SwitchBlockStatementGroup sbsg = (SwitchStatement.SwitchBlockStatementGroup) it.next();
             for (Iterator it2 = sbsg.caseLabels.iterator(); it2.hasNext();) {
                 ((Java.Rvalue) it2.next()).accept((Visitor.RvalueVisitor) this.cv);
             }
@@ -269,6 +271,10 @@ public class Traverser {
 
     public void traverseLocalVariableDeclarationStatement(Java.LocalVariableDeclarationStatement lvds) {
         lvds.type.accept((Visitor.TypeVisitor) this.cv);
+        for (int i = 0; i < lvds.variableDeclarators.length; ++i) {
+            Java.ArrayInitializerOrRvalue optionalInitializer = lvds.variableDeclarators[i].optionalInitializer;
+            if (optionalInitializer != null) this.traverseArrayInitializerOrRvalue(optionalInitializer);
+        }
         this.traverseStatement(lvds);
     }
 
@@ -301,11 +307,6 @@ public class Traverser {
 
     public void traversePackage(Java.Package p) {
         this.traverseAtom(p);
-    }
-
-    public void traverseArrayInitializer(Java.ArrayInitializer ai) {
-        for (int i = 0; i < ai.values.length; ++i) ai.values[i].accept((Visitor.RvalueVisitor) this.cv);
-        this.traverseRvalue(ai);
     }
 
     public void traverseArrayLength(Java.ArrayLength al) {
@@ -389,6 +390,23 @@ public class Traverser {
         this.traverseRvalue(na);
     }
 
+    public void traverseNewInitializedArray(Java.NewInitializedArray nia) {
+        nia.arrayType.accept((Visitor.TypeVisitor) this.cv);
+        this.traverseArrayInitializerOrRvalue(nia.arrayInitializer);
+    }
+
+    public void traverseArrayInitializerOrRvalue(Java.ArrayInitializerOrRvalue aiorv) {
+        if (aiorv instanceof Java.Rvalue) {
+            ((Java.Atom) aiorv).accept(this.cv);
+        } else
+        if (aiorv instanceof Java.ArrayInitializer) {
+            Java.ArrayInitializerOrRvalue[] values = ((Java.ArrayInitializer) aiorv).values;
+            for (int i = 0; i < values.length; ++i) this.traverseArrayInitializerOrRvalue(values[i]);
+        } else
+        {
+            throw new RuntimeException("Unexpected array initializer or rvalue class " + aiorv.getClass().getName());
+        }
+    }
     public void traverseNewClassInstance(Java.NewClassInstance nci) {
         if (nci.optionalQualification != null) nci.optionalQualification.accept((Visitor.RvalueVisitor) this.cv);
         nci.type.accept((Visitor.TypeVisitor) this.cv);
@@ -446,6 +464,7 @@ public class Traverser {
 
     public void traverseArrayAccessExpression(Java.ArrayAccessExpression aae) {
         aae.lhs.accept((Visitor.RvalueVisitor) this.cv);
+        ((Java.Atom) aae.index).accept(this.cv);
         this.traverseLvalue(aae);
     }
 

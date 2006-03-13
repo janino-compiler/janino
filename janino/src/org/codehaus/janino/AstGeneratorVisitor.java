@@ -37,6 +37,10 @@ package org.codehaus.janino;
 import java.io.*;
 import java.util.*;
 
+import org.codehaus.janino.Java.CompilationUnit;
+import org.codehaus.janino.Java.FunctionDeclarator;
+import org.codehaus.janino.Java.SwitchStatement;
+
 /**
  * @author Eugene Kuleshov
  */
@@ -104,7 +108,7 @@ public class AstGeneratorVisitor implements Visitor.ComprehensiveVisitor {
 
         // generator methods for child nodes
         for(Iterator it = cu.importDeclarations.iterator(); it.hasNext();) {
-            ((Java.ImportDeclaration) it.next()).accept(this);
+            ((CompilationUnit.ImportDeclaration) it.next()).accept(this);
         }
         for(Iterator it = cu.packageMemberTypeDeclarations.iterator(); it.hasNext();) {
             ((Java.PackageMemberTypeDeclaration) it.next()).accept(this);
@@ -123,7 +127,7 @@ public class AstGeneratorVisitor implements Visitor.ComprehensiveVisitor {
         write();
     }
 
-    public void visitSingleTypeImportDeclaration(Java.SingleTypeImportDeclaration stid) {
+    public void visitSingleTypeImportDeclaration(CompilationUnit.SingleTypeImportDeclaration stid) {
         write("private Java.SingleTypeImportDeclaration generateImportDeclaration"+getSuffix(stid)+"() throws Exception {");
         this.level++;
         write("return new Java.SingleTypeImportDeclaration("+getLocation(stid)+", "+arrayToString(stid.identifiers)+");");
@@ -132,7 +136,7 @@ public class AstGeneratorVisitor implements Visitor.ComprehensiveVisitor {
         write();
     }
     
-    public void visitTypeImportOnDemandDeclaration(Java.TypeImportOnDemandDeclaration tiodd) {
+    public void visitTypeImportOnDemandDeclaration(CompilationUnit.TypeImportOnDemandDeclaration tiodd) {
         write("private Java.TypeImportOnDemandDeclaration generateImportDeclaration"+getSuffix(tiodd)+"() throws Exception {");
         this.level++;
         write("return new Java.TypeImportOnDemandDeclaration("+getLocation(tiodd)+", "+arrayToString(tiodd.identifiers)+");");
@@ -314,8 +318,8 @@ public class AstGeneratorVisitor implements Visitor.ComprehensiveVisitor {
             write("Java.Block body = new Java.Block(" + getLocation(cd) + ", declaration);");
         }
         write("declaration.setBody(body);");
-        if(cd.optionalExplicitConstructorInvocation!=null) {
-            Java.ConstructorInvocation ci = cd.optionalExplicitConstructorInvocation;
+        if(cd.optionalConstructorInvocation!=null) {
+            Java.ConstructorInvocation ci = cd.optionalConstructorInvocation;
             write("declaration.setExplicitConstructorInvocation(generateConstructorInvocation"+getSuffix(ci)+"(declaringClass, declaration, body));");
         }
         
@@ -328,8 +332,8 @@ public class AstGeneratorVisitor implements Visitor.ComprehensiveVisitor {
         generateFormalParameters(cd.formalParameters);
         generateTypes(cd.thrownExceptions);
 
-        if(cd.optionalExplicitConstructorInvocation!=null) {
-            cd.optionalExplicitConstructorInvocation.accept((Visitor.ConstructorInvocationVisitor) this);
+        if(cd.optionalConstructorInvocation!=null) {
+            cd.optionalConstructorInvocation.accept((Visitor.BlockStatementVisitor) this);
         }
         if(cd.optionalBody!=null) {
             cd.optionalBody.accept(this);
@@ -575,7 +579,7 @@ public class AstGeneratorVisitor implements Visitor.ComprehensiveVisitor {
         write("statement.setCondition(generateAtom"+getSuffix(ss.condition)+"(scope));");
 
         for(Iterator it = ss.sbsgs.iterator(); it.hasNext();) {
-            Java.SwitchBlockStatementGroup sbgs = (Java.SwitchBlockStatementGroup) it.next();
+            SwitchStatement.SwitchBlockStatementGroup sbgs = (SwitchStatement.SwitchBlockStatementGroup) it.next();
             write("statement.addSwitchBlockStatementGroup(generateSwitchBlockStatementGroup"+getSuffix(sbgs)+"(scope));");
         }
         
@@ -587,7 +591,7 @@ public class AstGeneratorVisitor implements Visitor.ComprehensiveVisitor {
         ss.condition.accept((Visitor.RvalueVisitor) this);
         
         for(Iterator it = ss.sbsgs.iterator(); it.hasNext();) {
-            generateSwitchBlockStatementGroup((Java.SwitchBlockStatementGroup) it.next());
+            generateSwitchBlockStatementGroup((SwitchStatement.SwitchBlockStatementGroup) it.next());
         }
     }
 
@@ -727,7 +731,7 @@ public class AstGeneratorVisitor implements Visitor.ComprehensiveVisitor {
         }
     }
 
-    public void generateFormalParameter(Java.FormalParameter fp) {
+    public void generateFormalParameter(FunctionDeclarator.FormalParameter fp) {
         write("private Java.FormalParameter generateFormalParameter"+getSuffix(fp)+"(Java.Scope scope) throws Exception {");
         this.level++;
         write("return new Java.FormalParameter("+fp.finaL+", generateType"+getSuffix(fp.type)+"(scope), \""+fp.name+"\");");
@@ -1432,7 +1436,7 @@ public class AstGeneratorVisitor implements Visitor.ComprehensiveVisitor {
         }
     }
 
-    private void generateFormalParameters(Java.FormalParameter[] parameters) {
+    private void generateFormalParameters(FunctionDeclarator.FormalParameter[] parameters) {
         if(parameters==null || parameters.length==0) return;
         
         write("private Java.FormalParameter[] generateFormalParameters"+getSuffix(parameters)+"(Java.Scope scope) throws Exception {");
@@ -1477,7 +1481,7 @@ public class AstGeneratorVisitor implements Visitor.ComprehensiveVisitor {
         }
     }
 
-    private void generateSwitchBlockStatementGroup(Java.SwitchBlockStatementGroup sbsg) {
+    private void generateSwitchBlockStatementGroup(SwitchStatement.SwitchBlockStatementGroup sbsg) {
         write("private Java.SwitchBlockStatementGroup generateSwitchBlockStatementGroup"+getSuffix(sbsg)+"(Java.Block statement) throws Exception {");
         this.level++;
 

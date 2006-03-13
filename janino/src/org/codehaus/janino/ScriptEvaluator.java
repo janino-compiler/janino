@@ -421,7 +421,7 @@ public class ScriptEvaluator extends EvaluatorBase {
         // Parse block statements.
         Parser parser = new Parser(scanner);
         while (!scanner.peek().isEOF()) {
-            block.addStatement(parser.parseBlockStatement(block));
+            block.addStatement(parser.parseBlockStatement());
         }
 
         // Compile and load it.
