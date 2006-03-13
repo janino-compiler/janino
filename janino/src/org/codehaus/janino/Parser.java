@@ -127,6 +127,7 @@ import org.codehaus.janino.util.enumerator.Enumerator;
  *   <li><code>assert</code> (a JDK 1.4 language feature) is not yet implemented
  *   <li>The upcoming JDK 1.5 language features are not yet implemented
  *   <li>Checking of "definite assignment" (JLS2 16) is not executed
+ *   <li>Methods that compile to more than 32 KB of bytecode cannot be compiled (many Java<sup>TM</sup> compilers support up to 64 KB per method)
  * </ul>
  */
 
