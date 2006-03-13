@@ -608,10 +608,8 @@ public class UnitCompiler {
         boolean bodyCCN = this.compile(ws.body);
 
         // Compile condition.
-        if (bodyCCN || ws.bodyHasContinue) {
-            ws.whereToContinue.set();
-            this.compileBoolean(ws.condition, bodyOffset, Java.Rvalue.JUMP_IF_TRUE);
-        }
+        ws.whereToContinue.set();
+        this.compileBoolean(ws.condition, bodyOffset, Java.Rvalue.JUMP_IF_TRUE);
 
         if (ws.whereToBreak != null) ws.whereToBreak.set();
         return true;
