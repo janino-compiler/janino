@@ -49,17 +49,18 @@ public class SimpleCompiler extends EvaluatorBase {
     public static void main(String[] args) throws Exception {
         if (args.length < 1) {
             System.err.println("Usage:");
-            System.err.println("    org.codehaus.janino.SimpleCompiler <class-name> <arg> [ ... ]");
-            System.err.println("Reads a compilation unit from STDIN and invokes method \"public static void main(String[])\" of");
-            System.err.println("class <class-name>.");
+            System.err.println("    org.codehaus.janino.SimpleCompiler <source-file> <class-name> <arg> [ ... ]");
+            System.err.println("Reads a compilation unit from the given <source-file> and invokes method");
+            System.err.println("\"public static void main(String[])\" of class <class-name>.");
             System.exit(1);
         }
 
-        String className = args[0];
-        String[] mainArgs = new String[args.length - 1];
-        System.arraycopy(args, 1, mainArgs, 0, mainArgs.length);
+        String sourceFileName = args[0];
+        String className = args[1];
+        String[] mainArgs = new String[args.length - 2];
+        System.arraycopy(args, 2, mainArgs, 0, mainArgs.length);
 
-        ClassLoader cl = new SimpleCompiler("STDIN", System.in).getClassLoader();
+        ClassLoader cl = new SimpleCompiler(sourceFileName, new FileInputStream(sourceFileName)).getClassLoader();
         Class c = cl.loadClass(className);
         Method m = c.getMethod("main", new Class[] { String[].class });
         m.invoke(null, new Object[] { mainArgs });
