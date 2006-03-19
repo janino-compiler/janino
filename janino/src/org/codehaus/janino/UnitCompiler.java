@@ -605,7 +605,7 @@ public class UnitCompiler {
 
         // Compile body.
         CodeContext.Offset bodyOffset = this.codeContext.newOffset();
-        boolean bodyCCN = this.compile(ws.body);
+        this.compile(ws.body); // Return value (CCN) is ignored.
 
         // Compile condition.
         ws.whereToContinue.set();
@@ -6885,9 +6885,8 @@ public class UnitCompiler {
      * @param optionalLocation The location to report
      */
     /*private*/ void compileError(String message, Location optionalLocation) throws CompileException {
-        ErrorHandler eh = this.compileErrorHandler;
-        if (eh != null) {
-            eh.handleError(message, optionalLocation);
+        if (this.optionalCompileErrorHandler != null) {
+            this.optionalCompileErrorHandler.handleError(message, optionalLocation);
         } else {
             throw new CompileException(message, optionalLocation);
         }
@@ -6906,8 +6905,7 @@ public class UnitCompiler {
      * @param optionalLocation
      */
     private void warning(String handle, String message, Location optionalLocation) {
-        WarningHandler wh = this.warningHandler;
-        if (wh != null) wh.handleWarning(handle, message, optionalLocation);
+        if (this.optionalWarningHandler != null) this.optionalWarningHandler.handleWarning(handle, message, optionalLocation);
     }
 
     /**
@@ -6924,17 +6922,21 @@ public class UnitCompiler {
      * Be aware that a single problem during compilation often causes a bunch of compile errors,
      * so a good {@link ErrorHandler} counts errors and throws a {@link CompileException} when
      * a limit is reached.
+     *
+     * @param optionalCompileErrorHandler <code>null</code> to restore the default behavior (throwing a {@link CompileException}
      */
-    public void setCompileErrorHandler(ErrorHandler errorHandler) {
-        this.compileErrorHandler = errorHandler;
+    public void setCompileErrorHandler(ErrorHandler optionalCompileErrorHandler) {
+        this.optionalCompileErrorHandler = optionalCompileErrorHandler;
     }
 
     /**
-     * By default, warnings are discarded, but an application my install a (thread-local)
+     * By default, warnings are discarded, but an application my install a custom
      * {@link WarningHandler}.
+     *
+     * @param optionalWarningHandler <code>null</code> to indicate that no warnings be issued
      */
-    public void setWarningHandler(WarningHandler warningHandler) {
-        this.warningHandler = warningHandler;
+    public void setWarningHandler(WarningHandler optionalWarningHandler) {
+        this.optionalWarningHandler = optionalWarningHandler;
     }
 
     private CodeContext getCodeContext() {
@@ -7168,10 +7170,10 @@ public class UnitCompiler {
     private CodeContext codeContext = null;
 
     // Used for elaborate compile error handling.
-    private ErrorHandler compileErrorHandler = null;
+    private ErrorHandler optionalCompileErrorHandler = null;
 
     // Used for elaborate warning handling.
-    private WarningHandler warningHandler = null;
+    private WarningHandler optionalWarningHandler = null;
 
     public final Java.CompilationUnit compilationUnit;
 

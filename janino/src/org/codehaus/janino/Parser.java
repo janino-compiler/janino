@@ -2529,15 +2529,22 @@ public class Parser {
     }
 
     /**
-     * By default, warnings are discarded, but an application my install a (thread-local)
+     * By default, warnings are discarded, but an application my install a
      * {@link WarningHandler}.
+     * <p>
+     * Notice that there is no <code>Parser.setErrorHandler()</code> method, but parse errors
+     * always throw a {@link ParseException}. The reason being is that there is no reasonable
+     * way to recover from parse errors and continue parsing, so there is no need to install
+     * a custom parse error handler.
+     *
+     * @param optionalWarningHandler <code>null</code> to indicate that no warnings be issued
      */
-    public void setWarningHandler(WarningHandler warningHandler) {
-        this.warningHandler = warningHandler;
+    public void setWarningHandler(WarningHandler optionalWarningHandler) {
+        this.optionalWarningHandler = optionalWarningHandler;
     }
 
     // Used for elaborate warning handling.
-    private WarningHandler warningHandler = null;
+    private WarningHandler optionalWarningHandler = null;
 
     /**
      * Issues a warning with the given message an location an returns. This is done through
@@ -2552,8 +2559,7 @@ public class Parser {
      * @param optionalLocation
      */
     private void warning(String handle, String message, Location optionalLocation) {
-        WarningHandler wh = this.warningHandler;
-        if (wh != null) wh.handleWarning(handle, message, optionalLocation);
+        if (this.optionalWarningHandler != null) this.optionalWarningHandler.handleWarning(handle, message, optionalLocation);
     }
 
     private final Scanner scanner;

@@ -250,13 +250,28 @@ public class JavaSourceClassLoader extends ClassLoader {
     }
 
     /**
+     * @see UnitCompiler#setCompileErrorHandler(ErrorHandler)
+     */
+    public void setCompileErrorHandler(UnitCompiler.ErrorHandler optionalCompileErrorHandler) {
+        this.iClassLoader.setCompileErrorHandler(optionalCompileErrorHandler);
+    }
+
+    /**
+     * @see Parser#setWarningHandler(WarningHandler)
+     * @see UnitCompiler#setCompileErrorHandler(ErrorHandler)
+     */
+    public void setWarningHandler(WarningHandler optionalWarningHandler) {
+        this.iClassLoader.setWarningHandler(optionalWarningHandler);
+    }
+
+    /**
      * Implementation of {@link ClassLoader#findClass(String)}.
      * 
      * @throws ClassNotFoundException
      * @throws TunnelException wraps a {@link Scanner.ScanException}
      * @throws TunnelException wraps a {@link Parser.ParseException}
      * @throws TunnelException wraps a {@link CompileException}
-     * @throws TunnelException wraps a {@link IOException}
+     * @throws TunnelException wraps an {@link IOException}
      */
     protected Class findClass(String name) throws ClassNotFoundException {
 
@@ -295,6 +310,8 @@ public class JavaSourceClassLoader extends ClassLoader {
     }
 
     /**
+     * Load a class into a {@link ClassFile} object.
+     *
      * @return <code>null</code> if a class file could not be found
      */
     protected ClassFile findClassFile(String className) throws
@@ -324,7 +341,16 @@ public class JavaSourceClassLoader extends ClassLoader {
 
                 // Find and parse the right compilation unit, and add it to
                 // "this.uncompiledCompilationUnits".
-                if (this.iClassLoader.loadIClass(Descriptor.fromClassName(className)) == null) return null;
+                try {
+                    if (this.iClassLoader.loadIClass(Descriptor.fromClassName(className)) == null) return null;
+                } catch (TunnelException te) {
+                    Throwable de = te.getDelegate();
+                    if (de instanceof IOException)           throw (IOException) de;
+                    if (de instanceof Scanner.ScanException) throw (Scanner.ScanException) de;
+                    if (de instanceof Parser.ParseException) throw (Parser.ParseException) de;
+                    if (de instanceof CompileException)      throw (CompileException) de;
+                    throw new RuntimeException("Unexpected delegate exception \"" + de + "\"");
+                }
 
                 for (Iterator i = this.uncompiledCompilationUnits.iterator(); i.hasNext();) {
                     UnitCompiler uc = (UnitCompiler) i.next();
@@ -337,12 +363,7 @@ public class JavaSourceClassLoader extends ClassLoader {
             }
 
             // Compile the compilation unit.
-            ClassFile[] cfs;
-            try {
-                cfs = compilationUnitToCompile.compileUnit(this.debuggingInformation);
-            } catch (CompileException e) {
-                throw new TunnelException(e);
-            }
+            ClassFile[] cfs = compilationUnitToCompile.compileUnit(this.debuggingInformation);
 
             // Now that the CU is compiled, remove it from the set of uncompiled CUs.
             this.uncompiledCompilationUnits.remove(compilationUnitToCompile);
@@ -353,7 +374,7 @@ public class JavaSourceClassLoader extends ClassLoader {
                     if (cf != null) throw new RuntimeException(); // SNO: Multiple CFs with the same name.
                     cf = cfs[i];
                 } else {
-                    if (this.precompiledClasses.containsKey(cfs[i].getThisClassName())) throw new TunnelException(new CompileException("Class or interface \"" + className + "\" is defined in more than one compilation unit", null));
+                    if (this.precompiledClasses.containsKey(cfs[i].getThisClassName())) throw new CompileException("Class or interface \"" + className + "\" is defined in more than one compilation unit", null);
                     this.precompiledClasses.put(cfs[i].getThisClassName(), cfs[i]);
                 }
             }
@@ -366,9 +387,9 @@ public class JavaSourceClassLoader extends ClassLoader {
         this.protectionDomainFactory = protectionDomainFactory;
     }
 
-    private final IClassLoader      iClassLoader;
-    private final EnumeratorSet     debuggingInformation;
-    private ProtectionDomainFactory protectionDomainFactory;
+    private final JavaSourceIClassLoader iClassLoader;
+    private final EnumeratorSet          debuggingInformation;
+    private ProtectionDomainFactory      protectionDomainFactory;
 
     /**
      * Collection of parsed, but uncompiled compilation units.

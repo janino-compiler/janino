@@ -37,8 +37,7 @@ package org.codehaus.janino;
 import java.io.*;
 import java.util.*;
 
-import org.codehaus.janino.util.ClassFile;
-import org.codehaus.janino.util.TunnelException;
+import org.codehaus.janino.util.*;
 import org.codehaus.janino.util.resource.*;
 
 
@@ -50,9 +49,11 @@ import org.codehaus.janino.util.resource.*;
 final class JavaSourceIClassLoader extends IClassLoader {
     private static final boolean DEBUG = false;
 
-    private final ResourceFinder sourceFinder;
-    private final String         optionalCharacterEncoding;
-    private final Set            uncompiledCompilationUnits; // UnitCompiler
+    private final ResourceFinder      sourceFinder;
+    private final String              optionalCharacterEncoding;
+    private final Set                 uncompiledCompilationUnits; // UnitCompiler
+    private UnitCompiler.ErrorHandler optionalCompileErrorHandler = null;
+    private WarningHandler            optionalWarningHandler = null;
 
     /**
      * Notice that the <code>uncompiledCompilationUnits</code> set is both read and written
@@ -73,6 +74,21 @@ final class JavaSourceIClassLoader extends IClassLoader {
         this.optionalCharacterEncoding  = optionalCharacterEncoding;
         this.uncompiledCompilationUnits = uncompiledCompilationUnits;
         super.postConstruct();
+    }
+
+    /**
+     * @see UnitCompiler#setCompileErrorHandler(ErrorHandler)
+     */
+    public void setCompileErrorHandler(UnitCompiler.ErrorHandler optionalCompileErrorHandler) {
+        this.optionalCompileErrorHandler = optionalCompileErrorHandler;
+    }
+
+    /**
+     * @see Parser#setWarningHandler(WarningHandler)
+     * @see UnitCompiler#setCompileErrorHandler(ErrorHandler)
+     */
+    public void setWarningHandler(WarningHandler optionalWarningHandler) {
+        this.optionalWarningHandler = optionalWarningHandler;
     }
 
     /**
@@ -114,10 +130,13 @@ final class JavaSourceIClassLoader extends IClassLoader {
             try {
                 Scanner scanner = new Scanner(sourceResource.getFileName(), inputStream, this.optionalCharacterEncoding);
                 Parser parser = new Parser(scanner);
+                parser.setWarningHandler(this.optionalWarningHandler);
                 uc = new UnitCompiler(parser.parseCompilationUnit(), this);
             } finally {
                 try { inputStream.close(); } catch (IOException ex) {}
             }
+            uc.setCompileErrorHandler(this.optionalCompileErrorHandler);
+            uc.setWarningHandler(this.optionalWarningHandler);
 
             // Remember compilation unit for later compilation.
             this.uncompiledCompilationUnits.add(uc);
