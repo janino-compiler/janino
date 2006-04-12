@@ -220,7 +220,7 @@ public class JGrep {
             return (Action) Enumerator.fromString(name, Action.class);
         }
 
-        static MethodInvocationAction getMethodInvocationAction(String action) throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
+        static MethodInvocationAction getMethodInvocationAction(String action) throws CompileException, Parser.ParseException, Scanner.ScanException {
             if ("print-location-and-match".equals(action)) {
                 return new MethodInvocationAction() { public void execute(UnitCompiler uc, Java.Invocation invocation, IClass.IMethod method) { System.out.println(invocation.getLocation() + ": " + method); } };
             } else
@@ -606,7 +606,7 @@ public class JGrep {
      * The <code>inputStream</code> is closed before the method returns.
      * @return the parsed compilation unit
      */
-    /*private*/ Java.CompilationUnit parseCompilationUnit(
+    private Java.CompilationUnit parseCompilationUnit(
         String      fileName,
         InputStream inputStream,
         String      optionalCharacterEncoding
