@@ -88,4 +88,11 @@ public class MethodDescriptor {
         for (int i = 0; i < this.parameterFDs.length; ++i) sb.append(this.parameterFDs[i]);
         return sb.append(')').append(this.returnFD).toString();
     }
+
+    /**
+     * Patch an additional parameter into a given method descriptor.
+     */
+    public static String prependParameter(String md, String parameterFD) {
+        return '(' + parameterFD + md.substring(1);
+    }
 }

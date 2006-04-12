@@ -281,14 +281,14 @@ class ReflectionIClass extends IClass {
      * Load {@link Class} through {@link IClassLoader} to
      * ensure unique {@link IClass}es.
      */
-    /*private*/ IClass classToIClass(Class c) {
+    private IClass classToIClass(Class c) {
         return this.iClassLoader.loadIClass(Descriptor.fromClassName(c.getName()));
     }
 
     /**
      * @see #classToIClass(Class)
      */
-    /*private*/ IClass[] classesToIClasses(Class[] cs) {
+    private IClass[] classesToIClasses(Class[] cs) {
         IClass[] result = new IClass[cs.length];
         for (int i = 0; i < cs.length; ++i) result[i] = this.classToIClass(cs[i]);
         return result;

@@ -544,7 +544,7 @@ public class Compiler {
      * The <code>inputStream</code> is closed before the method returns.
      * @return the parsed compilation unit
      */
-    /*private*/ Java.CompilationUnit parseCompilationUnit(
+    private Java.CompilationUnit parseCompilationUnit(
         String      fileName,
         InputStream inputStream,
         String      optionalCharacterEncoding

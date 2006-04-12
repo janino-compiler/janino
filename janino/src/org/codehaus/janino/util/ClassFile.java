@@ -1098,7 +1098,7 @@ public class ClassFile {
      * name of the attribute is "SourceFile", then the returned object will be of type
      * {@link SourceFileAttribute}.
      */
-    /*private*/ AttributeInfo loadAttribute(DataInputStream dis) throws IOException {
+    private AttributeInfo loadAttribute(DataInputStream dis) throws IOException {
         short attributeNameIndex = dis.readShort(); // attribute_name_index
         int   attributeLength    = dis.readInt();   // attribute_length
 
