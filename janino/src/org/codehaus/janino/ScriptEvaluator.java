@@ -458,7 +458,7 @@ public class ScriptEvaluator extends EvaluatorBase {
         String   script,
         Class    interfaceToImplement,
         String[] parameterNames
-    ) throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
+    ) throws CompileException, Parser.ParseException, Scanner.ScanException {
         try {
             return ScriptEvaluator.createFastScriptEvaluator(
                 new Scanner(null, new StringReader(script)), // scanner
