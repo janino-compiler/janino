@@ -49,6 +49,12 @@ public class Mod {
     public final static short PACKAGE      = 0x0000;
     public final static short PPP          = 0x0007;
 
+    public static boolean isPublicAccess(short sh)    { return (sh & Mod.PPP) == Mod.PUBLIC; }
+    public static boolean isPrivateAccess(short sh)   { return (sh & Mod.PPP) == Mod.PRIVATE; }
+    public static boolean isProtectedAccess(short sh) { return (sh & Mod.PPP) == Mod.PROTECTED; }
+    public static boolean isPackageAccess(short sh)   { return (sh & Mod.PPP) == Mod.PACKAGE; }
+    public static short changeAccess(short sh, short newAccess) { return (short) ((sh & ~Mod.PPP) | newAccess); }
+
     public final static short STATIC       = 0x0008;
     public final static short FINAL        = 0x0010;
     public final static short SUPER        = 0x0020;
