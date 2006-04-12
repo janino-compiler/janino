@@ -37,7 +37,8 @@ package org.codehaus.janino;
 import java.io.*;
 import java.util.*;
 
-import org.codehaus.janino.util.*;
+import org.codehaus.janino.util.ClassFile;
+import org.codehaus.janino.util.TunnelException;
 import org.codehaus.janino.util.resource.*;
 
 
@@ -51,28 +52,28 @@ final class JavaSourceIClassLoader extends IClassLoader {
 
     private final ResourceFinder      sourceFinder;
     private final String              optionalCharacterEncoding;
-    private final Set                 uncompiledCompilationUnits; // UnitCompiler
+    private final Set                 unitCompilers; // UnitCompiler
     private UnitCompiler.ErrorHandler optionalCompileErrorHandler = null;
     private WarningHandler            optionalWarningHandler = null;
 
     /**
-     * Notice that the <code>uncompiledCompilationUnits</code> set is both read and written
+     * Notice that the <code>unitCompilers</code> set is both read and written
      * by the {@link JavaSourceIClassLoader}: As it searches for {@link IClass}es, it looks
-     * into <code>uncompiledCompilationUnits</code> for class declarations, and as it opens,
+     * into <code>unitCompilers</code> for class declarations, and as it opens,
      * scans and parses compilation units on-the-fly, it adds them to
-     * <code>uncompiledCompilationUnits</code>.
+     * <code>unitCompilers</code>.
      */
     public JavaSourceIClassLoader(
         ResourceFinder sourceFinder,
         String         optionalCharacterEncoding,
-        Set            uncompiledCompilationUnits, // UnitCompiler
+        Set            unitCompilers, // UnitCompiler
         IClassLoader   optionalParentIClassLoader
     ) {
         super(optionalParentIClassLoader);
 
         this.sourceFinder               = sourceFinder;
         this.optionalCharacterEncoding  = optionalCharacterEncoding;
-        this.uncompiledCompilationUnits = uncompiledCompilationUnits;
+        this.unitCompilers              = unitCompilers;
         super.postConstruct();
     }
 
@@ -108,7 +109,7 @@ final class JavaSourceIClassLoader extends IClassLoader {
         if (className.startsWith("java.")) return null;
     
         // Check the already-parsed compilation units.
-        for (Iterator it = this.uncompiledCompilationUnits.iterator(); it.hasNext();) {
+        for (Iterator it = this.unitCompilers.iterator(); it.hasNext();) {
             UnitCompiler uc = (UnitCompiler) it.next();
             IClass res = uc.findClass(className);
             if (res != null) {
@@ -139,7 +140,7 @@ final class JavaSourceIClassLoader extends IClassLoader {
             uc.setWarningHandler(this.optionalWarningHandler);
 
             // Remember compilation unit for later compilation.
-            this.uncompiledCompilationUnits.add(uc);
+            this.unitCompilers.add(uc);
 
             // Find the class/interface declaration in the com
             IClass res = uc.findClass(className);

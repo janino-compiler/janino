@@ -53,7 +53,7 @@ import org.codehaus.janino.util.resource.*;
 public class JavaSourceClassLoader extends ClassLoader {
 
     public interface ProtectionDomainFactory {
-        ProtectionDomain getProtectionDomain(String name) throws Exception;
+        ProtectionDomain getProtectionDomain(String name);
     }
     
     /**
@@ -144,19 +144,18 @@ public class JavaSourceClassLoader extends ClassLoader {
         ClassLoader cl;
         if (optionalCacheDirName == null) {
             cl = new JavaSourceClassLoader(
-                ClassLoader.getSystemClassLoader(),
-                optionalSourcePath,
-                optionalCharacterEncoding,
-                debuggingInformation
+                ClassLoader.getSystemClassLoader(), // parentClassLoader
+                optionalSourcePath,                 // optionalSourcePath
+                optionalCharacterEncoding,          // optionalCharacterEncoding
+                debuggingInformation                // debuggingInformation
             );
         } else {
-            File cacheDirectory = new File(optionalCacheDirName);
             cl = new CachingJavaSourceClassLoader(
-                ClassLoader.getSystemClassLoader(),
-                optionalSourcePath,
-                optionalCharacterEncoding,
-                cacheDirectory,
-                debuggingInformation
+                new ClassLoader(null) {}, // parentClassLoader
+                optionalSourcePath,                 // optionalSourcePath
+                optionalCharacterEncoding,          // optionalCharacterEncoding
+                new File(optionalCacheDirName),     // cacheDirectory
+                debuggingInformation                // debuggingInformation
             );
         }
 
@@ -240,10 +239,10 @@ public class JavaSourceClassLoader extends ClassLoader {
         super(parentClassLoader);
 
         this.iClassLoader = new JavaSourceIClassLoader(
-            sourceFinder,
-            optionalCharacterEncoding,
-            this.uncompiledCompilationUnits,
-            new ClassLoaderIClassLoader(parentClassLoader)
+            sourceFinder,                                  // sourceFinder
+            optionalCharacterEncoding,                     // optionalCharacterEncoding
+            this.unitCompilers,                            // unitCompilers
+            new ClassLoaderIClassLoader(parentClassLoader) // optionalParentIClassLoader
         );
 
         this.debuggingInformation = debuggingInformation;
@@ -271,116 +270,90 @@ public class JavaSourceClassLoader extends ClassLoader {
      * @throws TunnelException wraps a {@link Scanner.ScanException}
      * @throws TunnelException wraps a {@link Parser.ParseException}
      * @throws TunnelException wraps a {@link CompileException}
-     * @throws TunnelException wraps an {@link IOException}
+     * @throws TunnelException wraps a {@link IOException}
      */
     protected Class findClass(String name) throws ClassNotFoundException {
 
-        // Find the ClassFile object.
-        ClassFile cf;
-        try {
-            cf = this.findClassFile(name);
-        } catch (Scanner.ScanException ex) {
-            throw new TunnelException(ex);
-        } catch (Parser.ParseException ex) {
-            throw new TunnelException(ex);
-        } catch (CompileException ex) {
-            throw new TunnelException(ex);
-        } catch (IOException ex) {
-            throw new TunnelException(ex);
-        }
-        if (cf == null) throw new ClassNotFoundException(name);
+        Map bytecodes = this.generateBytecodes(name);
+        if (bytecodes == null) throw new ClassNotFoundException(name);
 
-        // Load the byte code into the virtual machine.
-        ProtectionDomain domain = null;
-        if (this.protectionDomainFactory != null) {
-            String sourceName = ClassFile.getSourceResourceName(cf.getThisClassName());
-            try {
-                domain = this.protectionDomainFactory.getProtectionDomain(sourceName);
-            } catch (Exception ex) {
-                throw new ClassNotFoundException(name, ex);
-            }
-        }
-
-        byte[] ba = cf.toByteArray();
-        return (
-            domain != null ?
-            this.defineClass(name, ba, 0, ba.length, domain) :
-            this.defineClass(name, ba, 0, ba.length)
-        );
+        Class clazz = this.defineBytecodes(name, bytecodes);
+        if (clazz == null) throw new RuntimeException("Scanning, parsing and compiling class \"" + name + "\" did not create a class file!?");
+        return clazz;
     }
 
     /**
-     * Load a class into a {@link ClassFile} object.
+     * Find, scan, parse the right compilation unit. Compile the parsed compilation unit to
+     * bytecode. This may cause more compilation units being scanned and parsed. Continue until
+     * all compilation units are compiled.
      *
-     * @return <code>null</code> if a class file could not be found
+     * @return <code>null</code> if no source code could be found
      */
-    protected ClassFile findClassFile(String className) throws
-        Scanner.ScanException,
-        Parser.ParseException,
-        CompileException,
-        IOException
-    {
+    protected Map generateBytecodes(String name) {
+        if (this.iClassLoader.loadIClass(Descriptor.fromClassName(name)) == null) return null;
 
-        // Check precompiled classes (classes that were parsed and compiled, but were not yet needed).
-        ClassFile cf = (ClassFile) this.precompiledClasses.get(className);
-
-        if (cf == null) {
-
-            // Check parsed, but uncompiled compilation units.
-            UnitCompiler compilationUnitToCompile = null;
-            for (Iterator i = this.uncompiledCompilationUnits.iterator(); i.hasNext();) {
-                UnitCompiler uc = (UnitCompiler) i.next();
-                if (uc.findClass(className) != null) {
-                    compilationUnitToCompile = uc;
-                    break;
-                }
-            }
-
-            // Find and parse the right compilation unit.
-            if (compilationUnitToCompile == null) {
-
-                // Find and parse the right compilation unit, and add it to
-                // "this.uncompiledCompilationUnits".
-                try {
-                    if (this.iClassLoader.loadIClass(Descriptor.fromClassName(className)) == null) return null;
-                } catch (TunnelException te) {
-                    Throwable de = te.getDelegate();
-                    if (de instanceof IOException)           throw (IOException) de;
-                    if (de instanceof Scanner.ScanException) throw (Scanner.ScanException) de;
-                    if (de instanceof Parser.ParseException) throw (Parser.ParseException) de;
-                    if (de instanceof CompileException)      throw (CompileException) de;
-                    throw new RuntimeException("Unexpected delegate exception \"" + de + "\"");
-                }
-
-                for (Iterator i = this.uncompiledCompilationUnits.iterator(); i.hasNext();) {
-                    UnitCompiler uc = (UnitCompiler) i.next();
-                    if (uc.findClass(className) != null) {
-                        compilationUnitToCompile = uc;
-                        break;
+        Map bytecodes = new HashMap(); // String name => byte[] bytecode
+        Set compiledUnitCompilers = new HashSet();
+        COMPILE_UNITS:
+        for (;;) {
+            for (Iterator it = this.unitCompilers.iterator(); it.hasNext();) {
+                UnitCompiler uc = (UnitCompiler) it.next();
+                if (!compiledUnitCompilers.contains(uc)) {
+                    ClassFile[] cfs;
+                    try {
+                        cfs = uc.compileUnit(this.debuggingInformation);
+                    } catch (CompileException ex) {
+                        throw new TunnelException(ex);
                     }
-                }
-                if (compilationUnitToCompile == null) throw new RuntimeException(); // SNO: Loading IClass does not parse the CU that defines the IClass.
-            }
-
-            // Compile the compilation unit.
-            ClassFile[] cfs = compilationUnitToCompile.compileUnit(this.debuggingInformation);
-
-            // Now that the CU is compiled, remove it from the set of uncompiled CUs.
-            this.uncompiledCompilationUnits.remove(compilationUnitToCompile);
-
-            // Get the generated class file.
-            for (int i = 0; i < cfs.length; ++i) {
-                if (cfs[i].getThisClassName().equals(className)) {
-                    if (cf != null) throw new RuntimeException(); // SNO: Multiple CFs with the same name.
-                    cf = cfs[i];
-                } else {
-                    if (this.precompiledClasses.containsKey(cfs[i].getThisClassName())) throw new CompileException("Class or interface \"" + className + "\" is defined in more than one compilation unit", null);
-                    this.precompiledClasses.put(cfs[i].getThisClassName(), cfs[i]);
+                    for (int i = 0; i < cfs.length; ++i) {
+                        ClassFile cf = cfs[i];
+                        bytecodes.put(cf.getThisClassName(), cf.toByteArray());
+                    }
+                    compiledUnitCompilers.add(uc);
+                    continue COMPILE_UNITS;
                 }
             }
-            if (cf == null) throw new RuntimeException(); // SNO: Compilation of CU does not generate CF with requested name.
+            return bytecodes;
         }
-        return cf;
+    }
+
+    /**
+     * Define a set of classes, like
+     * {@link java.lang.ClassLoader#defineClass(java.lang.String, byte[], int, int)}.
+     * If the <code>bytecodes</code> contains an entry for <code>name</code>, then the
+     * {@link Class} defined for that name is returned.
+     *
+     * @param bytecodes String name => byte[] bytecode
+     */
+    protected Class defineBytecodes(String name, Map bytecodes) throws ClassFormatError {
+        Class clazz = null;
+        for (Iterator it = bytecodes.entrySet().iterator(); it.hasNext();) {
+            Map.Entry me = (Map.Entry) it.next();
+            String name2 = (String) me.getKey();
+            byte[] ba = (byte[]) me.getValue();
+
+            Class c = this.defineBytecode(name2, ba);
+            if (name2.equals(name)) clazz = c;
+        }
+        return clazz;
+    }
+
+    /**
+     * Calls {@link java.lang.ClassLoader#defineClass(java.lang.String, byte[], int, int)}
+     * or {@link java.lang.ClassLoader#defineClass(java.lang.String, byte[], int, int, java.security.ProtectionDomain)},
+     * depending on whether or not a {@link ProtectionDomainFactory} was set.
+     *
+     * @see #setProtectionDomainFactory(ProtectionDomainFactory)
+     */
+    protected Class defineBytecode(String className, byte[] ba) throws ClassFormatError {
+        if (this.protectionDomainFactory == null) {
+            return this.defineClass(className, ba, 0, ba.length);
+        } else
+        {
+            String sourceName = ClassFile.getSourceResourceName(className);
+            ProtectionDomain domain = this.protectionDomainFactory.getProtectionDomain(sourceName);
+            return this.defineClass(className, ba, 0, ba.length, domain);
+        }
     }
 
     public void setProtectionDomainFactory(ProtectionDomainFactory protectionDomainFactory) {
@@ -394,11 +367,5 @@ public class JavaSourceClassLoader extends ClassLoader {
     /**
      * Collection of parsed, but uncompiled compilation units.
      */
-    private final Set uncompiledCompilationUnits = new HashSet(); // UnitCompiler
-
-    /**
-     * Map of classes that were parsed and compiled into class files, but not yet loaded into the
-     * virtual machine.
-     */
-    private final Map precompiledClasses = new HashMap(); // class name => Java.ClassFile
+    private final Set unitCompilers = new HashSet(); // UnitCompiler
 }
