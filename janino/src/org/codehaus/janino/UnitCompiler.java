@@ -248,7 +248,7 @@ public class UnitCompiler {
         for (Iterator it = cd.syntheticFields.values().iterator(); it.hasNext();) {
             IClass.IField f = (IClass.IField) it.next();
             cf.addFieldInfo(
-                (short) 0,                   // modifiers,
+                Mod.PACKAGE,                 // modifiers,
                 f.getName(),                 // fieldName,
                 f.getType().getDescriptor(), // fieldTypeFD,
                 null                         // optionalConstantValue
@@ -295,12 +295,27 @@ public class UnitCompiler {
                 if (ocv == Java.Rvalue.CONSTANT_VALUE_NULL) ocv = null;
             }
 
-            ClassFile.FieldInfo fi = cf.addFieldInfo(
-                fd.modifiers,                       // modifiers
-                vd.name,                            // fieldName
-                this.getType(type).getDescriptor(), // fieldTypeFD
-                ocv                                 // optionalConstantValue
-            );
+            ClassFile.FieldInfo fi;
+            if (Mod.isPrivateAccess(fd.modifiers)) {
+
+                // To make the private field accessible for enclosing types, enclosed types and types
+                // enclosed by the same type, it is modified as follows:
+                //  + Access is changed from PRIVATE to PACKAGE
+                fi = cf.addFieldInfo(
+                    Mod.changeAccess(fd.modifiers, Mod.PACKAGE), // modifiers
+                    vd.name,                                     // fieldName
+                    this.getType(type).getDescriptor(),          // fieldTypeFD
+                    ocv                                          // optionalConstantValue
+                );
+            } else
+            {
+                fi = cf.addFieldInfo(
+                    fd.modifiers,                       // modifiers
+                    vd.name,                            // fieldName
+                    this.getType(type).getDescriptor(), // fieldTypeFD
+                    ocv                                 // optionalConstantValue
+                );
+            }
 
             // Add "Deprecated" attribute (JVMS 4.7.10)
             if (fd.hasDeprecatedDocTag()) {
@@ -507,10 +522,10 @@ public class UnitCompiler {
             throw (CompileException) e.getDelegate();
         }
     }
-    /*private*/ boolean compile2(Java.Initializer i) throws CompileException {
+    private boolean compile2(Java.Initializer i) throws CompileException {
         return this.compile(i.block);
     }
-    /*private*/ boolean compile2(Java.Block b) throws CompileException {
+    private boolean compile2(Java.Block b) throws CompileException {
         this.codeContext.saveLocalVariables();
         try {
             boolean previousStatementCanCompleteNormally = true;
@@ -528,7 +543,7 @@ public class UnitCompiler {
             this.codeContext.restoreLocalVariables();
         }
     }
-    /*private*/ boolean compile2(Java.DoStatement ds) throws CompileException {
+    private boolean compile2(Java.DoStatement ds) throws CompileException {
         if (Boolean.TRUE.equals(this.getConstantValue(ds.condition))) {
             return this.compileUnconditionalLoop(ds, ds.body, null);
         }
@@ -549,7 +564,7 @@ public class UnitCompiler {
 
         return true;
     }
-    /*private*/ boolean compile2(Java.ForStatement fs) throws CompileException {
+    private boolean compile2(Java.ForStatement fs) throws CompileException {
         this.codeContext.saveLocalVariables();
         try {
 
@@ -594,7 +609,7 @@ public class UnitCompiler {
 
         return true;
     }
-    /*private*/ boolean compile2(Java.WhileStatement ws) throws CompileException {
+    private boolean compile2(Java.WhileStatement ws) throws CompileException {
         if (Boolean.TRUE.equals(this.getConstantValue(ws.condition))) {
             return this.compileUnconditionalLoop(ws, ws.body, null);
         }
@@ -657,7 +672,7 @@ public class UnitCompiler {
         return true;
     }
 
-    /*private*/ final boolean compile2(Java.LabeledStatement ls) throws CompileException {
+    private final boolean compile2(Java.LabeledStatement ls) throws CompileException {
         boolean canCompleteNormally = this.compile(ls.body);
         if (ls.whereToBreak != null) {
             ls.whereToBreak.set();
@@ -665,7 +680,7 @@ public class UnitCompiler {
         }
         return canCompleteNormally;
     }
-    /*private*/ boolean compile2(Java.SwitchStatement ss) throws CompileException {
+    private boolean compile2(Java.SwitchStatement ss) throws CompileException {
 
         // Compute condition.
         IClass switchExpressionType = this.compileGetValue(ss.condition);
@@ -787,7 +802,7 @@ public class UnitCompiler {
         }
         return canCompleteNormally;
     }
-    /*private*/ boolean compile2(Java.BreakStatement bs) throws CompileException {
+    private boolean compile2(Java.BreakStatement bs) throws CompileException {
 
         // Find the broken statement.
         Java.BreakableStatement brokenStatement = null;
@@ -834,7 +849,7 @@ public class UnitCompiler {
         this.writeBranch(bs, Opcode.GOTO, this.getWhereToBreak(brokenStatement));
         return false;
     }
-    /*private*/ boolean compile2(Java.ContinueStatement cs) throws CompileException {
+    private boolean compile2(Java.ContinueStatement cs) throws CompileException {
 
         // Find the continued statement.
         Java.ContinuableStatement continuedStatement = null;
@@ -888,14 +903,14 @@ public class UnitCompiler {
         this.writeBranch(cs, Opcode.GOTO, continuedStatement.whereToContinue);
         return false;
     }
-    /*private*/ boolean compile2(Java.EmptyStatement es) {
+    private boolean compile2(Java.EmptyStatement es) {
         return true;
     }
-    /*private*/ boolean compile2(Java.ExpressionStatement ee) throws CompileException {
+    private boolean compile2(Java.ExpressionStatement ee) throws CompileException {
         this.compile(ee.rvalue);
         return true;
     }
-    /*private*/ boolean compile2(Java.FieldDeclaration fd) throws CompileException {
+    private boolean compile2(Java.FieldDeclaration fd) throws CompileException {
         for (int i = 0; i < fd.variableDeclarators.length; ++i) {
             Java.VariableDeclarator vd = fd.variableDeclarators[i];
 
@@ -941,7 +956,7 @@ public class UnitCompiler {
         }
         return true;
     }
-    /*private*/ boolean compile2(Java.IfStatement is) throws CompileException {
+    private boolean compile2(Java.IfStatement is) throws CompileException {
         Object cv = this.getConstantValue(is.condition);
         Java.BlockStatement es = (
             is.optionalElseStatement != null
@@ -1024,7 +1039,7 @@ public class UnitCompiler {
             }
         }
     }
-    /*private*/ boolean compile2(Java.LocalClassDeclarationStatement lcds) throws CompileException {
+    private boolean compile2(Java.LocalClassDeclarationStatement lcds) throws CompileException {
 
         // Check for redefinition.
         Java.LocalClassDeclaration otherLCD = this.findLocalClassDeclaration(lcds, lcds.lcd.name);
@@ -1056,7 +1071,7 @@ public class UnitCompiler {
         return null;
     }
 
-    /*private*/ boolean compile2(Java.LocalVariableDeclarationStatement lvds) throws CompileException {
+    private boolean compile2(Java.LocalVariableDeclarationStatement lvds) throws CompileException {
         if ((lvds.modifiers & ~Mod.FINAL) != 0) this.compileError("The only allowed modifier in local variable declarations is \"final\"", lvds.getLocation());
 
         for (int j = 0; j < lvds.variableDeclarators.length; ++j) {
@@ -1110,7 +1125,7 @@ public class UnitCompiler {
         return vd.localVariable;
     }
 
-    /*private*/ boolean compile2(Java.ReturnStatement rs) throws CompileException {
+    private boolean compile2(Java.ReturnStatement rs) throws CompileException {
 
         // Determine enclosing block, function and compilation Unit.
         Java.FunctionDeclarator enclosingFunction = null;
@@ -1151,7 +1166,7 @@ public class UnitCompiler {
         this.writeOpcode(rs, Opcode.IRETURN + this.ilfda(returnType));
         return false;
     }
-    /*private*/ boolean compile2(Java.SynchronizedStatement ss) throws CompileException {
+    private boolean compile2(Java.SynchronizedStatement ss) throws CompileException {
 
         // Evaluate monitor object expression.
         if (!this.iClassLoader.OBJECT.isAssignableFrom(this.compileGetValue(ss.expression))) this.compileError("Monitor object of \"synchronized\" statement is not a subclass of \"Object\"", ss.getLocation());
@@ -1200,7 +1215,7 @@ public class UnitCompiler {
 
         return canCompleteNormally;
     }
-    /*private*/ boolean compile2(Java.ThrowStatement ts) throws CompileException {
+    private boolean compile2(Java.ThrowStatement ts) throws CompileException {
         IClass expressionType = this.compileGetValue(ts.expression);
         this.checkThrownException(
             (Java.Located) ts,      // located
@@ -1210,7 +1225,7 @@ public class UnitCompiler {
         this.writeOpcode(ts, Opcode.ATHROW);
         return false;
     }
-    /*private*/ boolean compile2(Java.TryStatement ts) throws CompileException {
+    private boolean compile2(Java.TryStatement ts) throws CompileException {
         if (ts.optionalFinally != null) ts.finallyOffset = this.codeContext.new Offset();
 
         CodeContext.Offset beginningOfBody = this.codeContext.newOffset();
@@ -1312,11 +1327,46 @@ public class UnitCompiler {
     // ------------ FunctionDeclarator.compile() -------------
 
     private void compile(Java.FunctionDeclarator fd, final ClassFile classFile) throws CompileException {
-        ClassFile.MethodInfo mi = classFile.addMethodInfo(
-            fd.modifiers,                         // accessFlags
-            fd.name,                              // name
-            this.toIInvocable(fd).getDescriptor() // methodMD
-        );
+        ClassFile.MethodInfo mi;
+
+        if (Mod.isPrivateAccess(fd.modifiers)) {
+            if (fd instanceof Java.MethodDeclarator && !fd.isStatic()){
+
+                // To make the non-static private method invocable for enclosing types, enclosed types
+                // and types enclosed by the same type, it is modified as follows:
+                //  + Access is changed from PRIVATE to PACKAGE
+                //  + The name is appended with "$"
+                //  + It is made static
+                //  + A parameter of type "declaring class" is prepended to the signature
+                mi = classFile.addMethodInfo(
+                    (short) (Mod.changeAccess(fd.modifiers, Mod.PACKAGE) | Mod.STATIC), // accessFlags
+                    fd.name + '$',                               // name
+                    MethodDescriptor.prependParameter(           // methodMD
+                        this.toIMethod((Java.MethodDeclarator) fd).getDescriptor(),
+                        this.resolve(fd.getDeclaringType()).getDescriptor()
+                    )
+                );
+            } else
+            {
+
+                // To make the static private method or private constructor invocable for enclosing
+                // types, enclosed types and types enclosed by the same type, it is modified as
+                // follows:
+                //  + Access is changed from PRIVATE to PACKAGE
+                mi = classFile.addMethodInfo(
+                    Mod.changeAccess(fd.modifiers, Mod.PACKAGE), // accessFlags
+                    fd.name,                                     // name
+                    this.toIInvocable(fd).getDescriptor()        // methodMD
+                );
+            }
+        } else
+        {
+            mi = classFile.addMethodInfo(
+                fd.modifiers,                         // accessFlags
+                fd.name,                              // name
+                this.toIInvocable(fd).getDescriptor() // methodMD
+            );
+        }
 
         // Add "Exceptions" attribute (JVMS 4.7.4).
         {
@@ -1514,10 +1564,10 @@ public class UnitCompiler {
             throw (CompileException) e.getDelegate();
         }
     }
-    /*private*/ void compile2(Java.Rvalue rv) throws CompileException {
+    private void compile2(Java.Rvalue rv) throws CompileException {
         this.pop((Java.Located) rv, this.compileGetValue(rv));
     }
-    /*private*/ void compile2(Java.Assignment a) throws CompileException {
+    private void compile2(Java.Assignment a) throws CompileException {
         if (a.operator == "=") {
             this.compileContext(a.lhs);
             this.assignmentConversion(
@@ -1554,7 +1604,7 @@ public class UnitCompiler {
         ) throw new RuntimeException();
         this.compileSet(a.lhs);
     }
-    /*private*/ void compile2(Java.Crement c) throws CompileException {
+    private void compile2(Java.Crement c) throws CompileException {
 
         // Optimized crement of integer local variable.
         Java.LocalVariable lv = this.isIntLV(c);
@@ -1595,11 +1645,11 @@ public class UnitCompiler {
         ) throw new RuntimeException();
         this.compileSet(c.operand);
     }
-    /*private*/ void compile2(Java.ParenthesizedExpression pe) throws CompileException {
+    private void compile2(Java.ParenthesizedExpression pe) throws CompileException {
         this.compile(pe.value);
     }
 
-    /*private*/ boolean compile2(Java.AlternateConstructorInvocation aci) throws CompileException {
+    private boolean compile2(Java.AlternateConstructorInvocation aci) throws CompileException {
         this.writeOpcode(aci, Opcode.ALOAD_0);
         Java.ConstructorDeclarator declaringConstructor = (Java.ConstructorDeclarator) aci.getEnclosingScope();
         this.invokeConstructor(
@@ -1611,7 +1661,7 @@ public class UnitCompiler {
         );
         return true;
     }
-    /*private*/ boolean compile2(Java.SuperConstructorInvocation sci) throws CompileException {
+    private boolean compile2(Java.SuperConstructorInvocation sci) throws CompileException {
         Java.ConstructorDeclarator declaringConstructor = (Java.ConstructorDeclarator) sci.getEnclosingScope();
         this.writeOpcode(sci, Opcode.ALOAD_0);
         Java.ClassDeclaration declaringClass = declaringConstructor.getDeclaringClass();
@@ -1699,7 +1749,7 @@ public class UnitCompiler {
             throw (CompileException) e.getDelegate();
         }
     }
-    /*private*/ void compileBoolean2(
+    private void compileBoolean2(
         Java.Rvalue        rv,
         CodeContext.Offset dst,        // Where to jump.
         boolean            orientation // JUMP_IF_TRUE or JUMP_IF_FALSE.
@@ -1707,7 +1757,7 @@ public class UnitCompiler {
         if (this.compileGetValue(rv) != IClass.BOOLEAN) this.compileError("Not a boolean expression", rv.getLocation());
         this.writeBranch(rv, orientation == Java.Rvalue.JUMP_IF_TRUE ? Opcode.IFNE : Opcode.IFEQ, dst);
     }
-    /*private*/ void compileBoolean2(
+    private void compileBoolean2(
         Java.UnaryOperation ue,
         CodeContext.Offset dst,        // Where to jump.
         boolean            orientation // JUMP_IF_TRUE or JUMP_IF_FALSE.
@@ -1719,7 +1769,7 @@ public class UnitCompiler {
 
         this.compileError("Boolean expression expected", ue.getLocation());
     }
-    /*private*/ void compileBoolean2(
+    private void compileBoolean2(
         Java.BinaryOperation bo,
         CodeContext.Offset   dst,        // Where to jump.
         boolean              orientation // JUMP_IF_TRUE or JUMP_IF_FALSE.
@@ -1859,7 +1909,7 @@ public class UnitCompiler {
 
         this.compileError("Boolean expression expected", bo.getLocation());
     }
-    /*private*/ void compileBoolean2(
+    private void compileBoolean2(
         Java.ParenthesizedExpression pe,
         CodeContext.Offset dst,
         boolean orientation
@@ -1914,13 +1964,13 @@ public class UnitCompiler {
             throw (CompileException) e.getDelegate();
         }
     }
-    /*private*/ int compileContext2(Java.Rvalue rv) {
+    private int compileContext2(Java.Rvalue rv) {
         return 0;
     }
-    /*private*/ int compileContext2(Java.AmbiguousName an) throws CompileException {
+    private int compileContext2(Java.AmbiguousName an) throws CompileException {
         return this.compileContext(this.toRvalueOrCE(this.reclassify(an)));
     }
-    /*private*/ int compileContext2(Java.FieldAccess fa) throws CompileException {
+    private int compileContext2(Java.FieldAccess fa) throws CompileException {
         if (fa.field.isStatic()) {
             this.getType(this.toTypeOrCE(fa.lhs));
             return 0;
@@ -1929,11 +1979,11 @@ public class UnitCompiler {
             return 1;
         }
     }
-    /*private*/ int compileContext2(Java.ArrayLength al) throws CompileException {
+    private int compileContext2(Java.ArrayLength al) throws CompileException {
         if (!this.compileGetValue(al.lhs).isArray()) this.compileError("Cannot determine length of non-array type", al.getLocation());
         return 1;
     }
-    /*private*/ int compileContext2(Java.ArrayAccessExpression aae) throws CompileException {
+    private int compileContext2(Java.ArrayAccessExpression aae) throws CompileException {
         IClass lhsType = this.compileGetValue(aae.lhs);
         if (!lhsType.isArray()) this.compileError("Subscript not allowed on non-array type \"" + lhsType.toString() + "\"", aae.getLocation());
 
@@ -1949,11 +1999,11 @@ public class UnitCompiler {
 
         return 2;
     }
-    /*private*/ int compileContext2(Java.FieldAccessExpression fae) throws CompileException {
+    private int compileContext2(Java.FieldAccessExpression fae) throws CompileException {
         this.determineValue(fae);
         return this.compileContext(fae.value);
     }
-    /*private*/ int compileContext2(Java.ParenthesizedExpression pe) throws CompileException {
+    private int compileContext2(Java.ParenthesizedExpression pe) throws CompileException {
         return this.compileContext(pe.value);
     }
 
@@ -2003,7 +2053,7 @@ public class UnitCompiler {
             throw (CompileException) e.getDelegate();
         }
     }
-    /*private*/ IClass compileGet2(Java.BooleanRvalue brv) throws CompileException {
+    private IClass compileGet2(Java.BooleanRvalue brv) throws CompileException {
         CodeContext.Offset isTrue = this.codeContext.new Offset();
         this.compileBoolean(brv, isTrue, Java.Rvalue.JUMP_IF_TRUE);
         this.writeOpcode(brv, Opcode.ICONST_0);
@@ -2015,13 +2065,13 @@ public class UnitCompiler {
 
         return IClass.BOOLEAN;
     }
-    /*private*/ IClass compileGet2(Java.AmbiguousName an) throws CompileException {
+    private IClass compileGet2(Java.AmbiguousName an) throws CompileException {
         return this.compileGet(this.toRvalueOrCE(this.reclassify(an)));
     }
-    /*private*/ IClass compileGet2(Java.LocalVariableAccess lva) {
+    private IClass compileGet2(Java.LocalVariableAccess lva) {
         return this.load((Java.Located) lva, lva.localVariable);
     }
-    /*private*/ IClass compileGet2(Java.FieldAccess fa) throws CompileException {
+    private IClass compileGet2(Java.FieldAccess fa) throws CompileException {
         this.checkAccessible(fa.field, fa.getEnclosingBlockStatement());
         if (fa.field.isStatic()) {
             this.writeOpcode(fa, Opcode.GETSTATIC);
@@ -2036,15 +2086,15 @@ public class UnitCompiler {
         );
         return fa.field.getType();
     }
-    /*private*/ IClass compileGet2(Java.ArrayLength al) {
+    private IClass compileGet2(Java.ArrayLength al) {
         this.writeOpcode(al, Opcode.ARRAYLENGTH);
         return IClass.INT;
     }
-    /*private*/ IClass compileGet2(Java.ThisReference tr) throws CompileException {
+    private IClass compileGet2(Java.ThisReference tr) throws CompileException {
         this.referenceThis((Java.Located) tr);
         return this.getIClass(tr);
     }
-    /*private*/ IClass compileGet2(Java.QualifiedThisReference qtr) throws CompileException {
+    private IClass compileGet2(Java.QualifiedThisReference qtr) throws CompileException {
         this.referenceThis(
             (Java.Located) qtr,
             this.getDeclaringClass(qtr),
@@ -2053,7 +2103,7 @@ public class UnitCompiler {
         );
         return this.getTargetIClass(qtr);
     }
-    /*private*/ IClass compileGet2(Java.ClassLiteral cl) throws CompileException {
+    private IClass compileGet2(Java.ClassLiteral cl) throws CompileException {
         Location loc = cl.getLocation();
         final IClassLoader icl = this.iClassLoader;
         IClass iClass = this.getType(cl.type);
@@ -2122,7 +2172,25 @@ public class UnitCompiler {
         }
 
         String className = Descriptor.toClassName(iClass.getDescriptor());
-        final String classDollarFieldName = "class$" + className.replace('.', '$');
+
+        // Compose the "class-dollar" field name. This i done as follows:
+        //   Type         Class-name           Field-name
+        //   String       java.lang.String     class$java$lang$String
+        //   String[]     [Ljava.lang.String;  array$Ljava$lang$String
+        //   String[][]   [[Ljava.lang.String; array$$Ljava$lang$String
+        //   String[][][] [[[java.lang.String; array$$$Ljava$lang$String
+        //   int[]        [I                   array$I
+        //   int[][]      [[I                  array$$I
+        String classDollarFieldName;
+        {
+            if (className.startsWith("[")) {
+                classDollarFieldName = "array" + className.replace('.', '$').replace('[', '$');
+                if (classDollarFieldName.endsWith(";")) classDollarFieldName = classDollarFieldName.substring(0, classDollarFieldName.length() - 1);
+            } else
+            {
+                classDollarFieldName = "class$" + className.replace('.', '$');
+            }
+        }
 
         // Declare the static "class dollar field" if not already done.
         {
@@ -2204,7 +2272,7 @@ public class UnitCompiler {
         ce.setEnclosingBlockStatement(cl.getEnclosingBlockStatement());
         return this.compileGet(ce);
     }
-    /*private*/ IClass compileGet2(Java.Assignment a) throws CompileException {
+    private IClass compileGet2(Java.Assignment a) throws CompileException {
         if (a.operator == "=") {
             int lhsCS = this.compileContext(a.lhs);
             IClass rhsType = this.compileGetValue(a.rhs);
@@ -2255,7 +2323,7 @@ public class UnitCompiler {
         this.compileSet(a.lhs);
         return lhsType;
     }
-    /*private*/ IClass compileGet2(Java.ConditionalExpression ce) throws CompileException {
+    private IClass compileGet2(Java.ConditionalExpression ce) throws CompileException {
         IClass mhsType, rhsType;
         CodeContext.Inserter mhsConvertInserter;
         CodeContext.Offset toEnd = this.codeContext.new Offset();
@@ -2332,7 +2400,7 @@ public class UnitCompiler {
 
         return expressionType;
     }
-    /*private*/ IClass compileGet2(Java.Crement c) throws CompileException {
+    private IClass compileGet2(Java.Crement c) throws CompileException {
 
         // Optimized crement of integer local variable.
         Java.LocalVariable lv = this.isIntLV(c);
@@ -2387,16 +2455,16 @@ public class UnitCompiler {
 
         return type;
     }
-    /*private*/ IClass compileGet2(Java.ArrayAccessExpression aae) throws CompileException {
+    private IClass compileGet2(Java.ArrayAccessExpression aae) throws CompileException {
         IClass lhsComponentType = this.getType(aae);
         this.writeOpcode(aae, Opcode.IALOAD + UnitCompiler.ilfdabcs(lhsComponentType));
         return lhsComponentType;
     }
-    /*private*/ IClass compileGet2(Java.FieldAccessExpression fae) throws CompileException {
+    private IClass compileGet2(Java.FieldAccessExpression fae) throws CompileException {
         this.determineValue(fae);
         return this.compileGet(fae.value);
     }
-    /*private*/ IClass compileGet2(Java.UnaryOperation uo) throws CompileException {
+    private IClass compileGet2(Java.UnaryOperation uo) throws CompileException {
         if (uo.operator == "!") {
             return this.compileGet2((Java.BooleanRvalue) uo);
         }
@@ -2441,7 +2509,7 @@ public class UnitCompiler {
         this.compileError("Unexpected operator \"" + uo.operator + "\"", uo.getLocation());
         return this.iClassLoader.OBJECT;
     }
-    /*private*/ IClass compileGet2(Java.Instanceof io) throws CompileException {
+    private IClass compileGet2(Java.Instanceof io) throws CompileException {
         IClass lhsType = this.compileGetValue(io.lhs);
         IClass rhsType = this.getType(io.rhs);
 
@@ -2461,7 +2529,7 @@ public class UnitCompiler {
         }
         return IClass.BOOLEAN;
     }
-    /*private*/ IClass compileGet2(Java.BinaryOperation bo) throws CompileException {
+    private IClass compileGet2(Java.BinaryOperation bo) throws CompileException {
         if (
             bo.op == "||" ||
             bo.op == "&&" ||
@@ -2484,7 +2552,7 @@ public class UnitCompiler {
             bo.op                       // operator
         );
     }
-    /*private*/ IClass compileGet2(Java.Cast c) throws CompileException {
+    private IClass compileGet2(Java.Cast c) throws CompileException {
         IClass tt = this.getType(c.targetType);
         IClass vt = this.compileGetValue(c.value);
         if (
@@ -2496,10 +2564,10 @@ public class UnitCompiler {
         ) this.compileError("Cannot cast \"" + vt + "\" to \"" + tt + "\"", c.getLocation());
         return tt;
     }
-    /*private*/ IClass compileGet2(Java.ParenthesizedExpression pe) throws CompileException {
+    private IClass compileGet2(Java.ParenthesizedExpression pe) throws CompileException {
         return this.compileGet(pe.value);
     }
-    /*private*/ IClass compileGet2(Java.MethodInvocation mi) throws CompileException {
+    private IClass compileGet2(Java.MethodInvocation mi) throws CompileException {
         IClass.IMethod iMethod = this.findIMethod(mi);
 
         IClass targetType;
@@ -2539,15 +2607,7 @@ public class UnitCompiler {
                 targetType = this.getType(this.toTypeOrCE(mi.optionalTarget));
             } else
             {
-                Java.Rvalue targetValue = this.toRvalueOrCE(mi.optionalTarget);
-
-                // TODO: Wrapper methods for private methods of enclosing / enclosed types.
-                if (
-                    this.getType(targetValue) != iMethod.getDeclaringIClass() &&
-                    iMethod.getAccess() == Access.PRIVATE
-                ) this.compileError("Invocation of private methods of enclosing or enclosed type NYI; please change the access of method \"" + iMethod.getName() + "()\" from \"private\" to \"/*private*/\"", mi.getLocation());
-
-                targetType = this.compileGetValue(targetValue);
+                targetType = this.compileGetValue(this.toRvalueOrCE(mi.optionalTarget));
             }
             if (iMethod.isStatic()) {
                 if (!staticContext) {
@@ -2586,23 +2646,42 @@ public class UnitCompiler {
             this.writeByte(mi, count);
             this.writeByte(mi, 0);
         } else {
-            byte opcode = (
-                iMethod.isStatic()                    ? Opcode.INVOKESTATIC :
-                iMethod.getAccess() == Access.PRIVATE ? Opcode.INVOKESPECIAL :
-                Opcode.INVOKEVIRTUAL
-            );
-            this.writeOpcode(mi, opcode);
-            if (opcode != Opcode.INVOKEVIRTUAL) targetType = iMethod.getDeclaringIClass();
-            this.writeConstantMethodrefInfo(
-                mi,                         // locatable
-                targetType.getDescriptor(), // classFD
-                iMethod.getName(),          // methodName
-                iMethod.getDescriptor()     // methodMD
-            );
+            if (!iMethod.isStatic() && iMethod.getAccess() == Access.PRIVATE) {
+
+                // In order to make a non-static private method invocable for enclosing types,
+                // enclosed types and types enclosed by the same type, "compile(FunctionDeclarator)"
+                // modifies it on-the-fly as follows:
+                //  + Access is changed from PRIVATE to PACKAGE
+                //  + The name is appended with "$"
+                //  + It is made static
+                //  + A parameter of type "declaring class" is prepended to the signature
+                // Hence, the invocation of such a method must be modified accordingly.
+                this.writeOpcode(mi, Opcode.INVOKESTATIC);
+                this.writeConstantMethodrefInfo(
+                    mi,                                           // locatable
+                    iMethod.getDeclaringIClass().getDescriptor(), // classFD
+                    iMethod.getName() + '$',                      // methodName
+                    MethodDescriptor.prependParameter(            // methodMD
+                        iMethod.getDescriptor(),
+                        iMethod.getDeclaringIClass().getDescriptor()
+                    )
+                );
+            } else
+            {
+                byte opcode = iMethod.isStatic() ? Opcode.INVOKESTATIC : Opcode.INVOKEVIRTUAL;
+                this.writeOpcode(mi, opcode);
+                if (opcode != Opcode.INVOKEVIRTUAL) targetType = iMethod.getDeclaringIClass();
+                this.writeConstantMethodrefInfo(
+                    mi,                         // locatable
+                    targetType.getDescriptor(), // classFD
+                    iMethod.getName(),          // methodName
+                    iMethod.getDescriptor()     // methodMD
+                );
+            }
         }
         return iMethod.getReturnType();
     }
-    /*private*/ IClass compileGet2(Java.SuperclassMethodInvocation scmi) throws CompileException {
+    private IClass compileGet2(Java.SuperclassMethodInvocation scmi) throws CompileException {
         IClass.IMethod iMethod = this.findIMethod(scmi);
 
         Java.Scope s;
@@ -2636,7 +2715,7 @@ public class UnitCompiler {
         );
         return iMethod.getReturnType();
     }
-    /*private*/ IClass compileGet2(Java.NewClassInstance nci) throws CompileException {
+    private IClass compileGet2(Java.NewClassInstance nci) throws CompileException {
         if (nci.iClass == null) nci.iClass = this.getType(nci.type);
 
         this.writeOpcode(nci, Opcode.NEW);
@@ -2706,7 +2785,7 @@ public class UnitCompiler {
         );
         return nci.iClass;
     }
-    /*private*/ IClass compileGet2(Java.NewAnonymousClassInstance naci) throws CompileException {
+    private IClass compileGet2(Java.NewAnonymousClassInstance naci) throws CompileException {
 
         // Find constructors.
         Java.AnonymousClassDeclaration acd = naci.anonymousClassDeclaration;
@@ -2818,12 +2897,12 @@ public class UnitCompiler {
         );
         return this.resolve(naci.anonymousClassDeclaration);
     }
-    /*private*/ IClass compileGet2(Java.ParameterAccess pa) throws CompileException {
+    private IClass compileGet2(Java.ParameterAccess pa) throws CompileException {
         Java.LocalVariable lv = this.getLocalVariable(pa.formalParameter);
         this.load((Java.Located) pa, lv);
         return lv.type;
     }
-    /*private*/ IClass compileGet2(Java.NewArray na) throws CompileException {
+    private IClass compileGet2(Java.NewArray na) throws CompileException {
         for (int i = 0; i < na.dimExprs.length; ++i) {
             IClass dimType = this.compileGetValue(na.dimExprs[i]);
             if (dimType != IClass.INT && this.unaryNumericPromotion(
@@ -2839,12 +2918,12 @@ public class UnitCompiler {
             this.getType(na.type) // componentType
         );
     }
-    /*private*/ IClass compileGet2(Java.NewInitializedArray nia) throws CompileException {
+    private IClass compileGet2(Java.NewInitializedArray nia) throws CompileException {
         IClass at = this.getType(nia.arrayType);
         this.compileGetValue(nia.arrayInitializer, at);
         return at;
     }
-    /*private*/ void compileGetValue(Java.ArrayInitializer ai, IClass arrayType) throws CompileException {
+    private void compileGetValue(Java.ArrayInitializer ai, IClass arrayType) throws CompileException {
         if (!arrayType.isArray()) this.compileError("Array initializer not allowed for non-array type \"" + arrayType.toString() + "\"");
         IClass ct = arrayType.getComponentType();
 
@@ -2878,14 +2957,14 @@ public class UnitCompiler {
             this.writeOpcode(ai, Opcode.IASTORE + UnitCompiler.ilfdabcs(ct));
         }
     }
-    /*private*/ IClass compileGet2(Java.Literal l) throws CompileException {
+    private IClass compileGet2(Java.Literal l) throws CompileException {
         if (
             l.value == Scanner.MAGIC_INTEGER ||
             l.value == Scanner.MAGIC_LONG
         ) this.compileError("This literal value may only appear in a negated context", l.getLocation());
         return this.pushConstant((Java.Located) l, l.value == null ? Java.Rvalue.CONSTANT_VALUE_NULL : l.value);
     }
-    /*private*/ IClass compileGet2(Java.ConstantValue cv) {
+    private IClass compileGet2(Java.ConstantValue cv) {
         return this.pushConstant((Java.Located) cv, cv.constantValue);
     }
 
@@ -2966,16 +3045,16 @@ public class UnitCompiler {
             throw (CompileException) e.getDelegate();
         }
     }
-    /*private*/ Object getConstantValue2(Java.Rvalue rv) {
+    private Object getConstantValue2(Java.Rvalue rv) {
         return null;
     }
-    /*private*/ Object getConstantValue2(Java.AmbiguousName an) throws CompileException {
+    private Object getConstantValue2(Java.AmbiguousName an) throws CompileException {
         return this.getConstantValue(this.toRvalueOrCE(this.reclassify(an)));
     }
-    /*private*/ Object getConstantValue2(Java.FieldAccess fa) throws CompileException {
+    private Object getConstantValue2(Java.FieldAccess fa) throws CompileException {
         return fa.field.getConstantValue();
     }
-    /*private*/ Object getConstantValue2(Java.UnaryOperation uo) throws CompileException {
+    private Object getConstantValue2(Java.UnaryOperation uo) throws CompileException {
         if (uo.operator.equals("+")) return this.getConstantValue(uo.operand);
         if (uo.operator.equals("-")) return this.getNegatedConstantValue(uo.operand);
         if (uo.operator.equals("!")) {
@@ -2986,7 +3065,7 @@ public class UnitCompiler {
         }
         return null;
     }
-    /*private*/ Object getConstantValue2(Java.BinaryOperation bo) throws CompileException {
+    private Object getConstantValue2(Java.BinaryOperation bo) throws CompileException {
 
         // null == null
         // null != null
@@ -3105,7 +3184,7 @@ public class UnitCompiler {
 
         return null;
     }
-    /*private*/ Object getConstantValue2(Java.Cast c) throws CompileException {
+    private Object getConstantValue2(Java.Cast c) throws CompileException {
         Object cv = this.getConstantValue(c.value);
         if (cv == null) return null;
 
@@ -3121,17 +3200,17 @@ public class UnitCompiler {
 
         return null;
     }
-    /*private*/ Object getConstantValue2(Java.ParenthesizedExpression pe) throws CompileException {
+    private Object getConstantValue2(Java.ParenthesizedExpression pe) throws CompileException {
         return this.getConstantValue(pe.value);
     }
-    /*private*/ Object getConstantValue2(Java.Literal l) throws CompileException {
+    private Object getConstantValue2(Java.Literal l) throws CompileException {
         if (
             l.value == Scanner.MAGIC_INTEGER ||
             l.value == Scanner.MAGIC_LONG
         ) this.compileError("This literal value may only appear in a negated context", l.getLocation());
         return l.value == null ? Java.Rvalue.CONSTANT_VALUE_NULL : l.value;
     }
-    /*private*/ Object getConstantValue2(Java.ConstantValue cv) {
+    private Object getConstantValue2(Java.ConstantValue cv) {
         return cv.constantValue;
     }
 
@@ -3181,20 +3260,20 @@ public class UnitCompiler {
             throw (CompileException) e.getDelegate();
         }
     }
-    /*private*/ Object getNegatedConstantValue2(Java.Rvalue rv) {
+    private Object getNegatedConstantValue2(Java.Rvalue rv) {
         return null;
     }
-    /*private*/ Object getNegatedConstantValue2(Java.UnaryOperation uo) throws CompileException {
+    private Object getNegatedConstantValue2(Java.UnaryOperation uo) throws CompileException {
         return (
             uo.operator.equals("+") ? this.getNegatedConstantValue(uo.operand) :
             uo.operator.equals("-") ? this.getConstantValue(uo.operand) :
             null
         );
     }
-    /*private*/ Object getNegatedConstantValue2(Java.ParenthesizedExpression pe) throws CompileException {
+    private Object getNegatedConstantValue2(Java.ParenthesizedExpression pe) throws CompileException {
         return this.getNegatedConstantValue(pe.value);
     }
-    /*private*/ Object getNegatedConstantValue2(Java.Literal l) throws CompileException {
+    private Object getNegatedConstantValue2(Java.Literal l) throws CompileException {
         if (l.value instanceof Integer) return new Integer(-((Integer) l.value).intValue()   );
         if (l.value instanceof Long   ) return new Long   (-((Long   ) l.value).longValue()  );
         if (l.value instanceof Float  ) return new Float  (-((Float  ) l.value).floatValue() );
@@ -3350,17 +3429,17 @@ public class UnitCompiler {
             throw (CompileException) e.getDelegate();
         }
     }
-    /*private*/ void compileSet2(Java.AmbiguousName an) throws CompileException {
+    private void compileSet2(Java.AmbiguousName an) throws CompileException {
         this.compileSet(this.toLvalueOrCE(this.reclassify(an)));
     }
-    /*private*/ void compileSet2(Java.LocalVariableAccess lva) {
+    private void compileSet2(Java.LocalVariableAccess lva) {
         this.store(
             (Java.Located) lva,
             lva.localVariable.type,
             lva.localVariable
         );
     }
-    /*private*/ void compileSet2(Java.FieldAccess fa) throws CompileException {
+    private void compileSet2(Java.FieldAccess fa) throws CompileException {
         this.checkAccessible(fa.field, fa.getEnclosingBlockStatement());
         this.writeOpcode(fa, (
             fa.field.isStatic() ?
@@ -3374,20 +3453,20 @@ public class UnitCompiler {
             fa.field.getDescriptor()                       // fieldFD
         );
     }
-    /*private*/ void compileSet2(Java.ArrayAccessExpression aae) throws CompileException {
+    private void compileSet2(Java.ArrayAccessExpression aae) throws CompileException {
         this.writeOpcode(aae, Opcode.IASTORE + UnitCompiler.ilfdabcs(this.getType(aae)));
     }
-    /*private*/ void compileSet2(Java.FieldAccessExpression fae) throws CompileException {
+    private void compileSet2(Java.FieldAccessExpression fae) throws CompileException {
         this.determineValue(fae);
         this.compileSet(this.toLvalueOrCE(fae.value));
     }
-    /*private*/ void compileSet2(Java.ParenthesizedExpression pe) throws CompileException {
+    private void compileSet2(Java.ParenthesizedExpression pe) throws CompileException {
         this.compileSet(this.toLvalueOrCE(pe.value));
     }
 
     // ---------------- Atom.getType() ----------------
 
-    /*private*/ IClass getType(Java.Atom a) throws CompileException {
+    private IClass getType(Java.Atom a) throws CompileException {
         final IClass[] res = new IClass[1];
         Visitor.AtomVisitor av = new Visitor.AtomVisitor() {
             public void visitPackage                       (Java.Package                        p   ) { try { res[0] = UnitCompiler.this.getType2(p   ); } catch (CompileException e) { throw new TunnelException(e); } }
@@ -3433,8 +3512,8 @@ public class UnitCompiler {
             throw (CompileException) e.getDelegate();
         }
     }
-    /*private*/ IClass getType2(Java.SimpleType st) { return st.iClass; }
-    /*private*/ IClass getType2(Java.BasicType bt) {
+    private IClass getType2(Java.SimpleType st) { return st.iClass; }
+    private IClass getType2(Java.BasicType bt) {
         switch (bt.index) {
             case Java.BasicType.VOID:    return IClass.VOID;
             case Java.BasicType.BYTE:    return IClass.BYTE;
@@ -3448,7 +3527,7 @@ public class UnitCompiler {
             default: throw new RuntimeException("Invalid index " + bt.index);
         }
     }
-    /*private*/ IClass getType2(Java.ReferenceType rt) throws CompileException {
+    private IClass getType2(Java.ReferenceType rt) throws CompileException {
         Java.TypeDeclaration scopeTypeDeclaration = null;
         Java.CompilationUnit scopeCompilationUnit;
         for (Java.Scope s = rt.getEnclosingScope();; s = s.getEnclosingScope()) {
@@ -3573,57 +3652,57 @@ public class UnitCompiler {
             return this.iClassLoader.OBJECT;
         }
     }
-    /*private*/ IClass getType2(Java.RvalueMemberType rvmt) throws CompileException {
+    private IClass getType2(Java.RvalueMemberType rvmt) throws CompileException {
         IClass rvt = this.getType(rvmt.rvalue);
         IClass memberType = this.findMemberType(rvt, rvmt.identifier, rvmt.getLocation());
         if (memberType == null) this.compileError("\"" + rvt + "\" has no member type \"" + rvmt.identifier + "\"", rvmt.getLocation());
         return memberType;
     }
-    /*private*/ IClass getType2(Java.ArrayType at) throws CompileException {
+    private IClass getType2(Java.ArrayType at) throws CompileException {
         return this.getArrayType(this.getType(at.componentType));
     }
-    /*private*/ IClass getType2(Java.AmbiguousName an) throws CompileException {
+    private IClass getType2(Java.AmbiguousName an) throws CompileException {
         return this.getType(this.reclassify(an));
     }
-    /*private*/ IClass getType2(Java.Package p) throws CompileException {
+    private IClass getType2(Java.Package p) throws CompileException {
         this.compileError("Unknown variable or type \"" + p.name + "\"", p.getLocation());
         return this.iClassLoader.OBJECT;
     }
-    /*private*/ IClass getType2(Java.LocalVariableAccess lva) {
+    private IClass getType2(Java.LocalVariableAccess lva) {
         return lva.localVariable.type;
     }
-    /*private*/ IClass getType2(Java.FieldAccess fa) throws CompileException {
+    private IClass getType2(Java.FieldAccess fa) throws CompileException {
         return fa.field.getType();
     }
-    /*private*/ IClass getType2(Java.ArrayLength al) {
+    private IClass getType2(Java.ArrayLength al) {
         return IClass.INT;
     }
-    /*private*/ IClass getType2(Java.ThisReference tr) throws CompileException {
+    private IClass getType2(Java.ThisReference tr) throws CompileException {
         return this.getIClass(tr);
     }
-    /*private*/ IClass getType2(Java.QualifiedThisReference qtr) throws CompileException {
+    private IClass getType2(Java.QualifiedThisReference qtr) throws CompileException {
         return this.getTargetIClass(qtr);
     }
-    /*private*/ IClass getType2(Java.ClassLiteral cl) {
+    private IClass getType2(Java.ClassLiteral cl) {
         return this.iClassLoader.CLASS;
     }
-    /*private*/ IClass getType2(Java.Assignment a) throws CompileException {
+    private IClass getType2(Java.Assignment a) throws CompileException {
         return this.getType(a.lhs);
     }
-    /*private*/ IClass getType2(Java.ConditionalExpression ce) throws CompileException {
+    private IClass getType2(Java.ConditionalExpression ce) throws CompileException {
         return this.getType(ce.mhs);
     }
-    /*private*/ IClass getType2(Java.Crement c) throws CompileException {
+    private IClass getType2(Java.Crement c) throws CompileException {
         return this.getType(c.operand);
     }
-    /*private*/ IClass getType2(Java.ArrayAccessExpression aae) throws CompileException {
+    private IClass getType2(Java.ArrayAccessExpression aae) throws CompileException {
         return this.getType(aae.lhs).getComponentType();
     }
-    /*private*/ IClass getType2(Java.FieldAccessExpression fae) throws CompileException {
+    private IClass getType2(Java.FieldAccessExpression fae) throws CompileException {
         this.determineValue(fae);
         return this.getType(fae.value);
     }
-    /*private*/ IClass getType2(Java.UnaryOperation uo) throws CompileException {
+    private IClass getType2(Java.UnaryOperation uo) throws CompileException {
         if (uo.operator == "!") return IClass.BOOLEAN;
         if (uo.operator == "+") return this.getType(uo.operand);
         if (
@@ -3634,10 +3713,10 @@ public class UnitCompiler {
         this.compileError("Unexpected operator \"" + uo.operator + "\"", uo.getLocation());
         return IClass.BOOLEAN;
     }
-    /*private*/ IClass getType2(Java.Instanceof io) {
+    private IClass getType2(Java.Instanceof io) {
         return IClass.BOOLEAN;
     }
-    /*private*/ IClass getType2(Java.BinaryOperation bo) throws CompileException {
+    private IClass getType2(Java.BinaryOperation bo) throws CompileException {
         if (
             bo.op == "||" ||
             bo.op == "&&" ||
@@ -3700,42 +3779,42 @@ public class UnitCompiler {
         this.compileError("Unexpected operator \"" + bo.op + "\"", bo.getLocation());
         return this.iClassLoader.OBJECT;
     }
-    /*private*/ IClass getType2(Java.Cast c) throws CompileException {
+    private IClass getType2(Java.Cast c) throws CompileException {
         return this.getType(c.targetType);
     }
-    /*private*/ IClass getType2(Java.ParenthesizedExpression pe) throws CompileException {
+    private IClass getType2(Java.ParenthesizedExpression pe) throws CompileException {
         return this.getType(pe.value);
     }
-    /*private*/ IClass getType2(Java.ConstructorInvocation ci) {
-        throw new RuntimeException();
-    }
-    /*private*/ IClass getType2(Java.MethodInvocation mi) throws CompileException {
+//    private IClass getType2(Java.ConstructorInvocation ci) {
+//        throw new RuntimeException();
+//    }
+    private IClass getType2(Java.MethodInvocation mi) throws CompileException {
         if (mi.iMethod == null) {
             mi.iMethod = this.findIMethod(mi);
         }
         return mi.iMethod.getReturnType();
     }
-    /*private*/ IClass getType2(Java.SuperclassMethodInvocation scmi) throws CompileException {
+    private IClass getType2(Java.SuperclassMethodInvocation scmi) throws CompileException {
         return this.findIMethod(scmi).getReturnType();
     }
-    /*private*/ IClass getType2(Java.NewClassInstance nci) throws CompileException {
+    private IClass getType2(Java.NewClassInstance nci) throws CompileException {
         if (nci.iClass == null) nci.iClass = this.getType(nci.type);
         return nci.iClass;
     }
-    /*private*/ IClass getType2(Java.NewAnonymousClassInstance naci) {
+    private IClass getType2(Java.NewAnonymousClassInstance naci) {
         return this.resolve(naci.anonymousClassDeclaration);
     }
-    /*private*/ IClass getType2(Java.ParameterAccess pa) throws CompileException {
+    private IClass getType2(Java.ParameterAccess pa) throws CompileException {
         return this.getLocalVariable(pa.formalParameter).type;
     }
-    /*private*/ IClass getType2(Java.NewArray na) throws CompileException {
+    private IClass getType2(Java.NewArray na) throws CompileException {
         IClass res = this.getType(na.type);
         return this.getArrayType(res, na.dimExprs.length + na.dims);
     }
-    /*private*/ IClass getType2(Java.NewInitializedArray nia) throws CompileException {
+    private IClass getType2(Java.NewInitializedArray nia) throws CompileException {
         return this.getType(nia.arrayType);
     }
-    /*private*/ IClass getType2(Java.Literal l) {
+    private IClass getType2(Java.Literal l) {
         if (l.value instanceof Integer  ) return IClass.INT;
         if (l.value instanceof Long     ) return IClass.LONG;
         if (l.value instanceof Float    ) return IClass.FLOAT;
@@ -3746,7 +3825,7 @@ public class UnitCompiler {
         if (l.value == null             ) return IClass.VOID;
         throw new RuntimeException();
     }
-    /*private*/ IClass getType2(Java.ConstantValue cv) {
+    private IClass getType2(Java.ConstantValue cv) {
         IClass res = (
             cv.constantValue instanceof Integer            ? IClass.INT     :
             cv.constantValue instanceof Long               ? IClass.LONG    :
@@ -3810,10 +3889,10 @@ public class UnitCompiler {
             throw (CompileException) e.getDelegate();
         }
     }
-    /*private*/ boolean isType2(Java.Atom a) {
+    private boolean isType2(Java.Atom a) {
         return a instanceof Java.Type;
     }
-    /*private*/ boolean isType2(Java.AmbiguousName an) throws CompileException {
+    private boolean isType2(Java.AmbiguousName an) throws CompileException {
         return this.isType(this.reclassify(an));
     }
 
@@ -3859,16 +3938,8 @@ public class UnitCompiler {
 
         // Check whether the member and the context block statement are enclosed by the same
         // top-level type.
-        if (topLevelIClassEnclosingMember == topLevelIClassEnclosingContextBlockStatement) {
-            if (
-                member instanceof IClass.IInvocable
-                && member.getAccess() == Access.PRIVATE
-                && (member instanceof IClass.IConstructor || !((IClass.IMethod) member).isStatic())
-            ) {
-                this.compileError("Compiler limitation: Access to private constructor or non-static method \"" + member + "\" declared in the same enclosing top-level type \"" + topLevelIClassEnclosingContextBlockStatement + "\" not supported. It is recommended to change its declaration from \"private\" to \"/*private*/\".", contextBlockStatement.getLocation());
-            }
-            return;
-        }
+        if (topLevelIClassEnclosingMember == topLevelIClassEnclosingContextBlockStatement) return;
+
         if (member.getAccess() == Access.PRIVATE) {
             this.compileError("Private member \"" + member + "\" cannot be accessed from type \"" + iClassDeclaringContextBlockStatement + "\".", contextBlockStatement.getLocation());
             return;
@@ -3900,7 +3971,7 @@ public class UnitCompiler {
             return;
         }
 
-        // At this point, the member is PROECTEDED accessible.
+        // At this point, the member is PROTECTED accessible.
 
         // Check whether the class declaring the context block statement is a subclass of the
         // class declaring the member.
@@ -5350,7 +5421,7 @@ public class UnitCompiler {
         return null;
     }
 
-    /*private*/ IClass resolve(final Java.TypeDeclaration td) {
+    private IClass resolve(final Java.TypeDeclaration td) {
         final Java.AbstractTypeDeclaration atd = (Java.AbstractTypeDeclaration) td;
         if (atd.resolvedType == null) atd.resolvedType = new IClass() {
             protected IClass.IMethod[] getDeclaredIMethods2() {
@@ -5628,7 +5699,7 @@ public class UnitCompiler {
         return tr.iClass;
     }
 
-    /*private*/ IClass getReturnType(Java.FunctionDeclarator fd) throws CompileException {
+    private IClass getReturnType(Java.FunctionDeclarator fd) throws CompileException {
         if (fd.returnType == null) {
             fd.returnType = this.getType(fd.type);
         }
@@ -6085,7 +6156,7 @@ public class UnitCompiler {
     /**
      * Implements "assignment conversion" (JLS2 5.2) on a constant value.
      */
-    /*private*/ Object assignmentConversion(
+    private Object assignmentConversion(
         Java.Located located,
         Object       value,
         IClass       targetType
@@ -6775,7 +6846,7 @@ public class UnitCompiler {
     private IClass getArrayType(IClass type) {
         return this.iClassLoader.loadArrayIClass(type);
     }
-    /*private*/ IClass getArrayType(IClass type, int brackets) {
+    private IClass getArrayType(IClass type, int brackets) {
         if (brackets == 0) return type;
         for (int i = 0; i < brackets; ++i) type = this.iClassLoader.loadArrayIClass(type);
         return type;
@@ -6884,7 +6955,7 @@ public class UnitCompiler {
      * @param message The message to report
      * @param optionalLocation The location to report
      */
-    /*private*/ void compileError(String message, Location optionalLocation) throws CompileException {
+    private void compileError(String message, Location optionalLocation) throws CompileException {
         if (this.optionalCompileErrorHandler != null) {
             this.optionalCompileErrorHandler.handleError(message, optionalLocation);
         } else {
