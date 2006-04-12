@@ -458,7 +458,7 @@ public class Disassembler {
             final short constantValueIndex = dis.readShort();
             return new AttributeInfo() {
                 public void print() {
-                    out.print("\"ConstantValue\" attribute " + constantValueIndex + " (");
+                    out.print("ConstantValue " + constantValueIndex + " (");
                     out.indent(); {
                         Disassembler.printConstantPoolEntry(constantValueIndex);
                     } out.unindent();
@@ -474,9 +474,8 @@ public class Disassembler {
             final AttributeInfo[]       attributes     = readAttributes(dis);
             return new AttributeInfo() {
                 public void print() {
-                    out.println("{");
+                    out.println("Code {");
                     out.indent(); {
-                        out.println("attribute_name = \"Code\"");
                         out.println("max_stack = " + maxStack);
                         out.println("max_locals = " + maxLocals);
 
@@ -527,9 +526,8 @@ public class Disassembler {
             final short[] exceptionIndexTable = readShortArray(dis, dis.readShort());
             return new AttributeInfo() {
                 public void print() {
-                    out.println("{");
+                    out.println("Exceptions {");
                     out.indent(); {
-                        out.println("attribute_name = \"Exceptions\"");
                         out.println("exception_index_table = {");
                         out.indent(); {
                             for (short i = 0; i < exceptionIndexTable.length; ++i) {
@@ -549,9 +547,8 @@ public class Disassembler {
             final short[] data = readShortArray(dis, 4 * dis.readShort());
             return new AttributeInfo() {
                 public void print() {
-                    out.println("{");
+                    out.println("InnerClasses {");
                     out.indent(); {
-                        out.println("attribute_name = \"InnerClasses\"");
                         out.println("classes = {");
                         out.indent(); {
                             for (int i = 0; i < data.length; i += 4) {
@@ -590,7 +587,7 @@ public class Disassembler {
         if (attributeName.equals("Synthetic")) {
             return new AttributeInfo() {
                 public void print() {
-                    out.print("attribute_name = \"Synthetic\"");
+                    out.print("Synthetic");
                 }
             };
         } else
@@ -598,9 +595,8 @@ public class Disassembler {
             final short sourceFileIndex = dis.readShort();
             return new AttributeInfo() {
                 public void print() {
-                    out.println("{");
+                    out.println("SourceFile {");
                     out.indent(); {
-                        out.println("attribute_name = \"SourceFile\"");
                         Disassembler.printConstantPoolEntry("sourcefile_index", sourceFileIndex);
                         out.println();
                     } out.unindent();
@@ -612,9 +608,8 @@ public class Disassembler {
             final short[] data = readShortArray(dis, 2 * dis.readShort());
             return new AttributeInfo() {
                 public void print() {
-                    out.println("{");
+                    out.println("LineNumberTable {");
                     out.indent(); {
-                        out.println("attribute_name = \"LineNumberTable\"");
                         out.println("line_number_table = {");
                         out.indent(); {
                             for (short i = 0; i < data.length; i += 2) {
@@ -633,7 +628,7 @@ public class Disassembler {
         if (attributeName.equals("Deprecated")) {
             return new AttributeInfo() {
                 public void print() {
-                    out.print("attribute_name = \"Deprecated\"");
+                    out.print("Deprecated");
                 }
             };
         } else
@@ -646,9 +641,8 @@ public class Disassembler {
             }
             return new AttributeInfo() {
                 public void print() {
-                    out.println("{");
+                    out.println(attributeName + " {");
                     out.indent(); {
-                        out.println("attribute_name = \"" + attributeName + "\"");
                         out.print("info = { ");
                         for (int i = 0; i < this.info.length; ++i) {
                             out.print("0x" + Integer.toHexString(0xff & this.info[i]) + ", ");
@@ -667,9 +661,8 @@ public class Disassembler {
     private static class LocalVariableTableAttribute implements AttributeInfo {
         public LocalVariableTableAttribute(short[] data) { this.data = data; }
         public void print() {
-            out.println("{");
+            out.println("LocalVariableTable {");
             out.indent(); {
-                out.println("attribute_name = \"LocalVariableTable\"");
                 out.println("local_variable_table = {");
                 out.indent(); {
                     for (int i = 0; i < this.data.length; i += 5) {
