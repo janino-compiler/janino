@@ -547,7 +547,7 @@ public class Java {
             String               name,
             Type                 optionalExtendedType,
             Type[]               implementedTypes
-        ) throws Parser.ParseException {
+        ) {
             super(
                 location,              // location
                 optionalDocComment,    // optionalDocComment
@@ -590,7 +590,7 @@ public class Java {
             String   name,
             Type     optionalExtendedType,
             Type[]   implementedTypes
-        ) throws Parser.ParseException {
+        ) {
             super(
                 location,               // location
                 optionalDocComment,     // optionalDocComment
@@ -725,7 +725,7 @@ public class Java {
             short                modifiers,
             String               name,
             Type[]               extendedTypes
-        ) throws Parser.ParseException {
+        ) {
             super(
                 location,              // location
                 optionalDocComment,    // optionalDocComment
@@ -1210,7 +1210,7 @@ public class Java {
             statement.setEnclosingScope(this);
         }
         // This one's for some very special compiler trickery...
-        /*private*/ void addButDontEncloseStatement(BlockStatement statement) {
+        void addButDontEncloseStatement(BlockStatement statement) {
             this.statements.add(statement);
         }
         public void addStatements(
@@ -1242,7 +1242,7 @@ public class Java {
          * </pre>
          * The "if" statement notifies its enclosing block by calling this method.
          */
-        /*private*/ void followingStatementsAreDead() {
+        void followingStatementsAreDead() {
             this.keepCompiling = false;
 
             Java.Scope s = this.getEnclosingScope();
