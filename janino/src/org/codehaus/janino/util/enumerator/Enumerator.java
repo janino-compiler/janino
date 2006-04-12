@@ -64,29 +64,38 @@ import java.util.*;
  * </pre>
  * 
  * @see <a href="http://java.sun.com/developer/Books/effectivejava/Chapter5.pdf">Effective Java, Item 21</a>
+ * @see org.codehaus.janino.util.enumerator.EnumeratorSet
  */
 public abstract class Enumerator {
     /*package*/ final String name;
-    private static final Map instances = new HashMap(); // Class enumeratorClass => String name => Enumerator
+
+    /**
+     * Class enumeratorClass => Map: String name => Enumerator
+     */
+    private static final Map instances = Collections.synchronizedMap(new HashMap());
 
     /**
      * Initialize the enumerator to the given value.
      */
     protected Enumerator(String name) {
+        if (name == null) throw new NullPointerException();
         this.name = name;
 
         Enumerator.getInstances(this.getClass()).put(name, this);
     }
 
     /**
-     * Check the object's value
+     * Equality is reference identity.
      */
-    public boolean equals(Object that) {
+    public final boolean equals(Object that) {
         return this == that;
     }
 
-    public int hashCode() {
-        return this.name.hashCode();
+    /**
+     * Enforce {@link Object}'s notion of {@link Object#hashCode()}.
+     */
+    public final int hashCode() {
+        return super.hashCode();
     }
 
     /**
@@ -96,6 +105,8 @@ public abstract class Enumerator {
         Map m = (Map) Enumerator.instances.get(enumeratorClass);
         if (m != null) return m;
 
+        // The map need not be synchronized because it is modified only during initialization
+        // of the Enumerator.
         m = new HashMap();
         Enumerator.instances.put(enumeratorClass, m);
         return m;
@@ -124,11 +135,7 @@ public abstract class Enumerator {
     }
 
     /**
-     * Convert an {@link Enumerator} into a clear-text string.
-     * <p>
-     * Examine the object through reflection for <code>public static final</code>
-     * fields that have the same type as this object, and return the name of the fields who's value
-     * matches the object's value.
+     * Returns the <code>name</code> passed to {@link #Enumerator(String)}.
      */
     public String toString() {
         return this.name;

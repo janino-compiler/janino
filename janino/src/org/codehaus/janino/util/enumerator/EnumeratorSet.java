@@ -171,7 +171,9 @@ public class EnumeratorSet {
     }
 
     /**
-     * Remove the given value from the set.
+     * If this {@link EnumeratorSet} contains the given <code>value</code>, return an
+     * {@link EnumeratorSet} that lacks the <code>value</code>. Otherwise, return this
+     * {@link EnumeratorSet}.
      * 
      * @return the reduced set
      * 
@@ -186,9 +188,9 @@ public class EnumeratorSet {
     }
 
     /**
-     * Remove the values of the given set from this set.
+     * Return this {@link EnumeratorSet} less <code>that</code> {@link EnumeratorSet}.
      * 
-     * @return true if this set changed as a result of the call
+     * @return the reduced set
      * 
      * @throws EnumeratorSetTypeException if this set was constructed for a different {@link Enumerator}-derived type
      */
