@@ -74,7 +74,7 @@ public abstract class IClass {
         public boolean           isInterface()               { return false; }
         public boolean           isPrimitive()               { return true; }
         public boolean           isPrimitiveNumeric()        { return Descriptor.isPrimitiveNumeric(this.fieldDescriptor); }
-        public boolean           isPublic()                  { return true; }
+        public Access            getAccess()                 { return Access.PUBLIC; }
 }
 
     /**
@@ -244,10 +244,7 @@ public abstract class IClass {
     private IClass superclass = null;
     protected abstract IClass getSuperclass2() throws CompileException;
 
-    /**
-     * Whether the class may be accessed from outside its package (JVMS 4.1 access_flags)
-     */
-    public abstract boolean isPublic();
+    public abstract Access getAccess();
 
     /**
      * Whether subclassing is allowed (JVMS 4.1 access_flags)
@@ -460,11 +457,30 @@ public abstract class IClass {
     }
 
     /**
-     * Create an {@link IClass} that represents an array of the given component type.
-     * @param componentType
+     * Get an {@link IClass} that represents an n-dimensional array of this type.
+     *
+     * @param n dimension count
      * @param objectType Required because the superclass of an array class is {@link Object} by definition
      */
-    public static IClass createArrayIClass(final IClass componentType, final IClass objectType) {
+    public IClass getArrayIClass(int n, IClass objectType) {
+        IClass result = this;
+        for (int i = 0; i < n; ++i) result = result.getArrayIClass(objectType);
+        return result;
+    }
+
+    /**
+     * Get an {@link IClass} that represents an array of this type.
+     *
+     * @param objectType Required because the superclass of an array class is {@link Object} by definition
+     */
+    public IClass getArrayIClass(IClass objectType) {
+        if (this.arrayIClass == null) this.arrayIClass = this.getArrayIClass2(objectType);
+        return this.arrayIClass;
+    }
+    private IClass arrayIClass = null;
+
+    private IClass getArrayIClass2(final IClass objectType) {
+        final IClass componentType = this;
         return new IClass() {
             public IClass.IConstructor[] getDeclaredIConstructors2() { return new IClass.IConstructor[0]; }
             public IClass.IMethod[]      getDeclaredIMethods2() { return new IClass.IMethod[0]; }
@@ -475,7 +491,7 @@ public abstract class IClass {
             public IClass                getSuperclass2() { return objectType; }
             public IClass[]              getInterfaces2() { return new IClass[0]; }
             public String                getDescriptor2() { return '[' + componentType.getDescriptor(); }
-            public boolean               isPublic() { return componentType.isPublic(); }
+            public Access                getAccess() { return componentType.getAccess(); }
             public boolean               isFinal() { return true; }
             public boolean               isInterface() { return false; }
             public boolean               isAbstract() { return false; }

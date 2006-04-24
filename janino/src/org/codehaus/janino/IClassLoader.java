@@ -121,12 +121,8 @@ public abstract class IClassLoader {
                 );
                 if (componentIClass == null) return null;
 
-                // This may have defined the array type as a side effect.
-                IClass arrayIClass = (IClass) this.loadedIClasses.get(fieldDescriptor);
-                if (arrayIClass != null) return arrayIClass;
-
-                // Now create and define the array type.
-                arrayIClass = IClass.createArrayIClass(componentIClass, this.OBJECT);
+                // Now get and define the array type.
+                IClass arrayIClass = componentIClass.getArrayIClass(this.OBJECT);
                 this.loadedIClasses.put(fieldDescriptor, arrayIClass);
                 return arrayIClass;
             }
@@ -145,17 +141,6 @@ public abstract class IClassLoader {
 
         if (IClassLoader.DEBUG) System.out.println(this + ": Loaded type \"" + fieldDescriptor + "\" as " + result);
 
-        return result;
-    }
-
-    /**
-     * Returns the type of an array of the class, interface, array or
-     * primitive.<br>
-     * Returns "null" for "void".
-     */
-    public final IClass loadArrayIClass(IClass componentType) {
-        IClass result = this.loadIClass('[' + componentType.getDescriptor());
-        if (result == null) throw new RuntimeException("S.N.O.: Cannot determine array type of \"" + componentType.toString() + "\"");
         return result;
     }
 
