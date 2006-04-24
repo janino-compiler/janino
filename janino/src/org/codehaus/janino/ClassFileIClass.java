@@ -196,8 +196,8 @@ public class ClassFileIClass extends IClass {
         }
     }
 
-    public boolean isPublic() {
-        return (this.accessFlags & Mod.PUBLIC) != 0;
+    public Access getAccess() {
+        return ClassFileIClass.accessFlags2Access(this.accessFlags);
     }
 
     public boolean isFinal() {
@@ -278,7 +278,6 @@ public class ClassFileIClass extends IClass {
     }
 
     /**
-     * 
      * @param index Index of the CONSTANT_Class_info to resolve (JVMS 4.4.1)
      */
     private IClass resolveClass(short index) throws ClassNotFoundException {
@@ -315,6 +314,7 @@ public class ClassFileIClass extends IClass {
     /**
      * Turn a {@link ClassFile.MethodInfo} into an {@link IInvocable}. This includes the checking and the
      * removal of the magic first parameter of an inner class constructor.
+     *
      * @param methodInfo
      * @throws ClassNotFoundException
      */
@@ -347,13 +347,7 @@ public class ClassFileIClass extends IClass {
         final IClass thrownExceptions[] = tes == null ? new IClass[0] : tes;
 
         // Determine access.
-        short af = methodInfo.getAccessFlags();
-        final Access access = (
-            (af & Mod.PUBLIC   ) != 0 ? Access.PUBLIC    :
-            (af & Mod.PROTECTED) != 0 ? Access.PROTECTED :
-            (af & Mod.PRIVATE  ) != 0 ? Access.PRIVATE   :
-            Access.DEFAULT
-        );
+        final Access access = ClassFileIClass.accessFlags2Access(methodInfo.getAccessFlags());
 
         if (name.equals("<init>")) {
             result = new IClass.IConstructor() {
@@ -431,13 +425,7 @@ public class ClassFileIClass extends IClass {
         final Object optionalConstantValue = ocv;
 
         // Determine access.
-        short af = fieldInfo.getAccessFlags();
-        final Access access = (
-            (af & Mod.PUBLIC   ) != 0 ? Access.PUBLIC    :
-            (af & Mod.PROTECTED) != 0 ? Access.PROTECTED :
-            (af & Mod.PRIVATE  ) != 0 ? Access.PRIVATE   :
-            Access.DEFAULT
-        );
+        final Access access = ClassFileIClass.accessFlags2Access(fieldInfo.getAccessFlags());
 
         result = new IField() {
             public Object  getConstantValue() throws CompileException { return optionalConstantValue; }
@@ -448,5 +436,14 @@ public class ClassFileIClass extends IClass {
         };
         this.resolvedFields.put(fieldInfo, result);
         return result;
+    }
+
+    private static Access accessFlags2Access(short accessFlags) {
+        return (
+            (accessFlags & Mod.PUBLIC   ) != 0 ? Access.PUBLIC    :
+            (accessFlags & Mod.PROTECTED) != 0 ? Access.PROTECTED :
+            (accessFlags & Mod.PRIVATE  ) != 0 ? Access.PRIVATE   :
+            Access.DEFAULT
+        );
     }
 }
