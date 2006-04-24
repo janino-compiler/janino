@@ -43,8 +43,14 @@ import org.codehaus.janino.util.enumerator.Enumerator;
  * A parser for the Java<sup>TM</sup> programming language.
  */
 public class Parser {
+    private final Scanner scanner;
+
     public Parser(Scanner scanner) {
         this.scanner = scanner;
+    }
+
+    public Scanner getScanner() {
+    	return this.scanner;
     }
 
     /**
@@ -2458,22 +2464,16 @@ public class Parser {
     private WarningHandler optionalWarningHandler = null;
 
     /**
-     * Issues a warning with the given message an location an returns. This is done through
+     * Issues a warning with the given message and location and returns. This is done through
      * a {@link WarningHandler} that was installed through
      * {@link #setWarningHandler(WarningHandler)}.
      * <p>
      * The <code>handle</code> argument qulifies the warning and is typically used by
      * the {@link WarningHandler} to suppress individual warnings.
-     *
-     * @param handle
-     * @param message
-     * @param optionalLocation
      */
     private void warning(String handle, String message, Location optionalLocation) {
         if (this.optionalWarningHandler != null) this.optionalWarningHandler.handleWarning(handle, message, optionalLocation);
     }
-
-    private final Scanner scanner;
 
     /**
      * An exception that reflects an error during parsing.
