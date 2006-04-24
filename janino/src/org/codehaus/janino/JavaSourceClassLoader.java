@@ -249,7 +249,7 @@ public class JavaSourceClassLoader extends ClassLoader {
     }
 
     /**
-     * @see UnitCompiler#setCompileErrorHandler(ErrorHandler)
+     * @see UnitCompiler#setCompileErrorHandler
      */
     public void setCompileErrorHandler(UnitCompiler.ErrorHandler optionalCompileErrorHandler) {
         this.iClassLoader.setCompileErrorHandler(optionalCompileErrorHandler);
@@ -257,7 +257,7 @@ public class JavaSourceClassLoader extends ClassLoader {
 
     /**
      * @see Parser#setWarningHandler(WarningHandler)
-     * @see UnitCompiler#setCompileErrorHandler(ErrorHandler)
+     * @see UnitCompiler#setCompileErrorHandler
      */
     public void setWarningHandler(WarningHandler optionalWarningHandler) {
         this.iClassLoader.setWarningHandler(optionalWarningHandler);
@@ -343,7 +343,7 @@ public class JavaSourceClassLoader extends ClassLoader {
      * or {@link java.lang.ClassLoader#defineClass(java.lang.String, byte[], int, int, java.security.ProtectionDomain)},
      * depending on whether or not a {@link ProtectionDomainFactory} was set.
      *
-     * @see #setProtectionDomainFactory(ProtectionDomainFactory)
+     * @see #setProtectionDomainFactory
      */
     protected Class defineBytecode(String className, byte[] ba) throws ClassFormatError {
         if (this.protectionDomainFactory == null) {
