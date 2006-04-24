@@ -280,7 +280,9 @@ public class Scanner {
      * @return <code>null</code> if the next token is not preceeded by a doc comment
      */
     public String doc() {
-        return this.docComment;
+        String s = this.docComment;
+        this.docComment = null;
+        return s;
     }
 
     public abstract class Token {
@@ -504,7 +506,10 @@ public class Scanner {
     }
 
     private Token internalRead() throws ScanException, IOException {
-        this.docComment = null;
+    	if (this.docComment != null) {
+    		this.warning("MDC", "Misplaced doc comment", this.nextToken.getLocation());
+    		this.docComment = null;
+    	}
 
         // Skip whitespace and process comments.
         int          state = 0;
@@ -580,7 +585,7 @@ public class Scanner {
                     state = 0;
                 } else
                 {
-//                  if (this.docComment != null) warning("More than one doc comment"); 
+                    if (this.docComment != null) this.warning("MDC", "Multiple doc comments", new Location(this.optionalFileName, this.nextCharLineNumber, this.nextCharColumnNumber)); 
                     dcsb = new StringBuffer();
                     dcsb.append((char) this.nextChar);
                     state = (
@@ -1203,5 +1208,35 @@ public class Scanner {
         }
 
         private final Location optionalLocation;
+    }
+
+    /**
+     * By default, warnings are discarded, but an application my install a
+     * {@link WarningHandler}.
+     * <p>
+     * Notice that there is no <code>Scanner.setErrorHandler()</code> method, but scan errors
+     * always throw a {@link ScanException}. The reason being is that there is no reasonable
+     * way to recover from scan errors and continue scanning, so there is no need to install
+     * a custom scan error handler.
+     *
+     * @param optionalWarningHandler <code>null</code> to indicate that no warnings be issued
+     */
+    public void setWarningHandler(WarningHandler optionalWarningHandler) {
+        this.optionalWarningHandler = optionalWarningHandler;
+    }
+
+    // Used for elaborate warning handling.
+    private WarningHandler optionalWarningHandler = null;
+
+    /**
+     * Issues a warning with the given message and location and returns. This is done through
+     * a {@link WarningHandler} that was installed through
+     * {@link #setWarningHandler(WarningHandler)}.
+     * <p>
+     * The <code>handle</code> argument qulifies the warning and is typically used by
+     * the {@link WarningHandler} to suppress individual warnings.
+     */
+    private void warning(String handle, String message, Location optionalLocation) {
+        if (this.optionalWarningHandler != null) this.optionalWarningHandler.handleWarning(handle, message, optionalLocation);
     }
 }
