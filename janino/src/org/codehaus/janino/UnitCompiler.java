@@ -728,7 +728,8 @@ public class UnitCompiler {
                 if (cv instanceof Character) {
                     civ = new Integer(((Character) cv).charValue());
                 } else {
-                    throw new RuntimeException();
+                    this.compileError("Value of case label must be a char, byte, short or int constant", rv.getLocation());
+                    civ = new Integer(99);
                 }
 
                 // Store in case label map.
@@ -924,7 +925,7 @@ public class UnitCompiler {
             if (initializer instanceof Java.Rvalue) {
                 Java.Rvalue rvalue = (Java.Rvalue) initializer;
                 IClass initializerType = this.compileGetValue(rvalue);
-                fieldType = this.getArrayType(fieldType, vd.brackets);
+                fieldType = fieldType.getArrayIClass(vd.brackets, this.iClassLoader.OBJECT);
                 this.assignmentConversion(
                     (Java.Located) fd,            // located
                     initializerType,              // sourceType
@@ -1601,7 +1602,7 @@ public class UnitCompiler {
                 resultType,         // sourceType
                 lhsType             // destinationType
             )
-        ) throw new RuntimeException();
+        ) throw new RuntimeException("SNO: \"" + a.operator + "\" reconversion failed");
         this.compileSet(a.lhs);
     }
     private void compile2(Java.Crement c) throws CompileException {
@@ -1642,7 +1643,7 @@ public class UnitCompiler {
                 promotedType,       // sourceType
                 type                // targetType
             )
-        ) throw new RuntimeException();
+        ) throw new RuntimeException("SNO: \"" + c.operator + "\" reconversion failed");
         this.compileSet(c.operand);
     }
     private void compile2(Java.ParenthesizedExpression pe) throws CompileException {
@@ -2096,10 +2097,10 @@ public class UnitCompiler {
     }
     private IClass compileGet2(Java.QualifiedThisReference qtr) throws CompileException {
         this.referenceThis(
-            (Java.Located) qtr,
-            this.getDeclaringClass(qtr),
-            this.getDeclaringTypeBodyDeclaration(qtr),
-            this.getTargetIClass(qtr)
+            (Java.Located) qtr,                        // located
+            this.getDeclaringClass(qtr),               // declaringClass
+            this.getDeclaringTypeBodyDeclaration(qtr), // declaringTypeBodyDeclaration
+            this.getTargetIClass(qtr)                  // targetIClass
         );
         return this.getTargetIClass(qtr);
     }
@@ -2124,7 +2125,7 @@ public class UnitCompiler {
                 iClass == IClass.BOOLEAN ? "Ljava/lang/Boolean;"   :
                 null
             );
-            if (wrapperClassDescriptor == null) throw new RuntimeException();
+            if (wrapperClassDescriptor == null) throw new RuntimeException("SNO: Unidentifiable primitive type \"" + iClass + "\"");
 
             this.writeConstantFieldrefInfo(
                 cl,
@@ -2168,7 +2169,7 @@ public class UnitCompiler {
         if (declaringType instanceof Java.InterfaceDeclaration) {
             statics = ((Java.InterfaceDeclaration) declaringType).constantDeclarations;
         } else {
-            throw new RuntimeException();
+            throw new RuntimeException("SNO: AbstractTypeDeclaration is neither ClassDeclaration nor InterfaceDeclaration");
         }
 
         String className = Descriptor.toClassName(iClass.getDescriptor());
@@ -2231,7 +2232,7 @@ public class UnitCompiler {
                 if (declaringType instanceof Java.InterfaceDeclaration) {
                     ((Java.InterfaceDeclaration) declaringType).addConstantDeclaration(fd);
                 } else {
-                    throw new RuntimeException();
+                    throw new RuntimeException("SNO: AbstractTypeDeclaration is neither ClassDeclaration nor InterfaceDeclaration");
                 }
             }
         }
@@ -2314,7 +2315,7 @@ public class UnitCompiler {
                 resultType,       // sourceType
                 lhsType           // destinationType
             )
-        ) throw new RuntimeException();
+        ) throw new RuntimeException("SNO: \"" + a.operator + "\" reconversion failed");
         this.dupx(
             (Java.Located) a, // located
             lhsType,          // type
@@ -2447,7 +2448,7 @@ public class UnitCompiler {
                 promotedType,       // sourceType
                 type                // targetType
             )
-        ) throw new RuntimeException();
+        ) throw new RuntimeException("SNO: \"" + c.operator + "\" reconversion failed");
         // DUPX cremented operand value.
         if (c.pre) this.dupx((Java.Located) c, type, cs);
         // Set operand.
@@ -2722,9 +2723,14 @@ public class UnitCompiler {
         this.writeConstantClassInfo(nci, nci.iClass.getDescriptor());
         this.writeOpcode(nci, Opcode.DUP);
 
+        if (nci.iClass.isInterface()) this.compileError("Cannot instantiate \"" + nci.iClass + "\"", nci.getLocation());
+        this.checkAccessible(nci.iClass, nci.getEnclosingBlockStatement());
+        if (nci.iClass.isAbstract()) this.compileError("Cannot instantiate abstract \"" + nci.iClass + "\"", nci.getLocation());
+
         // Determine the enclosing instance for the new object.
         Java.Rvalue optionalEnclosingInstance;
         if (nci.optionalQualification != null) {
+            if (nci.iClass.getOuterIClass() == null) this.compileError("Static member class cannot be instantiated with qualified NEW");
 
             // Enclosing instance defined by qualification (JLS 15.9.2.BL1.B3.B2).
             optionalEnclosingInstance = nci.optionalQualification;
@@ -2791,7 +2797,7 @@ public class UnitCompiler {
         Java.AnonymousClassDeclaration acd = naci.anonymousClassDeclaration;
         IClass sc = this.resolve(acd).getSuperclass();
         IClass.IConstructor[] iConstructors = sc.getDeclaredIConstructors();
-        if (iConstructors.length == 0) throw new RuntimeException();
+        if (iConstructors.length == 0) throw new RuntimeException("SNO: Base class has no constructors");
 
         // Determine most specific constructor.
         IClass.IConstructor iConstructor = (IClass.IConstructor) this.findMostSpecificIInvocable(
@@ -3659,7 +3665,7 @@ public class UnitCompiler {
         return memberType;
     }
     private IClass getType2(Java.ArrayType at) throws CompileException {
-        return this.getArrayType(this.getType(at.componentType));
+        return this.getType(at.componentType).getArrayIClass(this.iClassLoader.OBJECT);
     }
     private IClass getType2(Java.AmbiguousName an) throws CompileException {
         return this.getType(this.reclassify(an));
@@ -3809,7 +3815,7 @@ public class UnitCompiler {
     }
     private IClass getType2(Java.NewArray na) throws CompileException {
         IClass res = this.getType(na.type);
-        return this.getArrayType(res, na.dimExprs.length + na.dims);
+        return res.getArrayIClass(na.dimExprs.length + na.dims, this.iClassLoader.OBJECT);
     }
     private IClass getType2(Java.NewInitializedArray nia) throws CompileException {
         return this.getType(nia.arrayType);
@@ -3823,7 +3829,7 @@ public class UnitCompiler {
         if (l.value instanceof Character) return IClass.CHAR;
         if (l.value instanceof Boolean  ) return IClass.BOOLEAN;
         if (l.value == null             ) return IClass.VOID;
-        throw new RuntimeException();
+        throw new RuntimeException("SNO: Unidentifiable literal type \"" + l.value.getClass().getName() + "\"");
     }
     private IClass getType2(Java.ConstantValue cv) {
         IClass res = (
@@ -3837,7 +3843,7 @@ public class UnitCompiler {
             cv.constantValue == Java.Rvalue.CONSTANT_VALUE_NULL ? IClass.VOID    :
             null
         );
-        if (res == null) throw new RuntimeException();
+        if (res == null) throw new RuntimeException("SNO: Unidentifiable constant value type \"" + cv.constantValue.getClass().getName() + "\"");
         return res;
     }
 
@@ -3898,22 +3904,34 @@ public class UnitCompiler {
 
     /**
      * Check whether the given {@link IClass.IMember} is accessible in the given context,
-     * according to JLS 6.6. Issues a {@link #compileError(String)} if not.
+     * according to JLS 6.6.1.4. Issues a {@link #compileError(String)} if not.
      */
     private void checkAccessible(
         IClass.IMember      member,
         Java.BlockStatement contextBlockStatement
     ) throws CompileException {
+        this.checkAccessible(member.getDeclaringIClass(), member.getAccess(), contextBlockStatement);
+    }
 
-        // At this point, the member is PUBLIC, DEFAULT, PROECTEDED or PRIVATE accessible.
+    /**
+     * Verify that a member (class, interface, field or method) declared in a
+     * given class is accessible from a given block statement context, according
+     * to JLS2 6.6.1.4.
+     */
+    private void checkAccessible(
+        IClass              iClassDeclaringMember,
+        Access              memberAccess,
+        Java.BlockStatement contextBlockStatement
+    ) throws CompileException {
+
+        // At this point, memberAccess is PUBLIC, DEFAULT, PROECTEDED or PRIVATE.
 
         // PUBLIC members are always accessible.
-        if (member.getAccess() == Access.PUBLIC) return;
+        if (memberAccess == Access.PUBLIC) return;
 
         // At this point, the member is DEFAULT, PROECTEDED or PRIVATE accessible.
 
-        // Determine the declaring classes for the member and the context block statement.
-        IClass iClassDeclaringMember = member.getDeclaringIClass();
+        // Determine the class declaring the context block statement.
         IClass iClassDeclaringContextBlockStatement;
         for (Java.Scope s = contextBlockStatement.getEnclosingScope();; s = s.getEnclosingScope()) {
             if (s instanceof Java.TypeDeclaration) {
@@ -3925,49 +3943,37 @@ public class UnitCompiler {
         // Access is always allowed for block statements declared in the same class as the member.
         if (iClassDeclaringContextBlockStatement == iClassDeclaringMember) return;
 
-        // Determine the enclosing top level class declarations for the member and the context
-        // block statement.
-        IClass topLevelIClassEnclosingMember = iClassDeclaringMember;
-        for (IClass c = iClassDeclaringMember; c != null; c = c.getDeclaringIClass()) {
-            topLevelIClassEnclosingMember = c;
-        }
-        IClass topLevelIClassEnclosingContextBlockStatement = iClassDeclaringContextBlockStatement;
-        for (IClass c = iClassDeclaringContextBlockStatement; c != null; c = c.getDeclaringIClass()) {
-            topLevelIClassEnclosingContextBlockStatement = c;
-        }
-
         // Check whether the member and the context block statement are enclosed by the same
         // top-level type.
-        if (topLevelIClassEnclosingMember == topLevelIClassEnclosingContextBlockStatement) return;
+        {
+	        IClass topLevelIClassEnclosingMember = iClassDeclaringMember;
+	        for (IClass c = iClassDeclaringMember.getDeclaringIClass(); c != null; c = c.getDeclaringIClass()) {
+	            topLevelIClassEnclosingMember = c;
+	        }
+	        IClass topLevelIClassEnclosingContextBlockStatement = iClassDeclaringContextBlockStatement;
+	        for (IClass c = iClassDeclaringContextBlockStatement.getDeclaringIClass(); c != null; c = c.getDeclaringIClass()) {
+	            topLevelIClassEnclosingContextBlockStatement = c;
+	        }
+	
+	        if (topLevelIClassEnclosingMember == topLevelIClassEnclosingContextBlockStatement) return;
+        }
 
-        if (member.getAccess() == Access.PRIVATE) {
-            this.compileError("Private member \"" + member + "\" cannot be accessed from type \"" + iClassDeclaringContextBlockStatement + "\".", contextBlockStatement.getLocation());
+        if (memberAccess == Access.PRIVATE) {
+            this.compileError("Private member cannot be accessed from type \"" + iClassDeclaringContextBlockStatement + "\".", contextBlockStatement.getLocation());
             return;
         }
 
-        // At this point, the member is DEFAULT or PROECTEDED accessible.
-
-        // Determine the packages for the member and the context block statement.
-        String memberPackage;
-        {
-            String d = topLevelIClassEnclosingMember.getDescriptor();
-            int idx = d.lastIndexOf('.');
-            memberPackage = idx == -1 ? null : d.substring(0, idx);
-        }
-        String contextBlockStatementPackage;
-        {
-            String d = topLevelIClassEnclosingContextBlockStatement.getDescriptor();
-            int idx = d.lastIndexOf('.');
-            contextBlockStatementPackage = idx == -1 ? null : d.substring(0, idx);
-        }
+        // At this point, the member is DEFAULT or PROTECTED accessible.
 
         // Check whether the member and the context block statement are declared in the same
         // package.
-        if (memberPackage == null ? contextBlockStatementPackage == null : memberPackage.equals(contextBlockStatementPackage)) {
-            return;
-        }
-        if (member.getAccess() == Access.DEFAULT) {
-            this.compileError("Member \"" + member + "\" with \"" + member.getAccess() + "\" visibility cannot be accessed from type \"" + iClassDeclaringContextBlockStatement + "\".", contextBlockStatement.getLocation());
+        if (Descriptor.areInSamePackage(
+    		iClassDeclaringMember.getDescriptor(),
+    		iClassDeclaringContextBlockStatement.getDescriptor()
+        )) return;
+
+        if (memberAccess == Access.DEFAULT) {
+            this.compileError("Member with \"" + memberAccess + "\" access cannot be accessed from type \"" + iClassDeclaringContextBlockStatement + "\".", contextBlockStatement.getLocation());
             return;
         }
 
@@ -3977,11 +3983,56 @@ public class UnitCompiler {
         // class declaring the member.
         for (IClass c = iClassDeclaringContextBlockStatement;; c = c.getDeclaringIClass()) {
             if (c == null) {
-                this.compileError("Protected member \"" + member + "\" cannot be accessed from type \"" + iClassDeclaringContextBlockStatement + "\", which is neither declared in the same package as or is a subclass of \"" + iClassDeclaringMember + "\".", contextBlockStatement.getLocation());
+                this.compileError("Protected member cannot be accessed from type \"" + iClassDeclaringContextBlockStatement + "\", which is neither declared in the same package as or is a subclass of \"" + iClassDeclaringMember + "\".", contextBlockStatement.getLocation());
                 return;
             }
             if (c == iClassDeclaringMember) return;
         }
+    }
+
+    /**
+     * Check whether the given {@link IClass} is accessible in the given context,
+     * according to JLS2 6.6.1.2 and 6.6.1.4. Issues a
+     * {@link #compileError(String)} if not.
+     */
+    private void checkAccessible(
+        IClass              type,
+        Java.BlockStatement contextBlockStatement
+    ) throws CompileException {
+
+        // Determine the type declaring the type.
+        IClass iClassDeclaringType = type.getDeclaringIClass();
+
+        // Check accessibility of package member type.
+        if (iClassDeclaringType == null) {
+            if (type.getAccess() == Access.PUBLIC) {
+                return;
+            } else
+            if (type.getAccess() == Access.DEFAULT) {
+    
+                // Determine the type declaring the context block statement.
+                IClass iClassDeclaringContextBlockStatement;
+                for (Java.Scope s = contextBlockStatement.getEnclosingScope();; s = s.getEnclosingScope()) {
+                    if (s instanceof Java.TypeDeclaration) {
+                        iClassDeclaringContextBlockStatement = this.resolve((Java.TypeDeclaration) s);
+                        break;
+                    }
+                }
+    
+                // Check whether the type is accessed from within the same package.
+                String packageDeclaringType = Descriptor.getPackageName(type.getDescriptor());
+                String contextPackage = Descriptor.getPackageName(iClassDeclaringContextBlockStatement.getDescriptor());
+                if (!(packageDeclaringType == null ? contextPackage == null : packageDeclaringType.equals(contextPackage))) this.compileError("\"" + type + "\" is inaccessible from this package");
+                return;
+            } else
+            {
+                throw new RuntimeException("\"" + type + "\" has unexpected access \"" + type.getAccess() + "\"");
+            }
+        }
+
+        // "type" is a member type at this point.
+
+        this.checkAccessible(iClassDeclaringType, type.getAccess(), contextBlockStatement);
     }
 
     private final Java.Type toTypeOrCE(Java.Atom a) throws CompileException {
@@ -4354,7 +4405,7 @@ public class UnitCompiler {
 
         // Find constructors.
         IClass.IConstructor[] iConstructors = targetClass.getDeclaredIConstructors();
-        if (iConstructors.length == 0) throw new RuntimeException();
+        if (iConstructors.length == 0) throw new RuntimeException("SNO: Target class \"" + targetClass.getDescriptor() + "\" has no constructors");
 
         IClass.IConstructor iConstructor = (IClass.IConstructor) this.findMostSpecificIInvocable(
             located,
@@ -4395,7 +4446,7 @@ public class UnitCompiler {
             }
 
             if (!(scopeTypeDeclaration instanceof Java.ClassDeclaration)) {
-                if (syntheticFields.length > 0) throw new RuntimeException();
+                if (syntheticFields.length > 0) throw new RuntimeException("SNO: Target class has synthetic fields");
             } else {
                 Java.ClassDeclaration scopeClassDeclaration = (Java.ClassDeclaration) scopeTypeDeclaration;
                 for (int i = 0; i < syntheticFields.length; ++i) {
@@ -4517,8 +4568,7 @@ public class UnitCompiler {
                 // Implement "IField".
                 public boolean isStatic() { return (fd.modifiers & Mod.STATIC) != 0; }
                 public IClass getType() throws CompileException {
-                    IClass res2 = UnitCompiler.this.getType(fd.type);
-                    return UnitCompiler.this.getArrayType(res2, vd.brackets);
+                    return UnitCompiler.this.getType(fd.type).getArrayIClass(vd.brackets, UnitCompiler.this.iClassLoader.OBJECT);
                 }
                 public String getName() { return vd.name; }
                 public Object getConstantValue() throws CompileException {
@@ -5129,7 +5179,7 @@ public class UnitCompiler {
         final IClass.IInvocable[] iInvocables,
         final IClass[]            argumentTypes
     ) throws CompileException {
-        if (iInvocables.length == 0) throw new RuntimeException();
+        if (iInvocables.length == 0) throw new RuntimeException("SNO: Zero invocables");
 
         if (UnitCompiler.DEBUG) {
             System.out.println("Argument types:");
@@ -5461,7 +5511,7 @@ public class UnitCompiler {
             }
         
             public boolean isArray() { return false; }
-            protected IClass  getComponentType2() { throw new RuntimeException(); }
+            protected IClass  getComponentType2() { throw new RuntimeException("SNO: Non-array type has no component type"); }
             public boolean isPrimitive() { return false; }
             public boolean isPrimitiveNumeric() { return false; }
             protected IConstructor[] getDeclaredIConstructors2() {
@@ -5505,7 +5555,7 @@ public class UnitCompiler {
                     }
                     return (IClass.IField[]) l.toArray(new IClass.IField[l.size()]);
                 } else {
-                    throw new RuntimeException();
+                    throw new RuntimeException("SNO: AbstractTypeDeclaration is neither ClassDeclaration nor InterfaceDeclaration");
                 }
             }
             public IField[] getSyntheticIFields() {
@@ -5529,7 +5579,7 @@ public class UnitCompiler {
                 }
                 return null;
             }
-            public boolean isPublic() { return (atd.modifiers & Mod.PUBLIC) != 0; }
+            public Access getAccess() { return UnitCompiler.modifiers2Access(atd.modifiers); }
             public boolean isFinal() { return (atd.modifiers & Mod.FINAL) != 0;  }
             protected IClass[] getInterfaces2() throws CompileException {
                 if (atd instanceof Java.AnonymousClassDeclaration) {
@@ -5554,7 +5604,7 @@ public class UnitCompiler {
                     }
                     return res;
                 } else {
-                    throw new RuntimeException();
+                    throw new RuntimeException("SNO: AbstractTypeDeclaration is neither ClassDeclaration nor InterfaceDeclaration");
                 }
             }
             public boolean isAbstract() {
@@ -5608,7 +5658,7 @@ public class UnitCompiler {
 
             Java.ConstructorDeclarator constructorDeclarator = (Java.ConstructorDeclarator) declaringTypeBodyDeclaration;
             Java.LocalVariable syntheticParameter = (Java.LocalVariable) constructorDeclarator.syntheticParameters.get("this$" + (path.size() - 2));
-            if (syntheticParameter == null) throw new RuntimeException();
+            if (syntheticParameter == null) throw new RuntimeException("SNO: Synthetic \"this$*\" parameter not found");
             this.load(located, syntheticParameter);
             i = 1;
         } else {
@@ -5841,7 +5891,7 @@ public class UnitCompiler {
             return this.toIMethod((Java.MethodDeclarator) fd);
         } else
         {
-            throw new RuntimeException();
+            throw new RuntimeException("FunctionDeclarator is neither ConstructorDeclarator nor MethodDeclarator");
         }
     }
 
@@ -5934,10 +5984,10 @@ public class UnitCompiler {
         );
 
         IClass classNotFoundExceptionIClass = this.iClassLoader.loadIClass("Ljava/lang/ClassNotFoundException;");
-        if (classNotFoundExceptionIClass == null) throw new RuntimeException();
+        if (classNotFoundExceptionIClass == null) throw new RuntimeException("SNO: Cannot load \"ClassNotFoundException\"");
 
         IClass noClassDefFoundErrorIClass = this.iClassLoader.loadIClass("Ljava/lang/NoClassDefFoundError;");
-        if (noClassDefFoundErrorIClass == null) throw new RuntimeException();
+        if (noClassDefFoundErrorIClass == null) throw new RuntimeException("SNO: Cannot load \"NoClassFoundError\"");
 
         // catch (ClassNotFoundException ex) {
         Java.Block b = new Java.Block(loc);
@@ -6273,7 +6323,7 @@ public class UnitCompiler {
                 type,        // sourceType
                 promotedType // targetType
             )
-        ) throw new RuntimeException();
+        ) throw new RuntimeException("SNO: Conversion failed");
         return promotedType;
     }
 
@@ -6314,7 +6364,7 @@ public class UnitCompiler {
                         type1,       // sourceType
                         promotedType // targetType
                     )
-                ) throw new RuntimeException();
+                ) throw new RuntimeException("SNO: Conversion failed");
             } finally {
                 this.codeContext.popInserter();
             }
@@ -6327,7 +6377,7 @@ public class UnitCompiler {
                 type2,       // sourceType
                 promotedType // targetType
             )
-        ) throw new RuntimeException();
+        ) throw new RuntimeException("SNO: Conversion failed");
 
         return promotedType;
     }
@@ -6777,7 +6827,7 @@ public class UnitCompiler {
         IClass  type,
         int     x
     ) {
-        if (x < 0 || x > 2) throw new RuntimeException();
+        if (x < 0 || x > 2) throw new RuntimeException("SNO: x has value " + x);
         int dup  = Opcode.DUP  + x;
         int dup2 = Opcode.DUP2 + x;
         this.writeOpcode(located, (
@@ -6841,15 +6891,6 @@ public class UnitCompiler {
         if (t == IClass.CHAR  ) return 6;
         if (t == IClass.SHORT ) return 7;
         throw new RuntimeException("Unexpected type \"" + t + "\"");
-    }
-
-    private IClass getArrayType(IClass type) {
-        return this.iClassLoader.loadArrayIClass(type);
-    }
-    private IClass getArrayType(IClass type, int brackets) {
-        if (brackets == 0) return type;
-        for (int i = 0; i < brackets; ++i) type = this.iClassLoader.loadArrayIClass(type);
-        return type;
     }
 
     /**
@@ -7189,19 +7230,19 @@ public class UnitCompiler {
                 componentType == IClass.INT     ? 10 :
                 componentType == IClass.LONG    ? 11 : -1
             ));
-            return this.getArrayType(componentType);
+            return componentType.getArrayIClass(this.iClassLoader.OBJECT);
         }
 
         if (dimExprCount == 1) {
-            IClass at = this.getArrayType(componentType, dims);
+            IClass at = componentType.getArrayIClass(dims, this.iClassLoader.OBJECT);
 
             // "new <class-or-interface>[<n>]"
             // "new <anything>[<n>][]..."
             this.writeOpcode(located, Opcode.ANEWARRAY);
             this.writeConstantClassInfo(located, at.getDescriptor());
-            return this.getArrayType(at, 1);
+            return at.getArrayIClass(this.iClassLoader.OBJECT);
         } else {
-            IClass at = this.getArrayType(componentType, dimExprCount + dims);
+            IClass at = componentType.getArrayIClass(dimExprCount + dims, this.iClassLoader.OBJECT);
 
             // "new <anything>[]..."
             // "new <anything>[<n>][<m>]..."
@@ -7236,6 +7277,15 @@ public class UnitCompiler {
         public boolean isStatic()         { return false; }
         public Access  getAccess()        { return Access.DEFAULT; }
     };
+
+    private static Access modifiers2Access(short modifiers) {
+        return (
+            (modifiers & Mod.PUBLIC   ) != 0 ? Access.PUBLIC    :
+            (modifiers & Mod.PROTECTED) != 0 ? Access.PROTECTED :
+            (modifiers & Mod.PRIVATE  ) != 0 ? Access.PRIVATE   :
+            Access.DEFAULT
+        );
+    }
 
     // Used to write byte code while compiling one constructor/method.
     private CodeContext codeContext = null;
