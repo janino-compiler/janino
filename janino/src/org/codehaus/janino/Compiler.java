@@ -550,6 +550,7 @@ public class Compiler {
         String      optionalCharacterEncoding
     ) throws Scanner.ScanException, Parser.ParseException, IOException {
         Scanner scanner = new Scanner(fileName, inputStream, optionalCharacterEncoding);
+        scanner.setWarningHandler(this.warningHandler);
         try {
             Parser parser = new Parser(scanner);
             parser.setWarningHandler(this.warningHandler);
