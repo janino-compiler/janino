@@ -198,6 +198,26 @@ public class Descriptor {
         return d.length() == 1 && "BDFIJSC".indexOf(d.charAt(0)) != -1;
     }
 
+    /**
+     * Returns the package name of a class or interface reference descriptor,
+     * or <code>null</code> if the class or interface is declared in the
+     * default package.
+     */
+    public static String getPackageName(String d) {
+        if (d.charAt(0) != 'L') throw new RuntimeException("Attempt to get package name of non-class descriptor \"" + d + "\"");
+        int idx = d.lastIndexOf('/');
+        return idx == -1 ? null : d.substring(1, idx).replace('/', '.');
+    }
+
+    /**
+     * Check whether two reference types are declared in the same package.
+     */
+    public static boolean areInSamePackage(String d1, String d2) {
+        String packageName1 = Descriptor.getPackageName(d1);
+        String packageName2 = Descriptor.getPackageName(d2);
+        return packageName1 == null ? packageName2 == null : packageName1.equals(packageName2);
+    }
+
     public final static String VOID    = "V";
     public final static String BYTE    = "B";
     public final static String CHAR    = "C";
