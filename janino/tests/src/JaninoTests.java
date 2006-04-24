@@ -32,11 +32,11 @@
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import java.lang.reflect.*;
+
 import org.codehaus.janino.*;
 
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
-import junit.framework.Test;
+import junit.framework.*;
 
 
 public class JaninoTests {
@@ -212,8 +212,18 @@ public class JaninoTests {
             SimpleTestSuite suite15 = new SimpleTestSuite("15 Expressions");
             suite.addTest(suite15);
 
-//          suite15.ast("15.1 Evaluation, Denotation, and Result", "");
-//          ...
+            suite15.aet("15.9.1 Determining the class being Instantiated/3a", "new Object() instanceof Object", JaninoTests.RETURNS_TRUE);
+            suite15.aet("15.9.1 Determining the class being Instantiated/3b", "new java.util.List()", JaninoTests.THROWS_COMPILE_EXCEPTION);
+            suite15.aet("15.9.1 Determining the class being Instantiated/3c", "new other_package.PackageClass()", JaninoTests.THROWS_COMPILE_EXCEPTION);
+            suite15.aet("15.9.1 Determining the class being Instantiated/3d", "new java.util.AbstractList()", JaninoTests.THROWS_COMPILE_EXCEPTION);
+            suite15.aet("15.9.1 Determining the class being Instantiated/4a", "new other_package.Foo(3).new PublicMemberClass() instanceof other_package.Foo.PublicMemberClass");
+            suite15.aet("15.9.1 Determining the class being Instantiated/4b", "new other_package.Foo(3).new Foo.PublicMemberClass()", JaninoTests.THROWS_PARSE_EXCEPTION);
+            suite15.aet("15.9.1 Determining the class being Instantiated/4c", "new other_package.Foo(3).new other_package.Foo.PublicMemberClass()", JaninoTests.THROWS_PARSE_EXCEPTION);
+            suite15.aet("15.9.1 Determining the class being Instantiated/4d", "new other_package.Foo(3).new PackageMemberClass()", JaninoTests.THROWS_COMPILE_EXCEPTION);
+            suite15.aet("15.9.1 Determining the class being Instantiated/4e", "new other_package.Foo(3).new PublicAbstractMemberClass()", JaninoTests.THROWS_COMPILE_EXCEPTION);
+            suite15.aet("15.9.1 Determining the class being Instantiated/4f", "new other_package.Foo(3).new PublicStaticMemberClass()", JaninoTests.THROWS_COMPILE_EXCEPTION);
+            suite15.aet("15.9.1 Determining the class being Instantiated/4g", "new other_package.Foo(3).new PublicMemberInterface()", JaninoTests.THROWS_COMPILE_EXCEPTION);
+            suite15.aet("15.9.1 Determining the class being Instantiated/4h", "new java.util.ArrayList().new PublicMemberClass()", JaninoTests.THROWS_COMPILE_EXCEPTION);
         }
 
         // 16 Definite Assignment
@@ -258,6 +268,21 @@ class SimpleTestSuite extends TestSuite {
      */
     public void ast(String title, String script, int mode) {
         this.addTest(new ScriptTest(title, script, mode));
+    }
+
+    /**
+     * Shorthand for "add class body test".
+     * Compile and invoke "static main()".
+     */
+    public void acbt(String title, String classBody) {
+        this.addTest(new ClassBodyTest(title, classBody));
+    }
+
+    /**
+     * Shorthand for "add class body test".
+     */
+    public void acbt(String title, String classBody, int mode) {
+        this.addTest(new ClassBodyTest(title, classBody, mode));
     }
 }
 
@@ -316,7 +341,7 @@ class ExpressionTest extends TestCase {
  */
 class ScriptTest extends TestCase {
     private String script;
-    int      mode;
+    int     mode;
 
     public ScriptTest(String name, String script) {
         this(name, script, JaninoTests.COMPILE_AND_EXECUTE);
@@ -355,6 +380,57 @@ class ScriptTest extends TestCase {
         Object result = se.evaluate(new Object[0]);
         if (this.mode == JaninoTests.RETURNS_TRUE) {
             assertTrue("Script did not return \"true\"", ((Boolean) result).booleanValue());
+        }
+    }
+}
+
+/**
+ * A test case that compiles a class body, calls its "static main()" method and
+ * optionally verifies that it returns <code>true</code>.
+ */
+class ClassBodyTest extends TestCase {
+    private String classBody;
+    int     mode;
+
+    public ClassBodyTest(String name, String classBody) {
+        this(name, classBody, JaninoTests.COMPILE_AND_EXECUTE);
+    }
+
+    public ClassBodyTest(String name, String classBody, int mode) {
+        // Notice: JUnit 3.8.1 gets confused if the name contains "(" and/or ",".
+        super(name);
+        this.classBody = classBody;
+        this.mode = mode;
+    }
+
+    /**
+     * Compile a class body, invoke its "static main()" method, and optionally
+     * verify that it returns <code>true</code>.
+     */
+    protected void runTest() throws Throwable {
+        ClassBodyEvaluator cbe;
+        try {
+            cbe = new ClassBodyEvaluator(this.classBody);
+        } catch (Scanner.ScanException ex) {
+            if (this.mode == JaninoTests.THROWS_SCAN_EXCEPTION) return;
+            throw ex;
+        } catch (Parser.ParseException ex) {
+            if (this.mode == JaninoTests.THROWS_PARSE_EXCEPTION) return;
+            throw ex;
+        } catch (CompileException ex) {
+            if (this.mode == JaninoTests.THROWS_COMPILE_EXCEPTION) return;
+            throw ex;
+        }
+
+        if (this.mode == JaninoTests.THROWS_SCAN_EXCEPTION) fail("Should have thrown Scanner.ScanException");
+        if (this.mode == JaninoTests.THROWS_PARSE_EXCEPTION) fail("Should have thrown Parser.ParseException");
+        if (this.mode == JaninoTests.THROWS_COMPILE_EXCEPTION) fail("Should have thrown Java.CompileException");
+
+        Class c = cbe.evaluate();
+        Method m = c.getMethod("main", new Class[0]);
+        Object result = m.invoke(null, new Object[0]);
+        if (this.mode == JaninoTests.RETURNS_TRUE) {
+            assertTrue("Method \"static boolean main()\" did not return \"true\"", ((Boolean) result).booleanValue());
         }
     }
 }
