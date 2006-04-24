@@ -3981,13 +3981,11 @@ public class UnitCompiler {
 
         // Check whether the class declaring the context block statement is a subclass of the
         // class declaring the member.
-        for (IClass c = iClassDeclaringContextBlockStatement;; c = c.getDeclaringIClass()) {
-            if (c == null) {
-                this.compileError("Protected member cannot be accessed from type \"" + iClassDeclaringContextBlockStatement + "\", which is neither declared in the same package as or is a subclass of \"" + iClassDeclaringMember + "\".", contextBlockStatement.getLocation());
-                return;
-            }
-            if (c == iClassDeclaringMember) return;
+        if (!iClassDeclaringMember.isAssignableFrom(iClassDeclaringContextBlockStatement)) {
+            this.compileError("Protected member cannot be accessed from type \"" + iClassDeclaringContextBlockStatement + "\", which is neither declared in the same package as or is a subclass of \"" + iClassDeclaringMember + "\".", contextBlockStatement.getLocation());
+            return;
         }
+        return;
     }
 
     /**
