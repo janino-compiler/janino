@@ -127,7 +127,7 @@ public class PathResourceFinder extends LazyMultiResourceFinder {
             try {
                 return new ZipFileResourceFinder(new ZipFile(entry));
             } catch (IOException e) {
-                return MultiResourceFinder.EMPTY_RESOURCE_FINDER;
+                return ResourceFinder.EMPTY_RESOURCE_FINDER;
             }
         }
 
@@ -137,6 +137,6 @@ public class PathResourceFinder extends LazyMultiResourceFinder {
         }
 
         // Invalid entry.
-        return MultiResourceFinder.EMPTY_RESOURCE_FINDER;
+        return ResourceFinder.EMPTY_RESOURCE_FINDER;
     }
 }

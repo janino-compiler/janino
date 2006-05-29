@@ -132,19 +132,27 @@ public class StringPattern {
      * <code>true</code> is returned, if its mode is {@link #EXCLUDE}, then <code>false</code> is
      * returned.
      * <p>
-     * If <code>optionalPatterns</code> is <code>null</code>, or empty, or none of its patterns
+     * If <code>patterns</code> is {@link #PATTERNS_NONE}, or empty, or none of its patterns
      * matches, then <code>false</code> is returned.
+     * <p>
+     * If <code>patterns</code> is {@link #PATTERNS_ALL}, then <code>true</code> is
+     * returned.
+     * <p>
+     * For backwards compatibility, <code>null</code> patterns are treated like
+     * {@link #PATTERNS_NONE}.
      */
-    public static boolean matches(StringPattern[] optionalPatterns, String text) {
-        if (optionalPatterns != null) {
-            for (int i = optionalPatterns.length - 1; i >= 0; --i) {
-                if (optionalPatterns[i].matches(text)) {
-                    return optionalPatterns[i].getMode() == StringPattern.INCLUDE;
-                } 
-            }
+    public static boolean matches(StringPattern[] patterns, String text) {
+        if (patterns == null) return false; // Backwards compatibility -- previously, "null" was officially documented.
+
+        for (int i = patterns.length - 1; i >= 0; --i) {
+            if (patterns[i].matches(text)) {
+                return patterns[i].getMode() == StringPattern.INCLUDE;
+            } 
         }
         return false; // No patterns defined or no pattern matches.
     }
+    public static StringPattern[] PATTERNS_ALL = new StringPattern[] { new StringPattern("*") };
+    public static StringPattern[] PATTERNS_NONE = new StringPattern[0];
 
     public String toString() {
         return (

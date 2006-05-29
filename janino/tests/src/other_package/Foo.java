@@ -35,8 +35,7 @@
 package other_package;
 
 /**
- * Helper class for {@link JaninoTests} -- used to define accessibility
- * tests
+ * Helper class for {@link JLS2Tests} -- used to define accessibility tests.
  */
 public class Foo {
     public      Foo(int i) {}
@@ -72,6 +71,16 @@ public class Foo {
     protected interface          ProtectedMemberInterface {}
     public static interface      PublicStaticMemberInterface {}
     public interface             PublicMemberInterface {}
+
+    void useMembersToSuppressWarnings() {
+        new Foo('c');
+        privateStaticMethod();
+        privateMethod();
+        new PrivateStaticMemberClass();
+        new PrivateMemberClass();
+        new PrivateStaticMemberInterface() {};
+        new PrivateMemberInterface() {};
+    }
 }
 
 /*package*/ class     PackageClass {}

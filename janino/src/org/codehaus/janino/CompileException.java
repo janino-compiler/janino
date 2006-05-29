@@ -34,14 +34,27 @@
 
 package org.codehaus.janino;
 
+import org.codehaus.janino.util.*;
+
 /**
  * An exception that reflects an error during compilation.
  *
  * This exception is associated with a particular {@link Location
  * Location} in the source code.
  */
-public class CompileException extends Scanner.LocatedException {
+public class CompileException extends CausedException {
+    private final Location optionalLocation;
+
     public CompileException(String message, Location optionalLocation) {
-        super(message, optionalLocation);
+        super(message);
+        this.optionalLocation = optionalLocation;
+    }
+    public CompileException(String message, Location optionalLocation, Throwable cause) {
+        super(message, cause);
+        this.optionalLocation = optionalLocation;
+    }
+
+    public String getMessage() {
+        return (this.optionalLocation == null) ? super.getMessage() : this.optionalLocation.toString() + ": " + super.getMessage();
     }
 }

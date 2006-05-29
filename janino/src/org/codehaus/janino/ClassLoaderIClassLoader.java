@@ -49,7 +49,7 @@ public class ClassLoaderIClassLoader extends IClassLoader {
             null   // optionalParentIClassLoader
         );
 
-        if (classLoader == null) throw new RuntimeException();
+        if (classLoader == null) throw new NullPointerException();
 
         this.classLoader = classLoader;
         super.postConstruct();
@@ -72,7 +72,7 @@ public class ClassLoaderIClassLoader extends IClassLoader {
     /**
      * Find a new {@link IClass} by descriptor.
      */
-    protected IClass findIClass(String descriptor) {
+    protected IClass findIClass(String descriptor) throws ClassNotFoundException {
 
         //
         // See also [ 931385 ] Janino 2.0 throwing exception on arrays of java.io.File:
@@ -90,7 +90,12 @@ public class ClassLoaderIClassLoader extends IClassLoader {
 //            clazz = this.classLoader.loadClass(className);
             clazz = Class.forName(Descriptor.toClassName(descriptor), false, this.classLoader);
         } catch (ClassNotFoundException e) {
-            return null;
+            if (e.getException() == null) {
+                return null;
+            } else
+            {
+                throw e;
+            }
         }
         if (ClassLoaderIClassLoader.DEBUG) System.out.println("clazz = " + clazz);
 

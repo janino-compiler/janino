@@ -68,12 +68,29 @@ import java.lang.reflect.*;
  * statement of the script must be a RETURN statement (or a THROW statement), and all RETURN
  * statements in the script must return a value with the given type.
  * <p>
- * The script is compiled when the {@link ScriptEvaluator} object is instantiated. The script,
- * its return type, and its parameter names and types are specified at compile time.
- * <p>
  * The script evaluator is implemented by creating and compiling a temporary compilation unit
  * defining one class with one method the body of which consists of the statements of the
  * script.
+ * <p>
+ * To set up a {@link ScriptEvaluator} object, proceed as follows:
+ * <ol>
+ *   <li>
+ *   Create the {@link ScriptEvaluator} using {@link #ScriptEvaluator()}
+ *   <li>
+ *   Configure the {@link ScriptEvaluator} by calling any of the following methods:
+ *   <ul>
+ *      <li>{@link #setReturnType(Class)}
+ *      <li>{@link #setParameters(String[], Class[])}
+ *      <li>{@link #setThrownExceptions(Class[])}
+ *      <li>{@link org.codehaus.janino.SimpleCompiler#setParentClassLoader(ClassLoader)}
+ *      <li>{@link org.codehaus.janino.ClassBodyEvaluator#setDefaultImports(String[])}
+ *   </ul>
+ *   <li>
+ *   Call any of the {@link org.codehaus.janino.Cookable#cook(Scanner)} methods to scan,
+ *   parse, compile and load the script into the JVM.
+ * </ol>
+ * Alternatively, a number of "convenience constructors" exist that execute the steps described
+ * above instantly.
  * <p>
  * After the {@link ScriptEvaluator} object is created, the script can be executed as often with
  * different parameter values (see {@link #evaluate(Object[])}). This execution is very fast,
@@ -87,66 +104,62 @@ import java.lang.reflect.*;
  * not required; the most commonly used constructor is
  * {@link #ScriptEvaluator(String, Class, String[], Class[])}.
  */
-public class ScriptEvaluator extends EvaluatorBase {
-    private static final String DEFAULT_METHOD_NAME = "eval";
-    private static final String DEFAULT_CLASS_NAME = "SC";
+public class ScriptEvaluator extends ClassBodyEvaluator {
+    public static final String   DEFAULT_METHOD_NAME = "eval";
+    public static final String[] ZERO_STRINGS = new String[0];
+
+    private boolean              staticMethod = true;
+    private Class                returnType = void.class;
+    private String               methodName = ScriptEvaluator.DEFAULT_METHOD_NAME;
+    private String[]             parameterNames = ScriptEvaluator.ZERO_STRINGS;
+    private Class[]              parameterTypes = ClassBodyEvaluator.ZERO_CLASSES;
+    private Class[]              thrownExceptions = ClassBodyEvaluator.ZERO_CLASSES;
+
+    private Method               method = null; // null=uncooked
 
     /**
-     * Parse a script from a {@link String} and compile it.
-     * @see #ScriptEvaluator(Scanner, String, Class, Class[], boolean, Class, String, String[], Class[], Class[], ClassLoader)
+     * Equivalent to<pre>
+     * ScriptEvaluator se = new ScriptEvaluator();
+     * se.cook(script);</pre>
+     *
+     * @see #ScriptEvaluator()
+     * @see Cookable#cook(String)
      */
     public ScriptEvaluator(
         String   script
     ) throws CompileException, Parser.ParseException, Scanner.ScanException {
-        super((ClassLoader) null);
-        try {
-            this.scanParseCompileLoad(
-                new Scanner(null, new StringReader(script)), // scanner
-                ScriptEvaluator.DEFAULT_CLASS_NAME,          // className
-                (Class) null,                                // optionalExtendedType
-                new Class[0],                                // implementedTypes
-                true,                                        // staticMethod
-                void.class,                                  // returnType
-                ScriptEvaluator.DEFAULT_METHOD_NAME,         // methodName
-                new String[0],                               // parameterNames
-                new Class[0],                                // parameterTypes
-                new Class[0]                                 // thrownExceptions
-            );
-        } catch (IOException ex) {
-            throw new RuntimeException("SNO: StringReader throws IOException!?");
-        }
+        this.cook(script);
     }
 
     /**
-     * Parse a script from a {@link String} and compile it.
-     * @see #ScriptEvaluator(Scanner, String, Class, Class[], boolean, Class, String, String[], Class[], Class[], ClassLoader)
+     * Equivalent to<pre>
+     * ScriptEvaluator se = new ScriptEvaluator();
+     * se.setReturnType(returnType);
+     * se.cook(script);</pre>
+     *
+     * @see #ScriptEvaluator()
+     * @see #setReturnType(Class)
+     * @see Cookable#cook(String)
      */
     public ScriptEvaluator(
         String   script,
         Class    returnType
     ) throws CompileException, Parser.ParseException, Scanner.ScanException {
-        super((ClassLoader) null);
-        try {
-            this.scanParseCompileLoad(
-                new Scanner(null, new StringReader(script)), // scanner
-                ScriptEvaluator.DEFAULT_CLASS_NAME,          // className
-                (Class) null,                                // optionalExtendedType
-                new Class[0],                                // implementedTypes
-                true,                                        // staticMethod
-                returnType,                                  // returnType
-                ScriptEvaluator.DEFAULT_METHOD_NAME,         // methodName
-                new String[0],                               // parameterNames
-                new Class[0],                                // parameterTypes
-                new Class[0]                                 // thrownExceptions
-            );
-        } catch (IOException ex) {
-            throw new RuntimeException("SNO: StringReader throws IOException!?");
-        }
+        this.setReturnType(returnType);
+        this.cook(script);
     }
 
     /**
-     * Parse a script from a {@link String} and compile it.
-     * @see #ScriptEvaluator(Scanner, String, Class, Class[], boolean, Class, String, String[], Class[], Class[], ClassLoader)
+     * Equivalent to<pre>
+     * ScriptEvaluator se = new ScriptEvaluator();
+     * se.setReturnType(returnType);
+     * se.setParameters(parameterNames, parameterTypes);
+     * se.cook(script);</pre>
+     *
+     * @see #ScriptEvaluator()
+     * @see #setReturnType(Class)
+     * @see #setParameters(String[], Class[])
+     * @see Cookable#cook(String)
      */
     public ScriptEvaluator(
         String   script,
@@ -154,28 +167,24 @@ public class ScriptEvaluator extends EvaluatorBase {
         String[] parameterNames,
         Class[]  parameterTypes
     ) throws CompileException, Parser.ParseException, Scanner.ScanException {
-        super((ClassLoader) null);
-        try {
-            this.scanParseCompileLoad(
-                new Scanner(null, new StringReader(script)), // scanner
-                ScriptEvaluator.DEFAULT_CLASS_NAME,          // className
-                (Class) null,                                // optionalExtendedType
-                new Class[0],                                // implementedTypes
-                true,                                        // staticMethod
-                returnType,                                  // returnType
-                ScriptEvaluator.DEFAULT_METHOD_NAME,         // methodName
-                parameterNames,                              // parameterNames
-                parameterTypes,                              // parameterTypes
-                new Class[0]                                 // thrownExceptions
-            );
-        } catch (IOException ex) {
-            throw new RuntimeException("SNO: StringReader throws IOException!?");
-        }
+        this.setReturnType(returnType);
+        this.setParameters(parameterNames, parameterTypes);
+        this.cook(script);
     }
 
     /**
-     * Parse a script from a {@link String} and compile it.
-     * @see #ScriptEvaluator(Scanner, String, Class, Class[], boolean, Class, String, String[], Class[], Class[], ClassLoader)
+     * Equivalent to<pre>
+     * ScriptEvaluator se = new ScriptEvaluator();
+     * se.setReturnType(returnType);
+     * se.setParameters(parameterNames, parameterTypes);
+     * se.setThrownExceptions(thrownExceptions);
+     * se.cook(script);</pre>
+     *
+     * @see #ScriptEvaluator()
+     * @see #setReturnType(Class)
+     * @see #setParameters(String[], Class[])
+     * @see #setThrownExceptions(Class[])
+     * @see Cookable#cook(String)
      */
     public ScriptEvaluator(
         String   script,
@@ -184,28 +193,27 @@ public class ScriptEvaluator extends EvaluatorBase {
         Class[]  parameterTypes,
         Class[]  thrownExceptions
     ) throws CompileException, Parser.ParseException, Scanner.ScanException {
-        super((ClassLoader) null);
-        try {
-            this.scanParseCompileLoad(
-                new Scanner(null, new StringReader(script)), // scanner
-                ScriptEvaluator.DEFAULT_CLASS_NAME,          // className
-                (Class) null,                                // optionalExtendedType
-                new Class[0],                                // implementedTypes
-                true,                                        // staticMethod
-                returnType,                                  // returnType
-                ScriptEvaluator.DEFAULT_METHOD_NAME,         // methodName
-                parameterNames,                              // parameterName
-                parameterTypes,                              // parameterTypes
-                thrownExceptions                             // thrownExceptions
-            );
-        } catch (IOException ex) {
-            throw new RuntimeException("SNO: StringReader throws IOException!?");
-        }
+        this.setReturnType(returnType);
+        this.setParameters(parameterNames, parameterTypes);
+        this.setThrownExceptions(thrownExceptions);
+        this.cook(script);
     }
 
     /**
-     * Parse a script from an {@link InputStream} and compile it.
-     * @see #ScriptEvaluator(Scanner, String, Class, Class[], boolean, Class, String, String[], Class[], Class[], ClassLoader)
+     * Equivalent to<pre>
+     * ScriptEvaluator se = new ScriptEvaluator();
+     * se.setReturnType(returnType);
+     * se.setParameters(parameterNames, parameterTypes);
+     * se.setThrownExceptions(thrownExceptions);
+     * se.setParentClassLoader(optionalParentClassLoader);
+     * se.cook(optionalFileName, is);</pre>
+     *
+     * @see #ScriptEvaluator()
+     * @see #setReturnType(Class)
+     * @see #setParameters(String[], Class[])
+     * @see #setThrownExceptions(Class[])
+     * @see SimpleCompiler#setParentClassLoader(ClassLoader)
+     * @see Cookable#cook(String, InputStream)
      */
     public ScriptEvaluator(
         String      optionalFileName,
@@ -216,24 +224,28 @@ public class ScriptEvaluator extends EvaluatorBase {
         Class[]     thrownExceptions,
         ClassLoader optionalParentClassLoader // null = use current thread's context class loader
     ) throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
-        super(optionalParentClassLoader);
-        this.scanParseCompileLoad(
-            new Scanner(optionalFileName, is),   // scanner
-            ScriptEvaluator.DEFAULT_CLASS_NAME,  // className
-            (Class) null,                        // optionalExtendedType
-            new Class[0],                        // implementedTypes
-            true,                                // staticMethod
-            returnType,                          // returnType
-            ScriptEvaluator.DEFAULT_METHOD_NAME, // methodName
-            parameterNames,                      // parameterName
-            parameterTypes,                      // parameterTypes
-            thrownExceptions                     // thrownExceptions
-        );
+        this.setReturnType(returnType);
+        this.setParameters(parameterNames, parameterTypes);
+        this.setThrownExceptions(thrownExceptions);
+        this.setParentClassLoader(optionalParentClassLoader);
+        this.cook(optionalFileName, is);
     }
 
     /**
-     * Parse a script from a {@link Reader} and compile it.
-     * @see #ScriptEvaluator(Scanner, String, Class, Class[], boolean, Class, String, String[], Class[], Class[], ClassLoader)
+     * Equivalent to<pre>
+     * ScriptEvaluator se = new ScriptEvaluator();
+     * se.setReturnType(returnType);
+     * se.setParameters(parameterNames, parameterTypes);
+     * se.setThrownExceptions(thrownExceptions);
+     * se.setParentClassLoader(optionalParentClassLoader);
+     * se.cook(reader);</pre>
+     *
+     * @see #ScriptEvaluator()
+     * @see #setReturnType(Class)
+     * @see #setParameters(String[], Class[])
+     * @see #setThrownExceptions(Class[])
+     * @see SimpleCompiler#setParentClassLoader(ClassLoader)
+     * @see Cookable#cook(String, Reader)
      */
     public ScriptEvaluator(
         String      optionalFileName,
@@ -244,26 +256,28 @@ public class ScriptEvaluator extends EvaluatorBase {
         Class[]     thrownExceptions,
         ClassLoader optionalParentClassLoader // null = use current thread's context class loader
     ) throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
-        super(optionalParentClassLoader);
-        this.scanParseCompileLoad(
-            new Scanner(optionalFileName, reader), // scanner
-            ScriptEvaluator.DEFAULT_CLASS_NAME,    // className
-            (Class) null,                          // optionalExtendedType
-            new Class[0],                          // implementedTypes
-            true,                                  // staticMethod
-            returnType,                            // returnType
-            ScriptEvaluator.DEFAULT_METHOD_NAME,   // methodName
-            parameterNames,                        // parameterNames
-            parameterTypes,                        // parameterTypes
-            thrownExceptions                       // thrownExceptions
-        );
+        this.setReturnType(returnType);
+        this.setParameters(parameterNames, parameterTypes);
+        this.setThrownExceptions(thrownExceptions);
+        this.setParentClassLoader(optionalParentClassLoader);
+        this.cook(optionalFileName, reader);
     }
 
     /**
-     * Parse a script from a sequence of {@link Scanner.Token}s delivered by the given
-     * {@link Scanner} object and compile it.
-     * 
-     * @see #ScriptEvaluator(Scanner, String, Class, Class[], boolean, Class, String, String[], Class[], Class[], ClassLoader)
+     * Equivalent to<pre>
+     * ScriptEvaluator se = new ScriptEvaluator();
+     * se.setReturnType(returnType);
+     * se.setParameters(parameterNames, parameterTypes);
+     * se.setThrownExceptions(thrownExceptions);
+     * se.setParentClassLoader(optionalParentClassLoader);
+     * se.cook(scanner);</pre>
+     *
+     * @see #ScriptEvaluator()
+     * @see #setReturnType(Class)
+     * @see #setParameters(String[], Class[])
+     * @see #setThrownExceptions(Class[])
+     * @see SimpleCompiler#setParentClassLoader(ClassLoader)
+     * @see Cookable#cook(Scanner)
      */
     public ScriptEvaluator(
         Scanner     scanner,
@@ -273,26 +287,32 @@ public class ScriptEvaluator extends EvaluatorBase {
         Class[]     thrownExceptions,
         ClassLoader optionalParentClassLoader // null = use current thread's context class loader
     ) throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
-        super(optionalParentClassLoader);
-        this.scanParseCompileLoad(
-            scanner,                             // scanner
-            ScriptEvaluator.DEFAULT_CLASS_NAME,  // className
-            (Class) null,                        // optionalExtendedType
-            new Class[0],                        // implementedTypes
-            true,                                // staticMethod
-            returnType,                          // returnType
-            ScriptEvaluator.DEFAULT_METHOD_NAME, // methodName
-            parameterNames,                      // parameterNames
-            parameterTypes,                      // parameterTypes
-            thrownExceptions                     // thrownExceptions
-        );
+        this.setReturnType(returnType);
+        this.setParameters(parameterNames, parameterTypes);
+        this.setThrownExceptions(thrownExceptions);
+        this.setParentClassLoader(optionalParentClassLoader);
+        this.cook(scanner);
     }
 
     /**
-     * Parse a script from a sequence of {@link Scanner.Token}s delivered by the given
-     * {@link Scanner} object and compile it.
-     * 
-     * @see #ScriptEvaluator(Scanner, String, Class, Class[], boolean, Class, String, String[], Class[], Class[], ClassLoader)
+     * Equivalent to<pre>
+     * ScriptEvaluator se = new ScriptEvaluator();
+     * se.setExtendedType(optionalExtendedType);
+     * se.setImplementedTypes(implementedTypes);
+     * se.setReturnType(returnType);
+     * se.setParameters(parameterNames, parameterTypes);
+     * se.setThrownExceptions(thrownExceptions);
+     * se.setParentClassLoader(optionalParentClassLoader);
+     * se.cook(scanner);</pre>
+     *
+     * @see #ScriptEvaluator()
+     * @see ClassBodyEvaluator#setExtendedType(Class)
+     * @see ClassBodyEvaluator#setImplementedTypes(Class[])
+     * @see #setReturnType(Class)
+     * @see #setParameters(String[], Class[])
+     * @see #setThrownExceptions(Class[])
+     * @see SimpleCompiler#setParentClassLoader(ClassLoader)
+     * @see Cookable#cook(Scanner)
      */
     public ScriptEvaluator(
         Scanner     scanner,
@@ -304,56 +324,40 @@ public class ScriptEvaluator extends EvaluatorBase {
         Class[]     thrownExceptions,
         ClassLoader optionalParentClassLoader // null = use current thread's context class loader
     ) throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
-        super(optionalParentClassLoader);
-        this.scanParseCompileLoad(
-            scanner,                             // scanner
-            ScriptEvaluator.DEFAULT_CLASS_NAME,  // className
-            optionalExtendedType,                // optionalExtendedType
-            implementedTypes,                    // implementedTypes
-            true,                                // staticMethod
-            returnType,                          // returnType
-            ScriptEvaluator.DEFAULT_METHOD_NAME, // methodName
-            parameterNames,                      // parameterName
-            parameterTypes,                      // parameterTypes
-            thrownExceptions                     // thrownExceptions
-        );
+        this.setExtendedType(optionalExtendedType);
+        this.setImplementedTypes(implementedTypes);
+        this.setReturnType(returnType);
+        this.setParameters(parameterNames, parameterTypes);
+        this.setThrownExceptions(thrownExceptions);
+        this.setParentClassLoader(optionalParentClassLoader);
+        this.cook(scanner);
     }
 
     /**
-     * Construct a script evaluator that processes the given script
-     * with the given return type, parameter names and types. A script is a
-     * sequence of valid Java<sup>TM</sup> statements.
-     * <p>
-     * If the return type of the script is {@link Void#TYPE}, then all RETURN
-     * statements must have no value, and the script need not be concluded by a RETURN
-     * statement.
-     * <p>
-     * <code>parameterNames</code> and <code>parameterTypes</code> must have the same length.
-     * <p>
-     * The <code>optionalParentClassLoader</code> serves two purposes:
-     * <ul>
-     *   <li>It is used to look for classes referenced by the script.
-     *   <li>It is used to load the generated Java<sup>TM</sup> class
-     *   into the JVM; directly if it is a subclass of {@link ByteArrayClassLoader},
-     *   or by creation of a temporary {@link ByteArrayClassLoader} if not.
-     * </ul>
-     * A <code>null</code> <code>optionalParentClassLoader</code> means to use the current
-     * thread's context class loader.
-     * <p>
-     * A number of constructors exist that provide useful default values for the various
-     * parameters, or parse their script from a {@link String}, an {@link InputStream}
-     * or a {@link Reader} instead of a {@link Scanner}.
+     * Equivalent to<pre>
+     * ScriptEvaluator se = new ScriptEvaluator();
+     * se.setClassName(className);
+     * se.setExtendedType(optionalExtendedType);
+     * se.setImplementedTypes(implementedTypes);
+     * se.setStaticMethod(staticMethod);
+     * se.setReturnType(returnType);
+     * se.setMethodName(methodName);
+     * se.setParameters(parameterNames, parameterTypes);
+     * se.setThrownExceptions(thrownExceptions);
+     * se.setParentClassLoader(optionalParentClassLoader);
+     * se.cook(scanner);</pre>
      *
-     * @param scanner Source of tokens to parse
-     * @param className Name of the temporary class (uncritical)
-     * @param optionalExtendedType Superclass of the temporary class or <code>null</code>
-     * @param implementedTypes The interfaces that the the generated object implements (all methods must be implemented by the <code>optionalExtendedType</code>)
-     * @param returnType The return type of the temporary method that implements the script, e.g. {@link Double#TYPE} or {@link Void#TYPE}
-     * @param methodName The name of the temporary method (uncritical)
-     * @param parameterNames The names of the script parameters, e.g. "i" and "j".
-     * @param parameterTypes The types of the script parameters, e.g. {@link Integer#TYPE} or {@link Double#TYPE}.
-     * @param thrownExceptions The exceptions that the script is allowed to throw, e.g. {@link IOException}<code>.class</code>.
-     * @param optionalParentClassLoader Loads referenced classes
+     * @see #ScriptEvaluator()
+     * @see ClassBodyEvaluator#setClassName(String)
+     * @see ClassBodyEvaluator#setExtendedType(Class)
+     * @see ClassBodyEvaluator#setImplementedTypes(Class[])
+     * @see #setStaticMethod(boolean)
+     * @see #setReturnType(Class)
+     * @see #setMethodName(String)
+     * @see #setParameters(String[], Class[])
+     * @see #setThrownExceptions(Class[])
+     * @see SimpleCompiler#setParentClassLoader(ClassLoader)
+     * @see Cookable#cook(Scanner)
      */
     public ScriptEvaluator(
         Scanner     scanner,
@@ -368,54 +372,66 @@ public class ScriptEvaluator extends EvaluatorBase {
         Class[]     thrownExceptions,
         ClassLoader optionalParentClassLoader // null = use current thread's context class loader
     ) throws Scanner.ScanException, Parser.ParseException, CompileException, IOException {
-        super(optionalParentClassLoader);
-        this.scanParseCompileLoad(
-            scanner,              // scanner
-            className,            // className
-            optionalExtendedType, // optionalExtendedType
-            implementedTypes,     // implementedTypes
-            staticMethod,         // staticMethod
-            returnType,           // returnType
-            methodName,           // methodName
-            parameterNames,       // parameterNames
-            parameterTypes,       // parameterTypes
-            thrownExceptions      // thrownExceptions
-        );
+        this.setClassName(className);
+        this.setExtendedType(optionalExtendedType);
+        this.setImplementedTypes(implementedTypes);
+        this.setStaticMethod(staticMethod);
+        this.setReturnType(returnType);
+        this.setMethodName(methodName);
+        this.setParameters(parameterNames, parameterTypes);
+        this.setThrownExceptions(thrownExceptions);
+        this.setParentClassLoader(optionalParentClassLoader);
+        this.cook(scanner);
+    }
+
+    public ScriptEvaluator() {}
+
+    /**
+     * Define whether the generated method should be STATIC or not. Defaults to <code>true</code>.
+     */
+    public void setStaticMethod(boolean staticMethod) {
+        this.staticMethod = staticMethod;
     }
 
     /**
-     * Workhorse method used by all {@link ScriptEvaluator} constructors.
+     * Define the return type of the generated method. Defaults to <code>void.class</code>.
      */
-    private void scanParseCompileLoad(
-        Scanner  scanner,
-        String   className,
-        Class    optionalExtendedType,
-        Class[]  implementedTypes,
-        boolean  staticMethod,
-        Class    returnType,
-        String   methodName,
-        String[] parameterNames,
-        Class[]  parameterTypes,
-        Class[]  thrownExceptions
-    ) throws Scanner.ScanException, Parser.ParseException, CompileException, IOException {
-        if (parameterNames.length != parameterTypes.length) throw new RuntimeException("Lengths of \"parameterNames\" and \"parameterTypes\" do not match");
+    public void setReturnType(Class returnType) {
+        this.returnType = returnType;
+    }
 
-        // Create a temporary compilation unit.
-        Java.CompilationUnit compilationUnit = new Java.CompilationUnit(scanner.peek().getLocation().getFileName());
+    /**
+     * Define the name of the generated method. Defaults to {@link #DEFAULT_METHOD_NAME}.
+     */
+    public void setMethodName(String methodName) {
+        this.methodName = methodName;
+    }
 
-        // Parse import declarations.
-        this.parseImportDeclarations(compilationUnit, scanner);
+    /**
+     * Define the names and types of the parameters of the generated method.
+     */
+    public void setParameters(String[] parameterNames, Class[] parameterTypes) {
+        if (parameterNames.length != parameterTypes.length) throw new IllegalArgumentException("Parameter names and types counts do not match");
+        this.parameterNames = parameterNames;
+        this.parameterTypes = parameterTypes;
+    }
+
+    /**
+     * Define the exceptions that the generated method may throw.
+     */
+    public void setThrownExceptions(Class[] thrownExceptions) {
+        if (thrownExceptions == null) throw new NullPointerException("Zero thrown exceptions must be specified as \"new Class[0]\", not \"null\"");
+        this.thrownExceptions = thrownExceptions;
+    }
+
+    protected void internalCook(Scanner scanner) throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
+        Java.CompilationUnit compilationUnit = this.makeCompilationUnit(scanner);
 
         // Create class, method and block.
         Java.Block block = this.addClassMethodBlockDeclaration(
-            scanner.peek().getLocation(),           // location
-            compilationUnit,                        // compilationUnit
-            className,                              // className
-            optionalExtendedType, implementedTypes, // optionalExtendedType, implementedTypes
-            staticMethod,                           // staticMethod
-            returnType, methodName,                 // returnType, methodName
-            parameterNames, parameterTypes,         // parameterNames, parameterTypes
-            thrownExceptions                        // thrownExceptions
+            scanner.location(), // location
+            compilationUnit,    // compilationUnit
+            this.returnType     // returnType
         );
         
         // Parse block statements.
@@ -424,25 +440,89 @@ public class ScriptEvaluator extends EvaluatorBase {
             block.addStatement(parser.parseBlockStatement());
         }
 
-        // Compile and load it.
-        Class c;
-        try {
-            c = this.compileAndLoad(
-                compilationUnit,                                    // compilationUnit
-                DebuggingInformation.DEFAULT_DEBUGGING_INFORMATION, // debuggingInformation
-                className                                           // className
-            );
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException();
-        }
+        this.compileToMethod(compilationUnit);
+    }
 
-        // Find script method by name.
+    protected void compileToMethod(Java.CompilationUnit compilationUnit) throws CompileException {
+
+        // Compile and load the compilation unit.
+        Class c = this.compileToClass(
+            compilationUnit,                                    // compilationUnit
+            DebuggingInformation.DEFAULT_DEBUGGING_INFORMATION, // debuggingInformation
+            this.className                                      // className
+        );
+
+        // Find the script method by name.
         try {
-            this.method = c.getMethod(methodName, parameterTypes);
+            this.method = c.getMethod(this.methodName, this.parameterTypes);
         } catch (NoSuchMethodException ex) {
-            throw new RuntimeException(ex.toString());
+            throw new RuntimeException("SNO: Loaded class does not declare method \"" + this.methodName + "\"");
         }
-        if (this.method == null) throw new RuntimeException("Method \"" + methodName + "\" not found");
+    }
+
+    /**
+     * To the given {@link Java.CompilationUnit}, add
+     * <ul>
+     *   <li>A package member class declaration with the given name, superclass and interfaces
+     *   <li>A public method declaration with the given return type, name, parameter
+     *       names and values and thrown exceptions
+     *   <li>A block 
+     * </ul> 
+     * @param location
+     * @param compilationUnit
+     * @param className
+     * @param optionalExtendedType (null == {@link Object})
+     * @param implementedTypes
+     * @param staticMethod Whether the method should be declared "static"
+     * @param returnType Return type of the declared method
+     * @param methodName
+     * @param parameterNames
+     * @param parameterTypes
+     * @param thrownExceptions
+     * @return The created {@link Java.Block} object
+     * @throws Parser.ParseException
+     */
+    protected Java.Block addClassMethodBlockDeclaration(
+        Location             location,
+        Java.CompilationUnit compilationUnit,
+        Class                returnType
+    ) throws Parser.ParseException {
+        if (this.parameterNames.length != this.parameterTypes.length) throw new RuntimeException("Lengths of \"parameterNames\" and \"parameterTypes\" do not match");
+
+        // Add class declaration.
+        Java.ClassDeclaration cd = this.addPackageMemberClassDeclaration(
+            location,
+            compilationUnit
+        );
+
+        // Add method declaration.
+        Java.Block b = new Java.Block(location);
+        Java.FunctionDeclarator.FormalParameter[] fps = new Java.FunctionDeclarator.FormalParameter[this.parameterNames.length];
+        for (int i = 0; i < fps.length; ++i) {
+            fps[i] = new Java.FunctionDeclarator.FormalParameter(
+                location,                                           // location
+                true,                                               // finaL
+                this.classToType(location, this.parameterTypes[i]), // type
+                this.parameterNames[i]                              // name
+            );
+        }
+        Java.MethodDeclarator md = new Java.MethodDeclarator(
+            location,                                             // location
+            null,                                                 // optionalDocComment
+            (                                                     // modifiers
+                this.staticMethod ?
+                (short) (Mod.PUBLIC | Mod.STATIC) :
+                (short) Mod.PUBLIC
+            ),
+            this.classToType(location, returnType),               // type
+            this.methodName,                                      // name
+            fps,                                                  // formalParameters
+            this.classesToTypes(location, this.thrownExceptions), // thrownExceptions
+            b                                                     // optionalBody
+        );
+        cd.addDeclaredMethod(md);
+
+        return b;
     }
 
     /**
@@ -459,16 +539,8 @@ public class ScriptEvaluator extends EvaluatorBase {
         Class    interfaceToImplement,
         String[] parameterNames
     ) throws CompileException, Parser.ParseException, Scanner.ScanException {
-        try {
-            return ScriptEvaluator.createFastScriptEvaluator(
-                new Scanner(null, new StringReader(script)), // scanner
-                interfaceToImplement,                        // interfaceToImplement
-                parameterNames,                              // parameterNames
-                null                                         // optionalParentClassLoader
-            );
-        } catch (IOException ex) {
-            throw new RuntimeException("SNO: StringReader throws IOException!?");
-        }
+        ScriptEvaluator se = new ScriptEvaluator();
+        return ScriptEvaluator.createFastEvaluator(se, script, parameterNames, interfaceToImplement);
     }
 
     /**
@@ -507,14 +579,9 @@ public class ScriptEvaluator extends EvaluatorBase {
         String[]    parameterNames,
         ClassLoader optionalParentClassLoader
     ) throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
-        return ScriptEvaluator.createFastScriptEvaluator(
-            scanner,                            // scanner
-            ScriptEvaluator.DEFAULT_CLASS_NAME, // className
-            null,                               // optionalExtendedType
-            interfaceToImplement,               // interfaceToImplement
-            parameterNames,                     // parameterNames
-            optionalParentClassLoader           // optionalParentClassLoader
-        );
+        ScriptEvaluator se = new ScriptEvaluator();
+        se.setParentClassLoader(optionalParentClassLoader);
+        return ScriptEvaluator.createFastEvaluator(se, scanner, parameterNames, interfaceToImplement);
     }
 
     /**
@@ -524,12 +591,12 @@ public class ScriptEvaluator extends EvaluatorBase {
      * Notice: The <code>interfaceToImplement</code> must either be declared <code>public</code>,
      * or with package scope in the same package as <code>className</code>.
      * 
-     * @param scanner Source of script tokens
-     * @param className Name of generated class
-     * @param optionalExtendedType Class to extend
-     * @param interfaceToImplement Must declare exactly the one method that defines the expression's signature
-     * @param parameterNames The expression references the parameters through these names
-     * @param optionalParentClassLoader Loads referenced classes
+     * @param scanner                   Source of script tokens
+     * @param className                 Name of generated class
+     * @param optionalExtendedType      Class to extend
+     * @param interfaceToImplement      Must declare exactly the one method that defines the expression's signature
+     * @param parameterNames            The expression references the parameters through these names
+     * @param optionalParentClassLoader Used to load referenced classes, defaults to the current thread's "context class loader"
      * @return an object that implements the given interface and extends the <code>optionalExtendedType</code>
      */
     public static Object createFastScriptEvaluator(
@@ -540,25 +607,68 @@ public class ScriptEvaluator extends EvaluatorBase {
         String[]    parameterNames,
         ClassLoader optionalParentClassLoader
     ) throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
+        ScriptEvaluator se = new ScriptEvaluator();
+        se.setClassName(className);
+        se.setExtendedType(optionalExtendedType);
+        se.setParentClassLoader(optionalParentClassLoader);
+        return ScriptEvaluator.createFastEvaluator(se, scanner, parameterNames, interfaceToImplement);
+    }
+
+    public static Object createFastScriptEvaluator(
+        Scanner     scanner,
+        String[]    optionalDefaultImports,
+        String      className,
+        Class       optionalExtendedType,
+        Class       interfaceToImplement,
+        String[]    parameterNames,
+        ClassLoader optionalParentClassLoader
+    ) throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
+        ScriptEvaluator se = new ScriptEvaluator();
+        se.setClassName(className);
+        se.setExtendedType(optionalExtendedType);
+        se.setDefaultImports(optionalDefaultImports);
+        se.setParentClassLoader(optionalParentClassLoader);
+        return ScriptEvaluator.createFastEvaluator(se, scanner, parameterNames, interfaceToImplement);
+    }
+
+    public static Object createFastEvaluator(
+        ScriptEvaluator se,
+        String          s,
+        String[]        parameterNames,
+        Class           interfaceToImplement
+    ) throws CompileException, Parser.ParseException, Scanner.ScanException {
+        try {
+            return ScriptEvaluator.createFastEvaluator(
+                se,
+                new Scanner(null, new StringReader(s)),
+                parameterNames,
+                interfaceToImplement
+            );
+        } catch (IOException ex) {
+            throw new RuntimeException("IOException despite StringReader");
+        }
+    }
+
+    public static Object createFastEvaluator(
+        ScriptEvaluator se,
+        Scanner         scanner,
+        String[]        parameterNames,
+        Class           interfaceToImplement
+    ) throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
         if (!interfaceToImplement.isInterface()) throw new RuntimeException("\"" + interfaceToImplement + "\" is not an interface");
 
         Method[] methods = interfaceToImplement.getDeclaredMethods();
         if (methods.length != 1) throw new RuntimeException("Interface \"" + interfaceToImplement + "\" must declare exactly one method");
         Method methodToImplement = methods[0];
 
-        Class c = new ScriptEvaluator(
-            scanner,                               // scanner
-            className,                             // className
-            optionalExtendedType,                  // optionalExtendedType
-            new Class[] { interfaceToImplement },  // implementedTypes
-            false,                                 // staticMethod
-            methodToImplement.getReturnType(),     // returnType
-            methodToImplement.getName(),           // methodName
-            parameterNames,                        // parameterNames
-            methodToImplement.getParameterTypes(), // parameterTypes
-            methodToImplement.getExceptionTypes(), // thrownExceptions
-            optionalParentClassLoader              // optionalParentClassLoader
-        ).getMethod().getDeclaringClass();
+        se.setImplementedTypes(new Class[] { interfaceToImplement });
+        se.setStaticMethod(false);
+        se.setReturnType(methodToImplement.getReturnType());
+        se.setMethodName(methodToImplement.getName());
+        se.setParameters(parameterNames, methodToImplement.getParameterTypes());
+        se.setThrownExceptions(methodToImplement.getExceptionTypes());
+        se.cook(scanner);
+        Class c = se.getMethod().getDeclaringClass();
         try {
             return c.newInstance();
         } catch (InstantiationException e) {
@@ -571,31 +681,24 @@ public class ScriptEvaluator extends EvaluatorBase {
     }
 
     /**
-     * Evaluates a script with concrete parameter values.
-     *
+     * Calls the generated method with concrete parameter values.
      * <p>
-     *   Each parameter value must have the same type as specified through
-     *   the "parameterTypes" parameter of
-     *   {@link org.codehaus.janino.ScriptEvaluator#ScriptEvaluator(String,
-     *   Class, String[], Class[])}.
-     * </p>
+     * Each parameter value must have the same type as specified through
+     * the "parameterTypes" parameter of
+     * {@link #setParameters(String[], Class[])}.
      * <p>
-     *   Parameters of primitive type must passed with their wrapper class
-     *   objects.
-     * </p>
+     * Parameters of primitive type must passed with their wrapper class
+     * objects.
      * <p>
-     *   The object returned has the class specified through the "returnType"
-     *   parameter of
-     *   {@link org.codehaus.janino.ScriptEvaluator#ScriptEvaluator(String,
-     *   Class, String[], Class[])}.
-     * </p>
+     * The object returned has the class as specified through
+     * {@link #setReturnType(Class)}.
      * <p>
-     *   This method is thread-safe.
-     * </p>
+     * This method is thread-safe.
      *
      * @param parameterValues The concrete parameter values.
      */
     public Object evaluate(Object[] parameterValues) throws InvocationTargetException {
+        if (this.method == null) throw new IllegalStateException("Must only be called after \"cook()\"");
         try {
             return this.method.invoke(null, parameterValues);
         } catch (IllegalAccessException ex) {
@@ -604,13 +707,14 @@ public class ScriptEvaluator extends EvaluatorBase {
     }
 
     /**
-     * If, for any reason, somebody needs the
-     * {@link Method} object...
-     *
+     * Returns the loaded {@link java.lang.reflect.Method}.
+     * <p>
+     * This method must only be called after {@link #cook(Scanner)}.
+     * <p>
+     * This method must not be called for instances of derived classes.
      */
     public Method getMethod() {
+        if (this.method == null) throw new IllegalStateException("Must only be called after \"cook()\"");
         return this.method;
     }
-
-    private Method method;
 }

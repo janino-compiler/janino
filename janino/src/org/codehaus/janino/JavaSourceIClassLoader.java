@@ -37,8 +37,7 @@ package org.codehaus.janino;
 import java.io.*;
 import java.util.*;
 
-import org.codehaus.janino.util.ClassFile;
-import org.codehaus.janino.util.TunnelException;
+import org.codehaus.janino.util.*;
 import org.codehaus.janino.util.resource.*;
 
 
@@ -94,11 +93,9 @@ final class JavaSourceIClassLoader extends IClassLoader {
 
     /**
      * @param type field descriptor of the {@link IClass} to load, e.g. "Lpkg1/pkg2/Outer$Inner;"
-     * @throws TunnelException wraps a {@link Scanner.ScanException}
-     * @throws TunnelException wraps a {@link Parser.ParseException}
-     * @throws TunnelException wraps a {@link IOException}
+     * @throws ClassNotFoundException if an exception was raised while loading the {@link IClass}
      */
-    public IClass findIClass(final String type) {
+    public IClass findIClass(final String type) throws ClassNotFoundException {
         if (JavaSourceIClassLoader.DEBUG) System.out.println("type = " + type);
     
         // Class type.
@@ -118,25 +115,26 @@ final class JavaSourceIClassLoader extends IClassLoader {
             } 
         }
 
+        // Find source file.
+        Resource sourceResource = this.sourceFinder.findResource(ClassFile.getSourceResourceName(className));
+        if (sourceResource == null) return null;
+        if (JavaSourceIClassLoader.DEBUG) System.out.println("sourceURL=" + sourceResource);
+
         try {
 
-            // Find source file.
-            Resource sourceResource = this.sourceFinder.findResource(ClassFile.getSourceResourceName(className));
-            if (sourceResource == null) return null;
-            if (JavaSourceIClassLoader.DEBUG) System.out.println("sourceURL=" + sourceResource);
-
             // Scan and parse the source file.
-            UnitCompiler uc;
             InputStream inputStream = sourceResource.open();
+            Java.CompilationUnit cu;
             try {
                 Scanner scanner = new Scanner(sourceResource.getFileName(), inputStream, this.optionalCharacterEncoding);
                 scanner.setWarningHandler(this.optionalWarningHandler);
                 Parser parser = new Parser(scanner);
                 parser.setWarningHandler(this.optionalWarningHandler);
-                uc = new UnitCompiler(parser.parseCompilationUnit(), this);
+                cu = parser.parseCompilationUnit();
             } finally {
                 try { inputStream.close(); } catch (IOException ex) {}
             }
+            UnitCompiler uc = new UnitCompiler(cu, this);
             uc.setCompileErrorHandler(this.optionalCompileErrorHandler);
             uc.setWarningHandler(this.optionalWarningHandler);
 
@@ -149,11 +147,11 @@ final class JavaSourceIClassLoader extends IClassLoader {
             this.defineIClass(res);
             return res;
         } catch (Scanner.ScanException e) {
-            throw new TunnelException(e);
+            throw new ClassNotFoundException("Parsing compilation unit \"" + sourceResource + "\"", e);
         } catch (Parser.ParseException e) {
-            throw new TunnelException(e);
+            throw new ClassNotFoundException("Parsing compilation unit \"" + sourceResource + "\"", e);
         } catch (IOException e) {
-            throw new TunnelException(e);
+            throw new ClassNotFoundException("Parsing compilation unit \"" + sourceResource + "\"", e);
         }
     }
 }

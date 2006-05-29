@@ -79,26 +79,17 @@ public class ByteArrayClassLoader extends ClassLoader {
     /**
      * An object is regarded equal to <code>this</code> iff
      * <ul>
-     *   <li>It is an instance of {@link ByteArrayClassLoader}
-     *   <li>{@link #equals(ByteArrayClassLoader)} returns <code>true</code>
-     * </ul>
-     * @see #equals(ByteArrayClassLoader)
-     */
-    public boolean equals(Object that) {
-        return that instanceof ByteArrayClassLoader && this.equals((ByteArrayClassLoader) that);
-    }
-
-    /**
-     * Two {@link ByteArrayClassLoader}s are regarded equal iff
-     * <ul>
+     *   <li>It is also an instance of {@link ByteArrayClassLoader}
      *   <li>Both have the same parent {@link ClassLoader}
      *   <li>Exactly the same classes (name, bytecode) were added to both
      * </ul>
      * Roughly speaking, equal {@link ByteArrayClassLoader}s will return functionally identical
      * {@link Class}es on {@link ClassLoader#loadClass(java.lang.String)}.
      */
-    public boolean equals(ByteArrayClassLoader that) {
-        if (this == that) return true;
+    public boolean equals(Object o) {
+        if (!(o instanceof ByteArrayClassLoader)) return false;
+        if (this == o) return true;
+        ByteArrayClassLoader that = (ByteArrayClassLoader) o;
 
         if (this.getParent() != that.getParent()) return false;
 
@@ -106,8 +97,8 @@ public class ByteArrayClassLoader extends ClassLoader {
         for (Iterator it = this.classes.entrySet().iterator(); it.hasNext();) {
             Map.Entry me = (Map.Entry) it.next();
             byte[] ba = (byte[]) that.classes.get(me.getKey());
-            if (ba == null) return false;
-            if (!Arrays.equals((byte[]) me.getValue(), ba)) return false;
+            if (ba == null) return false; // Key missing in "that".
+            if (!Arrays.equals((byte[]) me.getValue(), ba)) return false; // Byte arrays differ.
         }
         return true;
     }

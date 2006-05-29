@@ -76,8 +76,8 @@ public class JGrep {
     public static void main(String[] args) {
         int idx = 0;
 
-        StringPattern[] optionalCombinedDirectoryNamePattern = null;
-        StringPattern[] optionalCombinedFileNamePattern = null;
+        StringPattern[] directoryNamePatterns = StringPattern.PATTERNS_ALL;
+        StringPattern[] fileNamePatterns = new StringPattern[] { new StringPattern("*.java") };
         File[]          classPath = new File[] { new File(".") };
         File[]          optionalExtDirs = null;
         File[]          optionalBootClassPath = null;
@@ -88,10 +88,10 @@ public class JGrep {
             String arg = args[idx];
             if (arg.charAt(0) != '-') break;
             if (arg.equals("-dirs")) {
-                optionalCombinedDirectoryNamePattern = StringPattern.parseCombinedPattern(args[++idx]);
+                directoryNamePatterns = StringPattern.parseCombinedPattern(args[++idx]);
             } else
             if (arg.equals("-files")) {
-                optionalCombinedFileNamePattern = StringPattern.parseCombinedPattern(args[++idx]);
+                fileNamePatterns = StringPattern.parseCombinedPattern(args[++idx]);
             } else
             if (arg.equals("-classpath")) {
                 classPath = PathResourceFinder.parsePath(args[++idx]);
@@ -201,9 +201,9 @@ public class JGrep {
         try {
             jGrep.jGrep(
                 rootDirectories,
-                optionalCombinedDirectoryNamePattern,
-                optionalCombinedFileNamePattern,
-                mits                                  // methodInvocationTargets
+                directoryNamePatterns,
+                fileNamePatterns,
+                mits                   // methodInvocationTargets
             );
         } catch (Exception e) {
             System.err.println(e.toString());
@@ -481,30 +481,24 @@ public class JGrep {
 
     public void jGrep(
         File[]                rootDirectories,
-        final StringPattern[] optionalCombinedDirectoryNamePattern,
-        final StringPattern[] optionalCombinedFileNamePattern,
+        final StringPattern[] directoryNamePatterns,
+        final StringPattern[] fileNamePatterns,
         List                  methodInvocationTargets // MethodInvocationTarget
     ) throws Scanner.ScanException, Parser.ParseException, CompileException, IOException {
-        this.benchmark.report("Root dirs",               rootDirectories                     );
-        this.benchmark.report("Directory name patterns", optionalCombinedDirectoryNamePattern);
-        this.benchmark.report("File name patterns",      optionalCombinedFileNamePattern     );
+        this.benchmark.report("Root dirs",               rootDirectories                );
+        this.benchmark.report("Directory name patterns", directoryNamePatterns          );
+        this.benchmark.report("File name patterns",      fileNamePatterns);
 
         this.jGrep(DirectoryIterator.traverseDirectories(
             rootDirectories,              // rootDirectories
             new FilenameFilter() {        // directoryNameFilter
                 public boolean accept(File dir, String name) {
-                    return (
-                        optionalCombinedDirectoryNamePattern == null ? true :
-                        StringPattern.matches(optionalCombinedDirectoryNamePattern, name)
-                    );
+                    return StringPattern.matches(directoryNamePatterns, name);
                 }
             },
             new FilenameFilter() {        // fileNameFilter
                 public boolean accept(File dir, String name) {
-                    return (
-                        optionalCombinedFileNamePattern == null ? name.endsWith(".java") :
-                        StringPattern.matches(optionalCombinedFileNamePattern, name)
-                    );
+                    return StringPattern.matches(fileNamePatterns, name);
                 }
             }
         ), methodInvocationTargets);
@@ -522,9 +516,8 @@ public class JGrep {
             while (sourceFilesIterator.hasNext()) {
                 File sourceFile = (File) sourceFilesIterator.next();
                 UnitCompiler uc = new UnitCompiler(this.parseCompilationUnit(
-                    sourceFile.getPath(),                                     // fileName
-                    new BufferedInputStream(new FileInputStream(sourceFile)), // inputStream
-                    this.optionalCharacterEncoding                            // optionalCharacterEncoding
+                    sourceFile,                    // sourceFile
+                    this.optionalCharacterEncoding // optionalCharacterEncoding
                 ), this.iClassLoader);
                 this.parsedCompilationUnits.add(uc);
                 ++sourceFileCount;
@@ -539,6 +532,7 @@ public class JGrep {
             for (Iterator it = this.parsedCompilationUnits.iterator(); it.hasNext();) {
                 final UnitCompiler uc = (UnitCompiler) it.next();
                 this.benchmark.beginReporting("Grepping \"" + uc.compilationUnit.optionalFileName + "\"");
+                class UCE extends RuntimeException { final CompileException ce; UCE(CompileException ce) { this.ce = ce; } }
                 try {
                     new Traverser() {
     
@@ -547,7 +541,7 @@ public class JGrep {
                             try {
                                 this.match(mi, uc.findIMethod(mi));
                             } catch (CompileException ex) {
-                                throw new TunnelException(ex);
+                                throw new UCE(ex);
                             }
                             super.traverseMethodInvocation(mi);
                         }
@@ -557,7 +551,7 @@ public class JGrep {
                             try {
                                 this.match(scmi, uc.findIMethod(scmi));
                             } catch (CompileException ex) {
-                                throw new TunnelException(ex);
+                                throw new UCE(ex);
                             }
                             super.traverseSuperclassMethodInvocation(scmi);
                         }
@@ -587,10 +581,8 @@ public class JGrep {
                             }
                         }
                     }.traverseCompilationUnit(uc.compilationUnit);
-                } catch (TunnelException ex) {
-                    Throwable ex2 = ex.getDelegate();
-                    if (ex2 instanceof CompileException) throw (CompileException) ex2;
-                    throw new RuntimeException(ex2.toString());
+                } catch (UCE uce) {
+                    throw uce.ce;
                 } finally {
                     this.benchmark.endReporting();
                 }
@@ -607,24 +599,21 @@ public class JGrep {
      * @return the parsed compilation unit
      */
     private Java.CompilationUnit parseCompilationUnit(
-        String      fileName,
-        InputStream inputStream,
-        String      optionalCharacterEncoding
+        File   sourceFile,
+        String optionalCharacterEncoding
     ) throws Scanner.ScanException, Parser.ParseException, IOException {
-        Scanner scanner = new Scanner(fileName, inputStream, optionalCharacterEncoding);
+        InputStream is = new BufferedInputStream(new FileInputStream(sourceFile));
         try {
-            Parser parser = new Parser(scanner);
+            Parser parser = new Parser(new Scanner(sourceFile.getPath(), is, optionalCharacterEncoding));
 
-            this.benchmark.beginReporting("Parsing \"" + fileName + "\"");
+            this.benchmark.beginReporting("Parsing \"" + sourceFile + "\"");
             try {
                 return parser.parseCompilationUnit();
             } finally {
                 this.benchmark.endReporting();
             }
         } finally {
-
-            // This closes the "inputStream".
-            scanner.close();
+            try { is.close(); } catch (IOException ex) {}
         }
     }
 
@@ -677,11 +666,8 @@ public class JGrep {
 
         /**
          * @param type field descriptor of the {@IClass} to load, e.g. "Lpkg1/pkg2/Outer$Inner;"
-         * @throws TunnelException wraps a {@link Scanner.ScanException}
-         * @throws TunnelException wraps a {@link Parser.ParseException}
-         * @throws TunnelException wraps a {@link IOException}
          */
-        protected IClass findIClass(final String type) throws TunnelException {
+        protected IClass findIClass(final String type) {
             if (JGrep.DEBUG) System.out.println("type = " + type);
 
             // Class type.

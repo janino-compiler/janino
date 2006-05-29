@@ -267,10 +267,6 @@ public class JavaSourceClassLoader extends ClassLoader {
      * Implementation of {@link ClassLoader#findClass(String)}.
      * 
      * @throws ClassNotFoundException
-     * @throws TunnelException wraps a {@link Scanner.ScanException}
-     * @throws TunnelException wraps a {@link Parser.ParseException}
-     * @throws TunnelException wraps a {@link CompileException}
-     * @throws TunnelException wraps a {@link IOException}
      */
     protected Class findClass(String name) throws ClassNotFoundException {
 
@@ -289,7 +285,7 @@ public class JavaSourceClassLoader extends ClassLoader {
      *
      * @return <code>null</code> if no source code could be found
      */
-    protected Map generateBytecodes(String name) {
+    protected Map generateBytecodes(String name) throws ClassNotFoundException {
         if (this.iClassLoader.loadIClass(Descriptor.fromClassName(name)) == null) return null;
 
         Map bytecodes = new HashMap(); // String name => byte[] bytecode
@@ -303,7 +299,7 @@ public class JavaSourceClassLoader extends ClassLoader {
                     try {
                         cfs = uc.compileUnit(this.debuggingInformation);
                     } catch (CompileException ex) {
-                        throw new TunnelException(ex);
+                        throw new ClassNotFoundException("Compiling unit \"" + uc + "\"", ex);
                     }
                     for (int i = 0; i < cfs.length; ++i) {
                         ClassFile cf = cfs[i];

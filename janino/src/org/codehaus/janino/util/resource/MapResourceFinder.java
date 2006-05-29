@@ -34,24 +34,32 @@
 
 package org.codehaus.janino.util.resource;
 
+import java.io.*;
 import java.util.*;
 
-import org.codehaus.janino.util.iterator.IteratorCollection;
-
-
 /**
- * A {@link org.codehaus.janino.util.resource.ResourceFinder} that examines a set
- * of {@link org.codehaus.janino.util.resource.ResourceFinder}s lazily as it
- * searches for resources.
- *
- * @see org.codehaus.janino.util.iterator.IteratorCollection
+ * A {@link org.codehaus.janino.util.resource.ResourceFinder} that provides access
+ * to resource stored as byte arrays in a {@link java.util.Map}.
  */
-public class LazyMultiResourceFinder extends MultiResourceFinder {
+public class MapResourceFinder extends ResourceFinder {
+    private final Map map;
+    private long      lastModified = 0L;
 
-    /**
-     * @param resourceFinders delegate {@link ResourceFinder}s
-     */
-    public LazyMultiResourceFinder(Iterator resourceFinders) {
-        super(new IteratorCollection(resourceFinders));
+    public MapResourceFinder(Map map) {
+        this.map = map;
+    }
+    public void setLastModified(long lastModified) {
+        this.lastModified = lastModified;
+    }
+
+    public final Resource findResource(final String resourceName) {
+        final byte[] ba = (byte[]) this.map.get(resourceName);
+        if (ba == null) return null;
+
+        return new Resource() {
+            public InputStream open() throws IOException { return new ByteArrayInputStream(ba); }
+            public String getFileName()                  { return resourceName; }
+            public long lastModified()                   { return MapResourceFinder.this.lastModified; }
+        };
     }
 }

@@ -37,20 +37,26 @@ package org.codehaus.janino.util.resource;
 import java.io.*;
 
 /**
- * Stores a stream of bytes in a named resource.
+ * Opens a resource, characterized by a name, for writing.
+ * <p>
+ * There also exists a concept {@link org.codehaus.janino.util.resource.ResourceFinder} that
+ * finds {@link org.codehaus.janino.util.resource.Resource}s for reading.
+ *
+ * @see org.codehaus.janino.util.resource.ResourceFinder
  */
 public interface ResourceCreator {
 
-	/**
-	 * Create the designated resource.
-	 * 
-	 * @return bytes written to this {@link OutputStream} are stored in the resource
-	 * @throws IOException
-	 */
+    /**
+     * Create the designated resource.
+     *
+     * @param resourceName Designates the resource; typically structured by slashes ("/") like "<code>com/foo/pkg/Bar.class</code>"
+     * @return bytes written to this {@link OutputStream} are stored in the resource
+     * @throws IOException Problems creating the resource
+     */
     public abstract OutputStream createResource(String resourceName) throws IOException;
 
     /**
-     * Deletes teh resource with the given name.
+     * Deletes the resource with the given name.
      * 
      * @return <code>false</code> if the resource could not be deleted
      */

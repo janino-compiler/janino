@@ -36,12 +36,9 @@ package org.codehaus.janino;
 
 import java.io.*;
 
-
 import org.apache.tools.ant.taskdefs.compilers.*;
 import org.apache.tools.ant.types.Path;
-import org.codehaus.janino.util.*;
-import org.codehaus.janino.util.enumerator.EnumeratorFormatException;
-import org.codehaus.janino.util.enumerator.EnumeratorSet;
+import org.codehaus.janino.util.enumerator.*;
 
 /**
  * A simple {@link org.apache.tools.ant.taskdefs.compilers.CompilerAdapter} for the "ant" tool
@@ -87,7 +84,7 @@ public class AntCompilerAdapter extends DefaultCompilerAdapter {
         File[] sourceFiles = this.compileList;
 
         // Determine output directory.
-        File optionalDestinationDirectory = this.destDir;
+        File destinationDirectory = this.destDir == null ? Compiler.NO_DESTINATION_DIRECTORY : this.destDir;
 
         // Determine the source path.
         File[] optionalSourcePath = AntCompilerAdapter.pathToFiles(
@@ -135,12 +132,12 @@ public class AntCompilerAdapter extends DefaultCompilerAdapter {
                 classPath,
                 optionalExtDirs,
                 optionalBootClassPath,
-                optionalDestinationDirectory,
+                destinationDirectory,
                 optionalCharacterEncoding,
                 verbose,
                 debuggingInformation,
-                (StringPattern[]) null,  // optionalWarningHandlePatterns
-                false                    // rebuild
+                Compiler.DEFAULT_WARNING_HANDLE_PATTERNS,
+                false                        // rebuild
             ).compile(sourceFiles);
         } catch (Scanner.ScanException e) {
             System.out.println(e.getMessage());

@@ -57,7 +57,6 @@ public class ResourceFinderClassLoader extends ClassLoader {
 
     /**
      * @throws ClassNotFoundException
-     * @throws TunnelException Tunnels a {@link IOException}
      */
     protected Class findClass(String className) throws ClassNotFoundException {
 
@@ -70,7 +69,7 @@ public class ResourceFinderClassLoader extends ClassLoader {
         try {
             is = classFileResource.open();
         } catch (IOException ex) {
-            throw new RuntimeException("Openeing class file resource \"" + classFileResource.getFileName() + "\": " + ex.getMessage());
+            throw new RuntimeException("Opening class file resource \"" + classFileResource.getFileName() + "\": " + ex.getMessage());
         }
 
         // Read bytecode from the resource into a byte array.
@@ -83,7 +82,7 @@ public class ResourceFinderClassLoader extends ClassLoader {
                 baos.write(buffer, 0, bytesRead);
             }
         } catch (IOException ex) {
-            throw new TunnelException(ex);
+            throw new ClassNotFoundException("Reading class file from \"" + classFileResource + "\"", ex);
         } finally {
             try { is.close(); } catch (IOException ex) {}
         }

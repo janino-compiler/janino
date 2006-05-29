@@ -37,9 +37,8 @@ package org.codehaus.janino;
 import java.io.*;
 import java.util.*;
 
-import org.codehaus.janino.Java;
 import org.codehaus.janino.util.*;
-import org.codehaus.janino.util.enumerator.EnumeratorSet;
+import org.codehaus.janino.util.enumerator.*;
 
 /**
  * This class actually implements the Java<sup>TM</sup> compiler. It is
@@ -70,6 +69,8 @@ public class UnitCompiler {
             UnitCompiler.this.compile((Java.PackageMemberTypeDeclaration) it.next());
         }
 
+        if (this.compileErrorCount > 0) throw new CompileException(this.compileErrorCount + " errors while compiling unit \"" + this.compilationUnit.optionalFileName + "\"", null);
+
         List l = this.generatedClassFiles;
         return (ClassFile[]) l.toArray(new ClassFile[l.size()]);
     }
@@ -77,18 +78,19 @@ public class UnitCompiler {
     // ------------ TypeDeclaration.compile() -------------
 
     private void compile(Java.TypeDeclaration td) throws CompileException {
+        class UCE extends RuntimeException { final CompileException ce; UCE(CompileException ce) { this.ce = ce; } }
         Visitor.TypeDeclarationVisitor tdv = new Visitor.TypeDeclarationVisitor() {
-            public void visitAnonymousClassDeclaration        (Java.AnonymousClassDeclaration acd)          { try { UnitCompiler.this.compile2(acd ); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitLocalClassDeclaration            (Java.LocalClassDeclaration lcd)              { try { UnitCompiler.this.compile2(lcd ); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitPackageMemberClassDeclaration    (Java.PackageMemberClassDeclaration pmcd)     { try { UnitCompiler.this.compile2((Java.PackageMemberTypeDeclaration) pmcd); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitMemberInterfaceDeclaration       (Java.MemberInterfaceDeclaration mid)         { try { UnitCompiler.this.compile2(mid ); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitPackageMemberInterfaceDeclaration(Java.PackageMemberInterfaceDeclaration pmid) { try { UnitCompiler.this.compile2((Java.PackageMemberTypeDeclaration) pmid); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitMemberClassDeclaration           (Java.MemberClassDeclaration mcd)             { try { UnitCompiler.this.compile2(mcd ); } catch (CompileException e) { throw new TunnelException(e); } }
+            public void visitAnonymousClassDeclaration        (Java.AnonymousClassDeclaration acd)          { try { UnitCompiler.this.compile2(acd                                     ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitLocalClassDeclaration            (Java.LocalClassDeclaration lcd)              { try { UnitCompiler.this.compile2(lcd                                     ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitPackageMemberClassDeclaration    (Java.PackageMemberClassDeclaration pmcd)     { try { UnitCompiler.this.compile2((Java.PackageMemberTypeDeclaration) pmcd); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitMemberInterfaceDeclaration       (Java.MemberInterfaceDeclaration mid)         { try { UnitCompiler.this.compile2(mid                                     ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitPackageMemberInterfaceDeclaration(Java.PackageMemberInterfaceDeclaration pmid) { try { UnitCompiler.this.compile2((Java.PackageMemberTypeDeclaration) pmid); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitMemberClassDeclaration           (Java.MemberClassDeclaration mcd)             { try { UnitCompiler.this.compile2(mcd                                     ); } catch (CompileException e) { throw new UCE(e); } }
         };
         try {
             td.accept(tdv);
-        } catch (TunnelException e) {
-            throw (CompileException) e.getDelegate();
+        } catch (UCE uce) {
+            throw uce.ce;
         }
     }
     public void compile2(Java.PackageMemberTypeDeclaration pmtd) throws CompileException {
@@ -169,8 +171,8 @@ public class UnitCompiler {
                 String s = cd.getLocation().getFileName();
                 if (s != null) {
                     sourceFileName = new File(s).getName();
-                } else if (this instanceof Java.NamedTypeDeclaration) {
-                    sourceFileName = ((Java.NamedTypeDeclaration) this).getName() + ".java";
+                } else if (cd instanceof Java.NamedTypeDeclaration) {
+                    sourceFileName = ((Java.NamedTypeDeclaration) cd).getName() + ".java";
                 } else {
                     sourceFileName = "ANONYMOUS.java";
                 }
@@ -358,7 +360,7 @@ public class UnitCompiler {
             }
         }
 
-        this.compile((Java.NamedClassDeclaration) lcd);
+        this.compile2((Java.NamedClassDeclaration) lcd);
     }
     public void compile2(final Java.MemberClassDeclaration mcd) throws CompileException {
 
@@ -475,51 +477,40 @@ public class UnitCompiler {
     }
 
     /**
-     * Checks whether this statement can complete normally (JLS2 14.20)
-     */
-    private boolean canCompleteNormally(Java.BlockStatement bs) throws CompileException {
-        CodeContext savedCodeContext = this.replaceCodeContext(this.createDummyCodeContext());
-        try {
-            return this.compile(bs);
-        } finally {
-            this.replaceCodeContext(savedCodeContext);
-        }
-    }
-
-    /**
      * @return <tt>false</tt> if this statement cannot complete normally (JLS2
      * 14.20)
      */
     private boolean compile(Java.BlockStatement bs) throws CompileException {
         final boolean[] res = new boolean[1];
+        class UCE extends RuntimeException { final CompileException ce; UCE(CompileException ce) { this.ce = ce; } }
         Visitor.BlockStatementVisitor bsv = new Visitor.BlockStatementVisitor() {
-            public void visitInitializer                      (Java.Initializer                       i   ) { try { res[0] = UnitCompiler.this.compile2(i   ); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitFieldDeclaration                 (Java.FieldDeclaration                  fd  ) { try { res[0] = UnitCompiler.this.compile2(fd  ); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitLabeledStatement                 (Java.LabeledStatement                  ls  ) { try { res[0] = UnitCompiler.this.compile2(ls  ); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitBlock                            (Java.Block                             b   ) { try { res[0] = UnitCompiler.this.compile2(b   ); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitExpressionStatement              (Java.ExpressionStatement               es  ) { try { res[0] = UnitCompiler.this.compile2(es  ); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitIfStatement                      (Java.IfStatement                       is  ) { try { res[0] = UnitCompiler.this.compile2(is  ); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitForStatement                     (Java.ForStatement                      fs  ) { try { res[0] = UnitCompiler.this.compile2(fs  ); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitWhileStatement                   (Java.WhileStatement                    ws  ) { try { res[0] = UnitCompiler.this.compile2(ws  ); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitTryStatement                     (Java.TryStatement                      ts  ) { try { res[0] = UnitCompiler.this.compile2(ts  ); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitSwitchStatement                  (Java.SwitchStatement                   ss  ) { try { res[0] = UnitCompiler.this.compile2(ss  ); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitSynchronizedStatement            (Java.SynchronizedStatement             ss  ) { try { res[0] = UnitCompiler.this.compile2(ss  ); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitDoStatement                      (Java.DoStatement                       ds  ) { try { res[0] = UnitCompiler.this.compile2(ds  ); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitLocalVariableDeclarationStatement(Java.LocalVariableDeclarationStatement lvds) { try { res[0] = UnitCompiler.this.compile2(lvds); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitReturnStatement                  (Java.ReturnStatement                   rs  ) { try { res[0] = UnitCompiler.this.compile2(rs  ); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitThrowStatement                   (Java.ThrowStatement                    ts  ) { try { res[0] = UnitCompiler.this.compile2(ts  ); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitBreakStatement                   (Java.BreakStatement                    bs  ) { try { res[0] = UnitCompiler.this.compile2(bs  ); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitContinueStatement                (Java.ContinueStatement                 cs  ) { try { res[0] = UnitCompiler.this.compile2(cs  ); } catch (CompileException e) { throw new TunnelException(e); } }
+            public void visitInitializer                      (Java.Initializer                       i   ) { try { res[0] = UnitCompiler.this.compile2(i   ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitFieldDeclaration                 (Java.FieldDeclaration                  fd  ) { try { res[0] = UnitCompiler.this.compile2(fd  ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitLabeledStatement                 (Java.LabeledStatement                  ls  ) { try { res[0] = UnitCompiler.this.compile2(ls  ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitBlock                            (Java.Block                             b   ) { try { res[0] = UnitCompiler.this.compile2(b   ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitExpressionStatement              (Java.ExpressionStatement               es  ) { try { res[0] = UnitCompiler.this.compile2(es  ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitIfStatement                      (Java.IfStatement                       is  ) { try { res[0] = UnitCompiler.this.compile2(is  ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitForStatement                     (Java.ForStatement                      fs  ) { try { res[0] = UnitCompiler.this.compile2(fs  ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitWhileStatement                   (Java.WhileStatement                    ws  ) { try { res[0] = UnitCompiler.this.compile2(ws  ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitTryStatement                     (Java.TryStatement                      ts  ) { try { res[0] = UnitCompiler.this.compile2(ts  ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitSwitchStatement                  (Java.SwitchStatement                   ss  ) { try { res[0] = UnitCompiler.this.compile2(ss  ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitSynchronizedStatement            (Java.SynchronizedStatement             ss  ) { try { res[0] = UnitCompiler.this.compile2(ss  ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitDoStatement                      (Java.DoStatement                       ds  ) { try { res[0] = UnitCompiler.this.compile2(ds  ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitLocalVariableDeclarationStatement(Java.LocalVariableDeclarationStatement lvds) { try { res[0] = UnitCompiler.this.compile2(lvds); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitReturnStatement                  (Java.ReturnStatement                   rs  ) { try { res[0] = UnitCompiler.this.compile2(rs  ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitThrowStatement                   (Java.ThrowStatement                    ts  ) { try { res[0] = UnitCompiler.this.compile2(ts  ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitBreakStatement                   (Java.BreakStatement                    bs  ) { try { res[0] = UnitCompiler.this.compile2(bs  ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitContinueStatement                (Java.ContinueStatement                 cs  ) { try { res[0] = UnitCompiler.this.compile2(cs  ); } catch (CompileException e) { throw new UCE(e); } }
             public void visitEmptyStatement                   (Java.EmptyStatement                    es  ) {       res[0] = UnitCompiler.this.compile2(es  );                                                                }
-            public void visitLocalClassDeclarationStatement   (Java.LocalClassDeclarationStatement    lcds) { try { res[0] = UnitCompiler.this.compile2(lcds); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitAlternateConstructorInvocation   (Java.AlternateConstructorInvocation    aci ) { try { res[0] = UnitCompiler.this.compile2(aci ); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitSuperConstructorInvocation       (Java.SuperConstructorInvocation        sci ) { try { res[0] = UnitCompiler.this.compile2(sci ); } catch (CompileException e) { throw new TunnelException(e); } }
+            public void visitLocalClassDeclarationStatement   (Java.LocalClassDeclarationStatement    lcds) { try { res[0] = UnitCompiler.this.compile2(lcds); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitAlternateConstructorInvocation   (Java.AlternateConstructorInvocation    aci ) { try { res[0] = UnitCompiler.this.compile2(aci ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitSuperConstructorInvocation       (Java.SuperConstructorInvocation        sci ) { try { res[0] = UnitCompiler.this.compile2(sci ); } catch (CompileException e) { throw new UCE(e); } }
         };
         try {
             bs.accept(bsv);
             return res[0];
-        } catch (TunnelException e) {
-            throw (CompileException) e.getDelegate();
+        } catch (UCE uce) {
+            throw uce.ce;
         }
     }
     private boolean compile2(Java.Initializer i) throws CompileException {
@@ -529,8 +520,7 @@ public class UnitCompiler {
         this.codeContext.saveLocalVariables();
         try {
             boolean previousStatementCanCompleteNormally = true;
-            b.keepCompiling = true;
-            for (int i = 0; b.keepCompiling && i < b.statements.size(); ++i) {
+            for (int i = 0; i < b.statements.size(); ++i) {
                 Java.BlockStatement bs = (Java.BlockStatement) b.statements.get(i);
                 if (!previousStatementCanCompleteNormally) {
                     this.compileError("Statement is unreachable", bs.getLocation());
@@ -544,8 +534,15 @@ public class UnitCompiler {
         }
     }
     private boolean compile2(Java.DoStatement ds) throws CompileException {
-        if (Boolean.TRUE.equals(this.getConstantValue(ds.condition))) {
-            return this.compileUnconditionalLoop(ds, ds.body, null);
+        Object cvc = this.getConstantValue(ds.condition);
+        if (cvc != null) {
+            if (Boolean.TRUE.equals(cvc)) {
+                this.warning("DSTC", "Condition of DO statement is always TRUE; the proper way of declaring an unconditional loop is \"for (;;)\"", ds.getLocation());
+                return this.compileUnconditionalLoop(ds, ds.body, null);
+            } else
+            {
+                this.warning("DSNR", "DO statement never repeats", ds.getLocation());
+            }
         }
 
         ds.whereToContinue = this.codeContext.new Offset();
@@ -554,7 +551,12 @@ public class UnitCompiler {
         CodeContext.Offset bodyOffset = this.codeContext.newOffset();
 
         // Compile body.
-        if (!this.compile(ds.body) && !ds.bodyHasContinue) this.compileError("\"do\" statement never tests its condition", ds.getLocation());
+        if (!this.compile(ds.body) && !ds.bodyHasContinue) {
+            this.warning("DSNTC", "\"do\" statement never tests its condition", ds.getLocation());
+            if (ds.whereToBreak == null) return false;
+            ds.whereToBreak.set();
+            return true;
+        }
 
         // Compile condition.
         ds.whereToContinue.set();
@@ -571,10 +573,21 @@ public class UnitCompiler {
             // Compile init.
             if (fs.optionalInit != null) this.compile(fs.optionalInit);
 
-            if (
-                fs.optionalCondition == null
-                || Boolean.TRUE.equals(this.getConstantValue(fs.optionalCondition))
-            ) return this.compileUnconditionalLoop(fs, fs.body, fs.optionalUpdate);
+            if (fs.optionalCondition == null) {
+                return this.compileUnconditionalLoop(fs, fs.body, fs.optionalUpdate);
+            } else
+            {
+                Object cvc = this.getConstantValue(fs.optionalCondition);
+                if (cvc != null) {
+                    if (Boolean.TRUE.equals(cvc)) {
+                        this.warning("FSTC", "Condition of FOR statement is always TRUE; the proper way of declaring an unconditional loop is \"for (;;)\"", fs.getLocation());
+                        return this.compileUnconditionalLoop(fs, fs.body, fs.optionalUpdate);
+                    } else
+                    {
+                        this.warning("FSNR", "FOR statement never repeats", fs.getLocation());
+                    }
+                }
+            }
 
             CodeContext.Offset toCondition = this.codeContext.new Offset();
             this.writeBranch(fs, Opcode.GOTO, toCondition);
@@ -589,12 +602,12 @@ public class UnitCompiler {
             fs.whereToContinue.set();
             if (fs.optionalUpdate != null) {
                 if (!bodyCCN && !fs.bodyHasContinue) {
-                    this.compileError("For update is unreachable", fs.getLocation());
-                    return true;
-                }
-
-                for (int i = 0; i < fs.optionalUpdate.length; ++i) {
-                    this.compile(fs.optionalUpdate[i]);
+                    this.warning("FUUR", "For update is unreachable", fs.getLocation());
+                } else
+                {
+                    for (int i = 0; i < fs.optionalUpdate.length; ++i) {
+                        this.compile(fs.optionalUpdate[i]);
+                    }
                 }
             }
 
@@ -610,8 +623,15 @@ public class UnitCompiler {
         return true;
     }
     private boolean compile2(Java.WhileStatement ws) throws CompileException {
-        if (Boolean.TRUE.equals(this.getConstantValue(ws.condition))) {
-            return this.compileUnconditionalLoop(ws, ws.body, null);
+        Object cvc = this.getConstantValue(ws.condition);
+        if (cvc != null) {
+            if (Boolean.TRUE.equals(cvc)) {
+                this.warning("WSTC", "Condition of WHILE statement is always TRUE; the proper way of declaring an unconditional loop is \"for (;;)\"", ws.getLocation());
+                return this.compileUnconditionalLoop(ws, ws.body, null);
+            } else
+            {
+                this.warning("WSNR", "WHILE statement never repeats", ws.getLocation());
+            }
         }
 
         ws.whereToContinue = this.codeContext.new Offset();
@@ -661,11 +681,12 @@ public class UnitCompiler {
         // Compile the "update".
         cs.whereToContinue.set();
         if (!bodyCCN && !cs.bodyHasContinue) {
-            this.compileError("Loop update is unreachable", update[0].getLocation());
-            return cs.whereToBreak != null;
+            this.warning("LUUR", "Loop update is unreachable", update[0].getLocation());
+        } else
+        {
+            for (int i = 0; i < update.length; ++i) this.compile(update[i]);
+            this.writeBranch(cs, Opcode.GOTO, bodyOffset);
         }
-        for (int i = 0; i < update.length; ++i) this.compile(update[i]);
-        this.writeBranch(cs, Opcode.GOTO, bodyOffset);
 
         if (cs.whereToBreak == null) return false;
         cs.whereToBreak.set();
@@ -745,10 +766,14 @@ public class UnitCompiler {
 
         // Generate TABLESWITCH or LOOKUPSWITCH instruction.
         CodeContext.Offset switchOffset = this.codeContext.newOffset();
-        if (!caseLabelMap.isEmpty() && 2 * caseLabelMap.size() >= (
-            ((Integer) caseLabelMap.lastKey()).intValue() -
-            ((Integer) caseLabelMap.firstKey()).intValue()
-        )) {
+        if (caseLabelMap.isEmpty()) {
+            // Special case: SWITCH statement without CASE labels (but maybe a DEFAULT label).
+            ;
+        } else
+        if (
+            ((Integer) caseLabelMap.firstKey()).intValue() + caseLabelMap.size() >= // Beware of INT overflow!
+            ((Integer) caseLabelMap.lastKey()).intValue() - caseLabelMap.size()
+        ) {
             int low = ((Integer) caseLabelMap.firstKey()).intValue();
             int high = ((Integer) caseLabelMap.lastKey()).intValue();
 
@@ -810,7 +835,7 @@ public class UnitCompiler {
         if (bs.optionalLabel == null) {
             for (
                 Java.Scope s = bs.getEnclosingScope();
-                s instanceof Java.Statement;
+                s instanceof Java.Statement || s instanceof Java.CatchClause;
                 s = s.getEnclosingScope()
             ) {
                 if (s instanceof Java.BreakableStatement) {
@@ -978,24 +1003,37 @@ public class UnitCompiler {
             }
 
             // Compile the seeing statement.
+            CodeContext.Inserter ins = this.codeContext.newInserter();
             boolean ssccn = this.compile(seeingStatement);
             if (ssccn) return true;
 
-            // Hm... the "seeing statement" cannot complete normally. So, in
-            // order to determine whether the IF statement can complete
-            // normally, we need to check whether the "blind statement" can
-            // complete normally.
-            if (!this.canCompleteNormally(blindStatement)) return false;
+            // Hm... the "seeing statement" cannot complete normally. Things are getting
+            // complicated here! The robust solution is to compile the constant-condition-IF
+            // statement as a non-constant-condition-IF statement. As an optimization, iff the
+            // IF-statement is enclosed ONLY by blocks, then the remaining bytecode can be
+            // written to a "fake" code context, i.e. be thrown away.
 
-            // We have a very complicated case here: The blind statement can complete
-            // normally, but the seeing statement can't. This makes the following
-            // code physically unreachable, but JLS2 14.20 says that this should not
-            // be considered an error.
-            // Calling "followingStatementsAreDead()" on the enclosing Block
-            // keeps it from generating unreachable code.
+            // Constant-condition-IF statement only enclosed by blocks?
             Java.Scope s = is.getEnclosingScope();
-            if (s instanceof Java.Block) ((Java.Block) s).followingStatementsAreDead();
-            return false;
+            while (s instanceof Java.Block) s = s.getEnclosingScope();
+            if (s instanceof Java.FunctionDeclarator) {
+
+                // Yes, compile rest of method to /dev/null.
+                throw UnitCompiler.STOP_COMPILING_CODE;
+            } else
+            {
+
+                // Compile constant-condition-IF statement as non-constant-condition-IF statement.
+                CodeContext.Offset off = this.codeContext.newOffset();
+                this.codeContext.pushInserter(ins);
+                try {
+                    this.pushConstant(is, new Integer(0));
+                    this.writeBranch(Opcode.IFNE, off);
+                } finally {
+                    this.codeContext.popInserter();
+                }
+            }
+            return this.compile(blindStatement);
         }
 
         // Non-constant condition.
@@ -1040,6 +1078,8 @@ public class UnitCompiler {
             }
         }
     }
+    private static final RuntimeException STOP_COMPILING_CODE = new RuntimeException("SNO: This exception should have been caught and processed");
+
     private boolean compile2(Java.LocalClassDeclarationStatement lcds) throws CompileException {
 
         // Check for redefinition.
@@ -1053,12 +1093,14 @@ public class UnitCompiler {
     /**
      * Find a local class declared in any block enclosing the given block statement.
      */
-    private Java.LocalClassDeclaration findLocalClassDeclaration(Java.BlockStatement bs, String name) {
+    private Java.LocalClassDeclaration findLocalClassDeclaration(Java.Scope s, String name) {
         for (;;) {
-            Java.Scope s = bs.getEnclosingScope();
-            if (!(s instanceof Java.BlockStatement)) break;
-            if (s instanceof Java.Block) {
-                for (Iterator it = ((Java.Block) s).statements.iterator();;) {
+            Java.Scope es = s.getEnclosingScope();
+            if (es instanceof Java.CompilationUnit) break;
+            if (s instanceof Java.BlockStatement && es instanceof Java.Block) {
+                Java.BlockStatement bs = (Java.BlockStatement) s;
+                Java.Block          b = (Java.Block) es;
+                for (Iterator it = b.statements.iterator();;) {
                     Java.BlockStatement bs2 = (Java.BlockStatement) it.next();
                     if (bs2 == bs) break;
                     if (bs2 instanceof Java.LocalClassDeclarationStatement) {
@@ -1067,7 +1109,7 @@ public class UnitCompiler {
                     }
                 }
             }
-            bs = (Java.BlockStatement) s;
+            s = es;
         }
         return null;
     }
@@ -1463,14 +1505,25 @@ public class UnitCompiler {
             }
 
             // Compile the function body.
-            boolean canCompleteNormally = this.compile(fd.optionalBody);
-            if (canCompleteNormally) {
-                if (this.getReturnType(fd) != IClass.VOID) this.compileError("Method must return a value", fd.getLocation());
-                this.writeOpcode(fd, Opcode.RETURN);
+            try {
+                boolean canCompleteNormally = this.compile(fd.optionalBody);
+                if (canCompleteNormally) {
+                    if (this.getReturnType(fd) != IClass.VOID) this.compileError("Method must return a value", fd.getLocation());
+                    this.writeOpcode(fd, Opcode.RETURN);
+                }
+            } catch (RuntimeException ex) {
+                if (ex != UnitCompiler.STOP_COMPILING_CODE) throw ex;
+
+                // In very special circumstances (e.g. "if (true) return;"), code generation is
+                // terminated abruptly by throwing STOP_COMPILING_CODE.
+                ;
             }
         } finally {
             this.replaceCodeContext(savedCodeContext);
         }
+
+        // Don't continue code attribute generation if we had compile errors.
+        if (this.compileErrorCount > 0) return;
 
         // Fix up.
         codeContext.fixUp();
@@ -1530,39 +1583,40 @@ public class UnitCompiler {
      * is not needed, e.g. "i++".
      */
     private void compile(Java.Rvalue rv) throws CompileException {
+        class UCE extends RuntimeException { final CompileException ce; UCE(CompileException ce) { this.ce = ce; } }
         Visitor.RvalueVisitor rvv = new Visitor.RvalueVisitor() {
-            public void visitArrayLength                   (Java.ArrayLength                    al  ) { try { UnitCompiler.this.compile2(al  ); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitAssignment                    (Java.Assignment                     a   ) { try { UnitCompiler.this.compile2(a   ); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitUnaryOperation                (Java.UnaryOperation                 uo  ) { try { UnitCompiler.this.compile2(uo  ); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitBinaryOperation               (Java.BinaryOperation                bo  ) { try { UnitCompiler.this.compile2(bo  ); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitCast                          (Java.Cast                           c   ) { try { UnitCompiler.this.compile2(c   ); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitClassLiteral                  (Java.ClassLiteral                   cl  ) { try { UnitCompiler.this.compile2(cl  ); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitConditionalExpression         (Java.ConditionalExpression          ce  ) { try { UnitCompiler.this.compile2(ce  ); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitConstantValue                 (Java.ConstantValue                  cv  ) { try { UnitCompiler.this.compile2(cv  ); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitCrement                       (Java.Crement                        c   ) { try { UnitCompiler.this.compile2(c   ); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitInstanceof                    (Java.Instanceof                     io  ) { try { UnitCompiler.this.compile2(io  ); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitMethodInvocation              (Java.MethodInvocation               mi  ) { try { UnitCompiler.this.compile2(mi  ); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitSuperclassMethodInvocation    (Java.SuperclassMethodInvocation     smi ) { try { UnitCompiler.this.compile2(smi ); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitLiteral                       (Java.Literal                        l   ) { try { UnitCompiler.this.compile2(l   ); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitNewAnonymousClassInstance     (Java.NewAnonymousClassInstance      naci) { try { UnitCompiler.this.compile2(naci); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitNewArray                      (Java.NewArray                       na  ) { try { UnitCompiler.this.compile2(na  ); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitNewInitializedArray           (Java.NewInitializedArray            nia ) { try { UnitCompiler.this.compile2(nia ); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitNewClassInstance              (Java.NewClassInstance               nci ) { try { UnitCompiler.this.compile2(nci ); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitParameterAccess               (Java.ParameterAccess                pa  ) { try { UnitCompiler.this.compile2(pa  ); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitQualifiedThisReference        (Java.QualifiedThisReference         qtr ) { try { UnitCompiler.this.compile2(qtr ); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitThisReference                 (Java.ThisReference                  tr  ) { try { UnitCompiler.this.compile2(tr  ); } catch (CompileException e) { throw new TunnelException(e); } }
+            public void visitArrayLength                   (Java.ArrayLength                    al  ) { try { UnitCompiler.this.compile2(al  ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitAssignment                    (Java.Assignment                     a   ) { try { UnitCompiler.this.compile2(a   ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitUnaryOperation                (Java.UnaryOperation                 uo  ) { try { UnitCompiler.this.compile2(uo  ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitBinaryOperation               (Java.BinaryOperation                bo  ) { try { UnitCompiler.this.compile2(bo  ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitCast                          (Java.Cast                           c   ) { try { UnitCompiler.this.compile2(c   ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitClassLiteral                  (Java.ClassLiteral                   cl  ) { try { UnitCompiler.this.compile2(cl  ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitConditionalExpression         (Java.ConditionalExpression          ce  ) { try { UnitCompiler.this.compile2(ce  ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitConstantValue                 (Java.ConstantValue                  cv  ) { try { UnitCompiler.this.compile2(cv  ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitCrement                       (Java.Crement                        c   ) { try { UnitCompiler.this.compile2(c   ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitInstanceof                    (Java.Instanceof                     io  ) { try { UnitCompiler.this.compile2(io  ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitMethodInvocation              (Java.MethodInvocation               mi  ) { try { UnitCompiler.this.compile2(mi  ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitSuperclassMethodInvocation    (Java.SuperclassMethodInvocation     smi ) { try { UnitCompiler.this.compile2(smi ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitLiteral                       (Java.Literal                        l   ) { try { UnitCompiler.this.compile2(l   ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitNewAnonymousClassInstance     (Java.NewAnonymousClassInstance      naci) { try { UnitCompiler.this.compile2(naci); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitNewArray                      (Java.NewArray                       na  ) { try { UnitCompiler.this.compile2(na  ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitNewInitializedArray           (Java.NewInitializedArray            nia ) { try { UnitCompiler.this.compile2(nia ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitNewClassInstance              (Java.NewClassInstance               nci ) { try { UnitCompiler.this.compile2(nci ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitParameterAccess               (Java.ParameterAccess                pa  ) { try { UnitCompiler.this.compile2(pa  ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitQualifiedThisReference        (Java.QualifiedThisReference         qtr ) { try { UnitCompiler.this.compile2(qtr ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitThisReference                 (Java.ThisReference                  tr  ) { try { UnitCompiler.this.compile2(tr  ); } catch (CompileException e) { throw new UCE(e); } }
 
-            public void visitAmbiguousName             (Java.AmbiguousName              an  ) { try { UnitCompiler.this.compile2(an  ); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitArrayAccessExpression     (Java.ArrayAccessExpression      aae ) { try { UnitCompiler.this.compile2(aae ); } catch (CompileException e) { throw new TunnelException(e); } };
-            public void visitFieldAccess               (Java.FieldAccess                fa  ) { try { UnitCompiler.this.compile2(fa  ); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitFieldAccessExpression     (Java.FieldAccessExpression      fae ) { try { UnitCompiler.this.compile2(fae ); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitLocalVariableAccess       (Java.LocalVariableAccess        lva ) { try { UnitCompiler.this.compile2(lva ); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitParenthesizedExpression   (Java.ParenthesizedExpression    pe  ) { try { UnitCompiler.this.compile2(pe  ); } catch (CompileException e) { throw new TunnelException(e); } }
+            public void visitAmbiguousName             (Java.AmbiguousName              an  ) { try { UnitCompiler.this.compile2(an  ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitArrayAccessExpression     (Java.ArrayAccessExpression      aae ) { try { UnitCompiler.this.compile2(aae ); } catch (CompileException e) { throw new UCE(e); } };
+            public void visitFieldAccess               (Java.FieldAccess                fa  ) { try { UnitCompiler.this.compile2(fa  ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitFieldAccessExpression     (Java.FieldAccessExpression      fae ) { try { UnitCompiler.this.compile2(fae ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitLocalVariableAccess       (Java.LocalVariableAccess        lva ) { try { UnitCompiler.this.compile2(lva ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitParenthesizedExpression   (Java.ParenthesizedExpression    pe  ) { try { UnitCompiler.this.compile2(pe  ); } catch (CompileException e) { throw new UCE(e); } }
         };
         try {
             rv.accept(rvv);
-        } catch (TunnelException e) {
-            throw (CompileException) e.getDelegate();
+        } catch (UCE uce) {
+            throw uce.ce;
         }
     }
     private void compile2(Java.Rvalue rv) throws CompileException {
@@ -1715,39 +1769,40 @@ public class UnitCompiler {
         final CodeContext.Offset dst,        // Where to jump.
         final boolean            orientation // JUMP_IF_TRUE or JUMP_IF_FALSE.
     ) throws CompileException {
+        class UCE extends RuntimeException { final CompileException ce; UCE(CompileException ce) { this.ce = ce; } }
         Visitor.RvalueVisitor rvv = new Visitor.RvalueVisitor() {
-            public void visitArrayLength                   (Java.ArrayLength                    al  ) { try { UnitCompiler.this.compileBoolean2(al  , dst, orientation); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitAssignment                    (Java.Assignment                     a   ) { try { UnitCompiler.this.compileBoolean2(a   , dst, orientation); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitUnaryOperation                (Java.UnaryOperation                 uo  ) { try { UnitCompiler.this.compileBoolean2(uo  , dst, orientation); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitBinaryOperation               (Java.BinaryOperation                bo  ) { try { UnitCompiler.this.compileBoolean2(bo  , dst, orientation); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitCast                          (Java.Cast                           c   ) { try { UnitCompiler.this.compileBoolean2(c   , dst, orientation); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitClassLiteral                  (Java.ClassLiteral                   cl  ) { try { UnitCompiler.this.compileBoolean2(cl  , dst, orientation); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitConditionalExpression         (Java.ConditionalExpression          ce  ) { try { UnitCompiler.this.compileBoolean2(ce  , dst, orientation); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitConstantValue                 (Java.ConstantValue                  cv  ) { try { UnitCompiler.this.compileBoolean2(cv  , dst, orientation); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitCrement                       (Java.Crement                        c   ) { try { UnitCompiler.this.compileBoolean2(c   , dst, orientation); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitInstanceof                    (Java.Instanceof                     io  ) { try { UnitCompiler.this.compileBoolean2(io  , dst, orientation); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitMethodInvocation              (Java.MethodInvocation               mi  ) { try { UnitCompiler.this.compileBoolean2(mi  , dst, orientation); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitSuperclassMethodInvocation    (Java.SuperclassMethodInvocation     smi ) { try { UnitCompiler.this.compileBoolean2(smi , dst, orientation); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitLiteral                       (Java.Literal                        l   ) { try { UnitCompiler.this.compileBoolean2(l   , dst, orientation); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitNewAnonymousClassInstance     (Java.NewAnonymousClassInstance      naci) { try { UnitCompiler.this.compileBoolean2(naci, dst, orientation); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitNewArray                      (Java.NewArray                       na  ) { try { UnitCompiler.this.compileBoolean2(na  , dst, orientation); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitNewInitializedArray           (Java.NewInitializedArray            nia ) { try { UnitCompiler.this.compileBoolean2(nia , dst, orientation); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitNewClassInstance              (Java.NewClassInstance               nci ) { try { UnitCompiler.this.compileBoolean2(nci , dst, orientation); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitParameterAccess               (Java.ParameterAccess                pa  ) { try { UnitCompiler.this.compileBoolean2(pa  , dst, orientation); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitQualifiedThisReference        (Java.QualifiedThisReference         qtr ) { try { UnitCompiler.this.compileBoolean2(qtr , dst, orientation); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitThisReference                 (Java.ThisReference                  tr  ) { try { UnitCompiler.this.compileBoolean2(tr  , dst, orientation); } catch (CompileException e) { throw new TunnelException(e); } }
+            public void visitArrayLength                   (Java.ArrayLength                    al  ) { try { UnitCompiler.this.compileBoolean2(al  , dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitAssignment                    (Java.Assignment                     a   ) { try { UnitCompiler.this.compileBoolean2(a   , dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitUnaryOperation                (Java.UnaryOperation                 uo  ) { try { UnitCompiler.this.compileBoolean2(uo  , dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitBinaryOperation               (Java.BinaryOperation                bo  ) { try { UnitCompiler.this.compileBoolean2(bo  , dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitCast                          (Java.Cast                           c   ) { try { UnitCompiler.this.compileBoolean2(c   , dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitClassLiteral                  (Java.ClassLiteral                   cl  ) { try { UnitCompiler.this.compileBoolean2(cl  , dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitConditionalExpression         (Java.ConditionalExpression          ce  ) { try { UnitCompiler.this.compileBoolean2(ce  , dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitConstantValue                 (Java.ConstantValue                  cv  ) { try { UnitCompiler.this.compileBoolean2(cv  , dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitCrement                       (Java.Crement                        c   ) { try { UnitCompiler.this.compileBoolean2(c   , dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitInstanceof                    (Java.Instanceof                     io  ) { try { UnitCompiler.this.compileBoolean2(io  , dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitMethodInvocation              (Java.MethodInvocation               mi  ) { try { UnitCompiler.this.compileBoolean2(mi  , dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitSuperclassMethodInvocation    (Java.SuperclassMethodInvocation     smi ) { try { UnitCompiler.this.compileBoolean2(smi , dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitLiteral                       (Java.Literal                        l   ) { try { UnitCompiler.this.compileBoolean2(l   , dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitNewAnonymousClassInstance     (Java.NewAnonymousClassInstance      naci) { try { UnitCompiler.this.compileBoolean2(naci, dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitNewArray                      (Java.NewArray                       na  ) { try { UnitCompiler.this.compileBoolean2(na  , dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitNewInitializedArray           (Java.NewInitializedArray            nia ) { try { UnitCompiler.this.compileBoolean2(nia , dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitNewClassInstance              (Java.NewClassInstance               nci ) { try { UnitCompiler.this.compileBoolean2(nci , dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitParameterAccess               (Java.ParameterAccess                pa  ) { try { UnitCompiler.this.compileBoolean2(pa  , dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitQualifiedThisReference        (Java.QualifiedThisReference         qtr ) { try { UnitCompiler.this.compileBoolean2(qtr , dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitThisReference                 (Java.ThisReference                  tr  ) { try { UnitCompiler.this.compileBoolean2(tr  , dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
 
-            public void visitAmbiguousName             (Java.AmbiguousName              an  ) { try { UnitCompiler.this.compileBoolean2(an  , dst, orientation); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitArrayAccessExpression     (Java.ArrayAccessExpression      aae ) { try { UnitCompiler.this.compileBoolean2(aae , dst, orientation); } catch (CompileException e) { throw new TunnelException(e); } };
-            public void visitFieldAccess               (Java.FieldAccess                fa  ) { try { UnitCompiler.this.compileBoolean2(fa  , dst, orientation); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitFieldAccessExpression     (Java.FieldAccessExpression      fae ) { try { UnitCompiler.this.compileBoolean2(fae , dst, orientation); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitLocalVariableAccess       (Java.LocalVariableAccess        lva ) { try { UnitCompiler.this.compileBoolean2(lva , dst, orientation); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitParenthesizedExpression   (Java.ParenthesizedExpression    pe  ) { try { UnitCompiler.this.compileBoolean2(pe  , dst, orientation); } catch (CompileException e) { throw new TunnelException(e); } }
+            public void visitAmbiguousName             (Java.AmbiguousName              an  ) { try { UnitCompiler.this.compileBoolean2(an  , dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitArrayAccessExpression     (Java.ArrayAccessExpression      aae ) { try { UnitCompiler.this.compileBoolean2(aae , dst, orientation); } catch (CompileException e) { throw new UCE(e); } };
+            public void visitFieldAccess               (Java.FieldAccess                fa  ) { try { UnitCompiler.this.compileBoolean2(fa  , dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitFieldAccessExpression     (Java.FieldAccessExpression      fae ) { try { UnitCompiler.this.compileBoolean2(fae , dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitLocalVariableAccess       (Java.LocalVariableAccess        lva ) { try { UnitCompiler.this.compileBoolean2(lva , dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitParenthesizedExpression   (Java.ParenthesizedExpression    pe  ) { try { UnitCompiler.this.compileBoolean2(pe  , dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
         };
         try {
             rv.accept(rvv);
-        } catch (TunnelException e) {
-            throw (CompileException) e.getDelegate();
+        } catch (UCE uce) {
+            throw uce.ce;
         }
     }
     private void compileBoolean2(
@@ -1929,8 +1984,9 @@ public class UnitCompiler {
      */
     private int compileContext(Java.Rvalue rv) throws CompileException {
         final int[] res = new int[1];
+        class UCE extends RuntimeException { final CompileException ce; UCE(CompileException ce) { this.ce = ce; } }
         Visitor.RvalueVisitor rvv = new Visitor.RvalueVisitor() {
-            public void visitArrayLength                   (Java.ArrayLength                    al  ) { try { res[0] = UnitCompiler.this.compileContext2(al  ); } catch (CompileException e) { throw new TunnelException(e); } }
+            public void visitArrayLength                   (Java.ArrayLength                    al  ) { try { res[0] = UnitCompiler.this.compileContext2(al  ); } catch (CompileException e) { throw new UCE(e); } }
             public void visitAssignment                    (Java.Assignment                     a   ) {       res[0] = UnitCompiler.this.compileContext2(a   );                                                                }
             public void visitUnaryOperation                (Java.UnaryOperation                 uo  ) {       res[0] = UnitCompiler.this.compileContext2(uo  );                                                                }
             public void visitBinaryOperation               (Java.BinaryOperation                bo  ) {       res[0] = UnitCompiler.this.compileContext2(bo  );                                                                }
@@ -1951,18 +2007,18 @@ public class UnitCompiler {
             public void visitQualifiedThisReference        (Java.QualifiedThisReference         qtr ) {       res[0] = UnitCompiler.this.compileContext2(qtr );                                                                }
             public void visitThisReference                 (Java.ThisReference                  tr  ) {       res[0] = UnitCompiler.this.compileContext2(tr  );                                                                }
 
-            public void visitAmbiguousName             (Java.AmbiguousName              an  ) { try { res[0] = UnitCompiler.this.compileContext2(an  ); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitArrayAccessExpression     (Java.ArrayAccessExpression      aae ) { try { res[0] = UnitCompiler.this.compileContext2(aae ); } catch (CompileException e) { throw new TunnelException(e); } };
-            public void visitFieldAccess               (Java.FieldAccess                fa  ) { try { res[0] = UnitCompiler.this.compileContext2(fa  ); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitFieldAccessExpression     (Java.FieldAccessExpression      fae ) { try { res[0] = UnitCompiler.this.compileContext2(fae ); } catch (CompileException e) { throw new TunnelException(e); } }
+            public void visitAmbiguousName             (Java.AmbiguousName              an  ) { try { res[0] = UnitCompiler.this.compileContext2(an  ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitArrayAccessExpression     (Java.ArrayAccessExpression      aae ) { try { res[0] = UnitCompiler.this.compileContext2(aae ); } catch (CompileException e) { throw new UCE(e); } };
+            public void visitFieldAccess               (Java.FieldAccess                fa  ) { try { res[0] = UnitCompiler.this.compileContext2(fa  ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitFieldAccessExpression     (Java.FieldAccessExpression      fae ) { try { res[0] = UnitCompiler.this.compileContext2(fae ); } catch (CompileException e) { throw new UCE(e); } }
             public void visitLocalVariableAccess       (Java.LocalVariableAccess        lva ) {       res[0] = UnitCompiler.this.compileContext2(lva );                                                                }
-            public void visitParenthesizedExpression   (Java.ParenthesizedExpression    pe  ) { try { res[0] = UnitCompiler.this.compileContext2(pe  ); } catch (CompileException e) { throw new TunnelException(e); } }
+            public void visitParenthesizedExpression   (Java.ParenthesizedExpression    pe  ) { try { res[0] = UnitCompiler.this.compileContext2(pe  ); } catch (CompileException e) { throw new UCE(e); } }
         };
         try {
             rv.accept(rvv);
             return res[0];
-        } catch (TunnelException e) {
-            throw (CompileException) e.getDelegate();
+        } catch (UCE uce) {
+            throw uce.ce;
         }
     }
     private int compileContext2(Java.Rvalue rv) {
@@ -2018,40 +2074,41 @@ public class UnitCompiler {
      */
     private IClass compileGet(Java.Rvalue rv) throws CompileException {
         final IClass[] res = new IClass[1];
+        class UCE extends RuntimeException { final CompileException ce; UCE(CompileException ce) { this.ce = ce; } }
         Visitor.RvalueVisitor rvv = new Visitor.RvalueVisitor() {
             public void visitArrayLength                   (Java.ArrayLength                    al  ) {       res[0] = UnitCompiler.this.compileGet2(al  );                                                                }
-            public void visitAssignment                    (Java.Assignment                     a   ) { try { res[0] = UnitCompiler.this.compileGet2(a   ); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitUnaryOperation                (Java.UnaryOperation                 uo  ) { try { res[0] = UnitCompiler.this.compileGet2(uo  ); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitBinaryOperation               (Java.BinaryOperation                bo  ) { try { res[0] = UnitCompiler.this.compileGet2(bo  ); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitCast                          (Java.Cast                           c   ) { try { res[0] = UnitCompiler.this.compileGet2(c   ); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitClassLiteral                  (Java.ClassLiteral                   cl  ) { try { res[0] = UnitCompiler.this.compileGet2(cl  ); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitConditionalExpression         (Java.ConditionalExpression          ce  ) { try { res[0] = UnitCompiler.this.compileGet2(ce  ); } catch (CompileException e) { throw new TunnelException(e); } }
+            public void visitAssignment                    (Java.Assignment                     a   ) { try { res[0] = UnitCompiler.this.compileGet2(a   ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitUnaryOperation                (Java.UnaryOperation                 uo  ) { try { res[0] = UnitCompiler.this.compileGet2(uo  ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitBinaryOperation               (Java.BinaryOperation                bo  ) { try { res[0] = UnitCompiler.this.compileGet2(bo  ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitCast                          (Java.Cast                           c   ) { try { res[0] = UnitCompiler.this.compileGet2(c   ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitClassLiteral                  (Java.ClassLiteral                   cl  ) { try { res[0] = UnitCompiler.this.compileGet2(cl  ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitConditionalExpression         (Java.ConditionalExpression          ce  ) { try { res[0] = UnitCompiler.this.compileGet2(ce  ); } catch (CompileException e) { throw new UCE(e); } }
             public void visitConstantValue                 (Java.ConstantValue                  cv  ) {       res[0] = UnitCompiler.this.compileGet2(cv  );                                                                }
-            public void visitCrement                       (Java.Crement                        c   ) { try { res[0] = UnitCompiler.this.compileGet2(c   ); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitInstanceof                    (Java.Instanceof                     io  ) { try { res[0] = UnitCompiler.this.compileGet2(io  ); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitMethodInvocation              (Java.MethodInvocation               mi  ) { try { res[0] = UnitCompiler.this.compileGet2(mi  ); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitSuperclassMethodInvocation    (Java.SuperclassMethodInvocation     smi ) { try { res[0] = UnitCompiler.this.compileGet2(smi ); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitLiteral                       (Java.Literal                        l   ) { try { res[0] = UnitCompiler.this.compileGet2(l   ); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitNewAnonymousClassInstance     (Java.NewAnonymousClassInstance      naci) { try { res[0] = UnitCompiler.this.compileGet2(naci); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitNewArray                      (Java.NewArray                       na  ) { try { res[0] = UnitCompiler.this.compileGet2(na  ); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitNewInitializedArray           (Java.NewInitializedArray            nia ) { try { res[0] = UnitCompiler.this.compileGet2(nia ); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitNewClassInstance              (Java.NewClassInstance               nci ) { try { res[0] = UnitCompiler.this.compileGet2(nci ); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitParameterAccess               (Java.ParameterAccess                pa  ) { try { res[0] = UnitCompiler.this.compileGet2(pa  ); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitQualifiedThisReference        (Java.QualifiedThisReference         qtr ) { try { res[0] = UnitCompiler.this.compileGet2(qtr ); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitThisReference                 (Java.ThisReference                  tr  ) { try { res[0] = UnitCompiler.this.compileGet2(tr  ); } catch (CompileException e) { throw new TunnelException(e); } }
+            public void visitCrement                       (Java.Crement                        c   ) { try { res[0] = UnitCompiler.this.compileGet2(c   ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitInstanceof                    (Java.Instanceof                     io  ) { try { res[0] = UnitCompiler.this.compileGet2(io  ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitMethodInvocation              (Java.MethodInvocation               mi  ) { try { res[0] = UnitCompiler.this.compileGet2(mi  ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitSuperclassMethodInvocation    (Java.SuperclassMethodInvocation     smi ) { try { res[0] = UnitCompiler.this.compileGet2(smi ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitLiteral                       (Java.Literal                        l   ) { try { res[0] = UnitCompiler.this.compileGet2(l   ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitNewAnonymousClassInstance     (Java.NewAnonymousClassInstance      naci) { try { res[0] = UnitCompiler.this.compileGet2(naci); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitNewArray                      (Java.NewArray                       na  ) { try { res[0] = UnitCompiler.this.compileGet2(na  ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitNewInitializedArray           (Java.NewInitializedArray            nia ) { try { res[0] = UnitCompiler.this.compileGet2(nia ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitNewClassInstance              (Java.NewClassInstance               nci ) { try { res[0] = UnitCompiler.this.compileGet2(nci ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitParameterAccess               (Java.ParameterAccess                pa  ) { try { res[0] = UnitCompiler.this.compileGet2(pa  ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitQualifiedThisReference        (Java.QualifiedThisReference         qtr ) { try { res[0] = UnitCompiler.this.compileGet2(qtr ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitThisReference                 (Java.ThisReference                  tr  ) { try { res[0] = UnitCompiler.this.compileGet2(tr  ); } catch (CompileException e) { throw new UCE(e); } }
 
-            public void visitAmbiguousName             (Java.AmbiguousName              an  ) { try { res[0] = UnitCompiler.this.compileGet2(an  ); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitArrayAccessExpression     (Java.ArrayAccessExpression      aae ) { try { res[0] = UnitCompiler.this.compileGet2(aae ); } catch (CompileException e) { throw new TunnelException(e); } };
-            public void visitFieldAccess               (Java.FieldAccess                fa  ) { try { res[0] = UnitCompiler.this.compileGet2(fa  ); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitFieldAccessExpression     (Java.FieldAccessExpression      fae ) { try { res[0] = UnitCompiler.this.compileGet2(fae ); } catch (CompileException e) { throw new TunnelException(e); } }
+            public void visitAmbiguousName             (Java.AmbiguousName              an  ) { try { res[0] = UnitCompiler.this.compileGet2(an  ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitArrayAccessExpression     (Java.ArrayAccessExpression      aae ) { try { res[0] = UnitCompiler.this.compileGet2(aae ); } catch (CompileException e) { throw new UCE(e); } };
+            public void visitFieldAccess               (Java.FieldAccess                fa  ) { try { res[0] = UnitCompiler.this.compileGet2(fa  ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitFieldAccessExpression     (Java.FieldAccessExpression      fae ) { try { res[0] = UnitCompiler.this.compileGet2(fae ); } catch (CompileException e) { throw new UCE(e); } }
             public void visitLocalVariableAccess       (Java.LocalVariableAccess        lva ) {       res[0] = UnitCompiler.this.compileGet2(lva );                                                                }
-            public void visitParenthesizedExpression   (Java.ParenthesizedExpression    pe  ) { try { res[0] = UnitCompiler.this.compileGet2(pe  ); } catch (CompileException e) { throw new TunnelException(e); } }
+            public void visitParenthesizedExpression   (Java.ParenthesizedExpression    pe  ) { try { res[0] = UnitCompiler.this.compileGet2(pe  ); } catch (CompileException e) { throw new UCE(e); } }
         };
         try {
             rv.accept(rvv);
             return res[0];
-        } catch (TunnelException e) {
-            throw (CompileException) e.getDelegate();
+        } catch (UCE uce) {
+            throw uce.ce;
         }
     }
     private IClass compileGet2(Java.BooleanRvalue brv) throws CompileException {
@@ -2942,23 +2999,23 @@ public class UnitCompiler {
         );
 
         for (int i = 0; i < ai.values.length; ++i) {
-            if (ai.values[i] instanceof Java.Rvalue) {
-                Java.Rvalue v = (Java.Rvalue) ai.values[i];
-                this.writeOpcode(ai, Opcode.DUP);
-                this.pushConstant((Java.Located) ai, new Integer(i));
-                IClass vt = this.compileGetValue(v);
+            this.writeOpcode(ai, Opcode.DUP);
+            this.pushConstant((Java.Located) ai, new Integer(i));
+            Java.ArrayInitializerOrRvalue aiorv = ai.values[i];
+            if (aiorv instanceof Java.Rvalue) {
+                Java.Rvalue rv = (Java.Rvalue) aiorv;
                 this.assignmentConversion(
-                    (Java.Located) ai,       // located
-                    vt,                      // sourceType
-                    ct,                      // targetType
-                    this.getConstantValue(v) // optionalConstantValue
+                    (Java.Located) ai,        // located
+                    this.compileGetValue(rv), // sourceType
+                    ct,                       // targetType
+                    this.getConstantValue(rv) // optionalConstantValue
                 );
             } else
-            if (ai.values[i] instanceof Java.ArrayInitializer) {
-                this.compileGetValue((Java.ArrayInitializer) ai.values[i], ct);
+            if (aiorv instanceof Java.ArrayInitializer) {
+                this.compileGetValue((Java.ArrayInitializer) aiorv, ct);
             } else
             {
-                throw new RuntimeException("Unexpected array initializer or rvalue class " + ai.values[i].getClass().getName());
+                throw new RuntimeException("Unexpected array initializer or rvalue class " + aiorv.getClass().getName());
             }
             this.writeOpcode(ai, Opcode.IASTORE + UnitCompiler.ilfdabcs(ct));
         }
@@ -3014,12 +3071,13 @@ public class UnitCompiler {
         if (rv.constantValue != Java.Rvalue.CONSTANT_VALUE_UNKNOWN) return rv.constantValue;
 
         final Object[] res = new Object[1];
+        class UCE extends RuntimeException { final CompileException ce; UCE(CompileException ce) { this.ce = ce; } }
         Visitor.RvalueVisitor rvv = new Visitor.RvalueVisitor() {
             public void visitArrayLength               (Java.ArrayLength                al  ) {       res[0] = UnitCompiler.this.getConstantValue2(al  );                                                                }
             public void visitAssignment                (Java.Assignment                 a   ) {       res[0] = UnitCompiler.this.getConstantValue2(a   );                                                                }
-            public void visitUnaryOperation            (Java.UnaryOperation             uo  ) { try { res[0] = UnitCompiler.this.getConstantValue2(uo  ); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitBinaryOperation           (Java.BinaryOperation            bo  ) { try { res[0] = UnitCompiler.this.getConstantValue2(bo  ); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitCast                      (Java.Cast                       c   ) { try { res[0] = UnitCompiler.this.getConstantValue2(c   ); } catch (CompileException e) { throw new TunnelException(e); } }
+            public void visitUnaryOperation            (Java.UnaryOperation             uo  ) { try { res[0] = UnitCompiler.this.getConstantValue2(uo  ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitBinaryOperation           (Java.BinaryOperation            bo  ) { try { res[0] = UnitCompiler.this.getConstantValue2(bo  ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitCast                      (Java.Cast                       c   ) { try { res[0] = UnitCompiler.this.getConstantValue2(c   ); } catch (CompileException e) { throw new UCE(e); } }
             public void visitClassLiteral              (Java.ClassLiteral               cl  ) {       res[0] = UnitCompiler.this.getConstantValue2(cl  );                                                                }
             public void visitConditionalExpression     (Java.ConditionalExpression      ce  ) {       res[0] = UnitCompiler.this.getConstantValue2(ce  );                                                                }
             public void visitConstantValue             (Java.ConstantValue              cv  ) {       res[0] = UnitCompiler.this.getConstantValue2(cv  );                                                                }
@@ -3027,7 +3085,7 @@ public class UnitCompiler {
             public void visitInstanceof                (Java.Instanceof                 io  ) {       res[0] = UnitCompiler.this.getConstantValue2(io  );                                                                }
             public void visitMethodInvocation          (Java.MethodInvocation           mi  ) {       res[0] = UnitCompiler.this.getConstantValue2(mi  );                                                                }
             public void visitSuperclassMethodInvocation(Java.SuperclassMethodInvocation smi ) {       res[0] = UnitCompiler.this.getConstantValue2(smi );                                                                }
-            public void visitLiteral                   (Java.Literal                    l   ) { try { res[0] = UnitCompiler.this.getConstantValue2(l   ); } catch (CompileException e) { throw new TunnelException(e); } }
+            public void visitLiteral                   (Java.Literal                    l   ) { try { res[0] = UnitCompiler.this.getConstantValue2(l   ); } catch (CompileException e) { throw new UCE(e); } }
             public void visitNewAnonymousClassInstance (Java.NewAnonymousClassInstance  naci) {       res[0] = UnitCompiler.this.getConstantValue2(naci);                                                                }
             public void visitNewArray                  (Java.NewArray                   na  ) {       res[0] = UnitCompiler.this.getConstantValue2(na  );                                                                }
             public void visitNewInitializedArray       (Java.NewInitializedArray        nia ) {       res[0] = UnitCompiler.this.getConstantValue2(nia );                                                                }
@@ -3036,19 +3094,19 @@ public class UnitCompiler {
             public void visitQualifiedThisReference    (Java.QualifiedThisReference     qtr ) {       res[0] = UnitCompiler.this.getConstantValue2(qtr );                                                                }
             public void visitThisReference             (Java.ThisReference              tr  ) {       res[0] = UnitCompiler.this.getConstantValue2(tr  );                                                                }
 
-            public void visitAmbiguousName             (Java.AmbiguousName              an  ) { try { res[0] = UnitCompiler.this.getConstantValue2(an  ); } catch (CompileException e) { throw new TunnelException(e); } }
+            public void visitAmbiguousName             (Java.AmbiguousName              an  ) { try { res[0] = UnitCompiler.this.getConstantValue2(an  ); } catch (CompileException e) { throw new UCE(e); } }
             public void visitArrayAccessExpression     (Java.ArrayAccessExpression      aae ) {       res[0] = UnitCompiler.this.getConstantValue2(aae );                                                                };
-            public void visitFieldAccess               (Java.FieldAccess                fa  ) { try { res[0] = UnitCompiler.this.getConstantValue2(fa  ); } catch (CompileException e) { throw new TunnelException(e); } }
+            public void visitFieldAccess               (Java.FieldAccess                fa  ) { try { res[0] = UnitCompiler.this.getConstantValue2(fa  ); } catch (CompileException e) { throw new UCE(e); } }
             public void visitFieldAccessExpression     (Java.FieldAccessExpression      fae ) {       res[0] = UnitCompiler.this.getConstantValue2(fae );                                                                }
             public void visitLocalVariableAccess       (Java.LocalVariableAccess        lva ) {       res[0] = UnitCompiler.this.getConstantValue2(lva );                                                                }
-            public void visitParenthesizedExpression   (Java.ParenthesizedExpression    pe  ) { try { res[0] = UnitCompiler.this.getConstantValue2(pe  ); } catch (CompileException e) { throw new TunnelException(e); } }
+            public void visitParenthesizedExpression   (Java.ParenthesizedExpression    pe  ) { try { res[0] = UnitCompiler.this.getConstantValue2(pe  ); } catch (CompileException e) { throw new UCE(e); } }
         };
         try {
             rv.accept(rvv);
             rv.constantValue = res[0];
             return rv.constantValue;
-        } catch (TunnelException e) {
-            throw (CompileException) e.getDelegate();
+        } catch (UCE uce) {
+            throw uce.ce;
         }
     }
     private Object getConstantValue2(Java.Rvalue rv) {
@@ -3230,10 +3288,11 @@ public class UnitCompiler {
      */
     private final Object getNegatedConstantValue(Java.Rvalue rv) throws CompileException {
         final Object[] res = new Object[1];
+        class UCE extends RuntimeException { final CompileException ce; UCE(CompileException ce) { this.ce = ce; } }
         Visitor.RvalueVisitor rvv = new Visitor.RvalueVisitor() {
             public void visitArrayLength               (Java.ArrayLength                al  ) {       res[0] = UnitCompiler.this.getNegatedConstantValue2(al  );                                                                }
             public void visitAssignment                (Java.Assignment                 a   ) {       res[0] = UnitCompiler.this.getNegatedConstantValue2(a   );                                                                }
-            public void visitUnaryOperation            (Java.UnaryOperation             uo  ) { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(uo  ); } catch (CompileException e) { throw new TunnelException(e); } }
+            public void visitUnaryOperation            (Java.UnaryOperation             uo  ) { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(uo  ); } catch (CompileException e) { throw new UCE(e); } }
             public void visitBinaryOperation           (Java.BinaryOperation            bo  ) {       res[0] = UnitCompiler.this.getNegatedConstantValue2(bo  );                                                                }
             public void visitCast                      (Java.Cast                       c   ) {       res[0] = UnitCompiler.this.getNegatedConstantValue2(c   );                                                                }
             public void visitClassLiteral              (Java.ClassLiteral               cl  ) {       res[0] = UnitCompiler.this.getNegatedConstantValue2(cl  );                                                                }
@@ -3243,7 +3302,7 @@ public class UnitCompiler {
             public void visitInstanceof                (Java.Instanceof                 io  ) {       res[0] = UnitCompiler.this.getNegatedConstantValue2(io  );                                                                }
             public void visitMethodInvocation          (Java.MethodInvocation           mi  ) {       res[0] = UnitCompiler.this.getNegatedConstantValue2(mi  );                                                                }
             public void visitSuperclassMethodInvocation(Java.SuperclassMethodInvocation smi ) {       res[0] = UnitCompiler.this.getNegatedConstantValue2(smi );                                                                }
-            public void visitLiteral                   (Java.Literal                    l   ) { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(l   ); } catch (CompileException e) { throw new TunnelException(e); } }
+            public void visitLiteral                   (Java.Literal                    l   ) { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(l   ); } catch (CompileException e) { throw new UCE(e); } }
             public void visitNewAnonymousClassInstance (Java.NewAnonymousClassInstance  naci) {       res[0] = UnitCompiler.this.getNegatedConstantValue2(naci);                                                                }
             public void visitNewArray                  (Java.NewArray                   na  ) {       res[0] = UnitCompiler.this.getNegatedConstantValue2(na  );                                                                }
             public void visitNewInitializedArray       (Java.NewInitializedArray        nia ) {       res[0] = UnitCompiler.this.getNegatedConstantValue2(nia );                                                                }
@@ -3257,13 +3316,13 @@ public class UnitCompiler {
             public void visitFieldAccess               (Java.FieldAccess                fa  ) {       res[0] = UnitCompiler.this.getNegatedConstantValue2(fa  );                                                                }
             public void visitFieldAccessExpression     (Java.FieldAccessExpression      fae ) {       res[0] = UnitCompiler.this.getNegatedConstantValue2(fae );                                                                }
             public void visitLocalVariableAccess       (Java.LocalVariableAccess        lva ) {       res[0] = UnitCompiler.this.getNegatedConstantValue2(lva );                                                                }
-            public void visitParenthesizedExpression   (Java.ParenthesizedExpression    pe  ) { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(pe  ); } catch (CompileException e) { throw new TunnelException(e); } }
+            public void visitParenthesizedExpression   (Java.ParenthesizedExpression    pe  ) { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(pe  ); } catch (CompileException e) { throw new UCE(e); } }
         };
         try {
             rv.accept(rvv);
             return res[0];
-        } catch (TunnelException e) {
-            throw (CompileException) e.getDelegate();
+        } catch (UCE uce) {
+            throw uce.ce;
         }
     }
     private Object getNegatedConstantValue2(Java.Rvalue rv) {
@@ -3297,11 +3356,12 @@ public class UnitCompiler {
      */
     private boolean generatesCode(Java.BlockStatement bs) throws CompileException {
         final boolean[] res = new boolean[1];
+        class UCE extends RuntimeException { final CompileException ce; UCE(CompileException ce) { this.ce = ce; } }
         Visitor.BlockStatementVisitor bsv = new Visitor.BlockStatementVisitor() {
-            public void visitInitializer                      (Java.Initializer                       i   ) { try { res[0] = UnitCompiler.this.generatesCode2(i   ); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitFieldDeclaration                 (Java.FieldDeclaration                  fd  ) { try { res[0] = UnitCompiler.this.generatesCode2(fd  ); } catch (CompileException e) { throw new TunnelException(e); } }
+            public void visitInitializer                      (Java.Initializer                       i   ) { try { res[0] = UnitCompiler.this.generatesCode2(i   ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitFieldDeclaration                 (Java.FieldDeclaration                  fd  ) { try { res[0] = UnitCompiler.this.generatesCode2(fd  ); } catch (CompileException e) { throw new UCE(e); } }
             public void visitLabeledStatement                 (Java.LabeledStatement                  ls  ) {       res[0] = UnitCompiler.this.generatesCode2(ls  );                                                                }
-            public void visitBlock                            (Java.Block                             b   ) { try { res[0] = UnitCompiler.this.generatesCode2(b   ); } catch (CompileException e) { throw new TunnelException(e); } }
+            public void visitBlock                            (Java.Block                             b   ) { try { res[0] = UnitCompiler.this.generatesCode2(b   ); } catch (CompileException e) { throw new UCE(e); } }
             public void visitExpressionStatement              (Java.ExpressionStatement               es  ) {       res[0] = UnitCompiler.this.generatesCode2(es  );                                                                }
             public void visitIfStatement                      (Java.IfStatement                       is  ) {       res[0] = UnitCompiler.this.generatesCode2(is  );                                                                }
             public void visitForStatement                     (Java.ForStatement                      fs  ) {       res[0] = UnitCompiler.this.generatesCode2(fs  );                                                                }
@@ -3323,8 +3383,8 @@ public class UnitCompiler {
         try {
             bs.accept(bsv);
             return res[0];
-        } catch (TunnelException e) {
-            throw (CompileException) e.getDelegate();
+        } catch (UCE uce) {
+            throw uce.ce;
         }
     }
     public boolean generatesCode2(Java.BlockStatement bs) { return true; }
@@ -3421,18 +3481,19 @@ public class UnitCompiler {
      * on the operand stack.
      */
     private void compileSet(Java.Lvalue lv) throws CompileException {
+        class UCE extends RuntimeException { final CompileException ce; UCE(CompileException ce) { this.ce = ce; } }
         Visitor.LvalueVisitor lvv = new Visitor.LvalueVisitor() {
-            public void visitAmbiguousName          (Java.AmbiguousName           an ) { try { UnitCompiler.this.compileSet2(an ); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitArrayAccessExpression  (Java.ArrayAccessExpression   aae) { try { UnitCompiler.this.compileSet2(aae); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitFieldAccess            (Java.FieldAccess             fa ) { try { UnitCompiler.this.compileSet2(fa ); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitFieldAccessExpression  (Java.FieldAccessExpression   fae) { try { UnitCompiler.this.compileSet2(fae); } catch (CompileException e) { throw new TunnelException(e); } }
+            public void visitAmbiguousName          (Java.AmbiguousName           an ) { try { UnitCompiler.this.compileSet2(an ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitArrayAccessExpression  (Java.ArrayAccessExpression   aae) { try { UnitCompiler.this.compileSet2(aae); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitFieldAccess            (Java.FieldAccess             fa ) { try { UnitCompiler.this.compileSet2(fa ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitFieldAccessExpression  (Java.FieldAccessExpression   fae) { try { UnitCompiler.this.compileSet2(fae); } catch (CompileException e) { throw new UCE(e); } }
             public void visitLocalVariableAccess    (Java.LocalVariableAccess     lva) {       UnitCompiler.this.compileSet2(lva);                                                                }
-            public void visitParenthesizedExpression(Java.ParenthesizedExpression pe ) { try { UnitCompiler.this.compileSet2(pe ); } catch (CompileException e) { throw new TunnelException(e); } }
+            public void visitParenthesizedExpression(Java.ParenthesizedExpression pe ) { try { UnitCompiler.this.compileSet2(pe ); } catch (CompileException e) { throw new UCE(e); } }
         };
         try {
             lv.accept(lvv);
-        } catch (TunnelException e) {
-            throw (CompileException) e.getDelegate();
+        } catch (UCE uce) {
+            throw uce.ce;
         }
     }
     private void compileSet2(Java.AmbiguousName an) throws CompileException {
@@ -3474,48 +3535,49 @@ public class UnitCompiler {
 
     private IClass getType(Java.Atom a) throws CompileException {
         final IClass[] res = new IClass[1];
+        class UCE extends RuntimeException { final CompileException ce; UCE(CompileException ce) { this.ce = ce; } }
         Visitor.AtomVisitor av = new Visitor.AtomVisitor() {
-            public void visitPackage                       (Java.Package                        p   ) { try { res[0] = UnitCompiler.this.getType2(p   ); } catch (CompileException e) { throw new TunnelException(e); } }
+            public void visitPackage                       (Java.Package                        p   ) { try { res[0] = UnitCompiler.this.getType2(p   ); } catch (CompileException e) { throw new UCE(e); } }
 
-            public void visitArrayType                     (Java.ArrayType                      at  ) { try { res[0] = UnitCompiler.this.getType2(at  ); } catch (CompileException e) { throw new TunnelException(e); } }
+            public void visitArrayType                     (Java.ArrayType                      at  ) { try { res[0] = UnitCompiler.this.getType2(at  ); } catch (CompileException e) { throw new UCE(e); } }
             public void visitBasicType                     (Java.BasicType                      bt  ) {       res[0] = UnitCompiler.this.getType2(bt  );                                                                }
-            public void visitReferenceType                 (Java.ReferenceType                  rt  ) { try { res[0] = UnitCompiler.this.getType2(rt  ); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitRvalueMemberType              (Java.RvalueMemberType               rmt ) { try { res[0] = UnitCompiler.this.getType2(rmt ); } catch (CompileException e) { throw new TunnelException(e); } }
+            public void visitReferenceType                 (Java.ReferenceType                  rt  ) { try { res[0] = UnitCompiler.this.getType2(rt  ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitRvalueMemberType              (Java.RvalueMemberType               rmt ) { try { res[0] = UnitCompiler.this.getType2(rmt ); } catch (CompileException e) { throw new UCE(e); } }
             public void visitSimpleType                    (Java.SimpleType                     st  ) {       res[0] = UnitCompiler.this.getType2(st  );                                                                }
 
             public void visitArrayLength                   (Java.ArrayLength                    al  ) {       res[0] = UnitCompiler.this.getType2(al  );                                                                }
-            public void visitAssignment                    (Java.Assignment                     a   ) { try { res[0] = UnitCompiler.this.getType2(a   ); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitUnaryOperation                (Java.UnaryOperation                 uo  ) { try { res[0] = UnitCompiler.this.getType2(uo  ); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitBinaryOperation               (Java.BinaryOperation                bo  ) { try { res[0] = UnitCompiler.this.getType2(bo  ); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitCast                          (Java.Cast                           c   ) { try { res[0] = UnitCompiler.this.getType2(c   ); } catch (CompileException e) { throw new TunnelException(e); } }
+            public void visitAssignment                    (Java.Assignment                     a   ) { try { res[0] = UnitCompiler.this.getType2(a   ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitUnaryOperation                (Java.UnaryOperation                 uo  ) { try { res[0] = UnitCompiler.this.getType2(uo  ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitBinaryOperation               (Java.BinaryOperation                bo  ) { try { res[0] = UnitCompiler.this.getType2(bo  ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitCast                          (Java.Cast                           c   ) { try { res[0] = UnitCompiler.this.getType2(c   ); } catch (CompileException e) { throw new UCE(e); } }
             public void visitClassLiteral                  (Java.ClassLiteral                   cl  ) {       res[0] = UnitCompiler.this.getType2(cl  );                                                                }
-            public void visitConditionalExpression         (Java.ConditionalExpression          ce  ) { try { res[0] = UnitCompiler.this.getType2(ce  ); } catch (CompileException e) { throw new TunnelException(e); } }
+            public void visitConditionalExpression         (Java.ConditionalExpression          ce  ) { try { res[0] = UnitCompiler.this.getType2(ce  ); } catch (CompileException e) { throw new UCE(e); } }
             public void visitConstantValue                 (Java.ConstantValue                  cv  ) {       res[0] = UnitCompiler.this.getType2(cv  );                                                                }
-            public void visitCrement                       (Java.Crement                        c   ) { try { res[0] = UnitCompiler.this.getType2(c   ); } catch (CompileException e) { throw new TunnelException(e); } }
+            public void visitCrement                       (Java.Crement                        c   ) { try { res[0] = UnitCompiler.this.getType2(c   ); } catch (CompileException e) { throw new UCE(e); } }
             public void visitInstanceof                    (Java.Instanceof                     io  ) {       res[0] = UnitCompiler.this.getType2(io  );                                                                }
-            public void visitMethodInvocation              (Java.MethodInvocation               mi  ) { try { res[0] = UnitCompiler.this.getType2(mi  ); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitSuperclassMethodInvocation    (Java.SuperclassMethodInvocation     smi ) { try { res[0] = UnitCompiler.this.getType2(smi ); } catch (CompileException e) { throw new TunnelException(e); } }
+            public void visitMethodInvocation              (Java.MethodInvocation               mi  ) { try { res[0] = UnitCompiler.this.getType2(mi  ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitSuperclassMethodInvocation    (Java.SuperclassMethodInvocation     smi ) { try { res[0] = UnitCompiler.this.getType2(smi ); } catch (CompileException e) { throw new UCE(e); } }
             public void visitLiteral                       (Java.Literal                        l   ) {       res[0] = UnitCompiler.this.getType2(l   );                                                                }
             public void visitNewAnonymousClassInstance     (Java.NewAnonymousClassInstance      naci) {       res[0] = UnitCompiler.this.getType2(naci);                                                                }
-            public void visitNewArray                      (Java.NewArray                       na  ) { try { res[0] = UnitCompiler.this.getType2(na  ); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitNewInitializedArray           (Java.NewInitializedArray            nia ) { try { res[0] = UnitCompiler.this.getType2(nia ); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitNewClassInstance              (Java.NewClassInstance               nci ) { try { res[0] = UnitCompiler.this.getType2(nci ); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitParameterAccess               (Java.ParameterAccess                pa  ) { try { res[0] = UnitCompiler.this.getType2(pa  ); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitQualifiedThisReference        (Java.QualifiedThisReference         qtr ) { try { res[0] = UnitCompiler.this.getType2(qtr ); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitThisReference                 (Java.ThisReference                  tr  ) { try { res[0] = UnitCompiler.this.getType2(tr  ); } catch (CompileException e) { throw new TunnelException(e); } }
+            public void visitNewArray                      (Java.NewArray                       na  ) { try { res[0] = UnitCompiler.this.getType2(na  ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitNewInitializedArray           (Java.NewInitializedArray            nia ) { try { res[0] = UnitCompiler.this.getType2(nia ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitNewClassInstance              (Java.NewClassInstance               nci ) { try { res[0] = UnitCompiler.this.getType2(nci ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitParameterAccess               (Java.ParameterAccess                pa  ) { try { res[0] = UnitCompiler.this.getType2(pa  ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitQualifiedThisReference        (Java.QualifiedThisReference         qtr ) { try { res[0] = UnitCompiler.this.getType2(qtr ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitThisReference                 (Java.ThisReference                  tr  ) { try { res[0] = UnitCompiler.this.getType2(tr  ); } catch (CompileException e) { throw new UCE(e); } }
 
-            public void visitAmbiguousName                 (Java.AmbiguousName                  an  ) { try { res[0] = UnitCompiler.this.getType2(an  ); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitArrayAccessExpression         (Java.ArrayAccessExpression          aae ) { try { res[0] = UnitCompiler.this.getType2(aae ); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitFieldAccess                   (Java.FieldAccess                    fa  ) { try { res[0] = UnitCompiler.this.getType2(fa  ); } catch (CompileException e) { throw new TunnelException(e); } }
-            public void visitFieldAccessExpression         (Java.FieldAccessExpression          fae ) { try { res[0] = UnitCompiler.this.getType2(fae ); } catch (CompileException e) { throw new TunnelException(e); } }
+            public void visitAmbiguousName                 (Java.AmbiguousName                  an  ) { try { res[0] = UnitCompiler.this.getType2(an  ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitArrayAccessExpression         (Java.ArrayAccessExpression          aae ) { try { res[0] = UnitCompiler.this.getType2(aae ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitFieldAccess                   (Java.FieldAccess                    fa  ) { try { res[0] = UnitCompiler.this.getType2(fa  ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitFieldAccessExpression         (Java.FieldAccessExpression          fae ) { try { res[0] = UnitCompiler.this.getType2(fae ); } catch (CompileException e) { throw new UCE(e); } }
             public void visitLocalVariableAccess           (Java.LocalVariableAccess            lva ) {       res[0] = UnitCompiler.this.getType2(lva );                                                                }
-            public void visitParenthesizedExpression       (Java.ParenthesizedExpression        pe  ) { try { res[0] = UnitCompiler.this.getType2(pe  ); } catch (CompileException e) { throw new TunnelException(e); } }
+            public void visitParenthesizedExpression       (Java.ParenthesizedExpression        pe  ) { try { res[0] = UnitCompiler.this.getType2(pe  ); } catch (CompileException e) { throw new UCE(e); } }
         };
         try {
             a.accept(av);
             return res[0] != null ? res[0] : this.iClassLoader.OBJECT;
-        } catch (TunnelException e) {
-            throw (CompileException) e.getDelegate();
+        } catch (UCE uce) {
+            throw uce.ce;
         }
     }
     private IClass getType2(Java.SimpleType st) { return st.iClass; }
@@ -3575,11 +3637,8 @@ public class UnitCompiler {
 
             // 6.5.5.1.1 Local class.
             {
-                Java.Scope s = rt.getEnclosingScope();
-                if (s instanceof Java.BlockStatement) {
-                    Java.LocalClassDeclaration lcd = this.findLocalClassDeclaration(((Java.BlockStatement) s), simpleTypeName);
-                    if (lcd != null) return this.resolve(lcd);
-                }
+                Java.LocalClassDeclaration lcd = this.findLocalClassDeclaration(rt.getEnclosingScope(), simpleTypeName);
+                if (lcd != null) return this.resolve(lcd);
             }
 
             // 6.5.5.1.2 Member type.
@@ -3614,12 +3673,14 @@ public class UnitCompiler {
                     scopeCompilationUnit.optionalPackageDeclaration == null ? null :
                     scopeCompilationUnit.optionalPackageDeclaration.packageName
                 );
-                IClassLoader icl = this.iClassLoader;
-                IClass result = icl.loadIClass(Descriptor.fromClassName(
-                    pkg == null ?
-                    simpleTypeName :
-                    pkg + "." + simpleTypeName
-                ));
+                String className = pkg == null ? simpleTypeName : pkg + "." + simpleTypeName;
+                IClass result;
+                try {
+                    result = this.iClassLoader.loadIClass(Descriptor.fromClassName(className));
+                } catch (ClassNotFoundException ex) {
+                    if (ex.getException() instanceof CompileException) throw (CompileException) ex.getException();
+                    throw new CompileException(className, rt.getLocation(), ex);
+                }
                 if (result != null) return result;
             }
 
@@ -3651,7 +3712,13 @@ public class UnitCompiler {
                     + rt.identifiers[rt.identifiers.length - 1]
                 );
             }
-            IClass result = this.iClassLoader.loadIClass(Descriptor.fromClassName(className));
+            IClass result;
+            try {
+                result = this.iClassLoader.loadIClass(Descriptor.fromClassName(className));
+            } catch (ClassNotFoundException ex) {
+                if (ex.getException() instanceof CompileException) throw (CompileException) ex.getException();
+                throw new CompileException(className, rt.getLocation(), ex);
+            }
             if (result != null) return result;
 
             this.compileError("Class \"" + className + "\" not found", rt.getLocation());
@@ -3696,7 +3763,50 @@ public class UnitCompiler {
         return this.getType(a.lhs);
     }
     private IClass getType2(Java.ConditionalExpression ce) throws CompileException {
-        return this.getType(ce.mhs);
+        IClass mhsType = this.getType(ce.mhs);
+        IClass rhsType = this.getType(ce.rhs);
+
+        if (mhsType == rhsType) {
+
+            // JLS 15.25.1.1
+            return mhsType;
+        } else
+        if (mhsType.isPrimitiveNumeric() && rhsType.isPrimitiveNumeric()) {
+
+            // JLS 15.25.1.2
+
+            // TODO JLS 15.25.1.2.1
+
+            // TODO JLS 15.25.1.2.2
+
+            // JLS 15.25.1.2.3
+            return this.binaryNumericPromotionType((Java.Locatable) ce, mhsType, rhsType);
+        } else
+        if (this.getConstantValue(ce.mhs) == Java.Rvalue.CONSTANT_VALUE_NULL && !rhsType.isPrimitive()) {
+
+            // JLS 15.25.1.3 (null : ref)
+            return rhsType;
+        } else
+        if (!mhsType.isPrimitive() && this.getConstantValue(ce.rhs) == Java.Rvalue.CONSTANT_VALUE_NULL) {
+
+            // JLS 15.25.1.3 (ref : null)
+            return mhsType;
+        } else
+        if (!mhsType.isPrimitive() && !rhsType.isPrimitive()) {
+            if (mhsType.isAssignableFrom(rhsType)) {
+                return mhsType;
+            } else
+            if (rhsType.isAssignableFrom(mhsType)) {
+                return rhsType;
+            } else {
+                this.compileError("Reference types \"" + mhsType + "\" and \"" + rhsType + "\" don't match", ce.getLocation());
+                return this.iClassLoader.OBJECT;
+            }
+        } else
+        {
+            this.compileError("Incompatible expression types \"" + mhsType + "\" and \"" + rhsType + "\"", ce.getLocation());
+            return this.iClassLoader.OBJECT;
+        }
     }
     private IClass getType2(Java.Crement c) throws CompileException {
         return this.getType(c.operand);
@@ -3851,6 +3961,7 @@ public class UnitCompiler {
 
     private boolean isType(Java.Atom a) throws CompileException {
         final boolean[] res = new boolean[1];
+        class UCE extends RuntimeException { final CompileException ce; UCE(CompileException ce) { this.ce = ce; } }
         Visitor.AtomVisitor av = new Visitor.AtomVisitor() {
             public void visitPackage                       (Java.Package                        p   ) {       res[0] = UnitCompiler.this.isType2(p   );                                                                }
 
@@ -3881,7 +3992,7 @@ public class UnitCompiler {
             public void visitQualifiedThisReference        (Java.QualifiedThisReference         qtr ) {       res[0] = UnitCompiler.this.isType2(qtr );                                                                }
             public void visitThisReference                 (Java.ThisReference                  tr  ) {       res[0] = UnitCompiler.this.isType2(tr  );                                                                }
 
-            public void visitAmbiguousName                 (Java.AmbiguousName                  an  ) { try { res[0] = UnitCompiler.this.isType2(an  ); } catch (CompileException e) { throw new TunnelException(e); } }
+            public void visitAmbiguousName                 (Java.AmbiguousName                  an  ) { try { res[0] = UnitCompiler.this.isType2(an  ); } catch (CompileException e) { throw new UCE(e); } }
             public void visitArrayAccessExpression         (Java.ArrayAccessExpression          aae ) {       res[0] = UnitCompiler.this.isType2(aae );                                                                }
             public void visitFieldAccess                   (Java.FieldAccess                    fa  ) {       res[0] = UnitCompiler.this.isType2(fa  );                                                                }
             public void visitFieldAccessExpression         (Java.FieldAccessExpression          fae ) {       res[0] = UnitCompiler.this.isType2(fae );                                                                }
@@ -3891,8 +4002,8 @@ public class UnitCompiler {
         try {
             a.accept(av);
             return res[0];
-        } catch (TunnelException e) {
-            throw (CompileException) e.getDelegate();
+        } catch (UCE uce) {
+            throw uce.ce;
         }
     }
     private boolean isType2(Java.Atom a) {
@@ -4045,11 +4156,7 @@ public class UnitCompiler {
         Java.Rvalue result = a.toRvalue();
         if (result == null) {
             this.compileError("Expression \"" + a.toString() + "\" is not an rvalue", a.getLocation());
-            return new Java.Rvalue(a.getLocation()) {
-                public String toString() { return a.toString(); }
-                public void accept(Visitor.AtomVisitor visitor) {}
-                public void accept(Visitor.RvalueVisitor visitor) {}
-            };
+            return new Java.Literal(a.getLocation(), "X");
         }
         return result;
     }
@@ -4655,7 +4762,13 @@ public class UnitCompiler {
         if (UnitCompiler.DEBUG) System.out.println("lhs = " + lhs);
         if (lhs instanceof Java.Package) {
             String className = ((Java.Package) lhs).name + '.' + rhs;
-            IClass result = this.iClassLoader.loadIClass(Descriptor.fromClassName(className));
+            IClass result;
+            try {
+                result = this.iClassLoader.loadIClass(Descriptor.fromClassName(className));
+            } catch (ClassNotFoundException ex) {
+                if (ex.getException() instanceof CompileException) throw (CompileException) ex.getException();
+                throw new CompileException(className, location, ex);
+            }
             if (result != null) return new Java.SimpleType(location, result);
 
             return new Java.Package(location, className);
@@ -4852,8 +4965,8 @@ public class UnitCompiler {
         if (identifier.equals("java")) return new Java.Package(location, identifier);
 
         // 6.5.2.BL1.B1.B2.1 Local class.
-        if (scope instanceof Java.BlockStatement) {
-            Java.LocalClassDeclaration lcd = this.findLocalClassDeclaration((Java.BlockStatement) scope, identifier);
+        {
+            Java.LocalClassDeclaration lcd = this.findLocalClassDeclaration(scope, identifier);
             if (lcd != null) return new Java.SimpleType(location, this.resolve(lcd));
         }
 
@@ -4882,7 +4995,13 @@ public class UnitCompiler {
                 identifier :
                 scopeCompilationUnit.optionalPackageDeclaration.packageName + '.' + identifier
             );
-            IClass result = this.iClassLoader.loadIClass(Descriptor.fromClassName(className));
+            IClass result;
+            try {
+                result = this.iClassLoader.loadIClass(Descriptor.fromClassName(className));
+            } catch (ClassNotFoundException ex) {
+                if (ex.getException() instanceof CompileException) throw (CompileException) ex.getException();
+                throw new CompileException(className, location, ex);
+            }
             if (result != null) return new Java.SimpleType(location, result);
         }
 
@@ -5073,12 +5192,14 @@ public class UnitCompiler {
             }
         }
         this.compileError("Class \"" + targetType + "\" has no method named \"" + methodName + "\"", located.getLocation());
+        final IClass[] pts = new IClass[arguments.length];
+        for (int i = 0; i < arguments.length; ++i) pts[i] = this.getType(arguments[i]);
         return targetType.new IMethod() {
             public String   getName()                                     { return methodName; }
             public IClass   getReturnType() throws CompileException       { return IClass.INT; }
             public boolean  isStatic()                                    { return false; }
             public boolean  isAbstract()                                  { return false; }
-            public IClass[] getParameterTypes() throws CompileException   { return new IClass[0]; }
+            public IClass[] getParameterTypes() throws CompileException   { return pts; }
             public IClass[] getThrownExceptions() throws CompileException { return new IClass[0]; }
             public Access   getAccess()                                   { return Access.PUBLIC; }
         };
@@ -5428,6 +5549,7 @@ public class UnitCompiler {
                     IClass te = this.getType(fd.thrownExceptions[i]);
                     if (te.isAssignableFrom(type)) return;
                 }
+                break;
             } else
 
             if (scope instanceof Java.TypeBodyDeclaration) {
@@ -5981,10 +6103,20 @@ public class UnitCompiler {
             }
         );
 
-        IClass classNotFoundExceptionIClass = this.iClassLoader.loadIClass("Ljava/lang/ClassNotFoundException;");
+        IClass classNotFoundExceptionIClass;
+        try {
+            classNotFoundExceptionIClass = this.iClassLoader.loadIClass("Ljava/lang/ClassNotFoundException;");
+        } catch (ClassNotFoundException ex) {
+            throw new RuntimeException("Loading class \"ClassNotFoundException\": " + ex.getMessage());
+        }
         if (classNotFoundExceptionIClass == null) throw new RuntimeException("SNO: Cannot load \"ClassNotFoundException\"");
 
-        IClass noClassDefFoundErrorIClass = this.iClassLoader.loadIClass("Ljava/lang/NoClassDefFoundError;");
+        IClass noClassDefFoundErrorIClass;
+        try {
+            noClassDefFoundErrorIClass = this.iClassLoader.loadIClass("Ljava/lang/NoClassDefFoundError;");
+        } catch (ClassNotFoundException ex) {
+            throw new RuntimeException("Loading class \"NoClassDefFoundError\": " + ex.getMessage());
+        }
         if (noClassDefFoundErrorIClass == null) throw new RuntimeException("SNO: Cannot load \"NoClassFoundError\"");
 
         // catch (ClassNotFoundException ex) {
@@ -6298,6 +6430,9 @@ public class UnitCompiler {
             if (value instanceof Character) {
                 result = new Double(((Character) value).charValue());
             }
+        } else
+        if (value == Java.Rvalue.CONSTANT_VALUE_NULL && !targetType.isPrimitive()) {
+            result = value;
         }
         if (result == null) this.compileError("Cannot convert constant of type \"" + value.getClass().getName() + "\" to type \"" + targetType.toString() + "\"", located.getLocation());
         return result;
@@ -6709,7 +6844,7 @@ public class UnitCompiler {
      * @param identifiers
      * @return <code>null</code> if a class with the given name could not be loaded
      */
-    private IClass loadFullyQualifiedClass(String[] identifiers) {
+    private IClass loadFullyQualifiedClass(String[] identifiers) throws CompileException {
 
         // Compose the descriptor (like "La/b/c;") and remember the positions of the slashes
         // (2 and 4).
@@ -6726,7 +6861,13 @@ public class UnitCompiler {
         // Attempt to load the IClass and replace dots with dollar signs, i.e.:
         // La/b/c; La/b$c; La$b$c;
         for (int j = slashes.length - 1;; --j) {
-            IClass result = this.iClassLoader.loadIClass(sb.toString());
+            IClass result;
+            try {
+                result = this.iClassLoader.loadIClass(sb.toString());
+            } catch (ClassNotFoundException ex) {
+                if (ex.getException() instanceof CompileException) throw (CompileException) ex.getException();
+                throw new CompileException(sb.toString(), null, ex);
+            }
             if (result != null) return result;
             if (j < 0) break;
             sb.setCharAt(slashes[j], '$');
@@ -6995,6 +7136,7 @@ public class UnitCompiler {
      * @param optionalLocation The location to report
      */
     private void compileError(String message, Location optionalLocation) throws CompileException {
+        ++this.compileErrorCount;
         if (this.optionalCompileErrorHandler != null) {
             this.optionalCompileErrorHandler.handleError(message, optionalLocation);
         } else {
@@ -7032,6 +7174,13 @@ public class UnitCompiler {
      * Be aware that a single problem during compilation often causes a bunch of compile errors,
      * so a good {@link ErrorHandler} counts errors and throws a {@link CompileException} when
      * a limit is reached.
+     * <p>
+     * If the given {@link ErrorHandler} does not throw {@link CompileException}s, then
+     * {@link #compileUnit(EnumeratorSet)} will throw one when the compilation of the unit
+     * is finished, and errors had occurred. In other words: The {@link ErrorHandler} may
+     * throw a {@link CompileException} or not, but {@link #compileUnit(EnumeratorSet)} will
+     * definitely throw a {@link CompileException} if one or more compile errors have
+     * occurred.
      *
      * @param optionalCompileErrorHandler <code>null</code> to restore the default behavior (throwing a {@link CompileException}
      */
@@ -7290,6 +7439,7 @@ public class UnitCompiler {
 
     // Used for elaborate compile error handling.
     private ErrorHandler optionalCompileErrorHandler = null;
+    private int          compileErrorCount = 0;
 
     // Used for elaborate warning handling.
     private WarningHandler optionalWarningHandler = null;

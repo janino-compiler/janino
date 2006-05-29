@@ -145,7 +145,7 @@ public class CachingJavaSourceClassLoader extends JavaSourceClassLoader {
                         is = classFileResource.open();
                         bytecode = CachingJavaSourceClassLoader.readInputStream(is);
                     } catch (IOException ex) {
-                        throw new TunnelException(ex);
+                        throw new ClassNotFoundException("Reading class file from \"" + classFileResource + "\"", ex);
                     } finally {
                         try { is.close(); } catch (IOException ex) {}
                     }
@@ -169,7 +169,7 @@ public class CachingJavaSourceClassLoader extends JavaSourceClassLoader {
                 os = this.classFileCacheResourceCreator.createResource(ClassFile.getClassFileResourceName(className2));
                 os.write(bytecode);
             } catch (IOException ex) {
-                throw new TunnelException(ex);
+                throw new ClassNotFoundException("Writing class file to \"" + ClassFile.getClassFileResourceName(className2) + "\"", ex);
             } finally {
                 if (os != null) try { os.close(); } catch (IOException ex) {}
             }

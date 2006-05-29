@@ -273,7 +273,14 @@ class ReflectionIClass extends IClass {
      * ensure unique {@link IClass}es.
      */
     private IClass classToIClass(Class c) {
-        return this.iClassLoader.loadIClass(Descriptor.fromClassName(c.getName()));
+        IClass iClass;
+        try {
+            iClass = this.iClassLoader.loadIClass(Descriptor.fromClassName(c.getName()));
+        } catch (ClassNotFoundException ex) {
+            throw new RuntimeException("Loading IClass \"" + c.getName() + "\": " + ex);
+        }
+        if (iClass == null) throw new RuntimeException("Cannot load class \"" + c.getName() + "\" through the given ClassLoader");
+        return iClass;
     }
 
     /**

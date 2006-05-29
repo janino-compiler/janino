@@ -38,15 +38,21 @@ import java.io.*;
 
 /**
  * Finds a resource by name.
+ * <p>
+ * Notice that there is a symmetrical concept
+ * {@link org.codehaus.janino.util.resource.ResourceCreator} that creates resources for
+ * writing.
+ *
+ * @see org.codehaus.janino.util.resource.ResourceCreator
  */
 public abstract class ResourceFinder {
 
     /**
-     * Find a resource by name and open it for reading
+     * Find a resource by name and open it for reading.
      * 
-     * @param resourceName
-     *            Slash-separated name that identifies the resource
+     * @param resourceName Designates the resource; typically structured by slashes ("/") like "<code>com/foo/pkg/Bar.class</code>"
      * @return <code>null</code> if the resource could not be found
+     * @throws IOException The resource was found, but there are problems opening it
      */
     public final InputStream findResourceAsStream(String resourceName) throws IOException {
         Resource resource = this.findResource(resourceName);
@@ -57,7 +63,7 @@ public abstract class ResourceFinder {
     /**
      * Find a resource by name and return it as a {@link Resource} object.
      * 
-     * @param resourceName Slash-separated name that identifies the resource
+     * @param resourceName Designates the resource; typically structured by slashes ("/") like "<code>com/foo/pkg/Bar.class</code>"
      * @return <code>null</code> if the resource could not be found
      */
     public abstract Resource findResource(String resourceName);
@@ -67,5 +73,14 @@ public abstract class ResourceFinder {
      */
     public static final ResourceFinder NO_RESOURCE_FINDER = new ResourceFinder() {
         public Resource findResource(String resourceName) { return null; }
+    };
+
+    /**
+     * This one's useful when a resource finder is required, but cannot be created
+     * for some reason.
+     */
+    public static final ResourceFinder EMPTY_RESOURCE_FINDER = new ResourceFinder() {
+        public Resource findResource(String resourceName) { return null; }
+        public String toString() { return "invalid entry"; }
     };
 }

@@ -38,7 +38,16 @@ import java.io.*;
 
 
 /**
- * Representation of a resource that was found by a {@link ResourceFinder}.
+ * A {@link Resource} is "something" that is typically found by a
+ * {@link org.codehaus.janino.util.resource.ResourceFinder}, can be {@link #open()}ed for
+ * reading, and optionally has a {@link #lastModified()} property.
+ * <p>
+ * There also exists a {@link org.codehaus.janino.util.resource.ResourceCreator} concept which
+ * opens a resource for writing, but that happens directly and not through an intermediate
+ * {@link Resource} object.
+ *
+ * @see org.codehaus.janino.util.resource.ResourceFinder
+ * @see org.codehaus.janino.util.resource.ResourceCreator
  */
 public interface Resource {
 

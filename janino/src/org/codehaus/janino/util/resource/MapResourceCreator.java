@@ -34,24 +34,35 @@
 
 package org.codehaus.janino.util.resource;
 
+import java.io.*;
 import java.util.*;
 
-import org.codehaus.janino.util.iterator.IteratorCollection;
-
-
 /**
- * A {@link org.codehaus.janino.util.resource.ResourceFinder} that examines a set
- * of {@link org.codehaus.janino.util.resource.ResourceFinder}s lazily as it
- * searches for resources.
- *
- * @see org.codehaus.janino.util.iterator.IteratorCollection
+ * Creates resources as byte arrays in a delegate {@link java.util.Map}.
  */
-public class LazyMultiResourceFinder extends MultiResourceFinder {
+public class MapResourceCreator implements ResourceCreator {
+    private final Map map;
 
-    /**
-     * @param resourceFinders delegate {@link ResourceFinder}s
-     */
-    public LazyMultiResourceFinder(Iterator resourceFinders) {
-        super(new IteratorCollection(resourceFinders));
+    public MapResourceCreator() {
+        this.map = new HashMap();
+    }
+    public MapResourceCreator(Map map) {
+    	this.map = map;
+    }
+    public Map getMap() {
+        return this.map;
+    }
+
+    public OutputStream createResource(final String resourceName) throws IOException {
+        return new ByteArrayOutputStream() {
+            public void close() throws IOException {
+                super.close();
+                MapResourceCreator.this.map.put(resourceName, this.toByteArray());
+            }
+        };
+    }
+
+    public boolean deleteResource(String resourceName) {
+        return this.map.remove(resourceName) != null;
     }
 }

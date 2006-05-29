@@ -57,7 +57,7 @@ public class ResourceFinderIClassLoader extends IClassLoader {
         this.postConstruct();
     }
 
-    protected IClass findIClass(String descriptor) {
+    protected IClass findIClass(String descriptor) throws ClassNotFoundException {
         String className = Descriptor.toClassName(descriptor);
 
         // Find the class file resource.
@@ -69,18 +69,19 @@ public class ResourceFinderIClassLoader extends IClassLoader {
         try {
             is = classFileResource.open();
         } catch (IOException ex) {
-            throw new RuntimeException("Opening resource \"" + classFileResource.getFileName() + "\": " + ex.getMessage());
+            throw new ClassNotFoundException("Opening resource \"" + classFileResource.getFileName() + "\"", ex);
         }
 
         // Load the IClass from the class file.
-        IClass iClass;
+        ClassFile cf;
         try {
-            iClass = new ClassFileIClass(new ClassFile(is), this);
+            cf = new ClassFile(is);
         } catch (IOException e) {
-            throw new ClassFormatError(className);
+            throw new ClassNotFoundException("Reading resource \"" + classFileResource.getFileName() + "\"", e);
         } finally {
             try { is.close(); } catch (IOException e) {}
         }
+        IClass iClass = new ClassFileIClass(cf, this);
         this.defineIClass(iClass);
         return iClass;
     }
