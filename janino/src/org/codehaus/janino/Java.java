@@ -250,14 +250,14 @@ public class Java {
         /**
          * Returns the doc comment of the object or <code>null</code>.
          */
-        String  getDocComment();
+        public String getDocComment();
 
         /**
          * Returns <code>true</code> if the object has a doc comment and
          * the <code>&#64#deprecated</code> tag appears in the doc
          * comment.
          */
-        boolean hasDeprecatedDocTag();
+        public boolean hasDeprecatedDocTag();
     }
 
     /**
@@ -327,11 +327,11 @@ public class Java {
     }
 
     public abstract static class AbstractTypeDeclaration implements TypeDeclaration {
-        private   final Location location;
-        protected final short    modifiers;
-        public final List        declaredMethods              = new ArrayList(); // MethodDeclarator
-        public final List        declaredClassesAndInterfaces = new ArrayList(); // MemberTypeDeclaration
-        private Scope enclosingScope = null;
+        private final Location location;
+        public final short     modifiers;
+        public final List      declaredMethods              = new ArrayList(); // MethodDeclarator
+        public final List      declaredClassesAndInterfaces = new ArrayList(); // MemberTypeDeclaration
+        private Scope          enclosingScope = null;
 
         /*package*/ IClass resolvedType = null;
 
@@ -532,7 +532,7 @@ public class Java {
      * {@link org.codehaus.janino.Java.TypeDeclaration}.
      */
     public static final class EnclosingScopeOfTypeDeclaration implements Scope {
-        private final TypeDeclaration typeDeclaration;
+        public final TypeDeclaration typeDeclaration;
         public EnclosingScopeOfTypeDeclaration(TypeDeclaration typeDeclaration) {
             this.typeDeclaration = typeDeclaration;
         }
@@ -822,7 +822,7 @@ public class Java {
 
     public abstract static class AbstractTypeBodyDeclaration extends Located implements TypeBodyDeclaration {
         private TypeDeclaration declaringType;
-        final boolean           statiC;
+        public final boolean    statiC;
 
         protected AbstractTypeBodyDeclaration(
             Location location,
@@ -882,10 +882,10 @@ public class Java {
     public abstract static class FunctionDeclarator extends AbstractTypeBodyDeclaration implements DocCommentable {
         private final String           optionalDocComment;
         public final short             modifiers;
-        final Type                     type;
+        public final Type              type;
         public final String            name;
         public final FormalParameter[] formalParameters;
-        protected final Type[]         thrownExceptions;
+        public final Type[]            thrownExceptions;
         public final Block             optionalBody;
 
         public FunctionDeclarator(
@@ -1049,7 +1049,7 @@ public class Java {
      */
     public static final class FieldDeclaration extends Statement implements TypeBodyDeclaration, DocCommentable {
         private final String              optionalDocComment;
-        final short                       modifiers;
+        public final short                modifiers;
         public final Type                 type;
         public final VariableDeclarator[] variableDeclarators;
 
@@ -1230,28 +1230,7 @@ public class Java {
 
         // Compile time members.
 
-        /**
-         * JLS 14.10 specifies that under certain circumstances it is not an error that
-         * statements are physically unreachable, precisely
-         * <pre>
-         *   {
-         *     if (true) return;
-         *     a = 1; // Physically unreachable, but not an error, i.e. "dead"
-         *   }
-         *   b = 2; // Same thing.
-         * </pre>
-         * The "if" statement notifies its enclosing block by calling this method.
-         */
-        void followingStatementsAreDead() {
-            this.keepCompiling = false;
-
-            Java.Scope s = this.getEnclosingScope();
-            if (s instanceof Java.Block) ((Java.Block) s).followingStatementsAreDead();
-        }
-
         public final void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitBlock(this); }
-
-        boolean keepCompiling;
     }
 
     /**
@@ -1280,6 +1259,8 @@ public class Java {
     }
 
     public final static class ExpressionStatement extends Statement {
+        public final Rvalue rvalue;
+
         public ExpressionStatement(Rvalue rvalue) throws Parser.ParseException {
             super(rvalue.getLocation());
             if (!(
@@ -1291,7 +1272,6 @@ public class Java {
             )) this.throwParseException("This kind of expression is not allowed in an expression statement");
             (this.rvalue = rvalue).setEnclosingBlockStatement(this);
         }
-        public final Rvalue rvalue;
 
         // Compile time members:
 
@@ -1310,6 +1290,9 @@ public class Java {
     }
 
     public final static class IfStatement extends Statement {
+        public final Rvalue         condition;
+        public final BlockStatement thenStatement;
+        public final BlockStatement optionalElseStatement;
 
         /**
          * Notice that the <code>elseStatement</code> is mandatory; for an if statement without
@@ -1327,10 +1310,6 @@ public class Java {
             this.optionalElseStatement = optionalElseStatement;
             if (optionalElseStatement != null) optionalElseStatement.setEnclosingScope(this);
         }
-
-        public final Rvalue         condition;
-        public final BlockStatement thenStatement;
-        public final BlockStatement optionalElseStatement;
 
         // Compile time members:
 
@@ -1581,6 +1560,8 @@ public class Java {
     }
 
     public final static class ReturnStatement extends Statement {
+        public final Rvalue optionalReturnValue;
+
         public ReturnStatement(
             Location location,
             Rvalue   optionalReturnValue
@@ -1590,14 +1571,14 @@ public class Java {
             if (optionalReturnValue != null) optionalReturnValue.setEnclosingBlockStatement(this);
         }
 
-        public final Rvalue optionalReturnValue;
-
         // Compile time members:
 
         public final void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitReturnStatement(this); }
     }
 
     public final static class ThrowStatement extends Statement {
+        public final Rvalue expression;
+
         public ThrowStatement(
             Location location,
             Rvalue   expression
@@ -1605,8 +1586,6 @@ public class Java {
             super(location);
             (this.expression = expression).setEnclosingBlockStatement(this);
         }
-
-        public final Rvalue expression;
 
         // Compile time members:
 
@@ -1637,6 +1616,8 @@ public class Java {
      * 14.15).
      */
     public final static class ContinueStatement extends Statement {
+        public final String optionalLabel;
+
         public ContinueStatement(
             Location location,
             String   optionalLabel
@@ -1644,8 +1625,6 @@ public class Java {
             super(location);
             this.optionalLabel = optionalLabel;
         }
-
-        public final String optionalLabel;
 
         // Compile time members:
 
@@ -2033,6 +2012,8 @@ public class Java {
     }
 
     public static final class ArrayLength extends Rvalue {
+        public final Rvalue lhs;
+
         public ArrayLength(
             Location location,
             Rvalue   lhs
@@ -2040,8 +2021,6 @@ public class Java {
             super(location);
             this.lhs = lhs;
         }
-
-        public final Rvalue lhs;
 
         // Compile time members.
 
@@ -2150,6 +2129,10 @@ public class Java {
     }
 
     public static final class Assignment extends Rvalue {
+        public final Lvalue lhs;
+        public final String operator;
+        public final Rvalue rhs;
+
         public Assignment(
             Location location,
             Lvalue   lhs,
@@ -2162,10 +2145,6 @@ public class Java {
             this.rhs      = rhs;
         }
 
-        public final Lvalue lhs;
-        public final String operator;
-        public final Rvalue rhs;
-
         // Compile time members.
 
         // Implement "Atom".
@@ -2176,6 +2155,8 @@ public class Java {
     }
 
     public static final class ConditionalExpression extends Rvalue {
+        public final Rvalue lhs, mhs, rhs;
+
         public ConditionalExpression(
             Location location,
             Rvalue   lhs,
@@ -2193,8 +2174,6 @@ public class Java {
 
         public final void accept(Visitor.AtomVisitor visitor) { visitor.visitConditionalExpression(this); }
         public final void accept(Visitor.RvalueVisitor visitor) { visitor.visitConditionalExpression(this); }
-
-        public final Rvalue lhs, mhs, rhs;
     }
 
     /**
@@ -2202,6 +2181,10 @@ public class Java {
      * or decrement.
      */
     public static final class Crement extends Rvalue {
+        public final boolean pre;
+        public final String  operator; // "++" or "--"
+        public final Lvalue  operand;
+
         public Crement(Location location, String operator, Lvalue operand) {
             super(location);
             this.pre      = true;
@@ -2214,10 +2197,6 @@ public class Java {
             this.operator = operator;
             this.operand  = operand;
         }
-
-        public final boolean pre;
-        public final String  operator;
-        public final Lvalue  operand;
 
         // Compile time members.
 
@@ -2267,7 +2246,7 @@ public class Java {
      */
     public static final class FieldAccessExpression extends Lvalue {
         public final Atom   lhs;
-        public final String         fieldName;
+        public final String fieldName;
 
         public FieldAccessExpression(
             Location       location,
@@ -2295,6 +2274,9 @@ public class Java {
      * This class implements the unary operators "+", "-", "~" and "!".
      */
     public static final class UnaryOperation extends BooleanRvalue {
+        public final String operator;
+        public final Rvalue operand;
+
         public UnaryOperation(
             Location location,
             String   operator,
@@ -2310,12 +2292,12 @@ public class Java {
 
         public final void accept(Visitor.AtomVisitor visitor) { visitor.visitUnaryOperation(this); }
         public final void accept(Visitor.RvalueVisitor visitor) { visitor.visitUnaryOperation(this); }
-
-        public final String operator;
-        public final Rvalue operand;
     }
 
     public static final class Instanceof extends Rvalue {
+        public final Rvalue lhs;
+        public final Type   rhs;
+
         public Instanceof(
             Location location,
             Rvalue   lhs,
@@ -2325,9 +2307,6 @@ public class Java {
             this.lhs = lhs;
             this.rhs = rhs;
         }
-
-        public final Rvalue lhs;
-        public final Type   rhs;
 
         // Compile time members.
 
@@ -2349,6 +2328,10 @@ public class Java {
      * <tt>| ^ & * / % + - << >> >>></tt>
      */
     public static final class BinaryOperation extends BooleanRvalue {
+        public final Rvalue lhs;
+        public final String op;
+        public final Rvalue rhs;
+
         public BinaryOperation(
             Location location,
             Rvalue   lhs,
@@ -2360,10 +2343,6 @@ public class Java {
             this.op = op;
             this.rhs = rhs;
         }
-
-        public final Rvalue lhs;
-        public final String op;
-        public final Rvalue rhs;
 
         // Compile time members.
 
@@ -2399,6 +2378,9 @@ public class Java {
     }
 
     public static final class Cast extends Rvalue {
+        public final Type   targetType;
+        public final Rvalue value;
+
         public Cast(
             Location location,
             Type     targetType,
@@ -2408,9 +2390,6 @@ public class Java {
             this.targetType = targetType;
             this.value      = value;
         }
-
-        public final Type   targetType;
-        public final Rvalue value;
 
         // Compile time members.
 
@@ -2529,6 +2508,8 @@ public class Java {
     }
 
     public static final class SuperclassMethodInvocation extends Invocation {
+        public final String methodName;
+
         public SuperclassMethodInvocation(
             Location       location,
             String         methodName,
@@ -2543,8 +2524,6 @@ public class Java {
 
         public final void accept(Visitor.AtomVisitor visitor) { visitor.visitSuperclassMethodInvocation(this); }
         public final void accept(Visitor.RvalueVisitor visitor) { visitor.visitSuperclassMethodInvocation(this); }
-
-        public final String methodName;
     }
 
     public static abstract class Invocation extends Rvalue {
@@ -2606,7 +2585,12 @@ public class Java {
             } else {
                 sb.append("???");
             }
-            sb.append("()");
+            sb.append('(');
+            for (int i = 0; i < this.arguments.length; ++i) {
+                if (i > 0) sb.append(", ");
+                sb.append(this.arguments[i].toString());
+            }
+            sb.append(')');
             return sb.toString();
         }
 
