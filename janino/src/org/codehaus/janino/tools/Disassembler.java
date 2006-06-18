@@ -139,14 +139,14 @@ public class Disassembler {
         try {
             disasm(is);
         } finally {
-            is.close();
+            try { is.close(); } catch (IOException ex) {}
+            this.ipw.flush();
         }
     }
 
     public void disasm(InputStream is) throws IOException {
         this.disasmClassFile(new DataInputStream(is));
         this.println();
-        this.ipw.flush();
     }
 
     private void disasmClassFile(DataInputStream dis) throws IOException {
@@ -155,19 +155,21 @@ public class Disassembler {
             this.println("minor_version = " + dis.readShort());
             this.println("major_version = " + dis.readShort());
 
-            short constantPoolCount = dis.readShort();
-            this.constantPool = new ConstantPoolInfo[constantPoolCount];
+            this.constantPool = new ConstantPoolInfo[dis.readShort()];
+            for (short i = 1; i < this.constantPool.length;) {
+                ConstantPoolInfo cpi = readConstantPoolInfo(dis);
+                this.constantPool[i++] = cpi;
+                for (int j = cpi.getSizeInConstantPool(); j > 1; --j) {
+                    this.constantPool[i++] = null;
+                }
+            }
             this.indentln("constant_pool[] = {"); {
-                for (short i = 1; i < constantPoolCount;) {
+                for (short i = 1; i < this.constantPool.length;) {
                     this.print(i + ": ");
-                    ConstantPoolInfo cpi = readConstantPoolInfo(dis);
-                    cpi.print();
+                    ConstantPoolInfo cpi = this.constantPool[i];
+                    cpi.print(); // Must be invoked only after "this.constantPool" is initialized.
                     this.println();
-                    this.constantPool[i++] = cpi;
-                    for (int j = cpi.getSizeInConstantPool(); j > 1; --j) {
-                        this.println(i + ": (null entry)");
-                        this.constantPool[i++] = null;
-                    }
+                    i += cpi.getSizeInConstantPool();
                 }
             } this.unindentln("}");
 
