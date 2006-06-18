@@ -1,6 +1,4 @@
 
-package util;
-
 /*
  * Janino - An embedded Java[TM] compiler
  *
@@ -33,6 +31,8 @@ package util;
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+package util;
 
 import junit.framework.*;
 
@@ -241,7 +241,7 @@ public class JaninoTestSuite extends StructuredTestSuite {
             } else
             if (this.mode == EXEC) {
                 this.compile();
-                Object result = this.execute();
+                this.execute();
             } else
             if (this.mode == TRUE) {
                 this.compile();
