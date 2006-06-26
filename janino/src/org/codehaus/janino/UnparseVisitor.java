@@ -56,7 +56,18 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
     public static void main(String[] args) throws Exception {
         Writer w = new BufferedWriter(new OutputStreamWriter(System.out));
         for (int i = 0; i < args.length; ++i) {
-            Java.CompilationUnit cu = new Parser(new Scanner(args[i])).parseCompilationUnit();
+            String fileName = args[i];
+
+            // Parse each compilation unit.
+            FileReader r = new FileReader(fileName);
+            Java.CompilationUnit cu;
+            try {
+                cu = new Parser(new Scanner(fileName, r)).parseCompilationUnit();
+            } finally {
+                r.close();
+            }
+
+            // Unparse each compilation unit.
             UnparseVisitor.unparse(cu, w);
         }
         w.flush();
@@ -307,7 +318,7 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
         for (int i = 0; i < vd.brackets; ++i) this.pw.print("[]");
         if (vd.optionalInitializer != null) {
             this.pw.print(" = ");
-            ((Java.Atom) vd.optionalInitializer).accept(this);
+            this.unparseArrayInitializerOrRvalue(vd.optionalInitializer);
         }
     }
     public void unparseFormalParameter(Java.FunctionDeclarator.FormalParameter fp) {
