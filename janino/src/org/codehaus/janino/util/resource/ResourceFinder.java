@@ -69,13 +69,6 @@ public abstract class ResourceFinder {
     public abstract Resource findResource(String resourceName);
 
     /**
-     * A {@link ResourceFinder} that never finds a resource.
-     */
-    public static final ResourceFinder NO_RESOURCE_FINDER = new ResourceFinder() {
-        public Resource findResource(String resourceName) { return null; }
-    };
-
-    /**
      * This one's useful when a resource finder is required, but cannot be created
      * for some reason.
      */
