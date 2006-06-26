@@ -140,13 +140,13 @@ public class Disassembler {
             disasm(is);
         } finally {
             try { is.close(); } catch (IOException ex) {}
-            this.ipw.flush();
         }
     }
 
     public void disasm(InputStream is) throws IOException {
         this.disasmClassFile(new DataInputStream(is));
         this.println();
+        this.ipw.flush();
     }
 
     private void disasmClassFile(DataInputStream dis) throws IOException {
@@ -216,19 +216,28 @@ public class Disassembler {
             }
 
             Map sourceLines = new HashMap();
-            {
+            READ_SOURCE_LINES: {
                 for (int i = 0; i < attributes.length; ++i) {
                     if (attributes[i] instanceof SourceFileAttribute) {
                         ConstantPoolInfo cpi = Disassembler.this.getConstantPoolEntry(((SourceFileAttribute) attributes[i]).sourceFileIndex);
                         if (cpi instanceof ConstantUtf8Info) {
                             String sourceFile = ((ConstantUtf8Info) cpi).getValue();
-                            LineNumberReader lnr = new LineNumberReader(new FileReader(new File(this.sourceDirectory, sourceFile)));
-                            for (;;) {
-                                String sl = lnr.readLine();
-                                if (sl == null) break;
-                                sourceLines.put(new Integer(lnr.getLineNumber()), sl);
+                            LineNumberReader lnr;
+                            try {
+                                lnr = new LineNumberReader(new FileReader(new File(this.sourceDirectory, sourceFile)));
+                            } catch (FileNotFoundException ex) {
+                                ;
+                                break READ_SOURCE_LINES;
                             }
-                            lnr.close();
+                            try {
+                                for (;;) {
+                                    String sl = lnr.readLine();
+                                    if (sl == null) break;
+                                    sourceLines.put(new Integer(lnr.getLineNumber()), sl);
+                                }
+                            } finally {
+                                lnr.close();
+                            }
                         }
                     }
                 }
