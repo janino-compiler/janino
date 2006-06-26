@@ -272,7 +272,7 @@ public class Compiler {
                 classPath
             ),
             (                                         // classFileFinder
-                rebuild ? ResourceFinder.NO_RESOURCE_FINDER :
+                rebuild ? ResourceFinder.EMPTY_RESOURCE_FINDER :
                 destinationDirectory == Compiler.NO_DESTINATION_DIRECTORY ? Compiler.FIND_NEXT_TO_SOURCE_FILE :
                 new DirectoryResourceFinder(destinationDirectory)
             ),
@@ -320,7 +320,7 @@ public class Compiler {
      * <p>
      * If it is impossible to check whether an already-compiled class file
      * exists, or if you want to enforce recompilation, pass
-     * {@link ResourceFinder#NO_RESOURCE_FINDER} as the
+     * {@link ResourceFinder#EMPTY_RESOURCE_FINDER} as the
      * <code>classFileResourceFinder</code>.
      * 
      * @param sourceFinder Finds extra Java compilation units that need to be compiled (a.k.a. "sourcepath")
