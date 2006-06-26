@@ -38,7 +38,7 @@ import java.util.*;
 
 /**
  * An {@link java.util.Iterator} that iterates over a delegate, which produces
- * arrays, {@link java.util.Collection}s, {link Enumeration}s or
+ * arrays, {@link java.util.Collection}s, {@link java.util.Enumeration}s or
  * {@link java.util.Iterator}s. This {@link java.util.Iterator} returns the
  * elements of these objects.
  * <p>

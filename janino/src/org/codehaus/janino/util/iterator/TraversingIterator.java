@@ -39,7 +39,7 @@ import java.util.*;
 /**
  * An {@link java.util.Iterator} that iterates over a delegate, and while
  * it encounters an array, a {@link java.util.Collection}, an
- * {link Enumeration} or a {@link java.util.Iterator} element, it iterates
+ * {@link java.util.Enumeration} or a {@link java.util.Iterator} element, it iterates
  * into it recursively.
  * <p>
  * Be aware that {@link #hasNext()} must read ahead one element.
