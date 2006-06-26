@@ -1389,9 +1389,6 @@ public class Java {
 
         public final void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitTryStatement(this); }
 
-        // Preserves "leave stack".
-        short stackValueLvIndex;
-
         CodeContext.Offset finallyOffset = null;
     }
 
