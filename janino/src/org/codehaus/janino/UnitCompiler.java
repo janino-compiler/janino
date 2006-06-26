@@ -850,7 +850,7 @@ public class UnitCompiler {
         } else {
             for (
                 Java.Scope s = bs.getEnclosingScope();
-                s instanceof Java.Statement;
+                s instanceof Java.Statement || s instanceof Java.CatchClause;
                 s = s.getEnclosingScope()
             ) {
                 if (s instanceof Java.LabeledStatement) {
@@ -1274,53 +1274,64 @@ public class UnitCompiler {
         CodeContext.Offset beginningOfBody = this.codeContext.newOffset();
         CodeContext.Offset afterStatement = this.codeContext.new Offset();
 
-        // Allocate a future LV that will be used to preserve the "leave stack".
-        this.codeContext.saveLocalVariables();
-        ts.stackValueLvIndex = this.codeContext.allocateLocalVariable((short) 2);
-        this.codeContext.restoreLocalVariables();
-
-        boolean canCompleteNormally = this.compile(ts.body);
-        CodeContext.Offset afterBody = this.codeContext.newOffset();
-        if (canCompleteNormally) {
-            this.writeBranch(ts, Opcode.GOTO, afterStatement);
-        }
-
         this.codeContext.saveLocalVariables();
         try {
 
-            // Local variable for exception object.
-            // Notice: Must be same size as "this.stackValueLvIndex".
-            short exceptionObjectLvIndex = this.codeContext.allocateLocalVariable((short) 2);
+            // Allocate a LV for the JSR of the FINALLY clause.
+            //
+            // Notice:
+            //   For unclear reasons, this variable must not overlap with any of the body's
+            //   variables (although the body's variables are out of scope when it comes to the
+            //   FINALLY clause!?), otherwise you get
+            //     java.lang.VerifyError: ... Accessing value from uninitialized localvariable 4
+            //   See bug #56.
+            short pcLVIndex = ts.optionalFinally != null ? this.codeContext.allocateLocalVariable((short) 1) : (short) 0;
+
+            boolean canCompleteNormally = this.compile(ts.body);
+            CodeContext.Offset afterBody = this.codeContext.newOffset();
+            if (canCompleteNormally) {
+                this.writeBranch(ts, Opcode.GOTO, afterStatement);
+            }
 
             if (beginningOfBody.offset != afterBody.offset) { // Avoid zero-length exception table entries.
-                for (int i = 0; i < ts.catchClauses.size(); ++i) {
-                    Java.CatchClause cc = (Java.CatchClause) ts.catchClauses.get(i);
-                    IClass caughtExceptionType = this.getType(cc.caughtException.type);
-                    this.codeContext.addExceptionTableEntry(
-                        beginningOfBody,                    // startPC
-                        afterBody,                          // endPC
-                        this.codeContext.newOffset(),       // handlerPC
-                        caughtExceptionType.getDescriptor() // catchTypeFD
-                    );
-                    this.store(
-                        (Java.Located) ts,     // located
-                        caughtExceptionType,   // lvType
-                        exceptionObjectLvIndex // lvIndex
-                    );
-    
-                    // Kludge: Treat the exception variable like a local
-                    // variable of the catch clause body.
-                    UnitCompiler.this.getLocalVariable(cc.caughtException).localVariableArrayIndex = exceptionObjectLvIndex;
-    
-                    if (this.compile(cc.body)) {
-                        canCompleteNormally = true;
-                        if (
-                            i < ts.catchClauses.size() - 1 ||
-                            ts.optionalFinally != null
-                        ) this.writeBranch(ts, Opcode.GOTO, afterStatement);
+                this.codeContext.saveLocalVariables();
+                try {
+
+                    // Allocate the "exception variable".
+                    short evi = this.codeContext.allocateLocalVariable((short) 1);
+
+                    for (int i = 0; i < ts.catchClauses.size(); ++i) {
+                        Java.CatchClause cc = (Java.CatchClause) ts.catchClauses.get(i);
+                        IClass caughtExceptionType = this.getType(cc.caughtException.type);
+                        this.codeContext.addExceptionTableEntry(
+                            beginningOfBody,                    // startPC
+                            afterBody,                          // endPC
+                            this.codeContext.newOffset(),       // handlerPC
+                            caughtExceptionType.getDescriptor() // catchTypeFD
+                        );
+                        this.store(
+                            (Java.Located) cc,   // located
+                            caughtExceptionType, // lvType
+                            evi                  // lvIndex
+                        );
+        
+                        // Kludge: Treat the exception variable like a local
+                        // variable of the catch clause body.
+                        UnitCompiler.this.getLocalVariable(cc.caughtException).localVariableArrayIndex = evi;
+        
+                        if (this.compile(cc.body)) {
+                            canCompleteNormally = true;
+                            if (
+                                i < ts.catchClauses.size() - 1 ||
+                                ts.optionalFinally != null
+                            ) this.writeBranch(cc, Opcode.GOTO, afterStatement);
+                        }
                     }
+                } finally {
+                    this.codeContext.restoreLocalVariables();
                 }
             }
+
             if (ts.optionalFinally != null) {
                 CodeContext.Offset here = this.codeContext.newOffset();
                 this.codeContext.addExceptionTableEntry(
@@ -1330,41 +1341,50 @@ public class UnitCompiler {
                     null             // catchTypeFD
                 );
 
-                // Store exception object in local variable.
-                this.store(
-                    (Java.Located) ts,        // located
-                    this.iClassLoader.OBJECT, // valueType
-                    exceptionObjectLvIndex    // localVariableIndex
-                );
-                this.writeBranch(ts, Opcode.JSR, ts.finallyOffset);
-                this.load(
-                    (Java.Located) ts,        // located
-                    this.iClassLoader.OBJECT, // valueType
-                    exceptionObjectLvIndex    // localVariableIndex
-                );
-                this.writeOpcode(ts, Opcode.ATHROW);
+                this.codeContext.saveLocalVariables();
+                try {
 
-                // Compile the "finally" body.
-                ts.finallyOffset.set();
-                short pcLVIndex = this.codeContext.allocateLocalVariable((short) 1);
-                this.store(
-                    (Java.Located) ts,        // located
-                    this.iClassLoader.OBJECT, // valueType
-                    pcLVIndex                 // localVariableIndex
-                );
-                if (this.compile(ts.optionalFinally)) {
-                    this.writeOpcode(ts, Opcode.RET);
-                    this.writeByte(ts, pcLVIndex);
+                    // Save the exception object in an anonymous local variable.
+                    short evi = this.codeContext.allocateLocalVariable((short) 1);
+                    this.store(
+                        (Java.Located) ts.optionalFinally, // located
+                        this.iClassLoader.OBJECT,          // valueType
+                        evi                                // localVariableIndex
+                    );
+                    this.writeBranch(ts.optionalFinally, Opcode.JSR, ts.finallyOffset);
+                    this.load(
+                        (Java.Located) ts.optionalFinally, // located
+                        this.iClassLoader.OBJECT,          // valueType
+                        evi                                // localVariableIndex
+                    );
+                    this.writeOpcode(ts.optionalFinally, Opcode.ATHROW);
+    
+                    // Compile the "finally" body.
+                    ts.finallyOffset.set();
+                    this.store(
+                        (Java.Located) ts.optionalFinally, // located
+                        this.iClassLoader.OBJECT,          // valueType
+                        pcLVIndex                          // localVariableIndex
+                    );
+                    if (this.compile(ts.optionalFinally)) {
+                        this.writeOpcode(ts.optionalFinally, Opcode.RET);
+                        this.writeByte(ts.optionalFinally, pcLVIndex);
+                    }
+                } finally {
+
+                    // The exception object local variable allocated above MUST NOT BE RELEASED
+                    // until after the FINALLY block is compiled, for otherwise you get
+                    //   java.lang.VerifyError: ... Accessing value from uninitialized register 7
+                    this.codeContext.restoreLocalVariables();
                 }
             }
 
             afterStatement.set();
             if (canCompleteNormally) this.leave(ts, null);
+            return canCompleteNormally;
         } finally {
             this.codeContext.restoreLocalVariables();
         }
-
-        return canCompleteNormally;
     }
 
     // ------------ FunctionDeclarator.compile() -------------
@@ -3457,17 +3477,25 @@ public class UnitCompiler {
     public void leave2(Java.TryStatement ts, IClass optionalStackValueType) {
         if (ts.finallyOffset != null) {
 
-            // Obviously, JSR must always be executed with the operand stack being
-            // empty; otherwise we get "java.lang.VerifyError: Inconsistent stack height
-            // 1 != 2"
-            if (optionalStackValueType != null) {
-                this.store((Java.Located) ts, optionalStackValueType, ts.stackValueLvIndex);
-            }
+            this.codeContext.saveLocalVariables();
+            try {
+                short sv = 0;
 
-            this.writeBranch(ts, Opcode.JSR, ts.finallyOffset);
-
-            if (optionalStackValueType != null) {
-                this.load((Java.Located) ts, optionalStackValueType, ts.stackValueLvIndex);
+                // Obviously, JSR must always be executed with the operand stack being
+                // empty; otherwise we get "java.lang.VerifyError: Inconsistent stack height
+                // 1 != 2"
+                if (optionalStackValueType != null) {
+                    sv = this.codeContext.allocateLocalVariable(Descriptor.size(optionalStackValueType.getDescriptor()));
+                    this.store((Java.Located) ts, optionalStackValueType, sv);
+                }
+    
+                this.writeBranch(ts, Opcode.JSR, ts.finallyOffset);
+    
+                if (optionalStackValueType != null) {
+                    this.load((Java.Located) ts, optionalStackValueType, sv);
+                }
+            } finally {
+                this.codeContext.restoreLocalVariables();
             }
         }
     }
