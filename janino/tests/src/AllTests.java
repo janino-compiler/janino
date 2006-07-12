@@ -51,12 +51,12 @@ public class AllTests extends JaninoTestSuite {
         section(1, SimpleCompiler.class.getName());
 
         section(2, "Default imports");
-        aet(TRUE, "1", "new ArrayList().getClass().getName().equals(\"java.util.ArrayList\")").setDefaultImports(new String[] { "java.util.*" });
-        ast(SCAN, "2", "xxx").setDefaultImports(new String[] { "java.util@" });
-        ast(PARS, "3", "xxx").setDefaultImports(new String[] { "java.util.9" });
-        ast(PARS, "4", "xxx").setDefaultImports(new String[] { "java.util.*;" });
-        acbt(TRUE, "5", "public static boolean main() { return new ArrayList() instanceof List; }").setDefaultImports(new String[] { "java.util.*" });
-        aet(COMP, "6", "new ArrayList()").setDefaultImports(new String[] { "java.io.*" });
+        exp(TRUE, "1", "new ArrayList().getClass().getName().equals(\"java.util.ArrayList\")").setDefaultImports(new String[] { "java.util.*" });
+        scr(SCAN, "2", "xxx").setDefaultImports(new String[] { "java.util@" });
+        scr(PARS, "3", "xxx").setDefaultImports(new String[] { "java.util.9" });
+        scr(PARS, "4", "xxx").setDefaultImports(new String[] { "java.util.*;" });
+        clb(TRUE, "5", "public static boolean main() { return new ArrayList() instanceof List; }").setDefaultImports(new String[] { "java.util.*" });
+        exp(COMP, "6", "new ArrayList()").setDefaultImports(new String[] { "java.io.*" });
 
         section(2, "Equals");
         this.addTest(new TestCase("1") {

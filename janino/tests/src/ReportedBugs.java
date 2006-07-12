@@ -52,7 +52,7 @@ public class ReportedBugs extends JaninoTestSuite {
         super("Regression tests for reported bugs");
 
         section("Bug 48");
-        asct(EXEC, "1", (
+        sim(EXEC, "1", (
             "package demo;\n" +
             "public class Service {\n" +
             "    public void test() {\n" +
@@ -62,7 +62,7 @@ public class ReportedBugs extends JaninoTestSuite {
             "    }\n" +
             "}"
         ), "demo.Service");
-        asct(EXEC, "2", (
+        sim(EXEC, "2", (
             "package demo;\n" +
             "public class Service {\n" +
             "    public Broken[] test() {\n" +
@@ -92,7 +92,7 @@ public class ReportedBugs extends JaninoTestSuite {
         }});
 
         section("Bug 54");
-        ast(TRUE, "0", (
+        scr(TRUE, "0", (
             "String s = \"\";\n" +
             "try {\n" +
             "    {\n" +
@@ -117,7 +117,7 @@ public class ReportedBugs extends JaninoTestSuite {
             "}\n" +
             "return \"set1returnfinally\".equals(s);"
         ));
-        acbt(COOK, "1", (
+        clb(COOK, "1", (
             "void foo() {\n" +
             "    while (true) {\n" +
             "        if (true) {\n" +
@@ -137,7 +137,7 @@ public class ReportedBugs extends JaninoTestSuite {
             "    }\n" +
             "}\n"
         ));
-        acbt(COOK, "2", (
+        clb(COOK, "2", (
             "void baz1() {\n" +
             "    for (int i = 0; i < 100;) {\n" +
             "        {\n" +
@@ -149,7 +149,7 @@ public class ReportedBugs extends JaninoTestSuite {
             "    }\n" +
             "}\n"
         ));
-        acbt(COOK, "3", (
+        clb(COOK, "3", (
             "void baz2() {\n" +
             "    for (int i = 0; i < 100; i++) {\n" +
             "        {\n" +
@@ -161,21 +161,21 @@ public class ReportedBugs extends JaninoTestSuite {
             "    }\n" +
             "}\n"
         ));
-        acbt(COOK, "4", (
+        clb(COOK, "4", (
             "public void foo() throws Exception {\n" +
             "    for (int i = 0 ; true; i++) {\n" +
             "        break;\n" +
             "    }\n" +
             "}\n"
         ));
-        acbt(COOK, "5", (
+        clb(COOK, "5", (
             "public void foo() throws Exception {\n" +
             "    for (int i = 0 ; true; i++) {\n" +
             "        if (true) { break; }\n" +
             "    }\n" +
             "}\n"
         ));
-        acbt(COOK, "6", (
+        clb(COOK, "6", (
             "public void foo() throws Exception {\n" +
             "    {\n" +
             "        try {\n" +
@@ -196,7 +196,7 @@ public class ReportedBugs extends JaninoTestSuite {
             "    }\n" +
             "}\n"
         ));
-        ast(EXEC, "x", (
+        scr(EXEC, "x", (
             "int c = 5;\n" +
             "if (c == 5) {\n" +
             "    if (true) return;\n" +
@@ -207,14 +207,14 @@ public class ReportedBugs extends JaninoTestSuite {
         ));
 
         section(null);
-        asct(COOK, "Bug 55", (
+        sim(COOK, "Bug 55", (
             "class Junk {" + "\n" +
             "    double[][] x = { { 123.4 } };" + "\n" +
             "}"
         ), "Junk");
 
         section(null);
-        ast(COOK, "Bug 56", (
+        scr(COOK, "Bug 56", (
             "int dummy3 = 3;\n" +
             "try {\n" +
             "    // 3 vars must be declared in try block\n" +
@@ -239,13 +239,13 @@ public class ReportedBugs extends JaninoTestSuite {
         // Bug 60: See JLS2Tests 14.3/1.
 
         section("Bug 63");
-        acbt(COMP, "0", (
+        clb(COMP, "0", (
             "public static boolean main() {\n" +
             "    IPred p = new Pred();\n"+
             "    return !p.filter();\n" +
             "}\n"
         ));
-        acbt(TRUE, "1", (
+        clb(TRUE, "1", (
             "public static boolean main() {\n" +
             "    Pred p = new Pred();\n"+
             "    return !p.filter();\n" +

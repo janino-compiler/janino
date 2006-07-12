@@ -34,26 +34,68 @@
 
 package util;
 
+import java.io.*;
+
 import junit.framework.*;
 
 import org.codehaus.janino.*;
 
 public class JaninoTestSuite extends StructuredTestSuite {
     /** The test is expected to throw a ScanException */
-    public static final int SCAN = 0;
+    public static final CompileAndExecuteTest.Mode SCAN = new CompileAndExecuteTest.Mode();
     /** The test is expected to throw a ParseException */
-    public static final int PARS = 1;
+    public static final CompileAndExecuteTest.Mode PARS = new CompileAndExecuteTest.Mode();
     /** The test is expected to throw a CompileException */
-    public static final int COMP = 2;
+    public static final CompileAndExecuteTest.Mode COMP = new CompileAndExecuteTest.Mode();
     /** The test is expected to compile successfully, but is not executed */
-    public static final int COOK = 3;
+    public static final CompileAndExecuteTest.Mode COOK = new CompileAndExecuteTest.Mode();
     /** The test is expected to compile and execute successfully */
-    public static final int EXEC = 4;
+    public static final CompileAndExecuteTest.Mode EXEC = new CompileAndExecuteTest.Mode();
     /** The test is expected to compile and execute successfully, and return <code>true</code> */
-    public static final int TRUE = 5;
+    public static final CompileAndExecuteTest.Mode TRUE = new CompileAndExecuteTest.Mode();
+    /** The string is expected to contain exactly one scannable token. */
+    public static final ScannerTest.Mode           VALI = new ScannerTest.Mode();
+    /** Scanning the string is expected to throw a {@link org.codehaus.janino.Scanner.ScanException}. */
+    public static final ScannerTest.Mode           INVA = new ScannerTest.Mode();
 
     public JaninoTestSuite(String name) {
         super(name);
+    }
+
+    /**
+     * Shorthand for "add scanner test".
+     */
+    protected TestCase sca(final ScannerTest.Mode mode, String title, final String s) {
+        TestCase tc = new ScannerTest(mode, title, s);
+        addTest(tc);
+        return tc;
+    }
+
+    protected static class ScannerTest extends TestCase {
+        private final ScannerTest.Mode mode;
+        private final String           s;
+
+        public static class Mode { private Mode() {}}
+
+        public ScannerTest(ScannerTest.Mode mode, String title, String s) {
+            super(title);
+            this.mode = mode;
+            this.s = s;
+        }
+        protected void runTest() throws Exception {
+            if (this.mode == INVA) {
+                try { new Scanner(null, new StringReader(this.s)).peek(); } catch (Scanner.ScanException ex) { return; }
+                fail("Should have thrown ScanException");
+            } else
+            if (this.mode == VALI) {
+                Scanner sc = new Scanner(null, new StringReader(this.s));
+                sc.read();
+                assertTrue(sc.read().isEOF());
+            } else
+            {
+                fail("Invalid mode \"" + this.mode + "\"");
+            }
+        }
     }
 
     /**
@@ -61,7 +103,7 @@ public class JaninoTestSuite extends StructuredTestSuite {
      *
      * @see ExpressionTest
      */
-    protected ExpressionTest aet(int mode, String title, String expression) {
+    protected ExpressionTest exp(ExpressionTest.Mode mode, String title, String expression) {
         ExpressionTest et = new ExpressionTest(mode, title, expression);
         addTest(et);
         return et;
@@ -72,7 +114,7 @@ public class JaninoTestSuite extends StructuredTestSuite {
      *
      * @see ScriptTest
      */
-    public ScriptTest ast(int mode, String title, String script) {
+    public ScriptTest scr(ScriptTest.Mode mode, String title, String script) {
         ScriptTest st = new ScriptTest(mode, title, script);
         addTest(st);
         return st;
@@ -84,7 +126,7 @@ public class JaninoTestSuite extends StructuredTestSuite {
      *
      * @see ClassBodyTest
      */
-    protected ClassBodyTest acbt(int mode, String title, String classBody) {
+    protected ClassBodyTest clb(ClassBodyTest.Mode mode, String title, String classBody) {
         ClassBodyTest cbt = new ClassBodyTest(title, mode, classBody);
         addTest(cbt);
         return cbt;
@@ -95,7 +137,7 @@ public class JaninoTestSuite extends StructuredTestSuite {
      *
      * @see SimpleCompilerTest
      */
-    protected SimpleCompilerTest asct(int mode, String title, String compilationUnit, String className) {
+    protected SimpleCompilerTest sim(SimpleCompilerTest.Mode mode, String title, String compilationUnit, String className) {
         SimpleCompilerTest sct = new SimpleCompilerTest(title, mode, compilationUnit, className);
         addTest(sct);
         return sct;
@@ -109,7 +151,7 @@ public class JaninoTestSuite extends StructuredTestSuite {
         private final String              expression;
         private final ExpressionEvaluator expressionEvaluator;
     
-        public ExpressionTest(int mode, String name, String expression) {
+        public ExpressionTest(Mode mode, String name, String expression) {
             super(mode, name);
             this.expression = expression;
             this.expressionEvaluator = new ExpressionEvaluator();
@@ -133,7 +175,7 @@ public class JaninoTestSuite extends StructuredTestSuite {
         private final String          script;
         private final ScriptEvaluator scriptEvaluator;
     
-        public ScriptTest(int mode, String name, String script) {
+        public ScriptTest(Mode mode, String name, String script) {
             super(mode, name);
             this.script = script;
             this.scriptEvaluator = new ScriptEvaluator();
@@ -158,7 +200,7 @@ public class JaninoTestSuite extends StructuredTestSuite {
         private final String             classBody;
         private final ClassBodyEvaluator classBodyEvaluator;
 
-        public ClassBodyTest(String name, int mode, String classBody) {
+        public ClassBodyTest(String name, Mode mode, String classBody) {
             super(mode, name);
             this.classBody = classBody;
             this.classBodyEvaluator = new ClassBodyEvaluator();
@@ -176,7 +218,7 @@ public class JaninoTestSuite extends StructuredTestSuite {
 
     /**
      * A test case that compiles a compilation unit, optionally creates an instance of the compiled
-     * class, calls its "void test()" method and optionally verifies that it returns
+     * class, calls its "test()" method and optionally verifies that it returns
      * <code>true</code>.
      */
     static protected class SimpleCompilerTest extends CompileAndExecuteTest {
@@ -184,7 +226,7 @@ public class JaninoTestSuite extends StructuredTestSuite {
         private final String         className;
         private final SimpleCompiler simpleCompiler;
 
-        public SimpleCompilerTest(String name, int mode, String compilationUnit, String className) {
+        public SimpleCompilerTest(String name, Mode mode, String compilationUnit, String className) {
             super(mode, name);
             this.compilationUnit = compilationUnit;
             this.className       = className;
@@ -206,9 +248,11 @@ public class JaninoTestSuite extends StructuredTestSuite {
      * verifies that they throw exceptions and return results as expected.
      */
     static protected abstract class CompileAndExecuteTest extends TestCase {
-        protected final int mode;
+        protected final Mode mode;
     
-        public CompileAndExecuteTest(int mode, String name) {
+        public static class Mode { private Mode() {}}
+
+        public CompileAndExecuteTest(Mode mode, String name) {
             super(name);
             // Notice: JUnit 3.8.1 gets confused if the name contains "(" and/or ",".
             if (name.indexOf('(') != -1) throw new RuntimeException("Parentheses in test name not permitted");
