@@ -50,59 +50,69 @@ import org.codehaus.janino.util.TeeReader;
 
 public class Scanner {
 
+    // Public Scanners that read from a file.
+
     /**
-     * Set up a scanner that reads tokens from the given file in the platform
-     * default encoding.
+     * Set up a scanner that reads tokens from the given file in the default charset.
      * <p>
-     * Don't forget to {@link #close()} when you're done, so the input file is closed.
-     * @param fileName
-     * @throws ScanException
-     * @throws IOException
+     * <b>This method is deprecated because it leaves the input file open.</b>
+     *
+     * @deprecated
      */
     public Scanner(String fileName) throws ScanException, IOException {
         this(
-            fileName,
-            new BufferedReader(new InputStreamReader(new BufferedInputStream(new FileInputStream(fileName)))),
-            true,                  // closeReaderOnConstructorException
-            (short) 1, (short) 0   // initialLineNumber, initialColumnNumber
-        );
-    }
-
-    /**
-     * Set up a scanner that reads tokens from the given file in the platform
-     * default encoding.
-     * <p>
-     * Don't forget to {@link #close()} when you're done, so the input file is closed.
-     * @param file
-     * @throws ScanException
-     * @throws IOException
-     */
-    public Scanner(File file) throws ScanException, IOException {
-        this(
-            file.getAbsolutePath(),
-            new BufferedReader(new InputStreamReader(new BufferedInputStream(new FileInputStream(file)))),
-            true,                  // closeReaderOnConstructorException
-            (short) 1, (short) 0   // initialLineNumber, initialColumnNumber
+            fileName,                     // optionalFileName
+            new FileInputStream(fileName) // is
         );
     }
 
     /**
      * Set up a scanner that reads tokens from the given file in the given encoding.
      * <p>
-     * Don't forget to {@link #close()} when you're done, so the input file is closed.
-     * @param file
-     * @param encoding
-     * @throws ScanException
-     * @throws IOException
+     * <b>This method is deprecated because it leaves the input file open.</b>
+     *
+     * @deprecated
      */
-    public Scanner(File file, String encoding) throws ScanException, IOException {
+    public Scanner(String fileName, String encoding) throws ScanException, IOException {
         this(
-            file.getAbsolutePath(),
-            new BufferedReader(new InputStreamReader(new BufferedInputStream(new FileInputStream(file)), encoding)),
-            true,                  // closeReaderOnConstructorException
-            (short) 1, (short) 0   // initialLineNumber, initialColumnNumber
+            fileName,                      // optionalFileName
+            new FileInputStream(fileName), // is
+            encoding                       // optionalEncoding
         );
     }
+
+    /**
+     * Set up a scanner that reads tokens from the given file in the platform
+     * default encoding.
+     * <p>
+     * <b>This method is deprecated because it leaves the input file open.</b>
+     *
+     * @deprecated
+     */
+    public Scanner(File file) throws ScanException, IOException {
+        this(
+            file.getAbsolutePath(),    // optionalFileName
+            new FileInputStream(file), // is
+            null                       // optionalEncoding
+        );
+    }
+
+    /**
+     * Set up a scanner that reads tokens from the given file in the given encoding.
+     * <p>
+     * <b>This method is deprecated because it leaves the input file open.</b>
+     *
+     * @deprecated
+     */
+    public Scanner(File file, String optionalEncoding) throws ScanException, IOException {
+        this(
+            file.getAbsolutePath(),    // optionalFileName
+            new FileInputStream(file), // fis
+            optionalEncoding                   // optionalEncoding
+        );
+    }
+
+    // Public Scanners that read from an InputStream
 
     /**
      * Set up a scanner that reads tokens from the given
@@ -110,17 +120,16 @@ public class Scanner {
      * <p>
      * The <code>fileName</code> is solely used for reporting in thrown
      * exceptions.
-     * @param fileName
+     * @param optionalFileName
      * @param is
      * @throws ScanException
      * @throws IOException
      */
-    public Scanner(String fileName, InputStream is) throws ScanException, IOException {
+    public Scanner(String optionalFileName, InputStream is) throws ScanException, IOException {
         this(
-            fileName,
-            new BufferedReader(new InputStreamReader(is)),
-            false,                 // closeReaderOnConstructorException
-            (short) 1, (short) 0   // initialLineNumber, initialColumnNumber
+            optionalFileName,
+            new InputStreamReader(is), // in
+            (short) 1, (short) 0       // initialLineNumber, initialColumnNumber
         );
     }
 
@@ -137,18 +146,23 @@ public class Scanner {
      * system's default temp dir is created in order to make the source code
      * available to a debugger.
      */
-    public Scanner(String optionalFileName, InputStream is, String optionalEncoding) throws ScanException, IOException {
+    public Scanner(
+        String      optionalFileName,
+        InputStream is,
+        String      optionalEncoding
+    ) throws ScanException, IOException {
         this(
-            optionalFileName,
-            new BufferedReader(
+            optionalFileName,                  // optionalFileName
+            (                                  // in
                 optionalEncoding == null ?
                 new InputStreamReader(is) :
                 new InputStreamReader(is, optionalEncoding)
             ),
-            false,                 // closeReaderOnConstructorException
-            (short) 1, (short) 0   // initialLineNumber, initialColumnNumber
+            (short) 1, (short) 0               // initialLineNumber, initialColumnNumber
         );
     }
+
+    // Public Scanners that read from a Reader.
 
     /**
      * Set up a scanner that reads tokens from the given
@@ -163,7 +177,12 @@ public class Scanner {
      * available to a debugger.
      */
     public Scanner(String optionalFileName, Reader in) throws ScanException, IOException {
-        this(optionalFileName, in, false, (short) 1, (short) 0);
+        this(
+            optionalFileName, // optionalFileName
+            in,               // in
+            (short) 1,        // initialLineNumber
+            (short) 0         // initialColumnNumber
+        );
     }
 
     /**
@@ -176,68 +195,57 @@ public class Scanner {
         short  initialLineNumber,        // "1" is a good idea
         short  initialColumnNumber       // "0" is a good idea
     ) throws ScanException, IOException {
-        this(optionalFileName, in, false, initialLineNumber, initialColumnNumber);
+
+        // Debugging on source code level is only possible if the code comes from
+        // a "real" Java source file which the debugger can read. If this is not the
+        // case, and we absolutely want source code level debugging, then we write
+        // a verbatim copy of the source code into a temporary file in the system
+        // temp directory.
+        // This behavior is controlled by the two system properties
+        //     org.codehaus.janino.source_debugging.enable
+        //     org.codehaus.janino.source_debugging.dir
+        // JANINO is designed to compile in memory to save the overhead of disk
+        // I/O, so writing this file is only recommended for source code level
+        // debugging purposes.
+        if (optionalFileName == null && Boolean.getBoolean("org.codehaus.janino.source_debugging.enable")) {
+            String dirName = System.getProperty("org.codehaus.janino.source_debugging.dir");
+            File dir = dirName == null ? null : new File(dirName);
+            File temporaryFile = File.createTempFile("janino", ".java", dir);
+            temporaryFile.deleteOnExit();
+            in = new TeeReader(
+                in,                            // in
+                new FileWriter(temporaryFile), // out
+                true                           // closeWriterOnEOF
+            );
+            optionalFileName = temporaryFile.getAbsolutePath();
+        }
+
+        this.optionalFileName     = optionalFileName;
+        this.in                   = new UnicodeUnescapeReader(in);
+        this.nextCharLineNumber   = initialLineNumber;
+        this.nextCharColumnNumber = initialColumnNumber;
+
+        this.readNextChar();
+        this.nextToken       = this.internalRead();
+        this.nextButOneToken = null;
     }
 
     /**
-     * Some public constructors open a file on-the-fly. For these constructors it is
-     * important that this private constructor closes the {@link Reader} if
-     * it throws an exception.
+     * Return the file name optionally passed to the constructor.
      */
-    private Scanner(
-        String  optionalFileName,
-        Reader  in,
-        boolean closeReaderOnConstructorException,
-        short   initialLineNumber,        // "1" is a good idea
-        short   initialColumnNumber       // "0" is a good idea
-    ) throws ScanException, IOException {
-        try {
-
-            // Debugging on source code level is only possible if the code comes from
-            // a "real" Java source file which the debugger can read. If this is not the
-            // case, and we absolutely want source code level debugging, then we write
-            // a verbatim copy of the source code into a temporary file in the system
-            // temp directory.
-            // This behavior is controlled by the two system properties
-            //     org.codehaus.janino.source_debugging.enable
-            //     org.codehaus.janino.source_debugging.dir
-            // JANINO is designed to compile in memory to save the overhead of disk
-            // I/O, so writing this file is only recommended for source code level
-            // debugging purposes.
-            if (optionalFileName == null && Boolean.getBoolean("org.codehaus.janino.source_debugging.enable")) {
-                String dirName = System.getProperty("org.codehaus.janino.source_debugging.dir");
-                File dir = dirName == null ? null : new File(dirName);
-                File temporaryFile = File.createTempFile("janino", ".java", dir);
-                temporaryFile.deleteOnExit();
-                in = new TeeReader(
-                    in,                            // in
-                    new FileWriter(temporaryFile), // out
-                    true                           // closeWriterOnEOF
-                );
-                optionalFileName = temporaryFile.getAbsolutePath();
-            }
-    
-            this.optionalFileName     = optionalFileName;
-            this.in                   = new UnicodeUnescapeReader(in);
-            this.nextCharLineNumber   = initialLineNumber;
-            this.nextCharColumnNumber = initialColumnNumber;
-
-            this.readNextChar();
-            this.nextToken       = this.internalRead();
-            this.nextButOneToken = null;
-        } catch (ScanException e) {
-            if (closeReaderOnConstructorException) try { in.close(); } catch (IOException e2) {}
-            throw e;
-        } catch (IOException e) {
-            if (closeReaderOnConstructorException) try { in.close(); } catch (IOException e2) {}
-            throw e;
-        }
+    public String getFileName() {
+        return this.optionalFileName;
     }
 
     /**
      * Closes the character source (file, {@link InputStream}, {@link Reader}) associated
      * with this object. The results of future calls to {@link #peek()} and
      * {@link #read()} are undefined.
+     * <p>
+     * <b>This method is deprecated, because the concept described above is confusing. An
+     * application should close the underlying {@link InputStream} or {@link Reader} itself.</b>
+     *
+     * @deprecated
      */
     public void close() throws IOException {
         this.in.close();
@@ -266,8 +274,11 @@ public class Scanner {
     }
 
     /**
-     * Peek the next but one token, neither remove the next nor the next
-     * but one token from the input.
+     * Peek the next but one token, neither remove the next nor the next but one token from the
+     * input.
+     * <p>
+     * This makes parsing so much easier, e.g. for class literals like
+     * <code>Map.class</code>.
      */
     public Token peekNextButOne() throws ScanException, IOException {
         if (this.nextButOneToken == null) this.nextButOneToken = this.internalRead();
@@ -283,6 +294,13 @@ public class Scanner {
         String s = this.docComment;
         this.docComment = null;
         return s;
+    }
+
+    /**
+     * Returns the {@link Location} of the next token.
+     */
+    public Location location() {
+        return this.nextToken.getLocation();
     }
 
     public abstract class Token {
@@ -1133,14 +1151,15 @@ public class Scanner {
 
     private /*final*/ String     optionalFileName;
     private /*final*/ Reader     in;
-    private int              nextChar  = -1;
+    private int              nextChar  = -1; // Always valid (one character read-ahead).
     private boolean          crLfPending = false;
     private short            nextCharLineNumber;
     private short            nextCharColumnNumber;
 
-    private Token nextToken, nextButOneToken;
-    private short tokenLineNumber;
-    private short tokenColumnNumber;
+    private Token  nextToken;         // Is always non-null (one token read-ahead).
+    private Token  nextButOneToken;   // Is only non-null after "peekNextButOne()".
+    private short  tokenLineNumber;   // Line number of "nextToken" (typically starting at one).
+    private short  tokenColumnNumber; // Column number of first character of "nextToken" (1 if token is immediately preceeded by a line break).
     private String docComment = null; // The optional JAVADOC comment preceeding the "nextToken".
 
     private static final Map JAVA_KEYWORDS = new HashMap();

@@ -48,6 +48,7 @@ public class ExpressionDemo extends DemoBase {
         String[] parameterNames         = { "total", };
         Class[]  parameterTypes         = { double.class, };
         Class[]  thrownExceptions       = new Class[0];
+        String[] optionalDefaultImports = null;
 
         int i;
         for (i = 0; i < args.length; ++i) {
@@ -67,6 +68,9 @@ public class ExpressionDemo extends DemoBase {
             } else
             if (arg.equals("-te")) {
                 thrownExceptions = DemoBase.stringToTypes(args[++i]);
+            } else
+            if (arg.equals("-di")) {
+                optionalDefaultImports = DemoBase.explode(args[++i]);
             } else
             if (arg.equals("-help")) {
                 ExpressionDemo.usage();
@@ -99,14 +103,12 @@ public class ExpressionDemo extends DemoBase {
         }
 
         // Create "ExpressionEvaluator" object.
-        ExpressionEvaluator ee = new ExpressionEvaluator(
-            expression,
-            optionalExpressionType,
-            parameterNames,
-            parameterTypes,
-            thrownExceptions,
-            null              // optionalClassLoader
-        );
+        ExpressionEvaluator ee = new ExpressionEvaluator();
+        ee.setReturnType(optionalExpressionType);
+        ee.setDefaultImports(optionalDefaultImports);
+        ee.setParameters(parameterNames, parameterTypes);
+        ee.setThrownExceptions(thrownExceptions);
+        ee.cook(expression);
 
         // Evaluate expression with actual parameter values.
         Object res = ee.evaluate(parameterValues);
@@ -125,6 +127,7 @@ public class ExpressionDemo extends DemoBase {
         System.err.println(" -pn <comma-separated-parameter-names>");
         System.err.println(" -pt <comma-separated-parameter-types>");
         System.err.println(" -te <comma-separated-thrown-exception-types>");
+        System.err.println(" -di <comma-separated-default-imports>");
         System.err.println(" -help");
         System.err.println("The number of parameter names, types and values must be identical.");
     }

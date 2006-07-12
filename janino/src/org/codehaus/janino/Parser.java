@@ -55,21 +55,16 @@ public class Parser {
 
     /**
      * <pre>
-     *   CompilationUnit := [ 'package' QualifiedIdentifier ';' ]
+     *   CompilationUnit := [ PackageDeclaration ]
      *                      { ImportDeclaration }
      *                      { TypeDeclaration }
      * </pre>
      */
     public Java.CompilationUnit parseCompilationUnit() throws ParseException, Scanner.ScanException, IOException {
-        Java.CompilationUnit compilationUnit = new Java.CompilationUnit(this.currentLocation().getFileName());
+        Java.CompilationUnit compilationUnit = new Java.CompilationUnit(this.location().getFileName());
 
         if (this.peekKeyword("package")) {
-            this.eatToken();
-            Location loc = this.currentLocation();
-            String packageName = Parser.join(this.parseQualifiedIdentifier(), ".");
-            this.verifyStringIsConventionalPackageName(packageName, loc);
-            compilationUnit.setPackageDeclaration(new Java.PackageDeclaration(loc, packageName));
-            this.readOperator(";");
+            compilationUnit.setPackageDeclaration(this.parsePackageDeclaration());
         }
 
         while (this.peekKeyword("import")) {
@@ -90,26 +85,46 @@ public class Parser {
 
     /**
      * <pre>
-     *   ImportDeclaration := 'import' Identifier
-     *                        { '.' Identifier }
-     *                        [ '.' '*' ]
-     *                        ';'
+     *   PackageDeclaration := 'package' QualifiedIdentifier ';'
+     * </pre>
+     */
+    public Java.PackageDeclaration parsePackageDeclaration() throws Parser.ParseException, Scanner.ScanException, IOException {
+        this.readKeyword("package");
+        Location loc = this.location();
+        String packageName = Parser.join(this.parseQualifiedIdentifier(), ".");
+        this.readOperator(";");
+        this.verifyStringIsConventionalPackageName(packageName, loc);
+        return new Java.PackageDeclaration(loc, packageName);
+    }
+
+    /**
+     * <pre>
+     *   ImportDeclaration := 'import' ImportDeclarationBody ';'
      * </pre>
      */
     public Java.CompilationUnit.ImportDeclaration parseImportDeclaration() throws ParseException, Scanner.ScanException, IOException {
-        Location loc = this.currentLocation();
         this.readKeyword("import");
+        Java.CompilationUnit.ImportDeclaration importDeclaration = this.parseImportDeclarationBody();
+        this.readOperator(";");
+        return importDeclaration;
+    }
+
+    /**
+     * <pre>
+     *   ImportDeclarationBody := Identifier { '.' Identifier } [ '.' '*' ]
+     * </pre>
+     */
+    public Java.CompilationUnit.ImportDeclaration parseImportDeclarationBody() throws ParseException, Scanner.ScanException, IOException {
+        Location loc = this.location();
         List l = new ArrayList();
         l.add(this.readIdentifier());
         for (;;) {
-            if (this.peekOperator(";")) {
-                this.eatToken();
+            if (!this.peekOperator(".")) {
                 return new Java.CompilationUnit.SingleTypeImportDeclaration(loc, (String[]) l.toArray(new String[l.size()]));
             }
             this.readOperator(".");
             if (this.peekOperator("*")) {
                 this.eatToken();
-                this.readOperator(";");
                 return new Java.CompilationUnit.TypeImportOnDemandDeclaration(loc, (String[]) l.toArray(new String[l.size()]));
             }
             l.add(this.readIdentifier());
@@ -144,7 +159,7 @@ public class Parser {
 
         Java.PackageMemberTypeDeclaration res;
         if (this.peekKeyword("class")) {
-            if (optionalDocComment == null) this.warning("CDCM", "Class doc comment missing", this.currentLocation());
+            if (optionalDocComment == null) this.warning("CDCM", "Class doc comment missing", this.location());
             this.eatToken();
             res = (Java.PackageMemberClassDeclaration) this.parseClassDeclarationRest(
                 optionalDocComment,                      // optionalDocComment
@@ -153,7 +168,7 @@ public class Parser {
             );
         } else
         if (this.peekKeyword("interface")) {
-            if (optionalDocComment == null) this.warning("IDCM", "Interface doc comment missing", this.currentLocation());
+            if (optionalDocComment == null) this.warning("IDCM", "Interface doc comment missing", this.location());
             this.eatToken();
             res = (Java.PackageMemberInterfaceDeclaration) this.parseInterfaceDeclarationRest(
                 optionalDocComment,                          // optionalDocComment
@@ -225,7 +240,7 @@ public class Parser {
         short                   modifiers,
         ClassDeclarationContext context
     ) throws ParseException, Scanner.ScanException, IOException {
-        Location location = this.currentLocation();
+        Location location = this.location();
         String className = this.readIdentifier();
         this.verifyIdentifierIsConventionalClassOrInterfaceName(className, location);
 
@@ -341,7 +356,7 @@ public class Parser {
             if ((modifiers & ~Mod.STATIC) != 0) this.throwParseException("Only modifier \"static\" allowed on initializer");
 
             Java.Initializer initializer = new Java.Initializer(
-                this.currentLocation(),        // location
+                this.location(),               // location
                 (modifiers & Mod.STATIC) != 0, // statiC
                 this.parseBlock()              // block
             );
@@ -352,7 +367,7 @@ public class Parser {
 
         // "void" method declaration.
         if (this.peekKeyword("void")) {
-            Location location = this.currentLocation();
+            Location location = this.location();
             this.eatToken();
             if (optionalDocComment == null) this.warning("MDCM", "Method doc comment missing", location);
             String name = this.readIdentifier();
@@ -368,7 +383,7 @@ public class Parser {
 
         // Member class.
         if (this.peekKeyword("class")) {
-            if (optionalDocComment == null) this.warning("MCDCM", "Member class doc comment missing", this.currentLocation());
+            if (optionalDocComment == null) this.warning("MCDCM", "Member class doc comment missing", this.location());
             this.eatToken();
             classDeclaration.addMemberTypeDeclaration((Java.MemberTypeDeclaration) this.parseClassDeclarationRest(
                 optionalDocComment,                      // optionalDocComment
@@ -380,7 +395,7 @@ public class Parser {
 
         // Member interface.
         if (this.peekKeyword("interface")) {
-            if (optionalDocComment == null) this.warning("MIDCM", "Member interface doc comment missing", this.currentLocation());
+            if (optionalDocComment == null) this.warning("MIDCM", "Member interface doc comment missing", this.location());
             this.eatToken();
             classDeclaration.addMemberTypeDeclaration((Java.MemberTypeDeclaration) this.parseInterfaceDeclarationRest(
                 optionalDocComment,                                // optionalDocComment
@@ -396,7 +411,7 @@ public class Parser {
             this.scanner.peek().isIdentifier(((Java.NamedClassDeclaration) classDeclaration).getName()) &&
             this.scanner.peekNextButOne().isOperator("(")
         ) {
-            if (optionalDocComment == null) this.warning("CDCM", "Constructor doc comment missing", this.currentLocation());
+            if (optionalDocComment == null) this.warning("CDCM", "Constructor doc comment missing", this.location());
             classDeclaration.addConstructor(this.parseConstructorDeclarator(
                 classDeclaration,   // declaringClass
                 optionalDocComment, // optionalDocComment
@@ -407,12 +422,12 @@ public class Parser {
 
         // Member method or field.
         Java.Type memberType = this.parseType();
-        Location location = this.currentLocation();
+        Location location = this.location();
         String memberName = this.readIdentifier();
 
         // Method declarator.
         if (this.peekOperator("(")) {
-            if (optionalDocComment == null) this.warning("MDCM", "Method doc comment missing", this.currentLocation());
+            if (optionalDocComment == null) this.warning("MDCM", "Method doc comment missing", this.location());
             classDeclaration.addDeclaredMethod(this.parseMethodDeclarationRest(
                 classDeclaration,   // declaringType
                 optionalDocComment, // optionalDocComment
@@ -424,7 +439,7 @@ public class Parser {
         }
 
         // Field declarator.
-        if (optionalDocComment == null) this.warning("FDCM", "Field doc comment missing", this.currentLocation());
+        if (optionalDocComment == null) this.warning("FDCM", "Field doc comment missing", this.location());
         Java.FieldDeclaration fd = new Java.FieldDeclaration(
             location,                                  // location
             optionalDocComment,                        // optionalDocComment
@@ -449,7 +464,7 @@ public class Parser {
         short                       modifiers,
         InterfaceDeclarationContext context
     ) throws ParseException, Scanner.ScanException, IOException {
-        Location location = this.currentLocation();
+        Location location = this.location();
         String interfaceName = this.readIdentifier();
         this.verifyIdentifierIsConventionalClassOrInterfaceName(interfaceName, location);
 
@@ -528,8 +543,8 @@ public class Parser {
 
             // "void" method declaration.
             if (this.peekKeyword("void")) {
-                if (optionalDocComment == null) this.warning("MDCM", "Method doc comment missing", this.currentLocation());
-                Location location = this.currentLocation();
+                if (optionalDocComment == null) this.warning("MDCM", "Method doc comment missing", this.location());
+                Location location = this.location();
                 this.eatToken();
                 String name = this.readIdentifier();
                 interfaceDeclaration.addDeclaredMethod(this.parseMethodDeclarationRest(
@@ -543,7 +558,7 @@ public class Parser {
 
             // Member class.
             if (this.peekKeyword("class")) {
-                if (optionalDocComment == null) this.warning("MCDCM", "Member class doc comment missing", this.currentLocation());
+                if (optionalDocComment == null) this.warning("MCDCM", "Member class doc comment missing", this.location());
                 this.eatToken();
                 interfaceDeclaration.addMemberTypeDeclaration((Java.MemberTypeDeclaration) this.parseClassDeclarationRest(
                     optionalDocComment,                            // optionalDocComment
@@ -554,7 +569,7 @@ public class Parser {
 
             // Member interface.
             if (this.peekKeyword("interface")) {
-                if (optionalDocComment == null) this.warning("MIDCM", "Member interface doc comment missing", this.currentLocation());
+                if (optionalDocComment == null) this.warning("MIDCM", "Member interface doc comment missing", this.location());
                 this.eatToken();
                 interfaceDeclaration.addMemberTypeDeclaration((Java.MemberTypeDeclaration) this.parseInterfaceDeclarationRest(
                     optionalDocComment,                                // optionalDocComment
@@ -567,12 +582,12 @@ public class Parser {
             {
                 Java.Type memberType = this.parseType();
                 if (!this.scanner.peek().isIdentifier()) this.throwParseException("Identifier expected in member declaration");
-                Location location = this.currentLocation();
+                Location location = this.location();
                 String memberName = this.readIdentifier();
 
                 // Method declarator.
                 if (this.peekOperator("(")) {
-                    if (optionalDocComment == null) this.warning("MDCM", "Method doc comment missing", this.currentLocation());
+                    if (optionalDocComment == null) this.warning("MDCM", "Method doc comment missing", this.location());
                     interfaceDeclaration.addDeclaredMethod(this.parseMethodDeclarationRest(
                         interfaceDeclaration,                            // declaringType
                         optionalDocComment,                              // optionalDocComment
@@ -584,7 +599,7 @@ public class Parser {
 
                 // Field declarator.
                 {
-                    if (optionalDocComment == null) this.warning("FDCM", "Field doc comment missing", this.currentLocation());
+                    if (optionalDocComment == null) this.warning("FDCM", "Field doc comment missing", this.location());
                     Java.FieldDeclaration fd = new Java.FieldDeclaration(
                         location,                                  // location
                         optionalDocComment,                        // optionalDocComment
@@ -618,7 +633,7 @@ public class Parser {
         String                optionalDocComment,
         short                 modifiers
     ) throws ParseException, Scanner.ScanException, IOException {
-        Location location = this.currentLocation();
+        Location location = this.location();
         this.readIdentifier();  // Class name
 
         // Parse formal parameters.
@@ -636,7 +651,7 @@ public class Parser {
         }
 
         // Parse constructor body.
-        location = this.currentLocation();
+        location = this.location();
         this.readOperator("{");
 
         // Special treatment for the first statement of the constructor body: If this is surely an
@@ -705,7 +720,7 @@ public class Parser {
         Java.Type                    type,
         String                       name
     ) throws ParseException, Scanner.ScanException, IOException {
-        Location location = this.currentLocation();
+        Location location = this.location();
 
         this.verifyIdentifierIsConventionalMethodName(name, location);
 
@@ -767,7 +782,7 @@ public class Parser {
      * </pre>
      */
     public Java.ArrayInitializer parseArrayInitializer() throws ParseException, Scanner.ScanException, IOException {
-        Location location = this.currentLocation();
+        Location location = this.location();
         this.readOperator("{");
         List l = new ArrayList(); // ArrayInitializerOrRvalue
         while (!this.peekOperator("}")) {
@@ -818,7 +833,7 @@ public class Parser {
 
         Java.Type type = this.parseType();
 
-        Location location = this.currentLocation();
+        Location location = this.location();
         String name = this.readIdentifier();
         this.verifyIdentifierIsConventionalLocalVariableOrParameterName(name, location);
 
@@ -859,7 +874,7 @@ public class Parser {
      * </pre>
      */
     public Java.Block parseBlock() throws ParseException, Scanner.ScanException, IOException {
-        Java.Block block = new Java.Block(this.currentLocation());
+        Java.Block block = new Java.Block(this.location());
         this.readOperator("{");
         block.addStatements(this.parseBlockStatements());
         this.readOperator("}");
@@ -915,7 +930,7 @@ public class Parser {
             // JAVADOC[TM] ignores doc comments for local classes, but we
             // don't...
             String optionalDocComment = this.scanner.doc();
-            if (optionalDocComment == null) this.warning("LCDCM", "Local class doc comment missing", this.currentLocation());
+            if (optionalDocComment == null) this.warning("LCDCM", "Local class doc comment missing", this.location());
 
             this.eatToken();
             final Java.LocalClassDeclaration lcd = (Java.LocalClassDeclaration) this.parseClassDeclarationRest(
@@ -928,7 +943,7 @@ public class Parser {
 
         // 'final' Type LocalVariableDeclarators ';'
         if (this.peekKeyword("final")) {
-            Location location = this.currentLocation();
+            Location location = this.location();
             this.eatToken();
             Java.Type variableType = this.parseType();
             Java.LocalVariableDeclarationStatement lvds = new Java.LocalVariableDeclarationStatement(
@@ -1020,7 +1035,7 @@ public class Parser {
      * Used by field declarations and local variable declarations.
      */
     public Java.VariableDeclarator parseVariableDeclaratorRest(String name) throws ParseException, Scanner.ScanException, IOException  {
-        Location loc = this.currentLocation();
+        Location loc = this.location();
         int brackets = this.parseBracketsOpt();
         Java.ArrayInitializerOrRvalue initializer = null;
         if (this.peekOperator("=")) {
@@ -1089,7 +1104,7 @@ public class Parser {
         String label = this.readIdentifier();
         this.readOperator(":");
         return new Java.LabeledStatement(
-            this.currentLocation(), // location
+            this.location(),        // location
             label,                  // label
             this.parseStatement()   // body
         );
@@ -1101,7 +1116,7 @@ public class Parser {
      * </pre>
      */
     public Java.Statement parseIfStatement() throws ParseException, Scanner.ScanException, IOException {
-        Location location = this.currentLocation();
+        Location location = this.location();
         this.readKeyword("if");
         this.readOperator("(");
         final Java.Rvalue condition = this.parseExpression().toRvalueOrPE();
@@ -1134,7 +1149,7 @@ public class Parser {
      * </pre>
      */
     public Java.Statement parseForStatement() throws ParseException, Scanner.ScanException, IOException {
-        Location location = this.currentLocation();
+        Location location = this.location();
         this.readKeyword("for");
 
         this.readOperator("(");
@@ -1189,7 +1204,7 @@ public class Parser {
             short modifiers = this.parseModifiersOpt();
             Java.Type variableType = this.parseType();
             return new Java.LocalVariableDeclarationStatement(
-                this.currentLocation(),              // location
+                this.location(),                     // location
                 modifiers,                           // modifiers
                 variableType,                        // type
                 this.parseLocalVariableDeclarators() // variableDeclarators
@@ -1233,7 +1248,7 @@ public class Parser {
      * </pre>
      */
     public Java.Statement parseWhileStatement() throws ParseException, Scanner.ScanException, IOException {
-        Location location = this.currentLocation();
+        Location location = this.location();
         this.readKeyword("while");
 
         this.readOperator("(");
@@ -1253,7 +1268,7 @@ public class Parser {
      * </pre>
      */
     public Java.Statement parseDoStatement() throws ParseException, Scanner.ScanException, IOException {
-        Location location = this.currentLocation();
+        Location location = this.location();
         this.readKeyword("do");
 
         Java.Statement body = this.parseStatement();
@@ -1285,7 +1300,7 @@ public class Parser {
      * </pre>
      */
     public Java.Statement parseTryStatement() throws ParseException, Scanner.ScanException, IOException {
-        Location location = this.currentLocation();
+        Location location = this.location();
         this.readKeyword("try");
 
         Java.Block body = this.parseBlock();
@@ -1293,7 +1308,7 @@ public class Parser {
         // { CatchClause }
         List ccs = new ArrayList();
         while (this.peekKeyword("catch")) {
-            Location loc = this.currentLocation();
+            Location loc = this.location();
             this.eatToken();
             this.readOperator("(");
             Java.FunctionDeclarator.FormalParameter caughtException = this.parseFormalParameter();
@@ -1330,7 +1345,7 @@ public class Parser {
      * </pre>
      */
     public Java.Statement parseSwitchStatement() throws ParseException, Scanner.ScanException, IOException {
-        Location location = this.currentLocation();
+        Location location = this.location();
         this.readKeyword("switch");
 
         this.readOperator("(");
@@ -1340,7 +1355,7 @@ public class Parser {
         this.readOperator("{");
         List sbsgs = new ArrayList();
         while (!this.peekOperator("}")) {
-            Location location2 = this.currentLocation();
+            Location location2 = this.location();
             boolean hasDefaultLabel = false;
             List caseLabels = new ArrayList();
             do {
@@ -1381,7 +1396,7 @@ public class Parser {
      * </pre>
      */
     public Java.Statement parseSynchronizedStatement() throws ParseException, Scanner.ScanException, IOException {
-        Location location = this.currentLocation();
+        Location location = this.location();
         this.readKeyword("synchronized");
         this.readOperator("(");
         Java.Rvalue expression = this.parseExpression().toRvalueOrPE();
@@ -1399,7 +1414,7 @@ public class Parser {
      * </pre>
      */
     public Java.Statement parseReturnStatement() throws ParseException, Scanner.ScanException, IOException {
-        Location location = this.currentLocation();
+        Location location = this.location();
         this.readKeyword("return");
         Java.Rvalue returnValue = this.peekOperator(";") ? null : this.parseExpression().toRvalueOrPE();
         this.readOperator(";");
@@ -1412,7 +1427,7 @@ public class Parser {
      * </pre>
      */
     public Java.Statement parseThrowStatement() throws ParseException, Scanner.ScanException, IOException {
-        Location location = this.currentLocation();
+        Location location = this.location();
         this.readKeyword("throw");
         final Java.Rvalue expression = this.parseExpression().toRvalueOrPE();
         this.readOperator(";");
@@ -1426,7 +1441,7 @@ public class Parser {
      * </pre>
      */
     public Java.Statement parseBreakStatement() throws ParseException, Scanner.ScanException, IOException {
-        Location location = this.currentLocation();
+        Location location = this.location();
         this.readKeyword("break");
         String optionalLabel = null;
         if (this.scanner.peek().isIdentifier()) optionalLabel = this.readIdentifier();
@@ -1440,7 +1455,7 @@ public class Parser {
      * </pre>
      */
     public Java.Statement parseContinueStatement() throws ParseException, Scanner.ScanException, IOException {
-        Location location = this.currentLocation();
+        Location location = this.location();
         this.readKeyword("continue");
         String optionalLabel = null;
         if (this.scanner.peek().isIdentifier()) optionalLabel = this.readIdentifier();
@@ -1454,7 +1469,7 @@ public class Parser {
      * </pre>
      */
     public Java.Statement parseEmptyStatement() throws ParseException, Scanner.ScanException, IOException {
-        Location location = this.currentLocation();
+        Location location = this.location();
         this.readOperator(";");
         return new Java.EmptyStatement(location);
     }
@@ -1512,7 +1527,7 @@ public class Parser {
      */
     public Java.ReferenceType parseReferenceType() throws ParseException, Scanner.ScanException, IOException {
         return new Java.ReferenceType(
-            this.currentLocation(),         // location
+            this.location(),                // location
             this.parseQualifiedIdentifier() // identifiers
         );
     }
@@ -1554,7 +1569,7 @@ public class Parser {
     public Java.Atom parseAssignmentExpression() throws ParseException, Scanner.ScanException, IOException  {
         Java.Atom a = this.parseConditionalExpression();
         if (this.peekOperator(new String[] { "=", "+=", "-=", "*=", "/=", "&=", "|=", "^=", "%=", "<<=", ">>=", ">>>=" })) {
-            Location location = this.currentLocation();
+            Location location = this.location();
             String operator = this.readOperator();
             final Java.Lvalue lhs = a.toLvalueOrPE();
             final Java.Rvalue rhs = this.parseAssignmentExpression().toRvalueOrPE();
@@ -1572,7 +1587,7 @@ public class Parser {
     public Java.Atom parseConditionalExpression() throws ParseException, Scanner.ScanException, IOException  {
         Java.Atom a = this.parseConditionalOrExpression();
         if (!this.peekOperator("?")) return a;
-        Location location = this.currentLocation();
+        Location location = this.location();
         this.eatToken();
 
         Java.Rvalue lhs = a.toRvalueOrPE();
@@ -1591,7 +1606,7 @@ public class Parser {
     public Java.Atom parseConditionalOrExpression() throws ParseException, Scanner.ScanException, IOException  {
         Java.Atom a = this.parseConditionalAndExpression();
         while (this.peekOperator("||")) {
-            Location location = this.currentLocation();
+            Location location = this.location();
             this.eatToken();
             a = new Java.BinaryOperation(
                 location,
@@ -1612,7 +1627,7 @@ public class Parser {
     public Java.Atom parseConditionalAndExpression() throws ParseException, Scanner.ScanException, IOException  {
         Java.Atom a = this.parseInclusiveOrExpression();
         while (this.peekOperator("&&")) {
-            Location location = this.currentLocation();
+            Location location = this.location();
             this.eatToken();
             a = new Java.BinaryOperation(
                 location,
@@ -1633,7 +1648,7 @@ public class Parser {
     public Java.Atom parseInclusiveOrExpression() throws ParseException, Scanner.ScanException, IOException  {
         Java.Atom a = this.parseExclusiveOrExpression();
         while (this.peekOperator("|")) {
-            Location location = this.currentLocation();
+            Location location = this.location();
             this.eatToken();
             a = new Java.BinaryOperation(
                 location,
@@ -1654,7 +1669,7 @@ public class Parser {
     public Java.Atom parseExclusiveOrExpression() throws ParseException, Scanner.ScanException, IOException  {
         Java.Atom a = this.parseAndExpression();
         while (this.peekOperator("^")) {
-            Location location = this.currentLocation();
+            Location location = this.location();
             this.eatToken();
             a = new Java.BinaryOperation(
                 location,
@@ -1675,7 +1690,7 @@ public class Parser {
     public Java.Atom parseAndExpression() throws ParseException, Scanner.ScanException, IOException  {
         Java.Atom a = this.parseEqualityExpression();
         while (this.peekOperator("&")) {
-            Location location = this.currentLocation();
+            Location location = this.location();
             this.eatToken();
             a = new Java.BinaryOperation(
                 location,
@@ -1698,7 +1713,7 @@ public class Parser {
 
         while (this.peekOperator(new String[] { "==", "!=" })) {
             a = new Java.BinaryOperation(
-                this.currentLocation(),                         // location
+                this.location(),                                // location
                 a.toRvalueOrPE(),                               // lhs
                 this.readOperator(),                            // op
                 this.parseRelationalExpression().toRvalueOrPE() // rhs
@@ -1721,7 +1736,7 @@ public class Parser {
 
         for (;;) {
             if (this.peekKeyword("instanceof")) {
-                Location location = this.currentLocation();
+                Location location = this.location();
                 this.eatToken();
                 a = new Java.Instanceof(
                     location,
@@ -1731,7 +1746,7 @@ public class Parser {
             } else
             if (this.peekOperator(new String[] { "<", ">", "<=", ">=" })) {
                 a = new Java.BinaryOperation(
-                    this.currentLocation(),                    // location
+                    this.location(),                    // location
                     a.toRvalueOrPE(),                          // lhs
                     this.readOperator(),                       // op
                     this.parseShiftExpression().toRvalueOrPE() // rhs
@@ -1753,7 +1768,7 @@ public class Parser {
 
         while (this.peekOperator(new String[] { "<<", ">>", ">>>" })) {
             a = new Java.BinaryOperation(
-                this.currentLocation(),                       // location
+                this.location(),                       // location
                 a.toRvalueOrPE(),                             // lhs
                 this.readOperator(),                          // op
                 this.parseAdditiveExpression().toRvalueOrPE() // rhs
@@ -1773,7 +1788,7 @@ public class Parser {
 
         while (this.peekOperator(new String[] { "+", "-" })) {
             a = new Java.BinaryOperation(
-                this.currentLocation(),                             // location
+                this.location(),                                    // location
                 a.toRvalueOrPE(),                                   // lhs
                 this.readOperator(),                                // op
                 this.parseMultiplicativeExpression().toRvalueOrPE() // rhs
@@ -1793,7 +1808,7 @@ public class Parser {
 
         while (this.peekOperator(new String[] { "*", "/", "%" })) {
             a = new Java.BinaryOperation(
-                this.currentLocation(),                    // location
+                this.location(),                    // location
                 a.toRvalueOrPE(),                          // lhs
                 this.readOperator(),                       // op
                 this.parseUnaryExpression().toRvalueOrPE() // rhs
@@ -1815,7 +1830,7 @@ public class Parser {
     public Java.Atom parseUnaryExpression() throws ParseException, Scanner.ScanException, IOException {
         if (this.peekOperator(new String[] { "++", "--" })) {
             return new Java.Crement(
-                this.currentLocation(),                    // location
+                this.location(),                           // location
                 this.readOperator(),                       // operator
                 this.parseUnaryExpression().toLvalueOrPE() // operand
             );
@@ -1823,8 +1838,8 @@ public class Parser {
 
         if (this.peekOperator(new String[] { "+", "-", "~", "!" })) {
             return new Java.UnaryOperation(
-                this.currentLocation(),                                           // location
-                this.readOperator(),                                              // operator
+                this.location(),                           // location
+                this.readOperator(),                       // operator
                 this.parseUnaryExpression().toRvalueOrPE() // operand
             );
         }
@@ -1837,9 +1852,9 @@ public class Parser {
 
         while (this.peekOperator(new String[] { "++", "--" })) {
             a = new Java.Crement(
-                this.currentLocation(),           // location
-                a.toLvalueOrPE(),                 // operand
-                this.readOperator()               // operator
+                this.location(),    // location
+                a.toLvalueOrPE(),   // operand
+                this.readOperator() // operator
             );
         }
 
@@ -1892,8 +1907,8 @@ public class Parser {
                 this.readOperator(")");
                 for (int i = 0; i < brackets; ++i) type = new Java.ArrayType(type);
                 return new Java.Cast(
-                    this.currentLocation(),                                           // location
-                    type,                                                             // targetType
+                    this.location(),                           // location
+                    type,                                      // targetType
                     this.parseUnaryExpression().toRvalueOrPE() // value
                 );
             }
@@ -1908,7 +1923,7 @@ public class Parser {
             ) {
                 // '(' Expression ')' UnaryExpression
                 return new Java.Cast(
-                    this.currentLocation(),                    // location
+                    this.location(),                           // location
                     a.toTypeOrPE(),                            // targetType
                     this.parseUnaryExpression().toRvalueOrPE() // value
                 );
@@ -1924,12 +1939,12 @@ public class Parser {
         }
 
         if (this.scanner.peek().isIdentifier()) {
-            Location location = this.currentLocation();
+            Location location = this.location();
             String[] qi = this.parseQualifiedIdentifier();
             if (this.peekOperator("(")) {
                 // Name Arguments
                 return new Java.MethodInvocation(
-                    this.currentLocation(),                         // location
+                    this.location(),                                // location
                     qi.length == 1 ? null : new Java.AmbiguousName( // optionalTarget
                         location,       // location
                         qi,             // identifiers
@@ -1956,7 +1971,7 @@ public class Parser {
                     && this.scanner.peekNextButOne().isKeyword("class")
                 ) {
                     this.eatToken();
-                    Location location2 = this.currentLocation();
+                    Location location2 = this.location();
                     this.eatToken();
                     return new Java.ClassLiteral(location2, res);
                 } else {
@@ -1965,13 +1980,13 @@ public class Parser {
             }
             // Name
             return new Java.AmbiguousName(
-                this.currentLocation(), // location
-                qi                      // identifiers
+                this.location(), // location
+                qi               // identifiers
             );
         }
 
         if (this.peekKeyword("this")) {
-            Location location = this.currentLocation();
+            Location location = this.location();
             this.eatToken();
             if (this.peekOperator("(")) {
 
@@ -1996,9 +2011,9 @@ public class Parser {
                 // 'super' Arguments
                 // Unqualified superclass constructor invocation (JLS 8.8.5.1)
                 return new Java.SuperConstructorInvocation(
-                    this.currentLocation(), // location
-                    (Java.Rvalue) null,     // optionalQualification
-                    this.parseArguments()   // arguments
+                    this.location(),      // location
+                    (Java.Rvalue) null,   // optionalQualification
+                    this.parseArguments() // arguments
                 );
             }
             this.readOperator(".");
@@ -2007,9 +2022,9 @@ public class Parser {
 
                 // 'super' '.' Identifier Arguments
                 return new Java.SuperclassMethodInvocation(
-                    this.currentLocation(), // location
-                    name,                   // methodName
-                    this.parseArguments()   // arguments
+                    this.location(),      // location
+                    name,                 // methodName
+                    this.parseArguments() // arguments
                 );
             } else {
 
@@ -2020,7 +2035,7 @@ public class Parser {
 
         // 'new'
         if (this.peekKeyword("new")) {
-            Location location = this.currentLocation();
+            Location location = this.location();
             this.eatToken();
             Java.Type type = this.parseType();
             if (type instanceof Java.ArrayType) {
@@ -2036,8 +2051,8 @@ public class Parser {
                 if (this.peekOperator("{")) {
                     // 'new' ReferenceType Arguments ClassBody
                     final Java.AnonymousClassDeclaration anonymousClassDeclaration = new Java.AnonymousClassDeclaration(
-                        this.currentLocation(),  // location
-                        type                     // baseType
+                        this.location(), // location
+                        type             // baseType
                     );
                     this.parseClassBody(anonymousClassDeclaration);
                     return new Java.NewAnonymousClassInstance(
@@ -2076,7 +2091,7 @@ public class Parser {
             ) {
                 // BasicType { '[]' } '.' 'class'
                 this.eatToken();
-                Location location = this.currentLocation();
+                Location location = this.location();
                 this.eatToken();
                 return new Java.ClassLiteral(location, res);
             }
@@ -2093,7 +2108,7 @@ public class Parser {
             ) {
                 // 'void' '.' 'class'
                 this.eatToken();
-                Location location = this.currentLocation();
+                Location location = this.location();
                 this.eatToken();
                 return new Java.ClassLiteral(location, new Java.BasicType(location, Java.BasicType.VOID));
             }
@@ -2126,22 +2141,22 @@ public class Parser {
                 if (this.peekOperator("(")) {
                     // '.' Identifier Arguments
                     return new Java.MethodInvocation(
-                        this.currentLocation(), // location
-                        atom.toRvalueOrPE(),    // optionalTarget
-                        identifier,             // methodName
-                        this.parseArguments()   // arguments
+                        this.location(),      // location
+                        atom.toRvalueOrPE(),  // optionalTarget
+                        identifier,           // methodName
+                        this.parseArguments() // arguments
                     );
                 }
                 // '.' Identifier
                 return new Java.FieldAccessExpression(
-                    this.currentLocation(), // location
-                    atom.toRvalueOrPE(),    // lhs
-                    identifier              // fieldName
+                    this.location(),     // location
+                    atom.toRvalueOrPE(), // lhs
+                    identifier           // fieldName
                 );
             }
             if (this.peekKeyword("this")) {
                 // '.' 'this'
-                Location location = this.currentLocation();
+                Location location = this.location();
                 this.eatToken();
                 return new Java.QualifiedThisReference(
                     location,                // location
@@ -2149,7 +2164,7 @@ public class Parser {
                 );
             }
             if (this.peekKeyword("super")) {
-                Location location = this.currentLocation();
+                Location location = this.location();
                 this.eatToken();
                 if (this.peekOperator("(")) {
 
@@ -2181,7 +2196,7 @@ public class Parser {
             if (this.peekKeyword("new")) {
                 // '.' 'new' Identifier Arguments [ ClassBody ]
                 Java.Rvalue lhs = atom.toRvalue();
-                Location location = this.currentLocation();
+                Location location = this.location();
                 this.eatToken();
                 String identifier = this.readIdentifier();
                 Java.Type type = new Java.RvalueMemberType(
@@ -2193,8 +2208,8 @@ public class Parser {
                 if (this.peekOperator("{")) {
                     // '.' 'new' Identifier Arguments ClassBody (LHS is an Rvalue)
                     final Java.AnonymousClassDeclaration anonymousClassDeclaration = new Java.AnonymousClassDeclaration(
-                        this.currentLocation(),  // location
-                        type                     // baseType
+                        this.location(), // location
+                        type             // baseType
                     );
                     this.parseClassBody(anonymousClassDeclaration);
                     return new Java.NewAnonymousClassInstance(
@@ -2206,16 +2221,16 @@ public class Parser {
                 } else {
                     // '.' 'new' Identifier Arguments (LHS is an Rvalue)
                     return new Java.NewClassInstance(
-                        location,       // location
-                        lhs,            // optionalQualification
-                        type,           // referenceType
-                        arguments       // arguments
+                        location, // location
+                        lhs,      // optionalQualification
+                        type,     // referenceType
+                        arguments // arguments
                     );
                 }
             }
             if (this.peekKeyword("class")) {
                 // '.' 'class'
-                Location location = this.currentLocation();
+                Location location = this.location();
                 this.eatToken();
                 return new Java.ClassLiteral(location, atom.toTypeOrPE());
             }
@@ -2223,7 +2238,7 @@ public class Parser {
         }
         if (this.peekOperator("[")) {
             // '[' Expression ']'
-            Location location = this.currentLocation();
+            Location location = this.location();
             this.eatToken();
             Java.Rvalue index = this.parseExpression().toRvalueOrPE();
             this.readOperator("]");
@@ -2303,29 +2318,31 @@ public class Parser {
 
     // Simplified access to the scanner.
 
-    public Location currentLocation() { return this.scanner.peek().getLocation(); }
+    public Location location()                                           { return this.scanner.location(); }
     public void     eatToken() throws Scanner.ScanException, IOException { this.scanner.read(); }
     // Keyword-related.
-    public boolean peekKeyword() { return this.scanner.peek().isKeyword(); }
-    public boolean peekKeyword(String keyword) { return this.scanner.peek().isKeyword(keyword); }
+    public boolean peekKeyword()                  { return this.scanner.peek().isKeyword(); }
+    public boolean peekKeyword(String keyword)    { return this.scanner.peek().isKeyword(keyword); }
     public boolean peekKeyword(String[] keywords) { return this.scanner.peek().isKeyword(keywords); }
-    public void    readKeyword(String keyword) throws ParseException, Scanner.ScanException, IOException { if (!this.scanner.read().isKeyword(keyword)) this.throwParseException("\"" + keyword + "\" expected"); }
+    public void    readKeyword(String keyword) throws ParseException, Scanner.ScanException, IOException {
+        if (!this.scanner.read().isKeyword(keyword)) this.throwParseException("\"" + keyword + "\" expected"); // We want a ParseException, not a ScanException
+    }
     // Operator-related.
-    public boolean peekOperator(String operator) { return this.scanner.peek().isOperator(operator); }
+    public boolean peekOperator(String operator)    { return this.scanner.peek().isOperator(operator); }
     public boolean peekOperator(String[] operators) { return this.scanner.peek().isOperator(operators); }
     public String  readOperator() throws ParseException, Scanner.ScanException, IOException {
         Scanner.Token t = this.scanner.read();
-        if (!t.isOperator()) this.throwParseException("Operator expected");
+        if (!t.isOperator()) this.throwParseException("Operator expected"); // We want a ParseException, not a ScanException
         return t.getOperator();
     }
     public void    readOperator(String operator) throws ParseException, Scanner.ScanException, IOException {
-        if (!this.scanner.read().isOperator(operator)) this.throwParseException("Operator \"" + operator + "\" expected");
+        if (!this.scanner.read().isOperator(operator)) this.throwParseException("Operator \"" + operator + "\" expected"); // We want a ParseException, not a ScanException
     }
     // Identifier-related.
     public boolean peekIdentifier() { return this.scanner.peek().isIdentifier(); }
     public String readIdentifier() throws ParseException, Scanner.ScanException, IOException {
         Scanner.Token t = this.scanner.read();
-        if (!t.isIdentifier()) this.throwParseException("Identifier expected");
+        if (!t.isIdentifier()) this.throwParseException("Identifier expected"); // We want a ParseException, not a ScanException
         return t.getIdentifier();
     }
 
@@ -2491,7 +2508,7 @@ public class Parser {
      * Convenience method for throwing a ParseException.
      */
     protected final void throwParseException(String message) throws ParseException {
-        throw new ParseException(message, this.currentLocation());
+        throw new ParseException(message, this.location());
     }
 
     private static String join(String[] sa, String separator) {

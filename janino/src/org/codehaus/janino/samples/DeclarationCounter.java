@@ -51,7 +51,13 @@ public class DeclarationCounter extends Traverser {
             String fileName = args[i];
 
             // Parse each compilation unit.
-            Java.CompilationUnit cu = new Parser(new Scanner(fileName)).parseCompilationUnit();
+            FileReader r = new FileReader(fileName);
+            Java.CompilationUnit cu;
+            try {
+                cu = new Parser(new Scanner(fileName, r)).parseCompilationUnit();
+            } finally {
+                r.close();
+            }
 
             // Traverse it and count declarations.
             dc.traverseCompilationUnit(cu);
