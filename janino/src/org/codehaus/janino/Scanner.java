@@ -775,6 +775,7 @@ public class Scanner {
         // Scan character literal.
         if (this.nextChar == '\'') {
             this.readNextChar();
+            if (this.nextChar == '\'') throw new ScanException("Single quote must be backslash-escaped in character literal");
             char lit = this.unescapeCharacterLiteral();
             if (this.nextChar != '\'') throw new ScanException("Closing single quote missing");
             this.readNextChar();
@@ -1068,7 +1069,18 @@ public class Scanner {
         try {
             f = Float.parseFloat(s);
         } catch (NumberFormatException e) {
-            throw new ScanException("Value of float literal \"" + s + "\" is out of range");
+            throw new RuntimeException("SNO: parsing float literal \"" + s + "\" throws a \"NumberFormatException\"");
+        }
+        if (Float.isInfinite(f)) throw new ScanException("Value of float literal \"" + s + "\" is out of range");
+        if (Float.isNaN(f)) throw new RuntimeException("SNO: parsing float literal \"" + s + "\" results is NaN");
+
+        // Check for FLOAT underrun.
+        if (f == 0.0F) {
+            for (int i = 0; i < s.length(); ++i) {
+                char c = s.charAt(i);
+                if ("123456789".indexOf(c) != -1) throw new ScanException("Literal \"" + s + "\" is too small to be represented as a float");
+                if ("0.".indexOf(c) == -1) break;
+            }
         }
 
         return new LiteralToken(new Float(f));
@@ -1079,7 +1091,19 @@ public class Scanner {
         try {
             d = Double.parseDouble(s);
         } catch (NumberFormatException e) {
-            throw new ScanException("Value of double literal \"" + s + "\" is out of range");
+            throw new RuntimeException("SNO: parsing double literal \"" + s + "\" throws a \"NumberFormatException\"");
+        }
+        if (Double.isInfinite(d)) throw new ScanException("Value of double literal \"" + s + "\" is out of range");
+        if (Double.isNaN(d)) throw new RuntimeException("SNO: parsing double literal \"" + s + "\" results is NaN");
+
+
+        // Check for DOUBLE underrun.
+        if (d == 0.0D) {
+            for (int i = 0; i < s.length(); ++i) {
+                char c = s.charAt(i);
+                if ("123456789".indexOf(c) != -1) throw new ScanException("Literal \"" + s + "\" is too small to be represented as a double");
+                if ("0.".indexOf(c) == -1) break;
+            }
         }
 
         return new LiteralToken(new Double(d));
@@ -1087,6 +1111,8 @@ public class Scanner {
 
     private char unescapeCharacterLiteral() throws ScanException, IOException {
         if (this.nextChar == -1) throw new ScanException("EOF in character literal");
+
+        if (this.nextChar == '\r' || this.nextChar == '\n') throw new ScanException("Line break in literal not allowed");
 
         if (this.nextChar != '\\') {
             char res = (char) this.nextChar;
