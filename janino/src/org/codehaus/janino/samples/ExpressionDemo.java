@@ -104,7 +104,7 @@ public class ExpressionDemo extends DemoBase {
 
         // Create "ExpressionEvaluator" object.
         ExpressionEvaluator ee = new ExpressionEvaluator();
-        ee.setReturnType(optionalExpressionType);
+        ee.setExpressionType(optionalExpressionType);
         ee.setDefaultImports(optionalDefaultImports);
         ee.setParameters(parameterNames, parameterTypes);
         ee.setThrownExceptions(thrownExceptions);
