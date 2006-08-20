@@ -73,23 +73,39 @@ public class SimpleCompiler extends Cookable {
     private ClassLoader                   classLoader = null; // null=uncooked
 
     public static void main(String[] args) throws Exception {
-        if (args.length < 1) {
-            System.err.println("Usage:");
-            System.err.println("    org.codehaus.janino.SimpleCompiler <source-file> <class-name> <arg> [ ... ]");
-            System.err.println("Reads a compilation unit from the given <source-file> and invokes method");
-            System.err.println("\"public static void main(String[])\" of class <class-name>.");
+        if (args.length < 2) {
+            System.err.println("Source file and/or class name missing; try \"-help\".");
             System.exit(1);
         }
 
-        String sourceFileName = args[0];
-        String className = args[1];
-        String[] mainArgs = new String[args.length - 2];
-        System.arraycopy(args, 2, mainArgs, 0, mainArgs.length);
+        if (args[0].equals("-help")) {
+            System.out.println("Usage:");
+            System.out.println("    org.codehaus.janino.SimpleCompiler <source-file> <class-name> { <argument> }");
+            System.out.println("Reads a compilation unit from the given <source-file> and invokes method");
+            System.out.println("\"public static void main(String[])\" of class <class-name>, passing the.");
+            System.out.println("given <argument>s.");
+            System.exit(1);
+        }
 
+        // Get source file.
+        String sourceFileName = args[0];
+
+        // Get class name.
+        String className = args[1];
+
+        // Get arguments.
+        String[] arguments = new String[args.length - 2];
+        System.arraycopy(args, 2, arguments, 0, arguments.length);
+
+        // Compile the source file.
         ClassLoader cl = new SimpleCompiler(sourceFileName, new FileInputStream(sourceFileName)).getClassLoader();
+
+        // Load the class.
         Class c = cl.loadClass(className);
+
+        // Invoke the "public static main(String[])" method.
         Method m = c.getMethod("main", new Class[] { String[].class });
-        m.invoke(null, new Object[] { mainArgs });
+        m.invoke(null, new Object[] { arguments });
     }
 
     /**

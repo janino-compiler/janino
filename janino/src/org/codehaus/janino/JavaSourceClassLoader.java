@@ -110,9 +110,9 @@ public class JavaSourceClassLoader extends ClassLoader {
             } else
             if ("-help".equals(arg)) {
                 System.out.println("Usage:"); 
-                System.out.println("  java [ <java-option> ] " + JavaSourceClassLoader.class.getName() + " [ <option>] ... <class-name> [ <arg> ] ..."); 
-                System.out.println("Load a Java class by name and invoke its \"main(String[])\" method,"); 
-                System.out.println("pass"); 
+                System.out.println("  java [ <java-option> ] " + JavaSourceClassLoader.class.getName() + " { <option> } <class-name> { <argument> }"); 
+                System.out.println("Load the named class by name and invoke its \"main(String[])\" method,"); 
+                System.out.println("passing the given <argument>s.");
                 System.out.println("  <java-option> Any valid option for the Java Virtual Machine (e.g. \"-classpath <dir>\")"); 
                 System.out.println("  <option>:"); 
                 System.out.println("    -sourcepath <" + File.pathSeparator + "-separated-list-of-source-directories>"); 
@@ -197,11 +197,15 @@ public class JavaSourceClassLoader extends ClassLoader {
     /**
      * Set up a {@link JavaSourceClassLoader} that finds Java<sup>TM</sup> source code in a file
      * that resides in either of the directories specified by the given source path.
-     * 
+     * <p>
+     * You can specify to include certain debugging information in the generated class files, which
+     * is useful if you want to debug through the generated classes (see
+     * {@link Scanner#Scanner(String, Reader)}).
+     *
      * @param parentClassLoader See {@link ClassLoader}
-     * @param optionalSourcePath A collection of directories that are searched for Java<sup>TM</sup> source files in the given order 
+     * @param optionalSourcePath A collection of directories that are searched for Java<sup>TM</sup> source files in the given order
      * @param optionalCharacterEncoding The encoding of the Java<sup>TM</sup> source files (<code>null</code> for platform default encoding)
-     * @param debuggingInformation What kind of debugging information to generate
+     * @param debuggingInformation What kind of debugging information to generate, see {@link DebuggingInformation}
      */
     public JavaSourceClassLoader(
         ClassLoader   parentClassLoader,
@@ -224,11 +228,15 @@ public class JavaSourceClassLoader extends ClassLoader {
     /**
      * Set up a {@link JavaSourceClassLoader} that finds Java<sup>TM</sup> source code through
      * a given {@link ResourceFinder}.
-     * 
+     * <p>
+     * You can specify to include certain debugging information in the generated class files, which
+     * is useful if you want to debug through the generated classes (see
+     * {@link Scanner#Scanner(String, Reader)}).
+     *
      * @param parentClassLoader See {@link ClassLoader}
      * @param sourceFinder Used to locate additional source files 
      * @param optionalCharacterEncoding The encoding of the Java<sup>TM</sup> source files (<code>null</code> for platform default encoding)
-     * @param debuggingInformation What kind of debugging information to generate
+     * @param debuggingInformation What kind of debugging information to generate, see {@link DebuggingInformation}
      */
     public JavaSourceClassLoader(
         ClassLoader    parentClassLoader,
@@ -270,11 +278,11 @@ public class JavaSourceClassLoader extends ClassLoader {
      */
     protected Class findClass(String name) throws ClassNotFoundException {
 
-        Map bytecodes = this.generateBytecodes(name);
+        Map bytecodes = this.generateBytecodes(name); // String name => byte[] bytecode
         if (bytecodes == null) throw new ClassNotFoundException(name);
 
         Class clazz = this.defineBytecodes(name, bytecodes);
-        if (clazz == null) throw new RuntimeException("Scanning, parsing and compiling class \"" + name + "\" did not create a class file!?");
+        if (clazz == null) throw new RuntimeException("SNO: Scanning, parsing and compiling class \"" + name + "\" did not create a class file!?");
         return clazz;
     }
 
@@ -283,7 +291,7 @@ public class JavaSourceClassLoader extends ClassLoader {
      * bytecode. This may cause more compilation units being scanned and parsed. Continue until
      * all compilation units are compiled.
      *
-     * @return <code>null</code> if no source code could be found
+     * @return String name => byte[] bytecode, or <code>null</code> if no source code could be found
      */
     protected Map generateBytecodes(String name) throws ClassNotFoundException {
         if (this.iClassLoader.loadIClass(Descriptor.fromClassName(name)) == null) return null;
