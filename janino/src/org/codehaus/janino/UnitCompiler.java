@@ -882,7 +882,7 @@ public class UnitCompiler {
         if (cs.optionalLabel == null) {
             for (
                 Java.Scope s = cs.getEnclosingScope();
-                s instanceof Java.Statement;
+                s instanceof Java.Statement || s instanceof Java.CatchClause;
                 s = s.getEnclosingScope()
             ) {
                 if (s instanceof Java.ContinuableStatement) {
@@ -897,7 +897,7 @@ public class UnitCompiler {
         } else {
             for (
                 Java.Scope s = cs.getEnclosingScope();
-                s instanceof Java.Statement;
+                s instanceof Java.Statement || s instanceof Java.CatchClause;
                 s = s.getEnclosingScope()
             ) {
                 if (s instanceof Java.LabeledStatement) {
@@ -2763,7 +2763,7 @@ public class UnitCompiler {
         IClass.IMethod iMethod = this.findIMethod(scmi);
 
         Java.Scope s;
-        for (s = scmi.getEnclosingBlockStatement(); s instanceof Java.Statement; s = s.getEnclosingScope());
+        for (s = scmi.getEnclosingBlockStatement(); s instanceof Java.Statement || s instanceof Java.CatchClause; s = s.getEnclosingScope());
         Java.FunctionDeclarator fd = s instanceof Java.FunctionDeclarator ? (Java.FunctionDeclarator) s : null;
         if (fd == null) {
             this.compileError("Cannot invoke superclass method in non-method scope", scmi.getLocation());
@@ -3635,29 +3635,7 @@ public class UnitCompiler {
                 break;
             }
         }
-/*
-        {
-            Java.Scope s = rt.getEnclosingScope();
 
-            // Determine scope statement.
-            if (s instanceof Java.Statement) {
-                for (s = s.getEnclosingScope(); s instanceof Java.Statement; s = s.getEnclosingScope());
-            }
-
-            if (s instanceof Java.FunctionDeclarator) {
-                s = s.getEnclosingScope();
-            }
-
-            // Determine scope class or interface.
-            if (s instanceof Java.TypeDeclaration) {
-                scopeTypeDeclaration = (Java.TypeDeclaration) s;
-            }
-
-            // Determine scope compilationUnit.
-            while (!(s instanceof Java.CompilationUnit)) s = s.getEnclosingScope();
-            scopeCompilationUnit = (Java.CompilationUnit) s;
-        }
-*/
         if (rt.identifiers.length == 1) {
 
             // 6.5.5.1 Simple type name (single identifier).
@@ -5883,7 +5861,7 @@ public class UnitCompiler {
 
             // Compile error if in static function context.
             Java.Scope s;
-            for (s = tr.getEnclosingBlockStatement(); s instanceof Java.Statement; s = s.getEnclosingScope());
+            for (s = tr.getEnclosingBlockStatement(); s instanceof Java.Statement || s instanceof Java.CatchClause; s = s.getEnclosingScope());
             if (s instanceof Java.FunctionDeclarator) {
                 Java.FunctionDeclarator function = (Java.FunctionDeclarator) s;
                 if ((function.modifiers & Mod.STATIC) != 0) this.compileError("No current instance available in static method", tr.getLocation());
