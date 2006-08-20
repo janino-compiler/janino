@@ -34,41 +34,63 @@
 
 package org.codehaus.janino.samples;
 
+import java.io.*;
 import java.lang.reflect.*;
 
 import org.codehaus.janino.*;
 
-/**
- * A test program that allows you to play around with the
- * {@link org.codehaus.janino.ClassBodyEvaluator ClassBodyEvaluator} class.
- */
-
-public class ClassBodyDemo extends DemoBase {
+public class ClassBodyDemo {
     public static void main(String[] args) throws Exception {
-        String script = (
-            "import java.util.*;\n" +
-            "\n" +
-            "public static int add(int a, int b) {\n" +
-            "    return a + b;\n" +
-            "}\n" +
-            "public String toString() {\n" +
-            "    return \"HELLO\";\n" +
-            "}\n" +
-            ""
-        );
+        if (args.length > 0 && args[0].equals("-help")) {
+            System.out.println("Usage:  ClassBodyDemo <class-body> { <argument> }");
+            System.out.println("        ClassBodyDemo -help");
+            System.out.println("If <class-body> starts with a '@', then the class body is read");
+            System.out.println("from the named file.");
+            System.out.println("The <class-body> must declare a method \"public static main(String[])\"");
+            System.out.println("to which the <argument>s are passed. If the return type of that method is");
+            System.out.println("not VOID, then the returned value is printed to STDOUT.");
+            System.exit(0);
+        }
 
-        Class c = new ClassBodyEvaluator(script).getClazz();
-        Method m = c.getMethod("add", new Class[] { int.class, int.class });
-        Integer res = (Integer) m.invoke(null, new Object[] {
-            new Integer(7),
-            new Integer(11),
-        });
-        System.out.println("res = " + res);
+        int i = 0;
 
-        Object o = c.newInstance();
-        String s = o.toString();
-        System.out.println("o.toString()=" + s);
+        // Get class body.
+        if (i >= args.length) {
+            System.err.println("Class body missing; try \"-help\".");
+        }
+        String classBody = args[i++];
+        if (classBody.startsWith("@")) classBody = ClassBodyDemo.readFileToString(classBody.substring(1));
+
+        // Get arguments.
+        String[] arguments = new String[args.length - i];
+        System.arraycopy(args, i, arguments, 0, arguments.length);
+
+        // Compile the class body.
+        Class c = new ClassBodyEvaluator(classBody).getClazz();
+
+        // Invoke the "public static main(String[])" method.
+        Method m = c.getMethod("main", new Class[] { String[].class });
+        Integer returnValue = (Integer) m.invoke(null, new Object[] { arguments });
+
+        // If non-VOID, print the return value.
+        if (m.getReturnType() != Void.TYPE) System.out.println(DemoBase.toString(returnValue));
     }
 
     private ClassBodyDemo() {}
+
+    private static String readFileToString(String fileName) throws IOException {
+        Reader r = new FileReader(fileName);
+        try {
+            StringBuffer sb = new StringBuffer();
+            char[] ca = new char[1024];
+            for (;;) {
+                int cnt = r.read(ca, 0, ca.length);
+                if (cnt == -1) break;
+                sb.append(ca, 0, cnt);
+            }
+            return sb.toString();
+        } finally {
+            r.close();
+        }
+    }
 }

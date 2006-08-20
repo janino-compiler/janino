@@ -43,10 +43,9 @@ import org.codehaus.janino.*;
 
 public class ExpressionDemo extends DemoBase {
     public static void main(String[] args) throws Exception {
-        String   expression             = "total >= 100.0 ? 0.0 : 7.95";
         Class    optionalExpressionType = null;
-        String[] parameterNames         = { "total", };
-        Class[]  parameterTypes         = { double.class, };
+        String[] parameterNames         = { };
+        Class[]  parameterTypes         = { };
         Class[]  thrownExceptions       = new Class[0];
         String[] optionalDefaultImports = null;
 
@@ -54,9 +53,6 @@ public class ExpressionDemo extends DemoBase {
         for (i = 0; i < args.length; ++i) {
             String arg = args[i];
             if (!arg.startsWith("-")) break;
-            if (arg.equals("-e")) {
-                expression = args[++i];
-            } else
             if (arg.equals("-et")) {
                 optionalExpressionType = DemoBase.stringToType(args[++i]);
             } else
@@ -73,26 +69,38 @@ public class ExpressionDemo extends DemoBase {
                 optionalDefaultImports = DemoBase.explode(args[++i]);
             } else
             if (arg.equals("-help")) {
-                ExpressionDemo.usage();
+                System.err.println("Usage:  ExpressionDemo { <option> } <expression> { <parameter-value> }");
+                System.err.println("Compiles and evaluates the given expression and prints its value.");
+                System.err.println("Valid options are");
+                System.err.println(" -et <expression-type> (default: any)");
+                System.err.println(" -pn <comma-separated-parameter-names> (default: none)");
+                System.err.println(" -pt <comma-separated-parameter-types> (default: none)");
+                System.err.println(" -te <comma-separated-thrown-exception-types> (default: none)");
+                System.err.println(" -di <comma-separated-default-imports> (default: none)");
+                System.err.println(" -help");
+                System.err.println("The number of parameter names, types and values must be identical.");
                 System.exit(0);
             } else
             {
-                System.err.println("Invalid command line option \"" + arg + "\".");
-                ExpressionDemo.usage();
+                System.err.println("Invalid command line option \"" + arg + "\"; try \"-help\".");
                 System.exit(0);
             }
         }
 
+        if (i >= args.length) {
+            System.err.println("Expression missing; try \"-help\".");
+            System.exit(1);
+        }
+        String expression = args[i++];
+
         if (parameterTypes.length != parameterNames.length) {
-            System.err.println("Parameter type count and parameter name count do not match.");
-            ExpressionDemo.usage();
+            System.err.println("Parameter type count (" + parameterTypes.length + ") and parameter name count (" + parameterNames.length + ") do not match; try \"-help\".");
             System.exit(1);
         }
 
         // One command line argument for each parameter.
         if (args.length - i != parameterNames.length) {
-            System.err.println("Parameter value count and parameter name count do not match.");
-            ExpressionDemo.usage();
+            System.err.println("Parameter value count (" + (args.length - i)  + ") and parameter name count (" + parameterNames.length + ") do not match; try \"-help\".");
             System.exit(1);
         }
 
@@ -118,17 +126,4 @@ public class ExpressionDemo extends DemoBase {
     }
 
     private ExpressionDemo() {}
-
-    private static void usage() {
-        System.err.println("Usage:  ExpressionDemo { <option> } { <parameter-value> }");
-        System.err.println("Valid options are");
-        System.err.println(" -e <expression>");
-        System.err.println(" -et <expression-type>");
-        System.err.println(" -pn <comma-separated-parameter-names>");
-        System.err.println(" -pt <comma-separated-parameter-types>");
-        System.err.println(" -te <comma-separated-thrown-exception-types>");
-        System.err.println(" -di <comma-separated-default-imports>");
-        System.err.println(" -help");
-        System.err.println("The number of parameter names, types and values must be identical.");
-    }
 }
