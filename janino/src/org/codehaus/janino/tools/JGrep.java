@@ -38,6 +38,7 @@ import java.util.*;
 import java.io.*;
 
 import org.codehaus.janino.*;
+import org.codehaus.janino.Scanner; // Resolve ambiguity with JDK 1.5's "java.util.Scanner".
 import org.codehaus.janino.util.*;
 import org.codehaus.janino.util.enumerator.*;
 import org.codehaus.janino.util.iterator.*;
