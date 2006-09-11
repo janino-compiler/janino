@@ -45,6 +45,8 @@ import org.codehaus.janino.util.enumerator.*;
 import org.codehaus.janino.util.resource.*;
 
 public class CompilerTests extends TestCase {
+    private static final String SRC = "src";
+
     public static Test suite() {
         TestSuite s = new TestSuite(Compiler.class.getName());
         s.addTest(new CompilerTests("testSelfCompile"));
@@ -57,11 +59,11 @@ public class CompilerTests extends TestCase {
     public void testSelfCompile() throws Exception {
         ClassLoader bootstrapClassLoader = new ClassLoader(null) {};
         File[] sourceFiles = new File[] {
-            new File("src/org/codehaus/janino/Compiler.java"),
-            new File("src/org/codehaus/janino/samples/ExpressionDemo.java"),
-            new File("src/org/codehaus/janino/util/resource/MapResourceCreator.java"),
+            new File(SRC + "/org/codehaus/janino/Compiler.java"),
+            new File(SRC + "/org/codehaus/janino/samples/ExpressionDemo.java"),
+            new File(SRC + "/org/codehaus/janino/util/resource/MapResourceCreator.java"),
         };
-        DirectoryResourceFinder sourceFinder = new DirectoryResourceFinder(new File("src"));
+        DirectoryResourceFinder sourceFinder = new DirectoryResourceFinder(new File(SRC));
         boolean verbose = false;
 
         Benchmark b = new Benchmark(true);
@@ -124,7 +126,7 @@ public class CompilerTests extends TestCase {
         Loader l = new Loader();
         Map classFileMap3 = new HashMap();
         {
-            Object sf   = l.instantiate(DirectoryResourceFinder.class, new Class[] { File.class }, new Object[] { new File("src") });
+            Object sf   = l.instantiate(DirectoryResourceFinder.class, new Class[] { File.class }, new Object[] { new File(SRC) });
             Object icl  = l.instantiate(ClassLoaderIClassLoader.class, new Class[] { ClassLoader.class }, new Object[] { bootstrapClassLoader });
             Object cfrf = l.getStaticField(ResourceFinder.class, "EMPTY_RESOURCE_FINDER");
             Object cfrc = l.instantiate(MapResourceCreator.class, new Class[] { Map.class }, new Object[] { classFileMap3 });
