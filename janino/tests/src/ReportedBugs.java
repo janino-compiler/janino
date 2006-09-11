@@ -251,6 +251,8 @@ public class ReportedBugs extends JaninoTestSuite {
             "    return !p.filter();\n" +
             "}\n"
         ));
+
+        // Bug 67: See "JavaSourceClassLoaderTests".
     }
 
     /**

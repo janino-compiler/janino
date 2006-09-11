@@ -278,13 +278,33 @@ public class JavaSourceClassLoader extends ClassLoader {
      */
     protected Class findClass(String name) throws ClassNotFoundException {
 
-        Map bytecodes = this.generateBytecodes(name); // String name => byte[] bytecode
-        if (bytecodes == null) throw new ClassNotFoundException(name);
+        // Check if the bytecode for that class was generated already.
+        {
+            byte[] bytecode = (byte[]) this.precompiledClasses.remove(name);
+            if (bytecode != null) {
+                return this.defineBytecode(name, bytecode);
+            }
+        }
 
-        Class clazz = this.defineBytecodes(name, bytecodes);
-        if (clazz == null) throw new RuntimeException("SNO: Scanning, parsing and compiling class \"" + name + "\" did not create a class file!?");
-        return clazz;
+        // Read, scan, parse and compile the right compilation unit.
+        {
+            Map bytecodes = this.generateBytecodes(name);
+            if (bytecodes == null) throw new ClassNotFoundException(name);
+            this.precompiledClasses.putAll(bytecodes);
+        }
+
+        // Now the bytecode for our class should be available.
+        byte[] bytecode = (byte[]) this.precompiledClasses.remove(name);
+        if (bytecode == null) throw new RuntimeException("SNO: Scanning, parsing and compiling class \"" + name + "\" did not create a class file!?");
+        return this.defineBytecode(name, bytecode);
     }
+
+    /**
+     * This {@link Map} keeps those classes which were already compiled, but not
+     * yet defined i.e. which were not yet passed to
+     * {@link ClassLoader#defineClass(java.lang.String, byte[], int, int)}.
+     */
+    Map precompiledClasses = new HashMap(); // String name => byte[] bytecode
 
     /**
      * Find, scan, parse the right compilation unit. Compile the parsed compilation unit to
@@ -292,6 +312,7 @@ public class JavaSourceClassLoader extends ClassLoader {
      * all compilation units are compiled.
      *
      * @return String name => byte[] bytecode, or <code>null</code> if no source code could be found
+     * @throws ClassNotFoundException on compilation problems
      */
     protected Map generateBytecodes(String name) throws ClassNotFoundException {
         if (this.iClassLoader.loadIClass(Descriptor.fromClassName(name)) == null) return null;

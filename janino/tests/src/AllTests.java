@@ -78,6 +78,7 @@ public class AllTests extends JaninoTestSuite {
 
         section(null);
         this.addTest(CompilerTests.suite());
+        this.addTest(JavaSourceClassLoaderTests.suite());
         this.addTest(ReportedBugs.suite());
     }
 }
