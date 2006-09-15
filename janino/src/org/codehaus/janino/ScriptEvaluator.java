@@ -37,8 +37,11 @@ package org.codehaus.janino;
 import java.io.*;
 import java.lang.reflect.*;
 
+import org.codehaus.janino.Parser.ParseException;
+import org.codehaus.janino.Scanner.ScanException;
+
 /**
- * A script evaluator that executes a script in Java<sup>TM</sup> bytecode.
+ * An engine that executes a script in Java<sup>TM</sup> bytecode.
  * <p>
  * The syntax of the script to compile is a sequence of import declarations followed by a
  * sequence of statements, as defined in the
@@ -89,33 +92,41 @@ import java.lang.reflect.*;
  *   Call any of the {@link org.codehaus.janino.Cookable#cook(Scanner)} methods to scan,
  *   parse, compile and load the script into the JVM.
  * </ol>
- * Alternatively, a number of "convenience constructors" exist that execute the steps described
- * above instantly.
- * <p>
  * After the {@link ScriptEvaluator} object is created, the script can be executed as often with
  * different parameter values (see {@link #evaluate(Object[])}). This execution is very fast,
  * compared to the compilation.
  * <p>
- * The more elaborate constructors of {@link ScriptEvaluator} also allow for the specification
- * of the name of the generated class, the class it extends, the interfaces it implements, the
- * name of the method that executes the script, the exceptions that this method is allowed
- * to throw, and the {@link ClassLoader} that is used to define the generated
- * class and to load classes referenced by the expression. This degree of flexibility is usually
- * not required; the most commonly used constructor is
- * {@link #ScriptEvaluator(String, Class, String[], Class[])}.
+ * Less common methods exist that allow for the specification of the name of the generated class,
+ * the class it extends, the interfaces it implements, the name of the method that executes the
+ * script, the exceptions that this method (i.e. the script) is allowed to throw, and the
+ * {@link ClassLoader} that is used to define the generated class and to load classes referenced by
+ * the script.
+ * <p>
+ * Alternatively, a number of "convenience constructors" exist that execute the steps described
+ * above instantly. Their use is discouraged.
+ * <p>
+ * If you want to compile many scripts at the same time, you have the option cook an <i>array</i>
+ * of scripts in one {@link ScriptEvaluator} by using the following methods:
+ * <ul>
+ *   <li>{@link #setMethodNames(String[])}
+ *   <li>{@link #setParameters(String[][], Class[][])}
+ *   <li>{@link #setReturnTypes(Class[])}
+ *   <li>{@link #setStaticMethod(boolean[])}
+ *   <li>{@link #setThrownExceptions(Class[][])}
+ *   <li>{@link #cook(Scanner[])}
+ *   <li>{@link #evaluate(int, Object[])}
+ * </ul>
+ * Notice that these methods have array parameters in contrast to their one-script brethren.
  */
 public class ScriptEvaluator extends ClassBodyEvaluator {
-    public static final String   DEFAULT_METHOD_NAME = "eval";
-    public static final String[] ZERO_STRINGS = new String[0];
+    protected boolean[]  optionalStaticMethod = null;
+    protected Class[]    optionalReturnTypes = null;
+    protected String[]   optionalMethodNames = null;
+    protected String[][] optionalParameterNames = null;
+    protected Class[][]  optionalParameterTypes = null;
+    protected Class[][]  optionalThrownExceptions = null;
 
-    private boolean              staticMethod = true;
-    private Class                returnType = void.class;
-    private String               methodName = ScriptEvaluator.DEFAULT_METHOD_NAME;
-    private String[]             parameterNames = ScriptEvaluator.ZERO_STRINGS;
-    private Class[]              parameterTypes = ClassBodyEvaluator.ZERO_CLASSES;
-    private Class[]              thrownExceptions = ClassBodyEvaluator.ZERO_CLASSES;
-
-    private Method               method = null; // null=uncooked
+    private Method[]     result = null; // null=uncooked
 
     /**
      * Equivalent to<pre>
@@ -390,137 +401,267 @@ public class ScriptEvaluator extends ClassBodyEvaluator {
      * Define whether the generated method should be STATIC or not. Defaults to <code>true</code>.
      */
     public void setStaticMethod(boolean staticMethod) {
-        this.staticMethod = staticMethod;
+        this.setStaticMethod(new boolean[] { staticMethod });
     }
 
     /**
      * Define the return type of the generated method. Defaults to <code>void.class</code>.
      */
     public void setReturnType(Class returnType) {
-        this.returnType = returnType;
+        this.setReturnTypes(new Class[] { returnType });
     }
 
     /**
-     * Define the name of the generated method. Defaults to {@link #DEFAULT_METHOD_NAME}.
+     * Define the name of the generated method. Defaults to an unspecified name.
      */
     public void setMethodName(String methodName) {
-        this.methodName = methodName;
+        this.setMethodNames(new String[] { methodName });
     }
 
     /**
      * Define the names and types of the parameters of the generated method.
      */
     public void setParameters(String[] parameterNames, Class[] parameterTypes) {
-        if (parameterNames.length != parameterTypes.length) throw new IllegalArgumentException("Parameter names and types counts do not match");
-        this.parameterNames = parameterNames;
-        this.parameterTypes = parameterTypes;
+        this.setParameters(new String[][] { parameterNames }, new Class[][] {parameterTypes });
     }
 
     /**
      * Define the exceptions that the generated method may throw.
      */
     public void setThrownExceptions(Class[] thrownExceptions) {
-        if (thrownExceptions == null) throw new NullPointerException("Zero thrown exceptions must be specified as \"new Class[0]\", not \"null\"");
-        this.thrownExceptions = thrownExceptions;
+        this.setThrownExceptions(new Class[][] { thrownExceptions });
     }
 
-    protected void internalCook(Scanner scanner) throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
-        Java.CompilationUnit compilationUnit = this.makeCompilationUnit(scanner);
+    public final void cook(Scanner scanner)
+    throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
+        this.cook(new Scanner[] { scanner });
+    }
 
-        // Create class, method and block.
-        Java.Block block = this.addClassMethodBlockDeclaration(
-            scanner.location(), // location
-            compilationUnit,    // compilationUnit
-            this.returnType     // returnType
-        );
-        
-        // Parse block statements.
-        Parser parser = new Parser(scanner);
-        while (!scanner.peek().isEOF()) {
-            block.addStatement(parser.parseBlockStatement());
+    /**
+     * Calls the generated method with concrete parameter values.
+     * <p>
+     * Each parameter value must have the same type as specified through
+     * the "parameterTypes" parameter of
+     * {@link #setParameters(String[], Class[])}.
+     * <p>
+     * Parameters of primitive type must passed with their wrapper class
+     * objects.
+     * <p>
+     * The object returned has the class as specified through
+     * {@link #setReturnType(Class)}.
+     * <p>
+     * This method is thread-safe.
+     *
+     * @param parameterValues The concrete parameter values.
+     */
+    public Object evaluate(Object[] parameterValues) throws InvocationTargetException {
+        return this.evaluate(0, parameterValues);
+    }
+
+    /**
+     * Returns the loaded {@link java.lang.reflect.Method}.
+     * <p>
+     * This method must only be called after {@link #cook(Scanner)}.
+     * <p>
+     * This method must not be called for instances of derived classes.
+     */
+    public Method getMethod() {
+        return this.getMethod(0);
+    }
+
+    /**
+     * Define whether the methods implementing each script should be STATIC or not. By default
+     * all scripts are compiled into STATIC methods.
+     */
+    public void setStaticMethod(boolean[] staticMethod) {
+        this.optionalStaticMethod = staticMethod;
+    }
+
+    /**
+     * Define the return types of the scripts. By default all scripts have VOID return type.
+     */
+    public void setReturnTypes(Class[] returnTypes) {
+        this.optionalReturnTypes = returnTypes;
+    }
+
+    /**
+     * Define the names of the generated methods. By default the methods have distinct and
+     * implementation-specific names.
+     * <p>
+     * If two scripts have the same name, then they must have different parameter types
+     * (see {@link #setParameters(String[][], Class[][])}).
+     */
+    public void setMethodNames(String[] methodNames) {
+        this.optionalMethodNames = methodNames;
+    }
+
+    /**
+     * Define the names and types of the parameters of the generated methods.
+     */
+    public void setParameters(String[][] parameterNames, Class[][] parameterTypes) {
+        this.optionalParameterNames = parameterNames;
+        this.optionalParameterTypes = parameterTypes;
+    }
+
+    /**
+     * Define the exceptions that the generated methods may throw.
+     */
+    public void setThrownExceptions(Class[][] thrownExceptions) {
+        this.optionalThrownExceptions = thrownExceptions;
+    }
+
+    public void cook(Scanner[] scanners)
+    throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
+
+        // Create compilation unit.
+        Java.CompilationUnit compilationUnit = this.makeCompilationUnit(scanners.length == 1 ? scanners[0] : null);
+
+        // Create class declaration.
+        Java.ClassDeclaration cd = this.addPackageMemberClassDeclaration(scanners[0].location(), compilationUnit);
+
+        // Determine method names
+        String[] methodNames;
+        if (this.optionalMethodNames == null) {
+            methodNames = new String[scanners.length];
+            for (int i = 0; i < methodNames.length; ++i) methodNames[i] = "eval" + i;
+        } else
+        {
+            methodNames = this.optionalMethodNames;
         }
 
-        this.compileToMethod(compilationUnit);
-    }
+        // Determine parameter types.
+        Class[][] parameterTypes = this.optionalParameterTypes == null ? new Class[scanners.length][0] : this.optionalParameterTypes;
 
-    protected void compileToMethod(Java.CompilationUnit compilationUnit) throws CompileException {
+        // Create methods with one block each.
+        for (int i = 0; i < scanners.length; ++i) {
+            Scanner s = scanners[i];
+
+            boolean  staticMethod     = this.optionalStaticMethod == null ? true : this.optionalStaticMethod[i];
+            Class    returnType       = this.optionalReturnTypes == null ? this.getDefaultReturnType() : this.optionalReturnTypes[i];
+            String[] parameterNames   = this.optionalParameterNames == null ? new String[0] : this.optionalParameterNames[i];
+            Class[]  thrownExceptions = this.optionalThrownExceptions == null ? new Class[0] : this.optionalThrownExceptions[i];
+
+            Java.Block block = this.addMethodDeclarationAndBlock(
+                s.location(),      // location
+                cd,                // classDeclaration
+                staticMethod,      // staticMethod
+                returnType,        // returnType
+                methodNames[i],    // methodName
+                parameterTypes[i], // parameterTypes
+                parameterNames,    // parameterNames
+                thrownExceptions   // thrownExceptions
+            );
+
+            // Parse block statements.
+            this.fillBlock(i, s, block);
+        }
 
         // Compile and load the compilation unit.
         Class c = this.compileToClass(
             compilationUnit,                                    // compilationUnit
             DebuggingInformation.DEFAULT_DEBUGGING_INFORMATION, // debuggingInformation
-            this.className                                      // className
+            this.className
+        );
+        
+        // Find the script method by name.
+        this.result = new Method[methodNames.length];
+        for (int i = 0; i < this.result.length; ++i) {
+            try {
+                this.result[i] = c.getMethod(methodNames[i], parameterTypes[i]);
+            } catch (NoSuchMethodException ex) {
+                throw new RuntimeException("SNO: Loaded class does not declare method \"" + this.optionalMethodNames[i] + "\"");
+            }
+        }
+    }
+
+    protected Class getDefaultReturnType() {
+        return void.class;
+    }
+
+    /**
+     * Fill the given <code>block</code> by parsing statements until EOF and adding
+     * them to the block.
+     * @param idx TODO
+     */
+    protected void fillBlock(int idx, Scanner scanner, Java.Block block) throws ParseException, ScanException, IOException {
+        Parser parser = new Parser(scanner);
+        while (!scanner.peek().isEOF()) {
+            block.addStatement(parser.parseBlockStatement());
+        }
+    }
+
+    protected void compileToMethods(
+        Java.CompilationUnit compilationUnit,
+        String[]             methodNames,
+        Class[][]            parameterTypes
+    ) throws CompileException {
+
+        // Compile and load the compilation unit.
+        Class c = this.compileToClass(
+            compilationUnit,                                    // compilationUnit
+            DebuggingInformation.DEFAULT_DEBUGGING_INFORMATION, // debuggingInformation
+            this.className
         );
 
         // Find the script method by name.
-        try {
-            this.method = c.getMethod(this.methodName, this.parameterTypes);
-        } catch (NoSuchMethodException ex) {
-            throw new RuntimeException("SNO: Loaded class does not declare method \"" + this.methodName + "\"");
+        this.result = new Method[methodNames.length];
+        for (int i = 0; i < this.result.length; ++i) {
+            try {
+                this.result[i] = c.getMethod(methodNames[i], parameterTypes[i]);
+            } catch (NoSuchMethodException ex) {
+                throw new RuntimeException("SNO: Loaded class does not declare method \"" + this.optionalMethodNames[i] + "\"");
+            }
         }
     }
 
     /**
-     * To the given {@link Java.CompilationUnit}, add
+     * To the given {@link Java.ClassDeclaration}, add
      * <ul>
-     *   <li>A package member class declaration with the given name, superclass and interfaces
      *   <li>A public method declaration with the given return type, name, parameter
      *       names and values and thrown exceptions
      *   <li>A block 
      * </ul> 
-     * @param location
-     * @param compilationUnit
-     * @param className
-     * @param optionalExtendedType (null == {@link Object})
-     * @param implementedTypes
-     * @param staticMethod Whether the method should be declared "static"
+     *
      * @param returnType Return type of the declared method
-     * @param methodName
-     * @param parameterNames
-     * @param parameterTypes
-     * @param thrownExceptions
-     * @return The created {@link Java.Block} object
-     * @throws Parser.ParseException
      */
-    protected Java.Block addClassMethodBlockDeclaration(
-        Location             location,
-        Java.CompilationUnit compilationUnit,
-        Class                returnType
-    ) throws Parser.ParseException {
-        if (this.parameterNames.length != this.parameterTypes.length) throw new RuntimeException("Lengths of \"parameterNames\" and \"parameterTypes\" do not match");
-
-        // Add class declaration.
-        Java.ClassDeclaration cd = this.addPackageMemberClassDeclaration(
-            location,
-            compilationUnit
-        );
+    protected Java.Block addMethodDeclarationAndBlock(
+        Location              location,
+        Java.ClassDeclaration classDeclaration,
+        boolean               staticMethod,
+        Class                 returnType,
+        String                methodName,
+        Class[]               parameterTypes,
+        String[]              parameterNames,
+        Class[]               thrownExceptions
+    ) {
+        if (parameterNames.length != parameterTypes.length) throw new RuntimeException("Lengths of \"parameterNames\" and \"parameterTypes\" do not match");
 
         // Add method declaration.
         Java.Block b = new Java.Block(location);
-        Java.FunctionDeclarator.FormalParameter[] fps = new Java.FunctionDeclarator.FormalParameter[this.parameterNames.length];
+        Java.FunctionDeclarator.FormalParameter[] fps = new Java.FunctionDeclarator.FormalParameter[parameterNames.length];
         for (int i = 0; i < fps.length; ++i) {
             fps[i] = new Java.FunctionDeclarator.FormalParameter(
-                location,                                           // location
-                true,                                               // finaL
-                this.classToType(location, this.parameterTypes[i]), // type
-                this.parameterNames[i]                              // name
+                location,                                      // location
+                true,                                          // finaL
+                this.classToType(location, parameterTypes[i]), // type
+                parameterNames[i]                              // name
             );
         }
         Java.MethodDeclarator md = new Java.MethodDeclarator(
-            location,                                             // location
-            null,                                                 // optionalDocComment
-            (                                                     // modifiers
-                this.staticMethod ?
+            location,                                        // location
+            null,                                            // optionalDocComment
+            (                                                // modifiers
+                staticMethod ?
                 (short) (Mod.PUBLIC | Mod.STATIC) :
                 (short) Mod.PUBLIC
             ),
-            this.classToType(location, returnType),               // type
-            this.methodName,                                      // name
-            fps,                                                  // formalParameters
-            this.classesToTypes(location, this.thrownExceptions), // thrownExceptions
-            b                                                     // optionalBody
+            this.classToType(location, returnType),          // type
+            methodName,                                      // name
+            fps,                                             // formalParameters
+            this.classesToTypes(location, thrownExceptions), // thrownExceptions
+            b                                                // optionalBody
         );
-        cd.addDeclaredMethod(md);
+        classDeclaration.addDeclaredMethod(md);
 
         return b;
     }
@@ -695,12 +836,13 @@ public class ScriptEvaluator extends ClassBodyEvaluator {
      * <p>
      * This method is thread-safe.
      *
+     * @param idx The index of the script (0 ... <code>scripts.length - 1</code>)
      * @param parameterValues The concrete parameter values.
      */
-    public Object evaluate(Object[] parameterValues) throws InvocationTargetException {
-        if (this.method == null) throw new IllegalStateException("Must only be called after \"cook()\"");
+    public Object evaluate(int idx, Object[] parameterValues) throws InvocationTargetException {
+        if (this.result == null) throw new IllegalStateException("Must only be called after \"cook()\"");
         try {
-            return this.method.invoke(null, parameterValues);
+            return this.result[idx].invoke(null, parameterValues);
         } catch (IllegalAccessException ex) {
             throw new RuntimeException(ex.toString());
         }
@@ -712,9 +854,11 @@ public class ScriptEvaluator extends ClassBodyEvaluator {
      * This method must only be called after {@link #cook(Scanner)}.
      * <p>
      * This method must not be called for instances of derived classes.
+     *
+     * @param idx The index of the script (0 ... <code>scripts.length - 1</code>)
      */
-    public Method getMethod() {
-        if (this.method == null) throw new IllegalStateException("Must only be called after \"cook()\"");
-        return this.method;
+    public Method getMethod(int idx) {
+        if (this.result == null) throw new IllegalStateException("Must only be called after \"cook()\"");
+        return this.result[idx];
     }
 }

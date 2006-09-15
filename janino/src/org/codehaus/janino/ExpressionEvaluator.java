@@ -36,8 +36,12 @@ package org.codehaus.janino;
 
 import java.io.*;
 
+import org.codehaus.janino.Parser.ParseException;
+import org.codehaus.janino.Scanner.ScanException;
+import org.codehaus.janino.util.PrimitiveWrapper;
+
 /**
- * An expression evaluator that evaluates expressions in Java<sup>TM</sup> bytecode.
+ * An engine that evaluates expressions in Java<sup>TM</sup> bytecode.
  * <p>
  * The syntax of the expression to compile is that of a Java<sup>TM</sup> expression, as defined
  * in the <a href="http://java.sun.com/docs/books/jls/second_edition">Java Language Specification,
@@ -76,12 +80,31 @@ import java.io.*;
  *   Call any of the {@link org.codehaus.janino.Cookable#cook(Scanner)} methods to scan,
  *   parse, compile and load the expression into the JVM.
  * </ol>
+ * After the {@link ExpressionEvaluator} object is set up, the expression can be evaluated as
+ * often with different parameter values (see {@link #evaluate(Object[])}). This evaluation is
+ * very fast, compared to the compilation.
+ * <p>
+ * Less common methods exist that allow for the specification of the name of the generated class,
+ * the class it extends, the interfaces it implements, the name of the method that executes the
+ * expression, the exceptions that this method (i.e. the expression) is allowed to throw, and the
+ * {@link ClassLoader} that is used to define the generated class and to load classes referenced by
+ * the expression.
+ * <p>
  * Alternatively, a number of "convenience constructors" exist that execute the steps described
  * above instantly.
  * <p>
- * After the {@link ExpressionEvaluator} object is set up, the expression can be evaluated as
- * often with different parameter values (see {@link #evaluate(Object[])}). This evaluation is
- * very fast, compared to the setup.
+ * If you want to compile many expressions at the same time, you have the option cook an
+ * <i>array</i> of expressions in one {@link ExpressionEvaluator} by using the following methods:
+ * <ul>
+ *   <li>{@link #setMethodNames(String[])}
+ *   <li>{@link #setParameters(String[][], Class[][])}
+ *   <li>{@link #setExpressionTypes(Class[])}
+ *   <li>{@link #setStaticMethod(boolean[])}
+ *   <li>{@link #setThrownExceptions(Class[][])}
+ *   <li>{@link #cook(Scanner[])}
+ *   <li>{@link #evaluate(int, Object[])}
+ * </ul>
+ * Notice that these methods have array parameters in contrast to their one-script brethren.
  * <p>
  * Notice that for <i>functionally</i> identical {@link ExpressionEvaluator}s,
  * {@link java.lang.Object#equals(java.lang.Object)} will return <code>true</code>. E.g. "a+b" and
@@ -155,7 +178,8 @@ import java.io.*;
  */
 public class ExpressionEvaluator extends ScriptEvaluator {
     public static final Class ANY_TYPE = null;
-    private Class             expressionType = ExpressionEvaluator.ANY_TYPE;
+
+    private Class[] optionalExpressionTypes = null;
 
     /**
      * Equivalent to<pre>
@@ -310,29 +334,36 @@ public class ExpressionEvaluator extends ScriptEvaluator {
      * Defaults to {@link #ANY_TYPE}.
      */
     public void setExpressionType(Class expressionType) {
-        this.expressionType = expressionType;
+        this.setExpressionTypes(new Class[] { expressionType });
     }
 
+    public void setExpressionTypes(Class[] expressionTypes) {
+        this.optionalExpressionTypes = expressionTypes;
+
+        Class[] returnTypes = new Class[expressionTypes.length];
+        for (int i = 0; i < returnTypes.length; ++i) {
+            Class et = expressionTypes[i];
+            returnTypes[i] = et == ANY_TYPE ? Object.class : et;
+        }
+        super.setReturnTypes(returnTypes);
+    }
+    
     public final void setReturnType(Class returnType) {
-        throw new RuntimeException("Don't call \"setReturnType()\" on an ExpressionEvaluator, user \"setExpressionType()\" instead");
+        throw new RuntimeException("Don't call \"setReturnType(Class)\" on an ExpressionEvaluator, user \"setExpressionType(Class)\" instead");
     }
 
-    protected void internalCook(Scanner scanner) throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
-        Java.CompilationUnit compilationUnit = this.makeCompilationUnit(scanner);
+    public final void setReturnTypes(Class[] returnTypes) {
+        throw new RuntimeException("Don't call \"setReturnTypes(Class[])\" on an ExpressionEvaluator, user \"setExpressionTypes(Class[])\" instead");
+    }
+    
+    protected Class getDefaultReturnType() {
+        return Object.class;
+    }
 
-        // Create class, method and block.
-        Java.Block block = this.addClassMethodBlockDeclaration(
-            scanner.location(),        // location
-            compilationUnit,           // compilationUnit
-            (                          // returnType
-                this.expressionType == null ?
-                Object.class :
-                this.expressionType
-            )
-        );
-
+    protected void fillBlock(int idx, Scanner scanner, Java.Block block) throws ParseException, ScanException, IOException {
         Parser parser = new Parser(scanner);
-        if (this.expressionType == void.class) {
+        Class et = this.optionalExpressionTypes == null ? ANY_TYPE : this.optionalExpressionTypes[idx];
+        if (et == void.class) {
 
             // ExpressionEvaluator with an expression type "void" is a simple expression statement.
             block.addStatement(new Java.ExpressionStatement(parser.parseExpression().toRvalueOrPE()));
@@ -343,25 +374,28 @@ public class ExpressionEvaluator extends ScriptEvaluator {
 
             // Special case: A "null" expression type means return type "Object" and automatic
             // wrapping of primitive types.
-            if (this.expressionType == null) {
+            if (et == ANY_TYPE) {
                 value = new Java.MethodInvocation(
-                    scanner.location(),           // location
-                    new Java.ReferenceType(       // optionalTarget
-                        scanner.location(),                                                      // location
+                    scanner.location(),         // location
+                    new Java.ReferenceType(     // optionalTarget
+                        scanner.location(),                                                  // location
                         new String[] { "org", "codehaus", "janino", "util", "PrimitiveWrapper" } // identifiers
                     ),
                     "wrap",
-                    new Java.Rvalue[] { value }   // arguments
+                    new Java.Rvalue[] { value } // arguments
                 );
-                org.codehaus.janino.util.PrimitiveWrapper.wrap(99); // Make sure "PrimitiveWrapper" is compiled.
+
+                // Make sure "PrimitiveWrapper" is compiled.
+                PrimitiveWrapper.wrap(99);
+
+                // Add "PrimitiveWrapper" as an auxiliary class.
+                this.classToType(null, PrimitiveWrapper.class);
             }
 
             // Add a return statement.
             block.addStatement(new Java.ReturnStatement(scanner.location(), value));
         }
         if (!scanner.peek().isEOF()) throw new Parser.ParseException("Unexpected token \"" + scanner.peek() + "\"", scanner.location());
-
-        this.compileToMethod(compilationUnit);
     }
 
     /**

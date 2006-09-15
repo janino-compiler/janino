@@ -91,7 +91,11 @@ public class ByteArrayClassLoader extends ClassLoader {
         if (this == o) return true;
         ByteArrayClassLoader that = (ByteArrayClassLoader) o;
 
-        if (this.getParent() != that.getParent()) return false;
+        {
+            final ClassLoader parentOfThis = this.getParent();
+            final ClassLoader parentOfThat = that.getParent();
+            if (parentOfThis == null ? parentOfThat != null : !parentOfThis.equals(parentOfThat)) return false;
+        }
 
         if (this.classes.size() != that.classes.size()) return false;
         for (Iterator it = this.classes.entrySet().iterator(); it.hasNext();) {

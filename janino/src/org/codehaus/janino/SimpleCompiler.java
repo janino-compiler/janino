@@ -67,10 +67,14 @@ import org.codehaus.janino.util.enumerator.*;
 public class SimpleCompiler extends Cookable {
     private final static boolean DEBUG = false;
 
-    private final ClassLoaderIClassLoader DEFAULT_ICLASSLOADER = new ClassLoaderIClassLoader(Thread.currentThread().getContextClassLoader());
-    private ClassLoaderIClassLoader       classLoaderIClassLoader = this.DEFAULT_ICLASSLOADER;
+    private ClassLoader optionalParentClassLoader = Thread.currentThread().getContextClassLoader();
+    private Class[]     optionalAuxiliaryClasses = null;
 
-    private ClassLoader                   classLoader = null; // null=uncooked
+    // Set when "cook()"ing.
+    private AuxiliaryClassLoader classLoader = null;
+    private IClassLoader         iClassLoader = null;
+
+    private ClassLoader result = null;
 
     public static void main(String[] args) throws Exception {
         if (args.length < 2) {
@@ -173,24 +177,41 @@ public class SimpleCompiler extends Cookable {
     public SimpleCompiler() {}
 
     /**
-     * The "parent class loader" is used to load referenced classes. It defaults to the current
-     * thread's "context class loader".
+     * The "parent class loader" is used to load referenced classes. Useful values are
+     * <dl>
+     *   <dt><code>System.getSystemClassLoader()</code>
+     *   <dd>The running JVM's class path
+     *   <dt><code>Thread.currentThread().getContextClassLoader()</code>
+     *   <dd>The class loader effective for the invoking thread
+     *   <dt><code>null</code>
+     *   <dd>The running JVM's boot class path, i.e. the JDK classes but not the classes on the
+     *   class path
+     * </dl>
+     * The parent class loader defaults to the current thread's "context class loader".
      */
     public void setParentClassLoader(ClassLoader optionalParentClassLoader) {
-        this.classLoaderIClassLoader = (
-            optionalParentClassLoader != null ?
-            new ClassLoaderIClassLoader(optionalParentClassLoader) :
-            this.DEFAULT_ICLASSLOADER
-        );
+        this.optionalParentClassLoader = optionalParentClassLoader;
+        this.optionalAuxiliaryClasses = null;
     }
 
     /**
-     * Parse tokens delivered by the <code>scanner</code>, compile them and load them into the
-     * JVM.
+     * Allowe references to the classes loaded through this parent class loader
+     * (@see {@link #setParentClassLoader(ClassLoader)}), plus the extra
+     * <code>auxiliaryClasses</code>.
      * <p>
-     * This method must be called exactly once.
+     * Notice that the <code>auxiliaryClasses</code> must either be loadable through the
+     * <code>optionalParentClassLoader</code> (in which case they have no effect), or
+     * <b>no class with the same name</b> must be loadable through the
+     * <code>optionalParentClassLoader</code>.
      */
-    protected void internalCook(Scanner scanner) throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
+    public void setParentClassLoader(ClassLoader optionalParentClassLoader, Class[] auxiliaryClasses) {
+        this.optionalParentClassLoader = optionalParentClassLoader;
+        this.optionalAuxiliaryClasses = auxiliaryClasses;
+    }
+    
+    public void cook(Scanner scanner)
+    throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
+        this.precook();
 
         // Parse the compilation unit.
         Java.CompilationUnit compilationUnit = new Parser(scanner).parseCompilationUnit();
@@ -200,6 +221,79 @@ public class SimpleCompiler extends Cookable {
             compilationUnit,
             DebuggingInformation.DEFAULT_DEBUGGING_INFORMATION
         );
+    }
+
+    protected void precook() {
+
+        // Set up the ClassLoader for the compilation and the loading.
+        this.classLoader = new AuxiliaryClassLoader(this.optionalParentClassLoader);
+        if (this.optionalAuxiliaryClasses != null) {
+            for (int i = 0; i < this.optionalAuxiliaryClasses.length; ++i) {
+                this.classLoader.addAuxiliaryClass(this.optionalAuxiliaryClasses[i]);
+            }
+        }
+
+        this.iClassLoader = new ClassLoaderIClassLoader(this.classLoader);
+    }
+
+    /**
+     * A {@link ClassLoader} that intermixes that classes loaded by its parent with a map of
+     * "auxiliary classes".
+     */
+    private static final class AuxiliaryClassLoader extends ClassLoader {
+        private final Map auxiliaryClasses = new HashMap(); // String name => Class
+
+        private AuxiliaryClassLoader(ClassLoader parent) {
+            super(parent);
+        }
+
+        protected Class loadClass(String name, boolean resolve) throws ClassNotFoundException {
+            Class c = (Class) this.auxiliaryClasses.get(name);
+            if (c != null) return c;
+        
+            return super.loadClass(name, resolve);
+        }
+
+        private void addAuxiliaryClass(Class c) {
+
+            // Check whether the auxiliary class is conflicting with this ClassLoader.
+            try {
+                Class c2 = super.loadClass(c.getName(), false);
+                if (c2 != c) throw new RuntimeException("Trying to add an auxiliary class \"" + c.getName() + "\" while another class with the same name is already loaded");
+            } catch (ClassNotFoundException ex) {
+                ;
+            }
+
+            this.auxiliaryClasses.put(c.getName(), c);
+
+            {
+                Class sc = c.getSuperclass();
+                if (sc != null) this.addAuxiliaryClass(sc);
+            }
+
+            {
+                Class[] ifs = c.getInterfaces();
+                for (int i = 0; i < ifs.length; ++i) this.addAuxiliaryClass(ifs[i]);
+            }
+        }
+
+        public boolean equals(Object o) {
+            if (!(o instanceof AuxiliaryClassLoader)) return false;
+            AuxiliaryClassLoader that = (AuxiliaryClassLoader) o;
+
+            {
+                final ClassLoader parentOfThis = this.getParent();
+                final ClassLoader parentOfThat = that.getParent();
+                if (parentOfThis == null ? parentOfThat != null : !parentOfThis.equals(parentOfThat)) return false;
+            }
+
+            return this.auxiliaryClasses.equals(that.auxiliaryClasses);
+        }
+
+        public int hashCode() {
+            ClassLoader parent = this.getParent();
+            return (parent == null ? 0 : parent.hashCode()) ^ this.auxiliaryClasses.hashCode();
+        }
     }
 
     /**
@@ -214,8 +308,8 @@ public class SimpleCompiler extends Cookable {
      */
     public ClassLoader getClassLoader() {
         if (this.getClass() != SimpleCompiler.class) throw new IllegalStateException("Must not be called on derived instances");
-        if (this.classLoader == null) throw new IllegalStateException("Must only be called after \"cook()\"");
-        return this.classLoader;
+        if (this.result == null) throw new IllegalStateException("Must only be called after \"cook()\"");
+        return this.result;
     }
 
     /**
@@ -229,8 +323,8 @@ public class SimpleCompiler extends Cookable {
         if (!(o instanceof SimpleCompiler)) return false;
         SimpleCompiler that = (SimpleCompiler) o;
         if (this.getClass() != that.getClass()) return false;
-        if (this.classLoader == null || that.classLoader == null) throw new IllegalStateException("Equality can only be checked after cooking");
-        return this.classLoader.equals(that.classLoader);
+        if (this.result == null || that.result == null) throw new IllegalStateException("Equality can only be checked after cooking");
+        return this.result.equals(that.result);
     }
 
     public int hashCode() {
@@ -246,9 +340,11 @@ public class SimpleCompiler extends Cookable {
     ) {
         if (optionalClass == null) return null;
 
+        this.classLoader.addAuxiliaryClass(optionalClass);
+
         IClass iClass;
         try {
-            iClass = this.classLoaderIClassLoader.loadIClass(Descriptor.fromClassName(optionalClass.getName()));
+            iClass = this.iClassLoader.loadIClass(Descriptor.fromClassName(optionalClass.getName()));
         } catch (ClassNotFoundException ex) {
             throw new RuntimeException("Loading IClass \"" + optionalClass.getName() + "\": " + ex);
         }
@@ -291,7 +387,7 @@ public class SimpleCompiler extends Cookable {
         // Compile compilation unit to class files.
         ClassFile[] classFiles = new UnitCompiler(
             compilationUnit,
-            this.classLoaderIClassLoader
+            this.iClassLoader
         ).compileUnit(debuggingInformation);
 
         // Convert the class files to bytes and store them in a Map.
@@ -324,10 +420,10 @@ public class SimpleCompiler extends Cookable {
         }
 
         // Create a ClassLoader that loads the generated classes.
-        this.classLoader = new ByteArrayClassLoader(
-            classes,                                      // classes
-            this.classLoaderIClassLoader.getClassLoader() // parent
+        this.result = new ByteArrayClassLoader(
+            classes,         // classes
+            this.classLoader // parent
         );
-        return this.classLoader;
+        return this.result;
     }
 }

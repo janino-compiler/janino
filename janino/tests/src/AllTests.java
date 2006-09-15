@@ -80,5 +80,6 @@ public class AllTests extends JaninoTestSuite {
         this.addTest(CompilerTests.suite());
         this.addTest(JavaSourceClassLoaderTests.suite());
         this.addTest(ReportedBugs.suite());
+        this.addTest(SandboxTests.suite());
     }
 }

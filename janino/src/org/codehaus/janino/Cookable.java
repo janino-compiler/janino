@@ -42,7 +42,7 @@ import java.io.*;
  * that use a {@link java.lang.String}, a {@link java.io.File}, an {@link java.io.InputStream} or
  * a {@link java.io.Reader} as the source of characters for scanning.
  * <p>
- * The <code>cook*()</code> methods eventually invoke the abstract {@link #internalCook(Scanner)}
+ * The <code>cook*()</code> methods eventually invoke the abstract {@link #cook(Scanner)}
  * method with a correctly configured {@link org.codehaus.janino.Scanner}.
  */
 public abstract class Cookable {
@@ -50,15 +50,11 @@ public abstract class Cookable {
     /**
      * To be implemented by the derived classes.
      */
-    protected abstract void internalCook(Scanner scanner)
+    public abstract void cook(Scanner scanner)
     throws CompileException, Parser.ParseException, Scanner.ScanException, IOException;
 
     // The "cook()" method family.
 
-    public final void cook(Scanner scanner)
-    throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
-        this.internalCook(scanner);
-    }
     public final void cook(Reader r)
     throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
         this.cook(null, r);
@@ -113,7 +109,7 @@ public abstract class Cookable {
     throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
         InputStream is = new FileInputStream(file);
         try {
-            this.internalCook(new Scanner(file.getAbsolutePath(), is, optionalEncoding));
+            this.cook(new Scanner(file.getAbsolutePath(), is, optionalEncoding));
             is.close();
             is = null;
         } finally {

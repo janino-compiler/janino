@@ -116,7 +116,7 @@ public class ClassBodyEvaluator extends SimpleCompiler {
     protected String               className = ClassBodyEvaluator.DEFAULT_CLASS_NAME;
     private Class                  optionalExtendedType = null;
     private Class[]                implementedTypes = ClassBodyEvaluator.ZERO_CLASSES;
-    private Class                  clazz = null; // null=uncooked
+    private Class                  result = null; // null=uncooked
 
     /**
      * Equivalent to<pre>
@@ -278,7 +278,8 @@ public class ClassBodyEvaluator extends SimpleCompiler {
         this.implementedTypes = implementedTypes;
     }
 
-    protected void internalCook(Scanner scanner) throws CompileException, ParseException, ScanException, IOException {
+    public void cook(Scanner scanner)
+    throws CompileException, ParseException, ScanException, IOException {
         Java.CompilationUnit compilationUnit = this.makeCompilationUnit(scanner);
 
         // Add class declaration.
@@ -294,20 +295,25 @@ public class ClassBodyEvaluator extends SimpleCompiler {
         }
 
         // Compile and load it.
-        this.clazz = this.compileToClass(
+        this.result = this.compileToClass(
             compilationUnit,              // compilationUnit
             DebuggingInformation.ALL,     // debuggingInformation
-            this.className                // className
+            this.className
         );
     }
 
     /**
      * Create a {@link Java.CompilationUnit}, set the default imports, and parse the import
      * declarations.
+     * <p>
+     * If the <code>optionalScanner</code> is given, a sequence of IMPORT directives is parsed
+     * from it and added to the compilation unit.
      */
-    protected Java.CompilationUnit makeCompilationUnit(Scanner scanner)
+    protected Java.CompilationUnit makeCompilationUnit(Scanner optionalScanner)
     throws Parser.ParseException, Scanner.ScanException, IOException {
-        Java.CompilationUnit cu = new Java.CompilationUnit(scanner.getFileName());
+        this.precook();
+
+        Java.CompilationUnit cu = new Java.CompilationUnit(optionalScanner == null ? null : optionalScanner.getFileName());
         
         // Set default imports.
         if (this.optionalDefaultImports != null) {
@@ -319,9 +325,11 @@ public class ClassBodyEvaluator extends SimpleCompiler {
         }
 
         // Parse all available IMPORT declarations.
-        Parser parser = new Parser(scanner);
-        while (scanner.peek().isKeyword("import")) {
-            cu.addImportDeclaration(parser.parseImportDeclaration());
+        if (optionalScanner != null) {
+            Parser parser = new Parser(optionalScanner);
+            while (optionalScanner.peek().isKeyword("import")) {
+                cu.addImportDeclaration(parser.parseImportDeclaration());
+            }
         }
 
         return cu;
@@ -397,8 +405,8 @@ public class ClassBodyEvaluator extends SimpleCompiler {
      */
     public Class getClazz() {
         if (this.getClass() != ClassBodyEvaluator.class) throw new IllegalStateException("Must not be called on derived instances");
-        if (this.clazz == null) throw new IllegalStateException("Must only be called after \"cook()\"");
-        return this.clazz;
+        if (this.result == null) throw new IllegalStateException("Must only be called after \"cook()\"");
+        return this.result;
     }
 
     /**
