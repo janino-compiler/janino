@@ -99,6 +99,18 @@ public abstract class Cookable {
     }
 
     /**
+     * Cook tokens from a {@link java.lang.String}.
+     */
+    public final void cook(String s)
+    throws CompileException, Parser.ParseException, Scanner.ScanException {
+        try {
+            this.cook(new StringReader(s));
+        } catch (IOException ex) {
+            throw new RuntimeException("SNO: IOException despite StringReader");
+        }
+    }
+
+    /**
      * Cook tokens from the given {@link File}, encoded in the "platform default encoding".
      */
     public final void cookFile(File file)
@@ -127,17 +139,5 @@ public abstract class Cookable {
     public final void cookFile(String fileName, String optionalEncoding)
     throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
         this.cookFile(new File(fileName), optionalEncoding);
-    }
-
-    /**
-     * Cook tokens from a {@link java.lang.String}.
-     */
-    public final void cook(String s)
-    throws CompileException, Parser.ParseException, Scanner.ScanException {
-        try {
-            this.cook(new StringReader(s));
-        } catch (IOException ex) {
-            throw new RuntimeException("SNO: IOException despite StringReader");
-        }
     }
 }

@@ -257,7 +257,10 @@ public class ClassBodyEvaluator extends SimpleCompiler {
      * One reason to use this function is to have a class name in a non-default package, which
      * can be relevant when types and members with DEFAULT accessibility are accessed.
      */
-    public void setClassName(String className) { this.className = className; }
+    public void setClassName(String className) {
+        if (className == null) throw new NullPointerException();
+        this.className = className;
+    }
 
     /**
      * Set a particular superclass that the generated class will extend. If <code>null</code> is
@@ -341,11 +344,8 @@ public class ClassBodyEvaluator extends SimpleCompiler {
      *   <li>A class declaration with the configured name, superclass and interfaces
      *   <li>A method declaration with the given return type, name, parameter
      *       names and values and thrown exceptions
-     * </ul> 
-     * @param location
-     * @param compilationUnit
-     * @param className
-     * @param implementedTypes
+     * </ul>
+     *
      * @return The created {@link Java.ClassDeclaration} object
      * @throws Parser.ParseException
      */

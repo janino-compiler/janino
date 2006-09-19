@@ -2035,8 +2035,6 @@ public class Java {
 
         /**
          * Access the declaring class.
-         * @param location
-         * @param scope
          */
         public ThisReference(Location location) {
             super(location);
