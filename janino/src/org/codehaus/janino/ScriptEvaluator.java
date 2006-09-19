@@ -36,6 +36,8 @@ package org.codehaus.janino;
 
 import java.io.*;
 import java.lang.reflect.*;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.codehaus.janino.Parser.ParseException;
 import org.codehaus.janino.Scanner.ScanException;
@@ -474,14 +476,14 @@ public class ScriptEvaluator extends ClassBodyEvaluator {
      * all scripts are compiled into STATIC methods.
      */
     public void setStaticMethod(boolean[] staticMethod) {
-        this.optionalStaticMethod = staticMethod;
+        this.optionalStaticMethod = (boolean[]) staticMethod.clone();
     }
 
     /**
      * Define the return types of the scripts. By default all scripts have VOID return type.
      */
     public void setReturnTypes(Class[] returnTypes) {
-        this.optionalReturnTypes = returnTypes;
+        this.optionalReturnTypes = (Class[]) returnTypes.clone();
     }
 
     /**
@@ -492,48 +494,80 @@ public class ScriptEvaluator extends ClassBodyEvaluator {
      * (see {@link #setParameters(String[][], Class[][])}).
      */
     public void setMethodNames(String[] methodNames) {
-        this.optionalMethodNames = methodNames;
+        this.optionalMethodNames = (String[]) methodNames.clone();
     }
 
     /**
      * Define the names and types of the parameters of the generated methods.
      */
     public void setParameters(String[][] parameterNames, Class[][] parameterTypes) {
-        this.optionalParameterNames = parameterNames;
-        this.optionalParameterTypes = parameterTypes;
+        this.optionalParameterNames = (String[][]) parameterNames.clone();
+        this.optionalParameterTypes = (Class[][]) parameterTypes.clone();
     }
 
     /**
      * Define the exceptions that the generated methods may throw.
      */
     public void setThrownExceptions(Class[][] thrownExceptions) {
-        this.optionalThrownExceptions = thrownExceptions;
+        this.optionalThrownExceptions = (Class[][]) thrownExceptions.clone();
     }
 
+    /**
+     * Like {@link #cook(Scanner)}, but cooks a <i>set</i> of scripts into one class. Notice that
+     * if <i>any</i> of the scripts causes trouble, the entire compilation will fail. If you
+     * need to report <i>which</i> of the scripts causes the exception, you may want to use the
+     * <code>optionalFileName</code> argument of {@link Scanner#Scanner(String, Reader)} to
+     * distinguish between the individual token sources.
+     * <p>
+     * On a 2 GHz Intel Pentium Core Duo under Windows XP with an IBM 1.4.2 JDK, compiling
+     * 10000 expressions "a + b" (integer) takes about 4 seconds and 56 MB of main memory.
+     * The generated class file is 639203 bytes large.
+     * <p>
+     * The number and the complexity of the scripts is restricted by the
+     * <a href="http://java.sun.com/docs/books/vmspec/2nd-edition/html/ClassFile.doc.html#88659">Limitations
+     * of the Java Virtual Machine</a>, where the most limiting factor is the 64K entries limit
+     * of the constant pool. Since every method with a distinct name requires one entry there,
+     * you can define at best 32K (very simple) scripts.
+     *
+     * @throws IllegalStateException if any of the preceeding <code>set...()</code> had an array size different from that of <code>scanners</code>
+     */
     public void cook(Scanner[] scanners)
     throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
+        if (scanners == null) throw new NullPointerException();
+
+        // The "dimension" of this ScriptEvaluator, i.e. how many scripts are cooked at the same
+        // time.
+        int count = scanners.length;
+
+        // Check array sizes.
+        if (this.optionalMethodNames      != null && this.optionalMethodNames.length      != count) throw new IllegalStateException("methodName");
+        if (this.optionalParameterNames   != null && this.optionalParameterNames.length   != count) throw new IllegalStateException("parameterNames");
+        if (this.optionalParameterTypes   != null && this.optionalParameterTypes.length   != count) throw new IllegalStateException("parameterTypes");
+        if (this.optionalReturnTypes      != null && this.optionalReturnTypes.length      != count) throw new IllegalStateException("returnTypes");
+        if (this.optionalStaticMethod     != null && this.optionalStaticMethod.length     != count) throw new IllegalStateException("staticMethod");
+        if (this.optionalThrownExceptions != null && this.optionalThrownExceptions.length != count) throw new IllegalStateException("thrownExceptions");
 
         // Create compilation unit.
-        Java.CompilationUnit compilationUnit = this.makeCompilationUnit(scanners.length == 1 ? scanners[0] : null);
+        Java.CompilationUnit compilationUnit = this.makeCompilationUnit(count == 1 ? scanners[0] : null);
 
         // Create class declaration.
         Java.ClassDeclaration cd = this.addPackageMemberClassDeclaration(scanners[0].location(), compilationUnit);
 
-        // Determine method names
+        // Determine method names.
         String[] methodNames;
         if (this.optionalMethodNames == null) {
-            methodNames = new String[scanners.length];
-            for (int i = 0; i < methodNames.length; ++i) methodNames[i] = "eval" + i;
+            methodNames = new String[count];
+            for (int i = 0; i < count; ++i) methodNames[i] = "eval" + i;
         } else
         {
             methodNames = this.optionalMethodNames;
         }
 
         // Determine parameter types.
-        Class[][] parameterTypes = this.optionalParameterTypes == null ? new Class[scanners.length][0] : this.optionalParameterTypes;
+        Class[][] parameterTypes = this.optionalParameterTypes == null ? new Class[count][0] : this.optionalParameterTypes;
 
         // Create methods with one block each.
-        for (int i = 0; i < scanners.length; ++i) {
+        for (int i = 0; i < count; ++i) {
             Scanner s = scanners[i];
 
             boolean  staticMethod     = this.optionalStaticMethod == null ? true : this.optionalStaticMethod[i];
@@ -564,13 +598,83 @@ public class ScriptEvaluator extends ClassBodyEvaluator {
         );
         
         // Find the script method by name.
-        this.result = new Method[methodNames.length];
-        for (int i = 0; i < this.result.length; ++i) {
-            try {
-                this.result[i] = c.getMethod(methodNames[i], parameterTypes[i]);
-            } catch (NoSuchMethodException ex) {
-                throw new RuntimeException("SNO: Loaded class does not declare method \"" + this.optionalMethodNames[i] + "\"");
+        this.result = new Method[count];
+        if (count <= 10) {
+            for (int i = 0; i < count; ++i) {
+                try {
+                    this.result[i] = c.getDeclaredMethod(methodNames[i], parameterTypes[i]);
+                } catch (NoSuchMethodException ex) {
+                    throw new RuntimeException("SNO: Loaded class does not declare method \"" + methodNames[i] + "\"");
+                }
             }
+        } else
+        {
+            class MethodWrapper {
+                private final String  name;
+                private final Class[] parameterTypes;
+                MethodWrapper(String name, Class[] parameterTypes) {
+                    this.name = name;
+                    this.parameterTypes = parameterTypes;
+                }
+                public boolean equals(Object o) {
+                    if (!(o instanceof MethodWrapper)) return false;
+                    MethodWrapper that = (MethodWrapper) o;
+                    if (!this.name.equals(that.name)) return false;
+                    int cnt = this.parameterTypes.length;
+                    if (cnt != that.parameterTypes.length) return false;
+                    for (int i = 0; i < cnt; ++i) {
+                        if (!this.parameterTypes[i].equals(that.parameterTypes[i])) return false;
+                    }
+                    return true;
+                }
+                public int hashCode() {
+                    int hc = this.name.hashCode();
+                    for (int i = 0; i < this.parameterTypes.length; ++i) {
+                        hc ^= this.parameterTypes[i].hashCode();
+                    }
+                    return hc;
+                }
+            }
+            Method[] ma = c.getDeclaredMethods();
+            Map dms = new HashMap(2 * count);
+            for (int i = 0; i < ma.length; ++i) {
+                Method m = ma[i];
+                dms.put(new MethodWrapper(m.getName(), m.getParameterTypes()), m);
+            }
+            for (int i = 0; i < count; ++i) {
+                Method m = (Method) dms.get(new MethodWrapper(methodNames[i], parameterTypes[i]));
+                if (m == null) throw new RuntimeException("SNO: Loaded class does not declare method \"" + methodNames[i] + "\"");
+                this.result[i] = m;
+            }
+        }
+    }
+
+    public final void cook(Reader[] readers)
+    throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
+        this.cook(new String[readers.length], readers);
+    }
+
+    /**
+     * @param optionalFileNames Used when reporting errors and warnings.
+     */
+    public final void cook(String[] optionalFileNames, Reader[] readers)
+    throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
+        Scanner[] scanners = new Scanner[readers.length];
+        for (int i = 0; i < readers.length; ++i) scanners[i] = new Scanner(optionalFileNames[i], readers[i]);
+        this.cook(scanners);
+    }
+
+    /**
+     * Cook tokens from {@link java.lang.String}s.
+     */
+    public final void cook(String[] strings)
+    throws CompileException, Parser.ParseException, Scanner.ScanException {
+        Reader[] readers = new Reader[strings.length];
+        for (int i = 0; i < strings.length; ++i) readers[i] = new StringReader(strings[i]);
+        try {
+            this.cook(readers);
+        } catch (IOException ex) {
+            throw new RuntimeException("SNO: IOException despite StringReader");
         }
     }
 
