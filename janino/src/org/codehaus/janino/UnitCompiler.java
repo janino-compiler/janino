@@ -1084,7 +1084,7 @@ public class UnitCompiler {
 
         // Check for redefinition.
         Java.LocalClassDeclaration otherLCD = this.findLocalClassDeclaration(lcds, lcds.lcd.name);
-        if (otherLCD != null) this.compileError("Redeclaration of local class \"" + lcds.lcd.name + "\"; previously declared in " + otherLCD.getLocation());
+        if (otherLCD != lcds.lcd) this.compileError("Redeclaration of local class \"" + lcds.lcd.name + "\"; previously declared in " + otherLCD.getLocation());
 
         this.compile(lcds.lcd);
         return true;
@@ -1102,11 +1102,11 @@ public class UnitCompiler {
                 Java.Block          b = (Java.Block) es;
                 for (Iterator it = b.statements.iterator();;) {
                     Java.BlockStatement bs2 = (Java.BlockStatement) it.next();
-                    if (bs2 == bs) break;
                     if (bs2 instanceof Java.LocalClassDeclarationStatement) {
                         Java.LocalClassDeclarationStatement lcds = ((Java.LocalClassDeclarationStatement) bs2);
                         if (lcds.lcd.name.equals(name)) return lcds.lcd;
                     }
+                    if (bs2 == bs) break;
                 }
             }
             s = es;
