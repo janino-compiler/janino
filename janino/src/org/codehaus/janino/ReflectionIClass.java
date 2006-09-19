@@ -74,6 +74,17 @@ class ReflectionIClass extends IClass {
             // Wrap java.reflection.Method in an IMethod.
             iMethods.add(new ReflectionIMethod(m));
         }
+        if (methods.length == 0 && this.clazz.isArray()) {
+            iMethods.add(new IMethod() {
+                public String   getName() { return "clone"; }
+                public IClass   getReturnType() throws CompileException { return ReflectionIClass.this.iClassLoader.OBJECT; }
+                public boolean  isAbstract() { return false; }
+                public boolean  isStatic() { return false; }
+                public Access   getAccess() { return Access.PUBLIC; }
+                public IClass[] getParameterTypes() throws CompileException { return new IClass[0]; }
+                public IClass[] getThrownExceptions() throws CompileException { return new IClass[0]; }
+            });
+        }
         return (IMethod[]) iMethods.toArray(new IMethod[iMethods.size()]);
     }
 

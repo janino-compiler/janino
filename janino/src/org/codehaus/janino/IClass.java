@@ -75,7 +75,7 @@ public abstract class IClass {
         public boolean           isPrimitive()               { return true; }
         public boolean           isPrimitiveNumeric()        { return Descriptor.isPrimitiveNumeric(this.fieldDescriptor); }
         public Access            getAccess()                 { return Access.PUBLIC; }
-}
+    }
 
     /**
      * Returns all the constructors declared by the class represented by the
@@ -483,7 +483,23 @@ public abstract class IClass {
         final IClass componentType = this;
         return new IClass() {
             public IClass.IConstructor[] getDeclaredIConstructors2() { return new IClass.IConstructor[0]; }
-            public IClass.IMethod[]      getDeclaredIMethods2() { return new IClass.IMethod[0]; }
+
+            // Special trickery #17: Arrays override "Object.clone()", but without "throws
+            // CloneNotSupportedException"!
+            public IClass.IMethod[]      getDeclaredIMethods2() {
+                final IClass ot = objectType; // <= We need this intermediate locvar -- otherwise JANINO cannot compile it self (JANINO bug)
+                return new IClass.IMethod[] {
+                    new IMethod() {
+                        public String   getName() { return "clone"; }
+                        public IClass   getReturnType() { return ot; }
+                        public boolean  isAbstract() { return false; }
+                        public boolean  isStatic() { return false; }
+                        public Access   getAccess() { return Access.PUBLIC; }
+                        public IClass[] getParameterTypes() { return new IClass[0]; }
+                        public IClass[] getThrownExceptions() { return new IClass[0]; }
+                    }
+                };
+            }
             public IClass.IField[]       getDeclaredIFields2() { return new IClass.IField[0]; }
             public IClass[]              getDeclaredIClasses2() { return new IClass[0]; }
             public IClass                getDeclaringIClass2() { return null; }
