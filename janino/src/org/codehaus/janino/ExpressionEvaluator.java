@@ -61,7 +61,7 @@ import org.codehaus.janino.util.PrimitiveWrapper;
  * (Notice that the import directive is concluded with a semicolon, while the expression is not.)
  * <p>
  * The expression evaluator is implemented by creating and compiling a temporary compilation unit
- * defining one class with one static method with one return statement.
+ * defining one class with one static method with one RETURN statement.
  * <p>
  * To set up an {@link ExpressionEvaluator} object, proceed as follows:
  * <ol>
@@ -349,11 +349,11 @@ public class ExpressionEvaluator extends ScriptEvaluator {
     }
     
     public final void setReturnType(Class returnType) {
-        throw new RuntimeException("Don't call \"setReturnType(Class)\" on an ExpressionEvaluator, user \"setExpressionType(Class)\" instead");
+        throw new RuntimeException("Don't call \"setReturnType(Class)\" on an ExpressionEvaluator, use \"setExpressionType(Class)\" instead");
     }
 
     public final void setReturnTypes(Class[] returnTypes) {
-        throw new RuntimeException("Don't call \"setReturnTypes(Class[])\" on an ExpressionEvaluator, user \"setExpressionTypes(Class[])\" instead");
+        throw new RuntimeException("Don't call \"setReturnTypes(Class[])\" on an ExpressionEvaluator, use \"setExpressionTypes(Class[])\" instead");
     }
     
     protected Class getDefaultReturnType() {
@@ -372,16 +372,16 @@ public class ExpressionEvaluator extends ScriptEvaluator {
             // Compute expression value
             Java.Rvalue value = parser.parseExpression().toRvalueOrPE();
 
-            // Special case: A "null" expression type means return type "Object" and automatic
+            // Special case: Expression type "ANY_TYPE" means return type "Object" and automatic
             // wrapping of primitive types.
             if (et == ANY_TYPE) {
                 value = new Java.MethodInvocation(
                     scanner.location(),         // location
                     new Java.ReferenceType(     // optionalTarget
-                        scanner.location(),                                                  // location
+                        scanner.location(),                                                      // location
                         new String[] { "org", "codehaus", "janino", "util", "PrimitiveWrapper" } // identifiers
                     ),
-                    "wrap",
+                    "wrap",                     // methodName
                     new Java.Rvalue[] { value } // arguments
                 );
 
