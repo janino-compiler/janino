@@ -178,15 +178,19 @@ public class SimpleCompiler extends Cookable {
 
     /**
      * The "parent class loader" is used to load referenced classes. Useful values are
-     * <dl>
-     *   <dt><code>System.getSystemClassLoader()</code>
-     *   <dd>The running JVM's class path
-     *   <dt><code>Thread.currentThread().getContextClassLoader()</code>
-     *   <dd>The class loader effective for the invoking thread
-     *   <dt><code>null</code>
-     *   <dd>The running JVM's boot class path, i.e. the JDK classes but not the classes on the
-     *   class path
-     * </dl>
+     * <table border="1"><tr>
+     *   <td><code>System.getSystemClassLoader()</code></td>
+     *   <td>The running JVM's class path</td>
+     * </tr><tr>
+     *   <td><code>Thread.currentThread().getContextClassLoader()</code></td>
+     *   <td>The class loader effective for the invoking thread</td>
+     * </tr><tr>
+     *   <td><code>null</code></td>
+     *   <td>
+     *     The running JVM's boot class path, i.e. the JDK classes but not the classes on the
+     *     class path
+     *   </td>
+     * </tr></table>
      * The parent class loader defaults to the current thread's "context class loader".
      */
     public void setParentClassLoader(ClassLoader optionalParentClassLoader) {
@@ -255,6 +259,7 @@ public class SimpleCompiler extends Cookable {
         }
 
         private void addAuxiliaryClass(Class c) {
+            if (this.auxiliaryClasses.containsKey(c.getName())) return;
 
             // Check whether the auxiliary class is conflicting with this ClassLoader.
             try {
