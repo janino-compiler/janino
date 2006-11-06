@@ -487,11 +487,10 @@ public abstract class IClass {
             // Special trickery #17: Arrays override "Object.clone()", but without "throws
             // CloneNotSupportedException"!
             public IClass.IMethod[]      getDeclaredIMethods2() {
-                final IClass ot = objectType; // <= We need this intermediate locvar -- otherwise JANINO cannot compile it self (JANINO bug)
                 return new IClass.IMethod[] {
                     new IMethod() {
                         public String   getName() { return "clone"; }
-                        public IClass   getReturnType() { return ot; }
+                        public IClass   getReturnType() { return objectType /*ot*/; }
                         public boolean  isAbstract() { return false; }
                         public boolean  isStatic() { return false; }
                         public Access   getAccess() { return Access.PUBLIC; }
@@ -651,7 +650,17 @@ public abstract class IClass {
          * method does include the optionally leading synthetic parameters.
          */
         public String getDescriptor() throws CompileException {
-            return new MethodDescriptor(IClass.getDescriptors(this.getParameterTypes()), Descriptor.VOID).toString();
+            IClass[] parameterTypes = this.getParameterTypes();
+
+            IClass outerIClass = IClass.this.getOuterIClass();
+            if (outerIClass != null) {
+                IClass[] tmp = new IClass[parameterTypes.length + 1];
+                tmp[0] = outerIClass;
+                System.arraycopy(parameterTypes, 0, tmp, 1, parameterTypes.length);
+                parameterTypes = tmp;
+            }
+
+            return new MethodDescriptor(IClass.getDescriptors(parameterTypes), Descriptor.VOID).toString();
         }
         public String toString() {
             StringBuffer sb = new StringBuffer(this.getDeclaringIClass().toString());
