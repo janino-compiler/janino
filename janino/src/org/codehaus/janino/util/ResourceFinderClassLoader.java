@@ -45,7 +45,7 @@ import org.codehaus.janino.util.resource.*;
  * to find ".class" files.
  */
 public class ResourceFinderClassLoader extends ClassLoader {
-    private final static boolean DEBUG = true;
+    private final static boolean DEBUG = false;
 
     private final ResourceFinder resourceFinder;
 

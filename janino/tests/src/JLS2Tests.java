@@ -183,7 +183,7 @@ public class JLS2Tests extends JaninoTestSuite {
         section("8 Classes");
         
         section("8.1 Class Declaration");
-        
+
         section("9 Interfaces");
         
         section("9.1 Interface Declarations");
@@ -244,6 +244,16 @@ public class JLS2Tests extends JaninoTestSuite {
         exp(COMP, "4g", "new other_package.Foo(3).new PublicMemberInterface()");
         exp(COMP, "4h", "new java.util.ArrayList().new PublicMemberClass()");
         
+        section("15.9.5 Anonymous Class Declarations");
+        sim(EXEC, "Static anonymous class", (
+            "public class Foo {\n" +
+            "    public static void test() { new Foo().meth(); }\n" +
+            "    private Object meth() {\n" +
+            "        return new Object() {};\n" +
+            "    }\n" +
+            "}\n"
+        ), "Foo");
+
         section("16 Definite Assignment");
         
         section("16.1 Definite Assignment and Expressions");

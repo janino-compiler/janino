@@ -91,6 +91,8 @@ public class JavaSourceClassLoaderTests extends TestCase {
         b.endReporting("Generated " + classFileMap1.size() + " class files.");
         assertTrue("More than 200 class files", classFileMap1.size() > 200);
 
+//        assertNotNull("Remove one class file", classFileMap1.remove("org/codehaus/janino/Compiler.class"));
+
         b.beginReporting("Loading class \"" + className + "\" again, but with the class files created during the first compilation being available, i.e. no source files should be recompiled");
         MapResourceCreator classFileResources2 = new MapResourceCreator();
         MapResourceFinder classFileFinder = new MapResourceFinder(classFileMap1);
@@ -104,6 +106,6 @@ public class JavaSourceClassLoaderTests extends TestCase {
             DebuggingInformation.NONE                      // debuggingInformation
         ).loadClass(className);
         b.endReporting("Generated " + classFileResources2.getMap().size() + " class files.");
-        assertEquals("Zero files recompiled", 0, classFileResources2.getMap().size());
+        assertEquals("Files recompiled", 0, classFileResources2.getMap().size());
     }
 }

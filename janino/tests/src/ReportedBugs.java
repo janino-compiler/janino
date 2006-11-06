@@ -253,6 +253,49 @@ public class ReportedBugs extends JaninoTestSuite {
         ));
 
         // Bug 67: See "JavaSourceClassLoaderTests".
+
+        section("Bug 69");
+        sim(EXEC, "0", (
+            "public class Test {\n" +
+            "    public static void test() {\n" +
+            "        Object foo = baz();\n" +
+            "        System.out.println(\"hello\");\n" +
+            "    }\n" +
+            "    public static Object baz() {\n" +
+            "        final Test test = new Test();\n" +
+            "        return new Foo() {\n" +
+            "            private final void bar() {\n" +
+            "                try {\n" +
+            "                    whee();\n" +
+            "                } catch (Throwable ex) {\n" +
+            "                    throw test.choke();\n" +
+            "                }\n" +
+            "            }\n" +
+            "            private void whee() {\n" +
+            "            }\n" +
+            "        };\n" +
+            "    }\n" +
+            "    public RuntimeException choke() {\n" +
+            "        return new RuntimeException(\"ack\");\n" +
+            "    }\n" +
+            "    private static abstract class Foo {\n" +
+            "    }\n" +
+            "}\n"
+        ), "Test");
+        
+        section("Bug 70");
+        clb(COOK, "0", (
+            "public String result = \"allow\", email = null, anno = null, cnd = null, transactionID = null;\n" +
+            "public String treeCode(String root) {\n" +
+            "    try {\n"+
+            "        return null;\n" +
+            "    } catch (Exception treeEx) {\n" +
+            "        treeEx.printStackTrace();\n" +
+            "        result = \"allow\";\n" +
+            "    }\n" +
+            "    return result;\n" +
+            "}\n"
+        ));
     }
 
     /**
