@@ -77,17 +77,17 @@ public class SimpleCompiler extends Cookable {
     private ClassLoader result = null;
 
     public static void main(String[] args) throws Exception {
-        if (args.length < 2) {
-            System.err.println("Source file and/or class name missing; try \"-help\".");
-            System.exit(1);
-        }
-
-        if (args[0].equals("-help")) {
+        if (args.length >= 1 && args[0].equals("-help")) {
             System.out.println("Usage:");
             System.out.println("    org.codehaus.janino.SimpleCompiler <source-file> <class-name> { <argument> }");
             System.out.println("Reads a compilation unit from the given <source-file> and invokes method");
             System.out.println("\"public static void main(String[])\" of class <class-name>, passing the.");
             System.out.println("given <argument>s.");
+            System.exit(1);
+        }
+        
+        if (args.length < 2) {
+            System.err.println("Source file and/or class name missing; try \"-help\".");
             System.exit(1);
         }
 
@@ -404,12 +404,6 @@ public class SimpleCompiler extends Cookable {
 
         // Disassemble all generated classes (for debugging).
         if (SimpleCompiler.DEBUG) {
-//            try {
-//                Disassembler.disasm(new ByteArrayInputStream(new byte[] { 1, 2, 3, 4 }));
-//            } catch (IOException e) {
-//                // TODO Auto-generated catch block
-//                e.printStackTrace();
-//            }
             for (Iterator it = classes.entrySet().iterator(); it.hasNext();) {
                 Map.Entry me = (Map.Entry) it.next();
                 String className = (String) me.getKey();
