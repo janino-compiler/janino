@@ -2834,7 +2834,7 @@ public class UnitCompiler {
                 if (optionalOuterIClass == null) {
 
                     // No enclosing instance needed for a top-level class object.
-                    optionalEnclosingInstance = new Java.ThisReference(nci.getLocation());
+                    optionalEnclosingInstance = null;
                 } else {
 
                     // Find an appropriate enclosing instance for the new inner class object among
@@ -4535,11 +4535,12 @@ public class UnitCompiler {
         }
 
         // Pass enclosing instance as a synthetic parameter.
-        IClass outerIClass = targetClass.getOuterIClass();
-        if (outerIClass != null) {
-            if (optionalEnclosingInstance == null) this.compileError("Enclosing instance for initialization of inner class \"" + targetClass + "\" missing", located.getLocation());
-            IClass eiic = this.compileGetValue(optionalEnclosingInstance);
-            if (!outerIClass.isAssignableFrom(eiic)) this.compileError("Type of enclosing instance (\"" + eiic + "\") is not assignable to \"" + outerIClass + "\"", located.getLocation());
+        if (optionalEnclosingInstance != null) {
+            IClass outerIClass = targetClass.getOuterIClass();
+            if (outerIClass != null) {
+                IClass eiic = this.compileGetValue(optionalEnclosingInstance);
+                if (!outerIClass.isAssignableFrom(eiic)) this.compileError("Type of enclosing instance (\"" + eiic + "\") is not assignable to \"" + outerIClass + "\"", located.getLocation());
+            }
         }
 
         // Pass local variables to constructor as synthetic parameters.
@@ -4593,6 +4594,8 @@ public class UnitCompiler {
                         Java.LocalVariable lv;
                         DETERMINE_LV: {
                             Java.Scope s;
+
+                            // Does one of the enclosing blocks declare a local variable with that name?
                             for (s = scope; s instanceof Java.BlockStatement; s = s.getEnclosingScope()) {
                                 Java.BlockStatement bs = (Java.BlockStatement) s;
                                 Java.Scope es = bs.getEnclosingScope();
@@ -4614,6 +4617,8 @@ public class UnitCompiler {
                                     }
                                 }
                             }
+
+                            // Does the declaring function declare a parameter with that name?
                             while (!(s instanceof Java.FunctionDeclarator)) s = s.getEnclosingScope();
                             Java.FunctionDeclarator fd = (Java.FunctionDeclarator) s;
                             for (int j = 0; j < fd.formalParameters.length; ++j) {
@@ -4850,7 +4855,10 @@ public class UnitCompiler {
         Java.CompilationUnit         scopeCompilationUnit;
         {
             Java.Scope s = scope;
-            while (s instanceof Java.BlockStatement && !(s instanceof Java.TypeBodyDeclaration)) s = s.getEnclosingScope();
+            while (
+                (s instanceof Java.BlockStatement || s instanceof Java.CatchClause)
+                && !(s instanceof Java.TypeBodyDeclaration)
+            ) s = s.getEnclosingScope();
             if (s instanceof Java.TypeBodyDeclaration) {
                 scopeTBD = (Java.TypeBodyDeclaration) s;
                 s = s.getEnclosingScope();
@@ -4879,7 +4887,7 @@ public class UnitCompiler {
                 }
                 s = s.getEnclosingScope();
             }
-            while (s instanceof Java.BlockStatement) s = s.getEnclosingScope();
+            while (s instanceof Java.BlockStatement || s instanceof Java.CatchClause) s = s.getEnclosingScope();
             if (s instanceof Java.FunctionDeclarator) {
                 s = s.getEnclosingScope();
                 if (s instanceof Java.InnerClassDeclaration) {
@@ -4913,6 +4921,7 @@ public class UnitCompiler {
                         if (!(s instanceof Java.FunctionDeclarator)) break;
                         s = s.getEnclosingScope();
                         if (!(s instanceof Java.InnerClassDeclaration)) break;
+                        icd = (Java.InnerClassDeclaration) s;
                         s = s.getEnclosingScope();
                     }
                 }
@@ -5783,8 +5792,9 @@ public class UnitCompiler {
             }
 
             Java.ConstructorDeclarator constructorDeclarator = (Java.ConstructorDeclarator) declaringTypeBodyDeclaration;
-            Java.LocalVariable syntheticParameter = (Java.LocalVariable) constructorDeclarator.syntheticParameters.get("this$" + (path.size() - 2));
-            if (syntheticParameter == null) throw new RuntimeException("SNO: Synthetic \"this$*\" parameter not found");
+            String spn = "this$" + (path.size() - 2);
+            Java.LocalVariable syntheticParameter = (Java.LocalVariable) constructorDeclarator.syntheticParameters.get(spn);
+            if (syntheticParameter == null) throw new RuntimeException("SNO: Synthetic parameter \""+ spn + "\" not found");
             this.load(located, syntheticParameter);
             i = 1;
         } else {
