@@ -114,6 +114,13 @@ public class CachingJavaSourceClassLoader extends JavaSourceClassLoader {
         ResourceCreator classFileCacheResourceCreator,
         EnumeratorSet   debuggingInformation
     ) {
+        // TODO: This should read:
+//        super(
+//            new ResourceFinderClassLoader(classFileCacheResourceFinder, parentClassLoader), // parentClassLoader
+//            sourceFinder,                                                                   // sourceFinder
+//            optionalCharacterEncoding,                                                      // optionalCharacterEncoding
+//            debuggingInformation                                                            // debuggingInformation
+//        );
         super(parentClassLoader, sourceFinder, optionalCharacterEncoding, debuggingInformation);
         this.classFileCacheResourceFinder  = classFileCacheResourceFinder;
         this.classFileCacheResourceCreator = classFileCacheResourceCreator;
