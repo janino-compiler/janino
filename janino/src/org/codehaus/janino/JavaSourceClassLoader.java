@@ -40,6 +40,7 @@ import java.util.*;
 
 import java.security.ProtectionDomain;
 
+import org.codehaus.janino.tools.Disassembler;
 import org.codehaus.janino.util.*;
 import org.codehaus.janino.util.enumerator.*;
 import org.codehaus.janino.util.resource.*;
@@ -51,6 +52,7 @@ import org.codehaus.janino.util.resource.*;
  * compiles and loads it into the virtual machine. 
  */
 public class JavaSourceClassLoader extends ClassLoader {
+    private final static boolean DEBUG = false;
 
     public interface ProtectionDomainFactory {
         ProtectionDomain getProtectionDomain(String name);
@@ -279,23 +281,21 @@ public class JavaSourceClassLoader extends ClassLoader {
     protected Class findClass(String name) throws ClassNotFoundException {
 
         // Check if the bytecode for that class was generated already.
-        {
-            byte[] bytecode = (byte[]) this.precompiledClasses.remove(name);
-            if (bytecode != null) {
-                return this.defineBytecode(name, bytecode);
-            }
-        }
-
-        // Read, scan, parse and compile the right compilation unit.
-        {
-            Map bytecodes = this.generateBytecodes(name);
-            if (bytecodes == null) throw new ClassNotFoundException(name);
-            this.precompiledClasses.putAll(bytecodes);
-        }
-
-        // Now the bytecode for our class should be available.
         byte[] bytecode = (byte[]) this.precompiledClasses.remove(name);
-        if (bytecode == null) throw new RuntimeException("SNO: Scanning, parsing and compiling class \"" + name + "\" did not create a class file!?");
+        if (bytecode == null) {
+
+            // Read, scan, parse and compile the right compilation unit.
+            {
+                Map bytecodes = this.generateBytecodes(name);
+                if (bytecodes == null) throw new ClassNotFoundException(name);
+                this.precompiledClasses.putAll(bytecodes);
+            }
+
+            // Now the bytecode for our class should be available.
+            bytecode = (byte[]) this.precompiledClasses.remove(name);
+            if (bytecode == null) throw new RuntimeException("SNO: Scanning, parsing and compiling class \"" + name + "\" did not create a class file!?");
+        }
+
         return this.defineBytecode(name, bytecode);
     }
 
@@ -371,6 +371,18 @@ public class JavaSourceClassLoader extends ClassLoader {
      * @see #setProtectionDomainFactory
      */
     protected Class defineBytecode(String className, byte[] ba) throws ClassFormatError {
+
+        // Disassemble the the class bytecode(for debugging).
+        if (JavaSourceClassLoader.DEBUG) {
+            System.out.println("*** Disassembly of class \"" + className + "\":");
+            try {
+                new Disassembler().disasm(new ByteArrayInputStream(ba));
+                System.out.flush();
+            } catch (IOException ex) {
+                throw new RuntimeException("SNO: IOException despite ByteArrayInputStream");
+            }
+        }
+
         if (this.protectionDomainFactory == null) {
             return this.defineClass(className, ba, 0, ba.length);
         } else
