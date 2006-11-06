@@ -34,13 +34,17 @@
 
 package org.codehaus.janino;
 
+import java.io.*;
 import java.util.*;
+
+import org.codehaus.janino.tools.Disassembler;
 
 /**
  * This {@link ClassLoader} allows for the loading of a set of Java<sup>TM</sup> classes
  * provided in class file format.
  */
 public class ByteArrayClassLoader extends ClassLoader {
+    private static final boolean DEBUG = false;
 
     /**
      * The given {@link Map} of classes must not be modified afterwards.
@@ -69,6 +73,16 @@ public class ByteArrayClassLoader extends ClassLoader {
     protected Class findClass(String name) throws ClassNotFoundException {
         byte[] data = (byte[]) this.classes.get(name);
         if (data == null) throw new ClassNotFoundException(name); 
+
+        if (DEBUG) {
+            System.out.println("*** Disassembly of class \"" + name + "\":");
+            try {
+                new Disassembler().disasm(new ByteArrayInputStream(data));
+                System.out.flush();
+            } catch (IOException ex) {
+                throw new RuntimeException("SNO: IOException despite ByteArrayInputStream");
+            }
+        }
 
         return super.defineClass(
             name,                // name
