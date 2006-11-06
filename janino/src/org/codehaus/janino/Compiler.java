@@ -37,6 +37,7 @@ package org.codehaus.janino;
 import java.util.*;
 import java.io.*;
 
+import org.codehaus.janino.tools.Disassembler;
 import org.codehaus.janino.util.*;
 import org.codehaus.janino.util.enumerator.*;
 import org.codehaus.janino.util.resource.*;
@@ -623,7 +624,22 @@ public class Compiler {
         }
         OutputStream os = rc.createResource(classFileResourceName);
         try {
-            classFile.store(os);
+            if (DEBUG) {
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                classFile.store(baos);
+                byte[] ba = baos.toByteArray();
+                System.out.println("*** Disassembly of class \"" + classFile.getThisClassName() + "\":");
+                try {
+                    new Disassembler().disasm(new ByteArrayInputStream(ba));
+                    System.out.flush();
+                } catch (IOException ex) {
+                    throw new RuntimeException("SNO: IOException despite ByteArrayInputStream");
+                }
+                os.write(ba);
+            } else
+            {
+                classFile.store(os);
+            }
         } catch (IOException ex) {
             try { os.close(); } catch (IOException e) {}
             os = null;
