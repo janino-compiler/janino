@@ -1725,14 +1725,17 @@ public class UnitCompiler {
     }
 
     private boolean compile2(Java.AlternateConstructorInvocation aci) throws CompileException {
-        this.writeOpcode(aci, Opcode.ALOAD_0);
         Java.ConstructorDeclarator declaringConstructor = (Java.ConstructorDeclarator) aci.getEnclosingScope();
+        IClass                     declaringIClass = this.resolve(declaringConstructor.getDeclaringClass());
+
+        this.writeOpcode(aci, Opcode.ALOAD_0);
+        if (declaringIClass.getOuterIClass() != null) this.writeOpcode(aci, Opcode.ALOAD_1);
         this.invokeConstructor(
-            (Java.Located) aci,                                     // located
-            (Java.Scope) declaringConstructor,                      // scope
-            (Java.Rvalue) null,                                     // optionalEnclosingInstance
-            this.resolve(declaringConstructor.getDeclaringClass()), // targetClass
-            aci.arguments                                           // arguments
+            (Java.Located) aci,                // located
+            (Java.Scope) declaringConstructor, // scope
+            (Java.Rvalue) null,                // optionalEnclosingInstance
+            declaringIClass,                   // targetClass
+            aci.arguments                      // arguments
         );
         return true;
     }
@@ -2815,7 +2818,7 @@ public class UnitCompiler {
             Java.Scope s = nci.getEnclosingBlockStatement();
             for (; !(s instanceof Java.TypeBodyDeclaration); s = s.getEnclosingScope());
             Java.TypeBodyDeclaration enclosingTypeBodyDeclaration = (Java.TypeBodyDeclaration) s;
-            Java.TypeDeclaration enclosingTypeDeclaration = (Java.TypeDeclaration) s.getEnclosingScope();
+            Java.TypeDeclaration     enclosingTypeDeclaration     = (Java.TypeDeclaration) s.getEnclosingScope();
 
             if (
                 !(enclosingTypeDeclaration instanceof Java.ClassDeclaration)
@@ -2826,6 +2829,7 @@ public class UnitCompiler {
                 //  + interface method declaration or
                 //  + static type body declaration (here: method or initializer or field declarator)
                 // context (JLS 15.9.2.BL1.B3.B1.B1).
+                if (nci.iClass.getOuterIClass() != null) this.compileError("Instantiation of \"" + nci.type + "\" requires an enclosing instance", nci.getLocation());
                 optionalEnclosingInstance = null;
             } else {
 
@@ -2933,7 +2937,7 @@ public class UnitCompiler {
             Mod.PACKAGE,                         // modifiers
             fps,                                 // formalParameters
             tets,                                // thrownExceptions
-            new Java.SuperConstructorInvocation( // optionalExplicitonstructorInvocation
+            new Java.SuperConstructorInvocation( // optionalExplicitConstructorInvocation
                 loc,                         // location
                 optionalQualificationAccess, // optionalQualification
                 parameterAccesses            // arguments
@@ -3703,31 +3707,33 @@ public class UnitCompiler {
 
             // 6.5.5.2 Qualified type name (two or more identifiers).
             Java.Atom q = this.reclassifyName(rt.getLocation(), rt.getEnclosingScope(), rt.identifiers, rt.identifiers.length - 1);
-            String className;
 
+            // 6.5.5.2.1 PACKAGE.CLASS
             if (q instanceof Java.Package) {
+                String className = Java.join(rt.identifiers, ".");
+                IClass result;
+                try {
+                    result = this.iClassLoader.loadIClass(Descriptor.fromClassName(className));
+                } catch (ClassNotFoundException ex) {
+                    if (ex.getException() instanceof CompileException) throw (CompileException) ex.getException();
+                    throw new CompileException(className, rt.getLocation(), ex);
+                }
+                if (result != null) return result;
 
-                // 6.5.5.2.1 PACKAGE.CLASS
-                className = Java.join(rt.identifiers, ".");
-            } else {
-
-                // 6.5.5.2.2 CLASS.CLASS (member type)
-                className = (
-                    Descriptor.toClassName(this.getType(this.toTypeOrCE(q)).getDescriptor())
-                    + '$'
-                    + rt.identifiers[rt.identifiers.length - 1]
-                );
+                this.compileError("Class \"" + className + "\" not found", rt.getLocation());
+                return this.iClassLoader.OBJECT;
             }
-            IClass result;
-            try {
-                result = this.iClassLoader.loadIClass(Descriptor.fromClassName(className));
-            } catch (ClassNotFoundException ex) {
-                if (ex.getException() instanceof CompileException) throw (CompileException) ex.getException();
-                throw new CompileException(className, rt.getLocation(), ex);
-            }
-            if (result != null) return result;
 
-            this.compileError("Class \"" + className + "\" not found", rt.getLocation());
+            // 6.5.5.2.2 CLASS.CLASS (member type)
+            String memberTypeName = rt.identifiers[rt.identifiers.length - 1];
+            IClass[] types = this.getType(this.toTypeOrCE(q)).findMemberType(memberTypeName);
+            if (types.length == 1) return types[0];
+            if (types.length == 0) {
+                this.compileError("\"" + q + "\" declares no member type \"" + memberTypeName + "\"", rt.getLocation());
+            } else
+            {
+                this.compileError("\"" + q + "\" and its supertypes declare more than one member type \"" + memberTypeName + "\"", rt.getLocation());
+            }
             return this.iClassLoader.OBJECT;
         }
     }
