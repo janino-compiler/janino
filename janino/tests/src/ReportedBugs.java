@@ -55,7 +55,7 @@ public class ReportedBugs extends JaninoTestSuite {
         sim(EXEC, "1", (
             "package demo;\n" +
             "public class Service {\n" +
-            "    public void test() {\n" +
+            "    public static void test() {\n" +
             "        Broken[] dummy = new Broken[5];\n" +
             "    }\n" +
             "    class Broken {\n" +
@@ -65,7 +65,7 @@ public class ReportedBugs extends JaninoTestSuite {
         sim(EXEC, "2", (
             "package demo;\n" +
             "public class Service {\n" +
-            "    public Broken[] test() {\n" +
+            "    public static Broken[] test() {\n" +
             "        return null;\n" +
             "    }\n" +
             "}\n" +
@@ -211,7 +211,7 @@ public class ReportedBugs extends JaninoTestSuite {
             "class Junk {" + "\n" +
             "    double[][] x = { { 123.4 } };" + "\n" +
             "}"
-        ), "Junk");
+        ), null);
 
         section(null);
         scr(COOK, "Bug 56", (
@@ -296,6 +296,48 @@ public class ReportedBugs extends JaninoTestSuite {
             "    return result;\n" +
             "}\n"
         ));
+
+        section("Bug 71");
+        sim(TRUE, "Alternate Constructor Invocation", (
+            "public class ACI {\n" +
+            "    public static boolean test() {\n" +
+            "        Sub s = new ACI().new Sub(new int[] { 1, 2 });\n" +
+            "        return s.x == 1 && s.y == 2;\n" +
+            "    }\n" +
+            "    class Sub {\n" +
+            "        int x, y;\n" +
+            "        public Sub(int[] a){\n" +
+            "            this(a[0], a[1]);\n" +
+            "        }\n" +
+            "        public Sub(int x, int y){\n" +
+            "            this.x = x;\n" +
+            "            this.y = y;\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n"
+        ), "ACI");
+        sim(TRUE, "Superconstructor Invocation", (
+            "public class SCI {\n" +
+            "    public static boolean test() {\n" +
+            "        Sub s = new SCI().new Sub(1, 2);\n" +
+            "        return s.x == 1 && s.y == 2;\n" +
+            "    }\n" +
+            "    class Sub extends Foo.Subb {\n" +
+            "        public Sub(int x, int y){\n" +
+            "            new Foo().super(x, y);\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n" +
+            "class Foo {\n" +
+            "    class Subb {\n" +
+            "        int x, y;\n" +
+            "        public Subb(int x, int y){\n" +
+            "            this.x = x;\n" +
+            "            this.y = y;\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n"
+        ), "SCI");
     }
 
     /**

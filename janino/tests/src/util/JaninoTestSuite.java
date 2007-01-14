@@ -217,9 +217,8 @@ public class JaninoTestSuite extends StructuredTestSuite {
     }
 
     /**
-     * A test case that compiles a compilation unit, optionally creates an instance of the compiled
-     * class, calls its "test()" method and optionally verifies that it returns
-     * <code>true</code>.
+     * A test case that compiles a compilation unit, optionally calls its static "test()" method,
+     * and optionally verifies that it returns <code>true</code>.
      */
     static protected class SimpleCompilerTest extends CompileAndExecuteTest {
         private final String         compilationUnit;
@@ -238,8 +237,12 @@ public class JaninoTestSuite extends StructuredTestSuite {
         }
 
         protected Object execute() throws Exception {
-            Class c = this.simpleCompiler.getClassLoader().loadClass(this.className);
-            return c.getMethod("test", new Class[0]).invoke(c.newInstance(), new Object[0]);
+            return (
+                this.simpleCompiler.getClassLoader()
+                .loadClass(this.className)
+                .getMethod("test", new Class[0])
+                .invoke(null, new Object[0])
+            );
         }
     }
 
