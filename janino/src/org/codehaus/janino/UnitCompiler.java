@@ -327,54 +327,35 @@ public class UnitCompiler {
     }
 
     public void compile2(Java.AnonymousClassDeclaration acd) throws CompileException {
-        Java.Scope s = acd.getEnclosingScope();
-        for (; !(s instanceof Java.TypeBodyDeclaration); s = s.getEnclosingScope());
-        final Java.TypeBodyDeclaration tbd = (Java.TypeBodyDeclaration) s;
-
-        // Define a synthetic "this$..." field for a non-static function context. (It is
-        // very difficult to tell whether the anonymous constructor will require its
-        // enclosing instance.)
-        if (!tbd.isStatic()) {
-            final int nesting = UnitCompiler.getOuterClasses(acd).size();
-            acd.defineSyntheticField(new SimpleIField(
-                this.resolve(acd),
-                "this$" + (nesting - 2),
-                UnitCompiler.this.resolve(tbd.getDeclaringType())
-            ));
-        }
-        this.compile2((Java.ClassDeclaration) acd);
+        this.compile2((Java.InnerClassDeclaration) acd);
     }
-    public void compile2(Java.LocalClassDeclaration lcd) throws CompileException {
 
-        // Define a synthetic "this$..." field for the local class if the enclosing method is non-static.
+    public void compile2(Java.LocalClassDeclaration lcd) throws CompileException {
+        this.compile2((Java.InnerClassDeclaration) lcd);
+    }
+
+    public void compile2(Java.InnerClassDeclaration icd) throws CompileException {
+
+        // Define a synthetic "this$..." field if there is an enclosing instance.
         {
-            List ocs = UnitCompiler.getOuterClasses(lcd);
+            List ocs = UnitCompiler.getOuterClasses(icd);
             final int nesting = ocs.size();
             if (nesting >= 2) {
-                final IClass enclosingInstanceType = this.resolve((Java.AbstractTypeDeclaration) ocs.get(1));
-                lcd.defineSyntheticField(new SimpleIField(
-                    this.resolve(lcd),
+                icd.defineSyntheticField(new SimpleIField(
+                    this.resolve(icd),
                     "this$" + (nesting - 2),
-                    enclosingInstanceType
+                    this.resolve((Java.AbstractTypeDeclaration) ocs.get(1))
                 ));
             }
         }
 
-        this.compile2((Java.NamedClassDeclaration) lcd);
+        this.compile2((Java.ClassDeclaration) icd);
     }
-    public void compile2(final Java.MemberClassDeclaration mcd) throws CompileException {
 
-        // Define a synthetic "this$..." field for a non-static member class.
-        if ((mcd.modifiers & Mod.STATIC) == 0) {
-            final int nesting = UnitCompiler.getOuterClasses(mcd).size();
-            mcd.defineSyntheticField(new SimpleIField(
-                this.resolve(mcd),
-                "this$" + (nesting - 2),
-                UnitCompiler.this.resolve(mcd.getDeclaringType())
-            ));
-        }
-        this.compile2((Java.NamedClassDeclaration) mcd);
+    public void compile2(final Java.MemberClassDeclaration mcd) throws CompileException {
+        this.compile2((Java.InnerClassDeclaration) mcd);
     }
+
     public void compile2(Java.InterfaceDeclaration id) throws CompileException {
 
         // Determine extended interfaces.
@@ -1731,11 +1712,11 @@ public class UnitCompiler {
         this.writeOpcode(aci, Opcode.ALOAD_0);
         if (declaringIClass.getOuterIClass() != null) this.writeOpcode(aci, Opcode.ALOAD_1);
         this.invokeConstructor(
-            (Java.Located) aci,                // located
-            (Java.Scope) declaringConstructor, // scope
-            (Java.Rvalue) null,                // optionalEnclosingInstance
+            (Java.Located) aci,                                     // located
+            (Java.Scope) declaringConstructor,                      // scope
+            (Java.Rvalue) null,                                     // optionalEnclosingInstance
             declaringIClass,                   // targetClass
-            aci.arguments                      // arguments
+            aci.arguments                                           // arguments
         );
         return true;
     }
@@ -2818,7 +2799,7 @@ public class UnitCompiler {
             Java.Scope s = nci.getEnclosingBlockStatement();
             for (; !(s instanceof Java.TypeBodyDeclaration); s = s.getEnclosingScope());
             Java.TypeBodyDeclaration enclosingTypeBodyDeclaration = (Java.TypeBodyDeclaration) s;
-            Java.TypeDeclaration     enclosingTypeDeclaration     = (Java.TypeDeclaration) s.getEnclosingScope();
+            Java.TypeDeclaration enclosingTypeDeclaration = (Java.TypeDeclaration) s.getEnclosingScope();
 
             if (
                 !(enclosingTypeDeclaration instanceof Java.ClassDeclaration)
@@ -3711,18 +3692,18 @@ public class UnitCompiler {
             // 6.5.5.2.1 PACKAGE.CLASS
             if (q instanceof Java.Package) {
                 String className = Java.join(rt.identifiers, ".");
-                IClass result;
-                try {
-                    result = this.iClassLoader.loadIClass(Descriptor.fromClassName(className));
-                } catch (ClassNotFoundException ex) {
-                    if (ex.getException() instanceof CompileException) throw (CompileException) ex.getException();
-                    throw new CompileException(className, rt.getLocation(), ex);
-                }
-                if (result != null) return result;
-
-                this.compileError("Class \"" + className + "\" not found", rt.getLocation());
-                return this.iClassLoader.OBJECT;
+            IClass result;
+            try {
+                result = this.iClassLoader.loadIClass(Descriptor.fromClassName(className));
+            } catch (ClassNotFoundException ex) {
+                if (ex.getException() instanceof CompileException) throw (CompileException) ex.getException();
+                throw new CompileException(className, rt.getLocation(), ex);
             }
+            if (result != null) return result;
+
+            this.compileError("Class \"" + className + "\" not found", rt.getLocation());
+            return this.iClassLoader.OBJECT;
+        }
 
             // 6.5.5.2.2 CLASS.CLASS (member type)
             String memberTypeName = rt.identifiers[rt.identifiers.length - 1];
@@ -3733,7 +3714,7 @@ public class UnitCompiler {
             } else
             {
                 this.compileError("\"" + q + "\" and its supertypes declare more than one member type \"" + memberTypeName + "\"", rt.getLocation());
-            }
+    }
             return this.iClassLoader.OBJECT;
         }
     }
@@ -5847,12 +5828,11 @@ public class UnitCompiler {
         if (atd instanceof Java.LocalClassDeclaration) {
             Java.Scope s = atd.getEnclosingScope();
             for (; !(s instanceof Java.FunctionDeclarator); s = s.getEnclosingScope());
-            boolean isStaticMethod = (s instanceof Java.MethodDeclarator) && (((Java.FunctionDeclarator) s).modifiers & Mod.STATIC) != 0;
+            if ((s instanceof Java.MethodDeclarator) && (((Java.FunctionDeclarator) s).modifiers & Mod.STATIC) != 0) return null;
             for (; !(s instanceof Java.TypeDeclaration); s = s.getEnclosingScope());
             Java.TypeDeclaration immediatelyEnclosingTypeDeclaration = (Java.TypeDeclaration) s;
             return (
-                immediatelyEnclosingTypeDeclaration instanceof Java.ClassDeclaration &&
-                !isStaticMethod
+                immediatelyEnclosingTypeDeclaration instanceof Java.ClassDeclaration
             ) ? immediatelyEnclosingTypeDeclaration : null;
         }
 
@@ -5865,6 +5845,7 @@ public class UnitCompiler {
         // Anonymous class declaration, interface declaration
         Java.Scope s = atd;
         for (; !(s instanceof Java.TypeBodyDeclaration); s = s.getEnclosingScope()) {
+            if (s instanceof Java.ConstructorInvocation) return null;
             if (s instanceof Java.CompilationUnit) return null;
         }
         //if (!(s instanceof Java.ClassDeclaration)) return null;

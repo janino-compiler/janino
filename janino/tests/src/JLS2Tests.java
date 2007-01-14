@@ -253,6 +253,15 @@ public class JLS2Tests extends JaninoTestSuite {
             "    }\n" +
             "}\n"
         ), "Foo");
+        sim(EXEC, "Anonymous class in explicit constructor invocation", (
+            "public class A {\n" +
+            "    public static void test() { new A(); }\n" +
+            "    public A(Object o) {}\n" +
+            "    public A() {\n" +
+            "        this(new Object() {});\n" +
+            "    }\n" +
+            "}\n"
+        ), "A");
 
         section("16 Definite Assignment");
         
