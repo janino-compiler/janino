@@ -153,11 +153,11 @@ public class JavaSourceClassLoader extends ClassLoader {
             );
         } else {
             cl = new CachingJavaSourceClassLoader(
-                new ClassLoader(null) {}, // parentClassLoader
-                optionalSourcePath,                 // optionalSourcePath
-                optionalCharacterEncoding,          // optionalCharacterEncoding
-                new File(optionalCacheDirName),     // cacheDirectory
-                debuggingInformation                // debuggingInformation
+                SimpleCompiler.BOOT_CLASS_LOADER, // parentClassLoader
+                optionalSourcePath,               // optionalSourcePath
+                optionalCharacterEncoding,        // optionalCharacterEncoding
+                new File(optionalCacheDirName),   // cacheDirectory
+                debuggingInformation              // debuggingInformation
             );
         }
 

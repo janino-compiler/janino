@@ -1,5 +1,6 @@
 import org.codehaus.janino.CompileException;
 import org.codehaus.janino.ExpressionEvaluator;
+import org.codehaus.janino.SimpleCompiler;
 
 import for_sandbox_tests.ExternalClass;
 
@@ -27,7 +28,7 @@ public class SandboxTests extends TestCase {
         // Invoke method of forbidden external class.
         try {
             ExpressionEvaluator ee = new ExpressionEvaluator();
-            ee.setParentClassLoader(null);
+            ee.setParentClassLoader(SimpleCompiler.BOOT_CLASS_LOADER);
             ee.cook("for_sandbox_tests.ExternalClass.m1()");
             fail("Should have thrown a CompileException");
         } catch (CompileException ex) {
@@ -48,7 +49,7 @@ public class SandboxTests extends TestCase {
 
         // Invoke method of base class.
         ExpressionEvaluator ee = new ExpressionEvaluator();
-        ee.setParentClassLoader(null);
+        ee.setParentClassLoader(SimpleCompiler.BOOT_CLASS_LOADER);
         ee.setExtendedType(ExternalClass.class);
         ee.cook("m1()");
         assertEquals(7, ((Integer) ee.evaluate(new Object[0])).intValue());

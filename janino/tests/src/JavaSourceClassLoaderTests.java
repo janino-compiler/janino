@@ -58,29 +58,27 @@ public class JavaSourceClassLoaderTests extends TestCase {
     public JavaSourceClassLoaderTests(String name) { super(name); }
 
     public void testJSCL() throws Exception {
-        ClassLoader bootstrapClassLoader = new ClassLoader(null) {};
         String className = Compiler.class.getName();
 
         Benchmark b = new Benchmark(true);
         b.beginReporting("Loading class \"" + className + "\" through a JavaSourceClassLoader");
         new JavaSourceClassLoader(
-            bootstrapClassLoader,            // parentClassLoader
-            new File[] { SOURCE_DIRECTORY }, // optionalSourcePath
-            null,                            // optionalCharacterEncoding
-            DebuggingInformation.NONE        // debuggingInformation
+            SimpleCompiler.BOOT_CLASS_LOADER, // parentClassLoader
+            new File[] { SOURCE_DIRECTORY },  // optionalSourcePath
+            null,                             // optionalCharacterEncoding
+            DebuggingInformation.NONE         // debuggingInformation
         ).loadClass(className);
         b.endReporting();
     }
     
     public void testCJSCL() throws Exception {
-        ClassLoader bootstrapClassLoader = new ClassLoader(null) {};
         String className = Compiler.class.getName();
         
         Benchmark b = new Benchmark(true);
         b.beginReporting("Loading class \"" + className + "\" through a CachingJavaSourceClassLoader");
         MapResourceCreator classFileResources1 = new MapResourceCreator();
         new CachingJavaSourceClassLoader(
-            bootstrapClassLoader,                          // parentClassLoader
+            SimpleCompiler.BOOT_CLASS_LOADER,              // parentClassLoader
             new DirectoryResourceFinder(SOURCE_DIRECTORY), // sourceFinder
             (String) null,                                 // optionalCharacterEncoding
             ResourceFinder.EMPTY_RESOURCE_FINDER,          // classFileCacheResourceFinder
@@ -98,7 +96,7 @@ public class JavaSourceClassLoaderTests extends TestCase {
         MapResourceFinder classFileFinder = new MapResourceFinder(classFileMap1);
         classFileFinder.setLastModified(System.currentTimeMillis());
         new CachingJavaSourceClassLoader(
-            bootstrapClassLoader,                          // parentClassLoader
+            SimpleCompiler.BOOT_CLASS_LOADER,              // parentClassLoader
             new DirectoryResourceFinder(SOURCE_DIRECTORY), // sourceFinder
             (String) null,                                 // optionalCharacterEncoding
             classFileFinder,                               // classFileCacheResourceFinder

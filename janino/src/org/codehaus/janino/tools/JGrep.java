@@ -468,10 +468,7 @@ public class JGrep {
         } else {
             ClassLoader cl;
 
-            // This is the only way to instantiate a "bootstrap" class loader, i.e. a class loader
-            // that finds the bootstrap classes like "Object", "String" and "Throwable", but not
-            // the classes on the JVM's class path.
-            cl = new ClassLoader(null) {};
+            cl = SimpleCompiler.BOOT_CLASS_LOADER;
             cl = new ResourceFinderClassLoader(bootClassPathResourceFinder, cl);
             cl = new ResourceFinderClassLoader(extensionDirectoriesResourceFinder, cl);
             cl = new ResourceFinderClassLoader(classPathResourceFinder, cl);

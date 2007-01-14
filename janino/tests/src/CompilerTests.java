@@ -57,7 +57,7 @@ public class CompilerTests extends TestCase {
     public CompilerTests(String name) { super(name); }
 
     public void testSelfCompile() throws Exception {
-        ClassLoader bootstrapClassLoader = new ClassLoader(null) {};
+        ClassLoader bootstrapClassLoader = SimpleCompiler.BOOT_CLASS_LOADER;
         File[] sourceFiles = new File[] {
             new File(SRC + "/org/codehaus/janino/Compiler.java"),
             new File(SRC + "/org/codehaus/janino/samples/ExpressionDemo.java"),

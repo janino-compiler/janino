@@ -430,7 +430,7 @@ public class ClassBodyEvaluator extends SimpleCompiler {
         ClassLoader optionalParentClassLoader
     ) throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
         return ClassBodyEvaluator.createFastClassBodyEvaluator(
-            scanner,
+            scanner,                               // scanner
             ClassBodyEvaluator.DEFAULT_CLASS_NAME, // className
             (                                      // optionalExtendedType
                 optionalBaseType != null && !optionalBaseType.isInterface() ?
@@ -440,7 +440,7 @@ public class ClassBodyEvaluator extends SimpleCompiler {
                 optionalBaseType != null && optionalBaseType.isInterface() ?
                 new Class[] { optionalBaseType } : new Class[0]
             ),
-            optionalParentClassLoader
+            optionalParentClassLoader              // optionalParentClassLoader
         );
     }
 

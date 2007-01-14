@@ -412,9 +412,10 @@ public class ExpressionEvaluator extends ScriptEvaluator {
         String      expression,
         Class       interfaceToImplement,
         String[]    parameterNames,
-        ClassLoader optionalClassLoader
+        ClassLoader optionalParentClassLoader
     ) throws CompileException, Parser.ParseException, Scanner.ScanException {
         ExpressionEvaluator ee = new ExpressionEvaluator();
+        ee.setParentClassLoader(optionalParentClassLoader);
         return ScriptEvaluator.createFastEvaluator(ee, expression, parameterNames, interfaceToImplement);
     }
 
