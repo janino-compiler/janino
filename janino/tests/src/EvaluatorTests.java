@@ -39,11 +39,13 @@ import java.util.*;
 import junit.framework.*;
 
 import org.codehaus.janino.*;
+import org.codehaus.janino.Scanner;
 
 public class EvaluatorTests extends TestCase {
     public static Test suite() {
         TestSuite s = new TestSuite(EvaluatorTests.class.getName());
         s.addTest(new EvaluatorTests("testExpressionEvaluator"));
+        s.addTest(new EvaluatorTests("testFastClassBodyEvaluator"));
         s.addTest(new EvaluatorTests("testManyEEs"));
         return s;
     }
@@ -60,7 +62,7 @@ public class EvaluatorTests extends TestCase {
         ee.setImplementedTypes(new Class[] { Runnable.class, });
         ee.setMethodNames(new String[] { "a", "b", "run", });
         ee.setParameters(new String[][] { { "a", "b" }, {}, {} }, new Class[][] { { int.class, int.class}, {}, {} });
-        ee.setParentClassLoader(new ClassLoader(null) {}, new Class[] { for_sandbox_tests.ExternalClass.class });
+        ee.setParentClassLoader(SimpleCompiler.BOOT_CLASS_LOADER, new Class[] { for_sandbox_tests.ExternalClass.class });
         ee.setStaticMethod(new boolean[] { false, true, true });
         ee.setThrownExceptions(new Class[][] { {}, { IOException.class }, {} });
 
@@ -83,6 +85,20 @@ public class EvaluatorTests extends TestCase {
         }
 
         ee.evaluate(2, new Object[0]);
+    }
+
+    public void testFastClassBodyEvaluator() throws Exception {
+        ((Runnable) ClassBodyEvaluator.createFastClassBodyEvaluator(
+            new Scanner(null, new StringReader(
+                "import java.util.*;\n" +
+                "public void run() {\n" +
+                "    new ArrayList();\n" +
+                "    new other_package.Foo(7);\n" +
+                "}\n"
+            )),
+            Runnable.class,
+            Thread.currentThread().getContextClassLoader()
+        )).run();
     }
 
     public void testManyEEs() throws Exception {

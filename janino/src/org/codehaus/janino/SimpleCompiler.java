@@ -67,7 +67,7 @@ import org.codehaus.janino.util.enumerator.*;
 public class SimpleCompiler extends Cookable {
     private final static boolean DEBUG = false;
 
-    private ClassLoader optionalParentClassLoader = Thread.currentThread().getContextClassLoader();
+    private ClassLoader parentClassLoader = Thread.currentThread().getContextClassLoader();
     private Class[]     optionalAuxiliaryClasses = null;
 
     // Set when "cook()"ing.
@@ -177,26 +177,28 @@ public class SimpleCompiler extends Cookable {
     public SimpleCompiler() {}
 
     /**
-     * The "parent class loader" is used to load referenced classes. Useful values are
+     * The "parent class loader" is used to load referenced classes. Useful values are:
      * <table border="1"><tr>
      *   <td><code>System.getSystemClassLoader()</code></td>
      *   <td>The running JVM's class path</td>
      * </tr><tr>
-     *   <td><code>Thread.currentThread().getContextClassLoader()</code></td>
+     *   <td><code>Thread.currentThread().getContextClassLoader()</code> or <code>null</code></td>
      *   <td>The class loader effective for the invoking thread</td>
      * </tr><tr>
-     *   <td><code>null</code></td>
-     *   <td>
-     *     The running JVM's boot class path, i.e. the JDK classes but not the classes on the
-     *     class path
-     *   </td>
+     *   <td>{@link #BOOT_CLASS_LOADER}</td>
+     *   <td>The running JVM's boot class path</td>
      * </tr></table>
-     * The parent class loader defaults to the current thread's "context class loader".
+     * The parent class loader defaults to the current thread's context class loader.
      */
     public void setParentClassLoader(ClassLoader optionalParentClassLoader) {
-        this.optionalParentClassLoader = optionalParentClassLoader;
-        this.optionalAuxiliaryClasses = null;
+        this.setParentClassLoader(optionalParentClassLoader, null);
     }
+
+    /**
+     * A {@link ClassLoader} that finds the classes on the JVM's <i>boot class path</i> (e.g.
+     * <code>java.io.*</code>), but not the classes on the JVM's <i>class path</i>.
+     */
+    public static final ClassLoader BOOT_CLASS_LOADER = new ClassLoader(null) {};
 
     /**
      * Allowe references to the classes loaded through this parent class loader
@@ -209,7 +211,11 @@ public class SimpleCompiler extends Cookable {
      * <code>optionalParentClassLoader</code>.
      */
     public void setParentClassLoader(ClassLoader optionalParentClassLoader, Class[] auxiliaryClasses) {
-        this.optionalParentClassLoader = optionalParentClassLoader;
+        this.parentClassLoader = (
+            optionalParentClassLoader != null
+            ? optionalParentClassLoader
+            : Thread.currentThread().getContextClassLoader()
+        );
         this.optionalAuxiliaryClasses = auxiliaryClasses;
     }
     
@@ -230,7 +236,7 @@ public class SimpleCompiler extends Cookable {
     protected void precook() {
 
         // Set up the ClassLoader for the compilation and the loading.
-        this.classLoader = new AuxiliaryClassLoader(this.optionalParentClassLoader);
+        this.classLoader = new AuxiliaryClassLoader(this.parentClassLoader);
         if (this.optionalAuxiliaryClasses != null) {
             for (int i = 0; i < this.optionalAuxiliaryClasses.length; ++i) {
                 this.classLoader.addAuxiliaryClass(this.optionalAuxiliaryClasses[i]);
