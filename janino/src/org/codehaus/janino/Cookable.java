@@ -100,6 +100,9 @@ public abstract class Cookable {
 
     /**
      * Cook tokens from a {@link java.lang.String}.
+     * <p>
+     * <b>Notice:</b> If you pass a string literal, be sure to escape all Java<sup>TM</sup> special
+     * characters, especially backslashes.
      */
     public final void cook(String s)
     throws CompileException, Parser.ParseException, Scanner.ScanException {
