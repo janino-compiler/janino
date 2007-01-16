@@ -677,23 +677,35 @@ public class Compiler {
 
         /**
          * @param type field descriptor of the {@IClass} to load, e.g. "Lpkg1/pkg2/Outer$Inner;"
-         * @throws ClassNotFoundException if an excaption was raised while loading the {@link IClass}
+         * @return <code>null</code> if a the type could not be found
+         * @throws ClassNotFoundException if an exception was raised while loading the {@link IClass}
          */
         protected IClass findIClass(final String type) throws ClassNotFoundException {
             if (Compiler.DEBUG) System.out.println("type = " + type);
 
-            // Class type.
+            // Determine the class name.
             String className = Descriptor.toClassName(type); // E.g. "pkg1.pkg2.Outer$Inner"
             if (Compiler.DEBUG) System.out.println("2 className = \"" + className + "\"");
 
             // Do not attempt to load classes from package "java".
             if (className.startsWith("java.")) return null;
 
+            // Determine the name of the top-level class.
+            String topLevelClassName;
+            {
+                int idx = className.indexOf('$');
+                topLevelClassName = idx == -1 ? className : className.substring(0, idx);
+            }
+
             // Check the already-parsed compilation units.
             for (int i = 0; i < Compiler.this.parsedCompilationUnits.size(); ++i) {
                 UnitCompiler uc = (UnitCompiler) Compiler.this.parsedCompilationUnits.get(i);
-                IClass res = uc.findClass(className);
+                IClass res = uc.findClass(topLevelClassName);
                 if (res != null) {
+                    if (!className.equals(topLevelClassName)) {
+                        res = uc.findClass(className);
+                        if (res == null) return null;
+                    }
                     this.defineIClass(res);
                     return res;
                 } 
@@ -742,23 +754,25 @@ public class Compiler {
         ) throws ClassNotFoundException {
 
             // Parse the source file.
-            Java.CompilationUnit cu;
+            UnitCompiler uc;
             try {
-                cu = Compiler.this.parseCompilationUnit(
+                Java.CompilationUnit cu = Compiler.this.parseCompilationUnit(
                     sourceResource.getFileName(),                   // fileName
                     new BufferedInputStream(sourceResource.open()), // inputStream
                     Compiler.this.optionalCharacterEncoding         // optionalCharacterEncoding
                 );
+                uc = new UnitCompiler(cu, Compiler.this.iClassLoader);
             } catch (IOException ex) {
                 throw new ClassNotFoundException("Parsing compilation unit \"" + sourceResource + "\"", ex);
             } catch (Parser.ParseException ex) {
                 throw new ClassNotFoundException("Parsing compilation unit \"" + sourceResource + "\"", ex);
             } catch (Scanner.ScanException ex) {
                 throw new ClassNotFoundException("Parsing compilation unit \"" + sourceResource + "\"", ex);
+            } catch (CompileException ex) {
+                throw new ClassNotFoundException("Parsing compilation unit \"" + sourceResource + "\"", ex);
             }
 
             // Remember compilation unit for later compilation.
-            UnitCompiler uc = new UnitCompiler(cu, Compiler.this.iClassLoader);
             Compiler.this.parsedCompilationUnits.add(uc);
 
             // Define the class.

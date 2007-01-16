@@ -175,11 +175,23 @@ public class JLS2Tests extends JaninoTestSuite {
         section("6 Names");
         
         section("6.1 Declarations");
-        
+
         section("7 Packages");
         
         section("7.1 Package Members");
         
+        section("7.5 Import Declarations");
+
+        section("7.5.3 Single Static Import Declaration");
+        exp(TRUE, "Static field", "import static java.util.Collections.EMPTY_MAP; EMPTY_MAP instanceof java.util.Map");
+        scr(EXEC, "Member type", "import static java.util.Map.Entry; Entry e;");
+        exp(TRUE, "Static method", "import static java.util.Arrays.asList; asList(new String[] { \"HELLO\", \"WORLD\" }).size() == 2");
+
+        section("7.5.4 Static-Import-on-Demand Declaration");
+        exp(TRUE, "Static field", "import static java.util.Collections.*; EMPTY_MAP instanceof java.util.Map");
+        scr(EXEC, "Member type", "import static java.util.Map.*; Entry e;");
+        exp(TRUE, "Static method", "import static java.util.Arrays.*; asList(new String[] { \"HELLO\", \"WORLD\" }).size() == 2");
+
         section("8 Classes");
         
         section("8.1 Class Declaration");

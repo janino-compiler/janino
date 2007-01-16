@@ -37,6 +37,10 @@ package org.codehaus.janino;
 import java.io.*;
 import java.util.*;
 
+import org.codehaus.janino.IClass.*;
+import org.codehaus.janino.Java.*;
+import org.codehaus.janino.Java.CompilationUnit.*;
+import org.codehaus.janino.Visitor.*;
 import org.codehaus.janino.util.*;
 import org.codehaus.janino.util.enumerator.*;
 
@@ -50,9 +54,96 @@ public class UnitCompiler {
     public UnitCompiler(
         Java.CompilationUnit compilationUnit,
         IClassLoader         iClassLoader
-    ) {
+    ) throws CompileException {
         this.compilationUnit = compilationUnit;
         this.iClassLoader    = iClassLoader;
+
+        this.typeImportsOnDemand.add(new String[] { "java", "lang" });
+        for (Iterator it = this.compilationUnit.importDeclarations.iterator(); it.hasNext();) {
+            ImportDeclaration id = (ImportDeclaration) it.next();
+            class UCE extends RuntimeException { final CompileException ce; UCE(CompileException ce) { this.ce = ce; } }
+            try {
+                id.accept(new ImportVisitor() {
+                    public void visitSingleTypeImportDeclaration(SingleTypeImportDeclaration stid)          { try { UnitCompiler.this.import2(stid);  } catch (CompileException e) { throw new UCE(e); } }
+                    public void visitTypeImportOnDemandDeclaration(TypeImportOnDemandDeclaration tiodd)     { try { UnitCompiler.this.import2(tiodd); } catch (CompileException e) { throw new UCE(e); } }
+                    public void visitSingleStaticImportDeclaration(SingleStaticImportDeclaration ssid)      { try { UnitCompiler.this.import2(ssid);  } catch (CompileException e) { throw new UCE(e); } }
+                    public void visitStaticImportOnDemandDeclaration(StaticImportOnDemandDeclaration siodd) { try { UnitCompiler.this.import2(siodd); } catch (CompileException e) { throw new UCE(e); } }
+                });
+            } catch (UCE uce) { throw uce.ce; }
+        }
+    }
+
+    private void import2(SingleTypeImportDeclaration stid) throws CompileException {
+        String[] ids = stid.identifiers;
+        String name = last(ids);
+        {
+            String[] fqn = (String[]) UnitCompiler.this.singleTypeImports.get(name);
+            if (fqn != null) {
+                compileError("Class \"" + name + "\" was first imported as \"" + Java.join(fqn, ".") + "\", now as \"" + Java.join(ids, ".") + "\"");
+            }
+        }
+        UnitCompiler.this.singleTypeImports.put(name, ids);
+    }
+    private void import2(TypeImportOnDemandDeclaration tiodd) throws CompileException {
+        UnitCompiler.this.typeImportsOnDemand.add(tiodd.identifiers);
+    }
+    private void import2(SingleStaticImportDeclaration ssid) throws CompileException {
+        String name = last(ssid.identifiers);
+
+        // Check for re-import of same name.
+        {
+            Object o = this.singleStaticImports.get(name);
+            if (o != null) {
+                UnitCompiler.this.compileError("\"" + name + "\" was previously imported as \"" + o.toString() + "\"", ssid.getLocation());
+            }
+        }
+
+        // Type?
+        {
+            IClass iClass = this.loadFullyQualifiedClass(ssid.identifiers);
+            if (iClass != null) {
+                this.singleStaticImports.put(name, iClass);
+                return;
+            }
+        }
+
+        // Static field?
+        String[] typeName = allButLast(ssid.identifiers);
+        IClass iClass = this.loadFullyQualifiedClass(typeName);
+        if (iClass == null) {
+            this.compileError("Could not load \"" + Java.join(typeName, ".") + "\"", ssid.getLocation());
+            return;
+        }
+        IField[] flds = iClass.getDeclaredIFields();
+        for (int i = 0; i < flds.length; ++i) {
+            IField f = flds[i];
+            if (f.getName().equals(name)) {
+                if (!f.isStatic()) {
+                    this.compileError("Filed \"" + name + "\" of \"" + Java.join(typeName, ".") + "\" must be static", ssid.getLocation());
+                    return;
+                }
+                this.singleStaticImports.put(name, f);
+                return;
+            }
+        }
+
+        // Static method?
+        IMethod[] ms = iClass.getDeclaredIMethods(name);
+        if (ms.length > 0) {
+            this.singleStaticImports.put(name, ms);
+            return;
+        }
+        
+        this.compileError("\"" + Java.join(typeName, ".") + "\" has no static member \"" + name + "\"", ssid.getLocation());
+        return;
+    }
+    private void import2(StaticImportOnDemandDeclaration siodd) throws CompileException {
+        IClass iClass = this.loadFullyQualifiedClass(siodd.identifiers);
+        if (iClass == null) {
+            this.compileError("Could not load \"" + Java.join(siodd.identifiers, ".") + "\"", siodd.getLocation());
+            return;
+        }
+        UnitCompiler.this.staticImportsOnDemand.add(iClass);
     }
 
     /**
@@ -98,7 +189,7 @@ public class UnitCompiler {
 
         // Check for conflict with single-type-import (7.6).
         {
-            String[] ss = declaringCompilationUnit.getSingleTypeImport(pmtd.getName());
+            String[] ss = this.getSingleTypeImport(pmtd.getName());
             if (ss != null) this.compileError("Package member type declaration \"" + pmtd.getName() + "\" conflicts with single-type-import \"" + Java.join(ss, ".") + "\"", pmtd.getLocation());
         }
 
@@ -3681,6 +3772,24 @@ public class UnitCompiler {
                 if (importedClass != null) return importedClass;
             }
 
+            // JLS3 ???:  Type imported through single static import.
+            {
+                Object o = this.singleStaticImports.get(simpleTypeName);
+                if (o instanceof IClass) return (IClass) o;
+            }
+
+            // JLS3 ???: Type imported through static-import-on-demand.
+            {
+                for (Iterator it = this.staticImportsOnDemand.iterator(); it.hasNext();) {
+                    IClass ic = (IClass) it.next();
+                    IClass[] memberTypes = ic.getDeclaredIClasses();
+                    for (int i = 0; i < memberTypes.length; ++i) {
+                        IClass mt = memberTypes[i];
+                        if (mt.getDescriptor().endsWith('$' + simpleTypeName + ';')) return mt;
+                    }
+                }
+            }
+
             // 6.5.5.1.8 Give up.
             this.compileError("Cannot determine simple type name \"" + simpleTypeName + "\"", rt.getLocation());
             return this.iClassLoader.OBJECT;
@@ -4860,8 +4969,8 @@ public class UnitCompiler {
 
         // 6.5.2.1.BL1
 
-        // 6.5.2.BL1.B1.B1.1/6.5.6.1.1 Local variable.
-        // 6.5.2.BL1.B1.B1.2/6.5.6.1.1 Parameter.
+        // 6.5.2.BL1.B1.B1.1 (JLS3: 6.5.2.BL1.B1.B1.1) / 6.5.6.1.1 Local variable.
+        // 6.5.2.BL1.B1.B1.2 (JLS3: 6.5.2.BL1.B1.B1.2) / 6.5.6.1.1 Parameter.
         {
             Java.Scope s = scope;
             if (s instanceof Java.BlockStatement) {
@@ -4915,7 +5024,7 @@ public class UnitCompiler {
             }
         }
 
-        // 6.5.2.BL1.B1.B1.3/6.5.6.1.2.1 Field.
+        // 6.5.2.BL1.B1.B1.3 (JLS3: 6.5.2.BL1.B1.B1.3) / 6.5.6.1.2.1 Field.
         Java.BlockStatement enclosingBlockStatement = null;
         for (Java.Scope s = scope; !(s instanceof Java.CompilationUnit); s = s.getEnclosingScope()) {
             if (s instanceof Java.BlockStatement && enclosingBlockStatement == null) enclosingBlockStatement = (Java.BlockStatement) s;
@@ -4963,34 +5072,53 @@ public class UnitCompiler {
             }
         }
 
+        // JLS3 6.5.2.BL1.B1.B2.1 Static field imported through single static import.
+        {
+            Object o = this.singleStaticImports.get(identifier);
+            if (o instanceof IField) return new FieldAccess(location, new SimpleType(location, ((IField) o).getDeclaringIClass()), (IField) o);
+        }
+
+        // JLS3 6.5.2.BL1.B1.B2.2 Static field imported through static-import-on-demand.
+        for (Iterator it = this.staticImportsOnDemand.iterator(); it.hasNext();) {
+            IClass iClass = (IClass) it.next();
+            IField[] flds = iClass.getDeclaredIFields();
+            for (int i = 0 ; i < flds.length; ++i) {
+                IField f = flds[i];
+                if (f.getName().equals(identifier)) return new FieldAccess(location, new SimpleType(location, iClass), f);
+            }
+        }
+
         // Hack: "java" MUST be a package, not a class.
         if (identifier.equals("java")) return new Java.Package(location, identifier);
 
-        // 6.5.2.BL1.B1.B2.1 Local class.
+        // 6.5.2.BL1.B1.B2.1 (JLS3: 6.5.2.BL1.B1.B3.2) Local class.
         {
             Java.LocalClassDeclaration lcd = this.findLocalClassDeclaration(scope, identifier);
             if (lcd != null) return new Java.SimpleType(location, this.resolve(lcd));
         }
 
-        // 6.5.2.BL1.B1.B2.2 Member type.
+        // 6.5.2.BL1.B1.B2.2 (JLS3: 6.5.2.BL1.B1.B3.3) Member type.
         if (scopeTypeDeclaration != null) {
             IClass memberType = this.findMemberType(UnitCompiler.this.resolve(scopeTypeDeclaration), identifier, location);
             if (memberType != null) return new Java.SimpleType(location, memberType);
         }
 
-        // 6.5.2.BL1.B1.B3.1 Single-type-import.
+        // 6.5.2.BL1.B1.B3.1 (JLS3: 6.5.2.BL1.B1.B4.1) Single type import.
         if (scopeCompilationUnit != null) {
             IClass iClass = this.importSingleType(identifier, location);
             if (iClass != null) return new Java.SimpleType(location, iClass);
         }
 
-        // 6.5.2.BL1.B1.B3.2 Package member class/interface declared in this compilation unit.
+        // 6.5.2.BL1.B1.B3.2 (JLS3: 6.5.2.BL1.B1.B3.1) Package member class/interface declared in this compilation unit.
+        // Notice that JLS2 looks this up AFTER local class, member type, single type import, while
+        // JLS3 looks this up BEFORE local class, member type, single type import.
         if (scopeCompilationUnit != null) {
             Java.PackageMemberTypeDeclaration pmtd = scopeCompilationUnit.getPackageMemberTypeDeclaration(identifier);
             if (pmtd != null) return new Java.SimpleType(location, this.resolve((Java.AbstractTypeDeclaration) pmtd));
         }
 
         // 6.5.2.BL1.B1.B4 Class or interface declared in same package.
+        // Notice: Why is this missing in JLS3?
         if (scopeCompilationUnit != null) {
             String className = (
                 scopeCompilationUnit.optionalPackageDeclaration == null ?
@@ -5007,7 +5135,7 @@ public class UnitCompiler {
             if (result != null) return new Java.SimpleType(location, result);
         }
 
-        // 6.5.2.BL1.B1.B5, 6.5.2.BL1.B1.B6 Type-import-on-demand.
+        // 6.5.2.BL1.B1.B5 (JLS3: 6.5.2.BL1.B1.B4.2), 6.5.2.BL1.B1.B6 Type-import-on-demand.
         if (scopeCompilationUnit != null) {
             IClass importedClass = this.importTypeOnDemand(identifier, location);
             if (importedClass != null) {
@@ -5015,6 +5143,24 @@ public class UnitCompiler {
             }
         }
 
+        // JLS3 6.5.2.BL1.B1.B4.3 Type imported through single static import.
+        {
+            Object o = this.singleStaticImports.get(identifier);
+            if (o instanceof IClass) return new SimpleType(null, (IClass) o);
+        }
+
+        // JLS3 6.5.2.BL1.B1.B4.4 Type imported through static-import-on-demand.
+        {
+            for (Iterator it = this.staticImportsOnDemand.iterator(); it.hasNext();) {
+                IClass ic = (IClass) it.next();
+                IClass[] memberTypes = ic.getDeclaredIClasses();
+                for (int i = 0; i < memberTypes.length; ++i) {
+                    IClass mt = memberTypes[i];
+                    if (mt.getDescriptor().endsWith('$' + identifier + ';')) return new Java.SimpleType(null, mt);
+                }
+            }
+        }
+        
         // 6.5.2.BL1.B1.B7 Package name
         return new Java.Package(location, identifier);
     }
@@ -5135,36 +5281,61 @@ public class UnitCompiler {
      * @return The selected {@link IClass.IMethod} or <code>null</code>
      */
     public IClass.IMethod findIMethod(Java.MethodInvocation mi) throws CompileException {
-        for (Java.Scope s = mi.getEnclosingBlockStatement(); !(s instanceof Java.CompilationUnit); s = s.getEnclosingScope()) {
-            if (s instanceof Java.TypeDeclaration) {
-                Java.TypeDeclaration td = (Java.TypeDeclaration) s;
+        IClass.IMethod iMethod;
+        FIND_METHOD: {
 
-                // Find methods with specified name.
-                IClass.IMethod iMethod = this.findIMethod(
-                    (Java.Located) mi, // located
-                    (                  // targetType
-                        mi.optionalTarget == null ?
-                        this.resolve(td) :
-                        this.getType(mi.optionalTarget)
-                    ),
-                    mi.methodName,     // methodName
-                    mi.arguments       // arguments
-                );
-
-                // Check exceptions that the method may throw.
-                IClass[] thrownExceptions = iMethod.getThrownExceptions();
-                for (int i = 0; i < thrownExceptions.length; ++i) {
-                    this.checkThrownException(
-                        (Java.Located) mi,                           // located
-                        thrownExceptions[i],                         // type
-                        (Java.Scope) mi.getEnclosingBlockStatement() // scope
+            // Method declared by enclosing type declarations?
+            for (Java.Scope s = mi.getEnclosingBlockStatement(); !(s instanceof Java.CompilationUnit); s = s.getEnclosingScope()) {
+                if (s instanceof Java.TypeDeclaration) {
+                    Java.TypeDeclaration td = (Java.TypeDeclaration) s;
+    
+                    // Find methods with specified name.
+                    iMethod = this.findIMethod(
+                        (Java.Located) mi, // located
+                        (                  // targetType
+                            mi.optionalTarget == null ?
+                            this.resolve(td) :
+                            this.getType(mi.optionalTarget)
+                        ),
+                        mi.methodName,     // methodName
+                        mi.arguments       // arguments
                     );
+                    if (iMethod != null) break FIND_METHOD;
                 }
-
-                return iMethod;
             }
+
+            // Static method declared through single static import?
+            {
+                Object o = this.singleStaticImports.get(mi.methodName);
+                if (o instanceof IMethod[]) {
+                    iMethod = this.findIMethod(
+                        mi,                                      // located
+                        ((IMethod[]) o)[0].getDeclaringIClass(), // targetType
+                        mi.methodName,                           // methodName
+                        mi.arguments                             // arguments
+                    );
+                    if (iMethod != null) break FIND_METHOD;
+                }
+            }
+
+            // Static method declared through static-import-on-demand?
+            for (Iterator it = this.staticImportsOnDemand.iterator(); it.hasNext();) {
+                IClass iClass = (IClass) it.next();
+                iMethod = this.findIMethod(
+                    mi,            // located
+                    iClass,        // targetType
+                    mi.methodName, // methodName
+                    mi.arguments   // arguments
+                );
+                if (iMethod != null) break FIND_METHOD;
+            }
+
+            this.compileError("A method named \"" + mi.methodName + "\" is not declared in any enclosing class nor any supertype, nor through a static import", mi.getLocation());
+            return fakeIMethod(this.iClassLoader.OBJECT, mi.methodName, mi.arguments);
         }
-        return null;
+
+        this.checkThrownExceptions(mi, iMethod);
+        return iMethod;
     }
 
     /**
@@ -5172,12 +5343,14 @@ public class UnitCompiler {
      * method exists, choose the most specific one (JLS 15.11.2).
      * <p>
      * Notice that the returned {@link IClass.IMethod} may be declared in an enclosing type.
+     *
+     * @return <code>null</code> if no appropriate method could be found
      */
     private IClass.IMethod findIMethod(
-        Java.Located  located,
-        IClass        targetType,
-        final String  methodName,
-        Java.Rvalue[] arguments
+        Located  located,
+        IClass   targetType,
+        String   methodName,
+        Rvalue[] arguments
     ) throws CompileException {
         for (IClass ic = targetType; ic != null; ic = ic.getDeclaringIClass()) {
             List l = new ArrayList();
@@ -5193,11 +5366,14 @@ public class UnitCompiler {
                 return iMethod;
             }
         }
-        this.compileError("Class \"" + targetType + "\" has no method named \"" + methodName + "\"", located.getLocation());
+        return null;
+    }
+
+    private IMethod fakeIMethod(IClass targetType, final String name, Rvalue[] arguments) throws CompileException {
         final IClass[] pts = new IClass[arguments.length];
         for (int i = 0; i < arguments.length; ++i) pts[i] = this.getType(arguments[i]);
         return targetType.new IMethod() {
-            public String   getName()                                     { return methodName; }
+            public String   getName()                                     { return name; }
             public IClass   getReturnType() throws CompileException       { return IClass.INT; }
             public boolean  isStatic()                                    { return false; }
             public boolean  isAbstract()                                  { return false; }
@@ -5258,12 +5434,19 @@ public class UnitCompiler {
                 break;
             }
         }
-        return this.findIMethod(
-            (Java.Located) scmi,                          // located
-            this.resolve(declaringClass).getSuperclass(), // targetType
-            scmi.methodName,                              // methodName
-            scmi.arguments                                // arguments
+        IClass superclass = this.resolve(declaringClass).getSuperclass();
+        IMethod iMethod = this.findIMethod(
+            (Java.Located) scmi, // located
+            superclass,          // targetType
+            scmi.methodName,     // methodName
+            scmi.arguments       // arguments
         );
+        if (iMethod == null) {
+            this.compileError("Class \"" + superclass + "\" has no method named \"" + scmi.methodName + "\"", scmi.getLocation());
+            return fakeIMethod(superclass, scmi.methodName, scmi.arguments);
+        }
+        this.checkThrownExceptions(scmi, iMethod);
+        return iMethod;
     }
 
     /**
@@ -5517,6 +5700,23 @@ public class UnitCompiler {
         return false;
     }
 
+    /**
+     * @throws CompileException if the {@link Invocation} throws exceptions that are disallowed in the given scope
+     */
+    private void checkThrownExceptions(Invocation in, IMethod iMethod) throws CompileException {
+        IClass[] thrownExceptions = iMethod.getThrownExceptions();
+        for (int i = 0; i < thrownExceptions.length; ++i) {
+            this.checkThrownException(
+                (Java.Located) in,                           // located
+                thrownExceptions[i],                         // type
+                (Java.Scope) in.getEnclosingBlockStatement() // scope
+            );
+        }
+    }
+
+    /**
+     * @throws CompileException if the exception with the given type must not be thrown in the given scope
+     */
     private void checkThrownException(
         Java.Located located,
         IClass       type,
@@ -6022,7 +6222,7 @@ public class UnitCompiler {
      * If the given name was declared in a simple type import, load that class.
      */
     private IClass importSingleType(String simpleTypeName, Location location) throws CompileException {
-        String[] ss = this.compilationUnit.getSingleTypeImport(simpleTypeName);
+        String[] ss = this.getSingleTypeImport(simpleTypeName);
         if (ss == null) return null;
 
         IClass iClass = this.loadFullyQualifiedClass(ss);
@@ -6031,6 +6231,16 @@ public class UnitCompiler {
             return this.iClassLoader.OBJECT;
         }
         return iClass;
+    }
+
+    /**
+     * Check if the given name was imported through a "single type import", e.g.<pre>
+     *     import java.util.Map</pre>
+     * 
+     * @return the fully qualified name or <code>null</code>
+     */
+    public String[] getSingleTypeImport(String name) {
+        return (String[]) this.singleTypeImports.get(name);
     }
 
     /**
@@ -6046,19 +6256,9 @@ public class UnitCompiler {
         if (importedClass != null) return importedClass;
 
         // Cache miss...
-        List packages = new ArrayList();
-        packages.add(new String[] { "java", "lang" });
-        for (Iterator i = this.compilationUnit.importDeclarations.iterator(); i.hasNext();) {
-            Java.CompilationUnit.ImportDeclaration id = (Java.CompilationUnit.ImportDeclaration) i.next();
-            if (id instanceof Java.CompilationUnit.TypeImportOnDemandDeclaration) {
-                packages.add(((Java.CompilationUnit.TypeImportOnDemandDeclaration) id).identifiers);
-            }
-        }
-        for (Iterator i = packages.iterator(); i.hasNext();) {
+        for (Iterator i = this.typeImportsOnDemand.iterator(); i.hasNext();) {
             String[] ss = (String[]) i.next();
-            String[] ss2 = new String[ss.length + 1];
-            System.arraycopy(ss, 0, ss2, 0, ss.length);
-            ss2[ss.length] = simpleTypeName;
+            String[] ss2 = concat(ss, simpleTypeName);
             IClass iClass = this.loadFullyQualifiedClass(ss2);
             if (iClass != null) {
                 if (importedClass != null && importedClass != iClass) this.compileError("Ambiguous class name: \"" + importedClass + "\" vs. \"" + iClass + "\"", location);
@@ -7437,6 +7637,25 @@ public class UnitCompiler {
         );
     }
 
+    private static String last(String[] sa) {
+        if (sa.length == 0) throw new IllegalArgumentException("SNO: Empty string array");
+        return sa[sa.length - 1];
+    }
+
+    private static String[] allButLast(String[] sa) {
+        if (sa.length == 0) throw new IllegalArgumentException("SNO: Empty string array");
+        String[] tmp = new String[sa.length - 1];
+        System.arraycopy(sa, 0, tmp, 0, tmp.length);
+        return tmp;
+    }
+
+    private static String[] concat(String[] sa, String s) {
+        String[] tmp = new String[sa.length + 1];
+        System.arraycopy(sa, 0, tmp, 0, sa.length);
+        tmp[sa.length] = s;
+        return tmp;
+    }
+    
     // Used to write byte code while compiling one constructor/method.
     private CodeContext codeContext = null;
 
@@ -7452,4 +7671,9 @@ public class UnitCompiler {
     private List          generatedClassFiles;
     private IClassLoader  iClassLoader;
     private EnumeratorSet debuggingInformation;
+
+    private final Map        singleTypeImports     = new HashMap();   // String simpleTypeName => String[] fullyQualifiedTypeName
+    private final Collection typeImportsOnDemand   = new ArrayList(); // String[] package
+    private final Map        singleStaticImports   = new HashMap();   // String staticMemberName => IField, IMethod[] or IClass
+    private final Collection staticImportsOnDemand = new ArrayList(); // IClass
 }

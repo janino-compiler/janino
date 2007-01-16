@@ -69,7 +69,7 @@ public class CompilerTests extends TestCase {
         Benchmark b = new Benchmark(true);
         b.beginReporting("Compile Janino from scratch");
         MapResourceCreator classFileResources1 = new MapResourceCreator();
-        new Compiler(
+        Compiler c = new Compiler(
             sourceFinder,                                       // sourceFinder
             new ClassLoaderIClassLoader(bootstrapClassLoader),  // iClassLoader
             ResourceFinder.EMPTY_RESOURCE_FINDER,               // classFileFinder
@@ -78,7 +78,13 @@ public class CompilerTests extends TestCase {
             verbose,                                            // verbose
             DebuggingInformation.DEFAULT_DEBUGGING_INFORMATION, // debuggingInformation
             (WarningHandler) null                               // optionalWarningHandler
-        ).compile(sourceFiles);
+        );
+        c.setCompileErrorHandler(new UnitCompiler.ErrorHandler() {
+            public void handleError(String message, Location optionalLocation) throws CompileException {
+                throw new CompileException(message, optionalLocation);
+            }
+        });
+        c.compile(sourceFiles);
         Map classFileMap1 = classFileResources1.getMap();
         b.endReporting("Generated " + classFileMap1.size() + " class files.");
 

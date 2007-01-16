@@ -37,6 +37,7 @@ package org.codehaus.janino;
 import java.io.*;
 import java.util.*;
 
+import org.codehaus.janino.Java.CompilationUnit.ImportDeclaration;
 import org.codehaus.janino.util.enumerator.Enumerator;
 
 /**
@@ -111,21 +112,39 @@ public class Parser {
 
     /**
      * <pre>
-     *   ImportDeclarationBody := Identifier { '.' Identifier } [ '.' '*' ]
+     *   ImportDeclarationBody := [ 'static' ] Identifier { '.' Identifier } [ '.' '*' ]
      * </pre>
      */
     public Java.CompilationUnit.ImportDeclaration parseImportDeclarationBody() throws ParseException, Scanner.ScanException, IOException {
         Location loc = this.location();
+        boolean isStatic;
+        if (this.peekKeyword("static")) {
+            isStatic = true;
+            this.eatToken();
+        } else
+        {
+            isStatic = false;
+        }
         List l = new ArrayList();
         l.add(this.readIdentifier());
         for (;;) {
             if (!this.peekOperator(".")) {
-                return new Java.CompilationUnit.SingleTypeImportDeclaration(loc, (String[]) l.toArray(new String[l.size()]));
+                String[] identifiers = (String[]) l.toArray(new String[l.size()]);
+                return (
+                    isStatic
+                    ? (ImportDeclaration) new Java.CompilationUnit.SingleStaticImportDeclaration(loc, identifiers)
+                    : (ImportDeclaration) new Java.CompilationUnit.SingleTypeImportDeclaration(loc, identifiers)
+                );
             }
             this.readOperator(".");
             if (this.peekOperator("*")) {
                 this.eatToken();
-                return new Java.CompilationUnit.TypeImportOnDemandDeclaration(loc, (String[]) l.toArray(new String[l.size()]));
+                String[] identifiers = (String[]) l.toArray(new String[l.size()]);
+                return (
+                    isStatic
+                    ? (ImportDeclaration) new Java.CompilationUnit.StaticImportOnDemandDeclaration(loc, identifiers)
+                    : (ImportDeclaration) new Java.CompilationUnit.TypeImportOnDemandDeclaration(loc, identifiers)
+                );
             }
             l.add(this.readIdentifier());
         }

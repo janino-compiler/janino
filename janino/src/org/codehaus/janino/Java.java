@@ -154,38 +154,7 @@ public class Java {
         }
 
         /**
-         * Check if the given name was imported through a "single type import", e.g.<pre>
-         *     import java.util.Map</pre>
-         * 
-         * @return the fully qualified name or <code>null</code>
-         */
-        public String[] getSingleTypeImport(String name) {
-            for (Iterator it = this.importDeclarations.iterator(); it.hasNext();) {
-                CompilationUnit.ImportDeclaration id = (CompilationUnit.ImportDeclaration) it.next();
-                if (id instanceof CompilationUnit.SingleTypeImportDeclaration) {
-                    String[] ss = ((CompilationUnit.SingleTypeImportDeclaration) id).identifiers;
-                    if (ss[ss.length - 1].equals(name)) return ss;
-                }
-            }
-            return null;
-        }
-
-        /**
-         * Represents a type-import-on-demand like<pre>
-         *     import java.util.*;</pre>
-         */
-        public static class TypeImportOnDemandDeclaration extends ImportDeclaration {
-            public final String[] identifiers;
-        
-            public TypeImportOnDemandDeclaration(Location location, String[] identifiers) {
-                super(location);
-                this.identifiers = identifiers;
-            }
-            public final void accept(Visitor.ComprehensiveVisitor visitor) { visitor.visitTypeImportOnDemandDeclaration(this); }
-        }
-
-        /**
-         * Represents a single type import like<pre>
+         * Represents a single type import declaration like<pre>
          *     import java.util.Map;</pre>
          */
         public static class SingleTypeImportDeclaration extends ImportDeclaration {
@@ -195,14 +164,56 @@ public class Java {
                 super(location);
                 this.identifiers = identifiers;
             }
-            public final void accept(Visitor.ComprehensiveVisitor visitor) { visitor.visitSingleTypeImportDeclaration(this); }
+            public final void accept(Visitor.ImportVisitor visitor) { visitor.visitSingleTypeImportDeclaration(this); }
         }
 
+        /**
+         * Represents a type-import-on-demand declaration like<pre>
+         *     import java.util.*;</pre>
+         */
+        public static class TypeImportOnDemandDeclaration extends ImportDeclaration {
+            public final String[] identifiers;
+        
+            public TypeImportOnDemandDeclaration(Location location, String[] identifiers) {
+                super(location);
+                this.identifiers = identifiers;
+            }
+            public final void accept(Visitor.ImportVisitor visitor) { visitor.visitTypeImportOnDemandDeclaration(this); }
+        }
+
+        /**
+         * Represents a single static import declaration like<pre>
+         *     import java.util.Collections.EMPTY_MAP;</pre>
+         */
+        public static class SingleStaticImportDeclaration extends ImportDeclaration {
+            public final String[] identifiers;
+            
+            public SingleStaticImportDeclaration(Location location, String[] identifiers) {
+                super(location);
+                this.identifiers = identifiers;
+            }
+            public final void accept(Visitor.ImportVisitor visitor) { visitor.visitSingleStaticImportDeclaration(this); }
+        }
+        
+        /**
+         * Represents a static-import-on-demand declaration like<pre>
+         *     import java.util.Collections.*;</pre>
+         */
+        public static class StaticImportOnDemandDeclaration extends ImportDeclaration {
+            public final String[] identifiers;
+            
+            public StaticImportOnDemandDeclaration(Location location, String[] identifiers) {
+                super(location);
+                this.identifiers = identifiers;
+            }
+            public final void accept(Visitor.ImportVisitor visitor) { visitor.visitStaticImportOnDemandDeclaration(this); }
+        }
+        
         public abstract static class ImportDeclaration extends Java.Located {
             public ImportDeclaration(Location location) {
                 super(location);
             }
-            public abstract void accept(Visitor.ComprehensiveVisitor visitor);
+            public abstract void accept(Visitor.ImportVisitor visitor);
         }
     }
 

@@ -105,11 +105,22 @@ final class JavaSourceIClassLoader extends IClassLoader {
         // Do not attempt to load classes from package "java".
         if (className.startsWith("java.")) return null;
     
+        // Determine the name of the top-level class.
+        String topLevelClassName;
+        {
+            int idx = className.indexOf('$');
+            topLevelClassName = idx == -1 ? className : className.substring(0, idx);
+        }
+
         // Check the already-parsed compilation units.
         for (Iterator it = this.unitCompilers.iterator(); it.hasNext();) {
             UnitCompiler uc = (UnitCompiler) it.next();
-            IClass res = uc.findClass(className);
+            IClass res = uc.findClass(topLevelClassName);
             if (res != null) {
+                if (!className.equals(topLevelClassName)) {
+                    res = uc.findClass(className);
+                    if (res == null) return null;
+                }
                 this.defineIClass(res);
                 return res;
             } 
@@ -141,9 +152,12 @@ final class JavaSourceIClassLoader extends IClassLoader {
             // Remember compilation unit for later compilation.
             this.unitCompilers.add(uc);
 
-            // Find the class/interface declaration in the com
+            // Find the class/interface declaration in the compiled unit.
             IClass res = uc.findClass(className);
-            if (res == null) throw new Parser.ParseException("Source file \"" + sourceResource.getFileName() + "\" does not declare class \"" + className + "\"", (Location) null);
+            if (res == null) {
+                if (className.equals(topLevelClassName)) throw new Parser.ParseException("Source file \"" + sourceResource.getFileName() + "\" does not declare class \"" + className + "\"", (Location) null);
+                return null;
+            }
             this.defineIClass(res);
             return res;
         } catch (Scanner.ScanException e) {
@@ -151,6 +165,8 @@ final class JavaSourceIClassLoader extends IClassLoader {
         } catch (Parser.ParseException e) {
             throw new ClassNotFoundException("Parsing compilation unit \"" + sourceResource + "\"", e);
         } catch (IOException e) {
+            throw new ClassNotFoundException("Parsing compilation unit \"" + sourceResource + "\"", e);
+        } catch (CompileException e) {
             throw new ClassNotFoundException("Parsing compilation unit \"" + sourceResource + "\"", e);
         }
     }

@@ -40,11 +40,14 @@ package org.codehaus.janino;
  */
 public class Visitor {
     public interface ComprehensiveVisitor
-    extends TypeDeclarationVisitor, TypeBodyDeclarationVisitor, BlockStatementVisitor, AtomVisitor {
-    
-        // ImportDeclaration-derived.
+    extends ImportVisitor, TypeDeclarationVisitor, TypeBodyDeclarationVisitor, BlockStatementVisitor, AtomVisitor {
+    }
+
+    public interface ImportVisitor {
         void visitSingleTypeImportDeclaration(Java.CompilationUnit.SingleTypeImportDeclaration stid);
         void visitTypeImportOnDemandDeclaration(Java.CompilationUnit.TypeImportOnDemandDeclaration tiodd);
+        void visitSingleStaticImportDeclaration(Java.CompilationUnit.SingleStaticImportDeclaration ssid);
+        void visitStaticImportOnDemandDeclaration(Java.CompilationUnit.StaticImportOnDemandDeclaration siodd);
     }
     
     public interface TypeDeclarationVisitor {

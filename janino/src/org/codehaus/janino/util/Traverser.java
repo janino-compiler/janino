@@ -35,6 +35,7 @@
 package org.codehaus.janino.util;
 
 import org.codehaus.janino.*;
+import org.codehaus.janino.Java.CompilationUnit.*;
 
 import java.util.*;
 
@@ -51,8 +52,10 @@ import java.util.*;
  */
 public class Traverser {
     public final Visitor.ComprehensiveVisitor cv = new Visitor.ComprehensiveVisitor() {
-    	public final void visitSingleTypeImportDeclaration(Java.CompilationUnit.SingleTypeImportDeclaration stid)             { Traverser.this.traverseSingleTypeImportDeclaration(stid); }
-        public final void visitTypeImportOnDemandDeclaration(Java.CompilationUnit.TypeImportOnDemandDeclaration tiodd)        { Traverser.this.traverseTypeImportOnDemandDeclaration(tiodd); }
+    	public final void visitSingleTypeImportDeclaration(Java.CompilationUnit.SingleTypeImportDeclaration stid)      { Traverser.this.traverseSingleTypeImportDeclaration(stid); }
+        public final void visitTypeImportOnDemandDeclaration(Java.CompilationUnit.TypeImportOnDemandDeclaration tiodd) { Traverser.this.traverseTypeImportOnDemandDeclaration(tiodd); }
+        public final void visitSingleStaticImportDeclaration(SingleStaticImportDeclaration ssid)                       { Traverser.this.traverseSingleStaticImportDeclaration(ssid); }
+        public final void visitStaticImportOnDemandDeclaration(StaticImportOnDemandDeclaration siodd)                  { Traverser.this.traverseStaticImportOnDemandDeclaration(siodd); }
         public final void visitAnonymousClassDeclaration(Java.AnonymousClassDeclaration acd)                  { Traverser.this.traverseAnonymousClassDeclaration(acd); }
         public final void visitLocalClassDeclaration(Java.LocalClassDeclaration lcd)                          { Traverser.this.traverseLocalClassDeclaration(lcd); }
         public final void visitPackageMemberClassDeclaration(Java.PackageMemberClassDeclaration pmcd)         { Traverser.this.traversePackageMemberClassDeclaration(pmcd); }
@@ -137,6 +140,14 @@ public class Traverser {
 
     public void traverseTypeImportOnDemandDeclaration(Java.CompilationUnit.TypeImportOnDemandDeclaration tiodd) {
         this.traverseImportDeclaration(tiodd);
+    }
+
+    public void traverseSingleStaticImportDeclaration(Java.CompilationUnit.SingleStaticImportDeclaration stid) {
+        this.traverseImportDeclaration(stid);
+    }
+
+    public void traverseStaticImportOnDemandDeclaration(Java.CompilationUnit.StaticImportOnDemandDeclaration siodd) {
+        this.traverseImportDeclaration(siodd);
     }
 
     public void traverseImportDeclaration(Java.CompilationUnit.ImportDeclaration id) {

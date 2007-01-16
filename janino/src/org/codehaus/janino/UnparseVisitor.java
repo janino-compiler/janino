@@ -37,6 +37,7 @@ package org.codehaus.janino;
 import java.io.*;
 import java.util.*;
 
+import org.codehaus.janino.Java.CompilationUnit.*;
 import org.codehaus.janino.util.AutoIndentWriter;
 
 /**
@@ -103,6 +104,12 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
     }
     public void visitTypeImportOnDemandDeclaration(Java.CompilationUnit.TypeImportOnDemandDeclaration tiodd) {
         this.pw.println("import " + Java.join(tiodd.identifiers, ".") + ".*;");
+    }
+    public void visitSingleStaticImportDeclaration(SingleStaticImportDeclaration ssid) {
+        this.pw.println("import static " + Java.join(ssid.identifiers, ".") + ';');
+    }
+    public void visitStaticImportOnDemandDeclaration(StaticImportOnDemandDeclaration siodd) {
+        this.pw.println("import static " + Java.join(siodd.identifiers, ".") + ".*;");
     }
 
     public void visitLocalClassDeclaration(Java.LocalClassDeclaration lcd) {
