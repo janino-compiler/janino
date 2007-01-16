@@ -328,7 +328,7 @@ public class JavaSourceClassLoader extends ClassLoader {
                     try {
                         cfs = uc.compileUnit(this.debuggingInformation);
                     } catch (CompileException ex) {
-                        throw new ClassNotFoundException("Compiling unit \"" + uc + "\"", ex);
+                        throw new ClassNotFoundException("Compiling unit \"" + uc.compilationUnit.optionalFileName + "\"", ex);
                     }
                     for (int i = 0; i < cfs.length; ++i) {
                         ClassFile cf = cfs[i];
