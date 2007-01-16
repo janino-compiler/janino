@@ -242,7 +242,15 @@ public class ClassBodyEvaluator extends SimpleCompiler {
      * "Default imports" add to the system import "java.lang", i.e. the evaluator may refer to
      * classes imported by default imports without having to explicitly declare IMPORT statements.
      * <p>
-     * Example: <code>sc.setDefaultImports(new String[] { "java.util.Map", "java.io.*" });</code>
+     * Notice that JDK 5 "static imports" are also supported, as shown in the following example.
+     * <p>
+     * Example: <pre>
+     *     sc.setDefaultImports(new String[] {
+     *         "java.util.Map",                          // Single type import
+     *         "java.io.*",                              // Type-import-on-demand
+     *         "static java.util.Collections.EMPTY_MAP", // Single static import
+     *         "static java.util.Collections.*",         // Static-import-on-demand
+     *     });</pre>
      */
     public void setDefaultImports(String[] optionalDefaultImports) {
         this.optionalDefaultImports = optionalDefaultImports;
