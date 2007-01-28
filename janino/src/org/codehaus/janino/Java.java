@@ -109,22 +109,9 @@ public class Java {
             this.optionalPackageDeclaration = packageDeclaration;
         }
 
-        public void addImportDeclaration(CompilationUnit.ImportDeclaration id) throws Parser.ParseException {
+        public void addImportDeclaration(CompilationUnit.ImportDeclaration id) {
 
-            // Check for conflicting single-type import.
-            if (id instanceof CompilationUnit.SingleTypeImportDeclaration) {
-                String[] ss = ((CompilationUnit.SingleTypeImportDeclaration) id).identifiers;
-                String name = ss[ss.length - 1];
-                for (Iterator it = this.importDeclarations.iterator(); it.hasNext();) {
-                    CompilationUnit.ImportDeclaration id2 = (CompilationUnit.ImportDeclaration) it.next();
-                    if (id2 instanceof CompilationUnit.SingleTypeImportDeclaration) {
-                        String[] ss2 = ((CompilationUnit.SingleTypeImportDeclaration) id2).identifiers;
-                        if (ss2[ss2.length - 1].equals(name)) {
-                            if (!Java.join(ss, ".").equals(Java.join(ss2, "."))) id.throwParseException("Class \"" + name + "\" was first imported from \"" + Java.join(ss, ".") + "\", now again from \"" + Java.join(ss2, ".") + "\"");
-                        }
-                    }
-                }
-            }
+            // Conflicting imports are checked in UnitCompiler, not here.
             this.importDeclarations.add(id);
         }
 

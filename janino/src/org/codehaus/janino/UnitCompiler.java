@@ -65,7 +65,7 @@ public class UnitCompiler {
             try {
                 id.accept(new ImportVisitor() {
                     public void visitSingleTypeImportDeclaration(SingleTypeImportDeclaration stid)          { try { UnitCompiler.this.import2(stid);  } catch (CompileException e) { throw new UCE(e); } }
-                    public void visitTypeImportOnDemandDeclaration(TypeImportOnDemandDeclaration tiodd)     { try { UnitCompiler.this.import2(tiodd); } catch (CompileException e) { throw new UCE(e); } }
+                    public void visitTypeImportOnDemandDeclaration(TypeImportOnDemandDeclaration tiodd)     {       UnitCompiler.this.import2(tiodd);                                                    }
                     public void visitSingleStaticImportDeclaration(SingleStaticImportDeclaration ssid)      { try { UnitCompiler.this.import2(ssid);  } catch (CompileException e) { throw new UCE(e); } }
                     public void visitStaticImportOnDemandDeclaration(StaticImportOnDemandDeclaration siodd) { try { UnitCompiler.this.import2(siodd); } catch (CompileException e) { throw new UCE(e); } }
                 });
@@ -76,66 +76,73 @@ public class UnitCompiler {
     private void import2(SingleTypeImportDeclaration stid) throws CompileException {
         String[] ids = stid.identifiers;
         String name = last(ids);
-        {
-            String[] fqn = (String[]) UnitCompiler.this.singleTypeImports.get(name);
-            if (fqn != null) {
-                compileError("Class \"" + name + "\" was first imported as \"" + Java.join(fqn, ".") + "\", now as \"" + Java.join(ids, ".") + "\"");
-            }
+
+        String[] prev = (String[]) UnitCompiler.this.singleTypeImports.put(name, ids);
+
+        // Check for re-import of same name.
+        if (prev != null && !Arrays.equals(prev, ids)) {
+            this.compileError("Class \"" + name + "\" was previously imported as \"" + Java.join(prev, ".") + "\", now as \"" + Java.join(ids, ".") + "\"");
         }
-        UnitCompiler.this.singleTypeImports.put(name, ids);
     }
-    private void import2(TypeImportOnDemandDeclaration tiodd) throws CompileException {
+    private void import2(TypeImportOnDemandDeclaration tiodd) {
+
+        // Duplicate type-imports-on-demand are not an error, so no checks here.
         UnitCompiler.this.typeImportsOnDemand.add(tiodd.identifiers);
     }
     private void import2(SingleStaticImportDeclaration ssid) throws CompileException {
         String name = last(ssid.identifiers);
+        Object importedObject;
+
+        FIND_IMPORTED_OBJECT:
+        {
+
+            // Type?
+            {
+                IClass iClass = this.loadFullyQualifiedClass(ssid.identifiers);
+                if (iClass != null) {
+                    importedObject = iClass;
+                    break FIND_IMPORTED_OBJECT;
+                }
+            }
+    
+            String[] typeName = allButLast(ssid.identifiers);
+            IClass iClass = this.loadFullyQualifiedClass(typeName);
+            if (iClass == null) {
+                this.compileError("Could not load \"" + Java.join(typeName, ".") + "\"", ssid.getLocation());
+                return;
+            }
+    
+            // Static field?
+            IField[] flds = iClass.getDeclaredIFields();
+            for (int i = 0; i < flds.length; ++i) {
+                IField iField = flds[i];
+                if (iField.getName().equals(name)) {
+                    if (!iField.isStatic()) {
+                        this.compileError("Filed \"" + name + "\" of \"" + Java.join(typeName, ".") + "\" must be static", ssid.getLocation());
+                    }
+                    importedObject = iField;
+                    break FIND_IMPORTED_OBJECT;
+                }
+            }
+    
+            // Static method?
+            IMethod[] ms = iClass.getDeclaredIMethods(name);
+            if (ms.length > 0) {
+                importedObject = Arrays.asList(ms);
+                break FIND_IMPORTED_OBJECT;
+            }
+
+            // Give up.
+            this.compileError("\"" + Java.join(typeName, ".") + "\" has no static member \"" + name + "\"", ssid.getLocation());
+            return;
+        }
+
+        Object prev = this.singleStaticImports.put(name, importedObject);
 
         // Check for re-import of same name.
-        {
-            Object o = this.singleStaticImports.get(name);
-            if (o != null) {
-                UnitCompiler.this.compileError("\"" + name + "\" was previously imported as \"" + o.toString() + "\"", ssid.getLocation());
-            }
+        if (prev != null && !prev.equals(importedObject)) {
+            UnitCompiler.this.compileError("\"" + name + "\" was previously statically imported as \"" + prev.toString() + "\", now as \"" + importedObject.toString() + "\"", ssid.getLocation());
         }
-
-        // Type?
-        {
-            IClass iClass = this.loadFullyQualifiedClass(ssid.identifiers);
-            if (iClass != null) {
-                this.singleStaticImports.put(name, iClass);
-                return;
-            }
-        }
-
-        // Static field?
-        String[] typeName = allButLast(ssid.identifiers);
-        IClass iClass = this.loadFullyQualifiedClass(typeName);
-        if (iClass == null) {
-            this.compileError("Could not load \"" + Java.join(typeName, ".") + "\"", ssid.getLocation());
-            return;
-        }
-        IField[] flds = iClass.getDeclaredIFields();
-        for (int i = 0; i < flds.length; ++i) {
-            IField f = flds[i];
-            if (f.getName().equals(name)) {
-                if (!f.isStatic()) {
-                    this.compileError("Filed \"" + name + "\" of \"" + Java.join(typeName, ".") + "\" must be static", ssid.getLocation());
-                    return;
-                }
-                this.singleStaticImports.put(name, f);
-                return;
-            }
-        }
-
-        // Static method?
-        IMethod[] ms = iClass.getDeclaredIMethods(name);
-        if (ms.length > 0) {
-            this.singleStaticImports.put(name, ms);
-            return;
-        }
-        
-        this.compileError("\"" + Java.join(typeName, ".") + "\" has no static member \"" + name + "\"", ssid.getLocation());
-        return;
     }
     private void import2(StaticImportOnDemandDeclaration siodd) throws CompileException {
         IClass iClass = this.loadFullyQualifiedClass(siodd.identifiers);
@@ -5307,12 +5314,13 @@ public class UnitCompiler {
             // Static method declared through single static import?
             {
                 Object o = this.singleStaticImports.get(mi.methodName);
-                if (o instanceof IMethod[]) {
+                if (o instanceof List) {
+                    IClass declaringIClass = ((IMethod) ((List) o).get(0)).getDeclaringIClass();
                     iMethod = this.findIMethod(
-                        mi,                                      // located
-                        ((IMethod[]) o)[0].getDeclaringIClass(), // targetType
-                        mi.methodName,                           // methodName
-                        mi.arguments                             // arguments
+                        mi,              // located
+                        declaringIClass, // targetType
+                        mi.methodName,   // methodName
+                        mi.arguments     // arguments
                     );
                     if (iMethod != null) break FIND_METHOD;
                 }
@@ -7674,6 +7682,6 @@ public class UnitCompiler {
 
     private final Map        singleTypeImports     = new HashMap();   // String simpleTypeName => String[] fullyQualifiedTypeName
     private final Collection typeImportsOnDemand   = new ArrayList(); // String[] package
-    private final Map        singleStaticImports   = new HashMap();   // String staticMemberName => IField, IMethod[] or IClass
+    private final Map        singleStaticImports   = new HashMap();   // String staticMemberName => IField, List of IMethod, or IClass
     private final Collection staticImportsOnDemand = new ArrayList(); // IClass
 }

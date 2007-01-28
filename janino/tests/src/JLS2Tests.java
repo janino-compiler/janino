@@ -182,11 +182,25 @@ public class JLS2Tests extends JaninoTestSuite {
         
         section("7.5 Import Declarations");
 
+        section("7.5.1 Single-Type-Import Declaration");
+        exp(EXEC, "1", "import java.util.ArrayList; new ArrayList()");
+        exp(EXEC, "Duplicate", "import java.util.ArrayList; import java.util.ArrayList; new ArrayList()");
+        scr(COMP, "Inconsistent", "import java.util.List; import java.awt.List;");
+
+        section("7.5.2 Type-Import-on-Demand Declaration");
+        exp(EXEC, "1", "import java.util.*; new ArrayList()");
+        exp(EXEC, "Duplicate", "import java.util.*; import java.util.*; new ArrayList()");
+        
         section("7.5.3 Single Static Import Declaration");
         exp(TRUE, "Static field", "import static java.util.Collections.EMPTY_MAP; EMPTY_MAP instanceof java.util.Map");
+        exp(TRUE, "Static field/duplicate", "import static java.util.Collections.EMPTY_MAP; import static java.util.Collections.EMPTY_MAP; EMPTY_MAP instanceof java.util.Map");
         scr(EXEC, "Member type", "import static java.util.Map.Entry; Entry e;");
+        scr(EXEC, "Member type/duplicate", "import static java.util.Map.Entry; import static java.util.Map.Entry; Entry e;");
+        scr(COMP, "Member type/inconsistent", "import static java.util.Map.Entry; import static java.security.KeyStore.Entry; Entry e;");
         exp(TRUE, "Static method", "import static java.util.Arrays.asList; asList(new String[] { \"HELLO\", \"WORLD\" }).size() == 2");
-
+        exp(TRUE, "Static method/duplicate", "import static java.util.Arrays.asList; import static java.util.Arrays.asList; asList(new String[] { \"HELLO\", \"WORLD\" }).size() == 2");
+        scr(COMP, "Static method/inconsistent", "import static java.lang.Integer.toString; import static java.lang.Long.toString;");
+        
         section("7.5.4 Static-Import-on-Demand Declaration");
         exp(TRUE, "Static field", "import static java.util.Collections.*; EMPTY_MAP instanceof java.util.Map");
         scr(EXEC, "Member type", "import static java.util.Map.*; Entry e;");
