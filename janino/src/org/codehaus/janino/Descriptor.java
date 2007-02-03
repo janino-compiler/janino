@@ -229,6 +229,8 @@ public class Descriptor {
     public final static String BOOLEAN = "Z";
     public final static String OBJECT            = "Ljava/lang/Object;";
     public final static String STRING            = "Ljava/lang/String;";
+    public final static String STRING_BUFFER     = "Ljava/lang/StringBuffer;";
+    public final static String STRING_BUILDER    = "Ljava/lang/StringBuilder;"; // Since 1.5!
     public final static String CLASS             = "Ljava/lang/Class;";
     public final static String THROWABLE         = "Ljava/lang/Throwable;";
     public final static String RUNTIME_EXCEPTION = "Ljava/lang/RuntimeException;";

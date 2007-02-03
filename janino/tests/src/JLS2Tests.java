@@ -32,6 +32,8 @@
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import java.util.Arrays;
+
 import junit.framework.*;
 
 import util.*;
@@ -288,6 +290,20 @@ public class JLS2Tests extends JaninoTestSuite {
             "    }\n" +
             "}\n"
         ), "A");
+
+        section("15.18 Additive Operators");
+        section("15.18.1 String Concatenation Operator +");
+        section("15.18.1.3 Examples of String Concatenation");
+        exp(TRUE, "1", "(\"The square root of 6.25 is \" + Math.sqrt(6.25)).equals(\"The square root of 6.25 is 2.5\")");
+        exp(TRUE, "2", "1 + 2 + \" fiddlers\" == \"3 fiddlers\"");
+        exp(TRUE, "3", "\"fiddlers \" + 1 + 2 == \"fiddlers 12\"");
+        for (int i = 65530; i <= 65537; ++i) {
+            char[] ca = new char[i];
+            Arrays.fill(ca, 'x');
+            String s1 = new String(ca);
+            exp(TRUE, "4/" + i, "\"" + s1 +"\".length() == " + i);
+            exp(TRUE, "5/" + i, "(\"" + s1 +"\" + \"XXX\").length() == " + (i + 3));
+        }
 
         section("16 Definite Assignment");
         

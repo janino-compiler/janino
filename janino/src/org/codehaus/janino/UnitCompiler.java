@@ -51,12 +51,45 @@ import org.codehaus.janino.util.enumerator.*;
 public class UnitCompiler {
     private static final boolean DEBUG = false;
 
+    /**
+     * This constant determines the number of operands up to which the
+     *
+     *      a.concat(b).concat(c)
+     *
+     * strategy is used to implement string concatenation. For more operands, the
+     *
+     *      new StringBuffer(a).append(b).append(c).append(d).toString()
+     *
+     * strategy is chosen.
+     *
+     * A very good article from Tom Gibara
+     *
+     *    http://www.tomgibara.com/janino-evaluation/string-concatenation-benchmark
+     *
+     * analyzes the impact of this decision and recommends a value of three.
+     */
+    private static final int STRING_CONCAT_LIMIT = 3;
+
     public UnitCompiler(
         Java.CompilationUnit compilationUnit,
         IClassLoader         iClassLoader
     ) throws CompileException {
         this.compilationUnit = compilationUnit;
         this.iClassLoader    = iClassLoader;
+
+        try {
+            if (iClassLoader.loadIClass(Descriptor.STRING_BUILDER) != null) {
+                this.isStringBuilderAvailable = true;
+            } else
+            if (iClassLoader.loadIClass(Descriptor.STRING_BUFFER) != null) {
+                this.isStringBuilderAvailable = false;
+            } else
+            {
+                throw new RuntimeException("SNO: Could neither load \"StringBuffer\" nor \"StringBuilder\"");
+            }
+        } catch (ClassNotFoundException ex) {
+            throw new RuntimeException("SNO: Error loading \"StringBuffer\" or \"StringBuilder\": " + ex.getMessage());
+        }
 
         this.typeImportsOnDemand.add(new String[] { "java", "lang" });
         for (Iterator it = this.compilationUnit.importDeclarations.iterator(); it.hasNext();) {
@@ -4373,7 +4406,7 @@ public class UnitCompiler {
      * <code>&nbsp;&nbsp;| ^ &amp; * / % + - &lt;&lt; &gt;&gt; &gt;&gt;&gt;</code>
      */
     private IClass compileArithmeticOperation(
-        Java.Located  located,
+        final Java.Located  located,
         IClass   type,
         Iterator operands,
         String   operator
@@ -4453,51 +4486,7 @@ public class UnitCompiler {
 
                 // String concatenation?
                 if (operator == "+" && (type == icl.STRING || operandType == icl.STRING)) {
-
-                    if (type != null) this.stringConversion(located, type);
-
-                    do {
-                        Object cv = this.getConstantValue(operand);
-                        if (cv == null) {
-                            this.stringConversion(located, this.compileGetValue(operand));
-                            operand = operands.hasNext() ? (Java.Rvalue) operands.next() : null;
-                        } else {
-                            if (operands.hasNext()) {
-                                operand = (Java.Rvalue) operands.next();
-                                Object cv2 = this.getConstantValue(operand);
-                                if (cv2 != null) {
-                                    StringBuffer sb = new StringBuffer(cv.toString()).append(cv2);
-                                    for (;;) {
-                                        if (!operands.hasNext()) {
-                                            operand = null;
-                                            break;
-                                        }
-                                        operand = (Java.Rvalue) operands.next();
-                                        Object cv3 = this.getConstantValue(operand);
-                                        if (cv3 == null) break;
-                                        sb.append(cv3);
-                                    }
-                                    cv = sb.toString();
-                                }
-                            } else {
-                                operand = null;
-                            }
-                            this.pushConstant(located, cv.toString());
-                        }
-
-                        // Concatenate.
-                        if (type != null) {
-                            this.writeOpcode(located, Opcode.INVOKEVIRTUAL);
-                            this.writeConstantMethodrefInfo(
-                                located,
-                                Descriptor.STRING,                                // classFD
-                                "concat",                                         // methodName
-                                "(" + Descriptor.STRING + ")" + Descriptor.STRING // methodMD
-                            );
-                        }
-                        type = this.iClassLoader.STRING;
-                    } while (operand != null);
-                    return type;
+                    return this.compileStringConcatenation(located, type, operand, operands);
                 }
 
                 if (type == null) {
@@ -4574,6 +4563,153 @@ public class UnitCompiler {
 
         throw new RuntimeException("Unexpected operator \"" + operator + "\"");
     }
+
+    /**
+     * @param type If non-null, the first operand with that type is already on the stack
+     * @param operand The next operand
+     * @param operands All following operands ({@link Iterator} over {@link Java.Rvalue}s)
+     */
+    private IClass compileStringConcatenation(
+        final Java.Located located,
+        IClass             type,
+        Java.Rvalue        operand,
+        Iterator           operands
+    ) throws CompileException {
+        boolean operandOnStack;
+        if (type != null) {
+            this.stringConversion(located, type);
+            operandOnStack = true;
+        } else
+        {
+            operandOnStack = false;
+        }
+
+        // Compute list of operands and merge consecutive constant operands.
+        List tmp = new ArrayList(); // Compilable
+        do {
+            Object cv = this.getConstantValue(operand);
+            if (cv == null) {
+                // Non-constant operand.
+                final Java.Rvalue final_operand = operand;
+                tmp.add(new Compilable() {
+                    public void compile() throws CompileException {
+                        UnitCompiler.this.stringConversion(located, UnitCompiler.this.compileGetValue(final_operand));
+                    }
+                });
+
+                operand = operands.hasNext() ? (Java.Rvalue) operands.next() : null;
+            } else
+            {
+                // Constant operand. Check to see whether the next operand is also constant.
+                if (operands.hasNext()) {
+                    operand = (Java.Rvalue) operands.next();
+                    Object cv2 = this.getConstantValue(operand);
+                    if (cv2 != null) {
+                        StringBuffer sb = new StringBuffer(cv.toString()).append(cv2);
+                        for (;;) {
+                            if (!operands.hasNext()) {
+                                operand = null;
+                                break;
+                            }
+                            operand = (Java.Rvalue) operands.next();
+                            Object cv3 = this.getConstantValue(operand);
+                            if (cv3 == null) break;
+                            sb.append(cv3);
+                        }
+                        cv = sb.toString();
+                    }
+                } else
+                {
+                    operand = null;
+                }
+                // Break long string constants up into UTF8-able chunks.
+                final String[] ss = UnitCompiler.makeUTF8Able(cv.toString());
+                for (int i = 0; i < ss.length; ++i) {
+                    final String s = ss[i];
+                    tmp.add(new Compilable() {
+                        public void compile() throws CompileException {
+                            UnitCompiler.this.pushConstant(located, s);
+                        }
+                    });
+                }
+            }
+        } while (operand != null);
+
+        // At this point "tmp" contains an optimized sequence of Strings (representing constant
+        // portions) and Rvalues (non-constant portions).
+
+        if (tmp.size() <= (operandOnStack ? STRING_CONCAT_LIMIT - 1: STRING_CONCAT_LIMIT)) {
+
+            // String concatenation through "a.concat(b).concat(c)".
+            for (Iterator it = tmp.iterator(); it.hasNext();) {
+                Compilable c = (Compilable) it.next();
+                c.compile();
+                
+                // Concatenate.
+                if (operandOnStack) {
+                    this.writeOpcode(located, Opcode.INVOKEVIRTUAL);
+                    this.writeConstantMethodrefInfo(
+                        located,
+                        Descriptor.STRING,                                // classFD
+                        "concat",                                         // methodName
+                        "(" + Descriptor.STRING + ")" + Descriptor.STRING // methodMD
+                    );
+                } else
+                {
+                    operandOnStack = true;
+                }
+            }
+            return this.iClassLoader.STRING;
+        }
+
+        // String concatenation through "new StringBuffer(a).append(b).append(c).append(d).toString()".
+        Iterator it = tmp.iterator();
+
+        String stringBuilferFD = this.isStringBuilderAvailable ? Descriptor.STRING_BUILDER : Descriptor.STRING_BUFFER;
+        // "new StringBuffer(a)":
+        if (operandOnStack) {
+            this.writeOpcode(located, Opcode.NEW);
+            this.writeConstantClassInfo(located, stringBuilferFD);
+            this.writeOpcode(located, Opcode.DUP_X1);
+            this.writeOpcode(located, Opcode.SWAP);
+        } else
+        {
+            this.writeOpcode(located, Opcode.NEW);
+            this.writeConstantClassInfo(located, stringBuilferFD);
+            this.writeOpcode(located, Opcode.DUP);
+            ((Compilable) it.next()).compile();
+        }
+        this.writeOpcode(located, Opcode.INVOKESPECIAL);
+        this.writeConstantMethodrefInfo(
+            located,
+            stringBuilferFD,                                // classFD
+            "<init>",                                       // methodName
+            "(" + Descriptor.STRING + ")" + Descriptor.VOID // methodMD
+        );
+        while (it.hasNext()) {
+            ((Compilable) it.next()).compile();
+            
+            // "StringBuffer.append(b)":
+            this.writeOpcode(located, Opcode.INVOKEVIRTUAL);
+            this.writeConstantMethodrefInfo(
+                located,
+                stringBuilferFD,                                // classFD
+                "append",                                       // methodName
+                "(" + Descriptor.STRING + ")" + stringBuilferFD // methodMD
+            );
+        }
+
+        // "StringBuffer.toString()":
+        this.writeOpcode(located, Opcode.INVOKEVIRTUAL);
+        this.writeConstantMethodrefInfo(
+            located,
+            stringBuilferFD,           // classFD
+            "toString",                // methodName
+            "()" + Descriptor.STRING   // methodMD
+        );
+        return this.iClassLoader.STRING;
+    }
+    interface Compilable { void compile() throws CompileException; }
 
     /**
      * Convert object of type "sourceType" to type "String". JLS2 15.18.1.1
@@ -6460,36 +6596,17 @@ public class UnitCompiler {
         }
         if (value instanceof String) {
             String s = (String) value;
-            if (s.length() < (65536 / 3)) {
-                this.writeLDC(located, this.addConstantStringInfo((String) value));
-                return this.iClassLoader.STRING;
-            }
-            int sLength = s.length(), uTFLength = 0;
-            int from = 0;
-            for (int i = 0;; i++) {
-                if (i == sLength || uTFLength >= 65532) {
-                    this.writeLDC(located, this.addConstantStringInfo(s.substring(from, i)));
-                    if (from != 0) {
-                        this.writeOpcode(located, Opcode.INVOKEVIRTUAL);
-                        this.writeConstantMethodrefInfo(
-                            located,
-                            Descriptor.STRING,                                // classFD
-                            "concat",                                         // methodName
-                            "(" + Descriptor.STRING + ")" + Descriptor.STRING // methodMD
-                        );
-                    }
-                    if (i == sLength) break;
-                    from = i;
-                    uTFLength = 0;
-                }
-                int c = s.charAt(i);
-                if ((c >= 0x0001) && (c <= 0x007F)) {
-                    ++uTFLength;
-                } else if (c > 0x07FF) {
-                    uTFLength += 3;
-                } else {
-                    uTFLength += 2;
-                }
+            String ss[] = UnitCompiler.makeUTF8Able(s);
+            this.writeLDC(located, this.addConstantStringInfo(ss[0]));
+            for (int i = 1; i < ss.length; ++i) {
+                this.writeLDC(located, this.addConstantStringInfo(ss[i]));
+                this.writeOpcode(located, Opcode.INVOKEVIRTUAL);
+                this.writeConstantMethodrefInfo(
+                    located,
+                    Descriptor.STRING,                                // classFD
+                    "concat",                                         // methodName
+                    "(" + Descriptor.STRING + ")" + Descriptor.STRING // methodMD
+                );
             }
             return this.iClassLoader.STRING;
         }
@@ -6502,6 +6619,48 @@ public class UnitCompiler {
             return IClass.VOID;
         }
         throw new RuntimeException("Unknown literal type \"" + value.getClass().getName() + "\"");
+    }
+
+    /**
+     * Only strings that can be UTF8-encoded into 65535 bytes can be stored as constant string
+     * infos.
+     *
+     * @param s The string to split into suitable chunks
+     * @return the chunks that can be UTF8-encoded into 65535 bytes
+     */
+    private static String[] makeUTF8Able(String s) {
+        if (s.length() < (65536 / 3)) return new String[] { s };
+
+        int sLength = s.length(), uTFLength = 0;
+        int from = 0;
+        List l = new ArrayList();
+        for (int i = 0;; i++) {
+            if (i == sLength) {
+                l.add(s.substring(from));
+                break;
+            }
+            if (uTFLength >= 65532) {
+                l.add(s.substring(from, i));
+                if (i + (65536 / 3) > sLength) {
+                    l.add(s.substring(i));
+                    break;
+                }
+                from = i;
+                uTFLength = 0;
+            }
+            int c = s.charAt(i);
+            if (c >= 0x0001 && c <= 0x007F) {
+                ++uTFLength;
+            } else
+            if (c > 0x07FF) {
+                uTFLength += 3;
+            } else
+            {
+                uTFLength += 2;
+            }
+        }
+        return (String[]) l.toArray(new String[l.size()]);
+
     }
     private void writeLDC(Java.Located located, short index) {
         if (index <= 255) {
@@ -7676,9 +7835,10 @@ public class UnitCompiler {
 
     public final Java.CompilationUnit compilationUnit;
 
-    private List          generatedClassFiles;
-    private IClassLoader  iClassLoader;
-    private EnumeratorSet debuggingInformation;
+    private final IClassLoader iClassLoader;
+    private final boolean      isStringBuilderAvailable;
+    private List               generatedClassFiles;
+    private EnumeratorSet      debuggingInformation;
 
     private final Map        singleTypeImports     = new HashMap();   // String simpleTypeName => String[] fullyQualifiedTypeName
     private final Collection typeImportsOnDemand   = new ArrayList(); // String[] package
