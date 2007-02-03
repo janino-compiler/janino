@@ -2722,6 +2722,9 @@ public class Java {
         public final void accept(Visitor.RvalueVisitor visitor) { visitor.visitLiteral(this); }
     }
 
+    /**
+     * Synthetic syntax element for implementing the class literals.
+     */
     public static final class ConstantValue extends Rvalue {
         public final Object constantValue;
 
