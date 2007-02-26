@@ -716,6 +716,10 @@ public class CodeContext {
         return i;
     }
 
+    public Inserter currentInserter() {
+        return this.currentInserter;
+    }
+
     /**
      * Remember the current {@link Inserter}, then replace it with the
      * new one.

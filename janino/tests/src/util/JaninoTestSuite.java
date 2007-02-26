@@ -41,6 +41,7 @@ import junit.framework.*;
 import org.codehaus.janino.*;
 
 public class JaninoTestSuite extends StructuredTestSuite {
+
     /** The test is expected to throw a ScanException */
     public static final CompileAndExecuteTest.Mode SCAN = new CompileAndExecuteTest.Mode();
     /** The test is expected to throw a ParseException */
@@ -53,6 +54,7 @@ public class JaninoTestSuite extends StructuredTestSuite {
     public static final CompileAndExecuteTest.Mode EXEC = new CompileAndExecuteTest.Mode();
     /** The test is expected to compile and execute successfully, and return <code>true</code> */
     public static final CompileAndExecuteTest.Mode TRUE = new CompileAndExecuteTest.Mode();
+
     /** The string is expected to contain exactly one scannable token. */
     public static final ScannerTest.Mode           VALI = new ScannerTest.Mode();
     /** Scanning the string is expected to throw a {@link org.codehaus.janino.Scanner.ScanException}. */
@@ -63,25 +65,33 @@ public class JaninoTestSuite extends StructuredTestSuite {
     }
 
     /**
-     * Shorthand for "add scanner test".
+     * Add a test case that scans the given {@link String} into Java<sup>TM</sup> tokens.
+     *
+     * <table>
+     *   <tr><th><code>mode</code></th><th>Meaning</th></tr>
+     *   <tr><td>VALI</td><td>The string is expected to contain exactly one scannable token.</tr>
+     *   <tr><td>INVA</td><td>Scanning the string is expected to throw a {@link org.codehaus.janino.Scanner.ScanException}.
+     * </table>
+     *
+     * @param name The name of the JUnit test case
      */
-    protected TestCase sca(final ScannerTest.Mode mode, String title, final String s) {
-        TestCase tc = new ScannerTest(mode, title, s);
+    protected ScannerTest sca(final ScannerTest.Mode mode, String name, final String s) {
+        ScannerTest tc = new ScannerTest(mode, name, s);
         addTest(tc);
         return tc;
     }
+    protected static final class ScannerTest extends TestCase {
+        private final Mode   mode;
+        private final String s;
 
-    protected static class ScannerTest extends TestCase {
-        private final ScannerTest.Mode mode;
-        private final String           s;
+        protected static class Mode { private Mode() {} }
 
-        public static class Mode { private Mode() {}}
-
-        public ScannerTest(ScannerTest.Mode mode, String title, String s) {
-            super(title);
+        public ScannerTest(Mode mode, String name, String s) {
+            super(name);
             this.mode = mode;
-            this.s = s;
+            this.s    = s;
         }
+
         protected void runTest() throws Exception {
             if (this.mode == INVA) {
                 try { new Scanner(null, new StringReader(this.s)).peek(); } catch (Scanner.ScanException ex) { return; }
@@ -90,71 +100,45 @@ public class JaninoTestSuite extends StructuredTestSuite {
             if (this.mode == VALI) {
                 Scanner sc = new Scanner(null, new StringReader(this.s));
                 sc.read();
-                assertTrue(sc.read().isEOF());
+                assertTrue("Only one token", sc.read().isEOF());
             } else
             {
                 fail("Invalid mode \"" + this.mode + "\"");
             }
         }
-    }
+    };
 
     /**
-     * Shorthand for "add expression test".
+     * Add a test case that scans, parses and compiles an expression, and verifies that it
+     * evaluates to <code>true</code>.
      *
-     * @see ExpressionTest
+     * <table>
+     *   <tr><th><code>mode</code></th><th>Meaning</th></tr>
+     *   <tr><td>SCAN</td><td>The test is expected to throw a ScanException</tr>
+     *   <tr><td>PARS</td><td>The test is expected to throw a ParseException</tr>
+     *   <tr><td>COMP</td><td>The test is expected to throw a CompileException</tr>
+     *   <tr><td>COOK</td><td>The test is expected to compile successfully, but is not executed</tr>
+     *   <tr><td>EXEC</td><td>The test is expected to compile and execute successfully</tr>
+     *   <tr><td>TRUE</td><td>The test is expected to compile and execute successfully, and return <code>true</code></tr>
+     * </table>
+     *
+     * @param name The name of the JUnit test case
      */
-    protected ExpressionTest exp(ExpressionTest.Mode mode, String title, String expression) {
-        ExpressionTest et = new ExpressionTest(mode, title, expression);
+    protected ExpressionTest exp(ExpressionTest.Mode mode, String name, String expression) {
+        ExpressionTest et = new ExpressionTest(mode, name, expression);
         addTest(et);
         return et;
     }
-
-    /**
-     * Shorthand for "add script test".
-     *
-     * @see ScriptTest
-     */
-    public ScriptTest scr(ScriptTest.Mode mode, String title, String script) {
-        ScriptTest st = new ScriptTest(mode, title, script);
-        addTest(st);
-        return st;
-    }
-
-                
-    /**
-     * Shorthand for "add class body test".
-     *
-     * @see ClassBodyTest
-     */
-    protected ClassBodyTest clb(ClassBodyTest.Mode mode, String title, String classBody) {
-        ClassBodyTest cbt = new ClassBodyTest(title, mode, classBody);
-        addTest(cbt);
-        return cbt;
-    }
-
-    /**
-     * Shorthand for "add simple compiler test".
-     *
-     * @see SimpleCompilerTest
-     */
-    protected SimpleCompilerTest sim(SimpleCompilerTest.Mode mode, String title, String compilationUnit, String className) {
-        SimpleCompilerTest sct = new SimpleCompilerTest(title, mode, compilationUnit, className);
-        addTest(sct);
-        return sct;
-    }
-
-    /**
-     * A test case that compiles and evaluates a Janino expression, and verifies
-     * that it evaluates to "true".
-     */
     static protected class ExpressionTest extends CompileAndExecuteTest {
         private final String              expression;
         private final ExpressionEvaluator expressionEvaluator;
     
         public ExpressionTest(Mode mode, String name, String expression) {
-            super(mode, name);
-            this.expression = expression;
+            super(name, mode);
+            this.expression          = expression;
             this.expressionEvaluator = new ExpressionEvaluator();
+
+            this.expressionEvaluator.setExpressionType(mode == TRUE ? boolean.class : ExpressionEvaluator.ANY_TYPE);
         }
         public ExpressionTest setDefaultImports(String[] defaultImports) { this.expressionEvaluator.setDefaultImports(defaultImports); return this; }
     
@@ -168,17 +152,35 @@ public class JaninoTestSuite extends StructuredTestSuite {
     }
     
     /**
-     * A test case that compiles and runs a Janino script, and optionally checks
-     * it boolean return value for thruthness.
+     * Add a test case that scans, parses, compiles and executes a Janino script, and verifies
+     * that it returns <code>true</code>.
+     *
+     * <table>
+     *   <tr><th><code>mode</code></th><th>Meaning</th></tr>
+     *   <tr><td>SCAN</td><td>The test is expected to throw a ScanException</tr>
+     *   <tr><td>PARS</td><td>The test is expected to throw a ParseException</tr>
+     *   <tr><td>COMP</td><td>The test is expected to throw a CompileException</tr>
+     *   <tr><td>COOK</td><td>The test is expected to compile successfully, but is not executed</tr>
+     *   <tr><td>EXEC</td><td>The test is expected to compile and execute successfully</tr>
+     *   <tr><td>TRUE</td><td>The test is expected to compile and execute successfully, and return <code>true</code></tr>
+     * </table>
+     *
+     * @param name The name of the JUnit test case
      */
+    protected ScriptTest scr(ScriptTest.Mode mode, String name, String script) {
+        ScriptTest st = new ScriptTest(mode, name, script);
+        addTest(st);
+        return st;
+    }
     static protected class ScriptTest extends CompileAndExecuteTest {
         private final String          script;
         private final ScriptEvaluator scriptEvaluator;
     
         public ScriptTest(Mode mode, String name, String script) {
-            super(mode, name);
-            this.script = script;
+            super(name, mode);
+            this.script          = script;
             this.scriptEvaluator = new ScriptEvaluator();
+
             this.scriptEvaluator.setReturnType(mode == TRUE ? boolean.class : void.class);
         }
         public ScriptTest setDefaultImports(String[] defaultImports) { this.scriptEvaluator.setDefaultImports(defaultImports); return this; }
@@ -193,16 +195,34 @@ public class JaninoTestSuite extends StructuredTestSuite {
     }
     
     /**
-     * A test case that compiles a class body, calls its "static main()" method and
-     * optionally verifies that it returns <code>true</code>.
+     * Add a test case that scans, parses and compiles a class body, invokes its
+     * <code>public static boolean main()</code> method and verifies that it returns
+     * <code>true</code>.
+     *
+     * <table>
+     *   <tr><th><code>mode</code></th><th>Meaning</th></tr>
+     *   <tr><td>SCAN</td><td>The test is expected to throw a ScanException</tr>
+     *   <tr><td>PARS</td><td>The test is expected to throw a ParseException</tr>
+     *   <tr><td>COMP</td><td>The test is expected to throw a CompileException</tr>
+     *   <tr><td>COOK</td><td>The test is expected to compile successfully, but is not executed</tr>
+     *   <tr><td>EXEC</td><td>The test is expected to compile and execute successfully</tr>
+     *   <tr><td>TRUE</td><td>The test is expected to compile and execute successfully, and return <code>true</code></tr>
+     * </table>
+     *
+     * @param name The name of the JUnit test case
      */
+    protected ClassBodyTest clb(ClassBodyTest.Mode mode, String name, String classBody) {
+        ClassBodyTest cbt = new ClassBodyTest(name, mode, classBody);
+        addTest(cbt);
+        return cbt;
+    }
     static protected class ClassBodyTest extends CompileAndExecuteTest {
         private final String             classBody;
         private final ClassBodyEvaluator classBodyEvaluator;
 
         public ClassBodyTest(String name, Mode mode, String classBody) {
-            super(mode, name);
-            this.classBody = classBody;
+            super(name, mode);
+            this.classBody          = classBody;
             this.classBodyEvaluator = new ClassBodyEvaluator();
         }
         public ClassBodyTest setDefaultImports(String[] defaultImports) { this.classBodyEvaluator.setDefaultImports(defaultImports); return this; }
@@ -217,16 +237,35 @@ public class JaninoTestSuite extends StructuredTestSuite {
     }
 
     /**
-     * A test case that compiles a compilation unit, optionally calls its static "test()" method,
-     * and optionally verifies that it returns <code>true</code>.
+     * Add a test case that scans, parses and compiles a compilation unit, then calls the
+     * <code>public static boolean test()</code> method of the named class, and verifies that it
+     * returns <code>true</code>.
+     *
+     * <table>
+     *   <tr><th><code>mode</code></th><th>Meaning</th></tr>
+     *   <tr><td>SCAN</td><td>The test is expected to throw a ScanException</tr>
+     *   <tr><td>PARS</td><td>The test is expected to throw a ParseException</tr>
+     *   <tr><td>COMP</td><td>The test is expected to throw a CompileException</tr>
+     *   <tr><td>COOK</td><td>The test is expected to compile successfully, but is not executed</tr>
+     *   <tr><td>EXEC</td><td>The test is expected to compile and execute successfully</tr>
+     *   <tr><td>TRUE</td><td>The test is expected to compile and execute successfully, and return <code>true</code></tr>
+     * </table>
+     *
+     * @param name The name of the JUnit test case
+     * @param className The name of the class with the <code>public static boolean test()</code> method
      */
+    protected SimpleCompilerTest sim(SimpleCompilerTest.Mode mode, String name, String compilationUnit, String className) {
+        SimpleCompilerTest sct = new SimpleCompilerTest(name, mode, compilationUnit, className);
+        addTest(sct);
+        return sct;
+    }
     static protected class SimpleCompilerTest extends CompileAndExecuteTest {
         private final String         compilationUnit;
         private final String         className;
         private final SimpleCompiler simpleCompiler;
 
         public SimpleCompilerTest(String name, Mode mode, String compilationUnit, String className) {
-            super(mode, name);
+            super(name, mode);
             this.compilationUnit = compilationUnit;
             this.className       = className;
             this.simpleCompiler = new SimpleCompiler();
@@ -250,12 +289,12 @@ public class JaninoTestSuite extends StructuredTestSuite {
      * A test case that calls its abstract methods {@link #compile()}, then {@link #execute()}, and
      * verifies that they throw exceptions and return results as expected.
      */
-    static protected abstract class CompileAndExecuteTest extends TestCase {
+    static abstract class CompileAndExecuteTest extends TestCase {
         protected final Mode mode;
     
         public static class Mode { private Mode() {}}
 
-        public CompileAndExecuteTest(Mode mode, String name) {
+        public CompileAndExecuteTest(String name, Mode mode) {
             super(name);
             // Notice: JUnit 3.8.1 gets confused if the name contains "(" and/or ",".
             if (name.indexOf('(') != -1) throw new RuntimeException("Parentheses in test name not permitted");

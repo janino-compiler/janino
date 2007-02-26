@@ -173,7 +173,76 @@ public class JLS2Tests extends JaninoTestSuite {
         section("5 Conversions and Promotions");
         
         section("5.1 Kinds of Conversions");
+
+        section("5.1.7 Boxing Conversion");
+        scr(TRUE, "boolean 1", "Boolean   b = true;        return b.booleanValue();");
+        scr(TRUE, "boolean 2", "Boolean   b = false;       return !b.booleanValue();");
+        scr(TRUE, "byte",      "Byte      b = (byte) 7;    return b.equals(new Byte((byte) 7));");
+        scr(TRUE, "char",      "Character c = 'X';         return c.equals(new Character('X'));");
+        scr(TRUE, "short",     "Short     s = (short) 322; return s.equals(new Short((short) 322));");
+        scr(TRUE, "int",       "Integer   i = 99;          return i.equals(new Integer(99));");
+        scr(TRUE, "long",      "Long      l = 733L;        return l.equals(new Long(733L));");
+        scr(TRUE, "float",     "Float     f = 12.5F;       return f.equals(new Float(12.5F));");
+        scr(TRUE, "double",    "Double    d = 14.3D;       return d.equals(new Double(14.3D));");
         
+        section("5.1.8 Unboxing Conversion");
+        exp(TRUE, "boolean 1", "Boolean.TRUE");
+        exp(TRUE, "boolean 2", "!Boolean.FALSE");
+        exp(TRUE, "byte",      "new Byte((byte) 9) == (byte) 9");
+        exp(TRUE, "char",      "new Character('Y') == 'Y'");
+        exp(TRUE, "short",     "new Short((short) 33) == (short) 33");
+        exp(TRUE, "int",       "new Integer(-444) == -444");
+        exp(TRUE, "long",      "new Long(987654321L) == 987654321L");
+        exp(TRUE, "float",     "new Float(33.3F) == 33.3F");
+        exp(TRUE, "double",    "new Double(939.939D) == 939.939D");
+
+        section("5.2 Assignment Conversion");
+        scr(TRUE, "Identity 1", "int i = 7; return i == 7;");
+        scr(TRUE, "Identity 2", "String s = \"S\"; return s.equals(\"S\");");
+        scr(TRUE, "Widening Primitive", "long l = 7; return l == 7L;");
+        scr(TRUE, "Widening Reference", "Object o = \"A\"; return o.equals(\"A\");");
+        scr(TRUE, "Boxing", "Integer i = 7; return i.intValue() == 7;");
+        scr(TRUE, "Boxing; Widening Reference", "Object o = 7; return o.equals(new Integer(7));");
+        scr(TRUE, "Unboxing", "int i = new Integer(7); return i == 7;");
+        scr(TRUE, "Unboxing; Widening Primitive", "long l = new Integer(7); return l == 7L;");
+        scr(EXEC, "Constant Assignment byte 1", "byte b = -128;");
+        scr(COMP, "Constant Assignment byte 2", "byte b = 128;");
+        scr(EXEC, "Constant Assignment short 1", "short s = -32768;");
+        scr(COMP, "Constant Assignment short 2", "short s = 32768;");
+        scr(COMP, "Constant Assignment char 1", "char c = -1;");
+        scr(EXEC, "Constant Assignment char 2", "char c = 0;");
+        scr(EXEC, "Constant Assignment char 3", "char c = 65535;");
+        scr(COMP, "Constant Assignment char 4", "char c = 65536;");
+        scr(EXEC, "Constant Assignment Byte 1", "Byte b = -128;");
+        scr(COMP, "Constant Assignment Byte 2", "Byte b = 128;");
+        scr(EXEC, "Constant Assignment Short 1", "Short s = -32768;");
+        scr(COMP, "Constant Assignment Short 2", "Short s = 32768;");
+        scr(COMP, "Constant Assignment Character 1", "Character c = -1;");
+        scr(EXEC, "Constant Assignment Character 2", "Character c = 0;");
+        scr(EXEC, "Constant Assignment Character 3", "Character c = 65535;");
+        scr(COMP, "Constant Assignment Character 4", "Character c = 65536;");
+        
+        section("5.5 Casting Conversion");
+        exp(TRUE, "Identity", "7 == (int) 7");
+        exp(TRUE, "Widening Primitive", "(int) 'a' == 97");
+        exp(TRUE, "Narrowing Primitive", "(int) 10000000000L == 1410065408");
+        exp(TRUE, "Widening Reference", "((Object) \"SS\").equals(\"SS\")");
+        scr(TRUE, "Narrowing Reference", "Object o = \"SS\"; return ((String) o).length() == 2;");
+        exp(TRUE, "Boxing", "((Integer) 7).intValue() == 7");
+        exp(TRUE, "Unboxing", "(int) new Integer(7) == 7");
+
+        section("5.6 Numeric Promotions");
+        section("5.6.1 Unary Numeric Promotion");
+        exp(TRUE, "Unboxing 1", "-new Byte((byte) 7) == -7");
+        exp(TRUE, "Unboxing 2", "-new Double(10.0D) == -10.0D");
+        scr(TRUE, "Char", "char c = 'a'; return -c == -97;");
+
+        section("5.6.2 Binary Numeric Promotion");
+        exp(TRUE, "Unboxing Double", "2.5D * new Integer(4) == 10D");
+        exp(TRUE, "float", "7 % new Float(2.5F) == 2F");
+        exp(TRUE, "long", "2000000000 + 2000000000L == 4000000000L");
+        exp(TRUE, "byte", "(short) 32767 + (byte) 100 == 32867");
+
         section("6 Names");
         
         section("6.1 Declarations");
@@ -194,8 +263,8 @@ public class JLS2Tests extends JaninoTestSuite {
         exp(EXEC, "Duplicate", "import java.util.*; import java.util.*; new ArrayList()");
         
         section("7.5.3 Single Static Import Declaration");
-        exp(TRUE, "Static field", "import static java.util.Collections.EMPTY_MAP; EMPTY_MAP instanceof java.util.Map");
-        exp(TRUE, "Static field/duplicate", "import static java.util.Collections.EMPTY_MAP; import static java.util.Collections.EMPTY_MAP; EMPTY_MAP instanceof java.util.Map");
+        exp(TRUE, "Static field", "import static java.util.Collections.EMPTY_SET; EMPTY_SET instanceof java.util.Set");
+        exp(TRUE, "Static field/duplicate", "import static java.util.Collections.EMPTY_SET; import static java.util.Collections.EMPTY_SET; EMPTY_SET instanceof java.util.Set");
         scr(EXEC, "Member type", "import static java.util.Map.Entry; Entry e;");
         scr(EXEC, "Member type/duplicate", "import static java.util.Map.Entry; import static java.util.Map.Entry; Entry e;");
         scr(COMP, "Member type/inconsistent", "import static java.util.Map.Entry; import static java.security.KeyStore.Entry; Entry e;");
@@ -204,7 +273,7 @@ public class JLS2Tests extends JaninoTestSuite {
         scr(COMP, "Static method/inconsistent", "import static java.lang.Integer.toString; import static java.lang.Long.toString;");
         
         section("7.5.4 Static-Import-on-Demand Declaration");
-        exp(TRUE, "Static field", "import static java.util.Collections.*; EMPTY_MAP instanceof java.util.Map");
+        exp(TRUE, "Static field", "import static java.util.Collections.*; EMPTY_SET instanceof java.util.Set");
         scr(EXEC, "Member type", "import static java.util.Map.*; Entry e;");
         exp(TRUE, "Static method", "import static java.util.Arrays.*; asList(new String[] { \"HELLO\", \"WORLD\" }).size() == 2");
 
@@ -272,6 +341,12 @@ public class JLS2Tests extends JaninoTestSuite {
         exp(COMP, "4g", "new other_package.Foo(3).new PublicMemberInterface()");
         exp(COMP, "4h", "new java.util.ArrayList().new PublicMemberClass()");
         
+        section("15.9.3 Choosing the Constructor and its Arguments");
+        exp(EXEC, "1", "new Integer(3)");
+        exp(EXEC, "2", "new Integer(new Integer(3))");
+        exp(EXEC, "3", "new Integer(new Byte((byte) 3))");
+        exp(COMP, "4", "new Integer(new Object())");
+
         section("15.9.5 Anonymous Class Declarations");
         sim(EXEC, "Static anonymous class", (
             "public class Foo {\n" +
@@ -291,6 +366,44 @@ public class JLS2Tests extends JaninoTestSuite {
             "}\n"
         ), "A");
 
+        section("15.14 Postfix Expressions");
+        section("15.14.2 Postfix Increment Operator ++");
+        scr(TRUE, "1", "int i = 7; i++; return i == 8;");
+        scr(TRUE, "2", "Integer i = new Integer(7); i++; return i.intValue() == 8;");
+        scr(TRUE, "3", "int i = 7; return i == 7 && i++ == 7 && i == 8;");
+        scr(TRUE, "4", "Integer i = new Integer(7); return i.intValue() == 7 && (i++).intValue() == 7 && i.intValue() == 8;");
+
+        section("15.14.3 Postfix Decrement Operator --");
+        scr(TRUE, "1", "int i = 7; i--; return i == 6;");
+        scr(TRUE, "2", "Integer i = new Integer(7); i--; return i.intValue() == 6;");
+        scr(TRUE, "3", "int i = 7; return i == 7 && i-- == 7 && i == 6;");
+        scr(TRUE, "4", "Integer i = new Integer(7); return i.intValue() == 7 && (i--).intValue() == 7 && i.intValue() == 6;");
+
+        section("15.15 Unary Operators");
+        section("15.15.1 Prefix Increment Operator ++");
+        scr(TRUE, "1", "int i = 7; ++i; return i == 8;");
+        scr(TRUE, "2", "Integer i = new Integer(7); ++i; return i.intValue() == 8;");
+        scr(TRUE, "3", "int i = 7; return i == 7 && ++i == 8 && i == 8;");
+        scr(TRUE, "4", "Integer i = new Integer(7); return i.intValue() == 7 && (++i).intValue() == 8 && i.intValue() == 8;");
+
+        section("15.15.2 Prefix Decrement Operator --");
+        scr(TRUE, "1", "int i = 7; --i; return i == 6;");
+        scr(TRUE, "2", "Integer i = new Integer(7); --i; return i.intValue() == 6;");
+        scr(TRUE, "3", "int i = 7; return i == 7 && --i == 6 && i == 6;");
+        scr(TRUE, "4", "Integer i = new Integer(7); return i.intValue() == 7 && (--i).intValue() == 6 && i.intValue() == 6;");
+
+        section("15.15.3 Unary Plus Operator +");
+        exp(TRUE, "1", "new Integer(+new Integer(7)).intValue() == 7");
+
+        section("15.15.4 Unary Minus Operator -");
+        exp(TRUE, "1", "new Integer(-new Integer(7)).intValue() == -7");
+
+        section("15.17 Multiplicative Operators");
+        exp(TRUE, "1", "new Integer(new Byte((byte) 2) * new Short((short) 3)).intValue() == 6");
+
+        section("15.18 Additive Operators");
+        exp(TRUE, "1", "(new Byte((byte) 7) - new Double(1.5D) + \"x\").equals(\"5.5x\")");
+
         section("15.18 Additive Operators");
         section("15.18.1 String Concatenation Operator +");
         section("15.18.1.3 Examples of String Concatenation");
@@ -305,8 +418,41 @@ public class JLS2Tests extends JaninoTestSuite {
             exp(TRUE, "5/" + i, "(\"" + s1 +"\" + \"XXX\").length() == " + (i + 3));
         }
 
+        section("15.20 Relational Operators");
+
+        section("15.20.1 Numerical Comparison Operators <, <=, > and >=");
+        exp(TRUE, "1", "new Integer(7) > new Byte((byte) 5)");
+
+        section("15.21 Equality Operators");
+
+        section("15.21.1 Numerical Equality Operators == and !=");
+        exp(TRUE, "1", "new Integer(7) != new Byte((byte) 5)");
+        exp(TRUE, "2", "new Integer(7) == 7");
+        exp(TRUE, "3", "5 == new Byte((byte) 5)");
+
+        section("15.21.2 Boolean Equality Operators == and !=");
+        exp(TRUE, "1", "new Boolean(true) != new Boolean(true)");
+        exp(TRUE, "2", "new Boolean(true) == true");
+        exp(TRUE, "3", "false == new Boolean(false)");
+        exp(TRUE, "4", "false != true");
+
+        section("15.22.2 Boolean Logical Operators &, ^, and |");
+        exp(COMP, "1", "new Boolean(true) & new Boolean(true)");
+        exp(TRUE, "2", "new Boolean(true) ^ false");
+        exp(TRUE, "3", "false | new Boolean(true)");
+
+        section("15.23 Conditional-And Operator &&");
+        exp(TRUE, "1", "new Boolean(true) && new Boolean(true)");
+        exp(TRUE, "2", "new Boolean(true) && true");
+        exp(TRUE, "3", "true && new Boolean(true)");
+
+        section("15.24 Conditional-Or Operator ||");
+        exp(TRUE, "1", "new Boolean(true) || new Boolean(false)");
+        exp(TRUE, "2", "new Boolean(false) || true");
+        exp(TRUE, "3", "true || new Boolean(true)");
+
         section("16 Definite Assignment");
-        
+
         section("16.1 Definite Assignment and Expressions");
     }
 }

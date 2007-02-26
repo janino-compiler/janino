@@ -60,7 +60,7 @@ public class Descriptor {
         return d.substring(1);
     }
     public static short size(String d) {
-        if (d.equals(Descriptor.VOID)) return 0;
+        if (d.equals(Descriptor.VOID_)) return 0;
         if (Descriptor.hasSize1(d)) return 1;
         if (Descriptor.hasSize2(d)) return 2;
         throw new RuntimeException("No size defined for type \"" + Descriptor.toString(d) + "\"");
@@ -70,7 +70,7 @@ public class Descriptor {
         return Descriptor.isReference(d);
     }
     public static boolean hasSize2(String d) {
-        return d.equals(Descriptor.LONG) || d.equals(Descriptor.DOUBLE);
+        return d.equals(Descriptor.LONG_) || d.equals(Descriptor.DOUBLE_);
     }
 
     // Pretty-print.
@@ -128,15 +128,15 @@ public class Descriptor {
      * descriptor.
      */
     public static String fromClassName(String className) {
-        if (className.equals("void"   )) return Descriptor.VOID;
-        if (className.equals("byte"   )) return Descriptor.BYTE;
-        if (className.equals("char"   )) return Descriptor.CHAR;
-        if (className.equals("double" )) return Descriptor.DOUBLE;
-        if (className.equals("float"  )) return Descriptor.FLOAT;
-        if (className.equals("int"    )) return Descriptor.INT;
-        if (className.equals("long"   )) return Descriptor.LONG;
-        if (className.equals("short"  )) return Descriptor.SHORT;
-        if (className.equals("boolean")) return Descriptor.BOOLEAN;
+        if (className.equals("void"   )) return Descriptor.VOID_;
+        if (className.equals("byte"   )) return Descriptor.BYTE_;
+        if (className.equals("char"   )) return Descriptor.CHAR_;
+        if (className.equals("double" )) return Descriptor.DOUBLE_;
+        if (className.equals("float"  )) return Descriptor.FLOAT_;
+        if (className.equals("int"    )) return Descriptor.INT_;
+        if (className.equals("long"   )) return Descriptor.LONG_;
+        if (className.equals("short"  )) return Descriptor.SHORT_;
+        if (className.equals("boolean")) return Descriptor.BOOLEAN_;
         if (className.startsWith("[")) return className.replace('.', '/');
         return 'L' + className.replace('.', '/') + ';';
     }
@@ -157,15 +157,15 @@ public class Descriptor {
      */
     public static String toClassName(String d) {
         if (d.length() == 1) {
-            if (d.equals(Descriptor.VOID   )) return "void";
-            if (d.equals(Descriptor.BYTE   )) return "byte";
-            if (d.equals(Descriptor.CHAR   )) return "char";
-            if (d.equals(Descriptor.DOUBLE )) return "double";
-            if (d.equals(Descriptor.FLOAT  )) return "float";
-            if (d.equals(Descriptor.INT    )) return "int";
-            if (d.equals(Descriptor.LONG   )) return "long";
-            if (d.equals(Descriptor.SHORT  )) return "short";
-            if (d.equals(Descriptor.BOOLEAN)) return "boolean";
+            if (d.equals(Descriptor.VOID_   )) return "void";
+            if (d.equals(Descriptor.BYTE_   )) return "byte";
+            if (d.equals(Descriptor.CHAR_   )) return "char";
+            if (d.equals(Descriptor.DOUBLE_ )) return "double";
+            if (d.equals(Descriptor.FLOAT_  )) return "float";
+            if (d.equals(Descriptor.INT_    )) return "int";
+            if (d.equals(Descriptor.LONG_   )) return "long";
+            if (d.equals(Descriptor.SHORT_  )) return "short";
+            if (d.equals(Descriptor.BOOLEAN_)) return "boolean";
         } else {
             char firstChar = d.charAt(0);
             if (firstChar == 'L' && d.endsWith(";")) {
@@ -218,15 +218,15 @@ public class Descriptor {
         return packageName1 == null ? packageName2 == null : packageName1.equals(packageName2);
     }
 
-    public final static String VOID    = "V";
-    public final static String BYTE    = "B";
-    public final static String CHAR    = "C";
-    public final static String DOUBLE  = "D";
-    public final static String FLOAT   = "F";
-    public final static String INT     = "I";
-    public final static String LONG    = "J";
-    public final static String SHORT   = "S";
-    public final static String BOOLEAN = "Z";
+    public final static String VOID_    = "V";
+    public final static String BYTE_    = "B";
+    public final static String CHAR_    = "C";
+    public final static String DOUBLE_  = "D";
+    public final static String FLOAT_   = "F";
+    public final static String INT_     = "I";
+    public final static String LONG_    = "J";
+    public final static String SHORT_   = "S";
+    public final static String BOOLEAN_ = "Z";
     public final static String OBJECT            = "Ljava/lang/Object;";
     public final static String STRING            = "Ljava/lang/String;";
     public final static String STRING_BUFFER     = "Ljava/lang/StringBuffer;";
@@ -237,4 +237,12 @@ public class Descriptor {
     public final static String ERROR             = "Ljava/lang/Error;";
     public final static String CLONEABLE         = "Ljava/lang/Cloneable;";
     public final static String SERIALIZABLE      = "Ljava/io/Serializable;";
+    public final static String BOOLEAN   = "Ljava/lang/Boolean;";
+    public final static String BYTE      = "Ljava/lang/Byte;";
+    public final static String CHARACTER = "Ljava/lang/Character;";
+    public final static String SHORT     = "Ljava/lang/Short;";
+    public final static String INTEGER   = "Ljava/lang/Integer;";
+    public final static String LONG      = "Ljava/lang/Long;";
+    public final static String FLOAT     = "Ljava/lang/Float;";
+    public final static String DOUBLE    = "Ljava/lang/Double;";
 }

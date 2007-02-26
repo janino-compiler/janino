@@ -42,15 +42,15 @@ import java.util.*;
 public abstract class IClass {
     private static final boolean DEBUG = false;
 
-    public static final IClass VOID    = new PrimitiveIClass(Descriptor.VOID);
-    public static final IClass BYTE    = new PrimitiveIClass(Descriptor.BYTE);
-    public static final IClass CHAR    = new PrimitiveIClass(Descriptor.CHAR);
-    public static final IClass DOUBLE  = new PrimitiveIClass(Descriptor.DOUBLE);
-    public static final IClass FLOAT   = new PrimitiveIClass(Descriptor.FLOAT);
-    public static final IClass INT     = new PrimitiveIClass(Descriptor.INT);
-    public static final IClass LONG    = new PrimitiveIClass(Descriptor.LONG);
-    public static final IClass SHORT   = new PrimitiveIClass(Descriptor.SHORT);
-    public static final IClass BOOLEAN = new PrimitiveIClass(Descriptor.BOOLEAN);
+    public static final IClass VOID    = new PrimitiveIClass(Descriptor.VOID_);
+    public static final IClass BYTE    = new PrimitiveIClass(Descriptor.BYTE_);
+    public static final IClass CHAR    = new PrimitiveIClass(Descriptor.CHAR_);
+    public static final IClass DOUBLE  = new PrimitiveIClass(Descriptor.DOUBLE_);
+    public static final IClass FLOAT   = new PrimitiveIClass(Descriptor.FLOAT_);
+    public static final IClass INT     = new PrimitiveIClass(Descriptor.INT_);
+    public static final IClass LONG    = new PrimitiveIClass(Descriptor.LONG_);
+    public static final IClass SHORT   = new PrimitiveIClass(Descriptor.SHORT_);
+    public static final IClass BOOLEAN = new PrimitiveIClass(Descriptor.BOOLEAN_);
 
     private static class PrimitiveIClass extends IClass {
         private final String fieldDescriptor;
@@ -154,8 +154,17 @@ public abstract class IClass {
         IMethod[] methods = (IMethod[]) this.declaredIMethodCache.get(methodName);
         return methods == null ? IClass.NO_IMETHODS : methods;
     }
-    /*package*/ Map declaredIMethodCache = null;
+    /*package*/ Map declaredIMethodCache = null; // String methodName => IMethod[]
     public static final IMethod[] NO_IMETHODS = new IMethod[0];
+
+    public final boolean hasIMethod(String methodName, IClass[] parameterTypes) throws CompileException {
+        IMethod[] ims = this.getDeclaredIMethods(methodName);
+        for (int i = 0; i < ims.length; ++i) {
+            IClass[] pts = ims[i].getParameterTypes();
+            if (Arrays.equals(pts, parameterTypes)) return true;
+        }
+        return false;
+    }
 
     /**
      * Returns the fields of a class or interface (but not inherited
@@ -397,32 +406,32 @@ public abstract class IClass {
     private static final Set PRIMITIVE_WIDENING_CONVERSIONS = new HashSet();
     static {
         String[] pwcs = new String[] {
-            Descriptor.BYTE  + Descriptor.SHORT,
+            Descriptor.BYTE_  + Descriptor.SHORT_,
 
-            Descriptor.BYTE  + Descriptor.INT,
-            Descriptor.SHORT + Descriptor.INT,
-            Descriptor.CHAR  + Descriptor.INT,
+            Descriptor.BYTE_  + Descriptor.INT_,
+            Descriptor.SHORT_ + Descriptor.INT_,
+            Descriptor.CHAR_  + Descriptor.INT_,
     
-            Descriptor.BYTE  + Descriptor.LONG,
-            Descriptor.SHORT + Descriptor.LONG,
-            Descriptor.CHAR  + Descriptor.LONG,
-            Descriptor.INT   + Descriptor.LONG,
+            Descriptor.BYTE_  + Descriptor.LONG_,
+            Descriptor.SHORT_ + Descriptor.LONG_,
+            Descriptor.CHAR_  + Descriptor.LONG_,
+            Descriptor.INT_   + Descriptor.LONG_,
     
-            Descriptor.BYTE  + Descriptor.FLOAT,
-            Descriptor.SHORT + Descriptor.FLOAT,
-            Descriptor.CHAR  + Descriptor.FLOAT,
-            Descriptor.INT   + Descriptor.FLOAT,
+            Descriptor.BYTE_  + Descriptor.FLOAT_,
+            Descriptor.SHORT_ + Descriptor.FLOAT_,
+            Descriptor.CHAR_  + Descriptor.FLOAT_,
+            Descriptor.INT_   + Descriptor.FLOAT_,
     
-            Descriptor.LONG  + Descriptor.FLOAT,
+            Descriptor.LONG_  + Descriptor.FLOAT_,
     
-            Descriptor.BYTE  + Descriptor.DOUBLE,
-            Descriptor.SHORT + Descriptor.DOUBLE,
-            Descriptor.CHAR  + Descriptor.DOUBLE,
-            Descriptor.INT   + Descriptor.DOUBLE,
+            Descriptor.BYTE_  + Descriptor.DOUBLE_,
+            Descriptor.SHORT_ + Descriptor.DOUBLE_,
+            Descriptor.CHAR_  + Descriptor.DOUBLE_,
+            Descriptor.INT_   + Descriptor.DOUBLE_,
     
-            Descriptor.LONG  + Descriptor.DOUBLE,
+            Descriptor.LONG_  + Descriptor.DOUBLE_,
     
-            Descriptor.FLOAT + Descriptor.DOUBLE,
+            Descriptor.FLOAT_ + Descriptor.DOUBLE_,
         };
         for (int i = 0; i < pwcs.length; ++i) IClass.PRIMITIVE_WIDENING_CONVERSIONS.add(pwcs[i]);
     }
@@ -660,7 +669,7 @@ public abstract class IClass {
                 parameterTypes = tmp;
             }
 
-            return new MethodDescriptor(IClass.getDescriptors(parameterTypes), Descriptor.VOID).toString();
+            return new MethodDescriptor(IClass.getDescriptors(parameterTypes), Descriptor.VOID_).toString();
         }
         public String toString() {
             StringBuffer sb = new StringBuffer(this.getDeclaringIClass().toString());

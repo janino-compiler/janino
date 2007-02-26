@@ -69,22 +69,24 @@ public class CompilerTests extends TestCase {
         Benchmark b = new Benchmark(true);
         b.beginReporting("Compile Janino from scratch");
         MapResourceCreator classFileResources1 = new MapResourceCreator();
-        Compiler c = new Compiler(
-            sourceFinder,                                       // sourceFinder
-            new ClassLoaderIClassLoader(bootstrapClassLoader),  // iClassLoader
-            ResourceFinder.EMPTY_RESOURCE_FINDER,               // classFileFinder
-            classFileResources1,                                // classFileCreator
-            (String) null,                                      // optionalCharacterEncoding
-            verbose,                                            // verbose
-            DebuggingInformation.DEFAULT_DEBUGGING_INFORMATION, // debuggingInformation
-            (WarningHandler) null                               // optionalWarningHandler
-        );
-        c.setCompileErrorHandler(new UnitCompiler.ErrorHandler() {
-            public void handleError(String message, Location optionalLocation) throws CompileException {
-                throw new CompileException(message, optionalLocation);
-            }
-        });
-        c.compile(sourceFiles);
+        {
+            Compiler c = new Compiler(
+                sourceFinder,                                       // sourceFinder
+                new ClassLoaderIClassLoader(bootstrapClassLoader),  // iClassLoader
+                ResourceFinder.EMPTY_RESOURCE_FINDER,               // classFileFinder
+                classFileResources1,                                // classFileCreator
+                (String) null,                                      // optionalCharacterEncoding
+                verbose,                                            // verbose
+                DebuggingInformation.DEFAULT_DEBUGGING_INFORMATION, // debuggingInformation
+                (WarningHandler) null                               // optionalWarningHandler
+            );
+            c.setCompileErrorHandler(new UnitCompiler.ErrorHandler() {
+                public void handleError(String message, Location optionalLocation) throws CompileException {
+                    throw new CompileException(message, optionalLocation);
+                }
+            });
+            c.compile(sourceFiles);
+        }
         Map classFileMap1 = classFileResources1.getMap();
         b.endReporting("Generated " + classFileMap1.size() + " class files.");
 
@@ -92,16 +94,24 @@ public class CompilerTests extends TestCase {
         MapResourceCreator classFileResources2 = new MapResourceCreator();
         MapResourceFinder classFileFinder = new MapResourceFinder(classFileMap1);
         classFileFinder.setLastModified(System.currentTimeMillis());
-        new Compiler(
-            sourceFinder,                                       // sourceFinder
-            new ClassLoaderIClassLoader(bootstrapClassLoader),  // iClassLoader
-            classFileFinder,                                    // classFileFinder
-            classFileResources2,                                // classFileCreator
-            (String) null,                                      // optionalCharacterEncoding
-            verbose,                                            // verbose
-            DebuggingInformation.DEFAULT_DEBUGGING_INFORMATION, // debuggingInformation
-            (WarningHandler) null                               // optionalWarningHandler
-        ).compile(sourceFiles);
+        {
+            Compiler c = new Compiler(
+                sourceFinder,                                       // sourceFinder
+                new ClassLoaderIClassLoader(bootstrapClassLoader),  // iClassLoader
+                classFileFinder,                                    // classFileFinder
+                classFileResources2,                                // classFileCreator
+                (String) null,                                      // optionalCharacterEncoding
+                verbose,                                            // verbose
+                DebuggingInformation.DEFAULT_DEBUGGING_INFORMATION, // debuggingInformation
+                (WarningHandler) null                               // optionalWarningHandler
+            );
+            c.setCompileErrorHandler(new UnitCompiler.ErrorHandler() {
+                public void handleError(String message, Location optionalLocation) throws CompileException {
+                    throw new CompileException(message, optionalLocation);
+                }
+            });
+            c.compile(sourceFiles);
+        }
         b.endReporting("Generated " + classFileResources2.getMap().size() + " class files.");
         assertTrue("Only few class files re-generated", classFileResources2.getMap().size() < 30);
 
@@ -148,14 +158,14 @@ public class CompilerTests extends TestCase {
                 l.loadClass(EnumeratorSet.class),   // debuggingInformation
                 l.loadClass(WarningHandler.class),  // optionalWarningHandler
             }, new Object[] {
-                sf,                       // sourceFinder
-                icl,                      // iClassLoader
-                cfrf,                     // classFileResourceFinder
-                cfrc,                     // classFileResourceCreator
-                (String) null,            // optionalCharacterEncoding
-                Boolean.valueOf(verbose), // verbose
-                di,                       // debuggingInformation
-                null,                     // optionalWarningHandler
+                sf,                                     // sourceFinder
+                icl,                                    // iClassLoader
+                cfrf,                                   // classFileResourceFinder
+                cfrc,                                   // classFileResourceCreator
+                (String) null,                          // optionalCharacterEncoding
+                verbose ? Boolean.TRUE : Boolean.FALSE, // verbose
+                di,                                     // debuggingInformation
+                null,                                   // optionalWarningHandler
             });
             l.invoke(compiler, "compile", new Class[] { File[].class }, new Object[] { sourceFiles });
         }

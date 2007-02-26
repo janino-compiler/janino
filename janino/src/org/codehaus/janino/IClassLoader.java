@@ -50,6 +50,14 @@ public abstract class IClassLoader {
     public IClass ERROR;
     public IClass CLONEABLE;
     public IClass SERIALIZABLE;
+    public IClass BOOLEAN;
+    public IClass BYTE;
+    public IClass CHARACTER;
+    public IClass SHORT;
+    public IClass INTEGER;
+    public IClass LONG;
+    public IClass FLOAT;
+    public IClass DOUBLE;
 
     public IClassLoader(IClassLoader optionalParentIClassLoader) {
         this.optionalParentIClassLoader = optionalParentIClassLoader;
@@ -71,6 +79,14 @@ public abstract class IClassLoader {
             this.ERROR             = this.loadIClass(Descriptor.ERROR);
             this.CLONEABLE         = this.loadIClass(Descriptor.CLONEABLE);
             this.SERIALIZABLE      = this.loadIClass(Descriptor.SERIALIZABLE);
+            this.BOOLEAN           = this.loadIClass(Descriptor.BOOLEAN);
+            this.BYTE              = this.loadIClass(Descriptor.BYTE);
+            this.CHARACTER         = this.loadIClass(Descriptor.CHARACTER);
+            this.SHORT             = this.loadIClass(Descriptor.SHORT);
+            this.INTEGER           = this.loadIClass(Descriptor.INTEGER);
+            this.LONG              = this.loadIClass(Descriptor.LONG);
+            this.FLOAT             = this.loadIClass(Descriptor.FLOAT);
+            this.DOUBLE            = this.loadIClass(Descriptor.DOUBLE);
         } catch (ClassNotFoundException e) {
             throw new RuntimeException("Cannot load simple types");
         }
@@ -87,15 +103,15 @@ public abstract class IClassLoader {
 
         if (Descriptor.isPrimitive(fieldDescriptor)) {
             return (
-                fieldDescriptor.equals(Descriptor.VOID   ) ? IClass.VOID    :
-                fieldDescriptor.equals(Descriptor.BYTE   ) ? IClass.BYTE    :
-                fieldDescriptor.equals(Descriptor.CHAR   ) ? IClass.CHAR    :
-                fieldDescriptor.equals(Descriptor.DOUBLE ) ? IClass.DOUBLE  :
-                fieldDescriptor.equals(Descriptor.FLOAT  ) ? IClass.FLOAT   :
-                fieldDescriptor.equals(Descriptor.INT    ) ? IClass.INT     :
-                fieldDescriptor.equals(Descriptor.LONG   ) ? IClass.LONG    :
-                fieldDescriptor.equals(Descriptor.SHORT  ) ? IClass.SHORT   :
-                fieldDescriptor.equals(Descriptor.BOOLEAN) ? IClass.BOOLEAN :
+                fieldDescriptor.equals(Descriptor.VOID_   ) ? IClass.VOID    :
+                fieldDescriptor.equals(Descriptor.BYTE_   ) ? IClass.BYTE    :
+                fieldDescriptor.equals(Descriptor.CHAR_   ) ? IClass.CHAR    :
+                fieldDescriptor.equals(Descriptor.DOUBLE_ ) ? IClass.DOUBLE  :
+                fieldDescriptor.equals(Descriptor.FLOAT_  ) ? IClass.FLOAT   :
+                fieldDescriptor.equals(Descriptor.INT_    ) ? IClass.INT     :
+                fieldDescriptor.equals(Descriptor.LONG_   ) ? IClass.LONG    :
+                fieldDescriptor.equals(Descriptor.SHORT_  ) ? IClass.SHORT   :
+                fieldDescriptor.equals(Descriptor.BOOLEAN_) ? IClass.BOOLEAN :
                 null
             );
         }
