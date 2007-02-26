@@ -818,7 +818,7 @@ public class UnitCompiler {
         // Compute condition.
         IClass switchExpressionType = this.compileGetValue(ss.condition);
         this.assignmentConversion(
-            (Java.Located) ss,    // located
+            (Locatable) ss,       // l
             switchExpressionType, // sourceType
             IClass.INT,           // targetType
             null                  // optionalConstantValue
@@ -844,7 +844,7 @@ public class UnitCompiler {
                 // Verify that case label is assignable to the type of the switch expression.
                 IClass rvType = this.getType(rv);
                 this.assignmentConversion(
-                    (Java.Located) ss,    // located
+                    (Locatable) ss,       // l
                     rvType,               // sourceType
                     switchExpressionType, // targetType
                     cv                    // optionalConstantValue
@@ -889,33 +889,33 @@ public class UnitCompiler {
             int low = ((Integer) caseLabelMap.firstKey()).intValue();
             int high = ((Integer) caseLabelMap.lastKey()).intValue();
 
-            this.writeByte(ss, Opcode.TABLESWITCH);
+            this.writeOpcode(ss, Opcode.TABLESWITCH);
             new Java.Padder(this.codeContext).set();
-            this.writeOffset(ss, switchOffset, defaultLabelOffset);
-            this.writeInt(ss, low);
-            this.writeInt(ss, high);
+            this.writeOffset(switchOffset, defaultLabelOffset);
+            this.writeInt(low);
+            this.writeInt(high);
             Iterator si = caseLabelMap.entrySet().iterator();
             int cur = low;
             while (si.hasNext()) {
                 Map.Entry me = (Map.Entry) si.next();
                 int val = ((Integer) me.getKey()).intValue();
                 while (cur < val) {
-                    this.writeOffset(ss, switchOffset, defaultLabelOffset);
+                    this.writeOffset(switchOffset, defaultLabelOffset);
                     ++cur;
                 }
-                this.writeOffset(ss, switchOffset, (CodeContext.Offset) me.getValue());
+                this.writeOffset(switchOffset, (CodeContext.Offset) me.getValue());
                 ++cur;
             }
         } else {
             this.writeOpcode(ss, Opcode.LOOKUPSWITCH);
             new Java.Padder(this.codeContext).set();
-            this.writeOffset(ss, switchOffset, defaultLabelOffset);
-            this.writeInt(ss, caseLabelMap.size());
+            this.writeOffset(switchOffset, defaultLabelOffset);
+            this.writeInt(caseLabelMap.size());
             Iterator si = caseLabelMap.entrySet().iterator();
             while (si.hasNext()) {
                 Map.Entry me = (Map.Entry) si.next();
-                this.writeInt(ss, ((Integer) me.getKey()).intValue());
-                this.writeOffset(ss, switchOffset, (CodeContext.Offset) me.getValue());
+                this.writeInt(((Integer) me.getKey()).intValue());
+                this.writeOffset(switchOffset, (CodeContext.Offset) me.getValue());
             }
         }
 
@@ -1064,7 +1064,7 @@ public class UnitCompiler {
                 IClass initializerType = this.compileGetValue(rvalue);
                 fieldType = fieldType.getArrayIClass(vd.brackets, this.iClassLoader.OBJECT);
                 this.assignmentConversion(
-                    (Java.Located) fd,            // located
+                    (Locatable) fd,               // l
                     initializerType,              // sourceType
                     fieldType,                    // destinationType
                     this.getConstantValue(rvalue) // optionalConstantValue
@@ -1086,9 +1086,8 @@ public class UnitCompiler {
                 this.writeOpcode(fd, Opcode.PUTFIELD);
             }
             this.writeConstantFieldrefInfo(
-                fd,
-                this.resolve(fd.getDeclaringType()).getDescriptor(), // classFD
-                vd.name,                                             // fieldName
+                this.resolve(fd.getDeclaringType()).getDescriptor(),
+                vd.name, // classFD
                 fieldType.getDescriptor()                            // fieldFD
             );
         }
@@ -1140,7 +1139,7 @@ public class UnitCompiler {
                 this.codeContext.pushInserter(ins);
                 try {
                     this.pushConstant(is, new Integer(0));
-                    this.writeBranch(Opcode.IFNE, off);
+                    this.writeBranch((Locatable) is, Opcode.IFNE, off);
                 } finally {
                     this.codeContext.popInserter();
                 }
@@ -1157,7 +1156,7 @@ public class UnitCompiler {
                 CodeContext.Offset end = this.codeContext.new Offset();
                 this.compileBoolean(is.condition, eso, Java.Rvalue.JUMP_IF_FALSE);
                 boolean tsccn = this.compile(is.thenStatement);
-                if (tsccn) this.writeBranch(Opcode.GOTO, end);
+                if (tsccn) this.writeBranch((Locatable) is, Opcode.GOTO, end);
                 eso.set();
                 boolean esccn = this.compile(es);
                 end.set();
@@ -1185,7 +1184,7 @@ public class UnitCompiler {
                 // if (expr) ; else ;
                 IClass conditionType = this.compileGetValue(is.condition);
                 if (conditionType != IClass.BOOLEAN) this.compileError("Not a boolean expression", is.getLocation());
-                this.pop((Java.Located) is, conditionType);
+                this.pop((Locatable) is, conditionType);
                 return true;
             }
         }
@@ -1243,7 +1242,7 @@ public class UnitCompiler {
                 if (vd.optionalInitializer instanceof Java.Rvalue) {
                     Java.Rvalue rhs = (Java.Rvalue) vd.optionalInitializer;
                     this.assignmentConversion(
-                        (Java.Located) lvds,       // located
+                        (Locatable) lvds,          // l
                         this.compileGetValue(rhs), // sourceType
                         lv.type,                   // targetType
                         this.getConstantValue(rhs) // optionalConstantValue
@@ -1256,9 +1255,9 @@ public class UnitCompiler {
                     throw new RuntimeException("Unexpected rvalue or array initialized class " + vd.optionalInitializer.getClass().getName());
                 }
                 this.store(
-                    (Java.Located) lvds, // located
-                    lv.type,             // valueType
-                    lv                   // localVariable
+                    (Locatable) lvds, // l
+                    lv.type,          // valueType
+                    lv                // localVariable
                 );
             }
         }
@@ -1307,7 +1306,7 @@ public class UnitCompiler {
         }
         IClass type = this.compileGetValue(rs.optionalReturnValue);
         this.assignmentConversion(
-            (Java.Located) rs,                            // located
+            (Locatable) rs,                               // l
             type,                                         // sourceType
             returnType,                                   // targetType
             this.getConstantValue(rs.optionalReturnValue) // optionalConstantValue
@@ -1335,7 +1334,7 @@ public class UnitCompiler {
 
             // Store the monitor object.
             this.writeOpcode(ss, Opcode.DUP);
-            this.store((Java.Located) ss, this.iClassLoader.OBJECT, ss.monitorLvIndex);
+            this.store((Locatable) ss, this.iClassLoader.OBJECT, ss.monitorLvIndex);
 
             // Create lock on the monitor object.
             this.writeOpcode(ss, Opcode.MONITORENTER);
@@ -1373,9 +1372,9 @@ public class UnitCompiler {
     private boolean compile2(Java.ThrowStatement ts) throws CompileException {
         IClass expressionType = this.compileGetValue(ts.expression);
         this.checkThrownException(
-            (Java.Located) ts,      // located
-            expressionType,         // type
-            ts.getEnclosingScope()  // scope
+            (Locatable) ts,        // l
+            expressionType,        // type
+            ts.getEnclosingScope() // scope
         );
         this.writeOpcode(ts, Opcode.ATHROW);
         return false;
@@ -1422,7 +1421,7 @@ public class UnitCompiler {
                             caughtExceptionType.getDescriptor() // catchTypeFD
                         );
                         this.store(
-                            (Java.Located) cc,   // located
+                            (Locatable) cc,      // l
                             caughtExceptionType, // lvType
                             evi                  // lvIndex
                         );
@@ -1459,28 +1458,28 @@ public class UnitCompiler {
                     // Save the exception object in an anonymous local variable.
                     short evi = this.codeContext.allocateLocalVariable((short) 1);
                     this.store(
-                        (Java.Located) ts.optionalFinally, // located
-                        this.iClassLoader.OBJECT,          // valueType
-                        evi                                // localVariableIndex
+                        (Locatable) ts.optionalFinally, // l
+                        this.iClassLoader.OBJECT,       // valueType
+                        evi                             // localVariableIndex
                     );
                     this.writeBranch(ts.optionalFinally, Opcode.JSR, ts.finallyOffset);
                     this.load(
-                        (Java.Located) ts.optionalFinally, // located
-                        this.iClassLoader.OBJECT,          // valueType
-                        evi                                // localVariableIndex
+                        (Locatable) ts.optionalFinally, // l
+                        this.iClassLoader.OBJECT,       // valueType
+                        evi                             // localVariableIndex
                     );
                     this.writeOpcode(ts.optionalFinally, Opcode.ATHROW);
     
                     // Compile the "finally" body.
                     ts.finallyOffset.set();
                     this.store(
-                        (Java.Located) ts.optionalFinally, // located
-                        this.iClassLoader.OBJECT,          // valueType
-                        pcLVIndex                          // localVariableIndex
+                        (Locatable) ts.optionalFinally, // l
+                        this.iClassLoader.OBJECT,       // valueType
+                        pcLVIndex                       // localVariableIndex
                     );
                     if (this.compile(ts.optionalFinally)) {
                         this.writeOpcode(ts.optionalFinally, Opcode.RET);
-                        this.writeByte(ts.optionalFinally, pcLVIndex);
+                        this.writeByte(pcLVIndex);
                     }
                 } finally {
 
@@ -1752,13 +1751,13 @@ public class UnitCompiler {
         }
     }
     private void compile2(Java.Rvalue rv) throws CompileException {
-        this.pop((Java.Located) rv, this.compileGetValue(rv));
+        this.pop((Locatable) rv, this.compileGetValue(rv));
     }
     private void compile2(Java.Assignment a) throws CompileException {
         if (a.operator == "=") {
             this.compileContext(a.lhs);
             this.assignmentConversion(
-                (Java.Located) a,             // located
+                (Locatable) a,               // l
                 this.compileGetValue(a.rhs), // sourceType
                 this.getType(a.lhs),         // targetType
                 this.getConstantValue(a.rhs) // optionalConstantValue
@@ -1769,24 +1768,24 @@ public class UnitCompiler {
 
         // Implement "|= ^= &= *= /= %= += -= <<= >>= >>>=".
         int lhsCS = this.compileContext(a.lhs);
-        this.dup((Java.Located) a, lhsCS);
+        this.dup((Locatable) a, lhsCS);
         IClass lhsType = this.compileGet(a.lhs);
         IClass resultType = this.compileArithmeticBinaryOperation(
-            (Java.Located) a,        // located
-            lhsType,                 // lhsType
-            a.operator.substring(    // operator
+            (Locatable) a,        // l
+            lhsType,              // lhsType
+            a.operator.substring( // operator
                 0,
                 a.operator.length() - 1
             ).intern(), // <= IMPORTANT!
-            a.rhs                    // rhs
+            a.rhs                 // rhs
         );
         // Convert the result to LHS type (JLS2 15.26.2).
         if (
             !this.tryIdentityConversion(resultType, lhsType) &&
             !this.tryNarrowingPrimitiveConversion(
-                (Java.Located) a,   // located
-                resultType,         // sourceType
-                lhsType             // destinationType
+                (Locatable) a,   // l
+                resultType,      // sourceType
+                lhsType          // destinationType
             )
         ) throw new RuntimeException("SNO: \"" + a.operator + "\" reconversion failed");
         this.compileSet(a.lhs);
@@ -1797,15 +1796,15 @@ public class UnitCompiler {
         Java.LocalVariable lv = this.isIntLV(c);
         if (lv != null) {
             this.writeOpcode(c, Opcode.IINC);
-            this.writeByte(c, lv.localVariableArrayIndex);
-            this.writeByte(c, c.operator == "++" ? 1 : -1);
+            this.writeByte(lv.localVariableArrayIndex);
+            this.writeByte(c.operator == "++" ? 1 : -1);
             return;
         }
 
         int cs = this.compileContext(c.operand);
-        this.dup((Java.Located) c, cs);
+        this.dup((Locatable) c, cs);
         IClass type = this.compileGet(c.operand);
-        IClass promotedType = this.unaryNumericPromotion((Java.Located) c, type);
+        IClass promotedType = this.unaryNumericPromotion((Locatable) c, type);
         this.writeOpcode(c, UnitCompiler.ilfd(
             promotedType,
             Opcode.ICONST_1,
@@ -1836,11 +1835,11 @@ public class UnitCompiler {
         this.writeOpcode(aci, Opcode.ALOAD_0);
         if (declaringIClass.getOuterIClass() != null) this.writeOpcode(aci, Opcode.ALOAD_1);
         this.invokeConstructor(
-            (Java.Located) aci,                                     // located
-            (Java.Scope) declaringConstructor,                      // scope
-            (Java.Rvalue) null,                                     // optionalEnclosingInstance
+            (Locatable) aci,                   // l
+            (Java.Scope) declaringConstructor, // scope
+            (Java.Rvalue) null,                // optionalEnclosingInstance
             declaringIClass,                   // targetClass
-            aci.arguments                                           // arguments
+            aci.arguments                      // arguments
         );
         return true;
     }
@@ -1875,7 +1874,7 @@ public class UnitCompiler {
             }
         }
         this.invokeConstructor(
-            (Java.Located) sci,                // located
+            (Locatable) sci,                   // l
             (Java.Scope) declaringConstructor, // scope
             optionalEnclosingInstance,         // optionalEnclosingInstance
             superclass,                        // targetClass
@@ -1991,7 +1990,7 @@ public class UnitCompiler {
                     this.compileBoolean(bo.lhs, dst, Java.Rvalue.JUMP_IF_TRUE ^ orientation == Java.Rvalue.JUMP_IF_FALSE);
                 } else {
                     // "a && false", "a || true"
-                    this.pop((Java.Located) bo.lhs, this.compileGetValue(bo.lhs));
+                    this.pop((Locatable) bo.lhs, this.compileGetValue(bo.lhs));
                     this.compileBoolean(bo.rhs, dst, Java.Rvalue.JUMP_IF_TRUE ^ orientation == Java.Rvalue.JUMP_IF_FALSE);
                 }
                 return;
@@ -2053,7 +2052,7 @@ public class UnitCompiler {
                 this.getUnboxedType(rhsType).isPrimitiveNumeric() &&
                 !((bo.op == "==" || bo.op == "!=") && !lhsType.isPrimitive() && !rhsType.isPrimitive())
             ) {
-                IClass promotedType = this.binaryNumericPromotion((Java.Located) bo, lhsType, convertLhsInserter, rhsType);
+                IClass promotedType = this.binaryNumericPromotion((Locatable) bo, lhsType, convertLhsInserter, rhsType);
                 if (promotedType == IClass.INT) {
                     this.writeBranch(bo, Opcode.IF_ICMPEQ + opIdx, dst);
                 } else
@@ -2201,9 +2200,9 @@ public class UnitCompiler {
         if (
             !this.tryIdentityConversion(indexType, IClass.INT) &&
             !this.tryWideningPrimitiveConversion(
-                (Java.Located) aae, // located
-                indexType,          // sourceType
-                IClass.INT          // targetType
+                (Locatable) aae, // l
+                indexType,       // sourceType
+                IClass.INT       // targetType
             )
         ) this.compileError("Index expression of type \"" + indexType + "\" cannot be widened to \"int\"", aae.getLocation());
 
@@ -2280,7 +2279,7 @@ public class UnitCompiler {
         return this.compileGet(this.toRvalueOrCE(this.reclassify(an)));
     }
     private IClass compileGet2(Java.LocalVariableAccess lva) {
-        return this.load((Java.Located) lva, lva.localVariable);
+        return this.load((Locatable) lva, lva.localVariable);
     }
     private IClass compileGet2(Java.FieldAccess fa) throws CompileException {
         this.checkAccessible(fa.field, fa.getEnclosingBlockStatement());
@@ -2290,9 +2289,8 @@ public class UnitCompiler {
             this.writeOpcode(fa, Opcode.GETFIELD);
         }
         this.writeConstantFieldrefInfo(
-            fa,
-            fa.field.getDeclaringIClass().getDescriptor(), // classFD
-            fa.field.getName(),                            // fieldName
+            fa.field.getDeclaringIClass().getDescriptor(),
+            fa.field.getName(), // classFD
             fa.field.getType().getDescriptor()             // fieldFD
         );
         return fa.field.getType();
@@ -2302,12 +2300,12 @@ public class UnitCompiler {
         return IClass.INT;
     }
     private IClass compileGet2(Java.ThisReference tr) throws CompileException {
-        this.referenceThis((Java.Located) tr);
+        this.referenceThis((Locatable) tr);
         return this.getIClass(tr);
     }
     private IClass compileGet2(Java.QualifiedThisReference qtr) throws CompileException {
         this.referenceThis(
-            (Java.Located) qtr,                        // located
+            (Locatable) qtr,                           // l
             this.getDeclaringClass(qtr),               // declaringClass
             this.getDeclaringTypeBodyDeclaration(qtr), // declaringTypeBodyDeclaration
             this.getTargetIClass(qtr)                  // targetIClass
@@ -2338,9 +2336,8 @@ public class UnitCompiler {
             if (wrapperClassDescriptor == null) throw new RuntimeException("SNO: Unidentifiable primitive type \"" + iClass + "\"");
 
             this.writeConstantFieldrefInfo(
-                cl,
-                wrapperClassDescriptor, // classFD
-                "TYPE",                 // fieldName
+                wrapperClassDescriptor,
+                "TYPE", // classFD
                 "Ljava/lang/Class;"     // fieldFD
             );
             return icl.CLASS;
@@ -2490,15 +2487,15 @@ public class UnitCompiler {
             IClass lhsType = this.getType(a.lhs);
             Object rhsCV = this.getConstantValue(a.rhs);
             this.assignmentConversion(
-                (Java.Located) a, // located
-                rhsType,          // sourceType
-                lhsType,          // targetType
-                rhsCV             // optionalConstantValue
+                (Locatable) a, // l
+                rhsType,       // sourceType
+                lhsType,       // targetType
+                rhsCV          // optionalConstantValue
             );
             this.dupx(
-                (Java.Located) a, // located
-                lhsType,          // type
-                lhsCS             // x
+                (Locatable) a, // l
+                lhsType,       // type
+                lhsCS          // x
             );
             this.compileSet(a.lhs);
             return lhsType;
@@ -2506,10 +2503,10 @@ public class UnitCompiler {
 
         // Implement "|= ^= &= *= /= %= += -= <<= >>= >>>=".
         int lhsCS = this.compileContext(a.lhs);
-        this.dup((Java.Located) a, lhsCS);
+        this.dup((Locatable) a, lhsCS);
         IClass lhsType = this.compileGet(a.lhs);
         IClass resultType = this.compileArithmeticBinaryOperation(
-            (Java.Located) a,     // located
+            (Locatable) a,        // l
             lhsType,              // lhsType
             a.operator.substring( // operator
                 0,
@@ -2521,15 +2518,15 @@ public class UnitCompiler {
         if (
             !this.tryIdentityConversion(resultType, lhsType) &&
             !this.tryNarrowingPrimitiveConversion(
-                (Java.Located) a, // located
-                resultType,       // sourceType
-                lhsType           // destinationType
+                (Locatable) a, // l
+                resultType,    // sourceType
+                lhsType        // destinationType
             )
         ) throw new RuntimeException("SNO: \"" + a.operator + "\" reconversion failed");
         this.dupx(
-            (Java.Located) a, // located
-            lhsType,          // type
-            lhsCS             // x
+            (Locatable) a, // l
+            lhsType,       // type
+            lhsCS          // x
         );
         this.compileSet(a.lhs);
         return lhsType;
@@ -2579,7 +2576,7 @@ public class UnitCompiler {
 
             // JLS 15.25.1.2.3
             expressionType = this.binaryNumericPromotion(
-                (Java.Located) ce,  // located
+                (Locatable) ce,     // l
                 mhsType,            // type1
                 mhsConvertInserter, // convertInserter1
                 rhsType,            // type2
@@ -2620,24 +2617,24 @@ public class UnitCompiler {
         // Optimized crement of integer local variable.
         Java.LocalVariable lv = this.isIntLV(c);
         if (lv != null) {
-            if (!c.pre) this.load((Java.Located) c, lv);
+            if (!c.pre) this.load((Locatable) c, lv);
             this.writeOpcode(c, Opcode.IINC);
-            this.writeByte(c, lv.localVariableArrayIndex);
-            this.writeByte(c, c.operator == "++" ? 1 : -1);
-            if (c.pre) this.load((Java.Located) c, lv);
+            this.writeByte(lv.localVariableArrayIndex);
+            this.writeByte(c.operator == "++" ? 1 : -1);
+            if (c.pre) this.load((Locatable) c, lv);
             return lv.type;
         }
 
         // Compile operand context.
         int cs = this.compileContext(c.operand);
         // DUP operand context.
-        this.dup((Java.Located) c, cs);
+        this.dup((Locatable) c, cs);
         // Get operand value.
         IClass type = this.compileGet(c.operand);
         // DUPX operand value.
-        if (!c.pre) this.dupx((Java.Located) c, type, cs);
+        if (!c.pre) this.dupx((Locatable) c, type, cs);
         // Apply "unary numeric promotion".
-        IClass promotedType = this.unaryNumericPromotion((Java.Located) c, type);
+        IClass promotedType = this.unaryNumericPromotion((Locatable) c, type);
         // Crement.
         this.writeOpcode(c, UnitCompiler.ilfd(
             promotedType,
@@ -2656,7 +2653,7 @@ public class UnitCompiler {
         }
         this.reverseUnaryNumericPromotion((Locatable) c, promotedType, type);
         // DUPX cremented operand value.
-        if (c.pre) this.dupx((Java.Located) c, type, cs);
+        if (c.pre) this.dupx((Locatable) c, type, cs);
         // Set operand.
         this.compileSet(c.operand);
 
@@ -2703,7 +2700,7 @@ public class UnitCompiler {
         if (uo.operator == "~") {
             IClass operandType = this.compileGetValue(uo.operand);
 
-            IClass promotedType = this.unaryNumericPromotion((Java.Located) uo, operandType);
+            IClass promotedType = this.unaryNumericPromotion((Locatable) uo, operandType);
             if (promotedType == IClass.INT) {
                 this.writeOpcode(uo, Opcode.ICONST_M1);
                 this.writeOpcode(uo, Opcode.IXOR);
@@ -2711,7 +2708,7 @@ public class UnitCompiler {
             }
             if (promotedType == IClass.LONG) {
                 this.writeOpcode(uo, Opcode.LDC2_W);
-                this.writeConstantLongInfo(uo, -1L);
+                this.writeConstantLongInfo(-1L);
                 this.writeOpcode(uo, Opcode.LXOR);
                 return IClass.LONG;
             }
@@ -2726,7 +2723,7 @@ public class UnitCompiler {
         IClass rhsType = this.getType(io.rhs);
 
         if (rhsType.isAssignableFrom(lhsType)) {
-            this.pop((Java.Located) io, lhsType);
+            this.pop((Locatable) io, lhsType);
             this.writeOpcode(io, Opcode.ICONST_1);
         } else
         if (
@@ -2735,7 +2732,7 @@ public class UnitCompiler {
             lhsType.isAssignableFrom(rhsType)
         ) {
             this.writeOpcode(io, Opcode.INSTANCEOF);
-            this.writeConstantClassInfo(io, rhsType.getDescriptor());
+            this.writeConstantClassInfo(rhsType.getDescriptor());
         } else {
             this.compileError("\"" + lhsType + "\" can never be an instance of \"" + rhsType + "\"", io.getLocation());
         }
@@ -2758,7 +2755,7 @@ public class UnitCompiler {
 
         // Implements "| ^ & * / % + - << >> >>>".
         return this.compileArithmeticOperation(
-            (Java.Located) bo,          // located
+            (Locatable) bo,             // l
             null,                       // type
             bo.unrollLeftAssociation(), // operands
             bo.op                       // operator
@@ -2771,12 +2768,12 @@ public class UnitCompiler {
         IClass vt = this.compileGetValue(c.value);
         if (
             !this.tryIdentityConversion(vt, tt) &&
-            !this.tryWideningPrimitiveConversion((Java.Located) c, vt, tt) &&
-            !this.tryNarrowingPrimitiveConversion((Java.Located) c, vt, tt) &&
+            !this.tryWideningPrimitiveConversion((Locatable) c, vt, tt) &&
+            !this.tryNarrowingPrimitiveConversion((Locatable) c, vt, tt) &&
             !this.tryWideningReferenceConversion(vt, tt) &&
-            !this.tryNarrowingReferenceConversion((Java.Located) c, vt, tt) &&
-            !this.tryBoxingConversion((Java.Located) c, vt, tt) &&
-            !this.tryUnboxingConversion((Java.Located) c, vt, tt)
+            !this.tryNarrowingReferenceConversion((Locatable) c, vt, tt) &&
+            !this.tryBoxingConversion((Locatable) c, vt, tt) &&
+            !this.tryUnboxingConversion((Locatable) c, vt, tt)
         ) this.compileError("Cannot cast \"" + vt + "\" to \"" + tt + "\"", c.getLocation());
         return tt;
     }
@@ -2808,7 +2805,7 @@ public class UnitCompiler {
                 // JLS2 15.12.4.1.1.1.2
                 if (scopeTBD.isStatic()) this.compileError("Instance method \"" + iMethod.toString() + "\" cannot be invoked in static context", mi.getLocation());
                 this.referenceThis(
-                    (Java.Located) mi,           // located
+                    (Locatable) mi,              // l
                     scopeClassDeclaration,       // declaringClass
                     scopeTBD,                    // declaringTypeBodyDeclaration
                     iMethod.getDeclaringIClass() // targetIClass
@@ -2828,7 +2825,7 @@ public class UnitCompiler {
             if (iMethod.isStatic()) {
                 if (!staticContext) {
                     // JLS2 15.12.4.1.2.1
-                    this.pop((Java.Located) mi.optionalTarget, this.getType(mi.optionalTarget));
+                    this.pop((Locatable) mi.optionalTarget, this.getType(mi.optionalTarget));
                 }
             } else {
                 if (staticContext) this.compileError("Instance method \"" + mi.methodName + "\" cannot be invoked in static context", mi.getLocation());
@@ -2839,7 +2836,7 @@ public class UnitCompiler {
         IClass[] parameterTypes = iMethod.getParameterTypes();
         for (int i = 0; i < mi.arguments.length; ++i) {
             this.assignmentConversion(
-                (Java.Located) mi,                     // located
+                (Locatable) mi,                        // l
                 this.compileGetValue(mi.arguments[i]), // sourceType
                 parameterTypes[i],                     // targetType
                 this.getConstantValue(mi.arguments[i]) // optionalConstantValue
@@ -2851,16 +2848,15 @@ public class UnitCompiler {
         if (iMethod.getDeclaringIClass().isInterface()) {
             this.writeOpcode(mi, Opcode.INVOKEINTERFACE);
             this.writeConstantInterfaceMethodrefInfo(
-                mi,                                           // locatable
-                iMethod.getDeclaringIClass().getDescriptor(), // classFD
-                iMethod.getName(),                            // methodName
+                iMethod.getDeclaringIClass().getDescriptor(),                                           // locatable
+                iMethod.getName(), // classFD
                 iMethod.getDescriptor()                       // methodMD
             );
             IClass[] pts = iMethod.getParameterTypes();
             int count = 1;
             for (int i = 0; i < pts.length; ++i) count += Descriptor.size(pts[i].getDescriptor());
-            this.writeByte(mi, count);
-            this.writeByte(mi, 0);
+            this.writeByte(count);
+            this.writeByte(0);
         } else {
             if (!iMethod.isStatic() && iMethod.getAccess() == Access.PRIVATE) {
 
@@ -2874,9 +2870,8 @@ public class UnitCompiler {
                 // Hence, the invocation of such a method must be modified accordingly.
                 this.writeOpcode(mi, Opcode.INVOKESTATIC);
                 this.writeConstantMethodrefInfo(
-                    mi,                                           // locatable
-                    iMethod.getDeclaringIClass().getDescriptor(), // classFD
-                    iMethod.getName() + '$',                      // methodName
+                    iMethod.getDeclaringIClass().getDescriptor(),                                           // locatable
+                    iMethod.getName() + '$', // classFD
                     MethodDescriptor.prependParameter(            // methodMD
                         iMethod.getDescriptor(),
                         iMethod.getDeclaringIClass().getDescriptor()
@@ -2888,9 +2883,8 @@ public class UnitCompiler {
                 this.writeOpcode(mi, opcode);
                 if (opcode != Opcode.INVOKEVIRTUAL) targetType = iMethod.getDeclaringIClass();
                 this.writeConstantMethodrefInfo(
-                    mi,                         // locatable
-                    targetType.getDescriptor(), // classFD
-                    iMethod.getName(),          // methodName
+                    targetType.getDescriptor(),                         // locatable
+                    iMethod.getName(), // classFD
                     iMethod.getDescriptor()     // methodMD
                 );
             }
@@ -2908,13 +2902,13 @@ public class UnitCompiler {
             return IClass.INT;
         }
         if ((fd.modifiers & Mod.STATIC) != 0) this.compileError("Cannot invoke superclass method in static context", scmi.getLocation());
-        this.load((Java.Located) scmi, this.resolve(fd.getDeclaringType()), 0);
+        this.load((Locatable) scmi, this.resolve(fd.getDeclaringType()), 0);
 
         // Evaluate method parameters.
         IClass[] parameterTypes = iMethod.getParameterTypes();
         for (int i = 0; i < scmi.arguments.length; ++i) {
             this.assignmentConversion(
-                (Java.Located) scmi,                     // located
+                (Locatable) scmi,                        // l
                 this.compileGetValue(scmi.arguments[i]), // sourceType
                 parameterTypes[i],                       // targetType
                 this.getConstantValue(scmi.arguments[i]) // optionalConstantValue
@@ -2924,9 +2918,8 @@ public class UnitCompiler {
         // Invoke!
         this.writeOpcode(scmi, Opcode.INVOKESPECIAL);
         this.writeConstantMethodrefInfo(
-            scmi,
-            iMethod.getDeclaringIClass().getDescriptor(), // classFD
-            scmi.methodName,                              // methodName
+            iMethod.getDeclaringIClass().getDescriptor(),
+            scmi.methodName, // classFD
             iMethod.getDescriptor()                       // methodMD
         );
         return iMethod.getReturnType();
@@ -2935,7 +2928,7 @@ public class UnitCompiler {
         if (nci.iClass == null) nci.iClass = this.getType(nci.type);
 
         this.writeOpcode(nci, Opcode.NEW);
-        this.writeConstantClassInfo(nci, nci.iClass.getDescriptor());
+        this.writeConstantClassInfo(nci.iClass.getDescriptor());
         this.writeOpcode(nci, Opcode.DUP);
 
         if (nci.iClass.isInterface()) this.compileError("Cannot instantiate \"" + nci.iClass + "\"", nci.getLocation());
@@ -2999,7 +2992,7 @@ public class UnitCompiler {
         }
 
         this.invokeConstructor(
-            (Java.Located) nci,               // located
+            (Locatable) nci,                  // l
             nci.getEnclosingBlockStatement(), // scope
             optionalEnclosingInstance,        // optionalEnclosingInstance
             nci.iClass,                       // targetClass
@@ -3017,9 +3010,9 @@ public class UnitCompiler {
 
         // Determine most specific constructor.
         IClass.IConstructor iConstructor = (IClass.IConstructor) this.findMostSpecificIInvocable(
-            (Java.Located) naci, // located
-            iConstructors,       // iInvocables
-            naci.arguments       // arguments
+            (Locatable) naci, // l
+            iConstructors,    // iInvocables
+            naci.arguments    // arguments
         );
 
         IClass[] pts = iConstructor.getParameterTypes();
@@ -3085,7 +3078,7 @@ public class UnitCompiler {
 
         // Instantiate the anonymous class.
         this.writeOpcode(naci, Opcode.NEW);
-        this.writeConstantClassInfo(naci, this.resolve(naci.anonymousClassDeclaration).getDescriptor());
+        this.writeConstantClassInfo(this.resolve(naci.anonymousClassDeclaration).getDescriptor());
 
         // Invoke the anonymous constructor.
         this.writeOpcode(naci, Opcode.DUP);
@@ -3111,7 +3104,7 @@ public class UnitCompiler {
             oei.setEnclosingBlockStatement(naci.getEnclosingBlockStatement());
         }
         this.invokeConstructor(
-            (Java.Located) naci,                            // located
+            (Locatable) naci,                               // l
             (Java.Scope) naci.getEnclosingBlockStatement(), // scope
             oei,                                            // optionalEnclosingInstance
             this.resolve(naci.anonymousClassDeclaration),   // targetClass
@@ -3121,20 +3114,20 @@ public class UnitCompiler {
     }
     private IClass compileGet2(Java.ParameterAccess pa) throws CompileException {
         Java.LocalVariable lv = this.getLocalVariable(pa.formalParameter);
-        this.load((Java.Located) pa, lv);
+        this.load((Locatable) pa, lv);
         return lv.type;
     }
     private IClass compileGet2(Java.NewArray na) throws CompileException {
         for (int i = 0; i < na.dimExprs.length; ++i) {
             IClass dimType = this.compileGetValue(na.dimExprs[i]);
             if (dimType != IClass.INT && this.unaryNumericPromotion(
-                (Java.Located) na, // located
+                (Locatable) na, // l
                 dimType         // type
             ) != IClass.INT) this.compileError("Invalid array size expression type", na.getLocation());
         }
 
         return this.newArray(
-            (Java.Located) na,    // located
+            (Locatable) na,       // l
             na.dimExprs.length,   // dimExprCount
             na.dims,              // dims
             this.getType(na.type) // componentType
@@ -3149,22 +3142,22 @@ public class UnitCompiler {
         if (!arrayType.isArray()) this.compileError("Array initializer not allowed for non-array type \"" + arrayType.toString() + "\"");
         IClass ct = arrayType.getComponentType();
 
-        this.pushConstant((Java.Located) ai, new Integer(ai.values.length));
+        this.pushConstant((Locatable) ai, new Integer(ai.values.length));
         this.newArray(
-            (Java.Located) ai, // located
-            1,                 // dimExprCount,
-            0,                 // dims,
-            ct                 // componentType
+            (Locatable) ai, // l
+            1,              // dimExprCount,
+            0,              // dims,
+            ct              // componentType
         );
 
         for (int i = 0; i < ai.values.length; ++i) {
             this.writeOpcode(ai, Opcode.DUP);
-            this.pushConstant((Java.Located) ai, new Integer(i));
+            this.pushConstant((Locatable) ai, new Integer(i));
             Java.ArrayInitializerOrRvalue aiorv = ai.values[i];
             if (aiorv instanceof Java.Rvalue) {
                 Java.Rvalue rv = (Java.Rvalue) aiorv;
                 this.assignmentConversion(
-                    (Java.Located) ai,        // located
+                    (Locatable) ai,           // l
                     this.compileGetValue(rv), // sourceType
                     ct,                       // targetType
                     this.getConstantValue(rv) // optionalConstantValue
@@ -3184,10 +3177,10 @@ public class UnitCompiler {
             l.value == Scanner.MAGIC_INTEGER ||
             l.value == Scanner.MAGIC_LONG
         ) this.compileError("This literal value may only appear in a negated context", l.getLocation());
-        return this.pushConstant((Java.Located) l, l.value == null ? Java.Rvalue.CONSTANT_VALUE_NULL : l.value);
+        return this.pushConstant((Locatable) l, l.value == null ? Java.Rvalue.CONSTANT_VALUE_NULL : l.value);
     }
     private IClass compileGet2(Java.ConstantValue cv) {
-        return this.pushConstant((Java.Located) cv, cv.constantValue);
+        return this.pushConstant((Locatable) cv, cv.constantValue);
     }
 
     /**
@@ -3199,7 +3192,7 @@ public class UnitCompiler {
         Object cv = this.getConstantValue(rv);
         if (cv != null) {
             this.fakeCompile(rv); // To check that, e.g., "a" compiles in "true || a".
-            this.pushConstant((Java.Located) rv, cv);
+            this.pushConstant((Locatable) rv, cv);
             return this.getType(rv);
         }
 
@@ -3610,7 +3603,7 @@ public class UnitCompiler {
     }
     public void leave2(Java.BlockStatement bs, IClass optionalStackValueType) { ; }
     public void leave2(Java.SynchronizedStatement ss, IClass optionalStackValueType) {
-        this.load((Java.Located) ss, this.iClassLoader.OBJECT, ss.monitorLvIndex);
+        this.load((Locatable) ss, this.iClassLoader.OBJECT, ss.monitorLvIndex);
         this.writeOpcode(ss, Opcode.MONITOREXIT);
     }
     public void leave2(Java.TryStatement ts, IClass optionalStackValueType) {
@@ -3625,13 +3618,13 @@ public class UnitCompiler {
                 // 1 != 2"
                 if (optionalStackValueType != null) {
                     sv = this.codeContext.allocateLocalVariable(Descriptor.size(optionalStackValueType.getDescriptor()));
-                    this.store((Java.Located) ts, optionalStackValueType, sv);
+                    this.store((Locatable) ts, optionalStackValueType, sv);
                 }
     
                 this.writeBranch(ts, Opcode.JSR, ts.finallyOffset);
     
                 if (optionalStackValueType != null) {
-                    this.load((Java.Located) ts, optionalStackValueType, sv);
+                    this.load((Locatable) ts, optionalStackValueType, sv);
                 }
             } finally {
                 this.codeContext.restoreLocalVariables();
@@ -3668,7 +3661,7 @@ public class UnitCompiler {
     }
     private void compileSet2(Java.LocalVariableAccess lva) {
         this.store(
-            (Java.Located) lva,
+            (Locatable) lva,
             lva.localVariable.type,
             lva.localVariable
         );
@@ -3681,9 +3674,8 @@ public class UnitCompiler {
             Opcode.PUTFIELD
         ));
         this.writeConstantFieldrefInfo(
-            fa,
-            fa.field.getDeclaringIClass().getDescriptor(), // classFD
-            fa.field.getName(),                            // fieldName
+            fa.field.getDeclaringIClass().getDescriptor(),
+            fa.field.getName(), // classFD
             fa.field.getDescriptor()                       // fieldFD
         );
     }
@@ -4058,7 +4050,7 @@ public class UnitCompiler {
             bo.op == ">>>"
         ) {
             IClass lhsType = this.getType(bo.lhs);
-            return this.unaryNumericPromotionType((Java.Located) bo, lhsType);
+            return this.unaryNumericPromotionType((Locatable) bo, lhsType);
         }
 
         this.compileError("Unexpected operator \"" + bo.op + "\"", bo.getLocation());
@@ -4416,13 +4408,13 @@ public class UnitCompiler {
      * <code>&nbsp;&nbsp;| ^ & * / % + - &lt;&lt; &gt;&gt; &gt;&gt;&gt;</code>
      */
     private IClass compileArithmeticBinaryOperation(
-        Java.Located  located,
-        IClass   lhsType,
-        String   operator,
-        Java.Rvalue   rhs
+        Locatable   l,
+        IClass      lhsType,
+        String      operator,
+        Java.Rvalue rhs
     ) throws CompileException {
         return this.compileArithmeticOperation(
-            located,
+            l,
             lhsType,
             Arrays.asList(new Java.Rvalue[] { rhs }).iterator(),
             operator
@@ -4692,9 +4684,8 @@ public class UnitCompiler {
                 if (operandOnStack) {
                     this.writeOpcode(l, Opcode.INVOKEVIRTUAL);
                     this.writeConstantMethodrefInfo(
-                        l,
-                        Descriptor.STRING,                                // classFD
-                        "concat",                                         // methodName
+                        Descriptor.STRING,
+                        "concat",                                // classFD
                         "(" + Descriptor.STRING + ")" + Descriptor.STRING // methodMD
                     );
                 } else
@@ -4712,21 +4703,20 @@ public class UnitCompiler {
         // "new StringBuffer(a)":
         if (operandOnStack) {
             this.writeOpcode(l, Opcode.NEW);
-            this.writeConstantClassInfo(l, stringBuilferFD);
+            this.writeConstantClassInfo(stringBuilferFD);
             this.writeOpcode(l, Opcode.DUP_X1);
             this.writeOpcode(l, Opcode.SWAP);
         } else
         {
             this.writeOpcode(l, Opcode.NEW);
-            this.writeConstantClassInfo(l, stringBuilferFD);
+            this.writeConstantClassInfo(stringBuilferFD);
             this.writeOpcode(l, Opcode.DUP);
             ((Compilable) it.next()).compile();
         }
         this.writeOpcode(l, Opcode.INVOKESPECIAL);
         this.writeConstantMethodrefInfo(
-            l,
-            stringBuilferFD,                                // classFD
-            "<init>",                                       // methodName
+            stringBuilferFD,
+            "<init>",                                // classFD
             "(" + Descriptor.STRING + ")" + Descriptor.VOID_ // methodMD
         );
         while (it.hasNext()) {
@@ -4735,9 +4725,8 @@ public class UnitCompiler {
             // "StringBuffer.append(b)":
             this.writeOpcode(l, Opcode.INVOKEVIRTUAL);
             this.writeConstantMethodrefInfo(
-                l,
-                stringBuilferFD,                                // classFD
-                "append",                                       // methodName
+                stringBuilferFD,
+                "append",                                // classFD
                 "(" + Descriptor.STRING + ")" + stringBuilferFD // methodMD
             );
         }
@@ -4745,9 +4734,8 @@ public class UnitCompiler {
         // "StringBuffer.toString()":
         this.writeOpcode(l, Opcode.INVOKEVIRTUAL);
         this.writeConstantMethodrefInfo(
-            l,
-            stringBuilferFD,           // classFD
-            "toString",                // methodName
+            stringBuilferFD,
+            "toString",           // classFD
             "()" + Descriptor.STRING   // methodMD
         );
         return this.iClassLoader.STRING;
@@ -4763,9 +4751,8 @@ public class UnitCompiler {
     ) {
         this.writeOpcode(l, Opcode.INVOKESTATIC);
         this.writeConstantMethodrefInfo(
-            l,
-            Descriptor.STRING, // classFD
-            "valueOf",         // methodName
+            Descriptor.STRING,
+            "valueOf", // classFD
             "(" + (            // methodMD
                 sourceType == IClass.BOOLEAN ||
                 sourceType == IClass.CHAR    ||
@@ -4789,7 +4776,7 @@ public class UnitCompiler {
      * @param optionalEnclosingInstance Used if the target class is an inner class
      */
     private void invokeConstructor(
-        Java.Located  located,
+        Locatable     l,
         Java.Scope    scope,
         Java.Rvalue   optionalEnclosingInstance,
         IClass        targetClass,
@@ -4801,7 +4788,7 @@ public class UnitCompiler {
         if (iConstructors.length == 0) throw new RuntimeException("SNO: Target class \"" + targetClass.getDescriptor() + "\" has no constructors");
 
         IClass.IConstructor iConstructor = (IClass.IConstructor) this.findMostSpecificIInvocable(
-            located,
+            l,
             iConstructors, // iInvocables
             arguments      // arguments
         );
@@ -4810,7 +4797,7 @@ public class UnitCompiler {
         IClass[] thrownExceptions = iConstructor.getThrownExceptions();
         for (int i = 0; i < thrownExceptions.length; ++i) {
             this.checkThrownException(
-                located,
+                l,
                 thrownExceptions[i],
                 scope
             );
@@ -4821,7 +4808,7 @@ public class UnitCompiler {
             IClass outerIClass = targetClass.getOuterIClass();
             if (outerIClass != null) {
                 IClass eiic = this.compileGetValue(optionalEnclosingInstance);
-                if (!outerIClass.isAssignableFrom(eiic)) this.compileError("Type of enclosing instance (\"" + eiic + "\") is not assignable to \"" + outerIClass + "\"", located.getLocation());
+                if (!outerIClass.isAssignableFrom(eiic)) this.compileError("Type of enclosing instance (\"" + eiic + "\") is not assignable to \"" + outerIClass + "\"", l.getLocation());
             }
         }
 
@@ -4849,12 +4836,11 @@ public class UnitCompiler {
                     IClass.IField eisf = (IClass.IField) scopeClassDeclaration.syntheticFields.get(sf.getName());
                     if (eisf != null) {
                         if (scopeTBD instanceof Java.MethodDeclarator) {
-                            this.load(located, this.resolve(scopeClassDeclaration), 0);
-                            this.writeOpcode(located, Opcode.GETFIELD);
+                            this.load(l, this.resolve(scopeClassDeclaration), 0);
+                            this.writeOpcode(l, Opcode.GETFIELD);
                             this.writeConstantFieldrefInfo(
-                                located,
-                                this.resolve(scopeClassDeclaration).getDescriptor(), // classFD
-                                sf.getName(),                                        // fieldName
+                                this.resolve(scopeClassDeclaration).getDescriptor(),
+                                sf.getName(), // classFD
                                 sf.getDescriptor()                                   // fieldFD
                             );
                         } else
@@ -4862,14 +4848,14 @@ public class UnitCompiler {
                             Java.ConstructorDeclarator constructorDeclarator = (Java.ConstructorDeclarator) scopeTBD;
                             Java.LocalVariable syntheticParameter = (Java.LocalVariable) constructorDeclarator.syntheticParameters.get(sf.getName());
                             if (syntheticParameter == null) {
-                                this.compileError("Compiler limitation: Constructor cannot access local variable \"" + sf.getName().substring(4) + "\" declared in an enclosing block because none of the methods accesses it. As a workaround, declare a dummy method that accesses the local variable.", located.getLocation());
-                                this.writeOpcode(located, Opcode.ACONST_NULL);
+                                this.compileError("Compiler limitation: Constructor cannot access local variable \"" + sf.getName().substring(4) + "\" declared in an enclosing block because none of the methods accesses it. As a workaround, declare a dummy method that accesses the local variable.", l.getLocation());
+                                this.writeOpcode(l, Opcode.ACONST_NULL);
                             } else {
-                                this.load(located, syntheticParameter);
+                                this.load(l, syntheticParameter);
                             }
                         } else {
-                            this.compileError("Compiler limitation: Initializers cannot access local variables declared in an enclosing block.", located.getLocation());
-                            this.writeOpcode(located, Opcode.ACONST_NULL);
+                            this.compileError("Compiler limitation: Initializers cannot access local variables declared in an enclosing block.", l.getLocation());
+                            this.writeOpcode(l, Opcode.ACONST_NULL);
                         }
                     } else {
                         String localVariableName = sf.getName().substring(4);
@@ -4912,7 +4898,7 @@ public class UnitCompiler {
                             }
                             throw new RuntimeException("SNO: Synthetic field \"" + sf.getName() + "\" neither maps a synthetic field of an enclosing instance nor a local variable");
                         }
-                        this.load(located, lv);
+                        this.load(l, lv);
                     }
                 }
             }
@@ -4922,7 +4908,7 @@ public class UnitCompiler {
         IClass[] parameterTypes = iConstructor.getParameterTypes();
         for (int i = 0; i < arguments.length; ++i) {
             this.assignmentConversion(
-                (Java.Located) located,             // located
+                l,                                  // l
                 this.compileGetValue(arguments[i]), // sourceType
                 parameterTypes[i],                  // targetType
                 this.getConstantValue(arguments[i]) // optionalConstantValue
@@ -4932,11 +4918,10 @@ public class UnitCompiler {
         // Invoke!
         // Notice that the method descriptor is "iConstructor.getDescriptor()" prepended with the
         // synthetic parameters.
-        this.writeOpcode(located, Opcode.INVOKESPECIAL);
+        this.writeOpcode(l, Opcode.INVOKESPECIAL);
         this.writeConstantMethodrefInfo(
-            located,
-            targetClass.getDescriptor(), // classFD
-            "<init>",                    // methodName
+            targetClass.getDescriptor(),
+            "<init>", // classFD
             iConstructor.getDescriptor() // methodMD
         );
     }
@@ -4976,9 +4961,9 @@ public class UnitCompiler {
                     ) {
                         Object constantInitializerValue = UnitCompiler.this.getConstantValue((Java.Rvalue) vd.optionalInitializer);
                         if (constantInitializerValue != null) return UnitCompiler.this.assignmentConversion(
-                            (Java.Located) vd.optionalInitializer, // located
-                            constantInitializerValue,              // value
-                            this.getType()                         // targetType
+                            (Locatable) vd.optionalInitializer, // l
+                            constantInitializerValue,           // value
+                            this.getType()                      // targetType
                         );
                     }
                     return null;
@@ -5477,7 +5462,7 @@ public class UnitCompiler {
     
                     // Find methods with specified name.
                     iMethod = this.findIMethod(
-                        (Java.Located) mi, // located
+                        (Locatable) mi,    // l
                         (                  // targetType
                             mi.optionalTarget == null ?
                             this.resolve(td) :
@@ -5496,7 +5481,7 @@ public class UnitCompiler {
                 if (o instanceof List) {
                     IClass declaringIClass = ((IMethod) ((List) o).get(0)).getDeclaringIClass();
                     iMethod = this.findIMethod(
-                        mi,              // located
+                        (Locatable) mi,  // l
                         declaringIClass, // targetType
                         mi.methodName,   // methodName
                         mi.arguments     // arguments
@@ -5509,10 +5494,10 @@ public class UnitCompiler {
             for (Iterator it = this.staticImportsOnDemand.iterator(); it.hasNext();) {
                 IClass iClass = (IClass) it.next();
                 iMethod = this.findIMethod(
-                    mi,            // located
-                    iClass,        // targetType
-                    mi.methodName, // methodName
-                    mi.arguments   // arguments
+                    (Locatable) mi, // l
+                    iClass,         // targetType
+                    mi.methodName,  // methodName
+                    mi.arguments    // arguments
                 );
                 if (iMethod != null) break FIND_METHOD;
             }
@@ -5534,21 +5519,21 @@ public class UnitCompiler {
      * @return <code>null</code> if no appropriate method could be found
      */
     private IClass.IMethod findIMethod(
-        Located  located,
-        IClass   targetType,
-        String   methodName,
-        Rvalue[] arguments
+        Locatable l,
+        IClass    targetType,
+        String    methodName,
+        Rvalue[]  arguments
     ) throws CompileException {
         for (IClass ic = targetType; ic != null; ic = ic.getDeclaringIClass()) {
-            List l = new ArrayList();
-            this.getIMethods(ic, methodName, l);
-            if (l.size() > 0) {
+            List ms = new ArrayList();
+            this.getIMethods(ic, methodName, ms);
+            if (ms.size() > 0) {
 
                 // Determine arguments' types, choose the most specific method
                 IClass.IMethod iMethod = (IClass.IMethod) this.findMostSpecificIInvocable(
-                    located,
-                    (IClass.IMethod[]) l.toArray(new IClass.IMethod[l.size()]), // iInvocables
-                    arguments                                                   // arguments
+                    l,                                                            // l
+                    (IClass.IMethod[]) ms.toArray(new IClass.IMethod[ms.size()]), // iInvocables
+                    arguments                                                     // arguments
                 );
                 return iMethod;
             }
@@ -5623,10 +5608,10 @@ public class UnitCompiler {
         }
         IClass superclass = this.resolve(declaringClass).getSuperclass();
         IMethod iMethod = this.findIMethod(
-            (Java.Located) scmi, // located
-            superclass,          // targetType
-            scmi.methodName,     // methodName
-            scmi.arguments       // arguments
+            (Locatable) scmi, // l
+            superclass,       // targetType
+            scmi.methodName,  // methodName
+            scmi.arguments    // arguments
         );
         if (iMethod == null) {
             this.compileError("Class \"" + superclass + "\" has no method named \"" + scmi.methodName + "\"", scmi.getLocation());
@@ -5708,7 +5693,7 @@ public class UnitCompiler {
     /**
      * Determine the applicable invocables and choose the most specific invocable.
      * 
-     * @return the maximally specific {@link IInvocable} or <code>null</code> if no {@link IInvocable} is applicable
+     * @return the maximally specific {@link IClass.IInvocable} or <code>null</code> if no {@link IClass.IInvocable} is applicable
      *
      * @throws CompileException
      */
@@ -5924,7 +5909,7 @@ public class UnitCompiler {
         IClass[] thrownExceptions = iMethod.getThrownExceptions();
         for (int i = 0; i < thrownExceptions.length; ++i) {
             this.checkThrownException(
-                (Java.Located) in,                           // located
+                (Locatable) in,                              // l
                 thrownExceptions[i],                         // type
                 (Java.Scope) in.getEnclosingBlockStatement() // scope
             );
@@ -5935,13 +5920,13 @@ public class UnitCompiler {
      * @throws CompileException if the exception with the given type must not be thrown in the given scope
      */
     private void checkThrownException(
-        Java.Located located,
-        IClass       type,
-        Java.Scope   scope
+        Locatable  l,
+        IClass     type,
+        Java.Scope scope
     ) throws CompileException {
 
         // Thrown object must be assignable to "Throwable".
-        if (!this.iClassLoader.THROWABLE.isAssignableFrom(type)) this.compileError("Thrown object of type \"" + type + "\" is not assignable to \"Throwable\"", located.getLocation());
+        if (!this.iClassLoader.THROWABLE.isAssignableFrom(type)) this.compileError("Thrown object of type \"" + type + "\" is not assignable to \"Throwable\"", l.getLocation());
 
         // "RuntimeException" and "Error" are never checked.
         if (
@@ -5976,7 +5961,7 @@ public class UnitCompiler {
             }
         }
 
-        this.compileError("Thrown exception of type \"" + type + "\" is neither caught by a \"try...catch\" block nor declared in the \"throws\" clause of the declaring function", located.getLocation());
+        this.compileError("Thrown exception of type \"" + type + "\" is neither caught by a \"try...catch\" block nor declared in the \"throws\" clause of the declaring function", l.getLocation());
     }
 
     private IClass getTargetIClass(Java.QualifiedThisReference qtr) throws CompileException {
@@ -6159,14 +6144,14 @@ public class UnitCompiler {
     }
 
     private void referenceThis(
-        Java.Located             located,
+        Locatable                l,
         Java.ClassDeclaration    declaringClass,
         Java.TypeBodyDeclaration declaringTypeBodyDeclaration,
         IClass                   targetIClass
     ) throws CompileException {
         List path = UnitCompiler.getOuterClasses(declaringClass);
 
-        if (declaringTypeBodyDeclaration.isStatic()) this.compileError("No current instance available in static context", located.getLocation());
+        if (declaringTypeBodyDeclaration.isStatic()) this.compileError("No current instance available in static context", l.getLocation());
 
         int j;
         TARGET_FOUND: {
@@ -6185,13 +6170,13 @@ public class UnitCompiler {
                 // assignable from more than one enclosing class.
                 if (targetIClass.isAssignableFrom(this.resolve((Java.AbstractTypeDeclaration) path.get(j)))) break TARGET_FOUND;
             }
-            this.compileError("\"" + declaringClass + "\" is not enclosed by \"" + targetIClass + "\"", located.getLocation());
+            this.compileError("\"" + declaringClass + "\" is not enclosed by \"" + targetIClass + "\"", l.getLocation());
         }
 
         int i;
         if (declaringTypeBodyDeclaration instanceof Java.ConstructorDeclarator) {
             if (j == 0) {
-                this.writeOpcode(located, Opcode.ALOAD_0);
+                this.writeOpcode(l, Opcode.ALOAD_0);
                 return;
             }
 
@@ -6199,10 +6184,10 @@ public class UnitCompiler {
             String spn = "this$" + (path.size() - 2);
             Java.LocalVariable syntheticParameter = (Java.LocalVariable) constructorDeclarator.syntheticParameters.get(spn);
             if (syntheticParameter == null) throw new RuntimeException("SNO: Synthetic parameter \""+ spn + "\" not found");
-            this.load(located, syntheticParameter);
+            this.load(l, syntheticParameter);
             i = 1;
         } else {
-            this.writeOpcode(located, Opcode.ALOAD_0);
+            this.writeOpcode(l, Opcode.ALOAD_0);
             i = 0;
         }
         for (; i < j; ++i) {
@@ -6216,11 +6201,10 @@ public class UnitCompiler {
                 fieldName,
                 oic
             ));
-            this.writeOpcode(located, Opcode.GETFIELD);
+            this.writeOpcode(l, Opcode.GETFIELD);
             this.writeConstantFieldrefInfo(
-                located,
-                iic.getDescriptor(), // classFD
-                fieldName,           // fieldName
+                iic.getDescriptor(),
+                fieldName, // classFD
                 oic.getDescriptor()  // fieldFD
             );
         }
@@ -6620,7 +6604,7 @@ public class UnitCompiler {
             } else
             if (i >= Byte.MIN_VALUE && i <= Byte.MAX_VALUE) {
                 this.writeOpcode(l, Opcode.BIPUSH);
-                this.writeByte(l, (byte) i);
+                this.writeByte((byte) i);
             } else {
                 this.writeLDC(l, this.addConstantIntegerInfo(i));
             }
@@ -6632,7 +6616,7 @@ public class UnitCompiler {
                 this.writeOpcode(l, Opcode.LCONST_0 + (int) lv);
             } else {
                 this.writeOpcode(l, Opcode.LDC2_W);
-                this.writeConstantLongInfo(l, lv);
+                this.writeConstantLongInfo(lv);
             }
             return IClass.LONG;
         }
@@ -6660,7 +6644,7 @@ public class UnitCompiler {
             } else
             {
                 this.writeOpcode(l, Opcode.LDC2_W);
-                this.writeConstantDoubleInfo(l, dv);
+                this.writeConstantDoubleInfo(dv);
             }
             return IClass.DOUBLE;
         }
@@ -6672,9 +6656,8 @@ public class UnitCompiler {
                 this.writeLDC(l, this.addConstantStringInfo(ss[i]));
                 this.writeOpcode(l, Opcode.INVOKEVIRTUAL);
                 this.writeConstantMethodrefInfo(
-                    l,
-                    Descriptor.STRING,                                // classFD
-                    "concat",                                         // methodName
+                    Descriptor.STRING,
+                    "concat",                                // classFD
                     "(" + Descriptor.STRING + ")" + Descriptor.STRING // methodMD
                 );
             }
@@ -6735,10 +6718,10 @@ public class UnitCompiler {
     private void writeLDC(Locatable l, short index) {
         if (index <= 255) {
             this.writeOpcode(l, Opcode.LDC);
-            this.writeByte(l, (byte) index);
+            this.writeByte((byte) index);
         } else {
             this.writeOpcode(l, Opcode.LDC_W);
-            this.writeShort(l, index);
+            this.writeShort(index);
         }
     }
 
@@ -6746,10 +6729,10 @@ public class UnitCompiler {
      * Implements "assignment conversion" (JLS2 5.2).
      */
     private void assignmentConversion(
-        Java.Located located,
-        IClass       sourceType,
-        IClass       targetType,
-        Object       optionalConstantValue
+        Locatable l,
+        IClass    sourceType,
+        IClass    targetType,
+        Object    optionalConstantValue
     ) throws CompileException {
         if (UnitCompiler.DEBUG) System.out.println("assignmentConversion(" + sourceType + ", " + targetType + ", " + optionalConstantValue + ")");
 
@@ -6757,7 +6740,7 @@ public class UnitCompiler {
         if (this.tryIdentityConversion(sourceType, targetType)) return;
 
         // JLS2 5.1.2 Widening primitive conversion.
-        if (this.tryWideningPrimitiveConversion(located, sourceType, targetType)) return;
+        if (this.tryWideningPrimitiveConversion(l, sourceType, targetType)) return;
 
         // JLS2 5.1.4 Widening reference conversion.
         if (this.isWideningReferenceConvertible(sourceType, targetType)) return;
@@ -6767,11 +6750,11 @@ public class UnitCompiler {
             IClass boxedType = this.isBoxingConvertible(sourceType);
             if (boxedType != null) {
                 if (this.tryIdentityConversion(boxedType, targetType)) {
-                    this.boxingConversion(located, sourceType, boxedType);
+                    this.boxingConversion(l, sourceType, boxedType);
                     return;
                 } else
                 if (this.isWideningReferenceConvertible(boxedType, targetType)) {
-                    this.boxingConversion(located, sourceType, boxedType);
+                    this.boxingConversion(l, sourceType, boxedType);
                     return;
                 }
             }
@@ -6782,12 +6765,12 @@ public class UnitCompiler {
             IClass unboxedType = this.isUnboxingConvertible(sourceType);
             if (unboxedType != null) {
                 if (this.tryIdentityConversion(unboxedType, targetType)) {
-                    this.unboxingConversion(located, sourceType, unboxedType);
+                    this.unboxingConversion(l, sourceType, unboxedType);
                     return;
                 } else
                 if (this.isWideningPrimitiveConvertible(unboxedType, targetType)) {
-                    this.unboxingConversion(located, sourceType, unboxedType);
-                    this.tryWideningPrimitiveConversion(located, unboxedType, targetType);
+                    this.unboxingConversion(l, sourceType, unboxedType);
+                    this.tryWideningPrimitiveConversion(l, unboxedType, targetType);
                     return;
                 }
             }
@@ -6796,22 +6779,22 @@ public class UnitCompiler {
         // 5.2 Special narrowing primitive conversion.
         if (optionalConstantValue != null) {
             if (this.tryConstantAssignmentConversion(
-                located,
+                l,
                 optionalConstantValue, // constantValue
                 targetType             // targetType
             )) return;
         }
 
-        this.compileError("Assignment conversion not possible from type \"" + sourceType + "\" to type \"" + targetType + "\"", located.getLocation());
+        this.compileError("Assignment conversion not possible from type \"" + sourceType + "\" to type \"" + targetType + "\"", l.getLocation());
     }
 
     /**
      * Implements "assignment conversion" (JLS2 5.2) on a constant value.
      */
     private Object assignmentConversion(
-        Java.Located located,
-        Object       value,
-        IClass       targetType
+        Locatable l,
+        Object    value,
+        IClass    targetType
     ) throws CompileException {
         Object result = null;
 
@@ -6906,7 +6889,7 @@ public class UnitCompiler {
         if (value == Java.Rvalue.CONSTANT_VALUE_NULL && !targetType.isPrimitive()) {
             result = value;
         }
-        if (result == null) this.compileError("Cannot convert constant of type \"" + value.getClass().getName() + "\" to type \"" + targetType.toString() + "\"", located.getLocation());
+        if (result == null) this.compileError("Cannot convert constant of type \"" + value.getClass().getName() + "\" to type \"" + targetType.toString() + "\"", l.getLocation());
         return result;
     }
 
@@ -7097,7 +7080,7 @@ public class UnitCompiler {
     ) {
         byte[] opcodes = (byte[]) UnitCompiler.PRIMITIVE_WIDENING_CONVERSIONS.get(sourceType.getDescriptor() + targetType.getDescriptor());
         if (opcodes != null) {
-            this.write(l, opcodes);
+            this.writeOpcodes(l, opcodes);
             return true;
         }
         return false;
@@ -7206,7 +7189,7 @@ public class UnitCompiler {
     ) {
         byte[] opcodes = (byte[]) UnitCompiler.PRIMITIVE_NARROWING_CONVERSIONS.get(sourceType.getDescriptor() + targetType.getDescriptor());
         if (opcodes != null) {
-            this.write(l, opcodes);
+            this.writeOpcodes(l, opcodes);
             return true;
         }
         return false;
@@ -7274,9 +7257,9 @@ public class UnitCompiler {
      * @param targetType The type to convert to
      */
     private boolean tryConstantAssignmentConversion(
-        Located l,
-        Object  constantValue,
-        IClass  targetType
+        Locatable l,
+        Object    constantValue,
+        IClass    targetType
     ) throws CompileException {
         if (UnitCompiler.DEBUG) System.out.println("isConstantPrimitiveAssignmentConvertible(" + constantValue + ", " + targetType + ")");
 
@@ -7390,14 +7373,14 @@ public class UnitCompiler {
      * @return Whether the conversion succeeded
      */
     private boolean tryNarrowingReferenceConversion(
-        Java.Located located,
-        IClass  sourceType,
-        IClass  targetType
+        Locatable l,
+        IClass    sourceType,
+        IClass    targetType
     ) throws CompileException {
         if (!this.isNarrowingReferenceConvertible(sourceType, targetType)) return false;
 
-        this.writeOpcode(located, Opcode.CHECKCAST);
-        this.writeConstantClassInfo(located, targetType.getDescriptor());
+        this.writeOpcode(l, Opcode.CHECKCAST);
+        this.writeConstantClassInfo(targetType.getDescriptor());
         return true;
     }
 
@@ -7439,16 +7422,15 @@ public class UnitCompiler {
         if (targetType.hasIMethod("valueOf", new IClass[] { sourceType })) {
             this.writeOpcode(l, Opcode.INVOKESTATIC);
             this.writeConstantMethodrefInfo(
-                l,
-                targetType.getDescriptor(),                                         // classFD
-                "valueOf",                                                          // methodName
+                targetType.getDescriptor(),
+                "valueOf",                                         // classFD
                 '(' + sourceType.getDescriptor() + ')' + targetType.getDescriptor() // methodFD
             );
             return;
         }
         // new Target(source)
         this.writeOpcode(l, Opcode.NEW);
-        this.writeConstantClassInfo(l, targetType.getDescriptor());
+        this.writeConstantClassInfo(targetType.getDescriptor());
         if (Descriptor.hasSize2(sourceType.getDescriptor())) {
             this.writeOpcode(l, Opcode.DUP_X2);
             this.writeOpcode(l, Opcode.DUP_X2);
@@ -7460,9 +7442,8 @@ public class UnitCompiler {
         }
         this.writeOpcode(l, Opcode.INVOKESPECIAL);
         this.writeConstantMethodrefInfo(
-            l,
-            targetType.getDescriptor(),                               // classFD
-            "<init>",                                                 // methodName
+            targetType.getDescriptor(),
+            "<init>",                               // classFD
             '(' + sourceType.getDescriptor() + ')' + Descriptor.VOID_ // methodMD
         );
     }
@@ -7487,7 +7468,7 @@ public class UnitCompiler {
         Locatable l,
         IClass    sourceType,
         IClass    targetType
-    ) throws CompileException {
+    ) {
         if (this.isUnboxingConvertible(sourceType) == targetType) {
             this.unboxingConversion(l, sourceType, targetType);
             return true;
@@ -7499,14 +7480,13 @@ public class UnitCompiler {
      * @param targetType a primitive type (except VOID)
      * @param sourceType the corresponding wrapper type
      */
-    private void unboxingConversion(Locatable l, IClass sourceType, IClass targetType) throws CompileException {
+    private void unboxingConversion(Locatable l, IClass sourceType, IClass targetType) {
 
         // "source.targetValue()"
         this.writeOpcode(l, Opcode.INVOKEVIRTUAL);
         this.writeConstantMethodrefInfo(
-            l,
-            sourceType.getDescriptor(),       // classFD
-            targetType.toString() + "Value",  // methodName
+            sourceType.getDescriptor(),
+            targetType.toString() + "Value",       // classFD
             "()" + targetType.getDescriptor() // methodFD
         );
     }
@@ -7549,32 +7529,32 @@ public class UnitCompiler {
 
     // Load the value of a local variable onto the stack and return its type.
     private IClass load(
-        Java.Located       located,
+        Locatable          l,
         Java.LocalVariable localVariable
     ) {
         this.load(
-            located,
+            l,
             localVariable.type,
             localVariable.localVariableArrayIndex
         );
         return localVariable.type;
     }
     private void load(
-        Java.Located located,
-        IClass  type,
-        int     index
+        Locatable l,
+        IClass    type,
+        int       index
     ) {
         if (index <= 3) {
-            this.writeOpcode(located, Opcode.ILOAD_0 + 4 * this.ilfda(type) + index);
+            this.writeOpcode(l, Opcode.ILOAD_0 + 4 * this.ilfda(type) + index);
         } else
         if (index <= 255) {
-            this.writeOpcode(located, Opcode.ILOAD + this.ilfda(type));
-            this.writeByte(located, index);
+            this.writeOpcode(l, Opcode.ILOAD + this.ilfda(type));
+            this.writeByte(index);
         } else
         {
-            this.writeOpcode(located, Opcode.WIDE);
-            this.writeOpcode(located, Opcode.ILOAD + this.ilfda(type));
-            this.writeShort(located, index);
+            this.writeOpcode(l, Opcode.WIDE);
+            this.writeOpcode(l, Opcode.ILOAD + this.ilfda(type));
+            this.writeShort(index);
         }
     }
 
@@ -7585,36 +7565,36 @@ public class UnitCompiler {
      * described in JLS 5.2 is applied.
      */
     private void store(
-        Java.Located       located,
+        Locatable          l,
         IClass             valueType,
         Java.LocalVariable localVariable
     ) {
         this.store(
-            located,                              // located
+            l,                                    // l
             localVariable.type,                   // lvType
             localVariable.localVariableArrayIndex // lvIndex
         );
     }
     private void store(
-        Java.Located located,
-        IClass  lvType,
-        short   lvIndex
+        Locatable l,
+        IClass    lvType,
+        short     lvIndex
     ) {
         if (lvIndex <= 3) {
-            this.writeOpcode(located, Opcode.ISTORE_0 + 4 * this.ilfda(lvType) + lvIndex);
+            this.writeOpcode(l, Opcode.ISTORE_0 + 4 * this.ilfda(lvType) + lvIndex);
         } else
         if (lvIndex <= 255) {
-            this.writeOpcode(located, Opcode.ISTORE + this.ilfda(lvType));
-            this.writeByte(located, lvIndex);
+            this.writeOpcode(l, Opcode.ISTORE + this.ilfda(lvType));
+            this.writeByte(lvIndex);
         } else
         {
-            this.writeOpcode(located, Opcode.WIDE);
-            this.writeOpcode(located, Opcode.ISTORE + this.ilfda(lvType));
-            this.writeShort(located, lvIndex);
+            this.writeOpcode(l, Opcode.WIDE);
+            this.writeOpcode(l, Opcode.ISTORE + this.ilfda(lvType));
+            this.writeShort(lvIndex);
         }
     }
 
-    private void dup(Java.Located located, int n) {
+    private void dup(Locatable l, int n) {
         switch (n) {
 
         case 0:
@@ -7622,11 +7602,11 @@ public class UnitCompiler {
             break;
 
         case 1:
-            this.writeOpcode(located, Opcode.DUP);
+            this.writeOpcode(l, Opcode.DUP);
             break;
 
         case 2:
-            this.writeOpcode(located, Opcode.DUP2);
+            this.writeOpcode(l, Opcode.DUP2);
             break;
 
         default:
@@ -7634,23 +7614,23 @@ public class UnitCompiler {
         }
     }
     private void dupx(
-        Java.Located located,
-        IClass  type,
-        int     x
+        Locatable l,
+        IClass    type,
+        int       x
     ) {
         if (x < 0 || x > 2) throw new RuntimeException("SNO: x has value " + x);
         int dup  = Opcode.DUP  + x;
         int dup2 = Opcode.DUP2 + x;
-        this.writeOpcode(located, (
+        this.writeOpcode(l, (
             type == IClass.LONG || type == IClass.DOUBLE ?
             dup2 :
             dup
         ));
     }
 
-    private void pop(Java.Located located, IClass type) {
+    private void pop(Locatable l, IClass type) {
         if (type == IClass.VOID) return;
-        this.writeOpcode(located, (
+        this.writeOpcode(l, (
             type == IClass.LONG || type == IClass.DOUBLE ?
             Opcode.POP2 :
             Opcode.POP
@@ -7886,107 +7866,78 @@ public class UnitCompiler {
         return new CodeContext(this.getCodeContext().getClassFile());
     }
 
-    private void write(Java.Locatable l, byte[] b) {
-        this.codeContext.write(l.getLocation().getLineNumber(), b);
+    private void writeByte(int v) {
+        this.codeContext.write((short) -1, new byte[] { (byte) v });
     }
-    private void writeByte(Java.Locatable l, int v) {
-        this.codeContext.write(l.getLocation().getLineNumber(), new byte[] { (byte) v });
+    private void writeShort(int v) {
+        this.codeContext.write((short) -1, new byte[] { (byte) (v >> 8), (byte) v });
     }
-    private void writeInt(Java.Locatable l, int v) {
-        this.codeContext.write(l.getLocation().getLineNumber(), new byte[] { (byte) (v >> 24), (byte) (v >> 16), (byte) (v >> 8), (byte) v });
+    private void writeInt(int v) {
+        this.codeContext.write((short) -1, new byte[] { (byte) (v >> 24), (byte) (v >> 16), (byte) (v >> 8), (byte) v });
     }
-    private void writeShort(Java.Locatable l, int v) {
-        this.codeContext.write(l.getLocation().getLineNumber(), new byte[] { (byte) (v >> 8), (byte) v });
-    }
+
     private void writeOpcode(Java.Locatable l, int opcode) {
-        this.writeByte(l, opcode);
+        this.codeContext.write(l.getLocation().getLineNumber(), new byte[] { (byte) opcode });
+    }
+    private void writeOpcodes(Java.Locatable l, byte[] opcodes) {
+        this.codeContext.write(l.getLocation().getLineNumber(), opcodes);
     }
     private void writeBranch(Java.Locatable l, int opcode, final CodeContext.Offset dst) {
         this.codeContext.writeBranch(l.getLocation().getLineNumber(), opcode, dst);
     }
-    private void writeBranch(int opcode, final CodeContext.Offset dst) {
-        this.codeContext.writeBranch((short) -1, opcode, dst);
-    }
-    private void writeOffset(Java.Locatable l, CodeContext.Offset src, final CodeContext.Offset dst) {
-        this.codeContext.writeOffset(l.getLocation().getLineNumber(), src, dst);
+    private void writeOffset(CodeContext.Offset src, final CodeContext.Offset dst) {
+        this.codeContext.writeOffset((short) -1, src, dst);
     }
 
     // Wrappers for "ClassFile.addConstant...Info()". Saves us some coding overhead.
 
-    private void writeConstantClassInfo(Java.Locatable l, String descriptor) {
+    private void writeConstantClassInfo(String descriptor) {
         CodeContext ca = this.codeContext;
-        ca.writeShort(
-            l.getLocation().getLineNumber(),
-            ca.getClassFile().addConstantClassInfo(descriptor)
-        );
+        ca.writeShort((short) -1, ca.getClassFile().addConstantClassInfo(descriptor));
     }
-    private void writeConstantFieldrefInfo(Java.Locatable l, String classFD, String fieldName, String fieldFD) {
+    private void writeConstantFieldrefInfo(String classFD, String fieldName, String fieldFD) {
         CodeContext ca = this.codeContext;
-        ca.writeShort(
-            l.getLocation().getLineNumber(),
-            ca.getClassFile().addConstantFieldrefInfo(classFD, fieldName, fieldFD)
-        );
+        ca.writeShort((short) -1, ca.getClassFile().addConstantFieldrefInfo(classFD, fieldName, fieldFD));
     }
-    private void writeConstantMethodrefInfo(Java.Locatable l, String classFD, String methodName, String methodMD) {
+    private void writeConstantMethodrefInfo(String classFD, String methodName, String methodMD) {
         CodeContext ca = this.codeContext;
-        ca.writeShort(
-            l.getLocation().getLineNumber(),
-            ca.getClassFile().addConstantMethodrefInfo(classFD, methodName, methodMD)
-        );
+        ca.writeShort((short) -1, ca.getClassFile().addConstantMethodrefInfo(classFD, methodName, methodMD));
     }
-    private void writeConstantInterfaceMethodrefInfo(Java.Locatable l, String classFD, String methodName, String methodMD) {
+    private void writeConstantInterfaceMethodrefInfo(String classFD, String methodName, String methodMD) {
         CodeContext ca = this.codeContext;
-        ca.writeShort(
-            l.getLocation().getLineNumber(),
-            ca.getClassFile().addConstantInterfaceMethodrefInfo(classFD, methodName, methodMD)
-        );
+        ca.writeShort((short) -1, ca.getClassFile().addConstantInterfaceMethodrefInfo(classFD, methodName, methodMD));
     }
 /* UNUSED
-    private void writeConstantStringInfo(Java.Locatable l, String value) {
-        this.codeContext.writeShort(
-            l.getLocation().getLineNumber(),
-            this.addConstantStringInfo(value)
-        );
+    private void writeConstantStringInfo(String value) {
+        this.codeContext.writeShort((short) -1, this.addConstantStringInfo(value));
     }
 */
     private short addConstantStringInfo(String value) {
         return this.codeContext.getClassFile().addConstantStringInfo(value);
     }
-    /* UNUSED
-    private void writeConstantIntegerInfo(Java.Locatable l, int value) {
-        this.codeContext.writeShort(
-            l.getLocation().getLineNumber(),
-            this.addConstantIntegerInfo(value)
-        );
+/* UNUSED
+    private void writeConstantIntegerInfo(int value) {
+        this.codeContext.writeShort((short) -1, this.addConstantIntegerInfo(value));
     }
 */
     private short addConstantIntegerInfo(int value) {
         return this.codeContext.getClassFile().addConstantIntegerInfo(value);
     }
 /* UNUSED
-    private void writeConstantFloatInfo(Java.Locatable l, float value) {
-        this.codeContext.writeShort(
-            l.getLocation().getLineNumber(),
-            this.addConstantFloatInfo(value)
-        );
+    private void writeConstantFloatInfo(float value) {
+        this.codeContext.writeShort((short) -1, this.addConstantFloatInfo(value));
     }
 */
     private short addConstantFloatInfo(float value) {
         return this.codeContext.getClassFile().addConstantFloatInfo(value);
     }
-    private void writeConstantLongInfo(Java.Locatable l, long value) {
+    private void writeConstantLongInfo(long value) {
         CodeContext ca = this.codeContext;
-        ca.writeShort(
-            l.getLocation().getLineNumber(),
-            ca.getClassFile().addConstantLongInfo(value)
-        );
+        ca.writeShort((short) -1, ca.getClassFile().addConstantLongInfo(value));
     }
-    private void writeConstantDoubleInfo(Java.Locatable l, double value) {
+    private void writeConstantDoubleInfo(double value) {
         CodeContext ca = this.codeContext;
-        ca.writeShort(
-            l.getLocation().getLineNumber(),
-            ca.getClassFile().addConstantDoubleInfo(value)
-        );
+        ca.writeShort((short) -1, ca.getClassFile().addConstantDoubleInfo(value));
     }
 
     public CodeContext.Offset getWhereToBreak(Java.BreakableStatement bs) {
@@ -8018,8 +7969,8 @@ public class UnitCompiler {
         return qtr.declaringClass;
     }
 
-    private void referenceThis(Java.Located located) {
-        this.writeOpcode(located, Opcode.ALOAD_0);
+    private void referenceThis(Locatable l) {
+        this.writeOpcode(l, Opcode.ALOAD_0);
     }
 
     /**
@@ -8030,16 +7981,16 @@ public class UnitCompiler {
      * @return The type of the created array
      */
     private IClass newArray(
-        Java.Located located,
-        int     dimExprCount,
-        int     dims,
-        IClass  componentType
+        Locatable l,
+        int       dimExprCount,
+        int       dims,
+        IClass    componentType
     ) {
         if (dimExprCount == 1 && dims == 0 && componentType.isPrimitive()) {
 
             // "new <primitive>[<n>]"
-            this.writeOpcode(located, Opcode.NEWARRAY);
-            this.writeByte(located, (
+            this.writeOpcode(l, Opcode.NEWARRAY);
+            this.writeByte((
                 componentType == IClass.BOOLEAN ? 4 :
                 componentType == IClass.CHAR    ? 5 :
                 componentType == IClass.FLOAT   ? 6 :
@@ -8057,8 +8008,8 @@ public class UnitCompiler {
 
             // "new <class-or-interface>[<n>]"
             // "new <anything>[<n>][]..."
-            this.writeOpcode(located, Opcode.ANEWARRAY);
-            this.writeConstantClassInfo(located, at.getDescriptor());
+            this.writeOpcode(l, Opcode.ANEWARRAY);
+            this.writeConstantClassInfo(at.getDescriptor());
             return at.getArrayIClass(this.iClassLoader.OBJECT);
         } else {
             IClass at = componentType.getArrayIClass(dimExprCount + dims, this.iClassLoader.OBJECT);
@@ -8066,9 +8017,9 @@ public class UnitCompiler {
             // "new <anything>[]..."
             // "new <anything>[<n>][<m>]..."
             // "new <anything>[<n>][<m>]...[]..."
-            this.writeOpcode(located, Opcode.MULTIANEWARRAY);
-            this.writeConstantClassInfo(located, at.getDescriptor());
-            this.writeByte(located, dimExprCount);
+            this.writeOpcode(l, Opcode.MULTIANEWARRAY);
+            this.writeConstantClassInfo(at.getDescriptor());
+            this.writeByte(dimExprCount);
             return at;
         }
     }

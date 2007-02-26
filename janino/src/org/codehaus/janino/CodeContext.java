@@ -641,10 +641,16 @@ public class CodeContext {
         for (Offset o = this.currentInserter; o != null; o = o.next) o.offset += b.length;
     }
 
+    /**
+     * @param lineNumber The line number that corresponds to the byte code, or -1
+     */
     public void writeShort(short lineNumber, int v) {
         this.write(lineNumber, new byte[] { (byte) (v >> 8), (byte) v });
     }
 
+    /**
+     * @param lineNumber The line number that corresponds to the byte code, or -1
+     */
     public void writeBranch(short lineNumber, int opcode, final Offset dst) {
         this.relocatables.add(new Branch(this.newOffset(), dst));
         this.write(lineNumber, new byte[] { (byte) opcode, -1, -1 });

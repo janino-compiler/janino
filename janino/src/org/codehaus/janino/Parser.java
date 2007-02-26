@@ -391,10 +391,9 @@ public class Parser {
             if (optionalDocComment == null) this.warning("MDCM", "Method doc comment missing", location);
             String name = this.readIdentifier();
             classDeclaration.addDeclaredMethod(this.parseMethodDeclarationRest(
-                classDeclaration,                                  // declaringType
-                optionalDocComment,                                // optionalDocComment
-                modifiers,                                         // modifiers
-                new Java.BasicType(location, Java.BasicType.VOID), // type
+                optionalDocComment,                                  // declaringType
+                modifiers,                                // optionalDocComment
+                new Java.BasicType(location, Java.BasicType.VOID),                                         // modifiers
                 name                                               // name
             ));
             return;
@@ -432,8 +431,7 @@ public class Parser {
         ) {
             if (optionalDocComment == null) this.warning("CDCM", "Constructor doc comment missing", this.location());
             classDeclaration.addConstructor(this.parseConstructorDeclarator(
-                classDeclaration,   // declaringClass
-                optionalDocComment, // optionalDocComment
+                optionalDocComment,   // declaringClass
                 modifiers           // modifiers
             ));
             return;
@@ -448,10 +446,9 @@ public class Parser {
         if (this.peekOperator("(")) {
             if (optionalDocComment == null) this.warning("MDCM", "Method doc comment missing", this.location());
             classDeclaration.addDeclaredMethod(this.parseMethodDeclarationRest(
-                classDeclaration,   // declaringType
-                optionalDocComment, // optionalDocComment
-                modifiers,          // modifiers
-                memberType,         // type
+                optionalDocComment,   // declaringType
+                modifiers, // optionalDocComment
+                memberType,          // modifiers
                 memberName          // name
             ));
             return;
@@ -567,10 +564,9 @@ public class Parser {
                 this.eatToken();
                 String name = this.readIdentifier();
                 interfaceDeclaration.addDeclaredMethod(this.parseMethodDeclarationRest(
-                    interfaceDeclaration,                              // declaringType
-                    optionalDocComment,                                // optionalDocComment
-                    (short) (modifiers | Mod.ABSTRACT | Mod.PUBLIC),   // modifiers
-                    new Java.BasicType(location, Java.BasicType.VOID), // type
+                    optionalDocComment,                              // declaringType
+                    (short) (modifiers | Mod.ABSTRACT | Mod.PUBLIC),                                // optionalDocComment
+                    new Java.BasicType(location, Java.BasicType.VOID),   // modifiers
                     name                                               // name
                 ));
             } else
@@ -608,10 +604,9 @@ public class Parser {
                 if (this.peekOperator("(")) {
                     if (optionalDocComment == null) this.warning("MDCM", "Method doc comment missing", this.location());
                     interfaceDeclaration.addDeclaredMethod(this.parseMethodDeclarationRest(
-                        interfaceDeclaration,                            // declaringType
-                        optionalDocComment,                              // optionalDocComment
-                        (short) (modifiers | Mod.ABSTRACT | Mod.PUBLIC), // modifiers
-                        memberType,                                      // type
+                        optionalDocComment,                            // declaringType
+                        (short) (modifiers | Mod.ABSTRACT | Mod.PUBLIC),                              // optionalDocComment
+                        memberType, // modifiers
                         memberName                                       // name
                     ));
                 } else
@@ -648,16 +643,14 @@ public class Parser {
      * </pre>
      */
     public Java.ConstructorDeclarator parseConstructorDeclarator(
-        Java.ClassDeclaration declaringClass,
-        String                optionalDocComment,
-        short                 modifiers
+        String optionalDocComment,
+        short  modifiers
     ) throws ParseException, Scanner.ScanException, IOException {
         Location location = this.location();
         this.readIdentifier();  // Class name
 
         // Parse formal parameters.
         Java.FunctionDeclarator.FormalParameter[] formalParameters = this.parseFormalParameters(
-            declaringClass // enclosingScope
         );
 
         // Parse "throws" clause.
@@ -733,7 +726,6 @@ public class Parser {
      * </pre>
      */
     public Java.MethodDeclarator parseMethodDeclarationRest(
-        Java.AbstractTypeDeclaration declaringType,
         String                       optionalDocComment,
         short                        modifiers,
         Java.Type                    type,
@@ -744,7 +736,6 @@ public class Parser {
         this.verifyIdentifierIsConventionalMethodName(name, location);
 
         Java.FunctionDeclarator.FormalParameter[] formalParameters = this.parseFormalParameters(
-            declaringType // enclosingScope
         );
 
         for (int i = this.parseBracketsOpt(); i > 0; --i) type = new Java.ArrayType(type);
@@ -822,9 +813,8 @@ public class Parser {
      *   FormalParameters := '(' [ FormalParameter { ',' FormalParameter } ] ')'
      * </pre>
      */
-    public Java.FunctionDeclarator.FormalParameter[] parseFormalParameters(
-        Java.Scope enclosingScope
-    ) throws ParseException, Scanner.ScanException, IOException {
+    public Java.FunctionDeclarator.FormalParameter[] parseFormalParameters()
+    throws ParseException, Scanner.ScanException, IOException {
         this.readOperator("(");
         if (this.peekOperator(")")) {
             this.eatToken();
