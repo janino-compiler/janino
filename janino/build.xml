@@ -75,6 +75,15 @@
 		<mkdir dir="lib"/>
 		<jar jarfile="lib/janino.jar" basedir="${build}"/>
 
+		<echo level="info">Signing jar: lib/janino.jar</echo>
+		<exec executable="jarsigner">
+			<arg value="-keystore"/><arg value="dummy-keystore"/>
+			<arg value="-storepass"/><arg value="storepass"/>
+			<arg value="-keypass"/><arg value="keypass"/>
+			<arg value="lib/janino.jar"/>
+			<arg value="dummy"/>
+		</exec>
+
 		<zip destfile="${janino_zip}">
 			<zipfileset file="lib/janino.jar" prefix="janino-${version}/lib"/>
 			<zipfileset dir="${javadoc}" prefix="janino-${version}/javadoc"/>
