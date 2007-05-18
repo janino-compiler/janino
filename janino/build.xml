@@ -40,21 +40,20 @@
 	<property file="build.properties"/>
 
 	<target name="compile" description="Compile the source">
-		<delete dir="${build}"/>
-		<mkdir dir="${build}"/>
+		<mkdir dir="build/classes"/>
 
 		<javac
 			fork="yes"
 			executable="${jdk_1_2_2_home}/bin/javac"
-			srcdir="${src}" excludes="org/codehaus/janino/AstGeneratorVisitor.java"
-			destdir="${build}"
+			srcdir="src" excludes="org/codehaus/janino/AstGeneratorVisitor.java"
+			destdir="build/classes"
 			debug="true"
 			debuglevel="source"
 		/>
 	</target>
 
-	<target name="javadoc" description="Build JAVADOC">
-		<delete dir="${javadoc}"/>
+	<target name="javadoc" description="Build JAVADOC" depends="compile">
+		<mkdir dir="build/javadoc"/>
 		<javadoc
 			header="&lt;a href=&quot;http://janino.codehaus.org/&quot;&gt;Web Site&lt;/a&gt;"
 			splitindex="true"
@@ -62,8 +61,8 @@
 			windowtitle="Janino ${version}"
 			overview="src/overview.html"
 			sourcepath="src"
-			classpath="classes;${ant_jar}"
-			destdir="${javadoc}"
+			classpath="build/classes;${ant_jar}"
+			destdir="build/javadoc"
 			packagenames="${javadoc_packages}"
 		>
 			<link offline="true" href="${jdk_javadoc_remote}" packagelistloc="${jdk_javadoc_local}"/>
@@ -71,24 +70,30 @@
 		</javadoc>
 	</target>
 
-	<target name="dist" description="Generate the distribution">
-		<mkdir dir="lib"/>
-		<jar jarfile="lib/janino.jar" basedir="${build}"/>
-
-		<echo level="info">Signing jar: lib/janino.jar</echo>
+	<target name="jar" description="Create the janino jar." depends="compile">
+		<mkdir dir="build/lib"/>
+		<jar jarfile="build/lib/janino.jar" basedir="build/classes"/>
+	</target>
+ 
+	<target name="dist" description="Generate the distribution" depends="jar, javadoc">
+		<echo level="info">Signing jar: build/lib/janino.jar</echo>
 		<exec executable="jarsigner">
 			<arg value="-keystore"/><arg value="dummy-keystore"/>
 			<arg value="-storepass"/><arg value="storepass"/>
 			<arg value="-keypass"/><arg value="keypass"/>
-			<arg value="lib/janino.jar"/>
+			<arg value="build/lib/janino.jar"/>
 			<arg value="dummy"/>
 		</exec>
 
 		<zip destfile="${janino_zip}">
-			<zipfileset file="lib/janino.jar" prefix="janino-${version}/lib"/>
-			<zipfileset dir="${javadoc}" prefix="janino-${version}/javadoc"/>
-			<zipfileset dir="${src}" prefix="janino-${version}/src"/>
+			<zipfileset file="build/lib/janino.jar" prefix="janino-${version}/lib"/>
+			<zipfileset dir="build/javadoc" prefix="janino-${version}/javadoc"/>
+			<zipfileset dir="src" prefix="janino-${version}/src"/>
 			<zipfileset file="build.*" prefix="janino-${version}"/>
 		</zip>
+	</target>
+
+	<target name="clean" description="Clean built files.">
+		<delete dir="build"/>
 	</target>
 </project>
