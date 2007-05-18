@@ -46,7 +46,7 @@ import org.codehaus.janino.util.resource.*;
  * <p>
  * Notice that it does not compile them!
  */
-final class JavaSourceIClassLoader extends IClassLoader {
+public final class JavaSourceIClassLoader extends IClassLoader {
     private static final boolean DEBUG = false;
 
     private final ResourceFinder      sourceFinder;

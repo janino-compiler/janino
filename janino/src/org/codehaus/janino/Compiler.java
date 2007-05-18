@@ -304,7 +304,7 @@ public class Compiler {
         this.benchmark.report("Rebuild",                 new Boolean(rebuild)         );
     }
     public static final File NO_DESTINATION_DIRECTORY = null; // Backwards compatibility -- previously, "null" was officially documented
-    static class SimpleWarningHandler implements WarningHandler {
+    public static class SimpleWarningHandler implements WarningHandler {
         public void handleWarning(String handle, String message, Location optionalLocation) {
             StringBuffer sb = new StringBuffer();
             if (optionalLocation != null) sb.append(optionalLocation).append(": ");

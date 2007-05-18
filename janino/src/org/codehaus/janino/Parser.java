@@ -2515,7 +2515,7 @@ public class Parser {
      * Location} in the source code.
      */
     public static class ParseException extends Scanner.LocatedException {
-        ParseException(String message, Location location) {
+        public ParseException(String message, Location location) {
             super(message, location);
         }
     }
