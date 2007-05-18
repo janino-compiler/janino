@@ -343,6 +343,15 @@ public class ReportedBugs extends JaninoTestSuite {
 
         section("Bug 80"); // Expression compilation is said to throw StackOverflowError!?
         exp(COMP, "Erroneous expression", "(10).total >= 100.0 ? 0.0 : 7.95");
+
+        section("Bug 81"); // IncompatibleClassChangeError when invoking getClass() on interface references
+        scr(EXEC, "x", (
+            "import java.util.ArrayList;\n" +
+            "import java.util.List;\n" +
+            "\n" +
+            "List list = new ArrayList();\n" +
+            "System.out.println(list.getClass());\n"
+        ));
     }
 
     /**
