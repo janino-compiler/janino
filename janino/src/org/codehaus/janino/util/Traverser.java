@@ -489,7 +489,7 @@ public class Traverser {
     }
 
     public void traverseSuperclassFieldAccessExpression(Java.SuperclassFieldAccessExpression scfae) {
-        if (scfae.optionalQualification != null) scfae.optionalQualification.accept(this.cv);
+        if (scfae.optionalQualification != null) scfae.optionalQualification.accept((Visitor.TypeVisitor) this.cv);
         this.traverseLvalue(scfae);
     }
     
