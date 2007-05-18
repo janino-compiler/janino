@@ -67,7 +67,7 @@ public class PathResourceFinder extends LazyMultiResourceFinder {
      * @param path A java-like path, i.e. a "path separator"-separated list of entries.
      */
     public PathResourceFinder(String path) {
-        this(new EnumerationIterator(new StringTokenizer(path, File.pathSeparator)));
+        this(PathResourceFinder.parsePath(path));
     }
 
     private static Iterator createIterator(final Iterator entries) {
