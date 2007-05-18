@@ -424,7 +424,7 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
     }
     public void visitSuperclassFieldAccessExpression(Java.SuperclassFieldAccessExpression scfae) {
         if (scfae.optionalQualification != null) {
-            scfae.optionalQualification.accept(this);
+            scfae.optionalQualification.accept((Visitor.TypeVisitor) this);
             this.pw.print(".super." + scfae.fieldName);
         } else
         {
