@@ -599,7 +599,7 @@ public class Compiler {
      * @param classFile
      * @param sourceFile Required to compute class file path if no destination directory given
      */
-    private void storeClassFile(ClassFile classFile, final File sourceFile) throws IOException {
+    public void storeClassFile(ClassFile classFile, final File sourceFile) throws IOException {
         String classFileResourceName = ClassFile.getClassFileResourceName(classFile.getThisClassName());
 
         // Determine where to create the class file.
