@@ -2895,9 +2895,9 @@ public class UnitCompiler {
                 this.writeOpcode(mi, opcode);
                 if (opcode != Opcode.INVOKEVIRTUAL) targetType = iMethod.getDeclaringIClass();
                 this.writeConstantMethodrefInfo(
-                    targetType.getDescriptor(),                         // locatable
-                    iMethod.getName(), // classFD
-                    iMethod.getDescriptor()     // methodMD
+                    iMethod.getDeclaringIClass().getDescriptor(), // classFD
+                    iMethod.getName(),                            // methodName
+                    iMethod.getDescriptor()                       // methodMD
                 );
             }
         }
