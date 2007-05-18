@@ -61,8 +61,8 @@ public class ZipFileResourceFinder extends ResourceFinder {
                 return ZipFileResourceFinder.this.zipFile.getName() + ':' + resourceName;
             }
             public long lastModified() {
-            	long l = ze.getTime();
-            	return l == -1L ? 0L : l;
+                long l = ze.getTime();
+                return l == -1L ? 0L : l;
             }
 
             public String toString() { return this.getFileName(); }

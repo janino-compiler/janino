@@ -4246,16 +4246,16 @@ public class UnitCompiler {
         // Check whether the member and the context block statement are enclosed by the same
         // top-level type.
         {
-	        IClass topLevelIClassEnclosingMember = iClassDeclaringMember;
-	        for (IClass c = iClassDeclaringMember.getDeclaringIClass(); c != null; c = c.getDeclaringIClass()) {
-	            topLevelIClassEnclosingMember = c;
-	        }
-	        IClass topLevelIClassEnclosingContextBlockStatement = iClassDeclaringContextBlockStatement;
-	        for (IClass c = iClassDeclaringContextBlockStatement.getDeclaringIClass(); c != null; c = c.getDeclaringIClass()) {
-	            topLevelIClassEnclosingContextBlockStatement = c;
-	        }
-	
-	        if (topLevelIClassEnclosingMember == topLevelIClassEnclosingContextBlockStatement) return;
+            IClass topLevelIClassEnclosingMember = iClassDeclaringMember;
+                for (IClass c = iClassDeclaringMember.getDeclaringIClass(); c != null; c = c.getDeclaringIClass()) {
+                topLevelIClassEnclosingMember = c;
+            }
+            IClass topLevelIClassEnclosingContextBlockStatement = iClassDeclaringContextBlockStatement;
+            for (IClass c = iClassDeclaringContextBlockStatement.getDeclaringIClass(); c != null; c = c.getDeclaringIClass()) {
+                topLevelIClassEnclosingContextBlockStatement = c;
+            }
+
+            if (topLevelIClassEnclosingMember == topLevelIClassEnclosingContextBlockStatement) return;
         }
 
         if (memberAccess == Access.PRIVATE) {
@@ -4268,8 +4268,8 @@ public class UnitCompiler {
         // Check whether the member and the context block statement are declared in the same
         // package.
         if (Descriptor.areInSamePackage(
-    		iClassDeclaringMember.getDescriptor(),
-    		iClassDeclaringContextBlockStatement.getDescriptor()
+            iClassDeclaringMember.getDescriptor(),
+            iClassDeclaringContextBlockStatement.getDescriptor()
         )) return;
 
         if (memberAccess == Access.DEFAULT) {

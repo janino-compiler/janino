@@ -42,10 +42,10 @@ import java.io.*;
 public abstract class FileResourceCreator implements ResourceCreator {
 
     public final OutputStream createResource(String resourceName) throws IOException {
-    	File file = this.getFile(resourceName);
+        File file = this.getFile(resourceName);
 
         // Create directory for class file if it does not exist.
-    	File dir = file.getParentFile();
+        File dir = file.getParentFile();
         if (dir != null && !dir.isDirectory()) {
             if (!dir.mkdirs()) throw new IOException("Cannot create directory for class file \"" + file + "\"");
         }
@@ -55,7 +55,7 @@ public abstract class FileResourceCreator implements ResourceCreator {
     }
 
     public final boolean deleteResource(String resourceName) {
-    	return this.getFile(resourceName).delete();
+        return this.getFile(resourceName).delete();
     }
 
     protected abstract File getFile(String resourceName);

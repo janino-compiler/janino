@@ -52,7 +52,7 @@ import java.util.*;
  */
 public class Traverser {
     public final Visitor.ComprehensiveVisitor cv = new Visitor.ComprehensiveVisitor() {
-    	public final void visitSingleTypeImportDeclaration(Java.CompilationUnit.SingleTypeImportDeclaration stid)      { Traverser.this.traverseSingleTypeImportDeclaration(stid); }
+        public final void visitSingleTypeImportDeclaration(Java.CompilationUnit.SingleTypeImportDeclaration stid)      { Traverser.this.traverseSingleTypeImportDeclaration(stid); }
         public final void visitTypeImportOnDemandDeclaration(Java.CompilationUnit.TypeImportOnDemandDeclaration tiodd) { Traverser.this.traverseTypeImportOnDemandDeclaration(tiodd); }
         public final void visitSingleStaticImportDeclaration(SingleStaticImportDeclaration ssid)                       { Traverser.this.traverseSingleStaticImportDeclaration(ssid); }
         public final void visitStaticImportOnDemandDeclaration(StaticImportOnDemandDeclaration siodd)                  { Traverser.this.traverseStaticImportOnDemandDeclaration(siodd); }

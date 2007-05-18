@@ -47,7 +47,7 @@ public class MapResourceCreator implements ResourceCreator {
         this.map = new HashMap();
     }
     public MapResourceCreator(Map map) {
-    	this.map = map;
+        this.map = map;
     }
     public Map getMap() {
         return this.map;

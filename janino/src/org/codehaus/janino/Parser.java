@@ -51,7 +51,7 @@ public class Parser {
     }
 
     public Scanner getScanner() {
-    	return this.scanner;
+        return this.scanner;
     }
 
     /**
