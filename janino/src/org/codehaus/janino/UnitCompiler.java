@@ -2795,7 +2795,6 @@ public class UnitCompiler {
     private IClass compileGet2(Java.MethodInvocation mi) throws CompileException {
         IClass.IMethod iMethod = this.findIMethod(mi);
 
-        IClass targetType;
         if (mi.optionalTarget == null) {
 
             // JLS2 6.5.7.1, 15.12.4.1.1.1
@@ -2823,16 +2822,15 @@ public class UnitCompiler {
                     iMethod.getDeclaringIClass() // targetIClass
                 );
             }
-            targetType = this.resolve(scopeClassDeclaration);
         } else {
 
             // 6.5.7.2
             boolean staticContext = this.isType(mi.optionalTarget);
             if (staticContext) {
-                targetType = this.getType(this.toTypeOrCE(mi.optionalTarget));
+                this.getType(this.toTypeOrCE(mi.optionalTarget));
             } else
             {
-                targetType = this.compileGetValue(this.toRvalueOrCE(mi.optionalTarget));
+                this.compileGetValue(this.toRvalueOrCE(mi.optionalTarget));
             }
             if (iMethod.isStatic()) {
                 if (!staticContext) {
@@ -2893,7 +2891,6 @@ public class UnitCompiler {
             {
                 byte opcode = iMethod.isStatic() ? Opcode.INVOKESTATIC : Opcode.INVOKEVIRTUAL;
                 this.writeOpcode(mi, opcode);
-                if (opcode != Opcode.INVOKEVIRTUAL) targetType = iMethod.getDeclaringIClass();
                 this.writeConstantMethodrefInfo(
                     iMethod.getDeclaringIClass().getDescriptor(), // classFD
                     iMethod.getName(),                            // methodName
