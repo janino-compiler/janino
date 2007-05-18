@@ -55,7 +55,9 @@ public class JarDirectoriesResourceFinder extends LazyMultiResourceFinder {
             new TransformingIterator(Arrays.asList(directories).iterator()) {
                 protected Object transform(Object o) { // File directory => Iterator ResourceFinder
                     File directory = (File) o;
-        
+
+                    if (!directory.exists()) return Collections.EMPTY_LIST.iterator();
+
                     // Iterate over the JAR files in the given directory.
                     File[] jarFiles = directory.listFiles(new FilenameFilter() {
                         public boolean accept(File dir, String name) { return name.endsWith(".jar"); }
