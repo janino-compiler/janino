@@ -516,7 +516,7 @@ public class Parser {
         this.parseInterfaceBody(interfaceDeclaration);
         return interfaceDeclaration;
     }
-    private static class InterfaceDeclarationContext extends Enumerator {
+    public static class InterfaceDeclarationContext extends Enumerator {
         public static final InterfaceDeclarationContext NAMED_TYPE_DECLARATION = new InterfaceDeclarationContext("named_type_declaration");
         public static final InterfaceDeclarationContext COMPILATION_UNIT       = new InterfaceDeclarationContext("compilation_unit");
         private InterfaceDeclarationContext(String name) { super(name); }
