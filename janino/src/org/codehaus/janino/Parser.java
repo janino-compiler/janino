@@ -313,7 +313,7 @@ public class Parser {
         this.parseClassBody(namedClassDeclaration);
         return namedClassDeclaration;
     }
-    private static class ClassDeclarationContext extends Enumerator {
+    public static class ClassDeclarationContext extends Enumerator {
         public static final ClassDeclarationContext BLOCK            = new ClassDeclarationContext("block");
         public static final ClassDeclarationContext TYPE_DECLARATION = new ClassDeclarationContext("type_declaration");
         public static final ClassDeclarationContext COMPILATION_UNIT = new ClassDeclarationContext("compilation_unit");
