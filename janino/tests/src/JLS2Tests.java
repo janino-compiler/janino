@@ -324,7 +324,7 @@ public class JLS2Tests extends JaninoTestSuite {
         section("15 Expressions");
         
         section("15.1 Evaluation, Denotation, and Result");
-        
+
         section("15.9 Class Instance Creation Expressions");
         
         section("15.9.1 Determining the class being Instantiated");
@@ -366,6 +366,29 @@ public class JLS2Tests extends JaninoTestSuite {
             "}\n"
         ), "A");
 
+        section("15.11 Field Access Expressions");
+        section("15.11.2 Accessing Superclass Members using super");
+        sim(TRUE, "1", (
+            "public class T1            { int x = 1; }\n" +
+            "public class T2 extends T1 { int x = 2; }\n" +
+            "public class T3 extends T2 {\n" +
+            "    int x = 3;\n" +
+            "    public static boolean test() {\n" +
+            "        return new T3().test2();\n" +
+            "    }\n" +
+            "    public boolean test2() {\n" +
+            "        return (\n" +
+            "            x == 3\n" +
+            "            && super.x == 2\n" +
+            "            && T3.super.x == 2\n" +
+            "            && T2.super.x == 1\n" +
+            "            && ((T2) this).x == 2\n" +
+            "            && ((T1) this).x == 1\n" +
+            "        );\n" +
+            "    }\n" +
+            "}\n"
+         ), "T3");
+        
         section("15.14 Postfix Expressions");
         section("15.14.2 Postfix Increment Operator ++");
         scr(TRUE, "1", "int i = 7; i++; return i == 8;");

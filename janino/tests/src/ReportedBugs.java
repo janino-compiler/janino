@@ -338,6 +338,11 @@ public class ReportedBugs extends JaninoTestSuite {
             "    }\n" +
             "}\n"
         ), "SCI");
+
+        //  Bug 78: See JLS2Tests, section 15.11.2.
+
+        section("Bug 80"); // Expression compilation is said to throw StackOverflowError!?
+        exp(COMP, "Erroneous expression", "(10).total >= 100.0 ? 0.0 : 7.95");
     }
 
     /**

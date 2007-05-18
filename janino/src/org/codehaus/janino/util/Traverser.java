@@ -115,6 +115,7 @@ public class Traverser {
         public final void visitArrayAccessExpression(Java.ArrayAccessExpression aae)                          { Traverser.this.traverseArrayAccessExpression(aae); }
         public final void visitFieldAccess(Java.FieldAccess fa)                                               { Traverser.this.traverseFieldAccess(fa); }
         public final void visitFieldAccessExpression(Java.FieldAccessExpression fae)                          { Traverser.this.traverseFieldAccessExpression(fae); }
+        public final void visitSuperclassFieldAccessExpression(Java.SuperclassFieldAccessExpression scfae)    { Traverser.this.traverseSuperclassFieldAccessExpression(scfae); }
         public final void visitLocalVariableAccess(Java.LocalVariableAccess lva)                              { Traverser.this.traverseLocalVariableAccess(lva); }
         public final void visitParenthesizedExpression(Java.ParenthesizedExpression pe)                       { Traverser.this.traverseParenthesizedExpression(pe); }
     };
@@ -487,6 +488,11 @@ public class Traverser {
         this.traverseLvalue(fae);
     }
 
+    public void traverseSuperclassFieldAccessExpression(Java.SuperclassFieldAccessExpression scfae) {
+        if (scfae.optionalQualification != null) scfae.optionalQualification.accept(this.cv);
+        this.traverseLvalue(scfae);
+    }
+    
     public void traverseLocalVariableAccess(Java.LocalVariableAccess lva) {
         this.traverseLvalue(lva);
     }

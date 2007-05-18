@@ -200,7 +200,7 @@ public class UnitCompiler {
             UnitCompiler.this.compile((Java.PackageMemberTypeDeclaration) it.next());
         }
 
-        if (this.compileErrorCount > 0) throw new CompileException(this.compileErrorCount + " errors while compiling unit \"" + this.compilationUnit.optionalFileName + "\"", null);
+        if (this.compileErrorCount > 0) throw new CompileException(this.compileErrorCount + " error(s) while compiling unit \"" + this.compilationUnit.optionalFileName + "\"", null);
 
         List l = this.generatedClassFiles;
         return (ClassFile[]) l.toArray(new ClassFile[l.size()]);
@@ -1737,12 +1737,13 @@ public class UnitCompiler {
             public void visitQualifiedThisReference        (Java.QualifiedThisReference         qtr ) { try { UnitCompiler.this.compile2(qtr ); } catch (CompileException e) { throw new UCE(e); } }
             public void visitThisReference                 (Java.ThisReference                  tr  ) { try { UnitCompiler.this.compile2(tr  ); } catch (CompileException e) { throw new UCE(e); } }
 
-            public void visitAmbiguousName             (Java.AmbiguousName              an  ) { try { UnitCompiler.this.compile2(an  ); } catch (CompileException e) { throw new UCE(e); } }
-            public void visitArrayAccessExpression     (Java.ArrayAccessExpression      aae ) { try { UnitCompiler.this.compile2(aae ); } catch (CompileException e) { throw new UCE(e); } };
-            public void visitFieldAccess               (Java.FieldAccess                fa  ) { try { UnitCompiler.this.compile2(fa  ); } catch (CompileException e) { throw new UCE(e); } }
-            public void visitFieldAccessExpression     (Java.FieldAccessExpression      fae ) { try { UnitCompiler.this.compile2(fae ); } catch (CompileException e) { throw new UCE(e); } }
-            public void visitLocalVariableAccess       (Java.LocalVariableAccess        lva ) { try { UnitCompiler.this.compile2(lva ); } catch (CompileException e) { throw new UCE(e); } }
-            public void visitParenthesizedExpression   (Java.ParenthesizedExpression    pe  ) { try { UnitCompiler.this.compile2(pe  ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitAmbiguousName                  (Java.AmbiguousName              an   ) { try { UnitCompiler.this.compile2(an   ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitArrayAccessExpression          (Java.ArrayAccessExpression      aae  ) { try { UnitCompiler.this.compile2(aae  ); } catch (CompileException e) { throw new UCE(e); } };
+            public void visitFieldAccess                    (Java.FieldAccess                fa   ) { try { UnitCompiler.this.compile2(fa   ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitFieldAccessExpression          (Java.FieldAccessExpression      fae  ) { try { UnitCompiler.this.compile2(fae  ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae) { try { UnitCompiler.this.compile2(scfae); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitLocalVariableAccess            (Java.LocalVariableAccess        lva  ) { try { UnitCompiler.this.compile2(lva  ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitParenthesizedExpression        (Java.ParenthesizedExpression    pe   ) { try { UnitCompiler.this.compile2(pe   ); } catch (CompileException e) { throw new UCE(e); } }
         };
         try {
             rv.accept(rvv);
@@ -1919,12 +1920,13 @@ public class UnitCompiler {
             public void visitQualifiedThisReference        (Java.QualifiedThisReference         qtr ) { try { UnitCompiler.this.compileBoolean2(qtr , dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
             public void visitThisReference                 (Java.ThisReference                  tr  ) { try { UnitCompiler.this.compileBoolean2(tr  , dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
 
-            public void visitAmbiguousName             (Java.AmbiguousName              an  ) { try { UnitCompiler.this.compileBoolean2(an  , dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
-            public void visitArrayAccessExpression     (Java.ArrayAccessExpression      aae ) { try { UnitCompiler.this.compileBoolean2(aae , dst, orientation); } catch (CompileException e) { throw new UCE(e); } };
-            public void visitFieldAccess               (Java.FieldAccess                fa  ) { try { UnitCompiler.this.compileBoolean2(fa  , dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
-            public void visitFieldAccessExpression     (Java.FieldAccessExpression      fae ) { try { UnitCompiler.this.compileBoolean2(fae , dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
-            public void visitLocalVariableAccess       (Java.LocalVariableAccess        lva ) { try { UnitCompiler.this.compileBoolean2(lva , dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
-            public void visitParenthesizedExpression   (Java.ParenthesizedExpression    pe  ) { try { UnitCompiler.this.compileBoolean2(pe  , dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitAmbiguousName                  (Java.AmbiguousName                   an   ) { try { UnitCompiler.this.compileBoolean2(an   , dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitArrayAccessExpression          (Java.ArrayAccessExpression           aae  ) { try { UnitCompiler.this.compileBoolean2(aae  , dst, orientation); } catch (CompileException e) { throw new UCE(e); } };
+            public void visitFieldAccess                    (Java.FieldAccess                     fa   ) { try { UnitCompiler.this.compileBoolean2(fa   , dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitFieldAccessExpression          (Java.FieldAccessExpression           fae  ) { try { UnitCompiler.this.compileBoolean2(fae  , dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitSuperclassFieldAccessExpression(Java.SuperclassFieldAccessExpression scfae) { try { UnitCompiler.this.compileBoolean2(scfae, dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitLocalVariableAccess            (Java.LocalVariableAccess             lva  ) { try { UnitCompiler.this.compileBoolean2(lva  , dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitParenthesizedExpression        (Java.ParenthesizedExpression         pe   ) { try { UnitCompiler.this.compileBoolean2(pe   , dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
         };
         try {
             rv.accept(rvv);
@@ -2159,12 +2161,13 @@ public class UnitCompiler {
             public void visitQualifiedThisReference        (Java.QualifiedThisReference         qtr ) {       res[0] = UnitCompiler.this.compileContext2(qtr );                                                                }
             public void visitThisReference                 (Java.ThisReference                  tr  ) {       res[0] = UnitCompiler.this.compileContext2(tr  );                                                                }
 
-            public void visitAmbiguousName             (Java.AmbiguousName              an  ) { try { res[0] = UnitCompiler.this.compileContext2(an  ); } catch (CompileException e) { throw new UCE(e); } }
-            public void visitArrayAccessExpression     (Java.ArrayAccessExpression      aae ) { try { res[0] = UnitCompiler.this.compileContext2(aae ); } catch (CompileException e) { throw new UCE(e); } };
-            public void visitFieldAccess               (Java.FieldAccess                fa  ) { try { res[0] = UnitCompiler.this.compileContext2(fa  ); } catch (CompileException e) { throw new UCE(e); } }
-            public void visitFieldAccessExpression     (Java.FieldAccessExpression      fae ) { try { res[0] = UnitCompiler.this.compileContext2(fae ); } catch (CompileException e) { throw new UCE(e); } }
-            public void visitLocalVariableAccess       (Java.LocalVariableAccess        lva ) {       res[0] = UnitCompiler.this.compileContext2(lva );                                                                }
-            public void visitParenthesizedExpression   (Java.ParenthesizedExpression    pe  ) { try { res[0] = UnitCompiler.this.compileContext2(pe  ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitAmbiguousName                  (Java.AmbiguousName                   an   ) { try { res[0] = UnitCompiler.this.compileContext2(an   ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitArrayAccessExpression          (Java.ArrayAccessExpression           aae  ) { try { res[0] = UnitCompiler.this.compileContext2(aae  ); } catch (CompileException e) { throw new UCE(e); } };
+            public void visitFieldAccess                    (Java.FieldAccess                     fa   ) { try { res[0] = UnitCompiler.this.compileContext2(fa   ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitFieldAccessExpression          (Java.FieldAccessExpression           fae  ) { try { res[0] = UnitCompiler.this.compileContext2(fae  ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitSuperclassFieldAccessExpression(Java.SuperclassFieldAccessExpression scfae) { try { res[0] = UnitCompiler.this.compileContext2(scfae); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitLocalVariableAccess            (Java.LocalVariableAccess             lva  ) {       res[0] = UnitCompiler.this.compileContext2(lva  );                                                                }
+            public void visitParenthesizedExpression        (Java.ParenthesizedExpression         pe   ) { try { res[0] = UnitCompiler.this.compileContext2(pe   ); } catch (CompileException e) { throw new UCE(e); } }
         };
         try {
             rv.accept(rvv);
@@ -2212,6 +2215,10 @@ public class UnitCompiler {
         this.determineValue(fae);
         return this.compileContext(fae.value);
     }
+    private int compileContext2(Java.SuperclassFieldAccessExpression scfae) throws CompileException {
+        this.determineValue(scfae);
+        return this.compileContext(scfae.value);
+    }
     private int compileContext2(Java.ParenthesizedExpression pe) throws CompileException {
         return this.compileContext(pe.value);
     }
@@ -2249,12 +2256,13 @@ public class UnitCompiler {
             public void visitQualifiedThisReference        (Java.QualifiedThisReference         qtr ) { try { res[0] = UnitCompiler.this.compileGet2(qtr ); } catch (CompileException e) { throw new UCE(e); } }
             public void visitThisReference                 (Java.ThisReference                  tr  ) { try { res[0] = UnitCompiler.this.compileGet2(tr  ); } catch (CompileException e) { throw new UCE(e); } }
 
-            public void visitAmbiguousName             (Java.AmbiguousName              an  ) { try { res[0] = UnitCompiler.this.compileGet2(an  ); } catch (CompileException e) { throw new UCE(e); } }
-            public void visitArrayAccessExpression     (Java.ArrayAccessExpression      aae ) { try { res[0] = UnitCompiler.this.compileGet2(aae ); } catch (CompileException e) { throw new UCE(e); } };
-            public void visitFieldAccess               (Java.FieldAccess                fa  ) { try { res[0] = UnitCompiler.this.compileGet2(fa  ); } catch (CompileException e) { throw new UCE(e); } }
-            public void visitFieldAccessExpression     (Java.FieldAccessExpression      fae ) { try { res[0] = UnitCompiler.this.compileGet2(fae ); } catch (CompileException e) { throw new UCE(e); } }
-            public void visitLocalVariableAccess       (Java.LocalVariableAccess        lva ) {       res[0] = UnitCompiler.this.compileGet2(lva );                                                                }
-            public void visitParenthesizedExpression   (Java.ParenthesizedExpression    pe  ) { try { res[0] = UnitCompiler.this.compileGet2(pe  ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitAmbiguousName                  (Java.AmbiguousName                   an   ) { try { res[0] = UnitCompiler.this.compileGet2(an   ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitArrayAccessExpression          (Java.ArrayAccessExpression           aae  ) { try { res[0] = UnitCompiler.this.compileGet2(aae  ); } catch (CompileException e) { throw new UCE(e); } };
+            public void visitFieldAccess                    (Java.FieldAccess                     fa   ) { try { res[0] = UnitCompiler.this.compileGet2(fa   ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitFieldAccessExpression          (Java.FieldAccessExpression           fae  ) { try { res[0] = UnitCompiler.this.compileGet2(fae  ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitSuperclassFieldAccessExpression(Java.SuperclassFieldAccessExpression scfae) { try { res[0] = UnitCompiler.this.compileGet2(scfae); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitLocalVariableAccess            (Java.LocalVariableAccess             lva  ) {       res[0] = UnitCompiler.this.compileGet2(lva  );                                                                }
+            public void visitParenthesizedExpression        (Java.ParenthesizedExpression         pe   ) { try { res[0] = UnitCompiler.this.compileGet2(pe   ); } catch (CompileException e) { throw new UCE(e); } }
         };
         try {
             rv.accept(rvv);
@@ -2668,6 +2676,10 @@ public class UnitCompiler {
         this.determineValue(fae);
         return this.compileGet(fae.value);
     }
+    private IClass compileGet2(Java.SuperclassFieldAccessExpression scfae) throws CompileException {
+        this.determineValue(scfae);
+        return this.compileGet(scfae.value);
+    }
     private IClass compileGet2(Java.UnaryOperation uo) throws CompileException {
         if (uo.operator == "!") {
             return this.compileGet2((Java.BooleanRvalue) uo);
@@ -2918,8 +2930,8 @@ public class UnitCompiler {
         // Invoke!
         this.writeOpcode(scmi, Opcode.INVOKESPECIAL);
         this.writeConstantMethodrefInfo(
-            iMethod.getDeclaringIClass().getDescriptor(),
-            scmi.methodName, // classFD
+            iMethod.getDeclaringIClass().getDescriptor(), // classFD
+            scmi.methodName,                              // methodName
             iMethod.getDescriptor()                       // methodMD
         );
         return iMethod.getReturnType();
@@ -3225,33 +3237,34 @@ public class UnitCompiler {
         final Object[] res = new Object[1];
         class UCE extends RuntimeException { final CompileException ce; UCE(CompileException ce) { this.ce = ce; } }
         Visitor.RvalueVisitor rvv = new Visitor.RvalueVisitor() {
-            public void visitArrayLength               (Java.ArrayLength                al  ) {       res[0] = UnitCompiler.this.getConstantValue2(al  );                                                                }
-            public void visitAssignment                (Java.Assignment                 a   ) {       res[0] = UnitCompiler.this.getConstantValue2(a   );                                                                }
+            public void visitArrayLength               (Java.ArrayLength                al  ) {       res[0] = UnitCompiler.this.getConstantValue2(al  );                                                    }
+            public void visitAssignment                (Java.Assignment                 a   ) {       res[0] = UnitCompiler.this.getConstantValue2(a   );                                                    }
             public void visitUnaryOperation            (Java.UnaryOperation             uo  ) { try { res[0] = UnitCompiler.this.getConstantValue2(uo  ); } catch (CompileException e) { throw new UCE(e); } }
             public void visitBinaryOperation           (Java.BinaryOperation            bo  ) { try { res[0] = UnitCompiler.this.getConstantValue2(bo  ); } catch (CompileException e) { throw new UCE(e); } }
             public void visitCast                      (Java.Cast                       c   ) { try { res[0] = UnitCompiler.this.getConstantValue2(c   ); } catch (CompileException e) { throw new UCE(e); } }
-            public void visitClassLiteral              (Java.ClassLiteral               cl  ) {       res[0] = UnitCompiler.this.getConstantValue2(cl  );                                                                }
-            public void visitConditionalExpression     (Java.ConditionalExpression      ce  ) {       res[0] = UnitCompiler.this.getConstantValue2(ce  );                                                                }
-            public void visitConstantValue             (Java.ConstantValue              cv  ) {       res[0] = UnitCompiler.this.getConstantValue2(cv  );                                                                }
-            public void visitCrement                   (Java.Crement                    c   ) {       res[0] = UnitCompiler.this.getConstantValue2(c   );                                                                }
-            public void visitInstanceof                (Java.Instanceof                 io  ) {       res[0] = UnitCompiler.this.getConstantValue2(io  );                                                                }
-            public void visitMethodInvocation          (Java.MethodInvocation           mi  ) {       res[0] = UnitCompiler.this.getConstantValue2(mi  );                                                                }
-            public void visitSuperclassMethodInvocation(Java.SuperclassMethodInvocation smi ) {       res[0] = UnitCompiler.this.getConstantValue2(smi );                                                                }
+            public void visitClassLiteral              (Java.ClassLiteral               cl  ) {       res[0] = UnitCompiler.this.getConstantValue2(cl  );                                                    }
+            public void visitConditionalExpression     (Java.ConditionalExpression      ce  ) {       res[0] = UnitCompiler.this.getConstantValue2(ce  );                                                    }
+            public void visitConstantValue             (Java.ConstantValue              cv  ) {       res[0] = UnitCompiler.this.getConstantValue2(cv  );                                                    }
+            public void visitCrement                   (Java.Crement                    c   ) {       res[0] = UnitCompiler.this.getConstantValue2(c   );                                                    }
+            public void visitInstanceof                (Java.Instanceof                 io  ) {       res[0] = UnitCompiler.this.getConstantValue2(io  );                                                    }
+            public void visitMethodInvocation          (Java.MethodInvocation           mi  ) {       res[0] = UnitCompiler.this.getConstantValue2(mi  );                                                    }
+            public void visitSuperclassMethodInvocation(Java.SuperclassMethodInvocation smi ) {       res[0] = UnitCompiler.this.getConstantValue2(smi );                                                    }
             public void visitLiteral                   (Java.Literal                    l   ) { try { res[0] = UnitCompiler.this.getConstantValue2(l   ); } catch (CompileException e) { throw new UCE(e); } }
-            public void visitNewAnonymousClassInstance (Java.NewAnonymousClassInstance  naci) {       res[0] = UnitCompiler.this.getConstantValue2(naci);                                                                }
-            public void visitNewArray                  (Java.NewArray                   na  ) {       res[0] = UnitCompiler.this.getConstantValue2(na  );                                                                }
-            public void visitNewInitializedArray       (Java.NewInitializedArray        nia ) {       res[0] = UnitCompiler.this.getConstantValue2(nia );                                                                }
-            public void visitNewClassInstance          (Java.NewClassInstance           nci ) {       res[0] = UnitCompiler.this.getConstantValue2(nci );                                                                }
-            public void visitParameterAccess           (Java.ParameterAccess            pa  ) {       res[0] = UnitCompiler.this.getConstantValue2(pa  );                                                                }
-            public void visitQualifiedThisReference    (Java.QualifiedThisReference     qtr ) {       res[0] = UnitCompiler.this.getConstantValue2(qtr );                                                                }
-            public void visitThisReference             (Java.ThisReference              tr  ) {       res[0] = UnitCompiler.this.getConstantValue2(tr  );                                                                }
+            public void visitNewAnonymousClassInstance (Java.NewAnonymousClassInstance  naci) {       res[0] = UnitCompiler.this.getConstantValue2(naci);                                                    }
+            public void visitNewArray                  (Java.NewArray                   na  ) {       res[0] = UnitCompiler.this.getConstantValue2(na  );                                                    }
+            public void visitNewInitializedArray       (Java.NewInitializedArray        nia ) {       res[0] = UnitCompiler.this.getConstantValue2(nia );                                                    }
+            public void visitNewClassInstance          (Java.NewClassInstance           nci ) {       res[0] = UnitCompiler.this.getConstantValue2(nci );                                                    }
+            public void visitParameterAccess           (Java.ParameterAccess            pa  ) {       res[0] = UnitCompiler.this.getConstantValue2(pa  );                                                    }
+            public void visitQualifiedThisReference    (Java.QualifiedThisReference     qtr ) {       res[0] = UnitCompiler.this.getConstantValue2(qtr );                                                    }
+            public void visitThisReference             (Java.ThisReference              tr  ) {       res[0] = UnitCompiler.this.getConstantValue2(tr  );                                                    }
 
-            public void visitAmbiguousName             (Java.AmbiguousName              an  ) { try { res[0] = UnitCompiler.this.getConstantValue2(an  ); } catch (CompileException e) { throw new UCE(e); } }
-            public void visitArrayAccessExpression     (Java.ArrayAccessExpression      aae ) {       res[0] = UnitCompiler.this.getConstantValue2(aae );                                                                };
-            public void visitFieldAccess               (Java.FieldAccess                fa  ) { try { res[0] = UnitCompiler.this.getConstantValue2(fa  ); } catch (CompileException e) { throw new UCE(e); } }
-            public void visitFieldAccessExpression     (Java.FieldAccessExpression      fae ) {       res[0] = UnitCompiler.this.getConstantValue2(fae );                                                                }
-            public void visitLocalVariableAccess       (Java.LocalVariableAccess        lva ) {       res[0] = UnitCompiler.this.getConstantValue2(lva );                                                                }
-            public void visitParenthesizedExpression   (Java.ParenthesizedExpression    pe  ) { try { res[0] = UnitCompiler.this.getConstantValue2(pe  ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitAmbiguousName                  (Java.AmbiguousName                   an   ) { try { res[0] = UnitCompiler.this.getConstantValue2(an   ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitArrayAccessExpression          (Java.ArrayAccessExpression           aae  ) {       res[0] = UnitCompiler.this.getConstantValue2(aae  );                                                    }
+            public void visitFieldAccess                    (Java.FieldAccess                     fa   ) { try { res[0] = UnitCompiler.this.getConstantValue2(fa   ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitFieldAccessExpression          (Java.FieldAccessExpression           fae  ) {       res[0] = UnitCompiler.this.getConstantValue2(fae  );                                                    }
+            public void visitSuperclassFieldAccessExpression(Java.SuperclassFieldAccessExpression scfae) {       res[0] = UnitCompiler.this.getConstantValue2(scfae);                                                    }
+            public void visitLocalVariableAccess            (Java.LocalVariableAccess             lva  ) {       res[0] = UnitCompiler.this.getConstantValue2(lva  );                                                    }
+            public void visitParenthesizedExpression        (Java.ParenthesizedExpression         pe   ) { try { res[0] = UnitCompiler.this.getConstantValue2(pe   ); } catch (CompileException e) { throw new UCE(e); } }
         };
         try {
             rv.accept(rvv);
@@ -3463,12 +3476,13 @@ public class UnitCompiler {
             public void visitQualifiedThisReference    (Java.QualifiedThisReference     qtr ) {       res[0] = UnitCompiler.this.getNegatedConstantValue2(qtr );                                                                }
             public void visitThisReference             (Java.ThisReference              tr  ) {       res[0] = UnitCompiler.this.getNegatedConstantValue2(tr  );                                                                }
 
-            public void visitAmbiguousName             (Java.AmbiguousName              an  ) {       res[0] = UnitCompiler.this.getNegatedConstantValue2(an  );                                                                }
-            public void visitArrayAccessExpression     (Java.ArrayAccessExpression      aae ) {       res[0] = UnitCompiler.this.getNegatedConstantValue2(aae );                                                                };
-            public void visitFieldAccess               (Java.FieldAccess                fa  ) {       res[0] = UnitCompiler.this.getNegatedConstantValue2(fa  );                                                                }
-            public void visitFieldAccessExpression     (Java.FieldAccessExpression      fae ) {       res[0] = UnitCompiler.this.getNegatedConstantValue2(fae );                                                                }
-            public void visitLocalVariableAccess       (Java.LocalVariableAccess        lva ) {       res[0] = UnitCompiler.this.getNegatedConstantValue2(lva );                                                                }
-            public void visitParenthesizedExpression   (Java.ParenthesizedExpression    pe  ) { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(pe  ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitAmbiguousName                  (Java.AmbiguousName                   an   ) {       res[0] = UnitCompiler.this.getNegatedConstantValue2(an   );                                                    }
+            public void visitArrayAccessExpression          (Java.ArrayAccessExpression           aae  ) {       res[0] = UnitCompiler.this.getNegatedConstantValue2(aae  );                                                    }
+            public void visitFieldAccess                    (Java.FieldAccess                     fa   ) {       res[0] = UnitCompiler.this.getNegatedConstantValue2(fa   );                                                    }
+            public void visitFieldAccessExpression          (Java.FieldAccessExpression           fae  ) {       res[0] = UnitCompiler.this.getNegatedConstantValue2(fae  );                                                    }
+            public void visitSuperclassFieldAccessExpression(Java.SuperclassFieldAccessExpression scfae) {       res[0] = UnitCompiler.this.getNegatedConstantValue2(scfae);                                                    }
+            public void visitLocalVariableAccess            (Java.LocalVariableAccess             lva  ) {       res[0] = UnitCompiler.this.getNegatedConstantValue2(lva  );                                                    }
+            public void visitParenthesizedExpression        (Java.ParenthesizedExpression         pe   ) { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(pe   ); } catch (CompileException e) { throw new UCE(e); } }
         };
         try {
             rv.accept(rvv);
@@ -3643,12 +3657,13 @@ public class UnitCompiler {
     private void compileSet(Java.Lvalue lv) throws CompileException {
         class UCE extends RuntimeException { final CompileException ce; UCE(CompileException ce) { this.ce = ce; } }
         Visitor.LvalueVisitor lvv = new Visitor.LvalueVisitor() {
-            public void visitAmbiguousName          (Java.AmbiguousName           an ) { try { UnitCompiler.this.compileSet2(an ); } catch (CompileException e) { throw new UCE(e); } }
-            public void visitArrayAccessExpression  (Java.ArrayAccessExpression   aae) { try { UnitCompiler.this.compileSet2(aae); } catch (CompileException e) { throw new UCE(e); } }
-            public void visitFieldAccess            (Java.FieldAccess             fa ) { try { UnitCompiler.this.compileSet2(fa ); } catch (CompileException e) { throw new UCE(e); } }
-            public void visitFieldAccessExpression  (Java.FieldAccessExpression   fae) { try { UnitCompiler.this.compileSet2(fae); } catch (CompileException e) { throw new UCE(e); } }
-            public void visitLocalVariableAccess    (Java.LocalVariableAccess     lva) {       UnitCompiler.this.compileSet2(lva);                                                                }
-            public void visitParenthesizedExpression(Java.ParenthesizedExpression pe ) { try { UnitCompiler.this.compileSet2(pe ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitAmbiguousName                  (Java.AmbiguousName                   an   ) { try { UnitCompiler.this.compileSet2(an   ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitArrayAccessExpression          (Java.ArrayAccessExpression           aae  ) { try { UnitCompiler.this.compileSet2(aae  ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitFieldAccess                    (Java.FieldAccess                     fa   ) { try { UnitCompiler.this.compileSet2(fa   ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitFieldAccessExpression          (Java.FieldAccessExpression           fae  ) { try { UnitCompiler.this.compileSet2(fae  ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitSuperclassFieldAccessExpression(Java.SuperclassFieldAccessExpression scfae) { try { UnitCompiler.this.compileSet2(scfae); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitLocalVariableAccess            (Java.LocalVariableAccess             lva  ) {       UnitCompiler.this.compileSet2(lva  );                                                    }
+            public void visitParenthesizedExpression        (Java.ParenthesizedExpression         pe   ) { try { UnitCompiler.this.compileSet2(pe   ); } catch (CompileException e) { throw new UCE(e); } }
         };
         try {
             lv.accept(lvv);
@@ -3686,6 +3701,10 @@ public class UnitCompiler {
         this.determineValue(fae);
         this.compileSet(this.toLvalueOrCE(fae.value));
     }
+    private void compileSet2(Java.SuperclassFieldAccessExpression scfae) throws CompileException {
+        this.determineValue(scfae);
+        this.compileSet(this.toLvalueOrCE(scfae.value));
+    }
     private void compileSet2(Java.ParenthesizedExpression pe) throws CompileException {
         this.compileSet(this.toLvalueOrCE(pe.value));
     }
@@ -3696,14 +3715,15 @@ public class UnitCompiler {
         final IClass[] res = new IClass[1];
         class UCE extends RuntimeException { final CompileException ce; UCE(CompileException ce) { this.ce = ce; } }
         Visitor.AtomVisitor av = new Visitor.AtomVisitor() {
+            // AtomVisitor
             public void visitPackage                       (Java.Package                        p   ) { try { res[0] = UnitCompiler.this.getType2(p   ); } catch (CompileException e) { throw new UCE(e); } }
-
+            // TypeVisitor
             public void visitArrayType                     (Java.ArrayType                      at  ) { try { res[0] = UnitCompiler.this.getType2(at  ); } catch (CompileException e) { throw new UCE(e); } }
             public void visitBasicType                     (Java.BasicType                      bt  ) {       res[0] = UnitCompiler.this.getType2(bt  );                                                                }
             public void visitReferenceType                 (Java.ReferenceType                  rt  ) { try { res[0] = UnitCompiler.this.getType2(rt  ); } catch (CompileException e) { throw new UCE(e); } }
             public void visitRvalueMemberType              (Java.RvalueMemberType               rmt ) { try { res[0] = UnitCompiler.this.getType2(rmt ); } catch (CompileException e) { throw new UCE(e); } }
             public void visitSimpleType                    (Java.SimpleType                     st  ) {       res[0] = UnitCompiler.this.getType2(st  );                                                                }
-
+            // RvalueVisitor
             public void visitArrayLength                   (Java.ArrayLength                    al  ) {       res[0] = UnitCompiler.this.getType2(al  );                                                                }
             public void visitAssignment                    (Java.Assignment                     a   ) { try { res[0] = UnitCompiler.this.getType2(a   ); } catch (CompileException e) { throw new UCE(e); } }
             public void visitUnaryOperation                (Java.UnaryOperation                 uo  ) { try { res[0] = UnitCompiler.this.getType2(uo  ); } catch (CompileException e) { throw new UCE(e); } }
@@ -3724,13 +3744,14 @@ public class UnitCompiler {
             public void visitParameterAccess               (Java.ParameterAccess                pa  ) { try { res[0] = UnitCompiler.this.getType2(pa  ); } catch (CompileException e) { throw new UCE(e); } }
             public void visitQualifiedThisReference        (Java.QualifiedThisReference         qtr ) { try { res[0] = UnitCompiler.this.getType2(qtr ); } catch (CompileException e) { throw new UCE(e); } }
             public void visitThisReference                 (Java.ThisReference                  tr  ) { try { res[0] = UnitCompiler.this.getType2(tr  ); } catch (CompileException e) { throw new UCE(e); } }
-
-            public void visitAmbiguousName                 (Java.AmbiguousName                  an  ) { try { res[0] = UnitCompiler.this.getType2(an  ); } catch (CompileException e) { throw new UCE(e); } }
-            public void visitArrayAccessExpression         (Java.ArrayAccessExpression          aae ) { try { res[0] = UnitCompiler.this.getType2(aae ); } catch (CompileException e) { throw new UCE(e); } }
-            public void visitFieldAccess                   (Java.FieldAccess                    fa  ) { try { res[0] = UnitCompiler.this.getType2(fa  ); } catch (CompileException e) { throw new UCE(e); } }
-            public void visitFieldAccessExpression         (Java.FieldAccessExpression          fae ) { try { res[0] = UnitCompiler.this.getType2(fae ); } catch (CompileException e) { throw new UCE(e); } }
-            public void visitLocalVariableAccess           (Java.LocalVariableAccess            lva ) {       res[0] = UnitCompiler.this.getType2(lva );                                                                }
-            public void visitParenthesizedExpression       (Java.ParenthesizedExpression        pe  ) { try { res[0] = UnitCompiler.this.getType2(pe  ); } catch (CompileException e) { throw new UCE(e); } }
+            // LvalueVisitor
+            public void visitAmbiguousName                  (Java.AmbiguousName                   an   ) { try { res[0] = UnitCompiler.this.getType2(an   ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitArrayAccessExpression          (Java.ArrayAccessExpression           aae  ) { try { res[0] = UnitCompiler.this.getType2(aae  ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitFieldAccess                    (Java.FieldAccess                     fa   ) { try { res[0] = UnitCompiler.this.getType2(fa   ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitFieldAccessExpression          (Java.FieldAccessExpression           fae  ) { try { res[0] = UnitCompiler.this.getType2(fae  ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitSuperclassFieldAccessExpression(Java.SuperclassFieldAccessExpression scfae) { try { res[0] = UnitCompiler.this.getType2(scfae); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitLocalVariableAccess            (Java.LocalVariableAccess             lva  ) {       res[0] = UnitCompiler.this.getType2(lva  );                                                                }
+            public void visitParenthesizedExpression        (Java.ParenthesizedExpression         pe   ) { try { res[0] = UnitCompiler.this.getType2(pe   ); } catch (CompileException e) { throw new UCE(e); } }
         };
         try {
             a.accept(av);
@@ -3975,6 +3996,10 @@ public class UnitCompiler {
         this.determineValue(fae);
         return this.getType(fae.value);
     }
+    private IClass getType2(Java.SuperclassFieldAccessExpression scfae) throws CompileException {
+        this.determineValue(scfae);
+        return this.getType(scfae.value);
+    }
     private IClass getType2(Java.UnaryOperation uo) throws CompileException {
         if (uo.operator == "!") return IClass.BOOLEAN;
 
@@ -4128,41 +4153,43 @@ public class UnitCompiler {
         final boolean[] res = new boolean[1];
         class UCE extends RuntimeException { final CompileException ce; UCE(CompileException ce) { this.ce = ce; } }
         Visitor.AtomVisitor av = new Visitor.AtomVisitor() {
-            public void visitPackage                       (Java.Package                        p   ) {       res[0] = UnitCompiler.this.isType2(p   );                                                                }
-
-            public void visitArrayType                     (Java.ArrayType                      at  ) {       res[0] = UnitCompiler.this.isType2(at  );                                                                }
-            public void visitBasicType                     (Java.BasicType                      bt  ) {       res[0] = UnitCompiler.this.isType2(bt  );                                                                }
-            public void visitReferenceType                 (Java.ReferenceType                  rt  ) {       res[0] = UnitCompiler.this.isType2(rt  );                                                                }
-            public void visitRvalueMemberType              (Java.RvalueMemberType               rmt ) {       res[0] = UnitCompiler.this.isType2(rmt );                                                                }
-            public void visitSimpleType                    (Java.SimpleType                     st  ) {       res[0] = UnitCompiler.this.isType2(st  );                                                                }
-
-            public void visitArrayLength                   (Java.ArrayLength                    al  ) {       res[0] = UnitCompiler.this.isType2(al  );                                                                }
-            public void visitAssignment                    (Java.Assignment                     a   ) {       res[0] = UnitCompiler.this.isType2(a   );                                                                }
-            public void visitUnaryOperation                (Java.UnaryOperation                 uo  ) {       res[0] = UnitCompiler.this.isType2(uo  );                                                                }
-            public void visitBinaryOperation               (Java.BinaryOperation                bo  ) {       res[0] = UnitCompiler.this.isType2(bo  );                                                                }
-            public void visitCast                          (Java.Cast                           c   ) {       res[0] = UnitCompiler.this.isType2(c   );                                                                }
-            public void visitClassLiteral                  (Java.ClassLiteral                   cl  ) {       res[0] = UnitCompiler.this.isType2(cl  );                                                                }
-            public void visitConditionalExpression         (Java.ConditionalExpression          ce  ) {       res[0] = UnitCompiler.this.isType2(ce  );                                                                }
-            public void visitConstantValue                 (Java.ConstantValue                  cv  ) {       res[0] = UnitCompiler.this.isType2(cv  );                                                                }
-            public void visitCrement                       (Java.Crement                        c   ) {       res[0] = UnitCompiler.this.isType2(c   );                                                                }
-            public void visitInstanceof                    (Java.Instanceof                     io  ) {       res[0] = UnitCompiler.this.isType2(io  );                                                                }
-            public void visitMethodInvocation              (Java.MethodInvocation               mi  ) {       res[0] = UnitCompiler.this.isType2(mi  );                                                                }
-            public void visitSuperclassMethodInvocation    (Java.SuperclassMethodInvocation     smi ) {       res[0] = UnitCompiler.this.isType2(smi );                                                                }
-            public void visitLiteral                       (Java.Literal                        l   ) {       res[0] = UnitCompiler.this.isType2(l   );                                                                }
-            public void visitNewAnonymousClassInstance     (Java.NewAnonymousClassInstance      naci) {       res[0] = UnitCompiler.this.isType2(naci);                                                                }
-            public void visitNewArray                      (Java.NewArray                       na  ) {       res[0] = UnitCompiler.this.isType2(na  );                                                                }
-            public void visitNewInitializedArray           (Java.NewInitializedArray            nia ) {       res[0] = UnitCompiler.this.isType2(nia );                                                                }
-            public void visitNewClassInstance              (Java.NewClassInstance               nci ) {       res[0] = UnitCompiler.this.isType2(nci );                                                                }
-            public void visitParameterAccess               (Java.ParameterAccess                pa  ) {       res[0] = UnitCompiler.this.isType2(pa  );                                                                }
-            public void visitQualifiedThisReference        (Java.QualifiedThisReference         qtr ) {       res[0] = UnitCompiler.this.isType2(qtr );                                                                }
-            public void visitThisReference                 (Java.ThisReference                  tr  ) {       res[0] = UnitCompiler.this.isType2(tr  );                                                                }
-
-            public void visitAmbiguousName                 (Java.AmbiguousName                  an  ) { try { res[0] = UnitCompiler.this.isType2(an  ); } catch (CompileException e) { throw new UCE(e); } }
-            public void visitArrayAccessExpression         (Java.ArrayAccessExpression          aae ) {       res[0] = UnitCompiler.this.isType2(aae );                                                                }
-            public void visitFieldAccess                   (Java.FieldAccess                    fa  ) {       res[0] = UnitCompiler.this.isType2(fa  );                                                                }
-            public void visitFieldAccessExpression         (Java.FieldAccessExpression          fae ) {       res[0] = UnitCompiler.this.isType2(fae );                                                                }
-            public void visitLocalVariableAccess           (Java.LocalVariableAccess            lva ) {       res[0] = UnitCompiler.this.isType2(lva );                                                                }
-            public void visitParenthesizedExpression       (Java.ParenthesizedExpression        pe  ) {       res[0] = UnitCompiler.this.isType2(pe  );                                                                }
+            // AtomVisitor
+            public void visitPackage(Java.Package p) { res[0] = UnitCompiler.this.isType2(p); }
+            // TypeVisitor
+            public void visitArrayType       (Java.ArrayType        at  ) { res[0] = UnitCompiler.this.isType2(at ); }
+            public void visitBasicType       (Java.BasicType        bt  ) { res[0] = UnitCompiler.this.isType2(bt ); }
+            public void visitReferenceType   (Java.ReferenceType    rt  ) { res[0] = UnitCompiler.this.isType2(rt ); }
+            public void visitRvalueMemberType(Java.RvalueMemberType rmt ) { res[0] = UnitCompiler.this.isType2(rmt); }
+            public void visitSimpleType      (Java.SimpleType       st  ) { res[0] = UnitCompiler.this.isType2(st ); }
+            // RvalueVisitor
+            public void visitArrayLength               (Java.ArrayLength                al  ) { res[0] = UnitCompiler.this.isType2(al  ); }
+            public void visitAssignment                (Java.Assignment                 a   ) { res[0] = UnitCompiler.this.isType2(a   ); }
+            public void visitUnaryOperation            (Java.UnaryOperation             uo  ) { res[0] = UnitCompiler.this.isType2(uo  ); }
+            public void visitBinaryOperation           (Java.BinaryOperation            bo  ) { res[0] = UnitCompiler.this.isType2(bo  ); }
+            public void visitCast                      (Java.Cast                       c   ) { res[0] = UnitCompiler.this.isType2(c   ); }
+            public void visitClassLiteral              (Java.ClassLiteral               cl  ) { res[0] = UnitCompiler.this.isType2(cl  ); }
+            public void visitConditionalExpression     (Java.ConditionalExpression      ce  ) { res[0] = UnitCompiler.this.isType2(ce  ); }
+            public void visitConstantValue             (Java.ConstantValue              cv  ) { res[0] = UnitCompiler.this.isType2(cv  ); }
+            public void visitCrement                   (Java.Crement                    c   ) { res[0] = UnitCompiler.this.isType2(c   ); }
+            public void visitInstanceof                (Java.Instanceof                 io  ) { res[0] = UnitCompiler.this.isType2(io  ); }
+            public void visitMethodInvocation          (Java.MethodInvocation           mi  ) { res[0] = UnitCompiler.this.isType2(mi  ); }
+            public void visitSuperclassMethodInvocation(Java.SuperclassMethodInvocation smi ) { res[0] = UnitCompiler.this.isType2(smi ); }
+            public void visitLiteral                   (Java.Literal                    l   ) { res[0] = UnitCompiler.this.isType2(l   ); }
+            public void visitNewAnonymousClassInstance (Java.NewAnonymousClassInstance  naci) { res[0] = UnitCompiler.this.isType2(naci); }
+            public void visitNewArray                  (Java.NewArray                   na  ) { res[0] = UnitCompiler.this.isType2(na  ); }
+            public void visitNewInitializedArray       (Java.NewInitializedArray        nia ) { res[0] = UnitCompiler.this.isType2(nia ); }
+            public void visitNewClassInstance          (Java.NewClassInstance           nci ) { res[0] = UnitCompiler.this.isType2(nci ); }
+            public void visitParameterAccess           (Java.ParameterAccess            pa  ) { res[0] = UnitCompiler.this.isType2(pa  ); }
+            public void visitQualifiedThisReference    (Java.QualifiedThisReference     qtr ) { res[0] = UnitCompiler.this.isType2(qtr ); }
+            public void visitThisReference             (Java.ThisReference              tr  ) { res[0] = UnitCompiler.this.isType2(tr  ); }
+            // LvalueVisitor
+            public void visitAmbiguousName                  (Java.AmbiguousName                   an   ) { try { res[0] = UnitCompiler.this.isType2(an   ); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitArrayAccessExpression          (Java.ArrayAccessExpression           aae  ) {       res[0] = UnitCompiler.this.isType2(aae  );                                                    }
+            public void visitFieldAccess                    (Java.FieldAccess                     fa   ) {       res[0] = UnitCompiler.this.isType2(fa   );                                                    }
+            public void visitFieldAccessExpression          (Java.FieldAccessExpression           fae  ) {       res[0] = UnitCompiler.this.isType2(fae  );                                                    }
+            public void visitSuperclassFieldAccessExpression(Java.SuperclassFieldAccessExpression scfae) {       res[0] = UnitCompiler.this.isType2(scfae);                                                    }
+            public void visitLocalVariableAccess            (Java.LocalVariableAccess             lva  ) {       res[0] = UnitCompiler.this.isType2(lva  );                                                    }
+            public void visitParenthesizedExpression        (Java.ParenthesizedExpression         pe   ) {       res[0] = UnitCompiler.this.isType2(pe   );                                                    }
         };
         try {
             a.accept(av);
@@ -5443,6 +5470,42 @@ public class UnitCompiler {
         fae.value.setEnclosingBlockStatement(fae.getEnclosingBlockStatement());
     }
 
+    /** "super.fld", "Type.super.fld" */
+    private void determineValue(Java.SuperclassFieldAccessExpression scfae) throws CompileException {
+        if (scfae.value != null) return;
+
+        Rvalue lhs;
+        {
+            Java.ThisReference tr = new Java.ThisReference(scfae.getLocation());
+            tr.setEnclosingBlockStatement(scfae.getEnclosingBlockStatement());
+            IClass type;
+            if (scfae.optionalQualification != null) {
+                type = UnitCompiler.this.getType(scfae.optionalQualification);
+            } else
+            {
+                type = this.getType(tr);
+            }
+            lhs = new Java.Cast(scfae.getLocation(), new SimpleType(scfae.getLocation(), type.getSuperclass()), tr);
+        }
+
+        IClass.IField iField = this.findIField(this.getType(lhs), scfae.fieldName, scfae.getLocation());
+        if (iField == null) {
+            this.compileError("Class has no field \"" + scfae.fieldName + "\"", scfae.getLocation());
+            scfae.value = new Java.Rvalue(scfae.getLocation()) {
+                public String toString() { return "???"; }
+                public final void accept(Visitor.AtomVisitor visitor) {}
+                public final void accept(Visitor.RvalueVisitor visitor) {}
+            };
+            return;
+        }
+        scfae.value = new Java.FieldAccess(
+            scfae.getLocation(),
+            lhs,
+            iField
+        );
+        scfae.value.setEnclosingBlockStatement(scfae.getEnclosingBlockStatement());
+    }
+    
     /**
      * Find named methods of "targetType", examine the argument types and choose the
      * most specific method. Check that only the allowed exceptions are thrown.

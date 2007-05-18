@@ -2242,9 +2242,9 @@ public class Java {
         public final String fieldName;
 
         public FieldAccessExpression(
-            Location       location,
-            Atom           lhs,
-            String         fieldName
+            Location location,
+            Atom     lhs,
+            String   fieldName
         ) {
             super(location);
             this.lhs       = lhs;
@@ -2263,6 +2263,35 @@ public class Java {
         Rvalue value = null;
     }
 
+    /**
+     * Representation of "super.fld" and "Type.super.fld".
+     */
+    public static final class SuperclassFieldAccessExpression extends Lvalue {
+        public final Type   optionalQualification;
+        public final String fieldName;
+        
+        public SuperclassFieldAccessExpression(
+            Location location,
+            Type     optionalQualification,
+            String   fieldName
+        ) {
+            super(location);
+            this.optionalQualification = optionalQualification;
+            this.fieldName             = fieldName;
+        }
+        
+        // Compile time members.
+        
+        // Implement "Atom".
+        public String toString() { return (this.optionalQualification == null ? "super." : this.optionalQualification.toString() + ".super.") + this.fieldName; }
+        
+        public final void accept(Visitor.AtomVisitor visitor) { visitor.visitSuperclassFieldAccessExpression(this); }
+        public final void accept(Visitor.RvalueVisitor visitor) { visitor.visitSuperclassFieldAccessExpression(this); }
+        public final void accept(Visitor.LvalueVisitor visitor) { visitor.visitSuperclassFieldAccessExpression(this); }
+
+        Rvalue value = null;
+    }
+    
     /**
      * This class implements the unary operators "+", "-", "~" and "!".
      */

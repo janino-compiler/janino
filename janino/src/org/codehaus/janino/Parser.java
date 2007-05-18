@@ -2038,7 +2038,11 @@ public class Parser {
             } else {
 
                 // 'super' '.' Identifier
-                this.throwParseException("Superclass field access NYI");
+                return new Java.SuperclassFieldAccessExpression(
+                    this.location(),  // location
+                    (Java.Type) null, // optionalQualification
+                    name              // fieldName
+                );
             }
         }
 
@@ -2186,7 +2190,7 @@ public class Parser {
                     );
                 }
                 this.readOperator(".");
-                /*String identifier =*/ this.readIdentifier();
+                String identifier = this.readIdentifier();
 
                 if (this.peekOperator("(")) {
 
@@ -2198,8 +2202,11 @@ public class Parser {
 
                     // '.' 'super' '.' Identifier
                     // Qualified superclass field access (JLS 15.11.2) (LHS is an Rvalue)
-                    // TODO: Qualified superclass field access
-                    this.throwParseException("Qualified superclass field access NYI");
+                    return new Java.SuperclassFieldAccessExpression(
+                        location,          // location
+                        atom.toTypeOrPE(), // optionalQualification
+                        identifier         // fieldName
+                    );
                 }
             }
             if (this.peekKeyword("new")) {

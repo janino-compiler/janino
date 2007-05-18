@@ -132,6 +132,7 @@ public class Visitor {
         void visitArrayAccessExpression(Java.ArrayAccessExpression aae);
         void visitFieldAccess(Java.FieldAccess fa);
         void visitFieldAccessExpression(Java.FieldAccessExpression fae);
+        void visitSuperclassFieldAccessExpression(Java.SuperclassFieldAccessExpression scfae);
         void visitLocalVariableAccess(Java.LocalVariableAccess lva);
         void visitParenthesizedExpression(Java.ParenthesizedExpression pe);
     }

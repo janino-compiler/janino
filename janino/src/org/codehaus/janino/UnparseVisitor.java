@@ -422,6 +422,15 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
         fae.lhs.accept(this);
         this.pw.print('.' + fae.fieldName);
     }
+    public void visitSuperclassFieldAccessExpression(Java.SuperclassFieldAccessExpression scfae) {
+        if (scfae.optionalQualification != null) {
+            scfae.optionalQualification.accept(this);
+            this.pw.print(".super." + scfae.fieldName);
+        } else
+        {
+            this.pw.print("super." + scfae.fieldName);
+        }
+    }
     public void visitInstanceof(Java.Instanceof io) {
         ((Java.Atom) io.lhs).accept(this);
         this.pw.print(" instanceof ");
