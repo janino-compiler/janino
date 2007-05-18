@@ -524,10 +524,10 @@ public class Scanner {
     }
 
     private Token internalRead() throws ScanException, IOException {
-    	if (this.docComment != null) {
-    		this.warning("MDC", "Misplaced doc comment", this.nextToken.getLocation());
-    		this.docComment = null;
-    	}
+        if (this.docComment != null) {
+            this.warning("MDC", "Misplaced doc comment", this.nextToken.getLocation());
+            this.docComment = null;
+        }
 
         // Skip whitespace and process comments.
         int          state = 0;
