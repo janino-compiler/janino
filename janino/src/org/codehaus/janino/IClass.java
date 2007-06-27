@@ -624,10 +624,21 @@ public abstract class IClass {
 
         public boolean isMoreSpecificThan(IInvocable that) throws CompileException {
             if (IClass.DEBUG) System.out.print("\"" + this + "\".isMoreSpecificThan(\"" + that + "\") => ");
-            if (!that.getDeclaringIClass().isAssignableFrom(this.getDeclaringIClass())) {
-                if (IClass.DEBUG) System.out.println("falsE");
-                return false;
+
+            // The following case is tricky: JLS2 says that the invocation is AMBIGUOUS, but only
+            // JAVAC 1.2 issues an error; JAVAC 1.4.1, 1.5.0 and 1.6.0 obviously ignore the declaring
+            // type and invoke "A.meth(String)".
+            // JLS3 is not clear about this. For compatibility with JAVA 1.4.1, 1.5.0 and 1.6.0,
+            // JANINO also ignores the declaring type.
+            //
+            // See also JANINO-79 and JLS2Tests / 15.12.2.2
+            if (false) {
+                if (!that.getDeclaringIClass().isAssignableFrom(this.getDeclaringIClass())) {
+                    if (IClass.DEBUG) System.out.println("falsE");
+                    return false;
+                }
             }
+
             IClass[] thisParameterTypes = this.getParameterTypes();
             IClass[] thatParameterTypes = that.getParameterTypes();
             int i;
@@ -638,7 +649,7 @@ public abstract class IClass {
                 }
             }
             if (IClass.DEBUG) System.out.println("true");
-            return true;
+            return !Arrays.equals(thisParameterTypes, thatParameterTypes);
         }
         public boolean isLessSpecificThan(IInvocable that) throws CompileException {
             return that.isMoreSpecificThan(this);

@@ -389,6 +389,29 @@ public class JLS2Tests extends JaninoTestSuite {
             "}\n"
          ), "T3");
         
+        section("15.12 Method Invocation Expressions");
+        section("15.12.2 Compile-Time Step 2: Determine Method Signature");
+        section("15.12.2.2 Choose the Most Specific Method");
+        sim(COMP, "Ambiguity 1", (
+            "public class Main { public static boolean test() { return new A().meth(\"x\", \"y\"); } }\n" +
+            "public class A {\n" +
+            "    public boolean meth(String s, Object o) { return true; }\n" +
+            "    public boolean meth(Object o, String s) { return false; }\n" +
+            "}\n"
+        ), "Main");
+        // The following case is tricky: JLS2 says that the invocation is AMBIGUOUS, but only
+        // JAVAC 1.2 issues an error; JAVAC 1.4.1, 1.5.0 and 1.6.0 obviously ignore the declaring
+        // type and invoke "A.meth(String)".
+        // JLS3 is not clear about this. For compatibility with JAVA 1.4.1, 1.5.0 and 1.6.0,
+        // JANINO also ignores the declaring type.
+        //
+        // See also JANINO-79 and "IClass.IInvocable.isMoreSpecificThan()".
+        sim(TRUE, "Ambiguity 2", (
+            "public class Main        { public static boolean test()  { return new B().meth(\"x\"); } }\n" +
+            "public class A           { public boolean meth(String s) { return true; } }\n" +
+            "public class B extends A { public boolean meth(Object o) { return false; } }\n"
+        ), "Main");
+
         section("15.14 Postfix Expressions");
         section("15.14.2 Postfix Increment Operator ++");
         scr(TRUE, "1", "int i = 7; i++; return i == 8;");

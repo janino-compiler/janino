@@ -5823,7 +5823,7 @@ public class UnitCompiler {
             {
                 ;
             }
-            if (UnitCompiler.DEBUG) System.out.println("mostSpecificIInvocables=" + maximallySpecificIInvocables);
+            if (UnitCompiler.DEBUG) System.out.println("maximallySpecificIInvocables=" + maximallySpecificIInvocables);
         }
 
         if (maximallySpecificIInvocables.size() == 1) return (IClass.IInvocable) maximallySpecificIInvocables.get(0);
@@ -5842,8 +5842,19 @@ public class UnitCompiler {
                 IClass[] parameterTypesOfFirstMethod = m.getParameterTypes();
                 for (;;) {
                     if (!m.isAbstract()) {
-                        if (theNonAbstractMethod != null) throw new RuntimeException("SNO: More than one non-abstract method with same signature and same declaring class!?");
-                        theNonAbstractMethod = m;
+                        if (theNonAbstractMethod != null) {
+                            IClass declaringIClass = m.getDeclaringIClass();
+                            IClass theNonAbstractMethodDeclaringIClass = theNonAbstractMethod.getDeclaringIClass();
+                            if (declaringIClass.isAssignableFrom(theNonAbstractMethodDeclaringIClass)) {
+                                ;
+                            } else
+                            if (theNonAbstractMethodDeclaringIClass.isAssignableFrom(declaringIClass)) {
+                                theNonAbstractMethod = m;
+                            } else
+                            {
+                                throw new RuntimeException("SNO: More than one non-abstract method with same signature and same declaring class!?");
+                            }
+                        }
                     }
                     if (!it.hasNext()) break;
 
