@@ -233,7 +233,8 @@ public class SimpleCompiler extends Cookable {
         );
     }
 
-    protected void precook() {
+    protected final void precook() {
+        if (this.classLoader != null) throw new RuntimeException("\"cook()\" must not be called more than once");
 
         // Set up the ClassLoader for the compilation and the loading.
         this.classLoader = new AuxiliaryClassLoader(this.parentClassLoader);
@@ -387,7 +388,7 @@ public class SimpleCompiler extends Cookable {
      * @return The {@link ClassLoader} into which the compiled classes were defined
      * @throws CompileException
      */
-    protected ClassLoader compileToClassLoader(
+    protected final ClassLoader compileToClassLoader(
         Java.CompilationUnit compilationUnit,
         EnumeratorSet        debuggingInformation
     ) throws CompileException {

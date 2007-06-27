@@ -37,8 +37,12 @@ package org.codehaus.janino;
 import java.io.*;
 
 /**
- * "Cooking" means scanning a sequence of Java<sup>TM</sup> tokens with a
- * {@link org.codehaus.janino.Scanner}. This class declares numerous <code>cook*()</code> methods
+ * "Cooking" means scanning a sequence of Java<sup>TM</sup> tokens with a {@link
+ * org.codehaus.janino.Scanner} and turning them into some artifact. For example, if you cook a
+ * {@link ClassBodyEvaluator}, then the tokens are interpreted as a class body and compiled into
+ * a {@link Class} which is accessible through {@link ClassBodyEvaluator#getClazz()}.
+ * <p>
+ * This class declares numerous <code>cook*()</code> methods
  * that use a {@link java.lang.String}, a {@link java.io.File}, an {@link java.io.InputStream} or
  * a {@link java.io.Reader} as the source of characters for scanning.
  * <p>

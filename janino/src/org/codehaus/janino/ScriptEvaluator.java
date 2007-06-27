@@ -45,7 +45,8 @@ import org.codehaus.janino.Scanner.ScanException;
 /**
  * An engine that executes a script in Java<sup>TM</sup> bytecode.
  * <p>
- * The syntax of the script to compile is a sequence of import declarations followed by a
+ * The syntax of the script to compile is a sequence of import declarations (not allowed if you
+ * compile many scripts at a time, see below) followed by a
  * sequence of statements, as defined in the
  * <a href="http://java.sun.com/docs/books/jls/second_edition">Java Language Specification, 2nd
  * edition</a>, sections
@@ -107,8 +108,8 @@ import org.codehaus.janino.Scanner.ScanException;
  * Alternatively, a number of "convenience constructors" exist that execute the steps described
  * above instantly. Their use is discouraged.
  * <p>
- * If you want to compile many scripts at the same time, you have the option cook an <i>array</i>
- * of scripts in one {@link ScriptEvaluator} by using the following methods:
+ * If you want to compile many scripts at the same time, you have the option to cook an
+ * <i>array</i> of scripts in one {@link ScriptEvaluator} by using the following methods:
  * <ul>
  *   <li>{@link #setMethodNames(String[])}
  *   <li>{@link #setParameters(String[][], Class[][])}
@@ -529,9 +530,12 @@ public class ScriptEvaluator extends ClassBodyEvaluator {
      * of the constant pool. Since every method with a distinct name requires one entry there,
      * you can define at best 32K (very simple) scripts.
      *
+     * If and only if the number of scanners is one, then that single script may contain leading
+     * IMPORT directives.
+     *
      * @throws IllegalStateException if any of the preceeding <code>set...()</code> had an array size different from that of <code>scanners</code>
      */
-    public void cook(Scanner[] scanners)
+    public final void cook(Scanner[] scanners)
     throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
         if (scanners == null) throw new NullPointerException();
 
@@ -546,6 +550,8 @@ public class ScriptEvaluator extends ClassBodyEvaluator {
         if (this.optionalReturnTypes      != null && this.optionalReturnTypes.length      != count) throw new IllegalStateException("returnTypes");
         if (this.optionalStaticMethod     != null && this.optionalStaticMethod.length     != count) throw new IllegalStateException("staticMethod");
         if (this.optionalThrownExceptions != null && this.optionalThrownExceptions.length != count) throw new IllegalStateException("thrownExceptions");
+
+        this.precook();
 
         // Create compilation unit.
         Java.CompilationUnit compilationUnit = this.makeCompilationUnit(count == 1 ? scanners[0] : null);
@@ -597,7 +603,7 @@ public class ScriptEvaluator extends ClassBodyEvaluator {
             this.className
         );
         
-        // Find the script method by name.
+        // Find the script methods by name.
         this.result = new Method[count];
         if (count <= 10) {
             for (int i = 0; i < count; ++i) {

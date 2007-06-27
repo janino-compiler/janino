@@ -291,6 +291,8 @@ public class ClassBodyEvaluator extends SimpleCompiler {
 
     public void cook(Scanner scanner)
     throws CompileException, ParseException, ScanException, IOException {
+        this.precook();
+
         Java.CompilationUnit compilationUnit = this.makeCompilationUnit(scanner);
 
         // Add class declaration.
@@ -320,10 +322,8 @@ public class ClassBodyEvaluator extends SimpleCompiler {
      * If the <code>optionalScanner</code> is given, a sequence of IMPORT directives is parsed
      * from it and added to the compilation unit.
      */
-    protected Java.CompilationUnit makeCompilationUnit(Scanner optionalScanner)
+    protected final Java.CompilationUnit makeCompilationUnit(Scanner optionalScanner)
     throws Parser.ParseException, Scanner.ScanException, IOException {
-        this.precook();
-
         Java.CompilationUnit cu = new Java.CompilationUnit(optionalScanner == null ? null : optionalScanner.getFileName());
         
         // Set default imports.
@@ -387,7 +387,7 @@ public class ClassBodyEvaluator extends SimpleCompiler {
      * @param newClassName The fully qualified class name
      * @return The loaded class
      */
-    protected Class compileToClass(
+    protected final Class compileToClass(
         Java.CompilationUnit compilationUnit,
         EnumeratorSet        debuggingInformation,
         String               newClassName
