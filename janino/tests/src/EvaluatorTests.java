@@ -44,6 +44,7 @@ import org.codehaus.janino.Scanner;
 public class EvaluatorTests extends TestCase {
     public static Test suite() {
         TestSuite s = new TestSuite(EvaluatorTests.class.getName());
+        s.addTest(new EvaluatorTests("testMultiScriptEvaluator"));
         s.addTest(new EvaluatorTests("testExpressionEvaluator"));
         s.addTest(new EvaluatorTests("testFastClassBodyEvaluator"));
         s.addTest(new EvaluatorTests("testManyEEs"));
@@ -52,6 +53,21 @@ public class EvaluatorTests extends TestCase {
 
     public EvaluatorTests(String name) { super(name); }
 
+    public void testMultiScriptEvaluator() throws Exception {
+        String funct2 = "return a + b;";
+        String funct3 = "return 0;";
+        ScriptEvaluator se2 = new ScriptEvaluator();
+        se2.setReturnTypes(new Class[] { double.class , double.class});
+        se2.setMethodNames(new String[] { "funct2", "funct3" });
+        String[][] params2 = { {"a", "b"}, {} };
+        Class[][] paramsType2 = { {double.class, double.class}, {} };
+        se2.setParameters(params2, paramsType2);
+        se2.setStaticMethod(new boolean[] { true, true });
+        se2.cook(new String[] {funct2, funct3});
+        assertEquals(se2.getMethod(0).invoke(null, new Object[] { new Double(3.0), new Double(4.0) }), new Double(7.0));
+        assertEquals(se2.getMethod(1).invoke(null, null), new Double(0.0));
+    }
+    
     public void testExpressionEvaluator() throws Exception {
         ExpressionEvaluator ee = new ExpressionEvaluator();
 
