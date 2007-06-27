@@ -49,7 +49,11 @@ import org.codehaus.janino.util.resource.*;
 /**
  * A {@link ClassLoader} that, unlike usual {@link ClassLoader}s,
  * does not load byte code, but reads Java<sup>TM</sup> source code and then scans, parses,
- * compiles and loads it into the virtual machine. 
+ * compiles and loads it into the virtual machine.
+ * <p>
+ * As with any {@link ClassLoader}, it is not possible to "update" classes after they've been
+ * loaded. The way to achieve this is to give up on the {@link JavaSourceClassLoader} and create
+ * a new one.
  */
 public class JavaSourceClassLoader extends ClassLoader {
     private final static boolean DEBUG = false;

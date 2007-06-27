@@ -59,6 +59,7 @@ import org.codehaus.janino.util.PrimitiveWrapper;
  *   new DecimalFormat("####,###.##").format(10200020.345345)
  * </pre>
  * (Notice that the import directive is concluded with a semicolon, while the expression is not.)
+ * This feature is not available if you compile many expressions at a time (see below).
  * <p>
  * The expression evaluator is implemented by creating and compiling a temporary compilation unit
  * defining one class with one static method with one RETURN statement.
@@ -93,7 +94,7 @@ import org.codehaus.janino.util.PrimitiveWrapper;
  * Alternatively, a number of "convenience constructors" exist that execute the steps described
  * above instantly.
  * <p>
- * If you want to compile many expressions at the same time, you have the option cook an
+ * If you want to compile many expressions at the same time, you have the option to cook an
  * <i>array</i> of expressions in one {@link ExpressionEvaluator} by using the following methods:
  * <ul>
  *   <li>{@link #setMethodNames(String[])}
@@ -104,7 +105,7 @@ import org.codehaus.janino.util.PrimitiveWrapper;
  *   <li>{@link #cook(Scanner[])}
  *   <li>{@link #evaluate(int, Object[])}
  * </ul>
- * Notice that these methods have array parameters in contrast to their one-script brethren.
+ * Notice that these methods have array parameters in contrast to their one-expression brethren.
  * <p>
  * Notice that for <i>functionally</i> identical {@link ExpressionEvaluator}s,
  * {@link java.lang.Object#equals(java.lang.Object)} will return <code>true</code>. E.g. "a+b" and
