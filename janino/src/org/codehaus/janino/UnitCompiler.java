@@ -251,18 +251,22 @@ public class UnitCompiler {
     }
 
     public void compile2(Java.ClassDeclaration cd) throws CompileException {
+        IClass iClass = this.resolve(cd);
 
-        // Determine implemented interfaces.
-        IClass[] iis = this.resolve(cd).getInterfaces();
-        String[] interfaceDescriptors = new String[iis.length];
-        for (int i = 0; i < iis.length; ++i) interfaceDescriptors[i] = iis[i].getDescriptor();
+        // Check that all methods are implemented.
+        if ((cd.modifiers & Mod.ABSTRACT) == 0) {
+            IMethod[] ms = iClass.getIMethods();
+            for (int i = 0; i <  ms.length; ++i) {
+                if (ms[i].isAbstract()) this.compileError("Non-abstract class \"" + iClass + "\" must implement method \"" + ms[i] + "\"", cd.getLocation());
+            }
+        }
 
         // Create "ClassFile" object.
         ClassFile cf = new ClassFile(
-            (short) (cd.modifiers | Mod.SUPER),               // accessFlags
-            this.resolve(cd).getDescriptor(),                 // thisClassFD
-            this.resolve(cd).getSuperclass().getDescriptor(), // superClassFD
-            interfaceDescriptors                              // interfaceFDs
+            (short) (cd.modifiers | Mod.SUPER),           // accessFlags
+            iClass.getDescriptor(),                       // thisClassFD
+            iClass.getSuperclass().getDescriptor(),       // superClassFD
+            IClass.getDescriptors(iClass.getInterfaces()) // interfaceFDs
         );
 
         // Add InnerClasses attribute entry for this class declaration.
@@ -270,7 +274,7 @@ public class UnitCompiler {
             ;
         } else
         if (cd.getEnclosingScope() instanceof Java.Block) {
-            short innerClassInfoIndex = cf.addConstantClassInfo(this.resolve(cd).getDescriptor());
+            short innerClassInfoIndex = cf.addConstantClassInfo(iClass.getDescriptor());
             short innerNameIndex = (
                 this instanceof Java.NamedTypeDeclaration ?
                 cf.addConstantUtf8Info(((Java.NamedTypeDeclaration) this).getName()) :
@@ -284,7 +288,7 @@ public class UnitCompiler {
             ));
         } else
         if (cd.getEnclosingScope() instanceof Java.AbstractTypeDeclaration) {
-            short innerClassInfoIndex = cf.addConstantClassInfo(this.resolve(cd).getDescriptor());
+            short innerClassInfoIndex = cf.addConstantClassInfo(iClass.getDescriptor());
             short outerClassInfoIndex = cf.addConstantClassInfo(this.resolve(((Java.AbstractTypeDeclaration) cd.getEnclosingScope())).getDescriptor());
             short innerNameIndex      = cf.addConstantUtf8Info(((Java.MemberTypeDeclaration) cd).getName());
             cf.addInnerClassesAttributeEntry(new ClassFile.InnerClassesAttribute.Entry(
@@ -395,7 +399,7 @@ public class UnitCompiler {
 
             // Add InnerClasses attribute entry for member type declaration.
             short innerClassInfoIndex = cf.addConstantClassInfo(this.resolve(atd).getDescriptor());
-            short outerClassInfoIndex = cf.addConstantClassInfo(this.resolve(cd).getDescriptor());
+            short outerClassInfoIndex = cf.addConstantClassInfo(iClass.getDescriptor());
             short innerNameIndex      = cf.addConstantUtf8Info(((Java.MemberTypeDeclaration) atd).getName());
             cf.addInnerClassesAttributeEntry(new ClassFile.InnerClassesAttribute.Entry(
                 innerClassInfoIndex, // innerClassInfoIndex

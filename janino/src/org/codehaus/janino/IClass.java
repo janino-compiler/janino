@@ -155,6 +155,42 @@ public abstract class IClass {
         return methods == null ? IClass.NO_IMETHODS : methods;
     }
     /*package*/ Map declaredIMethodCache = null; // String methodName => IMethod[]
+
+    /**
+     * Returns all methods declared in the class or interface, its superclasses and its
+     * superinterfaces.<br>
+     * For overridden methods, only the last non-abstract implementation is returned.
+     * 
+     * @return an array of {@link IMethod}s that must not be modified
+     */
+    public final IMethod[] getIMethods() throws CompileException {
+        if (this.iMethodCache == null) {
+            Map m = new HashMap();
+            this.getIMethods(m);
+            Collection iMethods = m.values();
+            this.iMethodCache = (IMethod[]) iMethods.toArray(new IMethod[iMethods.size()]);
+        }
+        return this.iMethodCache;
+    }
+    /*package*/ IMethod[] iMethodCache = null;
+    private void getIMethods(Map result) throws CompileException {
+        IMethod[] ms = this.getDeclaredIMethods();
+        for (int i = 0; i < ms.length; ++i) {
+            IMethod m = ms[i];
+            String key = m.getDescriptor();
+            IMethod m2 = (IMethod) result.get(key);
+            if (m2 == null || m2.isAbstract()) result.put(key, m);
+        }
+        {
+            IClass sc = this.getSuperclass();
+            if (sc != null) sc.getIMethods(result);
+        }
+        {
+            IClass[] iis = this.getInterfaces();
+            for (int i = 0; i < iis.length; ++i) iis[i].getIMethods(result);
+        }
+    }
+
     public static final IMethod[] NO_IMETHODS = new IMethod[0];
 
     public final boolean hasIMethod(String methodName, IClass[] parameterTypes) throws CompileException {
