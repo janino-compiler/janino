@@ -46,7 +46,9 @@ public class EvaluatorTests extends TestCase {
         TestSuite s = new TestSuite(EvaluatorTests.class.getName());
         s.addTest(new EvaluatorTests("testMultiScriptEvaluator"));
         s.addTest(new EvaluatorTests("testExpressionEvaluator"));
-        s.addTest(new EvaluatorTests("testFastClassBodyEvaluator"));
+        s.addTest(new EvaluatorTests("testFastClassBodyEvaluator1"));
+        s.addTest(new EvaluatorTests("testFastClassBodyEvaluator2"));
+        s.addTest(new EvaluatorTests("testFastExpressionEvaluator"));
         s.addTest(new EvaluatorTests("testManyEEs"));
         return s;
     }
@@ -103,7 +105,7 @@ public class EvaluatorTests extends TestCase {
         ee.evaluate(2, new Object[0]);
     }
 
-    public void testFastClassBodyEvaluator() throws Exception {
+    public void testFastClassBodyEvaluator1() throws Exception {
         ((Runnable) ClassBodyEvaluator.createFastClassBodyEvaluator(
             new Scanner(null, new StringReader(
                 "import java.util.*;\n" +
@@ -117,6 +119,32 @@ public class EvaluatorTests extends TestCase {
         )).run();
     }
 
+    public void testFastClassBodyEvaluator2() throws Exception {
+        try {
+            ((Runnable) ClassBodyEvaluator.createFastClassBodyEvaluator(
+                new Scanner(null, new StringReader(
+                    "public void m() { // Implement \"m()\" instead of \"run()\".\n" +
+                    "    System.out.println(\"Got here\");\n" +
+                    "}"
+                )),
+                Runnable.class,
+                Thread.currentThread().getContextClassLoader()
+            )).run();
+            fail("CompileException expected");
+        } catch (CompileException ex) {
+            ;
+        }
+    }
+    
+    public void testFastExpressionEvaluator() throws Exception {
+        ((Runnable) ExpressionEvaluator.createFastExpressionEvaluator(
+            "o == null ? 3 : 4",  // expression
+            Comparable.class,     // interfaceToImplement
+            new String[] { "o" }, // parameterNames
+            null                  // optionalParentClassLoader
+        )).run();
+    }
+    
     public void testManyEEs() throws Exception {
         ExpressionEvaluator ee = new ExpressionEvaluator();
         final int COUNT = 10000;
