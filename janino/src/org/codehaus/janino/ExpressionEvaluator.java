@@ -349,14 +349,6 @@ public class ExpressionEvaluator extends ScriptEvaluator {
         super.setReturnTypes(returnTypes);
     }
     
-    public final void setReturnType(Class returnType) {
-        throw new RuntimeException("Don't call \"setReturnType(Class)\" on an ExpressionEvaluator, use \"setExpressionType(Class)\" instead");
-    }
-
-    public final void setReturnTypes(Class[] returnTypes) {
-        throw new RuntimeException("Don't call \"setReturnTypes(Class[])\" on an ExpressionEvaluator, use \"setExpressionTypes(Class[])\" instead");
-    }
-    
     protected Class getDefaultReturnType() {
         return Object.class;
     }

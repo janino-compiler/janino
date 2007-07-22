@@ -137,12 +137,12 @@ public class EvaluatorTests extends TestCase {
     }
     
     public void testFastExpressionEvaluator() throws Exception {
-        ((Runnable) ExpressionEvaluator.createFastExpressionEvaluator(
+        ((Comparable) ExpressionEvaluator.createFastExpressionEvaluator(
             "o == null ? 3 : 4",  // expression
             Comparable.class,     // interfaceToImplement
             new String[] { "o" }, // parameterNames
             null                  // optionalParentClassLoader
-        )).run();
+        )).compareTo("");
     }
     
     public void testManyEEs() throws Exception {
