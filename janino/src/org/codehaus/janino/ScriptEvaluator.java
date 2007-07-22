@@ -901,7 +901,7 @@ public class ScriptEvaluator extends ClassBodyEvaluator {
     }
 
     /**
-     * Create and return an object that implements the exactly one abstract method of the given
+     * Create and return an object that implements the exactly one method of the given
      * <code>interfaceToImplement</code>.
      *
      * @param se A pre-configured {@link ScriptEvaluator} object
