@@ -177,7 +177,7 @@ public abstract class IClass {
         IMethod[] ms = this.getDeclaredIMethods();
         for (int i = 0; i < ms.length; ++i) {
             IMethod m = ms[i];
-            String key = m.getDescriptor();
+            String key = m.getName() + m.getDescriptor();
             IMethod m2 = (IMethod) result.get(key);
             if (m2 == null || m2.isAbstract()) result.put(key, m);
         }
