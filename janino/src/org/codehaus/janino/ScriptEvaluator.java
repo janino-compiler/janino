@@ -900,6 +900,16 @@ public class ScriptEvaluator extends ClassBodyEvaluator {
         }
     }
 
+    /**
+     * Create and return an object that implements the exactly one abstract method of the given
+     * <code>interfaceToImplement</code>.
+     *
+     * @param se A pre-configured {@link ScriptEvaluator} object
+     * @param scanner Source of tokens to read
+     * @param parameterNames The names of the parameters of the one abstract method of <code>interfaceToImplement</code>
+     * @param interfaceToImplement A type with exactly one abstract method
+     * @return an instance of the created {@link Object}
+     */
     public static Object createFastEvaluator(
         ScriptEvaluator se,
         Scanner         scanner,
