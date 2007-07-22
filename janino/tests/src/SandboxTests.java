@@ -3,6 +3,7 @@ import org.codehaus.janino.ExpressionEvaluator;
 import org.codehaus.janino.SimpleCompiler;
 
 import for_sandbox_tests.ExternalClass;
+import for_sandbox_tests.OtherExternalClass;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
@@ -49,7 +50,7 @@ public class SandboxTests extends TestCase {
 
         // Invoke method of base class.
         ExpressionEvaluator ee = new ExpressionEvaluator();
-        ee.setParentClassLoader(SimpleCompiler.BOOT_CLASS_LOADER);
+        ee.setParentClassLoader(SimpleCompiler.BOOT_CLASS_LOADER, new Class[] { OtherExternalClass.class });
         ee.setExtendedType(ExternalClass.class);
         ee.cook("m1()");
         assertEquals(7, ((Integer) ee.evaluate(new Object[0])).intValue());

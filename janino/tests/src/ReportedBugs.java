@@ -352,6 +352,8 @@ public class ReportedBugs extends JaninoTestSuite {
             "List list = new ArrayList();\n" +
             "System.out.println(list.getClass());\n"
         ));
+
+        // Bug 95: See "EvaluatorTests.testFastClassBodyEvaluator2()".
     }
 
     /**
