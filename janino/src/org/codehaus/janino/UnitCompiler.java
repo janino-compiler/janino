@@ -5906,8 +5906,8 @@ public class UnitCompiler {
             return im.getDeclaringIClass().new IMethod() {
                 public String   getName()                                   { return im.getName(); }
                 public IClass   getReturnType() throws CompileException     { return im.getReturnType(); }
-                public boolean  isAbstract()                                { return true; }
-                public boolean  isStatic()                                  { return false; }
+                public boolean  isAbstract()                                { return im.isAbstract(); }
+                public boolean  isStatic()                                  { return im.isStatic(); }
                 public Access   getAccess()                                 { return im.getAccess(); }
                 public IClass[] getParameterTypes() throws CompileException { return im.getParameterTypes(); }
                 public IClass[] getThrownExceptions()                       { return tes; }
