@@ -91,6 +91,9 @@ public class UnitCompiler {
             throw new RuntimeException("SNO: Error loading \"StringBuffer\" or \"StringBuilder\": " + ex.getMessage());
         }
 
+        // Compile non-static import declarations. (Must be done here in the constructor and not
+        // down in "compileUnit()" because otherwise "resolve()" cannot resolve type names.)
+        this.typeImportsOnDemand = new ArrayList();
         this.typeImportsOnDemand.add(new String[] { "java", "lang" });
         for (Iterator it = this.compilationUnit.importDeclarations.iterator(); it.hasNext();) {
             ImportDeclaration id = (ImportDeclaration) it.next();
@@ -99,8 +102,8 @@ public class UnitCompiler {
                 id.accept(new ImportVisitor() {
                     public void visitSingleTypeImportDeclaration(SingleTypeImportDeclaration stid)          { try { UnitCompiler.this.import2(stid);  } catch (CompileException e) { throw new UCE(e); } }
                     public void visitTypeImportOnDemandDeclaration(TypeImportOnDemandDeclaration tiodd)     {       UnitCompiler.this.import2(tiodd);                                                    }
-                    public void visitSingleStaticImportDeclaration(SingleStaticImportDeclaration ssid)      { try { UnitCompiler.this.import2(ssid);  } catch (CompileException e) { throw new UCE(e); } }
-                    public void visitStaticImportOnDemandDeclaration(StaticImportOnDemandDeclaration siodd) { try { UnitCompiler.this.import2(siodd); } catch (CompileException e) { throw new UCE(e); } }
+                    public void visitSingleStaticImportDeclaration(SingleStaticImportDeclaration ssid)      {}
+                    public void visitStaticImportOnDemandDeclaration(StaticImportOnDemandDeclaration siodd) {}
                 });
             } catch (UCE uce) { throw uce.ce; }
         }
@@ -193,6 +196,21 @@ public class UnitCompiler {
     public ClassFile[] compileUnit(
         EnumeratorSet debuggingInformation
     ) throws CompileException {
+
+        // Compile static import declarations.
+        for (Iterator it = this.compilationUnit.importDeclarations.iterator(); it.hasNext();) {
+            ImportDeclaration id = (ImportDeclaration) it.next();
+            class UCE extends RuntimeException { final CompileException ce; UCE(CompileException ce) { this.ce = ce; } }
+            try {
+                id.accept(new ImportVisitor() {
+                    public void visitSingleTypeImportDeclaration(SingleTypeImportDeclaration stid)          {}
+                    public void visitTypeImportOnDemandDeclaration(TypeImportOnDemandDeclaration tiodd)     {}
+                    public void visitSingleStaticImportDeclaration(SingleStaticImportDeclaration ssid)      { try { UnitCompiler.this.import2(ssid);  } catch (CompileException e) { throw new UCE(e); } }
+                    public void visitStaticImportOnDemandDeclaration(StaticImportOnDemandDeclaration siodd) { try { UnitCompiler.this.import2(siodd); } catch (CompileException e) { throw new UCE(e); } }
+                });
+            } catch (UCE uce) { throw uce.ce; }
+        }
+
         this.generatedClassFiles  = new ArrayList();
         this.debuggingInformation = debuggingInformation;
 
@@ -8169,7 +8187,7 @@ public class UnitCompiler {
     private EnumeratorSet      debuggingInformation;
 
     private final Map        singleTypeImports     = new HashMap();   // String simpleTypeName => String[] fullyQualifiedTypeName
-    private final Collection typeImportsOnDemand   = new ArrayList(); // String[] package
+    private final Collection typeImportsOnDemand;                     // String[] package
     private final Map        singleStaticImports   = new HashMap();   // String staticMemberName => IField, List of IMethod, or IClass
     private final Collection staticImportsOnDemand = new ArrayList(); // IClass
 }
