@@ -4421,8 +4421,8 @@ public class UnitCompiler {
      * lexical order.
      */
     void initializeInstanceVariablesAndInvokeInstanceInitializers(Java.ConstructorDeclarator cd) throws CompileException {
-        for (Iterator it = cd.getDeclaringClass().variableDeclaratorsAndInitializers.iterator(); it.hasNext();) {
-            Java.TypeBodyDeclaration tbd = (Java.TypeBodyDeclaration) it.next();
+        for (int i = 0; i < cd.getDeclaringClass().variableDeclaratorsAndInitializers.size(); ++i) {
+            Java.TypeBodyDeclaration tbd = (Java.TypeBodyDeclaration) cd.getDeclaringClass().variableDeclaratorsAndInitializers.get(i);
             if (!tbd.isStatic()) {
                 Java.BlockStatement bs = (Java.BlockStatement) tbd;
                 if (!this.compile(bs)) this.compileError("Instance variable declarator or instance initializer does not complete normally", bs.getLocation());
