@@ -218,10 +218,10 @@ public class SimpleCompiler extends Cookable {
         );
         this.optionalAuxiliaryClasses = auxiliaryClasses;
     }
-    
+
     public void cook(Scanner scanner)
     throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
-        this.precook();
+        this.setUpClassLoaders();
 
         // Parse the compilation unit.
         Java.CompilationUnit compilationUnit = new Parser(scanner).parseCompilationUnit();
@@ -233,7 +233,12 @@ public class SimpleCompiler extends Cookable {
         );
     }
 
-    protected final void precook() {
+    /**
+     * Initializes {@link #classLoader} and {@link #iClassLoader} from the configured
+     * {@link #parentClassLoader} and {@link #optionalAuxiliaryClasses}. These are needed by
+     * {@link #classToType(Location, Class)} and friends which are used when creating the AST.
+     */
+    protected final void setUpClassLoaders() {
         if (this.classLoader != null) throw new RuntimeException("\"cook()\" must not be called more than once");
 
         // Set up the ClassLoader for the compilation and the loading.

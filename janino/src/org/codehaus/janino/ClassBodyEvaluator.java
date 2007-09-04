@@ -291,7 +291,7 @@ public class ClassBodyEvaluator extends SimpleCompiler {
 
     public void cook(Scanner scanner)
     throws CompileException, ParseException, ScanException, IOException {
-        this.precook();
+        this.setUpClassLoaders();
 
         Java.CompilationUnit compilationUnit = this.makeCompilationUnit(scanner);
 
