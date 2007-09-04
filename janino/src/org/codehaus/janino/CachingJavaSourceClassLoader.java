@@ -53,6 +53,13 @@ import org.codehaus.janino.util.resource.*;
  * <p>
  * See {@link org.codehaus.janino.JavaSourceClassLoader#main(String[])} for
  * an example how to use this class.
+ * <p>
+ * <b>Notice:</b> You must NOT rely on that this class stores some particular data in some
+ * particular resources through the given <code>classFileCacheResourceFinder/Creator</code>!
+ * These serve only as a means for the {@link CachingJavaSourceClassLoader} to persistently
+ * cache some data between invocations. In other words: If you want to compile <code>.java</code>
+ * files into <code>.class</code> files, then don't use <i>this</i> class but {@link Compiler}
+ * instead!
  */
 public class CachingJavaSourceClassLoader extends JavaSourceClassLoader {
     private final ResourceFinder  classFileCacheResourceFinder;
@@ -63,7 +70,7 @@ public class CachingJavaSourceClassLoader extends JavaSourceClassLoader {
      * See {@link #CachingJavaSourceClassLoader(ClassLoader, ResourceFinder, String, ResourceFinder, ResourceCreator, EnumeratorSet)}.
      *
      * @param optionalSourcePath Directories to scan for source files
-     * @param cacheDirectory Directory to use for caching generated class files
+     * @param cacheDirectory Directory to use for caching generated class files (see class description)
      */
     public CachingJavaSourceClassLoader(
         ClassLoader   parentClassLoader,
@@ -102,8 +109,8 @@ public class CachingJavaSourceClassLoader extends JavaSourceClassLoader {
      * @param parentClassLoader             Attempt to load classes through this one before looking for source files
      * @param sourceFinder                  Finds Java<sup>TM</sup> source for class <code>pkg.Cls</code> in resource <code>pkg/Cls.java</code>
      * @param optionalCharacterEncoding     Encoding of Java<sup>TM</sup> source or <code>null</code> for platform default encoding
-     * @param classFileCacheResourceFinder  Finds precompiled class <code>pkg.Cls</code> in resource <code>pkg/Cls.class</code>
-     * @param classFileCacheResourceCreator Stores compiled class <code>pkg.Cls</code> in resource <code>pkg/Cls.class</code>
+     * @param classFileCacheResourceFinder  Finds precompiled class <code>pkg.Cls</code> in resource <code>pkg/Cls.class</code> (see class description)
+     * @param classFileCacheResourceCreator Stores compiled class <code>pkg.Cls</code> in resource <code>pkg/Cls.class</code> (see class description)
      * @param debuggingInformation          What debugging information to include into the generated class files
      */
     public CachingJavaSourceClassLoader(
@@ -114,13 +121,6 @@ public class CachingJavaSourceClassLoader extends JavaSourceClassLoader {
         ResourceCreator classFileCacheResourceCreator,
         EnumeratorSet   debuggingInformation
     ) {
-        // TODO: This should read:
-//        super(
-//            new ResourceFinderClassLoader(classFileCacheResourceFinder, parentClassLoader), // parentClassLoader
-//            sourceFinder,                                                                   // sourceFinder
-//            optionalCharacterEncoding,                                                      // optionalCharacterEncoding
-//            debuggingInformation                                                            // debuggingInformation
-//        );
         super(parentClassLoader, sourceFinder, optionalCharacterEncoding, debuggingInformation);
         this.classFileCacheResourceFinder  = classFileCacheResourceFinder;
         this.classFileCacheResourceCreator = classFileCacheResourceCreator;

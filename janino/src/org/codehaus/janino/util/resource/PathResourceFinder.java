@@ -79,16 +79,19 @@ public class PathResourceFinder extends LazyMultiResourceFinder {
     }
 
     /**
-     * Break a given string up by a "separator" string. Empty components are
+     * Break a given string up by the system-dependent path-separator character (on UNIX systems,
+     * this character is ':'; on Microsoft Windows systems it is ';'). Empty components are
      * ignored.
      * <p>
-     * Examples:
+     * UNIX Examples:
      * <dl>
-     *   <dt>A*B*C          <dd>A, B, C
-     *   <dt>**B*           <dd>B
-     *   <dt>*A             <dd>A
+     *   <dt>A:B:C          <dd>A, B, C
+     *   <dt>::B:           <dd>B
+     *   <dt>:A             <dd>A
      *   <dt>(Empty string) <dd>(Zero components)
      * </dl>
+     *
+     * @see File#pathSeparatorChar
      */
     public static File[] parsePath(String s) {
         int from = 0;

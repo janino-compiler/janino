@@ -64,7 +64,7 @@ public class JavaSourceClassLoader extends ClassLoader {
     
     /**
      * Read Java<sup>TM</sup> source code for a given class name, scan, parse, compile and load
-     * it into the virtual machine, and invoke its "main()" method.
+     * it into the virtual machine, and invoke its "main()" method with the given args.
      * <p>
      * Usage is as follows:
      * <pre>
@@ -76,7 +76,7 @@ public class JavaSourceClassLoader extends ClassLoader {
      *       -g                           Generate all debugging info");
      *       -g:none                      Generate no debugging info");
      *       -g:{lines,vars,source}       Generate only some debugging info");
-     *       -cache <i>dir</i>                      Cache compiled classes here");
+     *       -cache <i>dir</i>                   Cache compiled classes here");
 
      * </pre>
      */

@@ -43,6 +43,9 @@ import java.util.*;
 public class MapResourceCreator implements ResourceCreator {
     private final Map map;
 
+    /**
+     * Auto-create the delegate {@link Map}.
+     */
     public MapResourceCreator() {
         this.map = new HashMap();
     }
