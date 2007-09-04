@@ -354,6 +354,24 @@ public class ReportedBugs extends JaninoTestSuite {
         ));
 
         // Bug 95: See "EvaluatorTests.testFastClassBodyEvaluator2()".
+
+        section("Bug 99"); // ConcurrentModificationException due to instance variable of Class type initialized using a class literal
+        sim(COOK, "xyz", "class Test{Class c = String.class;}", "Test");
+
+        section("Bug 102"); // Static initializers are not executed
+        sim(TRUE, "Static initializer", (
+            "public class Test{\n" +
+            "  static String x = \"\";\n" +
+            "  static { x += a; }\n" +
+            "  static int a = 7;\n" +
+            "  static { x += a; }\n" +
+            "  static { System.out.println(\"HELLO\");\n }\n" +
+            "  public static boolean test() {\n" +
+            "    System.out.println(\">>>\" + x + \"<<<\");\n" +
+            "    return x.equals(\"07\");\n" +
+            "  }\n" +
+            "}"
+        ), "Test");
     }
 
     /**
