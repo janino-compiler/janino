@@ -36,6 +36,7 @@ package org.codehaus.janino;
 
 import java.io.*;
 
+import org.codehaus.janino.Java.Rvalue;
 import org.codehaus.janino.Parser.ParseException;
 import org.codehaus.janino.Scanner.ScanException;
 import org.codehaus.janino.util.PrimitiveWrapper;
@@ -348,22 +349,25 @@ public class ExpressionEvaluator extends ScriptEvaluator {
         }
         super.setReturnTypes(returnTypes);
     }
-    
+
     protected Class getDefaultReturnType() {
         return Object.class;
     }
 
-    protected void fillBlock(int idx, Scanner scanner, Java.Block block) throws ParseException, ScanException, IOException {
+    protected Java.Block makeBlock(int idx, Scanner scanner) throws ParseException, ScanException, IOException {
+        Java.Block block = new Java.Block(scanner.location());
+
         Parser parser = new Parser(scanner);
+
+        // Parse the expression.
+        Rvalue value = parser.parseExpression().toRvalueOrPE();
+
         Class et = this.optionalExpressionTypes == null ? ANY_TYPE : this.optionalExpressionTypes[idx];
         if (et == void.class) {
 
             // ExpressionEvaluator with an expression type "void" is a simple expression statement.
-            block.addStatement(new Java.ExpressionStatement(parser.parseExpression().toRvalueOrPE()));
+            block.addStatement(new Java.ExpressionStatement(value));
         } else {
-
-            // Compute expression value
-            Java.Rvalue value = parser.parseExpression().toRvalueOrPE();
 
             // Special case: Expression type "ANY_TYPE" means return type "Object" and automatic
             // wrapping of primitive types.
@@ -389,6 +393,8 @@ public class ExpressionEvaluator extends ScriptEvaluator {
             block.addStatement(new Java.ReturnStatement(scanner.location(), value));
         }
         if (!scanner.peek().isEOF()) throw new Parser.ParseException("Unexpected token \"" + scanner.peek() + "\"", scanner.location());
+
+        return block;
     }
 
     /**
