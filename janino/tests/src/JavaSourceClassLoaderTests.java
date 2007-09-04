@@ -33,6 +33,7 @@
  */
 
 import java.io.*;
+import java.util.HashMap;
 import java.util.Map;
 
 import junit.framework.*;
@@ -52,6 +53,7 @@ public class JavaSourceClassLoaderTests extends TestCase {
         TestSuite s = new TestSuite(JavaSourceClassLoaderTests.class.getName());
         s.addTest(new JavaSourceClassLoaderTests("testJSCL"));
         s.addTest(new JavaSourceClassLoaderTests("testCJSCL"));
+        s.addTest(new JavaSourceClassLoaderTests("testCircularStaticImports"));
         return s;
     }
 
@@ -105,5 +107,48 @@ public class JavaSourceClassLoaderTests extends TestCase {
         ).loadClass(className);
         b.endReporting("Generated " + classFileResources2.getMap().size() + " class files.");
         assertEquals("Files recompiled", 0, classFileResources2.getMap().size());
+    }
+
+    public void testCircularStaticImports() throws Exception {
+        Map sources = new HashMap();
+        sources.put("test/Func1.java", (
+            "package test;\n" +
+            "\n" +
+            "\n" +
+            "import static test.Func2.func2;\n" +
+            "\n" +
+            "public class Func1 {\n" +
+            "    public static boolean func1() throws Exception {\n" +
+            "        return true;\n" +
+            "    }\n" +
+            "} \n"
+        ).getBytes());
+        sources.put("test/Func2.java", (
+            "package test;\n" +
+            "\n" +
+            "\n" +
+            "import static test.Func1.func1;\n" +
+            "\n" +
+            "public class Func2 {\n" +
+            "    public static boolean func2() throws Exception {\n" +
+            "        return true;\n" +
+            "    }\n" +
+            "} \n"
+        ).getBytes());
+//        Map cache = new HashMap();
+//        new CachingJavaSourceClassLoader(
+//            SimpleCompiler.BOOT_CLASS_LOADER, // parentClassLoader
+//            new MapResourceFinder(sources),   // sourceFinder
+//            (String) null,                    // optionalCharacterEncoding
+//            new MapResourceFinder(cache),     // classFileCacheResourceFinder
+//            new MapResourceCreator(cache),    // classFileResourceCreator
+//            DebuggingInformation.NONE         // debuggingInformation
+//        ).loadClass("test.Func1");
+        new JavaSourceClassLoader(
+            SimpleCompiler.BOOT_CLASS_LOADER, // parentClassLoader
+            new MapResourceFinder(sources),   // sourceFinder
+            (String) null,                    // optionalCharacterEncoding
+            DebuggingInformation.NONE         // debuggingInformation
+        ).loadClass("test.Func1");
     }
 }
