@@ -122,6 +122,7 @@ import org.codehaus.janino.Scanner.ScanException;
  * Notice that these methods have array parameters in contrast to their one-script brethren.
  */
 public class ScriptEvaluator extends ClassBodyEvaluator {
+
     protected boolean[]  optionalStaticMethod = null;
     protected Class[]    optionalReturnTypes = null;
     protected String[]   optionalMethodNames = null;
@@ -551,7 +552,7 @@ public class ScriptEvaluator extends ClassBodyEvaluator {
         if (this.optionalStaticMethod     != null && this.optionalStaticMethod.length     != count) throw new IllegalStateException("staticMethod");
         if (this.optionalThrownExceptions != null && this.optionalThrownExceptions.length != count) throw new IllegalStateException("thrownExceptions");
 
-        this.precook();
+        this.setUpClassLoaders();
 
         // Create compilation unit.
         Java.CompilationUnit compilationUnit = this.makeCompilationUnit(count == 1 ? scanners[0] : null);
@@ -569,31 +570,30 @@ public class ScriptEvaluator extends ClassBodyEvaluator {
             methodNames = this.optionalMethodNames;
         }
 
-        // Determine parameter types.
-        Class[][] parameterTypes = this.optionalParameterTypes == null ? new Class[count][0] : this.optionalParameterTypes;
-
         // Create methods with one block each.
         for (int i = 0; i < count; ++i) {
             Scanner s = scanners[i];
 
-            boolean  staticMethod     = this.optionalStaticMethod == null ? true : this.optionalStaticMethod[i];
-            Class    returnType       = this.optionalReturnTypes == null ? this.getDefaultReturnType() : this.optionalReturnTypes[i];
-            String[] parameterNames   = this.optionalParameterNames == null ? new String[0] : this.optionalParameterNames[i];
+            Java.Block block = this.makeBlock(i, scanners[i]);
+
+            // Determine the following script properties AFTER the call to "makeBlock()",
+            // because "makeBlock()" may modify these script properties on-the-fly.
+            boolean  staticMethod     = this.optionalStaticMethod     == null ? true : this.optionalStaticMethod[i];
+            Class    returnType       = this.optionalReturnTypes      == null ? this.getDefaultReturnType() : this.optionalReturnTypes[i];
+            String[] parameterNames   = this.optionalParameterNames   == null ? new String[0] : this.optionalParameterNames[i];
+            Class[]  parameterTypes   = this.optionalParameterTypes   == null ? new Class[0] : this.optionalParameterTypes[i];
             Class[]  thrownExceptions = this.optionalThrownExceptions == null ? new Class[0] : this.optionalThrownExceptions[i];
 
-            Java.Block block = this.addMethodDeclarationAndBlock(
-                s.location(),      // location
-                cd,                // classDeclaration
-                staticMethod,      // staticMethod
-                returnType,        // returnType
-                methodNames[i],    // methodName
-                parameterTypes[i], // parameterTypes
-                parameterNames,    // parameterNames
-                thrownExceptions   // thrownExceptions
-            );
-
-            // Parse block statements.
-            this.fillBlock(i, s, block);
+            cd.addDeclaredMethod(this.makeMethodDeclaration(
+                s.location(),     // location
+                staticMethod,     // staticMethod
+                returnType,       // returnType
+                methodNames[i],   // methodName
+                parameterTypes,   // parameterTypes
+                parameterNames,   // parameterNames
+                thrownExceptions, // thrownExceptions
+                block             // optionalBody
+            ));
         }
 
         // Compile and load the compilation unit.
@@ -608,7 +608,7 @@ public class ScriptEvaluator extends ClassBodyEvaluator {
         if (count <= 10) {
             for (int i = 0; i < count; ++i) {
                 try {
-                    this.result[i] = c.getDeclaredMethod(methodNames[i], parameterTypes[i]);
+                    this.result[i] = c.getDeclaredMethod(methodNames[i], this.optionalParameterTypes == null ? new Class[0] : this.optionalParameterTypes[i]);
                 } catch (NoSuchMethodException ex) {
                     throw new RuntimeException("SNO: Loaded class does not declare method \"" + methodNames[i] + "\"");
                 }
@@ -648,7 +648,7 @@ public class ScriptEvaluator extends ClassBodyEvaluator {
                 dms.put(new MethodWrapper(m.getName(), m.getParameterTypes()), m);
             }
             for (int i = 0; i < count; ++i) {
-                Method m = (Method) dms.get(new MethodWrapper(methodNames[i], parameterTypes[i]));
+                Method m = (Method) dms.get(new MethodWrapper(methodNames[i], this.optionalParameterTypes == null ? new Class[0] : this.optionalParameterTypes[i]));
                 if (m == null) throw new RuntimeException("SNO: Loaded class does not declare method \"" + methodNames[i] + "\"");
                 this.result[i] = m;
             }
@@ -691,13 +691,15 @@ public class ScriptEvaluator extends ClassBodyEvaluator {
     /**
      * Fill the given <code>block</code> by parsing statements until EOF and adding
      * them to the block.
-     * @param idx TODO
      */
-    protected void fillBlock(int idx, Scanner scanner, Java.Block block) throws ParseException, ScanException, IOException {
+    protected Java.Block makeBlock(int idx, Scanner scanner) throws ParseException, ScanException, IOException {
+        Java.Block block = new Java.Block(scanner.location());
         Parser parser = new Parser(scanner);
         while (!scanner.peek().isEOF()) {
             block.addStatement(parser.parseBlockStatement());
         }
+
+        return block;
     }
 
     protected void compileToMethods(
@@ -734,20 +736,18 @@ public class ScriptEvaluator extends ClassBodyEvaluator {
      *
      * @param returnType Return type of the declared method
      */
-    protected Java.Block addMethodDeclarationAndBlock(
-        Location              location,
-        Java.ClassDeclaration classDeclaration,
-        boolean               staticMethod,
-        Class                 returnType,
-        String                methodName,
-        Class[]               parameterTypes,
-        String[]              parameterNames,
-        Class[]               thrownExceptions
+    protected Java.MethodDeclarator makeMethodDeclaration(
+        Location   location,
+        boolean    staticMethod,
+        Class      returnType,
+        String     methodName,
+        Class[]    parameterTypes,
+        String[]   parameterNames,
+        Class[]    thrownExceptions,
+        Java.Block optionalBody
     ) {
-        if (parameterNames.length != parameterTypes.length) throw new RuntimeException("Lengths of \"parameterNames\" and \"parameterTypes\" do not match");
+        if (parameterNames.length != parameterTypes.length) throw new RuntimeException("Lengths of \"parameterNames\" (" + parameterNames.length + ") and \"parameterTypes\" (" + parameterTypes.length + ") do not match");
 
-        // Add method declaration.
-        Java.Block b = new Java.Block(location);
         Java.FunctionDeclarator.FormalParameter[] fps = new Java.FunctionDeclarator.FormalParameter[parameterNames.length];
         for (int i = 0; i < fps.length; ++i) {
             fps[i] = new Java.FunctionDeclarator.FormalParameter(
@@ -757,7 +757,8 @@ public class ScriptEvaluator extends ClassBodyEvaluator {
                 parameterNames[i]                              // name
             );
         }
-        Java.MethodDeclarator md = new Java.MethodDeclarator(
+
+        return new Java.MethodDeclarator(
             location,                                        // location
             null,                                            // optionalDocComment
             (                                                // modifiers
@@ -769,11 +770,8 @@ public class ScriptEvaluator extends ClassBodyEvaluator {
             methodName,                                      // name
             fps,                                             // formalParameters
             this.classesToTypes(location, thrownExceptions), // thrownExceptions
-            b                                                // optionalBody
+            optionalBody                                     // optionalBody
         );
-        classDeclaration.addDeclaredMethod(md);
-
-        return b;
     }
 
     /**
