@@ -36,22 +36,24 @@ package org.codehaus.janino.util;
 
 import org.codehaus.janino.*;
 import org.codehaus.janino.Java.CompilationUnit.*;
+import org.codehaus.janino.Visitor.ComprehensiveVisitor;
 
 import java.util.*;
 
 /**
  * This class traverses the subnodes of an AST. Derived classes may override
  * individual methods to process specific nodes, e.g.:<pre>
- *     class MethodCounter extends Traverser {
+ *     LocalClassDeclaration lcd = ...;
+ *     lcd.accept(new Traverser {
  *         int n = 0;
  *         public void traverseMethodDeclarator(Java.MethodDeclarator md) {
  *             ++this.n;
  *             super.traverseMethodDeclarator(md);
  *         }
- *     }</pre>
+ *     }.comprehensiveVisitor());</pre>
  */
 public class Traverser {
-    public final Visitor.ComprehensiveVisitor cv = new Visitor.ComprehensiveVisitor() {
+    private final Visitor.ComprehensiveVisitor cv = new Visitor.ComprehensiveVisitor() {
         public final void visitSingleTypeImportDeclaration(Java.CompilationUnit.SingleTypeImportDeclaration stid)      { Traverser.this.traverseSingleTypeImportDeclaration(stid); }
         public final void visitTypeImportOnDemandDeclaration(Java.CompilationUnit.TypeImportOnDemandDeclaration tiodd) { Traverser.this.traverseTypeImportOnDemandDeclaration(tiodd); }
         public final void visitSingleStaticImportDeclaration(SingleStaticImportDeclaration ssid)                       { Traverser.this.traverseSingleStaticImportDeclaration(ssid); }
@@ -120,6 +122,10 @@ public class Traverser {
         public final void visitParenthesizedExpression(Java.ParenthesizedExpression pe)                       { Traverser.this.traverseParenthesizedExpression(pe); }
     };
  
+    public ComprehensiveVisitor comprehensiveVisitor() {
+        return this.cv;
+    }
+
     // These may be overridden by derived classes.
 
     public void traverseCompilationUnit(Java.CompilationUnit cu) {

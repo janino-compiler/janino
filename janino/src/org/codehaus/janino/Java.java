@@ -1851,7 +1851,7 @@ public class Java {
 //                    t.setEnclosingScope(enclosingBlockStatement);
                     super.traverseType(t);
                 }
-            }.cv);
+            }.comprehensiveVisitor());
         }
         public Java.BlockStatement getEnclosingBlockStatement() {
             return this.enclosingBlockStatement;
