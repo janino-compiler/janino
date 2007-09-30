@@ -128,7 +128,7 @@ public class ClassBodyEvaluator extends SimpleCompiler {
      */
     public ClassBodyEvaluator(
         String classBody
-    ) throws CompileException, Parser.ParseException, Scanner.ScanException {
+    ) throws CompileException, ParseException, ScanException {
         this.cook(classBody);
     }
 
@@ -143,7 +143,7 @@ public class ClassBodyEvaluator extends SimpleCompiler {
     public ClassBodyEvaluator(
         String      optionalFileName,
         InputStream is
-    ) throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
+    ) throws CompileException, ParseException, ScanException, IOException {
         this.cook(optionalFileName, is);
     }
 
@@ -158,7 +158,7 @@ public class ClassBodyEvaluator extends SimpleCompiler {
     public ClassBodyEvaluator(
         String   optionalFileName,
         Reader   reader
-    ) throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
+    ) throws CompileException, ParseException, ScanException, IOException {
         this.cook(optionalFileName, reader);
     }
 
@@ -175,7 +175,7 @@ public class ClassBodyEvaluator extends SimpleCompiler {
     public ClassBodyEvaluator(
         Scanner     scanner,
         ClassLoader optionalParentClassLoader
-    ) throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
+    ) throws CompileException, ParseException, ScanException, IOException {
         this.setParentClassLoader(optionalParentClassLoader);
         this.cook(scanner);
     }
@@ -199,7 +199,7 @@ public class ClassBodyEvaluator extends SimpleCompiler {
         Class       optionalExtendedType,
         Class[]     implementedTypes,
         ClassLoader optionalParentClassLoader
-    ) throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
+    ) throws CompileException, ParseException, ScanException, IOException {
         this.setExtendedType(optionalExtendedType);
         this.setImplementedTypes(implementedTypes);
         this.setParentClassLoader(optionalParentClassLoader);
@@ -228,7 +228,7 @@ public class ClassBodyEvaluator extends SimpleCompiler {
         Class       optionalExtendedType,
         Class[]     implementedTypes,
         ClassLoader optionalParentClassLoader
-    ) throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
+    ) throws CompileException, ParseException, ScanException, IOException {
         this.setClassName(className);
         this.setExtendedType(optionalExtendedType);
         this.setImplementedTypes(implementedTypes);
@@ -323,7 +323,7 @@ public class ClassBodyEvaluator extends SimpleCompiler {
      * from it and added to the compilation unit.
      */
     protected final Java.CompilationUnit makeCompilationUnit(Scanner optionalScanner)
-    throws Parser.ParseException, Scanner.ScanException, IOException {
+    throws ParseException, ScanException, IOException {
         Java.CompilationUnit cu = new Java.CompilationUnit(optionalScanner == null ? null : optionalScanner.getFileName());
         
         // Set default imports.
@@ -355,12 +355,11 @@ public class ClassBodyEvaluator extends SimpleCompiler {
      * </ul>
      *
      * @return The created {@link Java.ClassDeclaration} object
-     * @throws Parser.ParseException
      */
     protected Java.PackageMemberClassDeclaration addPackageMemberClassDeclaration(
         Location             location,
         Java.CompilationUnit compilationUnit
-    ) throws Parser.ParseException {
+    ) throws ParseException {
         String cn = this.className;
         int idx = cn.lastIndexOf('.');
         if (idx != -1) {
@@ -436,7 +435,7 @@ public class ClassBodyEvaluator extends SimpleCompiler {
         Scanner     scanner,
         Class       optionalBaseType,
         ClassLoader optionalParentClassLoader
-    ) throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
+    ) throws CompileException, ParseException, ScanException, IOException {
         return ClassBodyEvaluator.createFastClassBodyEvaluator(
             scanner,                               // scanner
             ClassBodyEvaluator.DEFAULT_CLASS_NAME, // className
@@ -472,7 +471,7 @@ public class ClassBodyEvaluator extends SimpleCompiler {
         Class       optionalExtendedType,
         Class[]     implementedTypes,
         ClassLoader optionalParentClassLoader
-    ) throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
+    ) throws CompileException, ParseException, ScanException, IOException {
         Class c = new ClassBodyEvaluator(
             scanner,
             className,
