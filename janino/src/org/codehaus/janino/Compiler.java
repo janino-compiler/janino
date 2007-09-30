@@ -37,6 +37,7 @@ package org.codehaus.janino;
 import java.util.*;
 import java.io.*;
 
+import org.codehaus.janino.Parser.ParseException;
 import org.codehaus.janino.Scanner.ScanException;
 import org.codehaus.janino.UnitCompiler.ErrorHandler;
 import org.codehaus.janino.tools.Disassembler;
