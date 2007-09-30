@@ -32,19 +32,39 @@
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.codehaus.janino;
+package org.codehaus.janino.util;
 
-import org.codehaus.janino.util.*;
+import org.codehaus.janino.Location;
 
 /**
- * An exception that reflects an error during compilation.
+ * An {@link Exception} that is associated with an optional {@link Location} in a source file.
  */
-public class CompileException extends LocatedException {
+public class LocatedException extends CausedException {
+    private final Location optionalLocation;
 
-    public CompileException(String message, Location optionalLocation) {
-        super(message, optionalLocation);
+    public LocatedException(String message, Location optionalLocation) {
+        super(message);
+        this.optionalLocation = optionalLocation;
     }
-    public CompileException(String message, Location optionalLocation, Throwable cause) {
-        super(message, optionalLocation, cause);
+
+    public LocatedException(String message, Location optionalLocation, Throwable optionalCause) {
+        super(message, optionalCause);
+        this.optionalLocation = optionalLocation;
+    }
+    
+    /**
+     * Returns the message specified at creation time, preceeded with nicely formatted location
+     * information (if any).
+     */
+    public String getMessage() {
+        return this.optionalLocation == null ? super.getMessage() : this.optionalLocation.toString() + ": " + super.getMessage();
+    }
+
+    /**
+     * Returns the {@link Location} object specified at
+     * construction time (may be <code>null</code>).
+     */
+    public Location getLocation() {
+        return this.optionalLocation;
     }
 }

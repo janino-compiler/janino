@@ -38,6 +38,7 @@ import java.io.*;
 import java.util.*;
 
 import org.codehaus.janino.Java.CompilationUnit.ImportDeclaration;
+import org.codehaus.janino.util.LocatedException;
 import org.codehaus.janino.util.enumerator.Enumerator;
 
 /**
@@ -2514,7 +2515,7 @@ public class Parser {
      * This exception is associated with a particular {@link Location
      * Location} in the source code.
      */
-    public static class ParseException extends Scanner.LocatedException {
+    public static class ParseException extends LocatedException {
         public ParseException(String message, Location location) {
             super(message, location);
         }

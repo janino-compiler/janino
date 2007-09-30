@@ -37,6 +37,7 @@ package org.codehaus.janino;
 import java.io.*;
 import java.util.*;
 
+import org.codehaus.janino.util.LocatedException;
 import org.codehaus.janino.util.TeeReader;
 
 
@@ -120,10 +121,6 @@ public class Scanner {
      * <p>
      * The <code>fileName</code> is solely used for reporting in thrown
      * exceptions.
-     * @param optionalFileName
-     * @param is
-     * @throws ScanException
-     * @throws IOException
      */
     public Scanner(String optionalFileName, InputStream is) throws ScanException, IOException {
         this(
@@ -1152,7 +1149,7 @@ public class Scanner {
         try {
             this.nextChar = this.in.read();
         } catch (UnicodeUnescapeException ex) {
-            throw new ScanException(ex.getMessage());
+            throw new ScanException(ex.getMessage(), ex);
         }
         if (this.nextChar == '\r') {
             ++this.nextCharLineNumber;
@@ -1221,6 +1218,7 @@ public class Scanner {
      * An exception that reflects an error during parsing.
      */
     public class ScanException extends LocatedException {
+
         public ScanException(String message) {
             super(message, new Location(
                 Scanner.this.optionalFileName,
@@ -1228,31 +1226,14 @@ public class Scanner {
                 Scanner.this.nextCharColumnNumber
             ));
         }
-    }
 
-    public static class LocatedException extends Exception {
-        LocatedException(String message, Location optionalLocation) {
-            super(message);
-            this.optionalLocation = optionalLocation;
+        public ScanException(String message, Throwable cause) {
+            super(message, new Location(
+                    Scanner.this.optionalFileName,
+                    Scanner.this.nextCharLineNumber,
+                    Scanner.this.nextCharColumnNumber
+            ), cause);
         }
-
-        /**
-         * Returns the message specified at creation time, preceeded
-         * with nicely formatted location information (if any).
-         */
-        public String getMessage() {
-            return (this.optionalLocation == null) ? super.getMessage() : this.optionalLocation.toString() + ": " + super.getMessage();
-        }
-
-        /**
-         * Returns the {@link Location} object specified at
-         * construction time (may be <code>null</code>).
-         */
-        public Location getLocation() {
-            return this.optionalLocation;
-        }
-
-        private final Location optionalLocation;
     }
 
     /**
