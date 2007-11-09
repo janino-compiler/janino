@@ -944,9 +944,9 @@ public class Parser {
 
             this.eatToken();
             final Java.LocalClassDeclaration lcd = (Java.LocalClassDeclaration) this.parseClassDeclarationRest(
-                optionalDocComment,                // optionalDocComment
-                (short) (Mod.FINAL | Mod.PRIVATE), // modifiers
-                ClassDeclarationContext.BLOCK      // context
+                optionalDocComment,           // optionalDocComment
+                Mod.NONE,                     // modifiers
+                ClassDeclarationContext.BLOCK // context
             );
             return new Java.LocalClassDeclarationStatement(lcd);
         }
