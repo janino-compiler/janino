@@ -597,7 +597,7 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
             } finally {
                 this.aiw.setPrefix(null);
             }
-            this.pw.println(" */");
+            this.pw.println("*/");
         }
     }
     private void unparseModifiers(short modifiers) {
