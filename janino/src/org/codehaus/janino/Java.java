@@ -1267,6 +1267,7 @@ public class Java {
                 || rvalue instanceof Java.MethodInvocation
                 || rvalue instanceof Java.SuperclassMethodInvocation
                 || rvalue instanceof Java.NewClassInstance
+                || rvalue instanceof Java.NewAnonymousClassInstance
             )) this.throwParseException("This kind of expression is not allowed in an expression statement");
             (this.rvalue = rvalue).setEnclosingBlockStatement(this);
         }
