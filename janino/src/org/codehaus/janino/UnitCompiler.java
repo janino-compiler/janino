@@ -5538,25 +5538,36 @@ public class UnitCompiler {
         FIND_METHOD: {
 
             // Method declared by enclosing type declarations?
-            for (Java.Scope s = mi.getEnclosingBlockStatement(); !(s instanceof Java.CompilationUnit); s = s.getEnclosingScope()) {
-                if (s instanceof Java.TypeDeclaration) {
-                    Java.TypeDeclaration td = (Java.TypeDeclaration) s;
-    
-                    // Find methods with specified name.
-                    iMethod = this.findIMethod(
-                        (Locatable) mi,    // l
-                        (                  // targetType
-                            mi.optionalTarget == null ?
-                            this.resolve(td) :
-                            this.getType(mi.optionalTarget)
-                        ),
-                        mi.methodName,     // methodName
-                        mi.arguments       // arguments
-                    );
-                    if (iMethod != null) break FIND_METHOD;
+            if (mi.optionalTarget == null) {
+                for (Java.Scope s = mi.getEnclosingBlockStatement(); !(s instanceof Java.CompilationUnit); s = s.getEnclosingScope()) {
+                    if (s instanceof Java.TypeDeclaration) {
+                        Java.TypeDeclaration td = (Java.TypeDeclaration) s;
+        
+                        // Find methods with specified name.
+                        iMethod = this.findIMethod(
+                            (Locatable) mi,    // loc
+                            this.resolve(td),  // targetType
+                            mi.methodName,     // methodName
+                            mi.arguments       // arguments
+                        );
+                        if (iMethod != null) break FIND_METHOD;
+                    }
                 }
             }
 
+            // Method declared by the target's type?
+            if (mi.optionalTarget != null) {
+
+                // Find methods with specified name.
+                iMethod = this.findIMethod(
+                        (Locatable) mi,                  // loc
+                        this.getType(mi.optionalTarget), // targetType
+                        mi.methodName,                   // methodName
+                        mi.arguments                     // arguments
+                );
+                if (iMethod != null) break FIND_METHOD;
+            }
+            
             // Static method declared through single static import?
             {
                 Object o = this.singleStaticImports.get(mi.methodName);
@@ -5593,34 +5604,30 @@ public class UnitCompiler {
     }
 
     /**
-     * Find {@link IClass.IMethod} by name and argument types. If more than one such
-     * method exists, choose the most specific one (JLS 15.11.2).
-     * <p>
-     * Notice that the returned {@link IClass.IMethod} may be declared in an enclosing type.
+     * Find a {@link IClass.IMethod} in the given <code>targetType</code>, its superclasses or
+     * superinterfaces with the given <code>name</code> and for the given <code>arguments</code>.
+     * If more than one such method exists, choose the most specific one (JLS 15.11.2).
      *
      * @return <code>null</code> if no appropriate method could be found
      */
     private IClass.IMethod findIMethod(
-        Locatable l,
+        Locatable loc,
         IClass    targetType,
         String    methodName,
         Rvalue[]  arguments
     ) throws CompileException {
-        for (IClass ic = targetType; ic != null; ic = ic.getDeclaringIClass()) {
-            List ms = new ArrayList();
-            this.getIMethods(ic, methodName, ms);
-            if (ms.size() > 0) {
 
-                // Determine arguments' types, choose the most specific method
-                IClass.IMethod iMethod = (IClass.IMethod) this.findMostSpecificIInvocable(
-                    l,                                                            // l
-                    (IClass.IMethod[]) ms.toArray(new IClass.IMethod[ms.size()]), // iInvocables
-                    arguments                                                     // arguments
-                );
-                return iMethod;
-            }
-        }
-        return null;
+        // Get all methods 
+        List ms = new ArrayList();
+        this.getIMethods(targetType, methodName, ms);
+        if (ms.size() == 0) return null;
+
+        // Determine arguments' types, choose the most specific method
+        return (IClass.IMethod) this.findMostSpecificIInvocable(
+            loc,                                                          // loc
+            (IClass.IMethod[]) ms.toArray(new IClass.IMethod[ms.size()]), // iInvocables
+            arguments                                                     // arguments
+        );
     }
 
     private IMethod fakeIMethod(IClass targetType, final String name, Rvalue[] arguments) throws CompileException {
