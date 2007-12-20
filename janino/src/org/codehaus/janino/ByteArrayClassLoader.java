@@ -84,9 +84,14 @@ public class ByteArrayClassLoader extends ClassLoader {
             }
         }
 
+        // Notice: Not inheriting the protection domain will cause problems with Java Web Start /
+        // JNLP. See
+        //     http://jira.codehaus.org/browse/JANINO-104
+        //     http://www.nabble.com/-Help-jel--java.security.AccessControlException-to13073723.html
         return super.defineClass(
-            name,                // name
-            data, 0, data.length // b, off, len
+            name,                                 // name
+            data, 0, data.length,                 // b, off, len
+            this.getClass().getProtectionDomain() // protectionDomain
         );
     }
 
