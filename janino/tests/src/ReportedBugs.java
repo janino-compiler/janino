@@ -372,6 +372,29 @@ public class ReportedBugs extends JaninoTestSuite {
             "  }\n" +
             "}"
         ), "Test");
+        
+        section("Bug 105"); // Possible to call a method of an enclosing class as if it was a member of an inner class
+        clb(COMP, "Invalid enclosing instance method call", (
+            "class Price {\n" + 
+            "  public int getPriceA() {\n" + 
+            "    return 1;\n" + 
+            "  }\n" + 
+            "\n" + 
+            "  public int getPriceB() {\n" + 
+            "    return 2;\n" + 
+            "  }\n" + 
+            "}\n" + 
+            "\n" + 
+            "Price price;\n" + 
+            "\n" + 
+            "public int assign() {\n" + 
+            "  return price.rate();\n" + // This should not compile.
+            "}\n" + 
+            "\n" + 
+            "int rate() {\n" + 
+            "  return 17;\n" + 
+            "}\n"
+        ));
     }
 
     /**
