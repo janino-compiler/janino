@@ -36,11 +36,13 @@ package org.codehaus.janino;
 
 import java.io.*;
 import java.lang.reflect.*;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
+import org.codehaus.janino.Java.AmbiguousName;
+import org.codehaus.janino.Java.LocalVariableDeclarationStatement;
 import org.codehaus.janino.Parser.ParseException;
 import org.codehaus.janino.Scanner.ScanException;
+import org.codehaus.janino.util.Traverser;
 
 /**
  * An engine that executes a script in Java<sup>TM</sup> bytecode.
@@ -572,9 +574,9 @@ public class ScriptEvaluator extends ClassBodyEvaluator {
 
         // Create methods with one block each.
         for (int i = 0; i < count; ++i) {
-            Scanner s = scanners[i];
+            Scanner scanner = scanners[i];
 
-            Java.Block block = this.makeBlock(i, scanners[i]);
+            Java.Block block = this.makeBlock(i, scanner);
 
             // Determine the following script properties AFTER the call to "makeBlock()",
             // because "makeBlock()" may modify these script properties on-the-fly.
@@ -585,14 +587,14 @@ public class ScriptEvaluator extends ClassBodyEvaluator {
             Class[]  thrownExceptions = this.optionalThrownExceptions == null ? new Class[0] : this.optionalThrownExceptions[i];
 
             cd.addDeclaredMethod(this.makeMethodDeclaration(
-                s.location(),     // location
-                staticMethod,     // staticMethod
-                returnType,       // returnType
-                methodNames[i],   // methodName
-                parameterTypes,   // parameterTypes
-                parameterNames,   // parameterNames
-                thrownExceptions, // thrownExceptions
-                block             // optionalBody
+                scanner.location(), // location
+                staticMethod,       // staticMethod
+                returnType,         // returnType
+                methodNames[i],     // methodName
+                parameterTypes,     // parameterTypes
+                parameterNames,     // parameterNames
+                thrownExceptions,   // thrownExceptions
+                block               // optionalBody
             ));
         }
 
@@ -937,6 +939,62 @@ public class ScriptEvaluator extends ClassBodyEvaluator {
             // SNO - interface methods are always PUBLIC.
             throw new RuntimeException(e.toString());
         }
+    }
+
+    /**
+     * Guess the names of the parameters used in the given expression. The strategy is to look
+     * at all "ambiguous names" in the expression (e.g. in "a.b.c.d()", the ambiguous name
+     * is "a.b.c"), and then at the components of the ambiguous name.
+     * <ul>
+     *   <li>If any component starts with an upper-case letter, then ambiguous name is assumed to
+     *       be a type name.
+     *   <li>Otherwise, if the first component of the ambiguous name matches the name of a 
+     *       previously defined local variable, then the first component of the ambiguous name is
+     *       assumed to be a local variable name. (Notice that this strategy does not consider that
+     *       the scope of a local variable declaration may end before the end of the script.)
+     *   <li>Otherwise, the first component of the ambiguous name is assumed to be a parameter name.
+     * </ul>
+     *
+     * @see Scanner#Scanner(String, Reader)
+     */
+    public static String[] guessParameterNames(Scanner scanner) throws ParseException, ScanException, IOException {
+        Parser parser = new Parser(scanner);
+
+        // Eat optional leading import declarations.
+        while (scanner.peek().isKeyword("import")) parser.parseImportDeclaration();
+
+        // Parse the script statements into a block.
+        Java.Block block = new Java.Block(scanner.location());
+        while (!scanner.peek().isEOF()) block.addStatement(parser.parseBlockStatement());
+
+        // Traverse the block for ambiguous names and guess which of them are parameter names.
+        final Set localVariableNames = new HashSet();
+        final Set parameterNames = new HashSet();
+        new Traverser() {
+            public void traverseLocalVariableDeclarationStatement(LocalVariableDeclarationStatement lvds) {
+                for (int i = 0; i < lvds.variableDeclarators.length; ++i) {
+                    localVariableNames.add(lvds.variableDeclarators[i].name);
+                }
+                super.traverseLocalVariableDeclarationStatement(lvds);
+            }
+
+            public void traverseAmbiguousName(AmbiguousName an) {
+
+                // If any of the components starts with an upper-case letter, then the ambiguous
+                // name is most probably a type name, e.g. "System.out" or "java.lang.System.out".
+                for (int i = 0; i < an.identifiers.length; ++i) {
+                    if (Character.isUpperCase(an.identifiers[i].charAt(0))) return;
+                }
+
+                // Is it a local variable's name?
+                if (localVariableNames.contains(an.identifiers[0])) return;
+
+                // It's most probably a parameter name (although it could be a field name as well).
+                parameterNames.add(an.identifiers[0]);
+            }
+        }.traverseBlock(block);
+
+        return (String[]) parameterNames.toArray(new String[parameterNames.size()]);
     }
 
     /**

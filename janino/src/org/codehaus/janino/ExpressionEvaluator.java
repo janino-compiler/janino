@@ -35,11 +35,14 @@
 package org.codehaus.janino;
 
 import java.io.*;
+import java.util.*;
 
+import org.codehaus.janino.Java.AmbiguousName;
 import org.codehaus.janino.Java.Rvalue;
 import org.codehaus.janino.Parser.ParseException;
 import org.codehaus.janino.Scanner.ScanException;
 import org.codehaus.janino.util.PrimitiveWrapper;
+import org.codehaus.janino.util.Traverser;
 
 /**
  * An engine that evaluates expressions in Java<sup>TM</sup> bytecode.
@@ -475,5 +478,46 @@ public class ExpressionEvaluator extends ScriptEvaluator {
         ee.setDefaultImports(optionalDefaultImports);
         ee.setParentClassLoader(optionalParentClassLoader);
         return ScriptEvaluator.createFastEvaluator(ee, scanner, parameterNames, interfaceToImplement);
+    }
+
+    /**
+     * Guess the names of the parameters used in the given expression. The strategy is to look
+     * at all "ambiguous names" in the expression (e.g. in "a.b.c.d()", the ambiguous name
+     * is "a.b.c"), and then at the first components of the ambiguous name.
+     * <ul>
+     *   <li>If any component starts with an upper-case letter, then ambiguous name is assumed to
+     *       be a type name.
+     *   <li>Otherwise, it is assumed to be a parameter name.
+     * </ul>
+     *
+     * @see Scanner#Scanner(String, Reader)
+     */
+    public static String[] guessParameterNames(Scanner scanner) throws ParseException, ScanException, IOException {
+        Parser parser = new Parser(scanner);
+
+        // Eat optional leading import declarations.
+        while (scanner.peek().isKeyword("import")) parser.parseImportDeclaration();
+
+        // Parse the expression.
+        Rvalue rvalue = parser.parseExpression().toRvalueOrPE();
+        if (!scanner.peek().isEOF()) throw new Parser.ParseException("Unexpected token \"" + scanner.peek() + "\"", scanner.location());
+
+        // Traverse the expression for ambiguous names and guess which of them are parameter names.
+        final Set parameterNames = new HashSet();
+        rvalue.accept(new Traverser() {
+            public void traverseAmbiguousName(AmbiguousName an) {
+
+                // If any of the components starts with an upper-case letter, then the ambiguous
+                // name is most probably a type name, e.g. "System.out" or "java.lang.System.out".
+                for (int i = 0; i < an.identifiers.length; ++i) {
+                    if (Character.isUpperCase(an.identifiers[i].charAt(0))) return;
+                }
+
+                // It's most probably a parameter name (although it could be a field name as well).
+                parameterNames.add(an.identifiers[0]);
+            }
+        }.comprehensiveVisitor());
+
+        return (String[]) parameterNames.toArray(new String[parameterNames.size()]);
     }
 }
