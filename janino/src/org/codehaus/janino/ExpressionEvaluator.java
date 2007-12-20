@@ -41,6 +41,7 @@ import org.codehaus.janino.Java.AmbiguousName;
 import org.codehaus.janino.Java.Rvalue;
 import org.codehaus.janino.Parser.ParseException;
 import org.codehaus.janino.Scanner.ScanException;
+import org.codehaus.janino.Visitor.RvalueVisitor;
 import org.codehaus.janino.util.PrimitiveWrapper;
 import org.codehaus.janino.util.Traverser;
 
@@ -504,7 +505,7 @@ public class ExpressionEvaluator extends ScriptEvaluator {
 
         // Traverse the expression for ambiguous names and guess which of them are parameter names.
         final Set parameterNames = new HashSet();
-        rvalue.accept(new Traverser() {
+        rvalue.accept((RvalueVisitor) new Traverser() {
             public void traverseAmbiguousName(AmbiguousName an) {
 
                 // If any of the components starts with an upper-case letter, then the ambiguous
