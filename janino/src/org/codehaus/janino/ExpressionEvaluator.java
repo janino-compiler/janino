@@ -344,6 +344,7 @@ public class ExpressionEvaluator extends ScriptEvaluator {
     }
 
     public void setExpressionTypes(Class[] expressionTypes) {
+        assertNotCooked();
         this.optionalExpressionTypes = expressionTypes;
 
         Class[] returnTypes = new Class[expressionTypes.length];

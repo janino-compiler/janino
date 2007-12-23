@@ -253,6 +253,7 @@ public class ClassBodyEvaluator extends SimpleCompiler {
      *     });</pre>
      */
     public void setDefaultImports(String[] optionalDefaultImports) {
+        assertNotCooked();
         this.optionalDefaultImports = optionalDefaultImports;
     }
 
@@ -267,6 +268,7 @@ public class ClassBodyEvaluator extends SimpleCompiler {
      */
     public void setClassName(String className) {
         if (className == null) throw new NullPointerException();
+        assertNotCooked();
         this.className = className;
     }
 
@@ -278,6 +280,7 @@ public class ClassBodyEvaluator extends SimpleCompiler {
      * directly access the base superclass's (non-private) members.
      */
     public void setExtendedType(Class optionalExtendedType) {
+        assertNotCooked();
         this.optionalExtendedType = optionalExtendedType;
     }
 
@@ -286,6 +289,7 @@ public class ClassBodyEvaluator extends SimpleCompiler {
      */
     public void setImplementedTypes(Class[] implementedTypes) {
         if (implementedTypes == null) throw new NullPointerException("Zero implemented types must be specified as \"new Class[0]\", not \"null\"");
+        assertNotCooked();
         this.implementedTypes = implementedTypes;
     }
 

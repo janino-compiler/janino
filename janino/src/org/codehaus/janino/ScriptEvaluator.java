@@ -480,6 +480,7 @@ public class ScriptEvaluator extends ClassBodyEvaluator {
      * all scripts are compiled into STATIC methods.
      */
     public void setStaticMethod(boolean[] staticMethod) {
+        assertNotCooked();
         this.optionalStaticMethod = (boolean[]) staticMethod.clone();
     }
 
@@ -487,6 +488,7 @@ public class ScriptEvaluator extends ClassBodyEvaluator {
      * Define the return types of the scripts. By default all scripts have VOID return type.
      */
     public void setReturnTypes(Class[] returnTypes) {
+        assertNotCooked();
         this.optionalReturnTypes = (Class[]) returnTypes.clone();
     }
 
@@ -498,6 +500,7 @@ public class ScriptEvaluator extends ClassBodyEvaluator {
      * (see {@link #setParameters(String[][], Class[][])}).
      */
     public void setMethodNames(String[] methodNames) {
+        assertNotCooked();
         this.optionalMethodNames = (String[]) methodNames.clone();
     }
 
@@ -505,6 +508,7 @@ public class ScriptEvaluator extends ClassBodyEvaluator {
      * Define the names and types of the parameters of the generated methods.
      */
     public void setParameters(String[][] parameterNames, Class[][] parameterTypes) {
+        assertNotCooked();
         this.optionalParameterNames = (String[][]) parameterNames.clone();
         this.optionalParameterTypes = (Class[][]) parameterTypes.clone();
     }
@@ -513,6 +517,7 @@ public class ScriptEvaluator extends ClassBodyEvaluator {
      * Define the exceptions that the generated methods may throw.
      */
     public void setThrownExceptions(Class[][] thrownExceptions) {
+        assertNotCooked();
         this.optionalThrownExceptions = (Class[][]) thrownExceptions.clone();
     }
 

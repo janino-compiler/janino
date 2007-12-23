@@ -51,6 +51,7 @@ public class EvaluatorTests extends TestCase {
         s.addTest(new EvaluatorTests("testFastExpressionEvaluator"));
         s.addTest(new EvaluatorTests("testManyEEs"));
         s.addTest(new EvaluatorTests("testGuessParameterNames"));
+        s.addTest(new EvaluatorTests("testAssertNotCooked"));
         return s;
     }
 
@@ -179,5 +180,15 @@ public class EvaluatorTests extends TestCase {
             "return a + b.c + d.e() + f() + g.h.I.j() + k.l.M;"
         )))));
         assertEquals(new HashSet(Arrays.asList(new String[] { "b", "d" })), parameterNames);
+    }
+
+    public void testAssertNotCooked() throws Exception {
+        ClassBodyEvaluator temp = new ClassBodyEvaluator("");
+        try {
+            temp.setExtendedType(String.class); // Must throw an ISE because the CBS is already cooked.
+        } catch (IllegalStateException ex) {
+            return;
+        }
+        fail();
     }
 }

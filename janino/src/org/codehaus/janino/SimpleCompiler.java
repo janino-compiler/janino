@@ -211,6 +211,7 @@ public class SimpleCompiler extends Cookable {
      * <code>optionalParentClassLoader</code>.
      */
     public void setParentClassLoader(ClassLoader optionalParentClassLoader, Class[] auxiliaryClasses) {
+        assertNotCooked();
         this.parentClassLoader = (
             optionalParentClassLoader != null
             ? optionalParentClassLoader
@@ -239,7 +240,7 @@ public class SimpleCompiler extends Cookable {
      * {@link #classToType(Location, Class)} and friends which are used when creating the AST.
      */
     protected final void setUpClassLoaders() {
-        if (this.classLoader != null) throw new RuntimeException("\"cook()\" must not be called more than once");
+        assertNotCooked();
 
         // Set up the ClassLoader for the compilation and the loading.
         this.classLoader = new AuxiliaryClassLoader(this.parentClassLoader);
@@ -436,5 +437,12 @@ public class SimpleCompiler extends Cookable {
             this.classLoader // parent
         );
         return this.result;
+    }
+
+    /**
+     * Throw an {@link IllegalStateException} if this {@link Cookable} is already cooked.
+     */
+    protected void assertNotCooked() {
+        if (this.classLoader != null) throw new IllegalStateException("Already cooked");
     }
 }
