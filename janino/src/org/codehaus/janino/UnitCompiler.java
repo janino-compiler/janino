@@ -7842,7 +7842,8 @@ public class UnitCompiler {
     }
 
     /**
-     * Find one class or interface by name.
+     * Find one class or interface declared in this compilation unit by name.
+     *
      * @param className Fully qualified class name, e.g. "pkg1.pkg2.Outer$Inner".
      * @return <code>null</code> if a class with that name is not declared in this compilation unit
      */
