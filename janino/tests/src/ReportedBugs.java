@@ -36,6 +36,7 @@ import java.io.*;
 
 import org.codehaus.janino.Parser;
 import org.codehaus.janino.Scanner;
+import org.codehaus.janino.SimpleCompiler;
 
 import util.JaninoTestSuite;
 
@@ -372,7 +373,19 @@ public class ReportedBugs extends JaninoTestSuite {
             "  }\n" +
             "}"
         ), "Test");
-        
+        addTest(new TestCase("Static initializer") {
+            protected void runTest() throws Throwable {
+                SimpleCompiler compiler = new SimpleCompiler();
+                compiler.cook(new StringReader("public class Test{static{System.setProperty(\"foo\", \"bar\");}}"));
+                Class testClass = compiler.getClassLoader().loadClass("Test"); // Only loads the class (JLS2 12.2)
+                assertNull(System.getProperty("foo"));
+                testClass.newInstance(); // Initializes the class (JLS2 12.4)
+                assertEquals("bar", System.getProperty("foo"));
+                System.getProperties().remove("foo");
+                assertNull(System.getProperty("foo"));
+            }
+        });
+
         section("Bug 105"); // Possible to call a method of an enclosing class as if it was a member of an inner class
         clb(COMP, "Invalid enclosing instance method call", (
             "class Price {\n" + 
