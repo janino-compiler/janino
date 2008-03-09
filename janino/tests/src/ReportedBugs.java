@@ -33,10 +33,15 @@
  */
 
 import java.io.*;
+import java.util.HashMap;
+import java.util.Map;
 
+import org.codehaus.janino.DebuggingInformation;
+import org.codehaus.janino.JavaSourceClassLoader;
 import org.codehaus.janino.Parser;
 import org.codehaus.janino.Scanner;
 import org.codehaus.janino.SimpleCompiler;
+import org.codehaus.janino.util.resource.MapResourceFinder;
 
 import util.JaninoTestSuite;
 
@@ -408,6 +413,33 @@ public class ReportedBugs extends JaninoTestSuite {
             "  return 17;\n" + 
             "}\n"
         ));
+
+        section(null);
+        jscl("Bug 106", new String[] { "a/C2.java", (
+            "package a;\n" +
+            "\n" +
+            "public class C2 {\n" +
+            "    private static int A = 0;\n" +
+            "    public static int B = 0;\n" +
+            "}\n"
+        ), "b/C1.java", (
+            "package b;\n" +
+            "\n" +
+            "public class C1 {\n" +
+            "    public static int A = 0;\n" +
+            "}\n"
+        ), "b/C3.java", (
+            "package b;" +
+            "" +
+            "import static a.C2.*;" +
+            "import static b.C1.*;" +
+            "" +
+            "public class C3 {" +
+            "    public static void main(String[] args) {" +
+            "        System.out.println(A + B);" +
+            "    }" +
+            "}\n"
+        ) }, "b.C3");
     }
 
     /**

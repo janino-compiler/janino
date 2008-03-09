@@ -35,10 +35,13 @@
 package util;
 
 import java.io.*;
+import java.util.HashMap;
+import java.util.Map;
 
 import junit.framework.*;
 
 import org.codehaus.janino.*;
+import org.codehaus.janino.util.resource.MapResourceFinder;
 
 public class JaninoTestSuite extends StructuredTestSuite {
 
@@ -283,6 +286,34 @@ public class JaninoTestSuite extends StructuredTestSuite {
                 .invoke(null, new Object[0])
             );
         }
+    }
+
+    /**
+     * Create and return a test case that sets up a {@link JavaSourceClassLoader} that accesses
+     * resources given by name and contents, and then loads the named class.
+     *
+     * @param testCaseName The name of the test case
+     * @param resourceNamesAndContents Pairs of resource name and resource contents
+     * @param className The name of the class to be loaded from the {@link JavaSourceClassLoader}
+     */
+    protected void jscl(String testCaseName, final String[] resourceNamesAndContents, final String className) {
+        TestCase testCase = new TestCase(testCaseName) {
+            protected void runTest() throws Throwable {
+                Map sources = new HashMap();
+                for (int i = 0; i < resourceNamesAndContents.length; i += 2) {
+                    sources.put(resourceNamesAndContents[i], resourceNamesAndContents[i + 1].getBytes());
+                }
+                ClassLoader loader = new JavaSourceClassLoader(
+                    this.getClass().getClassLoader(),
+                    new MapResourceFinder(sources),
+                    null,
+                    DebuggingInformation.NONE
+                );
+    
+                loader.loadClass(className);
+            }
+        };
+        addTest(testCase);
     }
 
     /**

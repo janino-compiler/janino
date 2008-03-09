@@ -796,6 +796,6 @@ public abstract class IClass {
          * expression (JLS2 15.28, bullet 12).
          */
         public abstract Object  getConstantValue() throws CompileException;
-        public String           toString() { return this.getName(); }
+        public String           toString() { return this.getDeclaringIClass().toString() + "." + this.getName(); }
     }
 }

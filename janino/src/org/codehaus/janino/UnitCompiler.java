@@ -3795,9 +3795,13 @@ public class UnitCompiler {
         }
     }
     private IClass getType2(Java.ReferenceType rt) throws CompileException {
+        Java.BlockStatement  scopeBlockStatement = null;
         Java.TypeDeclaration scopeTypeDeclaration = null;
         Java.CompilationUnit scopeCompilationUnit;
         for (Java.Scope s = rt.getEnclosingScope();; s = s.getEnclosingScope()) {
+            if (s instanceof Java.BlockStatement && scopeBlockStatement == null) {
+                scopeBlockStatement = (Java.BlockStatement) s;
+            }
             if (s instanceof Java.TypeDeclaration && scopeTypeDeclaration == null) {
                 scopeTypeDeclaration = (Java.TypeDeclaration) s;
             }
@@ -3875,14 +3879,20 @@ public class UnitCompiler {
 
             // JLS3 ???: Type imported through static-import-on-demand.
             {
+                IClass importedMemberType = null;
                 for (Iterator it = this.staticImportsOnDemand.iterator(); it.hasNext();) {
                     IClass ic = (IClass) it.next();
                     IClass[] memberTypes = ic.getDeclaredIClasses();
                     for (int i = 0; i < memberTypes.length; ++i) {
                         IClass mt = memberTypes[i];
-                        if (mt.getDescriptor().endsWith('$' + simpleTypeName + ';')) return mt;
+                        if (!UnitCompiler.this.isAccessible(mt, scopeBlockStatement)) continue;
+                        if (mt.getDescriptor().endsWith('$' + simpleTypeName + ';')) {
+                            if (importedMemberType != null) UnitCompiler.this.compileError("Ambiguous static imports: \"" + importedMemberType.toString() + "\" vs. \"" + mt.toString() + "\"");
+                            importedMemberType = mt;
+                        }
                     }
                 }
+                if (importedMemberType != null) return importedMemberType;
             }
 
             // 6.5.5.1.8 Give up.
@@ -4225,8 +4235,19 @@ public class UnitCompiler {
     }
 
     /**
-     * Check whether the given {@link IClass.IMember} is accessible in the given context,
+     * Determine whether the given {@link IClass.IMember} is accessible in the given context,
      * according to JLS 6.6.1.4. Issues a {@link #compileError(String)} if not.
+     */
+    private boolean isAccessible(
+        IClass.IMember      member,
+        Java.BlockStatement contextBlockStatement
+    ) throws CompileException {
+        return this.isAccessible(member.getDeclaringIClass(), member.getAccess(), contextBlockStatement);
+    }
+    
+    /**
+     * Check whether the given {@link IClass.IMember} is accessible in the given context,
+     * according to JLS 6.6.1.4. Issue a {@link #compileError(String)} if not.
      */
     private void checkAccessible(
         IClass.IMember      member,
@@ -4236,20 +4257,45 @@ public class UnitCompiler {
     }
 
     /**
-     * Verify that a member (class, interface, field or method) declared in a
+     * Determine whether a member (class, interface, field or method) declared in a
      * given class is accessible from a given block statement context, according
      * to JLS2 6.6.1.4.
+     */
+    private boolean isAccessible(
+        IClass              iClassDeclaringMember,
+        Access              memberAccess,
+        Java.BlockStatement contextBlockStatement
+    ) throws CompileException {
+        return null == this.internalCheckAccessible(iClassDeclaringMember, memberAccess, contextBlockStatement);
+    }
+    
+    /**
+     * Verify that a member (class, interface, field or method) declared in a
+     * given class is accessible from a given block statement context, according
+     * to JLS2 6.6.1.4. Issue a {@link #compileError(String)} if not.
      */
     private void checkAccessible(
         IClass              iClassDeclaringMember,
         Access              memberAccess,
         Java.BlockStatement contextBlockStatement
     ) throws CompileException {
+        String message = this.internalCheckAccessible(iClassDeclaringMember, memberAccess, contextBlockStatement);
+        if (message != null) this.compileError(message, contextBlockStatement.getLocation());
+    }
 
+    /**
+     * @return a descriptive text iff a member declared in that {@link IClass} with that {@link Access} is inaccessible
+     */
+    private String internalCheckAccessible(
+        IClass              iClassDeclaringMember,
+        Access              memberAccess,
+        Java.BlockStatement contextBlockStatement
+    ) throws CompileException {
+        
         // At this point, memberAccess is PUBLIC, DEFAULT, PROECTEDED or PRIVATE.
 
         // PUBLIC members are always accessible.
-        if (memberAccess == Access.PUBLIC) return;
+        if (memberAccess == Access.PUBLIC) return null;
 
         // At this point, the member is DEFAULT, PROECTEDED or PRIVATE accessible.
 
@@ -4263,7 +4309,7 @@ public class UnitCompiler {
         }
 
         // Access is always allowed for block statements declared in the same class as the member.
-        if (iClassDeclaringContextBlockStatement == iClassDeclaringMember) return;
+        if (iClassDeclaringContextBlockStatement == iClassDeclaringMember) return null;
 
         // Check whether the member and the context block statement are enclosed by the same
         // top-level type.
@@ -4277,12 +4323,11 @@ public class UnitCompiler {
                 topLevelIClassEnclosingContextBlockStatement = c;
             }
 
-            if (topLevelIClassEnclosingMember == topLevelIClassEnclosingContextBlockStatement) return;
+            if (topLevelIClassEnclosingMember == topLevelIClassEnclosingContextBlockStatement) return null;
         }
 
         if (memberAccess == Access.PRIVATE) {
-            this.compileError("Private member cannot be accessed from type \"" + iClassDeclaringContextBlockStatement + "\".", contextBlockStatement.getLocation());
-            return;
+            return "Private member cannot be accessed from type \"" + iClassDeclaringContextBlockStatement + "\".";
         }
 
         // At this point, the member is DEFAULT or PROTECTED accessible.
@@ -4292,11 +4337,10 @@ public class UnitCompiler {
         if (Descriptor.areInSamePackage(
             iClassDeclaringMember.getDescriptor(),
             iClassDeclaringContextBlockStatement.getDescriptor()
-        )) return;
+        )) return null;
 
         if (memberAccess == Access.DEFAULT) {
-            this.compileError("Member with \"" + memberAccess + "\" access cannot be accessed from type \"" + iClassDeclaringContextBlockStatement + "\".", contextBlockStatement.getLocation());
-            return;
+            return "Member with \"" + memberAccess + "\" access cannot be accessed from type \"" + iClassDeclaringContextBlockStatement + "\".";
         }
 
         // At this point, the member is PROTECTED accessible.
@@ -4304,18 +4348,35 @@ public class UnitCompiler {
         // Check whether the class declaring the context block statement is a subclass of the
         // class declaring the member.
         if (!iClassDeclaringMember.isAssignableFrom(iClassDeclaringContextBlockStatement)) {
-            this.compileError("Protected member cannot be accessed from type \"" + iClassDeclaringContextBlockStatement + "\", which is neither declared in the same package as or is a subclass of \"" + iClassDeclaringMember + "\".", contextBlockStatement.getLocation());
-            return;
+            return "Protected member cannot be accessed from type \"" + iClassDeclaringContextBlockStatement + "\", which is neither declared in the same package as nor is a subclass of \"" + iClassDeclaringMember + "\".";
         }
-        return;
+        return null;
     }
 
     /**
+     * Determine whether the given {@link IClass} is accessible in the given context,
+     * according to JLS2 6.6.1.2 and 6.6.1.4.
+     */
+    private boolean isAccessible(
+        IClass              type,
+        Java.BlockStatement contextBlockStatement
+    ) throws CompileException {
+        return null == this.internalCheckAccessible(type, contextBlockStatement);
+    }
+    
+    /**
      * Check whether the given {@link IClass} is accessible in the given context,
-     * according to JLS2 6.6.1.2 and 6.6.1.4. Issues a
-     * {@link #compileError(String)} if not.
+     * according to JLS2 6.6.1.2 and 6.6.1.4. Issues a {@link #compileError(String)} if not.
      */
     private void checkAccessible(
+        IClass              type,
+        Java.BlockStatement contextBlockStatement
+    ) throws CompileException {
+        String message = this.internalCheckAccessible(type, contextBlockStatement);
+        if (message != null) this.compileError(message, contextBlockStatement.getLocation());
+    }
+
+    private String internalCheckAccessible(
         IClass              type,
         Java.BlockStatement contextBlockStatement
     ) throws CompileException {
@@ -4326,7 +4387,7 @@ public class UnitCompiler {
         // Check accessibility of package member type.
         if (iClassDeclaringType == null) {
             if (type.getAccess() == Access.PUBLIC) {
-                return;
+                return null;
             } else
             if (type.getAccess() == Access.DEFAULT) {
     
@@ -4342,8 +4403,8 @@ public class UnitCompiler {
                 // Check whether the type is accessed from within the same package.
                 String packageDeclaringType = Descriptor.getPackageName(type.getDescriptor());
                 String contextPackage = Descriptor.getPackageName(iClassDeclaringContextBlockStatement.getDescriptor());
-                if (!(packageDeclaringType == null ? contextPackage == null : packageDeclaringType.equals(contextPackage))) this.compileError("\"" + type + "\" is inaccessible from this package");
-                return;
+                if (!(packageDeclaringType == null ? contextPackage == null : packageDeclaringType.equals(contextPackage))) return "\"" + type + "\" is inaccessible from this package";
+                return null;
             } else
             {
                 throw new RuntimeException("\"" + type + "\" has unexpected access \"" + type.getAccess() + "\"");
@@ -4352,7 +4413,7 @@ public class UnitCompiler {
 
         // "type" is a member type at this point.
 
-        this.checkAccessible(iClassDeclaringType, type.getAccess(), contextBlockStatement);
+        return this.internalCheckAccessible(iClassDeclaringType, type.getAccess(), contextBlockStatement);
     }
 
     private final Java.Type toTypeOrCE(Java.Atom a) throws CompileException {
@@ -5162,12 +5223,14 @@ public class UnitCompiler {
         final String identifier
     ) throws CompileException {
 
-        // Determine scope type body declaration, type and compilation unit.
+        // Determine scope block statement, type body declaration, type and compilation unit.
+        Java.BlockStatement          scopeBlockStatement = null;
         Java.TypeBodyDeclaration     scopeTBD = null;
         Java.AbstractTypeDeclaration scopeTypeDeclaration = null;
         Java.CompilationUnit         scopeCompilationUnit;
         {
             Java.Scope s = scope;
+            if (s instanceof Java.BlockStatement) scopeBlockStatement = (Java.BlockStatement) s;
             while (
                 (s instanceof Java.BlockStatement || s instanceof Java.CatchClause)
                 && !(s instanceof Java.TypeBodyDeclaration)
@@ -5292,16 +5355,33 @@ public class UnitCompiler {
         // JLS3 6.5.2.BL1.B1.B2.1 Static field imported through single static import.
         {
             Object o = this.singleStaticImports.get(identifier);
-            if (o instanceof IField) return new FieldAccess(location, new SimpleType(location, ((IField) o).getDeclaringIClass()), (IField) o);
+            if (o instanceof IField) {
+                FieldAccess fieldAccess = new FieldAccess(location, new SimpleType(location, ((IField) o).getDeclaringIClass()), (IField) o);
+                fieldAccess.setEnclosingBlockStatement(enclosingBlockStatement);
+                return fieldAccess;
+            }
         }
 
         // JLS3 6.5.2.BL1.B1.B2.2 Static field imported through static-import-on-demand.
-        for (Iterator it = this.staticImportsOnDemand.iterator(); it.hasNext();) {
-            IClass iClass = (IClass) it.next();
-            IField[] flds = iClass.getDeclaredIFields();
-            for (int i = 0 ; i < flds.length; ++i) {
-                IField f = flds[i];
-                if (f.getName().equals(identifier)) return new FieldAccess(location, new SimpleType(location, iClass), f);
+        {
+            IField importedField = null;
+            for (Iterator it = this.staticImportsOnDemand.iterator(); it.hasNext();) {
+                IClass iClass = (IClass) it.next();
+                IField[] flds = iClass.getDeclaredIFields();
+                for (int i = 0 ; i < flds.length; ++i) {
+                    IField f = flds[i];
+                    if (f.getName().equals(identifier)) {
+                        if (!UnitCompiler.this.isAccessible(f, enclosingBlockStatement)) continue; // JLS3 7.5.4 Static-Import-on-Demand Declaration
+                        if (importedField != null) UnitCompiler.this.compileError("Ambiguous static field import: \"" + importedField.toString() + "\" vs. \"" + f.toString() + "\"");
+                        importedField = f;
+                    }
+                }
+            }
+            if (importedField != null) {
+                if (!importedField.isStatic()) UnitCompiler.this.compileError("Cannot static-import non-static field");
+                FieldAccess fieldAccess = new FieldAccess(location, new SimpleType(location, importedField.getDeclaringIClass()), importedField);
+                fieldAccess.setEnclosingBlockStatement(enclosingBlockStatement);
+                return fieldAccess;
             }
         }
 
@@ -5368,14 +5448,20 @@ public class UnitCompiler {
 
         // JLS3 6.5.2.BL1.B1.B4.4 Type imported through static-import-on-demand.
         {
+            IClass importedType = null;
             for (Iterator it = this.staticImportsOnDemand.iterator(); it.hasNext();) {
                 IClass ic = (IClass) it.next();
                 IClass[] memberTypes = ic.getDeclaredIClasses();
                 for (int i = 0; i < memberTypes.length; ++i) {
                     IClass mt = memberTypes[i];
-                    if (mt.getDescriptor().endsWith('$' + identifier + ';')) return new Java.SimpleType(null, mt);
+                    if (!UnitCompiler.this.isAccessible(mt, scopeBlockStatement)) continue;
+                    if (mt.getDescriptor().endsWith('$' + identifier + ';')) {
+                        if (importedType != null) UnitCompiler.this.compileError("Ambiguous static type import: \"" + importedType.toString() + "\" vs. \"" + mt.toString() + "\"");
+                        importedType = mt;
+                    }
                 }
             }
+            if (importedType != null) return new Java.SimpleType(null, importedType);
         }
         
         // 6.5.2.BL1.B1.B7 Package name
@@ -5584,16 +5670,21 @@ public class UnitCompiler {
             }
 
             // Static method declared through static-import-on-demand?
+            iMethod = null;
             for (Iterator it = this.staticImportsOnDemand.iterator(); it.hasNext();) {
                 IClass iClass = (IClass) it.next();
-                iMethod = this.findIMethod(
+                IMethod im = this.findIMethod(
                     (Locatable) mi, // l
                     iClass,         // targetType
                     mi.methodName,  // methodName
                     mi.arguments    // arguments
                 );
-                if (iMethod != null) break FIND_METHOD;
+                if (im != null) {
+                    if (iMethod != null) UnitCompiler.this.compileError("Ambiguous static method import: \"" + iMethod.toString() + "\" vs. \"" + im.toString() + "\"");
+                    iMethod = im;
+                }
             }
+            if (iMethod != null) break FIND_METHOD;
 
             this.compileError("A method named \"" + mi.methodName + "\" is not declared in any enclosing class nor any supertype, nor through a static import", mi.getLocation());
             return fakeIMethod(this.iClassLoader.OBJECT, mi.methodName, mi.arguments);
