@@ -33,16 +33,10 @@
  */
 
 import java.io.*;
-import java.util.HashMap;
-import java.util.Map;
 
-import org.codehaus.janino.DebuggingInformation;
-import org.codehaus.janino.JavaSourceClassLoader;
 import org.codehaus.janino.Parser;
 import org.codehaus.janino.Scanner;
 import org.codehaus.janino.SimpleCompiler;
-import org.codehaus.janino.util.resource.MapResourceFinder;
-
 import util.JaninoTestSuite;
 
 import junit.framework.*;
