@@ -37,6 +37,10 @@ package org.codehaus.janino;
 /**
  * This class defines constants and convenience methods for the handling of
  * modifiers as defined by the JVM.
+ * <p>
+ * Notice: This class should be named <code>IClass.IModifier</code>, but changing the name would
+ * break existing client code. Thus it won't be renamed until there's a really good reason to
+ * do it (maybe with a major desing change).
  */
 public class Mod {
     private Mod() {} // Don't instantiate me!
