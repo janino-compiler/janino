@@ -346,36 +346,16 @@ public class UnitCompiler {
                 if (tbd.isStatic()) b.addButDontEncloseStatement((Java.BlockStatement) tbd);
             }
 
-            // Create class initialization method iff there is any initialization code.
-            Java.MethodDeclarator classInitializationMethod = new Java.MethodDeclarator(
-                cd.getLocation(),                               // location
-                null,                                           // optionalDocComment
-                (short) (                                       // modifiers
-                    Mod.STATIC |
-                    Mod.PUBLIC
-                ),
-                new Java.BasicType(                             // type
-                    cd.getLocation(),
-                    Java.BasicType.VOID
-                ),
-                "<clinit>",                                     // name
-                new Java.FunctionDeclarator.FormalParameter[0], // formalParameters
-                new Java.ReferenceType[0],                      // thrownExceptions
-                b                                               // optionalBody
-            );
-            if (this.generatesCode(b)) {
-                classInitializationMethod.setDeclaringType(cd);
-                this.compile(classInitializationMethod, cf);
-            }
+            maybeCreateInitMethod(cd, cf, b);
         }
 
-        // Compile declared methods.
-        // (As a side effects, this fills the "syntheticFields" map.)
-        for (int i = 0; i < cd.declaredMethods.size(); ++i) {
-            this.compile(((Java.MethodDeclarator) cd.declaredMethods.get(i)), cf);
-        }
+        compileDeclaredMethods(cd, cf);
 
+        
         // Compile declared constructors.
+        // As a side effect of compiling methods and constructors, synthetic "class-dollar"
+        // methods (which implement class literals) are generated on-the fly. 
+        // We need to note how many we have here so we can compile the extras.
         int declaredMethodCount = cd.declaredMethods.size();
         {
             int syntheticFieldCount = cd.syntheticFields.size();
@@ -386,11 +366,8 @@ public class UnitCompiler {
             }
         }
 
-        // As a side effect of compiling methods and constructors, synthetic "class-dollar"
-        // methods (which implement class literals) are generated on-the fly. Compile these.
-        for (int i = declaredMethodCount; i < cd.declaredMethods.size(); ++i) {
-            this.compile(((Java.MethodDeclarator) cd.declaredMethods.get(i)), cf);
-        }
+        // Compile the aforementioned extras.
+        compileDeclaredMethods(cd, cf, declaredMethodCount);
 
         // Class and instance variables.
         for (Iterator it = cd.variableDeclaratorsAndInitializers.iterator(); it.hasNext();) {
@@ -410,22 +387,7 @@ public class UnitCompiler {
             );
         }
 
-        // Member types.
-        for (Iterator it = cd.getMemberTypeDeclarations().iterator(); it.hasNext();) {
-            Java.AbstractTypeDeclaration atd = ((Java.AbstractTypeDeclaration) it.next());
-            this.compile(atd);
-
-            // Add InnerClasses attribute entry for member type declaration.
-            short innerClassInfoIndex = cf.addConstantClassInfo(this.resolve(atd).getDescriptor());
-            short outerClassInfoIndex = cf.addConstantClassInfo(iClass.getDescriptor());
-            short innerNameIndex      = cf.addConstantUtf8Info(((Java.MemberTypeDeclaration) atd).getName());
-            cf.addInnerClassesAttributeEntry(new ClassFile.InnerClassesAttribute.Entry(
-                innerClassInfoIndex, // innerClassInfoIndex
-                outerClassInfoIndex, // outerClassInfoIndex
-                innerNameIndex,      // innerNameIndex
-                atd.modifiers        // innerClassAccessFlags
-            ));
-        }
+        compileDeclaredMemberTypes(cd, cf);
 
         // Add the generated class file to a thread-local store.
         this.generatedClassFiles.add(cf);
@@ -510,6 +472,7 @@ public class UnitCompiler {
     }
 
     public void compile2(Java.InterfaceDeclaration id) throws CompileException {
+        IClass iClass = this.resolve(id);
 
         // Determine extended interfaces.
         id.interfaces = new IClass[id.extendedTypes.length];
@@ -527,7 +490,7 @@ public class UnitCompiler {
                 Mod.INTERFACE |
                 Mod.ABSTRACT
             ),
-            this.resolve(id).getDescriptor(), // thisClassFD
+            iClass.getDescriptor(),           // thisClassFD
             Descriptor.OBJECT,                // superClassFD
             interfaceDescriptors              // interfaceFDs
         );
@@ -554,33 +517,10 @@ public class UnitCompiler {
             Java.Block b = new Java.Block(id.getLocation());
             b.addButDontEncloseStatements(id.constantDeclarations);
 
-            // Create interface initialization method iff there is any initialization code.
-            if (this.generatesCode(b)) {
-                Java.MethodDeclarator md = new Java.MethodDeclarator(
-                    id.getLocation(),                               // location
-                    null,                                           // optionalDocComment
-                    (short) (Mod.STATIC | Mod.PUBLIC),              // modifiers
-                    new Java.BasicType(                             // type
-                        id.getLocation(),
-                        Java.BasicType.VOID
-                    ),
-                    "<clinit>",                                     // name
-                    new Java.FunctionDeclarator.FormalParameter[0], // formalParameters
-                    new Java.ReferenceType[0],                      // thrownExcaptions
-                    b                                               // optionalBody
-                );
-                md.setDeclaringType(id);
-                this.compile(md, cf);
-            }
+            maybeCreateInitMethod(id, cf, b);
         }
 
-        // Methods.
-        // Notice that as a side effect of compiling methods, synthetic "class-dollar"
-        // methods (which implement class literals) are generated on-the fly. Hence, we
-        // must not use an Iterator here.
-        for (int i = 0; i < id.declaredMethods.size(); ++i) {
-            this.compile(((Java.MethodDeclarator) id.declaredMethods.get(i)), cf);
-        }
+        compileDeclaredMethods(id, cf);
 
         // Class variables.
         for (int i = 0; i < id.constantDeclarations.size(); ++i) {
@@ -589,25 +529,93 @@ public class UnitCompiler {
             this.addFields((Java.FieldDeclaration) bs, cf);
         }
 
-        // Member types.
-        for (Iterator it = id.getMemberTypeDeclarations().iterator(); it.hasNext();) {
+        compileDeclaredMemberTypes(id, cf);
+
+        // Add the generated class file to a thread-local store.
+        this.generatedClassFiles.add(cf);
+    }
+
+    /**
+     * Create class initialization method iff there is any initialization code.
+     * @param decl  The type declaration
+     * @param cf    The class file into which to put the method
+     * @param b     The block for the method (possibly empty)
+     * @throws CompileException
+     */
+    private void maybeCreateInitMethod(Java.AbstractTypeDeclaration decl,
+            ClassFile cf, Java.Block b) throws CompileException {
+        // Create interface initialization method iff there is any initialization code.
+        if (this.generatesCode(b)) {
+            Java.MethodDeclarator md = new Java.MethodDeclarator(
+                decl.getLocation(),                               // location
+                null,                                           // optionalDocComment
+                (short) (Mod.STATIC | Mod.PUBLIC),              // modifiers
+                new Java.BasicType(                             // type
+                    decl.getLocation(),
+                    Java.BasicType.VOID
+                ),
+                "<clinit>",                                     // name
+                new Java.FunctionDeclarator.FormalParameter[0], // formalParameters
+                new Java.ReferenceType[0],                      // thrownExcaptions
+                b                                               // optionalBody
+            );
+            md.setDeclaringType(decl);
+            this.compile(md, cf);
+        }
+    }
+
+    /**
+     * Compile all of the types for this declaration
+     * <p>
+     * NB: as a side effect this will fill in the sythetic field map
+     * @throws CompileException
+     */
+    private void compileDeclaredMemberTypes(
+        Java.AbstractTypeDeclaration decl,
+        ClassFile                    cf
+    ) throws CompileException {
+        for (Iterator it = decl.getMemberTypeDeclarations().iterator(); it.hasNext();) {
             Java.AbstractTypeDeclaration atd = ((Java.AbstractTypeDeclaration) it.next());
             this.compile(atd);
 
             // Add InnerClasses attribute entry for member type declaration.
             short innerClassInfoIndex = cf.addConstantClassInfo(this.resolve(atd).getDescriptor());
-            short outerClassInfoIndex = cf.addConstantClassInfo(this.resolve(id).getDescriptor());
+            short outerClassInfoIndex = cf.addConstantClassInfo(this.resolve(decl).getDescriptor());
             short innerNameIndex      = cf.addConstantUtf8Info(((Java.MemberTypeDeclaration) atd).getName());
             cf.addInnerClassesAttributeEntry(new ClassFile.InnerClassesAttribute.Entry(
                 innerClassInfoIndex, // innerClassInfoIndex
                 outerClassInfoIndex, // outerClassInfoIndex
                 innerNameIndex,      // innerNameIndex
-                id.modifiers         // innerClassAccessFlags
+                decl.modifiers         // innerClassAccessFlags
             ));
         }
+    }
+    
+    /**
+     * Compile all of the methods for this declaration
+     * <p>
+     * NB: as a side effect this will fill in the sythetic field map
+     * @throws CompileException
+     */
+    private void compileDeclaredMethods(Java.AbstractTypeDeclaration decl,
+            ClassFile cf) throws CompileException {
+        compileDeclaredMethods(decl, cf, 0);
+    }
 
-        // Add the generated class file to a thread-local store.
-        this.generatedClassFiles.add(cf);
+    /**
+     * Compile methods for this declaration starting at startPos
+     * @param startPos starting param to fill in
+     * @throws CompileException
+     */
+    private void compileDeclaredMethods(Java.AbstractTypeDeclaration decl,
+            ClassFile cf, int startPos) throws CompileException {
+        // Methods.
+        // Notice that as a side effect of compiling methods, synthetic "class-dollar"
+        // methods (which implement class literals) are generated on-the fly. Hence, we
+        // must not use an Iterator here.
+        for (int i = startPos; i < decl.declaredMethods.size(); ++i) {
+            this.compile(((Java.MethodDeclarator) decl.declaredMethods.get(i)), cf);
+        }
     }
 
     /**
@@ -3855,13 +3863,7 @@ public class UnitCompiler {
                     scopeCompilationUnit.optionalPackageDeclaration.packageName
                 );
                 String className = pkg == null ? simpleTypeName : pkg + "." + simpleTypeName;
-                IClass result;
-                try {
-                    result = this.iClassLoader.loadIClass(Descriptor.fromClassName(className));
-                } catch (ClassNotFoundException ex) {
-                    if (ex.getException() instanceof CompileException) throw (CompileException) ex.getException();
-                    throw new CompileException(className, rt.getLocation(), ex);
-                }
+                IClass result = findClassByName(rt.getLocation(), className);
                 if (result != null) return result;
             }
 
@@ -3906,18 +3908,12 @@ public class UnitCompiler {
             // 6.5.5.2.1 PACKAGE.CLASS
             if (q instanceof Java.Package) {
                 String className = Java.join(rt.identifiers, ".");
-            IClass result;
-            try {
-                result = this.iClassLoader.loadIClass(Descriptor.fromClassName(className));
-            } catch (ClassNotFoundException ex) {
-                if (ex.getException() instanceof CompileException) throw (CompileException) ex.getException();
-                throw new CompileException(className, rt.getLocation(), ex);
-            }
-            if (result != null) return result;
+                IClass result = findClassByName(rt.getLocation(), className);
+                if (result != null) return result;
 
-            this.compileError("Class \"" + className + "\" not found", rt.getLocation());
-            return this.iClassLoader.OBJECT;
-        }
+                this.compileError("Class \"" + className + "\" not found", rt.getLocation());
+                return this.iClassLoader.OBJECT;
+            }
 
             // 6.5.5.2.2 CLASS.CLASS (member type)
             String memberTypeName = rt.identifiers[rt.identifiers.length - 1];
@@ -3928,10 +3924,11 @@ public class UnitCompiler {
             } else
             {
                 this.compileError("\"" + q + "\" and its supertypes declare more than one member type \"" + memberTypeName + "\"", rt.getLocation());
-    }
+            }
             return this.iClassLoader.OBJECT;
         }
     }
+
     private IClass getType2(Java.RvalueMemberType rvmt) throws CompileException {
         IClass rvt = this.getType(rvmt.rvalue);
         IClass memberType = this.findMemberType(rvt, rvmt.identifier, rvmt.getLocation());
@@ -5147,13 +5144,7 @@ public class UnitCompiler {
         if (UnitCompiler.DEBUG) System.out.println("lhs = " + lhs);
         if (lhs instanceof Java.Package) {
             String className = ((Java.Package) lhs).name + '.' + rhs;
-            IClass result;
-            try {
-                result = this.iClassLoader.loadIClass(Descriptor.fromClassName(className));
-            } catch (ClassNotFoundException ex) {
-                if (ex.getException() instanceof CompileException) throw (CompileException) ex.getException();
-                throw new CompileException(className, location, ex);
-            }
+            IClass result = findClassByName(location, className);
             if (result != null) return new Java.SimpleType(location, result);
 
             return new Java.Package(location, className);
@@ -5208,6 +5199,17 @@ public class UnitCompiler {
             public String toString() { return Java.join(identifiers, "."); }
             public final void accept(Visitor.AtomVisitor visitor) {}
         };
+    }
+
+    private IClass findClassByName(Location location, String className) throws CompileException {
+        IClass res = this.findClass(className);
+        if(res != null) return res;
+        try {
+            return this.iClassLoader.loadIClass(Descriptor.fromClassName(className));
+        } catch (ClassNotFoundException ex) {
+            if (ex.getException() instanceof CompileException) throw (CompileException) ex.getException();
+            throw new CompileException(className, location, ex);
+        }
     }
 
     /**
@@ -5422,13 +5424,7 @@ public class UnitCompiler {
                 identifier :
                 scopeCompilationUnit.optionalPackageDeclaration.packageName + '.' + identifier
             );
-            IClass result;
-            try {
-                result = this.iClassLoader.loadIClass(Descriptor.fromClassName(className));
-            } catch (ClassNotFoundException ex) {
-                if (ex.getException() instanceof CompileException) throw (CompileException) ex.getException();
-                throw new CompileException(className, location, ex);
-            }
+            IClass result = findClassByName(location, className);
             if (result != null) return new Java.SimpleType(location, result);
         }
 
