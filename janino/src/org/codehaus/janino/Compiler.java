@@ -820,7 +820,7 @@ public class Compiler {
                 } catch (IOException ex) {
                     throw new ClassNotFoundException("Opening class file resource \"" + classFileResource + "\"", ex);
                 } finally {
-                    if (is != null) try { is.close(); } catch (IOException e) {}
+                    try { is.close(); } catch (IOException e) {}
                 }
                 ClassFileIClass result = new ClassFileIClass(
                     cf,                       // classFile
