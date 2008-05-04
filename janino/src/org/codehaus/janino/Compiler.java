@@ -816,11 +816,12 @@ public class Compiler {
                 InputStream is = null;
                 ClassFile cf;
                 try {
-                    cf = new ClassFile(new BufferedInputStream(classFileResource.open()));
+                    is = classFileResource.open();
+					cf = new ClassFile(new BufferedInputStream(is));
                 } catch (IOException ex) {
                     throw new ClassNotFoundException("Opening class file resource \"" + classFileResource + "\"", ex);
                 } finally {
-                    try { is.close(); } catch (IOException e) {}
+                    if (is != null) try { is.close(); } catch (IOException e) {}
                 }
                 ClassFileIClass result = new ClassFileIClass(
                     cf,                       // classFile
