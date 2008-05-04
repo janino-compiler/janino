@@ -3840,7 +3840,7 @@ public class UnitCompiler {
                 }
             }
 
-            if (scopeCompilationUnit != null) {
+            {
 
                 // 6.5.5.1.4a Single-type import.
                 {
@@ -5403,7 +5403,7 @@ public class UnitCompiler {
         }
 
         // 6.5.2.BL1.B1.B3.1 (JLS3: 6.5.2.BL1.B1.B4.1) Single type import.
-        if (scopeCompilationUnit != null) {
+        {
             IClass iClass = this.importSingleType(identifier, location);
             if (iClass != null) return new Java.SimpleType(location, iClass);
         }
@@ -5411,14 +5411,14 @@ public class UnitCompiler {
         // 6.5.2.BL1.B1.B3.2 (JLS3: 6.5.2.BL1.B1.B3.1) Package member class/interface declared in this compilation unit.
         // Notice that JLS2 looks this up AFTER local class, member type, single type import, while
         // JLS3 looks this up BEFORE local class, member type, single type import.
-        if (scopeCompilationUnit != null) {
+        {
             Java.PackageMemberTypeDeclaration pmtd = scopeCompilationUnit.getPackageMemberTypeDeclaration(identifier);
             if (pmtd != null) return new Java.SimpleType(location, this.resolve((Java.AbstractTypeDeclaration) pmtd));
         }
 
         // 6.5.2.BL1.B1.B4 Class or interface declared in same package.
         // Notice: Why is this missing in JLS3?
-        if (scopeCompilationUnit != null) {
+        {
             String className = (
                 scopeCompilationUnit.optionalPackageDeclaration == null ?
                 identifier :
@@ -5429,7 +5429,7 @@ public class UnitCompiler {
         }
 
         // 6.5.2.BL1.B1.B5 (JLS3: 6.5.2.BL1.B1.B4.2), 6.5.2.BL1.B1.B6 Type-import-on-demand.
-        if (scopeCompilationUnit != null) {
+        {
             IClass importedClass = this.importTypeOnDemand(identifier, location);
             if (importedClass != null) {
                 return new Java.SimpleType(location, importedClass);
