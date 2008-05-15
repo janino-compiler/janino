@@ -53,6 +53,7 @@ public class EvaluatorTests extends TestCase {
         s.addTest(new EvaluatorTests("testGuessParameterNames"));
         s.addTest(new EvaluatorTests("testAssertNotCooked"));
         s.addTest(new EvaluatorTests("testAccessingCompilingClass"));
+        s.addTest(new EvaluatorTests("testProtectedAccessToParentSuperClassVar"));
         return s;
     }
 
@@ -248,5 +249,19 @@ public class EvaluatorTests extends TestCase {
         //we count tests just to make sure things didn't go horrifically wrong and
         //the above loops become empty
         assertEquals(8, numTests);
+    }
+    
+    public void testProtectedAccessToParentSuperClassVar() throws Exception {
+        SimpleCompiler sc = new SimpleCompiler();
+        sc.setParentClassLoader(SimpleCompiler.BOOT_CLASS_LOADER, new Class[] { for_sandbox_tests.ProtectedVariable.class });
+        sc.cook("package test;\n" +
+                "public class Top extends for_sandbox_tests.ProtectedVariable {\n" +
+                "    public class Inner {\n" +
+                "        public int get() {\n" +
+                "            return var;\n" +
+                "        }\n" +
+                "    } \n" +
+                "}"
+        );
     }
 }

@@ -4343,11 +4343,16 @@ public class UnitCompiler {
         // At this point, the member is PROTECTED accessible.
 
         // Check whether the class declaring the context block statement is a subclass of the
-        // class declaring the member.
-        if (!iClassDeclaringMember.isAssignableFrom(iClassDeclaringContextBlockStatement)) {
-            return "Protected member cannot be accessed from type \"" + iClassDeclaringContextBlockStatement + "\", which is neither declared in the same package as nor is a subclass of \"" + iClassDeclaringMember + "\".";
-        }
-        return null;
+        // class declaring the member or a nested class whose parent is a subclass
+        IClass parentClass = iClassDeclaringContextBlockStatement;
+        do {
+            if (iClassDeclaringMember.isAssignableFrom(parentClass)) {
+                return null;
+            }
+            parentClass = parentClass.getOuterIClass();
+        } while(parentClass != null);
+
+        return "Protected member cannot be accessed from type \"" + iClassDeclaringContextBlockStatement + "\", which is neither declared in the same package as nor is a subclass of \"" + iClassDeclaringMember + "\".";
     }
 
     /**
