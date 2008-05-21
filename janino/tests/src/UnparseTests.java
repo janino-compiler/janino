@@ -1,0 +1,368 @@
+
+/*
+ * Janino - An embedded Java[TM] compiler
+ *
+ * Copyright (c) 2001-2007, Arno Unkrig
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ *    1. Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *    2. Redistributions in binary form must reproduce the above
+ *       copyright notice, this list of conditions and the following
+ *       disclaimer in the documentation and/or other materials
+ *       provided with the distribution.
+ *    3. The name of the author may not be used to endorse or promote
+ *       products derived from this software without specific prior
+ *       written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+ * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+ * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
+ * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
+ * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+import java.io.StringReader;
+import java.io.StringWriter;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import org.codehaus.janino.Java;
+import org.codehaus.janino.Parser;
+import org.codehaus.janino.Scanner;
+import org.codehaus.janino.UnparseVisitor;
+import org.codehaus.janino.Visitor;
+import org.codehaus.janino.Java.AmbiguousName;
+import org.codehaus.janino.Java.ArrayAccessExpression;
+import org.codehaus.janino.Java.ArrayLength;
+import org.codehaus.janino.Java.Assignment;
+import org.codehaus.janino.Java.Atom;
+import org.codehaus.janino.Java.BinaryOperation;
+import org.codehaus.janino.Java.Cast;
+import org.codehaus.janino.Java.ClassLiteral;
+import org.codehaus.janino.Java.ConditionalExpression;
+import org.codehaus.janino.Java.ConstantValue;
+import org.codehaus.janino.Java.Crement;
+import org.codehaus.janino.Java.FieldAccess;
+import org.codehaus.janino.Java.FieldAccessExpression;
+import org.codehaus.janino.Java.Instanceof;
+import org.codehaus.janino.Java.Literal;
+import org.codehaus.janino.Java.LocalVariableAccess;
+import org.codehaus.janino.Java.MethodInvocation;
+import org.codehaus.janino.Java.NewAnonymousClassInstance;
+import org.codehaus.janino.Java.NewArray;
+import org.codehaus.janino.Java.NewClassInstance;
+import org.codehaus.janino.Java.NewInitializedArray;
+import org.codehaus.janino.Java.ParameterAccess;
+import org.codehaus.janino.Java.ParenthesizedExpression;
+import org.codehaus.janino.Java.QualifiedThisReference;
+import org.codehaus.janino.Java.SuperclassFieldAccessExpression;
+import org.codehaus.janino.Java.SuperclassMethodInvocation;
+import org.codehaus.janino.Java.ThisReference;
+import org.codehaus.janino.Java.UnaryOperation;
+
+public class UnparseTests extends TestCase {
+    public static Test suite() {
+        TestSuite s = new TestSuite(UnparseTests.class.getName());
+        s.addTest(new UnparseTests("testSimple"));
+        s.addTest(new UnparseTests("testParens"));
+        s.addTest(new UnparseTests("testMany"));
+        return s;
+    }
+
+    public UnparseTests(String name) { super(name); }
+    
+    private static void helpTestExpr(String input, String expect, boolean simplify) throws Exception {
+        Parser p = new Parser(new Scanner(null, new StringReader(input)));
+        Atom expr = p.parseExpression();
+        if (simplify) {
+            expr = stripUnnecessaryParenExprs(expr);
+        }
+        
+        StringWriter sw = new StringWriter();
+        UnparseVisitor uv = new UnparseVisitor(sw);
+        expr.accept(uv);
+        String s = sw.toString();
+        s = replace(s, "((( ", "(");
+        s = replace(s, " )))", ")");
+        assertEquals(expect, s);    
+    }
+    private static String replace(String s, String from, String to) {
+        for (;;) {
+            int idx = s.indexOf(from);
+            if (idx == -1) break;
+            s = s.substring(0, idx) + to + s.substring(idx + from.length());
+        }
+        return s;
+    }
+    
+    private static Java.Rvalue[] stripUnnecessaryParenExprs(Java.Rvalue[] rvalues) {
+        Java.Rvalue[] res = new Java.Rvalue[rvalues.length];
+        for(int i = 0; i < res.length; ++i) {
+            res[i] = stripUnnecessaryParenExprs(rvalues[i]);
+        }
+        return res;
+    }
+    
+    private static Java.Atom stripUnnecessaryParenExprs(Java.Atom atom) {
+        if (atom instanceof Java.Rvalue) {
+            return stripUnnecessaryParenExprs((Java.Rvalue)atom);
+        }
+        return atom;
+    }
+    
+    private static Java.Lvalue stripUnnecessaryParenExprs(Java.Lvalue lvalue) {
+        return (Java.Lvalue)stripUnnecessaryParenExprs((Java.Rvalue)lvalue);
+    }
+    
+    private static Java.Rvalue stripUnnecessaryParenExprs(Java.Rvalue rvalue) {
+        if (rvalue == null) { return null; }
+        final Java.Rvalue[] res = new Java.Rvalue[1];
+        Visitor.RvalueVisitor rv = new Visitor.RvalueVisitor() {
+            public void visitArrayLength(ArrayLength al) {
+                res[0] = new Java.ArrayLength(
+                    al.getLocation(),
+                    stripUnnecessaryParenExprs(al.lhs)
+                );
+            }
+
+            public void visitAssignment(Assignment a) {
+                res[0] = new Java.Assignment(
+                    a.getLocation(),
+                    stripUnnecessaryParenExprs(a.lhs),
+                    a.operator,
+                    stripUnnecessaryParenExprs(a.rhs)
+                );
+            }
+
+            public void visitBinaryOperation(BinaryOperation bo) {
+                res[0] = new Java.BinaryOperation(
+                    bo.getLocation(),
+                    stripUnnecessaryParenExprs(bo.lhs),
+                    bo.op,
+                    stripUnnecessaryParenExprs(bo.rhs)
+                );
+            }
+
+            public void visitCast(Cast c) {
+                res[0] = new Java.Cast(
+                    c.getLocation(),
+                    c.targetType,
+                    stripUnnecessaryParenExprs(c.value)
+                );
+            }
+
+            public void visitClassLiteral(ClassLiteral cl) {
+                res[0] = cl; //too much effort
+            }
+
+            public void visitConditionalExpression(ConditionalExpression ce) {
+                res[0] = new Java.ConditionalExpression(
+                    ce.getLocation(),
+                    stripUnnecessaryParenExprs(ce.lhs),
+                    stripUnnecessaryParenExprs(ce.mhs),
+                    stripUnnecessaryParenExprs(ce.rhs)
+                );
+            }
+
+            public void visitConstantValue(ConstantValue cv) {
+                res[0] = cv;
+            }
+
+            public void visitCrement(Crement c) {
+                if (c.pre) {
+                    res[0] = new Java.Crement(
+                        c.getLocation(),
+                        c.operator,
+                        stripUnnecessaryParenExprs(c.operand)
+                    );
+                } else {
+                    res[0] = new Java.Crement(
+                        c.getLocation(),
+                        stripUnnecessaryParenExprs(c.operand),
+                        c.operator
+                    );
+                }
+            }
+
+            public void visitInstanceof(Instanceof io) {
+                res[0] = new Java.Instanceof(
+                    io.getLocation(),
+                    stripUnnecessaryParenExprs(io.lhs),
+                    io.rhs
+                );
+            }
+
+            public void visitLiteral(Literal l) {
+                res[0] = l;
+            }
+
+            public void visitMethodInvocation(MethodInvocation mi) {
+                res[0] = new Java.MethodInvocation(
+                    mi.getLocation(),
+                    stripUnnecessaryParenExprs(mi.optionalTarget),
+                    mi.methodName,
+                    stripUnnecessaryParenExprs(mi.arguments)
+                );
+            }
+
+            public void visitNewAnonymousClassInstance(NewAnonymousClassInstance naci) {
+                res[0] = naci; //too much effort
+            }
+
+            public void visitNewArray(NewArray na) {
+                res[0] = new Java.NewArray(
+                    na.getLocation(),
+                    na.type,
+                    stripUnnecessaryParenExprs(na.dimExprs),
+                    na.dims
+                );
+            }
+
+            public void visitNewClassInstance(NewClassInstance nci) {
+                res[0] = new Java.NewClassInstance(
+                    nci.getLocation(),
+                    stripUnnecessaryParenExprs(nci.optionalQualification),
+                    nci.type,
+                    stripUnnecessaryParenExprs(nci.arguments)
+                );
+            }
+
+            public void visitNewInitializedArray(NewInitializedArray nia) {
+                res[0] = nia; //too much effort
+            }
+
+            public void visitParameterAccess(ParameterAccess pa) {
+                res[0] = pa;
+            }
+
+            public void visitQualifiedThisReference(QualifiedThisReference qtr) {
+                res[0] = qtr;
+            }
+
+            public void visitSuperclassMethodInvocation(SuperclassMethodInvocation smi) {
+                res[0] = new Java.SuperclassMethodInvocation(
+                    smi.getLocation(),
+                    smi.methodName,
+                    stripUnnecessaryParenExprs(smi.arguments)
+                );
+            }
+
+            public void visitThisReference(ThisReference tr) {
+                res[0] = tr;
+            }
+
+            public void visitUnaryOperation(UnaryOperation uo) {
+                res[0] = new Java.UnaryOperation(
+                    uo.getLocation(),
+                    uo.operator,
+                    stripUnnecessaryParenExprs(uo.operand)
+                );
+            }
+
+            public void visitAmbiguousName(AmbiguousName an) {
+                res[0] = an;
+            }
+
+            public void visitArrayAccessExpression(ArrayAccessExpression aae) {
+                res[0] = new Java.ArrayAccessExpression(
+                    aae.getLocation(),
+                    stripUnnecessaryParenExprs(aae.lhs),
+                    stripUnnecessaryParenExprs(aae.index)
+                );
+            }
+
+            public void visitFieldAccess(FieldAccess fa) {
+                res[0] = new Java.FieldAccess(
+                    fa.getLocation(),
+                    stripUnnecessaryParenExprs(fa.lhs),
+                    fa.field
+                );
+            }
+
+            public void visitFieldAccessExpression(FieldAccessExpression fae) {
+                res[0] = new Java.FieldAccessExpression(
+                    fae.getLocation(),
+                    stripUnnecessaryParenExprs(fae.lhs),
+                    fae.fieldName
+                );
+            }
+
+            public void visitLocalVariableAccess(LocalVariableAccess lva) {
+                res[0] = lva;
+            }
+
+            public void visitParenthesizedExpression(ParenthesizedExpression pe) {
+                res[0] = stripUnnecessaryParenExprs(pe.value);
+            }
+
+            public void visitSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae) {
+                res[0] = scfae;
+            }
+            
+        };
+        rvalue.accept(rv);
+        return res[0];
+    }
+    
+    public void testSimple() throws Exception {
+        helpTestExpr("1 + 2*3", "1 + 2 * 3", false);
+        helpTestExpr("1 + 2*3", "1 + 2 * 3", true);
+    }
+    
+    public void testParens() throws Exception {
+        helpTestExpr("(1 + 2)*3", "(1 + 2) * 3", false);
+        helpTestExpr("(1 + 2)*3", "(1 + 2) * 3", true);
+    }
+    
+    public void testMany() throws Exception {
+        final String[][] exprs = new String[][] {
+              //input                                  expected simplified                    expect non-simplified
+            { "((1)+2)",                               "1 + 2",                               "((1) + 2)"           },
+            { "1 + 2 * 3",                             null,                                  null                  },
+            { "1 + (2 * 3)",                           "1 + 2 * 3",                           null                  },
+            { "3 - (2 - 1)",                           null,                                  null                  },
+            { "true ? 1 : 2",                          null,                                  null                  },
+            { "(true ? false : true) ? 1 : 2",         null,                                  null                  },
+            { "true ? false : (true ? false : true)",  "true ? false : true ? false : true",  null                  },
+            { "-(-(2))",                               "-(-2)",                               null                  },
+            { "- - 2",                                 "-(-2)",                               "-(-2)"               },
+            { "x && (y || z)",                         null,                                  null                  },
+            { "(x && y) || z",                         "x && y || z",                         null                  },
+            { "x = (y = z)",                           "x = y = z",                           null                  },
+            { "(--x) + 3",                             "--x + 3",                             null                  },
+            { "(baz.bar).foo(x, (3 + 4) * 5)",         "baz.bar.foo(x, (3 + 4) * 5)",         null                  },
+            { "!(bar instanceof Integer)",             null,                                  null                  },
+            { "(true ? foo : bar).baz()",              null,                                  null                  },
+        };
+        
+        for(int i = 0; i < exprs.length; ++i) {
+            String input = exprs[i][0];
+            String expectSimplify = exprs[i][1];
+            if (expectSimplify == null) {
+                expectSimplify = input;
+            }
+            
+            String expectNoSimplify = exprs[i][2];
+            if (expectNoSimplify == null) { 
+                expectNoSimplify = input; 
+            }
+            
+            helpTestExpr(input, expectSimplify, true);
+            helpTestExpr(input, expectNoSimplify, false);
+        }
+    }
+
+}
