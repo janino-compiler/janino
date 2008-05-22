@@ -32,9 +32,18 @@
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileFilter;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.io.OutputStreamWriter;
 import java.io.StringReader;
 import java.io.StringWriter;
-
+import java.util.ArrayList;
+import java.util.List;
+import junit.framework.Assert;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
@@ -44,6 +53,7 @@ import org.codehaus.janino.Parser;
 import org.codehaus.janino.Scanner;
 import org.codehaus.janino.UnparseVisitor;
 import org.codehaus.janino.Visitor;
+import org.codehaus.janino.Java.AbstractTypeDeclaration;
 import org.codehaus.janino.Java.AmbiguousName;
 import org.codehaus.janino.Java.ArrayAccessExpression;
 import org.codehaus.janino.Java.ArrayLength;
@@ -52,6 +62,7 @@ import org.codehaus.janino.Java.Atom;
 import org.codehaus.janino.Java.BinaryOperation;
 import org.codehaus.janino.Java.Cast;
 import org.codehaus.janino.Java.ClassLiteral;
+import org.codehaus.janino.Java.CompilationUnit;
 import org.codehaus.janino.Java.ConditionalExpression;
 import org.codehaus.janino.Java.ConstantValue;
 import org.codehaus.janino.Java.Crement;
@@ -60,6 +71,8 @@ import org.codehaus.janino.Java.FieldAccessExpression;
 import org.codehaus.janino.Java.Instanceof;
 import org.codehaus.janino.Java.Literal;
 import org.codehaus.janino.Java.LocalVariableAccess;
+import org.codehaus.janino.Java.Locatable;
+import org.codehaus.janino.Java.Located;
 import org.codehaus.janino.Java.MethodInvocation;
 import org.codehaus.janino.Java.NewAnonymousClassInstance;
 import org.codehaus.janino.Java.NewArray;
@@ -72,6 +85,7 @@ import org.codehaus.janino.Java.SuperclassFieldAccessExpression;
 import org.codehaus.janino.Java.SuperclassMethodInvocation;
 import org.codehaus.janino.Java.ThisReference;
 import org.codehaus.janino.Java.UnaryOperation;
+import org.codehaus.janino.util.Traverser;
 
 public class UnparseTests extends TestCase {
     public static Test suite() {
@@ -79,25 +93,26 @@ public class UnparseTests extends TestCase {
         s.addTest(new UnparseTests("testSimple"));
         s.addTest(new UnparseTests("testParens"));
         s.addTest(new UnparseTests("testMany"));
+        s.addTest(new UnparseTests("testParseUnparseParseJanino"));
         return s;
     }
 
     public UnparseTests(String name) { super(name); }
-    
+
     private static void helpTestExpr(String input, String expect, boolean simplify) throws Exception {
         Parser p = new Parser(new Scanner(null, new StringReader(input)));
         Atom expr = p.parseExpression();
         if (simplify) {
-            expr = stripUnnecessaryParenExprs(expr);
+            expr = UnparseTests.stripUnnecessaryParenExprs(expr);
         }
-        
+
         StringWriter sw = new StringWriter();
         UnparseVisitor uv = new UnparseVisitor(sw);
         expr.accept(uv);
         String s = sw.toString();
-        s = replace(s, "((( ", "(");
-        s = replace(s, " )))", ")");
-        assertEquals(expect, s);    
+        s = UnparseTests.replace(s, "((( ", "(");
+        s = UnparseTests.replace(s, " )))", ")");
+        Assert.assertEquals(expect, s);
     }
     private static String replace(String s, String from, String to) {
         for (;;) {
@@ -107,26 +122,26 @@ public class UnparseTests extends TestCase {
         }
         return s;
     }
-    
+
     private static Java.Rvalue[] stripUnnecessaryParenExprs(Java.Rvalue[] rvalues) {
         Java.Rvalue[] res = new Java.Rvalue[rvalues.length];
         for(int i = 0; i < res.length; ++i) {
-            res[i] = stripUnnecessaryParenExprs(rvalues[i]);
+            res[i] = UnparseTests.stripUnnecessaryParenExprs(rvalues[i]);
         }
         return res;
     }
-    
+
     private static Java.Atom stripUnnecessaryParenExprs(Java.Atom atom) {
         if (atom instanceof Java.Rvalue) {
-            return stripUnnecessaryParenExprs((Java.Rvalue)atom);
+            return UnparseTests.stripUnnecessaryParenExprs((Java.Rvalue)atom);
         }
         return atom;
     }
-    
+
     private static Java.Lvalue stripUnnecessaryParenExprs(Java.Lvalue lvalue) {
-        return (Java.Lvalue)stripUnnecessaryParenExprs((Java.Rvalue)lvalue);
+        return (Java.Lvalue)UnparseTests.stripUnnecessaryParenExprs((Java.Rvalue)lvalue);
     }
-    
+
     private static Java.Rvalue stripUnnecessaryParenExprs(Java.Rvalue rvalue) {
         if (rvalue == null) { return null; }
         final Java.Rvalue[] res = new Java.Rvalue[1];
@@ -134,25 +149,25 @@ public class UnparseTests extends TestCase {
             public void visitArrayLength(ArrayLength al) {
                 res[0] = new Java.ArrayLength(
                     al.getLocation(),
-                    stripUnnecessaryParenExprs(al.lhs)
+                    UnparseTests.stripUnnecessaryParenExprs(al.lhs)
                 );
             }
 
             public void visitAssignment(Assignment a) {
                 res[0] = new Java.Assignment(
                     a.getLocation(),
-                    stripUnnecessaryParenExprs(a.lhs),
+                    UnparseTests.stripUnnecessaryParenExprs(a.lhs),
                     a.operator,
-                    stripUnnecessaryParenExprs(a.rhs)
+                    UnparseTests.stripUnnecessaryParenExprs(a.rhs)
                 );
             }
 
             public void visitBinaryOperation(BinaryOperation bo) {
                 res[0] = new Java.BinaryOperation(
                     bo.getLocation(),
-                    stripUnnecessaryParenExprs(bo.lhs),
+                    UnparseTests.stripUnnecessaryParenExprs(bo.lhs),
                     bo.op,
-                    stripUnnecessaryParenExprs(bo.rhs)
+                    UnparseTests.stripUnnecessaryParenExprs(bo.rhs)
                 );
             }
 
@@ -160,7 +175,7 @@ public class UnparseTests extends TestCase {
                 res[0] = new Java.Cast(
                     c.getLocation(),
                     c.targetType,
-                    stripUnnecessaryParenExprs(c.value)
+                    UnparseTests.stripUnnecessaryParenExprs(c.value)
                 );
             }
 
@@ -171,9 +186,9 @@ public class UnparseTests extends TestCase {
             public void visitConditionalExpression(ConditionalExpression ce) {
                 res[0] = new Java.ConditionalExpression(
                     ce.getLocation(),
-                    stripUnnecessaryParenExprs(ce.lhs),
-                    stripUnnecessaryParenExprs(ce.mhs),
-                    stripUnnecessaryParenExprs(ce.rhs)
+                    UnparseTests.stripUnnecessaryParenExprs(ce.lhs),
+                    UnparseTests.stripUnnecessaryParenExprs(ce.mhs),
+                    UnparseTests.stripUnnecessaryParenExprs(ce.rhs)
                 );
             }
 
@@ -186,12 +201,12 @@ public class UnparseTests extends TestCase {
                     res[0] = new Java.Crement(
                         c.getLocation(),
                         c.operator,
-                        stripUnnecessaryParenExprs(c.operand)
+                        UnparseTests.stripUnnecessaryParenExprs(c.operand)
                     );
                 } else {
                     res[0] = new Java.Crement(
                         c.getLocation(),
-                        stripUnnecessaryParenExprs(c.operand),
+                        UnparseTests.stripUnnecessaryParenExprs(c.operand),
                         c.operator
                     );
                 }
@@ -200,7 +215,7 @@ public class UnparseTests extends TestCase {
             public void visitInstanceof(Instanceof io) {
                 res[0] = new Java.Instanceof(
                     io.getLocation(),
-                    stripUnnecessaryParenExprs(io.lhs),
+                    UnparseTests.stripUnnecessaryParenExprs(io.lhs),
                     io.rhs
                 );
             }
@@ -212,9 +227,9 @@ public class UnparseTests extends TestCase {
             public void visitMethodInvocation(MethodInvocation mi) {
                 res[0] = new Java.MethodInvocation(
                     mi.getLocation(),
-                    stripUnnecessaryParenExprs(mi.optionalTarget),
+                    UnparseTests.stripUnnecessaryParenExprs(mi.optionalTarget),
                     mi.methodName,
-                    stripUnnecessaryParenExprs(mi.arguments)
+                    UnparseTests.stripUnnecessaryParenExprs(mi.arguments)
                 );
             }
 
@@ -226,7 +241,7 @@ public class UnparseTests extends TestCase {
                 res[0] = new Java.NewArray(
                     na.getLocation(),
                     na.type,
-                    stripUnnecessaryParenExprs(na.dimExprs),
+                    UnparseTests.stripUnnecessaryParenExprs(na.dimExprs),
                     na.dims
                 );
             }
@@ -234,9 +249,9 @@ public class UnparseTests extends TestCase {
             public void visitNewClassInstance(NewClassInstance nci) {
                 res[0] = new Java.NewClassInstance(
                     nci.getLocation(),
-                    stripUnnecessaryParenExprs(nci.optionalQualification),
+                    UnparseTests.stripUnnecessaryParenExprs(nci.optionalQualification),
                     nci.type,
-                    stripUnnecessaryParenExprs(nci.arguments)
+                    UnparseTests.stripUnnecessaryParenExprs(nci.arguments)
                 );
             }
 
@@ -256,7 +271,7 @@ public class UnparseTests extends TestCase {
                 res[0] = new Java.SuperclassMethodInvocation(
                     smi.getLocation(),
                     smi.methodName,
-                    stripUnnecessaryParenExprs(smi.arguments)
+                    UnparseTests.stripUnnecessaryParenExprs(smi.arguments)
                 );
             }
 
@@ -268,7 +283,7 @@ public class UnparseTests extends TestCase {
                 res[0] = new Java.UnaryOperation(
                     uo.getLocation(),
                     uo.operator,
-                    stripUnnecessaryParenExprs(uo.operand)
+                    UnparseTests.stripUnnecessaryParenExprs(uo.operand)
                 );
             }
 
@@ -279,15 +294,15 @@ public class UnparseTests extends TestCase {
             public void visitArrayAccessExpression(ArrayAccessExpression aae) {
                 res[0] = new Java.ArrayAccessExpression(
                     aae.getLocation(),
-                    stripUnnecessaryParenExprs(aae.lhs),
-                    stripUnnecessaryParenExprs(aae.index)
+                    UnparseTests.stripUnnecessaryParenExprs(aae.lhs),
+                    UnparseTests.stripUnnecessaryParenExprs(aae.index)
                 );
             }
 
             public void visitFieldAccess(FieldAccess fa) {
                 res[0] = new Java.FieldAccess(
                     fa.getLocation(),
-                    stripUnnecessaryParenExprs(fa.lhs),
+                    UnparseTests.stripUnnecessaryParenExprs(fa.lhs),
                     fa.field
                 );
             }
@@ -295,7 +310,7 @@ public class UnparseTests extends TestCase {
             public void visitFieldAccessExpression(FieldAccessExpression fae) {
                 res[0] = new Java.FieldAccessExpression(
                     fae.getLocation(),
-                    stripUnnecessaryParenExprs(fae.lhs),
+                    UnparseTests.stripUnnecessaryParenExprs(fae.lhs),
                     fae.fieldName
                 );
             }
@@ -305,64 +320,161 @@ public class UnparseTests extends TestCase {
             }
 
             public void visitParenthesizedExpression(ParenthesizedExpression pe) {
-                res[0] = stripUnnecessaryParenExprs(pe.value);
+                res[0] = UnparseTests.stripUnnecessaryParenExprs(pe.value);
             }
 
             public void visitSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae) {
                 res[0] = scfae;
             }
-            
+
         };
         rvalue.accept(rv);
         return res[0];
     }
-    
+
     public void testSimple() throws Exception {
-        helpTestExpr("1 + 2*3", "1 + 2 * 3", false);
-        helpTestExpr("1 + 2*3", "1 + 2 * 3", true);
+        UnparseTests.helpTestExpr("1 + 2*3", "1 + 2 * 3", false);
+        UnparseTests.helpTestExpr("1 + 2*3", "1 + 2 * 3", true);
     }
-    
+
     public void testParens() throws Exception {
-        helpTestExpr("(1 + 2)*3", "(1 + 2) * 3", false);
-        helpTestExpr("(1 + 2)*3", "(1 + 2) * 3", true);
+        UnparseTests.helpTestExpr("(1 + 2)*3", "(1 + 2) * 3", false);
+        UnparseTests.helpTestExpr("(1 + 2)*3", "(1 + 2) * 3", true);
     }
-    
+
     public void testMany() throws Exception {
         final String[][] exprs = new String[][] {
               //input                                  expected simplified                    expect non-simplified
             { "((1)+2)",                               "1 + 2",                               "((1) + 2)"           },
+            { "1 - 2 + 3",                             null,                                  null                  },
+            { "(1 - 2) + 3",                           "1 - 2 + 3",                           null                  },
+            { "1 - (2 + 3)",                           "1 - (2 + 3)",                         null                  },
             { "1 + 2 * 3",                             null,                                  null                  },
             { "1 + (2 * 3)",                           "1 + 2 * 3",                           null                  },
             { "3 - (2 - 1)",                           null,                                  null                  },
             { "true ? 1 : 2",                          null,                                  null                  },
             { "(true ? false : true) ? 1 : 2",         null,                                  null                  },
             { "true ? false : (true ? false : true)",  "true ? false : true ? false : true",  null                  },
-            { "-(-(2))",                               "-(-2)",                               null                  },
+            { "-(-(2))",                               "-(-2)",                               "-(-(2))"             },
             { "- - 2",                                 "-(-2)",                               "-(-2)"               },
             { "x && (y || z)",                         null,                                  null                  },
             { "(x && y) || z",                         "x && y || z",                         null                  },
             { "x = (y = z)",                           "x = y = z",                           null                  },
+            { "x *= (y *= z)",                         "x *= y *= z",                         null                  },
             { "(--x) + 3",                             "--x + 3",                             null                  },
             { "(baz.bar).foo(x, (3 + 4) * 5)",         "baz.bar.foo(x, (3 + 4) * 5)",         null                  },
             { "!(bar instanceof Integer)",             null,                                  null                  },
             { "(true ? foo : bar).baz()",              null,                                  null                  },
+            { "((String) foo).length()",               null,                                  null                  },
+            { "-~2",                                   "-(~2)",                               "-(~2)"               },
+            { "(new String[1])[0]",                    null,                                  null                  },
+            { "(new String()).length()",               "new String().length()",               null                  },
+            { "(new int[] { 1, 2 })[0]",               "new int[] { 1, 2 }[0]",               null                  },
+            { "(\"asdf\" + \"qwer\").length()",        null,                                  null                  },
+            { "-(a++)",                                "-a++",                                null                  },
         };
-        
+
         for(int i = 0; i < exprs.length; ++i) {
             String input = exprs[i][0];
             String expectSimplify = exprs[i][1];
             if (expectSimplify == null) {
                 expectSimplify = input;
             }
-            
+
             String expectNoSimplify = exprs[i][2];
-            if (expectNoSimplify == null) { 
-                expectNoSimplify = input; 
+            if (expectNoSimplify == null) {
+                expectNoSimplify = input;
             }
-            
-            helpTestExpr(input, expectSimplify, true);
-            helpTestExpr(input, expectNoSimplify, false);
+
+            UnparseTests.helpTestExpr(input, expectSimplify, true);
+            UnparseTests.helpTestExpr(input, expectNoSimplify, false);
         }
     }
 
+    public void testParseUnparseParseJanino() throws Exception {
+
+        // Process all "*.java" files in the JANINO source tree.
+        this.find(new File("src"), new FileFilter() {
+
+            public boolean accept(File f) {
+                if (f.isDirectory()) return true;
+
+                if (f.getName().endsWith(".java") && f.isFile()) {
+
+                    try {
+
+                        // Parse the source file once.
+                        InputStream is = new FileInputStream(f);
+                        CompilationUnit cu1 = new Parser(new Scanner(f.toString(), is)).parseCompilationUnit();
+                        is.close();
+
+                        // Unparse the compilation unit, then parse again.
+                        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                        UnparseVisitor.unparse(cu1, new OutputStreamWriter(baos));
+                        byte[] ba = baos.toByteArray();
+                        CompilationUnit cu2 = new Parser(new Scanner(f.toString(), new ByteArrayInputStream(ba))).parseCompilationUnit();
+
+                        // Compare the two ASTs.
+                        Java.Locatable[] elements1 = this.listSyntaxElements(cu1);
+                        Java.Locatable[] elements2 = this.listSyntaxElements(cu2);
+                        for (int i = 0;; ++i) {
+                            if (i == elements1.length) {
+                                if (i == elements2.length) break;
+                                Assert.fail("Extra element " + elements2[i]);
+                            }
+                            Locatable locatable1 = elements1[i];
+
+                            if (i == elements2.length) {
+                                Assert.fail("Element missing: " + locatable1);
+                            }
+                            Locatable locatable2 = elements2[i];
+
+                            String s1 = locatable1.toString();
+                            String s2 = locatable2.toString();
+                            if (!s1.equals(s2)) {
+//                                String s = new String(ba);
+                                Assert.fail(locatable1.getLocation().toString() + ": Expected \"" + s1 + "\", was \"" + s2 + "\"");
+                            }
+                        }
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+                return false;
+            }
+
+            /**
+             * Traverse the given {@link CompilationUnit} and collect a list of all its
+             * syntactical elements.
+             */
+            private Locatable[] listSyntaxElements(CompilationUnit cu) {
+                final List locatables = new ArrayList();
+                new Traverser() {
+
+                    // Two implementations of "Locatable": "Located" and "AbstractTypeDeclaration".
+
+                    public void traverseLocated(Located l) {
+                        locatables.add(l);
+                        super.traverseLocated(l);
+                    }
+                    public void traverseAbstractTypeDeclaration(AbstractTypeDeclaration atd) {
+                        locatables.add(atd);
+                        super.traverseAbstractTypeDeclaration(atd);
+                    }
+                }.traverseCompilationUnit(cu);
+                return (Locatable[]) locatables.toArray(new Java.Locatable[locatables.size()]);
+            }
+        });
+    }
+
+    /**
+     * Invoke <code>fileFilter</code> for all files and subdirectories in the given
+     * <code>directory</code>. If {@link FileFilter#accept(File)} returns <code>true</code>,
+     * recurse with that file/directory.
+     */
+    private void find(File directory, FileFilter fileFilter) {
+        File[] subDirectories = directory.listFiles(fileFilter);
+        if (subDirectories == null) Assert.fail(directory + " is not a directory");
+        for (int i = 0; i < subDirectories.length; ++i) this.find(subDirectories[i], fileFilter);
+    }
 }
