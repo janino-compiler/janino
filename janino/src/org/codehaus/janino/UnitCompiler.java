@@ -597,9 +597,11 @@ public class UnitCompiler {
      * NB: as a side effect this will fill in the sythetic field map
      * @throws CompileException
      */
-    private void compileDeclaredMethods(Java.AbstractTypeDeclaration decl,
-            ClassFile cf) throws CompileException {
-        compileDeclaredMethods(decl, cf, 0);
+    private void compileDeclaredMethods(
+        Java.AbstractTypeDeclaration typeDeclaration,
+        ClassFile                    cf
+    ) throws CompileException {
+        compileDeclaredMethods(typeDeclaration, cf, 0);
     }
 
     /**
@@ -607,14 +609,17 @@ public class UnitCompiler {
      * @param startPos starting param to fill in
      * @throws CompileException
      */
-    private void compileDeclaredMethods(Java.AbstractTypeDeclaration decl,
-            ClassFile cf, int startPos) throws CompileException {
-        // Methods.
+    private void compileDeclaredMethods(
+        Java.AbstractTypeDeclaration typeDeclaration,
+        ClassFile                    cf,
+        int                          startPos
+    ) throws CompileException {
+
         // Notice that as a side effect of compiling methods, synthetic "class-dollar"
         // methods (which implement class literals) are generated on-the fly. Hence, we
         // must not use an Iterator here.
-        for (int i = startPos; i < decl.declaredMethods.size(); ++i) {
-            this.compile(((Java.MethodDeclarator) decl.declaredMethods.get(i)), cf);
+        for (int i = startPos; i < typeDeclaration.declaredMethods.size(); ++i) {
+            this.compile(((Java.MethodDeclarator) typeDeclaration.declaredMethods.get(i)), cf);
         }
     }
 
@@ -3367,56 +3372,62 @@ public class UnitCompiler {
 
                 if (!(lhs instanceof Number) || !(rhs instanceof Number)) return null;
 
-                // Numeric binary operation.
-                if (lhs instanceof Double || rhs instanceof Double) {
-                    double lhsD = ((Number) lhs).doubleValue();
-                    double rhsD = ((Number) rhs).doubleValue();
-                    double cvD;
-                    if (bo.op == "*") cvD = lhsD * rhsD; else
-                    if (bo.op == "/") cvD = lhsD / rhsD; else
-                    if (bo.op == "%") cvD = lhsD % rhsD; else
-                    if (bo.op == "+") cvD = lhsD + rhsD; else
-                    if (bo.op == "-") cvD = lhsD - rhsD; else return null;
-                    lhs = new Double(cvD);
-                } else
-                if (lhs instanceof Float || rhs instanceof Float) {
-                    float lhsF = ((Number) lhs).floatValue();
-                    float rhsF = ((Number) rhs).floatValue();
-                    float cvF;
-                    if (bo.op == "*") cvF = lhsF * rhsF; else
-                    if (bo.op == "/") cvF = lhsF / rhsF; else
-                    if (bo.op == "%") cvF = lhsF % rhsF; else
-                    if (bo.op == "+") cvF = lhsF + rhsF; else
-                    if (bo.op == "-") cvF = lhsF - rhsF; else return null;
-                    lhs = new Float(cvF);
-                } else
-                if (lhs instanceof Long || rhs instanceof Long) {
-                    long lhsL = ((Number) lhs).longValue();
-                    long rhsL = ((Number) rhs).longValue();
-                    long cvL;
-                    if (bo.op == "|") cvL = lhsL | rhsL; else
-                    if (bo.op == "^") cvL = lhsL ^ rhsL; else
-                    if (bo.op == "&") cvL = lhsL & rhsL; else
-                    if (bo.op == "*") cvL = lhsL * rhsL; else
-                    if (bo.op == "/") cvL = lhsL / rhsL; else
-                    if (bo.op == "%") cvL = lhsL % rhsL; else
-                    if (bo.op == "+") cvL = lhsL + rhsL; else
-                    if (bo.op == "-") cvL = lhsL - rhsL; else return null;
-                    lhs = new Long(cvL);
-                } else
-                {
-                    int lhsI = ((Number) lhs).intValue();
-                    int rhsI = ((Number) rhs).intValue();
-                    int cvI;
-                    if (bo.op == "|") cvI = lhsI | rhsI; else
-                    if (bo.op == "^") cvI = lhsI ^ rhsI; else
-                    if (bo.op == "&") cvI = lhsI & rhsI; else
-                    if (bo.op == "*") cvI = lhsI * rhsI; else
-                    if (bo.op == "/") cvI = lhsI / rhsI; else
-                    if (bo.op == "%") cvI = lhsI % rhsI; else
-                    if (bo.op == "+") cvI = lhsI + rhsI; else
-                    if (bo.op == "-") cvI = lhsI - rhsI; else return null;
-                    lhs = new Integer(cvI);
+                try {
+                    // Numeric binary operation.
+                    if (lhs instanceof Double || rhs instanceof Double) {
+                        double lhsD = ((Number) lhs).doubleValue();
+                        double rhsD = ((Number) rhs).doubleValue();
+                        double cvD;
+                        if (bo.op == "*") cvD = lhsD * rhsD; else
+                        if (bo.op == "/") cvD = lhsD / rhsD; else
+                        if (bo.op == "%") cvD = lhsD % rhsD; else
+                        if (bo.op == "+") cvD = lhsD + rhsD; else
+                        if (bo.op == "-") cvD = lhsD - rhsD; else return null;
+                        lhs = new Double(cvD);
+                    } else
+                    if (lhs instanceof Float || rhs instanceof Float) {
+                        float lhsF = ((Number) lhs).floatValue();
+                        float rhsF = ((Number) rhs).floatValue();
+                        float cvF;
+                        if (bo.op == "*") cvF = lhsF * rhsF; else
+                        if (bo.op == "/") cvF = lhsF / rhsF; else
+                        if (bo.op == "%") cvF = lhsF % rhsF; else
+                        if (bo.op == "+") cvF = lhsF + rhsF; else
+                        if (bo.op == "-") cvF = lhsF - rhsF; else return null;
+                        lhs = new Float(cvF);
+                    } else
+                    if (lhs instanceof Long || rhs instanceof Long) {
+                        long lhsL = ((Number) lhs).longValue();
+                        long rhsL = ((Number) rhs).longValue();
+                        long cvL;
+                        if (bo.op == "|") cvL = lhsL | rhsL; else
+                        if (bo.op == "^") cvL = lhsL ^ rhsL; else
+                        if (bo.op == "&") cvL = lhsL & rhsL; else
+                        if (bo.op == "*") cvL = lhsL * rhsL; else
+                        if (bo.op == "/") cvL = lhsL / rhsL; else
+                        if (bo.op == "%") cvL = lhsL % rhsL; else
+                        if (bo.op == "+") cvL = lhsL + rhsL; else
+                        if (bo.op == "-") cvL = lhsL - rhsL; else return null;
+                        lhs = new Long(cvL);
+                    } else
+                    {
+                        int lhsI = ((Number) lhs).intValue();
+                        int rhsI = ((Number) rhs).intValue();
+                        int cvI;
+                        if (bo.op == "|") cvI = lhsI | rhsI; else
+                        if (bo.op == "^") cvI = lhsI ^ rhsI; else
+                        if (bo.op == "&") cvI = lhsI & rhsI; else
+                        if (bo.op == "*") cvI = lhsI * rhsI; else
+                        if (bo.op == "/") cvI = lhsI / rhsI; else
+                        if (bo.op == "%") cvI = lhsI % rhsI; else
+                        if (bo.op == "+") cvI = lhsI + rhsI; else
+                        if (bo.op == "-") cvI = lhsI - rhsI; else return null;
+                        lhs = new Integer(cvI);
+                    }
+                } catch (ArithmeticException ae) {
+                    // Most likely a div by zero or mod by zero.
+                    // Guess we can't make this expression into a constant.
+                    return null;
                 }
             }
             return lhs;
