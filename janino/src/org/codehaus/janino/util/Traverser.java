@@ -44,7 +44,7 @@ import java.util.*;
  * This class traverses the subnodes of an AST. Derived classes may override
  * individual methods to process specific nodes, e.g.:<pre>
  *     LocalClassDeclaration lcd = ...;
- *     lcd.accept(new Traverser {
+ *     lcd.accept(new Traverser() {
  *         int n = 0;
  *         public void traverseMethodDeclarator(Java.MethodDeclarator md) {
  *             ++this.n;
