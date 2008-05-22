@@ -152,6 +152,9 @@ public class Java {
                 this.identifiers = identifiers;
             }
             public final void accept(Visitor.ImportVisitor visitor) { visitor.visitSingleTypeImportDeclaration(this); }
+            public String toString() {
+                return "import " + Java.join(this.identifiers, ".") + ';';
+            }
         }
 
         /**
@@ -166,6 +169,9 @@ public class Java {
                 this.identifiers = identifiers;
             }
             public final void accept(Visitor.ImportVisitor visitor) { visitor.visitTypeImportOnDemandDeclaration(this); }
+            public String toString() {
+                return "import " + Java.join(this.identifiers, ".") + ".*;";
+            }
         }
 
         /**
@@ -866,6 +872,9 @@ public class Java {
             super(location, statiC);
             (this.block = block).setEnclosingScope(this);
         }
+        public String toString() {
+            return this.statiC ? "static " + this.block : this.block.toString();
+        }
 
         // Implement BlockStatement.
 
@@ -1185,6 +1194,9 @@ public class Java {
             this.label = label;
             (this.body  = body).setEnclosingScope(this);
         }
+        public String toString() {
+            return this.label + ": " + this.body;
+        }
 
         // Compile time members:
 
@@ -1229,6 +1241,10 @@ public class Java {
         // Compile time members.
 
         public final void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitBlock(this); }
+
+        public String toString() {
+            return "{ ... }";
+        }
     }
 
     /**
@@ -1271,6 +1287,10 @@ public class Java {
             )) this.throwParseException("This kind of expression is not allowed in an expression statement");
             (this.rvalue = rvalue).setEnclosingBlockStatement(this);
         }
+        
+        public String toString() {
+            return this.rvalue.toString() + ';';
+        }
 
         // Compile time members:
 
@@ -1283,6 +1303,9 @@ public class Java {
         public LocalClassDeclarationStatement(Java.LocalClassDeclaration lcd) {
             super(lcd.getLocation());
             (this.lcd = lcd).setEnclosingScope(this);
+        }
+        public String toString() {
+            return this.lcd.toString();
         }
 
         public final void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitLocalClassDeclarationStatement(this); }
@@ -1308,6 +1331,10 @@ public class Java {
             (this.thenStatement         = thenStatement).setEnclosingScope(this);
             this.optionalElseStatement = optionalElseStatement;
             if (optionalElseStatement != null) optionalElseStatement.setEnclosingScope(this);
+        }
+
+        public String toString() {
+            return this.optionalElseStatement == null ? "if" : "if ... else";
         }
 
         // Compile time members:
@@ -1339,6 +1366,9 @@ public class Java {
             }
             (this.body = body).setEnclosingScope(this);
         }
+        public String toString() {
+            return "for (...; ...; ...) ...";
+        }
 
         // Compile time members:
 
@@ -1358,9 +1388,11 @@ public class Java {
             (this.condition = condition).setEnclosingBlockStatement(this);
             (this.body = body).setEnclosingScope(this);
         }
+        public String toString() {
+            return "while (" + this.condition + ") " + this.body + ';';
+        }
 
         // Compile time members:
-
 
         public final void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitWhileStatement(this); }
     }
@@ -1382,6 +1414,9 @@ public class Java {
             for (Iterator it = catchClauses.iterator(); it.hasNext();) ((CatchClause) it.next()).setEnclosingTryStatement(this);
             this.optionalFinally = optionalFinally;
             if (optionalFinally != null) optionalFinally.setEnclosingScope(this);
+        }
+        public String toString() {
+            return "try ... " + this.catchClauses.size() + (this.optionalFinally == null ? " catches" : " catches ... finally");
         }
 
         // Compile time members:
@@ -1438,6 +1473,9 @@ public class Java {
                 }
             }
         }
+        public String toString() {
+            return "switch (" + this.condition + ") { (" + this.sbsgs.size() + " statement groups) }";
+        }
 
         public static class SwitchBlockStatementGroup extends Java.Located {
             public final List    caseLabels; // Rvalue
@@ -1454,6 +1492,9 @@ public class Java {
                 this.caseLabels      = caseLabels;
                 this.hasDefaultLabel = hasDefaultLabel;
                 this.blockStatements = blockStatements;
+            }
+            public String toString() {
+                return this.caseLabels.size() + (this.hasDefaultLabel ? " case label(s) plus DEFAULT" : " case label(s)");
             }
         }
 
@@ -1489,6 +1530,9 @@ public class Java {
             (this.expression = expression).setEnclosingBlockStatement(this);
             (this.body       = body).setEnclosingScope(this);
         }
+        public String toString() {
+            return "synchronized(" + this.expression + ") " + this.body;
+        }
 
         // Compile time members:
 
@@ -1509,6 +1553,9 @@ public class Java {
             super(location);
             (this.body      = body).setEnclosingScope(this);
             (this.condition = condition).setEnclosingBlockStatement(this);
+        }
+        public String toString() {
+            return "do " + this.body + " while(" + this.condition + ");";
         }
 
         // Compile time members:
@@ -1566,6 +1613,10 @@ public class Java {
             this.optionalReturnValue = optionalReturnValue;
             if (optionalReturnValue != null) optionalReturnValue.setEnclosingBlockStatement(this);
         }
+        
+        public String toString() {
+            return this.optionalReturnValue == null ? "return;" : "return " + this.optionalReturnValue + ';';
+        }
 
         // Compile time members:
 
@@ -1581,6 +1632,9 @@ public class Java {
         ) {
             super(location);
             (this.expression = expression).setEnclosingBlockStatement(this);
+        }
+        public String toString() {
+            return "throw " + this.expression + ';';
         }
 
         // Compile time members:
@@ -1600,6 +1654,9 @@ public class Java {
         ) {
             super(location);
             this.optionalLabel = optionalLabel;
+        }
+        public String toString() {
+            return this.optionalLabel == null ? "break;" : "break " + this.optionalLabel + ';';
         }
 
         // Compile time members:
@@ -1621,6 +1678,9 @@ public class Java {
             super(location);
             this.optionalLabel = optionalLabel;
         }
+        public String toString() {
+            return this.optionalLabel == null ? "continue;" : "continue " + this.optionalLabel + ';';
+        }
 
         // Compile time members:
 
@@ -1633,6 +1693,9 @@ public class Java {
     public final static class EmptyStatement extends Statement {
         public EmptyStatement(Location location) {
             super(location);
+        }
+        public String toString() {
+            return ";";
         }
 
         public final void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitEmptyStatement(this); }
@@ -2731,6 +2794,9 @@ public class Java {
         ) {
             super(location);
             this.values = values;
+        }
+        public String toString() {
+            return " { (" + values.length + " values) }";
         }
     }
 

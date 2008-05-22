@@ -442,11 +442,13 @@ public class Scanner {
         }
         if (v instanceof Integer) {
             if (v == Scanner.MAGIC_INTEGER) return "2147483648";
-            return v.toString();
+            int iv = ((Integer) v).intValue();
+            return iv < 0 ? Integer.toHexString(iv) : Integer.toString(iv);
         }
         if (v instanceof Long) {
             if (v == Scanner.MAGIC_LONG) return "9223372036854775808L";
-            return v.toString() + 'L';
+            long lv = ((Long) v).longValue();
+            return (lv < 0L ? Long.toHexString(lv) : Long.toString(lv)) + 'L';
         }
         if (v instanceof Float) {
             return v.toString() + 'F';
