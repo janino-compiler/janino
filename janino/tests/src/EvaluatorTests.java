@@ -32,14 +32,27 @@
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import java.io.*;
-import java.lang.reflect.*;
-import java.util.*;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringReader;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Properties;
+import java.util.Set;
 
-import junit.framework.*;
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
 
-import org.codehaus.janino.*;
+import org.codehaus.janino.ClassBodyEvaluator;
+import org.codehaus.janino.CompileException;
+import org.codehaus.janino.ExpressionEvaluator;
 import org.codehaus.janino.Scanner;
+import org.codehaus.janino.ScriptEvaluator;
+import org.codehaus.janino.SimpleCompiler;
 
 public class EvaluatorTests extends TestCase {
     public static Test suite() {
@@ -53,7 +66,11 @@ public class EvaluatorTests extends TestCase {
         s.addTest(new EvaluatorTests("testGuessParameterNames"));
         s.addTest(new EvaluatorTests("testAssertNotCooked"));
         s.addTest(new EvaluatorTests("testAccessingCompilingClass"));
-        s.addTest(new EvaluatorTests("testProtectedAccessToParentSuperClassVar"));
+        s.addTest(new EvaluatorTests("testProtectedAccessAcrossPackages"));
+        s.addTest(new EvaluatorTests("testProtectedAccessWithinPackage"));
+        s.addTest(new EvaluatorTests("testComplicatedSyntheticAccess"));
+        s.addTest(new EvaluatorTests("testStaticInitAccessProtected"));
+        s.addTest(new EvaluatorTests("testDivByZero"));
         return s;
     }
 
@@ -251,7 +268,7 @@ public class EvaluatorTests extends TestCase {
         assertEquals(8, numTests);
     }
     
-    public void testProtectedAccessToParentSuperClassVar() throws Exception {
+    public void testProtectedAccessAcrossPackages() throws Exception {
         SimpleCompiler sc = new SimpleCompiler();
         sc.setParentClassLoader(SimpleCompiler.BOOT_CLASS_LOADER, new Class[] { for_sandbox_tests.ProtectedVariable.class });
         sc.cook("package test;\n" +
@@ -263,5 +280,177 @@ public class EvaluatorTests extends TestCase {
                 "    } \n" +
                 "}"
         );
+    }
+    
+    public void testProtectedAccessWithinPackage() throws Exception {
+        SimpleCompiler sc = new SimpleCompiler();
+        sc.setParentClassLoader(SimpleCompiler.BOOT_CLASS_LOADER, new Class[] { for_sandbox_tests.ProtectedVariable.class });
+        sc.cook("package for_sandbox_tests;\n" +
+                "public class Top extends for_sandbox_tests.ProtectedVariable {\n" +
+                "    public class Inner {\n" +
+                "        public int get() {\n" +
+                "            return var;\n" +
+                "        }\n" +
+                "        public void set() {\n" +
+                "            var += 10;\n" +
+                "        }\n" +
+                "        public int getS() {\n" +
+                "            return svar;\n" +
+                "        }\n" +
+                "        public void setS() {\n" +
+                "            svar += 10;\n" +
+                "        }\n" +
+                "    } \n" +
+                "    public Inner createInner() {\n" +
+                "        return new Inner();\n" +
+                "    }\n" +
+                "}"
+        );
+        
+        Class topClass = sc.getClassLoader().loadClass("for_sandbox_tests.Top");
+        Method createInner = topClass.getDeclaredMethod("createInner", null);
+        Object t = topClass.newInstance();
+        Object i = createInner.invoke(t, null);
+        
+        Class innerClass = sc.getClassLoader().loadClass("for_sandbox_tests.Top$Inner");
+        Method get = innerClass.getDeclaredMethod("get", null);
+        Method getS = innerClass.getDeclaredMethod("getS", null);
+        Method set = innerClass.getDeclaredMethod("set", null);
+        Method setS = innerClass.getDeclaredMethod("setS", null);
+        
+        Object res;
+        {   // non-static
+            res = get.invoke(i, null);
+            assertEquals(new Integer(1), res);
+            set.invoke(i, null);
+            res = get.invoke(i, null);
+            assertEquals(new Integer(11), res);
+        }
+        {   //static
+            res = getS.invoke(i, null);
+            assertEquals(new Integer(2), res);
+            setS.invoke(i, null);
+            res = getS.invoke(i, null);
+            assertEquals(new Integer(12), res);
+        }
+    }
+    
+    public void testComplicatedSyntheticAccess() throws Exception {
+        SimpleCompiler sc = new SimpleCompiler();
+        sc.setParentClassLoader(SimpleCompiler.BOOT_CLASS_LOADER, new Class[] { for_sandbox_tests.ProtectedVariable.class });
+        sc.cook("package for_sandbox_tests;\n" +
+                "public class L0 extends for_sandbox_tests.ProtectedVariable {\n" +
+                "    public class L1 extends for_sandbox_tests.ProtectedVariable {\n" +
+                "        public class L2 extends for_sandbox_tests.ProtectedVariable {\n" +
+                "            public class Inner {\n" +
+                "                public int getL2() { return L0.L1.L2.this.var; }\n" +
+                "                public int getL1() { return L0.L1.this.var; }\n" +
+                "                public int getL0() { return L0.this.var; }\n" +
+                "                public int setL2() { return L2.this.var = 2; }\n" +
+                "                public int setL1() { return L1.this.var = 1; }\n" +
+                "                public int setL0() { return L0.this.var = 0; }\n" +
+                "            }\n" +
+                "        }\n" +
+                "    }\n" +
+                "    public L0.L1.L2.Inner createInner() {\n" +
+                "        return new L0().new L1().new L2().new Inner();\n" +
+                "    }\n" +
+                "}" 
+        );
+        
+        Class topClass = sc.getClassLoader().loadClass("for_sandbox_tests.L0");
+        Method createInner = topClass.getDeclaredMethod("createInner", null);
+        Object t = topClass.newInstance();
+        Object inner = createInner.invoke(t, null);
+        
+        Class innerClass = inner.getClass();
+        Method[] gets = new Method[] {
+                innerClass.getMethod("getL0", null),
+                innerClass.getMethod("getL1", null),
+                innerClass.getMethod("getL2", null),
+        };
+        Method[] sets = new Method[] {
+                innerClass.getMethod("setL0", null),
+                innerClass.getMethod("setL1", null),
+                innerClass.getMethod("setL2", null),
+        };
+        for(int i = 0; i < 3; ++i) {
+            Object g1 = gets[i].invoke(inner, null);
+            assertEquals(new Integer(1), g1);
+            Object s1 = sets[i].invoke(inner, null);
+            assertEquals(new Integer(i), s1);
+            Object g2 = gets[i].invoke(inner, null);
+            assertEquals(new Integer(i), g2);
+        }
+    }
+    
+    public void testStaticInitAccessProtected() throws Exception {
+        SimpleCompiler sc = new SimpleCompiler();
+        sc.cook("package test;\n" +
+                "public class Outer extends for_sandbox_tests.ProtectedVariable  {\n" +
+                "    public class Inner {\n" +
+                "        {\n" +
+                "            int t = var;\n" +
+                "            var = svar;\n" +
+                "            svar = t;\n" +
+                "        }\n" +
+                "        private final int i = var;\n" +
+                "        private final int j = svar;\n" +
+                "        {\n" +
+                "            int t = var;\n" +
+                "            var = svar;\n" +
+                "            svar = t;\n" +
+                "        }\n" +
+                "        private final int[] a = new int[] { i, j };\n" +
+                "    }\n" +
+                "    public Inner createInner() {\n" +
+                "        return new Inner();\n" +
+                "    }\n" +
+                "}" 
+        );
+        
+        Class topClass = sc.getClassLoader().loadClass("test.Outer");
+        Method createInner = topClass.getDeclaredMethod("createInner", null);
+        Object t = topClass.newInstance();
+        assertNotNull(t);
+        Object inner = createInner.invoke(t, null);
+        assertNotNull(inner);
+    }
+
+    public void testDivByZero() throws Exception {
+        SimpleCompiler sc = new SimpleCompiler();
+        sc.cook(
+            "package test;\n" +
+            "public class Test {\n" +
+            "    public int runIntDiv() {\n" +
+            "        return 1 / 0;\n" +
+            "    }\n" +
+            "    public int runIntMod() {\n" +
+            "        return 1 % 0;\n" +
+            "    }\n" +
+            "    public long runLongDiv() {\n" +
+            "        return 1L / 0;\n" +
+            "    }\n" +
+            "    public long runLongMod() {\n" +
+            "        return 1L % 0;\n" +
+            "    }\n" +
+            "}"
+        );
+
+
+        Class c = sc.getClassLoader().loadClass("test.Test");
+        Object o = c.newInstance();
+
+        Method[] m = c.getMethods();
+        for(int i = 0; i < m.length; ++i) {
+            if(m[i].getName().startsWith("run")) {
+                try {
+                    Object res = m[i].invoke(o, null);
+                    fail("Method " + m[i] + " should have failed, but got " + res);
+                } catch(InvocationTargetException ae) {
+                    assertTrue(ae.getTargetException() instanceof ArithmeticException);
+                }
+            }
+        }
     }
 }

@@ -1334,8 +1334,8 @@ public class ClassFile {
         }
 
         public static class Entry {
-            public final short startPC, lineNumber;
-            public Entry(short startPC, short lineNumber) {
+            public final int startPC, lineNumber;
+            public Entry(int startPC, int lineNumber) {
                 this.startPC    = startPC;
                 this.lineNumber = lineNumber;
             }

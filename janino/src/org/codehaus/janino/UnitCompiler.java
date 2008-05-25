@@ -1691,11 +1691,7 @@ public class UnitCompiler {
         // Don't continue code attribute generation if we had compile errors.
         if (this.compileErrorCount > 0) return;
 
-        // Fix up.
-        codeContext.fixUp();
-
-        // Relocate.
-        codeContext.relocate();
+        codeContext.fixUpAndRelocate();
 
         // Do flow analysis.
         if (UnitCompiler.DEBUG) {
