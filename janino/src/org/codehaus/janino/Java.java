@@ -2786,7 +2786,7 @@ public class Java {
      * constant) values.
      */
     public static final class ArrayInitializer extends Located implements ArrayInitializerOrRvalue {
-        public final ArrayInitializerOrRvalue[]  values;
+        public final ArrayInitializerOrRvalue[] values;
 
         public ArrayInitializer(
             Location                   location,
@@ -2796,7 +2796,7 @@ public class Java {
             this.values = values;
         }
         public String toString() {
-            return " { (" + values.length + " values) }";
+            return " { (" + this.values.length + " values) }";
         }
     }
 
