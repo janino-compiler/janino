@@ -560,15 +560,14 @@ public class CodeContext {
      * fixUp() all of the offsets and relocate() all relocatables
      */
     public void fixUpAndRelocate() {
-        //we do this in a loop to allow relocatables to adjust the size
-        //of things in the byte stream.  It is extremely unlikely, but possible
-        //that a late relocatable will grow the size of the bytecode, and require
-        //an earlier relocatable to switch from 32K mode to 64K mode branching
-        boolean finished = false;
-        while (!finished) {
+
+        // We do this in a loop to allow relocatables to adjust the size
+        // of things in the byte stream.  It is extremely unlikely, but possible
+        // that a late relocatable will grow the size of the bytecode, and require
+        // an earlier relocatable to switch from 32K mode to 64K mode branching
+        do {
             fixUp();
-            finished = relocate();
-        }
+        } while (!relocate());
     }
 
     /**
@@ -752,32 +751,32 @@ public class CodeContext {
             if (this.destination.offset == Offset.UNSET) throw new RuntimeException("Cannot relocate branch to unset destination offset");
             int offset = this.destination.offset - this.source.offset;
             
-            if (!expanded && (offset > Short.MAX_VALUE || offset < Short.MIN_VALUE)) {
+            if (!this.expanded && (offset > Short.MAX_VALUE || offset < Short.MIN_VALUE)) {
                 //we want to insert the data without skewing our source position,
                 //so we will cache it and then restore it later.
                 int pos = this.source.offset; 
-                CodeContext.this.pushInserter(source); {
+                CodeContext.this.pushInserter(this.source); {
                     // promotion to a wide instruction only requires 2 extra bytes 
                     // everything else requires a new GOTO_W instruction after a negated if
                     CodeContext.this.write(
                         (short) -1, 
-                        new byte[opcode == Opcode.GOTO ? 2 : opcode == Opcode.JSR ? 2 : 5]
+                        new byte[this.opcode == Opcode.GOTO ? 2 : this.opcode == Opcode.JSR ? 2 : 5]
                     );
                 } CodeContext.this.popInserter();
                 this.source.offset = pos;
-                expanded = true;
+                this.expanded = true;
                 return false;
             }
             
             final byte[] ba;
-            if (!expanded) {
+            if (!this.expanded) {
                 //we fit in a 16-bit jump
-                ba = new byte[] { (byte) opcode, (byte) (offset >> 8), (byte) offset };
+                ba = new byte[] { (byte) this.opcode, (byte) (offset >> 8), (byte) offset };
             } else {
                 byte inverted = ((Byte) CodeContext.EXPANDED_BRANCH_OPS.get(
-                        new Byte((byte) opcode))
+                        new Byte((byte) this.opcode))
                 ).byteValue();
-                if (opcode == Opcode.GOTO || opcode == Opcode.JSR) {
+                if (this.opcode == Opcode.GOTO || this.opcode == Opcode.JSR) {
                     //  [GOTO offset]
                     //expands to 
                     //  [GOTO_W offset]
