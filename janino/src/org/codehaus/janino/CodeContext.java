@@ -38,6 +38,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -705,35 +706,6 @@ public class CodeContext {
         this.write(lineNumber, new byte[] { (byte) opcode, -1, -1 });
     }
 
-    private static final Map EXPANDED_BRANCH_OPS = new HashMap(); // Map<Byte, Byte>
-    static {
-        //comparisons expand by doing a negated jump as follows:
-        //  [if cond offset]
-        //expands to 
-        //  [if !cond skip_goto]
-        //  [GOTO_W offset]
-        EXPANDED_BRANCH_OPS.put(new Byte(Opcode.IF_ACMPEQ), new Byte(Opcode.IF_ACMPNE)); 
-        EXPANDED_BRANCH_OPS.put(new Byte(Opcode.IF_ACMPNE), new Byte(Opcode.IF_ACMPEQ)); 
-        EXPANDED_BRANCH_OPS.put(new Byte(Opcode.IF_ICMPEQ), new Byte(Opcode.IF_ICMPNE)); 
-        EXPANDED_BRANCH_OPS.put(new Byte(Opcode.IF_ICMPNE), new Byte(Opcode.IF_ICMPEQ)); 
-        EXPANDED_BRANCH_OPS.put(new Byte(Opcode.IF_ICMPGE), new Byte(Opcode.IF_ICMPLT)); 
-        EXPANDED_BRANCH_OPS.put(new Byte(Opcode.IF_ICMPLT), new Byte(Opcode.IF_ICMPGE)); 
-        EXPANDED_BRANCH_OPS.put(new Byte(Opcode.IF_ICMPGT), new Byte(Opcode.IF_ICMPLE)); 
-        EXPANDED_BRANCH_OPS.put(new Byte(Opcode.IF_ICMPLE), new Byte(Opcode.IF_ICMPGT)); 
-        EXPANDED_BRANCH_OPS.put(new Byte(Opcode.IFEQ), new Byte(Opcode.IFNE)); 
-        EXPANDED_BRANCH_OPS.put(new Byte(Opcode.IFNE), new Byte(Opcode.IFEQ)); 
-        EXPANDED_BRANCH_OPS.put(new Byte(Opcode.IFGE), new Byte(Opcode.IFLT)); 
-        EXPANDED_BRANCH_OPS.put(new Byte(Opcode.IFLT), new Byte(Opcode.IFGE)); 
-        EXPANDED_BRANCH_OPS.put(new Byte(Opcode.IFGT), new Byte(Opcode.IFLE)); 
-        EXPANDED_BRANCH_OPS.put(new Byte(Opcode.IFLE), new Byte(Opcode.IFGT)); 
-        EXPANDED_BRANCH_OPS.put(new Byte(Opcode.IFNULL), new Byte(Opcode.IFNONNULL)); 
-        EXPANDED_BRANCH_OPS.put(new Byte(Opcode.IFNONNULL), new Byte(Opcode.IFNULL));
-        
-        // these merely expand to their wide version
-        EXPANDED_BRANCH_OPS.put(new Byte(Opcode.GOTO), new Byte(Opcode.GOTO_W)); 
-        EXPANDED_BRANCH_OPS.put(new Byte(Opcode.JSR), new Byte(Opcode.JSR_W)); 
-    }
-
     private class Branch extends Relocatable {
         public Branch(int opcode, Offset destination) {
             this.opcode = opcode;
@@ -773,21 +745,16 @@ public class CodeContext {
                 //we fit in a 16-bit jump
                 ba = new byte[] { (byte) this.opcode, (byte) (offset >> 8), (byte) offset };
             } else {
-                byte inverted = ((Byte) CodeContext.EXPANDED_BRANCH_OPS.get(
-                        new Byte((byte) this.opcode))
-                ).byteValue();
                 if (this.opcode == Opcode.GOTO || this.opcode == Opcode.JSR) {
-                    //  [GOTO offset]
-                    //expands to 
-                    //  [GOTO_W offset]
                     ba = new byte[] { 
-                        (byte) inverted,
+                        (byte) (this.opcode + 33), // GOTO => GOTO_W; JSR => JSR_W
                         (byte) (offset >> 24), 
                         (byte) (offset >> 16), 
                         (byte) (offset >> 8), 
                         (byte) offset 
                     };
-                } else {
+                } else
+                {
                     //exclude the if-statement from jump target
                     //if jumping backwards this will increase the jump to go over it
                     //if jumping forwards this will decrease the jump by it
@@ -798,7 +765,7 @@ public class CodeContext {
                     //  [if !cond skip_goto]
                     //  [GOTO_W offset]
                     ba = new byte[] { 
-                        (byte) inverted,
+                        CodeContext.invertBranchOpcode((byte) this.opcode),
                         (byte) 0,
                         (byte) 8, //jump from this instruction past the GOTO_W
                         (byte) Opcode.GOTO_W, 
@@ -817,6 +784,34 @@ public class CodeContext {
         private final int opcode;
         private final Inserter source;
         private final Offset destination;
+    }
+
+    /**
+     * E.g. {@link Opcode#IFLT} ("less than") inverts to {@link Opcode#IFGE} ("greater than or equal to").
+     */
+    private static byte invertBranchOpcode(byte branchOpcode) {
+        return ((Byte) CodeContext.BRANCH_OPCODE_INVERSION.get(new Byte(branchOpcode))).byteValue();
+    }
+    private static final Map BRANCH_OPCODE_INVERSION = CodeContext.createBranchOpcodeInversion(); // Map<Byte branch-opcode, Byte inverted-branch-opcode>
+    private static Map createBranchOpcodeInversion() {
+        Map m = new HashMap();
+        m.put(new Byte(Opcode.IF_ACMPEQ), new Byte(Opcode.IF_ACMPNE)); 
+        m.put(new Byte(Opcode.IF_ACMPNE), new Byte(Opcode.IF_ACMPEQ)); 
+        m.put(new Byte(Opcode.IF_ICMPEQ), new Byte(Opcode.IF_ICMPNE)); 
+        m.put(new Byte(Opcode.IF_ICMPNE), new Byte(Opcode.IF_ICMPEQ)); 
+        m.put(new Byte(Opcode.IF_ICMPGE), new Byte(Opcode.IF_ICMPLT)); 
+        m.put(new Byte(Opcode.IF_ICMPLT), new Byte(Opcode.IF_ICMPGE)); 
+        m.put(new Byte(Opcode.IF_ICMPGT), new Byte(Opcode.IF_ICMPLE)); 
+        m.put(new Byte(Opcode.IF_ICMPLE), new Byte(Opcode.IF_ICMPGT)); 
+        m.put(new Byte(Opcode.IFEQ),      new Byte(Opcode.IFNE)); 
+        m.put(new Byte(Opcode.IFNE),      new Byte(Opcode.IFEQ)); 
+        m.put(new Byte(Opcode.IFGE),      new Byte(Opcode.IFLT)); 
+        m.put(new Byte(Opcode.IFLT),      new Byte(Opcode.IFGE)); 
+        m.put(new Byte(Opcode.IFGT),      new Byte(Opcode.IFLE)); 
+        m.put(new Byte(Opcode.IFLE),      new Byte(Opcode.IFGT)); 
+        m.put(new Byte(Opcode.IFNULL),    new Byte(Opcode.IFNONNULL)); 
+        m.put(new Byte(Opcode.IFNONNULL), new Byte(Opcode.IFNULL));
+        return Collections.unmodifiableMap(m);
     }
 
     public void writeOffset(short lineNumber, Offset src, final Offset dst) {
