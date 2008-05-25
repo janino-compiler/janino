@@ -99,11 +99,16 @@ public class JLS2Tests extends JaninoTestSuite {
         exp(TRUE, "5", "2 * 2147483647 == -2");
         exp(TRUE, "6", "2 * -2147483648 == 0");
         exp(COMP, "7", "2147483648");
-        exp(EXEC, "8", "9223372036854775807L");
-        exp(COMP, "9", "9223372036854775808L");
-        sca(INVA, "10", "9223372036854775809L");
-        exp(EXEC, "11", "-9223372036854775808L");
-        exp(SCAN, "12", "-9223372036854775809L");
+        exp(EXEC, "8", "-2147483648");
+        exp(TRUE, "9", "-1 == 0xffffffff");
+        exp(TRUE, "10", "1 == -0xffffffff");
+        exp(TRUE, "11", "-0xf == -15");
+        exp(EXEC, "12", "9223372036854775807L");
+        exp(COMP, "13", "9223372036854775808L");
+        sca(INVA, "14", "9223372036854775809L");
+        sca(INVA, "15", "99999999999999999999999999999L");
+        exp(EXEC, "16", "-9223372036854775808L");
+        exp(SCAN, "17", "-9223372036854775809L");
         
         section("3.10.2 Floating-Point Literals");
         exp(TRUE, "1", "1e1f == 10f");
