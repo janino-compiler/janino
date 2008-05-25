@@ -142,11 +142,11 @@ public class CodeContext {
         DataOutputStream dos,
         short            lineNumberTableAttributeNameIndex
     ) throws IOException {
-        dos.writeShort(this.maxStack);                     // max_stack
-        dos.writeShort(this.maxLocals);                    // max_locals
-        dos.writeInt(this.end.offset);            // code_length
-        dos.write(this.code, 0, this.end.offset); // code
-        dos.writeShort(this.exceptionTableEntries.size());        // exception_table_length
+        dos.writeShort(this.maxStack);                                // max_stack
+        dos.writeShort(this.maxLocals);                               // max_locals
+        dos.writeInt(this.end.offset);                                // code_length
+        dos.write(this.code, 0, this.end.offset);                     // code
+        dos.writeShort(this.exceptionTableEntries.size());            // exception_table_length
         for (int i = 0; i < this.exceptionTableEntries.size(); ++i) { // exception_table
             ExceptionTableEntry exceptionTableEntry = (ExceptionTableEntry) this.exceptionTableEntries.get(i);
             dos.writeShort(exceptionTableEntry.startPC.offset);
@@ -185,7 +185,7 @@ public class CodeContext {
      * Notice: On inconsistencies, a "RuntimeException" is thrown (KLUDGE).
      */
     public void flowAnalysis(String functionName) {
-        if(CodeContext.DEBUG) { 
+        if (CodeContext.DEBUG) { 
             System.err.println("flowAnalysis(" + functionName + ")"); 
         }
         
@@ -195,11 +195,11 @@ public class CodeContext {
         // Analyze flow from offset zero.
         this.flowAnalysis(
             functionName,
-            this.code,                // code
+            this.code,       // code
             this.end.offset, // codeSize
-            0,                        // offset
-            0,                        // stackSize
-            stackSizes                // stackSizes
+            0,               // offset
+            0,               // stackSize
+            stackSizes       // stackSizes
         );
 
         // Analyze flow from exception handler entry points.
@@ -210,11 +210,11 @@ public class CodeContext {
                 if (stackSizes[exceptionTableEntry.startPC.offset] != CodeContext.UNEXAMINED) {
                     this.flowAnalysis(
                         functionName,         
-                        this.code,                                                   // code
+                        this.code,                                          // code
                         this.end.offset,                                    // codeSize
                         exceptionTableEntry.handlerPC.offset,               // offset
                         stackSizes[exceptionTableEntry.startPC.offset] + 1, // stackSize
-                        stackSizes                                                   // stackSizes
+                        stackSizes                                          // stackSizes
                     );
                     ++analyzedExceptionHandlers;
                 }
@@ -565,7 +565,7 @@ public class CodeContext {
         //that a late relocatable will grow the size of the bytecode, and require
         //an earlier relocatable to switch from 32K mode to 64K mode branching
         boolean finished = false;
-        while(!finished) {
+        while (!finished) {
             fixUp();
             finished = relocate();
         }
@@ -740,12 +740,12 @@ public class CodeContext {
             this.opcode = opcode;
             this.source = CodeContext.this.newInserter();
             this.destination = destination;
-            if(opcode == Opcode.JSR_W || opcode == Opcode.GOTO_W) {
+            if (opcode == Opcode.JSR_W || opcode == Opcode.GOTO_W) {
                 //no need to expand wide opcodes
                 this.expanded = true;
             } else { 
                 this.expanded = false;
-        }
+            }
         }
         
         public boolean relocate() {
@@ -760,10 +760,8 @@ public class CodeContext {
                     // promotion to a wide instruction only requires 2 extra bytes 
                     // everything else requires a new GOTO_W instruction after a negated if
                     CodeContext.this.write(
-                            (short) -1, 
-                            new byte[opcode == Opcode.GOTO ? 2 : 
-                                     opcode == Opcode.JSR ? 2 :
-                                     5]
+                        (short) -1, 
+                        new byte[opcode == Opcode.GOTO ? 2 : opcode == Opcode.JSR ? 2 : 5]
                     );
                 } CodeContext.this.popInserter();
                 this.source.offset = pos;
@@ -772,23 +770,23 @@ public class CodeContext {
             }
             
             final byte[] ba;
-            if(!expanded) {
+            if (!expanded) {
                 //we fit in a 16-bit jump
-                ba = new byte[] { (byte)opcode, (byte) (offset >> 8), (byte) offset };
+                ba = new byte[] { (byte) opcode, (byte) (offset >> 8), (byte) offset };
             } else {
-                byte inverted = ((Byte)CodeContext.EXPANDED_BRANCH_OPS.get(
-                        new Byte((byte)opcode))
+                byte inverted = ((Byte) CodeContext.EXPANDED_BRANCH_OPS.get(
+                        new Byte((byte) opcode))
                 ).byteValue();
-                if(opcode == Opcode.GOTO || opcode == Opcode.JSR) {
+                if (opcode == Opcode.GOTO || opcode == Opcode.JSR) {
                     //  [GOTO offset]
                     //expands to 
                     //  [GOTO_W offset]
                     ba = new byte[] { 
-                            (byte) inverted,
-                            (byte) (offset >> 24), 
-                            (byte) (offset >> 16), 
-                            (byte) (offset >> 8), 
-                            (byte) offset 
+                        (byte) inverted,
+                        (byte) (offset >> 24), 
+                        (byte) (offset >> 16), 
+                        (byte) (offset >> 8), 
+                        (byte) offset 
                     };
                 } else {
                     //exclude the if-statement from jump target
@@ -801,14 +799,14 @@ public class CodeContext {
                     //  [if !cond skip_goto]
                     //  [GOTO_W offset]
                     ba = new byte[] { 
-                            (byte) inverted,
-                            (byte) 0,
-                            (byte) 8, //jump from this instruction past the GOTO_W
-                            (byte) Opcode.GOTO_W, 
-                            (byte) (offset >> 24), 
-                            (byte) (offset >> 16), 
-                            (byte) (offset >> 8), 
-                            (byte) offset 
+                        (byte) inverted,
+                        (byte) 0,
+                        (byte) 8, //jump from this instruction past the GOTO_W
+                        (byte) Opcode.GOTO_W, 
+                        (byte) (offset >> 24), 
+                        (byte) (offset >> 16), 
+                        (byte) (offset >> 8), 
+                        (byte) offset 
                     };
                 }
             }
