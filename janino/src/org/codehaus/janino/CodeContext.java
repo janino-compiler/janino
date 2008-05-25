@@ -713,26 +713,26 @@ public class CodeContext {
         //expands to 
         //  [if !cond skip_goto]
         //  [GOTO_W offset]
-        EXPANDED_BRANCH_OPS.put(Byte.valueOf(Opcode.IF_ACMPEQ), Byte.valueOf(Opcode.IF_ACMPNE)); 
-        EXPANDED_BRANCH_OPS.put(Byte.valueOf(Opcode.IF_ACMPNE), Byte.valueOf(Opcode.IF_ACMPEQ)); 
-        EXPANDED_BRANCH_OPS.put(Byte.valueOf(Opcode.IF_ICMPEQ), Byte.valueOf(Opcode.IF_ICMPNE)); 
-        EXPANDED_BRANCH_OPS.put(Byte.valueOf(Opcode.IF_ICMPNE), Byte.valueOf(Opcode.IF_ICMPEQ)); 
-        EXPANDED_BRANCH_OPS.put(Byte.valueOf(Opcode.IF_ICMPGE), Byte.valueOf(Opcode.IF_ICMPLT)); 
-        EXPANDED_BRANCH_OPS.put(Byte.valueOf(Opcode.IF_ICMPLT), Byte.valueOf(Opcode.IF_ICMPGE)); 
-        EXPANDED_BRANCH_OPS.put(Byte.valueOf(Opcode.IF_ICMPGT), Byte.valueOf(Opcode.IF_ICMPLE)); 
-        EXPANDED_BRANCH_OPS.put(Byte.valueOf(Opcode.IF_ICMPLE), Byte.valueOf(Opcode.IF_ICMPGT)); 
-        EXPANDED_BRANCH_OPS.put(Byte.valueOf(Opcode.IFEQ), Byte.valueOf(Opcode.IFNE)); 
-        EXPANDED_BRANCH_OPS.put(Byte.valueOf(Opcode.IFNE), Byte.valueOf(Opcode.IFEQ)); 
-        EXPANDED_BRANCH_OPS.put(Byte.valueOf(Opcode.IFGE), Byte.valueOf(Opcode.IFLT)); 
-        EXPANDED_BRANCH_OPS.put(Byte.valueOf(Opcode.IFLT), Byte.valueOf(Opcode.IFGE)); 
-        EXPANDED_BRANCH_OPS.put(Byte.valueOf(Opcode.IFGT), Byte.valueOf(Opcode.IFLE)); 
-        EXPANDED_BRANCH_OPS.put(Byte.valueOf(Opcode.IFLE), Byte.valueOf(Opcode.IFGT)); 
-        EXPANDED_BRANCH_OPS.put(Byte.valueOf(Opcode.IFNULL), Byte.valueOf(Opcode.IFNONNULL)); 
-        EXPANDED_BRANCH_OPS.put(Byte.valueOf(Opcode.IFNONNULL), Byte.valueOf(Opcode.IFNULL));
+        EXPANDED_BRANCH_OPS.put(new Byte(Opcode.IF_ACMPEQ), new Byte(Opcode.IF_ACMPNE)); 
+        EXPANDED_BRANCH_OPS.put(new Byte(Opcode.IF_ACMPNE), new Byte(Opcode.IF_ACMPEQ)); 
+        EXPANDED_BRANCH_OPS.put(new Byte(Opcode.IF_ICMPEQ), new Byte(Opcode.IF_ICMPNE)); 
+        EXPANDED_BRANCH_OPS.put(new Byte(Opcode.IF_ICMPNE), new Byte(Opcode.IF_ICMPEQ)); 
+        EXPANDED_BRANCH_OPS.put(new Byte(Opcode.IF_ICMPGE), new Byte(Opcode.IF_ICMPLT)); 
+        EXPANDED_BRANCH_OPS.put(new Byte(Opcode.IF_ICMPLT), new Byte(Opcode.IF_ICMPGE)); 
+        EXPANDED_BRANCH_OPS.put(new Byte(Opcode.IF_ICMPGT), new Byte(Opcode.IF_ICMPLE)); 
+        EXPANDED_BRANCH_OPS.put(new Byte(Opcode.IF_ICMPLE), new Byte(Opcode.IF_ICMPGT)); 
+        EXPANDED_BRANCH_OPS.put(new Byte(Opcode.IFEQ), new Byte(Opcode.IFNE)); 
+        EXPANDED_BRANCH_OPS.put(new Byte(Opcode.IFNE), new Byte(Opcode.IFEQ)); 
+        EXPANDED_BRANCH_OPS.put(new Byte(Opcode.IFGE), new Byte(Opcode.IFLT)); 
+        EXPANDED_BRANCH_OPS.put(new Byte(Opcode.IFLT), new Byte(Opcode.IFGE)); 
+        EXPANDED_BRANCH_OPS.put(new Byte(Opcode.IFGT), new Byte(Opcode.IFLE)); 
+        EXPANDED_BRANCH_OPS.put(new Byte(Opcode.IFLE), new Byte(Opcode.IFGT)); 
+        EXPANDED_BRANCH_OPS.put(new Byte(Opcode.IFNULL), new Byte(Opcode.IFNONNULL)); 
+        EXPANDED_BRANCH_OPS.put(new Byte(Opcode.IFNONNULL), new Byte(Opcode.IFNULL));
         
         // these merely expand to their wide version
-        EXPANDED_BRANCH_OPS.put(Byte.valueOf(Opcode.GOTO), Byte.valueOf(Opcode.GOTO_W)); 
-        EXPANDED_BRANCH_OPS.put(Byte.valueOf(Opcode.JSR), Byte.valueOf(Opcode.JSR_W)); 
+        EXPANDED_BRANCH_OPS.put(new Byte(Opcode.GOTO), new Byte(Opcode.GOTO_W)); 
+        EXPANDED_BRANCH_OPS.put(new Byte(Opcode.JSR), new Byte(Opcode.JSR_W)); 
     }
 
     private class Branch extends Relocatable {
@@ -777,7 +777,7 @@ public class CodeContext {
                 ba = new byte[] { (byte)opcode, (byte) (offset >> 8), (byte) offset };
             } else {
                 byte inverted = ((Byte)CodeContext.EXPANDED_BRANCH_OPS.get(
-                        Byte.valueOf((byte)opcode))
+                        new Byte((byte)opcode))
                 ).byteValue();
                 if(opcode == Opcode.GOTO || opcode == Opcode.JSR) {
                     //  [GOTO offset]
