@@ -375,13 +375,13 @@ public class Scanner {
     }
 
     /**
-     * This value represents the "magic" literal "2147483648" which is only
+     * This reference represents the "magic" literal "2147483648" which is only
      * allowed in a negated context.
      */
     public static final Integer MAGIC_INTEGER = new Integer(Integer.MIN_VALUE);
 
     /**
-     * This value represents the "magic" literal "9223372036854775808L" which is only
+     * This reference represents the "magic" literal "9223372036854775808L" which is only
      * allowed in a negated context.
      */
     public static final Long MAGIC_LONG = new Long(Long.MIN_VALUE);
@@ -443,12 +443,12 @@ public class Scanner {
         if (v instanceof Integer) {
             if (v == Scanner.MAGIC_INTEGER) return "2147483648";
             int iv = ((Integer) v).intValue();
-            return iv < 0 ? Integer.toHexString(iv) : Integer.toString(iv);
+            return iv < 0 ? "0x" + Integer.toHexString(iv) : Integer.toString(iv);
         }
         if (v instanceof Long) {
             if (v == Scanner.MAGIC_LONG) return "9223372036854775808L";
             long lv = ((Long) v).longValue();
-            return (lv < 0L ? Long.toHexString(lv) : Long.toString(lv)) + 'L';
+            return lv < 0L ? "0x" + Long.toHexString(lv) + 'L' : Long.toString(lv) + 'L';
         }
         if (v instanceof Float) {
             return v.toString() + 'F';
