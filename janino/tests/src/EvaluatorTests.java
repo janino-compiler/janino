@@ -474,7 +474,7 @@ public class EvaluatorTests extends TestCase {
         for(int i = 0; i < tests.length; ++i) {
             int repititions = tests[i];
             
-            StringBuilder sb = new StringBuilder();
+            StringBuffer sb = new StringBuffer();
             sb.append(preamble);
             for(int j = 0; j < repititions; ++j) {
                 sb.append(middle);
@@ -488,7 +488,7 @@ public class EvaluatorTests extends TestCase {
             Method m = c.getDeclaredMethod("run", null);
             Object o = c.newInstance();
             Object res = m.invoke(o, null);
-            assertEquals(Integer.valueOf(2*repititions), res);
+            assertEquals(new Integer(2*repititions), res);
         }
         
     }
