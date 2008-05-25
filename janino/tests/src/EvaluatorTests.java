@@ -71,6 +71,7 @@ public class EvaluatorTests extends TestCase {
         s.addTest(new EvaluatorTests("testComplicatedSyntheticAccess"));
         s.addTest(new EvaluatorTests("testStaticInitAccessProtected"));
         s.addTest(new EvaluatorTests("testDivByZero"));
+        s.addTest(new EvaluatorTests("test32kBranchLimit"));
         return s;
     }
 
@@ -452,5 +453,43 @@ public class EvaluatorTests extends TestCase {
                 }
             }
         }
+    }
+    
+    public void test32kBranchLimit() throws Exception {
+        String preamble =
+            "package test;\n" +
+            "public class Test {\n" +
+            "    public int run() {\n" +
+            "        int res = 0;\n" +
+            "        for(int i = 0; i < 2; ++i) {\n";
+        String middle =
+            "            ++res;\n";
+        String postamble =
+            "        }\n" +
+            "        return res;\n" +
+            "    }\n" +
+            "}";
+        
+        int[] tests = new int[] { 1, 10, 100, Short.MAX_VALUE/5, Short.MAX_VALUE/4, Short.MAX_VALUE/2 };
+        for(int i = 0; i < tests.length; ++i) {
+            int repititions = tests[i];
+            
+            StringBuilder sb = new StringBuilder();
+            sb.append(preamble);
+            for(int j = 0; j < repititions; ++j) {
+                sb.append(middle);
+            }
+            sb.append(postamble);
+            
+            SimpleCompiler sc = new SimpleCompiler();
+            sc.cook(sb.toString());
+            
+            Class c = sc.getClassLoader().loadClass("test.Test");
+            Method m = c.getDeclaredMethod("run", null);
+            Object o = c.newInstance();
+            Object res = m.invoke(o, null);
+            assertEquals(Integer.valueOf(2*repititions), res);
+        }
+        
     }
 }
