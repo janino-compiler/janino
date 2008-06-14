@@ -459,6 +459,12 @@ public class Scanner {
         if (v instanceof Boolean) {
             return v.toString();
         }
+        if(v instanceof Byte) {
+            return "((byte)"+v.toString()+")";
+        }
+        if(v instanceof Short) {
+            return "((short)"+v.toString()+")";
+        }
         if (v == null) {
             return "null";
         }
