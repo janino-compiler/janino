@@ -74,6 +74,7 @@ public class EvaluatorTests extends TestCase {
 //        s.addTest(new EvaluatorTests("testStaticInitAccessProtected"));
         s.addTest(new EvaluatorTests("testDivByZero"));
         s.addTest(new EvaluatorTests("test32kBranchLimit"));
+        s.addTest(new EvaluatorTests("testHugeIntArray"));
         return s;
     }
 
@@ -491,6 +492,38 @@ public class EvaluatorTests extends TestCase {
             Object o = c.newInstance();
             Object res = m.invoke(o, null);
             assertEquals(new Integer(2*repititions), res);
+        }
+        
+    }
+    
+    
+    public void testHugeIntArray() throws Exception {
+        String preamble =
+            "package test;\n" +
+            "public class Test {\n" +
+            "    public int[] run() {\n" +
+            "        return 1.0 > 2.0 ? null : new int[] {";
+        String middle = " 123,";
+        String postamble = 
+            "        };\n" +
+            "    }\n" +
+            "}";
+        
+        int[] tests = new int[] { 1, 10, 8192};
+        for(int i = 0; i < tests.length; ++i) {
+            int repititions = tests[i];
+            
+            StringBuffer sb = new StringBuffer();
+            StringBuffer expected = new StringBuffer();
+            sb.append(preamble);
+            for(int j = 0; j < repititions; ++j) {
+                sb.append(middle);
+                expected.append(middle);
+            }
+            sb.append(postamble);
+            
+            SimpleCompiler sc = new SimpleCompiler();
+            sc.cook(sb.toString());
         }
         
     }

@@ -500,7 +500,7 @@ package org.codehaus.janino;
         /*MULTIANEWARRAY*/  Opcode.SD_MULTIANEWARRAY | Opcode.OP1_CP2 | Opcode.OP2_SB,
         /*IFNULL*/          Opcode.SD_M1 | Opcode.OP1_BO2,
         /*IFNONNULL*/       Opcode.SD_M1 | Opcode.OP1_BO2,
-/*200*/ /*GOTO_W*/          Opcode.SD_P0 | Opcode.OP1_BO4,
+/*200*/ /*GOTO_W*/          Opcode.SD_P0 | Opcode.OP1_BO4 | Opcode.NO_FALLTHROUGH,
         /*JSR_W*/           Opcode.SD_P1 | Opcode.OP1_BO4,
         Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE,
         Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE,
