@@ -6915,7 +6915,7 @@ public class UnitCompiler {
 
     }
     private void writeLDC(Locatable l, short index) {
-        if (index <= 255) {
+        if (0 <= index && index <= 255) {
             this.writeOpcode(l, Opcode.LDC);
             this.writeByte((byte) index);
         } else {

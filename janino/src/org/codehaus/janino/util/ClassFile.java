@@ -426,7 +426,7 @@ public class ClassFile {
     }
 
     public ConstantPoolInfo getConstantPoolInfo(short index) {
-        return (ConstantPoolInfo) this.constantPool.get(index);
+        return (ConstantPoolInfo) this.constantPool.get(0xffff & index);
     }
 
     /**
@@ -480,7 +480,7 @@ public class ClassFile {
             ConstantPoolInfo cpi = ConstantPoolInfo.loadConstantPoolInfo(dis);
             this.constantPool.add(cpi);
             this.constantPoolMap.put(cpi, new Short(i));
-            if (cpi instanceof ConstantLongInfo || cpi instanceof ConstantDoubleInfo) {
+            if (cpi.isWide()) {
                 this.constantPool.add(null);
                 ++i;
             }

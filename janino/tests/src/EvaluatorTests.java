@@ -527,4 +527,32 @@ public class EvaluatorTests extends TestCase {
         }
         
     }
+    
+    public void test32kConstantPool() throws Exception {
+        String preamble =
+            "package test;\n" +
+            "public class Test {\n";
+        String postamble =
+            "}";
+        
+        
+        int[] tests = new int[] { 1, 100, 13020 };
+        for(int i = 0; i < tests.length; ++i) {
+            int repititions = tests[i];
+            
+            StringBuffer sb = new StringBuffer();
+            sb.append(preamble);
+            for(int j = 0; j < repititions; ++j) {
+                sb.append("boolean _v").append(Integer.toString(j)).append(" = false;\n");
+            }
+            sb.append(postamble);
+            
+            SimpleCompiler sc = new SimpleCompiler();
+            sc.cook(sb.toString());
+            
+            Class c = sc.getClassLoader().loadClass("test.Test");
+            Object o = c.newInstance();
+            assertNotNull(o);
+        }
+    }
 }
