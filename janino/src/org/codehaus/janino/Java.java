@@ -424,7 +424,7 @@ public class Java {
             tbd.setDeclaringType(this);
 
             // Clear resolved type cache.
-            if (this.resolvedType != null) this.resolvedType.declaredIFields = null;
+            if (this.resolvedType != null) this.resolvedType.clearIFieldCaches();
         }
 
         // Compile time members.
@@ -705,7 +705,7 @@ public class Java {
             fd.setDeclaringType(this);
 
             // Clear resolved type cache.
-            if (this.resolvedType != null) this.resolvedType.declaredIFields = null;
+            if (this.resolvedType != null) this.resolvedType.clearIFieldCaches();
         }
 
         public /*final*/ Type[] extendedTypes;

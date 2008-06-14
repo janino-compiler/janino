@@ -7895,14 +7895,10 @@ public class UnitCompiler {
     ) throws CompileException {
 
         // Search for a field with the given name in the current class.
-        IClass.IField[] fields = iClass.getDeclaredIFields();
-        for (int i = 0; i < fields.length; ++i) {
-            final IClass.IField f = fields[i];
-            if (name.equals(f.getName())) return f;
-        }
+        IClass.IField f = iClass.getDeclaredIField(name);
+        if(f != null) return f;
 
         // Examine superclass.
-        IClass.IField f = null;
         {
             IClass superclass = iClass.getSuperclass();
             if (superclass != null) f = this.findIField(superclass, name, location);

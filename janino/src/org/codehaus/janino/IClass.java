@@ -213,7 +213,25 @@ public abstract class IClass {
         }
         return this.declaredIFields;
     }
-    protected IField[] declaredIFields = null;
+    public final IField getDeclaredIField(String name) {
+        if(this.declaredIFieldsCache == null) {
+            IField[] fields = getDeclaredIFields();
+            Map m = new HashMap();
+            for(int i = 0; i < fields.length; ++i) {
+                m.put(fields[i].getName(), fields[i]);
+            }
+            this.declaredIFieldsCache = m;
+        }
+        return (IField) this.declaredIFieldsCache.get(name);
+    }
+    
+    protected void clearIFieldCaches() {
+        this.declaredIFields = null;
+        this.declaredIFieldsCache = null;
+    }
+        
+    private Map declaredIFieldsCache = null; // String name => IField
+    private IField[] declaredIFields = null;
     protected abstract IField[] getDeclaredIFields2();
 
     /**
