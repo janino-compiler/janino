@@ -1117,6 +1117,9 @@ public class Scanner {
         return new LiteralToken(new Double(d));
     }
 
+    /**
+     * Consume characters until a literal character is complete.
+     */
     private char unescapeCharacterLiteral() throws ScanException, IOException {
         if (this.nextChar == -1) throw new ScanException("EOF in character literal");
 
