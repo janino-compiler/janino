@@ -112,7 +112,6 @@ public class Visitor {
         void visitCast(Java.Cast c);
         void visitClassLiteral(Java.ClassLiteral cl);
         void visitConditionalExpression(Java.ConditionalExpression ce);
-        void visitConstantValue(Java.ConstantValue cv);
         void visitCrement(Java.Crement c);
         void visitInstanceof(Java.Instanceof io);
         void visitMethodInvocation(Java.MethodInvocation mi);

@@ -2806,6 +2806,9 @@ public class Java {
     public static final class Literal extends Rvalue {
         public final Object value; // The "null" literal has "value == null".
 
+        /**
+         * @param value A {@link Boolean}, {@link String}, {@link Double}, {@link Float}, {@link Character}, or <code>null</code>
+         */
         public Literal(Location location, Object value) {
             super(location);
             this.value = value;
@@ -2816,24 +2819,6 @@ public class Java {
 
         public final void accept(Visitor.AtomVisitor visitor) { visitor.visitLiteral(this); }
         public final void accept(Visitor.RvalueVisitor visitor) { visitor.visitLiteral(this); }
-    }
-
-    /**
-     * Synthetic syntax element for implementing the class literals.
-     */
-    public static final class ConstantValue extends Rvalue {
-        public final Object constantValue;
-
-        public ConstantValue(Location location, Object constantValue) {
-            super(location);
-            this.constantValue = constantValue == null ? Rvalue.CONSTANT_VALUE_NULL : constantValue;
-        }
-
-        // Implement "Atom".
-        public String toString() { return this.constantValue.toString(); }
-
-        public final void accept(Visitor.AtomVisitor visitor) { visitor.visitConstantValue(this); }
-        public final void accept(Visitor.RvalueVisitor visitor) { visitor.visitConstantValue(this); }
     }
 
     /**

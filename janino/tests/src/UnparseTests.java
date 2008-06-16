@@ -64,7 +64,6 @@ import org.codehaus.janino.Java.Cast;
 import org.codehaus.janino.Java.ClassLiteral;
 import org.codehaus.janino.Java.CompilationUnit;
 import org.codehaus.janino.Java.ConditionalExpression;
-import org.codehaus.janino.Java.ConstantValue;
 import org.codehaus.janino.Java.Crement;
 import org.codehaus.janino.Java.FieldAccess;
 import org.codehaus.janino.Java.FieldAccessExpression;
@@ -191,10 +190,6 @@ public class UnparseTests extends TestCase {
                     UnparseTests.stripUnnecessaryParenExprs(ce.mhs),
                     UnparseTests.stripUnnecessaryParenExprs(ce.rhs)
                 );
-            }
-
-            public void visitConstantValue(ConstantValue cv) {
-                res[0] = cv;
             }
 
             public void visitCrement(Crement c) {

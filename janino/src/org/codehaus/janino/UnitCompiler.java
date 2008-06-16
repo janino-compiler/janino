@@ -1754,7 +1754,6 @@ public class UnitCompiler {
             public void visitCast                          (Java.Cast                           c   ) { try { UnitCompiler.this.compile2(c   ); } catch (CompileException e) { throw new UCE(e); } }
             public void visitClassLiteral                  (Java.ClassLiteral                   cl  ) { try { UnitCompiler.this.compile2(cl  ); } catch (CompileException e) { throw new UCE(e); } }
             public void visitConditionalExpression         (Java.ConditionalExpression          ce  ) { try { UnitCompiler.this.compile2(ce  ); } catch (CompileException e) { throw new UCE(e); } }
-            public void visitConstantValue                 (Java.ConstantValue                  cv  ) { try { UnitCompiler.this.compile2(cv  ); } catch (CompileException e) { throw new UCE(e); } }
             public void visitCrement                       (Java.Crement                        c   ) { try { UnitCompiler.this.compile2(c   ); } catch (CompileException e) { throw new UCE(e); } }
             public void visitInstanceof                    (Java.Instanceof                     io  ) { try { UnitCompiler.this.compile2(io  ); } catch (CompileException e) { throw new UCE(e); } }
             public void visitMethodInvocation              (Java.MethodInvocation               mi  ) { try { UnitCompiler.this.compile2(mi  ); } catch (CompileException e) { throw new UCE(e); } }
@@ -1937,7 +1936,6 @@ public class UnitCompiler {
             public void visitCast                          (Java.Cast                           c   ) { try { UnitCompiler.this.compileBoolean2(c   , dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
             public void visitClassLiteral                  (Java.ClassLiteral                   cl  ) { try { UnitCompiler.this.compileBoolean2(cl  , dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
             public void visitConditionalExpression         (Java.ConditionalExpression          ce  ) { try { UnitCompiler.this.compileBoolean2(ce  , dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
-            public void visitConstantValue                 (Java.ConstantValue                  cv  ) { try { UnitCompiler.this.compileBoolean2(cv  , dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
             public void visitCrement                       (Java.Crement                        c   ) { try { UnitCompiler.this.compileBoolean2(c   , dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
             public void visitInstanceof                    (Java.Instanceof                     io  ) { try { UnitCompiler.this.compileBoolean2(io  , dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
             public void visitMethodInvocation              (Java.MethodInvocation               mi  ) { try { UnitCompiler.this.compileBoolean2(mi  , dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
@@ -2178,7 +2176,6 @@ public class UnitCompiler {
             public void visitCast                          (Java.Cast                           c   ) {       res[0] = UnitCompiler.this.compileContext2(c   );                                                                }
             public void visitClassLiteral                  (Java.ClassLiteral                   cl  ) {       res[0] = UnitCompiler.this.compileContext2(cl  );                                                                }
             public void visitConditionalExpression         (Java.ConditionalExpression          ce  ) {       res[0] = UnitCompiler.this.compileContext2(ce  );                                                                }
-            public void visitConstantValue                 (Java.ConstantValue                  cv  ) {       res[0] = UnitCompiler.this.compileContext2(cv  );                                                                }
             public void visitCrement                       (Java.Crement                        c   ) {       res[0] = UnitCompiler.this.compileContext2(c   );                                                                }
             public void visitInstanceof                    (Java.Instanceof                     io  ) {       res[0] = UnitCompiler.this.compileContext2(io  );                                                                }
             public void visitMethodInvocation              (Java.MethodInvocation               mi  ) {       res[0] = UnitCompiler.this.compileContext2(mi  );                                                                }
@@ -2273,7 +2270,6 @@ public class UnitCompiler {
             public void visitCast                          (Java.Cast                           c   ) { try { res[0] = UnitCompiler.this.compileGet2(c   ); } catch (CompileException e) { throw new UCE(e); } }
             public void visitClassLiteral                  (Java.ClassLiteral                   cl  ) { try { res[0] = UnitCompiler.this.compileGet2(cl  ); } catch (CompileException e) { throw new UCE(e); } }
             public void visitConditionalExpression         (Java.ConditionalExpression          ce  ) { try { res[0] = UnitCompiler.this.compileGet2(ce  ); } catch (CompileException e) { throw new UCE(e); } }
-            public void visitConstantValue                 (Java.ConstantValue                  cv  ) {       res[0] = UnitCompiler.this.compileGet2(cv  );                                                                }
             public void visitCrement                       (Java.Crement                        c   ) { try { res[0] = UnitCompiler.this.compileGet2(c   ); } catch (CompileException e) { throw new UCE(e); } }
             public void visitInstanceof                    (Java.Instanceof                     io  ) { try { res[0] = UnitCompiler.this.compileGet2(io  ); } catch (CompileException e) { throw new UCE(e); } }
             public void visitMethodInvocation              (Java.MethodInvocation               mi  ) { try { res[0] = UnitCompiler.this.compileGet2(mi  ); } catch (CompileException e) { throw new UCE(e); } }
@@ -2491,12 +2487,12 @@ public class UnitCompiler {
             classDollarFieldName           // fieldName
         );
         Java.ConditionalExpression ce = new Java.ConditionalExpression(
-            loc,                                  // location
-            new Java.BinaryOperation(             // lhs
-                loc,                              // location
-                classDollarFieldAccess,           // lhs
-                "!=",                             // op
-                new Java.ConstantValue(loc, null) // rhs
+            loc,                            // location
+            new Java.BinaryOperation(       // lhs
+                loc,                        // location
+                classDollarFieldAccess,     // lhs
+                "!=",                       // op
+                new Java.Literal(loc, null) // rhs
             ),
             classDollarFieldAccess,        // mhs
             new Java.Assignment(           // rhs
@@ -2508,7 +2504,7 @@ public class UnitCompiler {
                     declaringClassOrInterfaceType, // optionalTarget
                     "class$",                      // methodName
                     new Java.Rvalue[] {            // arguments
-                        new Java.ConstantValue(
+                        new Java.Literal(
                             loc,      // location
                             className // constantValue
                         )
@@ -3219,9 +3215,6 @@ public class UnitCompiler {
         ) this.compileError("This literal value may only appear in a negated context", l.getLocation());
         return this.pushConstant((Locatable) l, l.value == null ? Java.Rvalue.CONSTANT_VALUE_NULL : l.value);
     }
-    private IClass compileGet2(Java.ConstantValue cv) {
-        return this.pushConstant((Locatable) cv, cv.constantValue);
-    }
 
     /**
      * Convenience function that calls {@link #compileContext(Java.Rvalue)}
@@ -3272,7 +3265,6 @@ public class UnitCompiler {
             public void visitCast                      (Java.Cast                       c   ) { try { res[0] = UnitCompiler.this.getConstantValue2(c   ); } catch (CompileException e) { throw new UCE(e); } }
             public void visitClassLiteral              (Java.ClassLiteral               cl  ) {       res[0] = UnitCompiler.this.getConstantValue2(cl  );                                                    }
             public void visitConditionalExpression     (Java.ConditionalExpression      ce  ) {       res[0] = UnitCompiler.this.getConstantValue2(ce  );                                                    }
-            public void visitConstantValue             (Java.ConstantValue              cv  ) {       res[0] = UnitCompiler.this.getConstantValue2(cv  );                                                    }
             public void visitCrement                   (Java.Crement                    c   ) {       res[0] = UnitCompiler.this.getConstantValue2(c   );                                                    }
             public void visitInstanceof                (Java.Instanceof                 io  ) {       res[0] = UnitCompiler.this.getConstantValue2(io  );                                                    }
             public void visitMethodInvocation          (Java.MethodInvocation           mi  ) {       res[0] = UnitCompiler.this.getConstantValue2(mi  );                                                    }
@@ -3473,9 +3465,6 @@ public class UnitCompiler {
         ) this.compileError("This literal value may only appear in a negated context", l.getLocation());
         return l.value == null ? Java.Rvalue.CONSTANT_VALUE_NULL : l.value;
     }
-    private Object getConstantValue2(Java.ConstantValue cv) {
-        return cv.constantValue;
-    }
 
     /**
      * Attempts to evaluate the negated value of a constant {@link Java.Rvalue}.
@@ -3496,7 +3485,6 @@ public class UnitCompiler {
             public void visitCast                      (Java.Cast                       c   ) {       res[0] = UnitCompiler.this.getNegatedConstantValue2(c   );                                                                }
             public void visitClassLiteral              (Java.ClassLiteral               cl  ) {       res[0] = UnitCompiler.this.getNegatedConstantValue2(cl  );                                                                }
             public void visitConditionalExpression     (Java.ConditionalExpression      ce  ) {       res[0] = UnitCompiler.this.getNegatedConstantValue2(ce  );                                                                }
-            public void visitConstantValue             (Java.ConstantValue              cv  ) {       res[0] = UnitCompiler.this.getNegatedConstantValue2(cv  );                                                                }
             public void visitCrement                   (Java.Crement                    c   ) {       res[0] = UnitCompiler.this.getNegatedConstantValue2(c   );                                                                }
             public void visitInstanceof                (Java.Instanceof                 io  ) {       res[0] = UnitCompiler.this.getNegatedConstantValue2(io  );                                                                }
             public void visitMethodInvocation          (Java.MethodInvocation           mi  ) {       res[0] = UnitCompiler.this.getNegatedConstantValue2(mi  );                                                                }
@@ -3765,7 +3753,6 @@ public class UnitCompiler {
             public void visitCast                          (Java.Cast                           c   ) { try { res[0] = UnitCompiler.this.getType2(c   ); } catch (CompileException e) { throw new UCE(e); } }
             public void visitClassLiteral                  (Java.ClassLiteral                   cl  ) {       res[0] = UnitCompiler.this.getType2(cl  );                                                                }
             public void visitConditionalExpression         (Java.ConditionalExpression          ce  ) { try { res[0] = UnitCompiler.this.getType2(ce  ); } catch (CompileException e) { throw new UCE(e); } }
-            public void visitConstantValue                 (Java.ConstantValue                  cv  ) {       res[0] = UnitCompiler.this.getType2(cv  );                                                                }
             public void visitCrement                       (Java.Crement                        c   ) { try { res[0] = UnitCompiler.this.getType2(c   ); } catch (CompileException e) { throw new UCE(e); } }
             public void visitInstanceof                    (Java.Instanceof                     io  ) {       res[0] = UnitCompiler.this.getType2(io  );                                                                }
             public void visitMethodInvocation              (Java.MethodInvocation               mi  ) { try { res[0] = UnitCompiler.this.getType2(mi  ); } catch (CompileException e) { throw new UCE(e); } }
@@ -4164,21 +4151,6 @@ public class UnitCompiler {
         if (l.value == null             ) return IClass.VOID;
         throw new RuntimeException("SNO: Unidentifiable literal type \"" + l.value.getClass().getName() + "\"");
     }
-    private IClass getType2(Java.ConstantValue cv) {
-        IClass res = (
-            cv.constantValue instanceof Integer            ? IClass.INT     :
-            cv.constantValue instanceof Long               ? IClass.LONG    :
-            cv.constantValue instanceof Float              ? IClass.FLOAT   :
-            cv.constantValue instanceof Double             ? IClass.DOUBLE  :
-            cv.constantValue instanceof String             ? this.iClassLoader.STRING  :
-            cv.constantValue instanceof Character          ? IClass.CHAR    :
-            cv.constantValue instanceof Boolean            ? IClass.BOOLEAN :
-            cv.constantValue == Java.Rvalue.CONSTANT_VALUE_NULL ? IClass.VOID    :
-            null
-        );
-        if (res == null) throw new RuntimeException("SNO: Unidentifiable constant value type \"" + cv.constantValue.getClass().getName() + "\"");
-        return res;
-    }
 
     // ---------------- Atom.isType() ---------------
 
@@ -4202,7 +4174,6 @@ public class UnitCompiler {
             public void visitCast                      (Java.Cast                       c   ) { res[0] = UnitCompiler.this.isType2(c   ); }
             public void visitClassLiteral              (Java.ClassLiteral               cl  ) { res[0] = UnitCompiler.this.isType2(cl  ); }
             public void visitConditionalExpression     (Java.ConditionalExpression      ce  ) { res[0] = UnitCompiler.this.isType2(ce  ); }
-            public void visitConstantValue             (Java.ConstantValue              cv  ) { res[0] = UnitCompiler.this.isType2(cv  ); }
             public void visitCrement                   (Java.Crement                    c   ) { res[0] = UnitCompiler.this.isType2(c   ); }
             public void visitInstanceof                (Java.Instanceof                 io  ) { res[0] = UnitCompiler.this.isType2(io  ); }
             public void visitMethodInvocation          (Java.MethodInvocation           mi  ) { res[0] = UnitCompiler.this.isType2(mi  ); }

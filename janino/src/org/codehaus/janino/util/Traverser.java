@@ -93,7 +93,6 @@ public class Traverser {
         public final void visitCast(Java.Cast c)                                                              { Traverser.this.traverseCast(c); }
         public final void visitClassLiteral(Java.ClassLiteral cl)                                             { Traverser.this.traverseClassLiteral(cl); }
         public final void visitConditionalExpression(Java.ConditionalExpression ce)                           { Traverser.this.traverseConditionalExpression(ce); }
-        public final void visitConstantValue(Java.ConstantValue cv)                                           { Traverser.this.traverseConstantValue(cv); }
         public final void visitCrement(Java.Crement c)                                                        { Traverser.this.traverseCrement(c); }
         public final void visitInstanceof(Java.Instanceof io)                                                 { Traverser.this.traverseInstanceof(io); }
         public final void visitMethodInvocation(Java.MethodInvocation mi)                                     { Traverser.this.traverseMethodInvocation(mi); }
@@ -363,10 +362,6 @@ public class Traverser {
         ce.mhs.accept((Visitor.RvalueVisitor) this.cv);
         ce.rhs.accept((Visitor.RvalueVisitor) this.cv);
         this.traverseRvalue(ce);
-    }
-
-    public void traverseConstantValue(Java.ConstantValue cv) {
-        this.traverseRvalue(cv);
     }
 
     public void traverseCrement(Java.Crement c) {

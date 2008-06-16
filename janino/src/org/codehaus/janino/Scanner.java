@@ -404,6 +404,9 @@ public class Scanner {
     public final class LiteralToken extends Token {
         private final Object value;
 
+        /**
+         * @param value A {@link Boolean}, {@link String}, {@link Double}, {@link Float}, {@link Character}, or <code>null</code>
+         */
         public LiteralToken(Object value) {
             this.value = value;
         }

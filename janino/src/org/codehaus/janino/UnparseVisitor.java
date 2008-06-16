@@ -407,7 +407,6 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
         this.pw.print(" : ");
         this.unparseRhs(ce.rhs, "?:");
     }
-    public void visitConstantValue(Java.ConstantValue cv) { this.pw.print(cv.toString()); }
     public void visitCrement(Java.Crement c) {
         if (c.pre) {
             this.pw.print(c.operator);
