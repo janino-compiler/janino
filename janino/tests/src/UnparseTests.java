@@ -92,7 +92,6 @@ public class UnparseTests extends TestCase {
         s.addTest(new UnparseTests("testSimple"));
         s.addTest(new UnparseTests("testParens"));
         s.addTest(new UnparseTests("testMany"));
-        s.addTest(new UnparseTests("testLiterals"));
         s.addTest(new UnparseTests("testParseUnparseParseJanino"));
         return s;
     }
@@ -395,22 +394,6 @@ public class UnparseTests extends TestCase {
         }
     }
     
-    public void testLiterals() throws Exception {
-        Object[][] tests = new Object[][] {
-                { new Java.Literal(null, new Short((short)1)), "((short)1)" },
-                { new Java.Literal(null, new Byte((byte)1)),   "((byte)1)"  },
-        };
-        for(int i = 0; i < tests.length; ++i) {
-            Atom expr = (Atom) tests[i][0];
-            String expected = (String) tests[i][1];
-            
-            StringWriter sw = new StringWriter();
-            UnparseVisitor uv = new UnparseVisitor(sw);
-            expr.accept(uv);
-            Assert.assertEquals(expected, sw.toString());
-        }
-    }
-
     public void testParseUnparseParseJanino() throws Exception {
 
         // Process all "*.java" files in the JANINO source tree.
