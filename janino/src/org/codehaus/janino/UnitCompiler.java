@@ -3251,6 +3251,8 @@ public class UnitCompiler {
      *   <tr><td>double</td><td>Double</td></tr>
      *   <tr><td>null</td><td>{@link Java.Rvalue#CONSTANT_VALUE_NULL}</td></tr>
      * </table>
+     *
+     * @return <code>null</code> iff the rvalue is not a constant value
      */
     public final Object getConstantValue(Java.Rvalue rv) throws CompileException {
         if (rv.constantValue != Java.Rvalue.CONSTANT_VALUE_UNKNOWN) return rv.constantValue;
