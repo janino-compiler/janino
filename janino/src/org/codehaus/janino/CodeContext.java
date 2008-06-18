@@ -56,8 +56,7 @@ import org.codehaus.janino.util.ClassFile;
 public class CodeContext {
     private static final boolean DEBUG = false;
 
-    private static final int INITIAL_SIZE   = 100;
-    private static final int SIZE_INCREMENT = 128;
+    private static final int INITIAL_SIZE = 128;
 
     private /*final*/ ClassFile classFile;
 
@@ -660,6 +659,97 @@ public class CodeContext {
      */
     public void write(short lineNumber, byte[] b) {
         if (b.length == 0) return;
+        
+        int ico = this.currentInserter.offset;
+        this.makeSpace(lineNumber, b.length);
+        System.arraycopy(b, 0, this.code, ico, b.length);
+    }
+
+    /**
+     * Inserts a byte at the current insertion position. Creates
+     * {@link LineNumberOffset}s as necessary.
+     * <p>
+     * This method is an optimization to avoid allocating small byte[] and ease
+     * GC load.
+     * 
+     * @param lineNumber The line number that corresponds to the byte code, or -1
+     * @param b1
+     */
+    public void write(short lineNumber, byte b1) {
+        int ico = this.currentInserter.offset;
+        this.makeSpace(lineNumber, 1);
+        this.code[ico] = b1;
+    }
+    
+    /**
+     * Inserts bytes at the current insertion position. Creates
+     * {@link LineNumberOffset}s as necessary.
+     * <p>
+     * This method is an optimization to avoid allocating small byte[] and ease
+     * GC load.
+     * 
+     * @param lineNumber The line number that corresponds to the byte code, or -1
+     * @param b1
+     * @param b2
+     */
+    public void write(short lineNumber, byte b1, byte b2) {
+        int ico = this.currentInserter.offset;
+        this.makeSpace(lineNumber, 2);
+        this.code[ico++] = b1;
+        this.code[ico  ] = b2;
+    }
+    
+    /**
+     * Inserts bytes at the current insertion position. Creates
+     * {@link LineNumberOffset}s as necessary.
+     * <p>
+     * This method is an optimization to avoid allocating small byte[] and ease
+     * GC load.
+     * 
+     * @param lineNumber The line number that corresponds to the byte code, or -1
+     * @param b1
+     * @param b2
+     * @param b3
+     */
+    public void write(short lineNumber, byte b1, byte b2, byte b3) {
+        int ico = this.currentInserter.offset;
+        this.makeSpace(lineNumber, 3);
+        this.code[ico++] = b1;
+        this.code[ico++] = b2;
+        this.code[ico  ] = b3;
+    }
+    
+    /**
+     * Inserts bytes at the current insertion position. Creates
+     * {@link LineNumberOffset}s as necessary.
+     * <p>
+     * This method is an optimization to avoid allocating small byte[] and ease
+     * GC load.
+     * 
+     * @param lineNumber The line number that corresponds to the byte code, or -1
+     * @param b1
+     * @param b2
+     * @param b3
+     * @param b4
+     */
+    public void write(short lineNumber, byte b1, byte b2, byte b3, byte b4) {
+        int ico = this.currentInserter.offset;
+        this.makeSpace(lineNumber, 4);
+        this.code[ico++] = b1;
+        this.code[ico++] = b2;
+        this.code[ico++] = b3;
+        this.code[ico  ] = b4;
+    }
+    
+    /**
+     * Add space for size bytes at current offset. Creates
+     * {@link LineNumberOffset}s as necessary.
+     *  
+     * @param lineNumber The line number that corresponds to the byte code, or -1
+     * @param size       The size in bytes to inject
+     */
+    public void makeSpace(short lineNumber, int size) {
+        if (size == 0) return;
 
         INSERT_LINE_NUMBER_OFFSET:
         if (lineNumber != -1) {
@@ -678,24 +768,29 @@ public class CodeContext {
         }
 
         int ico = this.currentInserter.offset;
-        if (this.end.offset + b.length <= this.code.length) {
-            System.arraycopy(this.code, ico, this.code, ico + b.length, this.end.offset - ico);
+        if (this.end.offset + size <= this.code.length) {
+            // Optimization to avoid a trivial method call in the common case
+            if(ico != this.end.offset) {
+                System.arraycopy(this.code, ico, this.code, ico + size, this.end.offset - ico);
+            }
         } else {
             byte[] oldCode = this.code;
-            this.code = new byte[this.code.length + CodeContext.SIZE_INCREMENT];
-            if (this.code.length >= 0xffff) throw new RuntimeException("Code attribute in class \"" + this.classFile.getThisClassName() + "\" grows beyond 64 KB");
+            //double size to avoid horrible performance, but don't grow over our limit
+            int newSize = Math.max(Math.min(oldCode.length * 2, 0xffff), oldCode.length + size);
+            if (newSize > 0xffff) throw new RuntimeException("Code attribute in class \"" + this.classFile.getThisClassName() + "\" grows beyond 64 KB");
+            this.code = new byte[newSize];
             System.arraycopy(oldCode, 0, this.code, 0, ico);
-            System.arraycopy(oldCode, ico, this.code, ico + b.length, this.end.offset - ico);
-        }
-        System.arraycopy(b, 0, this.code, ico, b.length);
-        for (Offset o = this.currentInserter; o != null; o = o.next) o.offset += b.length;
+            System.arraycopy(oldCode, ico, this.code, ico + size, this.end.offset - ico);
+        }  
+        Arrays.fill(this.code, ico, ico + size, (byte)0);
+        for (Offset o = this.currentInserter; o != null; o = o.next) o.offset += size;
     }
 
     /**
      * @param lineNumber The line number that corresponds to the byte code, or -1
      */
     public void writeShort(short lineNumber, int v) {
-        this.write(lineNumber, new byte[] { (byte) (v >> 8), (byte) v });
+        this.write(lineNumber, (byte) (v >> 8), (byte) v);
     }
 
     /**
@@ -703,7 +798,7 @@ public class CodeContext {
      */
     public void writeBranch(short lineNumber, int opcode, final Offset dst) {
         this.relocatables.add(new Branch(opcode, dst));
-        this.write(lineNumber, new byte[] { (byte) opcode, -1, -1 });
+        this.write(lineNumber, (byte) opcode, (byte) -1, (byte) -1);
     }
 
     private class Branch extends Relocatable {
@@ -730,9 +825,9 @@ public class CodeContext {
                 CodeContext.this.pushInserter(this.source); {
                     // promotion to a wide instruction only requires 2 extra bytes 
                     // everything else requires a new GOTO_W instruction after a negated if
-                    CodeContext.this.write(
+                    CodeContext.this.makeSpace(
                         (short) -1, 
-                        new byte[this.opcode == Opcode.GOTO ? 2 : this.opcode == Opcode.JSR ? 2 : 5]
+                        this.opcode == Opcode.GOTO ? 2 : this.opcode == Opcode.JSR ? 2 : 5
                     );
                 } CodeContext.this.popInserter();
                 this.source.offset = pos;
@@ -816,7 +911,7 @@ public class CodeContext {
 
     public void writeOffset(short lineNumber, Offset src, final Offset dst) {
         this.relocatables.add(new OffsetBranch(this.newOffset(), src, dst));
-        this.write(lineNumber, new byte[] { -1, -1, -1, -1 });
+        this.write(lineNumber, (byte) -1, (byte) -1, (byte) -1, (byte) -1);
     }
 
     private class OffsetBranch extends Relocatable {

@@ -34,6 +34,10 @@
 
 package org.codehaus.janino;
 
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+
 /**
  * Helper class that defines useful methods for handling "field descriptors"
  * (JVMS 4.3.2) and "method descriptors" (JVMS 4.3.3).<p>
@@ -128,15 +132,8 @@ public class Descriptor {
      * descriptor.
      */
     public static String fromClassName(String className) {
-        if (className.equals("void"   )) return Descriptor.VOID_;
-        if (className.equals("byte"   )) return Descriptor.BYTE_;
-        if (className.equals("char"   )) return Descriptor.CHAR_;
-        if (className.equals("double" )) return Descriptor.DOUBLE_;
-        if (className.equals("float"  )) return Descriptor.FLOAT_;
-        if (className.equals("int"    )) return Descriptor.INT_;
-        if (className.equals("long"   )) return Descriptor.LONG_;
-        if (className.equals("short"  )) return Descriptor.SHORT_;
-        if (className.equals("boolean")) return Descriptor.BOOLEAN_;
+        String res = (String)Descriptor.classNameToDescriptor.get(className);
+        if(res != null) { return res; }
         if (className.startsWith("[")) return className.replace('.', '/');
         return 'L' + className.replace('.', '/') + ';';
     }
@@ -156,29 +153,18 @@ public class Descriptor {
      * Class#getName()}.
      */
     public static String toClassName(String d) {
-        if (d.length() == 1) {
-            if (d.equals(Descriptor.VOID_   )) return "void";
-            if (d.equals(Descriptor.BYTE_   )) return "byte";
-            if (d.equals(Descriptor.CHAR_   )) return "char";
-            if (d.equals(Descriptor.DOUBLE_ )) return "double";
-            if (d.equals(Descriptor.FLOAT_  )) return "float";
-            if (d.equals(Descriptor.INT_    )) return "int";
-            if (d.equals(Descriptor.LONG_   )) return "long";
-            if (d.equals(Descriptor.SHORT_  )) return "short";
-            if (d.equals(Descriptor.BOOLEAN_)) return "boolean";
-        } else {
-            char firstChar = d.charAt(0);
-            if (firstChar == 'L' && d.endsWith(";")) {
-
-                // Class or interface -- convert "Ljava/lang/String;" to "java.lang.String".
-                return d.substring(1, d.length() - 1).replace('/', '.');
-            } 
-            if (firstChar == '[') {
-
-                // Array type -- convert "[Ljava/lang/String;" to "[Ljava.lang.String;".
-                return d.replace('/', '.');
-            } 
-        }
+        String res = (String)Descriptor.descriptorToClassName.get(d);
+        if(res != null) { return res; }
+        
+        char firstChar = d.charAt(0);
+        if (firstChar == 'L' && d.endsWith(";")) {
+            // Class or interface -- convert "Ljava/lang/String;" to "java.lang.String".
+            return d.substring(1, d.length() - 1).replace('/', '.');
+        } 
+        if (firstChar == '[') {
+            // Array type -- convert "[Ljava/lang/String;" to "[Ljava.lang.String;".
+            return d.replace('/', '.');
+        } 
         throw new RuntimeException("(Invalid field descriptor \"" + d + "\")");
     }
 
@@ -218,15 +204,15 @@ public class Descriptor {
         return packageName1 == null ? packageName2 == null : packageName1.equals(packageName2);
     }
 
-    public final static String VOID_    = "V";
-    public final static String BYTE_    = "B";
-    public final static String CHAR_    = "C";
-    public final static String DOUBLE_  = "D";
-    public final static String FLOAT_   = "F";
-    public final static String INT_     = "I";
-    public final static String LONG_    = "J";
-    public final static String SHORT_   = "S";
-    public final static String BOOLEAN_ = "Z";
+    public final static String VOID_             = "V";
+    public final static String BYTE_             = "B";
+    public final static String CHAR_             = "C";
+    public final static String DOUBLE_           = "D";
+    public final static String FLOAT_            = "F";
+    public final static String INT_              = "I";
+    public final static String LONG_             = "J";
+    public final static String SHORT_            = "S";
+    public final static String BOOLEAN_          = "Z";
     public final static String OBJECT            = "Ljava/lang/Object;";
     public final static String STRING            = "Ljava/lang/String;";
     public final static String STRING_BUFFER     = "Ljava/lang/StringBuffer;";
@@ -237,12 +223,48 @@ public class Descriptor {
     public final static String ERROR             = "Ljava/lang/Error;";
     public final static String CLONEABLE         = "Ljava/lang/Cloneable;";
     public final static String SERIALIZABLE      = "Ljava/io/Serializable;";
-    public final static String BOOLEAN   = "Ljava/lang/Boolean;";
-    public final static String BYTE      = "Ljava/lang/Byte;";
-    public final static String CHARACTER = "Ljava/lang/Character;";
-    public final static String SHORT     = "Ljava/lang/Short;";
-    public final static String INTEGER   = "Ljava/lang/Integer;";
-    public final static String LONG      = "Ljava/lang/Long;";
-    public final static String FLOAT     = "Ljava/lang/Float;";
-    public final static String DOUBLE    = "Ljava/lang/Double;";
+    public final static String BOOLEAN           = "Ljava/lang/Boolean;";
+    public final static String BYTE              = "Ljava/lang/Byte;";
+    public final static String CHARACTER         = "Ljava/lang/Character;";
+    public final static String SHORT             = "Ljava/lang/Short;";
+    public final static String INTEGER           = "Ljava/lang/Integer;";
+    public final static String LONG              = "Ljava/lang/Long;";
+    public final static String FLOAT             = "Ljava/lang/Float;";
+    public final static String DOUBLE            = "Ljava/lang/Double;";
+    private final static Map classNameToDescriptor = new HashMap();
+    private final static Map descriptorToClassName = new HashMap();
+    static {
+        descriptorToClassName.put(Descriptor.VOID_,             "void");
+        descriptorToClassName.put(Descriptor.BYTE_,             "byte");
+        descriptorToClassName.put(Descriptor.CHAR_,             "char");
+        descriptorToClassName.put(Descriptor.DOUBLE_,           "double");
+        descriptorToClassName.put(Descriptor.FLOAT_,            "float");
+        descriptorToClassName.put(Descriptor.INT_,              "int");
+        descriptorToClassName.put(Descriptor.LONG_,             "long");
+        descriptorToClassName.put(Descriptor.SHORT_,            "short");
+        descriptorToClassName.put(Descriptor.BOOLEAN_,          "boolean");
+        descriptorToClassName.put(Descriptor.OBJECT,            "java.lang.Object");
+        descriptorToClassName.put(Descriptor.STRING,            "java.lang.String");
+        descriptorToClassName.put(Descriptor.STRING_BUFFER,     "java.lang.StringBuffer");
+        descriptorToClassName.put(Descriptor.STRING_BUILDER,    "java.lang.StringBuilder");
+        descriptorToClassName.put(Descriptor.CLASS,             "java.lang.Class");
+        descriptorToClassName.put(Descriptor.THROWABLE,         "java.lang.Throwable");
+        descriptorToClassName.put(Descriptor.RUNTIME_EXCEPTION, "java.lang.RuntimeException");
+        descriptorToClassName.put(Descriptor.ERROR,             "java.lang.Error");
+        descriptorToClassName.put(Descriptor.CLONEABLE,         "java.lang.Cloneable");
+        descriptorToClassName.put(Descriptor.SERIALIZABLE,      "java.io.Serializable");
+        descriptorToClassName.put(Descriptor.BOOLEAN,           "java.lang.Boolean");
+        descriptorToClassName.put(Descriptor.BYTE,              "java.lang.Byte");
+        descriptorToClassName.put(Descriptor.CHARACTER,         "java.lang.Character");
+        descriptorToClassName.put(Descriptor.SHORT,             "java.lang.Short");
+        descriptorToClassName.put(Descriptor.INTEGER,           "java.lang.Integer");
+        descriptorToClassName.put(Descriptor.LONG,              "java.lang.Long");
+        descriptorToClassName.put(Descriptor.FLOAT,             "java.lang.Float");
+        descriptorToClassName.put(Descriptor.DOUBLE,            "java.lang.Double");
+        
+        for(Iterator it = descriptorToClassName.entrySet().iterator(); it.hasNext();) {
+            Map.Entry e = (Map.Entry) it.next();
+            classNameToDescriptor.put(e.getValue(), e.getKey());
+        }
+    }
 }

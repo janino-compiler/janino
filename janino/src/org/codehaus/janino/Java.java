@@ -34,10 +34,17 @@
 
 package org.codehaus.janino;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
-import org.codehaus.janino.util.*;
-import org.codehaus.janino.util.iterator.*;
+import org.codehaus.janino.util.Traverser;
+import org.codehaus.janino.util.iterator.ReverseListIterator;
 
 
 /**
@@ -360,6 +367,13 @@ public class Java {
             method.setDeclaringType(this);
         }
 
+        public void invalidateMethodCaches() {
+            if (this.resolvedType != null) {
+                this.resolvedType.declaredIMethods = null;
+                this.resolvedType.declaredIMethodCache = null;
+            }
+        }
+
         // Implement TypeDeclaration.
         public void addMemberTypeDeclaration(MemberTypeDeclaration mcoid) {
             this.declaredClassesAndInterfaces.add(mcoid);
@@ -372,6 +386,13 @@ public class Java {
             for (Iterator it = this.declaredClassesAndInterfaces.iterator(); it.hasNext();) {
                 MemberTypeDeclaration mtd = (MemberTypeDeclaration) it.next();
                 if (mtd.getName().equals(name)) return mtd;
+            }
+            return null;
+        }
+        public MethodDeclarator getMethodDeclaration(String name) {
+            for (Iterator it = this.declaredMethods.iterator(); it.hasNext();) {
+                MethodDeclarator md = (MethodDeclarator) it.next();
+                if (md.name.equals(name)) return md;
             }
             return null;
         }
@@ -880,6 +901,10 @@ public class Java {
 
         public final void accept(Visitor.TypeBodyDeclarationVisitor visitor) { visitor.visitInitializer(this); }
         public final void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitInitializer(this); }
+
+        public Java.LocalVariable findLocalVariable(String name) {
+            return this.block.findLocalVariable(name);
+        }
     }
 
     /**
@@ -955,6 +980,9 @@ public class Java {
         
             public Java.LocalVariable localVariable = null;
         }
+
+        // Compile time members
+        public Map localVariables = null; // String name => Java.LocalVariable
     }
 
     public static final class ConstructorDeclarator extends FunctionDeclarator {
@@ -1164,6 +1192,7 @@ public class Java {
         Scope getEnclosingScope();
 
         void accept(Visitor.BlockStatementVisitor visitor);
+        Java.LocalVariable findLocalVariable(String name);
     }
 
     public static abstract class Statement extends Located implements BlockStatement {
@@ -1179,6 +1208,13 @@ public class Java {
             this.enclosingScope = enclosingScope;
         }
         public Scope getEnclosingScope() { return this.enclosingScope; }
+
+        // Compile time members
+        public Map localVariables = null; // String name => Java.LocalVariable
+        public Java.LocalVariable findLocalVariable(String name) {
+            if (this.localVariables == null) { return null; }
+            return (LocalVariable) this.localVariables.get(name);
+        }
     }
 
     public final static class LabeledStatement extends BreakableStatement {
@@ -1239,7 +1275,6 @@ public class Java {
         }
 
         // Compile time members.
-
         public final void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitBlock(this); }
 
         public String toString() {
@@ -1511,7 +1546,7 @@ public class Java {
             if (x != 0) {
                 CodeContext ca = this.getCodeContext();
                 ca.pushInserter(this); {
-                    ca.write((short) -1, new byte[4 - x]);
+                    ca.makeSpace((short) -1, 4 - x);
                 } ca.popInserter();
             }
         }
@@ -2521,6 +2556,13 @@ public class Java {
             this.enclosingScope = enclosingScope;
         }
         public Scope getEnclosingScope() { return this.enclosingScope; }
+
+        // Compile time members
+        public Map localVariables = null; // String name => Java.LocalVariable
+        public Java.LocalVariable findLocalVariable(String name) {
+            if (this.localVariables == null) { return null; }
+            return (LocalVariable) this.localVariables.get(name);
+        }
     }
 
     public final static class AlternateConstructorInvocation extends ConstructorInvocation {
@@ -2737,6 +2779,23 @@ public class Java {
         public final Rvalue[] dimExprs;
         public final int      dims;
 
+        /**
+         * Create a new array with dimension dimExprs.length + dims
+         * <p>
+         * e.g. byte[12][][] is created with
+         *     new NewArray(
+         *         null,
+         *         Java.BasicType(NULL, Java.BasicType.BYTE),
+         *         new Rvalue[] {
+         *             new Java.Literal(null, Integer.valueOf(12)
+         *         },
+         *         2
+         *     )
+         * @param location  the location of this element
+         * @param type      the base type of the array
+         * @param dimExprs  sizes for dimensions being allocated with specific sizes
+         * @param dims      the number of dimensions that are not yet allocated
+         */
         public NewArray(
             Location location,
             Type     type,

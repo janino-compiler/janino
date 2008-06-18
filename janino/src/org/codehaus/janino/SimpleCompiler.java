@@ -201,7 +201,7 @@ public class SimpleCompiler extends Cookable {
     public static final ClassLoader BOOT_CLASS_LOADER = new ClassLoader(null) {};
 
     /**
-     * Allowe references to the classes loaded through this parent class loader
+     * Allow references to the classes loaded through this parent class loader
      * (@see {@link #setParentClassLoader(ClassLoader)}), plus the extra
      * <code>auxiliaryClasses</code>.
      * <p>
@@ -226,6 +226,20 @@ public class SimpleCompiler extends Cookable {
 
         // Parse the compilation unit.
         Java.CompilationUnit compilationUnit = new Parser(scanner).parseCompilationUnit();
+
+        // Compile the classes and load them.
+        this.compileToClassLoader(
+            compilationUnit,
+            DebuggingInformation.DEFAULT_DEBUGGING_INFORMATION
+        );
+    }
+    
+    /**
+     * Cook this compilation unit directly. 
+     *  See {@link Cookable.cook}
+     */
+    public void cook(Java.CompilationUnit compilationUnit) throws CompileException {
+        this.setUpClassLoaders();
 
         // Compile the classes and load them.
         this.compileToClassLoader(
