@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry excluding="org/codehaus/janino/AstGeneratorVisitor.java" kind="src" path="src"/>
+	<classpathentry kind="src" path="src"/>
 	<classpathentry excluding="AstGeneratorVisitorTest.java|CVS/" kind="src" path="tests/src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="var" path="ECLIPSE_HOME/plugins/org.apache.ant_1.7.0.v200706080842/lib/ant.jar"/>
