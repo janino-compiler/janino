@@ -2807,10 +2807,20 @@ public class Java {
         public final Object value; // The "null" literal has "value == null".
 
         /**
-         * @param value A {@link Boolean}, {@link String}, {@link Double}, {@link Float}, {@link Character}, or <code>null</code>
+         * @param value An {@link Integer}, {@link Long}, {@link Float}, {@link Double}, {@link String}, {@link Character}, {@link Boolean}, or <code>null</code>
          */
         public Literal(Location location, Object value) {
             super(location);
+            if (!(
+                value instanceof Integer
+                || value instanceof Long
+                || value instanceof Float
+                || value instanceof Double
+                || value instanceof String
+                || value instanceof Character
+                || value instanceof Boolean
+                || value == null
+            )) throw new IllegalArgumentException(value.getClass().getName());
             this.value = value;
         }
 
