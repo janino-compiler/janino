@@ -236,7 +236,7 @@ public class SimpleCompiler extends Cookable {
     
     /**
      * Cook this compilation unit directly. 
-     *  See {@link Cookable.cook}
+     *  See {@link Cookable#cook}
      */
     public void cook(Java.CompilationUnit compilationUnit) throws CompileException {
         this.setUpClassLoaders();
