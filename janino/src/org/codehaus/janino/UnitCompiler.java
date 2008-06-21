@@ -130,7 +130,13 @@ public class UnitCompiler {
         this.iClassLoader    = iClassLoader;
 
         try {
-            if (iClassLoader.loadIClass(Descriptor.STRING_BUILDER) != null) {
+            boolean allowStringBuilder = true;
+            String targetVersion = System.getProperty("Janino.TargetVersion");
+            if (targetVersion != null && Double.parseDouble(targetVersion) <= 1.4d) {
+                allowStringBuilder = false;
+            }
+
+            if ((iClassLoader.loadIClass(Descriptor.STRING_BUILDER) != null) && allowStringBuilder) {
                 this.isStringBuilderAvailable = true;
             } else
             if (iClassLoader.loadIClass(Descriptor.STRING_BUFFER) != null) {
