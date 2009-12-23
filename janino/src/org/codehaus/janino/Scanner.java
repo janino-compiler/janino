@@ -34,8 +34,15 @@
 
 package org.codehaus.janino;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.codehaus.janino.util.LocatedException;
 import org.codehaus.janino.util.TeeReader;
@@ -462,6 +469,13 @@ public class Scanner {
         if (v instanceof Boolean) {
             return v.toString();
         }
+        if (v instanceof Byte) {
+            return "((byte)"+v.toString()+")";
+        }
+        if (v instanceof Short) {
+            return "((short)"+v.toString()+")";
+        }
+
         if (v == null) {
             return "null";
         }

@@ -1217,7 +1217,7 @@ public class Java {
         public Java.LocalVariable findLocalVariable(String name) {
             if (this.localVariables == null) { return null; }
             return (LocalVariable) this.localVariables.get(name);
-    }
+        }
     }
 
     public final static class LabeledStatement extends BreakableStatement {
@@ -2567,7 +2567,7 @@ public class Java {
         public Java.LocalVariable findLocalVariable(String name) {
             if (this.localVariables == null) { return null; }
             return (LocalVariable) this.localVariables.get(name);
-    }
+        }
     }
 
     public final static class AlternateConstructorInvocation extends ConstructorInvocation {
@@ -2883,6 +2883,8 @@ public class Java {
                 || value instanceof String
                 || value instanceof Character
                 || value instanceof Boolean
+                || value instanceof Short
+                || value instanceof Byte
                 || value == null
             )) throw new IllegalArgumentException(value.getClass().getName());
             this.value = value;

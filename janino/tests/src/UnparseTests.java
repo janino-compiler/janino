@@ -43,6 +43,7 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
+
 import junit.framework.Assert;
 import junit.framework.Test;
 import junit.framework.TestCase;
@@ -89,6 +90,7 @@ import org.codehaus.janino.util.Traverser;
 public class UnparseTests extends TestCase {
     public static Test suite() {
         TestSuite s = new TestSuite(UnparseTests.class.getName());
+        s.addTest(new UnparseTests("testLiterals"));
         s.addTest(new UnparseTests("testSimple"));
         s.addTest(new UnparseTests("testParens"));
         s.addTest(new UnparseTests("testMany"));
@@ -324,6 +326,22 @@ public class UnparseTests extends TestCase {
         };
         rvalue.accept(rv);
         return res[0];
+    }
+
+    public void testLiterals() throws Exception {
+        Object[][] tests = new Object[][] {
+                { new Java.Literal(null, new Short((short)1)), "((short)1)" },
+                { new Java.Literal(null, new Byte((byte)1)),   "((byte)1)"  },
+        };
+        for(int i = 0; i < tests.length; ++i) {
+            Atom expr = (Atom) tests[i][0];
+            String expected = (String) tests[i][1];
+            
+            StringWriter sw = new StringWriter();
+            UnparseVisitor uv = new UnparseVisitor(sw);
+            expr.accept(uv);
+            Assert.assertEquals(expected, sw.toString());
+        }
     }
 
     public void testSimple() throws Exception {

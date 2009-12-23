@@ -1578,7 +1578,7 @@ public class UnitCompiler {
                     if (this.compile(ts.optionalFinally)) {
                         if (pcLVIndex > 255) {
                             this.writeOpcode(ts.optionalFinally, Opcode.WIDE);
-                            this.writeOpcode(ts.optionalFinally, Opcode.RET);
+                        this.writeOpcode(ts.optionalFinally, Opcode.RET);
                             this.writeShort(pcLVIndex);
                         } else {
                         this.writeOpcode(ts.optionalFinally, Opcode.RET);
@@ -1822,7 +1822,7 @@ public class UnitCompiler {
             if (localVars.containsKey(fp.name)) this.compileError("Redefinition of formal parameter \"" + fp.name + "\"", fd.getLocation());
             Java.LocalVariable lv = this.getLocalVariable(fp);
             lv.setSlot(this.codeContext.allocateLocalVariable(Descriptor.size(lv.type.getDescriptor()), fp.name, this.getType(fp.type)));
-
+            
             localVars.put(fp.name, lv);
         }
 
@@ -1851,7 +1851,7 @@ public class UnitCompiler {
             public void visitSuperConstructorInvocation(SuperConstructorInvocation sci)         { UnitCompiler.this.buildLocalVariableMap(sci, localVars); }
             public void visitThrowStatement(ThrowStatement ts)                                  { UnitCompiler.this.buildLocalVariableMap(ts, localVars); }
             public void visitLocalClassDeclarationStatement(LocalClassDeclarationStatement lcds){ UnitCompiler.this.buildLocalVariableMap(lcds, localVars); }
-
+            
             // more complicated statements with specialized handlers, but don't add new variables in this scope
             public void visitBlock(Block b)              					 { try { UnitCompiler.this.buildLocalVariableMap(b , localVars); } catch (CompileException e) { throw new UCE(e); } }
             public void visitDoStatement(DoStatement ds)                     { try { UnitCompiler.this.buildLocalVariableMap(ds, localVars); } catch (CompileException e) { throw new UCE(e); } }
@@ -1862,7 +1862,7 @@ public class UnitCompiler {
             public void visitSynchronizedStatement(SynchronizedStatement ss) { try { UnitCompiler.this.buildLocalVariableMap(ss, localVars); } catch (CompileException e) { throw new UCE(e); } }
             public void visitTryStatement(TryStatement ts)                   { try { UnitCompiler.this.buildLocalVariableMap(ts, localVars); } catch (CompileException e) { throw new UCE(e); } }
             public void visitWhileStatement(WhileStatement ws)               { try { UnitCompiler.this.buildLocalVariableMap(ws, localVars); } catch (CompileException e) { throw new UCE(e); } }
-
+            
             // more complicated statements with specialized handlers, that can add variables in this scope
             public void visitLabeledStatement(LabeledStatement ls)                                     { try { resVars[0] = UnitCompiler.this.buildLocalVariableMap(ls  , localVars); } catch (CompileException e) { throw new UCE(e); } }
             public void visitLocalVariableDeclarationStatement(LocalVariableDeclarationStatement lvds) { try { resVars[0] = UnitCompiler.this.buildLocalVariableMap(lvds, localVars); } catch (CompileException e) { throw new UCE(e); } }
@@ -1873,7 +1873,7 @@ public class UnitCompiler {
     // default handlers
     private Map buildLocalVariableMap(Statement s, final Map localVars)              { return s.localVariables = localVars; }
     private Map buildLocalVariableMap(ConstructorInvocation ci, final Map localVars) { return ci.localVariables = localVars; }
-
+    
     // specialized handlers
     private void buildLocalVariableMap(Block block, Map localVars) throws CompileException {
         block.localVariables = localVars;
@@ -1934,7 +1934,7 @@ public class UnitCompiler {
         ws.localVariables = localVars;
         UnitCompiler.this.buildLocalVariableMap(ws.body, localVars);
     }
-
+    
     private Map buildLocalVariableMap(LabeledStatement ls, final Map localVars) throws CompileException {
         ls.localVariables = localVars;
         return UnitCompiler.this.buildLocalVariableMap((BlockStatement)ls.body, localVars);
@@ -2129,12 +2129,6 @@ public class UnitCompiler {
             if (outerIClassOfSuperclass == null) {
                 optionalEnclosingInstance = null;
             } else {
-//                optionalEnclosingInstance = new Java.QualifiedThisReference(
-//                    sci.getLocation(),      // location
-//                    declaringClass,         // declaringClass
-//                    declaringConstructor,   // declaringTypeBodyDeclaration
-//                    outerIClassOfSuperclass // targetClass
-//                );
                 optionalEnclosingInstance = new Java.QualifiedThisReference(
                     sci.getLocation(),   // location
                     new Java.SimpleType( // qualification
@@ -2726,11 +2720,11 @@ public class UnitCompiler {
             classDollarFieldName           // fieldName
         );
         Java.ConditionalExpression ce = new Java.ConditionalExpression(
-            loc,                                  // location
-            new Java.BinaryOperation(             // lhs
-                loc,                              // location
-                classDollarFieldAccess,           // lhs
-                "!=",                             // op
+            loc,                            // location
+            new Java.BinaryOperation(       // lhs
+                loc,                        // location
+                classDollarFieldAccess,     // lhs
+                "!=",                       // op
                 new Java.Literal(loc, null) // rhs
             ),
             classDollarFieldAccess,        // mhs
@@ -3839,7 +3833,7 @@ public class UnitCompiler {
     }
     public boolean generatesCode2(Java.Block b) throws CompileException {
         return generatesCode2ListStatements(b.statements);
-        }
+    }
     public boolean generatesCode2(Java.FieldDeclaration fd) throws CompileException {
         // Code is only generated if at least one of the declared variables has a
         // non-constant-final initializer.
@@ -4366,9 +4360,6 @@ public class UnitCompiler {
     private IClass getType2(Java.ParenthesizedExpression pe) throws CompileException {
         return this.getType(pe.value);
     }
-//    private IClass getType2(Java.ConstructorInvocation ci) {
-//        throw new RuntimeException();
-//    }
     private IClass getType2(Java.MethodInvocation mi) throws CompileException {
         if (mi.iMethod == null) {
             mi.iMethod = this.findIMethod(mi);
@@ -4396,6 +4387,7 @@ public class UnitCompiler {
         return this.getType(nia.arrayType);
     }
     private IClass getType2(Java.Literal l) {
+        if (l.value instanceof Short    ) return IClass.SHORT;
         if (l.value instanceof Byte     ) return IClass.BYTE;
         if (l.value instanceof Integer  ) return IClass.INT;
         if (l.value instanceof Long     ) return IClass.LONG;
@@ -6931,7 +6923,7 @@ public class UnitCompiler {
 
         declaringType.addDeclaredMethod(cdmd);
         declaringType.invalidateMethodCaches();
-        }
+    }
 
     private IClass pushConstant(Locatable l, Object value) {
         if (
