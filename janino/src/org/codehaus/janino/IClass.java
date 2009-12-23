@@ -549,10 +549,17 @@ public abstract class IClass {
      * @param objectType Required because the superclass of an array class is {@link Object} by definition
      */
     public IClass getArrayIClass(IClass objectType) {
-        if (this.arrayIClass == null) this.arrayIClass = this.getArrayIClass2(objectType);
+        if (this.arrayIClass == null) {
+            synchronized (this) {
+                if (this.arrayIClass == null) {
+                    this.arrayIClass = this.getArrayIClass2(objectType);
+                }
+            }
+        }
         return this.arrayIClass;
     }
-    private IClass arrayIClass = null;
+    // must be volatile for the double checked lock (above) to function
+    private volatile IClass arrayIClass = null;
 
     private IClass getArrayIClass2(final IClass objectType) {
         final IClass componentType = this;
