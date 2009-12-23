@@ -32,40 +32,34 @@
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.codehaus.janino;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectOutputStream;
 
-import java.io.Serializable;
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
 
-/**
- * Represents the location of a character in a file, as defined by
- * file name, line number and column number.
- */
-public class Location implements Serializable {
-    public Location(String optionalFileName, short lineNumber, short columnNumber) {
-        this.optionalFileName = optionalFileName;
-        this.lineNumber       = lineNumber;
-        this.columnNumber     = columnNumber;
+import org.codehaus.janino.SimpleCompiler;
+import org.codehaus.janino.util.LocatedException;
+
+public class SerializationTests extends TestCase {
+    public static Test suite() {
+        TestSuite s = new TestSuite(SerializationTests.class.getName());
+        s.addTest(new SerializationTests("testExceptionSerializable"));
+        return s;
     }
 
-    public String getFileName()     { return this.optionalFileName; }
-    public short  getLineNumber()   { return this.lineNumber; }
-    public short  getColumnNumber() { return this.columnNumber; }
-
-    /**
-     * Converts this {@link Location} into an english text, like<pre>
-     * File Main.java, Line 23, Column 79</pre>
-     */
-    public String toString() {
-        StringBuffer sb = new StringBuffer();
-        if (this.optionalFileName != null) {
-            sb.append("File ").append(this.optionalFileName).append(", ");
+    public SerializationTests(String name) { super(name); }
+    
+    public void testExceptionSerializable() throws Exception {
+        SimpleCompiler compiler = new SimpleCompiler();
+        try {
+            compiler.cook("this is not valid Java");
+            fail("Cook should have thrown an exception");
+        } catch (LocatedException e) {
+            ObjectOutputStream oos = new ObjectOutputStream(new ByteArrayOutputStream());
+            oos.writeObject(e);
+            oos.close();
         }
-        sb.append("Line ").append(this.lineNumber).append(", ");
-        sb.append("Column ").append(this.columnNumber);
-        return sb.toString();
     }
-
-    private final String optionalFileName;
-    private final short  lineNumber;
-    private final short  columnNumber;
 }

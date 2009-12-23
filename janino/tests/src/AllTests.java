@@ -32,11 +32,13 @@
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import junit.framework.*;
+import junit.framework.Test;
+import junit.framework.TestCase;
 
-import util.*;
+import org.codehaus.janino.ExpressionEvaluator;
+import org.codehaus.janino.SimpleCompiler;
 
-import org.codehaus.janino.*;
+import util.JaninoTestSuite;
 
 public class AllTests extends JaninoTestSuite {
     public static Test suite() {
@@ -84,5 +86,6 @@ public class AllTests extends JaninoTestSuite {
         this.addTest(EvaluatorTests.suite());
         this.addTest(AstTests.suite());
         this.addTest(UnparseTests.suite());
+        this.addTest(SerializationTests.suite());
     }
 }
