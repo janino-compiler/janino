@@ -32,7 +32,6 @@
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import java.io.IOException;
 import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -62,7 +61,6 @@ import org.codehaus.janino.Java.Rvalue;
 import org.codehaus.janino.Java.Type;
 import org.codehaus.janino.Java.FunctionDeclarator.FormalParameter;
 import org.codehaus.janino.Parser.ParseException;
-import org.codehaus.janino.Scanner.ScanException;
 
 public class AstTests extends TestCase {
     public static Test suite() {
@@ -79,7 +77,7 @@ public class AstTests extends TestCase {
     public AstTests(String name) { super(name); }
 
     private static Object compileAndEval(CompilationUnit cu) throws CompileException,
-            ParseException, ScanException, IOException, ClassNotFoundException,
+            ClassNotFoundException,
     InstantiationException, IllegalAccessException,
     NoSuchMethodException, InvocationTargetException {
         SimpleCompiler compiler = new SimpleCompiler();
