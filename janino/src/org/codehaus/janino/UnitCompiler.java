@@ -207,16 +207,13 @@ public class UnitCompiler {
             }
     
             // Static field?
-            IField[] flds = iClass.getDeclaredIFields();
-            for (int i = 0; i < flds.length; ++i) {
-                IField iField = flds[i];
-                if (iField.getName().equals(name)) {
-                    if (!iField.isStatic()) {
-                        this.compileError("Filed \"" + name + "\" of \"" + Java.join(typeName, ".") + "\" must be static", ssid.getLocation());
-                    }
-                    importedObject = iField;
-                    break FIND_IMPORTED_OBJECT;
+            IField iField = iClass.getDeclaredIField(name);
+            if (iField != null) {
+                if (!iField.isStatic()) {
+                    this.compileError("Filed \"" + name + "\" of \"" + Java.join(typeName, ".") + "\" must be static", ssid.getLocation());
                 }
+                importedObject = iField;
+                break FIND_IMPORTED_OBJECT;
             }
     
             // Static method?
@@ -5611,14 +5608,11 @@ public class UnitCompiler {
             IField importedField = null;
             for (Iterator it = this.staticImportsOnDemand.iterator(); it.hasNext();) {
                 IClass iClass = (IClass) it.next();
-                IField[] flds = iClass.getDeclaredIFields();
-                for (int i = 0 ; i < flds.length; ++i) {
-                    IField f = flds[i];
-                    if (f.getName().equals(identifier)) {
-                        if (!UnitCompiler.this.isAccessible(f, enclosingBlockStatement)) continue; // JLS3 7.5.4 Static-Import-on-Demand Declaration
-                        if (importedField != null) UnitCompiler.this.compileError("Ambiguous static field import: \"" + importedField.toString() + "\" vs. \"" + f.toString() + "\"");
-                        importedField = f;
-                    }
+                IField f = iClass.getDeclaredIField(identifier);
+                if (f != null) {
+                    if (!UnitCompiler.this.isAccessible(f, enclosingBlockStatement)) continue; // JLS3 7.5.4 Static-Import-on-Demand Declaration
+                    if (importedField != null) UnitCompiler.this.compileError("Ambiguous static field import: \"" + importedField.toString() + "\" vs. \"" + f.toString() + "\"");
+                    importedField = f;
                 }
             }
             if (importedField != null) {

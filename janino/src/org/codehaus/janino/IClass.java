@@ -219,15 +219,9 @@ public abstract class IClass {
      * fields).<br>
      * Returns an empty array for an array, primitive type or "void".
      */
-    public final IField[] getDeclaredIFields() {
-        if (this.declaredIFields == null) {
-            this.declaredIFields = this.getDeclaredIFields2();
-        }
-        return this.declaredIFields;
-    }
     public final IField getDeclaredIField(String name) {
         if(this.declaredIFieldsCache == null) {
-            IField[] fields = getDeclaredIFields();
+            IField[] fields = getDeclaredIFields2();
             Map m = new HashMap();
             for(int i = 0; i < fields.length; ++i) {
                 m.put(fields[i].getName(), fields[i]);
@@ -238,12 +232,10 @@ public abstract class IClass {
     }
     
     protected void clearIFieldCaches() {
-        this.declaredIFields = null;
         this.declaredIFieldsCache = null;
     }
         
     private Map declaredIFieldsCache = null; // String name => IField
-    private IField[] declaredIFields = null;
     protected abstract IField[] getDeclaredIFields2();
 
     /**
