@@ -275,14 +275,6 @@ public abstract class IClassLoader {
         icl = new ResourceFinderIClassLoader(extensionDirectoriesResourceFinder, icl);
         icl = new ResourceFinderIClassLoader(classPathResourceFinder, icl);
         return icl;
-//        ClassLoader cl;
-//        
-//        cl = SimpleCompiler.BOOT_CLASS_LOADER;
-//        cl = new ResourceFinderClassLoader(bootClassPathResourceFinder, cl);
-//        cl = new ResourceFinderClassLoader(extensionDirectoriesResourceFinder, cl);
-//        cl = new ResourceFinderClassLoader(classPathResourceFinder, cl);
-//        
-//        return new ClassLoaderIClassLoader(cl);
     }
 
     private final IClassLoader optionalParentIClassLoader;
