@@ -19,10 +19,8 @@ public class MultiThreadedIssueTest {
     public static void main(String[] args) throws InterruptedException {
         Runnable runnable = new Runnable() {
             public void run() {
-                System.out.println("Starting");
                 final Calculator calculator = create(random.nextInt(100));
-                double[] result = calculator.calc((int)Math.random());
-                System.out.println("result = " + result);
+                calculator.calc((int)Math.random());
             }
         };
 
@@ -37,6 +35,11 @@ public class MultiThreadedIssueTest {
         }
         for (int i = 0; i < threads.size(); ++i) {
             ((Thread)threads.get(i)).join();
+        }
+        if (!running.get()) {
+            System.exit(1);
+        } else {
+            System.exit(0);
         }
     }
 
@@ -56,11 +59,9 @@ public class MultiThreadedIssueTest {
             );
         } catch (Exception e) {
             e.printStackTrace();
-            System.out.println("javaCode = " + javaCode);
             running.set(false);
             throw new RuntimeException(e);
         }
-
     }
 
     public static String generateCode(int depth) {
