@@ -80,6 +80,7 @@ public class EvaluatorTests extends TestCase {
         s.addTest(new EvaluatorTests("testStaticFieldAccess"));
         s.addTest(new EvaluatorTests("testWideInstructions"));
         s.addTest(new EvaluatorTests("testHandlingNaN"));
+        s.addTest(new EvaluatorTests("testInstanceOf"));
         return s;
     }
 
@@ -699,5 +700,38 @@ public class EvaluatorTests extends TestCase {
             assertEquals("hi 1 1.0 1.0 1 1 true try finally", o);
         }
         
+    }
+    
+    
+    public void testInstanceOf() throws Exception {
+        String test =
+            "package test;\n" +
+            "public class Test {\n" +
+            "    public static boolean run(String o) {\n" +
+            "        return o instanceof String;" +
+            "    };\n" +
+            "    public static boolean run(Object o) {\n" +
+            "        return o instanceof String;" +
+            "    };\n" +
+            "    public static boolean run() {\n" +
+            "        return null instanceof String;" +
+            "    };\n" +
+            "}";
+        
+        SimpleCompiler sc = new SimpleCompiler();
+        sc.cook(test);
+        Class c = sc.getClassLoader().loadClass("test.Test");
+        Method m0 = c.getDeclaredMethod("run", new Class[] { });
+        assertEquals(new Boolean(false), m0.invoke(null, null));
+        
+        Method mStr = c.getDeclaredMethod("run", new Class[] { String.class });
+        Method mObj = c.getDeclaredMethod("run", new Class[] { Object.class });
+        
+        assertEquals(new Boolean(true),  mObj.invoke(null, new Object[] { "" }));
+        assertEquals(new Boolean(false), mObj.invoke(null, new Object[] { new Integer(1) }));
+        assertEquals(new Boolean(false), mObj.invoke(null, new Object[] { null }));
+        
+        assertEquals(new Boolean(true),  mStr.invoke(null, new Object[] { "" }));
+        assertEquals(new Boolean(false), mStr.invoke(null, new Object[] { null }));
     }
 }

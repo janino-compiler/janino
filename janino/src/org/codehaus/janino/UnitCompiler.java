@@ -3003,15 +3003,12 @@ public class UnitCompiler {
     private IClass compileGet2(Java.Instanceof io) throws CompileException {
         IClass lhsType = this.compileGetValue(io.lhs);
         IClass rhsType = this.getType(io.rhs);
-
-        if (rhsType.isAssignableFrom(lhsType)) {
-            this.pop((Locatable) io, lhsType);
-            this.writeOpcode(io, Opcode.ICONST_1);
-        } else
         if (
-            lhsType.isInterface() ||
-            rhsType.isInterface() ||
-            lhsType.isAssignableFrom(rhsType)
+            lhsType.isInterface() || rhsType.isInterface() ||
+            // we cannot precompute the result from type information as the value might be null,
+            // but we should detect when the instanceof is statically impossible
+            lhsType.isAssignableFrom(rhsType) ||
+            rhsType.isAssignableFrom(lhsType)
         ) {
             this.writeOpcode(io, Opcode.INSTANCEOF);
             this.writeConstantClassInfo(rhsType.getDescriptor());
