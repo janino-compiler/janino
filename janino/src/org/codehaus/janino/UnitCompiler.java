@@ -648,7 +648,7 @@ public class UnitCompiler {
                 innerClassInfoIndex, // innerClassInfoIndex
                 outerClassInfoIndex, // outerClassInfoIndex
                 innerNameIndex,      // innerNameIndex
-                decl.modifiers         // innerClassAccessFlags
+                atd.modifiers        // innerClassAccessFlags
             ));
         }
     }
