@@ -632,9 +632,9 @@ public class EvaluatorTests extends TestCase {
             int repititions = tests[i];
             
             StringBuilder sb = new StringBuilder();
-            StringBuilder expected = new StringBuilder();
             sb.append(preamble);
             for(int j = 0; j < repititions; ++j) {
+                sb.append(middle);
             }
             sb.append(postamble);
             
