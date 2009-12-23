@@ -754,8 +754,7 @@ public class EvaluatorTests extends TestCase {
             "}"
         );
     }
-    
-    
+
     public void testCovariantReturns() throws Exception {
         SimpleCompiler sc = new SimpleCompiler();
         sc.cook(
@@ -764,5 +763,18 @@ public class EvaluatorTests extends TestCase {
             "    public Test overrideMe() { return this; }\n" +
             "}"
         );
+        
+        try {
+            SimpleCompiler sc2 = new SimpleCompiler();
+            sc2.cook(
+                "package test;\n" +
+                "public class Test2 extends for_sandbox_tests.CovariantReturns {\n" +
+                "    public Integer overrideMe() { return null; }\n" +
+                "}"
+            );
+            fail("Compilation of non-covariant class should have failed");
+        } catch (CompileException ce) {
+            assertTrue(ce.getMessage().contains("Non-abstract class \"test.Test2\" must implement method"));
+        }
     }
 }

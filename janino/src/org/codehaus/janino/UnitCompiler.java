@@ -337,7 +337,12 @@ public class UnitCompiler {
                 IMethod base = ms[i];
                 if (base.isAbstract()) {
                     IMethod override = iClass.findIMethod(base.getName(), base.getParameterTypes());
-                    if (override == null || override.isAbstract()) {
+                    //error if
+                    if ( override == null || // it wasn't overridden
+                        override.isAbstract() || //it was overridden with an abstract method
+                        // the override does not provide a covariant return type
+                        ! base.getReturnType().isAssignableFrom(override.getReturnType())) { 
+                        
                         this.compileError("Non-abstract class \"" + iClass + "\" must implement method \"" + base + "\"", cd.getLocation());
                     }
                 }
