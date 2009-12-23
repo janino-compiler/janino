@@ -293,7 +293,6 @@ public class UnparseTests extends TestCase {
                     UnparseTests.stripUnnecessaryParenExprs(aae.index)
                 );
             }
-
             public void visitFieldAccess(FieldAccess fa) {
                 res[0] = new Java.FieldAccess(
                     fa.getLocation(),
@@ -435,7 +434,6 @@ public class UnparseTests extends TestCase {
                             String s1 = locatable1.toString();
                             String s2 = locatable2.toString();
                             if (!s1.equals(s2)) {
-//                                String s = new String(ba);
                                 Assert.fail(locatable1.getLocation().toString() + ": Expected \"" + s1 + "\", was \"" + s2 + "\"");
                             }
                         }
@@ -455,7 +453,6 @@ public class UnparseTests extends TestCase {
                 new Traverser() {
 
                     // Two implementations of "Locatable": "Located" and "AbstractTypeDeclaration".
-
                     public void traverseLocated(Located l) {
                         locatables.add(l);
                         super.traverseLocated(l);

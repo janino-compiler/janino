@@ -34,6 +34,7 @@
 
 package org.codehaus.janino;
 
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -43,6 +44,7 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import org.codehaus.janino.CodeContext.Offset;
 import org.codehaus.janino.util.Traverser;
 import org.codehaus.janino.util.iterator.ReverseListIterator;
 
@@ -84,6 +86,7 @@ public class Java {
         private final Location location;
 
         protected Located(Location location) {
+            //assert location != null;
             this.location = location;
         }
 
@@ -1149,7 +1152,7 @@ public class Java {
         }
     }
 
-    // Used by FieldDeclaration and LocalVariableDeclarationStatement.
+    /** Used by FieldDeclaration and LocalVariableDeclarationStatement. */
     public final static class VariableDeclarator extends Located {
         public final String                   name;
         public final int                      brackets;
@@ -1214,7 +1217,7 @@ public class Java {
         public Java.LocalVariable findLocalVariable(String name) {
             if (this.localVariables == null) { return null; }
             return (LocalVariable) this.localVariables.get(name);
-        }
+    }
     }
 
     public final static class LabeledStatement extends BreakableStatement {
@@ -1319,7 +1322,9 @@ public class Java {
                 || rvalue instanceof Java.SuperclassMethodInvocation
                 || rvalue instanceof Java.NewClassInstance
                 || rvalue instanceof Java.NewAnonymousClassInstance
-            )) this.throwParseException("This kind of expression is not allowed in an expression statement");
+            )) this.throwParseException(MessageFormat.format(
+                    "In Java 1.2 statements which may not cause side effects are illegal, thus expression statements cannot be of type {0}",
+                    new Object[] { rvalue.getClass().getSimpleName() }));
             (this.rvalue = rvalue).setEnclosingBlockStatement(this);
         }
         
@@ -2562,7 +2567,7 @@ public class Java {
         public Java.LocalVariable findLocalVariable(String name) {
             if (this.localVariables == null) { return null; }
             return (LocalVariable) this.localVariables.get(name);
-        }
+    }
     }
 
     public final static class AlternateConstructorInvocation extends ConstructorInvocation {
@@ -2891,12 +2896,65 @@ public class Java {
     }
 
     /**
+     * All local variables have a slot number, local variables that get written into the localvariabletable
+     * also have a start and end offset that defines the variable's extent in the bytecode. If the name is null,
+     * or variable debugging is not on, then the variable won't be written into the localvariabletable and the
+     * offsets can be ignored.
+     */
+    public static class LocalVariableSlot {
+    	private short  slotIndex = -1;
+    	private String name;
+    	private IClass type;
+    	private Offset start;
+    	private Offset end;
+
+    	public LocalVariableSlot(
+    			String name,
+    			short slotNumber,
+    			IClass type
+    	) {
+    		this.name = name;
+    		this.slotIndex = slotNumber;
+    		this.type = type;
+    	}
+
+    	public String toString() {
+    	    StringBuffer buf = new StringBuffer("local var(");
+
+    	    buf.append(this.name);
+    	    buf.append(", ").append(this.slotIndex);
+    	    if(this.name != null) {
+    	        buf.append(", ").append(this.type);
+    	        buf.append(", ").append(this.start.offset);
+    	        buf.append(", ").append(this.end.offset);
+    	    }
+    	    buf.append(")");
+
+    	    return buf.toString();
+    	}
+
+		public short getSlotIndex() {return this.slotIndex;}
+		public void setSlotIndex(short slotIndex) {this.slotIndex = slotIndex;}
+
+		public String getName() {return this.name;}
+		public void setName(String name) {this.name = name;}
+
+		public Offset getStart() {return this.start;}
+		public void setStart(Offset start) {this.start = start;}
+
+		public Offset getEnd() {return this.end;}
+		public void setEnd(Offset end) {this.end = end;}
+
+		public IClass getType() {return this.type;}
+    }
+
+    /**
      * Used during resolution.
      */
     public static class LocalVariable {
         public final boolean finaL;
         public final IClass  type;
-        public short         localVariableArrayIndex = -1; // Used during compilation
+        public LocalVariableSlot slot;
 
         public LocalVariable(
             boolean finaL,
@@ -2904,6 +2962,23 @@ public class Java {
         ) {
             this.finaL = finaL;
             this.type  = type;
+        }
+
+        public String toString() {
+        	StringBuffer sb = new StringBuffer();
+
+        	if(this.finaL) sb.append("final ");
+        	sb.append(this.type).append(" ");
+
+        	return sb.toString();
+        }
+
+        public void setSlot(LocalVariableSlot slot) {this.slot = slot;}
+
+        public short getSlotIndex() {
+        	if(this.slot == null)
+        		return -1;
+        	return this.slot.getSlotIndex();
         }
     }
 

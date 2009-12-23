@@ -38,6 +38,7 @@ import java.io.InputStream;
 import java.io.StringReader;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Properties;
@@ -76,6 +77,9 @@ public class EvaluatorTests extends TestCase {
         s.addTest(new EvaluatorTests("test32kBranchLimit"));
         s.addTest(new EvaluatorTests("test32kConstantPool"));
         s.addTest(new EvaluatorTests("testHugeIntArray"));
+        s.addTest(new EvaluatorTests("testStaticFieldAccess"));
+        s.addTest(new EvaluatorTests("testWideInstructions"));
+        s.addTest(new EvaluatorTests("testHandlingNaN"));
         return s;
     }
 
@@ -459,6 +463,88 @@ public class EvaluatorTests extends TestCase {
         }
     }
     
+    public static boolean compare(double lhs, double rhs, String comp) {
+        if (comp == "==") { return lhs == rhs; }
+        if (comp == "!=") { return lhs != rhs; }
+        if (comp == "<" ) { return lhs < rhs; }
+        if (comp == "<=") { return lhs <= rhs; }
+        if (comp == ">" ) { return lhs < rhs; }
+        if (comp == ">=") { return lhs <= rhs; }
+        throw new RuntimeException("Unsupported comparison");
+    }
+    public static boolean compare(float lhs, float rhs, String comp) {
+        if (comp == "==") { return lhs == rhs; }
+        if (comp == "!=") { return lhs != rhs; }
+        if (comp == "<" ) { return lhs < rhs; }
+        if (comp == "<=") { return lhs <= rhs; }
+        if (comp == ">" ) { return lhs < rhs; }
+        if (comp == ">=") { return lhs <= rhs; }
+        throw new RuntimeException("Unsupported comparison");
+    }
+    
+    public void testHandlingNaN() throws Exception {
+        String prog =
+            "package test;\n" +
+            "public class Test {\n" +
+    "public static boolean compare(double lhs, double rhs, String comp) {" +
+        "if (comp == \"==\") { return lhs == rhs; }" +
+        "if (comp == \"!=\") { return lhs != rhs; }" +
+        "if (comp == \"<\" ) { return lhs < rhs; }" +
+        "if (comp == \"<=\") { return lhs <= rhs; }" +
+        "if (comp == \">\" ) { return lhs < rhs; }" +
+        "if (comp == \">=\") { return lhs <= rhs; }" +
+        "throw new RuntimeException(\"Unsupported comparison\");" +
+    "}" +
+    "public static boolean compare(float lhs, float rhs, String comp) {" +
+        "if (comp == \"==\") { return lhs == rhs; }" +
+        "if (comp == \"!=\") { return lhs != rhs; }" +
+        "if (comp == \"<\" ) { return lhs < rhs; }" +
+        "if (comp == \"<=\") { return lhs <= rhs; }" +
+        "if (comp == \">\" ) { return lhs < rhs; }" +
+        "if (comp == \">=\") { return lhs <= rhs; }" +
+        "throw new RuntimeException(\"Unsupported comparison\");" +
+    "}" +
+            "}";
+        SimpleCompiler sc = new SimpleCompiler();
+        sc.cook(prog);
+
+        Class c = sc.getClassLoader().loadClass("test.Test");
+        Method dm = c.getMethod("compare", new Class[] { double.class, double.class, String.class });
+        Method fm = c.getMethod("compare", new Class[] { float.class, float.class, String.class });
+        Double[][] args = new Double[][] {
+                { new Double(Double.NaN), new Double(Double.NaN) },
+                { new Double(Double.NaN), new Double(1.0) },
+                { new Double(1.0), new Double(Double.NaN) },
+                { new Double(1.0), new Double(2.0) },
+                { new Double(2.0), new Double(1.0) },
+                { new Double(1.0), new Double(1.0) },
+        };
+        String[] opcode = new String[] { "==", "!=", "<", "<=", ">", ">=" };
+        for (int opIdx = 0; opIdx < opcode.length; ++opIdx) {
+            for (int argIdx = 0; argIdx < args.length; ++argIdx) {
+                String msg = "\""+ args[argIdx][0] +" "+ opcode[opIdx] +" "+ args[argIdx][1] +"\"";
+                {
+                    boolean exp = compare(args[argIdx][0].doubleValue(), args[argIdx][1].doubleValue(), opcode[opIdx]);
+                    Object[] objs = new Object[] { args[argIdx][0], args[argIdx][1], opcode[opIdx] };
+                    Object actual = dm.invoke(null, objs);
+                    assertEquals(msg, new Boolean(exp), actual);
+                }
+                
+                {
+                    msg = "float: " + msg;
+                    boolean exp = compare(args[argIdx][0].floatValue(), args[argIdx][1].floatValue(), opcode[opIdx]);
+                    Object[] objs = new Object[] { 
+                            new Float(args[argIdx][0].floatValue()),
+                            new Float(args[argIdx][1].floatValue()),
+                            opcode[opIdx]
+                    };
+                    Object actual = fm.invoke(null, objs);
+                    assertEquals(msg, new Boolean(exp), actual);
+                }
+            }
+        }
+    }
+    
     public void test32kBranchLimit() throws Exception {
         String preamble =
             "package test;\n" +
@@ -541,17 +627,76 @@ public class EvaluatorTests extends TestCase {
         for(int i = 0; i < tests.length; ++i) {
             int repititions = tests[i];
             
-            StringBuffer sb = new StringBuffer();
-            StringBuffer expected = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
+            StringBuilder expected = new StringBuilder();
             sb.append(preamble);
             for(int j = 0; j < repititions; ++j) {
-                sb.append(middle);
-                expected.append(middle);
             }
             sb.append(postamble);
             
             SimpleCompiler sc = new SimpleCompiler();
             sc.cook(sb.toString());
+            
+            Class c = sc.getClassLoader().loadClass("test.Test");
+            Object o = c.newInstance();
+            assertNotNull(o);
+        }
+    }
+        
+    
+    public void testStaticFieldAccess() throws Exception {
+        SimpleCompiler sc = new SimpleCompiler();
+        sc.cook(
+            "package test;\n" +
+            "public class Test {\n" +
+            "    public static class Inner {\n" +
+            "        public static int i = 0;\n" +
+            "    }\n" +
+            "    public int runTest(Inner in) {\n" +
+            "        return in.i;\n" +
+            "    }\n" +
+            "}"
+        );
+    }
+    
+    public void testWideInstructions() throws Exception {
+        String preamble =
+            "package test;\n" +
+            "public class Test {\n" +
+            "    public static String run() {\n";
+        String middle =
+            "Object o_{0,number,#}; int i_{0,number,#};\n";
+        String postamble =
+            "        int i = (int)0; ++i; i = (int)(i*i);\n" +
+            "        double d = (double)0.0; ++d; d = (double)(d*d);\n" +
+            "        float f = (float)0.0; ++f; f = (float)(f*f);\n" +
+            "        short s = (short)0; ++s; s = (short)(s*s);\n" +
+            "        long l = (long)0; ++l; l = (long)(l*l);\n" +
+            "        boolean b = false; b = !b;\n" +
+            "        Object o = \"hi\"; o = o.toString();\n" +
+            "        String res = o.toString() +\" \"+ i +\" \"+ d +\" \"+  f +\" \"+ s +\" \"+ l +\" \"+ b;\n" +
+            "        try { res = res + \" try\"; } finally { res = res + \" finally\"; }\n" +
+            "        return res;\n" +
+            "    };\n" +
+            "}";
+        
+        int[] tests = new int[] { 1, 128, };
+        for(int i = 0; i < tests.length; ++i) {
+            int repititions = tests[i];
+            
+            StringBuilder sb = new StringBuilder();
+            sb.append(preamble);
+            for(int j = 0; j < repititions; ++j) {
+                sb.append(MessageFormat.format(middle, new Object[] { new Integer(j) }));
+            }
+            sb.append(postamble);
+            
+            SimpleCompiler sc = new SimpleCompiler();
+            sc.cook(sb.toString());
+            Class c = sc.getClassLoader().loadClass("test.Test");
+            Method m = c.getDeclaredMethod("run", null);
+            Object o = m.invoke(null, null);
+            assertEquals("hi 1 1.0 1.0 1 1 true try finally", o);
         }
         
     }

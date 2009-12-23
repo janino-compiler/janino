@@ -34,8 +34,21 @@
 
 package org.codehaus.janino.util;
 
-import java.io.*;
-import java.util.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.UTFDataFormatException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 import org.codehaus.janino.Descriptor;
 
@@ -51,7 +64,6 @@ import org.codehaus.janino.Descriptor;
  * machine.
  */
 public class ClassFile {
-
     /**
      * Construct from parsed components.
      * @param accessFlags as defined by {@link org.codehaus.janino.Mod}
@@ -136,7 +148,7 @@ public class ClassFile {
      * <p>
      * If the {@link ClassFile} is created with this constructor, then most modifying operations
      * lead to a {@link UnsupportedOperationException}; only fields, methods and
-     * attributes can be added. 
+     * attributes can be added.
      * @param inputStream
      * @throws IOException
      * @throws ClassFormatError
@@ -208,8 +220,10 @@ public class ClassFile {
     }
 
     /**
-     * Add a "CONSTANT_Class_info" structure to the class file.
-     * 
+     * Return the constant index number for a "CONSTANT_Class_info" structure to the class file. If the
+     * class hasn't been added before, add it to the constant pool. Otherwise return the constant number for
+     * that element of the pool.
+     *
      * @see <a href="http://java.sun.com/docs/books/vmspec/2nd-edition/html/ClassFile.doc.html#1221">JVM specification, section 4.4.1</a>
      */
     public short addConstantClassInfo(String typeFD) {
@@ -229,7 +243,7 @@ public class ClassFile {
 
     /**
      * Add a "CONSTANT_Fieldref_info" structure to the class file.
-     * 
+     *
      * @see <a href="http://java.sun.com/docs/books/vmspec/2nd-edition/html/ClassFile.doc.html#42041">JVM specification, section 4.4.2</a>
      */
     public short addConstantFieldrefInfo(
@@ -245,7 +259,7 @@ public class ClassFile {
 
     /**
      * Add a "CONSTANT_Methodref_info" structure to the class file.
-     * 
+     *
      * @see <a href="http://java.sun.com/docs/books/vmspec/2nd-edition/html/ClassFile.doc.html#42041">JVM specification, section 4.4.2</a>
      */
     public short addConstantMethodrefInfo(
@@ -261,7 +275,7 @@ public class ClassFile {
 
     /**
      * Add a "CONSTANT_InterfaceMethodref_info" structure to the class file.
-     * 
+     *
      * @see <a href="http://java.sun.com/docs/books/vmspec/2nd-edition/html/ClassFile.doc.html#42041">JVM specification, section 4.4.2</a>
      */
     public short addConstantInterfaceMethodrefInfo(
@@ -277,7 +291,7 @@ public class ClassFile {
 
     /**
      * Add a "CONSTANT_String_info" structure to the class file.
-     * 
+     *
      * @see <a href="http://java.sun.com/docs/books/vmspec/2nd-edition/html/ClassFile.doc.html#29297">JVM specification, section 4.4.3</a>
      */
     public short addConstantStringInfo(String string) {
@@ -286,7 +300,7 @@ public class ClassFile {
 
     /**
      * Add a "CONSTANT_Integer_info" structure to the class file.
-     * 
+     *
      * @see <a href="http://java.sun.com/docs/books/vmspec/2nd-edition/html/ClassFile.doc.html#21942">JVM specification, section 4.4.4</a>
      */
     public short addConstantIntegerInfo(final int value) {
@@ -295,7 +309,7 @@ public class ClassFile {
 
     /**
      * Add a "CONSTANT_Float_info" structure to the class file.
-     * 
+     *
      * @see <a href="http://java.sun.com/docs/books/vmspec/2nd-edition/html/ClassFile.doc.html#21942">JVM specification, section 4.4.4</a>
      */
     public short addConstantFloatInfo(final float value) {
@@ -304,7 +318,7 @@ public class ClassFile {
 
     /**
      * Add a "CONSTANT_Long_info" structure to the class file.
-     * 
+     *
      * @see <a href="http://java.sun.com/docs/books/vmspec/2nd-edition/html/ClassFile.doc.html#1348">JVM specification, section 4.4.5</a>
      */
     public short addConstantLongInfo(final long value) {
@@ -313,7 +327,7 @@ public class ClassFile {
 
     /**
      * Add a "CONSTANT_Double_info" structure to the class file.
-     * 
+     *
      * @see <a href="http://java.sun.com/docs/books/vmspec/2nd-edition/html/ClassFile.doc.html#1348">JVM specification, section 4.4.5</a>
      */
     public short addConstantDoubleInfo(final double value) {
@@ -322,7 +336,7 @@ public class ClassFile {
 
     /**
      * Add a "CONSTANT_NameAndType_info" structure to the class file.
-     * 
+     *
      * @see <a href="http://java.sun.com/docs/books/vmspec/2nd-edition/html/ClassFile.doc.html#1327">JVM specification, section 4.4.6</a>
      */
     private short addConstantNameAndTypeInfo(String name, String descriptor) {
@@ -334,7 +348,7 @@ public class ClassFile {
 
     /**
      * Add a "CONSTANT_Utf8_info" structure to the class file.
-     * 
+     *
      * @see <a href="http://java.sun.com/docs/books/vmspec/2nd-edition/html/ClassFile.doc.html#7963">JVM specification, section 4.4.7</a>
      */
     public short addConstantUtf8Info(final String s) {
@@ -379,12 +393,15 @@ public class ClassFile {
         Short index = (Short) this.constantPoolMap.get(cpi);
         if (index != null) return index.shortValue();
 
-        short res = (short) this.constantPool.size();
+        int res = this.constantPool.size();
+        if (res > 0xFFFF) {
+            throw new RuntimeException("Constant pool has grown past JVM limit of 0xFFFF");
+        }
         this.constantPool.add(cpi);
         if (cpi.isWide()) this.constantPool.add(null);
 
-        this.constantPoolMap.put(cpi, new Short(res));
-        return res;
+        this.constantPoolMap.put(cpi, new Short((short)res));
+        return (short)res;
     }
 
     public FieldInfo addFieldInfo(
@@ -600,7 +617,7 @@ public class ClassFile {
      * <p>
      * Notice that member types are declared inside a different type, so the relevant source file
      * is that of the outermost declaring class.
-     * 
+     *
      * @param className Fully qualified class name, e.g. "pkg1.pkg2.Outer$Inner"
      * @return the name of the resource, e.g. "pkg1/pkg2/Outer.java"
      */
@@ -619,7 +636,7 @@ public class ClassFile {
     /**
      * Construct the name of a resource that could contain the class file of the
      * class with the given name.
-     * 
+     *
      * @param className Fully qualified class name, e.g. "pkg1.pkg2.Outer$Inner"
      * @return the name of the resource, e.g. "pkg1/pkg2/Outer$Inner.class"
      */
@@ -643,8 +660,8 @@ public class ClassFile {
 
     private static final int CLASS_FILE_MAGIC = 0xcafebabe;
 
-    public final static short MAJOR_VERSION_JDK_1_1 = 45; 
-    public final static short MINOR_VERSION_JDK_1_1 = 3; 
+    public final static short MAJOR_VERSION_JDK_1_1 = 45;
+    public final static short MINOR_VERSION_JDK_1_1 = 3;
     public final static short MAJOR_VERSION_JDK_1_2 = 46;
     public final static short MINOR_VERSION_JDK_1_2 = 0;
     public final static short MAJOR_VERSION_JDK_1_3 = 47;
@@ -1348,7 +1365,7 @@ public class ClassFile {
     public static class LocalVariableTableAttribute extends AttributeInfo {
         private final Entry[] entries;
 
-        LocalVariableTableAttribute(short attributeNameIndex, Entry[] entries) {
+        public LocalVariableTableAttribute(short attributeNameIndex, Entry[] entries) {
             super(attributeNameIndex);
             this.entries = entries;
         }
@@ -1460,7 +1477,7 @@ public class ClassFile {
             AttributeInfo[] attributes = new AttributeInfo[dis.readShort()];       // attributes_count
             for (int i = 0; i < attributes.length; ++i) {                          // attributes
                 attributes[i] = classFile.loadAttribute(dis);
-            } 
+            }
 
             return new CodeAttribute(
                 attributeNameIndex, // attributeNameIndex

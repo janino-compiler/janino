@@ -286,6 +286,7 @@ public class UnitCompiler {
 
     private void compile(Java.TypeDeclaration td) throws CompileException {
         class UCE extends RuntimeException { final CompileException ce; UCE(CompileException ce) { this.ce = ce; } }
+
         Visitor.TypeDeclarationVisitor tdv = new Visitor.TypeDeclarationVisitor() {
             public void visitAnonymousClassDeclaration        (Java.AnonymousClassDeclaration acd)          { try { UnitCompiler.this.compile2(acd                                     ); } catch (CompileException e) { throw new UCE(e); } }
             public void visitLocalClassDeclaration            (Java.LocalClassDeclaration lcd)              { try { UnitCompiler.this.compile2(lcd                                     ); } catch (CompileException e) { throw new UCE(e); } }
@@ -1326,9 +1327,8 @@ public class UnitCompiler {
 
         for (int j = 0; j < lvds.variableDeclarators.length; ++j) {
             Java.VariableDeclarator vd = lvds.variableDeclarators[j];
-
             Java.LocalVariable lv = this.getLocalVariable(lvds, vd);
-            lv.localVariableArrayIndex = this.codeContext.allocateLocalVariable(Descriptor.size(lv.type.getDescriptor()));
+            lv.setSlot(this.codeContext.allocateLocalVariable(Descriptor.size(lv.type.getDescriptor()), vd.name, lv.type));
 
             if (vd.optionalInitializer != null) {
                 if (vd.optionalInitializer instanceof Java.Rvalue) {
@@ -1499,13 +1499,19 @@ public class UnitCompiler {
             if (beginningOfBody.offset != afterBody.offset) { // Avoid zero-length exception table entries.
                 this.codeContext.saveLocalVariables();
                 try {
-
-                    // Allocate the "exception variable".
-                    short evi = this.codeContext.allocateLocalVariable((short) 1);
-
                     for (int i = 0; i < ts.catchClauses.size(); ++i) {
-                        Java.CatchClause cc = (Java.CatchClause) ts.catchClauses.get(i);
-                        IClass caughtExceptionType = this.getType(cc.caughtException.type);
+                        try {
+                            this.codeContext.saveLocalVariables();
+
+                            Java.CatchClause cc = (Java.CatchClause) ts.catchClauses.get(i);
+                            IClass caughtExceptionType = this.getType(cc.caughtException.type);
+                    // Allocate the "exception variable".
+                            Java.LocalVariableSlot exceptionVarSlot = this.codeContext.allocateLocalVariable((short) 1, cc.caughtException.name, caughtExceptionType);
+                            short evi = exceptionVarSlot.getSlotIndex();
+                            // Kludge: Treat the exception variable like a local
+                            // variable of the catch clause body.
+                            UnitCompiler.this.getLocalVariable(cc.caughtException).setSlot(exceptionVarSlot);
+
                         this.codeContext.addExceptionTableEntry(
                             beginningOfBody,                    // startPC
                             afterBody,                          // endPC
@@ -1518,9 +1524,6 @@ public class UnitCompiler {
                             evi                  // lvIndex
                         );
         
-                        // Kludge: Treat the exception variable like a local
-                        // variable of the catch clause body.
-                        UnitCompiler.this.getLocalVariable(cc.caughtException).localVariableArrayIndex = evi;
         
                         if (this.compile(cc.body)) {
                             canCompleteNormally = true;
@@ -1529,6 +1532,9 @@ public class UnitCompiler {
                                 ts.optionalFinally != null
                             ) this.writeBranch(cc, Opcode.GOTO, afterStatement);
                         }
+                        } finally {
+                            this.codeContext.restoreLocalVariables();
+                    }
                     }
                 } finally {
                     this.codeContext.restoreLocalVariables();
@@ -1570,8 +1576,14 @@ public class UnitCompiler {
                         pcLVIndex                       // localVariableIndex
                     );
                     if (this.compile(ts.optionalFinally)) {
+                        if (pcLVIndex > 255) {
+                            this.writeOpcode(ts.optionalFinally, Opcode.WIDE);
+                            this.writeOpcode(ts.optionalFinally, Opcode.RET);
+                            this.writeShort(pcLVIndex);
+                        } else {
                         this.writeOpcode(ts.optionalFinally, Opcode.RET);
                         this.writeByte(pcLVIndex);
+                    }
                     }
                 } finally {
 
@@ -1636,12 +1648,14 @@ public class UnitCompiler {
 
         // Add "Exceptions" attribute (JVMS 4.7.4).
         {
+            if(fd.thrownExceptions.length > 0) {
             final short eani = classFile.addConstantUtf8Info("Exceptions");
             short[] tecciis = new short[fd.thrownExceptions.length];
             for (int i = 0; i < fd.thrownExceptions.length; ++i) {
                 tecciis[i] = classFile.addConstantClassInfo(this.getType(fd.thrownExceptions[i]).getDescriptor());
             }
             mi.addAttribute(new ClassFile.ExceptionsAttribute(eani, tecciis));
+        }
         }
 
         // Add "Deprecated" attribute (JVMS 4.7.10)
@@ -1655,11 +1669,13 @@ public class UnitCompiler {
         final CodeContext codeContext = new CodeContext(mi.getClassFile());
 
         CodeContext savedCodeContext = this.replaceCodeContext(codeContext);
+
         try {
+            this.codeContext.saveLocalVariables();
 
             // Define special parameter "this".
             if ((fd.modifiers & Mod.STATIC) == 0) {
-                this.codeContext.allocateLocalVariable((short) 1);
+                this.codeContext.allocateLocalVariable((short) 1, "this", this.resolve(fd.getDeclaringType()));
             }
 
             if (fd instanceof Java.ConstructorDeclarator) {
@@ -1669,7 +1685,8 @@ public class UnitCompiler {
                 for (Iterator it = constructorDeclarator.getDeclaringClass().syntheticFields.values().iterator(); it.hasNext();) {
                     IClass.IField sf = (IClass.IField) it.next();
                     Java.LocalVariable lv = new Java.LocalVariable(true, sf.getType());
-                    lv.localVariableArrayIndex = this.codeContext.allocateLocalVariable(Descriptor.size(sf.getDescriptor()));
+
+                    lv.setSlot(this.codeContext.allocateLocalVariable(Descriptor.size(sf.getDescriptor()), null, null));
                     constructorDeclarator.syntheticParameters.put(sf.getName(), lv);
                 }
             }
@@ -1737,6 +1754,7 @@ public class UnitCompiler {
                 ;
             }
         } finally {
+            this.codeContext.restoreLocalVariables();
             this.replaceCodeContext(savedCodeContext);
         }
 
@@ -1758,40 +1776,64 @@ public class UnitCompiler {
             codeContext.flowAnalysis(fd.toString());
         }
 
+        final short lntani[] = {0};
+        if(this.debuggingInformation.contains(DebuggingInformation.LINES)) {
+            lntani[0] = classFile.addConstantUtf8Info("LineNumberTable");
+        }
+
+        final short lvtani[] = {0};
+        if(this.debuggingInformation.contains(DebuggingInformation.VARS)) {
+            makeLocalVariableNames(codeContext, mi);
+            lvtani[0] = classFile.addConstantUtf8Info("LocalVariableTable");
+        }
+
         // Add the code context as a code attribute to the MethodInfo.
-        final short lntani = (
-            this.debuggingInformation.contains(DebuggingInformation.LINES) ?
-            classFile.addConstantUtf8Info("LineNumberTable") :
-            (short) 0
-        );
         mi.addAttribute(new ClassFile.AttributeInfo(classFile.addConstantUtf8Info("Code")) {
             protected void storeBody(DataOutputStream dos) throws IOException {
-                codeContext.storeCodeAttributeBody(dos, lntani);
+                codeContext.storeCodeAttributeBody(dos, lntani[0], lvtani[0]);
             }
         });
     }
 
+    /** Make the variable name and class name Constant Pool names used by local vars */
+    private void makeLocalVariableNames(final CodeContext cc, final ClassFile.MethodInfo mi) {
+        ClassFile       cf = mi.getClassFile();
+        Iterator        iter = cc.getAllLocalVars().iterator();
+
+        cf.addConstantUtf8Info("LocalVariableTable");
+
+        while(iter.hasNext()) {
+            Java.LocalVariableSlot slot = (Java.LocalVariableSlot) iter.next();
+
+            if(slot.getName() != null) {
+                String typeName = slot.getType().getDescriptor();
+
+                cf.addConstantUtf8Info(typeName);
+                cf.addConstantUtf8Info(slot.getName());
+            }
+        }
+    }
+
     private void buildLocalVariableMap(FunctionDeclarator fd) throws CompileException {
         Map localVars = new HashMap();
-
         // Add function parameters.
         for (int i = 0; i < fd.formalParameters.length; ++i) {
             Java.FunctionDeclarator.FormalParameter fp = fd.formalParameters[i];
             if (localVars.containsKey(fp.name)) this.compileError("Redefinition of formal parameter \"" + fp.name + "\"", fd.getLocation());
             Java.LocalVariable lv = this.getLocalVariable(fp);
-            lv.localVariableArrayIndex = this.codeContext.allocateLocalVariable(Descriptor.size(lv.type.getDescriptor()));
-            
+            lv.setSlot(this.codeContext.allocateLocalVariable(Descriptor.size(lv.type.getDescriptor()), fp.name, this.getType(fp.type)));
+
             localVars.put(fp.name, lv);
         }
 
         fd.localVariables = localVars;
         if (fd instanceof ConstructorDeclarator) {
             ConstructorDeclarator cd = (ConstructorDeclarator) fd;
-            if (cd.optionalConstructorInvocation != null) {
+            if(cd.optionalConstructorInvocation != null) {
                 buildLocalVariableMap(cd.optionalConstructorInvocation, localVars);
             }
         }
-        if (fd.optionalBody != null) this.buildLocalVariableMap(fd.optionalBody, localVars);
+        if(fd.optionalBody != null) { this.buildLocalVariableMap(fd.optionalBody, localVars); }
     }
 
     private Map buildLocalVariableMap(BlockStatement bs, final Map localVars) throws CompileException {
@@ -1809,7 +1851,7 @@ public class UnitCompiler {
             public void visitSuperConstructorInvocation(SuperConstructorInvocation sci)         { UnitCompiler.this.buildLocalVariableMap(sci, localVars); }
             public void visitThrowStatement(ThrowStatement ts)                                  { UnitCompiler.this.buildLocalVariableMap(ts, localVars); }
             public void visitLocalClassDeclarationStatement(LocalClassDeclarationStatement lcds){ UnitCompiler.this.buildLocalVariableMap(lcds, localVars); }
-            
+
             // more complicated statements with specialized handlers, but don't add new variables in this scope
             public void visitBlock(Block b)              					 { try { UnitCompiler.this.buildLocalVariableMap(b , localVars); } catch (CompileException e) { throw new UCE(e); } }
             public void visitDoStatement(DoStatement ds)                     { try { UnitCompiler.this.buildLocalVariableMap(ds, localVars); } catch (CompileException e) { throw new UCE(e); } }
@@ -1820,7 +1862,7 @@ public class UnitCompiler {
             public void visitSynchronizedStatement(SynchronizedStatement ss) { try { UnitCompiler.this.buildLocalVariableMap(ss, localVars); } catch (CompileException e) { throw new UCE(e); } }
             public void visitTryStatement(TryStatement ts)                   { try { UnitCompiler.this.buildLocalVariableMap(ts, localVars); } catch (CompileException e) { throw new UCE(e); } }
             public void visitWhileStatement(WhileStatement ws)               { try { UnitCompiler.this.buildLocalVariableMap(ws, localVars); } catch (CompileException e) { throw new UCE(e); } }
-            
+
             // more complicated statements with specialized handlers, that can add variables in this scope
             public void visitLabeledStatement(LabeledStatement ls)                                     { try { resVars[0] = UnitCompiler.this.buildLocalVariableMap(ls  , localVars); } catch (CompileException e) { throw new UCE(e); } }
             public void visitLocalVariableDeclarationStatement(LocalVariableDeclarationStatement lvds) { try { resVars[0] = UnitCompiler.this.buildLocalVariableMap(lvds, localVars); } catch (CompileException e) { throw new UCE(e); } }
@@ -1831,7 +1873,7 @@ public class UnitCompiler {
     // default handlers
     private Map buildLocalVariableMap(Statement s, final Map localVars)              { return s.localVariables = localVars; }
     private Map buildLocalVariableMap(ConstructorInvocation ci, final Map localVars) { return ci.localVariables = localVars; }
-    
+
     // specialized handlers
     private void buildLocalVariableMap(Block block, Map localVars) throws CompileException {
         block.localVariables = localVars;
@@ -1892,7 +1934,7 @@ public class UnitCompiler {
         ws.localVariables = localVars;
         UnitCompiler.this.buildLocalVariableMap(ws.body, localVars);
     }
-    
+
     private Map buildLocalVariableMap(LabeledStatement ls, final Map localVars) throws CompileException {
         ls.localVariables = localVars;
         return UnitCompiler.this.buildLocalVariableMap((BlockStatement)ls.body, localVars);
@@ -2027,9 +2069,7 @@ public class UnitCompiler {
         // Optimized crement of integer local variable.
         Java.LocalVariable lv = this.isIntLV(c);
         if (lv != null) {
-            this.writeOpcode(c, Opcode.IINC);
-            this.writeByte(lv.localVariableArrayIndex);
-            this.writeByte(c.operator == "++" ? 1 : -1);
+            compileLocalVariableCrement(c, lv);
             return;
         }
 
@@ -2293,11 +2333,19 @@ public class UnitCompiler {
                     this.writeBranch(bo, Opcode.IFEQ + opIdx, dst);
                 } else
                 if (promotedType == IClass.FLOAT) {
+                    if (bo.op == ">" || bo.op== ">=") {
+                        this.writeOpcode(bo, Opcode.FCMPL);
+                    } else {
                     this.writeOpcode(bo, Opcode.FCMPG);
+                    }
                     this.writeBranch(bo, Opcode.IFEQ + opIdx, dst);
                 } else
                 if (promotedType == IClass.DOUBLE) {
+                    if (bo.op == ">" || bo.op == ">=") {
+                        this.writeOpcode(bo, Opcode.DCMPL);
+                    } else {
                     this.writeOpcode(bo, Opcode.DCMPG);
+                    }
                     this.writeBranch(bo, Opcode.IFEQ + opIdx, dst);
                 } else
                 {
@@ -2413,7 +2461,7 @@ public class UnitCompiler {
     }
     private int compileContext2(Java.FieldAccess fa) throws CompileException {
         if (fa.field.isStatic()) {
-            this.getType(this.toTypeOrCE(fa.lhs));
+            this.getType(fa.lhs);
             return 0;
         } else {
             this.compileGetValue(this.toRvalueOrCE(fa.lhs));
@@ -2678,11 +2726,11 @@ public class UnitCompiler {
             classDollarFieldName           // fieldName
         );
         Java.ConditionalExpression ce = new Java.ConditionalExpression(
-            loc,                            // location
-            new Java.BinaryOperation(       // lhs
-                loc,                        // location
-                classDollarFieldAccess,     // lhs
-                "!=",                       // op
+            loc,                                  // location
+            new Java.BinaryOperation(             // lhs
+                loc,                              // location
+                classDollarFieldAccess,           // lhs
+                "!=",                             // op
                 new Java.Literal(loc, null) // rhs
             ),
             classDollarFieldAccess,        // mhs
@@ -2844,9 +2892,7 @@ public class UnitCompiler {
         Java.LocalVariable lv = this.isIntLV(c);
         if (lv != null) {
             if (!c.pre) this.load((Locatable) c, lv);
-            this.writeOpcode(c, Opcode.IINC);
-            this.writeByte(lv.localVariableArrayIndex);
-            this.writeByte(c.operator == "++" ? 1 : -1);
+            compileLocalVariableCrement(c, lv);
             if (c.pre) this.load((Locatable) c, lv);
             return lv.type;
         }
@@ -2884,6 +2930,18 @@ public class UnitCompiler {
         this.compileSet(c.operand);
 
         return type;
+    }
+    private void compileLocalVariableCrement(Java.Crement c, Java.LocalVariable lv) {
+        if (lv.getSlotIndex() > 255) {
+            this.writeOpcode(c, Opcode.WIDE);
+            this.writeOpcode(c, Opcode.IINC);
+            this.writeShort(lv.getSlotIndex());
+            this.writeShort(c.operator == "++" ? 1 : -1);
+        } else {
+            this.writeOpcode(c, Opcode.IINC);
+            this.writeByte(lv.getSlotIndex());
+            this.writeByte(c.operator == "++" ? 1 : -1);
+        }
     }
     private IClass compileGet2(Java.ArrayAccessExpression aae) throws CompileException {
         IClass lhsComponentType = this.getType(aae);
@@ -3781,7 +3839,7 @@ public class UnitCompiler {
     }
     public boolean generatesCode2(Java.Block b) throws CompileException {
         return generatesCode2ListStatements(b.statements);
-    }
+        }
     public boolean generatesCode2(Java.FieldDeclaration fd) throws CompileException {
         // Code is only generated if at least one of the declared variables has a
         // non-constant-final initializer.
@@ -4338,6 +4396,7 @@ public class UnitCompiler {
         return this.getType(nia.arrayType);
     }
     private IClass getType2(Java.Literal l) {
+        if (l.value instanceof Byte     ) return IClass.BYTE;
         if (l.value instanceof Integer  ) return IClass.INT;
         if (l.value instanceof Long     ) return IClass.LONG;
         if (l.value instanceof Float    ) return IClass.FLOAT;
@@ -6872,7 +6931,7 @@ public class UnitCompiler {
 
         declaringType.addDeclaredMethod(cdmd);
         declaringType.invalidateMethodCaches();
-    }
+        }
 
     private IClass pushConstant(Locatable l, Object value) {
         if (
@@ -7822,7 +7881,7 @@ public class UnitCompiler {
         this.load(
             l,
             localVariable.type,
-            localVariable.localVariableArrayIndex
+            localVariable.getSlotIndex()
         );
         return localVariable.type;
     }
@@ -7859,7 +7918,7 @@ public class UnitCompiler {
         this.store(
             l,                                    // l
             localVariable.type,                   // lvType
-            localVariable.localVariableArrayIndex // lvIndex
+            localVariable.getSlotIndex()          // lvIndex
         );
     }
     private void store(
@@ -8151,9 +8210,15 @@ public class UnitCompiler {
     }
 
     private void writeByte(int v) {
+        if (v > Byte.MAX_VALUE - Byte.MIN_VALUE) {
+            throw new RuntimeException("Byte value out of legal range");
+        }
         this.codeContext.write((short) -1, (byte) v);
     }
     private void writeShort(int v) {
+        if (v > Short.MAX_VALUE - Short.MIN_VALUE) {
+            throw new RuntimeException("Short value out of legal range");
+        }
         this.codeContext.write((short) -1, (byte) (v >> 8), (byte) v);
     }
     private void writeInt(int v) {

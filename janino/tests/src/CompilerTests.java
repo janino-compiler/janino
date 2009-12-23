@@ -32,17 +32,37 @@
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import java.io.*;
+import java.io.File;
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 
-import junit.framework.*;
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
 
-import org.codehaus.janino.*;
-import org.codehaus.janino.Compiler; // To resolve ambiguity with "java.lang.Compiler".
-import org.codehaus.janino.util.*;
-import org.codehaus.janino.util.enumerator.*;
-import org.codehaus.janino.util.resource.*;
+import org.codehaus.janino.ClassLoaderIClassLoader;
+import org.codehaus.janino.CompileException;
+import org.codehaus.janino.Compiler;
+import org.codehaus.janino.DebuggingInformation;
+import org.codehaus.janino.IClassLoader;
+import org.codehaus.janino.Location;
+import org.codehaus.janino.SimpleCompiler;
+import org.codehaus.janino.UnitCompiler;
+import org.codehaus.janino.WarningHandler;
+import org.codehaus.janino.util.Benchmark;
+import org.codehaus.janino.util.ResourceFinderClassLoader;
+import org.codehaus.janino.util.enumerator.EnumeratorSet;
+import org.codehaus.janino.util.resource.DirectoryResourceFinder;
+import org.codehaus.janino.util.resource.MapResourceCreator;
+import org.codehaus.janino.util.resource.MapResourceFinder;
+import org.codehaus.janino.util.resource.Resource;
+import org.codehaus.janino.util.resource.ResourceCreator;
+import org.codehaus.janino.util.resource.ResourceFinder;
 
 public class CompilerTests extends TestCase {
     private static final String SRC = "src";

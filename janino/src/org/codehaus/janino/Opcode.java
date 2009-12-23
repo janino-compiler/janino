@@ -38,7 +38,7 @@ package org.codehaus.janino;
  * Definitions of Java bytecode opcodes.
  */
 
-/*package*/ interface Opcode {
+/*package*/ class Opcode {
     public final static byte AALOAD = 50;
     public final static byte AASTORE = 83;
     public final static byte ACONST_NULL = 1;
@@ -520,93 +520,26 @@ package org.codehaus.janino;
         Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE,
     };
 
-    public static final short[] WIDE_OPCODE_PROPERTIES = {
-/*  0*/ Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE,
-        Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE,
-        Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE,
-/*010*/ Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE,
-        Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE,
-        Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE,
-/*020*/ Opcode.INVALID_OPCODE,
-        /*ILOAD*/ Opcode.SD_P1 | Opcode.OP1_LV2,
-        /*LLOAD*/ Opcode.SD_P2 | Opcode.OP1_LV2,
-        /*FLOAD*/ Opcode.SD_P1 | Opcode.OP1_LV2,
-        /*DLOAD*/ Opcode.SD_P2 | Opcode.OP1_LV2,
-        /*ALOAD*/ Opcode.SD_P1 | Opcode.OP1_LV2,
-        Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE,
-/* 30*/ Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE,
-        Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE,
-        Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE,
-/* 40*/ Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE,
-        Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE,
-        Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE,
-/* 50*/ Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE,
-        /*ISTORE*/ Opcode.SD_M1 | Opcode.OP1_LV2,
-        /*LSTORE*/ Opcode.SD_M2 | Opcode.OP1_LV2,
-        /*FSTORE*/ Opcode.SD_M1 | Opcode.OP1_LV2,
-        /*DSTORE*/ Opcode.SD_M2 | Opcode.OP1_LV2,
-        /*ASTORE*/ Opcode.SD_M1 | Opcode.OP1_LV2,
-        Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE,
-/* 60*/ Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE,
-        Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE,
-        Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE,
-/* 70*/ Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE,
-        Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE,
-        Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE,
-/* 80*/ Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE,
-        Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE,
-        Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE,
-/* 90*/ Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE,
-        Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE,
-        Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE,
-/*100*/ Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE,
-        Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE,
-        Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE,
-/*110*/ Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE,
-        Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE,
-        Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE,
-/*120*/ Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE,
-        Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE,
-        Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE,
-/*130*/ Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE,
-        /*IINC*/ Opcode.SD_P0 | Opcode.OP1_LV2 | Opcode.OP2_SS,
-        Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE,
-        Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE,
-/*140*/ Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE,
-        Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE,
-        Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE,
-/*150*/ Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE,
-        Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE,
-        Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE,
-/*160*/ Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE,
-        Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE,
-        Opcode.INVALID_OPCODE,
-        /*RET*/ Opcode.SD_P0 | Opcode.OP1_LV2,
-/*170*/ Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE,
-        Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE,
-        Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE,
-/*180*/ Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE,
-        Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE,
-        Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE,
-/*190*/ Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE,
-        Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE,
-        Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE,
-/*200*/ Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE,
-        Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE,
-        Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE,
-/*210*/ Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE,
-        Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE,
-        Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE,
-/*220*/ Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE,
-        Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE,
-        Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE,
-/*230*/ Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE,
-        Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE,
-        Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE,
-/*240*/ Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE,
-        Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE,
-        Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE,
-/*250*/ Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE,
-        Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE,
-    };
+    public static final short[] WIDE_OPCODE_PROPERTIES = new short[256];
+    static {
+        for (int i = 0; i < WIDE_OPCODE_PROPERTIES.length; ++i) {
+            WIDE_OPCODE_PROPERTIES[i] = Opcode.INVALID_OPCODE;
+        }
+        // load instructions
+        WIDE_OPCODE_PROPERTIES[0xff & Opcode.ILOAD] = Opcode.SD_P1 | Opcode.OP1_LV2;
+        WIDE_OPCODE_PROPERTIES[0xff & Opcode.FLOAD] = Opcode.SD_P1 | Opcode.OP1_LV2;
+        WIDE_OPCODE_PROPERTIES[0xff & Opcode.ALOAD] = Opcode.SD_P1 | Opcode.OP1_LV2;
+        WIDE_OPCODE_PROPERTIES[0xff & Opcode.LLOAD] = Opcode.SD_P2 | Opcode.OP1_LV2;
+        WIDE_OPCODE_PROPERTIES[0xff & Opcode.DLOAD] = Opcode.SD_P2 | Opcode.OP1_LV2;
+        
+        // store instructions
+        WIDE_OPCODE_PROPERTIES[0xff & Opcode.ISTORE] = Opcode.SD_M1 | Opcode.OP1_LV2;
+        WIDE_OPCODE_PROPERTIES[0xff & Opcode.FSTORE] = Opcode.SD_M1 | Opcode.OP1_LV2;
+        WIDE_OPCODE_PROPERTIES[0xff & Opcode.ASTORE] = Opcode.SD_M1 | Opcode.OP1_LV2;
+        WIDE_OPCODE_PROPERTIES[0xff & Opcode.LSTORE] = Opcode.SD_M2 | Opcode.OP1_LV2;
+        WIDE_OPCODE_PROPERTIES[0xff & Opcode.DSTORE] = Opcode.SD_M2 | Opcode.OP1_LV2;
+        
+        WIDE_OPCODE_PROPERTIES[0xff & Opcode.IINC] = Opcode.SD_P0 | Opcode.OP1_LV2 | Opcode.OP2_SS;
+        WIDE_OPCODE_PROPERTIES[0xff & Opcode.RET]  = Opcode.SD_P0 | Opcode.OP1_LV2;
+    }
 }

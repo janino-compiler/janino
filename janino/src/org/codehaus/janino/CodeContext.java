@@ -43,7 +43,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Stack;
 
 import org.codehaus.janino.util.ClassFile;
 
@@ -55,9 +54,10 @@ import org.codehaus.janino.util.ClassFile;
  */
 public class CodeContext {
     private static final boolean DEBUG = false;
-
-    private static final int INITIAL_SIZE = 128;
-
+    private static final int     INITIAL_SIZE   = 128;
+    private static final byte    UNEXAMINED = -1;
+    private static final byte    INVALID_OFFSET = -2;
+    private static final int     MAX_STACK_SIZE = 254;
     private /*final*/ ClassFile classFile;
 
     private short           maxStack;
@@ -67,6 +67,21 @@ public class CodeContext {
     private /*final*/ Inserter  end;
     private Inserter        currentInserter;
     private /*final*/ List      exceptionTableEntries; // ExceptionTableEntry
+
+    /**
+     * List of Java.LocalVariableSlot objects that contain all the local variables that
+     * are allocated in any block in this CodeContext.
+     */
+    private List           allLocalVars = new ArrayList();
+    /**
+     * List of List of Java.LocalVariableSlot objects. Each List of Java.LocalVariableSlot is
+     * the local variables allocated for a block. They are pushed and poped onto the list together
+     * to make allocation of the next local variable slot easy.
+     */
+    private List           scopedVars = new ArrayList();
+    private short          nextLocalVariableSlot = 0;
+
+    private final List     relocatables = new ArrayList();
 
     /**
      * Create an empty "Code" attribute.
@@ -92,6 +107,7 @@ public class CodeContext {
         return this.classFile;
     }
 
+
     /**
      * Allocate space for a local variable of the given size (1 or 2)
      * on the local variable array.
@@ -102,35 +118,92 @@ public class CodeContext {
      * The only way to deallocate local variables is to
      * {@link #saveLocalVariables()} and later {@link
      * #restoreLocalVariables()}.
+     *
+     * @param size The number of slots to allocate (1 or 2)
+     * @return
      */
     public short allocateLocalVariable(
-        short size // 1 or 2
+            short size
     ) {
-        short res = this.localVariableArrayLength;
-        this.localVariableArrayLength += size;
-        if (this.localVariableArrayLength > this.maxLocals) {
-            this.maxLocals = this.localVariableArrayLength;
+        return allocateLocalVariable(size, null, null).getSlotIndex();
         }
 
-        return res;
+    /**
+     * Allocate space for a local variable of the given size (1 or 2)
+     * on the local variable array.
+     *
+     * As a side effect, the "max_locals" field of the "Code" attribute
+     * is updated.
+     *
+     * The only way to deallocate local variables is to
+     * {@link #saveLocalVariables()} and later {@link
+     * #restoreLocalVariables()}.
+     * @param size Number of slots to use (1 or 2)
+     * @param name The variable name, if it's null, the variable won't be written to the localvariabletable
+     * @param type The variable type. if the name isn't null, the type is needed to write to the localvariabletable
+     */
+    public Java.LocalVariableSlot allocateLocalVariable(
+        short size,
+        String name,
+        IClass type
+    ) {
+        List currentVars = null;
+
+        if(this.scopedVars.size() == 0) {
+            throw new Error("saveLocalVariables must be called first");
+        } else {
+            currentVars = (List) this.scopedVars.get(this.scopedVars.size()-1);
+        }
+
+        Java.LocalVariableSlot slot = new Java.LocalVariableSlot(name, this.nextLocalVariableSlot, type);
+
+        if(slot.getName() != null) {
+            slot.setStart(newOffset());
+        }
+
+        this.nextLocalVariableSlot += size;
+        currentVars.add(slot);
+        this.allLocalVars.add(slot);
+
+        if(this.nextLocalVariableSlot > this.maxLocals) {
+            this.maxLocals = this.nextLocalVariableSlot;
+    }
+
+        return slot;
     }
 
     /**
      * Remember the current size of the local variables array.
      */
-    public void saveLocalVariables() {
-        this.savedLocalVariableArrayLengths.push(new Short(this.localVariableArrayLength));
+    public List saveLocalVariables() {
+        //
+        // push empty list on the stack to hold a new block's local vars
+        //
+        List l = new ArrayList();
+        this.scopedVars.add(l);
+
+        return l;
     }
 
     /**
-     * Restore the previous size of the local variables array.
+     * Restore the previous size of the local variables array. This MUST to be called for every call
+     * to saveLocalVariables as it closes the variable extent for all the active local variables in
+     * the current block.
      */
     public void restoreLocalVariables() {
-        this.localVariableArrayLength = ((Short) this.savedLocalVariableArrayLengths.pop()).shortValue();
-    }
+        //
+        // pop the list containing the current block's local vars
+        //
+        Iterator iter = ((List) this.scopedVars.remove(this.scopedVars.size()-1)).iterator();
 
-    private static final byte UNEXAMINED = -1;
-    private static final byte INVALID_OFFSET = -2;
+        while(iter.hasNext()) {
+            Java.LocalVariableSlot slot = (Java.LocalVariableSlot) iter.next();
+
+            if(slot.getName() != null) {
+                slot.setEnd(newOffset());
+            }
+        }
+    }
 
     /**
      * 
@@ -140,7 +213,8 @@ public class CodeContext {
      */
     protected void storeCodeAttributeBody(
         DataOutputStream dos,
-        short            lineNumberTableAttributeNameIndex
+        short            lineNumberTableAttributeNameIndex,
+        short            localVariableTableAttributeNameIndex
     ) throws IOException {
         dos.writeShort(this.maxStack);                                // max_stack
         dos.writeShort(this.maxLocals);                               // max_locals
@@ -172,10 +246,57 @@ public class CodeContext {
             ));
         }
 
+        if(localVariableTableAttributeNameIndex != 0) {
+            ClassFile.AttributeInfo ai = storeLocalVariableTable(dos, localVariableTableAttributeNameIndex);
+
+            if(ai != null) {
+                attributes.add(ai);
+            }
+        }
+
         dos.writeShort(attributes.size());                         // attributes_count
         for (Iterator it = attributes.iterator(); it.hasNext();) { // attributes;
             ClassFile.AttributeInfo attribute = (ClassFile.AttributeInfo) it.next();
             attribute.store(dos);
+        }
+    }
+
+    protected ClassFile.AttributeInfo storeLocalVariableTable(
+            DataOutputStream dos,
+            short localVariableTableAttributeNameIndex
+    )
+    {
+        ClassFile       cf = getClassFile();
+        Iterator        iter = getAllLocalVars().iterator();
+        final List      entryList = new ArrayList();
+
+        while(iter.hasNext()) {
+            Java.LocalVariableSlot slot = (Java.LocalVariableSlot) iter.next();
+
+            if(slot.getName() != null) {
+                String typeName = slot.getType().getDescriptor();
+                short  classSlot = cf.addConstantUtf8Info(typeName);
+                short  varNameSlot = cf.addConstantUtf8Info(slot.getName());
+
+//                System.out.println("slot: " + slot + ", typeSlot: " + classSlot + ", varSlot: " + varNameSlot);
+
+                ClassFile.LocalVariableTableAttribute.Entry entry = new ClassFile.LocalVariableTableAttribute.Entry(
+                        (short) slot.getStart().offset,
+                        (short) (slot.getEnd().offset - slot.getStart().offset),
+                        varNameSlot,
+                        classSlot,
+                        slot.getSlotIndex()
+                );
+                entryList.add(entry);
+            }
+        }
+
+        if(entryList.size() > 0) {
+            Object entries = entryList.toArray(new ClassFile.LocalVariableTableAttribute.Entry [entryList.size()]);
+
+            return new ClassFile.LocalVariableTableAttribute(localVariableTableAttributeNameIndex, (ClassFile.LocalVariableTableAttribute.Entry []) entries);
+        } else {
+            return null;
         }
     }
 
@@ -189,7 +310,7 @@ public class CodeContext {
             System.err.println("flowAnalysis(" + functionName + ")"); 
         }
         
-        byte[] stackSizes = new byte[this.end.offset];
+        short[] stackSizes = new short[this.end.offset];
         Arrays.fill(stackSizes, CodeContext.UNEXAMINED);
 
         // Analyze flow from offset zero.
@@ -198,7 +319,7 @@ public class CodeContext {
             this.code,       // code
             this.end.offset, // codeSize
             0,               // offset
-            0,               // stackSize
+            (short)0,               // stackSize
             stackSizes       // stackSizes
         );
 
@@ -213,7 +334,7 @@ public class CodeContext {
                         this.code,                                          // code
                         this.end.offset,                                    // codeSize
                         exceptionTableEntry.handlerPC.offset,               // offset
-                        stackSizes[exceptionTableEntry.startPC.offset] + 1, // stackSize
+                        (short)(stackSizes[exceptionTableEntry.startPC.offset] + 1), // stackSize
                         stackSizes                                          // stackSizes
                     );
                     ++analyzedExceptionHandlers;
@@ -224,7 +345,7 @@ public class CodeContext {
         // Check results and determine maximum stack size.
         this.maxStack = 0;
         for (int i = 0; i < stackSizes.length; ++i) {
-            byte ss = stackSizes[i];
+            short ss = stackSizes[i];
             if (ss == CodeContext.UNEXAMINED) {
                 if (CodeContext.DEBUG) {
                     System.out.println(functionName + ": Unexamined code at offset " + i);
@@ -242,8 +363,8 @@ public class CodeContext {
         byte[] code,      // Bytecode
         int    codeSize,  // Size
         int    offset,    // Current PC
-        int    stackSize, // Stack size on entry
-        byte[] stackSizes // Stack sizes in code
+        short    stackSize, // Stack size on entry
+        short[] stackSizes // Stack sizes in code
     ) {
         for (;;) {
             if (CodeContext.DEBUG) System.out.println("Offset = " + offset + ", stack size = " + stackSize);
@@ -252,7 +373,7 @@ public class CodeContext {
             if (offset < 0 || offset >= codeSize) throw new RuntimeException(functionName + ": Offset out of range");
 
             // Have we hit an area that has already been analyzed?
-            byte css = stackSizes[offset];
+            int css = stackSizes[offset];
             if (css == stackSize) return; // OK.
             if (css == CodeContext.INVALID_OFFSET) throw new RuntimeException(functionName + ": Invalid offset");
             if (css != CodeContext.UNEXAMINED) {
@@ -263,7 +384,7 @@ public class CodeContext {
                     throw new RuntimeException(functionName + ": Operand stack inconsistent at offset " + offset + ": Previous size " + css + ", now " + stackSize);
                 }
             }
-            stackSizes[offset] = (byte) stackSize;
+            stackSizes[offset] = stackSize;
 
             // Analyze current opcode.
             byte opcode = code[offset];
@@ -340,7 +461,7 @@ public class CodeContext {
                 }
             } 
 
-            if (stackSize > Byte.MAX_VALUE) {
+            if (stackSize > MAX_STACK_SIZE) {
                 String msg = this.classFile.getThisClassName() + '.' + functionName + ": Operand stack overflow at offset " + offset;
                 if (CodeContext.DEBUG) {
                     System.err.println(msg); 
@@ -400,7 +521,7 @@ public class CodeContext {
                         functionName,
                         code, codeSize,
                         targetOffset,
-                        stackSize + 1,
+                        (short)(stackSize + 1),
                         stackSizes
                     );
                 }
@@ -659,7 +780,7 @@ public class CodeContext {
      */
     public void write(short lineNumber, byte[] b) {
         if (b.length == 0) return;
-        
+
         int ico = this.currentInserter.offset;
         this.makeSpace(lineNumber, b.length);
         System.arraycopy(b, 0, this.code, ico, b.length);
@@ -671,7 +792,7 @@ public class CodeContext {
      * <p>
      * This method is an optimization to avoid allocating small byte[] and ease
      * GC load.
-     * 
+     *
      * @param lineNumber The line number that corresponds to the byte code, or -1
      * @param b1
      */
@@ -680,14 +801,14 @@ public class CodeContext {
         this.makeSpace(lineNumber, 1);
         this.code[ico] = b1;
     }
-    
+
     /**
      * Inserts bytes at the current insertion position. Creates
      * {@link LineNumberOffset}s as necessary.
      * <p>
      * This method is an optimization to avoid allocating small byte[] and ease
      * GC load.
-     * 
+     *
      * @param lineNumber The line number that corresponds to the byte code, or -1
      * @param b1
      * @param b2
@@ -698,14 +819,14 @@ public class CodeContext {
         this.code[ico++] = b1;
         this.code[ico  ] = b2;
     }
-    
+
     /**
      * Inserts bytes at the current insertion position. Creates
      * {@link LineNumberOffset}s as necessary.
      * <p>
      * This method is an optimization to avoid allocating small byte[] and ease
      * GC load.
-     * 
+     *
      * @param lineNumber The line number that corresponds to the byte code, or -1
      * @param b1
      * @param b2
@@ -718,14 +839,14 @@ public class CodeContext {
         this.code[ico++] = b2;
         this.code[ico  ] = b3;
     }
-    
+
     /**
      * Inserts bytes at the current insertion position. Creates
      * {@link LineNumberOffset}s as necessary.
      * <p>
      * This method is an optimization to avoid allocating small byte[] and ease
      * GC load.
-     * 
+     *
      * @param lineNumber The line number that corresponds to the byte code, or -1
      * @param b1
      * @param b2
@@ -740,11 +861,11 @@ public class CodeContext {
         this.code[ico++] = b3;
         this.code[ico  ] = b4;
     }
-    
+
     /**
      * Add space for size bytes at current offset. Creates
      * {@link LineNumberOffset}s as necessary.
-     *  
+     *
      * @param lineNumber The line number that corresponds to the byte code, or -1
      * @param size       The size in bytes to inject
      */
@@ -781,7 +902,7 @@ public class CodeContext {
             this.code = new byte[newSize];
             System.arraycopy(oldCode, 0, this.code, 0, ico);
             System.arraycopy(oldCode, ico, this.code, ico + size, this.end.offset - ico);
-        }  
+        }
         Arrays.fill(this.code, ico, ico + size, (byte)0);
         for (Offset o = this.currentInserter; o != null; o = o.next) o.offset += size;
     }
@@ -1084,10 +1205,6 @@ public class CodeContext {
         public abstract boolean relocate();
     }
 
-    private short       localVariableArrayLength = 0;
-    private final Stack savedLocalVariableArrayLengths = new Stack();
-    private final List  relocatables = new ArrayList();
-
     /**
      * A throw-in interface that marks {@link CodeContext.Offset}s
      * as "fix-ups": During the execution of
@@ -1100,4 +1217,6 @@ public class CodeContext {
     public interface FixUp {
         void fixUp();
     }
+
+    public List getAllLocalVars() {return this.allLocalVars;}
 }

@@ -1,5 +1,4 @@
 <!--
-
   Janino - An embedded Java[TM] compiler
 
   Copyright (c) 2001-2007, Arno Unkrig
@@ -37,6 +36,7 @@
 		Build file for the Janino project
     </description>
 
+	<property environment="env"/>
 	<property file="build.properties"/>
 
 	<target name="compile" description="Compile the source">
@@ -45,10 +45,11 @@
 		<javac
 			fork="yes"
 			executable="${jdk_1_2_2_home}/bin/javac"
+            source='1.2'
 			srcdir="src" excludes="org/codehaus/janino/AstGeneratorVisitor.java"
 			destdir="build/classes"
 			debug="true"
-			debuglevel="source"
+			debuglevel="lines,vars,source"
 		/>
 	</target>
 
@@ -73,6 +74,11 @@
 	<target name="jar" description="Create the janino jar." depends="compile">
 		<mkdir dir="build/lib"/>
 		<jar jarfile="build/lib/janino.jar" basedir="build/classes"/>
+	</target>
+
+	<target name="srcjar" description="Create a janino source jar." depends="compile">
+		<mkdir dir="build/lib"/>
+		<jar jarfile="build/lib/janino-src.jar" basedir="src"/>
 	</target>
  
 	<target name="dist" description="Generate the distribution" depends="jar, javadoc">

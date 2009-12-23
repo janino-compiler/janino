@@ -483,7 +483,7 @@ public class Traverser {
         fa.lhs.accept(this.cv);
         this.traverseLvalue(fa);
     }
-
+    
     public void traverseFieldAccessExpression(Java.FieldAccessExpression fae) {
         fae.lhs.accept(this.cv);
         this.traverseLvalue(fae);

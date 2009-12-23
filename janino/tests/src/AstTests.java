@@ -32,6 +32,7 @@
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import java.io.IOException;
 import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -61,6 +62,7 @@ import org.codehaus.janino.Java.Rvalue;
 import org.codehaus.janino.Java.Type;
 import org.codehaus.janino.Java.FunctionDeclarator.FormalParameter;
 import org.codehaus.janino.Parser.ParseException;
+import org.codehaus.janino.Scanner.ScanException;
 
 public class AstTests extends TestCase {
     public static Test suite() {
@@ -73,101 +75,101 @@ public class AstTests extends TestCase {
         s.addTest(new AstTests("testPrecedence"));
         return s;
     }
-
+    
     public AstTests(String name) { super(name); }
 
     private static Object compileAndEval(CompilationUnit cu) throws CompileException,
-    ClassNotFoundException,
-    InstantiationException, IllegalAccessException,
-    NoSuchMethodException, InvocationTargetException {
+            ParseException, ScanException, IOException, ClassNotFoundException,
+            InstantiationException, IllegalAccessException,
+            NoSuchMethodException, InvocationTargetException {
         SimpleCompiler compiler = new SimpleCompiler();
         compiler.cook(cu);
-
+        
         ClassLoader loader = compiler.getClassLoader(); 
-
+        
         Class handMadeClass = loader.loadClass("HandMade");
-
+        
         Object handMade = handMadeClass.newInstance();
         Method calc = handMadeClass.getMethod("calculate", null);
         Object res = calc.invoke(handMade, null);
         return res;
     }
-
+    
     private static ArrayType createByteArrayType() {
         return new Java.ArrayType(
-            new Java.BasicType(
-                getLocation(), 
-                Java.BasicType.BYTE
-            )
+                new Java.BasicType(
+                        getLocation(), 
+                        Java.BasicType.BYTE
+                )
         );
     };
-
+    
     private static PackageMemberClassDeclaration createClass(CompilationUnit cu)
-    throws ParseException {
+            throws ParseException {
         PackageMemberClassDeclaration clazz = new PackageMemberClassDeclaration(
-            getLocation(),
-            null,
-            Mod.PUBLIC,
-            "HandMade",
-            null,
-            new Type[]{}
+                getLocation(),
+                null,
+                Mod.PUBLIC,
+                "HandMade",
+                null,
+                new Type[]{}
         );
         cu.addPackageMemberTypeDeclaration(clazz);
         return clazz;
     }
-
+    
     private static Type createDoubleType() {
         return new BasicType(getLocation(), BasicType.DOUBLE);
     }
-
+    
     private static Java.BinaryOperation createOp(Rvalue l1, String op, Rvalue l2) {
         return new Java.BinaryOperation(getLocation(), l1, op, l2);
     }
-
+    
     private static Literal createLiteral(double d) {
-        return createLiteral(new Double(d));
+        return createLiteral(Double.valueOf(d));
     }
-
-
+    
+    
     private static Literal createLiteral(Object o) {
         return new Literal( getLocation(), o );
     }
-
+    
     private static void createMethod(PackageMemberClassDeclaration clazz, Block body, Type returnType) {
         MethodDeclarator method = new MethodDeclarator(
-            getLocation(),
-            null,
-            (short)(Mod.PUBLIC),
-            returnType,
-            "calculate",
-            new FormalParameter[0],
-            new Type[0],
-            body
+                getLocation(),
+                null,
+                (short)(Mod.PUBLIC),
+                returnType,
+                "calculate",
+                new FormalParameter[0],
+                new Type[0],
+                body
         );
         clazz.addDeclaredMethod(method);
     }
-
+        
 
     private static LocalVariableDeclarationStatement createVarDecl(String name, double value) {
         return new Java.LocalVariableDeclarationStatement(
-            getLocation(),
-            (short)0,
-            createDoubleType(),
-            new Java.VariableDeclarator[] {
-                new Java.VariableDeclarator(
-                    getLocation(),
-                    name,
-                    0,
-                    createLiteral(value)
-                )
-            }
+                getLocation(),
+                (short)0,
+                createDoubleType(),
+                new Java.VariableDeclarator[] {
+                    new Java.VariableDeclarator(
+                            getLocation(),
+                            name,
+                            0,
+                            createLiteral(value)
+                    )
+                }
         );
     }
-
+    
     private static AmbiguousName createVariableRef(String name) {
         return new Java.AmbiguousName(
-            getLocation(),
-            new String[] { name }
+                getLocation(),
+                new String[] { name }
         );
     }
 
@@ -178,38 +180,38 @@ public class AstTests extends TestCase {
         Exception e = new Exception();
         StackTraceElement ste = e.getStackTrace()[1];//we only care about our caller
         return new Location( 
-            ste.getFileName(), 
-            (short)ste.getLineNumber(), 
-            (short)0
+                ste.getFileName(), 
+                (short)ste.getLineNumber(), 
+                (short)0
         );
     }
 
-
+    
     public void testBlock() throws Exception {
         CompilationUnit cu = new CompilationUnit("AstTests.java");
-
+        
         PackageMemberClassDeclaration clazz = createClass(cu);
-
+        
         Block body = new Block(getLocation());
-
+        
         Block sub = new Block(getLocation());
         sub.addStatement( createVarDecl("x", 2.0) );                         
-
+        
         body.addStatement(sub);
         body.addStatement(
-            new ReturnStatement(
-                getLocation(),
-                new Java.BinaryOperation(
-                    getLocation(),
-                    createVariableRef("x"),
-                    "*",
-                    createLiteral(3)
+                new ReturnStatement(
+                        getLocation(),
+                        new Java.BinaryOperation(
+                                getLocation(),
+                                createVariableRef("x"),
+                                "*",
+                                createLiteral(3)
+                        )
                 )
-            )
         );
-
+        
         createMethod(clazz, body, createDoubleType());
-
+        
         try {
             compileAndEval(cu);
             fail("Block must limit the scope of variables in it");
@@ -220,137 +222,137 @@ public class AstTests extends TestCase {
 
     public void testByteArrayLiteral() throws Exception {
         CompilationUnit cu = new CompilationUnit("AstTests.java");
-
+        
         PackageMemberClassDeclaration clazz = createClass(cu);
-
-        Integer exp = new Integer(1);
+        
+        Byte exp = Byte.valueOf((byte)1);
         Block body = new Block(getLocation());
         body.addStatement(
-            new ReturnStatement(
-                getLocation(),
-                new Java.NewInitializedArray(
-                    getLocation(),
-                    createByteArrayType(),
-                    new Java.ArrayInitializer(
+                new ReturnStatement(
                         getLocation(),
-                        new Java.Rvalue[] {
-                            createLiteral(exp)
-                        }
-                    )
+                        new Java.NewInitializedArray(
+                                getLocation(),
+                                createByteArrayType(),
+                                new Java.ArrayInitializer(
+                                        getLocation(),
+                                        new Java.Rvalue[] {
+                                            createLiteral(exp)
+                                        }
+                                )
+                        )
                 )
-            )
         );
-
+        
         createMethod(clazz, body, 
-            createByteArrayType()
+                createByteArrayType()
         );
-
+        
         Object res = compileAndEval(cu);
         assertEquals(exp.byteValue(), ((byte[])res)[0]);
     }
 
     public void testLocalVariable() throws Exception {
         CompilationUnit cu = new CompilationUnit("AstTests.java");
-
+        
         PackageMemberClassDeclaration clazz = createClass(cu);
-
+        
         Block body = new Block(getLocation());
         body.addStatement( createVarDecl("x", 2.0) );                         
         body.addStatement(
-            new ReturnStatement(
-                getLocation(),
-                new Java.BinaryOperation(
-                    getLocation(),
-                    createVariableRef("x"),
-                    "*",
-                    createLiteral(3)
+                new ReturnStatement(
+                        getLocation(),
+                        new Java.BinaryOperation(
+                                getLocation(),
+                                createVariableRef("x"),
+                                "*",
+                                createLiteral(3)
+                        )
                 )
-            )
         );
-
+        
         createMethod(clazz, body, createDoubleType());
-
+        
         Object res = compileAndEval(cu);
         assertTrue(res instanceof Double);
-        assertEquals(new Double(6.0), res);
+        assertEquals(Double.valueOf(6.0), res);
     }
-
+    
     public void testSimpleAst() throws Exception {
         CompilationUnit cu = new CompilationUnit("AstTests.java");
-
+        
         PackageMemberClassDeclaration clazz = createClass(cu);
-
+        
         Block body = new Block(getLocation());
         body.addStatement(
-            new ReturnStatement(
-                getLocation(),
-                createLiteral(3.0)
-            )
+                new ReturnStatement(
+                        getLocation(),
+                        createLiteral(3.0)
+                )
         );
-
+        
         createMethod(clazz, body, createDoubleType());
-
+        
         Object res = compileAndEval(cu);
-        assertEquals(new Double(3.0), res);
+        assertEquals(Double.valueOf(3.0), res);
     }
 
     public void testClassRef() throws Exception {
         CompilationUnit cu = new CompilationUnit("AstTests.java");
-
+        
         PackageMemberClassDeclaration clazz = createClass(cu);
-
+        
         Block body = new Block(getLocation());
-
+        
         body.addStatement(
-            new ReturnStatement(
-                getLocation(),
-                new Java.ClassLiteral(
-                    getLocation(),
-                    new Java.ReferenceType(
+                new ReturnStatement(
                         getLocation(),
-                        new String[] {
-                            "HandMade"
-                        }
-                    )
+                        new Java.ClassLiteral(
+                                getLocation(),
+                                new Java.ReferenceType(
+                                        getLocation(),
+                                        new String[] {
+                                            "HandMade"
+                                        }
+                                )
+                        )
                 )
-            )
         );
-
+        
         createMethod(clazz, body, 
-            new Java.ReferenceType(
-                getLocation(),
-                new String[] { "java", "lang", "Class" }
-            )
+                new Java.ReferenceType(
+                        getLocation(),
+                        new String[] { "java", "lang", "Class" }
+                )
         );
-
+        
         SimpleCompiler compiler = new SimpleCompiler();
         compiler.cook(cu);
-
+        
         ClassLoader loader = compiler.getClassLoader(); 
         Class handMadeClass = loader.loadClass("HandMade");
         Method calc = handMadeClass.getMethod("calculate", null);
-
+        
         Object handMade = handMadeClass.newInstance();
         Object res = calc.invoke(handMade, null);
         assertEquals(handMadeClass, res);
     }
-
+    
     public void testPrecedence() throws Exception {
         ExpressionStatement es = new Java.ExpressionStatement(
-            new Java.Assignment(
-                getLocation(),
-                new Java.AmbiguousName(
-                    getLocation(),
-                    new String[] { "x" }
-                ),
-                "=",
-                createOp(
-                    createLiteral(1), "*",
-                    createOp(createLiteral(2), "+", createLiteral(3))
+                new Java.Assignment(
+                        getLocation(),
+                        new Java.AmbiguousName(
+                                getLocation(),
+                                new String[] { "x" }
+                        ),
+                        "=",
+                        createOp(
+                                createLiteral(1), "*",
+                                createOp(createLiteral(2), "+", createLiteral(3))
+                        )
                 )
-            )
         );
-
+        
         StringWriter sw = new StringWriter();
         UnparseVisitor uv = new UnparseVisitor(sw);
         uv.visitExpressionStatement(es);

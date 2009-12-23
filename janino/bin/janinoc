@@ -5,7 +5,7 @@ declare -a java_args;
 declare -a main_args;
 do_nothing=0;
 
-janino_jar=`dirname $0`/../lib/janino.jar;
+janino_jar=`dirname $0`/../build/lib/janino.jar;
 
 while (( $# > 0 )); do
     arg=$1; shift;

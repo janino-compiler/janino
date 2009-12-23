@@ -156,15 +156,15 @@ public class Descriptor {
         String res = (String)Descriptor.descriptorToClassName.get(d);
         if(res != null) { return res; }
         
-        char firstChar = d.charAt(0);
-        if (firstChar == 'L' && d.endsWith(";")) {
-            // Class or interface -- convert "Ljava/lang/String;" to "java.lang.String".
-            return d.substring(1, d.length() - 1).replace('/', '.');
-        } 
-        if (firstChar == '[') {
-            // Array type -- convert "[Ljava/lang/String;" to "[Ljava.lang.String;".
-            return d.replace('/', '.');
-        } 
+            char firstChar = d.charAt(0);
+            if (firstChar == 'L' && d.endsWith(";")) {
+                // Class or interface -- convert "Ljava/lang/String;" to "java.lang.String".
+                return d.substring(1, d.length() - 1).replace('/', '.');
+            } 
+            if (firstChar == '[') {
+                // Array type -- convert "[Ljava/lang/String;" to "[Ljava.lang.String;".
+                return d.replace('/', '.');
+            } 
         throw new RuntimeException("(Invalid field descriptor \"" + d + "\")");
     }
 
@@ -204,15 +204,15 @@ public class Descriptor {
         return packageName1 == null ? packageName2 == null : packageName1.equals(packageName2);
     }
 
-    public final static String VOID_             = "V";
-    public final static String BYTE_             = "B";
-    public final static String CHAR_             = "C";
-    public final static String DOUBLE_           = "D";
-    public final static String FLOAT_            = "F";
-    public final static String INT_              = "I";
-    public final static String LONG_             = "J";
-    public final static String SHORT_            = "S";
-    public final static String BOOLEAN_          = "Z";
+    public final static String VOID_    = "V";
+    public final static String BYTE_    = "B";
+    public final static String CHAR_    = "C";
+    public final static String DOUBLE_  = "D";
+    public final static String FLOAT_   = "F";
+    public final static String INT_     = "I";
+    public final static String LONG_    = "J";
+    public final static String SHORT_   = "S";
+    public final static String BOOLEAN_ = "Z";
     public final static String OBJECT            = "Ljava/lang/Object;";
     public final static String STRING            = "Ljava/lang/String;";
     public final static String STRING_BUFFER     = "Ljava/lang/StringBuffer;";
@@ -223,14 +223,14 @@ public class Descriptor {
     public final static String ERROR             = "Ljava/lang/Error;";
     public final static String CLONEABLE         = "Ljava/lang/Cloneable;";
     public final static String SERIALIZABLE      = "Ljava/io/Serializable;";
-    public final static String BOOLEAN           = "Ljava/lang/Boolean;";
-    public final static String BYTE              = "Ljava/lang/Byte;";
-    public final static String CHARACTER         = "Ljava/lang/Character;";
-    public final static String SHORT             = "Ljava/lang/Short;";
-    public final static String INTEGER           = "Ljava/lang/Integer;";
-    public final static String LONG              = "Ljava/lang/Long;";
-    public final static String FLOAT             = "Ljava/lang/Float;";
-    public final static String DOUBLE            = "Ljava/lang/Double;";
+    public final static String BOOLEAN   = "Ljava/lang/Boolean;";
+    public final static String BYTE      = "Ljava/lang/Byte;";
+    public final static String CHARACTER = "Ljava/lang/Character;";
+    public final static String SHORT     = "Ljava/lang/Short;";
+    public final static String INTEGER   = "Ljava/lang/Integer;";
+    public final static String LONG      = "Ljava/lang/Long;";
+    public final static String FLOAT     = "Ljava/lang/Float;";
+    public final static String DOUBLE    = "Ljava/lang/Double;";
     private final static Map classNameToDescriptor = new HashMap();
     private final static Map descriptorToClassName = new HashMap();
     static {

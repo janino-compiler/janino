@@ -233,7 +233,7 @@ public class SimpleCompiler extends Cookable {
             DebuggingInformation.DEFAULT_DEBUGGING_INFORMATION
         );
     }
-    
+
     /**
      * Cook this compilation unit directly. 
      *  See {@link Cookable#cook}
