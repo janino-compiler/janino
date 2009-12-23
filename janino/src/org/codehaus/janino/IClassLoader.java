@@ -34,7 +34,15 @@
 
 package org.codehaus.janino;
 
-import java.util.*;
+import java.io.File;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+import org.codehaus.janino.util.resource.JarDirectoriesResourceFinder;
+import org.codehaus.janino.util.resource.PathResourceFinder;
+import org.codehaus.janino.util.resource.ResourceFinder;
 
 /**
  * Loads an {@link IClass} by type name.
@@ -219,6 +227,62 @@ public abstract class IClassLoader {
         // Define.
         this.loadedIClasses.put(descriptor, iClass);
         if (IClassLoader.DEBUG) System.out.println(this + ": Defined type \"" + descriptor + "\"");
+    }
+
+    /**
+     * Create an {@link IClassLoader} that looks for classes in the given "boot class
+     * path", then in the given "extension directories", and then in the given
+     * "class path".
+     * <p>
+     * The default for the <code>optionalBootClassPath</code> is the path defined in
+     * the system property "sun.boot.class.path", and the default for the
+     * <code>optionalExtensionDirs</code> is the path defined in the "java.ext.dirs"
+     * system property.
+     */
+    public static IClassLoader createJavacLikePathIClassLoader(
+        final File[] optionalBootClassPath,
+        final File[] optionalExtDirs,
+        final File[] classPath
+    ) {
+        ResourceFinder bootClassPathResourceFinder = new PathResourceFinder(
+            optionalBootClassPath == null ?
+            PathResourceFinder.parsePath(System.getProperty("sun.boot.class.path")):
+            optionalBootClassPath
+        );
+        ResourceFinder extensionDirectoriesResourceFinder = new JarDirectoriesResourceFinder(
+            optionalExtDirs == null ?
+            PathResourceFinder.parsePath(System.getProperty("java.ext.dirs")):
+            optionalExtDirs
+        );
+        ResourceFinder classPathResourceFinder = new PathResourceFinder(classPath);
+    
+        // We can load classes through "ResourceFinderIClassLoader"s, which means
+        // they are read into "ClassFile" objects, or we can load classes through
+        // "ClassLoaderIClassLoader"s, which means they are loaded into the JVM.
+        //
+        // In my environment, the latter is slightly faster. No figures about
+        // resource usage yet.
+        //
+        // In applications where the generated classes are not loaded into the
+        // same JVM instance, we should avoid to use the
+        // ClassLoaderIClassLoader, because that assumes that final fields have
+        // a constant value, even if not compile-time-constant but only
+        // initialization-time constant. The classical example is
+        // "File.separator", which is non-blank final, but not compile-time-
+        // constant.
+        IClassLoader icl;
+        icl = new ResourceFinderIClassLoader(bootClassPathResourceFinder, null);
+        icl = new ResourceFinderIClassLoader(extensionDirectoriesResourceFinder, icl);
+        icl = new ResourceFinderIClassLoader(classPathResourceFinder, icl);
+        return icl;
+//        ClassLoader cl;
+//        
+//        cl = SimpleCompiler.BOOT_CLASS_LOADER;
+//        cl = new ResourceFinderClassLoader(bootClassPathResourceFinder, cl);
+//        cl = new ResourceFinderClassLoader(extensionDirectoriesResourceFinder, cl);
+//        cl = new ResourceFinderClassLoader(classPathResourceFinder, cl);
+//        
+//        return new ClassLoaderIClassLoader(cl);
     }
 
     private final IClassLoader optionalParentIClassLoader;

@@ -698,12 +698,12 @@ public abstract class IClass {
             // JANINO also ignores the declaring type.
             //
             // See also JANINO-79 and JLS2Tests / 15.12.2.2
-            if (false) {
-                if (!that.getDeclaringIClass().isAssignableFrom(this.getDeclaringIClass())) {
-                    if (IClass.DEBUG) System.out.println("falsE");
-                    return false;
-                }
-            }
+            // if (false) {
+            //     if (!that.getDeclaringIClass().isAssignableFrom(this.getDeclaringIClass())) {
+            //         if (IClass.DEBUG) System.out.println("falsE");
+            //         return false;
+            //     }
+            // }
 
             IClass[] thisParameterTypes = this.getParameterTypes();
             IClass[] thatParameterTypes = that.getParameterTypes();

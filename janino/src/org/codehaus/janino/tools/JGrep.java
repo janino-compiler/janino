@@ -34,15 +34,34 @@
 
 package org.codehaus.janino.tools;
 
-import java.util.*;
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FilenameFilter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
-import org.codehaus.janino.*;
-import org.codehaus.janino.Scanner; // Resolve ambiguity with JDK 1.5's "java.util.Scanner".
-import org.codehaus.janino.util.*;
-import org.codehaus.janino.util.enumerator.*;
-import org.codehaus.janino.util.iterator.*;
-import org.codehaus.janino.util.resource.*;
+import org.codehaus.janino.CompileException;
+import org.codehaus.janino.Descriptor;
+import org.codehaus.janino.ExpressionEvaluator;
+import org.codehaus.janino.IClass;
+import org.codehaus.janino.IClassLoader;
+import org.codehaus.janino.Java;
+import org.codehaus.janino.Parser;
+import org.codehaus.janino.Scanner;
+import org.codehaus.janino.ScriptEvaluator;
+import org.codehaus.janino.UnitCompiler;
+import org.codehaus.janino.util.Benchmark;
+import org.codehaus.janino.util.ClassFile;
+import org.codehaus.janino.util.StringPattern;
+import org.codehaus.janino.util.Traverser;
+import org.codehaus.janino.util.enumerator.Enumerator;
+import org.codehaus.janino.util.iterator.DirectoryIterator;
+import org.codehaus.janino.util.resource.PathResourceFinder;
 
 
 /**
@@ -213,13 +232,7 @@ public class JGrep {
     }
 
     private static final class Action extends Enumerator {
-        public static final Action PRINT_LOCATION_AND_MATCH = new Action("print-location-and-match");
-        public static final Action PRINT_LOCATION           = new Action("print-location");
-   
         private Action(String name) { super(name); }
-        public static Action fromString(String name) throws EnumeratorFormatException {
-            return (Action) Enumerator.fromString(name, Action.class);
-        }
 
         static MethodInvocationAction getMethodInvocationAction(String action) throws CompileException, Parser.ParseException, Scanner.ScanException {
             if ("print-location-and-match".equals(action)) {
@@ -391,7 +404,7 @@ public class JGrep {
         boolean verbose
     ) {
         this(
-            JGrep.createJavacLikePathIClassLoader( // iClassLoader
+            org.codehaus.janino.IClassLoader.createJavacLikePathIClassLoader( // iClassLoader
                 optionalBootClassPath,
                 optionalExtDirs,
                 classPath
@@ -416,65 +429,6 @@ public class JGrep {
         this.iClassLoader              = new JGrepIClassLoader(iClassLoader);
         this.optionalCharacterEncoding = optionalCharacterEncoding;
         this.benchmark                 = new Benchmark(verbose);
-    }
-
-    /**
-     * Create an {@link IClassLoader} that looks for classes in the given "boot class
-     * path", then in the given "extension directories", and then in the given
-     * "class path".
-     * <p>
-     * The default for the <code>optionalBootClassPath</code> is the path defined in
-     * the system property "sun.boot.class.path", and the default for the
-     * <code>optionalExtensionDirs</code> is the path defined in the "java.ext.dirs"
-     * system property.
-     */
-    private static IClassLoader createJavacLikePathIClassLoader(
-        final File[] optionalBootClassPath,
-        final File[] optionalExtDirs,
-        final File[] classPath
-    ) {
-        ResourceFinder bootClassPathResourceFinder = new PathResourceFinder(
-            optionalBootClassPath == null ?
-            PathResourceFinder.parsePath(System.getProperty("sun.boot.class.path")):
-            optionalBootClassPath
-        );
-        ResourceFinder extensionDirectoriesResourceFinder = new JarDirectoriesResourceFinder(
-            optionalExtDirs == null ?
-            PathResourceFinder.parsePath(System.getProperty("java.ext.dirs")):
-            optionalExtDirs
-        );
-        ResourceFinder classPathResourceFinder = new PathResourceFinder(classPath);
-
-        // We can load classes through "ResourceFinderIClassLoader"s, which means
-        // they are read into "ClassFile" objects, or we can load classes through
-        // "ClassLoaderIClassLoader"s, which means they are loaded into the JVM.
-        //
-        // In my environment, the latter is slightly faster. No figures about
-        // resource usage yet.
-        //
-        // In applications where the generated classes are not loaded into the
-        // same JVM instance, we should avoid to use the
-        // ClassLoaderIClassLoader, because that assumes that final fields have
-        // a constant value, even if not compile-time-constant but only
-        // initialization-time constant. The classical example is
-        // "File.separator", which is non-blank final, but not compile-time-
-        // constant.
-        if (true) {
-            IClassLoader icl;
-            icl = new ResourceFinderIClassLoader(bootClassPathResourceFinder, null);
-            icl = new ResourceFinderIClassLoader(extensionDirectoriesResourceFinder, icl);
-            icl = new ResourceFinderIClassLoader(classPathResourceFinder, icl);
-            return icl;
-        } else {
-            ClassLoader cl;
-
-            cl = SimpleCompiler.BOOT_CLASS_LOADER;
-            cl = new ResourceFinderClassLoader(bootClassPathResourceFinder, cl);
-            cl = new ResourceFinderClassLoader(extensionDirectoriesResourceFinder, cl);
-            cl = new ResourceFinderClassLoader(classPathResourceFinder, cl);
-
-            return new ClassLoaderIClassLoader(cl);
-        }
     }
 
     public void jGrep(
