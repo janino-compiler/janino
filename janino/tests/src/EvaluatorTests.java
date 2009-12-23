@@ -55,6 +55,8 @@ import org.codehaus.janino.Scanner;
 import org.codehaus.janino.ScriptEvaluator;
 import org.codehaus.janino.SimpleCompiler;
 
+import for_sandbox_tests.OverridesWithDifferingVisibility;
+
 public class EvaluatorTests extends TestCase {
     public static Test suite() {
         TestSuite s = new TestSuite(EvaluatorTests.class.getName());
@@ -81,6 +83,7 @@ public class EvaluatorTests extends TestCase {
         s.addTest(new EvaluatorTests("testWideInstructions"));
         s.addTest(new EvaluatorTests("testHandlingNaN"));
         s.addTest(new EvaluatorTests("testInstanceOf"));
+        s.addTest(new EvaluatorTests("testOverrideVisibility"));
         return s;
     }
 
@@ -733,5 +736,21 @@ public class EvaluatorTests extends TestCase {
         
         assertEquals(new Boolean(true),  mStr.invoke(null, new Object[] { "" }));
         assertEquals(new Boolean(false), mStr.invoke(null, new Object[] { null }));
+    }
+    
+    public void testOverrideVisibility() throws Exception {
+        // note that this compiles without problem
+        OverridesWithDifferingVisibility.test(new Object[] { "asdf"} );
+        
+        // so should this
+        SimpleCompiler sc = new SimpleCompiler();
+        sc.cook(
+            "package test;\n" +
+            "public class Test {\n" +
+            "    public void runTest() {\n" +
+            "       for_sandbox_tests.OverridesWithDifferingVisibility.test(new Object[] { \"asdf\"} );\n" +
+            "    }\n" +
+            "}"
+        );
     }
 }

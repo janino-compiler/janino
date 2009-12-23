@@ -3288,7 +3288,8 @@ public class UnitCompiler {
         IClass.IConstructor iConstructor = (IClass.IConstructor) this.findMostSpecificIInvocable(
             (Locatable) naci, // l
             iConstructors,    // iInvocables
-            naci.arguments    // arguments
+            naci.arguments,   // arguments
+            acd
         );
 
         IClass[] pts = iConstructor.getParameterTypes();
@@ -4459,10 +4460,10 @@ public class UnitCompiler {
      * according to JLS 6.6.1.4. Issues a {@link #compileError(String)} if not.
      */
     private boolean isAccessible(
-        IClass.IMember      member,
-        Java.BlockStatement contextBlockStatement
+        IClass.IMember member,
+        Java.Scope     contextScope
     ) throws CompileException {
-        return this.isAccessible(member.getDeclaringIClass(), member.getAccess(), contextBlockStatement);
+        return this.isAccessible(member.getDeclaringIClass(), member.getAccess(), contextScope);
     }
     
     /**
@@ -4482,11 +4483,11 @@ public class UnitCompiler {
      * to JLS2 6.6.1.4.
      */
     private boolean isAccessible(
-        IClass              iClassDeclaringMember,
-        Access              memberAccess,
-        Java.BlockStatement contextBlockStatement
+        IClass     iClassDeclaringMember,
+        Access     memberAccess,
+        Java.Scope contextScope
     ) throws CompileException {
-        return null == this.internalCheckAccessible(iClassDeclaringMember, memberAccess, contextBlockStatement);
+        return null == this.internalCheckAccessible(iClassDeclaringMember, memberAccess, contextScope);
     }
     
     /**
@@ -4507,9 +4508,9 @@ public class UnitCompiler {
      * @return a descriptive text iff a member declared in that {@link IClass} with that {@link Access} is inaccessible
      */
     private String internalCheckAccessible(
-        IClass              iClassDeclaringMember,
-        Access              memberAccess,
-        Java.BlockStatement contextBlockStatement
+        IClass     iClassDeclaringMember,
+        Access     memberAccess,
+        Java.Scope contextScope
     ) throws CompileException {
         
         // At this point, memberAccess is PUBLIC, DEFAULT, PROECTEDED or PRIVATE.
@@ -4521,7 +4522,7 @@ public class UnitCompiler {
 
         // Determine the class declaring the context block statement.
         IClass iClassDeclaringContextBlockStatement;
-        for (Java.Scope s = contextBlockStatement.getEnclosingScope();; s = s.getEnclosingScope()) {
+        for (Java.Scope s = contextScope;; s = s.getEnclosingScope()) {
             if (s instanceof Java.TypeDeclaration) {
                 iClassDeclaringContextBlockStatement = this.resolve((Java.TypeDeclaration) s);
                 break;
@@ -5122,7 +5123,8 @@ public class UnitCompiler {
         IClass.IConstructor iConstructor = (IClass.IConstructor) this.findMostSpecificIInvocable(
             l,
             iConstructors, // iInvocables
-            arguments      // arguments
+            arguments,     // arguments
+            scope          // contextScope
         );
 
         // Check exceptions that the constructor may throw.
@@ -5781,10 +5783,8 @@ public class UnitCompiler {
         
                         // Find methods with specified name.
                         iMethod = this.findIMethod(
-                            (Locatable) mi,    // loc
                             this.resolve(td),  // targetType
-                            mi.methodName,     // methodName
-                            mi.arguments       // arguments
+                            mi                 // invocation
                         );
                         if (iMethod != null) break FIND_METHOD;
                     }
@@ -5796,10 +5796,8 @@ public class UnitCompiler {
 
                 // Find methods with specified name.
                 iMethod = this.findIMethod(
-                        (Locatable) mi,                  // loc
                         this.getType(mi.optionalTarget), // targetType
-                        mi.methodName,                   // methodName
-                        mi.arguments                     // arguments
+                        mi                               // invocable
                 );
                 if (iMethod != null) break FIND_METHOD;
             }
@@ -5810,10 +5808,8 @@ public class UnitCompiler {
                 if (o instanceof List) {
                     IClass declaringIClass = ((IMethod) ((List) o).get(0)).getDeclaringIClass();
                     iMethod = this.findIMethod(
-                        (Locatable) mi,  // l
                         declaringIClass, // targetType
-                        mi.methodName,   // methodName
-                        mi.arguments     // arguments
+                        mi               // invocable
                     );
                     if (iMethod != null) break FIND_METHOD;
                 }
@@ -5824,10 +5820,8 @@ public class UnitCompiler {
             for (Iterator it = this.staticImportsOnDemand.iterator(); it.hasNext();) {
                 IClass iClass = (IClass) it.next();
                 IMethod im = this.findIMethod(
-                    (Locatable) mi, // l
                     iClass,         // targetType
-                    mi.methodName,  // methodName
-                    mi.arguments    // arguments
+                    mi              // invocable
                 );
                 if (im != null) {
                     if (iMethod != null) UnitCompiler.this.compileError("Ambiguous static method import: \"" + iMethod.toString() + "\" vs. \"" + im.toString() + "\"");
@@ -5852,22 +5846,21 @@ public class UnitCompiler {
      * @return <code>null</code> if no appropriate method could be found
      */
     private IClass.IMethod findIMethod(
-        Locatable loc,
-        IClass    targetType,
-        String    methodName,
-        Rvalue[]  arguments
+        IClass     targetType,
+        Invocation invocation
     ) throws CompileException {
 
         // Get all methods 
         List ms = new ArrayList();
-        this.getIMethods(targetType, methodName, ms);
+        this.getIMethods(targetType, invocation.methodName, ms);
         if (ms.size() == 0) return null;
 
         // Determine arguments' types, choose the most specific method
         return (IClass.IMethod) this.findMostSpecificIInvocable(
-            loc,                                                          // loc
+            (Locatable) invocation,                                       // loc
             (IClass.IMethod[]) ms.toArray(new IClass.IMethod[ms.size()]), // iInvocables
-            arguments                                                     // arguments
+            invocation.arguments,                                         // arguments
+            invocation.getEnclosingBlockStatement()                       // contextScope
         );
     }
 
@@ -5938,10 +5931,8 @@ public class UnitCompiler {
         }
         IClass superclass = this.resolve(declaringClass).getSuperclass();
         IMethod iMethod = this.findIMethod(
-            (Locatable) scmi, // l
             superclass,       // targetType
-            scmi.methodName,  // methodName
-            scmi.arguments    // arguments
+            scmi              // invocation
         );
         if (iMethod == null) {
             this.compileError("Class \"" + superclass + "\" has no method named \"" + scmi.methodName + "\"", scmi.getLocation());
@@ -5963,7 +5954,8 @@ public class UnitCompiler {
     private IClass.IInvocable findMostSpecificIInvocable(
         Locatable          l,
         final IInvocable[] iInvocables,
-        Rvalue[]           arguments
+        Rvalue[]           arguments,
+        Java.Scope         contextScope
     ) throws CompileException {
 
         // Determine arguments' types.
@@ -5972,10 +5964,10 @@ public class UnitCompiler {
             argumentTypes[i] = this.getType(arguments[i]);
         }
 
-        IInvocable ii = this.findMostSpecificIInvocable(l, iInvocables, argumentTypes, false);
+        IInvocable ii = this.findMostSpecificIInvocable(l, iInvocables, argumentTypes, false, contextScope);
         if (ii != null) return ii;
 
-        ii = this.findMostSpecificIInvocable(l, iInvocables, argumentTypes, true);
+        ii = this.findMostSpecificIInvocable(l, iInvocables, argumentTypes, true, contextScope);
         if (ii != null) return ii;
         
         // Report a nice compile error.
@@ -6031,7 +6023,8 @@ public class UnitCompiler {
         Locatable          l,
         final IInvocable[] iInvocables,
         final IClass[]     argumentTypes,
-        boolean            boxingPermitted
+        boolean            boxingPermitted,
+        Java.Scope         contextScope
     ) throws CompileException {
         if (UnitCompiler.DEBUG) {
             System.out.println("Argument types:");
@@ -6049,6 +6042,7 @@ public class UnitCompiler {
             // Check parameter count.
             IClass[] parameterTypes = ii.getParameterTypes();
             if (parameterTypes.length != argumentTypes.length) continue;
+            if (!this.isAccessible(ii, contextScope)) continue;
 
             // Check argument types vs. parameter types.
             if (UnitCompiler.DEBUG) System.out.println("Parameter / argument type check:");

@@ -2609,7 +2609,6 @@ public class Java {
 
     public static final class MethodInvocation extends Invocation {
         public final Atom   optionalTarget; // null == simple method name.
-        public final String methodName;
 
         public MethodInvocation(
             Location location,
@@ -2617,9 +2616,8 @@ public class Java {
             String   methodName,
             Rvalue[] arguments
         ) {
-            super(location, arguments);
+            super(location, methodName, arguments);
             this.optionalTarget = optionalTarget;
-            this.methodName     = methodName;
         }
 
         // Implement "Atom".
@@ -2641,15 +2639,12 @@ public class Java {
     }
 
     public static final class SuperclassMethodInvocation extends Invocation {
-        public final String methodName;
-
         public SuperclassMethodInvocation(
             Location       location,
             String         methodName,
             Rvalue[]       arguments
         ) {
-            super(location, arguments);
-            this.methodName = methodName;
+            super(location, methodName, arguments);
         }
 
         // Implement "Atom".
@@ -2661,12 +2656,15 @@ public class Java {
 
     public static abstract class Invocation extends Rvalue {
         public final Rvalue[] arguments;
+        public final String methodName;
 
         protected Invocation(
             Location location,
+            String methodName,
             Rvalue[] arguments
         ) {
             super(location);
+            this.methodName = methodName;
             this.arguments = arguments;
         }
     }
