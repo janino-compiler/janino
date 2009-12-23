@@ -334,7 +334,13 @@ public class UnitCompiler {
         if ((cd.modifiers & Mod.ABSTRACT) == 0) {
             IMethod[] ms = iClass.getIMethods();
             for (int i = 0; i <  ms.length; ++i) {
-                if (ms[i].isAbstract()) this.compileError("Non-abstract class \"" + iClass + "\" must implement method \"" + ms[i] + "\"", cd.getLocation());
+                IMethod base = ms[i];
+                if (base.isAbstract()) {
+                    IMethod override = iClass.findIMethod(base.getName(), base.getParameterTypes());
+                    if (override == null || override.isAbstract()) {
+                        this.compileError("Non-abstract class \"" + iClass + "\" must implement method \"" + base + "\"", cd.getLocation());
+                    }
+                }
             }
         }
 

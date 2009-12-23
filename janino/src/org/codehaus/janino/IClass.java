@@ -34,7 +34,15 @@
 
 package org.codehaus.janino;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * A simplified equivalent to "java.lang.reflect".
@@ -194,12 +202,16 @@ public abstract class IClass {
     public static final IMethod[] NO_IMETHODS = new IMethod[0];
 
     public final boolean hasIMethod(String methodName, IClass[] parameterTypes) throws CompileException {
+        return findIMethod(methodName, parameterTypes) != null;
+    }
+    
+    public final IMethod findIMethod(String methodName, IClass[] parameterTypes) throws CompileException {
         IMethod[] ims = this.getDeclaredIMethods(methodName);
         for (int i = 0; i < ims.length; ++i) {
             IClass[] pts = ims[i].getParameterTypes();
-            if (Arrays.equals(pts, parameterTypes)) return true;
+            if (Arrays.equals(pts, parameterTypes)) return ims[i];
         }
-        return false;
+        return null;
     }
 
     /**

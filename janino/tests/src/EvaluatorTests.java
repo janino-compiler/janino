@@ -84,6 +84,7 @@ public class EvaluatorTests extends TestCase {
         s.addTest(new EvaluatorTests("testHandlingNaN"));
         s.addTest(new EvaluatorTests("testInstanceOf"));
         s.addTest(new EvaluatorTests("testOverrideVisibility"));
+        s.addTest(new EvaluatorTests("testCovariantReturns"));
         return s;
     }
 
@@ -750,6 +751,17 @@ public class EvaluatorTests extends TestCase {
             "    public void runTest() {\n" +
             "       for_sandbox_tests.OverridesWithDifferingVisibility.test(new Object[] { \"asdf\"} );\n" +
             "    }\n" +
+            "}"
+        );
+    }
+    
+    
+    public void testCovariantReturns() throws Exception {
+        SimpleCompiler sc = new SimpleCompiler();
+        sc.cook(
+            "package test;\n" +
+            "public class Test extends for_sandbox_tests.CovariantReturns {\n" +
+            "    public Test overrideMe() { return this; }\n" +
             "}"
         );
     }
