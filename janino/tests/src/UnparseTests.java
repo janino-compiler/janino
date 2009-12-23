@@ -50,6 +50,7 @@ import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
 import org.codehaus.janino.Java;
+import org.codehaus.janino.Mod;
 import org.codehaus.janino.Parser;
 import org.codehaus.janino.Scanner;
 import org.codehaus.janino.UnparseVisitor;
@@ -84,7 +85,9 @@ import org.codehaus.janino.Java.QualifiedThisReference;
 import org.codehaus.janino.Java.SuperclassFieldAccessExpression;
 import org.codehaus.janino.Java.SuperclassMethodInvocation;
 import org.codehaus.janino.Java.ThisReference;
+import org.codehaus.janino.Java.Type;
 import org.codehaus.janino.Java.UnaryOperation;
+import org.codehaus.janino.Parser.ParseException;
 import org.codehaus.janino.util.Traverser;
 
 public class UnparseTests extends TestCase {
@@ -94,6 +97,7 @@ public class UnparseTests extends TestCase {
         s.addTest(new UnparseTests("testSimple"));
         s.addTest(new UnparseTests("testParens"));
         s.addTest(new UnparseTests("testMany"));
+        s.addTest(new UnparseTests("testInterface"));
         s.addTest(new UnparseTests("testParseUnparseParseJanino"));
         return s;
     }
@@ -114,6 +118,10 @@ public class UnparseTests extends TestCase {
         s = UnparseTests.replace(s, "((( ", "(");
         s = UnparseTests.replace(s, " )))", ")");
         Assert.assertEquals(expect, s);
+    }
+    
+    private static String normalizeWhitespace(String input) {
+        return input.replaceAll("\\s+", " ").trim();
     }
     private static String replace(String s, String from, String to) {
         for (;;) {
@@ -326,6 +334,27 @@ public class UnparseTests extends TestCase {
         };
         rvalue.accept(rv);
         return res[0];
+    }
+    
+    public void testInterface() throws Exception {
+        testInterfaceHelper(false);
+        testInterfaceHelper(true);
+    }
+
+    private void testInterfaceHelper(boolean interfaceMod) throws ParseException {
+        short modifier = Mod.PUBLIC;
+        if (interfaceMod) {
+            modifier |= Mod.INTERFACE;
+        }
+        Java.PackageMemberInterfaceDeclaration decl = 
+            new Java.PackageMemberInterfaceDeclaration(null, "foo", 
+                modifier, "Foo", new Type[0]);
+        StringWriter sw = new StringWriter();
+        UnparseVisitor uv = new UnparseVisitor(sw);
+        decl.accept(uv);
+        String s = sw.toString();
+        String correctString = "/**foo*/ public interface Foo { }";
+        assertEquals(correctString, normalizeWhitespace(s));
     }
 
     public void testLiterals() throws Exception {

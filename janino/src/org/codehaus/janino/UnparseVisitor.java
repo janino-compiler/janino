@@ -722,7 +722,11 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
     private void unparseInterfaceDeclaration(Java.InterfaceDeclaration id) {
         this.unparseDocComment(id);
         this.unparseModifiers(id.modifiers);
-        this.pw.print("interface " + id.name);
+        //make sure we print "interface", even if it wasn't in the modifiers
+        if ((id.modifiers & Mod.INTERFACE) == 0) {
+            this.pw.print("interface ");
+        }
+        this.pw.print(id.name);
         if (id.extendedTypes.length > 0) this.pw.print(" extends " + Java.join(id.extendedTypes, ", "));
         this.pw.println(" {");
         this.unparseAbstractTypeDeclarationBody(id);
