@@ -549,6 +549,7 @@ public class UnitCompiler {
             }
         }
         
+        // for classes that enclose surrounding scopes, trawl their initializers looking for synthetic fields.
         if (icd instanceof AnonymousClassDeclaration || icd instanceof LocalClassDeclaration) {
             Java.ClassDeclaration cd = (Java.ClassDeclaration)icd;
             for (int i = 0; i < cd.variableDeclaratorsAndInitializers.size(); ++i) {

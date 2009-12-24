@@ -87,6 +87,7 @@ public class EvaluatorTests extends TestCase {
         s.addTest(new EvaluatorTests("testCovariantReturns"));
         s.addTest(new EvaluatorTests("testNonExistentImport"));
         s.addTest(new EvaluatorTests("testAnonymousFieldInitializedByCapture"));
+        s.addTest(new EvaluatorTests("testNamedFieldInitializedByCapture"));
         s.addTest(new EvaluatorTests("testAbstractGrandParentsWithCovariantReturns"));
         return s;
     }
@@ -815,6 +816,33 @@ public class EvaluatorTests extends TestCase {
                 "      private String bar = foo;\n" +
                 "      private String[] cowparts = { moo, cow };\n" +
                 "    };\n" +
+                "} }"
+        );
+        
+        Class topClass = sc.getClassLoader().loadClass("Top");
+        Method get = topClass.getDeclaredMethod("get", null);
+        Object t = topClass.newInstance();
+        Object res = get.invoke(t, null);
+        ((Runnable)res).run();
+    }
+    
+    
+    public void testNamedFieldInitializedByCapture() throws Exception {
+        SimpleCompiler sc = new SimpleCompiler();
+        sc.cook("public class Top {\n" +
+                "  public Runnable get() {\n" +
+                "    final String foo = \"foo\";\n" +
+                "    final String cow = \"cow\";\n" +
+                "    final String moo = \"moo\";\n" +
+                "    class R implements Runnable {\n" +
+                "      public void run() {\n" +
+                "        if (bar == null) {\n" +
+                "          throw new RuntimeException();\n" +
+                "      } }\n" +
+                "      private String bar = foo;\n" +
+                "      private String[] cowparts = { moo, cow };\n" +
+                "    }\n" +
+                "    return new R();" +
                 "} }"
         );
         
