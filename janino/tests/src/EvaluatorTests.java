@@ -85,6 +85,7 @@ public class EvaluatorTests extends TestCase {
         s.addTest(new EvaluatorTests("testInstanceOf"));
         s.addTest(new EvaluatorTests("testOverrideVisibility"));
         s.addTest(new EvaluatorTests("testCovariantReturns"));
+        s.addTest(new EvaluatorTests("testNonExistentImport"));
         return s;
     }
 
@@ -776,5 +777,25 @@ public class EvaluatorTests extends TestCase {
         } catch (CompileException ce) {
             assertTrue(ce.getMessage().contains("Non-abstract class \"test.Test2\" must implement method"));
         }
+    }   
+    
+    public void testNonExistentImport() throws Exception {
+        try {
+            SimpleCompiler sc = new SimpleCompiler();
+            sc.cook("import does.not.Exist; public class Test { private final Exist e = null; }" );
+            fail("Compilation with non-existent import should fail");
+        } catch (CompileException ce) { 
+            assertTrue(ce.getMessage().contains("Imported class \"does.not.Exist\" could not be loaded"));
+        }
+        
+        try {
+            SimpleCompiler sc = new SimpleCompiler();
+            sc.cook("import does.not.Exist; public class Test { }" );
+            fail("Compilation with non-existent import should fail");
+        } catch (CompileException ce) { 
+            ce.printStackTrace();
+            assertTrue(ce.getMessage().contains("Imported class \"does.not.Exist\" could not be loaded"));
+        }
     }
+    
 }
