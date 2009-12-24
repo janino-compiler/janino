@@ -53,6 +53,8 @@ import org.codehaus.janino.IClass.IField;
 import org.codehaus.janino.IClass.IInvocable;
 import org.codehaus.janino.IClass.IMethod;
 import org.codehaus.janino.Java.AlternateConstructorInvocation;
+import org.codehaus.janino.Java.AnonymousClassDeclaration;
+import org.codehaus.janino.Java.ArrayInitializerOrRvalue;
 import org.codehaus.janino.Java.Block;
 import org.codehaus.janino.Java.BlockStatement;
 import org.codehaus.janino.Java.BreakStatement;
@@ -71,6 +73,7 @@ import org.codehaus.janino.Java.IfStatement;
 import org.codehaus.janino.Java.Initializer;
 import org.codehaus.janino.Java.Invocation;
 import org.codehaus.janino.Java.LabeledStatement;
+import org.codehaus.janino.Java.LocalClassDeclaration;
 import org.codehaus.janino.Java.LocalClassDeclarationStatement;
 import org.codehaus.janino.Java.LocalVariable;
 import org.codehaus.janino.Java.LocalVariableDeclarationStatement;
@@ -85,6 +88,8 @@ import org.codehaus.janino.Java.SwitchStatement;
 import org.codehaus.janino.Java.SynchronizedStatement;
 import org.codehaus.janino.Java.ThrowStatement;
 import org.codehaus.janino.Java.TryStatement;
+import org.codehaus.janino.Java.TypeBodyDeclaration;
+import org.codehaus.janino.Java.VariableDeclarator;
 import org.codehaus.janino.Java.WhileStatement;
 import org.codehaus.janino.Java.CompilationUnit.ImportDeclaration;
 import org.codehaus.janino.Java.CompilationUnit.SingleStaticImportDeclaration;
@@ -541,6 +546,22 @@ public class UnitCompiler {
                     "this$" + (nesting - 2),
                     this.resolve((Java.AbstractTypeDeclaration) ocs.get(1))
                 ));
+            }
+        }
+        
+        if (icd instanceof AnonymousClassDeclaration || icd instanceof LocalClassDeclaration) {
+            Java.ClassDeclaration cd = (Java.ClassDeclaration)icd;
+            for (int i = 0; i < cd.variableDeclaratorsAndInitializers.size(); ++i) {
+                TypeBodyDeclaration tbd = (TypeBodyDeclaration) cd.variableDeclaratorsAndInitializers.get(i);
+                if (tbd instanceof FieldDeclaration) {
+                    FieldDeclaration fd = (FieldDeclaration)tbd;
+                    for (int j = 0; j < fd.variableDeclarators.length; ++j) {
+                        VariableDeclarator vd = fd.variableDeclarators[j];
+                        if (vd.optionalInitializer != null) {
+                            this.fakeCompile(vd.optionalInitializer);
+                        }
+                    }
+                }
             }
         }
 
@@ -1987,6 +2008,22 @@ public class UnitCompiler {
     }
 
     // ------------------ Rvalue.compile() ----------------
+    
+    /**
+     * Call to check whether the given {@link ArrayInitializerOrRvalue} compiles or not.
+     */
+    private void fakeCompile(Java.ArrayInitializerOrRvalue aior) throws CompileException {
+        if (aior instanceof Java.Rvalue) {
+            Java.Rvalue rv = (Java.Rvalue) aior;
+            this.fakeCompile(rv);
+        }
+        if (aior instanceof Java.ArrayInitializer) {
+            Java.ArrayInitializer ai = (Java.ArrayInitializer) aior;
+            for (int i = 0; i < ai.values.length; ++i) {
+                fakeCompile(ai.values[i]);
+            }
+        }
+    }
 
     /**
      * Call to check whether the given {@link Java.Rvalue} compiles or not.
