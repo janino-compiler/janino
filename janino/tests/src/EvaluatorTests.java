@@ -86,6 +86,7 @@ public class EvaluatorTests extends TestCase {
         s.addTest(new EvaluatorTests("testOverrideVisibility"));
         s.addTest(new EvaluatorTests("testCovariantReturns"));
         s.addTest(new EvaluatorTests("testNonExistentImport"));
+        s.addTest(new EvaluatorTests("testAnonymousFieldInitializedByCapture"));
         return s;
     }
 
@@ -796,6 +797,31 @@ public class EvaluatorTests extends TestCase {
             ce.printStackTrace();
             assertTrue(ce.getMessage().contains("Imported class \"does.not.Exist\" could not be loaded"));
         }
+    }
+    
+    public void testAnonymousFieldInitializedByCapture() throws Exception {
+        SimpleCompiler sc = new SimpleCompiler();
+        sc.setParentClassLoader(SimpleCompiler.BOOT_CLASS_LOADER, new Class[] { for_sandbox_tests.ProtectedVariable.class });
+        sc.cook("public class Top {\n" +
+                "  public String get() {\n" +
+                "    final String foo = \"foo\";\n" +
+                "    Runnable r = new Runnable() {\n" +
+                "      public void run() {\n" +
+                "        if (! this.bar.equals(foo)) {\n" +
+                "          throw new RuntimeException();\n" +
+                "      } }\n" +
+                "      private String bar = foo;\n" +
+                "    };\n" +
+                "    r.run();\n" +
+                "    return foo;\n" +
+                "} }"
+        );
+        
+        Class topClass = sc.getClassLoader().loadClass("Top");
+        Method get = topClass.getDeclaredMethod("get", null);
+        Object t = topClass.newInstance();
+        Object res = get.invoke(t, null);
+        assertEquals("foo", res);
     }
     
 }

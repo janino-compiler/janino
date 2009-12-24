@@ -437,7 +437,9 @@ public class UnitCompiler {
             Java.ConstructorDeclarator[] cds = cd.getConstructors();
             for (int i = 0; i < cds.length; ++i) {
                 this.compile(cds[i], cf);
-                if (syntheticFieldCount != cd.syntheticFields.size()) throw new RuntimeException("SNO: Compilation of constructor \"" + cds[i] + "\" (" + cds[i].getLocation() +") added synthetic fields!?");
+                if (syntheticFieldCount != cd.syntheticFields.size()) {
+                    throw new RuntimeException("SNO: Compilation of constructor \"" + cds[i] + "\" (" + cds[i].getLocation() +") added synthetic fields!?");
+                }
             }
         }
 
@@ -5514,40 +5516,40 @@ public class UnitCompiler {
             while (s instanceof Java.BlockStatement || s instanceof Java.CatchClause) s = s.getEnclosingScope();
             if (s instanceof Java.FunctionDeclarator) {
                 s = s.getEnclosingScope();
-                if (s instanceof Java.InnerClassDeclaration) {
-                    Java.InnerClassDeclaration icd = (Java.InnerClassDeclaration) s;
-                    s = s.getEnclosingScope();
-                    if (s instanceof Java.AnonymousClassDeclaration) s = s.getEnclosingScope();
-                    while (s instanceof Java.BlockStatement) {
-                        Java.LocalVariable lv = ((Java.BlockStatement) s).findLocalVariable(identifier);
-                        if (lv != null) {
-                            if (!lv.finaL) this.compileError("Cannot access non-final local variable \"" + identifier + "\" from inner class");
-                            final IClass lvType = lv.type;
-                            IClass.IField iField = new SimpleIField(
-                                this.resolve(icd),
-                                "val$" + identifier,
-                                lvType
-                            );
-                            icd.defineSyntheticField(iField);
-                            Java.FieldAccess fa = new Java.FieldAccess(
-                                location,                        // location
-                                new Java.QualifiedThisReference( // lhs
-                                    location,                                        // location
-                                    new Java.SimpleType(location, this.resolve(icd)) // qualification
-                                ),
-                                iField                           // field
-                            );
-                            fa.setEnclosingBlockStatement((Java.BlockStatement) scope);
-                            return fa;
-                        }
-                        s = s.getEnclosingScope();
-                        while (s instanceof Java.BlockStatement) s = s.getEnclosingScope();
-                        if (!(s instanceof Java.FunctionDeclarator)) break;
-                        s = s.getEnclosingScope();
-                        if (!(s instanceof Java.InnerClassDeclaration)) break;
-                        icd = (Java.InnerClassDeclaration) s;
-                        s = s.getEnclosingScope();
+            }
+            if (s instanceof Java.InnerClassDeclaration) {
+                Java.InnerClassDeclaration icd = (Java.InnerClassDeclaration) s;
+                s = s.getEnclosingScope();
+                if (s instanceof Java.AnonymousClassDeclaration) s = s.getEnclosingScope();
+                while (s instanceof Java.BlockStatement) {
+                    Java.LocalVariable lv = ((Java.BlockStatement) s).findLocalVariable(identifier);
+                    if (lv != null) {
+                        if (!lv.finaL) this.compileError("Cannot access non-final local variable \"" + identifier + "\" from inner class");
+                        final IClass lvType = lv.type;
+                        IClass.IField iField = new SimpleIField(
+                            this.resolve(icd),
+                            "val$" + identifier,
+                            lvType
+                        );
+                        icd.defineSyntheticField(iField);
+                        Java.FieldAccess fa = new Java.FieldAccess(
+                            location,                        // location
+                            new Java.QualifiedThisReference( // lhs
+                                location,                                        // location
+                                new Java.SimpleType(location, this.resolve(icd)) // qualification
+                            ),
+                            iField                           // field
+                        );
+                        fa.setEnclosingBlockStatement((Java.BlockStatement) scope);
+                        return fa;
                     }
+                    s = s.getEnclosingScope();
+                    while (s instanceof Java.BlockStatement) s = s.getEnclosingScope();
+                    if (!(s instanceof Java.FunctionDeclarator)) break;
+                    s = s.getEnclosingScope();
+                    if (!(s instanceof Java.InnerClassDeclaration)) break;
+                    icd = (Java.InnerClassDeclaration) s;
+                    s = s.getEnclosingScope();
                 }
             }
         }
