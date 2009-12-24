@@ -87,6 +87,7 @@ public class EvaluatorTests extends TestCase {
         s.addTest(new EvaluatorTests("testCovariantReturns"));
         s.addTest(new EvaluatorTests("testNonExistentImport"));
         s.addTest(new EvaluatorTests("testAnonymousFieldInitializedByCapture"));
+        s.addTest(new EvaluatorTests("testAbstractGrandParentsWithCovariantReturns"));
         return s;
     }
 
@@ -801,19 +802,19 @@ public class EvaluatorTests extends TestCase {
     
     public void testAnonymousFieldInitializedByCapture() throws Exception {
         SimpleCompiler sc = new SimpleCompiler();
-        sc.setParentClassLoader(SimpleCompiler.BOOT_CLASS_LOADER, new Class[] { for_sandbox_tests.ProtectedVariable.class });
         sc.cook("public class Top {\n" +
-                "  public String get() {\n" +
+                "  public Runnable get() {\n" +
                 "    final String foo = \"foo\";\n" +
-                "    Runnable r = new Runnable() {\n" +
+                "    final String cow = \"cow\";\n" +
+                "    final String moo = \"moo\";\n" +
+                "    return new Runnable() {\n" +
                 "      public void run() {\n" +
-                "        if (! this.bar.equals(foo)) {\n" +
+                "        if (bar == null) {\n" +
                 "          throw new RuntimeException();\n" +
                 "      } }\n" +
                 "      private String bar = foo;\n" +
+                "      private String[] cowparts = { moo, cow };\n" +
                 "    };\n" +
-                "    r.run();\n" +
-                "    return foo;\n" +
                 "} }"
         );
         
@@ -821,7 +822,18 @@ public class EvaluatorTests extends TestCase {
         Method get = topClass.getDeclaredMethod("get", null);
         Object t = topClass.newInstance();
         Object res = get.invoke(t, null);
-        assertEquals("foo", res);
+        ((Runnable)res).run();
+    }
+    
+    
+    public void testAbstractGrandParentsWithCovariantReturns() throws Exception {
+        SimpleCompiler sc = new SimpleCompiler();
+        sc.cook("public class Top {\n" +
+                "  private static class IndentPrintWriter extends java.io.PrintWriter { " +
+                "    public IndentPrintWriter(java.io.OutputStream os) { super(os); }" +
+                "  }" +
+                "}"
+        );
     }
     
 }

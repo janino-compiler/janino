@@ -173,21 +173,43 @@ public abstract class IClass {
      */
     public final IMethod[] getIMethods() throws CompileException {
         if (this.iMethodCache == null) {
-            Map m = new HashMap();
-            this.getIMethods(m);
-            Collection iMethods = m.values();
+            List iMethods = new ArrayList();
+            this.getIMethods(iMethods);
             this.iMethodCache = (IMethod[]) iMethods.toArray(new IMethod[iMethods.size()]);
         }
         return this.iMethodCache;
     }
     /*package*/ IMethod[] iMethodCache = null;
-    private void getIMethods(Map result) throws CompileException {
+    private void getIMethods(List result) throws CompileException {
         IMethod[] ms = this.getDeclaredIMethods();
         for (int i = 0; i < ms.length; ++i) {
             IMethod m = ms[i];
-            String key = m.getName() + m.getDescriptor();
-            IMethod m2 = (IMethod) result.get(key);
-            if (m2 == null || m2.isAbstract()) result.put(key, m);
+            
+            boolean found = false;
+            for (int j = 0; j < result.size(); ++j) {
+                IMethod o = (IMethod) result.get(j);
+                if (! o.getName().equals(m.getName())) {
+                    continue;
+                }
+                IClass mrt = m.getReturnType();
+                IClass ort = o.getReturnType();
+                
+                if (! mrt.isAssignableFrom(ort)) {
+                    continue;
+                }
+                
+                String[] mpt = IClass.getDescriptors(m.getParameterTypes());
+                String[] opt = IClass.getDescriptors(o.getParameterTypes());
+                if (! Arrays.equals(mpt, opt)) {
+                    continue;
+                }
+                
+                found = true;
+                break;
+            }
+            if (!found) {
+                result.add(m);
+            }
         }
         {
             IClass sc = this.getSuperclass();
