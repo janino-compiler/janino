@@ -175,7 +175,15 @@ public class UnitCompiler {
 
         // Check for re-import of same name.
         if (prev != null && !Arrays.equals(prev, ids)) {
-            this.compileError("Class \"" + name + "\" was previously imported as \"" + Java.join(prev, ".") + "\", now as \"" + Java.join(ids, ".") + "\"");
+            this.compileError(
+                "Class \"" + name + "\" was previously imported as " +
+                "\"" + Java.join(prev, ".") + "\", now as \"" + Java.join(ids, ".") + "\"",
+                stid.getLocation()
+            );
+        }
+        IClass iClass = this.loadFullyQualifiedClass(ids);
+        if (iClass == null) {
+            this.compileError("Imported class \"" + Java.join(ids, ".") + "\" could not be loaded", stid.getLocation());
         }
     }
     private void import2(TypeImportOnDemandDeclaration tiodd) {
