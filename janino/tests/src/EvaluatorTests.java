@@ -89,6 +89,7 @@ public class EvaluatorTests extends TestCase {
         s.addTest(new EvaluatorTests("testAnonymousFieldInitializedByCapture"));
         s.addTest(new EvaluatorTests("testNamedFieldInitializedByCapture"));
         s.addTest(new EvaluatorTests("testAbstractGrandParentsWithCovariantReturns"));
+        s.addTest(new EvaluatorTests("testStringBuilderLength"));
         return s;
     }
 
@@ -864,4 +865,23 @@ public class EvaluatorTests extends TestCase {
         );
     }
     
+    public void testStringBuilderLength() throws Exception {
+        
+        SimpleCompiler sc = new SimpleCompiler();
+        sc.cook("public class Top {\n" +
+                "  public int len(StringBuilder sb) { return sb.length(); }" +
+                "}"
+        );
+        
+        Class topClass = sc.getClassLoader().loadClass("Top");
+        Method get = topClass.getDeclaredMethod("len", new Class[] { StringBuilder.class });
+        Object t = topClass.newInstance();
+        
+        StringBuilder sb = new StringBuilder();
+        assertEquals(new Integer(sb.length()), get.invoke(t, new Object[] { sb }));
+        sb.append("asdf");
+        assertEquals(new Integer(sb.length()), get.invoke(t, new Object[] { sb }));
+        sb.append("qwer");
+        assertEquals(new Integer(sb.length()), get.invoke(t, new Object[] { sb }));
+    }
 }
