@@ -4524,7 +4524,11 @@ public class UnitCompiler {
         IClass.IMember      member,
         Java.Scope     contextScope
     ) throws CompileException {
-        return this.isAccessible(member.getDeclaringIClass(), member.getAccess(), contextScope);
+        // you have to check that both the class and member are accessible in this scope
+        IClass declaringIClass = member.getDeclaringIClass();
+        boolean acc = this.isAccessible(declaringIClass, declaringIClass.getAccess(), contextScope);
+        acc = acc && this.isAccessible(declaringIClass, member.getAccess(), contextScope);
+        return acc;
     }
     
     /**
@@ -4535,7 +4539,10 @@ public class UnitCompiler {
         IClass.IMember      member,
         Java.BlockStatement contextBlockStatement
     ) throws CompileException {
-        this.checkAccessible(member.getDeclaringIClass(), member.getAccess(), contextBlockStatement);
+        // you have to check that both the class and member are accessible in this scope
+        IClass declaringIClass = member.getDeclaringIClass();
+        this.checkAccessible(declaringIClass, declaringIClass.getAccess(), contextBlockStatement);
+        this.checkAccessible(declaringIClass, member.getAccess(), contextBlockStatement);
     }
 
     /**

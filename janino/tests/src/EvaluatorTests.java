@@ -866,7 +866,6 @@ public class EvaluatorTests extends TestCase {
     }
     
     public void testStringBuilderLength() throws Exception {
-        
         SimpleCompiler sc = new SimpleCompiler();
         sc.cook("public class Top {\n" +
                 "  public int len(StringBuilder sb) { return sb.length(); }" +
