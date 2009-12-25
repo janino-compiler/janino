@@ -222,12 +222,12 @@ public class UnitCompiler {
             // Static field?
             IField iField = iClass.getDeclaredIField(name);
             if (iField != null) {
-                if (!iField.isStatic()) {
-                    this.compileError("Filed \"" + name + "\" of \"" + Java.join(typeName, ".") + "\" must be static", ssid.getLocation());
+                    if (!iField.isStatic()) {
+                        this.compileError("Filed \"" + name + "\" of \"" + Java.join(typeName, ".") + "\" must be static", ssid.getLocation());
+                    }
+                    importedObject = iField;
+                    break FIND_IMPORTED_OBJECT;
                 }
-                importedObject = iField;
-                break FIND_IMPORTED_OBJECT;
-            }
     
             // Static method?
             IMethod[] ms = iClass.getDeclaredIMethods(name);
@@ -296,7 +296,6 @@ public class UnitCompiler {
 
     private void compile(Java.TypeDeclaration td) throws CompileException {
         class UCE extends RuntimeException { final CompileException ce; UCE(CompileException ce) { this.ce = ce; } }
-
         Visitor.TypeDeclarationVisitor tdv = new Visitor.TypeDeclarationVisitor() {
             public void visitAnonymousClassDeclaration        (Java.AnonymousClassDeclaration acd)          { try { UnitCompiler.this.compile2(acd                                     ); } catch (CompileException e) { throw new UCE(e); } }
             public void visitLocalClassDeclaration            (Java.LocalClassDeclaration lcd)              { try { UnitCompiler.this.compile2(lcd                                     ); } catch (CompileException e) { throw new UCE(e); } }
@@ -548,7 +547,7 @@ public class UnitCompiler {
                 ));
             }
         }
-        
+
         // for classes that enclose surrounding scopes, trawl their initializers looking for synthetic fields.
         if (icd instanceof AnonymousClassDeclaration || icd instanceof LocalClassDeclaration) {
             Java.ClassDeclaration cd = (Java.ClassDeclaration)icd;
@@ -1367,6 +1366,7 @@ public class UnitCompiler {
 
         for (int j = 0; j < lvds.variableDeclarators.length; ++j) {
             Java.VariableDeclarator vd = lvds.variableDeclarators[j];
+
             Java.LocalVariable lv = this.getLocalVariable(lvds, vd);
             lv.setSlot(this.codeContext.allocateLocalVariable(Descriptor.size(lv.type.getDescriptor()), vd.name, lv.type));
 
@@ -1709,7 +1709,6 @@ public class UnitCompiler {
         final CodeContext codeContext = new CodeContext(mi.getClassFile());
 
         CodeContext savedCodeContext = this.replaceCodeContext(codeContext);
-
         try {
             this.codeContext.saveLocalVariables();
 
@@ -1856,6 +1855,7 @@ public class UnitCompiler {
 
     private void buildLocalVariableMap(FunctionDeclarator fd) throws CompileException {
         Map localVars = new HashMap();
+
         // Add function parameters.
         for (int i = 0; i < fd.formalParameters.length; ++i) {
             Java.FunctionDeclarator.FormalParameter fp = fd.formalParameters[i];
@@ -1869,7 +1869,7 @@ public class UnitCompiler {
         fd.localVariables = localVars;
         if (fd instanceof ConstructorDeclarator) {
             ConstructorDeclarator cd = (ConstructorDeclarator) fd;
-            if(cd.optionalConstructorInvocation != null) {
+            if (cd.optionalConstructorInvocation != null) {
                 buildLocalVariableMap(cd.optionalConstructorInvocation, localVars);
             }
         }
@@ -2009,7 +2009,7 @@ public class UnitCompiler {
     }
 
     // ------------------ Rvalue.compile() ----------------
-    
+
     /**
      * Call to check whether the given {@link ArrayInitializerOrRvalue} compiles or not.
      */
@@ -2511,7 +2511,12 @@ public class UnitCompiler {
     }
     private int compileContext2(Java.FieldAccess fa) throws CompileException {
         if (fa.field.isStatic()) {
-            this.getType(fa.lhs);
+            Rvalue rv = fa.lhs.toRvalue();
+            if (rv != null) {
+                this.warning("CNSFA", "Left-hand side of static field access should be a type, not an rvalue", fa.lhs.getLocation());
+                // JLS3 15.11.1.3.1.1:
+                this.pop(fa.lhs, this.compileGetValue(rv));
+            }
             return 0;
         } else {
             this.compileGetValue(this.toRvalueOrCE(fa.lhs));
@@ -4516,7 +4521,7 @@ public class UnitCompiler {
      * according to JLS 6.6.1.4. Issues a {@link #compileError(String)} if not.
      */
     private boolean isAccessible(
-        IClass.IMember member,
+        IClass.IMember      member,
         Java.Scope     contextScope
     ) throws CompileException {
         return this.isAccessible(member.getDeclaringIClass(), member.getAccess(), contextScope);
@@ -4539,8 +4544,8 @@ public class UnitCompiler {
      * to JLS2 6.6.1.4.
      */
     private boolean isAccessible(
-        IClass     iClassDeclaringMember,
-        Access     memberAccess,
+        IClass              iClassDeclaringMember,
+        Access              memberAccess,
         Java.Scope contextScope
     ) throws CompileException {
         return null == this.internalCheckAccessible(iClassDeclaringMember, memberAccess, contextScope);
@@ -4564,8 +4569,8 @@ public class UnitCompiler {
      * @return a descriptive text iff a member declared in that {@link IClass} with that {@link Access} is inaccessible
      */
     private String internalCheckAccessible(
-        IClass     iClassDeclaringMember,
-        Access     memberAccess,
+        IClass              iClassDeclaringMember,
+        Access              memberAccess,
         Java.Scope contextScope
     ) throws CompileException {
         
@@ -5555,42 +5560,42 @@ public class UnitCompiler {
             if (s instanceof Java.FunctionDeclarator) {
                 s = s.getEnclosingScope();
             }
-            if (s instanceof Java.InnerClassDeclaration) {
-                Java.InnerClassDeclaration icd = (Java.InnerClassDeclaration) s;
-                s = s.getEnclosingScope();
-                if (s instanceof Java.AnonymousClassDeclaration) s = s.getEnclosingScope();
-                while (s instanceof Java.BlockStatement) {
-                    Java.LocalVariable lv = ((Java.BlockStatement) s).findLocalVariable(identifier);
-                    if (lv != null) {
-                        if (!lv.finaL) this.compileError("Cannot access non-final local variable \"" + identifier + "\" from inner class");
-                        final IClass lvType = lv.type;
-                        IClass.IField iField = new SimpleIField(
-                            this.resolve(icd),
-                            "val$" + identifier,
-                            lvType
-                        );
-                        icd.defineSyntheticField(iField);
-                        Java.FieldAccess fa = new Java.FieldAccess(
-                            location,                        // location
-                            new Java.QualifiedThisReference( // lhs
-                                location,                                        // location
-                                new Java.SimpleType(location, this.resolve(icd)) // qualification
-                            ),
-                            iField                           // field
-                        );
-                        fa.setEnclosingBlockStatement((Java.BlockStatement) scope);
-                        return fa;
+                if (s instanceof Java.InnerClassDeclaration) {
+                    Java.InnerClassDeclaration icd = (Java.InnerClassDeclaration) s;
+                    s = s.getEnclosingScope();
+                    if (s instanceof Java.AnonymousClassDeclaration) s = s.getEnclosingScope();
+                    while (s instanceof Java.BlockStatement) {
+                        Java.LocalVariable lv = ((Java.BlockStatement) s).findLocalVariable(identifier);
+                        if (lv != null) {
+                            if (!lv.finaL) this.compileError("Cannot access non-final local variable \"" + identifier + "\" from inner class");
+                            final IClass lvType = lv.type;
+                            IClass.IField iField = new SimpleIField(
+                                this.resolve(icd),
+                                "val$" + identifier,
+                                lvType
+                            );
+                            icd.defineSyntheticField(iField);
+                            Java.FieldAccess fa = new Java.FieldAccess(
+                                location,                        // location
+                                new Java.QualifiedThisReference( // lhs
+                                    location,                                        // location
+                                    new Java.SimpleType(location, this.resolve(icd)) // qualification
+                                ),
+                                iField                           // field
+                            );
+                            fa.setEnclosingBlockStatement((Java.BlockStatement) scope);
+                            return fa;
+                        }
+                        s = s.getEnclosingScope();
+                        while (s instanceof Java.BlockStatement) s = s.getEnclosingScope();
+                        if (!(s instanceof Java.FunctionDeclarator)) break;
+                        s = s.getEnclosingScope();
+                        if (!(s instanceof Java.InnerClassDeclaration)) break;
+                        icd = (Java.InnerClassDeclaration) s;
+                        s = s.getEnclosingScope();
                     }
-                    s = s.getEnclosingScope();
-                    while (s instanceof Java.BlockStatement) s = s.getEnclosingScope();
-                    if (!(s instanceof Java.FunctionDeclarator)) break;
-                    s = s.getEnclosingScope();
-                    if (!(s instanceof Java.InnerClassDeclaration)) break;
-                    icd = (Java.InnerClassDeclaration) s;
-                    s = s.getEnclosingScope();
                 }
             }
-        }
 
         // 6.5.2.BL1.B1.B1.3 (JLS3: 6.5.2.BL1.B1.B1.3) / 6.5.6.1.2.1 Field.
         Java.BlockStatement enclosingBlockStatement = null;
@@ -5658,11 +5663,11 @@ public class UnitCompiler {
                 IClass iClass = (IClass) it.next();
                 IField f = iClass.getDeclaredIField(identifier);
                 if (f != null) {
-                    if (!UnitCompiler.this.isAccessible(f, enclosingBlockStatement)) continue; // JLS3 7.5.4 Static-Import-on-Demand Declaration
-                    if (importedField != null) UnitCompiler.this.compileError("Ambiguous static field import: \"" + importedField.toString() + "\" vs. \"" + f.toString() + "\"");
-                    importedField = f;
+                        if (!UnitCompiler.this.isAccessible(f, enclosingBlockStatement)) continue; // JLS3 7.5.4 Static-Import-on-Demand Declaration
+                        if (importedField != null) UnitCompiler.this.compileError("Ambiguous static field import: \"" + importedField.toString() + "\" vs. \"" + f.toString() + "\"");
+                        importedField = f;
+                    }
                 }
-            }
             if (importedField != null) {
                 if (!importedField.isStatic()) UnitCompiler.this.compileError("Cannot static-import non-static field");
                 FieldAccess fieldAccess = new FieldAccess(location, new SimpleType(location, importedField.getDeclaringIClass()), importedField);
@@ -5899,7 +5904,7 @@ public class UnitCompiler {
      * @return <code>null</code> if no appropriate method could be found
      */
     private IClass.IMethod findIMethod(
-        IClass     targetType,
+        IClass    targetType,
         Invocation invocation
     ) throws CompileException {
 
