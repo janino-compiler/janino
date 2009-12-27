@@ -1322,9 +1322,11 @@ public class Java {
                 || rvalue instanceof Java.SuperclassMethodInvocation
                 || rvalue instanceof Java.NewClassInstance
                 || rvalue instanceof Java.NewAnonymousClassInstance
-            )) this.throwParseException(MessageFormat.format(
-                    "In Java 1.2 statements which may not cause side effects are illegal, thus expression statements cannot be of type {0}",
-                    new Object[] { rvalue.getClass().getSimpleName() }));
+            )) {
+                String expressionType = rvalue.getClass().getName();
+                expressionType = expressionType.substring(expressionType.lastIndexOf('.') + 1);
+                this.throwParseException(expressionType + " is not allowed as an expression statement, only assignments, method invocations, and NEW");
+            }
             (this.rvalue = rvalue).setEnclosingBlockStatement(this);
         }
         
