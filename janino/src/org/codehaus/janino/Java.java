@@ -34,7 +34,6 @@
 
 package org.codehaus.janino;
 
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
