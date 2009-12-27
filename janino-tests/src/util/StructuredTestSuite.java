@@ -179,7 +179,9 @@ interface Stack_ { // Avoid name conflict with "java.util.Stack".
 
 /** A simple implementation of the {@link Stack_} interface. */
 class ArrayListStack extends ArrayList implements Stack_ {
-    public void   push(Object o) { this.add(o); }
+	private static final long serialVersionUID = 1024412833860481254L;
+
+	public void   push(Object o) { this.add(o); }
     public Object peek()         { return this.get(this.size() - 1); }
     public Object pop()          { return this.remove(this.size() - 1); }
 }
