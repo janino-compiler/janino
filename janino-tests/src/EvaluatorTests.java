@@ -107,7 +107,7 @@ public class EvaluatorTests extends TestCase {
         se2.setStaticMethod(new boolean[] { true, true });
         se2.cook(new String[] {funct2, funct3});
         assertEquals(se2.getMethod(0).invoke(null, new Object[] { new Double(3.0), new Double(4.0) }), new Double(7.0));
-        assertEquals(se2.getMethod(1).invoke(null, null), new Double(0.0));
+        assertEquals(se2.getMethod(1).invoke(null, new Object[0]), new Double(0.0));
     }
     
     public void testExpressionEvaluator() throws Exception {
@@ -276,7 +276,7 @@ public class EvaluatorTests extends TestCase {
         for(int i = 0; i < m.length; ++i) {
             for(int j = 0; j < exp.length; ++j) {
                 if(m[i].getName().startsWith("getL"+j)) {
-                    Class res = (Class)m[i].invoke(inst, null);
+                    Class res = (Class)m[i].invoke(inst, new Object[0]);
                     assertEquals(exp[j], res);
                     ++numTests;
                 }
@@ -327,29 +327,29 @@ public class EvaluatorTests extends TestCase {
         );
         
         Class topClass = sc.getClassLoader().loadClass("for_sandbox_tests.Top");
-        Method createInner = topClass.getDeclaredMethod("createInner", null);
+        Method createInner = topClass.getDeclaredMethod("createInner", new Class[0]);
         Object t = topClass.newInstance();
-        Object i = createInner.invoke(t, null);
+        Object i = createInner.invoke(t, new Object[0]);
         
         Class innerClass = sc.getClassLoader().loadClass("for_sandbox_tests.Top$Inner");
-        Method get = innerClass.getDeclaredMethod("get", null);
-        Method getS = innerClass.getDeclaredMethod("getS", null);
-        Method set = innerClass.getDeclaredMethod("set", null);
-        Method setS = innerClass.getDeclaredMethod("setS", null);
+        Method get = innerClass.getDeclaredMethod("get", new Class[0]);
+        Method getS = innerClass.getDeclaredMethod("getS", new Class[0]);
+        Method set = innerClass.getDeclaredMethod("set", new Class[0]);
+        Method setS = innerClass.getDeclaredMethod("setS", new Class[0]);
         
         Object res;
         {   // non-static
-            res = get.invoke(i, null);
+            res = get.invoke(i, new Object[0]);
             assertEquals(new Integer(1), res);
-            set.invoke(i, null);
-            res = get.invoke(i, null);
+            set.invoke(i, new Object[0]);
+            res = get.invoke(i, new Object[0]);
             assertEquals(new Integer(11), res);
         }
         {   //static
-            res = getS.invoke(i, null);
+            res = getS.invoke(i, new Object[0]);
             assertEquals(new Integer(2), res);
-            setS.invoke(i, null);
-            res = getS.invoke(i, null);
+            setS.invoke(i, new Object[0]);
+            res = getS.invoke(i, new Object[0]);
             assertEquals(new Integer(12), res);
         }
     }
@@ -378,27 +378,27 @@ public class EvaluatorTests extends TestCase {
         );
         
         Class topClass = sc.getClassLoader().loadClass("for_sandbox_tests.L0");
-        Method createInner = topClass.getDeclaredMethod("createInner", null);
+        Method createInner = topClass.getDeclaredMethod("createInner", new Class[0]);
         Object t = topClass.newInstance();
-        Object inner = createInner.invoke(t, null);
+        Object inner = createInner.invoke(t, new Object[0]);
         
         Class innerClass = inner.getClass();
         Method[] gets = new Method[] {
-                innerClass.getMethod("getL0", null),
-                innerClass.getMethod("getL1", null),
-                innerClass.getMethod("getL2", null),
+                innerClass.getMethod("getL0", new Class[0]),
+                innerClass.getMethod("getL1", new Class[0]),
+                innerClass.getMethod("getL2", new Class[0]),
         };
         Method[] sets = new Method[] {
-                innerClass.getMethod("setL0", null),
-                innerClass.getMethod("setL1", null),
-                innerClass.getMethod("setL2", null),
+                innerClass.getMethod("setL0", new Class[0]),
+                innerClass.getMethod("setL1", new Class[0]),
+                innerClass.getMethod("setL2", new Class[0]),
         };
         for(int i = 0; i < 3; ++i) {
-            Object g1 = gets[i].invoke(inner, null);
+            Object g1 = gets[i].invoke(inner, new Object[0]);
             assertEquals(new Integer(1), g1);
-            Object s1 = sets[i].invoke(inner, null);
+            Object s1 = sets[i].invoke(inner, new Object[0]);
             assertEquals(new Integer(i), s1);
-            Object g2 = gets[i].invoke(inner, null);
+            Object g2 = gets[i].invoke(inner, new Object[0]);
             assertEquals(new Integer(i), g2);
         }
     }
@@ -429,10 +429,10 @@ public class EvaluatorTests extends TestCase {
         );
         
         Class topClass = sc.getClassLoader().loadClass("test.Outer");
-        Method createInner = topClass.getDeclaredMethod("createInner", null);
+        Method createInner = topClass.getDeclaredMethod("createInner", new Class[0]);
         Object t = topClass.newInstance();
         assertNotNull(t);
-        Object inner = createInner.invoke(t, null);
+        Object inner = createInner.invoke(t, new Object[0]);
         assertNotNull(inner);
     }
 
@@ -464,7 +464,7 @@ public class EvaluatorTests extends TestCase {
         for(int i = 0; i < m.length; ++i) {
             if(m[i].getName().startsWith("run")) {
                 try {
-                    Object res = m[i].invoke(o, null);
+                    Object res = m[i].invoke(o, new Object[0]);
                     fail("Method " + m[i] + " should have failed, but got " + res);
                 } catch(InvocationTargetException ae) {
                     assertTrue(ae.getTargetException() instanceof ArithmeticException);
@@ -585,9 +585,9 @@ public class EvaluatorTests extends TestCase {
             sc.cook(sb.toString());
             
             Class c = sc.getClassLoader().loadClass("test.Test");
-            Method m = c.getDeclaredMethod("run", null);
+            Method m = c.getDeclaredMethod("run", new Class[0]);
             Object o = c.newInstance();
-            Object res = m.invoke(o, null);
+            Object res = m.invoke(o, new Object[0]);
             assertEquals(new Integer(2*repititions), res);
         }
         
@@ -704,8 +704,8 @@ public class EvaluatorTests extends TestCase {
             SimpleCompiler sc = new SimpleCompiler();
             sc.cook(sb.toString());
             Class c = sc.getClassLoader().loadClass("test.Test");
-            Method m = c.getDeclaredMethod("run", null);
-            Object o = m.invoke(null, null);
+            Method m = c.getDeclaredMethod("run", new Class[0]);
+            Object o = m.invoke(null, new Object[0]);
             assertEquals("hi 1 1.0 1.0 1 1 true try finally", o);
         }
         
@@ -731,7 +731,7 @@ public class EvaluatorTests extends TestCase {
         sc.cook(test);
         Class c = sc.getClassLoader().loadClass("test.Test");
         Method m0 = c.getDeclaredMethod("run", new Class[] { });
-        assertEquals(new Boolean(false), m0.invoke(null, null));
+        assertEquals(new Boolean(false), m0.invoke(null, new Object[0]));
         
         Method mStr = c.getDeclaredMethod("run", new Class[] { String.class });
         Method mObj = c.getDeclaredMethod("run", new Class[] { Object.class });
@@ -821,9 +821,9 @@ public class EvaluatorTests extends TestCase {
         );
         
         Class topClass = sc.getClassLoader().loadClass("Top");
-        Method get = topClass.getDeclaredMethod("get", null);
+        Method get = topClass.getDeclaredMethod("get", new Class[0]);
         Object t = topClass.newInstance();
-        Object res = get.invoke(t, null);
+        Object res = get.invoke(t, new Object[0]);
         ((Runnable)res).run();
     }
     
@@ -848,9 +848,9 @@ public class EvaluatorTests extends TestCase {
         );
         
         Class topClass = sc.getClassLoader().loadClass("Top");
-        Method get = topClass.getDeclaredMethod("get", null);
+        Method get = topClass.getDeclaredMethod("get", new Class[0]);
         Object t = topClass.newInstance();
-        Object res = get.invoke(t, null);
+        Object res = get.invoke(t, new Object[0]);
         ((Runnable)res).run();
     }
     

@@ -88,8 +88,8 @@ public class AstTests extends TestCase {
         Class handMadeClass = loader.loadClass("HandMade");
 
         Object handMade = handMadeClass.newInstance();
-        Method calc = handMadeClass.getMethod("calculate", null);
-        Object res = calc.invoke(handMade, null);
+        Method calc = handMadeClass.getMethod("calculate", new Class[0]);
+        Object res = calc.invoke(handMade, new Object[0]);
         return res;
     }
 
@@ -328,10 +328,10 @@ public class AstTests extends TestCase {
 
         ClassLoader loader = compiler.getClassLoader(); 
         Class handMadeClass = loader.loadClass("HandMade");
-        Method calc = handMadeClass.getMethod("calculate", null);
+        Method calc = handMadeClass.getMethod("calculate", new Class[0]);
 
         Object handMade = handMadeClass.newInstance();
-        Object res = calc.invoke(handMade, null);
+        Object res = calc.invoke(handMade, new Object[0]);
         assertEquals(handMadeClass, res);
     }
 
