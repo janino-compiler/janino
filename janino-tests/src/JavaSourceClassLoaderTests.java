@@ -32,22 +32,27 @@
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import java.io.*;
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
-import junit.framework.*;
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
 
-import org.codehaus.janino.*;
-import org.codehaus.janino.Compiler; // To resolve ambiguity with "java.lang.Compiler".
-import org.codehaus.janino.util.*;
+import org.codehaus.janino.CachingJavaSourceClassLoader;
+import org.codehaus.janino.Compiler;
+import org.codehaus.janino.DebuggingInformation;
+import org.codehaus.janino.JavaSourceClassLoader;
+import org.codehaus.janino.SimpleCompiler;
+import org.codehaus.janino.util.Benchmark;
 import org.codehaus.janino.util.resource.DirectoryResourceFinder;
 import org.codehaus.janino.util.resource.MapResourceCreator;
 import org.codehaus.janino.util.resource.MapResourceFinder;
 import org.codehaus.janino.util.resource.ResourceFinder;
 
 public class JavaSourceClassLoaderTests extends TestCase {
-    private static final File SOURCE_DIRECTORY = new File("src");
+    private static final File SOURCE_DIRECTORY = new File("../janino/src");
 
     public static Test suite() {
         TestSuite s = new TestSuite(JavaSourceClassLoaderTests.class.getName());

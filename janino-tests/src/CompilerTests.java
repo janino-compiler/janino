@@ -65,7 +65,7 @@ import org.codehaus.janino.util.resource.ResourceCreator;
 import org.codehaus.janino.util.resource.ResourceFinder;
 
 public class CompilerTests extends TestCase {
-    private static final String SRC = "src";
+    private static final String SRC = "../janino/src";
 
     public static Test suite() {
         TestSuite s = new TestSuite(Compiler.class.getName());
