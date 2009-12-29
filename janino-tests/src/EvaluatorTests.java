@@ -90,6 +90,7 @@ public class EvaluatorTests extends TestCase {
         s.addTest(new EvaluatorTests("testNamedFieldInitializedByCapture"));
         s.addTest(new EvaluatorTests("testAbstractGrandParentsWithCovariantReturns"));
         s.addTest(new EvaluatorTests("testStringBuilderLength"));
+        s.addTest(new EvaluatorTests("testBaseClassAccess"));
         return s;
     }
 
@@ -655,8 +656,7 @@ public class EvaluatorTests extends TestCase {
         
     
     public void testStaticFieldAccess() throws Exception {
-        SimpleCompiler sc = new SimpleCompiler();
-        sc.cook(
+        assertCompiles(true,
             "package test;\n" +
             "public class Test {\n" +
             "    public static class Inner {\n" +
@@ -749,8 +749,7 @@ public class EvaluatorTests extends TestCase {
         OverridesWithDifferingVisibility.test(new Object[] { "asdf"} );
         
         // so should this
-        SimpleCompiler sc = new SimpleCompiler();
-        sc.cook(
+        assertCompiles(true,
             "package test;\n" +
             "public class Test {\n" +
             "    public void runTest() {\n" +
@@ -761,45 +760,23 @@ public class EvaluatorTests extends TestCase {
     }
 
     public void testCovariantReturns() throws Exception {
-        SimpleCompiler sc = new SimpleCompiler();
-        sc.cook(
-            "package test;\n" +
-            "public class Test extends for_sandbox_tests.CovariantReturns {\n" +
-            "    public Test overrideMe() { return this; }\n" +
-            "}"
+        assertCompiles(true,
+                "package test;\n" +
+                "public class Test extends for_sandbox_tests.CovariantReturns {\n" +
+                "    public Test overrideMe() { return this; }\n" +
+                "}"
         );
-        
-        try {
-            SimpleCompiler sc2 = new SimpleCompiler();
-            sc2.cook(
+        assertCompiles(false,
                 "package test;\n" +
                 "public class Test2 extends for_sandbox_tests.CovariantReturns {\n" +
                 "    public Integer overrideMe() { return null; }\n" +
                 "}"
-            );
-            fail("Compilation of non-covariant class should have failed");
-        } catch (CompileException ce) {
-            assertTrue(ce.getMessage().contains("Non-abstract class \"test.Test2\" must implement method"));
-        }
+        );
     }   
     
     public void testNonExistentImport() throws Exception {
-        try {
-            SimpleCompiler sc = new SimpleCompiler();
-            sc.cook("import does.not.Exist; public class Test { private final Exist e = null; }" );
-            fail("Compilation with non-existent import should fail");
-        } catch (CompileException ce) { 
-            assertTrue(ce.getMessage().contains("Imported class \"does.not.Exist\" could not be loaded"));
-        }
-        
-        try {
-            SimpleCompiler sc = new SimpleCompiler();
-            sc.cook("import does.not.Exist; public class Test { }" );
-            fail("Compilation with non-existent import should fail");
-        } catch (CompileException ce) { 
-            ce.printStackTrace();
-            assertTrue(ce.getMessage().contains("Imported class \"does.not.Exist\" could not be loaded"));
-        }
+        assertCompiles(false, "import does.not.Exist; public class Test { private final Exist e = null; }");
+        assertCompiles(false, "import does.not.Exist; public class Test { }");
     }
     
     public void testAnonymousFieldInitializedByCapture() throws Exception {
@@ -856,8 +833,8 @@ public class EvaluatorTests extends TestCase {
     
     
     public void testAbstractGrandParentsWithCovariantReturns() throws Exception {
-        SimpleCompiler sc = new SimpleCompiler();
-        sc.cook("public class Top {\n" +
+        assertCompiles(true,
+                "public class Top {\n" +
                 "  private static class IndentPrintWriter extends java.io.PrintWriter { " +
                 "    public IndentPrintWriter(java.io.OutputStream os) { super(os); }" +
                 "  }" +
@@ -865,7 +842,7 @@ public class EvaluatorTests extends TestCase {
         );
     }
     
-    public void testStringBuilderLength() throws Exception {
+    public void testStringBuilderLength() throws Exception {        
         SimpleCompiler sc = new SimpleCompiler();
         sc.cook("public class Top {\n" +
                 "  public int len(StringBuilder sb) { return sb.length(); }" +
@@ -882,5 +859,39 @@ public class EvaluatorTests extends TestCase {
         assertEquals(new Integer(sb.length()), get.invoke(t, new Object[] { sb }));
         sb.append("qwer");
         assertEquals(new Integer(sb.length()), get.invoke(t, new Object[] { sb }));
+    }
+    
+
+    
+    public void testBaseClassAccess() throws Exception {
+        assertCompiles(true,
+                "    class top extends other_package.ScopingRules {\n" +
+                "        class Inner extends other_package.ScopingRules.ProtectedInner {\n" +
+                "            public void test() {\n" +
+                "                publicMethod();\n" +
+                "            }\n" +
+                "        }\n" +
+                "        \n" +
+                "        public void test() {\n" +
+                "            Inner i = new Inner();\n" +
+                "            i.publicMethod();\n" +
+                "        }\n" +
+                "    }"
+        );
+    }
+    
+    public SimpleCompiler assertCompiles(boolean shouldCompile, CharSequence prog) throws Exception {
+        try {
+            SimpleCompiler sc = new SimpleCompiler();
+            sc.cook(prog.toString());
+            assertTrue("Compilation should have failed for:\n" + prog, shouldCompile);
+            return sc;
+        } catch (CompileException ce) { 
+            if (shouldCompile) {
+                ce.printStackTrace();
+            }
+            assertFalse("Compilation should have succeeded for:\n" + prog, shouldCompile);
+        }
+        return null;
     }
 }

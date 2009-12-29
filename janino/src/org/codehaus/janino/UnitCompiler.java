@@ -4521,12 +4521,12 @@ public class UnitCompiler {
      * according to JLS 6.6.1.4. Issues a {@link #compileError(String)} if not.
      */
     private boolean isAccessible(
-        IClass.IMember      member,
+        IClass.IMember member,
         Java.Scope     contextScope
     ) throws CompileException {
         // you have to check that both the class and member are accessible in this scope
         IClass declaringIClass = member.getDeclaringIClass();
-        boolean acc = this.isAccessible(declaringIClass, declaringIClass.getAccess(), contextScope);
+        boolean acc = this.isAccessible(declaringIClass, contextScope);
         acc = acc && this.isAccessible(declaringIClass, member.getAccess(), contextScope);
         return acc;
     }
@@ -4541,7 +4541,7 @@ public class UnitCompiler {
     ) throws CompileException {
         // you have to check that both the class and member are accessible in this scope
         IClass declaringIClass = member.getDeclaringIClass();
-        this.checkAccessible(declaringIClass, declaringIClass.getAccess(), contextBlockStatement);
+        this.checkAccessible(declaringIClass, contextBlockStatement);
         this.checkAccessible(declaringIClass, member.getAccess(), contextBlockStatement);
     }
 
@@ -4551,8 +4551,8 @@ public class UnitCompiler {
      * to JLS2 6.6.1.4.
      */
     private boolean isAccessible(
-        IClass              iClassDeclaringMember,
-        Access              memberAccess,
+        IClass     iClassDeclaringMember,
+        Access     memberAccess,
         Java.Scope contextScope
     ) throws CompileException {
         return null == this.internalCheckAccessible(iClassDeclaringMember, memberAccess, contextScope);
@@ -4576,8 +4576,8 @@ public class UnitCompiler {
      * @return a descriptive text iff a member declared in that {@link IClass} with that {@link Access} is inaccessible
      */
     private String internalCheckAccessible(
-        IClass              iClassDeclaringMember,
-        Access              memberAccess,
+        IClass     iClassDeclaringMember,
+        Access     memberAccess,
         Java.Scope contextScope
     ) throws CompileException {
         
@@ -4652,10 +4652,10 @@ public class UnitCompiler {
      * according to JLS2 6.6.1.2 and 6.6.1.4.
      */
     private boolean isAccessible(
-        IClass              type,
-        Java.BlockStatement contextBlockStatement
+        IClass     type,
+        Java.Scope contextScope
     ) throws CompileException {
-        return null == this.internalCheckAccessible(type, contextBlockStatement);
+        return null == this.internalCheckAccessible(type, contextScope);
     }
     
     /**
@@ -4669,10 +4669,10 @@ public class UnitCompiler {
         String message = this.internalCheckAccessible(type, contextBlockStatement);
         if (message != null) this.compileError(message, contextBlockStatement.getLocation());
     }
-
+    
     private String internalCheckAccessible(
-        IClass              type,
-        Java.BlockStatement contextBlockStatement
+        IClass     type,
+        Java.Scope contextScope
     ) throws CompileException {
 
         // Determine the type declaring the type.
@@ -4687,7 +4687,7 @@ public class UnitCompiler {
     
                 // Determine the type declaring the context block statement.
                 IClass iClassDeclaringContextBlockStatement;
-                for (Java.Scope s = contextBlockStatement.getEnclosingScope();; s = s.getEnclosingScope()) {
+                for (Java.Scope s = contextScope;; s = s.getEnclosingScope()) {
                     if (s instanceof Java.TypeDeclaration) {
                         iClassDeclaringContextBlockStatement = this.resolve((Java.TypeDeclaration) s);
                         break;
@@ -4706,8 +4706,7 @@ public class UnitCompiler {
         }
 
         // "type" is a member type at this point.
-
-        return this.internalCheckAccessible(iClassDeclaringType, type.getAccess(), contextBlockStatement);
+        return this.internalCheckAccessible(iClassDeclaringType, type.getAccess(), contextScope);
     }
 
     private final Java.Type toTypeOrCE(Java.Atom a) throws CompileException {
