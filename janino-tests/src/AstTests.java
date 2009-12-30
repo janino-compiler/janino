@@ -71,6 +71,7 @@ public class AstTests extends TestCase {
         s.addTest(new AstTests("testByteArrayLiteral"));
         s.addTest(new AstTests("testClassRef"));
         s.addTest(new AstTests("testPrecedence"));
+        s.addTest(new AstTests("testFullyQualifiedFieldRef"));
         return s;
     }
 
@@ -355,5 +356,29 @@ public class AstTests extends TestCase {
         UnparseVisitor uv = new UnparseVisitor(sw);
         uv.visitExpressionStatement(es);
         assertEquals("x = 1.0D * ((( 2.0D + 3.0D )));", sw.toString());
+    }
+    
+
+    public void testFullyQualifiedFieldRef() throws Exception {
+        CompilationUnit cu = new CompilationUnit("AstTests.java");
+
+        PackageMemberClassDeclaration clazz = createClass(cu);
+
+        Block body = new Block(getLocation());
+        body.addStatement(  new Java.ReturnStatement(
+                getLocation(),
+                new Java.FieldAccessExpression(
+                        getLocation(),
+                        new Java.AmbiguousName(
+                                getLocation(),
+                                new String[] { "other_package", "ScopingRules" }
+                        ), 
+                        "publicStaticDouble"
+        )));
+
+        createMethod(clazz, body, createDoubleType());
+
+        Object res = compileAndEval(cu);
+        assertEquals(other_package.ScopingRules.publicStaticDouble, res);
     }
 }

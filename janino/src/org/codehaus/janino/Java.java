@@ -2039,10 +2039,20 @@ public class Java {
         public String toString() {
             return Java.join(this.identifiers, ".", 0, this.n);
         }
+        
+        public Lvalue toLvalue() {
+            if (this.reclassified != null) { return this.reclassified.toLvalue(); }
+            return this;
+        }
+        
+        public Rvalue toRvalue() {
+            if (this.reclassified != null) { return this.reclassified.toRvalue(); }
+            return this;
+        }
 
         Atom reclassified = null;
 
-        public final void accept(Visitor.AtomVisitor visitor) { visitor.visitAmbiguousName(this); }
+        public final void accept(Visitor.AtomVisitor visitor)   { visitor.visitAmbiguousName(this); }
         public final void accept(Visitor.RvalueVisitor visitor) { visitor.visitAmbiguousName(this); }
         public final void accept(Visitor.LvalueVisitor visitor) { visitor.visitAmbiguousName(this); }
     }
@@ -2104,7 +2114,7 @@ public class Java {
         // Compile time members.
 
         // Implement "Atom".
-        public String toString() { return this.lhs.toString() + '.' + this.field.toString(); }
+        public String toString() { return this.lhs.toString() + '.' + this.field.getName(); }
 
         public final void accept(Visitor.AtomVisitor visitor) { visitor.visitFieldAccess(this); }
         public final void accept(Visitor.RvalueVisitor visitor) { visitor.visitFieldAccess(this); }
