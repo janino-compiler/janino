@@ -1324,7 +1324,8 @@ public class Java {
             )) {
                 String expressionType = rvalue.getClass().getName();
                 expressionType = expressionType.substring(expressionType.lastIndexOf('.') + 1);
-                this.throwParseException(expressionType + " is not allowed as an expression statement, only assignments, method invocations, and NEW");
+                this.throwParseException(expressionType + " is not allowed as an expression statement.  " +
+                		"Expressions statements must be one of assignments, method invocations, or object allocations.");
             }
             (this.rvalue = rvalue).setEnclosingBlockStatement(this);
         }
