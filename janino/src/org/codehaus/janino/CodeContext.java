@@ -120,7 +120,7 @@ public class CodeContext {
      * #restoreLocalVariables()}.
      *
      * @param size The number of slots to allocate (1 or 2)
-     * @return
+     * @return The slot index of the allocated variable
      */
     public short allocateLocalVariable(
             short size

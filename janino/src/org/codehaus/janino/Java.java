@@ -330,7 +330,7 @@ public class Java {
          *   </dd>
          * </dl>
          * Notice that these fields are not included in the {@link IClass.IField} array returned
-         * by {@link IClass#getDeclaredIFields()}.
+         * by {@link IClass#getDeclaredIFields2()}.
          * <p>
          * If a synthetic field with the same name exists already, then it must have the same
          * type and the redefinition is ignored.
