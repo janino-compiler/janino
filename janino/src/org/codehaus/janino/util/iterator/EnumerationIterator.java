@@ -47,5 +47,12 @@ public class EnumerationIterator implements Iterator {
 
     public boolean hasNext() { return this.e.hasMoreElements(); }
     public Object  next()    { return this.e.nextElement(); }
+
+    /**
+     * Since {@link Enumeration}s don't support element removal, this method always throws
+     * an {@link UnsupportedOperationException}.
+     *
+     * @see Iterator#remove()
+     */
     public void    remove()  { throw new UnsupportedOperationException("remove"); }
 }
