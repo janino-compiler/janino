@@ -96,5 +96,12 @@ public class TraversingIterator implements Iterator {
         return false;
     }
 
-    public void remove() { throw new UnsupportedOperationException("remove"); }
+    /**
+     * @throws UnsupportedOperationException iff the {@link Iterator} currently being
+     *                                       traversed doesn't support element removal
+     * @see Iterator#remove()
+     */
+    public void remove() {
+        ((Iterator) this.nest.peek()).remove();
+    }
 }
