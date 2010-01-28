@@ -34,7 +34,7 @@
 <project name="Janino" default="compile" basedir=".">
 	<description>
 		Build file for the Janino project
-    </description>
+	</description>
 
 	<property environment="env"/>
 	<property file="build.properties"/>
@@ -45,7 +45,8 @@
 		<javac
 			fork="yes"
 			executable="${jdk_1_2_2_home}/bin/javac"
-            source='1.2'
+			source="1.2"
+			target="1.1"
 			srcdir="src" excludes="org/codehaus/janino/AstGeneratorVisitor.java"
 			destdir="build/classes"
 			debug="true"
