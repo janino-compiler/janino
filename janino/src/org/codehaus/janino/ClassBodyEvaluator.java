@@ -304,7 +304,7 @@ public class ClassBodyEvaluator extends SimpleCompiler {
             scanner.location(),
             compilationUnit
         );
-        
+
         // Parse class body declarations (member declarations) until EOF.
         Parser parser = new Parser(scanner);
         while (!scanner.peek().isEOF()) {
@@ -329,7 +329,7 @@ public class ClassBodyEvaluator extends SimpleCompiler {
     protected final Java.CompilationUnit makeCompilationUnit(Scanner optionalScanner)
     throws ParseException, ScanException, IOException {
         Java.CompilationUnit cu = new Java.CompilationUnit(optionalScanner == null ? null : optionalScanner.getFileName());
-        
+
         // Set default imports.
         if (this.optionalDefaultImports != null) {
             for (int i = 0; i < this.optionalDefaultImports.length; ++i) {
@@ -384,7 +384,7 @@ public class ClassBodyEvaluator extends SimpleCompiler {
 
     /**
      * Compile the given compilation unit, load all generated classes, and
-     * return the class with the given name. 
+     * return the class with the given name.
      * @param compilationUnit
      * @param debuggingInformation TODO
      * @param newClassName The fully qualified class name
@@ -460,7 +460,7 @@ public class ClassBodyEvaluator extends SimpleCompiler {
      * {@link Scanner} with no default imports.
      * <p>
      * For an explanation of the "fast class body evaluator" concept, see the class description.
-     * 
+     *
      * @param scanner Source of class body tokens
      * @param className Name of generated class
      * @param optionalExtendedType Class to extend

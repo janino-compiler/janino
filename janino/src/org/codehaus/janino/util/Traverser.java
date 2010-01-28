@@ -120,7 +120,7 @@ public class Traverser {
         public final void visitLocalVariableAccess(Java.LocalVariableAccess lva)                              { Traverser.this.traverseLocalVariableAccess(lva); }
         public final void visitParenthesizedExpression(Java.ParenthesizedExpression pe)                       { Traverser.this.traverseParenthesizedExpression(pe); }
     };
- 
+
     public ComprehensiveVisitor comprehensiveVisitor() {
         return this.cv;
     }
@@ -483,7 +483,7 @@ public class Traverser {
         fa.lhs.accept(this.cv);
         this.traverseLvalue(fa);
     }
-    
+
     public void traverseFieldAccessExpression(Java.FieldAccessExpression fae) {
         fae.lhs.accept(this.cv);
         this.traverseLvalue(fae);
@@ -493,7 +493,7 @@ public class Traverser {
         if (scfae.optionalQualification != null) scfae.optionalQualification.accept((Visitor.TypeVisitor) this.cv);
         this.traverseLvalue(scfae);
     }
-    
+
     public void traverseLocalVariableAccess(Java.LocalVariableAccess lva) {
         this.traverseLvalue(lva);
     }

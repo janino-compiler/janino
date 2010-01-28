@@ -57,7 +57,7 @@ public interface ResourceCreator {
 
     /**
      * Deletes the resource with the given name.
-     * 
+     *
      * @return <code>false</code> if the resource could not be deleted
      */
     public abstract boolean deleteResource(String resourceName);

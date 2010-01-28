@@ -49,7 +49,7 @@ public abstract class ResourceFinder {
 
     /**
      * Find a resource by name and open it for reading.
-     * 
+     *
      * @param resourceName Designates the resource; typically structured by slashes ("/") like "<code>com/foo/pkg/Bar.class</code>"
      * @return <code>null</code> if the resource could not be found
      * @throws IOException The resource was found, but there are problems opening it
@@ -62,7 +62,7 @@ public abstract class ResourceFinder {
 
     /**
      * Find a resource by name and return it as a {@link Resource} object.
-     * 
+     *
      * @param resourceName Designates the resource; typically structured by slashes ("/") like "<code>com/foo/pkg/Bar.class</code>"
      * @return <code>null</code> if the resource could not be found
      */

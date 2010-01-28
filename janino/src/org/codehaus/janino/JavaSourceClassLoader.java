@@ -61,17 +61,17 @@ public class JavaSourceClassLoader extends ClassLoader {
     public interface ProtectionDomainFactory {
         ProtectionDomain getProtectionDomain(String name);
     }
-    
+
     /**
      * Read Java<sup>TM</sup> source code for a given class name, scan, parse, compile and load
      * it into the virtual machine, and invoke its "main()" method with the given args.
      * <p>
      * Usage is as follows:
      * <pre>
-     *   java [ <i>java-option</i> ] org.codehaus.janino.JavaSourceClassLoader [ <i>option</i> ] ... <i>class-name</i> [ <i>arg</i> ] ... 
-     *     <i>java-option</i> Any valid option for the Java Virtual Machine (e.g. "-classpath <i>colon-separated-list-of-class-directories</i>") 
+     *   java [ <i>java-option</i> ] org.codehaus.janino.JavaSourceClassLoader [ <i>option</i> ] ... <i>class-name</i> [ <i>arg</i> ] ...
+     *     <i>java-option</i> Any valid option for the Java Virtual Machine (e.g. "-classpath <i>colon-separated-list-of-class-directories</i>")
      *     <i>option</i>:
-     *       -sourcepath <i>colon-separated-list-of-source-directories</i> 
+     *       -sourcepath <i>colon-separated-list-of-source-directories</i>
      *       -encoding <i>character-encoding</i>
      *       -g                           Generate all debugging info");
      *       -g:none                      Generate no debugging info");
@@ -96,7 +96,7 @@ public class JavaSourceClassLoader extends ClassLoader {
                 optionalSourcePath = PathResourceFinder.parsePath(args[++i]);
             } else
             if ("-encoding".equals(arg)) {
-                optionalCharacterEncoding = args[++i]; 
+                optionalCharacterEncoding = args[++i];
             } else
             if (arg.equals("-g")) {
                 debuggingInformation = DebuggingInformation.ALL;
@@ -112,22 +112,22 @@ public class JavaSourceClassLoader extends ClassLoader {
                 }
             } else
             if ("-cache".equals(arg)) {
-                optionalCacheDirName = args[++i]; 
+                optionalCacheDirName = args[++i];
             } else
             if ("-help".equals(arg)) {
-                System.out.println("Usage:"); 
-                System.out.println("  java [ <java-option> ] " + JavaSourceClassLoader.class.getName() + " { <option> } <class-name> { <argument> }"); 
-                System.out.println("Load the named class by name and invoke its \"main(String[])\" method,"); 
+                System.out.println("Usage:");
+                System.out.println("  java [ <java-option> ] " + JavaSourceClassLoader.class.getName() + " { <option> } <class-name> { <argument> }");
+                System.out.println("Load the named class by name and invoke its \"main(String[])\" method,");
                 System.out.println("passing the given <argument>s.");
-                System.out.println("  <java-option> Any valid option for the Java Virtual Machine (e.g. \"-classpath <dir>\")"); 
-                System.out.println("  <option>:"); 
-                System.out.println("    -sourcepath <" + File.pathSeparator + "-separated-list-of-source-directories>"); 
+                System.out.println("  <java-option> Any valid option for the Java Virtual Machine (e.g. \"-classpath <dir>\")");
+                System.out.println("  <option>:");
+                System.out.println("    -sourcepath <" + File.pathSeparator + "-separated-list-of-source-directories>");
                 System.out.println("    -encoding <character-encoding>");
                 System.out.println("    -g                     Generate all debugging info");
                 System.out.println("    -g:none                Generate no debugging info");
                 System.out.println("    -g:{lines,vars,source} Generate only some debugging info");
                 System.out.println("    -cache <dir>           Cache compiled classes here");
-                System.exit(0); 
+                System.exit(0);
             } else
             {
                 System.err.println("Invalid command line option \"" + arg + "\"; try \"-help\"");
@@ -240,7 +240,7 @@ public class JavaSourceClassLoader extends ClassLoader {
      * {@link Scanner#Scanner(String, Reader)}).
      *
      * @param parentClassLoader See {@link ClassLoader}
-     * @param sourceFinder Used to locate additional source files 
+     * @param sourceFinder Used to locate additional source files
      * @param optionalCharacterEncoding The encoding of the Java<sup>TM</sup> source files (<code>null</code> for platform default encoding)
      * @param debuggingInformation What kind of debugging information to generate, see {@link DebuggingInformation}
      */
@@ -279,7 +279,7 @@ public class JavaSourceClassLoader extends ClassLoader {
 
     /**
      * Implementation of {@link ClassLoader#findClass(String)}.
-     * 
+     *
      * @throws ClassNotFoundException
      */
     protected Class findClass(String name) throws ClassNotFoundException {

@@ -130,7 +130,7 @@ public class Disassembler {
 
     /**
      * Disassemble one Java<sup>TM</sup> class file to {@link System#out}.
-     * 
+     *
      * @param file
      * @throws IOException
      */
@@ -333,7 +333,7 @@ public class Disassembler {
                         } else {
                             s = ((ConstantUtf8Info) cpi).getValue();
                             if (s.length() > 80) {
-                                s = Disassembler.stringToJavaLiteral(s.substring(0, 80)) + "... (" + s.length() + " chars)"; 
+                                s = Disassembler.stringToJavaLiteral(s.substring(0, 80)) + "... (" + s.length() + " chars)";
                             } else {
                                 s = Disassembler.stringToJavaLiteral(s);
                             }
@@ -455,13 +455,13 @@ public class Disassembler {
             public void print(Map sourceLines) {
                 Disassembler.this.indentln("method_info {"); {
                     Disassembler.this.println("access_flags = " + decodeAccess(accessFlags));
-        
+
                     Disassembler.this.printConstantPoolEntry("name_index", nameIndex);
                     Disassembler.this.println();
-        
+
                     Disassembler.this.printConstantPoolEntry("descriptor_index", descriptorIndex);
                     Disassembler.this.println();
-        
+
                     Disassembler.this.indentln("attributes[] = {"); {
                         for (short i = 0; i < attributeInfos.length; ++i) {
                             AttributeInfo ai = attributeInfos[i];
@@ -616,7 +616,7 @@ public class Disassembler {
                                 Disassembler.this.indentln("{"); {
                                     Disassembler.this.printConstantPoolEntry("inner_class_info_index", data[i]);
                                     Disassembler.this.println();
-    
+
                                     short outerClassInfoIndex = data[i + 1];
                                     if (outerClassInfoIndex == 0) {
                                         Disassembler.this.print("(not a member)");
@@ -624,7 +624,7 @@ public class Disassembler {
                                         Disassembler.this.printConstantPoolEntry("outer_class_info_index", outerClassInfoIndex);
                                     }
                                     Disassembler.this.println();
-    
+
                                     short innerNameIndex = data[i + 2];
                                     if (innerNameIndex == 0) {
                                         Disassembler.this.print("(anonymous)");
@@ -632,7 +632,7 @@ public class Disassembler {
                                         Disassembler.this.printConstantPoolEntry("inner_name_index", innerNameIndex);
                                     }
                                     Disassembler.this.println();
-    
+
                                     Disassembler.this.println("inner_class_access_flags = " + decodeAccess(data[i + 3]));
                                 } Disassembler.this.unindentln(i == data.length - 1 ? "}" : "},");
                             }
@@ -1224,7 +1224,7 @@ public class Disassembler {
                                 for (int i = 0; i < npads; ++i) {
                                     byte b = dis.readByte();
                                     if (b != (byte) 0) d.print("Padding byte #" + i + " is " + (b & 0xff));
-                                } 
+                                }
                                 d.print("default => " + (instructionOffset + dis.readInt()));
                                 int npairs = dis.readInt();
                                 for (int i = 0; i < npairs; ++i) {
@@ -1297,7 +1297,7 @@ public class Disassembler {
     private static class Instruction {
 
         /**
-         * 
+         *
          * @param mnemonic
          * @param operands <code>null</code> is equivalent to "zero operands"
          */
@@ -1341,7 +1341,7 @@ public class Disassembler {
             if (this.atBOL) {
                 for (int i = 0; i < this.indentation; ++i) {
                     super.write(INDENTATION_CHARS, 0, INDENTATION_CHARS.length);
-                } 
+                }
                 this.atBOL = false;
             }
         }

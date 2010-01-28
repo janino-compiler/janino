@@ -61,13 +61,13 @@ public class JLS2Tests extends JaninoTestSuite {
         exp(TRUE, "4", "\"\\uuu0041\".equals(\"A\")");
         exp(TRUE, "5", "\"\\\\u0041\".equals(\"\\\\\" + \"u0041\")");
         exp(TRUE, "6", "\"\\\\\\u0041\".equals(\"\\\\\" + \"A\")");
-        
+
         section("3.4 Line Terminators");
         exp(TRUE, "1", "1//\r+//\r\n2//\n==//\n\r3");
-        
+
         section("3.6 White Space");
         exp(TRUE, "1", "3\t\r \n==3");
-        
+
         section("3.7 Comments");
         exp(TRUE, "1", "7/* */==7");
         exp(TRUE, "2", "7/**/==7");
@@ -79,7 +79,7 @@ public class JLS2Tests extends JaninoTestSuite {
         exp(TRUE, "8", "7//\r\n==7");
         exp(TRUE, "9", "7//\n\r==7");
         scr(PARS, "10", "7// /*\n\rXXX*/==7");
-        
+
         section("3.8 Identifiers");
         scr(EXEC, "1", "int a;");
         scr(EXEC, "2", "int ההה;");
@@ -88,9 +88,9 @@ public class JLS2Tests extends JaninoTestSuite {
         scr(EXEC, "5", "int $aaa;");
         scr(PARS, "6", "int 9aaa;");
         scr(PARS, "7", "int const;");
-        
+
         section("3.10 Literals");
-        
+
         section("3.10.1 Integer Literals");
         exp(TRUE, "1", "17 == 17L");
         exp(TRUE, "2", "255 == 0xFFl");
@@ -109,7 +109,7 @@ public class JLS2Tests extends JaninoTestSuite {
         sca(INVA, "15", "99999999999999999999999999999L");
         exp(EXEC, "16", "-9223372036854775808L");
         exp(SCAN, "17", "-9223372036854775809L");
-        
+
         section("3.10.2 Floating-Point Literals");
         exp(TRUE, "1", "1e1f == 10f");
         exp(TRUE, "2", "1E1F == 10f");
@@ -124,10 +124,10 @@ public class JLS2Tests extends JaninoTestSuite {
         sca(INVA, "double_too_big",   "1.79769313486231581e+308d");
         sca(VALI, "double_small",     "4.94065645841246544e-324D");
         sca(INVA, "double_too_small", "2e-324D");
-        
+
         section("3.10.3 Boolean Literals");
         exp(TRUE, "1", "true");
-        
+
         section("3.10.4 Character Literals");
         exp(TRUE, "1", "'a' == 97");
         sca(INVA, "2", "'''");
@@ -136,7 +136,7 @@ public class JLS2Tests extends JaninoTestSuite {
         sca(INVA, "5", "'ax'");
         sca(INVA, "6", "'a\n'");
         exp(TRUE, "7", "'\"' == 34"); // Unescaped double quote is allowed!
-        
+
         section("3.10.5 String Literals");
         exp(TRUE, "1",  "\"'\".charAt(0) == 39"); // Unescaped single quote is allowed!
         // Escape sequences already tested above for character literals.
@@ -145,7 +145,7 @@ public class JLS2Tests extends JaninoTestSuite {
         sca(INVA, "4", "\"aaa\rbbb\"");
         exp(TRUE, "5", "\"aaa\" == \"aaa\"");
         exp(TRUE, "6", "\"aaa\" != \"bbb\"");
-        
+
         section("3.10.6 Escape Sequences for Character and String Literals");
         sca(INVA, "1",  "'\\u000a'"); // 0x000a is LF
         exp(TRUE, "2",  "'\\b' == 8");
@@ -167,16 +167,16 @@ public class JLS2Tests extends JaninoTestSuite {
 
         section("3.11 Separators");
         sca(VALI, "1", ";");
-        
+
         section("3.12 Operators");
         scr(TRUE, "1", "int a = -11; a >>>= 2; return a == 1073741821;");
-        
+
         section("4 Types, Values, and Variables");
-        
+
         section("4.1 The Kinds of Types and Values");
-        
+
         section("5 Conversions and Promotions");
-        
+
         section("5.1 Kinds of Conversions");
 
         section("5.1.7 Boxing Conversion");
@@ -189,7 +189,7 @@ public class JLS2Tests extends JaninoTestSuite {
         scr(TRUE, "long",      "Long      l = 733L;        return l.equals(new Long(733L));");
         scr(TRUE, "float",     "Float     f = 12.5F;       return f.equals(new Float(12.5F));");
         scr(TRUE, "double",    "Double    d = 14.3D;       return d.equals(new Double(14.3D));");
-        
+
         section("5.1.8 Unboxing Conversion");
         exp(TRUE, "boolean 1", "Boolean.TRUE");
         exp(TRUE, "boolean 2", "!Boolean.FALSE");
@@ -226,7 +226,7 @@ public class JLS2Tests extends JaninoTestSuite {
         scr(EXEC, "Constant Assignment Character 2", "Character c = 0;");
         scr(EXEC, "Constant Assignment Character 3", "Character c = 65535;");
         scr(COMP, "Constant Assignment Character 4", "Character c = 65536;");
-        
+
         section("5.5 Casting Conversion");
         exp(TRUE, "Identity", "7 == (int) 7");
         exp(TRUE, "Widening Primitive", "(int) 'a' == 97");
@@ -249,13 +249,13 @@ public class JLS2Tests extends JaninoTestSuite {
         exp(TRUE, "byte", "(short) 32767 + (byte) 100 == 32867");
 
         section("6 Names");
-        
+
         section("6.1 Declarations");
 
         section("7 Packages");
-        
+
         section("7.1 Package Members");
-        
+
         section("7.5 Import Declarations");
 
         section("7.5.1 Single-Type-Import Declaration");
@@ -266,7 +266,7 @@ public class JLS2Tests extends JaninoTestSuite {
         section("7.5.2 Type-Import-on-Demand Declaration");
         exp(EXEC, "1", "import java.util.*; new ArrayList()");
         exp(EXEC, "Duplicate", "import java.util.*; import java.util.*; new ArrayList()");
-        
+
         section("7.5.3 Single Static Import Declaration");
         exp(TRUE, "Static field", "import static java.util.Collections.EMPTY_SET; EMPTY_SET instanceof java.util.Set");
         exp(TRUE, "Static field/duplicate", "import static java.util.Collections.EMPTY_SET; import static java.util.Collections.EMPTY_SET; EMPTY_SET instanceof java.util.Set");
@@ -276,28 +276,28 @@ public class JLS2Tests extends JaninoTestSuite {
         exp(TRUE, "Static method", "import static java.util.Arrays.asList; asList(new String[] { \"HELLO\", \"WORLD\" }).size() == 2");
         exp(TRUE, "Static method/duplicate", "import static java.util.Arrays.asList; import static java.util.Arrays.asList; asList(new String[] { \"HELLO\", \"WORLD\" }).size() == 2");
         scr(COMP, "Static method/inconsistent", "import static java.lang.Integer.toString; import static java.lang.Long.toString;");
-        
+
         section("7.5.4 Static-Import-on-Demand Declaration");
         exp(TRUE, "Static field", "import static java.util.Collections.*; EMPTY_SET instanceof java.util.Set");
         scr(EXEC, "Member type", "import static java.util.Map.*; Entry e;");
         exp(TRUE, "Static method", "import static java.util.Arrays.*; asList(new String[] { \"HELLO\", \"WORLD\" }).size() == 2");
 
         section("8 Classes");
-        
+
         section("8.1 Class Declaration");
 
         section("9 Interfaces");
-        
+
         section("9.1 Interface Declarations");
-        
+
         section("10 Arrays");
 
         section("10.1 Array Types");
-        
+
         section("11 Exceptions");
-        
+
         section("11.1 The Causes of Exceptions");
-        
+
         section("12 Execution");
 
         section("12.1 Virtual Machine Start-Up");
@@ -317,7 +317,7 @@ public class JLS2Tests extends JaninoTestSuite {
         scr(EXEC, "3", "new Object();");
         scr(PARS, "4", "new Object[3];");
         scr(PARS, "5", "int a; a;");
-        
+
         section("14.10 The switch Statement");
         scr(TRUE, "1", "int x = 37; switch (x) {} return x == 37;");
         scr(TRUE, "2", "int x = 37; switch (x) { default: ++x; break; } return x == 38;");
@@ -327,11 +327,11 @@ public class JLS2Tests extends JaninoTestSuite {
         scr(TRUE, "6", "int x = 37; switch (x) { case -2000000000: break; case 2000000000: break; } return x == 37;");
 
         section("15 Expressions");
-        
+
         section("15.1 Evaluation, Denotation, and Result");
 
         section("15.9 Class Instance Creation Expressions");
-        
+
         section("15.9.1 Determining the class being Instantiated");
         exp(TRUE, "3a", "new Object() instanceof Object");
         exp(COMP, "3b", "new java.util.List()");
@@ -345,7 +345,7 @@ public class JLS2Tests extends JaninoTestSuite {
         exp(COMP, "4f", "new other_package.Foo(3).new PublicStaticMemberClass()");
         exp(COMP, "4g", "new other_package.Foo(3).new PublicMemberInterface()");
         exp(COMP, "4h", "new java.util.ArrayList().new PublicMemberClass()");
-        
+
         section("15.9.3 Choosing the Constructor and its Arguments");
         exp(EXEC, "1", "new Integer(3)");
         exp(EXEC, "2", "new Integer(new Integer(3))");
@@ -393,7 +393,7 @@ public class JLS2Tests extends JaninoTestSuite {
             "    }\n" +
             "}\n"
          ), "T3");
-        
+
         section("15.12 Method Invocation Expressions");
         section("15.12.2 Compile-Time Step 2: Determine Method Signature");
         section("15.12.2.2 Choose the Most Specific Method");

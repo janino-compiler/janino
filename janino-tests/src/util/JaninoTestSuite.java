@@ -135,7 +135,7 @@ public class JaninoTestSuite extends StructuredTestSuite {
     static protected class ExpressionTest extends CompileAndExecuteTest {
         private final String              expression;
         private final ExpressionEvaluator expressionEvaluator;
-    
+
         public ExpressionTest(Mode mode, String name, String expression) {
             super(name, mode);
             this.expression          = expression;
@@ -144,7 +144,7 @@ public class JaninoTestSuite extends StructuredTestSuite {
             this.expressionEvaluator.setExpressionType(mode == TRUE ? boolean.class : ExpressionEvaluator.ANY_TYPE);
         }
         public ExpressionTest setDefaultImports(String[] defaultImports) { this.expressionEvaluator.setDefaultImports(defaultImports); return this; }
-    
+
         protected void compile() throws Exception {
             this.expressionEvaluator.cook(this.expression);
         }
@@ -153,7 +153,7 @@ public class JaninoTestSuite extends StructuredTestSuite {
             return this.expressionEvaluator.evaluate(new Object[0]);
         }
     }
-    
+
     /**
      * Add a test case that scans, parses, compiles and executes a Janino script, and verifies
      * that it returns <code>true</code>.
@@ -178,7 +178,7 @@ public class JaninoTestSuite extends StructuredTestSuite {
     static protected class ScriptTest extends CompileAndExecuteTest {
         private final String          script;
         private final ScriptEvaluator scriptEvaluator;
-    
+
         public ScriptTest(Mode mode, String name, String script) {
             super(name, mode);
             this.script          = script;
@@ -196,7 +196,7 @@ public class JaninoTestSuite extends StructuredTestSuite {
             return this.scriptEvaluator.evaluate(new Object[0]);
         }
     }
-    
+
     /**
      * Add a test case that scans, parses and compiles a class body, invokes its
      * <code>public static boolean main()</code> method and verifies that it returns
@@ -309,7 +309,7 @@ public class JaninoTestSuite extends StructuredTestSuite {
                     null,
                     DebuggingInformation.NONE
                 );
-    
+
                 loader.loadClass(className);
             }
         };
@@ -322,7 +322,7 @@ public class JaninoTestSuite extends StructuredTestSuite {
      */
     static abstract class CompileAndExecuteTest extends TestCase {
         protected final Mode mode;
-    
+
         public static class Mode { private Mode() {}}
 
         public CompileAndExecuteTest(String name, Mode mode) {

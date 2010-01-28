@@ -48,7 +48,7 @@ public class ByteArrayClassLoader extends ClassLoader {
 
     /**
      * The given {@link Map} of classes must not be modified afterwards.
-     * 
+     *
      * @param classes String className => byte[] data
      */
     public ByteArrayClassLoader(Map classes) {
@@ -72,7 +72,7 @@ public class ByteArrayClassLoader extends ClassLoader {
      */
     protected Class findClass(String name) throws ClassNotFoundException {
         byte[] data = (byte[]) this.classes.get(name);
-        if (data == null) throw new ClassNotFoundException(name); 
+        if (data == null) throw new ClassNotFoundException(name);
 
         if (DEBUG) {
             System.out.println("*** Disassembly of class \"" + name + "\":");

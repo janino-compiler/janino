@@ -147,7 +147,7 @@ public class StringPattern {
         for (int i = patterns.length - 1; i >= 0; --i) {
             if (patterns[i].matches(text)) {
                 return patterns[i].getMode() == StringPattern.INCLUDE;
-            } 
+            }
         }
         return false; // No patterns defined or no pattern matches.
     }

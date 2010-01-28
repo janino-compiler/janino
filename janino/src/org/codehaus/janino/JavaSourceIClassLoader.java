@@ -97,14 +97,14 @@ public final class JavaSourceIClassLoader extends IClassLoader {
      */
     public IClass findIClass(final String type) throws ClassNotFoundException {
         if (JavaSourceIClassLoader.DEBUG) System.out.println("type = " + type);
-    
+
         // Class type.
         String className = Descriptor.toClassName(type); // E.g. "pkg1.pkg2.Outer$Inner"
         if (JavaSourceIClassLoader.DEBUG) System.out.println("2 className = \"" + className + "\"");
-    
+
         // Do not attempt to load classes from package "java".
         if (className.startsWith("java.")) return null;
-    
+
         // Determine the name of the top-level class.
         String topLevelClassName;
         {
@@ -123,7 +123,7 @@ public final class JavaSourceIClassLoader extends IClassLoader {
                 }
                 this.defineIClass(res);
                 return res;
-            } 
+            }
         }
 
         // Find source file.

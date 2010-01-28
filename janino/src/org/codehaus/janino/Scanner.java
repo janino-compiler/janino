@@ -53,7 +53,7 @@ import org.codehaus.janino.util.TeeReader;
  * {@link java.lang.String String} objects.
  * <p>
  * The <code>optionalFileName</code> parameter passed to many
- * constructors should point 
+ * constructors should point
  */
 
 public class Scanner {
@@ -486,7 +486,7 @@ public class Scanner {
         private final String operator;
 
         /**
-         * 
+         *
          * @param operator Must be an interned string!
          */
         private OperatorToken(String operator) {
@@ -552,7 +552,7 @@ public class Scanner {
         PROCESS_COMMENTS:
         for (;;) {
             switch (state) {
-    
+
             case 0: // Outside any comment
                 if (this.nextChar == -1) {
                     return new EOFToken();
@@ -619,7 +619,7 @@ public class Scanner {
                     state = 0;
                 } else
                 {
-                    if (this.docComment != null) this.warning("MDC", "Multiple doc comments", new Location(this.optionalFileName, this.nextCharLineNumber, this.nextCharColumnNumber)); 
+                    if (this.docComment != null) this.warning("MDC", "Multiple doc comments", new Location(this.optionalFileName, this.nextCharLineNumber, this.nextCharColumnNumber));
                     dcsb = new StringBuffer();
                     dcsb.append((char) this.nextChar);
                     state = (
@@ -822,7 +822,7 @@ public class Scanner {
         int state = initialState;
         for (;;) {
             switch (state) {
-    
+
             case 0: // First character.
                 if (this.nextChar == '0') {
                     state = 6;
@@ -832,7 +832,7 @@ public class Scanner {
                     state = 1;
                 }
                 break;
-    
+
             case 1: // Decimal digits.
                 if (Character.isDigit((char) this.nextChar)) {
                     sb.append((char) this.nextChar);
@@ -861,7 +861,7 @@ public class Scanner {
                     return this.stringToIntegerLiteralToken(sb.toString(), 10);
                 }
                 break;
-    
+
             case 2: // After decimal point.
                 if (Character.isDigit((char) this.nextChar)) {
                     sb.append((char) this.nextChar);
@@ -882,7 +882,7 @@ public class Scanner {
                     return this.stringToDoubleLiteralToken(sb.toString());
                 }
                 break;
-    
+
             case 3: // Read exponent.
                 if (Character.isDigit((char) this.nextChar)) {
                     sb.append((char) this.nextChar);
@@ -896,7 +896,7 @@ public class Scanner {
                     throw new ScanException("Exponent missing after \"E\"");
                 }
                 break;
-    
+
             case 4: // After exponent sign.
                 if (Character.isDigit((char) this.nextChar)) {
                     sb.append((char) this.nextChar);
@@ -906,7 +906,7 @@ public class Scanner {
                     throw new ScanException("Exponent missing after \"E\" and sign");
                 }
                 break;
-    
+
             case 5: // After first exponent digit.
                 if (Character.isDigit((char) this.nextChar)) {
                     sb.append((char) this.nextChar);
@@ -923,7 +923,7 @@ public class Scanner {
                     return this.stringToDoubleLiteralToken(sb.toString());
                 }
                 break;
-    
+
             case 6: // After leading zero
                 if ("01234567".indexOf(this.nextChar) != -1) {
                     sb.append((char) this.nextChar);
@@ -956,7 +956,7 @@ public class Scanner {
                     return this.stringToIntegerLiteralToken("0", 10);
                 }
                 break;
-    
+
             case 7: // In octal literal.
                 if ("01234567".indexOf(this.nextChar) != -1) {
                     sb.append((char) this.nextChar);
@@ -971,7 +971,7 @@ public class Scanner {
                     return this.stringToIntegerLiteralToken(sb.toString(), 8);
                 }
                 break;
-    
+
             case 8: // First hex digit
                 if (Character.digit((char) this.nextChar, 16) != -1) {
                     sb.append((char) this.nextChar);
@@ -981,7 +981,7 @@ public class Scanner {
                     throw new ScanException("Hex digit expected after \"0x\"");
                 }
                 break;
-    
+
             case 9:
                 if (Character.digit((char) this.nextChar, 16) != -1) {
                     sb.append((char) this.nextChar);
@@ -1048,7 +1048,7 @@ public class Scanner {
             // Special case: Decimal literal 2^63 must only appear in "negated" context, i.e.
             // "-9223372036854775808" is a valid long literal, but "9223372036854775808" is not.
             if (s.equals("9223372036854775808")) return new LiteralToken(Scanner.MAGIC_LONG);
-    
+
             try {
                 x = Long.parseLong(s);
             } catch (NumberFormatException e) {

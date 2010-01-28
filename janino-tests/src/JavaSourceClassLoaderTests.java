@@ -77,10 +77,10 @@ public class JavaSourceClassLoaderTests extends TestCase {
         ).loadClass(className);
         b.endReporting();
     }
-    
+
     public void testCJSCL() throws Exception {
         String className = Compiler.class.getName();
-        
+
         Benchmark b = new Benchmark(true);
         b.beginReporting("Loading class \"" + className + "\" through a CachingJavaSourceClassLoader");
         MapResourceCreator classFileResources1 = new MapResourceCreator();

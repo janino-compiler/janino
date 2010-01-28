@@ -149,7 +149,7 @@ public class MultiIterator implements Iterator {
             {
                 throw new RuntimeException("Unexpected element type \"" + o.getClass().getName() + "\"");
             }
-        } 
+        }
     }
 
     public Object next() {

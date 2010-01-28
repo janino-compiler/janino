@@ -119,7 +119,7 @@ public class UnparseTests extends TestCase {
         s = UnparseTests.replace(s, " )))", ")");
         Assert.assertEquals(expect, s);
     }
-    
+
     private static String normalizeWhitespace(String input) {
         return input.replaceAll("\\s+", " ").trim();
     }
@@ -335,7 +335,7 @@ public class UnparseTests extends TestCase {
         rvalue.accept(rv);
         return res[0];
     }
-    
+
     public void testInterface() throws Exception {
         testInterfaceHelper(false);
         testInterfaceHelper(true);
@@ -346,8 +346,8 @@ public class UnparseTests extends TestCase {
         if (interfaceMod) {
             modifier |= Mod.INTERFACE;
         }
-        Java.PackageMemberInterfaceDeclaration decl = 
-            new Java.PackageMemberInterfaceDeclaration(null, "foo", 
+        Java.PackageMemberInterfaceDeclaration decl =
+            new Java.PackageMemberInterfaceDeclaration(null, "foo",
                 modifier, "Foo", new Type[0]);
         StringWriter sw = new StringWriter();
         UnparseVisitor uv = new UnparseVisitor(sw);
@@ -365,7 +365,7 @@ public class UnparseTests extends TestCase {
         for(int i = 0; i < tests.length; ++i) {
             Atom expr = (Atom) tests[i][0];
             String expected = (String) tests[i][1];
-            
+
             StringWriter sw = new StringWriter();
             UnparseVisitor uv = new UnparseVisitor(sw);
             expr.accept(uv);
@@ -439,7 +439,7 @@ public class UnparseTests extends TestCase {
             UnparseTests.helpTestExpr(input, expectNoSimplify, false);
         }
     }
-    
+
     public void testParseUnparseParseJanino() throws Exception {
 
         // Process all "*.java" files in the JANINO source tree.

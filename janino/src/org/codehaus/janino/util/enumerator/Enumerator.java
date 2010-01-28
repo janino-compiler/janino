@@ -44,7 +44,7 @@ import java.util.*;
  * <code>public static final</code> fields, as follows:
  * <pre>
  * public final class Suit extends Enumerator {
- * 
+ *
  *     // Exactly N instances of "Suit" exist to represent the N possible values.
  *     public static final Suit CLUBS    = new Suit("clubs");
  *     public static final Suit DIAMONDS = new Suit("diamonds");
@@ -54,7 +54,7 @@ import java.util.*;
  *     // Optional, if you want to use EumeratorSet arithmetics.
  *     public static final EnumeratorSet NONE = new EnumeratorSet(Suit.class      ).setName("none");
  *     public static final EnumeratorSet ALL  = new EnumeratorSet(Suit.class, true).setName("all");
- * 
+ *
  *     // These MUST be declared exactly like this:
  *     private Suit(String name) { super(name); }
  *     public static Suit fromString(String name) throws EnumeratorFormatException {
@@ -62,7 +62,7 @@ import java.util.*;
  *     }
  * }
  * </pre>
- * 
+ *
  * @see <a href="http://java.sun.com/developer/Books/effectivejava/Chapter5.pdf">Effective Java, Item 21</a>
  * @see org.codehaus.janino.util.enumerator.EnumeratorSet
  */
@@ -125,7 +125,7 @@ public abstract class Enumerator {
      *         return (Suit) Enumerator.fromString(name, Suit.class);
      *     }
      * }</pre>
-     * 
+     *
      * @throws EnumeratorFormatException if the string cannot be identified
      */
     protected static final Enumerator fromString(String name, Class enumeratorClass) throws EnumeratorFormatException {

@@ -59,7 +59,7 @@ import org.codehaus.janino.util.Traverser;
  * Example:
  * <pre>
  *   import java.text.*;
- * 
+ *
  *   System.out.println("HELLO");
  *   System.out.println(new DecimalFormat("####,###.##").format(a));
  * </pre>
@@ -609,7 +609,7 @@ public class ScriptEvaluator extends ClassBodyEvaluator {
             DebuggingInformation.DEFAULT_DEBUGGING_INFORMATION, // debuggingInformation
             this.className
         );
-        
+
         // Find the script methods by name.
         this.result = new Method[count];
         if (count <= 10) {
@@ -738,8 +738,8 @@ public class ScriptEvaluator extends ClassBodyEvaluator {
      * <ul>
      *   <li>A public method declaration with the given return type, name, parameter
      *       names and values and thrown exceptions
-     *   <li>A block 
-     * </ul> 
+     *   <li>A block
+     * </ul>
      *
      * @param returnType Return type of the declared method
      */
@@ -784,7 +784,7 @@ public class ScriptEvaluator extends ClassBodyEvaluator {
     /**
      * Simplified version of
      * {@link #createFastScriptEvaluator(Scanner, Class, String[], ClassLoader)}.
-     * 
+     *
      * @param script Contains the sequence of script tokens
      * @param interfaceToImplement Must declare exactly the one method that defines the expression's signature
      * @param parameterNames The expression references the parameters through these names
@@ -822,7 +822,7 @@ public class ScriptEvaluator extends ClassBodyEvaluator {
      * </pre>
      * Notice: The <code>interfaceToImplement</code> must either be declared <code>public</code>,
      * or with package scope in the root package (i.e. "no" package).
-     * 
+     *
      * @param scanner Source of script tokens
      * @param interfaceToImplement Must declare exactly one method
      * @param parameterNames
@@ -843,10 +843,10 @@ public class ScriptEvaluator extends ClassBodyEvaluator {
     /**
      * Like {@link #createFastScriptEvaluator(Scanner, Class, String[], ClassLoader)},
      * but gives you more control over the generated class (rarely needed in practice).
-     * <p> 
+     * <p>
      * Notice: The <code>interfaceToImplement</code> must either be declared <code>public</code>,
      * or with package scope in the same package as <code>className</code>.
-     * 
+     *
      * @param scanner                   Source of script tokens
      * @param className                 Name of generated class
      * @param optionalExtendedType      Class to extend
@@ -953,7 +953,7 @@ public class ScriptEvaluator extends ClassBodyEvaluator {
      * <ul>
      *   <li>If any component starts with an upper-case letter, then ambiguous name is assumed to
      *       be a type name.
-     *   <li>Otherwise, if the first component of the ambiguous name matches the name of a 
+     *   <li>Otherwise, if the first component of the ambiguous name matches the name of a
      *       previously defined local variable, then the first component of the ambiguous name is
      *       assumed to be a local variable name. (Notice that this strategy does not consider that
      *       the scope of a local variable declaration may end before the end of the script.)

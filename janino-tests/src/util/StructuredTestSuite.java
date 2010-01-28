@@ -90,7 +90,7 @@ public class StructuredTestSuite extends TestSuite {
      * Notice: If you indent by more than one level (i.e. <code>level > previous_level + 1</code>),
      * then unnamed intermediate sub-suites are inserted as needed (probably not what you want,
      * because these sub-suites appear with name "junit.framework.TestSuite").
-     * 
+     *
      * @param name the name of the sub-suite (or <code>null</code> for an unnamed sub-suite)
      */
     public void section(int level, String name) {
@@ -179,9 +179,9 @@ interface Stack_ { // Avoid name conflict with "java.util.Stack".
 
 /** A simple implementation of the {@link Stack_} interface. */
 class ArrayListStack extends ArrayList implements Stack_ {
-	private static final long serialVersionUID = 1024412833860481254L;
+    private static final long serialVersionUID = 1024412833860481254L;
 
-	public void   push(Object o) { this.add(o); }
+    public void   push(Object o) { this.add(o); }
     public Object peek()         { return this.get(this.size() - 1); }
     public Object pop()          { return this.remove(this.size() - 1); }
 }

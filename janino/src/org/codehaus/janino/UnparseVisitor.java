@@ -218,13 +218,13 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
         this.pw.print("for (");
         if (fs.optionalInit != null) {
             this.unparseBlockStatement(fs.optionalInit);
-        } else { 
+        } else {
             this.pw.print(';');
         }
         if (fs.optionalCondition != null) {
             this.pw.print(' ');
             this.unparse(fs.optionalCondition);
-        } 
+        }
         this.pw.print(';');
         if (fs.optionalUpdate != null) {
             this.pw.print(' ');
@@ -269,7 +269,7 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
         if (rs.optionalReturnValue != null) {
             this.pw.print(' ');
             this.unparse(rs.optionalReturnValue);
-        } 
+        }
         this.pw.print(';');
     }
     public void visitSwitchStatement(Java.SwitchStatement ss) {
@@ -513,7 +513,7 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
 
     /**
      * Iff the <code>operand</code> is unnatural for the <code>unaryOperator</code>, enclose the
-     * <code>operand</code> in parentheses. Example: "a+b" is an unnatural operand for unary "!x". 
+     * <code>operand</code> in parentheses. Example: "a+b" is an unnatural operand for unary "!x".
      *
      * @param unaryOperator ++x --x +x -x ~x !x x++ x--
      */
@@ -524,7 +524,7 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
 
     /**
      * Iff the <code>lhs</code> is unnatural for the <code>binaryOperator</code>, enclose the
-     * <code>lhs</code> in parentheses. Example: "a+b" is an unnatural lhs for operator "*". 
+     * <code>lhs</code> in parentheses. Example: "a+b" is an unnatural lhs for operator "*".
      *
      * @param binaryOperator = +=... ?: || && | ^ & == != < > <= >= instanceof << >> >>> + - * / % cast
      */
@@ -537,7 +537,7 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
 
     /**
      * Iff the <code>rhs</code> is unnatural for the <code>binaryOperator</code>, enclose the
-     * <code>rhs</code> in parentheses. Example: "a+b" is an unnatural rhs for operator "*". 
+     * <code>rhs</code> in parentheses. Example: "a+b" is an unnatural rhs for operator "*".
      */
     private void unparseRhs(Java.Rvalue rhs, String binaryOperator) {
         int cmp = UnparseVisitor.comparePrecedence(binaryOperator, rhs);
@@ -580,25 +580,25 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
      */
     private static int comparePrecedence(String operator, Java.Atom operand) {
         if (operand instanceof Java.BinaryOperation) {
-            return UnparseVisitor.getOperatorPrecedence(operator) - UnparseVisitor.getOperatorPrecedence(((Java.BinaryOperation) operand).op); 
+            return UnparseVisitor.getOperatorPrecedence(operator) - UnparseVisitor.getOperatorPrecedence(((Java.BinaryOperation) operand).op);
         } else
         if (operand instanceof Java.UnaryOperation) {
-            return UnparseVisitor.getOperatorPrecedence(operator) - UnparseVisitor.getOperatorPrecedence(((Java.UnaryOperation) operand).operator + "x"); 
+            return UnparseVisitor.getOperatorPrecedence(operator) - UnparseVisitor.getOperatorPrecedence(((Java.UnaryOperation) operand).operator + "x");
         } else
         if (operand instanceof Java.ConditionalExpression) {
-            return UnparseVisitor.getOperatorPrecedence(operator) - UnparseVisitor.getOperatorPrecedence("?:"); 
+            return UnparseVisitor.getOperatorPrecedence(operator) - UnparseVisitor.getOperatorPrecedence("?:");
         } else
         if (operand instanceof Java.Instanceof) {
-            return UnparseVisitor.getOperatorPrecedence(operator) - UnparseVisitor.getOperatorPrecedence("instanceof"); 
+            return UnparseVisitor.getOperatorPrecedence(operator) - UnparseVisitor.getOperatorPrecedence("instanceof");
         } else
         if (operand instanceof Java.Cast) {
-            return UnparseVisitor.getOperatorPrecedence(operator) - UnparseVisitor.getOperatorPrecedence("cast"); 
+            return UnparseVisitor.getOperatorPrecedence(operator) - UnparseVisitor.getOperatorPrecedence("cast");
         } else
         if (operand instanceof Java.MethodInvocation || operand instanceof Java.FieldAccess) {
-            return UnparseVisitor.getOperatorPrecedence(operator) - UnparseVisitor.getOperatorPrecedence("."); 
+            return UnparseVisitor.getOperatorPrecedence(operator) - UnparseVisitor.getOperatorPrecedence(".");
         } else
         if (operand instanceof Java.NewArray) {
-            return UnparseVisitor.getOperatorPrecedence(operator) - UnparseVisitor.getOperatorPrecedence("new"); 
+            return UnparseVisitor.getOperatorPrecedence(operator) - UnparseVisitor.getOperatorPrecedence("new");
         } else
         if (operand instanceof Java.Crement) {
             Java.Crement c = (Java.Crement) operand;
@@ -657,7 +657,7 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
         if (ncd.optionalExtendedType != null) {
             this.pw.print(" extends ");
             this.unparseType(ncd.optionalExtendedType);
-        } 
+        }
         if (ncd.implementedTypes.length > 0) this.pw.print(" implements " + Java.join(ncd.implementedTypes, ", "));
         this.pw.println(" {");
         this.unparseClassDeclarationBody(ncd);

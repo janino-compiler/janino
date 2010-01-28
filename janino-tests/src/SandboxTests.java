@@ -25,7 +25,7 @@ public class SandboxTests extends TestCase {
     }
 
     public void testForbiddenClass() throws Exception {
-        
+
         // Invoke method of forbidden external class.
         try {
             ExpressionEvaluator ee = new ExpressionEvaluator();

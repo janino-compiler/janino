@@ -50,7 +50,7 @@ public class SerializationTests extends TestCase {
     }
 
     public SerializationTests(String name) { super(name); }
-    
+
     public void testExceptionSerializable() throws Exception {
         SimpleCompiler compiler = new SimpleCompiler();
         try {

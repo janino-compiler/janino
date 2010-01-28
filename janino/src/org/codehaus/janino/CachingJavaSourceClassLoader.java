@@ -105,7 +105,7 @@ public class CachingJavaSourceClassLoader extends JavaSourceClassLoader {
      * <code>sourceFinder</code> must support the {@link org.codehaus.janino.util.resource.Resource#lastModified()}
      * method, so that the modification time of the source and the class files
      * can be compared.
-     * 
+     *
      * @param parentClassLoader             Attempt to load classes through this one before looking for source files
      * @param sourceFinder                  Finds Java<sup>TM</sup> source for class <code>pkg.Cls</code> in resource <code>pkg/Cls.java</code>
      * @param optionalCharacterEncoding     Encoding of Java<sup>TM</sup> source or <code>null</code> for platform default encoding
@@ -140,11 +140,11 @@ public class CachingJavaSourceClassLoader extends JavaSourceClassLoader {
         {
             Resource classFileResource = this.classFileCacheResourceFinder.findResource(ClassFile.getClassFileResourceName(className));
             if (classFileResource != null) {
-    
+
                 // Check whether a source file resource exists.
                 Resource sourceResource = this.sourceFinder.findResource(ClassFile.getSourceResourceName(className));
                 if (sourceResource == null) return null;
-    
+
                 // Check whether the class file is up-to-date.
                 if (sourceResource.lastModified() < classFileResource.lastModified()) {
 

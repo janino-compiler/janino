@@ -51,7 +51,7 @@ public class LocatedException extends CausedException {
         super(message, optionalCause);
         this.optionalLocation = optionalLocation;
     }
-    
+
     /**
      * Returns the message specified at creation time, preceeded with nicely formatted location
      * information (if any).

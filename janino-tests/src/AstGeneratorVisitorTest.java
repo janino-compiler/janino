@@ -47,16 +47,16 @@ import org.codehaus.janino.*;
  */
 public class AstGeneratorVisitorTest extends TestCase {
     private static final String GEN_NAME = "AstGen";
-    
+
     private URL u;
     private String name;
 
-    
+
     public static void main(String[] args) throws Exception {
         TestRunner.run(suite());
     }
 
-    
+
     public static Test suite() throws Exception {
         TestSuite suite = new TestSuite(AstGeneratorVisitor.class.getName());
 
@@ -100,7 +100,7 @@ public class AstGeneratorVisitorTest extends TestCase {
 
     public void testParsing() throws Throwable {
         System.err.println(name);
-        
+
         Java.CompilationUnit cu1 = null;
         InputStream is = null;
         long l1 = System.currentTimeMillis();
@@ -117,7 +117,7 @@ public class AstGeneratorVisitorTest extends TestCase {
             System.err.println("  parse " + (l2 - l1) / 1000f);
 
         }
-        
+
         l1 = System.currentTimeMillis();
         StringWriter sw1 = new StringWriter();
         UnparseVisitor uv = new UnparseVisitor(sw1);
@@ -131,9 +131,9 @@ public class AstGeneratorVisitorTest extends TestCase {
         gv.generateCompilationUnit(cu1);
         l2 = System.currentTimeMillis();
         System.err.println("  generate ast generator " + (l2 - l1) / 1000f);
-        
+
         Scanner scanner = new Scanner(null, new StringReader(sw2.toString()));
-        
+
         l1 = System.currentTimeMillis();
         AstCompilationUnitGenerator gen = null;
         try {
@@ -148,7 +148,7 @@ public class AstGeneratorVisitorTest extends TestCase {
             l2 = System.currentTimeMillis();
             System.err.println("  compile generated " + (l2 - l1) / 1000f);
         }
-        
+
         l1 = System.currentTimeMillis();
         Java.CompilationUnit cu2;
         try {

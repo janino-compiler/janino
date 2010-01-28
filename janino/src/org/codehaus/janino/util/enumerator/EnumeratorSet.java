@@ -89,7 +89,7 @@ public class EnumeratorSet {
      * declared in the <code>enumeratorClass</code> are also recognized and added. If the string names exactly one
      * of those {@link EnumeratorSet}s declared in the <code>enumeratorClass</code>, then the resulting set
      * inherits the name of theat {@link EnumeratorSet}.
-     * 
+     *
      * @throws EnumeratorFormatException if a token cannot be identified
      */
     public EnumeratorSet(
@@ -139,7 +139,7 @@ public class EnumeratorSet {
 
     /**
      * Add the given value to the set.
-     * 
+     *
      * @throws EnumeratorSetTypeException if this set was constructed for a different {@link Enumerator}-derived type
      */
     public EnumeratorSet add(Enumerator value) {
@@ -151,7 +151,7 @@ public class EnumeratorSet {
 
     /**
      * Add the values of the given set to this set.
-     * 
+     *
      * @throws EnumeratorSetTypeException if this set was constructed for a different {@link Enumerator}-derived type
      */
     public EnumeratorSet add(EnumeratorSet that) {
@@ -174,9 +174,9 @@ public class EnumeratorSet {
      * If this {@link EnumeratorSet} contains the given <code>value</code>, return an
      * {@link EnumeratorSet} that lacks the <code>value</code>. Otherwise, return this
      * {@link EnumeratorSet}.
-     * 
+     *
      * @return the reduced set
-     * 
+     *
      * @throws EnumeratorSetTypeException if this set was constructed for a different {@link Enumerator}-derived type
      */
     public EnumeratorSet remove(Enumerator value) {
@@ -189,9 +189,9 @@ public class EnumeratorSet {
 
     /**
      * Return this {@link EnumeratorSet} less <code>that</code> {@link EnumeratorSet}.
-     * 
+     *
      * @return the reduced set
-     * 
+     *
      * @throws EnumeratorSetTypeException if this set was constructed for a different {@link Enumerator}-derived type
      */
     public EnumeratorSet remove(EnumeratorSet that) {
@@ -203,7 +203,7 @@ public class EnumeratorSet {
 
     /**
      * Check whether this set contains the given value
-     * 
+     *
      * @throws EnumeratorSetTypeException if this set was constructed for a different {@link Enumerator}-derived type
      */
     public boolean contains(Enumerator value) {
@@ -215,7 +215,7 @@ public class EnumeratorSet {
      * Check if this set contains any of the values of the given set.
      * <p>
      * Returns <code>false</code> if either of the two sets is empty.
-     * 
+     *
      * @throws EnumeratorSetTypeException if this set was constructed for a different {@link Enumerator}-derived type
      */
     public boolean containsAnyOf(EnumeratorSet that) {
@@ -228,7 +228,7 @@ public class EnumeratorSet {
 
     /**
      * Check if this set contains all values of the given set.
-     * 
+     *
      * @throws EnumeratorSetTypeException if this set was constructed for a different {@link Enumerator}-derived type
      */
     public boolean containsAllOf(EnumeratorSet that) {
@@ -239,7 +239,7 @@ public class EnumeratorSet {
     /**
      * An {@link EnumeratorSet} can optionally be assigned a name, which is used by
      * {@link #toString()}.
-     * 
+     *
      * @return this object
      */
     public EnumeratorSet setName(String optionalName) {
@@ -261,7 +261,7 @@ public class EnumeratorSet {
 
     /**
      * Returns a map of all {@link EnumeratorSet}s instantiated for the given <code>enumeratorClass</code>.
-     * 
+     *
      * @return String name => EnumeratorSet
      */
     private static Map getNamedEnumeratorSets(Class enumeratorClass) {

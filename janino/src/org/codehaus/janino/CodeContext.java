@@ -206,7 +206,7 @@ public class CodeContext {
     }
 
     /**
-     * 
+     *
      * @param dos
      * @param lineNumberTableAttributeNameIndex 0 == don't generate a "LineNumberTable" attribute
      * @throws IOException
@@ -306,10 +306,10 @@ public class CodeContext {
      * Notice: On inconsistencies, a "RuntimeException" is thrown (KLUDGE).
      */
     public void flowAnalysis(String functionName) {
-        if (CodeContext.DEBUG) { 
-            System.err.println("flowAnalysis(" + functionName + ")"); 
+        if (CodeContext.DEBUG) {
+            System.err.println("flowAnalysis(" + functionName + ")");
         }
-        
+
         short[] stackSizes = new short[this.end.offset];
         Arrays.fill(stackSizes, CodeContext.UNEXAMINED);
 
@@ -330,7 +330,7 @@ public class CodeContext {
                 ExceptionTableEntry exceptionTableEntry = (ExceptionTableEntry) this.exceptionTableEntries.get(i);
                 if (stackSizes[exceptionTableEntry.startPC.offset] != CodeContext.UNEXAMINED) {
                     this.flowAnalysis(
-                        functionName,         
+                        functionName,
                         this.code,                                          // code
                         this.end.offset,                                    // codeSize
                         exceptionTableEntry.handlerPC.offset,               // offset
@@ -454,20 +454,20 @@ public class CodeContext {
             if (stackSize < 0) {
                 String msg = this.classFile.getThisClassName() + '.' + functionName + ": Operand stack underrun at offset " + offset;
                 if (CodeContext.DEBUG) {
-                    System.err.println(msg); 
+                    System.err.println(msg);
                     return;
                 } else {
-                    throw new RuntimeException(msg); 
+                    throw new RuntimeException(msg);
                 }
-            } 
+            }
 
             if (stackSize > MAX_STACK_SIZE) {
                 String msg = this.classFile.getThisClassName() + '.' + functionName + ": Operand stack overflow at offset " + offset;
                 if (CodeContext.DEBUG) {
-                    System.err.println(msg); 
+                    System.err.println(msg);
                     return;
                 } else {
-                    throw new RuntimeException(msg); 
+                    throw new RuntimeException(msg);
                 }
             }
 
@@ -546,10 +546,10 @@ public class CodeContext {
                     stackSize, stackSizes
                 );
                 operandOffset += 4;
-                
+
                 int npairs = extract32BitValue(0, operandOffset, code);
                 operandOffset += 4;
-                
+
                 for (int i = 0; i < npairs; ++i) {
                     operandOffset += 4; //skip match value
                     this.flowAnalysis(
@@ -628,7 +628,7 @@ public class CodeContext {
             offset = operandOffset;
         }
     }
-    
+
     /**
      * Extract a 16 bit value at offset in code and add bias to it
      * @param bias    an int to skew the final result by (useful for calculating relative offsets)
@@ -648,7 +648,7 @@ public class CodeContext {
         }
         return res;
     }
-    
+
     /**
      * Extract a 32 bit value at offset in code and add bias to it
      * @param bias    an int to skew the final result by (useful for calculating relative offsets)
@@ -666,17 +666,17 @@ public class CodeContext {
         if (CodeContext.DEBUG) {
             System.out.println("extract32BitValue(bias, offset) = (" + bias +", " + offset + ")");
             System.out.println(
-                    "bytes = {" + 
-                    code[offset  ] + ", " + 
-                    code[offset+1] + ", " + 
-                    code[offset+2] + ", " + 
+                    "bytes = {" +
+                    code[offset  ] + ", " +
+                    code[offset+1] + ", " +
+                    code[offset+2] + ", " +
                     code[offset+3] + "}"
             );
             System.out.println("result = " + res);
         }
         return res;
     }
-    
+
     /**
      * fixUp() all of the offsets and relocate() all relocatables
      */
@@ -774,7 +774,7 @@ public class CodeContext {
     /**
      * Inserts a sequence of bytes at the current insertion position. Creates
      * {@link LineNumberOffset}s as necessary.
-     * 
+     *
      * @param lineNumber The line number that corresponds to the byte code, or -1
      * @param b
      */
@@ -930,24 +930,24 @@ public class CodeContext {
             if (opcode == Opcode.JSR_W || opcode == Opcode.GOTO_W) {
                 //no need to expand wide opcodes
                 this.expanded = true;
-            } else { 
+            } else {
                 this.expanded = false;
             }
         }
-        
+
         public boolean relocate() {
             if (this.destination.offset == Offset.UNSET) throw new RuntimeException("Cannot relocate branch to unset destination offset");
             int offset = this.destination.offset - this.source.offset;
-            
+
             if (!this.expanded && (offset > Short.MAX_VALUE || offset < Short.MIN_VALUE)) {
                 //we want to insert the data without skewing our source position,
                 //so we will cache it and then restore it later.
-                int pos = this.source.offset; 
+                int pos = this.source.offset;
                 CodeContext.this.pushInserter(this.source); {
-                    // promotion to a wide instruction only requires 2 extra bytes 
+                    // promotion to a wide instruction only requires 2 extra bytes
                     // everything else requires a new GOTO_W instruction after a negated if
                     CodeContext.this.makeSpace(
-                        (short) -1, 
+                        (short) -1,
                         this.opcode == Opcode.GOTO ? 2 : this.opcode == Opcode.JSR ? 2 : 5
                     );
                 } CodeContext.this.popInserter();
@@ -955,19 +955,19 @@ public class CodeContext {
                 this.expanded = true;
                 return false;
             }
-            
+
             final byte[] ba;
             if (!this.expanded) {
                 //we fit in a 16-bit jump
                 ba = new byte[] { (byte) this.opcode, (byte) (offset >> 8), (byte) offset };
             } else {
                 if (this.opcode == Opcode.GOTO || this.opcode == Opcode.JSR) {
-                    ba = new byte[] { 
+                    ba = new byte[] {
                         (byte) (this.opcode + 33), // GOTO => GOTO_W; JSR => JSR_W
-                        (byte) (offset >> 24), 
-                        (byte) (offset >> 16), 
-                        (byte) (offset >> 8), 
-                        (byte) offset 
+                        (byte) (offset >> 24),
+                        (byte) (offset >> 16),
+                        (byte) (offset >> 8),
+                        (byte) offset
                     };
                 } else
                 {
@@ -975,27 +975,27 @@ public class CodeContext {
                     //if jumping backwards this will increase the jump to go over it
                     //if jumping forwards this will decrease the jump by it
                     offset -= 3;
-                            
+
                     //  [if cond offset]
-                    //expands to 
+                    //expands to
                     //  [if !cond skip_goto]
                     //  [GOTO_W offset]
-                    ba = new byte[] { 
+                    ba = new byte[] {
                         CodeContext.invertBranchOpcode((byte) this.opcode),
                         (byte) 0,
                         (byte) 8, //jump from this instruction past the GOTO_W
-                        (byte) Opcode.GOTO_W, 
-                        (byte) (offset >> 24), 
-                        (byte) (offset >> 16), 
-                        (byte) (offset >> 8), 
-                        (byte) offset 
+                        (byte) Opcode.GOTO_W,
+                        (byte) (offset >> 24),
+                        (byte) (offset >> 16),
+                        (byte) (offset >> 8),
+                        (byte) offset
                     };
                 }
             }
             System.arraycopy(ba, 0, CodeContext.this.code, this.source.offset, ba.length);
             return true;
         }
-        
+
         private boolean expanded; //marks whether this has been expanded to account for a wide branch
         private final int opcode;
         private final Inserter source;
@@ -1011,21 +1011,21 @@ public class CodeContext {
     private static final Map BRANCH_OPCODE_INVERSION = CodeContext.createBranchOpcodeInversion(); // Map<Byte branch-opcode, Byte inverted-branch-opcode>
     private static Map createBranchOpcodeInversion() {
         Map m = new HashMap();
-        m.put(new Byte(Opcode.IF_ACMPEQ), new Byte(Opcode.IF_ACMPNE)); 
-        m.put(new Byte(Opcode.IF_ACMPNE), new Byte(Opcode.IF_ACMPEQ)); 
-        m.put(new Byte(Opcode.IF_ICMPEQ), new Byte(Opcode.IF_ICMPNE)); 
-        m.put(new Byte(Opcode.IF_ICMPNE), new Byte(Opcode.IF_ICMPEQ)); 
-        m.put(new Byte(Opcode.IF_ICMPGE), new Byte(Opcode.IF_ICMPLT)); 
-        m.put(new Byte(Opcode.IF_ICMPLT), new Byte(Opcode.IF_ICMPGE)); 
-        m.put(new Byte(Opcode.IF_ICMPGT), new Byte(Opcode.IF_ICMPLE)); 
-        m.put(new Byte(Opcode.IF_ICMPLE), new Byte(Opcode.IF_ICMPGT)); 
-        m.put(new Byte(Opcode.IFEQ),      new Byte(Opcode.IFNE)); 
-        m.put(new Byte(Opcode.IFNE),      new Byte(Opcode.IFEQ)); 
-        m.put(new Byte(Opcode.IFGE),      new Byte(Opcode.IFLT)); 
-        m.put(new Byte(Opcode.IFLT),      new Byte(Opcode.IFGE)); 
-        m.put(new Byte(Opcode.IFGT),      new Byte(Opcode.IFLE)); 
-        m.put(new Byte(Opcode.IFLE),      new Byte(Opcode.IFGT)); 
-        m.put(new Byte(Opcode.IFNULL),    new Byte(Opcode.IFNONNULL)); 
+        m.put(new Byte(Opcode.IF_ACMPEQ), new Byte(Opcode.IF_ACMPNE));
+        m.put(new Byte(Opcode.IF_ACMPNE), new Byte(Opcode.IF_ACMPEQ));
+        m.put(new Byte(Opcode.IF_ICMPEQ), new Byte(Opcode.IF_ICMPNE));
+        m.put(new Byte(Opcode.IF_ICMPNE), new Byte(Opcode.IF_ICMPEQ));
+        m.put(new Byte(Opcode.IF_ICMPGE), new Byte(Opcode.IF_ICMPLT));
+        m.put(new Byte(Opcode.IF_ICMPLT), new Byte(Opcode.IF_ICMPGE));
+        m.put(new Byte(Opcode.IF_ICMPGT), new Byte(Opcode.IF_ICMPLE));
+        m.put(new Byte(Opcode.IF_ICMPLE), new Byte(Opcode.IF_ICMPGT));
+        m.put(new Byte(Opcode.IFEQ),      new Byte(Opcode.IFNE));
+        m.put(new Byte(Opcode.IFNE),      new Byte(Opcode.IFEQ));
+        m.put(new Byte(Opcode.IFGE),      new Byte(Opcode.IFLT));
+        m.put(new Byte(Opcode.IFLT),      new Byte(Opcode.IFGE));
+        m.put(new Byte(Opcode.IFGT),      new Byte(Opcode.IFLE));
+        m.put(new Byte(Opcode.IFLE),      new Byte(Opcode.IFGT));
+        m.put(new Byte(Opcode.IFNULL),    new Byte(Opcode.IFNONNULL));
         m.put(new Byte(Opcode.IFNONNULL), new Byte(Opcode.IFNULL));
         return Collections.unmodifiableMap(m);
     }

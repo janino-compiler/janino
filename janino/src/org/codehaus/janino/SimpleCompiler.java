@@ -85,7 +85,7 @@ public class SimpleCompiler extends Cookable {
             System.out.println("given <argument>s.");
             System.exit(1);
         }
-        
+
         if (args.length < 2) {
             System.err.println("Source file and/or class name missing; try \"-help\".");
             System.exit(1);
@@ -235,7 +235,7 @@ public class SimpleCompiler extends Cookable {
     }
 
     /**
-     * Cook this compilation unit directly. 
+     * Cook this compilation unit directly.
      *  See {@link Cookable#cook}
      */
     public void cook(Java.CompilationUnit compilationUnit) throws CompileException {
@@ -281,7 +281,7 @@ public class SimpleCompiler extends Cookable {
         protected Class loadClass(String name, boolean resolve) throws ClassNotFoundException {
             Class c = (Class) this.auxiliaryClasses.get(name);
             if (c != null) return c;
-        
+
             return super.loadClass(name, resolve);
         }
 
@@ -402,7 +402,7 @@ public class SimpleCompiler extends Cookable {
     /**
      * Compile the given compilation unit. (A "compilation unit" is typically the contents
      * of a Java<sup>TM</sup> source file.)
-     * 
+     *
      * @param compilationUnit The parsed compilation unit
      * @param debuggingInformation What kind of debugging information to generate in the class file
      * @return The {@link ClassLoader} into which the compiled classes were defined

@@ -110,7 +110,7 @@ public class EvaluatorTests extends TestCase {
         assertEquals(se2.getMethod(0).invoke(null, new Object[] { new Double(3.0), new Double(4.0) }), new Double(7.0));
         assertEquals(se2.getMethod(1).invoke(null, new Object[0]), new Double(0.0));
     }
-    
+
     public void testExpressionEvaluator() throws Exception {
         ExpressionEvaluator ee = new ExpressionEvaluator();
 
@@ -176,7 +176,7 @@ public class EvaluatorTests extends TestCase {
             ;
         }
     }
-    
+
     public void testFastExpressionEvaluator() throws Exception {
         ((Comparable) ExpressionEvaluator.createFastExpressionEvaluator(
             "o == null ? 3 : 4",  // expression
@@ -185,7 +185,7 @@ public class EvaluatorTests extends TestCase {
             null                  // optionalParentClassLoader
         )).compareTo("");
     }
-    
+
     public void testManyEEs() throws Exception {
         ExpressionEvaluator ee = new ExpressionEvaluator();
         final int COUNT = 10000;
@@ -230,7 +230,7 @@ public class EvaluatorTests extends TestCase {
         }
         fail();
     }
-    
+
     public void testAccessingCompilingClass() throws Exception {
         SimpleCompiler sc = new SimpleCompiler();
         sc.cook("package test.simple;\n" +
@@ -269,8 +269,8 @@ public class EvaluatorTests extends TestCase {
                 sc.getClassLoader().loadClass("test.simple.L0$L1"),
                 sc.getClassLoader().loadClass("test.simple.L0$L1$L2"),
         };
-        
-        
+
+
         Method[] m = exp[0].getMethods();
         Object inst = exp[0].newInstance();
         int numTests = 0;
@@ -287,7 +287,7 @@ public class EvaluatorTests extends TestCase {
         //the above loops become empty
         assertEquals(8, numTests);
     }
-    
+
     public void testProtectedAccessAcrossPackages() throws Exception {
         SimpleCompiler sc = new SimpleCompiler();
         sc.setParentClassLoader(SimpleCompiler.BOOT_CLASS_LOADER, new Class[] { for_sandbox_tests.ProtectedVariable.class });
@@ -301,7 +301,7 @@ public class EvaluatorTests extends TestCase {
                 "}"
         );
     }
-    
+
     public void testProtectedAccessWithinPackage() throws Exception {
         SimpleCompiler sc = new SimpleCompiler();
         sc.setParentClassLoader(SimpleCompiler.BOOT_CLASS_LOADER, new Class[] { for_sandbox_tests.ProtectedVariable.class });
@@ -326,18 +326,18 @@ public class EvaluatorTests extends TestCase {
                 "    }\n" +
                 "}"
         );
-        
+
         Class topClass = sc.getClassLoader().loadClass("for_sandbox_tests.Top");
         Method createInner = topClass.getDeclaredMethod("createInner", new Class[0]);
         Object t = topClass.newInstance();
         Object i = createInner.invoke(t, new Object[0]);
-        
+
         Class innerClass = sc.getClassLoader().loadClass("for_sandbox_tests.Top$Inner");
         Method get = innerClass.getDeclaredMethod("get", new Class[0]);
         Method getS = innerClass.getDeclaredMethod("getS", new Class[0]);
         Method set = innerClass.getDeclaredMethod("set", new Class[0]);
         Method setS = innerClass.getDeclaredMethod("setS", new Class[0]);
-        
+
         Object res;
         {   // non-static
             res = get.invoke(i, new Object[0]);
@@ -354,7 +354,7 @@ public class EvaluatorTests extends TestCase {
             assertEquals(new Integer(12), res);
         }
     }
-    
+
     public void testComplicatedSyntheticAccess() throws Exception {
         SimpleCompiler sc = new SimpleCompiler();
         sc.setParentClassLoader(SimpleCompiler.BOOT_CLASS_LOADER, new Class[] { for_sandbox_tests.ProtectedVariable.class });
@@ -375,14 +375,14 @@ public class EvaluatorTests extends TestCase {
                 "    public L0.L1.L2.Inner createInner() {\n" +
                 "        return new L0().new L1().new L2().new Inner();\n" +
                 "    }\n" +
-                "}" 
+                "}"
         );
-        
+
         Class topClass = sc.getClassLoader().loadClass("for_sandbox_tests.L0");
         Method createInner = topClass.getDeclaredMethod("createInner", new Class[0]);
         Object t = topClass.newInstance();
         Object inner = createInner.invoke(t, new Object[0]);
-        
+
         Class innerClass = inner.getClass();
         Method[] gets = new Method[] {
                 innerClass.getMethod("getL0", new Class[0]),
@@ -403,7 +403,7 @@ public class EvaluatorTests extends TestCase {
             assertEquals(new Integer(i), g2);
         }
     }
-    
+
     public void testStaticInitAccessProtected() throws Exception {
         SimpleCompiler sc = new SimpleCompiler();
         sc.cook("package test;\n" +
@@ -426,9 +426,9 @@ public class EvaluatorTests extends TestCase {
                 "    public Inner createInner() {\n" +
                 "        return new Inner();\n" +
                 "    }\n" +
-                "}" 
+                "}"
         );
-        
+
         Class topClass = sc.getClassLoader().loadClass("test.Outer");
         Method createInner = topClass.getDeclaredMethod("createInner", new Class[0]);
         Object t = topClass.newInstance();
@@ -473,7 +473,7 @@ public class EvaluatorTests extends TestCase {
             }
         }
     }
-    
+
     public static boolean compare(double lhs, double rhs, String comp) {
         if (comp == "==") { return lhs == rhs; }
         if (comp == "!=") { return lhs != rhs; }
@@ -492,7 +492,7 @@ public class EvaluatorTests extends TestCase {
         if (comp == ">=") { return lhs <= rhs; }
         throw new RuntimeException("Unsupported comparison");
     }
-    
+
     public void testHandlingNaN() throws Exception {
         String prog =
             "package test;\n" +
@@ -540,11 +540,11 @@ public class EvaluatorTests extends TestCase {
                     Object actual = dm.invoke(null, objs);
                     assertEquals(msg, new Boolean(exp), actual);
                 }
-                
+
                 {
                     msg = "float: " + msg;
                     boolean exp = compare(args[argIdx][0].floatValue(), args[argIdx][1].floatValue(), opcode[opIdx]);
-                    Object[] objs = new Object[] { 
+                    Object[] objs = new Object[] {
                             new Float(args[argIdx][0].floatValue()),
                             new Float(args[argIdx][1].floatValue()),
                             opcode[opIdx]
@@ -555,7 +555,7 @@ public class EvaluatorTests extends TestCase {
             }
         }
     }
-    
+
     public void test32kBranchLimit() throws Exception {
         String preamble =
             "package test;\n" +
@@ -570,28 +570,28 @@ public class EvaluatorTests extends TestCase {
             "        return res;\n" +
             "    }\n" +
             "}";
-        
+
         int[] tests = new int[] { 1, 10, 100, Short.MAX_VALUE/5, Short.MAX_VALUE/4, Short.MAX_VALUE/2 };
         for(int i = 0; i < tests.length; ++i) {
             int repititions = tests[i];
-            
+
             StringBuffer sb = new StringBuffer();
             sb.append(preamble);
             for(int j = 0; j < repititions; ++j) {
                 sb.append(middle);
             }
             sb.append(postamble);
-            
+
             SimpleCompiler sc = new SimpleCompiler();
             sc.cook(sb.toString());
-            
+
             Class c = sc.getClassLoader().loadClass("test.Test");
             Method m = c.getDeclaredMethod("run", new Class[0]);
             Object o = c.newInstance();
             Object res = m.invoke(o, new Object[0]);
             assertEquals(new Integer(2*repititions), res);
         }
-        
+
     }
     public void test32kConstantPool() throws Exception {
         String preamble =
@@ -599,29 +599,29 @@ public class EvaluatorTests extends TestCase {
             "public class Test {\n";
         String postamble =
             "}";
-        
-        
+
+
         int[] tests = new int[] { 1, 100, 13020 };
         for(int i = 0; i < tests.length; ++i) {
             int repititions = tests[i];
-            
+
             StringBuffer sb = new StringBuffer();
             sb.append(preamble);
             for(int j = 0; j < repititions; ++j) {
                 sb.append("boolean _v").append(Integer.toString(j)).append(" = false;\n");
             }
             sb.append(postamble);
-            
+
             SimpleCompiler sc = new SimpleCompiler();
             sc.cook(sb.toString());
-            
+
             Class c = sc.getClassLoader().loadClass("test.Test");
             Object o = c.newInstance();
             assertNotNull(o);
         }
     }
-    
-    
+
+
     public void testHugeIntArray() throws Exception {
         String preamble =
             "package test;\n" +
@@ -629,32 +629,32 @@ public class EvaluatorTests extends TestCase {
             "    public int[] run() {\n" +
             "        return 1.0 > 2.0 ? null : new int[] {";
         String middle = " 123,";
-        String postamble = 
+        String postamble =
             "        };\n" +
             "    }\n" +
             "}";
-        
+
         int[] tests = new int[] { 1, 10, 8192};
         for(int i = 0; i < tests.length; ++i) {
             int repititions = tests[i];
-            
+
             StringBuilder sb = new StringBuilder();
             sb.append(preamble);
             for(int j = 0; j < repititions; ++j) {
                 sb.append(middle);
             }
             sb.append(postamble);
-            
+
             SimpleCompiler sc = new SimpleCompiler();
             sc.cook(sb.toString());
-            
+
             Class c = sc.getClassLoader().loadClass("test.Test");
             Object o = c.newInstance();
             assertNotNull(o);
         }
     }
-        
-    
+
+
     public void testStaticFieldAccess() throws Exception {
         assertCompiles(true,
             "package test;\n" +
@@ -668,7 +668,7 @@ public class EvaluatorTests extends TestCase {
             "}"
         );
     }
-    
+
     public void testWideInstructions() throws Exception {
         String preamble =
             "package test;\n" +
@@ -689,18 +689,18 @@ public class EvaluatorTests extends TestCase {
             "        return res;\n" +
             "    };\n" +
             "}";
-        
+
         int[] tests = new int[] { 1, 128, };
         for(int i = 0; i < tests.length; ++i) {
             int repititions = tests[i];
-            
+
             StringBuilder sb = new StringBuilder();
             sb.append(preamble);
             for(int j = 0; j < repititions; ++j) {
                 sb.append(MessageFormat.format(middle, new Object[] { new Integer(j) }));
             }
             sb.append(postamble);
-            
+
             SimpleCompiler sc = new SimpleCompiler();
             sc.cook(sb.toString());
             Class c = sc.getClassLoader().loadClass("test.Test");
@@ -708,10 +708,10 @@ public class EvaluatorTests extends TestCase {
             Object o = m.invoke(null, new Object[0]);
             assertEquals("hi 1 1.0 1.0 1 1 true try finally", o);
         }
-        
+
     }
-    
-    
+
+
     public void testInstanceOf() throws Exception {
         String test =
             "package test;\n" +
@@ -726,28 +726,28 @@ public class EvaluatorTests extends TestCase {
             "        return null instanceof String;" +
             "    };\n" +
             "}";
-        
+
         SimpleCompiler sc = new SimpleCompiler();
         sc.cook(test);
         Class c = sc.getClassLoader().loadClass("test.Test");
         Method m0 = c.getDeclaredMethod("run", new Class[] { });
         assertEquals(new Boolean(false), m0.invoke(null, new Object[0]));
-        
+
         Method mStr = c.getDeclaredMethod("run", new Class[] { String.class });
         Method mObj = c.getDeclaredMethod("run", new Class[] { Object.class });
-        
+
         assertEquals(new Boolean(true),  mObj.invoke(null, new Object[] { "" }));
         assertEquals(new Boolean(false), mObj.invoke(null, new Object[] { new Integer(1) }));
         assertEquals(new Boolean(false), mObj.invoke(null, new Object[] { null }));
-        
+
         assertEquals(new Boolean(true),  mStr.invoke(null, new Object[] { "" }));
         assertEquals(new Boolean(false), mStr.invoke(null, new Object[] { null }));
     }
-    
+
     public void testOverrideVisibility() throws Exception {
         // note that this compiles without problem
         OverridesWithDifferingVisibility.test(new Object[] { "asdf"} );
-        
+
         // so should this
         assertCompiles(true,
             "package test;\n" +
@@ -772,13 +772,13 @@ public class EvaluatorTests extends TestCase {
                 "    public Integer overrideMe() { return null; }\n" +
                 "}"
         );
-    }   
-    
+    }
+
     public void testNonExistentImport() throws Exception {
         assertCompiles(false, "import does.not.Exist; public class Test { private final Exist e = null; }");
         assertCompiles(false, "import does.not.Exist; public class Test { }");
     }
-    
+
     public void testAnonymousFieldInitializedByCapture() throws Exception {
         SimpleCompiler sc = new SimpleCompiler();
         sc.cook("public class Top {\n" +
@@ -796,15 +796,15 @@ public class EvaluatorTests extends TestCase {
                 "    };\n" +
                 "} }"
         );
-        
+
         Class topClass = sc.getClassLoader().loadClass("Top");
         Method get = topClass.getDeclaredMethod("get", new Class[0]);
         Object t = topClass.newInstance();
         Object res = get.invoke(t, new Object[0]);
         ((Runnable)res).run();
     }
-    
-    
+
+
     public void testNamedFieldInitializedByCapture() throws Exception {
         SimpleCompiler sc = new SimpleCompiler();
         sc.cook("public class Top {\n" +
@@ -823,15 +823,15 @@ public class EvaluatorTests extends TestCase {
                 "    return new R();" +
                 "} }"
         );
-        
+
         Class topClass = sc.getClassLoader().loadClass("Top");
         Method get = topClass.getDeclaredMethod("get", new Class[0]);
         Object t = topClass.newInstance();
         Object res = get.invoke(t, new Object[0]);
         ((Runnable)res).run();
     }
-    
-    
+
+
     public void testAbstractGrandParentsWithCovariantReturns() throws Exception {
         assertCompiles(true,
                 "public class Top {\n" +
@@ -841,18 +841,18 @@ public class EvaluatorTests extends TestCase {
                 "}"
         );
     }
-    
-    public void testStringBuilderLength() throws Exception {        
+
+    public void testStringBuilderLength() throws Exception {
         SimpleCompiler sc = new SimpleCompiler();
         sc.cook("public class Top {\n" +
                 "  public int len(StringBuilder sb) { return sb.length(); }" +
                 "}"
         );
-        
+
         Class topClass = sc.getClassLoader().loadClass("Top");
         Method get = topClass.getDeclaredMethod("len", new Class[] { StringBuilder.class });
         Object t = topClass.newInstance();
-        
+
         StringBuilder sb = new StringBuilder();
         assertEquals(new Integer(sb.length()), get.invoke(t, new Object[] { sb }));
         sb.append("asdf");
@@ -860,9 +860,9 @@ public class EvaluatorTests extends TestCase {
         sb.append("qwer");
         assertEquals(new Integer(sb.length()), get.invoke(t, new Object[] { sb }));
     }
-    
 
-    
+
+
     public void testBaseClassAccess() throws Exception {
         assertCompiles(true,
                 "    class top extends other_package.ScopingRules {\n" +
@@ -879,14 +879,14 @@ public class EvaluatorTests extends TestCase {
                 "    }"
         );
     }
-    
+
     public SimpleCompiler assertCompiles(boolean shouldCompile, CharSequence prog) throws Exception {
         try {
             SimpleCompiler sc = new SimpleCompiler();
             sc.cook(prog.toString());
             assertTrue("Compilation should have failed for:\n" + prog, shouldCompile);
             return sc;
-        } catch (CompileException ce) { 
+        } catch (CompileException ce) {
             if (shouldCompile) {
                 ce.printStackTrace();
             }

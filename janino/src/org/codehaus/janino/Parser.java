@@ -1897,13 +1897,13 @@ public class Parser {
      *   CastExpression :=
      *     '(' PrimitiveType { '[]' } ')' UnaryExpression |
      *     '(' Expression ')' UnaryExpression
-     * 
+     *
      *   NewClassInstance := 'new' ReferenceType Arguments
-     * 
+     *
      *   NewAnonymousClassInstance := 'new' ReferenceType Arguments [ ClassBody ]
-     * 
+     *
      *   NewArray := 'new' Type DimExprs { '[]' }
-     * 
+     *
      *   NewInitializedArray := 'new' ArrayType ArrayInitializer
      * </pre>
      */
@@ -2402,13 +2402,13 @@ public class Parser {
         if (!Character.isUpperCase(id.charAt(0))) {
             this.warning("UCOIN1", "Class or interface name \"" + id + "\" does not begin with an upper-case letter (see JLS2 6.8.2)", loc);
             return;
-        } 
+        }
         for (int i = 0; i < id.length(); ++i) {
             char c = id.charAt(i);
             if (!Character.isLetter(c) && !Character.isDigit(c)) {
                 this.warning("UCOIN", "Class or interface name \"" + id + "\" contains unconventional character \"" + c + "\" (see JLS2 6.8.2)", loc);
                 return;
-            } 
+            }
         }
     }
 
@@ -2420,13 +2420,13 @@ public class Parser {
         if (!Character.isLowerCase(id.charAt(0))) {
             this.warning("UMN1", "Method name \"" + id + "\" does not begin with a lower-case letter (see JLS2 6.8.3)", loc);
             return;
-        } 
+        }
         for (int i = 0; i < id.length(); ++i) {
             char c = id.charAt(i);
             if (!Character.isLetter(c) && !Character.isDigit(c)) {
                 this.warning("UMN", "Method name \"" + id + "\" contains unconventional character \"" + c + "\" (see JLS2 6.8.3)", loc);
                 return;
-            } 
+            }
         }
     }
 
@@ -2445,7 +2445,7 @@ public class Parser {
                 if (!Character.isUpperCase(c) && !Character.isDigit(c) && c != '_') {
                     this.warning("UCN", "Constant name \"" + id + "\" contains unconventional character \"" + c + "\" (see JLS2 6.8.5)", loc);
                     return;
-                } 
+                }
             }
         } else
         if (Character.isLowerCase(id.charAt(0))) {
@@ -2454,7 +2454,7 @@ public class Parser {
                 if (!Character.isLetter(c) && !Character.isDigit(c)) {
                     this.warning("UFN", "Field name \"" + id + "\" contains unconventional character \"" + c + "\" (see JLS2 6.8.4)", loc);
                     return;
-                } 
+                }
             }
         } else {
             this.warning("UFN1", "\"" + id + "\" is neither a conventional field name (JLS2 6.8.4) nor a conventional constant name (JLS2 6.8.5)", loc);
@@ -2469,13 +2469,13 @@ public class Parser {
         if (!Character.isLowerCase(id.charAt(0))) {
             this.warning("ULVN1", "Local variable name \"" + id + "\" does not begin with a lower-case letter (see JLS2 6.8.6)", loc);
             return;
-        } 
+        }
         for (int i = 0; i < id.length(); ++i) {
             char c = id.charAt(i);
             if (!Character.isLetter(c) && !Character.isDigit(c)) {
                 this.warning("ULVN", "Local variable name \"" + id + "\" contains unconventional character \"" + c + "\" (see JLS2 6.8.6)", loc);
                 return;
-            } 
+            }
         }
     }
 

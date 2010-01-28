@@ -211,14 +211,14 @@ public class UnitCompiler {
                     break FIND_IMPORTED_OBJECT;
                 }
             }
-    
+
             String[] typeName = allButLast(ssid.identifiers);
             IClass iClass = this.loadFullyQualifiedClass(typeName);
             if (iClass == null) {
                 this.compileError("Could not load \"" + Java.join(typeName, ".") + "\"", ssid.getLocation());
                 return;
             }
-    
+
             // Static field?
             IField iField = iClass.getDeclaredIField(name);
             if (iField != null) {
@@ -228,7 +228,7 @@ public class UnitCompiler {
                     importedObject = iField;
                     break FIND_IMPORTED_OBJECT;
                 }
-    
+
             // Static method?
             IMethod[] ms = iClass.getDeclaredIMethods(name);
             if (ms.length > 0) {
@@ -350,8 +350,8 @@ public class UnitCompiler {
                     if ( override == null || // it wasn't overridden
                         override.isAbstract() || //it was overridden with an abstract method
                         // the override does not provide a covariant return type
-                        ! base.getReturnType().isAssignableFrom(override.getReturnType())) { 
-                        
+                        ! base.getReturnType().isAssignableFrom(override.getReturnType())) {
+
                         this.compileError("Non-abstract class \"" + iClass + "\" must implement method \"" + base + "\"", cd.getLocation());
                     }
                 }
@@ -430,10 +430,10 @@ public class UnitCompiler {
 
         this.compileDeclaredMethods(cd, cf);
 
-        
+
         // Compile declared constructors.
         // As a side effect of compiling methods and constructors, synthetic "class-dollar"
-        // methods (which implement class literals) are generated on-the fly. 
+        // methods (which implement class literals) are generated on-the fly.
         // We need to note how many we have here so we can compile the extras.
         int declaredMethodCount = cd.declaredMethods.size();
         {
@@ -691,7 +691,7 @@ public class UnitCompiler {
             ));
         }
     }
-    
+
     /**
      * Compile all of the methods for this declaration
      * <p>
@@ -1563,8 +1563,8 @@ public class UnitCompiler {
                             caughtExceptionType, // lvType
                             evi                  // lvIndex
                         );
-        
-        
+
+
                         if (this.compile(cc.body)) {
                             canCompleteNormally = true;
                             if (
@@ -1607,7 +1607,7 @@ public class UnitCompiler {
                         evi                             // localVariableIndex
                     );
                     this.writeOpcode(ts.optionalFinally, Opcode.ATHROW);
-    
+
                     // Compile the "finally" body.
                     ts.finallyOffset.set();
                     this.store(
@@ -1862,7 +1862,7 @@ public class UnitCompiler {
             if (localVars.containsKey(fp.name)) this.compileError("Redefinition of formal parameter \"" + fp.name + "\"", fd.getLocation());
             Java.LocalVariable lv = this.getLocalVariable(fp);
             lv.setSlot(this.codeContext.allocateLocalVariable(Descriptor.size(lv.type.getDescriptor()), fp.name, this.getType(fp.type)));
-            
+
             localVars.put(fp.name, lv);
         }
 
@@ -1891,9 +1891,9 @@ public class UnitCompiler {
             public void visitSuperConstructorInvocation(SuperConstructorInvocation sci)         { UnitCompiler.this.buildLocalVariableMap(sci, localVars); }
             public void visitThrowStatement(ThrowStatement ts)                                  { UnitCompiler.this.buildLocalVariableMap(ts, localVars); }
             public void visitLocalClassDeclarationStatement(LocalClassDeclarationStatement lcds){ UnitCompiler.this.buildLocalVariableMap(lcds, localVars); }
-            
+
             // more complicated statements with specialized handlers, but don't add new variables in this scope
-            public void visitBlock(Block b)              					 { try { UnitCompiler.this.buildLocalVariableMap(b , localVars); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitBlock(Block b)                                  { try { UnitCompiler.this.buildLocalVariableMap(b , localVars); } catch (CompileException e) { throw new UCE(e); } }
             public void visitDoStatement(DoStatement ds)                     { try { UnitCompiler.this.buildLocalVariableMap(ds, localVars); } catch (CompileException e) { throw new UCE(e); } }
             public void visitForStatement(ForStatement fs)                   { try { UnitCompiler.this.buildLocalVariableMap(fs, localVars); } catch (CompileException e) { throw new UCE(e); } }
             public void visitIfStatement(IfStatement is)                     { try { UnitCompiler.this.buildLocalVariableMap(is, localVars); } catch (CompileException e) { throw new UCE(e); } }
@@ -1902,7 +1902,7 @@ public class UnitCompiler {
             public void visitSynchronizedStatement(SynchronizedStatement ss) { try { UnitCompiler.this.buildLocalVariableMap(ss, localVars); } catch (CompileException e) { throw new UCE(e); } }
             public void visitTryStatement(TryStatement ts)                   { try { UnitCompiler.this.buildLocalVariableMap(ts, localVars); } catch (CompileException e) { throw new UCE(e); } }
             public void visitWhileStatement(WhileStatement ws)               { try { UnitCompiler.this.buildLocalVariableMap(ws, localVars); } catch (CompileException e) { throw new UCE(e); } }
-            
+
             // more complicated statements with specialized handlers, that can add variables in this scope
             public void visitLabeledStatement(LabeledStatement ls)                                     { try { resVars[0] = UnitCompiler.this.buildLocalVariableMap(ls  , localVars); } catch (CompileException e) { throw new UCE(e); } }
             public void visitLocalVariableDeclarationStatement(LocalVariableDeclarationStatement lvds) { try { resVars[0] = UnitCompiler.this.buildLocalVariableMap(lvds, localVars); } catch (CompileException e) { throw new UCE(e); } }
@@ -1913,7 +1913,7 @@ public class UnitCompiler {
     // default handlers
     private Map buildLocalVariableMap(Statement s, final Map localVars)              { return s.localVariables = localVars; }
     private Map buildLocalVariableMap(ConstructorInvocation ci, final Map localVars) { return ci.localVariables = localVars; }
-    
+
     // specialized handlers
     private void buildLocalVariableMap(Block block, Map localVars) throws CompileException {
         block.localVariables = localVars;
@@ -1974,7 +1974,7 @@ public class UnitCompiler {
         ws.localVariables = localVars;
         UnitCompiler.this.buildLocalVariableMap(ws.body, localVars);
     }
-    
+
     private Map buildLocalVariableMap(LabeledStatement ls, final Map localVars) throws CompileException {
         ls.localVariables = localVars;
         return UnitCompiler.this.buildLocalVariableMap((BlockStatement)ls.body, localVars);
@@ -3964,9 +3964,9 @@ public class UnitCompiler {
                     sv = this.codeContext.allocateLocalVariable(Descriptor.size(optionalStackValueType.getDescriptor()));
                     this.store((Locatable) ts, optionalStackValueType, sv);
                 }
-    
+
                 this.writeBranch(ts, Opcode.JSR, ts.finallyOffset);
-    
+
                 if (optionalStackValueType != null) {
                     this.load((Locatable) ts, optionalStackValueType, sv);
                 }
@@ -4530,7 +4530,7 @@ public class UnitCompiler {
         acc = acc && this.isAccessible(declaringIClass, member.getAccess(), contextScope);
         return acc;
     }
-    
+
     /**
      * Check whether the given {@link IClass.IMember} is accessible in the given context,
      * according to JLS 6.6.1.4. Issue a {@link #compileError(String)} if not.
@@ -4557,7 +4557,7 @@ public class UnitCompiler {
     ) throws CompileException {
         return null == this.internalCheckAccessible(iClassDeclaringMember, memberAccess, contextScope);
     }
-    
+
     /**
      * Verify that a member (class, interface, field or method) declared in a
      * given class is accessible from a given block statement context, according
@@ -4580,7 +4580,7 @@ public class UnitCompiler {
         Access     memberAccess,
         Java.Scope contextScope
     ) throws CompileException {
-        
+
         // At this point, memberAccess is PUBLIC, DEFAULT, PROECTEDED or PRIVATE.
 
         // PUBLIC members are always accessible.
@@ -4657,7 +4657,7 @@ public class UnitCompiler {
     ) throws CompileException {
         return null == this.internalCheckAccessible(type, contextScope);
     }
-    
+
     /**
      * Check whether the given {@link IClass} is accessible in the given context,
      * according to JLS2 6.6.1.2 and 6.6.1.4. Issues a {@link #compileError(String)} if not.
@@ -4669,7 +4669,7 @@ public class UnitCompiler {
         String message = this.internalCheckAccessible(type, contextBlockStatement);
         if (message != null) this.compileError(message, contextBlockStatement.getLocation());
     }
-    
+
     private String internalCheckAccessible(
         IClass     type,
         Java.Scope contextScope
@@ -4684,7 +4684,7 @@ public class UnitCompiler {
                 return null;
             } else
             if (type.getAccess() == Access.DEFAULT) {
-    
+
                 // Determine the type declaring the context block statement.
                 IClass iClassDeclaringContextBlockStatement;
                 for (Java.Scope s = contextScope;; s = s.getEnclosingScope()) {
@@ -4693,7 +4693,7 @@ public class UnitCompiler {
                         break;
                     }
                 }
-    
+
                 // Check whether the type is accessed from within the same package.
                 String packageDeclaringType = Descriptor.getPackageName(type.getDescriptor());
                 String contextPackage = Descriptor.getPackageName(iClassDeclaringContextBlockStatement.getDescriptor());
@@ -5079,7 +5079,7 @@ public class UnitCompiler {
             for (Iterator it = tmp.iterator(); it.hasNext();) {
                 Compilable c = (Compilable) it.next();
                 c.compile();
-                
+
                 // Concatenate.
                 if (operandOnStack) {
                     this.writeOpcode(l, Opcode.INVOKEVIRTUAL);
@@ -5121,7 +5121,7 @@ public class UnitCompiler {
         );
         while (it.hasNext()) {
             ((Compilable) it.next()).compile();
-            
+
             // "StringBuffer.append(b)":
             this.writeOpcode(l, Opcode.INVOKEVIRTUAL);
             this.writeConstantMethodrefInfo(
@@ -5270,7 +5270,7 @@ public class UnitCompiler {
                                 Java.Scope es = bs.getEnclosingScope();
                                 if (!(es instanceof Java.Block)) continue;
                                 Java.Block b = (Java.Block) es;
-    
+
                                 for (Iterator it = b.statements.iterator();;) {
                                     Java.BlockStatement bs2 = (Java.BlockStatement) it.next();
                                     if (bs2 == bs) break;
@@ -5754,7 +5754,7 @@ public class UnitCompiler {
             }
             if (importedType != null) return new Java.SimpleType(null, importedType);
         }
-        
+
         // 6.5.2.BL1.B1.B7 Package name
         return new Java.Package(location, identifier);
     }
@@ -5826,7 +5826,7 @@ public class UnitCompiler {
         );
         scfae.value.setEnclosingBlockStatement(scfae.getEnclosingBlockStatement());
     }
-    
+
     /**
      * Find named methods of "targetType", examine the argument types and choose the
      * most specific method. Check that only the allowed exceptions are thrown.
@@ -5844,7 +5844,7 @@ public class UnitCompiler {
                 for (Java.Scope s = mi.getEnclosingBlockStatement(); !(s instanceof Java.CompilationUnit); s = s.getEnclosingScope()) {
                     if (s instanceof Java.TypeDeclaration) {
                         Java.TypeDeclaration td = (Java.TypeDeclaration) s;
-        
+
                         // Find methods with specified name.
                         iMethod = this.findIMethod(
                             this.resolve(td),  // targetType
@@ -5865,7 +5865,7 @@ public class UnitCompiler {
                 );
                 if (iMethod != null) break FIND_METHOD;
             }
-            
+
             // Static method declared through single static import?
             {
                 Object o = this.singleStaticImports.get(mi.methodName);
@@ -5914,7 +5914,7 @@ public class UnitCompiler {
         Invocation invocation
     ) throws CompileException {
 
-        // Get all methods 
+        // Get all methods
         List ms = new ArrayList();
         this.getIMethods(targetType, invocation.methodName, ms);
         if (ms.size() == 0) return null;
@@ -6033,7 +6033,7 @@ public class UnitCompiler {
 
         ii = this.findMostSpecificIInvocable(l, iInvocables, argumentTypes, true, contextScope);
         if (ii != null) return ii;
-        
+
         // Report a nice compile error.
         StringBuffer sb = new StringBuffer("No applicable constructor/method found for ");
         if (argumentTypes.length == 0) {
@@ -6078,7 +6078,7 @@ public class UnitCompiler {
 
     /**
      * Determine the applicable invocables and choose the most specific invocable.
-     * 
+     *
      * @return the maximally specific {@link IClass.IInvocable} or <code>null</code> if no {@link IClass.IInvocable} is applicable
      *
      * @throws CompileException
@@ -6432,7 +6432,7 @@ public class UnitCompiler {
             protected final String getDescriptor2() {
                 return Descriptor.fromClassName(atd.getClassName());
             }
-        
+
             public boolean isArray() { return false; }
             protected IClass  getComponentType2() { throw new RuntimeException("SNO: Non-array type has no component type"); }
             public boolean isPrimitive() { return false; }
@@ -6440,7 +6440,7 @@ public class UnitCompiler {
             protected IConstructor[] getDeclaredIConstructors2() {
                 if (atd instanceof Java.ClassDeclaration) {
                     Java.ConstructorDeclarator[] cs = ((Java.ClassDeclaration) atd).getConstructors();
-    
+
                     IClass.IConstructor[] res = new IClass.IConstructor[cs.length];
                     for (int i = 0; i < cs.length; ++i) res[i] = UnitCompiler.this.toIConstructor(cs[i]);
                     return res;
@@ -6836,7 +6836,7 @@ public class UnitCompiler {
     /**
      * Check if the given name was imported through a "single type import", e.g.<pre>
      *     import java.util.Map</pre>
-     * 
+     *
      * @return the fully qualified name or <code>null</code>
      */
     public String[] getSingleTypeImport(String name) {
@@ -7451,7 +7451,7 @@ public class UnitCompiler {
     ) {
         return sourceType == targetType;
     }
-    
+
     private boolean isWideningPrimitiveConvertible(
         IClass sourceType,
         IClass targetType
@@ -7556,10 +7556,10 @@ public class UnitCompiler {
             targetType.isPrimitive() ||
             sourceType == targetType
         ) return false;
-        
+
         return targetType.isAssignableFrom(sourceType);
     }
-    
+
     /**
      * Check whether "narrowing primitive conversion" (JLS 5.1.3) is possible.
      */
@@ -7856,7 +7856,7 @@ public class UnitCompiler {
         if (sourceType == icl.DOUBLE   ) return IClass.DOUBLE;
         return null;
     }
-    
+
     private boolean tryUnboxingConversion(
         Locatable l,
         IClass    sourceType,
@@ -7883,7 +7883,7 @@ public class UnitCompiler {
             "()" + targetType.getDescriptor() // methodFD
         );
     }
-    
+
     /**
      * Attempt to load an {@link IClass} by fully-qualified name
      * @param identifiers
@@ -8471,7 +8471,7 @@ public class UnitCompiler {
         tmp[sa.length] = s;
         return tmp;
     }
-    
+
     // Used to write byte code while compiling one constructor/method.
     private CodeContext codeContext = null;
 

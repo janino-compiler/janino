@@ -77,7 +77,7 @@ import org.codehaus.janino.util.resource.PathResourceFinder;
  *           -method-invocation <i>class.method(arg-types)</i>
  * java org.codehaus.janino.JGrep -help
  * </pre>
- * 
+ *
  * If "-dirs" is not given, then all <i>directory-path</i>es are scanned for files.
  * The <i>directory-name-patterns</i> work as described in
  * {@link org.codehaus.janino.util.StringPattern#parseCombinedPattern(String)}.
@@ -487,7 +487,7 @@ public class JGrep {
                 class UCE extends RuntimeException { final CompileException ce; UCE(CompileException ce) { this.ce = ce; } }
                 try {
                     new Traverser() {
-    
+
                         // "method(...)", "x.method(...)"
                         public void traverseMethodInvocation(Java.MethodInvocation mi) {
                             try {
@@ -497,7 +497,7 @@ public class JGrep {
                             }
                             super.traverseMethodInvocation(mi);
                         }
-    
+
                         // "super.method(...)"
                         public void traverseSuperclassMethodInvocation(Java.SuperclassMethodInvocation scmi) {
                             try {
@@ -507,19 +507,19 @@ public class JGrep {
                             }
                             super.traverseSuperclassMethodInvocation(scmi);
                         }
-                            
+
                         // new Xyz(...)
                         public void traverseNewClassInstance(Java.NewClassInstance nci) {
     //                        System.out.println(nci.getLocation() + ": " + nci);
                             super.traverseNewClassInstance(nci);
                         }
-    
+
                         // new Xyz(...) {}
                         public void traverseNewAnonymousClassInstance(Java.NewAnonymousClassInstance naci) {
     //                        System.out.println(naci.getLocation() + ": " + naci);
                             super.traverseNewAnonymousClassInstance(naci);
                         }
-    
+
                         // Explicit constructor invocation ("this(...)", "super(...)").
                         public void traverseConstructorInvocation(Java.ConstructorInvocation ci) {
     //                        System.out.println(ci.getLocation() + ": " + ci);
@@ -636,7 +636,7 @@ public class JGrep {
                 if (res != null) {
                     this.defineIClass(res);
                     return res;
-                } 
+                }
             }
             return null;
         }

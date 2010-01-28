@@ -49,7 +49,7 @@ public class Visitor {
         void visitSingleStaticImportDeclaration(Java.CompilationUnit.SingleStaticImportDeclaration ssid);
         void visitStaticImportOnDemandDeclaration(Java.CompilationUnit.StaticImportOnDemandDeclaration siodd);
     }
-    
+
     public interface TypeDeclarationVisitor {
         void visitAnonymousClassDeclaration(Java.AnonymousClassDeclaration acd);
         void visitLocalClassDeclaration(Java.LocalClassDeclaration lcd);
@@ -58,7 +58,7 @@ public class Visitor {
         void visitPackageMemberInterfaceDeclaration(Java.PackageMemberInterfaceDeclaration pmid);
         void visitMemberClassDeclaration(Java.MemberClassDeclaration mcd);
     }
-    
+
     public interface TypeBodyDeclarationVisitor {
         void visitMemberInterfaceDeclaration(Java.MemberInterfaceDeclaration mid);
         void visitMemberClassDeclaration(Java.MemberClassDeclaration mcd);
@@ -67,7 +67,7 @@ public class Visitor {
         void visitMethodDeclarator(Java.MethodDeclarator md);
         void visitFieldDeclaration(Java.FieldDeclaration fd);
     }
-    
+
     public interface BlockStatementVisitor {
         void visitInitializer(Java.Initializer i);
         void visitFieldDeclaration(Java.FieldDeclaration fd);
@@ -91,11 +91,11 @@ public class Visitor {
         void visitAlternateConstructorInvocation(Java.AlternateConstructorInvocation aci);
         void visitSuperConstructorInvocation(Java.SuperConstructorInvocation sci);
     }
-    
+
     public interface AtomVisitor extends RvalueVisitor, TypeVisitor {
         void visitPackage(Java.Package p);
     }
-    
+
     public interface TypeVisitor {
         void visitArrayType(Java.ArrayType at);
         void visitBasicType(Java.BasicType bt);
@@ -103,7 +103,7 @@ public class Visitor {
         void visitRvalueMemberType(Java.RvalueMemberType rmt);
         void visitSimpleType(Java.SimpleType st);
     }
-    
+
     public interface RvalueVisitor extends LvalueVisitor {
         void visitArrayLength(Java.ArrayLength al);
         void visitAssignment(Java.Assignment a);
@@ -125,7 +125,7 @@ public class Visitor {
         void visitQualifiedThisReference(Java.QualifiedThisReference qtr);
         void visitThisReference(Java.ThisReference tr);
     }
-    
+
     public interface LvalueVisitor {
         void visitAmbiguousName(Java.AmbiguousName an);
         void visitArrayAccessExpression(Java.ArrayAccessExpression aae);

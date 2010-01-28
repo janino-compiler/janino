@@ -451,10 +451,10 @@ public class ExpressionEvaluator extends ScriptEvaluator {
      * Creates a "fast expression evaluator".
      * <p>
      * See the class description for an explanation of the "fast expression evaluator" concept.
-     * <p> 
+     * <p>
      * Notice: The <code>interfaceToImplement</code> must either be declared <code>public</code>,
      * or with package scope in the same package as <code>className</code>.
-     * 
+     *
      * @param scanner                   Source of expression tokens
      * @param optionalDefaultImports    Default imports, e.g. <code>{ "java.util.Map", "java.io.*" }</code>
      * @param className                 Name of generated class

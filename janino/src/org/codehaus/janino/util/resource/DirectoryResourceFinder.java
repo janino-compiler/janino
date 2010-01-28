@@ -58,14 +58,14 @@ public class DirectoryResourceFinder extends FileResourceFinder {
 
     // Implement FileResourceFinder.
     protected File findResourceAsFile(String resourceName) {
-    
+
         // Determine the subdirectory name (null for no subdirectory).
         int idx = resourceName.lastIndexOf('/');
         String subdirectoryName = (
             idx == -1 ? null :
             resourceName.substring(0, idx).replace('/', File.separatorChar)
         );
-    
+
         // Determine files existing in this subdirectory.
         Set files = (Set) this.subdirectoryNameToFiles.get(subdirectoryName); // String directoryName => Set => File
         if (files == null) {
@@ -74,12 +74,12 @@ public class DirectoryResourceFinder extends FileResourceFinder {
             files = (fa == null) ? Collections.EMPTY_SET : new HashSet(Arrays.asList(fa));
             this.subdirectoryNameToFiles.put(subdirectoryName, files);
         }
-    
+
         // Notice that "File.equals()" performs all the file-system dependent
         // magic like case conversion.
         File file = new File(this.directory, resourceName.replace('/', File.separatorChar));
         if (!files.contains(file)) return null;
-    
+
         return file;
     }
 }

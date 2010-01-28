@@ -531,14 +531,14 @@ package org.codehaus.janino;
         WIDE_OPCODE_PROPERTIES[0xff & Opcode.ALOAD] = Opcode.SD_P1 | Opcode.OP1_LV2;
         WIDE_OPCODE_PROPERTIES[0xff & Opcode.LLOAD] = Opcode.SD_P2 | Opcode.OP1_LV2;
         WIDE_OPCODE_PROPERTIES[0xff & Opcode.DLOAD] = Opcode.SD_P2 | Opcode.OP1_LV2;
-        
+
         // store instructions
         WIDE_OPCODE_PROPERTIES[0xff & Opcode.ISTORE] = Opcode.SD_M1 | Opcode.OP1_LV2;
         WIDE_OPCODE_PROPERTIES[0xff & Opcode.FSTORE] = Opcode.SD_M1 | Opcode.OP1_LV2;
         WIDE_OPCODE_PROPERTIES[0xff & Opcode.ASTORE] = Opcode.SD_M1 | Opcode.OP1_LV2;
         WIDE_OPCODE_PROPERTIES[0xff & Opcode.LSTORE] = Opcode.SD_M2 | Opcode.OP1_LV2;
         WIDE_OPCODE_PROPERTIES[0xff & Opcode.DSTORE] = Opcode.SD_M2 | Opcode.OP1_LV2;
-        
+
         WIDE_OPCODE_PROPERTIES[0xff & Opcode.IINC] = Opcode.SD_P0 | Opcode.OP1_LV2 | Opcode.OP2_SS;
         WIDE_OPCODE_PROPERTIES[0xff & Opcode.RET]  = Opcode.SD_P0 | Opcode.OP1_LV2;
     }

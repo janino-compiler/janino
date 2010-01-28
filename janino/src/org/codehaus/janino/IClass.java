@@ -119,7 +119,7 @@ public abstract class IClass {
      * Returns all methods with the given name declared in the class or
      * interface (but not inherited methods).<br>
      * Returns an empty array if no methods with that name are declared.
-     * 
+     *
      * @return an array of {@link IMethod}s that must not be modified
      */
     public final IMethod[] getDeclaredIMethods(String methodName) {
@@ -158,7 +158,7 @@ public abstract class IClass {
             }
             this.declaredIMethodCache = m;
         }
-        
+
         IMethod[] methods = (IMethod[]) this.declaredIMethodCache.get(methodName);
         return methods == null ? IClass.NO_IMETHODS : methods;
     }
@@ -168,7 +168,7 @@ public abstract class IClass {
      * Returns all methods declared in the class or interface, its superclasses and its
      * superinterfaces.<br>
      * For overridden methods, only the last non-abstract implementation is returned.
-     * 
+     *
      * @return an array of {@link IMethod}s that must not be modified
      */
     public final IMethod[] getIMethods() throws CompileException {
@@ -184,7 +184,7 @@ public abstract class IClass {
         IMethod[] ms = this.getDeclaredIMethods();
         for (int i = 0; i < ms.length; ++i) {
             IMethod m = ms[i];
-            
+
             boolean found = false;
             for (int j = 0; j < result.size(); ++j) {
                 IMethod o = (IMethod) result.get(j);
@@ -193,17 +193,17 @@ public abstract class IClass {
                 }
                 IClass mrt = m.getReturnType();
                 IClass ort = o.getReturnType();
-                
+
                 if (! mrt.isAssignableFrom(ort)) {
                     continue;
                 }
-                
+
                 String[] mpt = IClass.getDescriptors(m.getParameterTypes());
                 String[] opt = IClass.getDescriptors(o.getParameterTypes());
                 if (! Arrays.equals(mpt, opt)) {
                     continue;
                 }
-                
+
                 found = true;
                 break;
             }
@@ -226,7 +226,7 @@ public abstract class IClass {
     public final boolean hasIMethod(String methodName, IClass[] parameterTypes) throws CompileException {
         return findIMethod(methodName, parameterTypes) != null;
     }
-    
+
     public final IMethod findIMethod(String methodName, IClass[] parameterTypes) throws CompileException {
         IMethod[] ims = this.getDeclaredIMethods(methodName);
         for (int i = 0; i < ims.length; ++i) {
@@ -252,11 +252,11 @@ public abstract class IClass {
         }
         return (IField) this.declaredIFieldsCache.get(name);
     }
-    
+
     protected void clearIFieldCaches() {
         this.declaredIFieldsCache = null;
     }
-        
+
     private Map declaredIFieldsCache = null; // String name => IField
     protected abstract IField[] getDeclaredIFields2();
 
@@ -450,28 +450,28 @@ public abstract class IClass {
 
             // JLS 5.1.4.1: Target type is superclass of source class type.
             if (that.isSubclassOf(this)) return true;
-    
+
             // JLS 5.1.4.2: Source class type implements target interface type.
             // JLS 5.1.4.4: Source interface type implements target interface type.
             if (that.implementsInterface(this)) return true;
-    
+
             // JLS 5.1.4.3 Convert "null" literal to any reference type.
             if (that == IClass.VOID && !this.isPrimitive()) return true;
-    
+
             // JLS 5.1.4.5: From any interface to type "Object".
             if (that.isInterface() && this.getDescriptor().equals(Descriptor.OBJECT)) return true;
-    
+
             if (that.isArray()) {
-    
+
                 // JLS 5.1.4.6: From any array type to type "Object".
                 if (this.getDescriptor().equals(Descriptor.OBJECT)) return true;
-    
+
                 // JLS 5.1.4.7: From any array type to type "Cloneable".
                 if (this.getDescriptor().equals(Descriptor.CLONEABLE)) return true;
-    
+
                 // JLS 5.1.4.8: From any array type to type "java.io.Serializable".
                 if (this.getDescriptor().equals(Descriptor.SERIALIZABLE)) return true;
-    
+
                 // JLS 5.1.4.9: From SC[] to TC[] while SC if widening reference convertible to TC.
                 if (this.isArray()) {
                     IClass thisCT = this.getComponentType();
@@ -491,26 +491,26 @@ public abstract class IClass {
             Descriptor.BYTE_  + Descriptor.INT_,
             Descriptor.SHORT_ + Descriptor.INT_,
             Descriptor.CHAR_  + Descriptor.INT_,
-    
+
             Descriptor.BYTE_  + Descriptor.LONG_,
             Descriptor.SHORT_ + Descriptor.LONG_,
             Descriptor.CHAR_  + Descriptor.LONG_,
             Descriptor.INT_   + Descriptor.LONG_,
-    
+
             Descriptor.BYTE_  + Descriptor.FLOAT_,
             Descriptor.SHORT_ + Descriptor.FLOAT_,
             Descriptor.CHAR_  + Descriptor.FLOAT_,
             Descriptor.INT_   + Descriptor.FLOAT_,
-    
+
             Descriptor.LONG_  + Descriptor.FLOAT_,
-    
+
             Descriptor.BYTE_  + Descriptor.DOUBLE_,
             Descriptor.SHORT_ + Descriptor.DOUBLE_,
             Descriptor.CHAR_  + Descriptor.DOUBLE_,
             Descriptor.INT_   + Descriptor.DOUBLE_,
-    
+
             Descriptor.LONG_  + Descriptor.DOUBLE_,
-    
+
             Descriptor.FLOAT_ + Descriptor.DOUBLE_,
         };
         for (int i = 0; i < pwcs.length; ++i) IClass.PRIMITIVE_WIDENING_CONVERSIONS.add(pwcs[i]);
@@ -631,7 +631,7 @@ public abstract class IClass {
             Set s = new HashSet(); // IClass
             this.findMemberType(optionalName, s);
             res = s.isEmpty() ? IClass.ZERO_ICLASSES : (IClass[]) s.toArray(new IClass[s.size()]);
-    
+
             this.memberTypeCache.put(optionalName, res);
         }
 
@@ -652,16 +652,16 @@ public abstract class IClass {
                 if (mt.getDescriptor().equals(memberDescriptor)) {
                     result.add(mt);
                     return;
-                } 
+                }
             }
         }
-        
+
         // Examine superclass.
         {
             IClass superclass = this.getSuperclass();
-            if (superclass != null) superclass.findMemberType(optionalName, result); 
+            if (superclass != null) superclass.findMemberType(optionalName, result);
         }
-        
+
         // Examine interfaces.
         {
             IClass[] ifs = this.getInterfaces();

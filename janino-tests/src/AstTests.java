@@ -84,7 +84,7 @@ public class AstTests extends TestCase {
         SimpleCompiler compiler = new SimpleCompiler();
         compiler.cook(cu);
 
-        ClassLoader loader = compiler.getClassLoader(); 
+        ClassLoader loader = compiler.getClassLoader();
 
         Class handMadeClass = loader.loadClass("HandMade");
 
@@ -97,7 +97,7 @@ public class AstTests extends TestCase {
     private static ArrayType createByteArrayType() {
         return new Java.ArrayType(
             new Java.BasicType(
-                getLocation(), 
+                getLocation(),
                 Java.BasicType.BYTE
             )
         );
@@ -178,9 +178,9 @@ public class AstTests extends TestCase {
     static private Location getLocation() {
         Exception e = new Exception();
         StackTraceElement ste = e.getStackTrace()[1];//we only care about our caller
-        return new Location( 
-            ste.getFileName(), 
-            (short)ste.getLineNumber(), 
+        return new Location(
+            ste.getFileName(),
+            (short)ste.getLineNumber(),
             (short)0
         );
     }
@@ -194,7 +194,7 @@ public class AstTests extends TestCase {
         Block body = new Block(getLocation());
 
         Block sub = new Block(getLocation());
-        sub.addStatement( createVarDecl("x", 2.0) );                         
+        sub.addStatement( createVarDecl("x", 2.0) );
 
         body.addStatement(sub);
         body.addStatement(
@@ -242,7 +242,7 @@ public class AstTests extends TestCase {
             )
         );
 
-        createMethod(clazz, body, 
+        createMethod(clazz, body,
             createByteArrayType()
         );
 
@@ -256,7 +256,7 @@ public class AstTests extends TestCase {
         PackageMemberClassDeclaration clazz = createClass(cu);
 
         Block body = new Block(getLocation());
-        body.addStatement( createVarDecl("x", 2.0) );                         
+        body.addStatement( createVarDecl("x", 2.0) );
         body.addStatement(
             new ReturnStatement(
                 getLocation(),
@@ -317,7 +317,7 @@ public class AstTests extends TestCase {
             )
         );
 
-        createMethod(clazz, body, 
+        createMethod(clazz, body,
             new Java.ReferenceType(
                 getLocation(),
                 new String[] { "java", "lang", "Class" }
@@ -327,7 +327,7 @@ public class AstTests extends TestCase {
         SimpleCompiler compiler = new SimpleCompiler();
         compiler.cook(cu);
 
-        ClassLoader loader = compiler.getClassLoader(); 
+        ClassLoader loader = compiler.getClassLoader();
         Class handMadeClass = loader.loadClass("HandMade");
         Method calc = handMadeClass.getMethod("calculate", new Class[0]);
 
@@ -357,7 +357,7 @@ public class AstTests extends TestCase {
         uv.visitExpressionStatement(es);
         assertEquals("x = 1.0D * ((( 2.0D + 3.0D )));", sw.toString());
     }
-    
+
 
     public void testFullyQualifiedFieldRef() throws Exception {
         CompilationUnit cu = new CompilationUnit("AstTests.java");
@@ -372,7 +372,7 @@ public class AstTests extends TestCase {
                         new Java.AmbiguousName(
                                 getLocation(),
                                 new String[] { "other_package", "ScopingRules" }
-                        ), 
+                        ),
                         "publicStaticDouble"
         )));
 

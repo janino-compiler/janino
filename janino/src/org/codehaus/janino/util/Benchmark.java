@@ -178,7 +178,7 @@ public class Benchmark {
         String prefix = optionalTitle == null ? "" : (
             optionalTitle
             + ": "
-            + (optionalTitle.length() < Benchmark.PAD.length() ? Benchmark.PAD.substring(optionalTitle.length()) : "") 
+            + (optionalTitle.length() < Benchmark.PAD.length() ? Benchmark.PAD.substring(optionalTitle.length()) : "")
         );
 
         if (o == null) {

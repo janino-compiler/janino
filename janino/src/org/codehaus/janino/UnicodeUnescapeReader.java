@@ -58,7 +58,7 @@ public class UnicodeUnescapeReader extends FilterReader {
 
     /**
      * Override {@link FilterReader#read()}.
-     * 
+     *
      * @throws UnicodeUnescapeException Invalid escape sequence encountered
      */
     public int read() throws IOException {

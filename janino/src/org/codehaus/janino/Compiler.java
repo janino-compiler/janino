@@ -306,7 +306,7 @@ public class Compiler {
             debuggingInformation,                     // debuggingInformation
             new FilterWarningHandler(                 // optionalWarningHandler
                 warningHandlePatterns,
-                new SimpleWarningHandler() // <= Anonymous class here is complicated because the enclosing instance is not fully initialized yet 
+                new SimpleWarningHandler() // <= Anonymous class here is complicated because the enclosing instance is not fully initialized yet
             )
         );
 
@@ -343,7 +343,7 @@ public class Compiler {
      * exists, or if you want to enforce recompilation, pass
      * {@link ResourceFinder#EMPTY_RESOURCE_FINDER} as the
      * <code>classFileResourceFinder</code>.
-     * 
+     *
      * @param sourceFinder Finds extra Java compilation units that need to be compiled (a.k.a. "sourcepath")
      * @param iClassLoader loads auxiliary {@link IClass}es; e.g. <code>new ClassLoaderIClassLoader(ClassLoader)</code>
      * @param classFileFinder Where to look for up-to-date class files that need not be compiled
@@ -475,7 +475,7 @@ public class Compiler {
                     this.optionalCharacterEncoding                      // optionalCharacterEncoding
                 ), this.iClassLoader));
             }
-    
+
             // Compile all parsed compilation units. The vector of parsed CUs may
             // grow while they are being compiled, but eventually all CUs will
             // be compiled.
@@ -491,13 +491,13 @@ public class Compiler {
                 this.benchmark.beginReporting("Compiling compilation unit \"" + sourceFile + "\"");
                 ClassFile[] classFiles;
                 try {
-    
+
                     // Compile the compilation unit.
                     classFiles = unitCompiler.compileUnit(this.debuggingInformation);
                 } finally {
                     this.benchmark.endReporting();
                 }
-    
+
                 // Store the compiled classes and interfaces into class files.
                 this.benchmark.beginReporting("Storing " + classFiles.length + " class file(s) resulting from compilation unit \"" + sourceFile + "\"");
                 try {
@@ -682,7 +682,7 @@ public class Compiler {
                     }
                     this.defineIClass(res);
                     return res;
-                } 
+                }
             }
 
             // Search source path for uncompiled class.
@@ -775,7 +775,7 @@ public class Compiler {
                 ClassFile cf;
                 try {
                     is = classFileResource.open();
-					cf = new ClassFile(new BufferedInputStream(is));
+                    cf = new ClassFile(new BufferedInputStream(is));
                 } catch (IOException ex) {
                     throw new ClassNotFoundException("Opening class file resource \"" + classFileResource + "\"", ex);
                 } finally {

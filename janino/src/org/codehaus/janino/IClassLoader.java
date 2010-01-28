@@ -211,7 +211,7 @@ public abstract class IClassLoader {
      * <p>
      * This method should only be called from an implementation of
      * {@link #findIClass(String)}.
-     * 
+     *
      * @throws RuntimeException A different {@link IClass} object is already defined for this type
      */
     protected final void defineIClass(IClass iClass) {
@@ -255,7 +255,7 @@ public abstract class IClassLoader {
             optionalExtDirs
         );
         ResourceFinder classPathResourceFinder = new PathResourceFinder(classPath);
-    
+
         // We can load classes through "ResourceFinderIClassLoader"s, which means
         // they are read into "ClassFile" objects, or we can load classes through
         // "ClassLoaderIClassLoader"s, which means they are loaded into the JVM.

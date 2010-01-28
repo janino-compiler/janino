@@ -50,7 +50,7 @@ public class JarDirectoriesResourceFinder extends LazyMultiResourceFinder {
      */
     public JarDirectoriesResourceFinder(final File[] directories) {
         super(new MultiDimensionalIterator(
-        
+
             // Iterate over directories.
             new TransformingIterator(Arrays.asList(directories).iterator()) {
                 protected Object transform(Object o) { // File directory => Iterator ResourceFinder

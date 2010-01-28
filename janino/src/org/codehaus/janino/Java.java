@@ -76,7 +76,7 @@ public class Java {
         /**
          * Throw a {@link Parser.ParseException} with the given message and this
          * object's location.
-         * 
+         *
          * @param message The message to report
          */
         public void throwParseException(String message) throws Parser.ParseException;
@@ -155,7 +155,7 @@ public class Java {
          */
         public static class SingleTypeImportDeclaration extends ImportDeclaration {
             public final String[] identifiers;
-        
+
             public SingleTypeImportDeclaration(Location location, String[] identifiers) {
                 super(location);
                 this.identifiers = identifiers;
@@ -172,7 +172,7 @@ public class Java {
          */
         public static class TypeImportOnDemandDeclaration extends ImportDeclaration {
             public final String[] identifiers;
-        
+
             public TypeImportOnDemandDeclaration(Location location, String[] identifiers) {
                 super(location);
                 this.identifiers = identifiers;
@@ -189,28 +189,28 @@ public class Java {
          */
         public static class SingleStaticImportDeclaration extends ImportDeclaration {
             public final String[] identifiers;
-            
+
             public SingleStaticImportDeclaration(Location location, String[] identifiers) {
                 super(location);
                 this.identifiers = identifiers;
             }
             public final void accept(Visitor.ImportVisitor visitor) { visitor.visitSingleStaticImportDeclaration(this); }
         }
-        
+
         /**
          * Represents a static-import-on-demand declaration like<pre>
          *     import java.util.Collections.*;</pre>
          */
         public static class StaticImportOnDemandDeclaration extends ImportDeclaration {
             public final String[] identifiers;
-            
+
             public StaticImportOnDemandDeclaration(Location location, String[] identifiers) {
                 super(location);
                 this.identifiers = identifiers;
             }
             public final void accept(Visitor.ImportVisitor visitor) { visitor.visitStaticImportOnDemandDeclaration(this); }
         }
-        
+
         public abstract static class ImportDeclaration extends Java.Located {
             public ImportDeclaration(Location location) {
                 super(location);
@@ -961,7 +961,7 @@ public class Java {
             public final boolean finaL;
             public final Type    type;
             public final String  name;
-        
+
             public FormalParameter(
                 Location location,
                 boolean  finaL,
@@ -973,13 +973,13 @@ public class Java {
                 this.type  = type;
                 this.name  = name;
             }
-        
+
             public String toString() {
                 return this.type.toString() + ' ' + this.name;
             }
-        
+
             // Compile time members.
-        
+
             public Java.LocalVariable localVariable = null;
         }
 
@@ -1325,11 +1325,11 @@ public class Java {
                 String expressionType = rvalue.getClass().getName();
                 expressionType = expressionType.substring(expressionType.lastIndexOf('.') + 1);
                 this.throwParseException(expressionType + " is not allowed as an expression statement.  " +
-                		"Expressions statements must be one of assignments, method invocations, or object allocations.");
+                    "Expressions statements must be one of assignments, method invocations, or object allocations.");
             }
             (this.rvalue = rvalue).setEnclosingBlockStatement(this);
         }
-        
+
         public String toString() {
             return this.rvalue.toString() + ';';
         }
@@ -1523,7 +1523,7 @@ public class Java {
             public final List    caseLabels; // Rvalue
             public final boolean hasDefaultLabel;
             public final List    blockStatements; // BlockStatement
-        
+
             public SwitchBlockStatementGroup(
                 Location location,
                 List     caseLabels,      // Rvalue
@@ -1655,7 +1655,7 @@ public class Java {
             this.optionalReturnValue = optionalReturnValue;
             if (optionalReturnValue != null) optionalReturnValue.setEnclosingBlockStatement(this);
         }
-        
+
         public String toString() {
             return this.optionalReturnValue == null ? "return;" : "return " + this.optionalReturnValue + ';';
         }
@@ -2040,12 +2040,12 @@ public class Java {
         public String toString() {
             return Java.join(this.identifiers, ".", 0, this.n);
         }
-        
+
         public Lvalue toLvalue() {
             if (this.reclassified != null) { return this.reclassified.toLvalue(); }
             return this;
         }
-        
+
         public Rvalue toRvalue() {
             if (this.reclassified != null) { return this.reclassified.toRvalue(); }
             return this;
@@ -2385,7 +2385,7 @@ public class Java {
     public static final class SuperclassFieldAccessExpression extends Lvalue {
         public final Type   optionalQualification;
         public final String fieldName;
-        
+
         public SuperclassFieldAccessExpression(
             Location location,
             Type     optionalQualification,
@@ -2395,19 +2395,19 @@ public class Java {
             this.optionalQualification = optionalQualification;
             this.fieldName             = fieldName;
         }
-        
+
         // Compile time members.
-        
+
         // Implement "Atom".
         public String toString() { return (this.optionalQualification == null ? "super." : this.optionalQualification.toString() + ".super.") + this.fieldName; }
-        
+
         public final void accept(Visitor.AtomVisitor visitor) { visitor.visitSuperclassFieldAccessExpression(this); }
         public final void accept(Visitor.RvalueVisitor visitor) { visitor.visitSuperclassFieldAccessExpression(this); }
         public final void accept(Visitor.LvalueVisitor visitor) { visitor.visitSuperclassFieldAccessExpression(this); }
 
         Rvalue value = null;
     }
-    
+
     /**
      * This class implements the unary operators "+", "-", "~" and "!".
      */
@@ -2914,50 +2914,50 @@ public class Java {
      * offsets can be ignored.
      */
     public static class LocalVariableSlot {
-    	private short  slotIndex = -1;
-    	private String name;
-    	private IClass type;
-    	private Offset start;
-    	private Offset end;
+        private short  slotIndex = -1;
+        private String name;
+        private IClass type;
+        private Offset start;
+        private Offset end;
 
-    	public LocalVariableSlot(
-    			String name,
-    			short slotNumber,
-    			IClass type
-    	) {
-    		this.name = name;
-    		this.slotIndex = slotNumber;
-    		this.type = type;
-    	}
+        public LocalVariableSlot(
+            String name,
+            short slotNumber,
+            IClass type
+        ) {
+            this.name = name;
+            this.slotIndex = slotNumber;
+            this.type = type;
+        }
 
-    	public String toString() {
-    	    StringBuffer buf = new StringBuffer("local var(");
+        public String toString() {
+            StringBuffer buf = new StringBuffer("local var(");
 
-    	    buf.append(this.name);
-    	    buf.append(", ").append(this.slotIndex);
-    	    if(this.name != null) {
-    	        buf.append(", ").append(this.type);
-    	        buf.append(", ").append(this.start.offset);
-    	        buf.append(", ").append(this.end.offset);
-    	    }
-    	    buf.append(")");
+            buf.append(this.name);
+            buf.append(", ").append(this.slotIndex);
+            if (this.name != null) {
+                buf.append(", ").append(this.type);
+                buf.append(", ").append(this.start.offset);
+                buf.append(", ").append(this.end.offset);
+            }
+            buf.append(")");
 
-    	    return buf.toString();
-    	}
+            return buf.toString();
+        }
 
-		public short getSlotIndex() {return this.slotIndex;}
-		public void setSlotIndex(short slotIndex) {this.slotIndex = slotIndex;}
+        public short getSlotIndex() {return this.slotIndex;}
+        public void setSlotIndex(short slotIndex) {this.slotIndex = slotIndex;}
 
-		public String getName() {return this.name;}
-		public void setName(String name) {this.name = name;}
+        public String getName() {return this.name;}
+        public void setName(String name) {this.name = name;}
 
-		public Offset getStart() {return this.start;}
-		public void setStart(Offset start) {this.start = start;}
+        public Offset getStart() {return this.start;}
+        public void setStart(Offset start) {this.start = start;}
 
-		public Offset getEnd() {return this.end;}
-		public void setEnd(Offset end) {this.end = end;}
+        public Offset getEnd() {return this.end;}
+        public void setEnd(Offset end) {this.end = end;}
 
-		public IClass getType() {return this.type;}
+        public IClass getType() {return this.type;}
     }
 
     /**
@@ -2977,20 +2977,19 @@ public class Java {
         }
 
         public String toString() {
-        	StringBuffer sb = new StringBuffer();
+            StringBuffer sb = new StringBuffer();
 
-        	if(this.finaL) sb.append("final ");
-        	sb.append(this.type).append(" ");
+            if (this.finaL) sb.append("final ");
+            sb.append(this.type).append(" ");
 
-        	return sb.toString();
+            return sb.toString();
         }
 
         public void setSlot(LocalVariableSlot slot) {this.slot = slot;}
 
         public short getSlotIndex() {
-        	if(this.slot == null)
-        		return -1;
-        	return this.slot.getSlotIndex();
+            if (this.slot == null) return -1;
+            return this.slot.getSlotIndex();
         }
     }
 

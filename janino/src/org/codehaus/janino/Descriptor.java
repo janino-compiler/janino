@@ -155,16 +155,16 @@ public class Descriptor {
     public static String toClassName(String d) {
         String res = (String)Descriptor.descriptorToClassName.get(d);
         if(res != null) { return res; }
-        
+
             char firstChar = d.charAt(0);
             if (firstChar == 'L' && d.endsWith(";")) {
                 // Class or interface -- convert "Ljava/lang/String;" to "java.lang.String".
                 return d.substring(1, d.length() - 1).replace('/', '.');
-            } 
+            }
             if (firstChar == '[') {
                 // Array type -- convert "[Ljava/lang/String;" to "[Ljava.lang.String;".
                 return d.replace('/', '.');
-            } 
+            }
         throw new RuntimeException("(Invalid field descriptor \"" + d + "\")");
     }
 
@@ -261,7 +261,7 @@ public class Descriptor {
         descriptorToClassName.put(Descriptor.LONG,              "java.lang.Long");
         descriptorToClassName.put(Descriptor.FLOAT,             "java.lang.Float");
         descriptorToClassName.put(Descriptor.DOUBLE,            "java.lang.Double");
-        
+
         for(Iterator it = descriptorToClassName.entrySet().iterator(); it.hasNext();) {
             Map.Entry e = (Map.Entry) it.next();
             classNameToDescriptor.put(e.getValue(), e.getKey());

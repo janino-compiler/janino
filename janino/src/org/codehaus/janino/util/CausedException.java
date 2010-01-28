@@ -38,7 +38,7 @@ import java.io.*;
 import java.lang.reflect.*;
 
 /**
- * For compatibility with pre-1.4 JDKs, this class mimics 
+ * For compatibility with pre-1.4 JDKs, this class mimics
  */
 public class CausedException extends Exception {
     private Throwable     optionalCause = null;

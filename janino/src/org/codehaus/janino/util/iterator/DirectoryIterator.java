@@ -81,7 +81,7 @@ public class DirectoryIterator extends ProducerIterator {
                 }
                 return null;
             }
-    
+
             class State {
                 State(File dir) {
                     File[] entries = dir.listFiles();

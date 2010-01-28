@@ -40,7 +40,7 @@ import java.util.*;
 
 /**
  * Example for object allocation statistics:
- * 
+ *
  *     java -Xrunhprof:heap=sites,monitor=n,cutoff=0,depth=4 MyClass
  */
 public class HprofScrubber {
@@ -144,18 +144,18 @@ public class HprofScrubber {
                 return ((Site) o2).allocatedBytes - ((Site) o1).allocatedBytes;
             }
         });
-    
+
         int totalAllocatedBytes = 0, totalAllocatedObjects = 0;
         for (int i = 0; i < ss.length; ++i) {
             Site site = ss[i];
             totalAllocatedBytes += site.allocatedBytes;
             totalAllocatedObjects += site.allocatedObjects;
         }
-    
+
         System.out.println("          percent          alloc'ed");
         System.out.println("rank   self  accum      bytes  objects  class name");
         System.out.println("Total:              " + totalAllocatedBytes + "  " + totalAllocatedObjects);
-    
+
         double accumulatedPercentage = 0.0;
         MessageFormat mf = new MessageFormat("{0,number,00000} {1,number,00.00}% {2,number,00.00}% {3,number,000000000} {4,number,000000000} {5}");
         for (int i = 0; i < ss.length; ++i) {

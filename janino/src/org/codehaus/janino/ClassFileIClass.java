@@ -134,7 +134,7 @@ public class ClassFileIClass extends IClass {
                 } catch (ClassNotFoundException ex) {
                     throw new CompileException(ex.getMessage(), null);
                 }
-            } 
+            }
         }
         return (IClass[]) res.toArray(new IClass[res.size()]);
     }
@@ -154,7 +154,7 @@ public class ClassFileIClass extends IClass {
                 } catch (ClassNotFoundException ex) {
                     throw new CompileException(ex.getMessage(), null);
                 }
-            } 
+            }
         }
         return null;
     }
@@ -182,7 +182,7 @@ public class ClassFileIClass extends IClass {
                         throw new CompileException(ex.getMessage(), null);
                     }
                 }
-            } 
+            }
         }
         return null;
     }
@@ -284,13 +284,13 @@ public class ClassFileIClass extends IClass {
         if (ClassFileIClass.DEBUG) System.out.println("index=" + index);
         return this.resolveClass(Descriptor.fromInternalForm(this.classFile.getConstantClassName(index)));
     }
-    
+
     private IClass resolveClass(String descriptor) throws ClassNotFoundException {
         if (ClassFileIClass.DEBUG) System.out.println("descriptor=" + descriptor);
 
         IClass result = (IClass) this.resolvedClasses.get(descriptor);
         if (result != null) return result;
-        
+
         result = this.iClassLoader.loadIClass(descriptor);
         if (result == null) throw new ClassNotFoundException(descriptor);
 
