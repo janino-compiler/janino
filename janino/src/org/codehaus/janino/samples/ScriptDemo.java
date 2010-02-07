@@ -114,7 +114,8 @@ public class ScriptDemo extends DemoBase {
     private ScriptDemo() {}
 
     private static void usage() {
-        System.err.println("Usage:  ScriptDemo { <option> } <script> { <parameter-value> }");
+        System.err.println("Usage:");
+        System.err.println("  ScriptDemo { <option> } <script> { <parameter-value> }");
         System.err.println("Valid options are");
         System.err.println(" -rt <return-type>");
         System.err.println(" -pn <comma-separated-parameter-names>");

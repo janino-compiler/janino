@@ -42,8 +42,9 @@ import org.codehaus.janino.*;
 public class ClassBodyDemo {
     public static void main(String[] args) throws Exception {
         if (args.length > 0 && args[0].equals("-help")) {
-            System.out.println("Usage:  ClassBodyDemo <class-body> { <argument> }");
-            System.out.println("        ClassBodyDemo -help");
+            System.out.println("Usage:");
+            System.out.println("  ClassBodyDemo <class-body> { <argument> }");
+            System.out.println("  ClassBodyDemo -help");
             System.out.println("If <class-body> starts with a '@', then the class body is read");
             System.out.println("from the named file.");
             System.out.println("The <class-body> must declare a method \"public static main(String[])\"");

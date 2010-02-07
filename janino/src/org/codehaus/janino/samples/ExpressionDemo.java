@@ -69,7 +69,8 @@ public class ExpressionDemo extends DemoBase {
                 optionalDefaultImports = DemoBase.explode(args[++i]);
             } else
             if (arg.equals("-help")) {
-                System.err.println("Usage:  ExpressionDemo { <option> } <expression> { <parameter-value> }");
+                System.err.println("Usage:");
+                System.err.println("  ExpressionDemo { <option> } <expression> { <parameter-value> }");
                 System.err.println("Compiles and evaluates the given expression and prints its value.");
                 System.err.println("Valid options are");
                 System.err.println(" -et <expression-type> (default: any)");
