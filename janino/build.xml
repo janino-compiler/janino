@@ -57,7 +57,7 @@
 	<target name="javadoc" description="Build JAVADOC" depends="compile">
 		<mkdir dir="build/javadoc"/>
 		<javadoc
-			header="&lt;a href=&quot;http://janino.codehaus.org/&quot;&gt;Web Site&lt;/a&gt;"
+			header="&lt;a href=&quot;http://janino.net/&quot; target=&quot;_top&quot;&gt;janino.net&lt;/a&gt;"
 			splitindex="true"
 			doctitle="Janino ${version}"
 			windowtitle="Janino ${version}"
