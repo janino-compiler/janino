@@ -40,7 +40,6 @@ import org.codehaus.janino.*;
  * A test program that allows you to play around with the
  * {@link org.codehaus.janino.ExpressionEvaluator ExpressionEvaluator} class.
  */
-
 public class ExpressionDemo extends DemoBase {
     public static void main(String[] args) throws Exception {
         Class    optionalExpressionType = null;

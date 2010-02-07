@@ -39,6 +39,9 @@ import java.lang.reflect.*;
 
 import org.codehaus.janino.*;
 
+/**
+ * A test program that allows you to play with the {@link ClassBodyEvaluator} API.
+ */
 public class ClassBodyDemo {
     public static void main(String[] args) throws Exception {
         if (args.length > 0 && args[0].equals("-help")) {
