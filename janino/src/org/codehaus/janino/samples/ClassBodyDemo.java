@@ -74,10 +74,10 @@ public class ClassBodyDemo {
 
         // Invoke the "public static main(String[])" method.
         Method m = c.getMethod("main", new Class[] { String[].class });
-        Integer returnValue = (Integer) m.invoke(null, new Object[] { arguments });
+        Object returnValue = m.invoke(null, new Object[] { arguments });
 
         // If non-VOID, print the return value.
-        if (m.getReturnType() != Void.TYPE) System.out.println(DemoBase.toString(returnValue));
+        if (m.getReturnType() != void.class) System.out.println(DemoBase.toString(returnValue));
     }
 
     private ClassBodyDemo() {}
