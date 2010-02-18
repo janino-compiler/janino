@@ -43,9 +43,11 @@ import org.codehaus.janino.*;
 
 public class ScriptDemo extends DemoBase {
     public static void main(String[] args) throws Exception {
-        Class    returnType     = void.class;
-        String[] parameterNames = {};
-        Class[]  parameterTypes = {};
+        Class    returnType             = void.class;
+        String[] parameterNames         = {};
+        Class[]  parameterTypes         = {};
+        Class[]  thrownExceptions       = {};
+        String[] optionalDefaultImports = null;
 
         int i;
         for (i = 0; i < args.length; ++i) {
@@ -60,14 +62,28 @@ public class ScriptDemo extends DemoBase {
             if (arg.equals("-pt")) {
                 parameterTypes = DemoBase.stringToTypes(args[++i]);
             } else
-            if (arg.equals("-help")) {
-                ScriptDemo.usage();
+            if (arg.equals("-te")) {
+                thrownExceptions = DemoBase.stringToTypes(args[++i]);
+            } else
+            if (arg.equals("-di")) {
+                optionalDefaultImports = DemoBase.explode(args[++i]);
+            } else
+           if (arg.equals("-help")) {
+                System.err.println("Usage:");
+                System.err.println("  ScriptDemo { <option> } <script> { <parameter-value> }");
+                System.err.println("Valid options are");
+                System.err.println(" -rt <return-type>                            (default: void)");
+                System.err.println(" -pn <comma-separated-parameter-names>        (default: none)");
+                System.err.println(" -pt <comma-separated-parameter-types>        (default: none)");
+                System.err.println(" -te <comma-separated-thrown-exception-types> (default: none)");
+                System.err.println(" -di <comma-separated-default-imports>        (default: none)");
+                System.err.println(" -help");
+                System.err.println("The number of parameter names, types and values must be identical.");
                 System.exit(0);
             } else
             {
-                System.err.println("Invalid command line option \"" + arg + "\".");
-                ScriptDemo.usage();
-                System.exit(0);
+                System.err.println("Invalid command line option \"" + arg + "\"; try \"-help\".");
+                System.exit(1);
             }
         }
 
@@ -78,15 +94,13 @@ public class ScriptDemo extends DemoBase {
         String script = args[i++];
 
         if (parameterTypes.length != parameterNames.length) {
-            System.err.println("Parameter type count and parameter name count do not match.");
-            ScriptDemo.usage();
+            System.err.println("Parameter type count and parameter name count do not match; try \"-help\".");
             System.exit(1);
         }
 
         // One command line argument for each parameter.
         if (args.length - i != parameterNames.length) {
-            System.err.println("Argument and parameter count do not match.");
-            ScriptDemo.usage();
+            System.err.println("Argument and parameter count do not match; try \"-help\".");
             System.exit(1);
         }
 
@@ -97,12 +111,12 @@ public class ScriptDemo extends DemoBase {
         }
 
         // Create "ScriptEvaluator" object.
-        ScriptEvaluator se = new ScriptEvaluator(
-            script,
-            returnType,
-            parameterNames,
-            parameterTypes
-        );
+        ScriptEvaluator se = new ScriptEvaluator();
+        se.setReturnType(returnType);
+        se.setDefaultImports(optionalDefaultImports);
+        se.setParameters(parameterNames, parameterTypes);
+        se.setThrownExceptions(thrownExceptions);
+        se.cook(script);
 
         // Evaluate script with actual parameter values.
         Object res = se.evaluate(parameterValues);
@@ -112,16 +126,4 @@ public class ScriptDemo extends DemoBase {
     }
 
     private ScriptDemo() {}
-
-    private static void usage() {
-        System.err.println("Usage:");
-        System.err.println("  ScriptDemo { <option> } <script> { <parameter-value> }");
-        System.err.println("Valid options are");
-        System.err.println(" -rt <return-type>");
-        System.err.println(" -pn <comma-separated-parameter-names>");
-        System.err.println(" -pt <comma-separated-parameter-types>");
-        System.err.println(" -help");
-        System.err.println("The number of parameter names, types and values must be identical.");
-        System.err.println("The default is no parameters.");
-    }
 }

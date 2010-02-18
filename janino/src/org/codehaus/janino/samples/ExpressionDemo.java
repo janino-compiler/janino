@@ -43,9 +43,9 @@ import org.codehaus.janino.*;
 public class ExpressionDemo extends DemoBase {
     public static void main(String[] args) throws Exception {
         Class    optionalExpressionType = null;
-        String[] parameterNames         = { };
-        Class[]  parameterTypes         = { };
-        Class[]  thrownExceptions       = new Class[0];
+        String[] parameterNames         = {};
+        Class[]  parameterTypes         = {};
+        Class[]  thrownExceptions       = {};
         String[] optionalDefaultImports = null;
 
         int i;
@@ -72,18 +72,18 @@ public class ExpressionDemo extends DemoBase {
                 System.err.println("  ExpressionDemo { <option> } <expression> { <parameter-value> }");
                 System.err.println("Compiles and evaluates the given expression and prints its value.");
                 System.err.println("Valid options are");
-                System.err.println(" -et <expression-type> (default: any)");
-                System.err.println(" -pn <comma-separated-parameter-names> (default: none)");
-                System.err.println(" -pt <comma-separated-parameter-types> (default: none)");
+                System.err.println(" -et <expression-type>                        (default: any)");
+                System.err.println(" -pn <comma-separated-parameter-names>        (default: none)");
+                System.err.println(" -pt <comma-separated-parameter-types>        (default: none)");
                 System.err.println(" -te <comma-separated-thrown-exception-types> (default: none)");
-                System.err.println(" -di <comma-separated-default-imports> (default: none)");
+                System.err.println(" -di <comma-separated-default-imports>        (default: none)");
                 System.err.println(" -help");
                 System.err.println("The number of parameter names, types and values must be identical.");
                 System.exit(0);
             } else
             {
                 System.err.println("Invalid command line option \"" + arg + "\"; try \"-help\".");
-                System.exit(0);
+                System.exit(1);
             }
         }
 
