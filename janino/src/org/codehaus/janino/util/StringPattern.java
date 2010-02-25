@@ -57,6 +57,9 @@ public class StringPattern {
     private final int    mode;
     private final String pattern;
 
+    /**
+     * @param mode {@link #INCLUDE} or {@link #EXCLUDE}
+     */
     public StringPattern(int mode, String pattern) {
         this.mode    = mode;
         this.pattern = pattern;
