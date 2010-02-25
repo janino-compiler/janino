@@ -40,6 +40,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -259,7 +260,7 @@ public class UnitCompiler {
 
     /**
      * Generates an array of {@link ClassFile} objects which represent the classes and
-     * interfaces defined in the compilation unit.
+     * interfaces declared in the compilation unit.
      */
     public ClassFile[] compileUnit(
         EnumeratorSet debuggingInformation
@@ -340,7 +341,7 @@ public class UnitCompiler {
         IClass iClass = this.resolve(cd);
 
         // Check that all methods are implemented.
-        if ((cd.modifiers & Mod.ABSTRACT) == 0) {
+        if ((cd.getModifiers() & Mod.ABSTRACT) == 0) {
             IMethod[] ms = iClass.getIMethods();
             for (int i = 0; i <  ms.length; ++i) {
                 IMethod base = ms[i];
@@ -360,7 +361,7 @@ public class UnitCompiler {
 
         // Create "ClassFile" object.
         ClassFile cf = new ClassFile(
-            (short) (cd.modifiers | Mod.SUPER),           // accessFlags
+            (short) (cd.getModifiers() | Mod.SUPER),      // accessFlags
             iClass.getDescriptor(),                       // thisClassFD
             iClass.getSuperclass().getDescriptor(),       // superClassFD
             IClass.getDescriptors(iClass.getInterfaces()) // interfaceFDs
@@ -381,18 +382,18 @@ public class UnitCompiler {
                 innerClassInfoIndex, // innerClassInfoIndex
                 (short) 0,           // outerClassInfoIndex
                 innerNameIndex,      // innerNameIndex
-                cd.modifiers         // innerClassAccessFlags
+                cd.getModifiers()    // innerClassAccessFlags
             ));
         } else
-        if (cd.getEnclosingScope() instanceof Java.AbstractTypeDeclaration) {
+        if (cd.getEnclosingScope() instanceof Java.TypeDeclaration) {
             short innerClassInfoIndex = cf.addConstantClassInfo(iClass.getDescriptor());
-            short outerClassInfoIndex = cf.addConstantClassInfo(this.resolve(((Java.AbstractTypeDeclaration) cd.getEnclosingScope())).getDescriptor());
+            short outerClassInfoIndex = cf.addConstantClassInfo(this.resolve(((Java.TypeDeclaration) cd.getEnclosingScope())).getDescriptor());
             short innerNameIndex      = cf.addConstantUtf8Info(((Java.MemberTypeDeclaration) cd).getName());
             cf.addInnerClassesAttributeEntry(new ClassFile.InnerClassesAttribute.Entry(
                 innerClassInfoIndex, // innerClassInfoIndex
                 outerClassInfoIndex, // outerClassInfoIndex
                 innerNameIndex,      // innerNameIndex
-                cd.modifiers         // innerClassAccessFlags
+                cd.getModifiers()    // innerClassAccessFlags
             ));
         }
 
@@ -419,13 +420,13 @@ public class UnitCompiler {
 
         // Optional: Generate and compile class initialization method.
         {
-            Java.Block b = new Java.Block(cd.getLocation());
+            List/*<BlockStatement>*/ statements = new ArrayList();
             for (Iterator it = cd.variableDeclaratorsAndInitializers.iterator(); it.hasNext();) {
                 Java.TypeBodyDeclaration tbd = (Java.TypeBodyDeclaration) it.next();
-                if (tbd.isStatic()) b.addButDontEncloseStatement((Java.BlockStatement) tbd);
+                if (tbd.isStatic()) statements.add((Java.BlockStatement) tbd);
             }
 
-            this.maybeCreateInitMethod(cd, cf, b);
+            this.maybeCreateInitMethod(cd, cf, statements);
         }
 
         this.compileDeclaredMethods(cd, cf);
@@ -435,7 +436,7 @@ public class UnitCompiler {
         // As a side effect of compiling methods and constructors, synthetic "class-dollar"
         // methods (which implement class literals) are generated on-the fly.
         // We need to note how many we have here so we can compile the extras.
-        int declaredMethodCount = cd.declaredMethods.size();
+        int declaredMethodCount = cd.getMethodDeclarations().size();
         {
             int syntheticFieldCount = cd.syntheticFields.size();
             Java.ConstructorDeclarator[] cds = cd.getConstructors();
@@ -543,7 +544,7 @@ public class UnitCompiler {
                 icd.defineSyntheticField(new SimpleIField(
                     this.resolve(icd),
                     "this$" + (nesting - 2),
-                    this.resolve((Java.AbstractTypeDeclaration) ocs.get(1))
+                    this.resolve((Java.TypeDeclaration) ocs.get(1))
                 ));
             }
         }
@@ -586,7 +587,7 @@ public class UnitCompiler {
         // Create "ClassFile" object.
         ClassFile cf = new ClassFile(
             (short) (                         // accessFlags
-                id.modifiers |
+                id.getModifiers() |
                 Mod.SUPER |
                 Mod.INTERFACE |
                 Mod.ABSTRACT
@@ -615,10 +616,10 @@ public class UnitCompiler {
 
         // Interface initialization method.
         if (!id.constantDeclarations.isEmpty()) {
-            Java.Block b = new Java.Block(id.getLocation());
-            b.addButDontEncloseStatements(id.constantDeclarations);
+            List statements = new ArrayList(); // BlockStatements
+            statements.add(id.constantDeclarations);
 
-            maybeCreateInitMethod(id, cf, b);
+            maybeCreateInitMethod(id, cf, statements);
         }
 
         compileDeclaredMethods(id, cf);
@@ -643,10 +644,13 @@ public class UnitCompiler {
      * @param b     The block for the method (possibly empty)
      * @throws CompileException
      */
-    private void maybeCreateInitMethod(Java.AbstractTypeDeclaration decl,
-            ClassFile cf, Java.Block b) throws CompileException {
+    private void maybeCreateInitMethod(
+        Java.AbstractTypeDeclaration decl,
+        ClassFile                    cf,
+        List/*<BlockStatement>*/     statements
+    ) throws CompileException {
         // Create interface initialization method iff there is any initialization code.
-        if (this.generatesCode(b)) {
+        if (this.generatesCode2ListStatements(statements)) {
             Java.MethodDeclarator md = new Java.MethodDeclarator(
                 decl.getLocation(),                               // location
                 null,                                           // optionalDocComment
@@ -658,7 +662,7 @@ public class UnitCompiler {
                 "<clinit>",                                     // name
                 new Java.FunctionDeclarator.FormalParameter[0], // formalParameters
                 new Java.ReferenceType[0],                      // thrownExcaptions
-                b                                               // optionalBody
+                statements                                      // optionalStatements
             );
             md.setDeclaringType(decl);
             this.compile(md, cf);
@@ -672,22 +676,22 @@ public class UnitCompiler {
      * @throws CompileException
      */
     private void compileDeclaredMemberTypes(
-        Java.AbstractTypeDeclaration decl,
-        ClassFile                    cf
+        Java.TypeDeclaration decl,
+        ClassFile            cf
     ) throws CompileException {
         for (Iterator it = decl.getMemberTypeDeclarations().iterator(); it.hasNext();) {
-            Java.AbstractTypeDeclaration atd = ((Java.AbstractTypeDeclaration) it.next());
-            this.compile(atd);
+            Java.TypeDeclaration td = ((Java.MemberTypeDeclaration) it.next());
+            this.compile(td);
 
             // Add InnerClasses attribute entry for member type declaration.
-            short innerClassInfoIndex = cf.addConstantClassInfo(this.resolve(atd).getDescriptor());
+            short innerClassInfoIndex = cf.addConstantClassInfo(this.resolve(td).getDescriptor());
             short outerClassInfoIndex = cf.addConstantClassInfo(this.resolve(decl).getDescriptor());
-            short innerNameIndex      = cf.addConstantUtf8Info(((Java.MemberTypeDeclaration) atd).getName());
+            short innerNameIndex      = cf.addConstantUtf8Info(((Java.MemberTypeDeclaration) td).getName());
             cf.addInnerClassesAttributeEntry(new ClassFile.InnerClassesAttribute.Entry(
                 innerClassInfoIndex, // innerClassInfoIndex
                 outerClassInfoIndex, // outerClassInfoIndex
                 innerNameIndex,      // innerNameIndex
-                atd.modifiers        // innerClassAccessFlags
+                td.getModifiers()    // innerClassAccessFlags
             ));
         }
     }
@@ -711,16 +715,16 @@ public class UnitCompiler {
      * @throws CompileException
      */
     private void compileDeclaredMethods(
-        Java.AbstractTypeDeclaration typeDeclaration,
-        ClassFile                    cf,
-        int                          startPos
+        Java.TypeDeclaration typeDeclaration,
+        ClassFile            cf,
+        int                  startPos
     ) throws CompileException {
 
         // Notice that as a side effect of compiling methods, synthetic "class-dollar"
         // methods (which implement class literals) are generated on-the fly. Hence, we
         // must not use an Iterator here.
-        for (int i = startPos; i < typeDeclaration.declaredMethods.size(); ++i) {
-            this.compile(((Java.MethodDeclarator) typeDeclaration.declaredMethods.get(i)), cf);
+        for (int i = startPos; i < typeDeclaration.getMethodDeclarations().size(); ++i) {
+            this.compile(((Java.MethodDeclarator) typeDeclaration.getMethodDeclarations().get(i)), cf);
         }
     }
 
@@ -767,19 +771,23 @@ public class UnitCompiler {
     private boolean compile2(Java.Block b) throws CompileException {
         this.codeContext.saveLocalVariables();
         try {
-            boolean previousStatementCanCompleteNormally = true;
-            for (int i = 0; i < b.statements.size(); ++i) {
-                Java.BlockStatement bs = (Java.BlockStatement) b.statements.get(i);
-                if (!previousStatementCanCompleteNormally && this.generatesCode(bs)) {
-                    this.compileError("Statement is unreachable", bs.getLocation());
-                    break;
-                }
-                previousStatementCanCompleteNormally = this.compile(bs);
-            }
-            return previousStatementCanCompleteNormally;
+            return compileStatements(b.statements);
         } finally {
             this.codeContext.restoreLocalVariables();
         }
+    }
+
+    private boolean compileStatements(List statements) throws CompileException {
+        boolean previousStatementCanCompleteNormally = true;
+        for (int i = 0; i < statements.size(); ++i) {
+            Java.BlockStatement bs = (Java.BlockStatement) statements.get(i);
+            if (!previousStatementCanCompleteNormally && this.generatesCode(bs)) {
+                this.compileError("Statement is unreachable", bs.getLocation());
+                break;
+            }
+            previousStatementCanCompleteNormally = this.compile(bs);
+        }
+        return previousStatementCanCompleteNormally;
     }
     private boolean compile2(Java.DoStatement ds) throws CompileException {
         Object cvc = this.getConstantValue(ds.condition);
@@ -1344,10 +1352,10 @@ public class UnitCompiler {
         for (;;) {
             Java.Scope es = s.getEnclosingScope();
             if (es instanceof Java.CompilationUnit) break;
-            if (s instanceof Java.BlockStatement && es instanceof Java.Block) {
+            if (s instanceof Java.BlockStatement && (es instanceof Java.Block || es instanceof Java.FunctionDeclarator)) {
                 Java.BlockStatement bs = (Java.BlockStatement) s;
-                Java.Block          b = (Java.Block) es;
-                for (Iterator it = b.statements.iterator(); it.hasNext();) {
+                List                statements = es instanceof Java.BlockStatement ? ((Java.Block) es).statements : ((Java.FunctionDeclarator) es).optionalStatements;
+                for (Iterator it = statements.iterator(); it.hasNext();) {
                     Java.BlockStatement bs2 = (Java.BlockStatement) it.next();
                     if (bs2 instanceof Java.LocalClassDeclarationStatement) {
                         Java.LocalClassDeclarationStatement lcds = ((Java.LocalClassDeclarationStatement) bs2);
@@ -1417,7 +1425,7 @@ public class UnitCompiler {
         Java.FunctionDeclarator enclosingFunction = null;
         {
             Java.Scope s = rs.getEnclosingScope();
-            for (s = s.getEnclosingScope(); s instanceof Java.Statement || s instanceof Java.CatchClause; s = s.getEnclosingScope());
+            while (s instanceof Java.Statement || s instanceof Java.CatchClause) s = s.getEnclosingScope();
             enclosingFunction = (Java.FunctionDeclarator) s;
         }
 
@@ -1648,7 +1656,7 @@ public class UnitCompiler {
         ClassFile.MethodInfo mi;
 
         if (Mod.isPrivateAccess(fd.modifiers)) {
-            if (fd instanceof Java.MethodDeclarator && !fd.isStatic()){
+            if (fd instanceof Java.MethodDeclarator && !fd.isStatic()) {
 
                 // To make the non-static private method invocable for enclosing types, enclosed types
                 // and types enclosed by the same type, it is modified as follows:
@@ -1688,14 +1696,14 @@ public class UnitCompiler {
 
         // Add "Exceptions" attribute (JVMS 4.7.4).
         {
-            if(fd.thrownExceptions.length > 0) {
-            final short eani = classFile.addConstantUtf8Info("Exceptions");
-            short[] tecciis = new short[fd.thrownExceptions.length];
-            for (int i = 0; i < fd.thrownExceptions.length; ++i) {
-                tecciis[i] = classFile.addConstantClassInfo(this.getType(fd.thrownExceptions[i]).getDescriptor());
+            if (fd.thrownExceptions.length > 0) {
+                final short eani = classFile.addConstantUtf8Info("Exceptions");
+                short[] tecciis = new short[fd.thrownExceptions.length];
+                for (int i = 0; i < fd.thrownExceptions.length; ++i) {
+                    tecciis[i] = classFile.addConstantClassInfo(this.getType(fd.thrownExceptions[i]).getDescriptor());
+                }
+                mi.addAttribute(new ClassFile.ExceptionsAttribute(eani, tecciis));
             }
-            mi.addAttribute(new ClassFile.ExceptionsAttribute(eani, tecciis));
-        }
         }
 
         // Add "Deprecated" attribute (JVMS 4.7.10)
@@ -1777,11 +1785,11 @@ public class UnitCompiler {
 
             // Compile the function body.
             try {
-                if (fd.optionalBody == null) {
+                if (fd.optionalStatements == null) {
                     this.compileError("Method must have a body", fd.getLocation());
+                    return;
                 }
-                boolean canCompleteNormally = this.compile(fd.optionalBody);
-                if (canCompleteNormally) {
+                if (compileStatements(fd.optionalStatements)) {
                     if (this.getReturnType(fd) != IClass.VOID) this.compileError("Method must return a value", fd.getLocation());
                     this.writeOpcode(fd, Opcode.RETURN);
                 }
@@ -1816,12 +1824,12 @@ public class UnitCompiler {
         }
 
         final short lntani[] = {0};
-        if(this.debuggingInformation.contains(DebuggingInformation.LINES)) {
+        if (this.debuggingInformation.contains(DebuggingInformation.LINES)) {
             lntani[0] = classFile.addConstantUtf8Info("LineNumberTable");
         }
 
         final short lvtani[] = {0};
-        if(this.debuggingInformation.contains(DebuggingInformation.VARS)) {
+        if (this.debuggingInformation.contains(DebuggingInformation.VARS)) {
             makeLocalVariableNames(codeContext, mi);
             lvtani[0] = classFile.addConstantUtf8Info("LocalVariableTable");
         }
@@ -1844,7 +1852,7 @@ public class UnitCompiler {
         while(iter.hasNext()) {
             Java.LocalVariableSlot slot = (Java.LocalVariableSlot) iter.next();
 
-            if(slot.getName() != null) {
+            if (slot.getName() != null) {
                 String typeName = slot.getType().getDescriptor();
 
                 cf.addConstantUtf8Info(typeName);
@@ -1859,21 +1867,25 @@ public class UnitCompiler {
         // Add function parameters.
         for (int i = 0; i < fd.formalParameters.length; ++i) {
             Java.FunctionDeclarator.FormalParameter fp = fd.formalParameters[i];
-            if (localVars.containsKey(fp.name)) this.compileError("Redefinition of formal parameter \"" + fp.name + "\"", fd.getLocation());
             Java.LocalVariable lv = this.getLocalVariable(fp);
             lv.setSlot(this.codeContext.allocateLocalVariable(Descriptor.size(lv.type.getDescriptor()), fp.name, this.getType(fp.type)));
 
-            localVars.put(fp.name, lv);
+            if (localVars.put(fp.name, lv) != null) this.compileError("Redefinition of parameter \"" + fp.name + "\"", fd.getLocation());
         }
 
         fd.localVariables = localVars;
         if (fd instanceof ConstructorDeclarator) {
             ConstructorDeclarator cd = (ConstructorDeclarator) fd;
             if (cd.optionalConstructorInvocation != null) {
-                buildLocalVariableMap(cd.optionalConstructorInvocation, localVars);
+                this.buildLocalVariableMap(cd.optionalConstructorInvocation, localVars);
             }
         }
-        if(fd.optionalBody != null) { this.buildLocalVariableMap(fd.optionalBody, localVars); }
+        if (fd.optionalStatements != null) {
+            for (Iterator it = fd.optionalStatements.iterator(); it.hasNext();) {
+                BlockStatement bs = (BlockStatement) it.next();
+                localVars = this.buildLocalVariableMap(bs, localVars);
+            }
+        }
     }
 
     private Map buildLocalVariableMap(BlockStatement bs, final Map localVars) throws CompileException {
@@ -1928,21 +1940,21 @@ public class UnitCompiler {
     }
     private void buildLocalVariableMap(ForStatement fs, final Map localVars) throws CompileException {
         Map inner = localVars;
-        if(fs.optionalInit != null) {
-            inner = UnitCompiler.this.buildLocalVariableMap(fs.optionalInit, localVars);
+        if (fs.optionalInit != null) {
+            inner = this.buildLocalVariableMap(fs.optionalInit, localVars);
         }
         fs.localVariables = inner;
-        UnitCompiler.this.buildLocalVariableMap(fs.body, inner);
+        this.buildLocalVariableMap(fs.body, inner);
     }
     private void buildLocalVariableMap(IfStatement is, final Map localVars) throws CompileException {
         is.localVariables = localVars;
-        UnitCompiler.this.buildLocalVariableMap(is.thenStatement, localVars);
-        if(is.optionalElseStatement != null) {
-            UnitCompiler.this.buildLocalVariableMap(is.optionalElseStatement, localVars);
+        this.buildLocalVariableMap(is.thenStatement, localVars);
+        if (is.optionalElseStatement != null) {
+            this.buildLocalVariableMap(is.optionalElseStatement, localVars);
         }
     }
     private void buildLocalVariableMap(Initializer i, final Map localVars) throws CompileException {
-        UnitCompiler.this.buildLocalVariableMap(i.block, localVars);
+        this.buildLocalVariableMap(i.block, localVars);
     }
     private void buildLocalVariableMap(SwitchStatement ss, final Map localVars) throws CompileException {
         ss.localVariables = localVars;
@@ -1951,33 +1963,33 @@ public class UnitCompiler {
             SwitchStatement.SwitchBlockStatementGroup sbsg = (SwitchStatement.SwitchBlockStatementGroup) cases.next();
             for (Iterator stmts = sbsg.blockStatements.iterator(); stmts.hasNext();) {
                 BlockStatement bs = (BlockStatement) stmts.next();
-                vars = UnitCompiler.this.buildLocalVariableMap(bs, vars);
+                vars = this.buildLocalVariableMap(bs, vars);
             }
         }
     }
     private void buildLocalVariableMap(SynchronizedStatement ss, final Map localVars) throws CompileException {
         ss.localVariables = localVars;
-        UnitCompiler.this.buildLocalVariableMap(ss.body, localVars);
+        this.buildLocalVariableMap(ss.body, localVars);
     }
     private void buildLocalVariableMap(TryStatement ts, final Map localVars) throws CompileException {
         ts.localVariables = localVars;
-        UnitCompiler.this.buildLocalVariableMap(ts.body, localVars);
+        this.buildLocalVariableMap(ts.body, localVars);
         for (Iterator it = ts.catchClauses.iterator(); it.hasNext();) {
             Java.CatchClause cc = (Java.CatchClause) it.next();
-            UnitCompiler.this.buildLocalVariableMap(cc, localVars);
+            this.buildLocalVariableMap(cc, localVars);
         }
-        if(ts.optionalFinally != null) {
-            UnitCompiler.this.buildLocalVariableMap(ts.optionalFinally, localVars);
+        if (ts.optionalFinally != null) {
+            this.buildLocalVariableMap(ts.optionalFinally, localVars);
         }
     }
     private void buildLocalVariableMap(WhileStatement ws, final Map localVars) throws CompileException {
         ws.localVariables = localVars;
-        UnitCompiler.this.buildLocalVariableMap(ws.body, localVars);
+        this.buildLocalVariableMap(ws.body, localVars);
     }
 
     private Map buildLocalVariableMap(LabeledStatement ls, final Map localVars) throws CompileException {
         ls.localVariables = localVars;
-        return UnitCompiler.this.buildLocalVariableMap((BlockStatement)ls.body, localVars);
+        return this.buildLocalVariableMap((BlockStatement)ls.body, localVars);
     }
     private Map buildLocalVariableMap(LocalVariableDeclarationStatement lvds, final Map localVars) throws CompileException {
         Map newVars = new HashMap();
@@ -1985,8 +1997,7 @@ public class UnitCompiler {
         for(int i = 0; i < lvds.variableDeclarators.length; ++i) {
             Java.VariableDeclarator vd = lvds.variableDeclarators[i];
             Java.LocalVariable lv = UnitCompiler.this.getLocalVariable(lvds, vd);
-            if(newVars.containsKey(vd.name)) this.compileError("Redefinition of local variable \"" + vd.name + "\" ", vd.getLocation());
-            newVars.put(vd.name, lv);
+            if (newVars.put(vd.name, lv) != null) this.compileError("Redefinition of local variable \"" + vd.name + "\" ", vd.getLocation());
         }
         lvds.localVariables = newVars;
         return newVars;
@@ -2684,7 +2695,7 @@ public class UnitCompiler {
 
         // Non-primitive class literal.
 
-        Java.AbstractTypeDeclaration declaringType;
+        Java.TypeDeclaration declaringType;
         for (Java.Scope s = cl.getEnclosingBlockStatement();; s = s.getEnclosingScope()) {
             if (s instanceof Java.TypeDeclaration) {
                 declaringType = (Java.AbstractTypeDeclaration) s;
@@ -3408,7 +3419,7 @@ public class UnitCompiler {
                 optionalQualificationAccess, // optionalQualification
                 parameterAccesses            // arguments
             ),
-            new Java.Block(loc)                  // optionalBody
+            Collections.EMPTY_LIST               // optionalStatements
         ));
 
         // Compile the anonymous class.
@@ -3883,8 +3894,7 @@ public class UnitCompiler {
     public boolean generatesCode2(Java.EmptyStatement es) { return false; }
     public boolean generatesCode2(Java.LocalClassDeclarationStatement lcds) { return false; }
     public boolean generatesCode2(Java.Initializer i) throws CompileException { return this.generatesCode(i.block); }
-    // Takes a List<Java.BlockStatement>.
-    public boolean generatesCode2ListStatements(List l) throws CompileException {
+    public boolean generatesCode2ListStatements(List/*<BlockStatement>*/ l) throws CompileException {
         for (int i = 0; i < l.size(); ++i) {
             if (this.generatesCode(((Java.BlockStatement) l.get(i)))) return true;
         }
@@ -5085,7 +5095,7 @@ public class UnitCompiler {
                     this.writeOpcode(l, Opcode.INVOKEVIRTUAL);
                     this.writeConstantMethodrefInfo(
                         Descriptor.STRING,
-                        "concat",                                // classFD
+                        "concat",                                         // classFD
                         "(" + Descriptor.STRING + ")" + Descriptor.STRING // methodMD
                     );
                 } else
@@ -5268,10 +5278,18 @@ public class UnitCompiler {
                             for (s = scope; s instanceof Java.BlockStatement; s = s.getEnclosingScope()) {
                                 Java.BlockStatement bs = (Java.BlockStatement) s;
                                 Java.Scope es = bs.getEnclosingScope();
-                                if (!(es instanceof Java.Block)) continue;
-                                Java.Block b = (Java.Block) es;
+                                List statements;
+                                if (es instanceof Java.Block) {
+                                    statements = ((Java.Block) es).statements;
+                                } else
+                                if (es instanceof Java.FunctionDeclarator) {
+                                    statements = ((Java.FunctionDeclarator) es).optionalStatements;
+                                } else
+                                {
+                                    continue;
+                                }
 
-                                for (Iterator it = b.statements.iterator();;) {
+                                for (Iterator it = statements.iterator();;) {
                                     Java.BlockStatement bs2 = (Java.BlockStatement) it.next();
                                     if (bs2 == bs) break;
                                     if (bs2 instanceof Java.LocalVariableDeclarationStatement) {
@@ -5500,7 +5518,7 @@ public class UnitCompiler {
 
     private IClass findClassByName(Location location, String className) throws CompileException {
         IClass res = this.findClass(className);
-        if(res != null) return res;
+        if (res != null) return res;
         try {
             return this.iClassLoader.loadIClass(Descriptor.fromClassName(className));
         } catch (ClassNotFoundException ex) {
@@ -6398,9 +6416,9 @@ public class UnitCompiler {
         final Java.AbstractTypeDeclaration atd = (Java.AbstractTypeDeclaration) td;
         if (atd.resolvedType == null) atd.resolvedType = new IClass() {
             protected IClass.IMethod[] getDeclaredIMethods2() {
-                IClass.IMethod[] res = new IClass.IMethod[atd.declaredMethods.size()];
+                IClass.IMethod[] res = new IClass.IMethod[atd.getMethodDeclarations().size()];
                 int i = 0;
-                for (Iterator it = atd.declaredMethods.iterator(); it.hasNext();) {
+                for (Iterator it = atd.getMethodDeclarations().iterator(); it.hasNext();) {
                     res[i++] = UnitCompiler.this.toIMethod((Java.MethodDeclarator) it.next());
                 }
                 return res;
@@ -6408,9 +6426,10 @@ public class UnitCompiler {
             private IClass[] declaredClasses = null;
             protected IClass[] getDeclaredIClasses2() {
                 if (this.declaredClasses == null) {
-                    IClass[] mts = new IClass[atd.declaredClassesAndInterfaces.size()];
+                    Collection/*<MemberTypeDeclaration>*/ mtds = td.getMemberTypeDeclarations();
+                    IClass[] mts = new IClass[mtds.size()];
                     int i = 0;
-                    for (Iterator it = atd.declaredClassesAndInterfaces.iterator(); it.hasNext();) {
+                    for (Iterator it = mtds.iterator(); it.hasNext();) {
                         mts[i++] = UnitCompiler.this.resolve((Java.AbstractTypeDeclaration) it.next());
                     }
                     this.declaredClasses = mts;
@@ -6502,8 +6521,8 @@ public class UnitCompiler {
                 }
                 return null;
             }
-            public Access getAccess() { return UnitCompiler.modifiers2Access(atd.modifiers); }
-            public boolean isFinal() { return (atd.modifiers & Mod.FINAL) != 0;  }
+            public Access getAccess() { return UnitCompiler.modifiers2Access(atd.getModifiers()); }
+            public boolean isFinal() { return (atd.getModifiers() & Mod.FINAL) != 0;  }
             protected IClass[] getInterfaces2() throws CompileException {
                 if (atd instanceof Java.AnonymousClassDeclaration) {
                     IClass bt = UnitCompiler.this.getType(((Java.AnonymousClassDeclaration) atd).baseType);
@@ -6533,7 +6552,7 @@ public class UnitCompiler {
             public boolean isAbstract() {
                 return (
                     (atd instanceof Java.InterfaceDeclaration)
-                    || (atd.modifiers & Mod.ABSTRACT) != 0
+                    || (atd.getModifiers() & Mod.ABSTRACT) != 0
                 );
             }
             public boolean isInterface() { return atd instanceof Java.InterfaceDeclaration; }
@@ -6639,7 +6658,7 @@ public class UnitCompiler {
         // Member class declaration.
         if (
             atd instanceof Java.MemberClassDeclaration &&
-            (((Java.MemberClassDeclaration) atd).modifiers & Mod.STATIC) != 0
+            (((Java.MemberClassDeclaration) atd).getModifiers() & Mod.STATIC) != 0
         ) return null;
 
         // Anonymous class declaration, interface declaration
@@ -6665,7 +6684,12 @@ public class UnitCompiler {
             }
 
             // Determine declaring type.
-            while (!(s instanceof Java.TypeDeclaration)) s = s.getEnclosingScope();
+            while (!(s instanceof Java.TypeDeclaration)) {
+                if (s == null) {
+                    System.currentTimeMillis();
+                }
+                s = s.getEnclosingScope();
+            }
             if (!(s instanceof Java.ClassDeclaration)) this.compileError("Only methods of classes can have a current instance", tr.getLocation());
             tr.iClass = this.resolve((Java.ClassDeclaration) s);
         }
@@ -6892,7 +6916,6 @@ public class UnitCompiler {
                 break;
             }
         }
-        Java.Block body = new Java.Block(loc);
 
         // try {
         // return Class.forName(className);
@@ -6956,7 +6979,8 @@ public class UnitCompiler {
             null                               // optionalFinally
         );
 
-        body.addStatement(ts);
+        List statements = new ArrayList(); // BlockStatement
+        statements.add(ts);
 
         // Class class$(String className)
         Java.FunctionDeclarator.FormalParameter fp = new Java.FunctionDeclarator.FormalParameter(
@@ -6973,7 +6997,7 @@ public class UnitCompiler {
             "class$",                                             // name
             new Java.FunctionDeclarator.FormalParameter[] { fp }, // formalParameters
             new Java.Type[0],                                     // thrownExceptions
-            body                                                  // optionalBody
+            statements                                            // optionalStatements
         );
 
         declaringType.addDeclaredMethod(cdmd);
@@ -8090,7 +8114,7 @@ public class UnitCompiler {
 
         // Search for a field with the given name in the current class.
         IClass.IField f = iClass.getDeclaredIField(name);
-        if(f != null) return f;
+        if (f != null) return f;
 
         // Examine superclass.
         {

@@ -581,7 +581,7 @@ public class ScriptEvaluator extends ClassBodyEvaluator {
         for (int i = 0; i < count; ++i) {
             Scanner scanner = scanners[i];
 
-            Java.Block block = this.makeBlock(i, scanner);
+            List statements = this.makeStatements(i, scanner);
 
             // Determine the following script properties AFTER the call to "makeBlock()",
             // because "makeBlock()" may modify these script properties on-the-fly.
@@ -599,7 +599,7 @@ public class ScriptEvaluator extends ClassBodyEvaluator {
                 parameterTypes,     // parameterTypes
                 parameterNames,     // parameterNames
                 thrownExceptions,   // thrownExceptions
-                block               // optionalBody
+                statements          // statements
             ));
         }
 
@@ -699,14 +699,17 @@ public class ScriptEvaluator extends ClassBodyEvaluator {
      * Fill the given <code>block</code> by parsing statements until EOF and adding
      * them to the block.
      */
-    protected Java.Block makeBlock(int idx, Scanner scanner) throws ParseException, ScanException, IOException {
-        Java.Block block = new Java.Block(scanner.location());
+    protected List/*<BlockStatement>*/ makeStatements(
+        int     idx,
+        Scanner scanner
+    ) throws ParseException, ScanException, IOException {
+        List/*<BlockStatement>*/ statements = new ArrayList();
         Parser parser = new Parser(scanner);
         while (!scanner.peek().isEOF()) {
-            block.addStatement(parser.parseBlockStatement());
+            statements.add(parser.parseBlockStatement());
         }
 
-        return block;
+        return statements;
     }
 
     protected void compileToMethods(
@@ -744,14 +747,14 @@ public class ScriptEvaluator extends ClassBodyEvaluator {
      * @param returnType Return type of the declared method
      */
     protected Java.MethodDeclarator makeMethodDeclaration(
-        Location   location,
-        boolean    staticMethod,
-        Class      returnType,
-        String     methodName,
-        Class[]    parameterTypes,
-        String[]   parameterNames,
-        Class[]    thrownExceptions,
-        Java.Block optionalBody
+        Location                 location,
+        boolean                  staticMethod,
+        Class                    returnType,
+        String                   methodName,
+        Class[]                  parameterTypes,
+        String[]                 parameterNames,
+        Class[]                  thrownExceptions,
+        List/*<BlockStatement>*/ statements
     ) {
         if (parameterNames.length != parameterTypes.length) throw new RuntimeException("Lengths of \"parameterNames\" (" + parameterNames.length + ") and \"parameterTypes\" (" + parameterTypes.length + ") do not match");
 
@@ -777,7 +780,7 @@ public class ScriptEvaluator extends ClassBodyEvaluator {
             methodName,                                      // name
             fps,                                             // formalParameters
             this.classesToTypes(location, thrownExceptions), // thrownExceptions
-            optionalBody                                     // optionalBody
+            statements                                       // optionalStatements
         );
     }
 

@@ -36,6 +36,7 @@ package org.codehaus.janino;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -234,11 +235,24 @@ public class Java {
 
     public interface TypeDeclaration extends Locatable, Scope {
 
+        short getModifiers();
+
         /**
          * Return the member type with the given name.
          * @return <code>null</code> if a member type with that name is not declared
          */
         MemberTypeDeclaration getMemberTypeDeclaration(String name);
+
+        Collection/*<MemberTypeDeclaration>*/ getMemberTypeDeclarations();
+
+        /**
+         * Return the first method declared with the given name. (Does not honor inherited
+         * methods.)
+         * @return <code>null</code> if a method with this name is not declared
+         */
+        MethodDeclarator getMethodDeclaration(String name) ;
+
+        List/*<MethodDeclaration>*/ getMethodDeclarations() ;
 
         /**
          * Determine the effective class name, e.g. "pkg.Outer$Inner".
@@ -267,7 +281,7 @@ public class Java {
 
         /**
          * Returns <code>true</code> if the object has a doc comment and
-         * the <code>&#64#deprecated</code> tag appears in the doc
+         * the <code>&#64;deprecated</code> tag appears in the doc
          * comment.
          */
         public boolean hasDeprecatedDocTag();
@@ -341,9 +355,9 @@ public class Java {
 
     public abstract static class AbstractTypeDeclaration implements TypeDeclaration {
         private final Location location;
-        public final short     modifiers;
-        public final List      declaredMethods              = new ArrayList(); // MethodDeclarator
-        public final List      declaredClassesAndInterfaces = new ArrayList(); // MemberTypeDeclaration
+        private final short    modifiers;
+        private final List     declaredMethods              = new ArrayList(); // MethodDeclarator
+        private final List     declaredClassesAndInterfaces = new ArrayList(); // MemberTypeDeclaration
         private Scope          enclosingScope = null;
 
         /*package*/ IClass resolvedType = null;
@@ -356,17 +370,18 @@ public class Java {
             this.modifiers = modifiers;
         }
 
+        
+        public short getModifiers() {
+            return this.modifiers;
+        }
+
+
         public void setEnclosingScope(Scope enclosingScope) {
             if (this.enclosingScope != null && enclosingScope != this.enclosingScope) throw new RuntimeException("Enclosing scope is already set for type declaration \"" + this.toString() + "\" at " + this.getLocation());
             this.enclosingScope = enclosingScope;
         }
         public Scope getEnclosingScope() {
             return this.enclosingScope;
-        }
-
-        public void addDeclaredMethod(MethodDeclarator method) {
-            this.declaredMethods.add(method);
-            method.setDeclaringType(this);
         }
 
         public void invalidateMethodCaches() {
@@ -381,7 +396,7 @@ public class Java {
             this.declaredClassesAndInterfaces.add(mcoid);
             mcoid.setDeclaringType(this);
         }
-        public Collection getMemberTypeDeclarations() {
+        public Collection/*<MemberTypeDeclaration>*/ getMemberTypeDeclarations() {
             return this.declaredClassesAndInterfaces;
         }
         public MemberTypeDeclaration getMemberTypeDeclaration(String name) {
@@ -391,6 +406,12 @@ public class Java {
             }
             return null;
         }
+
+        public void addDeclaredMethod(MethodDeclarator method) {
+            this.declaredMethods.add(method);
+            method.setDeclaringType(this);
+        }
+
         public MethodDeclarator getMethodDeclaration(String name) {
             for (Iterator it = this.declaredMethods.iterator(); it.hasNext();) {
                 MethodDeclarator md = (MethodDeclarator) it.next();
@@ -398,6 +419,12 @@ public class Java {
             }
             return null;
         }
+
+        
+        public List getMethodDeclarations() {
+            return this.declaredMethods;
+        }
+
         public String createLocalTypeName(String localTypeName) {
             return (
                 this.getClassName()
@@ -476,7 +503,7 @@ public class Java {
                     new FunctionDeclarator.FormalParameter[0], // formalParameters
                     new Type[0],                               // thrownExceptions
                     null,                                      // optionalExplicitConstructorInvocation
-                    new Block(this.getLocation())              // optionalBody
+                    Collections.EMPTY_LIST                     // optionalStatements
                 );
                 defaultConstructor.setDeclaringType(this);
                 return new ConstructorDeclarator[] { defaultConstructor };
@@ -593,7 +620,7 @@ public class Java {
             return (TypeDeclaration) this.getEnclosingScope();
         }
         public boolean isStatic() {
-            return (this.modifiers & Mod.STATIC) != 0;
+            return (this.getModifiers() & Mod.STATIC) != 0;
         }
 
         // Implement TypeDeclaration.
@@ -778,7 +805,7 @@ public class Java {
             return (TypeDeclaration) this.getEnclosingScope();
         }
         public boolean isStatic() {
-            return (this.modifiers & Mod.STATIC) != 0;
+            return (this.getModifiers() & Mod.STATIC) != 0;
         }
 
         public final void accept(Visitor.TypeDeclarationVisitor visitor) { visitor.visitMemberInterfaceDeclaration(this); }
@@ -914,23 +941,23 @@ public class Java {
      * {@link Java.MethodDeclarator}.
      */
     public abstract static class FunctionDeclarator extends AbstractTypeBodyDeclaration implements DocCommentable {
-        private final String           optionalDocComment;
-        public final short             modifiers;
-        public final Type              type;
-        public final String            name;
-        public final FormalParameter[] formalParameters;
-        public final Type[]            thrownExceptions;
-        public final Block             optionalBody;
+        private final String                  optionalDocComment;
+        public final short                    modifiers;
+        public final Type                     type;
+        public final String                   name;
+        public final FormalParameter[]        formalParameters;
+        public final Type[]                   thrownExceptions;
+        public final List/*<BlockStatement>*/ optionalStatements;
 
         public FunctionDeclarator(
-            Location          location,
-            String            optionalDocComment,
-            short             modifiers,
-            Type              type,
-            String            name,
-            FormalParameter[] formalParameters,
-            Type[]            thrownExceptions,
-            Block             optionalBody
+            Location                 location,
+            String                   optionalDocComment,
+            short                    modifiers,
+            Type                     type,
+            String                   name,
+            FormalParameter[]        formalParameters,
+            Type[]                   thrownExceptions,
+            List/*<BlockStatement>*/ optionalStatements
         ) {
             super(location, (modifiers & Mod.STATIC) != 0);
             this.optionalDocComment = optionalDocComment;
@@ -941,8 +968,18 @@ public class Java {
             for (int i = 0; i < formalParameters.length; ++i) formalParameters[i].type.setEnclosingScope(this);
             this.thrownExceptions   = thrownExceptions;
             for (int i = 0; i < thrownExceptions.length; ++i) thrownExceptions[i].setEnclosingScope(this);
-            this.optionalBody       = optionalBody;
-            if (optionalBody != null) optionalBody.setEnclosingScope(this);
+            this.optionalStatements = optionalStatements;
+            if (optionalStatements != null) {
+                for (Iterator it = optionalStatements.iterator(); it.hasNext();) {
+                    Java.BlockStatement bs = (Java.BlockStatement) it.next();
+
+                    // Catch 22: In the initializers, some statement have their enclosing already
+                    // set!
+                    if (("<init>".equals(name) || "<clinit>".equals(name)) && bs.getEnclosingScope() != null) continue;
+
+                    bs.setEnclosingScope(this);
+                }
+            }
         }
 
         // Implement "Scope".
@@ -998,7 +1035,7 @@ public class Java {
             FunctionDeclarator.FormalParameter[] formalParameters,
             Type[]                               thrownExceptions,
             ConstructorInvocation                optionalConstructorInvocation,
-            Block                                optionalBody
+            List                                 statements // BlockStatement
         ) {
             super(
                 location,                                // location
@@ -1008,7 +1045,7 @@ public class Java {
                 "<init>",                                // name
                 formalParameters,                        // formalParameters
                 thrownExceptions,                        // thrownExceptions
-                optionalBody                             // optionalBody
+                statements                               // optionalStatements
             );
             this.optionalConstructorInvocation = optionalConstructorInvocation;
             if (optionalConstructorInvocation != null) optionalConstructorInvocation.setEnclosingScope(this);
@@ -1048,7 +1085,7 @@ public class Java {
             String                               name,
             FunctionDeclarator.FormalParameter[] formalParameters,
             Type[]                               thrownExceptions,
-            Block                                optionalBody
+            List                                 optionalStatements
         ) {
             super(
                 location,           // location
@@ -1058,7 +1095,7 @@ public class Java {
                 name,               // name
                 formalParameters,   // formalParameters
                 thrownExceptions,   // thrownExceptions
-                optionalBody
+                optionalStatements  // optionalStatements
             );
         }
 
@@ -1257,21 +1294,14 @@ public class Java {
             this.statements.add(statement);
             statement.setEnclosingScope(this);
         }
-        // This one's for some very special compiler trickery...
-        void addButDontEncloseStatement(BlockStatement statement) {
-            this.statements.add(statement);
-        }
+
         public void addStatements(
             List statements // BlockStatement
         ) {
             this.statements.addAll(statements);
             for (Iterator it = statements.iterator(); it.hasNext();) ((BlockStatement) it.next()).setEnclosingScope(this);
         }
-        public void addButDontEncloseStatements(
-            List statements // BlockStatement
-        ) {
-            this.statements.addAll(statements);
-        }
+
         public BlockStatement[] getStatements() {
             return (BlockStatement[]) this.statements.toArray(new BlockStatement[this.statements.size()]);
         }

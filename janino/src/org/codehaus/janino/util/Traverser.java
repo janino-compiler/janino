@@ -514,10 +514,10 @@ public class Traverser {
     }
 
     public void traverseAbstractTypeDeclaration(Java.AbstractTypeDeclaration atd) {
-        for (Iterator it = atd.declaredClassesAndInterfaces.iterator(); it.hasNext();) {
+        for (Iterator it = atd.getMemberTypeDeclarations().iterator(); it.hasNext();) {
             ((Java.NamedTypeDeclaration) it.next()).accept(this.cv);
         }
-        for (Iterator it = atd.declaredMethods.iterator(); it.hasNext();) {
+        for (Iterator it = atd.getMethodDeclarations().iterator(); it.hasNext();) {
             this.traverseMethodDeclarator((Java.MethodDeclarator) it.next());
         }
     }
@@ -544,7 +544,12 @@ public class Traverser {
         for (int i = 0; i < fd.formalParameters.length; ++i) {
             fd.formalParameters[i].type.accept((Visitor.TypeVisitor) this.cv);
         }
-        if (fd.optionalBody != null) fd.optionalBody.accept(this.cv);
+        if (fd.optionalStatements != null) {
+            for (Iterator it = fd.optionalStatements.iterator(); it.hasNext();) {
+                Java.BlockStatement bs = (Java.BlockStatement) it.next();
+                bs.accept(this.cv);
+            }
+        }
     }
 
     public void traverseAbstractTypeBodyDeclaration(Java.AbstractTypeBodyDeclaration atbd) {

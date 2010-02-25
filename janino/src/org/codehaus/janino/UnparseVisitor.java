@@ -34,16 +34,8 @@
 
 package org.codehaus.janino;
 
-import java.io.BufferedWriter;
-import java.io.FileReader;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.io.Writer;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
+import java.io.*;
+import java.util.*;
 
 import org.codehaus.janino.util.AutoIndentWriter;
 
@@ -85,7 +77,9 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
      * Unparse the given {@link Java.CompilationUnit} to the given {@link Writer}.
      */
     public static void unparse(Java.CompilationUnit cu, Writer w) {
-        new UnparseVisitor(w).unparseCompilationUnit(cu);
+        UnparseVisitor uv = new UnparseVisitor(w);
+        uv.unparseCompilationUnit(cu);
+        uv.close();
     }
 
     public UnparseVisitor(Writer w) {
@@ -93,14 +87,27 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
         this.pw = new PrintWriter(this.aiw, true);
     }
 
+    /**
+     * Flushes all generated code and closes the {@link Writer} that was passed
+     * to {@link #UnparseVisitor(Writer)}.
+     */
+    public void close() {
+        this.pw.close();
+    }
+
     public void unparseCompilationUnit(Java.CompilationUnit cu) {
         if (cu.optionalPackageDeclaration != null) {
+            this.pw.println();
             this.pw.println("package " + cu.optionalPackageDeclaration.packageName + ';');
         }
-        for (Iterator it = cu.importDeclarations.iterator(); it.hasNext();) {
-            ((Java.CompilationUnit.ImportDeclaration) it.next()).accept(this);
+        if (!cu.importDeclarations.isEmpty()) {
+            this.pw.println();
+            for (Iterator it = cu.importDeclarations.iterator(); it.hasNext();) {
+                ((Java.CompilationUnit.ImportDeclaration) it.next()).accept(this);
+            }
         }
         for (Iterator it = cu.packageMemberTypeDeclarations.iterator(); it.hasNext();) {
+            this.pw.println();
             this.unparseTypeDeclaration((Java.PackageMemberTypeDeclaration) it.next());
             this.pw.println();
         }
@@ -143,15 +150,24 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
         this.pw.print(' ');
         if (cd.optionalConstructorInvocation != null) {
             this.pw.println('{');
+            this.pw.print(AutoIndentWriter.INDENT);
             this.unparseBlockStatement(cd.optionalConstructorInvocation);
             this.pw.println(';');
-            for (Iterator it = cd.optionalBody.statements.iterator(); it.hasNext();) {
-                this.unparseBlockStatement((Java.BlockStatement) it.next());
+
+            if (!cd.optionalStatements.isEmpty()) {
                 this.pw.println();
+                this.unparseStatements(cd.optionalStatements);
             }
-            this.pw.print('}');
-        } else {
-            this.unparseBlockStatement(cd.optionalBody);
+            this.pw.print(AutoIndentWriter.UNINDENT + "}");
+        } else
+        if (cd.optionalStatements.isEmpty()) {
+            this.pw.print("{}");
+        } else
+        {
+            this.pw.println('{');
+            this.pw.print(AutoIndentWriter.INDENT);
+            this.unparseStatements(cd.optionalStatements);
+            this.pw.print(AutoIndentWriter.UNINDENT + "}");
         }
     }
     public void visitMethodDeclarator(Java.MethodDeclarator md) {
@@ -160,11 +176,18 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
         this.unparseType(md.type);
         this.pw.print(' ' + md.name);
         this.unparseFunctionDeclaratorRest(md);
-        if (md.optionalBody != null) {
-            this.pw.print(' ');
-            this.unparseBlockStatement(md.optionalBody);
-        } else {
+        if (md.optionalStatements == null) {
             this.pw.print(';');
+        } else
+        if (md.optionalStatements.isEmpty()) {
+            this.pw.print(" {}");
+        } else
+        {
+            this.pw.println(" {");
+            this.pw.print(AutoIndentWriter.INDENT);
+            this.unparseStatements(md.optionalStatements);
+            this.pw.print(AutoIndentWriter.UNINDENT);
+            this.pw.print('}');
         }
     }
     public void visitFieldDeclaration(Java.FieldDeclaration fd) {
@@ -183,12 +206,33 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
         this.unparseBlockStatement(i.block);
     }
     public void visitBlock(Java.Block b) {
+        if (b.statements.isEmpty()) {
+            this.pw.print("{}");
+            return;
+        }
         this.pw.println('{');
-        for (Iterator it = b.statements.iterator(); it.hasNext();) {
-            this.unparseBlockStatement((Java.BlockStatement) it.next());
+        this.pw.print(AutoIndentWriter.INDENT);
+        this.unparseStatements(b.statements);
+        this.pw.print(AutoIndentWriter.UNINDENT + "}");
+    }
+
+    private void unparseStatements(List statements) {
+        int state = -1;
+        for (Iterator it = statements.iterator(); it.hasNext();) {
+            Java.BlockStatement bs = (Java.BlockStatement) it.next();
+            int x = (
+                bs instanceof Java.Block                             ? 1 :
+                bs instanceof Java.LocalClassDeclarationStatement    ? 2 :
+                bs instanceof Java.LocalVariableDeclarationStatement ? 3 :
+                bs instanceof Java.SynchronizedStatement             ? 4 :
+                99
+            );
+            if (state != -1 && state != x) this.pw.println(AutoIndentWriter.CLEAR_TABULATORS);
+            state = x;
+
+            this.unparseBlockStatement(bs);
             this.pw.println();
         }
-        this.pw.print('}');
     }
     public void visitBreakStatement(Java.BreakStatement bs) {
         this.pw.print("break");
@@ -242,7 +286,7 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
         this.pw.print(") ");
         this.unparseBlockStatement(is.thenStatement);
         if (is.optionalElseStatement != null) {
-            this.pw.print(" else ");
+            this.pw.println(" else");
             this.unparseBlockStatement(is.optionalElseStatement);
         }
     }
@@ -257,6 +301,7 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
         this.unparseModifiers(lvds.modifiers);
         this.unparseType(lvds.type);
         this.pw.print(' ');
+        this.pw.print(AutoIndentWriter.TABULATOR);
         this.unparseVariableDeclarator(lvds.variableDeclarators[0]);
         for (int i = 1; i < lvds.variableDeclarators.length; ++i) {
             this.pw.print(", ");
@@ -278,7 +323,7 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
         this.pw.println(") {");
         for (Iterator it = ss.sbsgs.iterator(); it.hasNext();) {
             Java.SwitchStatement.SwitchBlockStatementGroup sbgs = (Java.SwitchStatement.SwitchBlockStatementGroup) it.next();
-            this.aiw.unindent();
+            this.pw.print(AutoIndentWriter.UNINDENT);
             try {
                 for (Iterator it2 = sbgs.caseLabels.iterator(); it2.hasNext();) {
                     Java.Rvalue rv = (Java.Rvalue) it2.next();
@@ -288,7 +333,7 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
                 }
                 if (sbgs.hasDefaultLabel) this.pw.println("default:");
             } finally {
-                this.aiw.indent();
+                this.pw.print(AutoIndentWriter.INDENT);
             }
             for (Iterator it2 = sbgs.blockStatements.iterator(); it2.hasNext();) {
                 this.unparseBlockStatement((Java.BlockStatement) it2.next());
@@ -340,7 +385,7 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
     public void unparseFormalParameter(Java.FunctionDeclarator.FormalParameter fp) {
         if (fp.finaL) this.pw.print("final ");
         this.unparseType(fp.type);
-        this.pw.print(' ' + fp.name);
+        this.pw.print(" " + AutoIndentWriter.TABULATOR + fp.name);
     }
     public void visitMethodInvocation(Java.MethodInvocation mi) {
         if (mi.optionalTarget != null) {
@@ -508,7 +553,7 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
     }
 
     private void unparse(Java.Atom operand) {
-        ((Java.Atom) operand).accept(this);
+        operand.accept(this);
     }
 
     /**
@@ -652,7 +697,7 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
 
     private void unparseNamedClassDeclaration(Java.NamedClassDeclaration ncd) {
         this.unparseDocComment(ncd);
-        this.unparseModifiers(ncd.modifiers);
+        this.unparseModifiers(ncd.getModifiers());
         this.pw.print("class " + ncd.name);
         if (ncd.optionalExtendedType != null) {
             this.pw.print(" extends ");
@@ -660,8 +705,9 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
         }
         if (ncd.implementedTypes.length > 0) this.pw.print(" implements " + Java.join(ncd.implementedTypes, ", "));
         this.pw.println(" {");
+        this.pw.print(AutoIndentWriter.INDENT);
         this.unparseClassDeclarationBody(ncd);
-        this.pw.print('}');
+        this.pw.print(AutoIndentWriter.UNINDENT + "}");
     }
     private void unparseArrayInitializerOrRvalue(Java.ArrayInitializerOrRvalue aiorv) {
         if (aiorv instanceof Java.Rvalue) {
@@ -690,8 +736,9 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
     public void visitAnonymousClassDeclaration(Java.AnonymousClassDeclaration acd) {
         this.unparseType(acd.baseType);
         this.pw.println(" {");
+        this.pw.print(AutoIndentWriter.INDENT);
         this.unparseClassDeclarationBody(acd);
-        this.pw.print('}');
+        this.pw.print(AutoIndentWriter.UNINDENT + "}");
     }
     public void visitNewAnonymousClassInstance(Java.NewAnonymousClassInstance naci) {
         if (naci.optionalQualification != null) {
@@ -704,70 +751,91 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
             this.unparse(naci.arguments[i]);
         }
         this.pw.println(") {");
+        this.pw.print(AutoIndentWriter.INDENT);
         this.unparseClassDeclarationBody(naci.anonymousClassDeclaration);
-        this.pw.print('}');
+        this.pw.print(AutoIndentWriter.UNINDENT + "}");
     }
     // Multi-line!
     private void unparseClassDeclarationBody(Java.ClassDeclaration cd) {
         for (Iterator it = cd.constructors.iterator(); it.hasNext();) {
+            this.pw.println();
             ((Java.ConstructorDeclarator) it.next()).accept(this);
             this.pw.println();
         }
         this.unparseAbstractTypeDeclarationBody(cd);
         for (Iterator it = cd.variableDeclaratorsAndInitializers.iterator(); it.hasNext();) {
+            this.pw.println();
             ((Java.TypeBodyDeclaration) it.next()).accept(this);
             this.pw.println();
         }
     }
     private void unparseInterfaceDeclaration(Java.InterfaceDeclaration id) {
         this.unparseDocComment(id);
-        this.unparseModifiers(id.modifiers);
+        this.unparseModifiers(id.getModifiers());
         //make sure we print "interface", even if it wasn't in the modifiers
-        if ((id.modifiers & Mod.INTERFACE) == 0) {
+        if ((id.getModifiers() & Mod.INTERFACE) == 0) {
             this.pw.print("interface ");
         }
         this.pw.print(id.name);
         if (id.extendedTypes.length > 0) this.pw.print(" extends " + Java.join(id.extendedTypes, ", "));
         this.pw.println(" {");
+        this.pw.print(AutoIndentWriter.INDENT);
         this.unparseAbstractTypeDeclarationBody(id);
         for (Iterator it = id.constantDeclarations.iterator(); it.hasNext();) {
             ((Java.TypeBodyDeclaration) it.next()).accept(this);
             this.pw.println();
         }
-        this.pw.print('}');
+        this.pw.print(AutoIndentWriter.UNINDENT + "}");
     }
     // Multi-line!
     private void unparseAbstractTypeDeclarationBody(Java.AbstractTypeDeclaration atd) {
-        for (Iterator it = atd.declaredMethods.iterator(); it.hasNext();) {
+        for (Iterator it = atd.getMethodDeclarations().iterator(); it.hasNext();) {
+            this.pw.println();
             ((Java.MethodDeclarator) it.next()).accept(this);
             this.pw.println();
         }
-        for (Iterator it = atd.declaredClassesAndInterfaces.iterator(); it.hasNext();) {
+        for (Iterator it = atd.getMemberTypeDeclarations().iterator(); it.hasNext();) {
+            this.pw.println();
             ((Java.TypeBodyDeclaration) it.next()).accept(this);
             this.pw.println();
         }
     }
     private void unparseFunctionDeclaratorRest(Java.FunctionDeclarator fd) {
+        boolean big = fd.formalParameters.length >= 4;
         this.pw.print('(');
+        if (big) { this.pw.println(); this.pw.print(AutoIndentWriter.INDENT); }
         for (int i = 0; i < fd.formalParameters.length; ++i) {
-            if (i > 0) this.pw.print(", ");
+            if (i > 0) {
+                if (big) {
+                    this.pw.println(',');
+                } else
+                {
+                    this.pw.print(", ");
+                }
+            }
             this.unparseFormalParameter(fd.formalParameters[i]);
         }
+        if (big) { this.pw.println(); this.pw.print(AutoIndentWriter.UNINDENT); }
         this.pw.print(')');
         if (fd.thrownExceptions.length > 0) this.pw.print(" throws " + Java.join(fd.thrownExceptions, ", "));
     }
     private void unparseDocComment(Java.DocCommentable dc) {
         String optionalDocComment = dc.getDocComment();
         if (optionalDocComment != null) {
-            this.pw.println();
             this.pw.print("/**");
-            this.aiw.setPrefix(" *");
-            try {
-                this.pw.print(optionalDocComment);
-            } finally {
-                this.aiw.setPrefix(null);
+            BufferedReader br = new BufferedReader(new StringReader(optionalDocComment));
+            for (;;) {
+                String line;
+                try {
+                    line = br.readLine();
+                } catch (IOException e) {
+                    throw new RuntimeException();
+                }
+                if (line == null) break;
+                this.pw.println(line);
+                this.pw.print(" *");
             }
-            this.pw.println("*/");
+            this.pw.println("/");
         }
     }
     private void unparseModifiers(short modifiers) {
@@ -776,11 +844,21 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
         }
     }
     private void unparseFunctionInvocationArguments(Java.Rvalue[] arguments) {
+        boolean big = arguments.length >= 5;
         this.pw.print('(');
+        if (big) { this.pw.println(); this.pw.print(AutoIndentWriter.INDENT); }
         for (int i = 0; i < arguments.length; ++i) {
-            if (i > 0) this.pw.print(", ");
+            if (i > 0) {
+                if (big) {
+                    this.pw.println(',');
+                } else
+                {
+                    this.pw.print(", ");
+                }
+            }
             this.unparse(arguments[i]);
         }
+        if (big) { this.pw.println(); this.pw.print(AutoIndentWriter.UNINDENT); }
         this.pw.print(')');
     }
 

@@ -359,8 +359,11 @@ public class ExpressionEvaluator extends ScriptEvaluator {
         return Object.class;
     }
 
-    protected Java.Block makeBlock(int idx, Scanner scanner) throws ParseException, ScanException, IOException {
-        Java.Block block = new Java.Block(scanner.location());
+    protected List/*<BlockStatement>*/ makeStatements(
+        int     idx,
+        Scanner scanner
+    ) throws ParseException, ScanException, IOException {
+        List/*<BlockStatement>*/ statements = new ArrayList();
 
         Parser parser = new Parser(scanner);
 
@@ -371,7 +374,7 @@ public class ExpressionEvaluator extends ScriptEvaluator {
         if (et == void.class) {
 
             // ExpressionEvaluator with an expression type "void" is a simple expression statement.
-            block.addStatement(new Java.ExpressionStatement(value));
+            statements.add(new Java.ExpressionStatement(value));
         } else {
 
             // Special case: Expression type "ANY_TYPE" means return type "Object" and automatic
@@ -395,11 +398,11 @@ public class ExpressionEvaluator extends ScriptEvaluator {
             }
 
             // Add a return statement.
-            block.addStatement(new Java.ReturnStatement(scanner.location(), value));
+            statements.add(new Java.ReturnStatement(scanner.location(), value));
         }
         if (!scanner.peek().isEOF()) throw new Parser.ParseException("Unexpected token \"" + scanner.peek() + "\"", scanner.location());
 
-        return block;
+        return statements;
     }
 
     /**

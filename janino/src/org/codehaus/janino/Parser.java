@@ -671,7 +671,7 @@ public class Parser {
         // expression statement, and if it could be a "ConstructorInvocation", then parse the
         // expression and check if it IS a ConstructorInvocation.
         Java.ConstructorInvocation optionalConstructorInvocation = null;
-        Java.Block body = new Java.Block(location);
+        List/*<BlockStatement>*/   statements = new ArrayList();
         if (
             this.peekKeyword(new String[] {
                 "this", "super", "new", "void",
@@ -699,10 +699,10 @@ public class Parser {
                     s = new Java.ExpressionStatement(a.toRvalueOrPE());
                     this.readOperator(";");
                 }
-                body.addStatement(s);
+                statements.add(s);
             }
         }
-        body.addStatements(this.parseBlockStatements());
+        statements.addAll(this.parseBlockStatements());
 
         this.readOperator("}");
 
@@ -713,7 +713,7 @@ public class Parser {
             formalParameters,              // formalParameters
             thrownExceptions,              // thrownExceptions
             optionalConstructorInvocation, // optionalConstructorInvocationStatement
-            body                           // body
+            statements                     // statements
         );
     }
 
@@ -736,8 +736,7 @@ public class Parser {
 
         this.verifyIdentifierIsConventionalMethodName(name, location);
 
-        Java.FunctionDeclarator.FormalParameter[] formalParameters = this.parseFormalParameters(
-        );
+        Java.FunctionDeclarator.FormalParameter[] formalParameters = this.parseFormalParameters();
 
         for (int i = this.parseBracketsOpt(); i > 0; --i) type = new Java.ArrayType(type);
 
@@ -749,14 +748,16 @@ public class Parser {
             thrownExceptions = new Java.ReferenceType[0];
         }
 
-        Java.Block optionalBody;
+        List/*<BlockStatement>*/ optionalStatements;
         if (this.peekOperator(";")) {
             if ((modifiers & (Mod.ABSTRACT | Mod.NATIVE)) == 0) this.throwParseException("Non-abstract, non-native method must have a body");
             this.eatToken();
-            optionalBody = null;
+            optionalStatements = null;
         } else {
             if ((modifiers & (Mod.ABSTRACT | Mod.NATIVE)) != 0) this.throwParseException("Abstract or native method must not have a body");
-            optionalBody = this.parseMethodBody();
+            this.readOperator("{");
+            optionalStatements = this.parseBlockStatements();
+            this.readOperator("}");
         }
         return new Java.MethodDeclarator(
             location,           // location
@@ -766,7 +767,7 @@ public class Parser {
             name,               // name
             formalParameters,   // formalParameters
             thrownExceptions,   // thrownExceptions
-            optionalBody        // optionalBody
+            optionalStatements  // optionalStatements
         );
     }
 
