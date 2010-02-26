@@ -50,6 +50,9 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
 
+import org.codehaus.commons.compiler.CompileException;
+import org.codehaus.commons.compiler.Location;
+import org.codehaus.commons.compiler.ParseException;
 import org.codehaus.janino.IClass.IField;
 import org.codehaus.janino.IClass.IInvocable;
 import org.codehaus.janino.IClass.IMethod;
@@ -617,7 +620,7 @@ public class UnitCompiler {
         // Interface initialization method.
         if (!id.constantDeclarations.isEmpty()) {
             List statements = new ArrayList(); // BlockStatements
-            statements.add(id.constantDeclarations);
+            statements.addAll(id.constantDeclarations);
 
             maybeCreateInitMethod(id, cf, statements);
         }
