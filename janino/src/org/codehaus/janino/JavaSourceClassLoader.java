@@ -297,7 +297,7 @@ public class JavaSourceClassLoader extends ClassLoader {
 
             // Now the bytecode for our class should be available.
             bytecode = (byte[]) this.precompiledClasses.remove(name);
-            if (bytecode == null) throw new RuntimeException("SNO: Scanning, parsing and compiling class \"" + name + "\" did not create a class file!?");
+            if (bytecode == null) throw new JaninoRuntimeException("SNO: Scanning, parsing and compiling class \"" + name + "\" did not create a class file!?");
         }
 
         return this.defineBytecode(name, bytecode);
@@ -383,7 +383,7 @@ public class JavaSourceClassLoader extends ClassLoader {
                 new Disassembler().disasm(new ByteArrayInputStream(ba));
                 System.out.flush();
             } catch (IOException ex) {
-                throw new RuntimeException("SNO: IOException despite ByteArrayInputStream");
+                throw new JaninoRuntimeException("SNO: IOException despite ByteArrayInputStream");
             }
         }
 

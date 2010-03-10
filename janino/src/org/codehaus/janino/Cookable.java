@@ -113,7 +113,7 @@ public abstract class Cookable {
         try {
             this.cook(new StringReader(s));
         } catch (IOException ex) {
-            throw new RuntimeException("SNO: IOException despite StringReader");
+            throw new JaninoRuntimeException("SNO: IOException despite StringReader");
         }
     }
 

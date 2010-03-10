@@ -288,9 +288,9 @@ class ReflectionIClass extends IClass {
         try {
             iClass = this.iClassLoader.loadIClass(Descriptor.fromClassName(c.getName()));
         } catch (ClassNotFoundException ex) {
-            throw new RuntimeException("Loading IClass \"" + c.getName() + "\": " + ex);
+            throw new JaninoRuntimeException("Loading IClass \"" + c.getName() + "\": " + ex);
         }
-        if (iClass == null) throw new RuntimeException("Cannot load class \"" + c.getName() + "\" through the given ClassLoader");
+        if (iClass == null) throw new JaninoRuntimeException("Cannot load class \"" + c.getName() + "\" through the given ClassLoader");
         return iClass;
     }
 

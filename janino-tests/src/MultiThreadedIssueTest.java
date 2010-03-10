@@ -60,7 +60,7 @@ public class MultiThreadedIssueTest {
         } catch (Exception e) {
             e.printStackTrace();
             running.set(false);
-            throw new RuntimeException(e);
+            throw new JaninoRuntimeException(e);
         }
     }
 

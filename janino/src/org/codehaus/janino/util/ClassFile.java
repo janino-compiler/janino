@@ -51,6 +51,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.codehaus.janino.Descriptor;
+import org.codehaus.janino.JaninoRuntimeException;
 
 
 /**
@@ -235,7 +236,7 @@ public class ClassFile {
             s = typeFD;
         } else
         {
-            throw new RuntimeException("\"" + Descriptor.toString(typeFD) + "\" is neither a class nor an array");
+            throw new JaninoRuntimeException("\"" + Descriptor.toString(typeFD) + "\" is neither a class nor an array");
         }
 
         return this.addToConstantPool(new ConstantClassInfo(this.addConstantUtf8Info(s)));
@@ -385,7 +386,7 @@ public class ClassFile {
             return this.addConstantDoubleInfo(((Double) cv).doubleValue());
         } else
         {
-            throw new RuntimeException("Unexpected constant value type \"" + cv.getClass().getName() + "\"");
+            throw new JaninoRuntimeException("Unexpected constant value type \"" + cv.getClass().getName() + "\"");
         }
     }
 
@@ -395,7 +396,7 @@ public class ClassFile {
 
         int res = this.constantPool.size();
         if (res > 0xFFFF) {
-            throw new RuntimeException("Constant pool has grown past JVM limit of 0xFFFF");
+            throw new JaninoRuntimeException("Constant pool has grown past JVM limit of 0xFFFF");
         }
         this.constantPool.add(cpi);
         if (cpi.isWide()) this.constantPool.add(null);
@@ -653,7 +654,7 @@ public class ClassFile {
             this.store(baos);
         } catch (IOException ex) {
             // ByteArrayOutputStream should never throw IOExceptions.
-            throw new RuntimeException(ex.toString());
+            throw new JaninoRuntimeException(ex.toString());
         }
         return baos.toByteArray();
     }
@@ -975,7 +976,7 @@ public class ClassFile {
         private final String s;
 
         public ConstantUtf8Info(String s) {
-            if (s == null) throw new RuntimeException();
+            if (s == null) throw new JaninoRuntimeException();
             this.s = s;
         }
 

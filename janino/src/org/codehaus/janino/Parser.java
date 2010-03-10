@@ -308,7 +308,7 @@ public class Parser {
             );
         } else
         {
-            throw new RuntimeException("SNO: Class declaration in unexpected context " + context);
+            throw new JaninoRuntimeException("SNO: Class declaration in unexpected context " + context);
         }
 
         this.parseClassBody(namedClassDeclaration);
@@ -511,7 +511,7 @@ public class Parser {
             );
         } else
         {
-            throw new RuntimeException("SNO: Interface declaration in unexpected context " + context);
+            throw new JaninoRuntimeException("SNO: Interface declaration in unexpected context " + context);
         }
 
         this.parseInterfaceBody(interfaceDeclaration);

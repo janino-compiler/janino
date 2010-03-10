@@ -34,10 +34,15 @@
 
 package org.codehaus.janino.util;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
+import org.codehaus.janino.JaninoRuntimeException;
 import org.codehaus.janino.tools.Disassembler;
-import org.codehaus.janino.util.resource.*;
+import org.codehaus.janino.util.resource.Resource;
+import org.codehaus.janino.util.resource.ResourceFinder;
 
 
 /**
@@ -72,7 +77,7 @@ public class ResourceFinderClassLoader extends ClassLoader {
         try {
             is = classFileResource.open();
         } catch (IOException ex) {
-            throw new RuntimeException("Opening class file resource \"" + classFileResource.getFileName() + "\": " + ex.getMessage());
+            throw new JaninoRuntimeException("Opening class file resource \"" + classFileResource.getFileName() + "\": " + ex.getMessage());
         }
 
         // Read bytecode from the resource into a byte array.
@@ -98,7 +103,7 @@ public class ResourceFinderClassLoader extends ClassLoader {
                 new Disassembler().disasm(new ByteArrayInputStream(ba));
                 System.out.flush();
             } catch (IOException ex) {
-                throw new RuntimeException("SNO: IOException despite ByteArrayInputStream");
+                throw new JaninoRuntimeException("SNO: IOException despite ByteArrayInputStream");
             }
         }
 

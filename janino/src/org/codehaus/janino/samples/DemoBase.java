@@ -34,8 +34,13 @@
 
 package org.codehaus.janino.samples;
 
-import java.util.*;
-import java.lang.reflect.*;
+import java.lang.reflect.Array;
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.StringTokenizer;
+
+import org.codehaus.janino.JaninoRuntimeException;
 
 /**
  * Common base class for the "...Demo" classes that demostrate Janino.
@@ -120,7 +125,7 @@ public class DemoBase {
         } catch (ClassNotFoundException ex) {
             ex.printStackTrace();
             System.exit(1);
-            throw new RuntimeException(); // Never reached.
+            throw new JaninoRuntimeException(); // Never reached.
         }
     }
 

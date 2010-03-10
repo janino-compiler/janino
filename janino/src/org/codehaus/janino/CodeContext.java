@@ -351,7 +351,7 @@ public class CodeContext {
                     System.out.println(functionName + ": Unexamined code at offset " + i);
                     return;
                 } else {
-                    throw new RuntimeException(functionName + ": Unexamined code at offset " + i);
+                    throw new JaninoRuntimeException(functionName + ": Unexamined code at offset " + i);
                 }
             }
             if (ss > this.maxStack) this.maxStack = ss;
@@ -370,18 +370,18 @@ public class CodeContext {
             if (CodeContext.DEBUG) System.out.println("Offset = " + offset + ", stack size = " + stackSize);
 
             // Check current bytecode offset.
-            if (offset < 0 || offset >= codeSize) throw new RuntimeException(functionName + ": Offset out of range");
+            if (offset < 0 || offset >= codeSize) throw new JaninoRuntimeException(functionName + ": Offset out of range");
 
             // Have we hit an area that has already been analyzed?
             int css = stackSizes[offset];
             if (css == stackSize) return; // OK.
-            if (css == CodeContext.INVALID_OFFSET) throw new RuntimeException(functionName + ": Invalid offset");
+            if (css == CodeContext.INVALID_OFFSET) throw new JaninoRuntimeException(functionName + ": Invalid offset");
             if (css != CodeContext.UNEXAMINED) {
                 if (CodeContext.DEBUG) {
                     System.err.println(functionName + ": Operand stack inconsistent at offset " + offset + ": Previous size " + css + ", now " + stackSize);
                     return;
                 } else {
-                    throw new RuntimeException(functionName + ": Operand stack inconsistent at offset " + offset + ": Previous size " + css + ", now " + stackSize);
+                    throw new JaninoRuntimeException(functionName + ": Operand stack inconsistent at offset " + offset + ": Previous size " + css + ", now " + stackSize);
                 }
             }
             stackSizes[offset] = stackSize;
@@ -396,7 +396,7 @@ public class CodeContext {
             } else {
                 props = Opcode.OPCODE_PROPERTIES[0xff & opcode];
             }
-            if (props == Opcode.INVALID_OPCODE) throw new RuntimeException(functionName + ": Invalid opcode " + (0xff & opcode) + " at offset " + offset);
+            if (props == Opcode.INVALID_OPCODE) throw new JaninoRuntimeException(functionName + ": Invalid opcode " + (0xff & opcode) + " at offset " + offset);
 
             switch (props & Opcode.SD_MASK) {
 
@@ -448,7 +448,7 @@ public class CodeContext {
                 break;
 
             default:
-                throw new RuntimeException(functionName + ": Invalid stack delta");
+                throw new JaninoRuntimeException(functionName + ": Invalid stack delta");
             }
 
             if (stackSize < 0) {
@@ -457,7 +457,7 @@ public class CodeContext {
                     System.err.println(msg);
                     return;
                 } else {
-                    throw new RuntimeException(msg);
+                    throw new JaninoRuntimeException(msg);
                 }
             }
 
@@ -467,7 +467,7 @@ public class CodeContext {
                     System.err.println(msg);
                     return;
                 } else {
-                    throw new RuntimeException(msg);
+                    throw new JaninoRuntimeException(msg);
                 }
             }
 
@@ -587,7 +587,7 @@ public class CodeContext {
                 break;
 
             default:
-                throw new RuntimeException(functionName + ": Invalid OP1");
+                throw new JaninoRuntimeException(functionName + ": Invalid OP1");
             }
 
             switch (props & Opcode.OP2_MASK) {
@@ -605,7 +605,7 @@ public class CodeContext {
                 break;
 
             default:
-                throw new RuntimeException(functionName + ": Invalid OP2");
+                throw new JaninoRuntimeException(functionName + ": Invalid OP2");
             }
 
             switch (props & Opcode.OP3_MASK) {
@@ -619,7 +619,7 @@ public class CodeContext {
                 break;
 
             default:
-                throw new RuntimeException(functionName + ": Invalid OP3");
+                throw new JaninoRuntimeException(functionName + ": Invalid OP3");
             }
 
             Arrays.fill(stackSizes, offset + 1, operandOffset, CodeContext.INVALID_OFFSET);
@@ -740,7 +740,7 @@ public class CodeContext {
         ClassFile.ConstantUtf8Info cui = (ClassFile.ConstantUtf8Info) this.classFile.getConstantPoolInfo(nat.getDescriptorIndex());
         String desc = cui.getString();
 
-        if (desc.charAt(0) != '(') throw new RuntimeException("Method descriptor does not start with \"(\"");
+        if (desc.charAt(0) != '(') throw new JaninoRuntimeException("Method descriptor does not start with \"(\"");
         int i = 1;
         int res = 0;
         for (;;) {
@@ -757,7 +757,7 @@ public class CodeContext {
                 res += 1;
                 while (desc.charAt(i) == '[') ++i;
                 if ("BCFISZDJ".indexOf(desc.charAt(i)) != -1) { ++i; break; }
-                if (desc.charAt(i) != 'L') throw new RuntimeException("Invalid char after \"[\"");
+                if (desc.charAt(i) != 'L') throw new JaninoRuntimeException("Invalid char after \"[\"");
                 ++i;
                 while (desc.charAt(i++) != ';');
                 break;
@@ -766,7 +766,7 @@ public class CodeContext {
                 while (desc.charAt(i++) != ';');
                 break;
             default:
-                throw new RuntimeException("Invalid method descriptor");
+                throw new JaninoRuntimeException("Invalid method descriptor");
             }
         }
     }
@@ -898,7 +898,7 @@ public class CodeContext {
             byte[] oldCode = this.code;
             //double size to avoid horrible performance, but don't grow over our limit
             int newSize = Math.max(Math.min(oldCode.length * 2, 0xffff), oldCode.length + size);
-            if (newSize > 0xffff) throw new RuntimeException("Code attribute in class \"" + this.classFile.getThisClassName() + "\" grows beyond 64 KB");
+            if (newSize > 0xffff) throw new JaninoRuntimeException("Code attribute in class \"" + this.classFile.getThisClassName() + "\" grows beyond 64 KB");
             this.code = new byte[newSize];
             System.arraycopy(oldCode, 0, this.code, 0, ico);
             System.arraycopy(oldCode, ico, this.code, ico + size, this.end.offset - ico);
@@ -936,7 +936,7 @@ public class CodeContext {
         }
 
         public boolean relocate() {
-            if (this.destination.offset == Offset.UNSET) throw new RuntimeException("Cannot relocate branch to unset destination offset");
+            if (this.destination.offset == Offset.UNSET) throw new JaninoRuntimeException("Cannot relocate branch to unset destination offset");
             int offset = this.destination.offset - this.source.offset;
 
             if (!this.expanded && (offset > Short.MAX_VALUE || offset < Short.MIN_VALUE)) {
@@ -1045,7 +1045,7 @@ public class CodeContext {
             if (
                 this.source.offset == Offset.UNSET ||
                 this.destination.offset == Offset.UNSET
-            ) throw new RuntimeException("Cannot relocate offset branch to unset destination offset");
+            ) throw new JaninoRuntimeException("Cannot relocate offset branch to unset destination offset");
             int offset = this.destination.offset - this.source.offset;
             byte[] ba = new byte[] {
                 (byte) (offset >> 24),
@@ -1090,7 +1090,7 @@ public class CodeContext {
      * new one.
      */
     public void pushInserter(Inserter ins) {
-        if (ins.nextInserter != null) throw new RuntimeException("An Inserter can only be pushed once at a time");
+        if (ins.nextInserter != null) throw new JaninoRuntimeException("An Inserter can only be pushed once at a time");
         ins.nextInserter = this.currentInserter;
         this.currentInserter = ins;
     }
@@ -1101,7 +1101,7 @@ public class CodeContext {
      */
     public void popInserter() {
         Inserter ni = this.currentInserter.nextInserter;
-        if (ni == null) throw new RuntimeException("Code inserter stack underflow");
+        if (ni == null) throw new JaninoRuntimeException("Code inserter stack underflow");
         this.currentInserter.nextInserter = null; // Mark it as "unpushed".
         this.currentInserter = ni;
     }
@@ -1123,7 +1123,7 @@ public class CodeContext {
          * this "Offset" before the current inserter.
          */
         public void set() {
-            if (this.offset != Offset.UNSET) throw new RuntimeException("Cannot \"set()\" Offset more than once");
+            if (this.offset != Offset.UNSET) throw new JaninoRuntimeException("Cannot \"set()\" Offset more than once");
 
             this.offset = CodeContext.this.currentInserter.offset;
             this.prev = CodeContext.this.currentInserter.prev;

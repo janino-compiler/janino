@@ -60,14 +60,14 @@ public class Descriptor {
         return d.charAt(0) == '[';
     }
     public static String getComponentDescriptor(String d) {
-        if (d.charAt(0) != '[') throw new RuntimeException("Cannot determine component descriptor from non-array descriptor \"" + d + "\"");
+        if (d.charAt(0) != '[') throw new JaninoRuntimeException("Cannot determine component descriptor from non-array descriptor \"" + d + "\"");
         return d.substring(1);
     }
     public static short size(String d) {
         if (d.equals(Descriptor.VOID_)) return 0;
         if (Descriptor.hasSize1(d)) return 1;
         if (Descriptor.hasSize2(d)) return 2;
-        throw new RuntimeException("No size defined for type \"" + Descriptor.toString(d) + "\"");
+        throw new JaninoRuntimeException("No size defined for type \"" + Descriptor.toString(d) + "\"");
     }
     public static boolean hasSize1(String d) {
         if (d.length() == 1) return "BCFISZ".indexOf(d) != -1;
@@ -88,7 +88,7 @@ public class Descriptor {
                 if (idx != 1) sb.append(", ");
                 idx = Descriptor.toString(d, idx, sb);
             }
-            if (idx >= d.length()) throw new RuntimeException("Invalid descriptor \"" + d + "\"");
+            if (idx >= d.length()) throw new JaninoRuntimeException("Invalid descriptor \"" + d + "\"");
             sb.append(") => ");
             ++idx;
         }
@@ -101,12 +101,12 @@ public class Descriptor {
             ++dimensions;
             ++idx;
         }
-        if (idx >= d.length()) throw new RuntimeException("Invalid descriptor \"" + d + "\"");
+        if (idx >= d.length()) throw new JaninoRuntimeException("Invalid descriptor \"" + d + "\"");
         switch (d.charAt(idx)) {
         case 'L':
             {
                 int idx2 = d.indexOf(';', idx);
-                if (idx2 == -1) throw new RuntimeException("Invalid descriptor \"" + d + "\"");
+                if (idx2 == -1) throw new JaninoRuntimeException("Invalid descriptor \"" + d + "\"");
                 sb.append(d.substring(idx + 1, idx2).replace('/', '.'));
                 idx = idx2;
             }
@@ -121,7 +121,7 @@ public class Descriptor {
         case 'S': sb.append("short");   break;
         case 'Z': sb.append("boolean"); break;
         default:
-            throw new RuntimeException("Invalid descriptor \"" + d + "\"");
+            throw new JaninoRuntimeException("Invalid descriptor \"" + d + "\"");
         }
         for (; dimensions > 0; --dimensions) sb.append("[]");
         return idx + 1;
@@ -165,14 +165,14 @@ public class Descriptor {
                 // Array type -- convert "[Ljava/lang/String;" to "[Ljava.lang.String;".
                 return d.replace('/', '.');
             }
-        throw new RuntimeException("(Invalid field descriptor \"" + d + "\")");
+        throw new JaninoRuntimeException("(Invalid field descriptor \"" + d + "\")");
     }
 
     /**
      * Convert a descriptor into the "internal form" as defined by JVMS 4.2.
      */
     public static String toInternalForm(String d) {
-        if (d.charAt(0) != 'L') throw new RuntimeException("Attempt to convert non-class descriptor \"" + d + "\" into internal form");
+        if (d.charAt(0) != 'L') throw new JaninoRuntimeException("Attempt to convert non-class descriptor \"" + d + "\" into internal form");
         return d.substring(1, d.length() - 1);
     }
 
@@ -190,7 +190,7 @@ public class Descriptor {
      * default package.
      */
     public static String getPackageName(String d) {
-        if (d.charAt(0) != 'L') throw new RuntimeException("Attempt to get package name of non-class descriptor \"" + d + "\"");
+        if (d.charAt(0) != 'L') throw new JaninoRuntimeException("Attempt to get package name of non-class descriptor \"" + d + "\"");
         int idx = d.lastIndexOf('/');
         return idx == -1 ? null : d.substring(1, idx).replace('/', '.');
     }

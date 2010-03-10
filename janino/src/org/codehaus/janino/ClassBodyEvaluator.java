@@ -403,7 +403,7 @@ public class ClassBodyEvaluator extends SimpleCompiler {
         try {
             return cl.loadClass(newClassName);
         } catch (ClassNotFoundException ex) {
-            throw new RuntimeException("SNO: Generated compilation unit does not declare class \"" + newClassName + "\"");
+            throw new JaninoRuntimeException("SNO: Generated compilation unit does not declare class \"" + newClassName + "\"");
         }
     }
 
@@ -489,7 +489,7 @@ public class ClassBodyEvaluator extends SimpleCompiler {
             throw new CompileException("Cannot instantiate abstract class -- one or more method implementations are missing", null);
         } catch (IllegalAccessException e) {
             // SNO - type and default constructor of generated class are PUBLIC.
-            throw new RuntimeException(e.toString());
+            throw new JaninoRuntimeException(e.toString());
         }
     }
 }

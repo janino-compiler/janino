@@ -617,7 +617,7 @@ public class ScriptEvaluator extends ClassBodyEvaluator {
                 try {
                     this.result[i] = c.getDeclaredMethod(methodNames[i], this.optionalParameterTypes == null ? new Class[0] : this.optionalParameterTypes[i]);
                 } catch (NoSuchMethodException ex) {
-                    throw new RuntimeException("SNO: Loaded class does not declare method \"" + methodNames[i] + "\"");
+                    throw new JaninoRuntimeException("SNO: Loaded class does not declare method \"" + methodNames[i] + "\"");
                 }
             }
         } else
@@ -656,7 +656,7 @@ public class ScriptEvaluator extends ClassBodyEvaluator {
             }
             for (int i = 0; i < count; ++i) {
                 Method m = (Method) dms.get(new MethodWrapper(methodNames[i], this.optionalParameterTypes == null ? new Class[0] : this.optionalParameterTypes[i]));
-                if (m == null) throw new RuntimeException("SNO: Loaded class does not declare method \"" + methodNames[i] + "\"");
+                if (m == null) throw new JaninoRuntimeException("SNO: Loaded class does not declare method \"" + methodNames[i] + "\"");
                 this.result[i] = m;
             }
         }
@@ -687,7 +687,7 @@ public class ScriptEvaluator extends ClassBodyEvaluator {
         try {
             this.cook(readers);
         } catch (IOException ex) {
-            throw new RuntimeException("SNO: IOException despite StringReader");
+            throw new JaninoRuntimeException("SNO: IOException despite StringReader");
         }
     }
 
@@ -731,7 +731,7 @@ public class ScriptEvaluator extends ClassBodyEvaluator {
             try {
                 this.result[i] = c.getMethod(methodNames[i], parameterTypes[i]);
             } catch (NoSuchMethodException ex) {
-                throw new RuntimeException("SNO: Loaded class does not declare method \"" + this.optionalMethodNames[i] + "\"");
+                throw new JaninoRuntimeException("SNO: Loaded class does not declare method \"" + this.optionalMethodNames[i] + "\"");
             }
         }
     }
@@ -756,7 +756,7 @@ public class ScriptEvaluator extends ClassBodyEvaluator {
         Class[]                  thrownExceptions,
         List/*<BlockStatement>*/ statements
     ) {
-        if (parameterNames.length != parameterTypes.length) throw new RuntimeException("Lengths of \"parameterNames\" (" + parameterNames.length + ") and \"parameterTypes\" (" + parameterTypes.length + ") do not match");
+        if (parameterNames.length != parameterTypes.length) throw new JaninoRuntimeException("Lengths of \"parameterNames\" (" + parameterNames.length + ") and \"parameterTypes\" (" + parameterTypes.length + ") do not match");
 
         Java.FunctionDeclarator.FormalParameter[] fps = new Java.FunctionDeclarator.FormalParameter[parameterNames.length];
         for (int i = 0; i < fps.length; ++i) {
@@ -904,7 +904,7 @@ public class ScriptEvaluator extends ClassBodyEvaluator {
                 interfaceToImplement
             );
         } catch (IOException ex) {
-            throw new RuntimeException("IOException despite StringReader");
+            throw new JaninoRuntimeException("IOException despite StringReader");
         }
     }
 
@@ -924,10 +924,10 @@ public class ScriptEvaluator extends ClassBodyEvaluator {
         String[]        parameterNames,
         Class           interfaceToImplement
     ) throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
-        if (!interfaceToImplement.isInterface()) throw new RuntimeException("\"" + interfaceToImplement + "\" is not an interface");
+        if (!interfaceToImplement.isInterface()) throw new JaninoRuntimeException("\"" + interfaceToImplement + "\" is not an interface");
 
         Method[] methods = interfaceToImplement.getDeclaredMethods();
-        if (methods.length != 1) throw new RuntimeException("Interface \"" + interfaceToImplement + "\" must declare exactly one method");
+        if (methods.length != 1) throw new JaninoRuntimeException("Interface \"" + interfaceToImplement + "\" must declare exactly one method");
         Method methodToImplement = methods[0];
 
         se.setImplementedTypes(new Class[] { interfaceToImplement });
@@ -942,10 +942,10 @@ public class ScriptEvaluator extends ClassBodyEvaluator {
             return c.newInstance();
         } catch (InstantiationException e) {
             // SNO - Declared class is always non-abstract.
-            throw new RuntimeException(e.toString());
+            throw new JaninoRuntimeException(e.toString());
         } catch (IllegalAccessException e) {
             // SNO - interface methods are always PUBLIC.
-            throw new RuntimeException(e.toString());
+            throw new JaninoRuntimeException(e.toString());
         }
     }
 
@@ -1028,7 +1028,7 @@ public class ScriptEvaluator extends ClassBodyEvaluator {
         try {
             return this.result[idx].invoke(null, parameterValues);
         } catch (IllegalAccessException ex) {
-            throw new RuntimeException(ex.toString());
+            throw new JaninoRuntimeException(ex.toString());
         }
     }
 

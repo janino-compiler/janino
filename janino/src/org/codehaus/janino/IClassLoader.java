@@ -96,7 +96,7 @@ public abstract class IClassLoader {
             this.FLOAT             = this.loadIClass(Descriptor.FLOAT);
             this.DOUBLE            = this.loadIClass(Descriptor.DOUBLE);
         } catch (ClassNotFoundException e) {
-            throw new RuntimeException("Cannot load simple types");
+            throw new JaninoRuntimeException("Cannot load simple types");
         }
     }
 
@@ -167,7 +167,7 @@ public abstract class IClassLoader {
             }
         }
 
-        if (!result.getDescriptor().equalsIgnoreCase(fieldDescriptor)) throw new RuntimeException("\"findIClass()\" returned \"" + result.getDescriptor() + "\" instead of \"" + fieldDescriptor + "\"");
+        if (!result.getDescriptor().equalsIgnoreCase(fieldDescriptor)) throw new JaninoRuntimeException("\"findIClass()\" returned \"" + result.getDescriptor() + "\" instead of \"" + fieldDescriptor + "\"");
 
         if (IClassLoader.DEBUG) System.out.println(this + ": Loaded type \"" + fieldDescriptor + "\" as " + result);
 
@@ -221,7 +221,7 @@ public abstract class IClassLoader {
         IClass loadedIClass = (IClass) this.loadedIClasses.get(descriptor);
         if (loadedIClass != null) {
             if (loadedIClass == iClass) return;
-            throw new RuntimeException("Non-identical definition of IClass \"" + descriptor + "\"");
+            throw new JaninoRuntimeException("Non-identical definition of IClass \"" + descriptor + "\"");
         }
 
         // Define.

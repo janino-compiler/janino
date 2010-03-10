@@ -415,7 +415,7 @@ public class Traverser {
             for (int i = 0; i < values.length; ++i) this.traverseArrayInitializerOrRvalue(values[i]);
         } else
         {
-            throw new RuntimeException("Unexpected array initializer or rvalue class " + aiorv.getClass().getName());
+            throw new JaninoRuntimeException("Unexpected array initializer or rvalue class " + aiorv.getClass().getName());
         }
     }
     public void traverseNewClassInstance(Java.NewClassInstance nci) {

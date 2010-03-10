@@ -34,7 +34,12 @@
 
 package org.codehaus.janino.util;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+
+import org.codehaus.janino.JaninoRuntimeException;
 
 /**
  * An {@link java.util.Iterator} that traverses a {@link java.util.Collection} of
@@ -147,7 +152,7 @@ public class MultiIterator implements Iterator {
                 this.inner = Arrays.asList((Object[]) o).iterator();
             } else
             {
-                throw new RuntimeException("Unexpected element type \"" + o.getClass().getName() + "\"");
+                throw new JaninoRuntimeException("Unexpected element type \"" + o.getClass().getName() + "\"");
             }
         }
     }

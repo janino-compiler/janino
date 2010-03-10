@@ -149,10 +149,10 @@ public class UnitCompiler {
                 this.isStringBuilderAvailable = false;
             } else
             {
-                throw new RuntimeException("SNO: Could neither load \"StringBuffer\" nor \"StringBuilder\"");
+                throw new JaninoRuntimeException("SNO: Could neither load \"StringBuffer\" nor \"StringBuilder\"");
             }
         } catch (ClassNotFoundException ex) {
-            throw new RuntimeException("SNO: Error loading \"StringBuffer\" or \"StringBuilder\": " + ex.getMessage());
+            throw new JaninoRuntimeException("SNO: Error loading \"StringBuffer\" or \"StringBuilder\": " + ex.getMessage());
         }
 
         // Compile non-static import declarations. (Must be done here in the constructor and not
@@ -333,7 +333,7 @@ public class UnitCompiler {
             this.compile2((Java.InterfaceDeclaration) pmtd);
         } else
         {
-            throw new RuntimeException("PMTD of unexpected type " + pmtd.getClass().getName());
+            throw new JaninoRuntimeException("PMTD of unexpected type " + pmtd.getClass().getName());
         }
     }
 
@@ -443,7 +443,7 @@ public class UnitCompiler {
             for (int i = 0; i < cds.length; ++i) {
                 this.compile(cds[i], cf);
                 if (syntheticFieldCount != cd.syntheticFields.size()) {
-                    throw new RuntimeException("SNO: Compilation of constructor \"" + cds[i] + "\" (" + cds[i].getLocation() +") added synthetic fields!?");
+                    throw new JaninoRuntimeException("SNO: Compilation of constructor \"" + cds[i] + "\" (" + cds[i].getLocation() +") added synthetic fields!?");
                 }
             }
         }
@@ -1218,7 +1218,7 @@ public class UnitCompiler {
                 this.compileGetValue((Java.ArrayInitializer) initializer, fieldType);
             } else
             {
-                throw new RuntimeException("Unexpected array initializer or rvalue class " + initializer.getClass().getName());
+                throw new JaninoRuntimeException("Unexpected array initializer or rvalue class " + initializer.getClass().getName());
             }
 
             // No need to check accessibility here.
@@ -1392,7 +1392,7 @@ public class UnitCompiler {
                     this.compileGetValue((Java.ArrayInitializer) vd.optionalInitializer, lv.type);
                 } else
                 {
-                    throw new RuntimeException("Unexpected rvalue or array initialized class " + vd.optionalInitializer.getClass().getName());
+                    throw new JaninoRuntimeException("Unexpected rvalue or array initialized class " + vd.optionalInitializer.getClass().getName());
                 }
                 this.store(
                     (Locatable) lvds, // l
@@ -2128,7 +2128,7 @@ public class UnitCompiler {
                 resultType,      // sourceType
                 lhsType          // destinationType
             )
-        ) throw new RuntimeException("SNO: \"" + a.operator + "\" reconversion failed");
+        ) throw new JaninoRuntimeException("SNO: \"" + a.operator + "\" reconversion failed");
         this.compileSet(a.lhs);
     }
     private void compile2(Java.Crement c) throws CompileException {
@@ -2410,7 +2410,7 @@ public class UnitCompiler {
                     this.writeBranch(bo, Opcode.IFEQ + opIdx, dst);
                 } else
                 {
-                    throw new RuntimeException("Unexpected promoted type \"" + promotedType + "\"");
+                    throw new JaninoRuntimeException("Unexpected promoted type \"" + promotedType + "\"");
                 }
                 return;
             }
@@ -2683,7 +2683,7 @@ public class UnitCompiler {
                 iClass == IClass.BOOLEAN ? "Ljava/lang/Boolean;"   :
                 null
             );
-            if (wrapperClassDescriptor == null) throw new RuntimeException("SNO: Unidentifiable primitive type \"" + iClass + "\"");
+            if (wrapperClassDescriptor == null) throw new JaninoRuntimeException("SNO: Unidentifiable primitive type \"" + iClass + "\"");
 
             this.writeConstantFieldrefInfo(
                 wrapperClassDescriptor,
@@ -2716,7 +2716,7 @@ public class UnitCompiler {
         if (declaringType instanceof Java.InterfaceDeclaration) {
             statics = ((Java.InterfaceDeclaration) declaringType).constantDeclarations;
         } else {
-            throw new RuntimeException("SNO: AbstractTypeDeclaration is neither ClassDeclaration nor InterfaceDeclaration");
+            throw new JaninoRuntimeException("SNO: AbstractTypeDeclaration is neither ClassDeclaration nor InterfaceDeclaration");
         }
 
         String className = Descriptor.toClassName(iClass.getDescriptor());
@@ -2779,7 +2779,7 @@ public class UnitCompiler {
                 if (declaringType instanceof Java.InterfaceDeclaration) {
                     ((Java.InterfaceDeclaration) declaringType).addConstantDeclaration(fd);
                 } else {
-                    throw new RuntimeException("SNO: AbstractTypeDeclaration is neither ClassDeclaration nor InterfaceDeclaration");
+                    throw new JaninoRuntimeException("SNO: AbstractTypeDeclaration is neither ClassDeclaration nor InterfaceDeclaration");
                 }
             }
         }
@@ -2862,7 +2862,7 @@ public class UnitCompiler {
                 resultType,    // sourceType
                 lhsType        // destinationType
             )
-        ) throw new RuntimeException("SNO: \"" + a.operator + "\" reconversion failed");
+        ) throw new JaninoRuntimeException("SNO: \"" + a.operator + "\" reconversion failed");
         this.dupx(
             (Locatable) a, // l
             lhsType,       // type
@@ -3354,7 +3354,7 @@ public class UnitCompiler {
         Java.AnonymousClassDeclaration acd = naci.anonymousClassDeclaration;
         IClass sc = this.resolve(acd).getSuperclass();
         IClass.IConstructor[] iConstructors = sc.getDeclaredIConstructors();
-        if (iConstructors.length == 0) throw new RuntimeException("SNO: Base class has no constructors");
+        if (iConstructors.length == 0) throw new JaninoRuntimeException("SNO: Base class has no constructors");
 
         // Determine most specific constructor.
         IClass.IConstructor iConstructor = (IClass.IConstructor) this.findMostSpecificIInvocable(
@@ -3516,7 +3516,7 @@ public class UnitCompiler {
                 this.compileGetValue((Java.ArrayInitializer) aiorv, ct);
             } else
             {
-                throw new RuntimeException("Unexpected array initializer or rvalue class " + aiorv.getClass().getName());
+                throw new JaninoRuntimeException("Unexpected array initializer or rvalue class " + aiorv.getClass().getName());
             }
             this.writeOpcode(ai, Opcode.IASTORE + UnitCompiler.ilfdabcs(ct));
         }
@@ -4111,7 +4111,7 @@ public class UnitCompiler {
             case Java.BasicType.FLOAT:   return IClass.FLOAT;
             case Java.BasicType.DOUBLE:  return IClass.DOUBLE;
             case Java.BasicType.BOOLEAN: return IClass.BOOLEAN;
-            default: throw new RuntimeException("Invalid index " + bt.index);
+            default: throw new JaninoRuntimeException("Invalid index " + bt.index);
         }
     }
     private IClass getType2(Java.ReferenceType rt) throws CompileException {
@@ -4466,7 +4466,7 @@ public class UnitCompiler {
         if (l.value instanceof Character) return IClass.CHAR;
         if (l.value instanceof Boolean  ) return IClass.BOOLEAN;
         if (l.value == null             ) return IClass.VOID;
-        throw new RuntimeException("SNO: Unidentifiable literal type \"" + l.value.getClass().getName() + "\"");
+        throw new JaninoRuntimeException("SNO: Unidentifiable literal type \"" + l.value.getClass().getName() + "\"");
     }
 
     // ---------------- Atom.isType() ---------------
@@ -4711,7 +4711,7 @@ public class UnitCompiler {
                 return null;
             } else
             {
-                throw new RuntimeException("\"" + type + "\" has unexpected access \"" + type.getAccess() + "\"");
+                throw new JaninoRuntimeException("\"" + type + "\" has unexpected access \"" + type.getAccess() + "\"");
             }
         }
 
@@ -4757,7 +4757,7 @@ public class UnitCompiler {
         for (Iterator it = cd.getDeclaringClass().syntheticFields.values().iterator(); it.hasNext();) {
             IClass.IField sf = (IClass.IField) it.next();
             Java.LocalVariable syntheticParameter = (Java.LocalVariable) cd.syntheticParameters.get(sf.getName());
-            if (syntheticParameter == null) throw new RuntimeException("SNO: Synthetic parameter for synthetic field \"" + sf.getName() + "\" not found");
+            if (syntheticParameter == null) throw new JaninoRuntimeException("SNO: Synthetic parameter for synthetic field \"" + sf.getName() + "\" not found");
             try {
                 Java.ExpressionStatement es = new Java.ExpressionStatement(new Java.Assignment(
                     cd.getLocation(),             // location
@@ -4775,7 +4775,7 @@ public class UnitCompiler {
                 es.setEnclosingScope(cd);
                 this.compile(es);
             } catch (Parser.ParseException e) {
-                throw new RuntimeException("S.N.O.");
+                throw new JaninoRuntimeException("S.N.O.");
             }
         }
     }
@@ -5006,7 +5006,7 @@ public class UnitCompiler {
             return type;
         }
 
-        throw new RuntimeException("Unexpected operator \"" + operator + "\"");
+        throw new JaninoRuntimeException("Unexpected operator \"" + operator + "\"");
     }
 
     /**
@@ -5195,7 +5195,7 @@ public class UnitCompiler {
 
         // Find constructors.
         IClass.IConstructor[] iConstructors = targetClass.getDeclaredIConstructors();
-        if (iConstructors.length == 0) throw new RuntimeException("SNO: Target class \"" + targetClass.getDescriptor() + "\" has no constructors");
+        if (iConstructors.length == 0) throw new JaninoRuntimeException("SNO: Target class \"" + targetClass.getDescriptor() + "\" has no constructors");
 
         IClass.IConstructor iConstructor = (IClass.IConstructor) this.findMostSpecificIInvocable(
             l,
@@ -5238,7 +5238,7 @@ public class UnitCompiler {
             }
 
             if (!(scopeTypeDeclaration instanceof Java.ClassDeclaration)) {
-                if (syntheticFields.length > 0) throw new RuntimeException("SNO: Target class has synthetic fields");
+                if (syntheticFields.length > 0) throw new JaninoRuntimeException("SNO: Target class has synthetic fields");
             } else {
                 Java.ClassDeclaration scopeClassDeclaration = (Java.ClassDeclaration) scopeTypeDeclaration;
                 for (int i = 0; i < syntheticFields.length; ++i) {
@@ -5315,7 +5315,7 @@ public class UnitCompiler {
                                     break DETERMINE_LV;
                                 }
                             }
-                            throw new RuntimeException("SNO: Synthetic field \"" + sf.getName() + "\" neither maps a synthetic field of an enclosing instance nor a local variable");
+                            throw new JaninoRuntimeException("SNO: Synthetic field \"" + sf.getName() + "\" neither maps a synthetic field of an enclosing instance nor a local variable");
                         }
                         this.load(l, lv);
                     }
@@ -5363,7 +5363,7 @@ public class UnitCompiler {
                     case Mod.PUBLIC:
                         return Access.PUBLIC;
                     default:
-                        throw new RuntimeException("Invalid access");
+                        throw new JaninoRuntimeException("Invalid access");
                     }
                 }
 
@@ -5574,7 +5574,7 @@ public class UnitCompiler {
                 Java.LocalVariable lv = ((Java.BlockStatement) s).findLocalVariable(identifier);
                 if (lv != null) {
                     Java.LocalVariableAccess lva = new Java.LocalVariableAccess(location, lv);
-                    if (!(scope instanceof Java.BlockStatement)) throw new RuntimeException("SNO: Local variable access in non-block statement context!?");
+                    if (!(scope instanceof Java.BlockStatement)) throw new JaninoRuntimeException("SNO: Local variable access in non-block statement context!?");
                     lva.setEnclosingBlockStatement((Java.BlockStatement) scope);
                     return lva;
                 }
@@ -6198,7 +6198,7 @@ public class UnitCompiler {
                                 theNonAbstractMethod = m;
                             } else
                             {
-                                throw new RuntimeException("SNO: More than one non-abstract method with same signature and same declaring class!?");
+                                throw new JaninoRuntimeException("SNO: More than one non-abstract method with same signature and same declaring class!?");
                             }
                         }
                     }
@@ -6453,7 +6453,7 @@ public class UnitCompiler {
             }
 
             public boolean isArray() { return false; }
-            protected IClass  getComponentType2() { throw new RuntimeException("SNO: Non-array type has no component type"); }
+            protected IClass  getComponentType2() { throw new JaninoRuntimeException("SNO: Non-array type has no component type"); }
             public boolean isPrimitive() { return false; }
             public boolean isPrimitiveNumeric() { return false; }
             protected IConstructor[] getDeclaredIConstructors2() {
@@ -6497,7 +6497,7 @@ public class UnitCompiler {
                     }
                     return (IClass.IField[]) l.toArray(new IClass.IField[l.size()]);
                 } else {
-                    throw new RuntimeException("SNO: AbstractTypeDeclaration is neither ClassDeclaration nor InterfaceDeclaration");
+                    throw new JaninoRuntimeException("SNO: AbstractTypeDeclaration is neither ClassDeclaration nor InterfaceDeclaration");
                 }
             }
             public IField[] getSyntheticIFields() {
@@ -6546,7 +6546,7 @@ public class UnitCompiler {
                     }
                     return res;
                 } else {
-                    throw new RuntimeException("SNO: AbstractTypeDeclaration is neither ClassDeclaration nor InterfaceDeclaration");
+                    throw new JaninoRuntimeException("SNO: AbstractTypeDeclaration is neither ClassDeclaration nor InterfaceDeclaration");
                 }
             }
             public boolean isAbstract() {
@@ -6601,7 +6601,7 @@ public class UnitCompiler {
             Java.ConstructorDeclarator constructorDeclarator = (Java.ConstructorDeclarator) declaringTypeBodyDeclaration;
             String spn = "this$" + (path.size() - 2);
             Java.LocalVariable syntheticParameter = (Java.LocalVariable) constructorDeclarator.syntheticParameters.get(spn);
-            if (syntheticParameter == null) throw new RuntimeException("SNO: Synthetic parameter \""+ spn + "\" not found");
+            if (syntheticParameter == null) throw new JaninoRuntimeException("SNO: Synthetic parameter \""+ spn + "\" not found");
             this.load(l, syntheticParameter);
             i = 1;
         } else {
@@ -6717,7 +6717,7 @@ public class UnitCompiler {
                 case Mod.PUBLIC:
                     return Access.PUBLIC;
                 default:
-                    throw new RuntimeException("Invalid access");
+                    throw new JaninoRuntimeException("Invalid access");
                 }
             }
 
@@ -6795,7 +6795,7 @@ public class UnitCompiler {
                 case Mod.PUBLIC:
                     return Access.PUBLIC;
                 default:
-                    throw new RuntimeException("Invalid access");
+                    throw new JaninoRuntimeException("Invalid access");
                 }
             }
 
@@ -6835,7 +6835,7 @@ public class UnitCompiler {
             return this.toIMethod((Java.MethodDeclarator) fd);
         } else
         {
-            throw new RuntimeException("FunctionDeclarator is neither ConstructorDeclarator nor MethodDeclarator");
+            throw new JaninoRuntimeException("FunctionDeclarator is neither ConstructorDeclarator nor MethodDeclarator");
         }
     }
 
@@ -6929,17 +6929,17 @@ public class UnitCompiler {
         try {
             classNotFoundExceptionIClass = this.iClassLoader.loadIClass("Ljava/lang/ClassNotFoundException;");
         } catch (ClassNotFoundException ex) {
-            throw new RuntimeException("Loading class \"ClassNotFoundException\": " + ex.getMessage());
+            throw new JaninoRuntimeException("Loading class \"ClassNotFoundException\": " + ex.getMessage());
         }
-        if (classNotFoundExceptionIClass == null) throw new RuntimeException("SNO: Cannot load \"ClassNotFoundException\"");
+        if (classNotFoundExceptionIClass == null) throw new JaninoRuntimeException("SNO: Cannot load \"ClassNotFoundException\"");
 
         IClass noClassDefFoundErrorIClass;
         try {
             noClassDefFoundErrorIClass = this.iClassLoader.loadIClass("Ljava/lang/NoClassDefFoundError;");
         } catch (ClassNotFoundException ex) {
-            throw new RuntimeException("Loading class \"NoClassDefFoundError\": " + ex.getMessage());
+            throw new JaninoRuntimeException("Loading class \"NoClassDefFoundError\": " + ex.getMessage());
         }
-        if (noClassDefFoundErrorIClass == null) throw new RuntimeException("SNO: Cannot load \"NoClassFoundError\"");
+        if (noClassDefFoundErrorIClass == null) throw new JaninoRuntimeException("SNO: Cannot load \"NoClassFoundError\"");
 
         // catch (ClassNotFoundException ex) {
         Java.Block b = new Java.Block(loc);
@@ -7085,7 +7085,7 @@ public class UnitCompiler {
             this.writeOpcode(l, Opcode.ACONST_NULL);
             return IClass.VOID;
         }
-        throw new RuntimeException("Unknown literal type \"" + value.getClass().getName() + "\"");
+        throw new JaninoRuntimeException("Unknown literal type \"" + value.getClass().getName() + "\"");
     }
 
     /**
@@ -7331,7 +7331,7 @@ public class UnitCompiler {
                 sourceType, // sourceType
                 pt          // targetType
             )
-        ) throw new RuntimeException("SNO: reverse unary numeric promotion failed");
+        ) throw new JaninoRuntimeException("SNO: reverse unary numeric promotion failed");
         if (unboxedType != null) this.boxingConversion(l, unboxedType, targetType);
     }
 
@@ -7360,7 +7360,7 @@ public class UnitCompiler {
                 sourceType, // sourceType
                 targetType  // targetType
             )
-        ) throw new RuntimeException("SNO: Conversion failed");
+        ) throw new JaninoRuntimeException("SNO: Conversion failed");
     }
 
     private IClass unaryNumericPromotionType(Locatable l, IClass type) throws CompileException {
@@ -8024,7 +8024,7 @@ public class UnitCompiler {
             break;
 
         default:
-            throw new RuntimeException("dup(" + n + ")");
+            throw new JaninoRuntimeException("dup(" + n + ")");
         }
     }
     private void dupx(
@@ -8032,7 +8032,7 @@ public class UnitCompiler {
         IClass    type,
         int       x
     ) {
-        if (x < 0 || x > 2) throw new RuntimeException("SNO: x has value " + x);
+        if (x < 0 || x > 2) throw new JaninoRuntimeException("SNO: x has value " + x);
         int dup  = Opcode.DUP  + x;
         int dup2 = Opcode.DUP2 + x;
         this.writeOpcode(l, (
@@ -8062,7 +8062,7 @@ public class UnitCompiler {
         if (t == IClass.LONG  ) return 1;
         if (t == IClass.FLOAT ) return 2;
         if (t == IClass.DOUBLE) return 3;
-        throw new RuntimeException("Unexpected type \"" + t + "\"");
+        throw new JaninoRuntimeException("Unexpected type \"" + t + "\"");
     }
     static int ilfd(
         IClass t,
@@ -8081,7 +8081,7 @@ public class UnitCompiler {
         if (t == IClass.LONG  ) return opcodeLong;
         if (t == IClass.FLOAT ) return opcodeFloat;
         if (t == IClass.DOUBLE) return opcodeDouble;
-        throw new RuntimeException("Unexpected type \"" + t + "\"");
+        throw new JaninoRuntimeException("Unexpected type \"" + t + "\"");
     }
     private int ilfda(IClass t) {
         return !t.isPrimitive() ? 4 : UnitCompiler.ilfd(t);
@@ -8095,7 +8095,7 @@ public class UnitCompiler {
         if (t == IClass.BOOLEAN || t == IClass.BYTE) return 5;
         if (t == IClass.CHAR  ) return 6;
         if (t == IClass.SHORT ) return 7;
-        throw new RuntimeException("Unexpected type \"" + t + "\"");
+        throw new JaninoRuntimeException("Unexpected type \"" + t + "\"");
     }
 
     /**
@@ -8263,7 +8263,7 @@ public class UnitCompiler {
 
     private CodeContext getCodeContext() {
         CodeContext res = this.codeContext;
-        if (res == null) throw new RuntimeException("S.N.O.: Null CodeContext");
+        if (res == null) throw new JaninoRuntimeException("S.N.O.: Null CodeContext");
         return res;
     }
 
@@ -8279,13 +8279,13 @@ public class UnitCompiler {
 
     private void writeByte(int v) {
         if (v > Byte.MAX_VALUE - Byte.MIN_VALUE) {
-            throw new RuntimeException("Byte value out of legal range");
+            throw new JaninoRuntimeException("Byte value out of legal range");
         }
         this.codeContext.write((short) -1, (byte) v);
     }
     private void writeShort(int v) {
         if (v > Short.MAX_VALUE - Short.MIN_VALUE) {
-            throw new RuntimeException("Short value out of legal range");
+            throw new JaninoRuntimeException("Short value out of legal range");
         }
         this.codeContext.write((short) -1, (byte) (v >> 8), (byte) v);
     }

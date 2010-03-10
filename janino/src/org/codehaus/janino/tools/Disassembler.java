@@ -34,8 +34,27 @@
 
 package org.codehaus.janino.tools;
 
-import java.io.*;
-import java.util.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.EOFException;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.LineNumberReader;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.StringTokenizer;
+
+import org.codehaus.janino.JaninoRuntimeException;
 
 /**
  * A Java bytecode disassembler, comparable to JAVAP, which is part of
@@ -402,7 +421,7 @@ public class Disassembler {
         case 1:
             return new ConstantUtf8Info(dis.readUTF());
         default:
-            throw new RuntimeException("Invalid cp_info tag \"" + (int) tag + "\"");
+            throw new JaninoRuntimeException("Invalid cp_info tag \"" + (int) tag + "\"");
         }
     }
 
@@ -516,7 +535,7 @@ public class Disassembler {
 
         // Check for extraneous bytes.
         int av = bais.available();
-        if (av > 0) throw new RuntimeException(av + " extraneous bytes in attribute \"" + attributeName + "\"");
+        if (av > 0) throw new JaninoRuntimeException(av + " extraneous bytes in attribute \"" + attributeName + "\"");
 
         return res;
     }
@@ -552,11 +571,11 @@ public class Disassembler {
                             for (int i = 0; i < attributes.length; ++i) {
                                 AttributeInfo a = attributes[i];
                                 if (a instanceof LocalVariableTableAttribute) {
-                                    if (localVariableTableAttribute != null) throw new RuntimeException("Duplicate LocalVariableTable attribute");
+                                    if (localVariableTableAttribute != null) throw new JaninoRuntimeException("Duplicate LocalVariableTable attribute");
                                     localVariableTableAttribute = (LocalVariableTableAttribute) a;
                                 }
                                 if (a instanceof LineNumberTableAttribute) {
-                                    if (lineNumberTableAttribute != null) throw new RuntimeException("Duplicate LineNumberTable attribute");
+                                    if (lineNumberTableAttribute != null) throw new JaninoRuntimeException("Duplicate LineNumberTable attribute");
                                     lineNumberTableAttribute = (LineNumberTableAttribute) a;
                                 }
                             }
@@ -1206,7 +1225,7 @@ public class Disassembler {
                         operand = new Operand() {
                             public void disasm(DataInputStream dis, int instructionOffset, LocalVariableTableAttribute localVariableTableAttribute, Disassembler d) throws IOException {
                                 int npads = 3 - (instructionOffset % 4);
-                                for (int i = 0; i < npads; ++i) if (dis.readByte() != (byte) 0) throw new RuntimeException("Non-zero pad byte in \"tableswitch\"");
+                                for (int i = 0; i < npads; ++i) if (dis.readByte() != (byte) 0) throw new JaninoRuntimeException("Non-zero pad byte in \"tableswitch\"");
                                 d.print("default => " + (instructionOffset + dis.readInt()));
                                 int low = dis.readInt();
                                 int high = dis.readInt();
@@ -1240,13 +1259,13 @@ public class Disassembler {
                             public void disasm(DataInputStream dis, int instructionOffset, LocalVariableTableAttribute localVariableTableAttribute, Disassembler d) throws IOException {
                                 int subopcode = 0xff & dis.readByte();
                                 Instruction wideInstruction = opcodeToWideInstruction[subopcode];
-                                if (wideInstruction == null) throw new RuntimeException("Invalid opcode " + subopcode + " after opcode WIDE");
+                                if (wideInstruction == null) throw new JaninoRuntimeException("Invalid opcode " + subopcode + " after opcode WIDE");
                                 d.disasmInstruction(wideInstruction, dis, instructionOffset, localVariableTableAttribute);
                             }
                         };
                     } else
                     {
-                        throw new RuntimeException("Unknown operand \"" + s + "\"");
+                        throw new JaninoRuntimeException("Unknown operand \"" + s + "\"");
                     }
                     l.add(operand);
                 }

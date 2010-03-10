@@ -112,10 +112,10 @@ public class Java {
         }
 
         // Implement "Scope".
-        public Scope getEnclosingScope() { throw new RuntimeException("A compilation unit has no enclosing scope"); }
+        public Scope getEnclosingScope() { throw new JaninoRuntimeException("A compilation unit has no enclosing scope"); }
 
         public void setPackageDeclaration(PackageDeclaration packageDeclaration) {
-            if (this.optionalPackageDeclaration != null) throw new RuntimeException("Re-setting package declaration");
+            if (this.optionalPackageDeclaration != null) throw new JaninoRuntimeException("Re-setting package declaration");
             this.optionalPackageDeclaration = packageDeclaration;
         }
 
@@ -377,7 +377,7 @@ public class Java {
 
 
         public void setEnclosingScope(Scope enclosingScope) {
-            if (this.enclosingScope != null && enclosingScope != this.enclosingScope) throw new RuntimeException("Enclosing scope is already set for type declaration \"" + this.toString() + "\" at " + this.getLocation());
+            if (this.enclosingScope != null && enclosingScope != this.enclosingScope) throw new JaninoRuntimeException("Enclosing scope is already set for type declaration \"" + this.toString() + "\" at " + this.getLocation());
             this.enclosingScope = enclosingScope;
         }
         public Scope getEnclosingScope() {
@@ -481,11 +481,11 @@ public class Java {
 
         // Implement InnerClassDeclaration.
         public void defineSyntheticField(IClass.IField iField) throws CompileException {
-            if (!(this instanceof InnerClassDeclaration)) throw new RuntimeException();
+            if (!(this instanceof InnerClassDeclaration)) throw new JaninoRuntimeException();
 
             IClass.IField if2 = (IClass.IField) this.syntheticFields.get(iField.getName());
             if (if2 != null) {
-                if (iField.getType() != if2.getType()) throw new RuntimeException();
+                if (iField.getType() != if2.getType()) throw new JaninoRuntimeException();
                 return;
             }
             this.syntheticFields.put(iField.getName(), iField);
@@ -888,7 +888,7 @@ public class Java {
 
         // Implement TypeBodyDeclaration.
         public void setDeclaringType(TypeDeclaration declaringType) {
-            if (this.declaringType != null && declaringType != null) throw new RuntimeException("Declaring type for type body declaration \"" + this.toString() + "\"at " + this.getLocation() + " is already set");
+            if (this.declaringType != null && declaringType != null) throw new JaninoRuntimeException("Declaring type for type body declaration \"" + this.toString() + "\"at " + this.getLocation() + " is already set");
             this.declaringType = declaringType;
         }
         public TypeDeclaration getDeclaringType() {
@@ -1184,7 +1184,7 @@ public class Java {
             for (int i = 0; i < values.length; ++i) Java.setEnclosingBlockStatement(values[i], enclosingBlockStatement);
         } else
         {
-            throw new RuntimeException("Unexpected array or initializer class " + aiorv.getClass().getName());
+            throw new JaninoRuntimeException("Unexpected array or initializer class " + aiorv.getClass().getName());
         }
     }
 
@@ -1243,7 +1243,7 @@ public class Java {
 
         // Implement "BlockStatement".
         public void setEnclosingScope(Scope enclosingScope) {
-            if (this.enclosingScope != null && enclosingScope != this.enclosingScope) throw new RuntimeException("Enclosing scope is already set for statement \"" + this.toString() + "\" at " + this.getLocation());
+            if (this.enclosingScope != null && enclosingScope != this.enclosingScope) throw new JaninoRuntimeException("Enclosing scope is already set for statement \"" + this.toString() + "\" at " + this.getLocation());
             this.enclosingScope = enclosingScope;
         }
         public Scope getEnclosingScope() { return this.enclosingScope; }
@@ -1514,7 +1514,7 @@ public class Java {
         }
 
         public void setEnclosingTryStatement(TryStatement enclosingTryStatement) {
-            if (this.enclosingTryStatement != null && enclosingTryStatement != this.enclosingTryStatement) throw new RuntimeException("Enclosing TYR statement already set for catch clause " + this.toString() + " at " + this.getLocation());
+            if (this.enclosingTryStatement != null && enclosingTryStatement != this.enclosingTryStatement) throw new JaninoRuntimeException("Enclosing TYR statement already set for catch clause " + this.toString() + " at " + this.getLocation());
             this.enclosingTryStatement = enclosingTryStatement;
         }
         public Scope getEnclosingScope() { return this.enclosingTryStatement; }
@@ -1824,7 +1824,7 @@ public class Java {
          * {@link org.codehaus.janino.Java.Type} objects.
          */
         public void setEnclosingScope(final Scope enclosingScope) {
-            if (this.enclosingScope != null && enclosingScope != this.enclosingScope) throw new RuntimeException("Enclosing scope already set for type \"" + this.toString() + "\" at " + this.getLocation());
+            if (this.enclosingScope != null && enclosingScope != this.enclosingScope) throw new JaninoRuntimeException("Enclosing scope already set for type \"" + this.toString() + "\" at " + this.getLocation());
             this.enclosingScope = enclosingScope;
         }
         public Scope getEnclosingScope() {
@@ -1871,7 +1871,7 @@ public class Java {
                 case BasicType.FLOAT:   return "float";
                 case BasicType.DOUBLE:  return "double";
                 case BasicType.BOOLEAN: return "boolean";
-                default: throw new RuntimeException("Invalid index " + this.index);
+                default: throw new JaninoRuntimeException("Invalid index " + this.index);
             }
         }
 
@@ -1973,7 +1973,7 @@ public class Java {
         public final void setEnclosingBlockStatement(final Java.BlockStatement enclosingBlockStatement) {
             this.accept((Visitor.RvalueVisitor) new Traverser() {
                 public void traverseRvalue(Java.Rvalue rv) {
-                    if (rv.enclosingBlockStatement != null && enclosingBlockStatement != rv.enclosingBlockStatement) throw new RuntimeException("Enclosing block statement for rvalue \"" + rv + "\" at " + rv.getLocation() + " is already set");
+                    if (rv.enclosingBlockStatement != null && enclosingBlockStatement != rv.enclosingBlockStatement) throw new JaninoRuntimeException("Enclosing block statement for rvalue \"" + rv + "\" at " + rv.getLocation() + " is already set");
                     rv.enclosingBlockStatement = enclosingBlockStatement;
                     super.traverseRvalue(rv);
                 }
@@ -1982,7 +1982,7 @@ public class Java {
                     ;
                 }
                 public void traverseType(Java.Type t) {
-                    if (t.enclosingScope != null && enclosingBlockStatement != t.enclosingScope) throw new RuntimeException("Enclosing scope already set for type \"" + this.toString() + "\" at " + t.getLocation());
+                    if (t.enclosingScope != null && enclosingBlockStatement != t.enclosingScope) throw new JaninoRuntimeException("Enclosing scope already set for type \"" + this.toString() + "\" at " + t.getLocation());
                     t.enclosingScope = enclosingBlockStatement;
 //                    t.setEnclosingScope(enclosingBlockStatement);
                     super.traverseType(t);
@@ -2599,7 +2599,7 @@ public class Java {
 
         // Implement BlockStatement
         public void setEnclosingScope(Scope enclosingScope) {
-            if (this.enclosingScope != null && enclosingScope != null) throw new RuntimeException("Enclosing scope is already set for statement \"" + this.toString() + "\" at " + this.getLocation());
+            if (this.enclosingScope != null && enclosingScope != null) throw new JaninoRuntimeException("Enclosing scope is already set for statement \"" + this.toString() + "\" at " + this.getLocation());
             this.enclosingScope = enclosingScope;
         }
         public Scope getEnclosingScope() { return this.enclosingScope; }

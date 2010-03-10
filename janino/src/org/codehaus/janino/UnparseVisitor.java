@@ -741,7 +741,7 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
             }
         } else
         {
-            throw new RuntimeException("Unexpected array initializer or rvalue class " + aiorv.getClass().getName());
+            throw new JaninoRuntimeException("Unexpected array initializer or rvalue class " + aiorv.getClass().getName());
         }
     }
 
@@ -841,7 +841,7 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
                 try {
                     line = br.readLine();
                 } catch (IOException e) {
-                    throw new RuntimeException();
+                    throw new JaninoRuntimeException();
                 }
                 if (line == null) break;
                 this.pw.println(line);

@@ -80,7 +80,7 @@ public class ByteArrayClassLoader extends ClassLoader {
                 new Disassembler().disasm(new ByteArrayInputStream(data));
                 System.out.flush();
             } catch (IOException ex) {
-                throw new RuntimeException("SNO: IOException despite ByteArrayInputStream");
+                throw new JaninoRuntimeException("SNO: IOException despite ByteArrayInputStream");
             }
         }
 

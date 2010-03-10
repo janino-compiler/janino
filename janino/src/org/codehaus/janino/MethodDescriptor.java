@@ -57,7 +57,7 @@ public class MethodDescriptor {
      * Parse a method descriptor into parameter FDs and return FDs.
      */
     public MethodDescriptor(String s) {
-        if (s.charAt(0) != '(') throw new RuntimeException();
+        if (s.charAt(0) != '(') throw new JaninoRuntimeException();
 
         int from = 1;
         List parameterFDs = new ArrayList(); // String
@@ -71,7 +71,7 @@ public class MethodDescriptor {
                 for (++to; s.charAt(to) != ';'; ++to);
                 ++to;
             } else {
-                throw new RuntimeException();
+                throw new JaninoRuntimeException();
             }
             parameterFDs.add(s.substring(from, to));
             from = to;

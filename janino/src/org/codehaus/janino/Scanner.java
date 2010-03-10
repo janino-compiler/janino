@@ -479,7 +479,7 @@ public class Scanner {
         if (v == null) {
             return "null";
         }
-        throw new RuntimeException("Unexpected value type \"" + v.getClass().getName() + "\"");
+        throw new JaninoRuntimeException("Unexpected value type \"" + v.getClass().getName() + "\"");
     }
 
     public class OperatorToken extends Token {
@@ -1035,7 +1035,7 @@ public class Scanner {
             break;
 
         default:
-            throw new RuntimeException("Illegal radix " + radix);
+            throw new JaninoRuntimeException("Illegal radix " + radix);
         }
         return new LiteralToken(new Integer(x));
     }
@@ -1075,7 +1075,7 @@ public class Scanner {
             break;
 
         default:
-            throw new RuntimeException("Illegal radix " + radix);
+            throw new JaninoRuntimeException("Illegal radix " + radix);
         }
         return new LiteralToken(new Long(x));
     }
@@ -1085,10 +1085,10 @@ public class Scanner {
         try {
             f = Float.parseFloat(s);
         } catch (NumberFormatException e) {
-            throw new RuntimeException("SNO: parsing float literal \"" + s + "\" throws a \"NumberFormatException\"");
+            throw new JaninoRuntimeException("SNO: parsing float literal \"" + s + "\" throws a \"NumberFormatException\"");
         }
         if (Float.isInfinite(f)) throw new ScanException("Value of float literal \"" + s + "\" is out of range");
-        if (Float.isNaN(f)) throw new RuntimeException("SNO: parsing float literal \"" + s + "\" results is NaN");
+        if (Float.isNaN(f)) throw new JaninoRuntimeException("SNO: parsing float literal \"" + s + "\" results is NaN");
 
         // Check for FLOAT underrun.
         if (f == 0.0F) {
@@ -1107,10 +1107,10 @@ public class Scanner {
         try {
             d = Double.parseDouble(s);
         } catch (NumberFormatException e) {
-            throw new RuntimeException("SNO: parsing double literal \"" + s + "\" throws a \"NumberFormatException\"");
+            throw new JaninoRuntimeException("SNO: parsing double literal \"" + s + "\" throws a \"NumberFormatException\"");
         }
         if (Double.isInfinite(d)) throw new ScanException("Value of double literal \"" + s + "\" is out of range");
-        if (Double.isNaN(d)) throw new RuntimeException("SNO: parsing double literal \"" + s + "\" results is NaN");
+        if (Double.isNaN(d)) throw new JaninoRuntimeException("SNO: parsing double literal \"" + s + "\" results is NaN");
 
 
         // Check for DOUBLE underrun.

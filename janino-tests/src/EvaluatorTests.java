@@ -481,7 +481,7 @@ public class EvaluatorTests extends TestCase {
         if (comp == "<=") { return lhs <= rhs; }
         if (comp == ">" ) { return lhs < rhs; }
         if (comp == ">=") { return lhs <= rhs; }
-        throw new RuntimeException("Unsupported comparison");
+        throw new JaninoRuntimeException("Unsupported comparison");
     }
     public static boolean compare(float lhs, float rhs, String comp) {
         if (comp == "==") { return lhs == rhs; }
@@ -490,7 +490,7 @@ public class EvaluatorTests extends TestCase {
         if (comp == "<=") { return lhs <= rhs; }
         if (comp == ">" ) { return lhs < rhs; }
         if (comp == ">=") { return lhs <= rhs; }
-        throw new RuntimeException("Unsupported comparison");
+        throw new JaninoRuntimeException("Unsupported comparison");
     }
 
     public void testHandlingNaN() throws Exception {
@@ -504,7 +504,7 @@ public class EvaluatorTests extends TestCase {
         "if (comp == \"<=\") { return lhs <= rhs; }" +
         "if (comp == \">\" ) { return lhs < rhs; }" +
         "if (comp == \">=\") { return lhs <= rhs; }" +
-        "throw new RuntimeException(\"Unsupported comparison\");" +
+        "throw new JaninoRuntimeException(\"Unsupported comparison\");" +
     "}" +
     "public static boolean compare(float lhs, float rhs, String comp) {" +
         "if (comp == \"==\") { return lhs == rhs; }" +
@@ -513,7 +513,7 @@ public class EvaluatorTests extends TestCase {
         "if (comp == \"<=\") { return lhs <= rhs; }" +
         "if (comp == \">\" ) { return lhs < rhs; }" +
         "if (comp == \">=\") { return lhs <= rhs; }" +
-        "throw new RuntimeException(\"Unsupported comparison\");" +
+        "throw new JaninoRuntimeException(\"Unsupported comparison\");" +
     "}" +
             "}";
         SimpleCompiler sc = new SimpleCompiler();
@@ -789,7 +789,7 @@ public class EvaluatorTests extends TestCase {
                 "    return new Runnable() {\n" +
                 "      public void run() {\n" +
                 "        if (bar == null) {\n" +
-                "          throw new RuntimeException();\n" +
+                "          throw new JaninoRuntimeException();\n" +
                 "      } }\n" +
                 "      private String bar = foo;\n" +
                 "      private String[] cowparts = { moo, cow };\n" +
@@ -815,7 +815,7 @@ public class EvaluatorTests extends TestCase {
                 "    class R implements Runnable {\n" +
                 "      public void run() {\n" +
                 "        if (bar == null) {\n" +
-                "          throw new RuntimeException();\n" +
+                "          throw new JaninoRuntimeException();\n" +
                 "      } }\n" +
                 "      private String bar = foo;\n" +
                 "      private String[] cowparts = { moo, cow };\n" +

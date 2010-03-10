@@ -328,8 +328,8 @@ public class JaninoTestSuite extends StructuredTestSuite {
         public CompileAndExecuteTest(String name, Mode mode) {
             super(name);
             // Notice: JUnit 3.8.1 gets confused if the name contains "(" and/or ",".
-            if (name.indexOf('(') != -1) throw new RuntimeException("Parentheses in test name not permitted");
-            if (name.indexOf(',') != -1) throw new RuntimeException("Comma in test name not permitted");
+            if (name.indexOf('(') != -1) throw new JaninoRuntimeException("Parentheses in test name not permitted");
+            if (name.indexOf(',') != -1) throw new JaninoRuntimeException("Comma in test name not permitted");
             this.mode = mode;
         }
 

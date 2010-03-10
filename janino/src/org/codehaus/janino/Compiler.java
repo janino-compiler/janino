@@ -482,7 +482,7 @@ public class Compiler {
             for (int i = 0; i < this.parsedCompilationUnits.size(); ++i) {
                 UnitCompiler unitCompiler = (UnitCompiler) this.parsedCompilationUnits.get(i);
                 Java.CompilationUnit cu = unitCompiler.compilationUnit;
-                if (cu.optionalFileName == null) throw new RuntimeException();
+                if (cu.optionalFileName == null) throw new JaninoRuntimeException();
                 File sourceFile = new File(cu.optionalFileName);
 
                 unitCompiler.setCompileErrorHandler(ceh);
@@ -604,7 +604,7 @@ public class Compiler {
                     new Disassembler().disasm(new ByteArrayInputStream(ba));
                     System.out.flush();
                 } catch (IOException ex) {
-                    throw new RuntimeException("SNO: IOException despite ByteArrayInputStream");
+                    throw new JaninoRuntimeException("SNO: IOException despite ByteArrayInputStream");
                 }
                 os.write(ba);
             } else

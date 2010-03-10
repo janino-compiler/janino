@@ -40,6 +40,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.codehaus.janino.JaninoRuntimeException;
 import org.codehaus.janino.util.Producer;
 
 /**
@@ -85,7 +86,7 @@ public class DirectoryIterator extends ProducerIterator {
             class State {
                 State(File dir) {
                     File[] entries = dir.listFiles();
-                    if (entries == null) throw new RuntimeException("Directory \"" + dir + "\" could not be read");
+                    if (entries == null) throw new JaninoRuntimeException("Directory \"" + dir + "\" could not be read");
                     List directoryList = new ArrayList();
                     List fileList      = new ArrayList();
                     for (int i = 0; i < entries.length; ++i) {

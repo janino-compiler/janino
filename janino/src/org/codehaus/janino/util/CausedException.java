@@ -34,8 +34,12 @@
 
 package org.codehaus.janino.util;
 
-import java.io.*;
-import java.lang.reflect.*;
+import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
+import org.codehaus.janino.JaninoRuntimeException;
 
 /**
  * For compatibility with pre-1.4 JDKs, this class mimics
@@ -76,11 +80,11 @@ public class CausedException extends Exception {
             try {
                 CausedException.INIT_CAUSE.invoke(this, new Object[] { optionalCause});
             } catch (IllegalArgumentException e) {
-                throw new RuntimeException("Calling \"initCause()\"");
+                throw new JaninoRuntimeException("Calling \"initCause()\"");
             } catch (IllegalAccessException e) {
-                throw new RuntimeException("Calling \"initCause()\"");
+                throw new JaninoRuntimeException("Calling \"initCause()\"");
             } catch (InvocationTargetException e) {
-                throw new RuntimeException("Calling \"initCause()\"");
+                throw new JaninoRuntimeException("Calling \"initCause()\"");
             }
         }
         return this;

@@ -78,7 +78,7 @@ public class ClassFileIClass extends IClass {
             try {
                 ii = this.resolveMethod(mi);
             } catch (ClassNotFoundException ex) {
-                throw new RuntimeException(ex.getMessage());
+                throw new JaninoRuntimeException(ex.getMessage());
             }
             if (ii instanceof IConstructor) iConstructors.add(ii);
         }
@@ -100,7 +100,7 @@ public class ClassFileIClass extends IClass {
             try {
                 ii = this.resolveMethod(mi);
             } catch (ClassNotFoundException ex) {
-                throw new RuntimeException(ex.getMessage());
+                throw new JaninoRuntimeException(ex.getMessage());
             }
             if (ii instanceof IMethod) iMethods.add(ii);
         }
@@ -114,7 +114,7 @@ public class ClassFileIClass extends IClass {
             try {
                 ifs[i] = this.resolveField((ClassFile.FieldInfo) this.classFile.fieldInfos.get(i));
             } catch (ClassNotFoundException ex) {
-                throw new RuntimeException(ex.getMessage());
+                throw new JaninoRuntimeException(ex.getMessage());
             }
         }
         return ifs;
@@ -356,8 +356,8 @@ public class ClassFileIClass extends IClass {
                     // Process magic first parameter of inner class constructor.
                     IClass outerIClass = ClassFileIClass.this.getOuterIClass();
                     if (outerIClass != null) {
-                        if (parameterTypes.length < 1) throw new RuntimeException("Inner class constructor lacks magic first parameter");
-                        if (parameterTypes[0] != outerIClass) throw new RuntimeException("Magic first parameter of inner class constructor has type \"" + parameterTypes[0].toString() + "\" instead of that of its enclosing instance (\"" + outerIClass.toString() + "\")");
+                        if (parameterTypes.length < 1) throw new JaninoRuntimeException("Inner class constructor lacks magic first parameter");
+                        if (parameterTypes[0] != outerIClass) throw new JaninoRuntimeException("Magic first parameter of inner class constructor has type \"" + parameterTypes[0].toString() + "\" instead of that of its enclosing instance (\"" + outerIClass.toString() + "\")");
                         IClass[] tmp = new IClass[parameterTypes.length - 1];
                         System.arraycopy(parameterTypes, 1, tmp, 0, tmp.length);
                         return tmp;
@@ -419,7 +419,7 @@ public class ClassFileIClass extends IClass {
                 ocv = ((ClassFile.ConstantValuePoolInfo) cpi).getValue(this.classFile);
             } else
             {
-                throw new RuntimeException("Unexpected constant pool info type \"" + cpi.getClass().getName() + "\"");
+                throw new JaninoRuntimeException("Unexpected constant pool info type \"" + cpi.getClass().getName() + "\"");
             }
         }
         final Object optionalConstantValue = ocv;

@@ -49,6 +49,7 @@ import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
+import org.codehaus.janino.JaninoRuntimeException;
 import org.codehaus.janino.Java;
 import org.codehaus.janino.Mod;
 import org.codehaus.janino.Parser;
@@ -488,7 +489,7 @@ public class UnparseTests extends TestCase {
                             }
                         }
                     } catch (Exception e) {
-                        throw new RuntimeException(e);
+                        throw new JaninoRuntimeException(e);
                     }
                 }
                 return false;

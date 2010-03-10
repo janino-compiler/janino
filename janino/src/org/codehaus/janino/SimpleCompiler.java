@@ -291,7 +291,7 @@ public class SimpleCompiler extends Cookable {
             // Check whether the auxiliary class is conflicting with this ClassLoader.
             try {
                 Class c2 = super.loadClass(c.getName(), false);
-                if (c2 != c) throw new RuntimeException("Trying to add an auxiliary class \"" + c.getName() + "\" while another class with the same name is already loaded");
+                if (c2 != c) throw new JaninoRuntimeException("Trying to add an auxiliary class \"" + c.getName() + "\" while another class with the same name is already loaded");
             } catch (ClassNotFoundException ex) {
                 ;
             }
@@ -378,9 +378,9 @@ public class SimpleCompiler extends Cookable {
         try {
             iClass = this.iClassLoader.loadIClass(Descriptor.fromClassName(optionalClass.getName()));
         } catch (ClassNotFoundException ex) {
-            throw new RuntimeException("Loading IClass \"" + optionalClass.getName() + "\": " + ex);
+            throw new JaninoRuntimeException("Loading IClass \"" + optionalClass.getName() + "\": " + ex);
         }
-        if (iClass == null) throw new RuntimeException("Cannot load class \"" + optionalClass.getName() + "\" through the given ClassLoader");
+        if (iClass == null) throw new JaninoRuntimeException("Cannot load class \"" + optionalClass.getName() + "\" through the given ClassLoader");
 
         return new Java.SimpleType(location, iClass);
     }
@@ -440,7 +440,7 @@ public class SimpleCompiler extends Cookable {
                     new Disassembler().disasm(new ByteArrayInputStream(bytecode));
                     System.out.flush();
                 } catch (IOException ex) {
-                    throw new RuntimeException("SNO: IOException despite ByteArrayInputStream");
+                    throw new JaninoRuntimeException("SNO: IOException despite ByteArrayInputStream");
                 }
             }
         }
