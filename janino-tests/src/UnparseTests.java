@@ -114,6 +114,7 @@ public class UnparseTests extends TestCase {
         StringWriter sw = new StringWriter();
         UnparseVisitor uv = new UnparseVisitor(sw);
         expr.accept(uv);
+        uv.close();
         String s = sw.toString();
         s = UnparseTests.replace(s, "((( ", "(");
         s = UnparseTests.replace(s, " )))", ")");
@@ -352,8 +353,9 @@ public class UnparseTests extends TestCase {
         StringWriter sw = new StringWriter();
         UnparseVisitor uv = new UnparseVisitor(sw);
         decl.accept(uv);
+        uv.close();
         String s = sw.toString();
-        String correctString = "/**foo*/ public interface Foo { }";
+        String correctString = "/**foo */ public interface Foo { }";
         assertEquals(correctString, normalizeWhitespace(s));
     }
 
@@ -369,6 +371,7 @@ public class UnparseTests extends TestCase {
             StringWriter sw = new StringWriter();
             UnparseVisitor uv = new UnparseVisitor(sw);
             expr.accept(uv);
+            uv.close();
             Assert.assertEquals(expected, sw.toString());
         }
     }

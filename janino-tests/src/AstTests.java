@@ -35,6 +35,8 @@
 import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
@@ -134,7 +136,7 @@ public class AstTests extends TestCase {
         return new Literal( getLocation(), o );
     }
 
-    private static void createMethod(PackageMemberClassDeclaration clazz, Block body, Type returnType) {
+    private static void createMethod(PackageMemberClassDeclaration clazz, List statements, Type returnType) {
         MethodDeclarator method = new MethodDeclarator(
             getLocation(),
             null,
@@ -143,7 +145,7 @@ public class AstTests extends TestCase {
             "calculate",
             new FormalParameter[0],
             new Type[0],
-            body
+            statements
         );
         clazz.addDeclaredMethod(method);
     }
@@ -191,13 +193,13 @@ public class AstTests extends TestCase {
 
         PackageMemberClassDeclaration clazz = createClass(cu);
 
-        Block body = new Block(getLocation());
+        List/*<Statement>*/ body = new ArrayList();
 
         Block sub = new Block(getLocation());
         sub.addStatement( createVarDecl("x", 2.0) );
 
-        body.addStatement(sub);
-        body.addStatement(
+        body.add(sub);
+        body.add(
             new ReturnStatement(
                 getLocation(),
                 new Java.BinaryOperation(
@@ -225,8 +227,8 @@ public class AstTests extends TestCase {
         PackageMemberClassDeclaration clazz = createClass(cu);
 
         Byte exp = new Byte((byte)1);
-        Block body = new Block(getLocation());
-        body.addStatement(
+        List/*<Statement>*/ body = new ArrayList();
+        body.add(
             new ReturnStatement(
                 getLocation(),
                 new Java.NewInitializedArray(
@@ -255,9 +257,9 @@ public class AstTests extends TestCase {
 
         PackageMemberClassDeclaration clazz = createClass(cu);
 
-        Block body = new Block(getLocation());
-        body.addStatement( createVarDecl("x", 2.0) );
-        body.addStatement(
+        List/*<Statement>*/ body = new ArrayList();
+        body.add( createVarDecl("x", 2.0) );
+        body.add(
             new ReturnStatement(
                 getLocation(),
                 new Java.BinaryOperation(
@@ -281,8 +283,8 @@ public class AstTests extends TestCase {
 
         PackageMemberClassDeclaration clazz = createClass(cu);
 
-        Block body = new Block(getLocation());
-        body.addStatement(
+        List/*<Statement>*/ body = new ArrayList();
+        body.add(
             new ReturnStatement(
                 getLocation(),
                 createLiteral(3.0)
@@ -300,9 +302,9 @@ public class AstTests extends TestCase {
 
         PackageMemberClassDeclaration clazz = createClass(cu);
 
-        Block body = new Block(getLocation());
+        List/*<Statement>*/ body = new ArrayList();
 
-        body.addStatement(
+        body.add(
             new ReturnStatement(
                 getLocation(),
                 new Java.ClassLiteral(
@@ -355,6 +357,7 @@ public class AstTests extends TestCase {
         StringWriter sw = new StringWriter();
         UnparseVisitor uv = new UnparseVisitor(sw);
         uv.visitExpressionStatement(es);
+        uv.close();
         assertEquals("x = 1.0D * ((( 2.0D + 3.0D )));", sw.toString());
     }
 
@@ -364,8 +367,8 @@ public class AstTests extends TestCase {
 
         PackageMemberClassDeclaration clazz = createClass(cu);
 
-        Block body = new Block(getLocation());
-        body.addStatement(  new Java.ReturnStatement(
+        List/*<Statement>*/ body = new ArrayList();
+        body.add(  new Java.ReturnStatement(
                 getLocation(),
                 new Java.FieldAccessExpression(
                         getLocation(),
