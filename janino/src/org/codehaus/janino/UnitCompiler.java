@@ -50,9 +50,6 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
 
-import org.codehaus.commons.compiler.CompileException;
-import org.codehaus.commons.compiler.Location;
-import org.codehaus.commons.compiler.ParseException;
 import org.codehaus.janino.IClass.IField;
 import org.codehaus.janino.IClass.IInvocable;
 import org.codehaus.janino.IClass.IMethod;
@@ -6688,9 +6685,6 @@ public class UnitCompiler {
 
             // Determine declaring type.
             while (!(s instanceof Java.TypeDeclaration)) {
-                if (s == null) {
-                    System.currentTimeMillis();
-                }
                 s = s.getEnclosingScope();
             }
             if (!(s instanceof Java.ClassDeclaration)) this.compileError("Only methods of classes can have a current instance", tr.getLocation());
