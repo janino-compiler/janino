@@ -115,9 +115,9 @@ public interface IExpressionEvaluator extends IScriptEvaluator {
      * <p>
      * Defaults to {@link #ANY_TYPE}.
      */
-    public abstract void setExpressionType(Class expressionType);
+    void setExpressionType(Class expressionType);
 
-    public abstract void setExpressionTypes(Class[] expressionTypes);
+    void setExpressionTypes(Class[] expressionTypes);
 
     /**
      * Evaluates the expression with concrete parameter values.
@@ -133,5 +133,5 @@ public interface IExpressionEvaluator extends IScriptEvaluator {
      *
      * @param parameterValues The concrete parameter values.
      */
-    public abstract Object evaluate(Object[] parameterValues) throws InvocationTargetException;
+    Object evaluate(Object[] parameterValues) throws InvocationTargetException;
 }

@@ -2,7 +2,7 @@
 /*
  * Janino - An embedded Java[TM] compiler
  *
- * Copyright (c) 2001-2007, Arno Unkrig
+ * Copyright (c) 2001-2010, Arno Unkrig
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,84 +37,23 @@ package org.codehaus.janino;
 import java.io.*;
 import java.util.*;
 
+import org.codehaus.commons.compiler.CompileException;
+import org.codehaus.commons.compiler.Cookable;
+import org.codehaus.commons.compiler.IExpressionEvaluator;
+import org.codehaus.commons.compiler.ParseException;
+import org.codehaus.commons.compiler.ScanException;
 import org.codehaus.janino.Java.AmbiguousName;
 import org.codehaus.janino.Java.Rvalue;
-import org.codehaus.janino.Parser.ParseException;
-import org.codehaus.janino.Scanner.ScanException;
 import org.codehaus.janino.Visitor.RvalueVisitor;
 import org.codehaus.janino.util.PrimitiveWrapper;
 import org.codehaus.janino.util.Traverser;
 
 /**
- * An engine that evaluates expressions in Java<sup>TM</sup> bytecode.
+ * This {@link IExpressionEvaluator} is implemented by creating and compiling a temporary
+ * compilation unit defining one class with one static method with one RETURN statement.
  * <p>
- * The syntax of the expression to compile is that of a Java<sup>TM</sup> expression, as defined
- * in the <a href="http://java.sun.com/docs/books/jls/second_edition">Java Language Specification,
- * 2nd edition</a>, section
- * <a href="http://java.sun.com/docs/books/jls/second_edition/html/expressions.doc.html#44393">15</a>.
- * Notice that a Java<sup>TM</sup> expression does not have a concluding semicolon.
- * <p>
- * Example:<pre>
- *   a + 7 * b</pre>
- * (Notice that this expression refers to two parameters "a" and "b", as explained below.)
- * <p>
- * The expression may optionally be preceeded with a sequence of import directives like
- * <pre>
- *   import java.text.*;
- *   new DecimalFormat("####,###.##").format(10200020.345345)
- * </pre>
- * (Notice that the import directive is concluded with a semicolon, while the expression is not.)
- * This feature is not available if you compile many expressions at a time (see below).
- * <p>
- * The expression evaluator is implemented by creating and compiling a temporary compilation unit
- * defining one class with one static method with one RETURN statement.
- * <p>
- * To set up an {@link ExpressionEvaluator} object, proceed as follows:
- * <ol>
- *   <li>
- *   Create the {@link ExpressionEvaluator} using {@link #ExpressionEvaluator()}
- *   <li>
- *   Configure the {@link ExpressionEvaluator} by calling any of the following methods:
- *   <ul>
- *      <li>{@link #setExpressionType(Class)}
- *      <li>{@link org.codehaus.janino.ScriptEvaluator#setParameters(String[], Class[])}
- *      <li>{@link org.codehaus.janino.ScriptEvaluator#setThrownExceptions(Class[])}
- *      <li>{@link org.codehaus.janino.SimpleCompiler#setParentClassLoader(ClassLoader)}
- *      <li>{@link org.codehaus.janino.ClassBodyEvaluator#setDefaultImports(String[])}
- *   </ul>
- *   <li>
- *   Call any of the {@link org.codehaus.janino.Cookable#cook(Scanner)} methods to scan,
- *   parse, compile and load the expression into the JVM.
- * </ol>
- * After the {@link ExpressionEvaluator} object is set up, the expression can be evaluated as
- * often with different parameter values (see {@link #evaluate(Object[])}). This evaluation is
- * very fast, compared to the compilation.
- * <p>
- * Less common methods exist that allow for the specification of the name of the generated class,
- * the class it extends, the interfaces it implements, the name of the method that executes the
- * expression, the exceptions that this method (i.e. the expression) is allowed to throw, and the
- * {@link ClassLoader} that is used to define the generated class and to load classes referenced by
- * the expression.
- * <p>
- * Alternatively, a number of "convenience constructors" exist that execute the steps described
- * above instantly.
- * <p>
- * If you want to compile many expressions at the same time, you have the option to cook an
- * <i>array</i> of expressions in one {@link ExpressionEvaluator} by using the following methods:
- * <ul>
- *   <li>{@link #setMethodNames(String[])}
- *   <li>{@link #setParameters(String[][], Class[][])}
- *   <li>{@link #setExpressionTypes(Class[])}
- *   <li>{@link #setStaticMethod(boolean[])}
- *   <li>{@link #setThrownExceptions(Class[][])}
- *   <li>{@link #cook(Scanner[])}
- *   <li>{@link #evaluate(int, Object[])}
- * </ul>
- * Notice that these methods have array parameters in contrast to their one-expression brethren.
- * <p>
- * Notice that for <i>functionally</i> identical {@link ExpressionEvaluator}s,
- * {@link java.lang.Object#equals(java.lang.Object)} will return <code>true</code>. E.g. "a+b" and
- * "c + d" are functionally identical if "a" and "c" have the same type, and so do "b" and "d".
+ * A number of "convenience constructors" exist that execute the set-up steps described for {@link
+ * IExpressionEvaluator} instantly.
  * <p>
  * If the parameter and return types of the expression are known at compile time, then a "fast"
  * expression evaluator can be instantiated through
@@ -148,43 +87,8 @@ import org.codehaus.janino.util.Traverser;
  * </table>
  * (How can it be that interface method invocation is slower than reflection for
  * the server JVM?)
- * <p>
- * The expression may refer to a set of parameters with the given
- * <code>parameterNames</code> and <code>parameterTypes</code>.
- * <p>
- * <code>parameterNames</code> and <code>parameterTypes</code> must have the
- * same number of elements.
- * <p>
- * The parameters and/or the return value can be of primitive type, e.g.
- * {@link Double#TYPE}.
- * <p>
- * The <code>optionalClassLoader</code> serves two purposes:
- * <ul>
- *   <li>It is used to look for classes referenced by the script.
- *   <li>It is used to load the generated Java<sup>TM</sup> class
- *   into the JVM; directly if it is a subclass of {@link
- *   ByteArrayClassLoader}, or by creation of a temporary
- *   {@link ByteArrayClassLoader} if not.
- * </ul>
- * If the <code>optionalClassLoader</code> is <code>null</code>, then the
- * current thread's context class loader is used.
- * <p>
- * A number of constructors exist that provide useful default values for
- * the various parameters, or parse their script from a {@link String}
- * instead of a {@link Scanner}. (You hardly want to use a scanner other than
- * the default scanner.)
- * <p>
- * If the type of the expression is not fixed, you can pass a <code>null</code>
- * <code>optionalExpressionType<code> argument; in this case, references are
- * returned as {@link Object}s, and primitive values are wrapped in their
- * wrapper classes.
- * <p>
- * If <code>optionalExpressionType</code> is {@link Void#TYPE}, then the
- * expression must be an invocation of a <code>void</code> method.
  */
-public class ExpressionEvaluator extends ScriptEvaluator {
-    public static final Class ANY_TYPE = null;
-
+public class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluator {
     private Class[] optionalExpressionTypes = null;
 
     /**
@@ -204,7 +108,7 @@ public class ExpressionEvaluator extends ScriptEvaluator {
         Class    expressionType,
         String[] parameterNames,
         Class[]  parameterTypes
-    ) throws CompileException, Parser.ParseException, Scanner.ScanException {
+    ) throws CompileException, ParseException, ScanException {
         this.setExpressionType(expressionType);
         this.setParameters(parameterNames, parameterTypes);
         this.cook(expression);
@@ -233,7 +137,7 @@ public class ExpressionEvaluator extends ScriptEvaluator {
         Class[]     parameterTypes,
         Class[]     thrownExceptions,
         ClassLoader optionalParentClassLoader
-    ) throws CompileException, Parser.ParseException, Scanner.ScanException {
+    ) throws CompileException, ParseException, ScanException {
         this.setExpressionType(expressionType);
         this.setParameters(parameterNames, parameterTypes);
         this.setThrownExceptions(thrownExceptions);
@@ -270,7 +174,7 @@ public class ExpressionEvaluator extends ScriptEvaluator {
         Class       optionalExtendedType,
         Class[]     implementedTypes,
         ClassLoader optionalParentClassLoader
-    ) throws CompileException, Parser.ParseException, Scanner.ScanException {
+    ) throws CompileException, ParseException, ScanException {
         this.setExpressionType(expressionType);
         this.setParameters(parameterNames, parameterTypes);
         this.setThrownExceptions(thrownExceptions);
@@ -318,7 +222,7 @@ public class ExpressionEvaluator extends ScriptEvaluator {
         Class[]     parameterTypes,
         Class[]     thrownExceptions,
         ClassLoader optionalParentClassLoader
-    ) throws Scanner.ScanException, Parser.ParseException, CompileException, IOException {
+    ) throws ScanException, ParseException, CompileException, IOException {
         this.setClassName(className);
         this.setExtendedType(optionalExtendedType);
         this.setImplementedTypes(implementedTypes);
@@ -333,12 +237,6 @@ public class ExpressionEvaluator extends ScriptEvaluator {
 
     public ExpressionEvaluator() {}
 
-    /**
-     * Define the type of the expression. The special type {@link #ANY_TYPE} allows the expression
-     * to return any type (primitive or reference).
-     * <p>
-     * Defaults to {@link #ANY_TYPE}.
-     */
     public void setExpressionType(Class expressionType) {
         this.setExpressionTypes(new Class[] { expressionType });
     }
@@ -400,7 +298,7 @@ public class ExpressionEvaluator extends ScriptEvaluator {
             // Add a return statement.
             statements.add(new Java.ReturnStatement(scanner.location(), value));
         }
-        if (!scanner.peek().isEOF()) throw new Parser.ParseException("Unexpected token \"" + scanner.peek() + "\"", scanner.location());
+        if (!scanner.peek().isEOF()) throw new ParseException("Unexpected token \"" + scanner.peek() + "\"", scanner.location());
 
         return statements;
     }
@@ -420,7 +318,7 @@ public class ExpressionEvaluator extends ScriptEvaluator {
         Class       interfaceToImplement,
         String[]    parameterNames,
         ClassLoader optionalParentClassLoader
-    ) throws CompileException, Parser.ParseException, Scanner.ScanException {
+    ) throws CompileException, ParseException, ScanException {
         ExpressionEvaluator ee = new ExpressionEvaluator();
         ee.setParentClassLoader(optionalParentClassLoader);
         return ScriptEvaluator.createFastEvaluator(ee, expression, parameterNames, interfaceToImplement);
@@ -442,7 +340,7 @@ public class ExpressionEvaluator extends ScriptEvaluator {
         Class       interfaceToImplement,
         String[]    parameterNames,
         ClassLoader optionalParentClassLoader
-    ) throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
+    ) throws CompileException, ParseException, ScanException, IOException {
         ExpressionEvaluator ee = new ExpressionEvaluator();
         ee.setClassName(className);
         ee.setExtendedType(optionalExtendedType);
@@ -476,7 +374,7 @@ public class ExpressionEvaluator extends ScriptEvaluator {
         Class       interfaceToImplement,
         String[]    parameterNames,
         ClassLoader optionalParentClassLoader
-    ) throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
+    ) throws CompileException, ParseException, ScanException, IOException {
         ExpressionEvaluator ee = new ExpressionEvaluator();
         ee.setClassName(className);
         ee.setExtendedType(optionalExtendedType);
@@ -505,7 +403,7 @@ public class ExpressionEvaluator extends ScriptEvaluator {
 
         // Parse the expression.
         Rvalue rvalue = parser.parseExpression().toRvalueOrPE();
-        if (!scanner.peek().isEOF()) throw new Parser.ParseException("Unexpected token \"" + scanner.peek() + "\"", scanner.location());
+        if (!scanner.peek().isEOF()) throw new ParseException("Unexpected token \"" + scanner.peek() + "\"", scanner.location());
 
         // Traverse the expression for ambiguous names and guess which of them are parameter names.
         final Set parameterNames = new HashSet();

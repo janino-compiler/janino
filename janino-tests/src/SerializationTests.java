@@ -39,8 +39,8 @@ import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
+import org.codehaus.commons.compiler.*;
 import org.codehaus.janino.SimpleCompiler;
-import org.codehaus.janino.util.LocatedException;
 
 public class SerializationTests extends TestCase {
     public static Test suite() {

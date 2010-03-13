@@ -2,7 +2,7 @@
 /*
  * Janino - An embedded Java[TM] compiler
  *
- * Copyright (c) 2001-2007, Arno Unkrig
+ * Copyright (c) 2001-2010, Arno Unkrig
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -44,7 +44,8 @@ import java.io.Reader;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.codehaus.janino.util.LocatedException;
+import org.codehaus.commons.compiler.Location;
+import org.codehaus.commons.compiler.ScanException;
 import org.codehaus.janino.util.TeeReader;
 
 
@@ -327,19 +328,19 @@ public class Scanner {
         public boolean isKeyword() { return false; }
         public boolean isKeyword(String k) { return false; }
         public boolean isKeyword(String[] ks) { return false; }
-        public String getKeyword() throws ScanException { throw new ScanException("Not a keyword token"); }
+        public String getKeyword() throws ScanException { throw new ScanException("Not a keyword token", Scanner.this.location()); }
 
         public boolean isIdentifier() { return false; }
         public boolean isIdentifier(String id) { return false; }
-        public String getIdentifier() throws ScanException { throw new ScanException("Not an identifier token"); }
+        public String getIdentifier() throws ScanException { throw new ScanException("Not an identifier token", Scanner.this.location()); }
 
         public boolean isLiteral() { return false; }
-        public Object getLiteralValue() throws ScanException { throw new ScanException("Not a literal token"); }
+        public Object getLiteralValue() throws ScanException { throw new ScanException("Not a literal token", Scanner.this.location()); }
 
         public boolean isOperator() { return false; }
         public boolean isOperator(String o) { return false; }
         public boolean isOperator(String[] os) { return false; }
-        public String getOperator() throws ScanException { throw new ScanException("Not an operator token"); }
+        public String getOperator() throws ScanException { throw new ScanException("Not an operator token", Scanner.this.location()); }
 
         public boolean isEOF() { return false; }
     }
@@ -601,7 +602,7 @@ public class Scanner {
 
             case 3: // After "/*"
                 if (this.nextChar == -1) {
-                    throw new ScanException("EOF in traditional comment");
+                    throw new ScanException("EOF in traditional comment", this.location());
                 } else
                 if (this.nextChar == '*') {
                     state = 4;
@@ -613,7 +614,7 @@ public class Scanner {
 
             case 4: // After "/**"
                 if (this.nextChar == -1) {
-                    throw new ScanException("EOF in doc comment");
+                    throw new ScanException("EOF in doc comment", this.location());
                 } else
                 if (this.nextChar == '/') {
                     state = 0;
@@ -632,7 +633,7 @@ public class Scanner {
 
             case 5: // After "/**..."
                 if (this.nextChar == -1) {
-                    throw new ScanException("EOF in doc comment");
+                    throw new ScanException("EOF in doc comment", this.location());
                 } else
                 if (this.nextChar == '*') {
                     state = 8;
@@ -648,7 +649,7 @@ public class Scanner {
 
             case 6: // After "/**...\n"
                 if (this.nextChar == -1) {
-                    throw new ScanException("EOF in doc comment");
+                    throw new ScanException("EOF in doc comment", this.location());
                 } else
                 if (this.nextChar == '*') {
                     state = 7;
@@ -667,7 +668,7 @@ public class Scanner {
 
             case 7: // After "/**...\n *"
                 if (this.nextChar == -1) {
-                    throw new ScanException("EOF in doc comment");
+                    throw new ScanException("EOF in doc comment", this.location());
                 } else
                 if (this.nextChar == '*') {
                     ;
@@ -684,7 +685,7 @@ public class Scanner {
 
             case 8: // After "/**...*"
                 if (this.nextChar == -1) {
-                    throw new ScanException("EOF in doc comment");
+                    throw new ScanException("EOF in doc comment", this.location());
                 } else
                 if (this.nextChar == '/') {
                     this.docComment = dcsb.toString();
@@ -702,7 +703,7 @@ public class Scanner {
 
             case 9: // After "/*..."
                 if (this.nextChar == -1) {
-                    throw new ScanException("EOF in traditional comment");
+                    throw new ScanException("EOF in traditional comment", this.location());
                 } else
                 if (this.nextChar == '*') {
                     state = 10;
@@ -714,7 +715,7 @@ public class Scanner {
 
             case 10: // After "/*...*"
                 if (this.nextChar == -1) {
-                    throw new ScanException("EOF in traditional comment");
+                    throw new ScanException("EOF in traditional comment", this.location());
                 } else
                 if (this.nextChar == '/') {
                     state = 0;
@@ -779,8 +780,8 @@ public class Scanner {
         if (this.nextChar == '"') {
             StringBuffer sb = new StringBuffer("");
             this.readNextChar();
-            if (this.nextChar == -1) throw new ScanException("EOF in string literal");
-            if (this.nextChar == '\r' || this.nextChar == '\n') throw new ScanException("Line break in string literal");
+            if (this.nextChar == -1) throw new ScanException("EOF in string literal", this.location());
+            if (this.nextChar == '\r' || this.nextChar == '\n') throw new ScanException("Line break in string literal", this.location());
             while (this.nextChar != '"') {
                 sb.append(this.unescapeCharacterLiteral());
             }
@@ -791,9 +792,9 @@ public class Scanner {
         // Scan character literal.
         if (this.nextChar == '\'') {
             this.readNextChar();
-            if (this.nextChar == '\'') throw new ScanException("Single quote must be backslash-escaped in character literal");
+            if (this.nextChar == '\'') throw new ScanException("Single quote must be backslash-escaped in character literal", this.location());
             char lit = this.unescapeCharacterLiteral();
-            if (this.nextChar != '\'') throw new ScanException("Closing single quote missing");
+            if (this.nextChar != '\'') throw new ScanException("Closing single quote missing", this.location());
             this.readNextChar();
 
             return new LiteralToken(new Character(lit));
@@ -814,7 +815,7 @@ public class Scanner {
             }
         }
 
-        throw new ScanException("Invalid character input \"" + (char) this.nextChar + "\" (character code " + this.nextChar + ")");
+        throw new ScanException("Invalid character input \"" + (char) this.nextChar + "\" (character code " + this.nextChar + ")", this.location());
     }
 
     private Token scanNumericLiteral(int initialState) throws ScanException, IOException {
@@ -893,7 +894,7 @@ public class Scanner {
                     state = 4;
                 } else
                 {
-                    throw new ScanException("Exponent missing after \"E\"");
+                    throw new ScanException("Exponent missing after \"E\"", this.location());
                 }
                 break;
 
@@ -903,7 +904,7 @@ public class Scanner {
                     state = 5;
                 } else
                 {
-                    throw new ScanException("Exponent missing after \"E\" and sign");
+                    throw new ScanException("Exponent missing after \"E\" and sign", this.location());
                 }
                 break;
 
@@ -961,6 +962,9 @@ public class Scanner {
                 if ("01234567".indexOf(this.nextChar) != -1) {
                     sb.append((char) this.nextChar);
                 } else
+                if (this.nextChar == '8' || this.nextChar == '9') {
+                    throw new ScanException("Digit '" + (char) this.nextChar + "' not allowed in octal literal", this.location());
+                } else
                 if (this.nextChar == 'l' || this.nextChar == 'L') {
                     // Octal long literal.
                     this.readNextChar();
@@ -978,7 +982,7 @@ public class Scanner {
                     state = 9;
                 } else
                 {
-                    throw new ScanException("Hex digit expected after \"0x\"");
+                    throw new ScanException("Hex digit expected after \"0x\"", this.location());
                 }
                 break;
 
@@ -1012,7 +1016,7 @@ public class Scanner {
             try {
                 x = Integer.parseInt(s);
             } catch (NumberFormatException e) {
-                throw new ScanException("Value of decimal integer literal \"" + s + "\" is out of range");
+                throw new ScanException("Value of decimal integer literal \"" + s + "\" is out of range", this.location());
             }
             break;
 
@@ -1020,7 +1024,7 @@ public class Scanner {
             // Cannot use "Integer.parseInt(s, 8)" because that parses SIGNED values.
             x = 0;
             for (int i = 0; i < s.length(); ++i) {
-                if ((x & 0xe0000000) != 0) throw new ScanException("Value of octal integer literal \"" + s + "\" is out of range");
+                if ((x & 0xe0000000) != 0) throw new ScanException("Value of octal integer literal \"" + s + "\" is out of range", this.location());
                 x = (x << 3) + Character.digit(s.charAt(i), 8);
             }
             break;
@@ -1029,7 +1033,7 @@ public class Scanner {
             // Cannot use "Integer.parseInt(s, 16)" because that parses SIGNED values.
             x = 0;
             for (int i = 0; i < s.length(); ++i) {
-                if ((x & 0xf0000000) != 0) throw new ScanException("Value of hexadecimal integer literal \"" + s + "\" is out of range");
+                if ((x & 0xf0000000) != 0) throw new ScanException("Value of hexadecimal integer literal \"" + s + "\" is out of range", this.location());
                 x = (x << 4) + Character.digit(s.charAt(i), 16);
             }
             break;
@@ -1052,7 +1056,7 @@ public class Scanner {
             try {
                 x = Long.parseLong(s);
             } catch (NumberFormatException e) {
-                throw new ScanException("Value of decimal long literal \"" + s + "\" is out of range");
+                throw new ScanException("Value of decimal long literal \"" + s + "\" is out of range", this.location());
             }
             break;
 
@@ -1060,7 +1064,7 @@ public class Scanner {
             // Cannot use "Long.parseLong(s, 8)" because that parses SIGNED values.
             x = 0L;
             for (int i = 0; i < s.length(); ++i) {
-                if ((x & 0xe000000000000000L) != 0L) throw new ScanException("Value of octal long literal \"" + s + "\" is out of range");
+                if ((x & 0xe000000000000000L) != 0L) throw new ScanException("Value of octal long literal \"" + s + "\" is out of range", this.location());
                 x = (x << 3) + Character.digit(s.charAt(i), 8);
             }
             break;
@@ -1069,7 +1073,7 @@ public class Scanner {
             // Cannot use "Long.parseLong(s, 16)" because that parses SIGNED values.
             x = 0L;
             for (int i = 0; i < s.length(); ++i) {
-                if ((x & 0xf000000000000000L) != 0L) throw new ScanException("Value of hexadecimal long literal \"" + s + "\" is out of range");
+                if ((x & 0xf000000000000000L) != 0L) throw new ScanException("Value of hexadecimal long literal \"" + s + "\" is out of range", this.location());
                 x = (x << 4) + (long) Character.digit(s.charAt(i), 16);
             }
             break;
@@ -1087,14 +1091,14 @@ public class Scanner {
         } catch (NumberFormatException e) {
             throw new JaninoRuntimeException("SNO: parsing float literal \"" + s + "\" throws a \"NumberFormatException\"");
         }
-        if (Float.isInfinite(f)) throw new ScanException("Value of float literal \"" + s + "\" is out of range");
+        if (Float.isInfinite(f)) throw new ScanException("Value of float literal \"" + s + "\" is out of range", this.location());
         if (Float.isNaN(f)) throw new JaninoRuntimeException("SNO: parsing float literal \"" + s + "\" results is NaN");
 
         // Check for FLOAT underrun.
         if (f == 0.0F) {
             for (int i = 0; i < s.length(); ++i) {
                 char c = s.charAt(i);
-                if ("123456789".indexOf(c) != -1) throw new ScanException("Literal \"" + s + "\" is too small to be represented as a float");
+                if ("123456789".indexOf(c) != -1) throw new ScanException("Literal \"" + s + "\" is too small to be represented as a float", this.location());
                 if ("0.".indexOf(c) == -1) break;
             }
         }
@@ -1109,7 +1113,7 @@ public class Scanner {
         } catch (NumberFormatException e) {
             throw new JaninoRuntimeException("SNO: parsing double literal \"" + s + "\" throws a \"NumberFormatException\"");
         }
-        if (Double.isInfinite(d)) throw new ScanException("Value of double literal \"" + s + "\" is out of range");
+        if (Double.isInfinite(d)) throw new ScanException("Value of double literal \"" + s + "\" is out of range", this.location());
         if (Double.isNaN(d)) throw new JaninoRuntimeException("SNO: parsing double literal \"" + s + "\" results is NaN");
 
 
@@ -1117,7 +1121,7 @@ public class Scanner {
         if (d == 0.0D) {
             for (int i = 0; i < s.length(); ++i) {
                 char c = s.charAt(i);
-                if ("123456789".indexOf(c) != -1) throw new ScanException("Literal \"" + s + "\" is too small to be represented as a double");
+                if ("123456789".indexOf(c) != -1) throw new ScanException("Literal \"" + s + "\" is too small to be represented as a double", this.location());
                 if ("0.".indexOf(c) == -1) break;
             }
         }
@@ -1129,9 +1133,9 @@ public class Scanner {
      * Consume characters until a literal character is complete.
      */
     private char unescapeCharacterLiteral() throws ScanException, IOException {
-        if (this.nextChar == -1) throw new ScanException("EOF in character literal");
+        if (this.nextChar == -1) throw new ScanException("EOF in character literal", this.location());
 
-        if (this.nextChar == '\r' || this.nextChar == '\n') throw new ScanException("Line break in literal not allowed");
+        if (this.nextChar == '\r' || this.nextChar == '\n') throw new ScanException("Line break in literal not allowed", this.location());
 
         if (this.nextChar != '\\') {
             char res = (char) this.nextChar;
@@ -1156,7 +1160,7 @@ public class Scanner {
             idx = "01234567".indexOf(this.nextChar);
             if (idx == -1) return (char) code;
             code = 8 * code + idx;
-            if (code > 255) throw new ScanException("Invalid octal escape");
+            if (code > 255) throw new ScanException("Invalid octal escape", this.location());
             this.readNextChar();
             return (char) code;
         }
@@ -1171,7 +1175,7 @@ public class Scanner {
         try {
             this.nextChar = this.in.read();
         } catch (UnicodeUnescapeException ex) {
-            throw new ScanException(ex.getMessage(), ex);
+            throw new ScanException(ex.getMessage(), this.location(), ex);
         }
         if (this.nextChar == '\r') {
             ++this.nextCharLineNumber;
@@ -1201,11 +1205,11 @@ public class Scanner {
     private short            nextCharLineNumber;
     private short            nextCharColumnNumber;
 
-    private Token  nextToken;         // Is always non-null (one token read-ahead).
-    private Token  nextButOneToken;   // Is only non-null after "peekNextButOne()".
-    private short  tokenLineNumber;   // Line number of "nextToken" (typically starting at one).
-    private short  tokenColumnNumber; // Column number of first character of "nextToken" (1 if token is immediately preceeded by a line break).
-    private String docComment = null; // The optional JAVADOC comment preceeding the "nextToken".
+    private Token  nextToken = new Token() {}; // Is always non-null (one token read-ahead).
+    private Token  nextButOneToken;            // Is only non-null after "peekNextButOne()".
+    private short  tokenLineNumber;            // Line number of "nextToken" (typically starting at one).
+    private short  tokenColumnNumber;          // Column number of first character of "nextToken" (1 if token is immediately preceeded by a line break).
+    private String docComment = null;          // The optional JAVADOC comment preceeding the "nextToken".
 
     private static final Map JAVA_KEYWORDS = new HashMap();
     static {
@@ -1233,29 +1237,6 @@ public class Scanner {
             "+=", "-=", "*=", "/=", "&=", "|=", "^=", "%=", "<<=", ">>=", ">>>=",
         };
         for (int i = 0; i < ops.length; ++i) Scanner.JAVA_OPERATORS.put(ops[i], ops[i]);
-    }
-
-
-    /**
-     * An exception that reflects an error during parsing.
-     */
-    public class ScanException extends LocatedException {
-
-        public ScanException(String message) {
-            super(message, new Location(
-                Scanner.this.optionalFileName,
-                Scanner.this.nextCharLineNumber,
-                Scanner.this.nextCharColumnNumber
-            ));
-        }
-
-        public ScanException(String message, Throwable cause) {
-            super(message, new Location(
-                    Scanner.this.optionalFileName,
-                    Scanner.this.nextCharLineNumber,
-                    Scanner.this.nextCharColumnNumber
-            ), cause);
-        }
     }
 
     /**

@@ -2,7 +2,7 @@
 /*
  * Janino - An embedded Java[TM] compiler
  *
- * Copyright (c) 2001-2007, Arno Unkrig
+ * Copyright (c) 2001-2010, Arno Unkrig
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,8 +37,10 @@ package org.codehaus.janino;
 import java.io.*;
 import java.util.*;
 
+import org.codehaus.commons.compiler.Location;
+import org.codehaus.commons.compiler.ParseException;
+import org.codehaus.commons.compiler.ScanException;
 import org.codehaus.janino.Java.CompilationUnit.ImportDeclaration;
-import org.codehaus.janino.util.LocatedException;
 import org.codehaus.janino.util.enumerator.Enumerator;
 
 /**
@@ -62,7 +64,7 @@ public class Parser {
      *                      { TypeDeclaration }
      * </pre>
      */
-    public Java.CompilationUnit parseCompilationUnit() throws ParseException, Scanner.ScanException, IOException {
+    public Java.CompilationUnit parseCompilationUnit() throws ParseException, ScanException, IOException {
         Java.CompilationUnit compilationUnit = new Java.CompilationUnit(this.location().getFileName());
 
         if (this.peekKeyword("package")) {
@@ -90,7 +92,7 @@ public class Parser {
      *   PackageDeclaration := 'package' QualifiedIdentifier ';'
      * </pre>
      */
-    public Java.PackageDeclaration parsePackageDeclaration() throws Parser.ParseException, Scanner.ScanException, IOException {
+    public Java.PackageDeclaration parsePackageDeclaration() throws ParseException, ScanException, IOException {
         this.readKeyword("package");
         Location loc = this.location();
         String packageName = Parser.join(this.parseQualifiedIdentifier(), ".");
@@ -104,7 +106,7 @@ public class Parser {
      *   ImportDeclaration := 'import' ImportDeclarationBody ';'
      * </pre>
      */
-    public Java.CompilationUnit.ImportDeclaration parseImportDeclaration() throws ParseException, Scanner.ScanException, IOException {
+    public Java.CompilationUnit.ImportDeclaration parseImportDeclaration() throws ParseException, ScanException, IOException {
         this.readKeyword("import");
         Java.CompilationUnit.ImportDeclaration importDeclaration = this.parseImportDeclarationBody();
         this.readOperator(";");
@@ -116,7 +118,7 @@ public class Parser {
      *   ImportDeclarationBody := [ 'static' ] Identifier { '.' Identifier } [ '.' '*' ]
      * </pre>
      */
-    public Java.CompilationUnit.ImportDeclaration parseImportDeclarationBody() throws ParseException, Scanner.ScanException, IOException {
+    public Java.CompilationUnit.ImportDeclaration parseImportDeclarationBody() throws ParseException, ScanException, IOException {
         Location loc = this.location();
         boolean isStatic;
         if (this.peekKeyword("static")) {
@@ -154,7 +156,7 @@ public class Parser {
     /**
      * QualifiedIdentifier := Identifier { '.' Identifier }
      */
-    public String[] parseQualifiedIdentifier() throws ParseException, Scanner.ScanException, IOException {
+    public String[] parseQualifiedIdentifier() throws ParseException, ScanException, IOException {
         if (!this.scanner.peek().isIdentifier()) this.throwParseException("Identifier expected");
         List l = new ArrayList();
         l.add(this.readIdentifier());
@@ -172,7 +174,7 @@ public class Parser {
      *             ModifiersOpt 'interface' InterfaceDeclarationRest
      * </pre>
      */
-    public Java.PackageMemberTypeDeclaration parsePackageMemberTypeDeclaration() throws ParseException, Scanner.ScanException, IOException {
+    public Java.PackageMemberTypeDeclaration parsePackageMemberTypeDeclaration() throws ParseException, ScanException, IOException {
         String optionalDocComment = this.scanner.doc();
 
         short modifiers = this.parseModifiersOpt();
@@ -210,7 +212,7 @@ public class Parser {
      *           'transient' | 'volatile' | 'strictfp'
      * </pre>
      */
-    public short parseModifiersOpt() throws ParseException, Scanner.ScanException, IOException {
+    public short parseModifiersOpt() throws ParseException, ScanException, IOException {
         short mod = 0;
         while (this.peekKeyword()) {
             String kw = this.scanner.peek().getKeyword();
@@ -259,7 +261,7 @@ public class Parser {
         String                  optionalDocComment,
         short                   modifiers,
         ClassDeclarationContext context
-    ) throws ParseException, Scanner.ScanException, IOException {
+    ) throws ParseException, ScanException, IOException {
         Location location = this.location();
         String className = this.readIdentifier();
         this.verifyIdentifierIsConventionalClassOrInterfaceName(className, location);
@@ -328,7 +330,7 @@ public class Parser {
      */
     public void parseClassBody(
         Java.ClassDeclaration classDeclaration
-    ) throws ParseException, Scanner.ScanException, IOException {
+    ) throws ParseException, ScanException, IOException {
         if (!this.peekOperator("{")) this.throwParseException("\"{\" expected at start of class body");
         this.eatToken();
 
@@ -362,7 +364,7 @@ public class Parser {
      */
     public void parseClassBodyDeclaration(
         Java.ClassDeclaration classDeclaration
-    ) throws ParseException, Scanner.ScanException, IOException {
+    ) throws ParseException, ScanException, IOException {
         if (this.peekOperator(";")) {
             this.eatToken();
             return;
@@ -480,7 +482,7 @@ public class Parser {
         String                      optionalDocComment,
         short                       modifiers,
         InterfaceDeclarationContext context
-    ) throws ParseException, Scanner.ScanException, IOException {
+    ) throws ParseException, ScanException, IOException {
         Location location = this.location();
         String interfaceName = this.readIdentifier();
         this.verifyIdentifierIsConventionalClassOrInterfaceName(interfaceName, location);
@@ -541,7 +543,7 @@ public class Parser {
      */
     public void parseInterfaceBody(
         Java.InterfaceDeclaration interfaceDeclaration
-    ) throws ParseException, Scanner.ScanException, IOException {
+    ) throws ParseException, ScanException, IOException {
         this.readOperator("{");
 
         for (;;) {
@@ -646,7 +648,7 @@ public class Parser {
     public Java.ConstructorDeclarator parseConstructorDeclarator(
         String optionalDocComment,
         short  modifiers
-    ) throws ParseException, Scanner.ScanException, IOException {
+    ) throws ParseException, ScanException, IOException {
         Location location = this.location();
         this.readIdentifier();  // Class name
 
@@ -731,7 +733,7 @@ public class Parser {
         short                        modifiers,
         Java.Type                    type,
         String                       name
-    ) throws ParseException, Scanner.ScanException, IOException {
+    ) throws ParseException, ScanException, IOException {
         Location location = this.location();
 
         this.verifyIdentifierIsConventionalMethodName(name, location);
@@ -778,7 +780,7 @@ public class Parser {
      *     Expression
      * </pre>
      */
-    public Java.ArrayInitializerOrRvalue parseVariableInitializer() throws ParseException, Scanner.ScanException, IOException {
+    public Java.ArrayInitializerOrRvalue parseVariableInitializer() throws ParseException, ScanException, IOException {
         if (this.peekOperator("{")) {
             return this.parseArrayInitializer();
         } else
@@ -793,7 +795,7 @@ public class Parser {
      *     '{' [ VariableInitializer { ',' VariableInitializer } [ ',' ] '}'
      * </pre>
      */
-    public Java.ArrayInitializer parseArrayInitializer() throws ParseException, Scanner.ScanException, IOException {
+    public Java.ArrayInitializer parseArrayInitializer() throws ParseException, ScanException, IOException {
         Location location = this.location();
         this.readOperator("{");
         List l = new ArrayList(); // ArrayInitializerOrRvalue
@@ -815,8 +817,8 @@ public class Parser {
      *   FormalParameters := '(' [ FormalParameter { ',' FormalParameter } ] ')'
      * </pre>
      */
-    public Java.FunctionDeclarator.FormalParameter[] parseFormalParameters()
-    throws ParseException, Scanner.ScanException, IOException {
+    public Java.FunctionDeclarator.FormalParameter[] parseFormalParameters(
+    ) throws ParseException, ScanException, IOException {
         this.readOperator("(");
         if (this.peekOperator(")")) {
             this.eatToken();
@@ -838,7 +840,7 @@ public class Parser {
      *   FormalParameter := [ 'final' ] Type Identifier BracketsOpt
      * </pre>
      */
-    public Java.FunctionDeclarator.FormalParameter parseFormalParameter() throws ParseException, Scanner.ScanException, IOException {
+    public Java.FunctionDeclarator.FormalParameter parseFormalParameter() throws ParseException, ScanException, IOException {
         boolean finaL = this.peekKeyword("final");
         if (finaL) this.eatToken();
 
@@ -857,7 +859,7 @@ public class Parser {
      *   BracketsOpt := { '[' ']' }
      * </pre>
      */
-    int parseBracketsOpt() throws Scanner.ScanException, IOException {
+    int parseBracketsOpt() throws ScanException, IOException {
         int res = 0;
         while (
             this.scanner.peek().          isOperator("[") &&
@@ -875,7 +877,7 @@ public class Parser {
      *   MethodBody := Block
      * </pre>
      */
-    public Java.Block parseMethodBody() throws ParseException, Scanner.ScanException, IOException {
+    public Java.Block parseMethodBody() throws ParseException, ScanException, IOException {
         return this.parseBlock();
     }
 
@@ -884,7 +886,7 @@ public class Parser {
      *   '{' BlockStatements '}'
      * </pre>
      */
-    public Java.Block parseBlock() throws ParseException, Scanner.ScanException, IOException {
+    public Java.Block parseBlock() throws ParseException, ScanException, IOException {
         Java.Block block = new Java.Block(this.location());
         this.readOperator("{");
         block.addStatements(this.parseBlockStatements());
@@ -897,7 +899,7 @@ public class Parser {
      *   BlockStatements := { BlockStatement }
      * </pre>
      */
-    public List parseBlockStatements() throws ParseException, Scanner.ScanException, IOException {
+    public List parseBlockStatements() throws ParseException, ScanException, IOException {
         List l = new ArrayList();
         while (
             !this.peekOperator("}") &&
@@ -921,7 +923,7 @@ public class Parser {
      *
      * (1) "Expression" must pose a type, and has optional trailing brackets.
      */
-    public Java.BlockStatement parseBlockStatement() throws ParseException, Scanner.ScanException, IOException {
+    public Java.BlockStatement parseBlockStatement() throws ParseException, ScanException, IOException {
 
         // Statement?
         if (
@@ -994,7 +996,7 @@ public class Parser {
      *   LocalVariableDeclarators := VariableDeclarator { ',' VariableDeclarator }
      * </pre>
      */
-    public Java.VariableDeclarator[] parseLocalVariableDeclarators() throws ParseException, Scanner.ScanException, IOException {
+    public Java.VariableDeclarator[] parseLocalVariableDeclarators() throws ParseException, ScanException, IOException {
         List l = new ArrayList();
         for (;;) {
             Java.VariableDeclarator vd = this.parseVariableDeclarator();
@@ -1013,7 +1015,7 @@ public class Parser {
      *     { ',' VariableDeclarator }
      * </pre>
      */
-    public Java.VariableDeclarator[] parseFieldDeclarationRest(String name) throws ParseException, Scanner.ScanException, IOException {
+    public Java.VariableDeclarator[] parseFieldDeclarationRest(String name) throws ParseException, ScanException, IOException {
         List l = new ArrayList();
 
         Java.VariableDeclarator vd = this.parseVariableDeclaratorRest(name);
@@ -1035,7 +1037,7 @@ public class Parser {
      *   VariableDeclarator := Identifier VariableDeclaratorRest
      * </pre>
      */
-    public Java.VariableDeclarator parseVariableDeclarator() throws ParseException, Scanner.ScanException, IOException {
+    public Java.VariableDeclarator parseVariableDeclarator() throws ParseException, ScanException, IOException {
         return this.parseVariableDeclaratorRest(this.readIdentifier());
     }
 
@@ -1045,7 +1047,7 @@ public class Parser {
      * </pre>
      * Used by field declarations and local variable declarations.
      */
-    public Java.VariableDeclarator parseVariableDeclaratorRest(String name) throws ParseException, Scanner.ScanException, IOException  {
+    public Java.VariableDeclarator parseVariableDeclaratorRest(String name) throws ParseException, ScanException, IOException  {
         Location loc = this.location();
         int brackets = this.parseBracketsOpt();
         Java.ArrayInitializerOrRvalue initializer = null;
@@ -1076,7 +1078,7 @@ public class Parser {
      *     ExpressionStatement
      * </pre>
      */
-    public Java.Statement parseStatement() throws ParseException, Scanner.ScanException, IOException {
+    public Java.Statement parseStatement() throws ParseException, ScanException, IOException {
         if (
             this.scanner.peek().isIdentifier() &&
             this.scanner.peekNextButOne().isOperator(":")
@@ -1111,7 +1113,7 @@ public class Parser {
      *   LabeledStatement := Identifier ':' Statement
      * </pre>
      */
-    public Java.Statement parseLabeledStatement() throws ParseException, Scanner.ScanException, IOException {
+    public Java.Statement parseLabeledStatement() throws ParseException, ScanException, IOException {
         String label = this.readIdentifier();
         this.readOperator(":");
         return new Java.LabeledStatement(
@@ -1126,7 +1128,7 @@ public class Parser {
      *   IfStatement := 'if' '(' Expression ')' Statement [ 'else' Statement ]
      * </pre>
      */
-    public Java.Statement parseIfStatement() throws ParseException, Scanner.ScanException, IOException {
+    public Java.Statement parseIfStatement() throws ParseException, ScanException, IOException {
         Location location = this.location();
         this.readKeyword("if");
         this.readOperator("(");
@@ -1159,7 +1161,7 @@ public class Parser {
      *     ')' Statement
      * </pre>
      */
-    public Java.Statement parseForStatement() throws ParseException, Scanner.ScanException, IOException {
+    public Java.Statement parseForStatement() throws ParseException, ScanException, IOException {
         Location location = this.location();
         this.readKeyword("for");
 
@@ -1207,7 +1209,7 @@ public class Parser {
      *
      * (1) "Expression" must pose a type.
      */
-    private Java.BlockStatement parseForInit() throws ParseException, Scanner.ScanException, IOException {
+    private Java.BlockStatement parseForInit() throws ParseException, ScanException, IOException {
 
         // Modifiers Type LocalVariableDeclarators
         // ModifiersOpt BasicType LocalVariableDeclarators
@@ -1258,7 +1260,7 @@ public class Parser {
      *   WhileStatement := 'while' '(' Expression ')' Statement
      * </pre>
      */
-    public Java.Statement parseWhileStatement() throws ParseException, Scanner.ScanException, IOException {
+    public Java.Statement parseWhileStatement() throws ParseException, ScanException, IOException {
         Location location = this.location();
         this.readKeyword("while");
 
@@ -1278,7 +1280,7 @@ public class Parser {
      *   DoStatement := 'do' Statement 'while' '(' Expression ')' ';'
      * </pre>
      */
-    public Java.Statement parseDoStatement() throws ParseException, Scanner.ScanException, IOException {
+    public Java.Statement parseDoStatement() throws ParseException, ScanException, IOException {
         Location location = this.location();
         this.readKeyword("do");
 
@@ -1310,7 +1312,7 @@ public class Parser {
      *   Finally := 'finally' Block
      * </pre>
      */
-    public Java.Statement parseTryStatement() throws ParseException, Scanner.ScanException, IOException {
+    public Java.Statement parseTryStatement() throws ParseException, ScanException, IOException {
         Location location = this.location();
         this.readKeyword("try");
 
@@ -1355,7 +1357,7 @@ public class Parser {
      *   SwitchLabel := 'case' Expression ':' | 'default' ':'
      * </pre>
      */
-    public Java.Statement parseSwitchStatement() throws ParseException, Scanner.ScanException, IOException {
+    public Java.Statement parseSwitchStatement() throws ParseException, ScanException, IOException {
         Location location = this.location();
         this.readKeyword("switch");
 
@@ -1406,7 +1408,7 @@ public class Parser {
      *     'synchronized' '(' expression ')' Block
      * </pre>
      */
-    public Java.Statement parseSynchronizedStatement() throws ParseException, Scanner.ScanException, IOException {
+    public Java.Statement parseSynchronizedStatement() throws ParseException, ScanException, IOException {
         Location location = this.location();
         this.readKeyword("synchronized");
         this.readOperator("(");
@@ -1424,7 +1426,7 @@ public class Parser {
      *   ReturnStatement := 'return' [ Expression ] ';'
      * </pre>
      */
-    public Java.Statement parseReturnStatement() throws ParseException, Scanner.ScanException, IOException {
+    public Java.Statement parseReturnStatement() throws ParseException, ScanException, IOException {
         Location location = this.location();
         this.readKeyword("return");
         Java.Rvalue returnValue = this.peekOperator(";") ? null : this.parseExpression().toRvalueOrPE();
@@ -1437,7 +1439,7 @@ public class Parser {
      *   ThrowStatement := 'throw' Expression ';'
      * </pre>
      */
-    public Java.Statement parseThrowStatement() throws ParseException, Scanner.ScanException, IOException {
+    public Java.Statement parseThrowStatement() throws ParseException, ScanException, IOException {
         Location location = this.location();
         this.readKeyword("throw");
         final Java.Rvalue expression = this.parseExpression().toRvalueOrPE();
@@ -1451,7 +1453,7 @@ public class Parser {
      *   BreakStatement := 'break' [ Identifier ] ';'
      * </pre>
      */
-    public Java.Statement parseBreakStatement() throws ParseException, Scanner.ScanException, IOException {
+    public Java.Statement parseBreakStatement() throws ParseException, ScanException, IOException {
         Location location = this.location();
         this.readKeyword("break");
         String optionalLabel = null;
@@ -1465,7 +1467,7 @@ public class Parser {
      *   ContinueStatement := 'continue' [ Identifier ] ';'
      * </pre>
      */
-    public Java.Statement parseContinueStatement() throws ParseException, Scanner.ScanException, IOException {
+    public Java.Statement parseContinueStatement() throws ParseException, ScanException, IOException {
         Location location = this.location();
         this.readKeyword("continue");
         String optionalLabel = null;
@@ -1479,7 +1481,7 @@ public class Parser {
      *   EmptyStatement := ';'
      * </pre>
      */
-    public Java.Statement parseEmptyStatement() throws ParseException, Scanner.ScanException, IOException {
+    public Java.Statement parseEmptyStatement() throws ParseException, ScanException, IOException {
         Location location = this.location();
         this.readOperator(";");
         return new Java.EmptyStatement(location);
@@ -1490,7 +1492,7 @@ public class Parser {
      *   ExpressionList := Expression { ',' Expression }
      * </pre>
      */
-    public Java.Rvalue[] parseExpressionList() throws ParseException, Scanner.ScanException, IOException {
+    public Java.Rvalue[] parseExpressionList() throws ParseException, ScanException, IOException {
         List l = new ArrayList();
         for (;;) {
             l.add(this.parseExpression().toRvalueOrPE());
@@ -1509,7 +1511,7 @@ public class Parser {
      *   ) { '[' ']' }
      * </pre>
      */
-    public Java.Type parseType() throws ParseException, Scanner.ScanException, IOException {
+    public Java.Type parseType() throws ParseException, ScanException, IOException {
         Scanner.Token t = this.scanner.peek();
         int bt = -1;
         if (t.isKeyword("byte"   )) { bt = Java.BasicType.BYTE   ; } else
@@ -1536,7 +1538,7 @@ public class Parser {
      *   ReferenceType := QualifiedIdentifier
      * </pre>
      */
-    public Java.ReferenceType parseReferenceType() throws ParseException, Scanner.ScanException, IOException {
+    public Java.ReferenceType parseReferenceType() throws ParseException, ScanException, IOException {
         return new Java.ReferenceType(
             this.location(),                // location
             this.parseQualifiedIdentifier() // identifiers
@@ -1548,7 +1550,7 @@ public class Parser {
      *   ReferenceTypeList := ReferenceType { ',' ReferenceType }
      * </pre>
      */
-    public Java.ReferenceType[] parseReferenceTypeList() throws ParseException, Scanner.ScanException, IOException {
+    public Java.ReferenceType[] parseReferenceTypeList() throws ParseException, ScanException, IOException {
         List l = new ArrayList();
         l.add(this.parseReferenceType());
         while (this.peekOperator(",")) {
@@ -1563,7 +1565,7 @@ public class Parser {
      *   Expression := AssignmentExpression
      * </pre>
      */
-    public Java.Atom parseExpression() throws ParseException, Scanner.ScanException, IOException  {
+    public Java.Atom parseExpression() throws ParseException, ScanException, IOException  {
         return this.parseAssignmentExpression();
     }
 
@@ -1577,7 +1579,7 @@ public class Parser {
      *     '>>=' | '>>>=' | '&=' | '^=' | '|='
      * </pre>
      */
-    public Java.Atom parseAssignmentExpression() throws ParseException, Scanner.ScanException, IOException  {
+    public Java.Atom parseAssignmentExpression() throws ParseException, ScanException, IOException  {
         Java.Atom a = this.parseConditionalExpression();
         if (this.peekOperator(new String[] { "=", "+=", "-=", "*=", "/=", "&=", "|=", "^=", "%=", "<<=", ">>=", ">>>=" })) {
             Location location = this.location();
@@ -1595,7 +1597,7 @@ public class Parser {
      *     ConditionalOrExpression [ '?' Expression ':' ConditionalExpression ]
      * </pre>
      */
-    public Java.Atom parseConditionalExpression() throws ParseException, Scanner.ScanException, IOException  {
+    public Java.Atom parseConditionalExpression() throws ParseException, ScanException, IOException  {
         Java.Atom a = this.parseConditionalOrExpression();
         if (!this.peekOperator("?")) return a;
         Location location = this.location();
@@ -1614,7 +1616,7 @@ public class Parser {
      *     ConditionalAndExpression { '||' ConditionalAndExpression ]
      * </pre>
      */
-    public Java.Atom parseConditionalOrExpression() throws ParseException, Scanner.ScanException, IOException  {
+    public Java.Atom parseConditionalOrExpression() throws ParseException, ScanException, IOException  {
         Java.Atom a = this.parseConditionalAndExpression();
         while (this.peekOperator("||")) {
             Location location = this.location();
@@ -1635,7 +1637,7 @@ public class Parser {
      *     InclusiveOrExpression { '&&' InclusiveOrExpression }
      * </pre>
      */
-    public Java.Atom parseConditionalAndExpression() throws ParseException, Scanner.ScanException, IOException  {
+    public Java.Atom parseConditionalAndExpression() throws ParseException, ScanException, IOException  {
         Java.Atom a = this.parseInclusiveOrExpression();
         while (this.peekOperator("&&")) {
             Location location = this.location();
@@ -1656,7 +1658,7 @@ public class Parser {
      *     ExclusiveOrExpression { '|' ExclusiveOrExpression }
      * </pre>
      */
-    public Java.Atom parseInclusiveOrExpression() throws ParseException, Scanner.ScanException, IOException  {
+    public Java.Atom parseInclusiveOrExpression() throws ParseException, ScanException, IOException  {
         Java.Atom a = this.parseExclusiveOrExpression();
         while (this.peekOperator("|")) {
             Location location = this.location();
@@ -1677,7 +1679,7 @@ public class Parser {
      *     AndExpression { '^' AndExpression }
      * </pre>
      */
-    public Java.Atom parseExclusiveOrExpression() throws ParseException, Scanner.ScanException, IOException  {
+    public Java.Atom parseExclusiveOrExpression() throws ParseException, ScanException, IOException  {
         Java.Atom a = this.parseAndExpression();
         while (this.peekOperator("^")) {
             Location location = this.location();
@@ -1698,7 +1700,7 @@ public class Parser {
      *     EqualityExpression { '&' EqualityExpression }
      * </pre>
      */
-    public Java.Atom parseAndExpression() throws ParseException, Scanner.ScanException, IOException  {
+    public Java.Atom parseAndExpression() throws ParseException, ScanException, IOException  {
         Java.Atom a = this.parseEqualityExpression();
         while (this.peekOperator("&")) {
             Location location = this.location();
@@ -1719,7 +1721,7 @@ public class Parser {
      *     RelationalExpression { ( '==' | '!=' ) RelationalExpression }
      * </pre>
      */
-    public Java.Atom parseEqualityExpression() throws ParseException, Scanner.ScanException, IOException  {
+    public Java.Atom parseEqualityExpression() throws ParseException, ScanException, IOException  {
         Java.Atom a = this.parseRelationalExpression();
 
         while (this.peekOperator(new String[] { "==", "!=" })) {
@@ -1742,7 +1744,7 @@ public class Parser {
      *     }
      * </pre>
      */
-    public Java.Atom parseRelationalExpression() throws ParseException, Scanner.ScanException, IOException  {
+    public Java.Atom parseRelationalExpression() throws ParseException, ScanException, IOException  {
         Java.Atom a = this.parseShiftExpression();
 
         for (;;) {
@@ -1774,7 +1776,7 @@ public class Parser {
      *     AdditiveExpression { ( '<<' | '>>' | '>>>' ) AdditiveExpression }
      * </pre>
      */
-    public Java.Atom parseShiftExpression() throws ParseException, Scanner.ScanException, IOException  {
+    public Java.Atom parseShiftExpression() throws ParseException, ScanException, IOException  {
         Java.Atom a = this.parseAdditiveExpression();
 
         while (this.peekOperator(new String[] { "<<", ">>", ">>>" })) {
@@ -1794,7 +1796,7 @@ public class Parser {
      *     MultiplicativeExpression { ( '+' | '-' ) MultiplicativeExpression }
      * </pre>
      */
-    public Java.Atom parseAdditiveExpression() throws ParseException, Scanner.ScanException, IOException  {
+    public Java.Atom parseAdditiveExpression() throws ParseException, ScanException, IOException  {
         Java.Atom a = this.parseMultiplicativeExpression();
 
         while (this.peekOperator(new String[] { "+", "-" })) {
@@ -1814,7 +1816,7 @@ public class Parser {
      *     UnaryExpression { ( '*' | '/' | '%' ) UnaryExpression }
      * </pre>
      */
-    public Java.Atom parseMultiplicativeExpression() throws ParseException, Scanner.ScanException, IOException {
+    public Java.Atom parseMultiplicativeExpression() throws ParseException, ScanException, IOException {
         Java.Atom a = this.parseUnaryExpression();
 
         while (this.peekOperator(new String[] { "*", "/", "%" })) {
@@ -1838,7 +1840,7 @@ public class Parser {
      *   PostfixOperator := '++' | '--'
      * </pre>
      */
-    public Java.Atom parseUnaryExpression() throws ParseException, Scanner.ScanException, IOException {
+    public Java.Atom parseUnaryExpression() throws ParseException, ScanException, IOException {
         if (this.peekOperator(new String[] { "++", "--" })) {
             return new Java.Crement(
                 this.location(),                           // location
@@ -1908,7 +1910,7 @@ public class Parser {
      *   NewInitializedArray := 'new' ArrayType ArrayInitializer
      * </pre>
      */
-    public Java.Atom parsePrimary() throws ParseException, Scanner.ScanException, IOException {
+    public Java.Atom parsePrimary() throws ParseException, ScanException, IOException {
         if (this.peekOperator("(")) {
             this.eatToken();
             if (this.peekKeyword(new String[] { "boolean", "char", "byte", "short", "int", "long", "float", "double", })) {
@@ -2148,7 +2150,7 @@ public class Parser {
      *     '[' Expression ']'                     // ArrayAccessExpression 15.13
      * </pre>
      */
-    public Java.Atom parseSelector(Java.Atom atom) throws ParseException, Scanner.ScanException, IOException {
+    public Java.Atom parseSelector(Java.Atom atom) throws ParseException, ScanException, IOException {
         if (this.peekOperator(".")) {
             this.eatToken();
             if (this.scanner.peek().isIdentifier()) {
@@ -2275,7 +2277,7 @@ public class Parser {
      *   DimExprs := DimExpr { DimExpr }
      * </pre>
      */
-    public Java.Rvalue[] parseDimExprs() throws ParseException, Scanner.ScanException, IOException {
+    public Java.Rvalue[] parseDimExprs() throws ParseException, ScanException, IOException {
         List l = new ArrayList();
         l.add(this.parseDimExpr());
         while (
@@ -2290,7 +2292,7 @@ public class Parser {
      *   DimExpr := '[' Expression ']'
      * </pre>
      */
-    public Java.Rvalue parseDimExpr() throws Scanner.ScanException, ParseException, IOException {
+    public Java.Rvalue parseDimExpr() throws ScanException, ParseException, IOException {
         this.readOperator("[");
         Java.Rvalue res = this.parseExpression().toRvalueOrPE();
         this.readOperator("]");
@@ -2302,7 +2304,7 @@ public class Parser {
      *   Arguments := '(' [ ArgumentList ] ')'
      * </pre>
      */
-    public Java.Rvalue[] parseArguments() throws ParseException, Scanner.ScanException, IOException {
+    public Java.Rvalue[] parseArguments() throws ParseException, ScanException, IOException {
         this.readOperator("(");
         if (this.peekOperator(")")) {
             this.eatToken();
@@ -2318,7 +2320,7 @@ public class Parser {
      *   ArgumentList := Expression { ',' Expression }
      * </pre>
      */
-    public Java.Rvalue[] parseArgumentList() throws ParseException, Scanner.ScanException, IOException {
+    public Java.Rvalue[] parseArgumentList() throws ParseException, ScanException, IOException {
         List l = new ArrayList();
         for (;;) {
             l.add(this.parseExpression().toRvalueOrPE());
@@ -2328,7 +2330,7 @@ public class Parser {
         return (Java.Rvalue[]) l.toArray(new Java.Rvalue[l.size()]);
     }
 
-    public Java.Atom parseLiteral() throws ParseException, Scanner.ScanException, IOException {
+    public Java.Atom parseLiteral() throws ParseException, ScanException, IOException {
         Scanner.Token t = this.scanner.read();
         if (!t.isLiteral()) this.throwParseException("Literal expected");
         return new Java.Literal(t.getLocation(), t.getLiteralValue());
@@ -2337,28 +2339,28 @@ public class Parser {
     // Simplified access to the scanner.
 
     public Location location()                                           { return this.scanner.location(); }
-    public void     eatToken() throws Scanner.ScanException, IOException { this.scanner.read(); }
+    public void     eatToken() throws ScanException, IOException { this.scanner.read(); }
     // Keyword-related.
     public boolean peekKeyword()                  { return this.scanner.peek().isKeyword(); }
     public boolean peekKeyword(String keyword)    { return this.scanner.peek().isKeyword(keyword); }
     public boolean peekKeyword(String[] keywords) { return this.scanner.peek().isKeyword(keywords); }
-    public void    readKeyword(String keyword) throws ParseException, Scanner.ScanException, IOException {
+    public void    readKeyword(String keyword) throws ParseException, ScanException, IOException {
         if (!this.scanner.read().isKeyword(keyword)) this.throwParseException("\"" + keyword + "\" expected"); // We want a ParseException, not a ScanException
     }
     // Operator-related.
     public boolean peekOperator(String operator)    { return this.scanner.peek().isOperator(operator); }
     public boolean peekOperator(String[] operators) { return this.scanner.peek().isOperator(operators); }
-    public String  readOperator() throws ParseException, Scanner.ScanException, IOException {
+    public String  readOperator() throws ParseException, ScanException, IOException {
         Scanner.Token t = this.scanner.read();
         if (!t.isOperator()) this.throwParseException("Operator expected"); // We want a ParseException, not a ScanException
         return t.getOperator();
     }
-    public void    readOperator(String operator) throws ParseException, Scanner.ScanException, IOException {
+    public void    readOperator(String operator) throws ParseException, ScanException, IOException {
         if (!this.scanner.read().isOperator(operator)) this.throwParseException("Operator \"" + operator + "\" expected"); // We want a ParseException, not a ScanException
     }
     // Identifier-related.
     public boolean peekIdentifier() { return this.scanner.peek().isIdentifier(); }
-    public String readIdentifier() throws ParseException, Scanner.ScanException, IOException {
+    public String readIdentifier() throws ParseException, ScanException, IOException {
         Scanner.Token t = this.scanner.read();
         if (!t.isIdentifier()) this.throwParseException("Identifier expected"); // We want a ParseException, not a ScanException
         return t.getIdentifier();
@@ -2369,7 +2371,7 @@ public class Parser {
      *   ExpressionStatement := Expression ';'
      * </pre>
      */
-    public Java.Statement parseExpressionStatement() throws ParseException, Scanner.ScanException, IOException {
+    public Java.Statement parseExpressionStatement() throws ParseException, ScanException, IOException {
         Java.Rvalue rv = this.parseExpression().toRvalueOrPE();
         this.readOperator(";");
 
@@ -2508,18 +2510,6 @@ public class Parser {
      */
     private void warning(String handle, String message, Location optionalLocation) {
         if (this.optionalWarningHandler != null) this.optionalWarningHandler.handleWarning(handle, message, optionalLocation);
-    }
-
-    /**
-     * An exception that reflects an error during parsing.
-     *
-     * This exception is associated with a particular {@link Location
-     * Location} in the source code.
-     */
-    public static class ParseException extends LocatedException {
-        public ParseException(String message, Location location) {
-            super(message, location);
-        }
     }
 
     /**

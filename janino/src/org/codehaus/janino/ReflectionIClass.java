@@ -2,7 +2,7 @@
 /*
  * Janino - An embedded Java[TM] compiler
  *
- * Copyright (c) 2001-2007, Arno Unkrig
+ * Copyright (c) 2001-2010, Arno Unkrig
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,6 +36,9 @@ package org.codehaus.janino;
 
 import java.util.*;
 import java.lang.reflect.*;
+
+import org.codehaus.commons.compiler.CompileException;
+import org.codehaus.commons.compiler.Location;
 
 /**
  * Wraps a {@link java.lang.Class} in an {@link org.codehaus.janino.IClass}.

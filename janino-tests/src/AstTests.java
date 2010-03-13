@@ -42,12 +42,8 @@ import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
-import org.codehaus.janino.CompileException;
-import org.codehaus.janino.Java;
-import org.codehaus.janino.Location;
-import org.codehaus.janino.Mod;
-import org.codehaus.janino.SimpleCompiler;
-import org.codehaus.janino.UnparseVisitor;
+import org.codehaus.commons.compiler.*;
+import org.codehaus.janino.*;
 import org.codehaus.janino.Java.AmbiguousName;
 import org.codehaus.janino.Java.ArrayType;
 import org.codehaus.janino.Java.BasicType;
@@ -62,7 +58,6 @@ import org.codehaus.janino.Java.ReturnStatement;
 import org.codehaus.janino.Java.Rvalue;
 import org.codehaus.janino.Java.Type;
 import org.codehaus.janino.Java.FunctionDeclarator.FormalParameter;
-import org.codehaus.janino.Parser.ParseException;
 
 public class AstTests extends TestCase {
     public static Test suite() {

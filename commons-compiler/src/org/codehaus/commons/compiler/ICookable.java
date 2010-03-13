@@ -68,21 +68,18 @@ public interface ICookable {
      *
      * @param optionalFileName Used when reporting errors and warnings.
      */
-    public abstract void cook(String optionalFileName, Reader r) throws CompileException,
-        ParseException, ScanException, IOException;
+    void cook(String optionalFileName, Reader r) throws CompileException, ParseException, ScanException, IOException;
 
     /**
      * Reads, scans, parses and compiles Java tokens from the given {@link Reader}.
      */
-    public abstract void cook(Reader r) throws CompileException, ParseException, ScanException,
-        IOException;
+    void cook(Reader r) throws CompileException, ParseException, ScanException, IOException;
 
     /**
      * Reads, scans, parses and compiles Java tokens from the given {@link InputStream}, encoded
      * in the "platform default encoding".
      */
-    public abstract void cook(InputStream is) throws CompileException, ParseException,
-        ScanException, IOException;
+    void cook(InputStream is) throws CompileException, ParseException, ScanException, IOException;
 
     /**
      * Reads, scans, parses and compiles Java tokens from the given {@link InputStream}, encoded
@@ -90,7 +87,7 @@ public interface ICookable {
      *
      * @param optionalFileName Used when reporting errors and warnings.
      */
-    public abstract void cook(
+    void cook(
         String      optionalFileName,
         InputStream is
     ) throws CompileException, ParseException, ScanException, IOException;
@@ -99,7 +96,7 @@ public interface ICookable {
      * Reads, scans, parses and compiles Java tokens from the given {@link InputStream} with the
      * given <code>encoding</code>.
      */
-    public abstract void cook(
+    void cook(
         InputStream is,
         String      optionalEncoding
     ) throws CompileException, ParseException, ScanException, IOException;
@@ -110,7 +107,7 @@ public interface ICookable {
      *
      * @param optionalFileName Used when reporting errors and warnings.
      */
-    public abstract void cook(
+    void cook(
         String      optionalFileName,
         InputStream is,
         String      optionalEncoding
@@ -119,21 +116,26 @@ public interface ICookable {
     /**
      * Reads, scans, parses and compiles Java tokens from the given {@link String}.
      */
-    public abstract void cook(String s) throws CompileException, ParseException, ScanException;
+    void cook(String s) throws CompileException, ParseException, ScanException;
+
+    /**
+     * Reads, scans, parses and compiles Java tokens from the given {@link String}.
+     *
+     * @param optionalFileName Used when reporting errors and warnings.
+     */
+    void cook(String optionalFileName, String s) throws CompileException, ParseException, ScanException;
 
     /**
      * Reads, scans, parses and compiles Java tokens from the given {@link File}, encoded
      * in the "platform default encoding".
      */
-    public abstract void cookFile(
-        File file
-    ) throws CompileException, ParseException, ScanException, IOException;
+    void cookFile(File file) throws CompileException, ParseException, ScanException, IOException;
 
     /**
      * Reads, scans, parses and compiles Java tokens from the given {@link File} with the
      * given <code>encoding</code>.
      */
-    public abstract void cookFile(
+    void cookFile(
         File   file,
         String optionalEncoding
     ) throws CompileException, ParseException, ScanException, IOException;
@@ -142,15 +144,13 @@ public interface ICookable {
      * Reads, scans, parses and compiles Java tokens from the named file, encoded in the "platform
      * default encoding".
      */
-    public abstract void cookFile(
-        String fileName
-    ) throws CompileException, ParseException, ScanException, IOException;
+    void cookFile(String fileName) throws CompileException, ParseException, ScanException, IOException;
 
     /**
      * Reads, scans, parses and compiles Java tokens from the named file with the given
      * <code>encoding</code>.
      */
-    public abstract void cookFile(
+    void cookFile(
         String fileName,
         String optionalEncoding
     ) throws CompileException, ParseException, ScanException, IOException;

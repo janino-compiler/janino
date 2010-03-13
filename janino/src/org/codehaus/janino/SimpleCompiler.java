@@ -2,7 +2,7 @@
 /*
  * Janino - An embedded Java[TM] compiler
  *
- * Copyright (c) 2001-2007, Arno Unkrig
+ * Copyright (c) 2001-2010, Arno Unkrig
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -38,33 +38,17 @@ import java.io.*;
 import java.lang.reflect.*;
 import java.util.*;
 
+import org.codehaus.commons.compiler.*;
 import org.codehaus.janino.tools.Disassembler;
 import org.codehaus.janino.util.*;
 import org.codehaus.janino.util.enumerator.*;
 
 /**
- * A simplified version of {@link Compiler} that can compile only a single
- * compilation unit. (A "compilation unit" is the characters stored in a
- * ".java" file.)
- * <p>
- * Opposed to a normal ".java" file, you can declare multiple public classes
- * here.
- * <p>
- * To set up a {@link SimpleCompiler} object, proceed as follows:
- * <ol>
- *   <li>
- *   Create the {@link SimpleCompiler} using {@link #SimpleCompiler()}
- *   <li>
- *   Optionally set an alternate parent class loader through
- *   {@link #setParentClassLoader(ClassLoader)}.
- *   <li>
- *   Call any of the {@link org.codehaus.janino.Cookable#cook(Scanner)} methods to scan,
- *   parse, compile and load the compilation unit into the JVM.
- * </ol>
- * Alternatively, a number of "convenience constructors" exist that execute the steps described
- * above instantly.
+ * To set up a {@link SimpleCompiler} object, proceed as described for {@link ISimpleCompiler}.
+ * Alternatively, a number of "convenience constructors" exist that execute the described steps
+ * instantly.
  */
-public class SimpleCompiler extends Cookable {
+public class SimpleCompiler extends Cookable implements ISimpleCompiler {
     private final static boolean DEBUG = false;
 
     private ClassLoader parentClassLoader = Thread.currentThread().getContextClassLoader();
@@ -123,7 +107,7 @@ public class SimpleCompiler extends Cookable {
     public SimpleCompiler(
         String optionalFileName,
         Reader in
-    ) throws IOException, Scanner.ScanException, Parser.ParseException, CompileException {
+    ) throws IOException, ScanException, ParseException, CompileException {
         this.cook(optionalFileName, in);
     }
 
@@ -138,7 +122,7 @@ public class SimpleCompiler extends Cookable {
     public SimpleCompiler(
         String      optionalFileName,
         InputStream is
-    ) throws IOException, Scanner.ScanException, Parser.ParseException, CompileException {
+    ) throws IOException, ScanException, ParseException, CompileException {
         this.cook(optionalFileName, is);
     }
 
@@ -152,7 +136,7 @@ public class SimpleCompiler extends Cookable {
      */
     public SimpleCompiler(
         String fileName
-    ) throws IOException, Scanner.ScanException, Parser.ParseException, CompileException {
+    ) throws IOException, ScanException, ParseException, CompileException {
         this.cookFile(fileName);
     }
 
@@ -169,7 +153,7 @@ public class SimpleCompiler extends Cookable {
     public SimpleCompiler(
         Scanner     scanner,
         ClassLoader optionalParentClassLoader
-    ) throws IOException, Scanner.ScanException, Parser.ParseException, CompileException {
+    ) throws IOException, ScanException, ParseException, CompileException {
         this.setParentClassLoader(optionalParentClassLoader);
         this.cook(scanner);
     }
@@ -177,28 +161,14 @@ public class SimpleCompiler extends Cookable {
     public SimpleCompiler() {}
 
     /**
-     * The "parent class loader" is used to load referenced classes. Useful values are:
-     * <table border="1"><tr>
-     *   <td><code>System.getSystemClassLoader()</code></td>
-     *   <td>The running JVM's class path</td>
-     * </tr><tr>
-     *   <td><code>Thread.currentThread().getContextClassLoader()</code> or <code>null</code></td>
-     *   <td>The class loader effective for the invoking thread</td>
-     * </tr><tr>
-     *   <td>{@link #BOOT_CLASS_LOADER}</td>
-     *   <td>The running JVM's boot class path</td>
-     * </tr></table>
-     * The parent class loader defaults to the current thread's context class loader.
-     */
-    public void setParentClassLoader(ClassLoader optionalParentClassLoader) {
-        this.setParentClassLoader(optionalParentClassLoader, null);
-    }
-
-    /**
      * A {@link ClassLoader} that finds the classes on the JVM's <i>boot class path</i> (e.g.
      * <code>java.io.*</code>), but not the classes on the JVM's <i>class path</i>.
      */
     public static final ClassLoader BOOT_CLASS_LOADER = new ClassLoader(null) {};
+
+    public void setParentClassLoader(ClassLoader optionalParentClassLoader) {
+        this.setParentClassLoader(optionalParentClassLoader, null);
+    }
 
     /**
      * Allow references to the classes loaded through this parent class loader
@@ -220,8 +190,14 @@ public class SimpleCompiler extends Cookable {
         this.optionalAuxiliaryClasses = auxiliaryClasses;
     }
 
-    public void cook(Scanner scanner)
-    throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
+    public final void cook(
+        String optionalFileName,
+        Reader r
+    ) throws CompileException, ParseException, ScanException, IOException {
+        this.cook(new Scanner(optionalFileName, r));
+    }
+
+    public void cook(Scanner scanner) throws CompileException, ParseException, ScanException, IOException {
         this.setUpClassLoaders();
 
         // Parse the compilation unit.
@@ -328,16 +304,6 @@ public class SimpleCompiler extends Cookable {
         }
     }
 
-    /**
-     * Returns a {@link ClassLoader} object through which the previously compiled classes can
-     * be accessed. This {@link ClassLoader} can be used for subsequent calls to
-     * {@link #SimpleCompiler(Scanner, ClassLoader)} in order to compile compilation units that
-     * use types (e.g. declare derived types) declared in the previous one.
-     * <p>
-     * This method must only be called after {@link #cook(Scanner)}.
-     * <p>
-     * This method must not be called for instances of derived classes.
-     */
     public ClassLoader getClassLoader() {
         if (this.getClass() != SimpleCompiler.class) throw new IllegalStateException("Must not be called on derived instances");
         if (this.result == null) throw new IllegalStateException("Must only be called after \"cook()\"");

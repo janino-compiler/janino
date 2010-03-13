@@ -2,7 +2,7 @@
 /*
  * Janino - An embedded Java[TM] compiler
  *
- * Copyright (c) 2001-2007, Arno Unkrig
+ * Copyright (c) 2001-2010, Arno Unkrig
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -44,8 +44,10 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.ArrayList;
 
-import org.codehaus.janino.Parser.ParseException;
-import org.codehaus.janino.Scanner.ScanException;
+import org.codehaus.commons.compiler.CompileException;
+import org.codehaus.commons.compiler.Location;
+import org.codehaus.commons.compiler.ParseException;
+import org.codehaus.commons.compiler.ScanException;
 import org.codehaus.janino.UnitCompiler.ErrorHandler;
 import org.codehaus.janino.tools.Disassembler;
 import org.codehaus.janino.util.Benchmark;
@@ -429,8 +431,7 @@ public class Compiler {
      * @throws ScanException Scan error
      * @throws IOException Occurred when reading from the <code>sourceFiles</code>
      */
-    public boolean compile(File[] sourceFiles)
-    throws Scanner.ScanException, Parser.ParseException, CompileException, IOException {
+    public boolean compile(File[] sourceFiles) throws ScanException, ParseException, CompileException, IOException {
         this.benchmark.report("Source files", sourceFiles);
 
         Resource[] sourceFileResources = new Resource[sourceFiles.length];
@@ -445,8 +446,9 @@ public class Compiler {
      * @param sourceResources Contain the compilation units to compile
      * @return <code>true</code> for backwards compatibility (return value can safely be ignored)
      */
-    public boolean compile(Resource[] sourceResources)
-    throws Scanner.ScanException, Parser.ParseException, CompileException, IOException {
+    public boolean compile(
+        Resource[] sourceResources
+    ) throws ScanException, ParseException, CompileException, IOException {
 
         // Set up the compile error handler as described at "setCompileErrorHandler()".
         UnitCompiler.ErrorHandler ceh = (
@@ -524,7 +526,7 @@ public class Compiler {
         String      fileName,
         InputStream inputStream,
         String      optionalCharacterEncoding
-    ) throws Scanner.ScanException, Parser.ParseException, IOException {
+    ) throws ScanException, ParseException, IOException {
         try {
             Scanner scanner = new Scanner(fileName, inputStream, optionalCharacterEncoding);
             scanner.setWarningHandler(this.optionalWarningHandler);
@@ -738,9 +740,9 @@ public class Compiler {
                 uc = new UnitCompiler(cu, Compiler.this.iClassLoader);
             } catch (IOException ex) {
                 throw new ClassNotFoundException("Parsing compilation unit \"" + sourceResource + "\"", ex);
-            } catch (Parser.ParseException ex) {
+            } catch (ParseException ex) {
                 throw new ClassNotFoundException("Parsing compilation unit \"" + sourceResource + "\"", ex);
-            } catch (Scanner.ScanException ex) {
+            } catch (ScanException ex) {
                 throw new ClassNotFoundException("Parsing compilation unit \"" + sourceResource + "\"", ex);
             } catch (CompileException ex) {
                 throw new ClassNotFoundException("Parsing compilation unit \"" + sourceResource + "\"", ex);

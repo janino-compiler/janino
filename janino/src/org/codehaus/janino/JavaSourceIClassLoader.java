@@ -2,7 +2,7 @@
 /*
  * Janino - An embedded Java[TM] compiler
  *
- * Copyright (c) 2001-2007, Arno Unkrig
+ * Copyright (c) 2001-2010, Arno Unkrig
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,6 +37,10 @@ package org.codehaus.janino;
 import java.io.*;
 import java.util.*;
 
+import org.codehaus.commons.compiler.CompileException;
+import org.codehaus.commons.compiler.Location;
+import org.codehaus.commons.compiler.ParseException;
+import org.codehaus.commons.compiler.ScanException;
 import org.codehaus.janino.util.*;
 import org.codehaus.janino.util.resource.*;
 
@@ -155,14 +159,14 @@ public final class JavaSourceIClassLoader extends IClassLoader {
             // Find the class/interface declaration in the compiled unit.
             IClass res = uc.findClass(className);
             if (res == null) {
-                if (className.equals(topLevelClassName)) throw new Parser.ParseException("Source file \"" + sourceResource.getFileName() + "\" does not declare class \"" + className + "\"", (Location) null);
+                if (className.equals(topLevelClassName)) throw new ParseException("Source file \"" + sourceResource.getFileName() + "\" does not declare class \"" + className + "\"", (Location) null);
                 return null;
             }
             this.defineIClass(res);
             return res;
-        } catch (Scanner.ScanException e) {
+        } catch (ScanException e) {
             throw new ClassNotFoundException("Parsing compilation unit \"" + sourceResource + "\"", e);
-        } catch (Parser.ParseException e) {
+        } catch (ParseException e) {
             throw new ClassNotFoundException("Parsing compilation unit \"" + sourceResource + "\"", e);
         } catch (IOException e) {
             throw new ClassNotFoundException("Parsing compilation unit \"" + sourceResource + "\"", e);

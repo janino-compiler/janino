@@ -2,7 +2,7 @@
 /*
  * Janino - An embedded Java[TM] compiler
  *
- * Copyright (c) 2001-2007, Arno Unkrig
+ * Copyright (c) 2001-2010, Arno Unkrig
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -38,10 +38,14 @@ import java.io.*;
 import java.lang.reflect.*;
 import java.util.*;
 
+import org.codehaus.commons.compiler.CompileException;
+import org.codehaus.commons.compiler.Cookable;
+import org.codehaus.commons.compiler.IScriptEvaluator;
+import org.codehaus.commons.compiler.Location;
+import org.codehaus.commons.compiler.ParseException;
+import org.codehaus.commons.compiler.ScanException;
 import org.codehaus.janino.Java.AmbiguousName;
 import org.codehaus.janino.Java.LocalVariableDeclarationStatement;
-import org.codehaus.janino.Parser.ParseException;
-import org.codehaus.janino.Scanner.ScanException;
 import org.codehaus.janino.util.Traverser;
 
 /**
@@ -94,7 +98,7 @@ import org.codehaus.janino.util.Traverser;
  *      <li>{@link org.codehaus.janino.ClassBodyEvaluator#setDefaultImports(String[])}
  *   </ul>
  *   <li>
- *   Call any of the {@link org.codehaus.janino.Cookable#cook(Scanner)} methods to scan,
+ *   Call any of the {@link org.codehaus.commons.compiler.Cookable#cook(Scanner)} methods to scan,
  *   parse, compile and load the script into the JVM.
  * </ol>
  * After the {@link ScriptEvaluator} object is created, the script can be executed as often with
@@ -123,7 +127,7 @@ import org.codehaus.janino.util.Traverser;
  * </ul>
  * Notice that these methods have array parameters in contrast to their one-script brethren.
  */
-public class ScriptEvaluator extends ClassBodyEvaluator {
+public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
 
     protected boolean[]  optionalStaticMethod = null;
     protected Class[]    optionalReturnTypes = null;
@@ -144,7 +148,7 @@ public class ScriptEvaluator extends ClassBodyEvaluator {
      */
     public ScriptEvaluator(
         String   script
-    ) throws CompileException, Parser.ParseException, Scanner.ScanException {
+    ) throws CompileException, ParseException, ScanException {
         this.cook(script);
     }
 
@@ -161,7 +165,7 @@ public class ScriptEvaluator extends ClassBodyEvaluator {
     public ScriptEvaluator(
         String   script,
         Class    returnType
-    ) throws CompileException, Parser.ParseException, Scanner.ScanException {
+    ) throws CompileException, ParseException, ScanException {
         this.setReturnType(returnType);
         this.cook(script);
     }
@@ -183,7 +187,7 @@ public class ScriptEvaluator extends ClassBodyEvaluator {
         Class    returnType,
         String[] parameterNames,
         Class[]  parameterTypes
-    ) throws CompileException, Parser.ParseException, Scanner.ScanException {
+    ) throws CompileException, ParseException, ScanException {
         this.setReturnType(returnType);
         this.setParameters(parameterNames, parameterTypes);
         this.cook(script);
@@ -209,7 +213,7 @@ public class ScriptEvaluator extends ClassBodyEvaluator {
         String[] parameterNames,
         Class[]  parameterTypes,
         Class[]  thrownExceptions
-    ) throws CompileException, Parser.ParseException, Scanner.ScanException {
+    ) throws CompileException, ParseException, ScanException {
         this.setReturnType(returnType);
         this.setParameters(parameterNames, parameterTypes);
         this.setThrownExceptions(thrownExceptions);
@@ -240,7 +244,7 @@ public class ScriptEvaluator extends ClassBodyEvaluator {
         Class[]     parameterTypes,
         Class[]     thrownExceptions,
         ClassLoader optionalParentClassLoader // null = use current thread's context class loader
-    ) throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
+    ) throws CompileException, ParseException, ScanException, IOException {
         this.setReturnType(returnType);
         this.setParameters(parameterNames, parameterTypes);
         this.setThrownExceptions(thrownExceptions);
@@ -272,7 +276,7 @@ public class ScriptEvaluator extends ClassBodyEvaluator {
         Class[]     parameterTypes,
         Class[]     thrownExceptions,
         ClassLoader optionalParentClassLoader // null = use current thread's context class loader
-    ) throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
+    ) throws CompileException, ParseException, ScanException, IOException {
         this.setReturnType(returnType);
         this.setParameters(parameterNames, parameterTypes);
         this.setThrownExceptions(thrownExceptions);
@@ -303,7 +307,7 @@ public class ScriptEvaluator extends ClassBodyEvaluator {
         Class[]     parameterTypes,
         Class[]     thrownExceptions,
         ClassLoader optionalParentClassLoader // null = use current thread's context class loader
-    ) throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
+    ) throws CompileException, ParseException, ScanException, IOException {
         this.setReturnType(returnType);
         this.setParameters(parameterNames, parameterTypes);
         this.setThrownExceptions(thrownExceptions);
@@ -340,7 +344,7 @@ public class ScriptEvaluator extends ClassBodyEvaluator {
         Class[]     parameterTypes,
         Class[]     thrownExceptions,
         ClassLoader optionalParentClassLoader // null = use current thread's context class loader
-    ) throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
+    ) throws CompileException, ParseException, ScanException, IOException {
         this.setExtendedType(optionalExtendedType);
         this.setImplementedTypes(implementedTypes);
         this.setReturnType(returnType);
@@ -388,7 +392,7 @@ public class ScriptEvaluator extends ClassBodyEvaluator {
         Class[]     parameterTypes,
         Class[]     thrownExceptions,
         ClassLoader optionalParentClassLoader // null = use current thread's context class loader
-    ) throws Scanner.ScanException, Parser.ParseException, CompileException, IOException {
+    ) throws ScanException, ParseException, CompileException, IOException {
         this.setClassName(className);
         this.setExtendedType(optionalExtendedType);
         this.setImplementedTypes(implementedTypes);
@@ -403,119 +407,59 @@ public class ScriptEvaluator extends ClassBodyEvaluator {
 
     public ScriptEvaluator() {}
 
-    /**
-     * Define whether the generated method should be STATIC or not. Defaults to <code>true</code>.
-     */
     public void setStaticMethod(boolean staticMethod) {
         this.setStaticMethod(new boolean[] { staticMethod });
     }
 
-    /**
-     * Define the return type of the generated method. Defaults to <code>void.class</code>.
-     */
     public void setReturnType(Class returnType) {
         this.setReturnTypes(new Class[] { returnType });
     }
 
-    /**
-     * Define the name of the generated method. Defaults to an unspecified name.
-     */
     public void setMethodName(String methodName) {
         this.setMethodNames(new String[] { methodName });
     }
 
-    /**
-     * Define the names and types of the parameters of the generated method.
-     */
     public void setParameters(String[] parameterNames, Class[] parameterTypes) {
         this.setParameters(new String[][] { parameterNames }, new Class[][] {parameterTypes });
     }
 
-    /**
-     * Define the exceptions that the generated method may throw.
-     */
     public void setThrownExceptions(Class[] thrownExceptions) {
         this.setThrownExceptions(new Class[][] { thrownExceptions });
     }
 
-    public final void cook(Scanner scanner)
-    throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
+    public final void cook(Scanner scanner) throws CompileException, ParseException, ScanException, IOException {
         this.cook(new Scanner[] { scanner });
     }
 
-    /**
-     * Calls the generated method with concrete parameter values.
-     * <p>
-     * Each parameter value must have the same type as specified through
-     * the "parameterTypes" parameter of
-     * {@link #setParameters(String[], Class[])}.
-     * <p>
-     * Parameters of primitive type must passed with their wrapper class
-     * objects.
-     * <p>
-     * The object returned has the class as specified through
-     * {@link #setReturnType(Class)}.
-     * <p>
-     * This method is thread-safe.
-     *
-     * @param parameterValues The concrete parameter values.
-     */
     public Object evaluate(Object[] parameterValues) throws InvocationTargetException {
         return this.evaluate(0, parameterValues);
     }
 
-    /**
-     * Returns the loaded {@link java.lang.reflect.Method}.
-     * <p>
-     * This method must only be called after {@link #cook(Scanner)}.
-     * <p>
-     * This method must not be called for instances of derived classes.
-     */
     public Method getMethod() {
         return this.getMethod(0);
     }
 
-    /**
-     * Define whether the methods implementing each script should be STATIC or not. By default
-     * all scripts are compiled into STATIC methods.
-     */
     public void setStaticMethod(boolean[] staticMethod) {
         assertNotCooked();
         this.optionalStaticMethod = (boolean[]) staticMethod.clone();
     }
 
-    /**
-     * Define the return types of the scripts. By default all scripts have VOID return type.
-     */
     public void setReturnTypes(Class[] returnTypes) {
         assertNotCooked();
         this.optionalReturnTypes = (Class[]) returnTypes.clone();
     }
 
-    /**
-     * Define the names of the generated methods. By default the methods have distinct and
-     * implementation-specific names.
-     * <p>
-     * If two scripts have the same name, then they must have different parameter types
-     * (see {@link #setParameters(String[][], Class[][])}).
-     */
     public void setMethodNames(String[] methodNames) {
         assertNotCooked();
         this.optionalMethodNames = (String[]) methodNames.clone();
     }
 
-    /**
-     * Define the names and types of the parameters of the generated methods.
-     */
     public void setParameters(String[][] parameterNames, Class[][] parameterTypes) {
         assertNotCooked();
         this.optionalParameterNames = (String[][]) parameterNames.clone();
         this.optionalParameterTypes = (Class[][]) parameterTypes.clone();
     }
 
-    /**
-     * Define the exceptions that the generated methods may throw.
-     */
     public void setThrownExceptions(Class[][] thrownExceptions) {
         assertNotCooked();
         this.optionalThrownExceptions = (Class[][]) thrownExceptions.clone();
@@ -543,8 +487,7 @@ public class ScriptEvaluator extends ClassBodyEvaluator {
      *
      * @throws IllegalStateException if any of the preceeding <code>set...()</code> had an array size different from that of <code>scanners</code>
      */
-    public final void cook(Scanner[] scanners)
-    throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
+    public final void cook(Scanner[] scanners) throws CompileException, ParseException, ScanException, IOException {
         if (scanners == null) throw new NullPointerException();
 
         // The "dimension" of this ScriptEvaluator, i.e. how many scripts are cooked at the same
@@ -662,30 +605,44 @@ public class ScriptEvaluator extends ClassBodyEvaluator {
         }
     }
 
-    public final void cook(Reader[] readers)
-    throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
+    public final void cook(Reader[] readers) throws CompileException, ParseException, ScanException, IOException {
         this.cook(new String[readers.length], readers);
     }
 
     /**
-     * @param optionalFileNames Used when reporting errors and warnings.
+     * On a 2 GHz Intel Pentium Core Duo under Windows XP with an IBM 1.4.2 JDK, compiling
+     * 10000 expressions "a + b" (integer) takes about 4 seconds and 56 MB of main memory.
+     * The generated class file is 639203 bytes large.
+     * <p>
+     * The number and the complexity of the scripts is restricted by the
+     * <a href="http://java.sun.com/docs/books/vmspec/2nd-edition/html/ClassFile.doc.html#88659">Limitations
+     * of the Java Virtual Machine</a>, where the most limiting factor is the 64K entries limit
+     * of the constant pool. Since every method with a distinct name requires one entry there,
+     * you can define at best 32K (very simple) scripts.
      */
-    public final void cook(String[] optionalFileNames, Reader[] readers)
-    throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
+    public final void cook(
+        String[] optionalFileNames,
+        Reader[] readers
+    ) throws CompileException, ParseException, ScanException, IOException {
         Scanner[] scanners = new Scanner[readers.length];
-        for (int i = 0; i < readers.length; ++i) scanners[i] = new Scanner(optionalFileNames[i], readers[i]);
+        for (int i = 0; i < readers.length; ++i) {
+            scanners[i] = new Scanner(optionalFileNames == null ? null : optionalFileNames[i], readers[i]);
+        }
         this.cook(scanners);
     }
 
-    /**
-     * Cook tokens from {@link java.lang.String}s.
-     */
-    public final void cook(String[] strings)
-    throws CompileException, Parser.ParseException, Scanner.ScanException {
+    public final void cook(String[] strings) throws CompileException, ParseException, ScanException {
+        this.cook(null, strings);
+    }
+
+    public final void cook(
+        String[] optionalFileNames,
+        String[] strings
+    ) throws CompileException, ParseException, ScanException {
         Reader[] readers = new Reader[strings.length];
         for (int i = 0; i < strings.length; ++i) readers[i] = new StringReader(strings[i]);
         try {
-            this.cook(readers);
+            this.cook(optionalFileNames, readers);
         } catch (IOException ex) {
             throw new JaninoRuntimeException("SNO: IOException despite StringReader");
         }
@@ -797,7 +754,7 @@ public class ScriptEvaluator extends ClassBodyEvaluator {
         String   script,
         Class    interfaceToImplement,
         String[] parameterNames
-    ) throws CompileException, Parser.ParseException, Scanner.ScanException {
+    ) throws CompileException, ParseException, ScanException {
         ScriptEvaluator se = new ScriptEvaluator();
         return ScriptEvaluator.createFastEvaluator(se, script, parameterNames, interfaceToImplement);
     }
@@ -837,7 +794,7 @@ public class ScriptEvaluator extends ClassBodyEvaluator {
         Class       interfaceToImplement,
         String[]    parameterNames,
         ClassLoader optionalParentClassLoader
-    ) throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
+    ) throws CompileException, ParseException, ScanException, IOException {
         ScriptEvaluator se = new ScriptEvaluator();
         se.setParentClassLoader(optionalParentClassLoader);
         return ScriptEvaluator.createFastEvaluator(se, scanner, parameterNames, interfaceToImplement);
@@ -865,7 +822,7 @@ public class ScriptEvaluator extends ClassBodyEvaluator {
         Class       interfaceToImplement,
         String[]    parameterNames,
         ClassLoader optionalParentClassLoader
-    ) throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
+    ) throws CompileException, ParseException, ScanException, IOException {
         ScriptEvaluator se = new ScriptEvaluator();
         se.setClassName(className);
         se.setExtendedType(optionalExtendedType);
@@ -881,7 +838,7 @@ public class ScriptEvaluator extends ClassBodyEvaluator {
         Class       interfaceToImplement,
         String[]    parameterNames,
         ClassLoader optionalParentClassLoader
-    ) throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
+    ) throws CompileException, ParseException, ScanException, IOException {
         ScriptEvaluator se = new ScriptEvaluator();
         se.setClassName(className);
         se.setExtendedType(optionalExtendedType);
@@ -895,7 +852,7 @@ public class ScriptEvaluator extends ClassBodyEvaluator {
         String          s,
         String[]        parameterNames,
         Class           interfaceToImplement
-    ) throws CompileException, Parser.ParseException, Scanner.ScanException {
+    ) throws CompileException, ParseException, ScanException {
         try {
             return ScriptEvaluator.createFastEvaluator(
                 se,
@@ -923,7 +880,7 @@ public class ScriptEvaluator extends ClassBodyEvaluator {
         Scanner         scanner,
         String[]        parameterNames,
         Class           interfaceToImplement
-    ) throws CompileException, Parser.ParseException, Scanner.ScanException, IOException {
+    ) throws CompileException, ParseException, ScanException, IOException {
         if (!interfaceToImplement.isInterface()) throw new JaninoRuntimeException("\"" + interfaceToImplement + "\" is not an interface");
 
         Method[] methods = interfaceToImplement.getDeclaredMethods();
@@ -1005,24 +962,6 @@ public class ScriptEvaluator extends ClassBodyEvaluator {
         return (String[]) parameterNames.toArray(new String[parameterNames.size()]);
     }
 
-    /**
-     * Calls the generated method with concrete parameter values.
-     * <p>
-     * Each parameter value must have the same type as specified through
-     * the "parameterTypes" parameter of
-     * {@link #setParameters(String[], Class[])}.
-     * <p>
-     * Parameters of primitive type must passed with their wrapper class
-     * objects.
-     * <p>
-     * The object returned has the class as specified through
-     * {@link #setReturnType(Class)}.
-     * <p>
-     * This method is thread-safe.
-     *
-     * @param idx The index of the script (0 ... <code>scripts.length - 1</code>)
-     * @param parameterValues The concrete parameter values.
-     */
     public Object evaluate(int idx, Object[] parameterValues) throws InvocationTargetException {
         if (this.result == null) throw new IllegalStateException("Must only be called after \"cook()\"");
         try {
@@ -1032,15 +971,6 @@ public class ScriptEvaluator extends ClassBodyEvaluator {
         }
     }
 
-    /**
-     * Returns the loaded {@link java.lang.reflect.Method}.
-     * <p>
-     * This method must only be called after {@link #cook(Scanner)}.
-     * <p>
-     * This method must not be called for instances of derived classes.
-     *
-     * @param idx The index of the script (0 ... <code>scripts.length - 1</code>)
-     */
     public Method getMethod(int idx) {
         if (this.result == null) throw new IllegalStateException("Must only be called after \"cook()\"");
         return this.result[idx];

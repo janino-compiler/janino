@@ -2,7 +2,7 @@
 /*
  * Janino - An embedded Java[TM] compiler
  *
- * Copyright (c) 2001-2007, Arno Unkrig
+ * Copyright (c) 2001-2010, Arno Unkrig
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -45,7 +45,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.codehaus.janino.CompileException;
+import org.codehaus.commons.compiler.CompileException;
+import org.codehaus.commons.compiler.ParseException;
+import org.codehaus.commons.compiler.ScanException;
 import org.codehaus.janino.Descriptor;
 import org.codehaus.janino.ExpressionEvaluator;
 import org.codehaus.janino.IClass;
@@ -234,7 +236,7 @@ public class JGrep {
     private static final class Action extends Enumerator {
         private Action(String name) { super(name); }
 
-        static MethodInvocationAction getMethodInvocationAction(String action) throws CompileException, Parser.ParseException, Scanner.ScanException {
+        static MethodInvocationAction getMethodInvocationAction(String action) throws CompileException, ParseException, ScanException {
             if ("print-location-and-match".equals(action)) {
                 return new MethodInvocationAction() { public void execute(UnitCompiler uc, Java.Invocation invocation, IClass.IMethod method) { System.out.println(invocation.getLocation() + ": " + method); } };
             } else
@@ -251,7 +253,7 @@ public class JGrep {
         }
     }
 
-    private static MethodInvocationTarget parseMethodInvocationPattern(String mip) throws Scanner.ScanException, IOException, Parser.ParseException {
+    private static MethodInvocationTarget parseMethodInvocationPattern(String mip) throws ScanException, IOException, ParseException {
         MethodInvocationTarget mit = new MethodInvocationTarget();
         Scanner scanner = new Scanner(null, new StringReader(mip));
         Parser parser = new Parser(scanner);
@@ -288,7 +290,7 @@ public class JGrep {
         }
     }
 
-    private static String readIdentifierPattern(Parser p) throws Parser.ParseException, Scanner.ScanException, IOException {
+    private static String readIdentifierPattern(Parser p) throws ParseException, ScanException, IOException {
         StringBuffer sb = new StringBuffer();
         if (p.peekOperator("*")) {
             sb.append('*');
@@ -436,7 +438,7 @@ public class JGrep {
         final StringPattern[] directoryNamePatterns,
         final StringPattern[] fileNamePatterns,
         List                  methodInvocationTargets // MethodInvocationTarget
-    ) throws Scanner.ScanException, Parser.ParseException, CompileException, IOException {
+    ) throws ScanException, ParseException, CompileException, IOException {
         this.benchmark.report("Root dirs",               rootDirectories                );
         this.benchmark.report("Directory name patterns", directoryNamePatterns          );
         this.benchmark.report("File name patterns",      fileNamePatterns);
@@ -456,8 +458,10 @@ public class JGrep {
         ), methodInvocationTargets);
     }
 
-    public void jGrep(Iterator sourceFilesIterator, final List methodInvocationTargets)
-    throws Scanner.ScanException, Parser.ParseException, CompileException, IOException {
+    public void jGrep(
+        Iterator   sourceFilesIterator,
+        final List methodInvocationTargets
+    ) throws ScanException, ParseException, CompileException, IOException {
 
         // Parse the given source files.
         this.benchmark.beginReporting();
@@ -553,7 +557,7 @@ public class JGrep {
     private Java.CompilationUnit parseCompilationUnit(
         File   sourceFile,
         String optionalCharacterEncoding
-    ) throws Scanner.ScanException, Parser.ParseException, IOException {
+    ) throws ScanException, ParseException, IOException {
         InputStream is = new BufferedInputStream(new FileInputStream(sourceFile));
         try {
             Parser parser = new Parser(new Scanner(sourceFile.getPath(), is, optionalCharacterEncoding));

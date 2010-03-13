@@ -33,6 +33,7 @@
  */
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -49,10 +50,20 @@ import org.codehaus.janino.util.Benchmark;
 import org.codehaus.janino.util.resource.DirectoryResourceFinder;
 import org.codehaus.janino.util.resource.MapResourceCreator;
 import org.codehaus.janino.util.resource.MapResourceFinder;
+import org.codehaus.janino.util.resource.MultiResourceFinder;
 import org.codehaus.janino.util.resource.ResourceFinder;
 
 public class JavaSourceClassLoaderTests extends TestCase {
-    private static final File SOURCE_DIRECTORY = new File("../janino/src");
+    private static final File   JANINO_SRC           = new File("../janino/src");
+    private static final File   COMMONS_COMPILER_SRC = new File("../commons-compiler/src");
+    private static final File[] SOURCE_PATH = new File[] {
+        JANINO_SRC,
+        COMMONS_COMPILER_SRC,
+    };
+    private static final ResourceFinder SOURCE_FINDER = new MultiResourceFinder(Arrays.asList(
+        new DirectoryResourceFinder(JANINO_SRC),
+        new DirectoryResourceFinder(COMMONS_COMPILER_SRC)
+    ));
 
     public static Test suite() {
         TestSuite s = new TestSuite(JavaSourceClassLoaderTests.class.getName());
@@ -71,7 +82,7 @@ public class JavaSourceClassLoaderTests extends TestCase {
         b.beginReporting("Loading class \"" + className + "\" through a JavaSourceClassLoader");
         new JavaSourceClassLoader(
             SimpleCompiler.BOOT_CLASS_LOADER, // parentClassLoader
-            new File[] { SOURCE_DIRECTORY },  // optionalSourcePath
+            SOURCE_PATH,                      // optionalSourcePath
             null,                             // optionalCharacterEncoding
             DebuggingInformation.NONE         // debuggingInformation
         ).loadClass(className);
@@ -85,12 +96,12 @@ public class JavaSourceClassLoaderTests extends TestCase {
         b.beginReporting("Loading class \"" + className + "\" through a CachingJavaSourceClassLoader");
         MapResourceCreator classFileResources1 = new MapResourceCreator();
         new CachingJavaSourceClassLoader(
-            SimpleCompiler.BOOT_CLASS_LOADER,              // parentClassLoader
-            new DirectoryResourceFinder(SOURCE_DIRECTORY), // sourceFinder
-            (String) null,                                 // optionalCharacterEncoding
-            ResourceFinder.EMPTY_RESOURCE_FINDER,          // classFileCacheResourceFinder
-            classFileResources1,                           // classFileResourceCreator
-            DebuggingInformation.NONE                      // debuggingInformation
+            SimpleCompiler.BOOT_CLASS_LOADER,     // parentClassLoader
+            SOURCE_FINDER,                        // sourceFinder
+            (String) null,                        // optionalCharacterEncoding
+            ResourceFinder.EMPTY_RESOURCE_FINDER, // classFileCacheResourceFinder
+            classFileResources1,                  // classFileResourceCreator
+            DebuggingInformation.NONE             // debuggingInformation
         ).loadClass(className);
         Map classFileMap1 = classFileResources1.getMap();
         b.endReporting("Generated " + classFileMap1.size() + " class files.");
@@ -103,12 +114,12 @@ public class JavaSourceClassLoaderTests extends TestCase {
         MapResourceFinder classFileFinder = new MapResourceFinder(classFileMap1);
         classFileFinder.setLastModified(System.currentTimeMillis());
         new CachingJavaSourceClassLoader(
-            SimpleCompiler.BOOT_CLASS_LOADER,              // parentClassLoader
-            new DirectoryResourceFinder(SOURCE_DIRECTORY), // sourceFinder
-            (String) null,                                 // optionalCharacterEncoding
-            classFileFinder,                               // classFileCacheResourceFinder
-            classFileResources2,                           // classFileResourceCreator
-            DebuggingInformation.NONE                      // debuggingInformation
+            SimpleCompiler.BOOT_CLASS_LOADER, // parentClassLoader
+            SOURCE_FINDER,                    // sourceFinder
+            (String) null,                    // optionalCharacterEncoding
+            classFileFinder,                  // classFileCacheResourceFinder
+            classFileResources2,              // classFileResourceCreator
+            DebuggingInformation.NONE         // debuggingInformation
         ).loadClass(className);
         b.endReporting("Generated " + classFileResources2.getMap().size() + " class files.");
         assertEquals("Files recompiled", 0, classFileResources2.getMap().size());

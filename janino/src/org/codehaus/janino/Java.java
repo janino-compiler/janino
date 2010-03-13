@@ -2,7 +2,7 @@
 /*
  * Janino - An embedded Java[TM] compiler
  *
- * Copyright (c) 2001-2007, Arno Unkrig
+ * Copyright (c) 2001-2010, Arno Unkrig
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -44,6 +44,9 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import org.codehaus.commons.compiler.CompileException;
+import org.codehaus.commons.compiler.Location;
+import org.codehaus.commons.compiler.ParseException;
 import org.codehaus.janino.CodeContext.Offset;
 import org.codehaus.janino.util.Traverser;
 import org.codehaus.janino.util.iterator.ReverseListIterator;
@@ -75,12 +78,12 @@ public class Java {
         public Location getLocation();
 
         /**
-         * Throw a {@link Parser.ParseException} with the given message and this
+         * Throw a {@link ParseException} with the given message and this
          * object's location.
          *
          * @param message The message to report
          */
-        public void throwParseException(String message) throws Parser.ParseException;
+        public void throwParseException(String message) throws ParseException;
     }
     public static abstract class Located implements Locatable {
         private final Location location;
@@ -93,8 +96,8 @@ public class Java {
         // Implement "Locatable".
 
         public Location getLocation() { return this.location; }
-        public void throwParseException(String message) throws Parser.ParseException {
-            throw new Parser.ParseException(message, this.location);
+        public void throwParseException(String message) throws ParseException {
+            throw new ParseException(message, this.location);
         }
     }
 
@@ -370,7 +373,6 @@ public class Java {
             this.modifiers = modifiers;
         }
 
-        
         public short getModifiers() {
             return this.modifiers;
         }
@@ -420,7 +422,6 @@ public class Java {
             return null;
         }
 
-        
         public List getMethodDeclarations() {
             return this.declaredMethods;
         }
@@ -444,8 +445,8 @@ public class Java {
 
         // Implement "Locatable".
         public Location getLocation() { return this.location; }
-        public void throwParseException(String message) throws Parser.ParseException {
-            throw new Parser.ParseException(message, this.location);
+        public void throwParseException(String message) throws ParseException {
+            throw new ParseException(message, this.location);
         }
 
         abstract public String toString();
@@ -686,7 +687,7 @@ public class Java {
             String   name,
             Type     optionalExtendedType,
             Type[]   implementedTypes
-        ) throws Parser.ParseException {
+        ) throws ParseException {
             super(
                 location,                         // location
                 optionalDocComment,               // optionalDocComment
@@ -819,7 +820,7 @@ public class Java {
             short           modifiers,
             String          name,
             Type[]          extendedTypes
-        ) throws Parser.ParseException {
+        ) throws ParseException {
             super(
                 location,                         // location
                 optionalDocComment,               // optionalDocComment
@@ -1342,7 +1343,7 @@ public class Java {
     public final static class ExpressionStatement extends Statement {
         public final Rvalue rvalue;
 
-        public ExpressionStatement(Rvalue rvalue) throws Parser.ParseException {
+        public ExpressionStatement(Rvalue rvalue) throws ParseException {
             super(rvalue.getLocation());
             if (!(
                 rvalue instanceof Java.Assignment
@@ -1790,17 +1791,17 @@ public class Java {
 
         // Parse time members:
 
-        public final Type toTypeOrPE() throws Parser.ParseException {
+        public final Type toTypeOrPE() throws ParseException {
             Type result = this.toType();
             if (result == null) this.throwParseException("Expression \"" + this.toString() + "\" is not a type");
             return result;
         }
-        public final Rvalue toRvalueOrPE() throws Parser.ParseException {
+        public final Rvalue toRvalueOrPE() throws ParseException {
             Rvalue result = this.toRvalue();
             if (result == null) this.throwParseException("Expression \"" + this.toString() + "\" is not an rvalue");
             return result;
         }
-        public final Lvalue toLvalueOrPE() throws Parser.ParseException {
+        public final Lvalue toLvalueOrPE() throws ParseException {
             Lvalue result = this.toLvalue();
             if (result == null) this.throwParseException("Expression \"" + this.toString() + "\" is not an lvalue");
             return result;

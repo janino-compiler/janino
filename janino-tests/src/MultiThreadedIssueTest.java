@@ -1,3 +1,4 @@
+
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
@@ -5,8 +6,7 @@ import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.codehaus.janino.ClassBodyEvaluator;
-import org.codehaus.janino.Scanner;
+import org.codehaus.janino.*;
 
 public class MultiThreadedIssueTest {
     public interface Calculator {
@@ -60,7 +60,7 @@ public class MultiThreadedIssueTest {
         } catch (Exception e) {
             e.printStackTrace();
             running.set(false);
-            throw new JaninoRuntimeException(e);
+            throw new RuntimeException(e);
         }
     }
 

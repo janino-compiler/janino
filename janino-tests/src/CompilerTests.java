@@ -35,6 +35,7 @@
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -45,12 +46,12 @@ import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
+import org.codehaus.commons.compiler.CompileException;
+import org.codehaus.commons.compiler.Location;
 import org.codehaus.janino.ClassLoaderIClassLoader;
-import org.codehaus.janino.CompileException;
 import org.codehaus.janino.Compiler;
 import org.codehaus.janino.DebuggingInformation;
 import org.codehaus.janino.IClassLoader;
-import org.codehaus.janino.Location;
 import org.codehaus.janino.SimpleCompiler;
 import org.codehaus.janino.UnitCompiler;
 import org.codehaus.janino.WarningHandler;
@@ -60,12 +61,14 @@ import org.codehaus.janino.util.enumerator.EnumeratorSet;
 import org.codehaus.janino.util.resource.DirectoryResourceFinder;
 import org.codehaus.janino.util.resource.MapResourceCreator;
 import org.codehaus.janino.util.resource.MapResourceFinder;
+import org.codehaus.janino.util.resource.MultiResourceFinder;
 import org.codehaus.janino.util.resource.Resource;
 import org.codehaus.janino.util.resource.ResourceCreator;
 import org.codehaus.janino.util.resource.ResourceFinder;
 
 public class CompilerTests extends TestCase {
-    private static final String SRC = "../janino/src";
+    private static final String JANINO_SRC           = "../janino/src";
+    private static final String COMMONS_COMPILER_SRC = "../commons-compiler/src";
 
     public static Test suite() {
         TestSuite s = new TestSuite(Compiler.class.getName());
@@ -79,11 +82,14 @@ public class CompilerTests extends TestCase {
     public void testSelfCompile() throws Exception {
         ClassLoader bootstrapClassLoader = SimpleCompiler.BOOT_CLASS_LOADER;
         File[] sourceFiles = new File[] {
-            new File(SRC + "/org/codehaus/janino/Compiler.java"),
-            new File(SRC + "/org/codehaus/janino/samples/ExpressionDemo.java"),
-            new File(SRC + "/org/codehaus/janino/util/resource/MapResourceCreator.java"),
+            new File(JANINO_SRC + "/org/codehaus/janino/Compiler.java"),
+            new File(JANINO_SRC + "/org/codehaus/janino/samples/ExpressionDemo.java"),
+            new File(JANINO_SRC + "/org/codehaus/janino/util/resource/MapResourceCreator.java"),
         };
-        DirectoryResourceFinder sourceFinder = new DirectoryResourceFinder(new File(SRC));
+        ResourceFinder sourceFinder = new MultiResourceFinder(Arrays.asList(new ResourceFinder[] {
+            new DirectoryResourceFinder(new File(JANINO_SRC)),
+            new DirectoryResourceFinder(new File(COMMONS_COMPILER_SRC)),
+        }));
         boolean verbose = false;
 
         Benchmark b = new Benchmark(true);
@@ -142,31 +148,52 @@ public class CompilerTests extends TestCase {
 
         // The helper object "l" accesses the previously JANINO-compiled classes.
         class Loader {
-            Class  loadClass(Class c)
-            throws ClassNotFoundException {
+            Class  loadClass(Class c) throws ClassNotFoundException {
                 return cl.loadClass(c.getName());
             }
-            Object instantiate(Class c, Class[] parameterTypes, Object[] arguments)
-            throws IllegalAccessException, InvocationTargetException, InstantiationException, NoSuchMethodException, ClassNotFoundException {
+            Object instantiate(
+                Class    c,
+                Class[]  parameterTypes,
+                Object[] arguments
+            ) throws IllegalAccessException, InvocationTargetException, InstantiationException, NoSuchMethodException, ClassNotFoundException {
                 return this.loadClass(c).getDeclaredConstructor(parameterTypes).newInstance(arguments);
             }
-            Object getStaticField(Class c, String fieldName)
-            throws IllegalAccessException, NoSuchFieldException, ClassNotFoundException {
+            Object getStaticField(
+                Class  c,
+                String fieldName
+            ) throws IllegalAccessException, NoSuchFieldException, ClassNotFoundException {
                 return this.loadClass(c).getDeclaredField(fieldName).get(null);
             }
-            Object invoke(Object object, String methodName, Class[] parameterTypes, Object[] arguments)
-            throws InvocationTargetException, IllegalAccessException, NoSuchMethodException {
+            Object invoke(
+                Object   object,
+                String   methodName,
+                Class[]  parameterTypes,
+                Object[] arguments
+            ) throws InvocationTargetException, IllegalAccessException, NoSuchMethodException {
                 return object.getClass().getDeclaredMethod(methodName, parameterTypes).invoke(object, arguments);
             }
         };
         Loader l = new Loader();
         Map classFileMap3 = new HashMap();
         {
-            Object sf   = l.instantiate(DirectoryResourceFinder.class, new Class[] { File.class }, new Object[] { new File(SRC) });
-            Object icl  = l.instantiate(ClassLoaderIClassLoader.class, new Class[] { ClassLoader.class }, new Object[] { bootstrapClassLoader });
+            Object sf = l.instantiate(MultiResourceFinder.class, new Class[] { Collection.class }, new Object[] {
+                Arrays.asList(new Object[] {
+                    l.instantiate(DirectoryResourceFinder.class, new Class[] { File.class }, new Object[] {
+                        new File(JANINO_SRC),
+                    }),
+                    l.instantiate(DirectoryResourceFinder.class, new Class[] { File.class }, new Object[] {
+                        new File(COMMONS_COMPILER_SRC),
+                    }),
+                }),
+            });
+            Object icl = l.instantiate(ClassLoaderIClassLoader.class, new Class[] { ClassLoader.class }, new Object[] {
+                bootstrapClassLoader,
+            });
             Object cfrf = l.getStaticField(ResourceFinder.class, "EMPTY_RESOURCE_FINDER");
-            Object cfrc = l.instantiate(MapResourceCreator.class, new Class[] { Map.class }, new Object[] { classFileMap3 });
-            Object di   = l.getStaticField(DebuggingInformation.class, "DEFAULT_DEBUGGING_INFORMATION");
+            Object cfrc = l.instantiate(MapResourceCreator.class, new Class[] { Map.class }, new Object[] {
+                classFileMap3,
+            });
+            Object di = l.getStaticField(DebuggingInformation.class, "DEFAULT_DEBUGGING_INFORMATION");
 
             Object compiler = l.instantiate(Compiler.class, new Class[] {
                 l.loadClass(ResourceFinder.class),  // sourceFinder

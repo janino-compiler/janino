@@ -34,6 +34,7 @@
 
 import java.io.*;
 
+import org.codehaus.commons.compiler.*;
 import org.codehaus.janino.Parser;
 import org.codehaus.janino.Scanner;
 import org.codehaus.janino.SimpleCompiler;
@@ -44,11 +45,11 @@ import junit.framework.*;
 public class ReportedBugs extends JaninoTestSuite {
     public ReportedBugs(String name) { super(name); }
 
-    public static Test suite() {
+    public static Test suite() throws Exception {
         return new ReportedBugs();
     }
 
-    public ReportedBugs() {
+    public ReportedBugs() throws Exception {
         super("Regression tests for reported bugs");
 
         section("Bug 48");
@@ -306,10 +307,10 @@ public class ReportedBugs extends JaninoTestSuite {
             "    }\n" +
             "    class Sub {\n" +
             "        int x, y;\n" +
-            "        public Sub(int[] a){\n" +
+            "        public Sub(int[] a) {\n" +
             "            this(a[0], a[1]);\n" +
             "        }\n" +
-            "        public Sub(int x, int y){\n" +
+            "        public Sub(int x, int y) {\n" +
             "            this.x = x;\n" +
             "            this.y = y;\n" +
             "        }\n" +
@@ -323,7 +324,7 @@ public class ReportedBugs extends JaninoTestSuite {
             "        return s.x == 1 && s.y == 2;\n" +
             "    }\n" +
             "    class Sub extends Foo.Subb {\n" +
-            "        public Sub(int x, int y){\n" +
+            "        public Sub(int x, int y) {\n" +
             "            new Foo().super(x, y);\n" +
             "        }\n" +
             "    }\n" +
@@ -331,7 +332,7 @@ public class ReportedBugs extends JaninoTestSuite {
             "class Foo {\n" +
             "    class Subb {\n" +
             "        int x, y;\n" +
-            "        public Subb(int x, int y){\n" +
+            "        public Subb(int x, int y) {\n" +
             "            this.x = x;\n" +
             "            this.y = y;\n" +
             "        }\n" +
@@ -439,7 +440,7 @@ public class ReportedBugs extends JaninoTestSuite {
     /**
      * Create a {@link Parser} reading from a given {@link java.lang.String}.
      */
-    private static Parser newStringParser(String s) throws Scanner.ScanException, IOException {
+    private static Parser newStringParser(String s) throws ScanException, IOException {
         return new Parser(new Scanner(null, new StringReader(s)));
     }
 }

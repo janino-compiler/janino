@@ -48,7 +48,7 @@
  *   Uses the <code>javax.tools.JavaCompiler</code> API that is available since Java 1.6.
  *   Requires a JDK (not just a JRE).
  * </ul>
- * 
+ *
  * Notice: Implementations may or may not be prone to "Java injection", i.e. it may or may not be
  * possible to, e.g., break out of the "expression" scope of an {@link IExpressionEvaluator} by
  * providing a "bogus" expression text. The documentation of each implementation should state

@@ -40,10 +40,69 @@ import java.util.Map;
 
 import junit.framework.*;
 
+import org.codehaus.commons.compiler.*;
 import org.codehaus.janino.*;
 import org.codehaus.janino.util.resource.MapResourceFinder;
 
 public class JaninoTestSuite extends StructuredTestSuite {
+    public  static final Class<IExpressionEvaluator> expressionEvaluatorClass;
+    private static final Class<IScriptEvaluator>     scriptEvaluatorClass;
+    private static final Class<IClassBodyEvaluator>  classBodyEvaluatorClass;
+    private static final Class<ISimpleCompiler>      simpleCompilerClass;
+    static {
+        String expressionEvaluatorClassName;
+        String scriptEvaluatorClassName;
+        String classBodyEvaluatorClassName;
+        String simpleCompilerClassName;
+
+        // Determine the EE, SE, CBS, SC class names through the "implementationPackageName"
+        // system property.
+        {
+            String implementationPackageName = System.getProperty("org.codehaus.commons.compiler.implementationPackageName", null);
+            if (implementationPackageName == null) {
+                expressionEvaluatorClassName = null;
+                scriptEvaluatorClassName = null;
+                classBodyEvaluatorClassName = null;
+                simpleCompilerClassName = null;
+            } else
+            {
+                expressionEvaluatorClassName = implementationPackageName + ".ExpressionEvaluator";
+                scriptEvaluatorClassName     = implementationPackageName + ".ScriptEvaluator";
+                classBodyEvaluatorClassName  = implementationPackageName + ".ClassBodyEvaluator";
+                simpleCompilerClassName      = implementationPackageName + ".SimpleCompiler";
+            }
+        }
+
+        // Override the EE, SE, CBS, SC class names through the
+        // "org.codehaus.commons.compiler.xxxClassName" system properties.
+        expressionEvaluatorClassName = System.getProperty(
+            "org.codehaus.commons.compiler.expressionEvaluatorClassName",
+            expressionEvaluatorClassName
+        );
+        scriptEvaluatorClassName = System.getProperty(
+            "org.codehaus.commons.compiler.scriptEvaluatorClassName",
+            scriptEvaluatorClassName
+        );
+        classBodyEvaluatorClassName = System.getProperty(
+            "org.codehaus.commons.compiler.classBodyEvaluatorClassName",
+            classBodyEvaluatorClassName
+        );
+        simpleCompilerClassName = System.getProperty(
+            "org.codehaus.commons.compiler.simpleCompilerClassName",
+            simpleCompilerClassName
+        );
+
+        // Load the EE, SE, CBE, SC classes.
+        ClassLoader cl = ClassLoader.getSystemClassLoader();
+        try {
+            expressionEvaluatorClass = (Class<IExpressionEvaluator>) cl.loadClass(expressionEvaluatorClassName);
+            scriptEvaluatorClass     = (Class<IScriptEvaluator>)     cl.loadClass(scriptEvaluatorClassName);
+            classBodyEvaluatorClass  = (Class<IClassBodyEvaluator>)  cl.loadClass(classBodyEvaluatorClassName);
+            simpleCompilerClass      = (Class<ISimpleCompiler>)      cl.loadClass(simpleCompilerClassName);
+        } catch (ClassNotFoundException cnfe) {
+            throw new ExceptionInInitializerError(cnfe);
+        }
+    }
 
     /** The test is expected to throw a ScanException */
     public static final CompileAndExecuteTest.Mode SCAN = new CompileAndExecuteTest.Mode();
@@ -60,7 +119,7 @@ public class JaninoTestSuite extends StructuredTestSuite {
 
     /** The string is expected to contain exactly one scannable token. */
     public static final ScannerTest.Mode           VALI = new ScannerTest.Mode();
-    /** Scanning the string is expected to throw a {@link org.codehaus.janino.Scanner.ScanException}. */
+    /** Scanning the string is expected to throw a {@link org.codehaus.commons.ScanException}. */
     public static final ScannerTest.Mode           INVA = new ScannerTest.Mode();
 
     public JaninoTestSuite(String name) {
@@ -73,7 +132,7 @@ public class JaninoTestSuite extends StructuredTestSuite {
      * <table>
      *   <tr><th><code>mode</code></th><th>Meaning</th></tr>
      *   <tr><td>VALI</td><td>The string is expected to contain exactly one scannable token.</tr>
-     *   <tr><td>INVA</td><td>Scanning the string is expected to throw a {@link org.codehaus.janino.Scanner.ScanException}.
+     *   <tr><td>INVA</td><td>Scanning the string is expected to throw a {@link org.codehaus.commons.ScanException}.
      * </table>
      *
      * @param name The name of the JUnit test case
@@ -97,7 +156,7 @@ public class JaninoTestSuite extends StructuredTestSuite {
 
         protected void runTest() throws Exception {
             if (this.mode == INVA) {
-                try { new Scanner(null, new StringReader(this.s)).peek(); } catch (Scanner.ScanException ex) { return; }
+                try { new Scanner(null, new StringReader(this.s)).peek(); } catch (ScanException ex) { return; }
                 fail("Should have thrown ScanException");
             } else
             if (this.mode == VALI) {
@@ -127,21 +186,21 @@ public class JaninoTestSuite extends StructuredTestSuite {
      *
      * @param name The name of the JUnit test case
      */
-    protected ExpressionTest exp(ExpressionTest.Mode mode, String name, String expression) {
+    protected ExpressionTest exp(ExpressionTest.Mode mode, String name, String expression) throws Exception {
         ExpressionTest et = new ExpressionTest(mode, name, expression);
         addTest(et);
         return et;
     }
     static protected class ExpressionTest extends CompileAndExecuteTest {
-        private final String              expression;
-        private final ExpressionEvaluator expressionEvaluator;
+        private final String               expression;
+        private final IExpressionEvaluator expressionEvaluator;
 
-        public ExpressionTest(Mode mode, String name, String expression) {
+        public ExpressionTest(Mode mode, String name, String expression) throws Exception {
             super(name, mode);
             this.expression          = expression;
-            this.expressionEvaluator = new ExpressionEvaluator();
+            this.expressionEvaluator = expressionEvaluatorClass.newInstance();
 
-            this.expressionEvaluator.setExpressionType(mode == TRUE ? boolean.class : ExpressionEvaluator.ANY_TYPE);
+            this.expressionEvaluator.setExpressionType(mode == TRUE ? boolean.class : IExpressionEvaluator.ANY_TYPE);
         }
         public ExpressionTest setDefaultImports(String[] defaultImports) { this.expressionEvaluator.setDefaultImports(defaultImports); return this; }
 
@@ -170,19 +229,19 @@ public class JaninoTestSuite extends StructuredTestSuite {
      *
      * @param name The name of the JUnit test case
      */
-    protected ScriptTest scr(ScriptTest.Mode mode, String name, String script) {
+    protected ScriptTest scr(ScriptTest.Mode mode, String name, String script) throws Exception {
         ScriptTest st = new ScriptTest(mode, name, script);
         addTest(st);
         return st;
     }
     static protected class ScriptTest extends CompileAndExecuteTest {
-        private final String          script;
-        private final ScriptEvaluator scriptEvaluator;
+        private final String           script;
+        private final IScriptEvaluator scriptEvaluator;
 
-        public ScriptTest(Mode mode, String name, String script) {
+        public ScriptTest(Mode mode, String name, String script) throws Exception {
             super(name, mode);
             this.script          = script;
-            this.scriptEvaluator = new ScriptEvaluator();
+            this.scriptEvaluator = scriptEvaluatorClass.newInstance();
 
             this.scriptEvaluator.setReturnType(mode == TRUE ? boolean.class : void.class);
         }
@@ -214,21 +273,24 @@ public class JaninoTestSuite extends StructuredTestSuite {
      *
      * @param name The name of the JUnit test case
      */
-    protected ClassBodyTest clb(ClassBodyTest.Mode mode, String name, String classBody) {
+    protected ClassBodyTest clb(ClassBodyTest.Mode mode, String name, String classBody) throws Exception {
         ClassBodyTest cbt = new ClassBodyTest(name, mode, classBody);
         addTest(cbt);
         return cbt;
     }
     static protected class ClassBodyTest extends CompileAndExecuteTest {
-        private final String             classBody;
-        private final ClassBodyEvaluator classBodyEvaluator;
+        private final String              classBody;
+        private final IClassBodyEvaluator classBodyEvaluator;
 
-        public ClassBodyTest(String name, Mode mode, String classBody) {
+        public ClassBodyTest(String name, Mode mode, String classBody) throws Exception {
             super(name, mode);
             this.classBody          = classBody;
-            this.classBodyEvaluator = new ClassBodyEvaluator();
+            this.classBodyEvaluator = classBodyEvaluatorClass.newInstance();
         }
-        public ClassBodyTest setDefaultImports(String[] defaultImports) { this.classBodyEvaluator.setDefaultImports(defaultImports); return this; }
+        public ClassBodyTest setDefaultImports(String[] defaultImports) {
+            this.classBodyEvaluator.setDefaultImports(defaultImports);
+            return this;
+        }
 
         protected void compile() throws Exception {
             this.classBodyEvaluator.cook(this.classBody);
@@ -257,21 +319,26 @@ public class JaninoTestSuite extends StructuredTestSuite {
      * @param name The name of the JUnit test case
      * @param className The name of the class with the <code>public static boolean test()</code> method
      */
-    protected SimpleCompilerTest sim(SimpleCompilerTest.Mode mode, String name, String compilationUnit, String className) {
+    protected SimpleCompilerTest sim(
+        SimpleCompilerTest.Mode mode,
+        String                  name,
+        String                  compilationUnit,
+        String                  className
+    ) throws Exception {
         SimpleCompilerTest sct = new SimpleCompilerTest(name, mode, compilationUnit, className);
         addTest(sct);
         return sct;
     }
     static protected class SimpleCompilerTest extends CompileAndExecuteTest {
-        private final String         compilationUnit;
-        private final String         className;
-        private final SimpleCompiler simpleCompiler;
+        private final String          compilationUnit;
+        private final String          className;
+        private final ISimpleCompiler simpleCompiler;
 
-        public SimpleCompilerTest(String name, Mode mode, String compilationUnit, String className) {
+        public SimpleCompilerTest(String name, Mode mode, String compilationUnit, String className) throws Exception {
             super(name, mode);
             this.compilationUnit = compilationUnit;
             this.className       = className;
-            this.simpleCompiler = new SimpleCompiler();
+            this.simpleCompiler  = simpleCompilerClass.newInstance();
         }
 
         protected void compile() throws Exception {
@@ -328,8 +395,8 @@ public class JaninoTestSuite extends StructuredTestSuite {
         public CompileAndExecuteTest(String name, Mode mode) {
             super(name);
             // Notice: JUnit 3.8.1 gets confused if the name contains "(" and/or ",".
-            if (name.indexOf('(') != -1) throw new JaninoRuntimeException("Parentheses in test name not permitted");
-            if (name.indexOf(',') != -1) throw new JaninoRuntimeException("Comma in test name not permitted");
+            if (name.indexOf('(') != -1) throw new RuntimeException("Parentheses in test name not permitted");
+            if (name.indexOf(',') != -1) throw new RuntimeException("Comma in test name not permitted");
             this.mode = mode;
         }
 
@@ -342,16 +409,34 @@ public class JaninoTestSuite extends StructuredTestSuite {
          */
         protected void runTest() throws Exception {
             if (this.mode == SCAN) {
-                try { this.compile(); } catch (Scanner.ScanException ex) { return; }
-                fail("Should have thrown ScanException");
+                try {
+                    this.compile();
+                } catch (ScanException ex) {
+                    return;
+                } catch (LocatedException le) {
+                    assertEquals("ScanException", le);
+                }
+                fail("Should have thrown ScanException, but compiled successfully");
             } else
             if (this.mode == PARS) {
-                try { this.compile(); } catch (Parser.ParseException ex) { return; }
-                fail("Should have thrown ParseException");
+                try {
+                    this.compile();
+                } catch (ParseException ex) {
+                    return;
+                } catch (LocatedException le) {
+                    assertEquals("ParseException", le);
+                }
+                fail("Should have thrown ParseException, but compiled successfully");
             } else
             if (this.mode == COMP) {
-                try { this.compile(); } catch (CompileException ex) { return; }
-                fail("Should have thrown CompileException");
+                try {
+                    this.compile();
+                } catch (CompileException ex) {
+                    return;
+                } catch (LocatedException le) {
+                    assertEquals("CompileException", le);
+                }
+                fail("Should have thrown CompileException, but compiled successfully");
             } else
             if (this.mode == COOK) {
                 this.compile();

@@ -1,4 +1,5 @@
-import org.codehaus.janino.CompileException;
+
+import org.codehaus.commons.compiler.*;
 import org.codehaus.janino.ExpressionEvaluator;
 import org.codehaus.janino.SimpleCompiler;
 

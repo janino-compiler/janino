@@ -49,7 +49,7 @@ import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
-import org.codehaus.janino.JaninoRuntimeException;
+import org.codehaus.commons.compiler.*;
 import org.codehaus.janino.Java;
 import org.codehaus.janino.Mod;
 import org.codehaus.janino.Parser;
@@ -88,7 +88,6 @@ import org.codehaus.janino.Java.SuperclassMethodInvocation;
 import org.codehaus.janino.Java.ThisReference;
 import org.codehaus.janino.Java.Type;
 import org.codehaus.janino.Java.UnaryOperation;
-import org.codehaus.janino.Parser.ParseException;
 import org.codehaus.janino.util.Traverser;
 
 public class UnparseTests extends TestCase {
@@ -447,7 +446,8 @@ public class UnparseTests extends TestCase {
     public void testParseUnparseParseJanino() throws Exception {
 
         // Process all "*.java" files in the JANINO source tree.
-        this.find(new File("src"), new FileFilter() {
+        // Must use the "janino" project directory, because that is pre-Java 5.
+        this.find(new File("../janino/src"), new FileFilter() {
 
             public boolean accept(File f) {
                 if (f.isDirectory()) return true;
@@ -489,7 +489,7 @@ public class UnparseTests extends TestCase {
                             }
                         }
                     } catch (Exception e) {
-                        throw new JaninoRuntimeException(e);
+                        throw new RuntimeException(e);
                     }
                 }
                 return false;

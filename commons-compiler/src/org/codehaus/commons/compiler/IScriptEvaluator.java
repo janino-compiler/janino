@@ -118,17 +118,17 @@ public interface IScriptEvaluator extends IClassBodyEvaluator {
     /**
      * Define whether the generated method should be STATIC or not. Defaults to <code>true</code>.
      */
-    public abstract void setStaticMethod(boolean staticMethod);
+    void setStaticMethod(boolean staticMethod);
 
     /**
      * Define the return type of the generated method. Defaults to <code>void.class</code>.
      */
-    public abstract void setReturnType(Class returnType);
+    void setReturnType(Class returnType);
 
     /**
      * Define the name of the generated method. Defaults to an unspecified name.
      */
-    public abstract void setMethodName(String methodName);
+    void setMethodName(String methodName);
 
     /**
      * Define the names and types of the parameters of the generated method.
@@ -138,12 +138,12 @@ public interface IScriptEvaluator extends IClassBodyEvaluator {
      * <p>
      * The parameters and/or the return value can be of primitive type, e.g. {@link Double#TYPE}.
      */
-    public abstract void setParameters(String[] parameterNames, Class[] parameterTypes);
+    void setParameters(String[] parameterNames, Class[] parameterTypes);
 
     /**
      * Define the exceptions that the generated method may throw.
      */
-    public abstract void setThrownExceptions(Class[] thrownExceptions);
+    void setThrownExceptions(Class[] thrownExceptions);
 
     /**
      * Calls the script with concrete parameter values.
@@ -159,7 +159,7 @@ public interface IScriptEvaluator extends IClassBodyEvaluator {
      *
      * @param parameterValues The concrete parameter values.
      */
-    public abstract Object evaluate(Object[] parameterValues) throws InvocationTargetException;
+    Object evaluate(Object[] parameterValues) throws InvocationTargetException;
 
     /**
      * Returns the loaded {@link java.lang.reflect.Method}.
@@ -167,17 +167,17 @@ public interface IScriptEvaluator extends IClassBodyEvaluator {
      * This method must only be called after exactly one of the {@link #cook(String, Reader)}
      * methods was called.
      */
-    public abstract Method getMethod();
+    Method getMethod();
 
     /**
      * Same as {@link #setStaticMethod(boolean)}, but for multiple scripts.
      */
-    public abstract void setStaticMethod(boolean[] staticMethod);
+    void setStaticMethod(boolean[] staticMethod);
 
     /**
      * Same as {@link #setReturnType(Class)}, but for multiple scripts.
      */
-    public abstract void setReturnTypes(Class[] returnTypes);
+    void setReturnTypes(Class[] returnTypes);
 
     /**
      * Same as {@link #setMethodName(String)}, but for multiple scripts.
@@ -188,44 +188,58 @@ public interface IScriptEvaluator extends IClassBodyEvaluator {
      * If two scripts have the same name, then they must have different parameter types
      * (see {@link #setParameters(String[][], Class[][])}).
      */
-    public abstract void setMethodNames(String[] methodNames);
+    void setMethodNames(String[] methodNames);
 
     /**
      * Same as {@link #setParameters(String[], Class[])}, but for multiple scripts.
      */
-    public abstract void setParameters(String[][] parameterNames, Class[][] parameterTypes);
+    void setParameters(String[][] parameterNames, Class[][] parameterTypes);
 
     /**
      * Same as {@link #setThrownExceptions(Class[])}, but for multiple scripts.
      */
-    public abstract void setThrownExceptions(Class[][] thrownExceptions);
+    void setThrownExceptions(Class[][] thrownExceptions);
 
     /**
      * Same as {@link #cook(Reader)}, but for multiple scripts.
      */
-    public abstract void cook(Reader[] readers) throws CompileException, ParseException,
+    void cook(Reader[] readers) throws CompileException, ParseException,
         ScanException, IOException;
 
     /**
-     * Same as {@link #cook(String, Reader)}, but for multiple scripts.
+     * Same as {@link #cook(String, Reader)}, but cooks a <i>set</i> of scripts into one class. Notice that
+     * if <i>any</i> of the scripts causes trouble, the entire compilation will fail. If you
+     * need to report <i>which</i> of the scripts causes the exception, you may want to use the
+     * <code>optionalFileNames</code> parameter to distinguish between the individual token sources.
+     * <p>
+     * If and only if the number of scanners is one, then that single script may contain leading
+     * IMPORT directives.
+     *
+     * @throws IllegalStateException if any of the preceding <code>set...()</code> had an array
+     *                               size different from that of <code>scanners</code>
      */
-    public abstract void cook(String[] optionalFileNames, Reader[] readers)
-        throws CompileException, ParseException, ScanException, IOException;
+    void cook(
+        String[] optionalFileNames,
+        Reader[] readers
+    ) throws CompileException, ParseException, ScanException, IOException;
 
     /**
      * Same as {@link #cook(String)}, but for multiple scripts.
      */
-    public abstract void cook(String[] strings) throws CompileException, ParseException,
-        ScanException;
+    void cook(String[] strings) throws CompileException, ParseException, ScanException;
+
+    /**
+     * Same as {@link #cook(String, String)}, but for multiple scripts.
+     */
+    void cook(String[] optionalFileNames, String[] strings) throws CompileException, ParseException, ScanException;
 
     /**
      * Same as {@link #evaluate(Object[])}, but for multiple scripts.
      */
-    public abstract Object evaluate(int idx, Object[] parameterValues)
-        throws InvocationTargetException;
+    Object evaluate(int idx, Object[] parameterValues) throws InvocationTargetException;
 
     /**
      * Same as {@link #getMethod()}, but for multiple scripts.
      */
-    public abstract Method getMethod(int idx);
+    Method getMethod(int idx);
 }

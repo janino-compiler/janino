@@ -48,8 +48,8 @@ import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
+import org.codehaus.commons.compiler.*;
 import org.codehaus.janino.ClassBodyEvaluator;
-import org.codehaus.janino.CompileException;
 import org.codehaus.janino.ExpressionEvaluator;
 import org.codehaus.janino.Scanner;
 import org.codehaus.janino.ScriptEvaluator;
@@ -99,7 +99,7 @@ public class EvaluatorTests extends TestCase {
     public void testMultiScriptEvaluator() throws Exception {
         String funct2 = "return a + b;";
         String funct3 = "return 0;";
-        ScriptEvaluator se2 = new ScriptEvaluator();
+        IScriptEvaluator se2 = new ScriptEvaluator();
         se2.setReturnTypes(new Class[] { double.class , double.class});
         se2.setMethodNames(new String[] { "funct2", "funct3" });
         String[][] params2 = { {"a", "b"}, {} };
@@ -116,7 +116,7 @@ public class EvaluatorTests extends TestCase {
 
         ee.setClassName("Foo");
         ee.setDefaultImports(new String[] { "java.io.*", "for_sandbox_tests.*", });
-        ee.setExpressionTypes(new Class[] { ExpressionEvaluator.ANY_TYPE, InputStream.class, void.class, });
+        ee.setExpressionTypes(new Class[] { IExpressionEvaluator.ANY_TYPE, InputStream.class, void.class, });
         ee.setExtendedType(Properties.class);
         ee.setImplementedTypes(new Class[] { Runnable.class, });
         ee.setMethodNames(new String[] { "a", "b", "run", });
@@ -481,7 +481,7 @@ public class EvaluatorTests extends TestCase {
         if (comp == "<=") { return lhs <= rhs; }
         if (comp == ">" ) { return lhs < rhs; }
         if (comp == ">=") { return lhs <= rhs; }
-        throw new JaninoRuntimeException("Unsupported comparison");
+        throw new RuntimeException("Unsupported comparison");
     }
     public static boolean compare(float lhs, float rhs, String comp) {
         if (comp == "==") { return lhs == rhs; }
@@ -490,7 +490,7 @@ public class EvaluatorTests extends TestCase {
         if (comp == "<=") { return lhs <= rhs; }
         if (comp == ">" ) { return lhs < rhs; }
         if (comp == ">=") { return lhs <= rhs; }
-        throw new JaninoRuntimeException("Unsupported comparison");
+        throw new RuntimeException("Unsupported comparison");
     }
 
     public void testHandlingNaN() throws Exception {
@@ -504,7 +504,7 @@ public class EvaluatorTests extends TestCase {
         "if (comp == \"<=\") { return lhs <= rhs; }" +
         "if (comp == \">\" ) { return lhs < rhs; }" +
         "if (comp == \">=\") { return lhs <= rhs; }" +
-        "throw new JaninoRuntimeException(\"Unsupported comparison\");" +
+        "throw new RuntimeException(\"Unsupported comparison\");" +
     "}" +
     "public static boolean compare(float lhs, float rhs, String comp) {" +
         "if (comp == \"==\") { return lhs == rhs; }" +
@@ -513,7 +513,7 @@ public class EvaluatorTests extends TestCase {
         "if (comp == \"<=\") { return lhs <= rhs; }" +
         "if (comp == \">\" ) { return lhs < rhs; }" +
         "if (comp == \">=\") { return lhs <= rhs; }" +
-        "throw new JaninoRuntimeException(\"Unsupported comparison\");" +
+        "throw new RuntimeException(\"Unsupported comparison\");" +
     "}" +
             "}";
         SimpleCompiler sc = new SimpleCompiler();
@@ -789,7 +789,7 @@ public class EvaluatorTests extends TestCase {
                 "    return new Runnable() {\n" +
                 "      public void run() {\n" +
                 "        if (bar == null) {\n" +
-                "          throw new JaninoRuntimeException();\n" +
+                "          throw new RuntimeException();\n" +
                 "      } }\n" +
                 "      private String bar = foo;\n" +
                 "      private String[] cowparts = { moo, cow };\n" +
@@ -815,7 +815,7 @@ public class EvaluatorTests extends TestCase {
                 "    class R implements Runnable {\n" +
                 "      public void run() {\n" +
                 "        if (bar == null) {\n" +
-                "          throw new JaninoRuntimeException();\n" +
+                "          throw new RuntimeException();\n" +
                 "      } }\n" +
                 "      private String bar = foo;\n" +
                 "      private String[] cowparts = { moo, cow };\n" +
@@ -880,7 +880,7 @@ public class EvaluatorTests extends TestCase {
         );
     }
 
-    public SimpleCompiler assertCompiles(boolean shouldCompile, CharSequence prog) throws Exception {
+    public ISimpleCompiler assertCompiles(boolean shouldCompile, CharSequence prog) throws Exception {
         try {
             SimpleCompiler sc = new SimpleCompiler();
             sc.cook(prog.toString());

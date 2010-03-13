@@ -2,7 +2,7 @@
 /*
  * Janino - An embedded Java[TM] compiler
  *
- * Copyright (c) 2001-2007, Arno Unkrig
+ * Copyright (c) 2001-2010, Arno Unkrig
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,6 +36,8 @@ package org.codehaus.janino.samples;
 
 import java.io.*;
 
+import org.codehaus.commons.compiler.ParseException;
+import org.codehaus.commons.compiler.ScanException;
 import org.codehaus.janino.*;
 import org.codehaus.janino.util.*;
 
@@ -45,7 +47,7 @@ import org.codehaus.janino.util.*;
  * several kinds of declarations.
  */
 public class DeclarationCounter extends Traverser {
-    public static void main(String[] args) throws Scanner.ScanException, IOException, Parser.ParseException {
+    public static void main(String[] args) throws ScanException, IOException, ParseException {
         DeclarationCounter dc = new DeclarationCounter();
         for (int i = 0; i < args.length; ++i) {
             String fileName = args[i];

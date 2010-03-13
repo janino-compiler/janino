@@ -43,17 +43,11 @@ public abstract class Cookable implements ICookable {
         Reader r
     ) throws CompileException, ParseException, ScanException, IOException;
 
-    // The "cook()" method family.
-
-    public final void cook(
-        Reader r
-    ) throws CompileException, ParseException, ScanException, IOException {
+    public final void cook(Reader r) throws CompileException, ParseException, ScanException, IOException {
         this.cook(null, r);
     }
 
-    public final void cook(
-        InputStream is
-    ) throws CompileException, ParseException, ScanException, IOException {
+    public final void cook(InputStream is) throws CompileException, ParseException, ScanException, IOException {
         this.cook(null, is);
     }
 
@@ -64,35 +58,48 @@ public abstract class Cookable implements ICookable {
         this.cook(optionalFileName, is, null);
     }
 
-    public final void cook(InputStream is, String optionalEncoding)
-    throws CompileException, ParseException, ScanException, IOException {
+    public final void cook(
+        InputStream is,
+        String      optionalEncoding
+    ) throws CompileException, ParseException, ScanException, IOException {
         this.cook(optionalEncoding == null ? new InputStreamReader(is) : new InputStreamReader(is, optionalEncoding));
     }
 
-    public final void cook(String optionalFileName, InputStream is, String optionalEncoding)
-    throws CompileException, ParseException, ScanException, IOException {
+    public final void cook(
+        String      optionalFileName,
+        InputStream is,
+        String      optionalEncoding
+    ) throws CompileException, ParseException, ScanException, IOException {
         this.cook(
             optionalFileName,
             optionalEncoding == null ? new InputStreamReader(is) : new InputStreamReader(is, optionalEncoding)
         );
     }
 
-    public final void cook(String s)
-    throws CompileException, ParseException, ScanException {
+    public final void cook(String s) throws CompileException, ParseException, ScanException {
+        this.cook((String) null, s);
+    }
+
+    public void cook(
+        String optionalFileName,
+        String s
+    ) throws CompileException, ParseException, ScanException {
         try {
-            this.cook(new StringReader(s));
-        } catch (IOException ex) {
-            throw new RuntimeException("SNO: IOException despite StringReader");
+            this.cook(optionalFileName, new StringReader(s));
+        } catch (IOException ioe) {
+            ioe.printStackTrace();
+            throw new RuntimeException("SNO: StringReader throws IOException");
         }
     }
 
-    public final void cookFile(File file)
-    throws CompileException, ParseException, ScanException, IOException {
+    public final void cookFile(File file) throws CompileException, ParseException, ScanException, IOException {
         this.cookFile(file, null);
     }
 
-    public final void cookFile(File file, String optionalEncoding)
-    throws CompileException, ParseException, ScanException, IOException {
+    public final void cookFile(
+        File   file,
+        String optionalEncoding
+    ) throws CompileException, ParseException, ScanException, IOException {
         InputStream is = new FileInputStream(file);
         try {
             this.cook(
@@ -106,13 +113,29 @@ public abstract class Cookable implements ICookable {
         }
     }
 
-    public final void cookFile(String fileName)
-    throws CompileException, ParseException, ScanException, IOException {
+    public final void cookFile(String fileName) throws CompileException, ParseException, ScanException, IOException {
         this.cookFile(fileName, null);
     }
 
-    public final void cookFile(String fileName, String optionalEncoding)
-    throws CompileException, ParseException, ScanException, IOException {
+    public final void cookFile(
+        String fileName,
+        String optionalEncoding
+    ) throws CompileException, ParseException, ScanException, IOException {
         this.cookFile(new File(fileName), optionalEncoding);
+    }
+
+    /**
+     * Reads all characters from the given {@link Reader} into a {@link String}.
+     */
+    protected static String readString(Reader r) throws IOException {
+        StringBuffer sb = new StringBuffer();
+        char[] ca = new char[4096];
+        for (;;) {
+            int count = r.read(ca);
+            if (count == -1) break;
+            sb.append(ca, 0, count);
+        }
+        String s = sb.toString();
+        return s;
     }
 }

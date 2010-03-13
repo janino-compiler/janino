@@ -39,11 +39,11 @@ import junit.framework.*;
 import util.*;
 
 public class JLS2Tests extends JaninoTestSuite {
-    public static Test suite() {
+    public static Test suite() throws Exception {
         return new JLS2Tests();
     }
 
-    public JLS2Tests() {
+    public JLS2Tests() throws Exception {
         super("Tests against the \"Java Language Specification\"; 2nd edition");
 
         section("3 Lexical structure");
@@ -95,7 +95,7 @@ public class JLS2Tests extends JaninoTestSuite {
         exp(TRUE, "1", "17 == 17L");
         exp(TRUE, "2", "255 == 0xFFl");
         exp(TRUE, "3", "17 == 021L");
-        scr(PARS, "4", "17 == 029");
+        exp(SCAN, "4", "17 == 029"); // Digit "9" not allowed in octal literal.
         exp(TRUE, "5", "2 * 2147483647 == -2");
         exp(TRUE, "6", "2 * -2147483648 == 0");
         exp(COMP, "7", "2147483648");
@@ -275,7 +275,7 @@ public class JLS2Tests extends JaninoTestSuite {
         scr(COMP, "Member type/inconsistent", "import static java.util.Map.Entry; import static java.security.KeyStore.Entry; Entry e;");
         exp(TRUE, "Static method", "import static java.util.Arrays.asList; asList(new String[] { \"HELLO\", \"WORLD\" }).size() == 2");
         exp(TRUE, "Static method/duplicate", "import static java.util.Arrays.asList; import static java.util.Arrays.asList; asList(new String[] { \"HELLO\", \"WORLD\" }).size() == 2");
-        scr(COMP, "Static method/inconsistent", "import static java.lang.Integer.toString; import static java.lang.Long.toString;");
+        scr(COMP, "Static method/inconsistent", "import static java.lang.Integer.decode; import static java.lang.Long.decode; decode(\"4000000000\");");
 
         section("7.5.4 Static-Import-on-Demand Declaration");
         exp(TRUE, "Static field", "import static java.util.Collections.*; EMPTY_SET instanceof java.util.Set");
@@ -386,7 +386,7 @@ public class JLS2Tests extends JaninoTestSuite {
             "            x == 3\n" +
             "            && super.x == 2\n" +
             "            && T3.super.x == 2\n" +
-            "            && T2.super.x == 1\n" +
+            "//            && T2.super.x == 1\n" + // <= Does not work with the SUN JDK 1.6 compiler
             "            && ((T2) this).x == 2\n" +
             "            && ((T1) this).x == 1\n" +
             "        );\n" +
