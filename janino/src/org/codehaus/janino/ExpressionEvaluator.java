@@ -5,31 +5,23 @@
  * Copyright (c) 2001-2010, Arno Unkrig
  * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
+ * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
+ * following conditions are met:
  *
- *    1. Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *    2. Redistributions in binary form must reproduce the above
- *       copyright notice, this list of conditions and the following
- *       disclaimer in the documentation and/or other materials
- *       provided with the distribution.
- *    3. The name of the author may not be used to endorse or promote
- *       products derived from this software without specific prior
- *       written permission.
+ *    1. Redistributions of source code must retain the above copyright notice, this list of conditions and the
+ *       following disclaimer.
+ *    2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the
+ *       following disclaimer in the documentation and/or other materials provided with the distribution.
+ *    3. The name of the author may not be used to endorse or promote products derived from this software without
+ *       specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
- * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
- * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
- * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
- * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
- * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+ * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
+ * THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 package org.codehaus.janino;
@@ -37,15 +29,9 @@ package org.codehaus.janino;
 import java.io.*;
 import java.util.*;
 
-import org.codehaus.commons.compiler.CompileException;
-import org.codehaus.commons.compiler.Cookable;
-import org.codehaus.commons.compiler.IExpressionEvaluator;
-import org.codehaus.commons.compiler.ParseException;
-import org.codehaus.commons.compiler.ScanException;
-import org.codehaus.janino.Java.AmbiguousName;
-import org.codehaus.janino.Java.Rvalue;
+import org.codehaus.commons.compiler.*;
+import org.codehaus.janino.Java.*;
 import org.codehaus.janino.Visitor.RvalueVisitor;
-import org.codehaus.janino.util.PrimitiveWrapper;
 import org.codehaus.janino.util.Traverser;
 
 /**
@@ -160,8 +146,8 @@ public class ExpressionEvaluator extends ScriptEvaluator implements IExpressionE
      * @see ExpressionEvaluator#setExpressionType(Class)
      * @see ScriptEvaluator#setParameters(String[], Class[])
      * @see ScriptEvaluator#setThrownExceptions(Class[])
-     * @see ClassBodyEvaluator#setExtendedType(Class)
-     * @see ClassBodyEvaluator#setImplementedTypes(Class[])
+     * @see ClassBodyEvaluator#setExtendedClass(Class)
+     * @see ClassBodyEvaluator#setImplementedInterfaces(Class[])
      * @see SimpleCompiler#setParentClassLoader(ClassLoader)
      * @see Cookable#cook(String)
      */
@@ -178,8 +164,8 @@ public class ExpressionEvaluator extends ScriptEvaluator implements IExpressionE
         this.setExpressionType(expressionType);
         this.setParameters(parameterNames, parameterTypes);
         this.setThrownExceptions(thrownExceptions);
-        this.setExtendedType(optionalExtendedType);
-        this.setImplementedTypes(implementedTypes);
+        this.setExtendedClass(optionalExtendedType);
+        this.setImplementedInterfaces(implementedTypes);
         this.setParentClassLoader(optionalParentClassLoader);
         this.cook(expression);
     }
@@ -200,8 +186,8 @@ public class ExpressionEvaluator extends ScriptEvaluator implements IExpressionE
      *
      * @see #ExpressionEvaluator()
      * @see ClassBodyEvaluator#setClassName(String)
-     * @see ClassBodyEvaluator#setExtendedType(Class)
-     * @see ClassBodyEvaluator#setImplementedTypes(Class[])
+     * @see ClassBodyEvaluator#setExtendedClass(Class)
+     * @see ClassBodyEvaluator#setImplementedInterfaces(Class[])
      * @see ScriptEvaluator#setStaticMethod(boolean)
      * @see ExpressionEvaluator#setExpressionType(Class)
      * @see ScriptEvaluator#setMethodName(String)
@@ -224,8 +210,8 @@ public class ExpressionEvaluator extends ScriptEvaluator implements IExpressionE
         ClassLoader optionalParentClassLoader
     ) throws ScanException, ParseException, CompileException, IOException {
         this.setClassName(className);
-        this.setExtendedType(optionalExtendedType);
-        this.setImplementedTypes(implementedTypes);
+        this.setExtendedClass(optionalExtendedType);
+        this.setImplementedInterfaces(implementedTypes);
         this.setStaticMethod(staticMethod);
         this.setExpressionType(expressionType);
         this.setMethodName(methodName);
@@ -281,8 +267,8 @@ public class ExpressionEvaluator extends ScriptEvaluator implements IExpressionE
                 value = new Java.MethodInvocation(
                     scanner.location(),         // location
                     new Java.ReferenceType(     // optionalTarget
-                        scanner.location(),                                                      // location
-                        new String[] { "org", "codehaus", "janino", "util", "PrimitiveWrapper" } // identifiers
+                        scanner.location(),                                                           // location
+                        new String[] { "org", "codehaus", "commons", "compiler", "PrimitiveWrapper" } // identifiers
                     ),
                     "wrap",                     // methodName
                     new Java.Rvalue[] { value } // arguments
@@ -298,20 +284,25 @@ public class ExpressionEvaluator extends ScriptEvaluator implements IExpressionE
             // Add a return statement.
             statements.add(new Java.ReturnStatement(scanner.location(), value));
         }
-        if (!scanner.peek().isEOF()) throw new ParseException("Unexpected token \"" + scanner.peek() + "\"", scanner.location());
+        if (!scanner.peek().isEOF()) {
+            throw new ParseException("Unexpected token \"" + scanner.peek() + "\"", scanner.location());
+        }
 
         return statements;
     }
 
     /**
-     * Creates a "fast expression evaluator" from the given {@link java.lang.String}
-     * <code>expression</code>, generating a class with the {@link #DEFAULT_CLASS_NAME} that
-     * extends {@link Object}.
-     * <p>
-     * See the class description for an explanation of the "fast expression evaluator" concept.
+     * Use {@link #createFastEvaluator(String, Class, String[])} instead:
+     * <pre>
+     * {@link IExpressionEvaluator} ee = {@link CompilerFactoryFactory}.{@link
+     * CompilerFactoryFactory#getDefaultCompilerFactory() getDefaultCompilerFactory}().{@link
+     * ICompilerFactory#newExpressionEvaluator() newExpressionEvaluator}();
+     * ee.setParentClassLoader(optionalParentClassLoader);
+     * return ee.{@link #createFastEvaluator createFastEvaluator}(expression, interfaceToImplement, parameterNames);
+     * </pre>
      *
-     * @see #createFastExpressionEvaluator(Scanner, String[], String, Class, Class, String[], ClassLoader)
-     * @see ExpressionEvaluator
+     * @deprecatedf
+     * @see #createFastEvaluator(String, Class, String[])
      */
     public static Object createFastExpressionEvaluator(
         String      expression,
@@ -319,19 +310,18 @@ public class ExpressionEvaluator extends ScriptEvaluator implements IExpressionE
         String[]    parameterNames,
         ClassLoader optionalParentClassLoader
     ) throws CompileException, ParseException, ScanException {
-        ExpressionEvaluator ee = new ExpressionEvaluator();
+        IExpressionEvaluator ee = new ExpressionEvaluator();
         ee.setParentClassLoader(optionalParentClassLoader);
-        return ScriptEvaluator.createFastEvaluator(ee, expression, parameterNames, interfaceToImplement);
+        return ee.createFastEvaluator(expression, interfaceToImplement, parameterNames);
     }
 
     /**
-     * Creates a "fast expression evaluator" from the given {@link Scanner} with no default
-     * imports.
-     * <p>
-     * See the class description for an explanation of the "fast expression evaluator" concept.
-     *
-     * @see #createFastExpressionEvaluator(Scanner, String[], String, Class, Class, String[], ClassLoader)
-     * @see ExpressionEvaluator
+     * Notice: This method is not declared in {@link IExpressionEvaluator}, and is hence only available in <i>this</i>
+     * implementation of <code>org.codehaus.commons.compiler</code>. To be independent from this particular
+     * implementation, try to switch to {@link #createFastEvaluator(Reader, Class, String[]).
+     * 
+     * @param scanner Source of tokens to read
+     * @see #createFastEvaluator(Reader, Class, String[])
      */
     public static Object createFastExpressionEvaluator(
         Scanner     scanner,
@@ -343,28 +333,18 @@ public class ExpressionEvaluator extends ScriptEvaluator implements IExpressionE
     ) throws CompileException, ParseException, ScanException, IOException {
         ExpressionEvaluator ee = new ExpressionEvaluator();
         ee.setClassName(className);
-        ee.setExtendedType(optionalExtendedType);
+        ee.setExtendedClass(optionalExtendedType);
         ee.setParentClassLoader(optionalParentClassLoader);
-        return ScriptEvaluator.createFastEvaluator(ee, scanner, parameterNames, interfaceToImplement);
+        return ee.createFastEvaluator(scanner, interfaceToImplement, parameterNames);
     }
 
     /**
-     * Creates a "fast expression evaluator".
-     * <p>
-     * See the class description for an explanation of the "fast expression evaluator" concept.
-     * <p>
-     * Notice: The <code>interfaceToImplement</code> must either be declared <code>public</code>,
-     * or with package scope in the same package as <code>className</code>.
-     *
-     * @param scanner                   Source of expression tokens
-     * @param optionalDefaultImports    Default imports, e.g. <code>{ "java.util.Map", "java.io.*" }</code>
-     * @param className                 Name of generated class
-     * @param optionalExtendedType      Class to extend
-     * @param interfaceToImplement      Must declare exactly the one method that defines the expression's signature
-     * @param parameterNames            The expression references the parameters through these names
-     * @param optionalParentClassLoader Used to load referenced classes, defaults to the current thread's "context class loader"
-     * @return an object that implements the given interface and extends the <code>optionalExtendedType</code>
-     * @see ExpressionEvaluator
+     * Notice: This method is not declared in {@link IExpressionEvaluator}, and is hence only available in <i>this</i>
+     * implementation of <code>org.codehaus.commons.compiler</code>. To be independent from this particular
+     * implementation, try to switch to {@link #createFastEvaluator(Reader, Class, String[]).
+     * 
+     * @param scanner Source of tokens to read
+     * @see #createFastEvaluator(Reader, Class, String[])
      */
     public static Object createFastExpressionEvaluator(
         Scanner     scanner,
@@ -377,10 +357,10 @@ public class ExpressionEvaluator extends ScriptEvaluator implements IExpressionE
     ) throws CompileException, ParseException, ScanException, IOException {
         ExpressionEvaluator ee = new ExpressionEvaluator();
         ee.setClassName(className);
-        ee.setExtendedType(optionalExtendedType);
+        ee.setExtendedClass(optionalExtendedType);
         ee.setDefaultImports(optionalDefaultImports);
         ee.setParentClassLoader(optionalParentClassLoader);
-        return ScriptEvaluator.createFastEvaluator(ee, scanner, parameterNames, interfaceToImplement);
+        return ee.createFastEvaluator(scanner, interfaceToImplement, parameterNames);
     }
 
     /**

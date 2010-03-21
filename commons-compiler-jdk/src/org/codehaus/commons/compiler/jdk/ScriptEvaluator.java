@@ -5,31 +5,23 @@
  * Copyright (c) 2001-2010, Arno Unkrig
  * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
+ * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
+ * following conditions are met:
  *
- *    1. Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *    2. Redistributions in binary form must reproduce the above
- *       copyright notice, this list of conditions and the following
- *       disclaimer in the documentation and/or other materials
- *       provided with the distribution.
- *    3. The name of the author may not be used to endorse or promote
- *       products derived from this software without specific prior
- *       written permission.
+ *    1. Redistributions of source code must retain the above copyright notice, this list of conditions and the
+ *       following disclaimer.
+ *    2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the
+ *       following disclaimer in the documentation and/or other materials provided with the distribution.
+ *    3. The name of the author may not be used to endorse or promote products derived from this software without
+ *       specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
- * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
- * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
- * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
- * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
- * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+ * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
+ * THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 package org.codehaus.commons.compiler.jdk;
@@ -403,7 +395,7 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
             }
         }
 
-        super.cook(optionalFileNames[0], imports, new MultiReader(classBody));
+        super.cook(optionalFileNames == null ? null : optionalFileNames[0], imports, new MultiReader(classBody));
 
         Class<?> c = this.getClazz();
 
@@ -473,60 +465,32 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
 
     /**
      * @param script Contains the sequence of script tokens
-     * @see #createFastScriptEvaluator(String, Class, String[])
+     * @see #createFastEvaluator(String, Class, String[])
      */
-    public Object createFastScriptEvaluator(
-        String   script,
-        Class<?> interfaceToImplement,
-        String[] parameterNames
-    ) throws CompileException, ParseException, ScanException, IOException {
-        return this.createFastEvaluator(new StringReader(script), interfaceToImplement, parameterNames);
+    public Object createFastEvaluator(
+        String                               script,
+        @SuppressWarnings("unchecked") Class interfaceToImplement,
+        String[]                             parameterNames
+    ) throws CompileException, ParseException, ScanException {
+        try {
+            return this.createFastEvaluator(new StringReader(script), interfaceToImplement, parameterNames);
+        } catch (IOException ioe) {
+            throw new RuntimeException("SNO: IOException despite StringReader", ioe);
+        }
     }
 
     /**
-     * If the parameter and return types of the expression are known at compile time, then a "fast"
-     * script evaluator can be instantiated through this method.
-     * <p>
-     * Script evaluation is faster than through {@link #evaluate(Object[])}, because it is not done
-     * through reflection but through direct method invocation.
-     * <p>
-     * Example:
-     * <pre>
-     * public interface Foo {
-     *     int bar(int a, int b);
-     * }
-     * ...
-     * Foo f = (Foo) new {@link ScriptEvaluator}().{@link #createFastScriptEvaluator createFastScriptEvaluator}(
-     *     myReader,
-     *     Foo.class,
-     *     new String[] { "a", "b" }
-     * );
-     * System.out.println("1 + 2 = " + f.bar(1, 2));
-     * </pre>
-     * Notice: Before calling {@link #createFastEvaluator(Reader, Class, String[])}, the
-     * {@link ScriptEvaluator} can be configured through
-     * <ul>
-     *   <li>{@link #setClassName(String)}
-     *   <li>{@link #setDefaultImports(String[])}
-     *   <li>{@link #setExtendedType(Class)}
-     *   <li>{@link #setParentClassLoader(ClassLoader)}
-     * </ul>
-     * All other configuration (implemented type, static method, return type, method name,
-     * parameter names and types, thrown exceptions) are predetermined by the
-     * <code>interfaceToImplement</code>.
-     * Notice: The <code>interfaceToImplement</code> must either be declared <code>public</code>,
-     * or with package scope in the same package as the generated class (see {@link
-     * #setClassName(String)}).
-     *
-     * @param r produces the stream of script tokens
-     * @param interfaceToImplement Must declare exactly one method
-     * @param parameterNames The names of the parameters of that method
-     * @return an object that implements the given interface
+     * Don't use.
      */
+    @Override
+    public final Object createInstance(Reader reader) {
+        throw new UnsupportedOperationException("createInstance");
+    }
+
     public Object createFastEvaluator(
-        Reader   r,
-        Class<?> interfaceToImplement,
-        String[] parameterNames
+        Reader                               r,
+        @SuppressWarnings("unchecked") Class interfaceToImplement,
+        String[]                             parameterNames
     ) throws CompileException, ParseException, ScanException, IOException {
         if (!interfaceToImplement.isInterface()) {
             throw new RuntimeException("\"" + interfaceToImplement + "\" is not an interface");
@@ -538,7 +502,7 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
         }
         Method methodToImplement = methods[0];
 
-        this.setImplementedTypes(new Class[] { interfaceToImplement });
+        this.setImplementedInterfaces(new Class[] { interfaceToImplement });
         this.setStaticMethod(false);
         this.setReturnType(methodToImplement.getReturnType());
         this.setMethodName(methodToImplement.getName());

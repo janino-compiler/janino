@@ -5,31 +5,23 @@
  * Copyright (c) 2001-2010, Arno Unkrig
  * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
+ * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
+ * following conditions are met:
  *
- *    1. Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *    2. Redistributions in binary form must reproduce the above
- *       copyright notice, this list of conditions and the following
- *       disclaimer in the documentation and/or other materials
- *       provided with the distribution.
- *    3. The name of the author may not be used to endorse or promote
- *       products derived from this software without specific prior
- *       written permission.
+ *    1. Redistributions of source code must retain the above copyright notice, this list of conditions and the
+ *       following disclaimer.
+ *    2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the
+ *       following disclaimer in the documentation and/or other materials provided with the distribution.
+ *    3. The name of the author may not be used to endorse or promote products derived from this software without
+ *       specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
- * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
- * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
- * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
- * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
- * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+ * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
+ * THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 package org.codehaus.janino;
@@ -327,8 +319,8 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
      * se.cook(scanner);</pre>
      *
      * @see #ScriptEvaluator()
-     * @see ClassBodyEvaluator#setExtendedType(Class)
-     * @see ClassBodyEvaluator#setImplementedTypes(Class[])
+     * @see ClassBodyEvaluator#setExtendedClass(Class)
+     * @see ClassBodyEvaluator#setImplementedInterfaces(Class[])
      * @see #setReturnType(Class)
      * @see #setParameters(String[], Class[])
      * @see #setThrownExceptions(Class[])
@@ -345,8 +337,8 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
         Class[]     thrownExceptions,
         ClassLoader optionalParentClassLoader // null = use current thread's context class loader
     ) throws CompileException, ParseException, ScanException, IOException {
-        this.setExtendedType(optionalExtendedType);
-        this.setImplementedTypes(implementedTypes);
+        this.setExtendedClass(optionalExtendedType);
+        this.setImplementedInterfaces(implementedTypes);
         this.setReturnType(returnType);
         this.setParameters(parameterNames, parameterTypes);
         this.setThrownExceptions(thrownExceptions);
@@ -370,8 +362,8 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
      *
      * @see #ScriptEvaluator()
      * @see ClassBodyEvaluator#setClassName(String)
-     * @see ClassBodyEvaluator#setExtendedType(Class)
-     * @see ClassBodyEvaluator#setImplementedTypes(Class[])
+     * @see ClassBodyEvaluator#setExtendedClass(Class)
+     * @see ClassBodyEvaluator#setImplementedInterfaces(Class[])
      * @see #setStaticMethod(boolean)
      * @see #setReturnType(Class)
      * @see #setMethodName(String)
@@ -394,8 +386,8 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
         ClassLoader optionalParentClassLoader // null = use current thread's context class loader
     ) throws ScanException, ParseException, CompileException, IOException {
         this.setClassName(className);
-        this.setExtendedType(optionalExtendedType);
-        this.setImplementedTypes(implementedTypes);
+        this.setExtendedClass(optionalExtendedType);
+        this.setImplementedInterfaces(implementedTypes);
         this.setStaticMethod(staticMethod);
         this.setReturnType(returnType);
         this.setMethodName(methodName);
@@ -742,13 +734,8 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
     }
 
     /**
-     * Simplified version of
-     * {@link #createFastScriptEvaluator(Scanner, Class, String[], ClassLoader)}.
-     *
-     * @param script Contains the sequence of script tokens
-     * @param interfaceToImplement Must declare exactly the one method that defines the expression's signature
-     * @param parameterNames The expression references the parameters through these names
-     * @return an object that implements the given interface and extends the <code>optionalExtendedType</code>
+     * @deprecated
+     * @see #createFastScriptEvaluator(Scanner, String[], String, Class, Class, String[], ClassLoader)
      */
     public static Object createFastScriptEvaluator(
         String   script,
@@ -756,38 +743,12 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
         String[] parameterNames
     ) throws CompileException, ParseException, ScanException {
         ScriptEvaluator se = new ScriptEvaluator();
-        return ScriptEvaluator.createFastEvaluator(se, script, parameterNames, interfaceToImplement);
+        return se.createFastEvaluator(script, interfaceToImplement, parameterNames);
     }
 
     /**
-     * If the parameter and return types of the expression are known at compile time,
-     * then a "fast" script evaluator can be instantiated through this method.
-     * <p>
-     * Script evaluation is faster than through {@link #evaluate(Object[])}, because
-     * it is not done through reflection but through direct method invocation.
-     * <p>
-     * Example:
-     * <pre>
-     * public interface Foo {
-     *     int bar(int a, int b);
-     * }
-     * ...
-     * Foo f = (Foo) ScriptEvaluator.createFastScriptEvaluator(
-     *     new Scanner(null, new StringReader("return a + b;")),
-     *     Foo.class,
-     *     new String[] { "a", "b" },
-     *     (ClassLoader) null          // Use current thread's context class loader
-     * );
-     * System.out.println("1 + 2 = " + f.bar(1, 2));
-     * </pre>
-     * Notice: The <code>interfaceToImplement</code> must either be declared <code>public</code>,
-     * or with package scope in the root package (i.e. "no" package).
-     *
-     * @param scanner Source of script tokens
-     * @param interfaceToImplement Must declare exactly one method
-     * @param parameterNames
-     * @param optionalParentClassLoader
-     * @return an object that implements the given interface
+     * @deprecated
+     * @see #createFastScriptEvaluator(Scanner, String[], String, Class, Class, String[], ClassLoader)
      */
     public static Object createFastScriptEvaluator(
         Scanner     scanner,
@@ -797,23 +758,12 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
     ) throws CompileException, ParseException, ScanException, IOException {
         ScriptEvaluator se = new ScriptEvaluator();
         se.setParentClassLoader(optionalParentClassLoader);
-        return ScriptEvaluator.createFastEvaluator(se, scanner, parameterNames, interfaceToImplement);
+        return se.createFastEvaluator(scanner, interfaceToImplement, parameterNames);
     }
 
     /**
-     * Like {@link #createFastScriptEvaluator(Scanner, Class, String[], ClassLoader)},
-     * but gives you more control over the generated class (rarely needed in practice).
-     * <p>
-     * Notice: The <code>interfaceToImplement</code> must either be declared <code>public</code>,
-     * or with package scope in the same package as <code>className</code>.
-     *
-     * @param scanner                   Source of script tokens
-     * @param className                 Name of generated class
-     * @param optionalExtendedType      Class to extend
-     * @param interfaceToImplement      Must declare exactly the one method that defines the expression's signature
-     * @param parameterNames            The expression references the parameters through these names
-     * @param optionalParentClassLoader Used to load referenced classes, defaults to the current thread's "context class loader"
-     * @return an object that implements the given interface and extends the <code>optionalExtendedType</code>
+     * @deprecated
+     * @see #createFastScriptEvaluator(Scanner, String[], String, Class, Class, String[], ClassLoader)
      */
     public static Object createFastScriptEvaluator(
         Scanner     scanner,
@@ -825,40 +775,67 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
     ) throws CompileException, ParseException, ScanException, IOException {
         ScriptEvaluator se = new ScriptEvaluator();
         se.setClassName(className);
-        se.setExtendedType(optionalExtendedType);
+        se.setExtendedClass(optionalExtendedType);
         se.setParentClassLoader(optionalParentClassLoader);
-        return ScriptEvaluator.createFastEvaluator(se, scanner, parameterNames, interfaceToImplement);
+        return se.createFastEvaluator(scanner, interfaceToImplement, parameterNames);
     }
 
+    /**
+     * Use {@link #createFastEvaluator(Scanner,Class,String[])} instead:
+     * <pre>
+     * {@link ScriptEvaluator} se = new {@link ScriptEvaluator#ScriptEvaluator() ScriptEvaluator}();
+     * se.{@link #setDefaultImports(String[]) setDefaultImports}.(optionalDefaultImports);
+     * se.{@link #setClassName(String) setClassName}.(className);
+     * se.{@link #setExtendedClass(Class) setExtendedClass}.(optionalExtendedClass);
+     * se.{@link #setParentClassLoader(ClassLoader) setParentClassLoader}(optionalParentClassLoader);
+     * return se.{@link #createFastEvaluator(Scanner, Class, String[]) createFastEvaluator}(scanner,
+     * interfaceToImplement, parameterNames);
+     * </pre>
+     *
+     * @deprecated
+     */
     public static Object createFastScriptEvaluator(
         Scanner     scanner,
         String[]    optionalDefaultImports,
         String      className,
-        Class       optionalExtendedType,
+        Class       optionalExtendedClass,
         Class       interfaceToImplement,
         String[]    parameterNames,
         ClassLoader optionalParentClassLoader
     ) throws CompileException, ParseException, ScanException, IOException {
         ScriptEvaluator se = new ScriptEvaluator();
-        se.setClassName(className);
-        se.setExtendedType(optionalExtendedType);
         se.setDefaultImports(optionalDefaultImports);
+        se.setClassName(className);
+        se.setExtendedClass(optionalExtendedClass);
         se.setParentClassLoader(optionalParentClassLoader);
-        return ScriptEvaluator.createFastEvaluator(se, scanner, parameterNames, interfaceToImplement);
+        return se.createFastEvaluator(scanner, interfaceToImplement, parameterNames);
     }
 
-    public static Object createFastEvaluator(
-        ScriptEvaluator se,
-        String          s,
-        String[]        parameterNames,
-        Class           interfaceToImplement
+    /**
+     * Don't use.
+     */
+    public final Object createInstance(Reader reader) {
+        throw new UnsupportedOperationException("createInstance");
+    }
+
+    public Object createFastEvaluator(
+        Reader   reader,
+        Class    interfaceToImplement,
+        String[] parameterNames
+    ) throws CompileException, ParseException, ScanException, IOException {
+        return this.createFastEvaluator(new Scanner(null, reader), interfaceToImplement, parameterNames);
+    }
+
+    public Object createFastEvaluator(
+        String   script,
+        Class    interfaceToImplement,
+        String[] parameterNames
     ) throws CompileException, ParseException, ScanException {
         try {
-            return ScriptEvaluator.createFastEvaluator(
-                se,
-                new Scanner(null, new StringReader(s)),
-                parameterNames,
-                interfaceToImplement
+            return this.createFastEvaluator(
+                new StringReader(script),
+                interfaceToImplement,
+                parameterNames
             );
         } catch (IOException ex) {
             throw new JaninoRuntimeException("IOException despite StringReader");
@@ -866,20 +843,17 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
     }
 
     /**
-     * Create and return an object that implements the exactly one method of the given
-     * <code>interfaceToImplement</code>.
-     *
-     * @param se A pre-configured {@link ScriptEvaluator} object
+     * Notice: This method is not declared in {@link IScriptEvaluator}, and is hence only available in <i>this</i>
+     * implementation of <code>org.codehaus.commons.compiler</code>. To be independent from this particular
+     * implementation, try to switch to {@link #createFastEvaluator(Reader, Class, String[])}.
+     * 
      * @param scanner Source of tokens to read
-     * @param parameterNames The names of the parameters of the one abstract method of <code>interfaceToImplement</code>
-     * @param interfaceToImplement A type with exactly one abstract method
-     * @return an instance of the created {@link Object}
+     * @see #createFastEvaluator(Reader, Class, String[])
      */
-    public static Object createFastEvaluator(
-        ScriptEvaluator se,
-        Scanner         scanner,
-        String[]        parameterNames,
-        Class           interfaceToImplement
+    public Object createFastEvaluator(
+        Scanner  scanner,
+        Class    interfaceToImplement,
+        String[] parameterNames
     ) throws CompileException, ParseException, ScanException, IOException {
         if (!interfaceToImplement.isInterface()) throw new JaninoRuntimeException("\"" + interfaceToImplement + "\" is not an interface");
 
@@ -887,14 +861,14 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
         if (methods.length != 1) throw new JaninoRuntimeException("Interface \"" + interfaceToImplement + "\" must declare exactly one method");
         Method methodToImplement = methods[0];
 
-        se.setImplementedTypes(new Class[] { interfaceToImplement });
-        se.setStaticMethod(false);
-        se.setReturnType(methodToImplement.getReturnType());
-        se.setMethodName(methodToImplement.getName());
-        se.setParameters(parameterNames, methodToImplement.getParameterTypes());
-        se.setThrownExceptions(methodToImplement.getExceptionTypes());
-        se.cook(scanner);
-        Class c = se.getMethod().getDeclaringClass();
+        this.setImplementedInterfaces(new Class[] { interfaceToImplement });
+        this.setStaticMethod(false);
+        this.setReturnType(methodToImplement.getReturnType());
+        this.setMethodName(methodToImplement.getName());
+        this.setParameters(parameterNames, methodToImplement.getParameterTypes());
+        this.setThrownExceptions(methodToImplement.getExceptionTypes());
+        this.cook(scanner);
+        Class c = this.getMethod().getDeclaringClass();
         try {
             return c.newInstance();
         } catch (InstantiationException e) {

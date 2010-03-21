@@ -5,31 +5,23 @@
  * Copyright (c) 2001-2010, Arno Unkrig
  * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
+ * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
+ * following conditions are met:
  *
- *    1. Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *    2. Redistributions in binary form must reproduce the above
- *       copyright notice, this list of conditions and the following
- *       disclaimer in the documentation and/or other materials
- *       provided with the distribution.
- *    3. The name of the author may not be used to endorse or promote
- *       products derived from this software without specific prior
- *       written permission.
+ *    1. Redistributions of source code must retain the above copyright notice, this list of conditions and the
+ *       following disclaimer.
+ *    2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the
+ *       following disclaimer in the documentation and/or other materials provided with the distribution.
+ *    3. The name of the author may not be used to endorse or promote products derived from this software without
+ *       specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
- * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
- * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
- * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
- * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
- * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+ * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
+ * THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 package org.codehaus.commons.compiler.jdk;
@@ -92,30 +84,6 @@ public class ByteArrayJavaFileManager<M extends JavaFileManager> extends Forward
     ) throws IOException {
 
         /**
-         * Byte array-based implementation of {@link JavaFileObject}.
-         */
-        class ByteArrayJavaFileObject extends SimpleJavaFileObject {
-            final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-
-            public ByteArrayJavaFileObject(Kind kind) {
-                super(
-                    URI.create("bytearray:///" + className.replace('.','/') + kind.extension),
-                    kind
-                );
-            }
-
-            @Override
-            public OutputStream openOutputStream() throws IOException {
-                return this.buffer;
-            }
-
-            @Override
-            public InputStream openInputStream() throws IOException {
-                return new ByteArrayInputStream(this.buffer.toByteArray());
-            }
-        }
-
-        /**
          * {@link StringBuffer}-based implementation of {@link JavaFileObject}.
          * <p>
          * Notice that {@link #getCharContent(boolean)} is much more efficient than {@link
@@ -152,7 +120,7 @@ public class ByteArrayJavaFileManager<M extends JavaFileManager> extends Forward
         JavaFileObject fileObject = (
             kind == Kind.SOURCE
             ? new StringBufferJavaFileObject(kind)
-            : new ByteArrayJavaFileObject(kind)
+            : new ByteArrayJavaFileObject(className, kind)
         );
 
         Map<Kind, Map<String, JavaFileObject>> locationJavaFiles = this.javaFiles.get(location);
@@ -194,5 +162,33 @@ public class ByteArrayJavaFileManager<M extends JavaFileManager> extends Forward
             }
         }
         return result;
+    }
+
+    /**
+     * Byte array-based implementation of {@link JavaFileObject}.
+     */
+    public static class ByteArrayJavaFileObject extends SimpleJavaFileObject {
+        final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+
+        public ByteArrayJavaFileObject(String className, Kind kind) {
+            super(
+                URI.create("bytearray:///" + className.replace('.','/') + kind.extension),
+                kind
+            );
+        }
+
+        @Override
+        public OutputStream openOutputStream() throws IOException {
+            return this.buffer;
+        }
+        
+        public byte[] toByteArray() {
+            return this.buffer.toByteArray();
+        }
+
+        @Override
+        public InputStream openInputStream() throws IOException {
+            return new ByteArrayInputStream(this.toByteArray());
+        }
     }
 }

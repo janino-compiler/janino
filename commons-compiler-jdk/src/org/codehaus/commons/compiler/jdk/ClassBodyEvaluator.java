@@ -5,41 +5,43 @@
  * Copyright (c) 2001-2010, Arno Unkrig
  * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
+ * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
+ * following conditions are met:
  *
- *    1. Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *    2. Redistributions in binary form must reproduce the above
- *       copyright notice, this list of conditions and the following
- *       disclaimer in the documentation and/or other materials
- *       provided with the distribution.
- *    3. The name of the author may not be used to endorse or promote
- *       products derived from this software without specific prior
- *       written permission.
+ *    1. Redistributions of source code must retain the above copyright notice, this list of conditions and the
+ *       following disclaimer.
+ *    2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the
+ *       following disclaimer in the documentation and/or other materials provided with the distribution.
+ *    3. The name of the author may not be used to endorse or promote products derived from this software without
+ *       specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
- * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
- * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
- * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
- * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
- * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+ * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
+ * THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 package org.codehaus.commons.compiler.jdk;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.Reader;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.nio.CharBuffer;
-import java.util.*;
-import java.util.regex.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import org.codehaus.commons.compiler.*;
+import org.codehaus.commons.compiler.CompileException;
+import org.codehaus.commons.compiler.IClassBodyEvaluator;
+import org.codehaus.commons.compiler.ParseException;
+import org.codehaus.commons.compiler.ScanException;
 import org.codehaus.commons.io.MultiReader;
 
 /**
@@ -75,14 +77,22 @@ public class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEval
         this.optionalDefaultImports = optionalDefaultImports;
     }
 
-    @Override
-    public void setExtendedType(@SuppressWarnings("unchecked") Class optionalExtendedType) {
+    @Override public void setExtendedClass(@SuppressWarnings("unchecked") Class optionalExtendedType) {
         this.optionalExtendedType = optionalExtendedType;
     }
 
-    @Override
-    public void setImplementedTypes(@SuppressWarnings("unchecked") Class[] implementedTypes) {
+    /** @deprecated */
+    @Override public void setExtendedType(@SuppressWarnings("unchecked") Class optionalExtendedClass) {
+        this.setExtendedClass(optionalExtendedClass);
+    }
+
+    @Override public void setImplementedInterfaces(@SuppressWarnings("unchecked") Class[] implementedTypes) {
         this.implementedTypes = implementedTypes;
+    }
+
+    /** @deprecated */
+    @Override public void setImplementedTypes(@SuppressWarnings("unchecked") Class[] implementedInterfaces) {
+        this.setImplementedInterfaces(implementedInterfaces);
     }
 
     public void cook(
@@ -241,4 +251,20 @@ public class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEval
         + "(?:\\.\\*)?"
         + ");"
     );
+
+    @Override
+    public Object createInstance(Reader reader) throws CompileException, ParseException, ScanException, IOException {
+        this.cook(reader);
+        try {
+            return this.getClazz().newInstance();
+        } catch (InstantiationException ie) {
+            CompileException ce = new CompileException("Class is abstract, an interface, an array class, a primitive type, or void; or has no zero-parameter constructor", null);
+            ce.initCause(ie);
+            throw ce;
+        } catch (IllegalAccessException iae) {
+            CompileException ce = new CompileException("The class or its zero-parameter constructor is not accessible", null);
+            ce.initCause(iae);
+            throw ce;
+        }
+    }
 }

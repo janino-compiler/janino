@@ -5,31 +5,23 @@
  * Copyright (c) 2001-2010, Arno Unkrig
  * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
+ * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
+ * following conditions are met:
  *
- *    1. Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *    2. Redistributions in binary form must reproduce the above
- *       copyright notice, this list of conditions and the following
- *       disclaimer in the documentation and/or other materials
- *       provided with the distribution.
- *    3. The name of the author may not be used to endorse or promote
- *       products derived from this software without specific prior
- *       written permission.
+ *    1. Redistributions of source code must retain the above copyright notice, this list of conditions and the
+ *       following disclaimer.
+ *    2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the
+ *       following disclaimer in the documentation and/or other materials provided with the distribution.
+ *    3. The name of the author may not be used to endorse or promote products derived from this software without
+ *       specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
- * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
- * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
- * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
- * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
- * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+ * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
+ * THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 package org.codehaus.commons.compiler.jdk;
@@ -150,8 +142,8 @@ public class ExpressionEvaluator extends ScriptEvaluator implements IExpressionE
      * @see ExpressionEvaluator#setExpressionType(Class)
      * @see ScriptEvaluator#setParameters(String[], Class[])
      * @see ScriptEvaluator#setThrownExceptions(Class[])
-     * @see ClassBodyEvaluator#setExtendedType(Class)
-     * @see ClassBodyEvaluator#setImplementedTypes(Class[])
+     * @see ClassBodyEvaluator#setExtendedClass(Class)
+     * @see ClassBodyEvaluator#setImplementedInterfaces(Class[])
      * @see SimpleCompiler#setParentClassLoader(ClassLoader)
      * @see Cookable#cook(String)
      */
@@ -168,8 +160,8 @@ public class ExpressionEvaluator extends ScriptEvaluator implements IExpressionE
         this.setExpressionType(expressionType);
         this.setParameters(parameterNames, parameterTypes);
         this.setThrownExceptions(thrownExceptions);
-        this.setExtendedType(optionalExtendedType);
-        this.setImplementedTypes(implementedTypes);
+        this.setExtendedClass(optionalExtendedType);
+        this.setImplementedInterfaces(implementedTypes);
         this.setParentClassLoader(optionalParentClassLoader);
         this.cook(expression);
     }
@@ -220,7 +212,7 @@ public class ExpressionEvaluator extends ScriptEvaluator implements IExpressionE
 
             if (this.optionalExpressionTypes == null || this.optionalExpressionTypes[i] == ANY_TYPE) {
                 returnTypes[i] = Object.class;
-                pw.print("return org.codehaus.janino.util.PrimitiveWrapper.wrap(");
+                pw.print("return org.codehaus.commons.compiler.PrimitiveWrapper.wrap(");
                 pw.write(readString(readers[i]));
                 pw.println(");");
             } else

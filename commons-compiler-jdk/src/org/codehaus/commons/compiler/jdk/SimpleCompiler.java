@@ -5,31 +5,23 @@
  * Copyright (c) 2001-2010, Arno Unkrig
  * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
+ * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
+ * following conditions are met:
  *
- *    1. Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *    2. Redistributions in binary form must reproduce the above
- *       copyright notice, this list of conditions and the following
- *       disclaimer in the documentation and/or other materials
- *       provided with the distribution.
- *    3. The name of the author may not be used to endorse or promote
- *       products derived from this software without specific prior
- *       written permission.
+ *    1. Redistributions of source code must retain the above copyright notice, this list of conditions and the
+ *       following disclaimer.
+ *    2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the
+ *       following disclaimer in the documentation and/or other materials provided with the distribution.
+ *    3. The name of the author may not be used to endorse or promote products derived from this software without
+ *       specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
- * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
- * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
- * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
- * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
- * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+ * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
+ * THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 package org.codehaus.commons.compiler.jdk;
@@ -50,7 +42,7 @@ public class SimpleCompiler extends Cookable implements ISimpleCompiler {
 
     @Override
     public ClassLoader getClassLoader() {
-        if (this.result == null) throw new IllegalStateException("Must only be called after \"cook()\"");
+        assertCooked();
         return this.result;
     }
 
@@ -59,6 +51,7 @@ public class SimpleCompiler extends Cookable implements ISimpleCompiler {
         String       optionalFileName,
         final Reader r
     ) throws CompileException, ParseException, ScanException, IOException {
+        assertNotCooked();
 
         // Create one Java source file in memory, which will be compiled later.
         JavaFileObject compilationUnit;
@@ -254,7 +247,14 @@ public class SimpleCompiler extends Cookable implements ISimpleCompiler {
     static final Set<String> SCAN_ERROR_CODES = new HashSet<String>(Arrays.asList(
         "compiler.err.illegal.char",
         "compiler.err.unclosed.comment",
-        "compiler.err.int.number.too.large"
+        "compiler.err.int.number.too.large", // <= Problematic...
+        "compiler.err.fp.number.too.large",
+        "compiler.err.fp.number.too.small",
+        "compiler.err.empty.char.lit",
+        "compiler.err.unclosed.char.lit",
+        "compiler.err.illegal.line.end.in.char.lit",
+        "compiler.err.unclosed.str.lit",
+        "compiler.err.illegal.unicode.esc"
     ));
 
     @Override
@@ -276,6 +276,13 @@ public class SimpleCompiler extends Cookable implements ISimpleCompiler {
     @Deprecated
     public void setParentClassLoader(ClassLoader optionalParentClassLoader, Class<?>[] auxiliaryClasses) {
         this.setParentClassLoader(optionalParentClassLoader);
+    }
+    
+    /**
+     * Throw an {@link IllegalStateException} if this {@link Cookable} is not yet cooked.
+     */
+    protected void assertCooked() {
+        if (this.result == null) throw new IllegalStateException("Not yet cooked");
     }
 
     /**

@@ -5,31 +5,23 @@
  * Copyright (c) 2001-2010, Arno Unkrig
  * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
+ * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
+ * following conditions are met:
  *
- *    1. Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *    2. Redistributions in binary form must reproduce the above
- *       copyright notice, this list of conditions and the following
- *       disclaimer in the documentation and/or other materials
- *       provided with the distribution.
- *    3. The name of the author may not be used to endorse or promote
- *       products derived from this software without specific prior
- *       written permission.
+ *    1. Redistributions of source code must retain the above copyright notice, this list of conditions and the
+ *       following disclaimer.
+ *    2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the
+ *       following disclaimer in the documentation and/or other materials provided with the distribution.
+ *    3. The name of the author may not be used to endorse or promote products derived from this software without
+ *       specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
- * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
- * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
- * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
- * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
- * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+ * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
+ * THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 package org.codehaus.janino;
@@ -37,8 +29,10 @@ package org.codehaus.janino;
 import java.io.*;
 
 import org.codehaus.commons.compiler.CompileException;
+import org.codehaus.commons.compiler.CompilerFactoryFactory;
 import org.codehaus.commons.compiler.Cookable;
 import org.codehaus.commons.compiler.IClassBodyEvaluator;
+import org.codehaus.commons.compiler.ICompilerFactory;
 import org.codehaus.commons.compiler.Location;
 import org.codehaus.commons.compiler.ParseException;
 import org.codehaus.commons.compiler.ScanException;
@@ -173,8 +167,8 @@ public class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEval
      * cbe.cook(scanner);</pre>
      *
      * @see #ClassBodyEvaluator()
-     * @see #setExtendedType(Class)
-     * @see #setImplementedTypes(Class[])
+     * @see #setExtendedClass(Class)
+     * @see #setImplementedInterfaces(Class[])
      * @see SimpleCompiler#setParentClassLoader(ClassLoader)
      * @see Cookable#cook(Scanner)
      */
@@ -184,8 +178,8 @@ public class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEval
         Class[]     implementedTypes,
         ClassLoader optionalParentClassLoader
     ) throws CompileException, ParseException, ScanException, IOException {
-        this.setExtendedType(optionalExtendedType);
-        this.setImplementedTypes(implementedTypes);
+        this.setExtendedClass(optionalExtendedType);
+        this.setImplementedInterfaces(implementedTypes);
         this.setParentClassLoader(optionalParentClassLoader);
         this.cook(scanner);
     }
@@ -201,8 +195,8 @@ public class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEval
      *
      * @see #ClassBodyEvaluator()
      * @see #setClassName(String)
-     * @see #setExtendedType(Class)
-     * @see #setImplementedTypes(Class[])
+     * @see #setExtendedClass(Class)
+     * @see #setImplementedInterfaces(Class[])
      * @see SimpleCompiler#setParentClassLoader(ClassLoader)
      * @see Cookable#cook(Scanner)
      */
@@ -214,8 +208,8 @@ public class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEval
         ClassLoader optionalParentClassLoader
     ) throws CompileException, ParseException, ScanException, IOException {
         this.setClassName(className);
-        this.setExtendedType(optionalExtendedType);
-        this.setImplementedTypes(implementedTypes);
+        this.setExtendedClass(optionalExtendedType);
+        this.setImplementedInterfaces(implementedTypes);
         this.setParentClassLoader(optionalParentClassLoader);
         this.cook(scanner);
     }
@@ -233,15 +227,25 @@ public class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEval
         this.className = className;
     }
 
-    public void setExtendedType(Class optionalExtendedType) {
+    public void setExtendedClass(Class optionalExtendedType) {
         assertNotCooked();
         this.optionalExtendedType = optionalExtendedType;
     }
 
-    public void setImplementedTypes(Class[] implementedTypes) {
+    /** @deprecated */
+    public void setExtendedType(Class optionalExtendedClass) {
+        this.setExtendedClass(optionalExtendedClass);
+    }
+
+    public void setImplementedInterfaces(Class[] implementedTypes) {
         if (implementedTypes == null) throw new NullPointerException("Zero implemented types must be specified as \"new Class[0]\", not \"null\"");
         assertNotCooked();
         this.implementedTypes = implementedTypes;
+    }
+
+    /** @deprecated */
+    public void setImplementedTypes(Class[] implementedInterfaces) {
+        this.setImplementedTypes(implementedInterfaces);
     }
 
     public void cook(Scanner scanner) throws CompileException, ParseException, ScanException, IOException {
@@ -364,20 +368,40 @@ public class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEval
         return this.result;
     }
 
+    public Object createInstance(Reader reader) throws CompileException, ParseException, ScanException, IOException {
+        this.cook(reader);
+
+        try {
+            return this.getClazz().newInstance();
+        } catch (InstantiationException ie) {
+            CompileException ce = new CompileException("Class is abstract, an interface, an array class, a primitive type, or void; or has no zero-parameter constructor", null);
+            ce.initCause(ie);
+            throw ce;
+        } catch (IllegalAccessException iae) {
+            CompileException ce = new CompileException("The class or its zero-parameter constructor is not accessible", null);
+            ce.initCause(iae);
+            throw ce;
+        }
+    }
+
     /**
-     * Scans, parses and compiles a class body from the tokens delivered by the the given
-     * {@link Scanner}.
-     * The generated class has the {@link #DEFAULT_CLASS_NAME} and extends the given
-     * <code>optionalBaseType</code> (if that is a class), and implements the given
-     * <code>optionalBaseType</code> (if that is an interface).
-     * <p>
-     * For an explanation of the "fast class body evaluator" concept, see the class description.
+     * Use {@link #createInstance(Reader)} instead:
+     * <pre>
+     * IClassBodyEvaluator cbe = {@link CompilerFactoryFactory}.{@link
+     * CompilerFactoryFactory#getDefaultCompilerFactory() getDefaultCompilerFactory}().{@link
+     * ICompilerFactory#newClassBodyEvaluator() newClassBodyEvaluator}();
+     * if (optionalBaseType != null) {
+     *     if (optionalBaseType.isInterface()) {
+     *         cbe.{@link #setImplementedInterfaces(Class[]) setImplementedInterfaces}(new Class[] { optionalBaseType });
+     *     } else {
+     *         cbe.{@link #setExtendedClass(Class) setExtendedClass}(optionalBaseType);
+     *     }
+     * }
+     * cbe.{@link #setParentClassLoader(ClassLoader) setParentClassLoader}(optionalParentClassLoader);
+     * cbe.{@link IClassBodyEvaluator#createInstance(Reader) createInstance}(reader);
+     * </pre>
      *
-     * @param scanner                   Source of class body tokens
-     * @param optionalBaseType          Base type to extend/implement
-     * @param optionalParentClassLoader Used to load referenced classes, defaults to the current thread's "context class loader"
-     * @return an object that extends/implements the given <code>optionalBaseType</code>
-     * @see ClassBodyEvaluator
+     * @see #createInstance(Reader)
      */
     public static Object createFastClassBodyEvaluator(
         Scanner     scanner,
@@ -400,33 +424,33 @@ public class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEval
     }
 
     /**
-     * Scans, parses and compiles a class body from the tokens delivered by the the given
-     * {@link Scanner} with no default imports.
-     * <p>
-     * For an explanation of the "fast class body evaluator" concept, see the class description.
+     * Use {@link #createInstance(Reader)} instead:
+     * <pre>
+     * IClassBodyEvaluator cbe = {@link CompilerFactoryFactory}.{@link
+     * CompilerFactoryFactory#getDefaultCompilerFactory() getDefaultCompilerFactory}().{@link
+     * ICompilerFactory#newClassBodyEvaluator() newClassBodyEvaluator}();
+     * cbe.{@link #setExtendedClass(Class) setExtendedClass}(optionalExtendedClass);
+     * cbe.{@link #setImplementedInterfaces(Class[]) setImplementedInterfaces}(implementedInterfaces);
+     * cbe.{@link #setParentClassLoader(ClassLoader) setParentClassLoader}(optionalParentClassLoader);
+     * cbe.{@link IClassBodyEvaluator#createInstance(Reader) createInstance}(reader);
+     * </pre>
      *
-     * @param scanner Source of class body tokens
-     * @param className Name of generated class
-     * @param optionalExtendedType Class to extend
-     * @param implementedTypes Interfaces to implement
-     * @param optionalParentClassLoader Used to load referenced classes, defaults to the current thread's "context class loader"
-     * @return an object that extends the <code>optionalExtendedType</code> and implements the given <code>implementedTypes</code>
-     * @see ClassBodyEvaluator
+     * @see #createInstance(Reader)
      */
     public static Object createFastClassBodyEvaluator(
         Scanner     scanner,
         String      className,
-        Class       optionalExtendedType,
-        Class[]     implementedTypes,
+        Class       optionalExtendedClass,
+        Class[]     implementedInterfaces,
         ClassLoader optionalParentClassLoader
     ) throws CompileException, ParseException, ScanException, IOException {
-        Class c = new ClassBodyEvaluator(
-            scanner,
-            className,
-            optionalExtendedType,
-            implementedTypes,
-            optionalParentClassLoader
-        ).getClazz();
+        ClassBodyEvaluator cbe = new ClassBodyEvaluator();
+        cbe.setClassName(className);
+        cbe.setExtendedClass(optionalExtendedClass);
+        cbe.setImplementedInterfaces(implementedInterfaces);
+        cbe.setParentClassLoader(optionalParentClassLoader);
+        cbe.cook(scanner);
+        Class c = cbe.getClazz();
         try {
             return c.newInstance();
         } catch (InstantiationException e) {

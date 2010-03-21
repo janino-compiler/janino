@@ -5,34 +5,29 @@
  * Copyright (c) 2001-2010, Arno Unkrig
  * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
+ * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
+ * following conditions are met:
  *
- *    1. Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *    2. Redistributions in binary form must reproduce the above
- *       copyright notice, this list of conditions and the following
- *       disclaimer in the documentation and/or other materials
- *       provided with the distribution.
- *    3. The name of the author may not be used to endorse or promote
- *       products derived from this software without specific prior
- *       written permission.
+ *    1. Redistributions of source code must retain the above copyright notice, this list of conditions and the
+ *       following disclaimer.
+ *    2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the
+ *       following disclaimer in the documentation and/or other materials provided with the distribution.
+ *    3. The name of the author may not be used to endorse or promote products derived from this software without
+ *       specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
- * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
- * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
- * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
- * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
- * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+ * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
+ * THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 package org.codehaus.commons.compiler;
+
+import java.io.IOException;
+import java.io.Reader;
 
 /**
  * Parses a class body and returns it as a {@link Class} object ready for use with
@@ -63,8 +58,8 @@ package org.codehaus.commons.compiler;
  *   <ul>
  *      <li>{@link #setDefaultImports(String[])}
  *      <li>{@link #setClassName(String)}
- *      <li>{@link #setExtendedType(Class)}
- *      <li>{@link #setImplementedTypes(Class[])}
+ *      <li>{@link #setExtendedClass(Class)}
+ *      <li>{@link #setImplementedInterfaces(Class[])}
  *      <li>{@link #setParentClassLoader(ClassLoader)}
  *   </ul>
  *   <li>
@@ -110,12 +105,26 @@ public interface IClassBodyEvaluator extends ICookable {
      * The common reason to set a base class for an evaluator is that the generated class can
      * directly access the base superclass's (non-private) members.
      */
-    void setExtendedType(Class optionalExtendedType);
+    void setExtendedClass(Class optionalExtendedClass);
+
+    /**
+     * Use {@link #setExtendedClass(Class)} instead.
+     *
+     * @deprecated
+     */
+    void setExtendedType(Class optionalExtendedClass);
 
     /**
      * Set a particular set of interfaces that the generated class will implement.
      */
-    void setImplementedTypes(Class[] implementedTypes);
+    void setImplementedInterfaces(Class[] implementedInterfaces);
+
+    /**
+     * Use {@link #setImplementedInterfaces(Class[])} instead.
+     *
+     * @deprecated
+     */
+    void setImplementedTypes(Class[] implementedInterfaces);
 
     /**
      * Returns the loaded {@link Class}.
@@ -125,4 +134,13 @@ public interface IClassBodyEvaluator extends ICookable {
      */
     Class getClazz();
 
+    /**
+     * Scans, parses and compiles a class body from the tokens delivered by the the given {@link Reader}, then creates
+     * and returns an instance of that class.
+     *
+     * @param reader Source of class body tokens
+     * @return       An object that extends the <code>optionalExtendedType</code> and implements the given
+     *               <code>implementedTypes</code>
+     */
+    Object createInstance(Reader reader) throws CompileException, ParseException, ScanException, IOException;
 }
