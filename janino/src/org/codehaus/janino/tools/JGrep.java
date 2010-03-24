@@ -37,11 +37,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.codehaus.commons.compiler.CompileException;
-import org.codehaus.commons.compiler.CompilerFactoryFactory;
-import org.codehaus.commons.compiler.ICompilerFactory;
-import org.codehaus.commons.compiler.ParseException;
-import org.codehaus.commons.compiler.ScanException;
+import org.codehaus.commons.compiler.*;
 import org.codehaus.janino.Descriptor;
 import org.codehaus.janino.ExpressionEvaluator;
 import org.codehaus.janino.IClass;
@@ -174,13 +170,12 @@ public class JGrep {
                     if (arg.startsWith("predicate:")) {
                         String predicateExpression = arg.substring(10);
                         try {
-                            mit.predicates.add(ExpressionEvaluator.createFastExpressionEvaluator(
-                                new Scanner(null, new StringReader(predicateExpression)), // expression
-                                JGrep.class.getName() + "PE",                             // className
-                                null,                                                     // optionalExtendedType
-                                MethodInvocationPredicate.class,                          // interfaceToImplement
-                                new String[] { "uc", "invocation", "method" },            // parameterNames
-                                null                                                      // optionalClassLoader
+                            IExpressionEvaluator ee = new ExpressionEvaluator();
+                            ee.setClassName(JGrep.class.getName() + "PE");
+                            mit.predicates.add((MethodInvocationPredicate) ee.createFastEvaluator(
+                                predicateExpression,
+                                MethodInvocationPredicate.class,
+                                new String[] { "uc", "invocation", "method" }
                             ));
                         } catch (Exception ex) {
                             System.err.println("Compiling predicate expression \"" + predicateExpression + "\": " + ex.getMessage());
