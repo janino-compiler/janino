@@ -1,0 +1,110 @@
+<!--
+  Janino - An embedded Java[TM] compiler
+
+  Copyright (c) 2001-2010, Arno Unkrig
+  All rights reserved.
+
+  Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
+  following conditions are met:
+ 
+     1. Redistributions of source code must retain the above copyright notice, this list of conditions and the
+        following disclaimer.
+     2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the
+        following disclaimer in the documentation and/or other materials provided with the distribution.
+     3. The name of the author may not be used to endorse or promote products derived from this software without
+        specific prior written permission.
+ 
+  THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+  TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
+  THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+  POSSIBILITY OF SUCH DAMAGE.
+//-->
+
+<project name="Janino" default="publish" basedir=".">
+	<property environment="env"/>
+	<property file="build.properties"/>
+
+	<target name="publish" depends="dist">
+	</target>
+
+	<target name="dist" depends="commons-compiler.jar,janino.jar,commons-compiler-jdk.jar,javadoc">
+		<echo level="info">Signing jars</echo>
+		<exec executable="jarsigner">
+			<arg value="-keystore"/><arg value="dummy-keystore"/>
+			<arg value="-storepass"/><arg value="storepass"/>
+			<arg value="-keypass"/><arg value="keypass"/>
+			<arg value="../commons-compiler/build/lib/commons-compiler.jar"/>
+			<arg value="dummy"/>
+		</exec>
+		<exec executable="jarsigner">
+			<arg value="-keystore"/><arg value="dummy-keystore"/>
+			<arg value="-storepass"/><arg value="storepass"/>
+			<arg value="-keypass"/><arg value="keypass"/>
+			<arg value="../janino/build/lib/janino.jar"/>
+			<arg value="dummy"/>
+		</exec>
+		<exec executable="jarsigner">
+			<arg value="-keystore"/><arg value="dummy-keystore"/>
+			<arg value="-storepass"/><arg value="storepass"/>
+			<arg value="-keypass"/><arg value="keypass"/>
+			<arg value="../commons-compiler-jdk/build/lib/commons-compiler-jdk.jar"/>
+			<arg value="dummy"/>
+		</exec>
+
+		<zip destfile="${janino_zip}" filesonly="true">
+			<zipfileset file="../commons-compiler/build/lib/commons-compiler.jar" prefix="janino-${version}"/>
+			<zipfileset file="../janino/build/lib/janino.jar" prefix="janino-${version}"/>
+			<zipfileset file="../commons-compiler-jdk/build/lib/commons-compiler-jdk.jar" prefix="janino-${version}"/>
+
+			<zipfileset file="../commons-compiler/build.*" prefix="janino-${version}/src/commons-compiler"/>
+			<zipfileset dir="../commons-compiler/src" prefix="janino-${version}/src/commons-compiler/src"/>
+
+			<zipfileset file="../janino/build.*" prefix="janino-${version}/src/janino"/>
+			<zipfileset dir="../janino/src" prefix="janino-${version}/src/janino/src"/>
+
+			<zipfileset file="../commons-compiler-jdk/build.*" prefix="janino-${version}/src/commons-compiler-jdk"/>
+			<zipfileset dir="../commons-compiler-jdk/src" prefix="janino-${version}/src/commons-compiler-jdk/src"/>
+
+			<zipfileset dir="${javadoc-dir}" prefix="janino-${version}/javadoc"/>
+
+			<zipfileset file="new_bsd_license.txt" prefix="janino-${version}"/>
+		</zip>
+	</target>
+
+	<target name="commons-compiler.jar">
+		<ant dir="../commons-compiler" antfile="build.xml" target="jar"/>
+	</target>
+
+	<target name="janino.jar">
+		<ant dir="../janino" antfile="build.xml" target="jar"/>
+	</target>
+
+	<target name="commons-compiler-jdk.jar">
+		<ant dir="../commons-compiler-jdk" antfile="build.xml" target="jar"/>
+	</target>
+
+	<target name="javadoc" description="Build JAVADOC">
+		<mkdir dir="${javadoc-dir}"/>
+		<javadoc
+			header="&lt;a href=&quot;http://janino.net/&quot; target=&quot;_top&quot;&gt;janino.net&lt;/a&gt;"
+			splitindex="true"
+			doctitle="Janino ${version}"
+			windowtitle="Janino ${version}"
+			overview="overview.html"
+			sourcepath="../commons-compiler/src;../janino/src;../commons-compiler-jdk"
+			classpath="${ant_jar}"
+			destdir="${javadoc-dir}"
+			packagenames="${javadoc_packages}"
+		>
+			<link offline="true" href="${jdk_javadoc_remote}" packagelistloc="${jdk_javadoc_local}"/>
+			<link offline="true" href="${ant_javadoc_remote}" packagelistloc="${ant_javadoc_local}"/>
+		</javadoc>
+	</target>
+
+	<target name="clean">
+		<delete dir="${build-dir}"/>
+	</target>
+</project>
