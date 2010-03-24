@@ -31,10 +31,9 @@
 
 		<javac
 			fork="yes"
-			source="1.2"
-			target="1.1"
+			source="1.6"
+			target="1.6"
 			srcdir="src"
-			excludes="org/codehaus/janino/AstGeneratorVisitor.java"
 			destdir="${build-dir}/classes"
 			classpath="${ant.jar}:../commons-compiler/bin"
 			debug="true"
@@ -44,7 +43,7 @@
 
 	<target name="jar" depends="compile">
 		<mkdir dir="${build-dir}/lib"/>
-		<jar jarfile="${build-dir}/lib/janino.jar" basedir="${build-dir}/classes"/>
+		<jar jarfile="${build-dir}/lib/commons-compiler-jdk.jar" basedir="${build-dir}/classes"/>
 	</target>
 
 	<target name="clean">
