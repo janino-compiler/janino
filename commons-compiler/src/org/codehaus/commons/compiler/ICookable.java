@@ -32,12 +32,18 @@ import java.io.*;
  * "Cooking" means scanning a sequence of characters and turning them into some
  * JVM-executable artifact. For example, if you cook a {@link
  * org.codehaus.janino.ClassBodyEvaluator}, then the tokens are interpreted as a class body and
- * compiled into a {@link Class} which is accessible through {@link ClassBodyEvaluator#getClazz()}.
+ * compiled into a {@link Class} which is accessible through {@link IClassBodyEvaluator#getClazz()}.
  * <p>
  * The <code>cook*()</code> methods eventually invoke the abstract {@link #cook(String, Reader)}
  * method.
  */
 public interface ICookable {
+
+    /**
+     * The {@link ClassLoader} that loads this classes on the boot class path, i.e. the JARs in the JRE's "lib" and
+     * "lib/ext" directories, but not the JARs and class directories specified through the class path.
+     */
+    public static final ClassLoader BOOT_CLASS_LOADER = ClassLoader.getSystemClassLoader().getParent();
 
     /**
      * The "parent class loader" is used to load referenced classes. Useful values are:

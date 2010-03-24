@@ -75,7 +75,7 @@ public abstract class AbstractJavaSourceClassLoader extends ClassLoader {
     }
 
     /**
-     * Read Java<sup>TM</sup> source code for a given class name, scan, parse, compile and load
+     * Read Java&trade; source code for a given class name, scan, parse, compile and load
      * it into the virtual machine, and invoke its "main()" method with the given args.
      * <p>
      * Usage is as follows:

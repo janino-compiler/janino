@@ -60,13 +60,13 @@ public interface ICompilerFactory {
 
     /**
      * @throws UnsupportedOperationException The underlying implementation does not implement an {@link
-     *                                       IJavaSourceClassLoader}
+     *                                       AbstractJavaSourceClassLoader}
      */
     AbstractJavaSourceClassLoader newJavaSourceClassLoader();
 
     /**
      * @throws UnsupportedOperationException The underlying implementation does not implement an {@link
-     *                                       IJavaSourceClassLoader}
+     *                                       AbstractJavaSourceClassLoader}
      */
     AbstractJavaSourceClassLoader newJavaSourceClassLoader(ClassLoader parentClassLoader);
 }

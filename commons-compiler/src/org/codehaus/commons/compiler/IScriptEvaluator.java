@@ -30,7 +30,7 @@ import java.io.*;
 import java.lang.reflect.*;
 
 /**
- * An engine that executes a script in Java<sup>TM</sup> bytecode.
+ * An engine that executes a script in Java&trade; bytecode.
  * <p>
  * The syntax of the script to compile is a sequence of import declarations (not allowed if you
  * compile many scripts at a time, see below) followed by a
@@ -79,7 +79,7 @@ import java.lang.reflect.*;
  *      <li>{@link org.codehaus.janino.ClassBodyEvaluator#setDefaultImports(String[])}
  *   </ul>
  *   <li>
- *   Call any of the {@link org.codehaus.commons.compiler.Cookable#cook(Scanner)} methods to scan,
+ *   Call any of the {@link org.codehaus.commons.compiler.Cookable#cook(Reader)} methods to scan,
  *   parse, compile and load the script into the JVM.
  * </ol>
  * After the {@link IScriptEvaluator} object is created, the script can be executed as often with
@@ -100,7 +100,7 @@ import java.lang.reflect.*;
  *   <li>{@link #setReturnTypes(Class[])}
  *   <li>{@link #setStaticMethod(boolean[])}
  *   <li>{@link #setThrownExceptions(Class[][])}
- *   <li>{@link #cook(Scanner[])}
+ *   <li>{@link #cook(Reader)}
  *   <li>{@link #evaluate(int, Object[])}
  * </ul>
  * Notice that these methods have array parameters in contrast to their one-script brethren.
@@ -259,9 +259,10 @@ public interface IScriptEvaluator extends IClassBodyEvaluator {
      * }
      * ...
      * IScriptEvaluator se = {@link CompilerFactoryFactory}.{@link
-     * CompilerFactoryFactory#getDefaultCompilerFactory getDefaultCompilerFactory}().{@link CompilerFactoryFactory#newScriptEvaluator newScriptEvaluator}();
+     * CompilerFactoryFactory#getDefaultCompilerFactory getDefaultCompilerFactory}().{@link
+     * ICompilerFactory#newScriptEvaluator newScriptEvaluator}();
      *
-     * // Optionally configure the SE here...
+     * // Optionally configure the SE her:
      * se.{@link #setClassName(String) setClassName}("Bar");
      * se.{@link #setDefaultImports(String[]) setDefaultImports}(new String[] { "java.util.*" });
      * se.{@link #setExtendedClass(Class) setExtendedClass}(SomeOtherClass.class);

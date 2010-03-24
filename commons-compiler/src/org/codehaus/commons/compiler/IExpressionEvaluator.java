@@ -32,13 +32,13 @@ import java.lang.reflect.InvocationTargetException;
 
 
 /**
- * An engine that evaluates expressions in Java<sup>TM</sup> bytecode.
+ * An engine that evaluates expressions in Java&trade; bytecode.
  * <p>
- * The syntax of the expression to compile is that of a Java<sup>TM</sup> expression, as defined
+ * The syntax of the expression to compile is that of a Java&trade; expression, as defined
  * in the <a href="http://java.sun.com/docs/books/jls/second_edition">Java Language Specification,
  * 2nd edition</a>, section
  * <a href="http://java.sun.com/docs/books/jls/second_edition/html/expressions.doc.html#44393">15</a>.
- * Notice that a Java<sup>TM</sup> expression does not have a concluding semicolon.
+ * Notice that a Java&trade; expression does not have a concluding semicolon.
  * <p>
  * Example:<pre>
  *   a + 7 * b</pre>

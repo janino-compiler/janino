@@ -25,25 +25,26 @@
  */
 
 /**
- * This package declares interfaces for the implementation of an {@link IExpressionEvaluator},
- * an {@link IScriptEvaluator}, an {@link IClassBodyEvaluator} and an {@link ISimpleCompiler}.
- * All of these adhere to the syntax of the Java <sup>TM</sup> programming language.
+ * This package declares interfaces for the implementation of an {@link
+ * org.codehaus.commons.compiler.IExpressionEvaluator}, an {@link org.codehaus.commons.compiler.IScriptEvaluator}, an
+ * {@link org.codehaus.commons.compiler.IClassBodyEvaluator} and an {@link
+ * org.codehaus.commons.compiler.ISimpleCompiler}. All of these adhere to the syntax of the Java &trade; programming
+ * language.
  * <p>
  * There are (at least) two implementations of these interfaces available:
  * <ul>
  *   <li>
- *   <code>org.codehaus.janino</code>, available at {@link http://janino.net}: A lightweight,
- *   stand-alone implementation that implements Java 1.4 and half of Java 5. Runs on all JREs
- *   starting at version 1.3.
+ *   <code>org.codehaus.janino</code>, available at <a href="http://janino.net">janino.net</a>: A lightweight,
+ *   stand-alone implementation that implements Java 1.4 and half of Java 5. Runs on all JREs starting at version 1.3.
  *   <li>
- *   <code>org.codehaus.commons.compiler.jdk</code>, also available at {@link http://janino.net}:
- *   Uses the <code>javax.tools.JavaCompiler</code> API that is available since Java 1.6.
- *   Requires a JDK (not just a JRE).
+ *   <code>org.codehaus.commons.compiler.jdk</code>, also available at <a href="http://janino.net">janino.net</a>:
+ *   Uses the <code>javax.tools.JavaCompiler</code> API that is available since Java 1.6. Requires a JDK (not just a
+ *   JRE).
  * </ul>
  *
- * Notice: Implementations may or may not be prone to "Java injection", i.e. it may or may not be
- * possible to, e.g., break out of the "expression" scope of an {@link IExpressionEvaluator} by
- * providing a "bogus" expression text. The documentation of each implementation should state
- * clearly whether or not it is prone to Java injection.
+ * Notice: Implementations may or may not be prone to "Java injection", i.e. it may or may not be possible to, e.g.,
+ * break out of the "expression" scope of an {@link org.codehaus.commons.compiler.IExpressionEvaluator} by providing a
+ * "bogus" expression text. The documentation of each implementation should state clearly whether or not it is prone to
+ * Java injection.
  */
 package org.codehaus.commons.compiler;

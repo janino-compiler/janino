@@ -66,6 +66,27 @@ import java.io.Reader;
  *   Call any of the {@link ICookable#cook(String, java.io.Reader)} methods to scan,
  *   parse, compile and load the class body into the JVM.
  * </ol>
+ * To compile a class body and immediately instantiate an object, the {@link #createInstance(Reader)} methods can be used.
+ * <p>
+ * The generated class may optionally extend/implement a given type; the returned instance can
+ * safely be type-casted to that <code>optionalBaseType</code>.
+ * <p>
+ * Example:
+ * <pre>
+ * public interface Foo {
+ *     int bar(int a, int b);
+ * }
+ * ...
+ * {@link IClassBodyEvaluator} cbe = {@link CompilerFactoryFactory}.{@link
+ * CompilerFactoryFactory#getDefaultCompilerFactory() getDefaultCompilerFactory}(). {@link
+ * ICompilerFactory#newClassBodyEvaluator() newClassBodyEvaluator}();
+ * Foo f = (Foo) ClassBodyEvaluator.createFastClassBodyEvaluator(
+ *     new Scanner(null, new StringReader("public int bar(int a, int b) { return a + b; }")),
+ *     Foo.class,                  // Base type to extend/implement
+ *     (ClassLoader) null          // Use current thread's context class loader
+ * );
+ * System.out.println("1 + 2 = " + f.bar(1, 2));
+ * </pre>
  */
 public interface IClassBodyEvaluator extends ICookable {
 
