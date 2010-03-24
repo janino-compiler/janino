@@ -47,45 +47,7 @@ import org.codehaus.janino.util.enumerator.EnumeratorSet;
  *   ByteArrayClassLoader}, or by creation of a temporary
  *   {@link ByteArrayClassLoader} if not.
  * </ul>
- * To set up a {@link ClassBodyEvaluator} object, proceed as follows:
- * <ol>
- *   <li>
- *   Create the {@link ClassBodyEvaluator} using {@link #ClassBodyEvaluator()}
- *   <li>
- *   Configure the {@link ClassBodyEvaluator} by calling any of the following methods:
- *   <ul>
- *      <li>{@link org.codehaus.janino.SimpleCompiler#setParentClassLoader(ClassLoader)}
- *      <li>{@link #setDefaultImports(String[])}
- *   </ul>
- *   <li>
- *   Call any of the {@link org.codehaus.commons.compiler.Cookable#cook(Scanner)} methods to scan,
- *   parse, compile and load the class body into the JVM.
- * </ol>
- * Alternatively, a number of "convenience constructors" exist that execute the steps described
- * above instantly.
- * <p>
- * To compile a class body and immediately instantiate an object, one of the
- * {@link #createFastClassBodyEvaluator(Scanner, Class, ClassLoader)} methods can be used.
- * <p>
- * The generated class may optionally extend/implement a given type; the returned instance can
- * safely be type-casted to that <code>optionalBaseType</code>.
- * <p>
- * Example:
- * <pre>
- * public interface Foo {
- *     int bar(int a, int b);
- * }
- * ...
- * Foo f = (Foo) ClassBodyEvaluator.createFastClassBodyEvaluator(
- *     new Scanner(null, new StringReader("public int bar(int a, int b) { return a + b; }")),
- *     Foo.class,                  // Base type to extend/implement
- *     (ClassLoader) null          // Use current thread's context class loader
- * );
- * System.out.println("1 + 2 = " + f.bar(1, 2));
- * </pre>
- * Notice: The <code>optionalBaseType</code> must be accessible from the generated class,
- * i.e. it must either be declared <code>public</code>, or with default accessibility in the
- * same package as the generated class.
+ * A number of "convenience constructors" exist that execute the setup steps instantly.
  */
 public class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
     protected static final Class[] ZERO_CLASSES = new Class[0];
@@ -148,7 +110,7 @@ public class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEval
      *
      * @see #ClassBodyEvaluator()
      * @see SimpleCompiler#setParentClassLoader(ClassLoader)
-     * @see Cookable#cook(Scanner)
+     * @see Cookable#cook(Reader)
      */
     public ClassBodyEvaluator(
         Scanner     scanner,
@@ -170,7 +132,7 @@ public class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEval
      * @see #setExtendedClass(Class)
      * @see #setImplementedInterfaces(Class[])
      * @see SimpleCompiler#setParentClassLoader(ClassLoader)
-     * @see Cookable#cook(Scanner)
+     * @see Cookable#cook(Reader)
      */
     public ClassBodyEvaluator(
         Scanner     scanner,
@@ -198,7 +160,7 @@ public class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEval
      * @see #setExtendedClass(Class)
      * @see #setImplementedInterfaces(Class[])
      * @see SimpleCompiler#setParentClassLoader(ClassLoader)
-     * @see Cookable#cook(Scanner)
+     * @see Cookable#cook(Reader)
      */
     public ClassBodyEvaluator(
         Scanner     scanner,

@@ -184,17 +184,17 @@ public class ExpressionEvaluator extends ScriptEvaluator implements IExpressionE
      * ee.setParentClassLoader(optionalParentClassLoader);
      * ee.cook(scanner);
      *
-     * @see #ExpressionEvaluator()
-     * @see ClassBodyEvaluator#setClassName(String)
-     * @see ClassBodyEvaluator#setExtendedClass(Class)
-     * @see ClassBodyEvaluator#setImplementedInterfaces(Class[])
-     * @see ScriptEvaluator#setStaticMethod(boolean)
-     * @see ExpressionEvaluator#setExpressionType(Class)
-     * @see ScriptEvaluator#setMethodName(String)
-     * @see ScriptEvaluator#setParameters(String[], Class[])
-     * @see ScriptEvaluator#setThrownExceptions(Class[])
-     * @see SimpleCompiler#setParentClassLoader(ClassLoader)
-     * @see Cookable#cook(Scanner)
+     * @see IExpressionEvaluator
+     * @see IClassBodyEvaluator#setClassName(String)
+     * @see IClassBodyEvaluator#setExtendedClass(Class)
+     * @see IClassBodyEvaluator#setImplementedInterfaces(Class[])
+     * @see IScriptEvaluator#setStaticMethod(boolean)
+     * @see IExpressionEvaluator#setExpressionType(Class)
+     * @see IScriptEvaluator#setMethodName(String)
+     * @see IScriptEvaluator#setParameters(String[], Class[])
+     * @see IScriptEvaluator#setThrownExceptions(Class[])
+     * @see ISimpleCompiler#setParentClassLoader(ClassLoader)
+     * @see ICookable#cook(Reader)
      */
     public ExpressionEvaluator(
         Scanner     scanner,
@@ -301,7 +301,7 @@ public class ExpressionEvaluator extends ScriptEvaluator implements IExpressionE
      * return ee.{@link #createFastEvaluator createFastEvaluator}(expression, interfaceToImplement, parameterNames);
      * </pre>
      *
-     * @deprecatedf
+     * @deprecated
      * @see #createFastEvaluator(String, Class, String[])
      */
     public static Object createFastExpressionEvaluator(
@@ -318,9 +318,9 @@ public class ExpressionEvaluator extends ScriptEvaluator implements IExpressionE
     /**
      * Notice: This method is not declared in {@link IExpressionEvaluator}, and is hence only available in <i>this</i>
      * implementation of <code>org.codehaus.commons.compiler</code>. To be independent from this particular
-     * implementation, try to switch to {@link #createFastEvaluator(Reader, Class, String[]).
+     * implementation, try to switch to {@link #createFastEvaluator(Reader, Class, String[])}.
      * 
-     * @param scanner Source of tokens to read
+     * @deprecated
      * @see #createFastEvaluator(Reader, Class, String[])
      */
     public static Object createFastExpressionEvaluator(
@@ -341,9 +341,9 @@ public class ExpressionEvaluator extends ScriptEvaluator implements IExpressionE
     /**
      * Notice: This method is not declared in {@link IExpressionEvaluator}, and is hence only available in <i>this</i>
      * implementation of <code>org.codehaus.commons.compiler</code>. To be independent from this particular
-     * implementation, try to switch to {@link #createFastEvaluator(Reader, Class, String[]).
+     * implementation, try to switch to {@link #createFastEvaluator(Reader, Class, String[])}.
      * 
-     * @param scanner Source of tokens to read
+     * @deprecated
      * @see #createFastEvaluator(Reader, Class, String[])
      */
     public static Object createFastExpressionEvaluator(

@@ -140,7 +140,7 @@ public class SimpleCompiler extends Cookable implements ISimpleCompiler {
      *
      * @see #SimpleCompiler()
      * @see #setParentClassLoader(ClassLoader)
-     * @see Cookable#cook(Scanner)
+     * @see Cookable#cook(Reader)
      */
     public SimpleCompiler(
         Scanner     scanner,

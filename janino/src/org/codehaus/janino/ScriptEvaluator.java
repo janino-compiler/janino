@@ -41,83 +41,7 @@ import org.codehaus.janino.Java.LocalVariableDeclarationStatement;
 import org.codehaus.janino.util.Traverser;
 
 /**
- * An engine that executes a script in Java<sup>TM</sup> bytecode.
- * <p>
- * The syntax of the script to compile is a sequence of import declarations (not allowed if you
- * compile many scripts at a time, see below) followed by a
- * sequence of statements, as defined in the
- * <a href="http://java.sun.com/docs/books/jls/second_edition">Java Language Specification, 2nd
- * edition</a>, sections
- * <a href="http://java.sun.com/docs/books/jls/second_edition/html/packages.doc.html#70209">7.5</a>
- * and
- * <a href="http://java.sun.com/docs/books/jls/second_edition/html/statements.doc.html#101241">14</a>.
- * <p>
- * Example:
- * <pre>
- *   import java.text.*;
- *
- *   System.out.println("HELLO");
- *   System.out.println(new DecimalFormat("####,###.##").format(a));
- * </pre>
- * (Notice that this expression refers to a parameter "a", as explained below.)
- * <p>
- * The script may complete abnormally, e.g. through a RETURN statement:
- * <pre>
- *   if (a == null) {
- *       System.out.println("Oops!");
- *       return;
- *   }
- * </pre>
- * Optionally, the script may be declared with a non-void return type. In this case, the last
- * statement of the script must be a RETURN statement (or a THROW statement), and all RETURN
- * statements in the script must return a value with the given type.
- * <p>
- * The script evaluator is implemented by creating and compiling a temporary compilation unit
- * defining one class with one method the body of which consists of the statements of the
- * script.
- * <p>
- * To set up a {@link ScriptEvaluator} object, proceed as follows:
- * <ol>
- *   <li>
- *   Create the {@link ScriptEvaluator} using {@link #ScriptEvaluator()}
- *   <li>
- *   Configure the {@link ScriptEvaluator} by calling any of the following methods:
- *   <ul>
- *      <li>{@link #setReturnType(Class)}
- *      <li>{@link #setParameters(String[], Class[])}
- *      <li>{@link #setThrownExceptions(Class[])}
- *      <li>{@link org.codehaus.janino.SimpleCompiler#setParentClassLoader(ClassLoader)}
- *      <li>{@link org.codehaus.janino.ClassBodyEvaluator#setDefaultImports(String[])}
- *   </ul>
- *   <li>
- *   Call any of the {@link org.codehaus.commons.compiler.Cookable#cook(Scanner)} methods to scan,
- *   parse, compile and load the script into the JVM.
- * </ol>
- * After the {@link ScriptEvaluator} object is created, the script can be executed as often with
- * different parameter values (see {@link #evaluate(Object[])}). This execution is very fast,
- * compared to the compilation.
- * <p>
- * Less common methods exist that allow for the specification of the name of the generated class,
- * the class it extends, the interfaces it implements, the name of the method that executes the
- * script, the exceptions that this method (i.e. the script) is allowed to throw, and the
- * {@link ClassLoader} that is used to define the generated class and to load classes referenced by
- * the script.
- * <p>
- * Alternatively, a number of "convenience constructors" exist that execute the steps described
- * above instantly. Their use is discouraged.
- * <p>
- * If you want to compile many scripts at the same time, you have the option to cook an
- * <i>array</i> of scripts in one {@link ScriptEvaluator} by using the following methods:
- * <ul>
- *   <li>{@link #setMethodNames(String[])}
- *   <li>{@link #setParameters(String[][], Class[][])}
- *   <li>{@link #setReturnTypes(Class[])}
- *   <li>{@link #setStaticMethod(boolean[])}
- *   <li>{@link #setThrownExceptions(Class[][])}
- *   <li>{@link #cook(Scanner[])}
- *   <li>{@link #evaluate(int, Object[])}
- * </ul>
- * Notice that these methods have array parameters in contrast to their one-script brethren.
+ * A number of "convenience constructors" exist that execute the setup steps instantly. Their use is discouraged.
  */
 public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
 
@@ -290,7 +214,7 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
      * @see #setParameters(String[], Class[])
      * @see #setThrownExceptions(Class[])
      * @see SimpleCompiler#setParentClassLoader(ClassLoader)
-     * @see Cookable#cook(Scanner)
+     * @see Cookable#cook(Reader)
      */
     public ScriptEvaluator(
         Scanner     scanner,
@@ -325,7 +249,7 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
      * @see #setParameters(String[], Class[])
      * @see #setThrownExceptions(Class[])
      * @see SimpleCompiler#setParentClassLoader(ClassLoader)
-     * @see Cookable#cook(Scanner)
+     * @see Cookable#cook(Reader)
      */
     public ScriptEvaluator(
         Scanner     scanner,
@@ -370,7 +294,7 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
      * @see #setParameters(String[], Class[])
      * @see #setThrownExceptions(Class[])
      * @see SimpleCompiler#setParentClassLoader(ClassLoader)
-     * @see Cookable#cook(Scanner)
+     * @see Cookable#cook(Reader)
      */
     public ScriptEvaluator(
         Scanner     scanner,
