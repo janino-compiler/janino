@@ -99,7 +99,7 @@ public class SimpleCompiler extends Cookable implements ISimpleCompiler {
     public SimpleCompiler(
         String optionalFileName,
         Reader in
-    ) throws IOException, ScanException, ParseException, CompileException {
+    ) throws IOException, CompileException {
         this.cook(optionalFileName, in);
     }
 
@@ -114,7 +114,7 @@ public class SimpleCompiler extends Cookable implements ISimpleCompiler {
     public SimpleCompiler(
         String      optionalFileName,
         InputStream is
-    ) throws IOException, ScanException, ParseException, CompileException {
+    ) throws IOException, CompileException {
         this.cook(optionalFileName, is);
     }
 
@@ -128,7 +128,7 @@ public class SimpleCompiler extends Cookable implements ISimpleCompiler {
      */
     public SimpleCompiler(
         String fileName
-    ) throws IOException, ScanException, ParseException, CompileException {
+    ) throws IOException, CompileException {
         this.cookFile(fileName);
     }
 
@@ -145,7 +145,7 @@ public class SimpleCompiler extends Cookable implements ISimpleCompiler {
     public SimpleCompiler(
         Scanner     scanner,
         ClassLoader optionalParentClassLoader
-    ) throws IOException, ScanException, ParseException, CompileException {
+    ) throws IOException, CompileException {
         this.setParentClassLoader(optionalParentClassLoader);
         this.cook(scanner);
     }
@@ -185,11 +185,11 @@ public class SimpleCompiler extends Cookable implements ISimpleCompiler {
     public final void cook(
         String optionalFileName,
         Reader r
-    ) throws CompileException, ParseException, ScanException, IOException {
+    ) throws CompileException, IOException {
         this.cook(new Scanner(optionalFileName, r));
     }
 
-    public void cook(Scanner scanner) throws CompileException, ParseException, ScanException, IOException {
+    public void cook(Scanner scanner) throws CompileException, IOException {
         this.setUpClassLoaders();
 
         // Parse the compilation unit.

@@ -68,7 +68,7 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
      * @see #ScriptEvaluator()
      * @see Cookable#cook(String)
      */
-    public ScriptEvaluator(String script) throws CompileException, ParseException, ScanException {
+    public ScriptEvaluator(String script) throws CompileException {
         this.cook(script);
     }
 
@@ -85,7 +85,7 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
     public ScriptEvaluator(
         String   script,
         Class<?> returnType
-    ) throws CompileException, ParseException, ScanException {
+    ) throws CompileException {
         this.setReturnType(returnType);
         this.cook(script);
     }
@@ -107,7 +107,7 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
         Class<?>   returnType,
         String[]   parameterNames,
         Class<?>[] parameterTypes
-    ) throws CompileException, ParseException, ScanException {
+    ) throws CompileException {
         this.setReturnType(returnType);
         this.setParameters(parameterNames, parameterTypes);
         this.cook(script);
@@ -133,7 +133,7 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
         String[]   parameterNames,
         Class<?>[] parameterTypes,
         Class<?>[] thrownExceptions
-    ) throws CompileException, ParseException, ScanException {
+    ) throws CompileException {
         this.setReturnType(returnType);
         this.setParameters(parameterNames, parameterTypes);
         this.setThrownExceptions(thrownExceptions);
@@ -164,7 +164,7 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
         Class<?>[]  parameterTypes,
         Class<?>[]  thrownExceptions,
         ClassLoader optionalParentClassLoader // null = use current thread's context class loader
-    ) throws CompileException, ParseException, ScanException, IOException {
+    ) throws CompileException, IOException {
         this.setReturnType(returnType);
         this.setParameters(parameterNames, parameterTypes);
         this.setThrownExceptions(thrownExceptions);
@@ -196,7 +196,7 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
         Class<?>[]  parameterTypes,
         Class<?>[]  thrownExceptions,
         ClassLoader optionalParentClassLoader // null = use current thread's context class loader
-    ) throws CompileException, ParseException, ScanException, IOException {
+    ) throws CompileException, IOException {
         this.setReturnType(returnType);
         this.setParameters(parameterNames, parameterTypes);
         this.setThrownExceptions(thrownExceptions);
@@ -233,7 +233,7 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
     public void cook(
         String optionalFileName,
         Reader r
-    ) throws CompileException, ParseException, ScanException, IOException {
+    ) throws CompileException, IOException {
         this.cook(new String[] { optionalFileName }, new Reader[] { r });
     }
 
@@ -274,14 +274,14 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
         this.optionalThrownExceptions = (Class<?>[][]) thrownExceptions.clone();
     }
 
-    public final void cook(Reader[] readers) throws CompileException, ParseException, ScanException, IOException {
+    public final void cook(Reader[] readers) throws CompileException, IOException {
         this.cook(new String[readers.length], readers);
     }
 
     public void cook(
         String[] optionalFileNames,
         Reader[] readers
-    ) throws CompileException, ParseException, ScanException, IOException {
+    ) throws CompileException, IOException {
         String[] imports;
 
         if (readers.length == 1) {
@@ -297,11 +297,11 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
         this.cook(optionalFileNames, readers, imports);
     }
 
-    public final void cook(String[] strings) throws CompileException, ParseException, ScanException {
+    public final void cook(String[] strings) throws CompileException {
         this.cook(null, strings);
     }
 
-    public void cook(String[] optionalFileNames, String[] strings) throws CompileException, ParseException, ScanException {
+    public void cook(String[] optionalFileNames, String[] strings) throws CompileException {
         Reader[] readers = new Reader[strings.length];
         for (int i = 0; i < strings.length; ++i) readers[i] = new StringReader(strings[i]);
         try {
@@ -319,7 +319,7 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
         String[] optionalFileNames,
         Reader[] readers,
         String[] imports
-    ) throws CompileException, ParseException, ScanException, IOException {
+    ) throws CompileException, IOException {
 
         // The "dimension" of this ScriptEvaluator, i.e. how many scripts are cooked at the same
         // time.
@@ -471,7 +471,7 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
         String                               script,
         @SuppressWarnings("unchecked") Class interfaceToImplement,
         String[]                             parameterNames
-    ) throws CompileException, ParseException, ScanException {
+    ) throws CompileException {
         try {
             return this.createFastEvaluator(new StringReader(script), interfaceToImplement, parameterNames);
         } catch (IOException ioe) {
@@ -491,7 +491,7 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
         Reader                               r,
         @SuppressWarnings("unchecked") Class interfaceToImplement,
         String[]                             parameterNames
-    ) throws CompileException, ParseException, ScanException, IOException {
+    ) throws CompileException, IOException {
         if (!interfaceToImplement.isInterface()) {
             throw new RuntimeException("\"" + interfaceToImplement + "\" is not an interface");
         }

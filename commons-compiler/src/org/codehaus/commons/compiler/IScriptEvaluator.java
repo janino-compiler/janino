@@ -195,8 +195,7 @@ public interface IScriptEvaluator extends IClassBodyEvaluator {
     /**
      * Same as {@link #cook(Reader)}, but for multiple scripts.
      */
-    void cook(Reader[] readers) throws CompileException, ParseException,
-        ScanException, IOException;
+    void cook(Reader[] readers) throws CompileException, IOException;
 
     /**
      * Same as {@link #cook(String, Reader)}, but cooks a <i>set</i> of scripts into one class. Notice that
@@ -213,17 +212,17 @@ public interface IScriptEvaluator extends IClassBodyEvaluator {
     void cook(
         String[] optionalFileNames,
         Reader[] readers
-    ) throws CompileException, ParseException, ScanException, IOException;
+    ) throws CompileException, IOException;
 
     /**
      * Same as {@link #cook(String)}, but for multiple scripts.
      */
-    void cook(String[] strings) throws CompileException, ParseException, ScanException;
+    void cook(String[] strings) throws CompileException;
 
     /**
      * Same as {@link #cook(String, String)}, but for multiple scripts.
      */
-    void cook(String[] optionalFileNames, String[] strings) throws CompileException, ParseException, ScanException;
+    void cook(String[] optionalFileNames, String[] strings) throws CompileException;
 
     /**
      * Same as {@link #evaluate(Object[])}, but for multiple scripts.
@@ -243,7 +242,7 @@ public interface IScriptEvaluator extends IClassBodyEvaluator {
         String   script,
         Class    interfaceToImplement,
         String[] parameterNames
-    ) throws CompileException, ParseException, ScanException;
+    ) throws CompileException;
 
     /**
      * If the parameter and return types of the expression are known at compile time, then a "fast"
@@ -292,5 +291,5 @@ public interface IScriptEvaluator extends IClassBodyEvaluator {
         Reader   reader,
         Class    interfaceToImplement,
         String[] parameterNames
-    ) throws CompileException, ParseException, ScanException, IOException;
+    ) throws CompileException, IOException;
 }

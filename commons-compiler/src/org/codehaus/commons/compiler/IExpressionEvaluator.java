@@ -169,7 +169,7 @@ public interface IExpressionEvaluator extends IScriptEvaluator {
         String   expression,
         Class    interfaceToImplement,
         String[] parameterNames
-    ) throws CompileException, ParseException, ScanException;
+    ) throws CompileException;
 
      /**
       * @see #createFastEvaluator(String, Class, String[])
@@ -178,5 +178,5 @@ public interface IExpressionEvaluator extends IScriptEvaluator {
         Reader   reader,
         Class    interfaceToImplement,
         String[] parameterNames
-    ) throws CompileException, ParseException, ScanException, IOException;
+    ) throws CompileException, IOException;
 }

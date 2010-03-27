@@ -36,9 +36,9 @@ public class JaninoTestSuite extends StructuredTestSuite {
 
     private final ICompilerFactory compilerFactory;
 
-    /** The test is expected to throw a ScanException */
+    /** The test is expected to throw a ScanException @deprecated */
     public static final CompileAndExecuteTest.Mode SCAN = new CompileAndExecuteTest.Mode();
-    /** The test is expected to throw a ParseException */
+    /** The test is expected to throw a ParseException @deprecated */
     public static final CompileAndExecuteTest.Mode PARS = new CompileAndExecuteTest.Mode();
     /** The test is expected to throw a CompileException */
     public static final CompileAndExecuteTest.Mode COMP = new CompileAndExecuteTest.Mode();
@@ -60,8 +60,6 @@ public class JaninoTestSuite extends StructuredTestSuite {
      *
      * <table>
      *   <tr><th><code>mode</code></th><th>Meaning</th></tr>
-     *   <tr><td>SCAN</td><td>The test is expected to throw a ScanException</tr>
-     *   <tr><td>PARS</td><td>The test is expected to throw a ParseException</tr>
      *   <tr><td>COMP</td><td>The test is expected to throw a CompileException</tr>
      *   <tr><td>COOK</td><td>The test is expected to compile successfully, but is not executed</tr>
      *   <tr><td>EXEC</td><td>The test is expected to compile and execute successfully</tr>
@@ -103,8 +101,6 @@ public class JaninoTestSuite extends StructuredTestSuite {
      *
      * <table>
      *   <tr><th><code>mode</code></th><th>Meaning</th></tr>
-     *   <tr><td>SCAN</td><td>The test is expected to throw a ScanException</tr>
-     *   <tr><td>PARS</td><td>The test is expected to throw a ParseException</tr>
      *   <tr><td>COMP</td><td>The test is expected to throw a CompileException</tr>
      *   <tr><td>COOK</td><td>The test is expected to compile successfully, but is not executed</tr>
      *   <tr><td>EXEC</td><td>The test is expected to compile and execute successfully</tr>
@@ -147,8 +143,6 @@ public class JaninoTestSuite extends StructuredTestSuite {
      *
      * <table>
      *   <tr><th><code>mode</code></th><th>Meaning</th></tr>
-     *   <tr><td>SCAN</td><td>The test is expected to throw a ScanException</tr>
-     *   <tr><td>PARS</td><td>The test is expected to throw a ParseException</tr>
      *   <tr><td>COMP</td><td>The test is expected to throw a CompileException</tr>
      *   <tr><td>COOK</td><td>The test is expected to compile successfully, but is not executed</tr>
      *   <tr><td>EXEC</td><td>The test is expected to compile and execute successfully</tr>
@@ -193,8 +187,6 @@ public class JaninoTestSuite extends StructuredTestSuite {
      *
      * <table>
      *   <tr><th><code>mode</code></th><th>Meaning</th></tr>
-     *   <tr><td>SCAN</td><td>The test is expected to throw a ScanException</tr>
-     *   <tr><td>PARS</td><td>The test is expected to throw a ParseException</tr>
      *   <tr><td>COMP</td><td>The test is expected to throw a CompileException</tr>
      *   <tr><td>COOK</td><td>The test is expected to compile successfully, but is not executed</tr>
      *   <tr><td>EXEC</td><td>The test is expected to compile and execute successfully</tr>
@@ -261,7 +253,7 @@ public class JaninoTestSuite extends StructuredTestSuite {
      * A test case that calls its abstract methods {@link #compile()}, then {@link #execute()}, and
      * verifies that they throw exceptions and return results as expected.
      */
-    static abstract class CompileAndExecuteTest extends TestCase {
+    static abstract class CompileAndExecuteTest extends BenchmarkingTestCase {
         protected final Mode mode;
 
         public static class Mode { private Mode() {}}
@@ -282,27 +274,7 @@ public class JaninoTestSuite extends StructuredTestSuite {
          * results as expected.
          */
         protected void runTest() throws Exception {
-            if (this.mode == SCAN) {
-                try {
-                    this.compile();
-                } catch (ScanException ex) {
-                    return;
-                } catch (LocatedException le) {
-                    assertEquals("ScanException", le);
-                }
-                fail("Should have thrown ScanException, but compiled successfully");
-            } else
-            if (this.mode == PARS) {
-                try {
-                    this.compile();
-                } catch (ParseException ex) {
-                    return;
-                } catch (LocatedException le) {
-                    assertEquals("ParseException", le);
-                }
-                fail("Should have thrown ParseException, but compiled successfully");
-            } else
-            if (this.mode == COMP) {
+            if (this.mode == COMP || this.mode == PARS || this.mode == SCAN) {
                 try {
                     this.compile();
                 } catch (CompileException ex) {

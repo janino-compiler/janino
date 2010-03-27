@@ -33,27 +33,27 @@ public abstract class Cookable implements ICookable {
     public abstract void cook(
         String optionalFileName,
         Reader r
-    ) throws CompileException, ParseException, ScanException, IOException;
+    ) throws CompileException, IOException;
 
-    public final void cook(Reader r) throws CompileException, ParseException, ScanException, IOException {
+    public final void cook(Reader r) throws CompileException, IOException {
         this.cook(null, r);
     }
 
-    public final void cook(InputStream is) throws CompileException, ParseException, ScanException, IOException {
+    public final void cook(InputStream is) throws CompileException, IOException {
         this.cook(null, is);
     }
 
     public final void cook(
         String      optionalFileName,
         InputStream is
-    ) throws CompileException, ParseException, ScanException, IOException {
+    ) throws CompileException, IOException {
         this.cook(optionalFileName, is, null);
     }
 
     public final void cook(
         InputStream is,
         String      optionalEncoding
-    ) throws CompileException, ParseException, ScanException, IOException {
+    ) throws CompileException, IOException {
         this.cook(optionalEncoding == null ? new InputStreamReader(is) : new InputStreamReader(is, optionalEncoding));
     }
 
@@ -61,21 +61,21 @@ public abstract class Cookable implements ICookable {
         String      optionalFileName,
         InputStream is,
         String      optionalEncoding
-    ) throws CompileException, ParseException, ScanException, IOException {
+    ) throws CompileException, IOException {
         this.cook(
             optionalFileName,
             optionalEncoding == null ? new InputStreamReader(is) : new InputStreamReader(is, optionalEncoding)
         );
     }
 
-    public final void cook(String s) throws CompileException, ParseException, ScanException {
+    public final void cook(String s) throws CompileException {
         this.cook((String) null, s);
     }
 
     public void cook(
         String optionalFileName,
         String s
-    ) throws CompileException, ParseException, ScanException {
+    ) throws CompileException {
         try {
             this.cook(optionalFileName, new StringReader(s));
         } catch (IOException ioe) {
@@ -84,14 +84,14 @@ public abstract class Cookable implements ICookable {
         }
     }
 
-    public final void cookFile(File file) throws CompileException, ParseException, ScanException, IOException {
+    public final void cookFile(File file) throws CompileException, IOException {
         this.cookFile(file, null);
     }
 
     public final void cookFile(
         File   file,
         String optionalEncoding
-    ) throws CompileException, ParseException, ScanException, IOException {
+    ) throws CompileException, IOException {
         InputStream is = new FileInputStream(file);
         try {
             this.cook(
@@ -105,14 +105,14 @@ public abstract class Cookable implements ICookable {
         }
     }
 
-    public final void cookFile(String fileName) throws CompileException, ParseException, ScanException, IOException {
+    public final void cookFile(String fileName) throws CompileException, IOException {
         this.cookFile(fileName, null);
     }
 
     public final void cookFile(
         String fileName,
         String optionalEncoding
-    ) throws CompileException, ParseException, ScanException, IOException {
+    ) throws CompileException, IOException {
         this.cookFile(new File(fileName), optionalEncoding);
     }
 

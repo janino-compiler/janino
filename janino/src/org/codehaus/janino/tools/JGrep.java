@@ -224,7 +224,7 @@ public class JGrep {
     private static final class Action extends Enumerator {
         private Action(String name) { super(name); }
 
-        static MethodInvocationAction getMethodInvocationAction(String action) throws CompileException, ParseException, ScanException {
+        static MethodInvocationAction getMethodInvocationAction(String action) throws CompileException {
             if ("print-location-and-match".equals(action)) {
                 return new MethodInvocationAction() { public void execute(UnitCompiler uc, Java.Invocation invocation, IClass.IMethod method) { System.out.println(invocation.getLocation() + ": " + method); } };
             } else
@@ -248,7 +248,7 @@ public class JGrep {
         }
     }
 
-    private static MethodInvocationTarget parseMethodInvocationPattern(String mip) throws ScanException, IOException, ParseException {
+    private static MethodInvocationTarget parseMethodInvocationPattern(String mip) throws CompileException, IOException {
         MethodInvocationTarget mit = new MethodInvocationTarget();
         Scanner scanner = new Scanner(null, new StringReader(mip));
         Parser parser = new Parser(scanner);
@@ -285,7 +285,7 @@ public class JGrep {
         }
     }
 
-    private static String readIdentifierPattern(Parser p) throws ParseException, ScanException, IOException {
+    private static String readIdentifierPattern(Parser p) throws CompileException, IOException {
         StringBuffer sb = new StringBuffer();
         if (p.peekOperator("*")) {
             sb.append('*');
@@ -433,7 +433,7 @@ public class JGrep {
         final StringPattern[] directoryNamePatterns,
         final StringPattern[] fileNamePatterns,
         List                  methodInvocationTargets // MethodInvocationTarget
-    ) throws ScanException, ParseException, CompileException, IOException {
+    ) throws CompileException, IOException {
         this.benchmark.report("Root dirs",               rootDirectories                );
         this.benchmark.report("Directory name patterns", directoryNamePatterns          );
         this.benchmark.report("File name patterns",      fileNamePatterns);
@@ -456,7 +456,7 @@ public class JGrep {
     public void jGrep(
         Iterator   sourceFilesIterator,
         final List methodInvocationTargets
-    ) throws ScanException, ParseException, CompileException, IOException {
+    ) throws CompileException, IOException {
 
         // Parse the given source files.
         this.benchmark.beginReporting();
@@ -552,7 +552,7 @@ public class JGrep {
     private Java.CompilationUnit parseCompilationUnit(
         File   sourceFile,
         String optionalCharacterEncoding
-    ) throws ScanException, ParseException, IOException {
+    ) throws CompileException, IOException {
         InputStream is = new BufferedInputStream(new FileInputStream(sourceFile));
         try {
             Parser parser = new Parser(new Scanner(sourceFile.getPath(), is, optionalCharacterEncoding));

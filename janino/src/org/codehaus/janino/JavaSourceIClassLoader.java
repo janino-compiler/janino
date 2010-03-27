@@ -31,8 +31,6 @@ import java.util.*;
 
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.Location;
-import org.codehaus.commons.compiler.ParseException;
-import org.codehaus.commons.compiler.ScanException;
 import org.codehaus.janino.util.*;
 import org.codehaus.janino.util.resource.*;
 
@@ -159,15 +157,11 @@ public final class JavaSourceIClassLoader extends IClassLoader {
             // Find the class/interface declaration in the compiled unit.
             IClass res = uc.findClass(className);
             if (res == null) {
-                if (className.equals(topLevelClassName)) throw new ParseException("Source file \"" + sourceResource.getFileName() + "\" does not declare class \"" + className + "\"", (Location) null);
+                if (className.equals(topLevelClassName)) throw new CompileException("Source file \"" + sourceResource.getFileName() + "\" does not declare class \"" + className + "\"", (Location) null);
                 return null;
             }
             this.defineIClass(res);
             return res;
-        } catch (ScanException e) {
-            throw new ClassNotFoundException("Parsing compilation unit \"" + sourceResource + "\"", e);
-        } catch (ParseException e) {
-            throw new ClassNotFoundException("Parsing compilation unit \"" + sourceResource + "\"", e);
         } catch (IOException e) {
             throw new ClassNotFoundException("Parsing compilation unit \"" + sourceResource + "\"", e);
         } catch (CompileException e) {

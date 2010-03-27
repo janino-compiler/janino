@@ -40,8 +40,6 @@ import java.util.regex.Pattern;
 
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.IClassBodyEvaluator;
-import org.codehaus.commons.compiler.ParseException;
-import org.codehaus.commons.compiler.ScanException;
 import org.codehaus.commons.io.MultiReader;
 
 /**
@@ -98,7 +96,7 @@ public class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEval
     public void cook(
         String optionalFileName,
         Reader r
-    ) throws CompileException, ParseException, ScanException, IOException {
+    ) throws CompileException, IOException {
         if (!r.markSupported()) r = new BufferedReader(r);
         this.cook(optionalFileName, ClassBodyEvaluator.parseImportDeclarations(r), r);
     }
@@ -111,7 +109,7 @@ public class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEval
         String   optionalFileName,
         String[] imports,
         Reader   r
-    ) throws CompileException, ParseException, ScanException, IOException {
+    ) throws CompileException, IOException {
 
         // Wrap the class body in a compilation unit.
         {
@@ -253,7 +251,7 @@ public class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEval
     );
 
     @Override
-    public Object createInstance(Reader reader) throws CompileException, ParseException, ScanException, IOException {
+    public Object createInstance(Reader reader) throws CompileException, IOException {
         this.cook(reader);
         try {
             return this.getClazz().newInstance();

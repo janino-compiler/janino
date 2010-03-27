@@ -90,7 +90,7 @@ public class ExpressionEvaluator extends ScriptEvaluator implements IExpressionE
         Class<?>   expressionType,
         String[]   parameterNames,
         Class<?>[] parameterTypes
-    ) throws CompileException, ParseException, ScanException {
+    ) throws CompileException {
         this.setExpressionType(expressionType);
         this.setParameters(parameterNames, parameterTypes);
         this.cook(expression);
@@ -119,7 +119,7 @@ public class ExpressionEvaluator extends ScriptEvaluator implements IExpressionE
         Class<?>[]  parameterTypes,
         Class<?>[]  thrownExceptions,
         ClassLoader optionalParentClassLoader
-    ) throws CompileException, ParseException, ScanException {
+    ) throws CompileException {
         this.setExpressionType(expressionType);
         this.setParameters(parameterNames, parameterTypes);
         this.setThrownExceptions(thrownExceptions);
@@ -156,7 +156,7 @@ public class ExpressionEvaluator extends ScriptEvaluator implements IExpressionE
         Class<?>    optionalExtendedType,
         Class<?>[]  implementedTypes,
         ClassLoader optionalParentClassLoader
-    ) throws CompileException, ParseException, ScanException {
+    ) throws CompileException {
         this.setExpressionType(expressionType);
         this.setParameters(parameterNames, parameterTypes);
         this.setThrownExceptions(thrownExceptions);
@@ -192,7 +192,7 @@ public class ExpressionEvaluator extends ScriptEvaluator implements IExpressionE
     public void cook(
         String[] optionalFileNames,
         Reader[] readers
-    ) throws CompileException, ParseException, ScanException, IOException {
+    ) throws CompileException, IOException {
 
         readers = readers.clone(); // Don't modify the argument array.
 

@@ -163,5 +163,5 @@ public interface IClassBodyEvaluator extends ICookable {
      * @return       An object that extends the <code>optionalExtendedType</code> and implements the given
      *               <code>implementedTypes</code>
      */
-    Object createInstance(Reader reader) throws CompileException, ParseException, ScanException, IOException;
+    Object createInstance(Reader reader) throws CompileException, IOException;
 }

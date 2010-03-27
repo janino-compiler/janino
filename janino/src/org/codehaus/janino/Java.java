@@ -38,7 +38,6 @@ import java.util.TreeMap;
 
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.Location;
-import org.codehaus.commons.compiler.ParseException;
 import org.codehaus.janino.CodeContext.Offset;
 import org.codehaus.janino.util.Traverser;
 import org.codehaus.janino.util.iterator.ReverseListIterator;
@@ -70,12 +69,12 @@ public class Java {
         public Location getLocation();
 
         /**
-         * Throw a {@link ParseException} with the given message and this
+         * Throw a {@link CompileException} with the given message and this
          * object's location.
          *
          * @param message The message to report
          */
-        public void throwParseException(String message) throws ParseException;
+        public void throwCompileException(String message) throws CompileException;
     }
     public static abstract class Located implements Locatable {
         private final Location location;
@@ -88,8 +87,8 @@ public class Java {
         // Implement "Locatable".
 
         public Location getLocation() { return this.location; }
-        public void throwParseException(String message) throws ParseException {
-            throw new ParseException(message, this.location);
+        public void throwCompileException(String message) throws CompileException {
+            throw new CompileException(message, this.location);
         }
     }
 
@@ -437,8 +436,8 @@ public class Java {
 
         // Implement "Locatable".
         public Location getLocation() { return this.location; }
-        public void throwParseException(String message) throws ParseException {
-            throw new ParseException(message, this.location);
+        public void throwCompileException(String message) throws CompileException {
+            throw new CompileException(message, this.location);
         }
 
         abstract public String toString();
@@ -679,7 +678,7 @@ public class Java {
             String   name,
             Type     optionalExtendedType,
             Type[]   implementedTypes
-        ) throws ParseException {
+        ) throws CompileException {
             super(
                 location,                         // location
                 optionalDocComment,               // optionalDocComment
@@ -694,7 +693,7 @@ public class Java {
                 Mod.PROTECTED |
                 Mod.PRIVATE |
                 Mod.STATIC
-            )) != 0) this.throwParseException("Modifiers \"protected\", \"private\" and \"static\" not allowed in package member class declaration");
+            )) != 0) this.throwCompileException("Modifiers \"protected\", \"private\" and \"static\" not allowed in package member class declaration");
         }
 
         // Implement PackageMemberTypeDeclaration.
@@ -812,7 +811,7 @@ public class Java {
             short           modifiers,
             String          name,
             Type[]          extendedTypes
-        ) throws ParseException {
+        ) throws CompileException {
             super(
                 location,                         // location
                 optionalDocComment,               // optionalDocComment
@@ -826,7 +825,7 @@ public class Java {
                 Mod.PROTECTED |
                 Mod.PRIVATE |
                 Mod.STATIC
-            )) != 0) this.throwParseException("Modifiers \"protected\", \"private\" and \"static\" not allowed in package member interface declaration");
+            )) != 0) this.throwCompileException("Modifiers \"protected\", \"private\" and \"static\" not allowed in package member interface declaration");
         }
 
         // Implement PackageMemberTypeDeclaration.
@@ -1335,7 +1334,7 @@ public class Java {
     public final static class ExpressionStatement extends Statement {
         public final Rvalue rvalue;
 
-        public ExpressionStatement(Rvalue rvalue) throws ParseException {
+        public ExpressionStatement(Rvalue rvalue) throws CompileException {
             super(rvalue.getLocation());
             if (!(
                 rvalue instanceof Java.Assignment
@@ -1347,8 +1346,11 @@ public class Java {
             )) {
                 String expressionType = rvalue.getClass().getName();
                 expressionType = expressionType.substring(expressionType.lastIndexOf('.') + 1);
-                this.throwParseException(expressionType + " is not allowed as an expression statement.  " +
-                    "Expressions statements must be one of assignments, method invocations, or object allocations.");
+                this.throwCompileException(
+                    expressionType
+                    + " is not allowed as an expression statement. "
+                    + "Expressions statements must be one of assignments, method invocations, or object allocations."
+                );
             }
             (this.rvalue = rvalue).setEnclosingBlockStatement(this);
         }
@@ -1783,19 +1785,19 @@ public class Java {
 
         // Parse time members:
 
-        public final Type toTypeOrPE() throws ParseException {
+        public final Type toTypeOrPE() throws CompileException {
             Type result = this.toType();
-            if (result == null) this.throwParseException("Expression \"" + this.toString() + "\" is not a type");
+            if (result == null) this.throwCompileException("Expression \"" + this.toString() + "\" is not a type");
             return result;
         }
-        public final Rvalue toRvalueOrPE() throws ParseException {
+        public final Rvalue toRvalueOrPE() throws CompileException {
             Rvalue result = this.toRvalue();
-            if (result == null) this.throwParseException("Expression \"" + this.toString() + "\" is not an rvalue");
+            if (result == null) this.throwCompileException("Expression \"" + this.toString() + "\" is not an rvalue");
             return result;
         }
-        public final Lvalue toLvalueOrPE() throws ParseException {
+        public final Lvalue toLvalueOrPE() throws CompileException {
             Lvalue result = this.toLvalue();
-            if (result == null) this.throwParseException("Expression \"" + this.toString() + "\" is not an lvalue");
+            if (result == null) this.throwCompileException("Expression \"" + this.toString() + "\" is not an lvalue");
             return result;
         }
 

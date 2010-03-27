@@ -38,8 +38,6 @@ import java.util.ArrayList;
 
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.Location;
-import org.codehaus.commons.compiler.ParseException;
-import org.codehaus.commons.compiler.ScanException;
 import org.codehaus.janino.UnitCompiler.ErrorHandler;
 import org.codehaus.janino.tools.Disassembler;
 import org.codehaus.janino.util.Benchmark;
@@ -379,13 +377,13 @@ public class Compiler {
      * Passing <code>null</code> restores the default {@link UnitCompiler.ErrorHandler}.
      * <p>
      * Notice that scan and parse errors are <i>not</i> redirected to this {@link ErrorHandler},
-     * instead, they cause a {@link ScanException} or a {@link ParseException} to be thrown.
+     * instead, they cause a {@link CompileException} to be thrown.
      * Also, the {@link Compiler} may choose to throw {@link CompileException}s in certain,
      * fatal compile error situations, even if an {@link ErrorHandler} is installed.
      * <p>
      * In other words: In situations where compilation can reasonably continue after a compile
      * error, the {@link ErrorHandler} is called; all other error conditions cause a
-     * {@link CompileException}, {@link ParseException} or {@link ScanException} to be thrown.
+     * {@link CompileException} to be thrown.
      */
     public void setCompileErrorHandler(UnitCompiler.ErrorHandler optionalCompileErrorHandler) {
         this.optionalCompileErrorHandler = optionalCompileErrorHandler;
@@ -419,11 +417,9 @@ public class Compiler {
      * @param sourceFiles Contain the compilation units to compile
      * @return <code>true</code> for backwards compatibility (return value can safely be ignored)
      * @throws CompileException Fatal compilation error, or the {@link CompileException} thrown be the installed compile error handler
-     * @throws ParseException Parse error
-     * @throws ScanException Scan error
      * @throws IOException Occurred when reading from the <code>sourceFiles</code>
      */
-    public boolean compile(File[] sourceFiles) throws ScanException, ParseException, CompileException, IOException {
+    public boolean compile(File[] sourceFiles) throws CompileException, IOException {
         this.benchmark.report("Source files", sourceFiles);
 
         Resource[] sourceFileResources = new Resource[sourceFiles.length];
@@ -440,7 +436,7 @@ public class Compiler {
      */
     public boolean compile(
         Resource[] sourceResources
-    ) throws ScanException, ParseException, CompileException, IOException {
+    ) throws CompileException, IOException {
 
         // Set up the compile error handler as described at "setCompileErrorHandler()".
         UnitCompiler.ErrorHandler ceh = (
@@ -518,7 +514,7 @@ public class Compiler {
         String      fileName,
         InputStream inputStream,
         String      optionalCharacterEncoding
-    ) throws ScanException, ParseException, IOException {
+    ) throws CompileException, IOException {
         try {
             Scanner scanner = new Scanner(fileName, inputStream, optionalCharacterEncoding);
             scanner.setWarningHandler(this.optionalWarningHandler);
@@ -731,10 +727,6 @@ public class Compiler {
                 );
                 uc = new UnitCompiler(cu, Compiler.this.iClassLoader);
             } catch (IOException ex) {
-                throw new ClassNotFoundException("Parsing compilation unit \"" + sourceResource + "\"", ex);
-            } catch (ParseException ex) {
-                throw new ClassNotFoundException("Parsing compilation unit \"" + sourceResource + "\"", ex);
-            } catch (ScanException ex) {
                 throw new ClassNotFoundException("Parsing compilation unit \"" + sourceResource + "\"", ex);
             } catch (CompileException ex) {
                 throw new ClassNotFoundException("Parsing compilation unit \"" + sourceResource + "\"", ex);

@@ -94,7 +94,7 @@ public class ExpressionEvaluator extends ScriptEvaluator implements IExpressionE
         Class    expressionType,
         String[] parameterNames,
         Class[]  parameterTypes
-    ) throws CompileException, ParseException, ScanException {
+    ) throws CompileException {
         this.setExpressionType(expressionType);
         this.setParameters(parameterNames, parameterTypes);
         this.cook(expression);
@@ -123,7 +123,7 @@ public class ExpressionEvaluator extends ScriptEvaluator implements IExpressionE
         Class[]     parameterTypes,
         Class[]     thrownExceptions,
         ClassLoader optionalParentClassLoader
-    ) throws CompileException, ParseException, ScanException {
+    ) throws CompileException {
         this.setExpressionType(expressionType);
         this.setParameters(parameterNames, parameterTypes);
         this.setThrownExceptions(thrownExceptions);
@@ -160,7 +160,7 @@ public class ExpressionEvaluator extends ScriptEvaluator implements IExpressionE
         Class       optionalExtendedType,
         Class[]     implementedTypes,
         ClassLoader optionalParentClassLoader
-    ) throws CompileException, ParseException, ScanException {
+    ) throws CompileException {
         this.setExpressionType(expressionType);
         this.setParameters(parameterNames, parameterTypes);
         this.setThrownExceptions(thrownExceptions);
@@ -208,7 +208,7 @@ public class ExpressionEvaluator extends ScriptEvaluator implements IExpressionE
         Class[]     parameterTypes,
         Class[]     thrownExceptions,
         ClassLoader optionalParentClassLoader
-    ) throws ScanException, ParseException, CompileException, IOException {
+    ) throws CompileException, IOException {
         this.setClassName(className);
         this.setExtendedClass(optionalExtendedType);
         this.setImplementedInterfaces(implementedTypes);
@@ -246,7 +246,7 @@ public class ExpressionEvaluator extends ScriptEvaluator implements IExpressionE
     protected List/*<BlockStatement>*/ makeStatements(
         int     idx,
         Scanner scanner
-    ) throws ParseException, ScanException, IOException {
+    ) throws CompileException, IOException {
         List/*<BlockStatement>*/ statements = new ArrayList();
 
         Parser parser = new Parser(scanner);
@@ -285,7 +285,7 @@ public class ExpressionEvaluator extends ScriptEvaluator implements IExpressionE
             statements.add(new Java.ReturnStatement(scanner.location(), value));
         }
         if (!scanner.peek().isEOF()) {
-            throw new ParseException("Unexpected token \"" + scanner.peek() + "\"", scanner.location());
+            throw new CompileException("Unexpected token \"" + scanner.peek() + "\"", scanner.location());
         }
 
         return statements;
@@ -309,7 +309,7 @@ public class ExpressionEvaluator extends ScriptEvaluator implements IExpressionE
         Class       interfaceToImplement,
         String[]    parameterNames,
         ClassLoader optionalParentClassLoader
-    ) throws CompileException, ParseException, ScanException {
+    ) throws CompileException {
         IExpressionEvaluator ee = new ExpressionEvaluator();
         ee.setParentClassLoader(optionalParentClassLoader);
         return ee.createFastEvaluator(expression, interfaceToImplement, parameterNames);
@@ -330,7 +330,7 @@ public class ExpressionEvaluator extends ScriptEvaluator implements IExpressionE
         Class       interfaceToImplement,
         String[]    parameterNames,
         ClassLoader optionalParentClassLoader
-    ) throws CompileException, ParseException, ScanException, IOException {
+    ) throws CompileException, IOException {
         ExpressionEvaluator ee = new ExpressionEvaluator();
         ee.setClassName(className);
         ee.setExtendedClass(optionalExtendedType);
@@ -354,7 +354,7 @@ public class ExpressionEvaluator extends ScriptEvaluator implements IExpressionE
         Class       interfaceToImplement,
         String[]    parameterNames,
         ClassLoader optionalParentClassLoader
-    ) throws CompileException, ParseException, ScanException, IOException {
+    ) throws CompileException, IOException {
         ExpressionEvaluator ee = new ExpressionEvaluator();
         ee.setClassName(className);
         ee.setExtendedClass(optionalExtendedType);
@@ -375,7 +375,7 @@ public class ExpressionEvaluator extends ScriptEvaluator implements IExpressionE
      *
      * @see Scanner#Scanner(String, Reader)
      */
-    public static String[] guessParameterNames(Scanner scanner) throws ParseException, ScanException, IOException {
+    public static String[] guessParameterNames(Scanner scanner) throws CompileException, IOException {
         Parser parser = new Parser(scanner);
 
         // Eat optional leading import declarations.
@@ -383,7 +383,7 @@ public class ExpressionEvaluator extends ScriptEvaluator implements IExpressionE
 
         // Parse the expression.
         Rvalue rvalue = parser.parseExpression().toRvalueOrPE();
-        if (!scanner.peek().isEOF()) throw new ParseException("Unexpected token \"" + scanner.peek() + "\"", scanner.location());
+        if (!scanner.peek().isEOF()) throw new CompileException("Unexpected token \"" + scanner.peek() + "\"", scanner.location());
 
         // Traverse the expression for ambiguous names and guess which of them are parameter names.
         final Set parameterNames = new HashSet();

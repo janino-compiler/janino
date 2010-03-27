@@ -66,18 +66,18 @@ public interface ICookable {
      *
      * @param optionalFileName Used when reporting errors and warnings.
      */
-    void cook(String optionalFileName, Reader r) throws CompileException, ParseException, ScanException, IOException;
+    void cook(String optionalFileName, Reader r) throws CompileException, IOException;
 
     /**
      * Reads, scans, parses and compiles Java tokens from the given {@link Reader}.
      */
-    void cook(Reader r) throws CompileException, ParseException, ScanException, IOException;
+    void cook(Reader r) throws CompileException, IOException;
 
     /**
      * Reads, scans, parses and compiles Java tokens from the given {@link InputStream}, encoded
      * in the "platform default encoding".
      */
-    void cook(InputStream is) throws CompileException, ParseException, ScanException, IOException;
+    void cook(InputStream is) throws CompileException, IOException;
 
     /**
      * Reads, scans, parses and compiles Java tokens from the given {@link InputStream}, encoded
@@ -88,7 +88,7 @@ public interface ICookable {
     void cook(
         String      optionalFileName,
         InputStream is
-    ) throws CompileException, ParseException, ScanException, IOException;
+    ) throws CompileException, IOException;
 
     /**
      * Reads, scans, parses and compiles Java tokens from the given {@link InputStream} with the
@@ -97,7 +97,7 @@ public interface ICookable {
     void cook(
         InputStream is,
         String      optionalEncoding
-    ) throws CompileException, ParseException, ScanException, IOException;
+    ) throws CompileException, IOException;
 
     /**
      * Reads, scans, parses and compiles Java tokens from the given {@link InputStream} with the
@@ -109,25 +109,25 @@ public interface ICookable {
         String      optionalFileName,
         InputStream is,
         String      optionalEncoding
-    ) throws CompileException, ParseException, ScanException, IOException;
+    ) throws CompileException, IOException;
 
     /**
      * Reads, scans, parses and compiles Java tokens from the given {@link String}.
      */
-    void cook(String s) throws CompileException, ParseException, ScanException;
+    void cook(String s) throws CompileException;
 
     /**
      * Reads, scans, parses and compiles Java tokens from the given {@link String}.
      *
      * @param optionalFileName Used when reporting errors and warnings.
      */
-    void cook(String optionalFileName, String s) throws CompileException, ParseException, ScanException;
+    void cook(String optionalFileName, String s) throws CompileException;
 
     /**
      * Reads, scans, parses and compiles Java tokens from the given {@link File}, encoded
      * in the "platform default encoding".
      */
-    void cookFile(File file) throws CompileException, ParseException, ScanException, IOException;
+    void cookFile(File file) throws CompileException, IOException;
 
     /**
      * Reads, scans, parses and compiles Java tokens from the given {@link File} with the
@@ -136,13 +136,13 @@ public interface ICookable {
     void cookFile(
         File   file,
         String optionalEncoding
-    ) throws CompileException, ParseException, ScanException, IOException;
+    ) throws CompileException, IOException;
 
     /**
      * Reads, scans, parses and compiles Java tokens from the named file, encoded in the "platform
      * default encoding".
      */
-    void cookFile(String fileName) throws CompileException, ParseException, ScanException, IOException;
+    void cookFile(String fileName) throws CompileException, IOException;
 
     /**
      * Reads, scans, parses and compiles Java tokens from the named file with the given
@@ -151,5 +151,5 @@ public interface ICookable {
     void cookFile(
         String fileName,
         String optionalEncoding
-    ) throws CompileException, ParseException, ScanException, IOException;
+    ) throws CompileException, IOException;
 }

@@ -44,7 +44,6 @@ import java.util.TreeMap;
 
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.Location;
-import org.codehaus.commons.compiler.ParseException;
 import org.codehaus.janino.IClass.IField;
 import org.codehaus.janino.IClass.IInvocable;
 import org.codehaus.janino.IClass.IMethod;
@@ -4756,25 +4755,21 @@ public class UnitCompiler {
             IClass.IField sf = (IClass.IField) it.next();
             Java.LocalVariable syntheticParameter = (Java.LocalVariable) cd.syntheticParameters.get(sf.getName());
             if (syntheticParameter == null) throw new JaninoRuntimeException("SNO: Synthetic parameter for synthetic field \"" + sf.getName() + "\" not found");
-            try {
-                Java.ExpressionStatement es = new Java.ExpressionStatement(new Java.Assignment(
-                    cd.getLocation(),             // location
-                    new Java.FieldAccess(         // lhs
-                        cd.getLocation(),                         // location
-                        new Java.ThisReference(cd.getLocation()), // lhs
-                        sf                                        // field
-                    ),
-                    "=",                          // operator
-                    new Java.LocalVariableAccess( // rhs
-                        cd.getLocation(),  // location
-                        syntheticParameter // localVariable
-                    )
-                ));
-                es.setEnclosingScope(cd);
-                this.compile(es);
-            } catch (ParseException e) {
-                throw new JaninoRuntimeException("S.N.O.");
-            }
+            Java.ExpressionStatement es = new Java.ExpressionStatement(new Java.Assignment(
+                cd.getLocation(),             // location
+                new Java.FieldAccess(         // lhs
+                    cd.getLocation(),                         // location
+                    new Java.ThisReference(cd.getLocation()), // lhs
+                    sf                                        // field
+                ),
+                "=",                          // operator
+                new Java.LocalVariableAccess( // rhs
+                    cd.getLocation(),  // location
+                    syntheticParameter // localVariable
+                )
+            ));
+            es.setEnclosingScope(cd);
+            this.compile(es);
         }
     }
 

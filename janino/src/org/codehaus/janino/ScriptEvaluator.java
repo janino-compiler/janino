@@ -34,8 +34,6 @@ import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.Cookable;
 import org.codehaus.commons.compiler.IScriptEvaluator;
 import org.codehaus.commons.compiler.Location;
-import org.codehaus.commons.compiler.ParseException;
-import org.codehaus.commons.compiler.ScanException;
 import org.codehaus.janino.Java.AmbiguousName;
 import org.codehaus.janino.Java.LocalVariableDeclarationStatement;
 import org.codehaus.janino.util.Traverser;
@@ -64,7 +62,7 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
      */
     public ScriptEvaluator(
         String   script
-    ) throws CompileException, ParseException, ScanException {
+    ) throws CompileException {
         this.cook(script);
     }
 
@@ -81,7 +79,7 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
     public ScriptEvaluator(
         String   script,
         Class    returnType
-    ) throws CompileException, ParseException, ScanException {
+    ) throws CompileException {
         this.setReturnType(returnType);
         this.cook(script);
     }
@@ -103,7 +101,7 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
         Class    returnType,
         String[] parameterNames,
         Class[]  parameterTypes
-    ) throws CompileException, ParseException, ScanException {
+    ) throws CompileException {
         this.setReturnType(returnType);
         this.setParameters(parameterNames, parameterTypes);
         this.cook(script);
@@ -129,7 +127,7 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
         String[] parameterNames,
         Class[]  parameterTypes,
         Class[]  thrownExceptions
-    ) throws CompileException, ParseException, ScanException {
+    ) throws CompileException {
         this.setReturnType(returnType);
         this.setParameters(parameterNames, parameterTypes);
         this.setThrownExceptions(thrownExceptions);
@@ -160,7 +158,7 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
         Class[]     parameterTypes,
         Class[]     thrownExceptions,
         ClassLoader optionalParentClassLoader // null = use current thread's context class loader
-    ) throws CompileException, ParseException, ScanException, IOException {
+    ) throws CompileException, IOException {
         this.setReturnType(returnType);
         this.setParameters(parameterNames, parameterTypes);
         this.setThrownExceptions(thrownExceptions);
@@ -192,7 +190,7 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
         Class[]     parameterTypes,
         Class[]     thrownExceptions,
         ClassLoader optionalParentClassLoader // null = use current thread's context class loader
-    ) throws CompileException, ParseException, ScanException, IOException {
+    ) throws CompileException, IOException {
         this.setReturnType(returnType);
         this.setParameters(parameterNames, parameterTypes);
         this.setThrownExceptions(thrownExceptions);
@@ -223,7 +221,7 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
         Class[]     parameterTypes,
         Class[]     thrownExceptions,
         ClassLoader optionalParentClassLoader // null = use current thread's context class loader
-    ) throws CompileException, ParseException, ScanException, IOException {
+    ) throws CompileException, IOException {
         this.setReturnType(returnType);
         this.setParameters(parameterNames, parameterTypes);
         this.setThrownExceptions(thrownExceptions);
@@ -260,7 +258,7 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
         Class[]     parameterTypes,
         Class[]     thrownExceptions,
         ClassLoader optionalParentClassLoader // null = use current thread's context class loader
-    ) throws CompileException, ParseException, ScanException, IOException {
+    ) throws CompileException, IOException {
         this.setExtendedClass(optionalExtendedType);
         this.setImplementedInterfaces(implementedTypes);
         this.setReturnType(returnType);
@@ -308,7 +306,7 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
         Class[]     parameterTypes,
         Class[]     thrownExceptions,
         ClassLoader optionalParentClassLoader // null = use current thread's context class loader
-    ) throws ScanException, ParseException, CompileException, IOException {
+    ) throws CompileException, IOException {
         this.setClassName(className);
         this.setExtendedClass(optionalExtendedType);
         this.setImplementedInterfaces(implementedTypes);
@@ -343,7 +341,7 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
         this.setThrownExceptions(new Class[][] { thrownExceptions });
     }
 
-    public final void cook(Scanner scanner) throws CompileException, ParseException, ScanException, IOException {
+    public final void cook(Scanner scanner) throws CompileException, IOException {
         this.cook(new Scanner[] { scanner });
     }
 
@@ -403,7 +401,7 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
      *
      * @throws IllegalStateException if any of the preceeding <code>set...()</code> had an array size different from that of <code>scanners</code>
      */
-    public final void cook(Scanner[] scanners) throws CompileException, ParseException, ScanException, IOException {
+    public final void cook(Scanner[] scanners) throws CompileException, IOException {
         if (scanners == null) throw new NullPointerException();
 
         // The "dimension" of this ScriptEvaluator, i.e. how many scripts are cooked at the same
@@ -521,7 +519,7 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
         }
     }
 
-    public final void cook(Reader[] readers) throws CompileException, ParseException, ScanException, IOException {
+    public final void cook(Reader[] readers) throws CompileException, IOException {
         this.cook(new String[readers.length], readers);
     }
 
@@ -539,7 +537,7 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
     public final void cook(
         String[] optionalFileNames,
         Reader[] readers
-    ) throws CompileException, ParseException, ScanException, IOException {
+    ) throws CompileException, IOException {
         Scanner[] scanners = new Scanner[readers.length];
         for (int i = 0; i < readers.length; ++i) {
             scanners[i] = new Scanner(optionalFileNames == null ? null : optionalFileNames[i], readers[i]);
@@ -547,14 +545,14 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
         this.cook(scanners);
     }
 
-    public final void cook(String[] strings) throws CompileException, ParseException, ScanException {
+    public final void cook(String[] strings) throws CompileException {
         this.cook(null, strings);
     }
 
     public final void cook(
         String[] optionalFileNames,
         String[] strings
-    ) throws CompileException, ParseException, ScanException {
+    ) throws CompileException {
         Reader[] readers = new Reader[strings.length];
         for (int i = 0; i < strings.length; ++i) readers[i] = new StringReader(strings[i]);
         try {
@@ -575,7 +573,7 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
     protected List/*<BlockStatement>*/ makeStatements(
         int     idx,
         Scanner scanner
-    ) throws ParseException, ScanException, IOException {
+    ) throws CompileException, IOException {
         List/*<BlockStatement>*/ statements = new ArrayList();
         Parser parser = new Parser(scanner);
         while (!scanner.peek().isEOF()) {
@@ -665,7 +663,7 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
         String   script,
         Class    interfaceToImplement,
         String[] parameterNames
-    ) throws CompileException, ParseException, ScanException {
+    ) throws CompileException {
         ScriptEvaluator se = new ScriptEvaluator();
         return se.createFastEvaluator(script, interfaceToImplement, parameterNames);
     }
@@ -679,7 +677,7 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
         Class       interfaceToImplement,
         String[]    parameterNames,
         ClassLoader optionalParentClassLoader
-    ) throws CompileException, ParseException, ScanException, IOException {
+    ) throws CompileException, IOException {
         ScriptEvaluator se = new ScriptEvaluator();
         se.setParentClassLoader(optionalParentClassLoader);
         return se.createFastEvaluator(scanner, interfaceToImplement, parameterNames);
@@ -696,7 +694,7 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
         Class       interfaceToImplement,
         String[]    parameterNames,
         ClassLoader optionalParentClassLoader
-    ) throws CompileException, ParseException, ScanException, IOException {
+    ) throws CompileException, IOException {
         ScriptEvaluator se = new ScriptEvaluator();
         se.setClassName(className);
         se.setExtendedClass(optionalExtendedType);
@@ -726,7 +724,7 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
         Class       interfaceToImplement,
         String[]    parameterNames,
         ClassLoader optionalParentClassLoader
-    ) throws CompileException, ParseException, ScanException, IOException {
+    ) throws CompileException, IOException {
         ScriptEvaluator se = new ScriptEvaluator();
         se.setDefaultImports(optionalDefaultImports);
         se.setClassName(className);
@@ -746,7 +744,7 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
         Reader   reader,
         Class    interfaceToImplement,
         String[] parameterNames
-    ) throws CompileException, ParseException, ScanException, IOException {
+    ) throws CompileException, IOException {
         return this.createFastEvaluator(new Scanner(null, reader), interfaceToImplement, parameterNames);
     }
 
@@ -754,7 +752,7 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
         String   script,
         Class    interfaceToImplement,
         String[] parameterNames
-    ) throws CompileException, ParseException, ScanException {
+    ) throws CompileException {
         try {
             return this.createFastEvaluator(
                 new StringReader(script),
@@ -778,7 +776,7 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
         Scanner  scanner,
         Class    interfaceToImplement,
         String[] parameterNames
-    ) throws CompileException, ParseException, ScanException, IOException {
+    ) throws CompileException, IOException {
         if (!interfaceToImplement.isInterface()) throw new JaninoRuntimeException("\"" + interfaceToImplement + "\" is not an interface");
 
         Method[] methods = interfaceToImplement.getDeclaredMethods();
@@ -820,7 +818,7 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
      *
      * @see Scanner#Scanner(String, Reader)
      */
-    public static String[] guessParameterNames(Scanner scanner) throws ParseException, ScanException, IOException {
+    public static String[] guessParameterNames(Scanner scanner) throws CompileException, IOException {
         Parser parser = new Parser(scanner);
 
         // Eat optional leading import declarations.

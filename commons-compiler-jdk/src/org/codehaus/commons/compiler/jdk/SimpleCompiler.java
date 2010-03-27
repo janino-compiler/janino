@@ -50,7 +50,7 @@ public class SimpleCompiler extends Cookable implements ISimpleCompiler {
     public void cook(
         String       optionalFileName,
         final Reader r
-    ) throws CompileException, ParseException, ScanException, IOException {
+    ) throws CompileException, IOException {
         assertNotCooked();
 
         // Create one Java source file in memory, which will be compiled later.
@@ -119,20 +119,9 @@ public class SimpleCompiler extends Cookable implements ISimpleCompiler {
                         String code = diagnostic.getCode();
                         String message = diagnostic.getMessage(null) + " (" + code + ")";
 
-                        // The JDK compiler does not distinguish between scan, parse and compile
-                        // errors, thus we determine the error type heuristically through the
-                        // diagnostic code.
-                        LocatedException cause = (
-                            PARSE_ERROR_CODES.contains(code)
-                            ? new ParseException(message, loc)
-                            : SCAN_ERROR_CODES.contains(code)
-                            ? new ScanException(message, loc)
-                            : new CompileException(message, loc)
-                        );
-
-                        // Wrap the exception in a RuntimeException, because "report()" does not
-                        // declare checked exceptions.
-                        throw new RuntimeException(cause);
+                        // Wrap the exception in a RuntimeException, because "report()" does not declare checked
+                        // exceptions.
+                        throw new RuntimeException(new CompileException(message, loc));
                     }
                 },
                 null,                                  // options
@@ -148,8 +137,6 @@ public class SimpleCompiler extends Cookable implements ISimpleCompiler {
             if (cause != null) {
                 cause = cause.getCause();
                 if (cause instanceof CompileException) throw (CompileException) cause;
-                if (cause instanceof ParseException)   throw (ParseException)   cause;
-                if (cause instanceof ScanException)    throw (ScanException)    cause;
                 if (cause instanceof IOException)      throw (IOException)      cause;
             }
             throw rte;
@@ -161,7 +148,7 @@ public class SimpleCompiler extends Cookable implements ISimpleCompiler {
 
     protected void cook(
         JavaFileObject compilationUnit
-    ) throws CompileException, ParseException, ScanException, IOException {
+    ) throws CompileException, IOException {
 
         // Find the JDK Java compiler.
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
@@ -199,20 +186,9 @@ public class SimpleCompiler extends Cookable implements ISimpleCompiler {
                         String code = diagnostic.getCode();
                         String message = diagnostic.getMessage(null) + " (" + code + ")";
 
-                        // The JDK compiler does not distinguish between scan, parse and compile
-                        // errors, thus we determine the error type heuristically through the
-                        // diagnostic code.
-                        LocatedException cause = (
-                            PARSE_ERROR_CODES.contains(code)
-                            ? new ParseException(message, loc)
-                            : SCAN_ERROR_CODES.contains(code)
-                            ? new ScanException(message, loc)
-                            : new CompileException(message, loc)
-                        );
-
-                        // Wrap the exception in a RuntimeException, because "report()" does not
-                        // declare checked exceptions.
-                        throw new RuntimeException(cause);
+                        // Wrap the exception in a RuntimeException, because "report()" does not declare checked
+                        // exceptions.
+                        throw new RuntimeException(new CompileException(message, loc));
                     }
                 },
                 null,                                  // options
@@ -228,8 +204,6 @@ public class SimpleCompiler extends Cookable implements ISimpleCompiler {
             if (cause != null) {
                 cause = cause.getCause();
                 if (cause instanceof CompileException) throw (CompileException) cause;
-                if (cause instanceof ParseException)   throw (ParseException)   cause;
-                if (cause instanceof ScanException)    throw (ScanException)    cause;
                 if (cause instanceof IOException)      throw (IOException)      cause;
             }
             throw rte;
@@ -238,24 +212,6 @@ public class SimpleCompiler extends Cookable implements ISimpleCompiler {
         // Create a ClassLoader that reads class files from our FM.
         this.result = new JavaFileManagerClassLoader(fileManager, this.parentClassLoader);
     }
-
-    static final Set<String> PARSE_ERROR_CODES = new HashSet<String>(Arrays.asList(
-        "compiler.err.not.stmt",
-        "compiler.err.expected",
-        "compiler.err.illegal.start.of.expr"
-    ));
-    static final Set<String> SCAN_ERROR_CODES = new HashSet<String>(Arrays.asList(
-        "compiler.err.illegal.char",
-        "compiler.err.unclosed.comment",
-        "compiler.err.int.number.too.large", // <= Problematic...
-        "compiler.err.fp.number.too.large",
-        "compiler.err.fp.number.too.small",
-        "compiler.err.empty.char.lit",
-        "compiler.err.unclosed.char.lit",
-        "compiler.err.illegal.line.end.in.char.lit",
-        "compiler.err.unclosed.str.lit",
-        "compiler.err.illegal.unicode.esc"
-    ));
 
     @Override
     public void setParentClassLoader(ClassLoader optionalParentClassLoader) {

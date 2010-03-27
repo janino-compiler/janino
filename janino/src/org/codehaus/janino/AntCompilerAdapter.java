@@ -31,8 +31,6 @@ import java.io.*;
 import org.apache.tools.ant.taskdefs.compilers.*;
 import org.apache.tools.ant.types.Path;
 import org.codehaus.commons.compiler.CompileException;
-import org.codehaus.commons.compiler.ParseException;
-import org.codehaus.commons.compiler.ScanException;
 import org.codehaus.janino.util.enumerator.*;
 
 /**
@@ -134,12 +132,6 @@ public class AntCompilerAdapter extends DefaultCompilerAdapter {
                 Compiler.DEFAULT_WARNING_HANDLE_PATTERNS,
                 false                        // rebuild
             ).compile(sourceFiles);
-        } catch (ScanException e) {
-            System.out.println(e.getMessage());
-            return false;
-        } catch (ParseException e) {
-            System.out.println(e.getMessage());
-            return false;
         } catch (CompileException e) {
             System.out.println(e.getMessage());
             return false;

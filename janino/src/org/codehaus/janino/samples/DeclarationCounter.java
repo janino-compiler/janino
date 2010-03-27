@@ -28,8 +28,7 @@ package org.codehaus.janino.samples;
 
 import java.io.*;
 
-import org.codehaus.commons.compiler.ParseException;
-import org.codehaus.commons.compiler.ScanException;
+import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.janino.*;
 import org.codehaus.janino.util.*;
 
@@ -39,7 +38,7 @@ import org.codehaus.janino.util.*;
  * several kinds of declarations.
  */
 public class DeclarationCounter extends Traverser {
-    public static void main(String[] args) throws ScanException, IOException, ParseException {
+    public static void main(String[] args) throws CompileException, IOException {
         DeclarationCounter dc = new DeclarationCounter();
         for (int i = 0; i < args.length; ++i) {
             String fileName = args[i];
