@@ -28,66 +28,102 @@
 	<property file="build.properties"/>
 
 	<target name="publish" depends="dist">
+		<echo>Now run './publish.sh'!</echo>
 	</target>
 
-	<target name="dist" depends="commons-compiler.jar,janino.jar,commons-compiler-jdk.jar,javadoc">
-		<echo level="info">Signing jars</echo>
-		<exec executable="jarsigner">
-			<arg value="-keystore"/><arg value="dummy-keystore"/>
-			<arg value="-storepass"/><arg value="storepass"/>
-			<arg value="-keypass"/><arg value="keypass"/>
-			<arg value="../commons-compiler/build/lib/commons-compiler.jar"/>
-			<arg value="dummy"/>
-		</exec>
-		<exec executable="jarsigner">
-			<arg value="-keystore"/><arg value="dummy-keystore"/>
-			<arg value="-storepass"/><arg value="storepass"/>
-			<arg value="-keypass"/><arg value="keypass"/>
-			<arg value="../janino/build/lib/janino.jar"/>
-			<arg value="dummy"/>
-		</exec>
-		<exec executable="jarsigner">
-			<arg value="-keystore"/><arg value="dummy-keystore"/>
-			<arg value="-storepass"/><arg value="storepass"/>
-			<arg value="-keypass"/><arg value="keypass"/>
-			<arg value="../commons-compiler-jdk/build/lib/commons-compiler-jdk.jar"/>
-			<arg value="dummy"/>
-		</exec>
+	<target name="dist" depends="clean,janino.jar,commons-compiler-jdk.jar,javadoc">
+		<zip destfile="build/janino-${version}.zip" filesonly="true">
+			<zipfileset file="build/lib/commons-compiler.jar"     prefix="janino-${version}"/>
+			<zipfileset file="build/lib/janino.jar"               prefix="janino-${version}"/>
+			<zipfileset file="build/lib/commons-compiler-jdk.jar" prefix="janino-${version}"/>
 
-		<zip destfile="${janino_zip}" filesonly="true">
-			<zipfileset file="../commons-compiler/build/lib/commons-compiler.jar" prefix="janino-${version}"/>
-			<zipfileset file="../janino/build/lib/janino.jar" prefix="janino-${version}"/>
-			<zipfileset file="../commons-compiler-jdk/build/lib/commons-compiler-jdk.jar" prefix="janino-${version}"/>
-
-			<zipfileset file="../commons-compiler/build.*" prefix="janino-${version}/src/commons-compiler"/>
-			<zipfileset dir="../commons-compiler/src" prefix="janino-${version}/src/commons-compiler/src"/>
-
-			<zipfileset file="../janino/build.*" prefix="janino-${version}/src/janino"/>
-			<zipfileset dir="../janino/src" prefix="janino-${version}/src/janino/src"/>
-
-			<zipfileset file="../commons-compiler-jdk/build.*" prefix="janino-${version}/src/commons-compiler-jdk"/>
+			<zipfileset dir="../commons-compiler/src"     prefix="janino-${version}/src/commons-compiler/src"/>
+			<zipfileset dir="../janino/src"               prefix="janino-${version}/src/janino/src"/>
 			<zipfileset dir="../commons-compiler-jdk/src" prefix="janino-${version}/src/commons-compiler-jdk/src"/>
 
-			<zipfileset dir="${javadoc-dir}" prefix="janino-${version}/javadoc"/>
+			<zipfileset dir="build/javadoc" prefix="janino-${version}/javadoc"/>
 
 			<zipfileset file="new_bsd_license.txt" prefix="janino-${version}"/>
 		</zip>
 	</target>
 
-	<target name="commons-compiler.jar">
-		<ant dir="../commons-compiler" antfile="build.xml" target="jar"/>
+	<target name="compile-commons-compiler">
+		<mkdir dir="build/bin-commons-compiler"/>
+
+		<javac
+			fork="yes"
+			source="1.2"
+			target="1.1"
+			srcdir="../commons-compiler/src"
+			destdir="build/bin-commons-compiler"
+			debug="true"
+			debuglevel="lines,vars,source"
+		/>
 	</target>
 
-	<target name="janino.jar">
-		<ant dir="../janino" antfile="build.xml" target="jar"/>
+	<target name="compile-janino">
+		<mkdir dir="build/bin-janino"/>
+
+		<javac
+			fork="yes"
+			source="1.2"
+			target="1.1"
+			srcdir="../janino/src"
+			excludes="org/codehaus/janino/AstGeneratorVisitor.java"
+			destdir="build/bin-janino"
+			classpath="${ant.jar}:build/bin-commons-compiler"
+			debug="true"
+			debuglevel="lines,vars,source"
+		/>
 	</target>
 
-	<target name="commons-compiler-jdk.jar">
-		<ant dir="../commons-compiler-jdk" antfile="build.xml" target="jar"/>
+	<target name="compile-commons-compiler-jdk">
+		<mkdir dir="build/bin-commons-compiler-jdk"/>
+
+		<javac
+			fork="yes"
+			source="1.6"
+			target="1.6"
+			srcdir="../commons-compiler-jdk/src"
+			destdir="build/bin-commons-compiler-jdk"
+			classpath="build/bin-commons-compiler"
+			debug="true"
+			debuglevel="lines,vars,source"
+		/>
+	</target>
+
+	<target name="janino.jar" depends="compile-commons-compiler,compile-janino">
+		<mkdir dir="build/lib"/>
+		<jar jarfile="build/lib/janino.jar" filesonly="true">
+			<fileset dir="build/bin-commons-compiler"/>
+			<fileset dir="build/bin-janino"/>
+		</jar>
+		<exec executable="jarsigner">
+			<arg value="-keystore"/><arg value="dummy-keystore"/>
+			<arg value="-storepass"/><arg value="storepass"/>
+			<arg value="-keypass"/><arg value="keypass"/>
+			<arg value="build/lib/janino.jar"/>
+			<arg value="dummy"/>
+		</exec>
+	</target>
+
+	<target name="commons-compiler-jdk.jar" depends="compile-commons-compiler,compile-commons-compiler-jdk">
+		<mkdir dir="build/lib"/>
+		<jar jarfile="build/lib/commons-compiler-jdk.jar" filesonly="true">
+			<fileset dir="build/bin-commons-compiler"/>
+			<fileset dir="build/bin-commons-compiler-jdk"/>
+		</jar>
+		<exec executable="jarsigner">
+			<arg value="-keystore"/><arg value="dummy-keystore"/>
+			<arg value="-storepass"/><arg value="storepass"/>
+			<arg value="-keypass"/><arg value="keypass"/>
+			<arg value="build/lib/commons-compiler-jdk.jar"/>
+			<arg value="dummy"/>
+		</exec>
 	</target>
 
 	<target name="javadoc" description="Build JAVADOC">
-		<mkdir dir="${javadoc-dir}"/>
+		<mkdir dir="build/javadoc"/>
 		<javadoc
 			header="&lt;a href=&quot;http://janino.net/&quot; target=&quot;_top&quot;&gt;janino.net&lt;/a&gt;"
 			splitindex="true"
@@ -96,7 +132,7 @@
 			overview="overview.html"
 			sourcepath="../commons-compiler/src;../janino/src;../commons-compiler-jdk"
 			classpath="${ant_jar}"
-			destdir="${javadoc-dir}"
+			destdir="build/javadoc"
 			packagenames="${javadoc_packages}"
 		>
 			<link offline="true" href="${jdk_javadoc_remote}" packagelistloc="${jdk_javadoc_local}"/>
@@ -105,6 +141,6 @@
 	</target>
 
 	<target name="clean">
-		<delete dir="${build-dir}"/>
+		<delete dir="build"/>
 	</target>
 </project>
