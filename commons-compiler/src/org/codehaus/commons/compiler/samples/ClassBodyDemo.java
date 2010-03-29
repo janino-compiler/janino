@@ -24,12 +24,12 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.codehaus.janino.samples;
+package org.codehaus.commons.compiler.samples;
 
 import java.io.*;
 import java.lang.reflect.*;
 
-import org.codehaus.janino.*;
+import org.codehaus.commons.compiler.*;
 
 /**
  * A test program that allows you to play with the {@link ClassBodyEvaluator} API.
@@ -62,7 +62,9 @@ public class ClassBodyDemo {
         System.arraycopy(args, i, arguments, 0, arguments.length);
 
         // Compile the class body.
-        Class c = new ClassBodyEvaluator(classBody).getClazz();
+        IClassBodyEvaluator cbe = CompilerFactoryFactory.getDefaultCompilerFactory().newClassBodyEvaluator();
+        cbe.cook(classBody);
+        Class c = cbe.getClazz();
 
         // Invoke the "public static main(String[])" method.
         Method m = c.getMethod("main", new Class[] { String[].class });

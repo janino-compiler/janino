@@ -24,9 +24,9 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.codehaus.janino.samples;
+package org.codehaus.commons.compiler.samples;
 
-import org.codehaus.janino.*;
+import org.codehaus.commons.compiler.*;
 
 /**
  * A test program that allows you to play around with the
@@ -103,7 +103,7 @@ public class ScriptDemo extends DemoBase {
         }
 
         // Create "ScriptEvaluator" object.
-        ScriptEvaluator se = new ScriptEvaluator();
+        IScriptEvaluator se = CompilerFactoryFactory.getDefaultCompilerFactory().newScriptEvaluator();
         se.setReturnType(returnType);
         se.setDefaultImports(optionalDefaultImports);
         se.setParameters(parameterNames, parameterTypes);

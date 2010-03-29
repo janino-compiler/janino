@@ -24,9 +24,9 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.codehaus.janino.samples;
+package org.codehaus.commons.compiler.samples;
 
-import org.codehaus.janino.*;
+import org.codehaus.commons.compiler.*;
 
 /**
  * A test program that allows you to play around with the
@@ -103,7 +103,7 @@ public class ExpressionDemo extends DemoBase {
         }
 
         // Create "ExpressionEvaluator" object.
-        ExpressionEvaluator ee = new ExpressionEvaluator();
+        IExpressionEvaluator ee = CompilerFactoryFactory.getDefaultCompilerFactory().newExpressionEvaluator();
         ee.setExpressionType(optionalExpressionType);
         ee.setDefaultImports(optionalDefaultImports);
         ee.setParameters(parameterNames, parameterTypes);

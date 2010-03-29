@@ -24,15 +24,10 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.codehaus.janino.samples;
+package org.codehaus.commons.compiler.samples;
 
-import java.lang.reflect.Array;
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.StringTokenizer;
-
-import org.codehaus.janino.JaninoRuntimeException;
+import java.lang.reflect.*;
+import java.util.*;
 
 /**
  * Common base class for the "...Demo" classes that demostrate Janino.
@@ -117,7 +112,7 @@ public class DemoBase {
         } catch (ClassNotFoundException ex) {
             ex.printStackTrace();
             System.exit(1);
-            throw new JaninoRuntimeException(); // Never reached.
+            throw new RuntimeException(); // Never reached.
         }
     }
 

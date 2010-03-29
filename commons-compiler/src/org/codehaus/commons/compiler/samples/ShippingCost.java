@@ -24,9 +24,9 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.codehaus.janino.samples;
+package org.codehaus.commons.compiler.samples;
 
-import org.codehaus.janino.*;
+import org.codehaus.commons.compiler.*;
 
 /**
  * Sample application which demonstrates how to use the
@@ -46,14 +46,10 @@ public class ShippingCost {
         Object[] parameterValues = new Object[] { new Double(args[0]) };
 
         // Create "ExpressionEvaluator" object.
-        ExpressionEvaluator ee = new ExpressionEvaluator(
-            "total >= 100.0 ? 0.0 : 7.95", // expression
-            double.class,                  // optionalExpressionType
-            new String[] { "total" },      // parameterNames,
-            new Class[] { double.class },  // parameterTypes
-            new Class[0],                  // thrownExceptions
-            null                           // optionalClassLoader
-        );
+        IExpressionEvaluator ee = CompilerFactoryFactory.getDefaultCompilerFactory().newExpressionEvaluator();
+        ee.setExpressionType(double.class);
+        ee.setParameters(new String[] { "total" }, new Class[] { double.class });
+        ee.cook("total >= 100.0 ? 0.0 : 7.95");
 
         // Evaluate expression with actual parameter values.
         Object res = ee.evaluate(parameterValues);
