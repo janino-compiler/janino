@@ -52,6 +52,39 @@ h5 {
     <a href="http://docs.codehaus.org/display/JANINO/Janino">Back to JANINO home page</a>
 
     <h4>Signed JANINO JAR file of the latest version: <a href="janino.jar">janino.jar</a></h4>
+    <h4>Signed COMMONS-COMPILER-JDK JAR file of the latest version: <a href="commons-compiler-jdk.jar">janino.jar</a></h4>
+
+    <h4>Version 2.6.0, ? ??, 2010 - <a href="janino-2.6.0.zip">Download</a></h4>
+    This version implements a number of incompatible changes:
+    <ul>
+      <li>
+        <code>CompileException</code> was moved from package <code>org.codehaus.janino</code> to package
+        <code>org.codehaus.commons.compiler</code> (and so were its buddies <code>Location</code>,
+        <code>LocatedException</code> and <code>CausedException</code>).
+      </li>
+      <li>
+        <code>ParseException</code> and <code>ScanException</code> were removed; all methods that previously threw
+        one or more of <code>CompileException</code>, <code>ParseException</code> and <code>ScanException</code> now
+        throw only <code>CompileException</code>. (This is an API simplification honoring the fact that applications
+        rarely want to differentiate between scan, parse and compilation problems).
+      </li>
+    </ul>
+    The core functionality of JANINO (expression evaluator, script evaluator, class body evaluator, simple compiler and
+    Java source class loader) was extracted to new interfaces declared in the new package
+    <code>org.codehaus.commons.compiler</code>, while the original API remains unchanged.
+    <p>
+    A second implementation of the <code>org.codehaus.commons.compiler</code> interfaces was added, based on the
+    <code>javax.tools.JavaCompiler</code> API that exists since JDK 1.6. This implementation is available in the
+    <code>commons-compiler-jdk.jar</code> file.
+    <p>
+    Rather than instantiating e.g. <code>org.codehaus.janino.ExpressionEvaluator</code> directly, applications can now
+    alternatively call
+    <code>org.codehaus.commons.compiler.CompilerFactoryFactory.getDefaultCompilerFactory().newExpressionEvaluator()</code>,
+    which will use the first implementation of <code>IExpressionEvaluator</code> on the class path (be it
+    <code>janino.jar</code> or <code>commons-compiler-jdk.jar</code>, or yet another implementation).
+    <p>
+    The JUNIT regression test suite was restructured so that if differntiates between implementation-independent tests,
+    which are automatically executed against every implementation on the class path, and implementation-specific tests.
 
     <h4>Version 2.5.16, January 26, 2010 - <a href="janino-2.5.16.zip">Download</a></h4>
     <ul>

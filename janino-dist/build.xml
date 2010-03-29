@@ -23,12 +23,33 @@
   POSSIBILITY OF SUCH DAMAGE.
 //-->
 
-<project name="Janino" default="publish" basedir=".">
-	<property environment="env"/>
+<project name="Janino" default="default" basedir=".">
 	<property file="build.properties"/>
 
-	<target name="publish" depends="dist">
-		<echo>Now run './publish.sh'!</echo>
+	<target name="default" depends="dist,publish"/>
+
+	<target name="publish">
+		<input
+			addproperty="xircles-user"
+			defaultvalue="aunkrig"
+			message="Your XIRCLES user name (you must have write access to the JANINO space):"
+		/>
+		<echo message="rsync to janino.codehaus.org"/>
+		<exec executable="${rsync-executable}">
+			<arg value="--recursive"/>
+			<arg value="--chmod=ugo=rwX"/>
+			<arg value="--rsh=${ssh-executable}"/>
+			<arg value="--verbose"/>
+			<arg value="favicon.ico"/>
+			<arg value="build/janino-${version}.zip"/>
+			<arg value="build/lib/janino.jar"/>
+			<arg value="build/lib/commons-compiler-jdk.jar"/>
+			<arg value="new_bsd_license.txt"/>
+			<arg value="changelog.html"/>
+			<arg value="build/pad_file.xml"/>
+			<arg value="../janino/src/org/codehaus/janino/samples"/>
+			<arg value="${xircles-user}@janino.codehaus.org:/projects/janino/dist/"/>
+		</exec>
 	</target>
 
 	<target name="dist" depends="clean,janino.jar,commons-compiler-jdk.jar,javadoc">
@@ -45,6 +66,14 @@
 
 			<zipfileset file="new_bsd_license.txt" prefix="janino-${version}"/>
 		</zip>
+
+		<length file="build/lib/janino.jar" property="janino-jar-size"/>
+		<copy file="pad_file-template.xml" tofile="build/pad_file.xml" encoding="ISO-8859-1">
+			<filterchain>
+				<replacestring from="@VERSION@" to="${version}"/>
+				<replacestring from="@SIZE@"    to="${janino-jar-size}"/>
+			</filterchain>
+		</copy>
 	</target>
 
 	<target name="compile-commons-compiler">
@@ -59,6 +88,9 @@
 			debug="true"
 			debuglevel="lines,vars,source"
 		/>
+		<copy todir="build/bin-commons-compiler">
+			<fileset dir="../commons-compiler/src" excludes="**/*.java,**/package.html"/>
+		</copy>
 	</target>
 
 	<target name="compile-janino">
@@ -75,6 +107,9 @@
 			debug="true"
 			debuglevel="lines,vars,source"
 		/>
+		<copy todir="build/bin-janino">
+			<fileset dir="../janino/src" excludes="**/*.java,**/package.html"/>
+		</copy>
 	</target>
 
 	<target name="compile-commons-compiler-jdk">
@@ -90,6 +125,9 @@
 			debug="true"
 			debuglevel="lines,vars,source"
 		/>
+		<copy todir="build/bin-commons-compiler-jdk">
+			<fileset dir="../commons-compiler-jdk/src" excludes="**/*.java,**/package.html"/>
+		</copy>
 	</target>
 
 	<target name="janino.jar" depends="compile-commons-compiler,compile-janino">
@@ -98,13 +136,13 @@
 			<fileset dir="build/bin-commons-compiler"/>
 			<fileset dir="build/bin-janino"/>
 		</jar>
-		<exec executable="jarsigner">
-			<arg value="-keystore"/><arg value="dummy-keystore"/>
-			<arg value="-storepass"/><arg value="storepass"/>
-			<arg value="-keypass"/><arg value="keypass"/>
-			<arg value="build/lib/janino.jar"/>
-			<arg value="dummy"/>
-		</exec>
+		<signjar
+			keystore="dummy-keystore"
+			storepass="storepass"
+			keypass="keypass"
+			jar="build/lib/janino.jar"
+			alias="dummy"
+		/>
 	</target>
 
 	<target name="commons-compiler-jdk.jar" depends="compile-commons-compiler,compile-commons-compiler-jdk">
@@ -113,13 +151,13 @@
 			<fileset dir="build/bin-commons-compiler"/>
 			<fileset dir="build/bin-commons-compiler-jdk"/>
 		</jar>
-		<exec executable="jarsigner">
-			<arg value="-keystore"/><arg value="dummy-keystore"/>
-			<arg value="-storepass"/><arg value="storepass"/>
-			<arg value="-keypass"/><arg value="keypass"/>
-			<arg value="build/lib/commons-compiler-jdk.jar"/>
-			<arg value="dummy"/>
-		</exec>
+		<signjar
+			keystore="dummy-keystore"
+			storepass="storepass"
+			keypass="keypass"
+			jar="build/lib/commons-compiler-jdk.jar"
+			alias="dummy"
+		/>
 	</target>
 
 	<target name="javadoc" description="Build JAVADOC">
@@ -130,13 +168,13 @@
 			doctitle="Janino ${version}"
 			windowtitle="Janino ${version}"
 			overview="overview.html"
-			sourcepath="../commons-compiler/src;../janino/src;../commons-compiler-jdk"
-			classpath="${ant_jar}"
+			sourcepath="../commons-compiler/src;../janino/src;../commons-compiler-jdk/src"
+			classpath="${ant.jar}"
 			destdir="build/javadoc"
-			packagenames="${javadoc_packages}"
+			packagenames="${javadoc-packages}"
 		>
-			<link offline="true" href="${jdk_javadoc_remote}" packagelistloc="${jdk_javadoc_local}"/>
-			<link offline="true" href="${ant_javadoc_remote}" packagelistloc="${ant_javadoc_local}"/>
+			<link offline="true" href="${javadoc-jdk-href}" packagelistloc="${javadoc-jdk-packagelistloc}"/>
+			<link offline="true" href="${javadoc-ant-href}" packagelistloc="${javadoc-ant-packagelistloc}"/>
 		</javadoc>
 	</target>
 
