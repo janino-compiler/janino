@@ -31,17 +31,15 @@ import java.io.*;
 import org.codehaus.commons.compiler.*;
 
 /**
- * This {@link IExpressionEvaluator} is implemented by creating and compiling a temporary
- * compilation unit defining one class with one static method with one RETURN statement.
+ * This {@link IExpressionEvaluator} is implemented by creating and compiling a temporary compilation unit defining one
+ * class with one static method with one RETURN statement.
  * <p>
  * A number of "convenience constructors" exist that execute the set-up steps described for {@link
  * IExpressionEvaluator} instantly.
  * <p>
- * If the parameter and return types of the expression are known at compile time, then a "fast"
- * expression evaluator can be instantiated through
- * {@link #createFastExpressionEvaluator(String, Class, String[], ClassLoader)}. Expression
- * evaluation is faster than through {@link #evaluate(Object[])}, because it is not done through
- * reflection but through direct method invocation.
+ * If the parameter and return types of the expression are known at compile time, then a "fast" expression evaluator can
+ * be instantiated through {@link #createFastEvaluator(String, Class, String[])}. Expression evaluation is faster than
+ * through {@link #evaluate(Object[])}, because it is not done through reflection but through direct method invocation.
  * <p>
  * Example:
  * <pre>
