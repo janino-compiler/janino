@@ -20,14 +20,14 @@ public class BenchmarkingTestCase extends TestCase {
 
     @Override
     public final void run(TestResult result) {
-        long ms = System.currentTimeMillis();
+        long ns = System.nanoTime();
         super.run(result);
         LOGGER.log(BENCHMARK_LEVEL, (
             "'"
             + this.getName()
             + "' took "
-            + (System.currentTimeMillis() - ms)
-            + " milliseconds"
+            + (System.nanoTime() - ns)
+            + " nanoseconds"
         ));
     }
 
