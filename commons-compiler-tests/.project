@@ -14,4 +14,11 @@
 	<natures>
 		<nature>org.eclipse.jdt.core.javanature</nature>
 	</natures>
+	<linkedResources>
+		<link>
+			<name>jdk1.6.0_17-jre-lib-logging.properties</name>
+			<type>1</type>
+			<location>C:/Program Files/Java/jdk1.6.0_17/jre/lib/logging.properties</location>
+		</link>
+	</linkedResources>
 </projectDescription>
