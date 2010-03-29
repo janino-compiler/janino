@@ -275,7 +275,7 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
     }
 
     public final void cook(Reader[] readers) throws CompileException, IOException {
-        this.cook(new String[readers.length], readers);
+        this.cook(null, readers);
     }
 
     public void cook(
@@ -368,16 +368,12 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
                     if (j > 0) pw.print(", ");
                     pw.print(parameterTypes[j].getName());
                     pw.print(" ");
-                    pw.print(parameterNames[i]);
+                    pw.print(parameterNames[j]);
                 }
                 pw.print(")");
-                if (thrownExceptions.length > 0) {
-                    pw.print(" throws");
-                    pw.print(thrownExceptions[0].getName());
-                    for (int j = 0; j < thrownExceptions.length; ++j) {
-                        pw.print(", ");
-                        pw.print(thrownExceptions[j]);
-                    }
+                for (int j = 0; j < thrownExceptions.length; ++j) {
+                    pw.print(j == 0 ? " throws " : ", ");
+                    pw.print(thrownExceptions[j].getName());
                 }
                 pw.println(" {");
                 pw.close();
