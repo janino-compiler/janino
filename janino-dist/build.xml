@@ -26,20 +26,16 @@
 <project name="Janino" default="default" basedir=".">
 	<property file="build.properties"/>
 
-	<target name="default" depends="dist,publish"/>
+	<target name="default" description="Build the distribution and publish everything" depends="dist,publish-all"/>
 
-	<target name="publish">
-		<input
-			addproperty="xircles-user"
-			defaultvalue="aunkrig"
-			message="Your XIRCLES user name (you must have write access to the JANINO space):"
-		/>
+	<target name="publish-all" depends="get-xircles-user">
 		<echo message="rsync to janino.codehaus.org"/>
 		<exec executable="${rsync-executable}">
 			<arg value="--recursive"/>
 			<arg value="--chmod=ugo=rwX"/>
 			<arg value="--rsh=${ssh-executable}"/>
 			<arg value="--verbose"/>
+			<arg value="--exclude=.svn"/>
 			<arg value="favicon.ico"/>
 			<arg value="build/janino-${version}.zip"/>
 			<arg value="build/lib/janino.jar"/>
@@ -50,6 +46,27 @@
 			<arg value="../janino/src/org/codehaus/janino/samples"/>
 			<arg value="${xircles-user}@janino.codehaus.org:/projects/janino/dist/"/>
 		</exec>
+	</target>
+
+	<target name="publish-zip" description="Upload only the ZIP file for beta testers" depends="get-xircles-user">
+		<echo message="rsync to janino.codehaus.org"/>
+		<exec executable="${rsync-executable}">
+			<arg value="--recursive"/>
+			<arg value="--chmod=ugo=rwX"/>
+			<arg value="--rsh=${ssh-executable}"/>
+			<arg value="--verbose"/>
+			<arg value="--exclude=.svn"/>
+			<arg value="build/janino-${version}.zip"/>
+			<arg value="${xircles-user}@janino.codehaus.org:/projects/janino/dist/"/>
+		</exec>
+	</target>
+
+	<target name="get-xircles-user">
+		<input
+			addproperty="xircles-user"
+			defaultvalue="aunkrig"
+			message="Your XIRCLES user name (you must have write access to the JANINO space):"
+		/>
 	</target>
 
 	<target name="dist" depends="clean,janino.jar,commons-compiler-jdk.jar,javadoc">
