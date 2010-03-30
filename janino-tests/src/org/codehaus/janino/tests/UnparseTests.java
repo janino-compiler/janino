@@ -289,7 +289,7 @@ public class UnparseTests extends TestCase {
         testInterfaceHelper(true);
     }
 
-    private void testInterfaceHelper(boolean interfaceMod) throws ParseException {
+    private void testInterfaceHelper(boolean interfaceMod) throws CompileException {
         short modifier = Mod.PUBLIC;
         if (interfaceMod) {
             modifier |= Mod.INTERFACE;

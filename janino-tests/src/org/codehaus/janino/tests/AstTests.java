@@ -95,8 +95,7 @@ public class AstTests extends TestCase {
         );
     };
 
-    private static PackageMemberClassDeclaration createClass(CompilationUnit cu)
-    throws ParseException {
+    private static PackageMemberClassDeclaration createClass(CompilationUnit cu) throws CompileException {
         PackageMemberClassDeclaration clazz = new PackageMemberClassDeclaration(
             getLocation(),
             null,
