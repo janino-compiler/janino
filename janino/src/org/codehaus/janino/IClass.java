@@ -231,27 +231,48 @@ public abstract class IClass {
     }
 
     /**
-     * Returns the fields of a class or interface (but not inherited
-     * fields).<br>
-     * Returns an empty array for an array, primitive type or "void".
+     * Returns the {@link IField}s declared in this {@link IClass} (but not inherited fields).
+     *
+     * @return An empty array for an array, primitive type or "void"
      */
-    public final IField getDeclaredIField(String name) {
-        if(this.declaredIFieldsCache == null) {
+    public final IField[] getDeclaredIFields() {
+        Collection/*<IField>*/ allFields = getDeclaredIFieldsCache().values();
+
+        return (IField[]) allFields.toArray(new IField[allFields.size()]);
+    }
+
+    /** @return String field-name => IField */
+    private Map getDeclaredIFieldsCache() {
+        if (this.declaredIFieldsCache == null) {
             IField[] fields = getDeclaredIFields2();
-            Map m = new HashMap();
-            for(int i = 0; i < fields.length; ++i) {
+            Map      m = new HashMap();
+
+            for (int i = 0; i < fields.length; ++i) {
                 m.put(fields[i].getName(), fields[i]);
             }
             this.declaredIFieldsCache = m;
         }
-        return (IField) this.declaredIFieldsCache.get(name);
+        return this.declaredIFieldsCache;
+    }
+
+    /**
+     * Returns the named {@link IField} declared in this {@link IClass} (does not work for inherited fields).
+     *
+     * @return <code>null</code> iff this {@link IClass} does not declare an {@link IField} with that name
+     */
+    public final IField getDeclaredIField(String name) {
+        return (IField) getDeclaredIFieldsCache().get(name);
     }
 
     protected void clearIFieldCaches() {
         this.declaredIFieldsCache = null;
     }
 
-    private Map declaredIFieldsCache = null; // String name => IField
+    private Map declaredIFieldsCache = null; // String field-name => IField
+
+    /**
+     * Uncached version of {@link #getDeclaredIFields()}.
+     */
     protected abstract IField[] getDeclaredIFields2();
 
     /**
