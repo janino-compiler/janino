@@ -205,7 +205,7 @@ public class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEval
 
     /** @deprecated */
     public void setImplementedTypes(Class[] implementedInterfaces) {
-        this.setImplementedTypes(implementedInterfaces);
+        this.setImplementedInterfaces(implementedInterfaces);
     }
 
     public void cook(Scanner scanner) throws CompileException, IOException {

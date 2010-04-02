@@ -28,6 +28,8 @@ package org.codehaus.commons.compiler.jdk;
 
 import java.io.*;
 import java.net.*;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.*;
 
 import javax.tools.*;
@@ -94,11 +96,11 @@ public class SimpleCompiler extends Cookable implements ISimpleCompiler {
 
         // Get the original FM, which reads class files through this JVM's BOOTCLASSPATH and
         // CLASSPATH.
-        JavaFileManager fileManager = compiler.getStandardFileManager(null, null, null);
+        final JavaFileManager fm = compiler.getStandardFileManager(null, null, null);
 
         // Wrap it so that the output files (in our case class files) are stored in memory rather
         // than in files.
-        fileManager = new ByteArrayJavaFileManager<JavaFileManager>(fileManager);
+        final JavaFileManager fileManager = new ByteArrayJavaFileManager<JavaFileManager>(fm);
 
         // Run the compiler.
         try {
@@ -143,7 +145,11 @@ public class SimpleCompiler extends Cookable implements ISimpleCompiler {
         }
 
         // Create a ClassLoader that reads class files from our FM.
-        this.result = new JavaFileManagerClassLoader(fileManager, this.parentClassLoader);
+        this.result = AccessController.doPrivileged(new PrivilegedAction<JavaFileManagerClassLoader>() {
+            public JavaFileManagerClassLoader run() {
+                return new JavaFileManagerClassLoader(fileManager, SimpleCompiler.this.parentClassLoader);
+            }
+        });
     }
 
     protected void cook(
@@ -161,11 +167,11 @@ public class SimpleCompiler extends Cookable implements ISimpleCompiler {
 
         // Get the original FM, which reads class files through this JVM's BOOTCLASSPATH and
         // CLASSPATH.
-        JavaFileManager fileManager = compiler.getStandardFileManager(null, null, null);
+        final JavaFileManager fm = compiler.getStandardFileManager(null, null, null);
 
         // Wrap it so that the output files (in our case class files) are stored in memory rather
         // than in files.
-        fileManager = new ByteArrayJavaFileManager<JavaFileManager>(fileManager);
+        final JavaFileManager fileManager = new ByteArrayJavaFileManager<JavaFileManager>(fm);
 
         // Run the compiler.
         try {
@@ -210,7 +216,11 @@ public class SimpleCompiler extends Cookable implements ISimpleCompiler {
         }
 
         // Create a ClassLoader that reads class files from our FM.
-        this.result = new JavaFileManagerClassLoader(fileManager, this.parentClassLoader);
+        this.result = AccessController.doPrivileged(new PrivilegedAction<JavaFileManagerClassLoader>() {
+            public JavaFileManagerClassLoader run() {
+                return new JavaFileManagerClassLoader(fileManager, SimpleCompiler.this.parentClassLoader);
+            }
+        });
     }
 
     @Override

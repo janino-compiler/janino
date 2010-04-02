@@ -28,6 +28,8 @@ package org.codehaus.janino;
 
 import java.io.*;
 import java.lang.reflect.*;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.*;
 
 import org.codehaus.commons.compiler.*;
@@ -152,12 +154,6 @@ public class SimpleCompiler extends Cookable implements ISimpleCompiler {
 
     public SimpleCompiler() {}
 
-    /**
-     * A {@link ClassLoader} that finds the classes on the JVM's <i>boot class path</i> (e.g.
-     * <code>java.io.*</code>), but not the classes on the JVM's <i>class path</i>.
-     */
-    public static final ClassLoader BOOT_CLASS_LOADER = new ClassLoader(null) {};
-
     public void setParentClassLoader(ClassLoader optionalParentClassLoader) {
         this.setParentClassLoader(optionalParentClassLoader, null);
     }
@@ -225,7 +221,11 @@ public class SimpleCompiler extends Cookable implements ISimpleCompiler {
         assertNotCooked();
 
         // Set up the ClassLoader for the compilation and the loading.
-        this.classLoader = new AuxiliaryClassLoader(this.parentClassLoader);
+        this.classLoader = (AuxiliaryClassLoader) AccessController.doPrivileged(new PrivilegedAction() {
+            public Object run() {
+                return new AuxiliaryClassLoader(SimpleCompiler.this.parentClassLoader);
+            }
+        });
         if (this.optionalAuxiliaryClasses != null) {
             for (int i = 0; i < this.optionalAuxiliaryClasses.length; ++i) {
                 this.classLoader.addAuxiliaryClass(this.optionalAuxiliaryClasses[i]);
@@ -381,7 +381,7 @@ public class SimpleCompiler extends Cookable implements ISimpleCompiler {
         ).compileUnit(debuggingInformation);
 
         // Convert the class files to bytes and store them in a Map.
-        Map classes = new HashMap(); // String className => byte[] data
+        final Map classes = new HashMap(); // String className => byte[] data
         for (int i = 0; i < classFiles.length; ++i) {
             ClassFile cf = classFiles[i];
             classes.put(cf.getThisClassName(), cf.toByteArray());
@@ -404,10 +404,14 @@ public class SimpleCompiler extends Cookable implements ISimpleCompiler {
         }
 
         // Create a ClassLoader that loads the generated classes.
-        this.result = new ByteArrayClassLoader(
-            classes,         // classes
-            this.classLoader // parent
-        );
+        this.result = (ClassLoader) AccessController.doPrivileged(new PrivilegedAction() {
+            public Object run() {
+                return new ByteArrayClassLoader(
+                    classes,                        // classes
+                    SimpleCompiler.this.classLoader // parent
+                );
+            }
+        });
         return this.result;
     }
 

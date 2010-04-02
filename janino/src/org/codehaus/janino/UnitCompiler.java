@@ -5564,11 +5564,11 @@ public class UnitCompiler {
         {
             Java.Scope s = scope;
             if (s instanceof Java.BlockStatement) {
-                Java.LocalVariable lv = ((Java.BlockStatement) s).findLocalVariable(identifier);
+                Java.BlockStatement bs = (BlockStatement) s;
+                Java.LocalVariable lv = bs.findLocalVariable(identifier);
                 if (lv != null) {
                     Java.LocalVariableAccess lva = new Java.LocalVariableAccess(location, lv);
-                    if (!(scope instanceof Java.BlockStatement)) throw new JaninoRuntimeException("SNO: Local variable access in non-block statement context!?");
-                    lva.setEnclosingBlockStatement((Java.BlockStatement) scope);
+                    lva.setEnclosingBlockStatement(bs);
                     return lva;
                 }
                 s = s.getEnclosingScope();
@@ -5577,42 +5577,42 @@ public class UnitCompiler {
             if (s instanceof Java.FunctionDeclarator) {
                 s = s.getEnclosingScope();
             }
-                if (s instanceof Java.InnerClassDeclaration) {
-                    Java.InnerClassDeclaration icd = (Java.InnerClassDeclaration) s;
-                    s = s.getEnclosingScope();
-                    if (s instanceof Java.AnonymousClassDeclaration) s = s.getEnclosingScope();
-                    while (s instanceof Java.BlockStatement) {
-                        Java.LocalVariable lv = ((Java.BlockStatement) s).findLocalVariable(identifier);
-                        if (lv != null) {
-                            if (!lv.finaL) this.compileError("Cannot access non-final local variable \"" + identifier + "\" from inner class");
-                            final IClass lvType = lv.type;
-                            IClass.IField iField = new SimpleIField(
-                                this.resolve(icd),
-                                "val$" + identifier,
-                                lvType
-                            );
-                            icd.defineSyntheticField(iField);
-                            Java.FieldAccess fa = new Java.FieldAccess(
-                                location,                        // location
-                                new Java.QualifiedThisReference( // lhs
-                                    location,                                        // location
-                                    new Java.SimpleType(location, this.resolve(icd)) // qualification
-                                ),
-                                iField                           // field
-                            );
-                            fa.setEnclosingBlockStatement((Java.BlockStatement) scope);
-                            return fa;
-                        }
-                        s = s.getEnclosingScope();
-                        while (s instanceof Java.BlockStatement) s = s.getEnclosingScope();
-                        if (!(s instanceof Java.FunctionDeclarator)) break;
-                        s = s.getEnclosingScope();
-                        if (!(s instanceof Java.InnerClassDeclaration)) break;
-                        icd = (Java.InnerClassDeclaration) s;
-                        s = s.getEnclosingScope();
+            if (s instanceof Java.InnerClassDeclaration) {
+                Java.InnerClassDeclaration icd = (Java.InnerClassDeclaration) s;
+                s = s.getEnclosingScope();
+                if (s instanceof Java.AnonymousClassDeclaration) s = s.getEnclosingScope();
+                while (s instanceof Java.BlockStatement) {
+                    Java.LocalVariable lv = ((Java.BlockStatement) s).findLocalVariable(identifier);
+                    if (lv != null) {
+                        if (!lv.finaL) this.compileError("Cannot access non-final local variable \"" + identifier + "\" from inner class");
+                        final IClass lvType = lv.type;
+                        IClass.IField iField = new SimpleIField(
+                            this.resolve(icd),
+                            "val$" + identifier,
+                            lvType
+                        );
+                        icd.defineSyntheticField(iField);
+                        Java.FieldAccess fa = new Java.FieldAccess(
+                            location,                        // location
+                            new Java.QualifiedThisReference( // lhs
+                                location,                                        // location
+                                new Java.SimpleType(location, this.resolve(icd)) // qualification
+                            ),
+                            iField                           // field
+                        );
+                        fa.setEnclosingBlockStatement((Java.BlockStatement) scope);
+                        return fa;
                     }
+                    s = s.getEnclosingScope();
+                    while (s instanceof Java.BlockStatement) s = s.getEnclosingScope();
+                    if (!(s instanceof Java.FunctionDeclarator)) break;
+                    s = s.getEnclosingScope();
+                    if (!(s instanceof Java.InnerClassDeclaration)) break;
+                    icd = (Java.InnerClassDeclaration) s;
+                    s = s.getEnclosingScope();
                 }
             }
+        }
 
         // 6.5.2.BL1.B1.B1.3 (JLS3: 6.5.2.BL1.B1.B1.3) / 6.5.6.1.2.1 Field.
         Java.BlockStatement enclosingBlockStatement = null;
@@ -6201,7 +6201,9 @@ public class UnitCompiler {
                 IClass[] parameterTypesOfFirstMethod = m.getParameterTypes();
                 for (;;) {
                     if (!m.isAbstract()) {
-                        if (theNonAbstractMethod != null) {
+                        if (theNonAbstractMethod == null) {
+                            theNonAbstractMethod = m;
+                        } else {
                             IClass declaringIClass = m.getDeclaringIClass();
                             IClass theNonAbstractMethodDeclaringIClass = theNonAbstractMethod.getDeclaringIClass();
                             if (declaringIClass.isAssignableFrom(theNonAbstractMethodDeclaringIClass)) {

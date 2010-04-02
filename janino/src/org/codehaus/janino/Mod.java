@@ -68,13 +68,14 @@ public class Mod {
     public final static short ENUM         = 0x4000;
 
     public static String shortToString(short sh) {
-        String res = "";
+        if (sh == 0) return "";
+        StringBuffer res = new StringBuffer();
         for (int i = 0; i < Mod.mappings.length; i += 2) {
             if ((sh & ((Short) Mod.mappings[i + 1]).shortValue()) == 0) continue;
-            if (res.length() > 0) res += ' ';
-            res += (String) Mod.mappings[i];
+            if (res.length() > 0) res.append(' ');
+            res.append((String) Mod.mappings[i]);
         }
-        return res;
+        return res.toString();
     }
 
     private final static Object[] mappings = {

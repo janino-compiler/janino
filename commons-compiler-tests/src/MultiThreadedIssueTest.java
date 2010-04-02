@@ -57,7 +57,7 @@ public class MultiThreadedIssueTest extends TestCase {
         Runnable runnable = new Runnable() {
             public void run() {
                 final Calculator calculator = create(random.nextInt(100));
-                calculator.calc((int)Math.random());
+                calculator.calc((int) (100.0 * Math.random()));
             }
         };
 

@@ -215,7 +215,7 @@ public class AstTests extends TestCase {
 
         PackageMemberClassDeclaration clazz = createClass(cu);
 
-        Byte exp = new Byte((byte)1);
+        Byte exp = Byte.valueOf((byte) 1);
         List/*<Statement>*/ body = new ArrayList();
         body.add(
             new ReturnStatement(

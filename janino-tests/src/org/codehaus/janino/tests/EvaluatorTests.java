@@ -40,7 +40,6 @@ import org.codehaus.janino.Scanner;
 import org.codehaus.janino.ScriptEvaluator;
 
 public class EvaluatorTests extends TestCase {
-    public static final ClassLoader BOOT_CLASS_LOADER = new ClassLoader(null) {};
 
     public static Test suite() {
         TestSuite s = new TestSuite(EvaluatorTests.class.getName());

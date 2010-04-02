@@ -184,10 +184,10 @@ public abstract class AbstractJavaSourceClassLoader extends ClassLoader {
     }
 
     private static File[] splitPath(String string) {
-        List l = new ArrayList();
+        List/*<File>*/ l = new ArrayList();
         for (StringTokenizer st = new StringTokenizer(string, File.pathSeparator); st.hasMoreTokens();) {
             l.add(new File(st.nextToken()));
         }
-        return (File[]) l.toArray(new String[l.size()]);
+        return (File[]) l.toArray(new File[l.size()]);
     }
 }

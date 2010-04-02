@@ -41,12 +41,6 @@ public class SandboxTests extends TestCase {
         return s;
     }
 
-    /**
-     * A {@link ClassLoader} that finds the classes on the JVM's <i>boot class path</i> (e.g.
-     * <code>java.io.*</code>), but not the classes on the JVM's <i>class path</i>.
-     */
-    public static final ClassLoader BOOT_CLASS_LOADER = ClassLoader.getSystemClassLoader().getParent();
-
     private final ICompilerFactory compilerFactory;
 
     public SandboxTests(String name, ICompilerFactory compilerFactory) {
@@ -59,7 +53,7 @@ public class SandboxTests extends TestCase {
         // Invoke method of forbidden external class.
         try {
             IExpressionEvaluator ee = compilerFactory.newExpressionEvaluator();
-            ee.setParentClassLoader(BOOT_CLASS_LOADER);
+            ee.setParentClassLoader(ICookable.BOOT_CLASS_LOADER);
             ee.cook("for_sandbox_tests.ExternalClass.m1()");
             fail("Should have thrown a CompileException");
         } catch (CompileException ex) {

@@ -651,13 +651,12 @@ public class Java {
         protected IClass getOuterIClass2() {
             Scope s = this.getEnclosingScope();
             for (; !(s instanceof FunctionDeclarator); s = s.getEnclosingScope());
-            boolean isStaticMethod = (s instanceof MethodDeclarator) && (((FunctionDeclarator) s).modifiers & Mod.STATIC) != 0;
+            if (
+                s instanceof MethodDeclarator
+                && (((MethodDeclarator) s).modifiers & Mod.STATIC) != 0
+            ) return null;
             for (; !(s instanceof TypeDeclaration); s = s.getEnclosingScope());
-            TypeDeclaration immediatelyEnclosingTypeDeclaration = (TypeDeclaration) s;
-            return (
-                immediatelyEnclosingTypeDeclaration instanceof ClassDeclaration &&
-                !isStaticMethod
-            ) ? (IClass) immediatelyEnclosingTypeDeclaration : null;
+            return ((AbstractTypeDeclaration) s).resolvedType;
         }
 
         // Implement TypeDeclaration.

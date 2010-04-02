@@ -77,7 +77,8 @@ public class CompilerTests extends TestCase {
         ClassLoader bootstrapClassLoader = SimpleCompiler.BOOT_CLASS_LOADER;
         File[] sourceFiles = new File[] {
             new File(JANINO_SRC + "/org/codehaus/janino/Compiler.java"),
-            new File(JANINO_SRC + "/org/codehaus/janino/samples/ExpressionDemo.java"),
+            new File(COMMONS_COMPILER_SRC + "/org/codehaus/commons/compiler/samples/ExpressionDemo.java"),
+            new File(JANINO_SRC + "/org/codehaus/janino/ClassLoaderIClassLoader.java"),
             new File(JANINO_SRC + "/org/codehaus/janino/util/resource/MapResourceCreator.java"),
         };
         ResourceFinder sourceFinder = new MultiResourceFinder(Arrays.asList(new ResourceFinder[] {

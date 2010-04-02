@@ -26,6 +26,8 @@
 
 package org.codehaus.janino;
 
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import org.codehaus.commons.compiler.*;
 
 public class CompilerFactory extends AbstractCompilerFactory {
@@ -51,10 +53,18 @@ public class CompilerFactory extends AbstractCompilerFactory {
     }
 
     public AbstractJavaSourceClassLoader newJavaSourceClassLoader() {
-        return new JavaSourceClassLoader();
+        return (AbstractJavaSourceClassLoader) AccessController.doPrivileged(new PrivilegedAction() {
+            public Object run() {
+                return new JavaSourceClassLoader();
+            }
+        });
     }
 
-    public AbstractJavaSourceClassLoader newJavaSourceClassLoader(ClassLoader parentClassLoader) {
-        return new JavaSourceClassLoader(parentClassLoader);
+    public AbstractJavaSourceClassLoader newJavaSourceClassLoader(final ClassLoader parentClassLoader) {
+        return (AbstractJavaSourceClassLoader) AccessController.doPrivileged(new PrivilegedAction() {
+            public Object run() {
+                return new JavaSourceClassLoader(parentClassLoader);
+            }
+        });
     }
 }

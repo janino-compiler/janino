@@ -121,7 +121,7 @@ public class EvaluatorTests extends TestCase {
 
         {
             Method m = ee.getMethod(0);
-            assertEquals(new Integer(5), m.invoke(m.getDeclaringClass().newInstance(), new Object[] { new Integer(2), new Integer(3) }));
+            assertEquals(5, m.invoke(m.getDeclaringClass().newInstance(), new Object[] { 2, 3 }));
         }
 
         try {
@@ -190,7 +190,7 @@ public class EvaluatorTests extends TestCase {
         ee.setParameters(parameterNames, parameterTypes);
 
         ee.cook(expressions);
-        assertEquals(new Integer(165), ee.evaluate(3 * COUNT / 4, new Object[] { new Integer(77), new Integer(88) }));
+        assertEquals(165, ee.evaluate(3 * COUNT / 4, new Object[] { 77, 88 }));
     }
 
     public void testAssertNotCooked() throws Exception {
@@ -316,17 +316,17 @@ public class EvaluatorTests extends TestCase {
         Object res;
         {   // non-static
             res = get.invoke(i, new Object[0]);
-            assertEquals(new Integer(1), res);
+            assertEquals(1, res);
             set.invoke(i, new Object[0]);
             res = get.invoke(i, new Object[0]);
-            assertEquals(new Integer(11), res);
+            assertEquals(11, res);
         }
         {   //static
             res = getS.invoke(i, new Object[0]);
-            assertEquals(new Integer(2), res);
+            assertEquals(2, res);
             setS.invoke(i, new Object[0]);
             res = getS.invoke(i, new Object[0]);
-            assertEquals(new Integer(12), res);
+            assertEquals(12, res);
         }
     }
 
@@ -372,11 +372,11 @@ public class EvaluatorTests extends TestCase {
         };
         for(int i = 0; i < 3; ++i) {
             Object g1 = gets[i].invoke(inner, new Object[0]);
-            assertEquals(new Integer(1), g1);
+            assertEquals(1, g1);
             Object s1 = sets[i].invoke(inner, new Object[0]);
-            assertEquals(new Integer(i), s1);
+            assertEquals(i, s1);
             Object g2 = gets[i].invoke(inner, new Object[0]);
-            assertEquals(new Integer(i), g2);
+            assertEquals(i, g2);
         }
     }
 
@@ -515,7 +515,7 @@ public class EvaluatorTests extends TestCase {
                     boolean exp = compare(args[argIdx][0].doubleValue(), args[argIdx][1].doubleValue(), opcode[opIdx]);
                     Object[] objs = new Object[] { args[argIdx][0], args[argIdx][1], opcode[opIdx] };
                     Object actual = dm.invoke(null, objs);
-                    assertEquals(msg, new Boolean(exp), actual);
+                    assertEquals(msg, exp, actual);
                 }
 
                 {
@@ -527,7 +527,7 @@ public class EvaluatorTests extends TestCase {
                             opcode[opIdx]
                     };
                     Object actual = fm.invoke(null, objs);
-                    assertEquals(msg, new Boolean(exp), actual);
+                    assertEquals(msg, exp, actual);
                 }
             }
         }
@@ -566,7 +566,7 @@ public class EvaluatorTests extends TestCase {
             Method   m = c.getDeclaredMethod("run", new Class[0]);
             Object   o = c.newInstance();
             Object   res = m.invoke(o, new Object[0]);
-            assertEquals(new Integer(2*repititions), res);
+            assertEquals(2 * repititions, res);
         }
 
     }
@@ -674,7 +674,7 @@ public class EvaluatorTests extends TestCase {
             StringBuilder sb = new StringBuilder();
             sb.append(preamble);
             for(int j = 0; j < repititions; ++j) {
-                sb.append(MessageFormat.format(middle, new Object[] { new Integer(j) }));
+                sb.append(MessageFormat.format(middle, new Object[] { j }));
             }
             sb.append(postamble);
 
@@ -708,17 +708,17 @@ public class EvaluatorTests extends TestCase {
         sc.cook(test);
         Class<?> c = sc.getClassLoader().loadClass("test.Test");
         Method   m0 = c.getDeclaredMethod("run", new Class[] { });
-        assertEquals(new Boolean(false), m0.invoke(null, new Object[0]));
+        assertEquals(false, m0.invoke(null, new Object[0]));
 
         Method mStr = c.getDeclaredMethod("run", new Class[] { String.class });
         Method mObj = c.getDeclaredMethod("run", new Class[] { Object.class });
 
-        assertEquals(new Boolean(true),  mObj.invoke(null, new Object[] { "" }));
-        assertEquals(new Boolean(false), mObj.invoke(null, new Object[] { new Integer(1) }));
-        assertEquals(new Boolean(false), mObj.invoke(null, new Object[] { null }));
+        assertEquals(true,  mObj.invoke(null, new Object[] { "" }));
+        assertEquals(false, mObj.invoke(null, new Object[] { 1 }));
+        assertEquals(false, mObj.invoke(null, new Object[] { null }));
 
-        assertEquals(new Boolean(true),  mStr.invoke(null, new Object[] { "" }));
-        assertEquals(new Boolean(false), mStr.invoke(null, new Object[] { null }));
+        assertEquals(true,  mStr.invoke(null, new Object[] { "" }));
+        assertEquals(false, mStr.invoke(null, new Object[] { null }));
     }
 
     public void testOverrideVisibility() throws Exception {
@@ -831,11 +831,11 @@ public class EvaluatorTests extends TestCase {
         Object   t = topClass.newInstance();
 
         StringBuilder sb = new StringBuilder();
-        assertEquals(new Integer(sb.length()), get.invoke(t, new Object[] { sb }));
+        assertEquals(sb.length(), get.invoke(t, new Object[] { sb }));
         sb.append("asdf");
-        assertEquals(new Integer(sb.length()), get.invoke(t, new Object[] { sb }));
+        assertEquals(sb.length(), get.invoke(t, new Object[] { sb }));
         sb.append("qwer");
-        assertEquals(new Integer(sb.length()), get.invoke(t, new Object[] { sb }));
+        assertEquals(sb.length(), get.invoke(t, new Object[] { sb }));
     }
 
 

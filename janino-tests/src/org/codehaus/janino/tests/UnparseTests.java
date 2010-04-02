@@ -308,8 +308,8 @@ public class UnparseTests extends TestCase {
 
     public void testLiterals() throws Exception {
         Object[][] tests = new Object[][] {
-                { new Java.Literal(null, new Short((short)1)), "((short)1)" },
-                { new Java.Literal(null, new Byte((byte)1)),   "((byte)1)"  },
+            { new Java.Literal(null, (short) 1), "((short)1)" },
+            { new Java.Literal(null, (byte) 1),  "((byte)1)"  },
         };
         for(int i = 0; i < tests.length; ++i) {
             Atom expr = (Atom) tests[i][0];
