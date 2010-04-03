@@ -78,7 +78,9 @@ public class DirectoryIterator extends ProducerIterator {
             class State {
                 State(File dir) {
                     File[] entries = dir.listFiles();
-                    if (entries == null) throw new JaninoRuntimeException("Directory \"" + dir + "\" could not be read");
+                    if (entries == null) {
+                        throw new JaninoRuntimeException("Directory \"" + dir + "\" could not be read");
+                    }
                     List directoryList = new ArrayList();
                     List fileList      = new ArrayList();
                     for (int i = 0; i < entries.length; ++i) {

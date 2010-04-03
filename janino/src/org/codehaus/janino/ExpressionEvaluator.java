@@ -319,7 +319,7 @@ public class ExpressionEvaluator extends ScriptEvaluator implements IExpressionE
      * Notice: This method is not declared in {@link IExpressionEvaluator}, and is hence only available in <i>this</i>
      * implementation of <code>org.codehaus.commons.compiler</code>. To be independent from this particular
      * implementation, try to switch to {@link #createFastEvaluator(Reader, Class, String[])}.
-     * 
+     *
      * @deprecated
      * @see #createFastEvaluator(Reader, Class, String[])
      */
@@ -342,7 +342,7 @@ public class ExpressionEvaluator extends ScriptEvaluator implements IExpressionE
      * Notice: This method is not declared in {@link IExpressionEvaluator}, and is hence only available in <i>this</i>
      * implementation of <code>org.codehaus.commons.compiler</code>. To be independent from this particular
      * implementation, try to switch to {@link #createFastEvaluator(Reader, Class, String[])}.
-     * 
+     *
      * @deprecated
      * @see #createFastEvaluator(Reader, Class, String[])
      */
@@ -383,7 +383,9 @@ public class ExpressionEvaluator extends ScriptEvaluator implements IExpressionE
 
         // Parse the expression.
         Rvalue rvalue = parser.parseExpression().toRvalueOrPE();
-        if (!scanner.peek().isEOF()) throw new CompileException("Unexpected token \"" + scanner.peek() + "\"", scanner.location());
+        if (!scanner.peek().isEOF()) {
+            throw new CompileException("Unexpected token \"" + scanner.peek() + "\"", scanner.location());
+        }
 
         // Traverse the expression for ambiguous names and guess which of them are parameter names.
         final Set parameterNames = new HashSet();

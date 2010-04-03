@@ -327,7 +327,7 @@ public class ClassFileIClass extends IClass {
         for (int i = 0; i < parameterTypes.length; ++i) parameterTypes[i] = this.resolveClass(md.parameterFDs[i]);
 
         // Determine thrown exceptions.
-        IClass tes[] = null;
+        IClass[] tes = null;
         ClassFile.AttributeInfo[] ais = methodInfo.getAttributes();
         for (int i = 0; i < ais.length; ++i) {
             ClassFile.AttributeInfo ai = ais[i];
@@ -337,7 +337,7 @@ public class ClassFileIClass extends IClass {
                 for (int j = 0; j < teis.length; ++j) tes[j] = this.resolveClass(teis[j]);
             }
         }
-        final IClass thrownExceptions[] = tes == null ? new IClass[0] : tes;
+        final IClass[] thrownExceptions = tes == null ? new IClass[0] : tes;
 
         // Determine access.
         final Access access = ClassFileIClass.accessFlags2Access(methodInfo.getAccessFlags());
@@ -349,8 +349,18 @@ public class ClassFileIClass extends IClass {
                     // Process magic first parameter of inner class constructor.
                     IClass outerIClass = ClassFileIClass.this.getOuterIClass();
                     if (outerIClass != null) {
-                        if (parameterTypes.length < 1) throw new JaninoRuntimeException("Inner class constructor lacks magic first parameter");
-                        if (parameterTypes[0] != outerIClass) throw new JaninoRuntimeException("Magic first parameter of inner class constructor has type \"" + parameterTypes[0].toString() + "\" instead of that of its enclosing instance (\"" + outerIClass.toString() + "\")");
+                        if (parameterTypes.length < 1) {
+                            throw new JaninoRuntimeException("Inner class constructor lacks magic first parameter");
+                        }
+                        if (parameterTypes[0] != outerIClass) {
+                            throw new JaninoRuntimeException(
+                                "Magic first parameter of inner class constructor has type \""
+                                + parameterTypes[0].toString()
+                                + "\" instead of that of its enclosing instance (\""
+                                + outerIClass.toString()
+                                + "\")"
+                            );
+                        }
                         IClass[] tmp = new IClass[parameterTypes.length - 1];
                         System.arraycopy(parameterTypes, 1, tmp, 0, tmp.length);
                         return tmp;
@@ -391,7 +401,7 @@ public class ClassFileIClass extends IClass {
         // Determine optional "constant value" of the field (JLS2 15.28, bullet
         // 12). If a field has a "ConstantValue" attribute, we assume that it
         // has a constant value. Notice that this assumption is not always
-        // correct, because typical Java<sup>TM</sup> compilers do not
+        // correct, because typical Java&trade; compilers do not
         // generate a "ConstantValue" attribute for fields like
         // "int RED = 0", because "0" is the default value for an integer
         // field.
@@ -412,7 +422,9 @@ public class ClassFileIClass extends IClass {
                 ocv = ((ClassFile.ConstantValuePoolInfo) cpi).getValue(this.classFile);
             } else
             {
-                throw new JaninoRuntimeException("Unexpected constant pool info type \"" + cpi.getClass().getName() + "\"");
+                throw new JaninoRuntimeException(
+                    "Unexpected constant pool info type \"" + cpi.getClass().getName() + "\""
+                );
             }
         }
         final Object optionalConstantValue = ocv;
@@ -424,7 +436,7 @@ public class ClassFileIClass extends IClass {
             public Object  getConstantValue() throws CompileException { return optionalConstantValue; }
             public String  getName()                                  { return name; }
             public IClass  getType() throws CompileException          { return type; }
-            public boolean isStatic()                                 { return (fieldInfo.getAccessFlags() & Mod.STATIC) != 0; }
+            public boolean isStatic()                         { return (fieldInfo.getAccessFlags() & Mod.STATIC) != 0; }
             public Access  getAccess()                                { return access; }
         };
         this.resolvedFields.put(fieldInfo, result);
@@ -433,9 +445,9 @@ public class ClassFileIClass extends IClass {
 
     private static Access accessFlags2Access(short accessFlags) {
         return (
-            (accessFlags & Mod.PUBLIC   ) != 0 ? Access.PUBLIC    :
+            (accessFlags & Mod.PUBLIC)    != 0 ? Access.PUBLIC    :
             (accessFlags & Mod.PROTECTED) != 0 ? Access.PROTECTED :
-            (accessFlags & Mod.PRIVATE  ) != 0 ? Access.PRIVATE   :
+            (accessFlags & Mod.PRIVATE)   != 0 ? Access.PRIVATE   :
             Access.DEFAULT
         );
     }

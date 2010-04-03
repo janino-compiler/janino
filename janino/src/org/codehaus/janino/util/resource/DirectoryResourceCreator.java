@@ -39,7 +39,7 @@ public class DirectoryResourceCreator extends FileResourceCreator {
         this.destinationDirectory = destinationDirectory;
     }
 
-    protected File getFile(String resourceName) {
+    protected final File getFile(String resourceName) {
         return new File(this.destinationDirectory, resourceName.replace('/', File.separatorChar));
     }
 }

@@ -39,9 +39,9 @@ public class FileResource implements Resource {
     public final InputStream open() throws IOException { return new FileInputStream(this.file); }
     public final long        lastModified()            { return this.file.lastModified(); }
 
-    public File getFile() { return this.file; }
+    public final File getFile() { return this.file; }
 
-    public String toString() { return this.getFileName(); }
+    public final String toString() { return this.getFileName(); }
 
     private final File file;
 }

@@ -27,23 +27,21 @@
 package org.codehaus.janino;
 
 /**
- * This class defines constants and convenience methods for the handling of
- * modifiers as defined by the JVM.
+ * This class defines constants and convenience methods for the handling of modifiers as defined by the JVM.
  * <p>
- * Notice: This class should be named <code>IClass.IModifier</code>, but changing the name would
- * break existing client code. Thus it won't be renamed until there's a really good reason to
- * do it (maybe with a major desing change).
+ * Notice: This class should be named <code>IClass.IModifier</code>, but changing the name would break existing client
+ * code. Thus it won't be renamed until there's a really good reason to do it (maybe with a major design change).
  */
-public class Mod {
+public final class Mod {
     private Mod() {} // Don't instantiate me!
 
-    public final static short NONE         = 0x0000;
+    public static final short NONE         = 0x0000;
 
-    public final static short PUBLIC       = 0x0001;
-    public final static short PRIVATE      = 0x0002;
-    public final static short PROTECTED    = 0x0004;
-    public final static short PACKAGE      = 0x0000;
-    public final static short PPP          = 0x0007;
+    public static final short PUBLIC       = 0x0001;
+    public static final short PRIVATE      = 0x0002;
+    public static final short PROTECTED    = 0x0004;
+    public static final short PACKAGE      = 0x0000;
+    public static final short PPP          = 0x0007;
 
     public static boolean isPublicAccess(short sh)    { return (sh & Mod.PPP) == Mod.PUBLIC; }
     public static boolean isPrivateAccess(short sh)   { return (sh & Mod.PPP) == Mod.PRIVATE; }
@@ -51,21 +49,21 @@ public class Mod {
     public static boolean isPackageAccess(short sh)   { return (sh & Mod.PPP) == Mod.PACKAGE; }
     public static short changeAccess(short sh, short newAccess) { return (short) ((sh & ~Mod.PPP) | newAccess); }
 
-    public final static short STATIC       = 0x0008;
-    public final static short FINAL        = 0x0010;
-    public final static short SUPER        = 0x0020;
-    public final static short SYNCHRONIZED = 0x0020;
-    public final static short VOLATILE     = 0x0040;
-    public final static short TRANSIENT    = 0x0080;
-    public final static short NATIVE       = 0x0100;
-    public final static short INTERFACE    = 0x0200;
-    public final static short ABSTRACT     = 0x0400;
-    public final static short STRICTFP     = 0x0800;
+    public static final short STATIC       = 0x0008;
+    public static final short FINAL        = 0x0010;
+    public static final short SUPER        = 0x0020;
+    public static final short SYNCHRONIZED = 0x0020;
+    public static final short VOLATILE     = 0x0040;
+    public static final short TRANSIENT    = 0x0080;
+    public static final short NATIVE       = 0x0100;
+    public static final short INTERFACE    = 0x0200;
+    public static final short ABSTRACT     = 0x0400;
+    public static final short STRICTFP     = 0x0800;
 
     // Poorly documented JDK 1.5 modifiers:
-    public final static short SYNTHETIC    = 0x1000;
-    public final static short ANNOTATION   = 0x2000;
-    public final static short ENUM         = 0x4000;
+    public static final short SYNTHETIC    = 0x1000;
+    public static final short ANNOTATION   = 0x2000;
+    public static final short ENUM         = 0x4000;
 
     public static String shortToString(short sh) {
         if (sh == 0) return "";
@@ -78,7 +76,7 @@ public class Mod {
         return res.toString();
     }
 
-    private final static Object[] mappings = {
+    private static final Object[] mappings = {
         "public",       new Short(Mod.PUBLIC),
         "private",      new Short(Mod.PRIVATE),
         "protected",    new Short(Mod.PROTECTED),

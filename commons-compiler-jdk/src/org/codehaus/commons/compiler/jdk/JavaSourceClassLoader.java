@@ -37,7 +37,7 @@ import org.codehaus.commons.compiler.jdk.ByteArrayJavaFileManager.ByteArrayJavaF
 
 /**
  * A {@link ClassLoader} that, unlike usual {@link ClassLoader}s,
- * does not load byte code, but reads Java<sup>TM</sup> source code and then scans, parses,
+ * does not load byte code, but reads Java&trade; source code and then scans, parses,
  * compiles and loads it into the virtual machine.
  * <p>
  * As with any {@link ClassLoader}, it is not possible to "update" classes after they've been
@@ -154,7 +154,6 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
             ) throws IOException {
                 return super.getJavaFileForOutput(location, className, kind, sibling);
             }
-            
         };
         this.fileManager = jfm;
     }
@@ -206,7 +205,7 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
             );
 
             if (classFileObject == null) {
-    
+
                 // Get the sourceFile.
                 JavaFileObject sourceFileObject = this.fileManager.getJavaFileForInput(
                     StandardLocation.SOURCE_PATH,
@@ -236,7 +235,7 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
                     null,                                   // out
                     this.fileManager,                       // fileManager
                     new DiagnosticListener<JavaFileObject>() { // diagnosticListener
-        
+
                         @Override
                         public void report(final Diagnostic<? extends JavaFileObject> diagnostic) {
                             if (diagnostic.getKind() == Diagnostic.Kind.ERROR) {
@@ -250,13 +249,13 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
                 ).call()) {
                     throw new ClassNotFoundException(className + ": Compilation failed");
                 }
-    
+
                 classFileObject = this.fileManager.getJavaFileForInput(
                     StandardLocation.CLASS_OUTPUT,
                     className,
                     Kind.CLASS
                 );
-    
+
                 if (classFileObject == null) {
                     throw new ClassNotFoundException(className + ": Class file not created by compilation");
                 }
@@ -326,11 +325,11 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
         public DiagnosticException(String message) {
             super(message);
         }
-        
+
         public DiagnosticException(Throwable cause) {
             super(cause);
         }
-        
+
         public DiagnosticException(Diagnostic<? extends JavaFileObject> diagnostic) {
             super(diagnostic.toString());
         }

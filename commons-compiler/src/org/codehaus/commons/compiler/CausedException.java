@@ -33,13 +33,17 @@ import java.lang.reflect.*;
  * For compatibility with pre-1.4 JDKs, this class mimics
  */
 public class CausedException extends Exception {
-    private Throwable     optionalCause = null;
-    private static Method INIT_CAUSE; // Null for pre-1.4 JDKs.
-    static {
+    private Throwable optionalCause = null;
+
+    private static final Method INIT_CAUSE = initCauseMethod(); // Null for pre-1.4 JDKs.
+    static Method initCauseMethod() {
         try {
-            CausedException.INIT_CAUSE = Exception.class.getDeclaredMethod("initCause", new Class[] { Throwable.class });
+            return Exception.class.getDeclaredMethod(
+                "initCause",
+                new Class[] { Throwable.class }
+            );
         } catch (NoSuchMethodException e) {
-            CausedException.INIT_CAUSE = null;
+            return null;
         }
     }
 

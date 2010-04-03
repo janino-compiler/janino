@@ -28,12 +28,12 @@ package org.codehaus.janino;
 
 import org.codehaus.janino.util.enumerator.*;
 
-public class DebuggingInformation extends Enumerator {
+public final class DebuggingInformation extends Enumerator {
     public static final DebuggingInformation SOURCE = new DebuggingInformation("source");
     public static final DebuggingInformation LINES  = new DebuggingInformation("lines");
     public static final DebuggingInformation VARS   = new DebuggingInformation("vars");
 
-    public static final EnumeratorSet NONE = new EnumeratorSet(DebuggingInformation.class      ).setName("none");
+    public static final EnumeratorSet NONE = new EnumeratorSet(DebuggingInformation.class).setName("none");
     public static final EnumeratorSet ALL  = new EnumeratorSet(DebuggingInformation.class, true).setName("all");
 
     public static final EnumeratorSet DEFAULT_DEBUGGING_INFORMATION = (

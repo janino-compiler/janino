@@ -35,7 +35,7 @@ import org.codehaus.janino.Java.CompilationUnit.ImportDeclaration;
 import org.codehaus.janino.util.enumerator.Enumerator;
 
 /**
- * A parser for the Java<sup>TM</sup> programming language.
+ * A parser for the Java&trade; programming language.
  */
 public class Parser {
     private final Scanner scanner;
@@ -190,7 +190,11 @@ public class Parser {
             );
         } else
         {
-            this.throwCompileException("Unexpected token \"" + this.scanner.peek() + "\" in class or interface declaration");
+            this.throwCompileException(
+                "Unexpected token \""
+                + this.scanner.peek()
+                + "\" in class or interface declaration"
+            );
             /* NEVER REACHED */ return null;
         }
         return res;
@@ -307,7 +311,7 @@ public class Parser {
         this.parseClassBody(namedClassDeclaration);
         return namedClassDeclaration;
     }
-    public static class ClassDeclarationContext extends Enumerator {
+    public static final class ClassDeclarationContext extends Enumerator {
         public static final ClassDeclarationContext BLOCK            = new ClassDeclarationContext("block");
         public static final ClassDeclarationContext TYPE_DECLARATION = new ClassDeclarationContext("type_declaration");
         public static final ClassDeclarationContext COMPILATION_UNIT = new ClassDeclarationContext("compilation_unit");
@@ -366,7 +370,9 @@ public class Parser {
 
         // Initializer?
         if (this.peekOperator("{")) {
-            if ((modifiers & ~Mod.STATIC) != 0) this.throwCompileException("Only modifier \"static\" allowed on initializer");
+            if ((modifiers & ~Mod.STATIC) != 0) {
+                this.throwCompileException("Only modifier \"static\" allowed on initializer");
+            }
 
             Java.Initializer initializer = new Java.Initializer(
                 this.location(),               // location
@@ -407,7 +413,9 @@ public class Parser {
 
         // Member interface.
         if (this.peekKeyword("interface")) {
-            if (optionalDocComment == null) this.warning("MIDCM", "Member interface doc comment missing", this.location());
+            if (optionalDocComment == null) {
+                this.warning("MIDCM", "Member interface doc comment missing", this.location());
+            }
             this.eatToken();
             classDeclaration.addMemberTypeDeclaration((Java.MemberTypeDeclaration) this.parseInterfaceDeclarationRest(
                 optionalDocComment,                                // optionalDocComment
@@ -510,10 +518,13 @@ public class Parser {
         this.parseInterfaceBody(interfaceDeclaration);
         return interfaceDeclaration;
     }
-    public static class InterfaceDeclarationContext extends Enumerator {
+    public static final class InterfaceDeclarationContext extends Enumerator {
+        // CHECKSTYLE(LineLengthCheck):OFF
         public static final InterfaceDeclarationContext NAMED_TYPE_DECLARATION = new InterfaceDeclarationContext("named_type_declaration");
         public static final InterfaceDeclarationContext COMPILATION_UNIT       = new InterfaceDeclarationContext("compilation_unit");
-        private InterfaceDeclarationContext(String name) { super(name); }
+        // CHECKSTYLE(LineLengthCheck):ON
+
+        InterfaceDeclarationContext(String name) { super(name); }
     }
 
     /**
@@ -558,39 +569,49 @@ public class Parser {
                 this.eatToken();
                 String name = this.readIdentifier();
                 interfaceDeclaration.addDeclaredMethod(this.parseMethodDeclarationRest(
-                    optionalDocComment,                              // declaringType
-                    (short) (modifiers | Mod.ABSTRACT | Mod.PUBLIC),                                // optionalDocComment
-                    new Java.BasicType(location, Java.BasicType.VOID),   // modifiers
+                    optionalDocComment,                                // declaringType
+                    (short) (modifiers | Mod.ABSTRACT | Mod.PUBLIC),   // optionalDocComment
+                    new Java.BasicType(location, Java.BasicType.VOID), // modifiers
                     name                                               // name
                 ));
             } else
 
             // Member class.
             if (this.peekKeyword("class")) {
-                if (optionalDocComment == null) this.warning("MCDCM", "Member class doc comment missing", this.location());
+                if (optionalDocComment == null) {
+                    this.warning("MCDCM", "Member class doc comment missing", this.location());
+                }
                 this.eatToken();
-                interfaceDeclaration.addMemberTypeDeclaration((Java.MemberTypeDeclaration) this.parseClassDeclarationRest(
-                    optionalDocComment,                            // optionalDocComment
-                    (short) (modifiers | Mod.STATIC | Mod.PUBLIC), // modifiers
-                    ClassDeclarationContext.TYPE_DECLARATION       // context
-                ));
+                interfaceDeclaration.addMemberTypeDeclaration(
+                    (Java.MemberTypeDeclaration) this.parseClassDeclarationRest(
+                        optionalDocComment,                            // optionalDocComment
+                        (short) (modifiers | Mod.STATIC | Mod.PUBLIC), // modifiers
+                        ClassDeclarationContext.TYPE_DECLARATION       // context
+                    )
+                );
             } else
 
             // Member interface.
             if (this.peekKeyword("interface")) {
-                if (optionalDocComment == null) this.warning("MIDCM", "Member interface doc comment missing", this.location());
+                if (optionalDocComment == null) {
+                    this.warning("MIDCM", "Member interface doc comment missing", this.location());
+                }
                 this.eatToken();
-                interfaceDeclaration.addMemberTypeDeclaration((Java.MemberTypeDeclaration) this.parseInterfaceDeclarationRest(
-                    optionalDocComment,                                // optionalDocComment
-                    (short) (modifiers | Mod.STATIC | Mod.PUBLIC),     // modifiers
-                    InterfaceDeclarationContext.NAMED_TYPE_DECLARATION // context
-                ));
+                interfaceDeclaration.addMemberTypeDeclaration(
+                    (Java.MemberTypeDeclaration) this.parseInterfaceDeclarationRest(
+                        optionalDocComment,                                // optionalDocComment
+                        (short) (modifiers | Mod.STATIC | Mod.PUBLIC),     // modifiers
+                        InterfaceDeclarationContext.NAMED_TYPE_DECLARATION // context
+                    )
+                );
             } else
 
             // Member method or field.
             {
                 Java.Type memberType = this.parseType();
-                if (!this.scanner.peek().isIdentifier()) this.throwCompileException("Identifier expected in member declaration");
+                if (!this.scanner.peek().isIdentifier()) {
+                    this.throwCompileException("Identifier expected in member declaration");
+                }
                 Location location = this.location();
                 String memberName = this.readIdentifier();
 
@@ -598,9 +619,9 @@ public class Parser {
                 if (this.peekOperator("(")) {
                     if (optionalDocComment == null) this.warning("MDCM", "Method doc comment missing", this.location());
                     interfaceDeclaration.addDeclaredMethod(this.parseMethodDeclarationRest(
-                        optionalDocComment,                            // declaringType
-                        (short) (modifiers | Mod.ABSTRACT | Mod.PUBLIC),                              // optionalDocComment
-                        memberType, // modifiers
+                        optionalDocComment,                              // declaringType
+                        (short) (modifiers | Mod.ABSTRACT | Mod.PUBLIC), // optionalDocComment
+                        memberType,                                      // modifiers
                         memberName                                       // name
                     ));
                 } else
@@ -669,9 +690,9 @@ public class Parser {
             this.peekKeyword(new String[] {
                 "this", "super", "new", "void",
                 "byte", "char", "short", "int", "long", "float", "double", "boolean",
-            } ) ||
-            this.scanner.peek().isLiteral() ||
-            this.scanner.peek().isIdentifier()
+            })
+            || this.scanner.peek().isLiteral()
+            || this.scanner.peek().isIdentifier()
         ) {
             Java.Atom a = this.parseExpression();
             if (a instanceof Java.ConstructorInvocation) {
@@ -743,11 +764,15 @@ public class Parser {
 
         List/*<BlockStatement>*/ optionalStatements;
         if (this.peekOperator(";")) {
-            if ((modifiers & (Mod.ABSTRACT | Mod.NATIVE)) == 0) this.throwCompileException("Non-abstract, non-native method must have a body");
+            if ((modifiers & (Mod.ABSTRACT | Mod.NATIVE)) == 0) {
+                this.throwCompileException("Non-abstract, non-native method must have a body");
+            }
             this.eatToken();
             optionalStatements = null;
         } else {
-            if ((modifiers & (Mod.ABSTRACT | Mod.NATIVE)) != 0) this.throwCompileException("Abstract or native method must not have a body");
+            if ((modifiers & (Mod.ABSTRACT | Mod.NATIVE)) != 0) {
+                this.throwCompileException("Abstract or native method must not have a body");
+            }
             this.readOperator("{");
             optionalStatements = this.parseBlockStatements();
             this.readOperator("}");
@@ -823,7 +848,9 @@ public class Parser {
             this.eatToken();
         }
         this.readOperator(")");
-        return (Java.FunctionDeclarator.FormalParameter[]) l.toArray(new Java.FunctionDeclarator.FormalParameter[l.size()]);
+        return (Java.FunctionDeclarator.FormalParameter[]) l.toArray(
+            new Java.FunctionDeclarator.FormalParameter[l.size()]
+        );
     }
 
     /**
@@ -853,8 +880,8 @@ public class Parser {
     int parseBracketsOpt() throws CompileException, IOException {
         int res = 0;
         while (
-            this.scanner.peek().          isOperator("[") &&
-            this.scanner.peekNextButOne().isOperator("]")
+            this.scanner.peek().isOperator("[")
+            && this.scanner.peekNextButOne().isOperator("]")
         ) {
             this.eatToken();
             this.eatToken();
@@ -1204,7 +1231,9 @@ public class Parser {
 
         // Modifiers Type LocalVariableDeclarators
         // ModifiersOpt BasicType LocalVariableDeclarators
-        if (this.peekKeyword(new String[] { "final", "byte", "short", "char", "int", "long", "float", "double", "boolean" })) {
+        if (this.peekKeyword(new String[] {
+            "final", "byte", "short", "char", "int", "long", "float", "double", "boolean"
+        })) {
             short modifiers = this.parseModifiersOpt();
             Java.Type variableType = this.parseType();
             return new Java.LocalVariableDeclarationStatement(
@@ -1328,7 +1357,11 @@ public class Parser {
             this.eatToken();
             optionalFinally = this.parseBlock();
         }
-        if (ccs.size() == 0 && optionalFinally == null) this.throwCompileException("\"try\" statement must have at least one \"catch\" clause or a \"finally\" clause");
+        if (ccs.size() == 0 && optionalFinally == null) {
+            this.throwCompileException(
+                "\"try\" statement must have at least one \"catch\" clause or a \"finally\" clause"
+            );
+        }
 
         return new Java.TryStatement(
             location,       // location
@@ -1505,13 +1538,13 @@ public class Parser {
     public Java.Type parseType() throws CompileException, IOException {
         Scanner.Token t = this.scanner.peek();
         int bt = -1;
-        if (t.isKeyword("byte"   )) { bt = Java.BasicType.BYTE   ; } else
-        if (t.isKeyword("short"  )) { bt = Java.BasicType.SHORT  ; } else
-        if (t.isKeyword("char"   )) { bt = Java.BasicType.CHAR   ; } else
-        if (t.isKeyword("int"    )) { bt = Java.BasicType.INT    ; } else
-        if (t.isKeyword("long"   )) { bt = Java.BasicType.LONG   ; } else
-        if (t.isKeyword("float"  )) { bt = Java.BasicType.FLOAT  ; } else
-        if (t.isKeyword("double" )) { bt = Java.BasicType.DOUBLE ; } else
+        if (t.isKeyword("byte"))    { bt = Java.BasicType.BYTE;    } else
+        if (t.isKeyword("short"))   { bt = Java.BasicType.SHORT;   } else
+        if (t.isKeyword("char"))    { bt = Java.BasicType.CHAR;    } else
+        if (t.isKeyword("int"))     { bt = Java.BasicType.INT;     } else
+        if (t.isKeyword("long"))    { bt = Java.BasicType.LONG;    } else
+        if (t.isKeyword("float"))   { bt = Java.BasicType.FLOAT;   } else
+        if (t.isKeyword("double"))  { bt = Java.BasicType.DOUBLE;  } else
         if (t.isKeyword("boolean")) { bt = Java.BasicType.BOOLEAN; }
         Java.Type res;
         if (bt != -1) {
@@ -1572,7 +1605,9 @@ public class Parser {
      */
     public Java.Atom parseAssignmentExpression() throws CompileException, IOException  {
         Java.Atom a = this.parseConditionalExpression();
-        if (this.peekOperator(new String[] { "=", "+=", "-=", "*=", "/=", "&=", "|=", "^=", "%=", "<<=", ">>=", ">>>=" })) {
+        if (this.peekOperator(
+            new String[] { "=", "+=", "-=", "*=", "/=", "&=", "|=", "^=", "%=", "<<=", ">>=", ">>>=" }
+        )) {
             Location location = this.location();
             String operator = this.readOperator();
             final Java.Lvalue lhs = a.toLvalueOrPE();
@@ -1904,7 +1939,9 @@ public class Parser {
     public Java.Atom parsePrimary() throws CompileException, IOException {
         if (this.peekOperator("(")) {
             this.eatToken();
-            if (this.peekKeyword(new String[] { "boolean", "char", "byte", "short", "int", "long", "float", "double", })) {
+            if (
+                this.peekKeyword(new String[] { "boolean", "char", "byte", "short", "int", "long", "float", "double", })
+            ) {
                 // '(' PrimitiveType { '[]' } ')' UnaryExpression
                 Java.Type type = this.parseType();
                 int brackets = this.parseBracketsOpt();
@@ -1923,7 +1960,7 @@ public class Parser {
                 this.scanner.peek().isLiteral() ||
                 this.scanner.peek().isIdentifier() ||
                 this.peekOperator(new String[] { "(", "~", "!", }) ||
-                this.peekKeyword(new String[] { "this", "super", "new", } )
+                this.peekKeyword(new String[] { "this", "super", "new", })
             ) {
                 // '(' Expression ')' UnaryExpression
                 return new Java.Cast(
@@ -2347,7 +2384,9 @@ public class Parser {
         return t.getOperator();
     }
     public void    readOperator(String operator) throws CompileException, IOException {
-        if (!this.scanner.read().isOperator(operator)) this.throwCompileException("Operator \"" + operator + "\" expected");
+        if (!this.scanner.read().isOperator(operator)) {
+            this.throwCompileException("Operator \"" + operator + "\" expected");
+        }
     }
     // Identifier-related.
     public boolean peekIdentifier() { return this.scanner.peek().isIdentifier(); }
@@ -2375,7 +2414,11 @@ public class Parser {
      */
     private void verifyStringIsConventionalPackageName(String s, Location loc) {
         if (!Character.isLowerCase(s.charAt(0))) {
-            this.warning("UPN", "Package name \"" + s + "\" does not begin with a lower-case letter (see JLS2 6.8.1)", loc);
+            this.warning(
+                "UPN",
+                "Package name \"" + s + "\" does not begin with a lower-case letter (see JLS2 6.8.1)",
+                loc
+            );
             return;
         }
 
@@ -2394,13 +2437,23 @@ public class Parser {
      */
     private void verifyIdentifierIsConventionalClassOrInterfaceName(String id, Location loc) {
         if (!Character.isUpperCase(id.charAt(0))) {
-            this.warning("UCOIN1", "Class or interface name \"" + id + "\" does not begin with an upper-case letter (see JLS2 6.8.2)", loc);
+            this.warning(
+                "UCOIN1",
+                "Class or interface name \"" + id + "\" does not begin with an upper-case letter (see JLS2 6.8.2)",
+                loc
+            );
             return;
         }
         for (int i = 0; i < id.length(); ++i) {
             char c = id.charAt(i);
             if (!Character.isLetter(c) && !Character.isDigit(c)) {
-                this.warning("UCOIN", "Class or interface name \"" + id + "\" contains unconventional character \"" + c + "\" (see JLS2 6.8.2)", loc);
+                this.warning("UCOIN", (
+                    "Class or interface name \""
+                    + id
+                    + "\" contains unconventional character \""
+                    + c
+                    + "\" (see JLS2 6.8.2)"
+                ), loc);
                 return;
             }
         }
@@ -2412,13 +2465,21 @@ public class Parser {
      */
     private void verifyIdentifierIsConventionalMethodName(String id, Location loc) {
         if (!Character.isLowerCase(id.charAt(0))) {
-            this.warning("UMN1", "Method name \"" + id + "\" does not begin with a lower-case letter (see JLS2 6.8.3)", loc);
+            this.warning(
+                "UMN1",
+                "Method name \"" + id + "\" does not begin with a lower-case letter (see JLS2 6.8.3)",
+                loc
+            );
             return;
         }
         for (int i = 0; i < id.length(); ++i) {
             char c = id.charAt(i);
             if (!Character.isLetter(c) && !Character.isDigit(c)) {
-                this.warning("UMN", "Method name \"" + id + "\" contains unconventional character \"" + c + "\" (see JLS2 6.8.3)", loc);
+                this.warning(
+                    "UMN",
+                    "Method name \"" + id + "\" contains unconventional character \"" + c + "\" (see JLS2 6.8.3)",
+                    loc
+                );
                 return;
             }
         }
@@ -2437,7 +2498,11 @@ public class Parser {
             for (int i = 0; i < id.length(); ++i) {
                 char c = id.charAt(i);
                 if (!Character.isUpperCase(c) && !Character.isDigit(c) && c != '_') {
-                    this.warning("UCN", "Constant name \"" + id + "\" contains unconventional character \"" + c + "\" (see JLS2 6.8.5)", loc);
+                    this.warning(
+                        "UCN",
+                        "Constant name \"" + id + "\" contains unconventional character \"" + c + "\" (see JLS2 6.8.5)",
+                        loc
+                    );
                     return;
                 }
             }
@@ -2446,12 +2511,20 @@ public class Parser {
             for (int i = 0; i < id.length(); ++i) {
                 char c = id.charAt(i);
                 if (!Character.isLetter(c) && !Character.isDigit(c)) {
-                    this.warning("UFN", "Field name \"" + id + "\" contains unconventional character \"" + c + "\" (see JLS2 6.8.4)", loc);
+                    this.warning(
+                        "UFN",
+                        "Field name \"" + id + "\" contains unconventional character \"" + c + "\" (see JLS2 6.8.4)",
+                        loc
+                    );
                     return;
                 }
             }
         } else {
-            this.warning("UFN1", "\"" + id + "\" is neither a conventional field name (JLS2 6.8.4) nor a conventional constant name (JLS2 6.8.5)", loc);
+            this.warning("UFN1", (
+                "\""
+                + id
+                + "\" is neither a conventional field name (JLS2 6.8.4) nor a conventional constant name (JLS2 6.8.5)"
+            ), loc);
         }
     }
 
@@ -2461,13 +2534,23 @@ public class Parser {
      */
     private void verifyIdentifierIsConventionalLocalVariableOrParameterName(String id, Location loc) {
         if (!Character.isLowerCase(id.charAt(0))) {
-            this.warning("ULVN1", "Local variable name \"" + id + "\" does not begin with a lower-case letter (see JLS2 6.8.6)", loc);
+            this.warning(
+                "ULVN1",
+                "Local variable name \"" + id + "\" does not begin with a lower-case letter (see JLS2 6.8.6)",
+                loc
+            );
             return;
         }
         for (int i = 0; i < id.length(); ++i) {
             char c = id.charAt(i);
             if (!Character.isLetter(c) && !Character.isDigit(c)) {
-                this.warning("ULVN", "Local variable name \"" + id + "\" contains unconventional character \"" + c + "\" (see JLS2 6.8.6)", loc);
+                this.warning("ULVN", (
+                    "Local variable name \""
+                    + id
+                    + "\" contains unconventional character \""
+                    + c
+                    + "\" (see JLS2 6.8.6)"
+                ), loc);
                 return;
             }
         }
@@ -2498,7 +2581,9 @@ public class Parser {
      * the {@link WarningHandler} to suppress individual warnings.
      */
     private void warning(String handle, String message, Location optionalLocation) {
-        if (this.optionalWarningHandler != null) this.optionalWarningHandler.handleWarning(handle, message, optionalLocation);
+        if (this.optionalWarningHandler != null) {
+            this.optionalWarningHandler.handleWarning(handle, message, optionalLocation);
+        }
     }
 
     /**

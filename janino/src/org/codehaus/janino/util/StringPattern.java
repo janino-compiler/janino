@@ -39,12 +39,12 @@ public class StringPattern {
     /**
      * @see #matches(StringPattern[], String)
      */
-    public final static int INCLUDE = 0;
+    public static final int INCLUDE = 0;
 
     /**
      * @see #matches(StringPattern[], String)
      */
-    public final static int EXCLUDE = 1;
+    public static final int EXCLUDE = 1;
 
     private final int    mode;
     private final String pattern;
@@ -146,8 +146,8 @@ public class StringPattern {
         }
         return false; // No patterns defined or no pattern matches.
     }
-    public static StringPattern[] PATTERNS_ALL = new StringPattern[] { new StringPattern("*") };
-    public static StringPattern[] PATTERNS_NONE = new StringPattern[0];
+    public static final StringPattern[] PATTERNS_ALL = new StringPattern[] { new StringPattern("*") };
+    public static final StringPattern[] PATTERNS_NONE = new StringPattern[0];
 
     public String toString() {
         return (

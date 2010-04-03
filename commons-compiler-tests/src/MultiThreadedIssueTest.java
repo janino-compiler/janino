@@ -68,10 +68,10 @@ public class MultiThreadedIssueTest extends TestCase {
             threads.add(thread);
         }
         for (int i = 0; i < threads.size(); ++i) {
-            ((Thread)threads.get(i)).start();
+            ((Thread) threads.get(i)).start();
         }
         for (int i = 0; i < threads.size(); ++i) {
-            ((Thread)threads.get(i)).join();
+            ((Thread) threads.get(i)).join();
         }
         if (!running.get()) {
             System.exit(1);

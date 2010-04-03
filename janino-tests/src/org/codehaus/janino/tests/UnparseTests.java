@@ -82,7 +82,7 @@ public class UnparseTests extends TestCase {
 
     private static Java.Rvalue[] stripUnnecessaryParenExprs(Java.Rvalue[] rvalues) {
         Java.Rvalue[] res = new Java.Rvalue[rvalues.length];
-        for(int i = 0; i < res.length; ++i) {
+        for (int i = 0; i < res.length; ++i) {
             res[i] = UnparseTests.stripUnnecessaryParenExprs(rvalues[i]);
         }
         return res;
@@ -90,13 +90,13 @@ public class UnparseTests extends TestCase {
 
     private static Java.Atom stripUnnecessaryParenExprs(Java.Atom atom) {
         if (atom instanceof Java.Rvalue) {
-            return UnparseTests.stripUnnecessaryParenExprs((Java.Rvalue)atom);
+            return UnparseTests.stripUnnecessaryParenExprs((Java.Rvalue) atom);
         }
         return atom;
     }
 
     private static Java.Lvalue stripUnnecessaryParenExprs(Java.Lvalue lvalue) {
-        return (Java.Lvalue)UnparseTests.stripUnnecessaryParenExprs((Java.Rvalue)lvalue);
+        return (Java.Lvalue) UnparseTests.stripUnnecessaryParenExprs((Java.Rvalue) lvalue);
     }
 
     private static Java.Rvalue stripUnnecessaryParenExprs(Java.Rvalue rvalue) {
@@ -311,7 +311,7 @@ public class UnparseTests extends TestCase {
             { new Java.Literal(null, (short) 1), "((short)1)" },
             { new Java.Literal(null, (byte) 1),  "((byte)1)"  },
         };
-        for(int i = 0; i < tests.length; ++i) {
+        for (int i = 0; i < tests.length; ++i) {
             Atom expr = (Atom) tests[i][0];
             String expected = (String) tests[i][1];
 
@@ -373,7 +373,7 @@ public class UnparseTests extends TestCase {
             { "-0x8000000000000000l",                  "-0x8000000000000000L",                "-0x8000000000000000L"},
         };
 
-        for(int i = 0; i < exprs.length; ++i) {
+        for (int i = 0; i < exprs.length; ++i) {
             String input = exprs[i][0];
             String expectSimplify = exprs[i][1];
             if (expectSimplify == null) {
@@ -412,7 +412,9 @@ public class UnparseTests extends TestCase {
                         ByteArrayOutputStream baos = new ByteArrayOutputStream();
                         UnparseVisitor.unparse(cu1, new OutputStreamWriter(baos));
                         byte[] ba = baos.toByteArray();
-                        CompilationUnit cu2 = new Parser(new Scanner(f.toString(), new ByteArrayInputStream(ba))).parseCompilationUnit();
+                        CompilationUnit cu2 = new Parser(
+                            new Scanner(f.toString(), new ByteArrayInputStream(ba))
+                        ).parseCompilationUnit();
 
                         // Compare the two ASTs.
                         Java.Locatable[] elements1 = this.listSyntaxElements(cu1);
@@ -432,7 +434,14 @@ public class UnparseTests extends TestCase {
                             String s1 = locatable1.toString();
                             String s2 = locatable2.toString();
                             if (!s1.equals(s2)) {
-                                Assert.fail(locatable1.getLocation().toString() + ": Expected \"" + s1 + "\", was \"" + s2 + "\"");
+                                Assert.fail(
+                                    locatable1.getLocation().toString()
+                                    + ": Expected \""
+                                    + s1
+                                    + "\", was \""
+                                    + s2
+                                    + "\""
+                                );
                             }
                         }
                     } catch (Exception e) {
@@ -466,8 +475,8 @@ public class UnparseTests extends TestCase {
     }
 
     /**
-     * Invoke <code>fileFilter</code> for all files and subdirectories in the given
-     * <code>directory</code>. If {@link FileFilter#accept(File)} returns <code>true</code>,
+     * Invoke {@code fileFilter} for all files and subdirectories in the given
+     * {@code directory}. If {@link FileFilter#accept(File)} returns {@code true},
      * recurse with that file/directory.
      */
     private void find(File directory, FileFilter fileFilter) {

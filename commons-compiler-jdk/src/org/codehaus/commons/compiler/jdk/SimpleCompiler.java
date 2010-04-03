@@ -243,7 +243,7 @@ public class SimpleCompiler extends Cookable implements ISimpleCompiler {
     public void setParentClassLoader(ClassLoader optionalParentClassLoader, Class<?>[] auxiliaryClasses) {
         this.setParentClassLoader(optionalParentClassLoader);
     }
-    
+
     /**
      * Throw an {@link IllegalStateException} if this {@link Cookable} is not yet cooked.
      */

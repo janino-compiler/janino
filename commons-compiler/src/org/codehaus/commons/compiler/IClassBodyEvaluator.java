@@ -66,7 +66,8 @@ import java.io.Reader;
  *   Call any of the {@link ICookable#cook(String, java.io.Reader)} methods to scan,
  *   parse, compile and load the class body into the JVM.
  * </ol>
- * To compile a class body and immediately instantiate an object, the {@link #createInstance(Reader)} methods can be used.
+ * To compile a class body and immediately instantiate an object, the {@link #createInstance(Reader)} methods can be
+ * used.
  * <p>
  * The generated class may optionally extend/implement a given type; the returned instance can
  * safely be type-casted to that <code>optionalBaseType</code>.
@@ -90,7 +91,7 @@ import java.io.Reader;
  */
 public interface IClassBodyEvaluator extends ICookable {
 
-    final String DEFAULT_CLASS_NAME = "SC";
+    String DEFAULT_CLASS_NAME = "SC";
 
     /**
      * "Default imports" add to the system import "java.lang", i.e. the evaluator may refer to

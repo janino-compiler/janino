@@ -227,13 +227,13 @@ public class ReportedBugs extends JaninoTestSuite {
         section("Bug 63");
         clb(COMP, "0", (
             "public static boolean main() {\n" +
-            "    IPred p = new Pred();\n"+
+            "    IPred p = new Pred();\n" +
             "    return !p.filter();\n" +
             "}\n"
         ));
         clb(TRUE, "1", (
             "public static boolean main() {\n" +
-            "    Pred p = new Pred();\n"+
+            "    Pred p = new Pred();\n" +
             "    return !p.filter();\n" +
             "}\n"
         ));
@@ -273,7 +273,7 @@ public class ReportedBugs extends JaninoTestSuite {
         clb(COOK, "0", (
             "public String result = \"allow\", email = null, anno = null, cnd = null, transactionID = null;\n" +
             "public String treeCode(String root) {\n" +
-            "    try {\n"+
+            "    try {\n" +
             "        return null;\n" +
             "    } catch (Exception treeEx) {\n" +
             "        treeEx.printStackTrace();\n" +
@@ -341,7 +341,8 @@ public class ReportedBugs extends JaninoTestSuite {
 
         // Bug 95: See "EvaluatorTests.testFastClassBodyEvaluator2()".
 
-        section("Bug 99"); // ConcurrentModificationException due to instance variable of Class type initialized using a class literal
+        section("Bug 99");
+        // ConcurrentModificationException due to instance variable of Class type initialized using a class literal
         sim(COOK, "xyz", "class Test{Class c = String.class;}", "Test");
 
         section("Bug 102"); // Static initializers are not executed

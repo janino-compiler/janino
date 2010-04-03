@@ -36,7 +36,7 @@ import java.util.Properties;
 /**
  * Utility class that finds implementations of {@link ICompilerFactory}s.
  */
-public class CompilerFactoryFactory {
+public final class CompilerFactoryFactory {
     private CompilerFactoryFactory() {}
 
     private static ICompilerFactory defaultCompilerFactory = null;
@@ -51,7 +51,9 @@ public class CompilerFactoryFactory {
     public static ICompilerFactory getDefaultCompilerFactory() throws Exception {
         if (defaultCompilerFactory == null) {
             Properties properties = new Properties();
-            InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream("org.codehaus.commons.compiler.properties");
+            InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(
+                "org.codehaus.commons.compiler.properties"
+            );
             if (is == null) {
                 throw new ClassNotFoundException(
                     "No implementation of org.codehaus.commons.compiler is on the class path"
@@ -67,7 +69,7 @@ public class CompilerFactoryFactory {
         }
         return defaultCompilerFactory;
     }
-    
+
     /**
      * Finds all implementation of <code>org.codehaus.commons.compiler</code> on the class path, then loads and
      * instantiates their {@link ICompilerFactory}s.

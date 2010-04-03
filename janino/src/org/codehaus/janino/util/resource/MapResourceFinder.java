@@ -40,7 +40,7 @@ public class MapResourceFinder extends ResourceFinder {
     public MapResourceFinder(Map map) {
         this.map = map;
     }
-    public void setLastModified(long lastModified) {
+    public final void setLastModified(long lastModified) {
         this.lastModified = lastModified;
     }
 

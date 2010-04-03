@@ -32,7 +32,6 @@ import org.codehaus.commons.compiler.*;
  * Sample application which demonstrates how to use the
  * {@link org.codehaus.janino.ExpressionEvaluator ExpressionEvaluator} class.
  */
-
 public class ShippingCost {
     public static void main(String[] args) throws Exception {
         if (args.length != 1) {

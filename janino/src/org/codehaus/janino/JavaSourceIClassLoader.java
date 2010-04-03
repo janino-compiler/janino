@@ -139,13 +139,17 @@ public final class JavaSourceIClassLoader extends IClassLoader {
             InputStream inputStream = sourceResource.open();
             Java.CompilationUnit cu;
             try {
-                Scanner scanner = new Scanner(sourceResource.getFileName(), inputStream, this.optionalCharacterEncoding);
+                Scanner scanner = new Scanner(
+                    sourceResource.getFileName(),
+                    inputStream,
+                    this.optionalCharacterEncoding
+                );
                 scanner.setWarningHandler(this.optionalWarningHandler);
                 Parser parser = new Parser(scanner);
                 parser.setWarningHandler(this.optionalWarningHandler);
                 cu = parser.parseCompilationUnit();
             } finally {
-                try { inputStream.close(); } catch (IOException ex) {}
+                try { inputStream.close(); } catch (IOException ex) { }
             }
             UnitCompiler uc = new UnitCompiler(cu, this);
             uc.setCompileErrorHandler(this.optionalCompileErrorHandler);
@@ -157,7 +161,15 @@ public final class JavaSourceIClassLoader extends IClassLoader {
             // Find the class/interface declaration in the compiled unit.
             IClass res = uc.findClass(className);
             if (res == null) {
-                if (className.equals(topLevelClassName)) throw new CompileException("Source file \"" + sourceResource.getFileName() + "\" does not declare class \"" + className + "\"", (Location) null);
+                if (className.equals(topLevelClassName)) {
+                    throw new CompileException((
+                        "Source file \""
+                        + sourceResource.getFileName()
+                        + "\" does not declare class \""
+                        + className
+                        + "\""
+                    ), (Location) null);
+                }
                 return null;
             }
             this.defineIClass(res);

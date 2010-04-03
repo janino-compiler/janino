@@ -42,6 +42,9 @@ import org.codehaus.janino.util.resource.ResourceFinder;
 public abstract class IClassLoader {
     private static final boolean DEBUG = false;
 
+    // The following are constants, but cannot be declared FINAL, because they are only initialized by the
+    // "postConstruct()".
+
     public IClass OBJECT;
     public IClass STRING;
     public IClass CLASS;
@@ -103,14 +106,14 @@ public abstract class IClassLoader {
 
         if (Descriptor.isPrimitive(fieldDescriptor)) {
             return (
-                fieldDescriptor.equals(Descriptor.VOID_   ) ? IClass.VOID    :
-                fieldDescriptor.equals(Descriptor.BYTE_   ) ? IClass.BYTE    :
-                fieldDescriptor.equals(Descriptor.CHAR_   ) ? IClass.CHAR    :
-                fieldDescriptor.equals(Descriptor.DOUBLE_ ) ? IClass.DOUBLE  :
-                fieldDescriptor.equals(Descriptor.FLOAT_  ) ? IClass.FLOAT   :
-                fieldDescriptor.equals(Descriptor.INT_    ) ? IClass.INT     :
-                fieldDescriptor.equals(Descriptor.LONG_   ) ? IClass.LONG    :
-                fieldDescriptor.equals(Descriptor.SHORT_  ) ? IClass.SHORT   :
+                fieldDescriptor.equals(Descriptor.VOID_)    ? IClass.VOID    :
+                fieldDescriptor.equals(Descriptor.BYTE_)    ? IClass.BYTE    :
+                fieldDescriptor.equals(Descriptor.CHAR_)    ? IClass.CHAR    :
+                fieldDescriptor.equals(Descriptor.DOUBLE_)  ? IClass.DOUBLE  :
+                fieldDescriptor.equals(Descriptor.FLOAT_)   ? IClass.FLOAT   :
+                fieldDescriptor.equals(Descriptor.INT_)     ? IClass.INT     :
+                fieldDescriptor.equals(Descriptor.LONG_)    ? IClass.LONG    :
+                fieldDescriptor.equals(Descriptor.SHORT_)   ? IClass.SHORT   :
                 fieldDescriptor.equals(Descriptor.BOOLEAN_) ? IClass.BOOLEAN :
                 null
             );
@@ -159,7 +162,15 @@ public abstract class IClassLoader {
             }
         }
 
-        if (!result.getDescriptor().equalsIgnoreCase(fieldDescriptor)) throw new JaninoRuntimeException("\"findIClass()\" returned \"" + result.getDescriptor() + "\" instead of \"" + fieldDescriptor + "\"");
+        if (!result.getDescriptor().equalsIgnoreCase(fieldDescriptor)) {
+            throw new JaninoRuntimeException(
+                "\"findIClass()\" returned \""
+                + result.getDescriptor()
+                + "\" instead of \""
+                + fieldDescriptor
+                + "\""
+            );
+        }
 
         if (IClassLoader.DEBUG) System.out.println(this + ": Loaded type \"" + fieldDescriptor + "\" as " + result);
 
@@ -237,14 +248,14 @@ public abstract class IClassLoader {
         final File[] classPath
     ) {
         ResourceFinder bootClassPathResourceFinder = new PathResourceFinder(
-            optionalBootClassPath == null ?
-            PathResourceFinder.parsePath(System.getProperty("sun.boot.class.path")):
-            optionalBootClassPath
+            optionalBootClassPath == null
+            ? PathResourceFinder.parsePath(System.getProperty("sun.boot.class.path"))
+            : optionalBootClassPath
         );
         ResourceFinder extensionDirectoriesResourceFinder = new JarDirectoriesResourceFinder(
-            optionalExtDirs == null ?
-            PathResourceFinder.parsePath(System.getProperty("java.ext.dirs")):
-            optionalExtDirs
+            optionalExtDirs == null
+            ? PathResourceFinder.parsePath(System.getProperty("java.ext.dirs"))
+            : optionalExtDirs
         );
         ResourceFinder classPathResourceFinder = new PathResourceFinder(classPath);
 

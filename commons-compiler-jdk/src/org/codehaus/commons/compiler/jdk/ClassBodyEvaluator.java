@@ -222,7 +222,7 @@ public class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEval
      * taken as an IMPORT declaration.
      *
      * @param r A {@link Reader} that supports MARK, e.g. a {@link BufferedReader}
-     * @return  The parsed imports, e.g. <code>{ "java.util.*", "static java.util.Map.Entry" }</code>
+     * @return  The parsed imports, e.g. {@code { "java.util.*", "static java.util.Map.Entry" }}
      */
     protected static String[] parseImportDeclarations(Reader r) throws IOException {
         final CharBuffer cb = CharBuffer.allocate(10000);
@@ -256,11 +256,17 @@ public class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEval
         try {
             return this.getClazz().newInstance();
         } catch (InstantiationException ie) {
-            CompileException ce = new CompileException("Class is abstract, an interface, an array class, a primitive type, or void; or has no zero-parameter constructor", null);
+            CompileException ce = new CompileException((
+                "Class is abstract, an interface, an array class, a primitive type, or void; "
+                + "or has no zero-parameter constructor"
+            ), null);
             ce.initCause(ie);
             throw ce;
         } catch (IllegalAccessException iae) {
-            CompileException ce = new CompileException("The class or its zero-parameter constructor is not accessible", null);
+            CompileException ce = new CompileException(
+                "The class or its zero-parameter constructor is not accessible",
+                null
+            );
             ce.initCause(iae);
             throw ce;
         }

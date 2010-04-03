@@ -32,7 +32,7 @@ import java.util.*;
 import org.codehaus.janino.tools.Disassembler;
 
 /**
- * This {@link ClassLoader} allows for the loading of a set of Java<sup>TM</sup> classes
+ * This {@link ClassLoader} allows for the loading of a set of Java&trade; classes
  * provided in class file format.
  */
 public class ByteArrayClassLoader extends ClassLoader {

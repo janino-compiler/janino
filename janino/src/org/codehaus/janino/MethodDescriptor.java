@@ -55,7 +55,7 @@ public class MethodDescriptor {
         List parameterFDs = new ArrayList(); // String
         while (s.charAt(from) != ')') {
             int to = from;
-            while (s.charAt(to) =='[') ++to;
+            while (s.charAt(to) == '[') ++to;
             if ("BCDFIJSZ".indexOf(s.charAt(to)) != -1) {
                 ++to;
             } else

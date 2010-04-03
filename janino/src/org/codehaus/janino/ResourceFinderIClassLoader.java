@@ -71,7 +71,7 @@ public class ResourceFinderIClassLoader extends IClassLoader {
         } catch (IOException e) {
             throw new ClassNotFoundException("Reading resource \"" + classFileResource.getFileName() + "\"", e);
         } finally {
-            try { is.close(); } catch (IOException e) {}
+            try { is.close(); } catch (IOException e) { }
         }
         IClass iClass = new ClassFileIClass(cf, this);
         this.defineIClass(iClass);

@@ -122,14 +122,14 @@ public class AstTests extends TestCase {
 
 
     private static Literal createLiteral(Object o) {
-        return new Literal( getLocation(), o );
+        return new Literal(getLocation(), o);
     }
 
     private static void createMethod(PackageMemberClassDeclaration clazz, List statements, Type returnType) {
         MethodDeclarator method = new MethodDeclarator(
             getLocation(),
             null,
-            (short)(Mod.PUBLIC),
+            (short) (Mod.PUBLIC),
             returnType,
             "calculate",
             new FormalParameter[0],
@@ -143,7 +143,7 @@ public class AstTests extends TestCase {
     private static LocalVariableDeclarationStatement createVarDecl(String name, double value) {
         return new Java.LocalVariableDeclarationStatement(
             getLocation(),
-            (short)0,
+            (short) 0,
             createDoubleType(),
             new Java.VariableDeclarator[] {
                 new Java.VariableDeclarator(
@@ -166,13 +166,13 @@ public class AstTests extends TestCase {
     /**
      * "Clever" method to get a location from a stack trace
      */
-    static private Location getLocation() {
+    private static Location getLocation() {
         Exception e = new Exception();
-        StackTraceElement ste = e.getStackTrace()[1];//we only care about our caller
+        StackTraceElement ste = e.getStackTrace()[1]; //we only care about our caller
         return new Location(
             ste.getFileName(),
-            (short)ste.getLineNumber(),
-            (short)0
+            (short) ste.getLineNumber(),
+            (short) 0
         );
     }
 
@@ -185,7 +185,7 @@ public class AstTests extends TestCase {
         List/*<Statement>*/ body = new ArrayList();
 
         Block sub = new Block(getLocation());
-        sub.addStatement( createVarDecl("x", 2.0) );
+        sub.addStatement(createVarDecl("x", 2.0));
 
         body.add(sub);
         body.add(
@@ -205,7 +205,7 @@ public class AstTests extends TestCase {
         try {
             compileAndEval(cu);
             fail("Block must limit the scope of variables in it");
-        } catch(CompileException ex) {
+        } catch (CompileException ex) {
             assertTrue(ex.getMessage().endsWith("Expression \"x\" is not an rvalue"));
         }
     }
@@ -238,7 +238,7 @@ public class AstTests extends TestCase {
         );
 
         Object res = compileAndEval(cu);
-        assertEquals(exp.byteValue(), ((byte[])res)[0]);
+        assertEquals(exp.byteValue(), ((byte[]) res)[0]);
     }
 
     public void testLocalVariable() throws Exception {
@@ -247,7 +247,7 @@ public class AstTests extends TestCase {
         PackageMemberClassDeclaration clazz = createClass(cu);
 
         List/*<Statement>*/ body = new ArrayList();
-        body.add( createVarDecl("x", 2.0) );
+        body.add(createVarDecl("x", 2.0));
         body.add(
             new ReturnStatement(
                 getLocation(),
@@ -357,16 +357,17 @@ public class AstTests extends TestCase {
         PackageMemberClassDeclaration clazz = createClass(cu);
 
         List/*<Statement>*/ body = new ArrayList();
-        body.add(  new Java.ReturnStatement(
+        body.add(new Java.ReturnStatement(
+            getLocation(),
+            new Java.FieldAccessExpression(
                 getLocation(),
-                new Java.FieldAccessExpression(
-                        getLocation(),
-                        new Java.AmbiguousName(
-                                getLocation(),
-                                new String[] { "other_package", "ScopingRules" }
-                        ),
-                        "publicStaticDouble"
-        )));
+                new Java.AmbiguousName(
+                    getLocation(),
+                    new String[] { "other_package", "ScopingRules" }
+                ),
+                "publicStaticDouble"
+            )
+        ));
 
         createMethod(clazz, body, createDoubleType());
 

@@ -46,10 +46,10 @@ public class DirectoryResourceFinder extends FileResourceFinder {
         this.directory = directory;
     }
 
-    public String toString() { return "dir:" + this.directory; }
+    public final String toString() { return "dir:" + this.directory; }
 
     // Implement FileResourceFinder.
-    protected File findResourceAsFile(String resourceName) {
+    protected final File findResourceAsFile(String resourceName) {
 
         // Determine the subdirectory name (null for no subdirectory).
         int idx = resourceName.lastIndexOf('/');
@@ -61,7 +61,11 @@ public class DirectoryResourceFinder extends FileResourceFinder {
         // Determine files existing in this subdirectory.
         Set files = (Set) this.subdirectoryNameToFiles.get(subdirectoryName); // String directoryName => Set => File
         if (files == null) {
-            File subDirectory = (subdirectoryName == null) ? this.directory : new File(this.directory, subdirectoryName);
+            File subDirectory = (
+                subdirectoryName == null
+                ? this.directory
+                : new File(this.directory, subdirectoryName)
+            );
             File[] fa = subDirectory.listFiles();
             files = (fa == null) ? Collections.EMPTY_SET : new HashSet(Arrays.asList(fa));
             this.subdirectoryNameToFiles.put(subdirectoryName, files);

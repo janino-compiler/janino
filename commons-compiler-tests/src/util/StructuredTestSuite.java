@@ -73,17 +73,17 @@ public class StructuredTestSuite extends TestSuite {
     }
 
     /**
-     * Create a sub-suite with the given <code>name</code>, and insert it one the given hierarchy
+     * Create a sub-suite with the given {@code name}, and insert it one the given hierarchy
      * level. Levels start with "1".
      * <p>
-     * As a special case, <code>level</code> zero resets to this {@link TestSuite}, and the
-     * <code>name</code> parameter is ignored.
+     * As a special case, {@code level} zero resets to this {@link TestSuite}, and the
+     * {@code name} parameter is ignored.
      * <p>
-     * Notice: If you indent by more than one level (i.e. <code>level > previous_level + 1</code>),
+     * Notice: If you indent by more than one level (i.e. {@code level > previous_level + 1}),
      * then unnamed intermediate sub-suites are inserted as needed (probably not what you want,
      * because these sub-suites appear with name "junit.framework.TestSuite").
      *
-     * @param name the name of the sub-suite (or <code>null</code> for an unnamed sub-suite)
+     * @param name the name of the sub-suite (or {@code null} for an unnamed sub-suite)
      */
     public void section(int level, String name) {
 
@@ -116,7 +116,7 @@ public class StructuredTestSuite extends TestSuite {
 
     /**
      * Convenience method for {@link #section(int, String)}: The level is automatically determined
-     * by counting the period characters in the first word of the <code>name</code> and adding
+     * by counting the period characters in the first word of the {@code name} and adding
      * one.
      * <p>
      * Examples:
@@ -161,12 +161,12 @@ public class StructuredTestSuite extends TestSuite {
  * {@link java.util.Stack} is a bad alternative, because it is synchronized and hence slow.
  */
 interface Stack_<T> { // Avoid name conflict with "java.util.Stack".
-    public void push(T o);
-    public T pop();
-    public T peek();
-    public boolean isEmpty();
-    public int size();
-    public void clear();
+    void push(T o);
+    T pop();
+    T peek();
+    boolean isEmpty();
+    int size();
+    void clear();
 }
 
 /** A simple implementation of the {@link Stack_} interface. */

@@ -141,15 +141,15 @@ public class CodeContext {
     ) {
         List currentVars = null;
 
-        if(this.scopedVars.size() == 0) {
+        if (this.scopedVars.size() == 0) {
             throw new Error("saveLocalVariables must be called first");
         } else {
-            currentVars = (List) this.scopedVars.get(this.scopedVars.size()-1);
+            currentVars = (List) this.scopedVars.get(this.scopedVars.size() - 1);
         }
 
         Java.LocalVariableSlot slot = new Java.LocalVariableSlot(name, this.nextLocalVariableSlot, type);
 
-        if(slot.getName() != null) {
+        if (slot.getName() != null) {
             slot.setStart(newOffset());
         }
 
@@ -157,9 +157,9 @@ public class CodeContext {
         currentVars.add(slot);
         this.allLocalVars.add(slot);
 
-        if(this.nextLocalVariableSlot > this.maxLocals) {
+        if (this.nextLocalVariableSlot > this.maxLocals) {
             this.maxLocals = this.nextLocalVariableSlot;
-    }
+        }
 
         return slot;
     }
@@ -186,12 +186,12 @@ public class CodeContext {
         //
         // pop the list containing the current block's local vars
         //
-        Iterator iter = ((List) this.scopedVars.remove(this.scopedVars.size()-1)).iterator();
+        Iterator iter = ((List) this.scopedVars.remove(this.scopedVars.size() - 1)).iterator();
 
-        while(iter.hasNext()) {
+        while (iter.hasNext()) {
             Java.LocalVariableSlot slot = (Java.LocalVariableSlot) iter.next();
 
-            if(slot.getName() != null) {
+            if (slot.getName() != null) {
                 slot.setEnd(newOffset());
             }
         }
@@ -231,19 +231,19 @@ public class CodeContext {
                     lnt.add(new ClassFile.LineNumberTableAttribute.Entry(o.offset, ((LineNumberOffset) o).lineNumber));
                 }
             }
-            ClassFile.LineNumberTableAttribute.Entry[] lnte = (ClassFile.LineNumberTableAttribute.Entry[]) lnt.toArray(new ClassFile.LineNumberTableAttribute.Entry[lnt.size()]);
+            ClassFile.LineNumberTableAttribute.Entry[] lnte = (ClassFile.LineNumberTableAttribute.Entry[]) lnt.toArray(
+                new ClassFile.LineNumberTableAttribute.Entry[lnt.size()]
+            );
             attributes.add(new ClassFile.LineNumberTableAttribute(
                 lineNumberTableAttributeNameIndex, // attributeNameIndex
                 lnte                               // lineNumberTableEntries
             ));
         }
 
-        if(localVariableTableAttributeNameIndex != 0) {
+        if (localVariableTableAttributeNameIndex != 0) {
             ClassFile.AttributeInfo ai = storeLocalVariableTable(dos, localVariableTableAttributeNameIndex);
 
-            if(ai != null) {
-                attributes.add(ai);
-            }
+            if (ai != null) attributes.add(ai);
         }
 
         dos.writeShort(attributes.size());                         // attributes_count
@@ -256,16 +256,15 @@ public class CodeContext {
     protected ClassFile.AttributeInfo storeLocalVariableTable(
             DataOutputStream dos,
             short localVariableTableAttributeNameIndex
-    )
-    {
+    ) {
         ClassFile       cf = getClassFile();
         Iterator        iter = getAllLocalVars().iterator();
         final List      entryList = new ArrayList();
 
-        while(iter.hasNext()) {
+        while (iter.hasNext()) {
             Java.LocalVariableSlot slot = (Java.LocalVariableSlot) iter.next();
 
-            if(slot.getName() != null) {
+            if (slot.getName() != null) {
                 String typeName = slot.getType().getDescriptor();
                 short  classSlot = cf.addConstantUtf8Info(typeName);
                 short  varNameSlot = cf.addConstantUtf8Info(slot.getName());
@@ -283,10 +282,13 @@ public class CodeContext {
             }
         }
 
-        if(entryList.size() > 0) {
+        if (entryList.size() > 0) {
             Object entries = entryList.toArray(new ClassFile.LocalVariableTableAttribute.Entry [entryList.size()]);
 
-            return new ClassFile.LocalVariableTableAttribute(localVariableTableAttributeNameIndex, (ClassFile.LocalVariableTableAttribute.Entry []) entries);
+            return new ClassFile.LocalVariableTableAttribute(
+                localVariableTableAttributeNameIndex,
+                (ClassFile.LocalVariableTableAttribute.Entry []) entries
+            );
         } else {
             return null;
         }
@@ -311,7 +313,7 @@ public class CodeContext {
             this.code,       // code
             this.end.offset, // codeSize
             0,               // offset
-            (short)0,               // stackSize
+            (short) 0,       // stackSize
             stackSizes       // stackSizes
         );
 
@@ -323,11 +325,11 @@ public class CodeContext {
                 if (stackSizes[exceptionTableEntry.startPC.offset] != CodeContext.UNEXAMINED) {
                     this.flowAnalysis(
                         functionName,
-                        this.code,                                          // code
-                        this.end.offset,                                    // codeSize
-                        exceptionTableEntry.handlerPC.offset,               // offset
-                        (short)(stackSizes[exceptionTableEntry.startPC.offset] + 1), // stackSize
-                        stackSizes                                          // stackSizes
+                        this.code,                                                    // code
+                        this.end.offset,                                              // codeSize
+                        exceptionTableEntry.handlerPC.offset,                         // offset
+                        (short) (stackSizes[exceptionTableEntry.startPC.offset] + 1), // stackSize
+                        stackSizes                                                    // stackSizes
                     );
                     ++analyzedExceptionHandlers;
                 }
@@ -362,7 +364,9 @@ public class CodeContext {
             if (CodeContext.DEBUG) System.out.println("Offset = " + offset + ", stack size = " + stackSize);
 
             // Check current bytecode offset.
-            if (offset < 0 || offset >= codeSize) throw new JaninoRuntimeException(functionName + ": Offset out of range");
+            if (offset < 0 || offset >= codeSize) {
+                throw new JaninoRuntimeException(functionName + ": Offset out of range");
+            }
 
             // Have we hit an area that has already been analyzed?
             int css = stackSizes[offset];
@@ -370,10 +374,26 @@ public class CodeContext {
             if (css == CodeContext.INVALID_OFFSET) throw new JaninoRuntimeException(functionName + ": Invalid offset");
             if (css != CodeContext.UNEXAMINED) {
                 if (CodeContext.DEBUG) {
-                    System.err.println(functionName + ": Operand stack inconsistent at offset " + offset + ": Previous size " + css + ", now " + stackSize);
+                    System.err.println(
+                        functionName
+                        + ": Operand stack inconsistent at offset "
+                        + offset
+                        + ": Previous size "
+                        + css
+                        + ", now "
+                        + stackSize
+                    );
                     return;
                 } else {
-                    throw new JaninoRuntimeException(functionName + ": Operand stack inconsistent at offset " + offset + ": Previous size " + css + ", now " + stackSize);
+                    throw new JaninoRuntimeException(
+                        functionName
+                        + ": Operand stack inconsistent at offset "
+                        + offset
+                        + ": Previous size "
+                        + css
+                        + ", now "
+                        + stackSize
+                    );
                 }
             }
             stackSizes[offset] = stackSize;
@@ -388,7 +408,15 @@ public class CodeContext {
             } else {
                 props = Opcode.OPCODE_PROPERTIES[0xff & opcode];
             }
-            if (props == Opcode.INVALID_OPCODE) throw new JaninoRuntimeException(functionName + ": Invalid opcode " + (0xff & opcode) + " at offset " + offset);
+            if (props == Opcode.INVALID_OPCODE) {
+                throw new JaninoRuntimeException(
+                    functionName
+                    + ": Invalid opcode "
+                    + (0xff & opcode)
+                    + " at offset "
+                    + offset
+                );
+            }
 
             switch (props & Opcode.SD_MASK) {
 
@@ -444,7 +472,13 @@ public class CodeContext {
             }
 
             if (stackSize < 0) {
-                String msg = this.classFile.getThisClassName() + '.' + functionName + ": Operand stack underrun at offset " + offset;
+                String msg = (
+                    this.classFile.getThisClassName()
+                    + '.'
+                    + functionName
+                    + ": Operand stack underrun at offset "
+                    + offset
+                );
                 if (CodeContext.DEBUG) {
                     System.err.println(msg);
                     return;
@@ -454,7 +488,13 @@ public class CodeContext {
             }
 
             if (stackSize > MAX_STACK_SIZE) {
-                String msg = this.classFile.getThisClassName() + '.' + functionName + ": Operand stack overflow at offset " + offset;
+                String msg = (
+                    this.classFile.getThisClassName()
+                    + '.'
+                    + functionName
+                    + ": Operand stack overflow at offset "
+                    + offset
+                );
                 if (CodeContext.DEBUG) {
                     System.err.println(msg);
                     return;
@@ -513,7 +553,7 @@ public class CodeContext {
                         functionName,
                         code, codeSize,
                         targetOffset,
-                        (short)(stackSize + 1),
+                        (short) (stackSize + 1),
                         stackSizes
                     );
                 }
@@ -623,19 +663,20 @@ public class CodeContext {
 
     /**
      * Extract a 16 bit value at offset in code and add bias to it
-     * @param bias    an int to skew the final result by (useful for calculating relative offsets)
-     * @param offset  the position in the code array to extract the bytes from
-     * @param code    the array of bytes
-     * @return an integer that treats the two bytes at position offset as an UNSIGNED SHORT
+     *
+     * @param bias   An int to skew the final result by (useful for calculating relative offsets)
+     * @param offset The position in the code array to extract the bytes from
+     * @param code   The array of bytes
+     * @return       An integer that treats the two bytes at position offset as an UNSIGNED SHORT
      */
     private int extract16BitValue(int bias, int offset, byte[] code) {
         int res = bias + (
-                ((       code[offset  ]) << 8) +
-                ((0xff & code[offset+1])     )
+            ((code[offset]) << 8)
+            + (code[offset + 1] & 0xff)
         );
         if (CodeContext.DEBUG) {
-            System.out.println("extract16BitValue(bias, offset) = (" + bias +", " + offset + ")");
-            System.out.println("bytes = {" + code[offset] + ", " + code[offset+1] + "}");
+            System.out.println("extract16BitValue(bias, offset) = (" + bias + ", " + offset + ")");
+            System.out.println("bytes = {" + code[offset] + ", " + code[offset + 1] + "}");
             System.out.println("result = " + res);
         }
         return res;
@@ -643,26 +684,27 @@ public class CodeContext {
 
     /**
      * Extract a 32 bit value at offset in code and add bias to it
-     * @param bias    an int to skew the final result by (useful for calculating relative offsets)
-     * @param offset  the position in the code array to extract the bytes from
-     * @param code    the array of bytes
-     * @return the 4 bytes at position offset + bias
+     *
+     * @param bias   An int to skew the final result by (useful for calculating relative offsets)
+     * @param offset The position in the code array to extract the bytes from
+     * @param code   The array of bytes
+     * @return       The 4 bytes at position offset + bias
      */
     private int extract32BitValue(int bias, int offset, byte[] code) {
         int res = bias + (
-                ((       code[offset  ]) << 24) +
-                ((0xff & code[offset+1]) << 16) +
-                ((0xff & code[offset+2]) <<  8) +
-                ((0xff & code[offset+3])      )
+            (code[offset]              << 24) +
+            ((0xff & code[offset + 1]) << 16) +
+            ((0xff & code[offset + 2]) <<  8) +
+            (0xff & code[offset + 3])
         );
         if (CodeContext.DEBUG) {
-            System.out.println("extract32BitValue(bias, offset) = (" + bias +", " + offset + ")");
+            System.out.println("extract32BitValue(bias, offset) = (" + bias + ", " + offset + ")");
             System.out.println(
-                    "bytes = {" +
-                    code[offset  ] + ", " +
-                    code[offset+1] + ", " +
-                    code[offset+2] + ", " +
-                    code[offset+3] + "}"
+                "bytes = {" +
+                code[offset] + ", " +
+                code[offset + 1] + ", " +
+                code[offset + 2] + ", " +
+                code[offset + 3] + "}"
             );
             System.out.println("result = " + res);
         }
@@ -712,9 +754,15 @@ public class CodeContext {
      * Analyse the descriptor of the Fieldref and return its size.
      */
     private int determineFieldSize(short idx) {
-        ClassFile.ConstantFieldrefInfo    cfi   = (ClassFile.ConstantFieldrefInfo)    this.classFile.getConstantPoolInfo(idx);
-        ClassFile.ConstantNameAndTypeInfo cnati = (ClassFile.ConstantNameAndTypeInfo) this.classFile.getConstantPoolInfo(cfi.getNameAndTypeIndex());
-        ClassFile.ConstantUtf8Info        cui   = (ClassFile.ConstantUtf8Info)        this.classFile.getConstantPoolInfo(cnati.getDescriptorIndex());
+        ClassFile.ConstantFieldrefInfo cfi = (
+            (ClassFile.ConstantFieldrefInfo) this.classFile.getConstantPoolInfo(idx)
+        );
+        ClassFile.ConstantNameAndTypeInfo cnati = (
+            (ClassFile.ConstantNameAndTypeInfo) this.classFile.getConstantPoolInfo(cfi.getNameAndTypeIndex())
+        );
+        ClassFile.ConstantUtf8Info cui = (
+            (ClassFile.ConstantUtf8Info) this.classFile.getConstantPoolInfo(cnati.getDescriptorIndex())
+        );
         return Descriptor.size(cui.getString());
     }
 
@@ -729,7 +777,9 @@ public class CodeContext {
             ((ClassFile.ConstantInterfaceMethodrefInfo) cpi).getNameAndTypeIndex() :
             ((ClassFile.ConstantMethodrefInfo) cpi).getNameAndTypeIndex()
         );
-        ClassFile.ConstantUtf8Info cui = (ClassFile.ConstantUtf8Info) this.classFile.getConstantPoolInfo(nat.getDescriptorIndex());
+        ClassFile.ConstantUtf8Info cui = (
+            (ClassFile.ConstantUtf8Info) this.classFile.getConstantPoolInfo(nat.getDescriptorIndex())
+        );
         String desc = cui.getString();
 
         if (desc.charAt(0) != '(') throw new JaninoRuntimeException("Method descriptor does not start with \"(\"");
@@ -883,19 +933,25 @@ public class CodeContext {
         int ico = this.currentInserter.offset;
         if (this.end.offset + size <= this.code.length) {
             // Optimization to avoid a trivial method call in the common case
-            if(ico != this.end.offset) {
+            if (ico != this.end.offset) {
                 System.arraycopy(this.code, ico, this.code, ico + size, this.end.offset - ico);
             }
         } else {
             byte[] oldCode = this.code;
             //double size to avoid horrible performance, but don't grow over our limit
             int newSize = Math.max(Math.min(oldCode.length * 2, 0xffff), oldCode.length + size);
-            if (newSize > 0xffff) throw new JaninoRuntimeException("Code attribute in class \"" + this.classFile.getThisClassName() + "\" grows beyond 64 KB");
+            if (newSize > 0xffff) {
+                throw new JaninoRuntimeException(
+                    "Code attribute in class \""
+                    + this.classFile.getThisClassName()
+                    + "\" grows beyond 64 KB"
+                );
+            }
             this.code = new byte[newSize];
             System.arraycopy(oldCode, 0, this.code, 0, ico);
             System.arraycopy(oldCode, ico, this.code, ico + size, this.end.offset - ico);
         }
-        Arrays.fill(this.code, ico, ico + size, (byte)0);
+        Arrays.fill(this.code, ico, ico + size, (byte) 0);
         for (Offset o = this.currentInserter; o != null; o = o.next) o.offset += size;
     }
 
@@ -928,7 +984,9 @@ public class CodeContext {
         }
 
         public boolean relocate() {
-            if (this.destination.offset == Offset.UNSET) throw new JaninoRuntimeException("Cannot relocate branch to unset destination offset");
+            if (this.destination.offset == Offset.UNSET) {
+                throw new JaninoRuntimeException("Cannot relocate branch to unset destination offset");
+            }
             int offset = this.destination.offset - this.source.offset;
 
             if (!this.expanded && (offset > Short.MAX_VALUE || offset < Short.MIN_VALUE)) {
@@ -1000,7 +1058,9 @@ public class CodeContext {
     private static byte invertBranchOpcode(byte branchOpcode) {
         return ((Byte) CodeContext.BRANCH_OPCODE_INVERSION.get(new Byte(branchOpcode))).byteValue();
     }
-    private static final Map BRANCH_OPCODE_INVERSION = CodeContext.createBranchOpcodeInversion(); // Map<Byte branch-opcode, Byte inverted-branch-opcode>
+
+    /** Byte branch-opcode => Byte inverted-branch-opcode */
+    private static final Map BRANCH_OPCODE_INVERSION = CodeContext.createBranchOpcodeInversion();
     private static Map createBranchOpcodeInversion() {
         Map m = new HashMap();
         m.put(new Byte(Opcode.IF_ACMPEQ), new Byte(Opcode.IF_ACMPNE));
@@ -1108,7 +1168,7 @@ public class CodeContext {
     public class Offset {
         int              offset = Offset.UNSET;
         Offset             prev = null, next = null;
-        final static int UNSET = -1;
+        static final int UNSET = -1;
 
         /**
          * Set this "Offset" to the offset of the current inserter; insert
@@ -1157,7 +1217,7 @@ public class CodeContext {
      * 4.7.3).
      */
     private static class ExceptionTableEntry {
-        public ExceptionTableEntry(
+        ExceptionTableEntry(
             Offset startPC,
             Offset endPC,
             Offset handlerPC,
@@ -1168,8 +1228,8 @@ public class CodeContext {
             this.handlerPC = handlerPC;
             this.catchType = catchType;
         }
-        private final Offset startPC, endPC, handlerPC;
-        private final short  catchType; // 0 == "finally" clause
+        final Offset startPC, endPC, handlerPC;
+        final short  catchType; // 0 == "finally" clause
     }
 
     /**
@@ -1210,5 +1270,5 @@ public class CodeContext {
         void fixUp();
     }
 
-    public List getAllLocalVars() {return this.allLocalVars;}
+    public List getAllLocalVars() { return this.allLocalVars; }
 }

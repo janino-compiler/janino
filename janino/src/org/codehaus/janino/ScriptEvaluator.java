@@ -399,7 +399,8 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
      * If and only if the number of scanners is one, then that single script may contain leading
      * IMPORT directives.
      *
-     * @throws IllegalStateException if any of the preceeding <code>set...()</code> had an array size different from that of <code>scanners</code>
+     * @throws IllegalStateException Any of the preceeding <code>set...()</code> had an array size different from that
+     *                               of <code>scanners</code>
      */
     public final void cook(Scanner[] scanners) throws CompileException, IOException {
         if (scanners == null) throw new NullPointerException();
@@ -409,12 +410,24 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
         int count = scanners.length;
 
         // Check array sizes.
-        if (this.optionalMethodNames      != null && this.optionalMethodNames.length      != count) throw new IllegalStateException("methodName");
-        if (this.optionalParameterNames   != null && this.optionalParameterNames.length   != count) throw new IllegalStateException("parameterNames");
-        if (this.optionalParameterTypes   != null && this.optionalParameterTypes.length   != count) throw new IllegalStateException("parameterTypes");
-        if (this.optionalReturnTypes      != null && this.optionalReturnTypes.length      != count) throw new IllegalStateException("returnTypes");
-        if (this.optionalStaticMethod     != null && this.optionalStaticMethod.length     != count) throw new IllegalStateException("staticMethod");
-        if (this.optionalThrownExceptions != null && this.optionalThrownExceptions.length != count) throw new IllegalStateException("thrownExceptions");
+        if (this.optionalMethodNames != null && this.optionalMethodNames.length != count) {
+            throw new IllegalStateException("methodName");
+        }
+        if (this.optionalParameterNames != null && this.optionalParameterNames.length != count) {
+            throw new IllegalStateException("parameterNames");
+        }
+        if (this.optionalParameterTypes != null && this.optionalParameterTypes.length != count) {
+            throw new IllegalStateException("parameterTypes");
+        }
+        if (this.optionalReturnTypes != null && this.optionalReturnTypes.length != count) {
+            throw new IllegalStateException("returnTypes");
+        }
+        if (this.optionalStaticMethod != null && this.optionalStaticMethod.length != count) {
+            throw new IllegalStateException("staticMethod");
+        }
+        if (this.optionalThrownExceptions != null && this.optionalThrownExceptions.length != count) {
+            throw new IllegalStateException("thrownExceptions");
+        }
 
         this.setUpClassLoaders();
 
@@ -442,11 +455,27 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
 
             // Determine the following script properties AFTER the call to "makeBlock()",
             // because "makeBlock()" may modify these script properties on-the-fly.
-            boolean  staticMethod     = this.optionalStaticMethod     == null ? true : this.optionalStaticMethod[i];
-            Class    returnType       = this.optionalReturnTypes      == null ? this.getDefaultReturnType() : this.optionalReturnTypes[i];
-            String[] parameterNames   = this.optionalParameterNames   == null ? new String[0] : this.optionalParameterNames[i];
-            Class[]  parameterTypes   = this.optionalParameterTypes   == null ? new Class[0] : this.optionalParameterTypes[i];
-            Class[]  thrownExceptions = this.optionalThrownExceptions == null ? new Class[0] : this.optionalThrownExceptions[i];
+            boolean  staticMethod = this.optionalStaticMethod == null || this.optionalStaticMethod[i];
+            Class returnType = (
+                this.optionalReturnTypes == null
+                ? this.getDefaultReturnType()
+                : this.optionalReturnTypes[i]
+            );
+            String[] parameterNames = (
+                this.optionalParameterNames == null
+                ? new String[0]
+                : this.optionalParameterNames[i]
+            );
+            Class[] parameterTypes = (
+                this.optionalParameterTypes == null
+                ? new Class[0]
+                : this.optionalParameterTypes[i]
+            );
+            Class[] thrownExceptions = (
+                this.optionalThrownExceptions == null
+                ? new Class[0]
+                : this.optionalThrownExceptions[i]
+            );
 
             cd.addDeclaredMethod(this.makeMethodDeclaration(
                 scanner.location(), // location
@@ -472,9 +501,16 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
         if (count <= 10) {
             for (int i = 0; i < count; ++i) {
                 try {
-                    this.result[i] = c.getDeclaredMethod(methodNames[i], this.optionalParameterTypes == null ? new Class[0] : this.optionalParameterTypes[i]);
+                    this.result[i] = c.getDeclaredMethod(
+                        methodNames[i],
+                        this.optionalParameterTypes == null ? new Class[0] : this.optionalParameterTypes[i]
+                    );
                 } catch (NoSuchMethodException ex) {
-                    throw new JaninoRuntimeException("SNO: Loaded class does not declare method \"" + methodNames[i] + "\"");
+                    throw new JaninoRuntimeException(
+                        "SNO: Loaded class does not declare method \""
+                        + methodNames[i]
+                        + "\""
+                    );
                 }
             }
         } else
@@ -512,8 +548,17 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
                 dms.put(new MethodWrapper(m.getName(), m.getParameterTypes()), m);
             }
             for (int i = 0; i < count; ++i) {
-                Method m = (Method) dms.get(new MethodWrapper(methodNames[i], this.optionalParameterTypes == null ? new Class[0] : this.optionalParameterTypes[i]));
-                if (m == null) throw new JaninoRuntimeException("SNO: Loaded class does not declare method \"" + methodNames[i] + "\"");
+                Method m = (Method) dms.get(new MethodWrapper(
+                    methodNames[i],
+                    this.optionalParameterTypes == null ? new Class[0] : this.optionalParameterTypes[i]
+                ));
+                if (m == null) {
+                    throw new JaninoRuntimeException(
+                        "SNO: Loaded class does not declare method \""
+                        + methodNames[i]
+                        + "\""
+                    );
+                }
                 this.result[i] = m;
             }
         }
@@ -602,7 +647,11 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
             try {
                 this.result[i] = c.getMethod(methodNames[i], parameterTypes[i]);
             } catch (NoSuchMethodException ex) {
-                throw new JaninoRuntimeException("SNO: Loaded class does not declare method \"" + this.optionalMethodNames[i] + "\"");
+                throw new JaninoRuntimeException(
+                    "SNO: Loaded class does not declare method \""
+                    + this.optionalMethodNames[i]
+                    + "\""
+                );
             }
         }
     }
@@ -627,9 +676,19 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
         Class[]                  thrownExceptions,
         List/*<BlockStatement>*/ statements
     ) {
-        if (parameterNames.length != parameterTypes.length) throw new JaninoRuntimeException("Lengths of \"parameterNames\" (" + parameterNames.length + ") and \"parameterTypes\" (" + parameterTypes.length + ") do not match");
+        if (parameterNames.length != parameterTypes.length) {
+            throw new JaninoRuntimeException(
+                "Lengths of \"parameterNames\" ("
+                + parameterNames.length
+                + ") and \"parameterTypes\" ("
+                + parameterTypes.length
+                + ") do not match"
+            );
+        }
 
-        Java.FunctionDeclarator.FormalParameter[] fps = new Java.FunctionDeclarator.FormalParameter[parameterNames.length];
+        Java.FunctionDeclarator.FormalParameter[] fps = new Java.FunctionDeclarator.FormalParameter[
+            parameterNames.length
+        ];
         for (int i = 0; i < fps.length; ++i) {
             fps[i] = new Java.FunctionDeclarator.FormalParameter(
                 location,                                      // location
@@ -768,7 +827,7 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
      * Notice: This method is not declared in {@link IScriptEvaluator}, and is hence only available in <i>this</i>
      * implementation of <code>org.codehaus.commons.compiler</code>. To be independent from this particular
      * implementation, try to switch to {@link #createFastEvaluator(Reader, Class, String[])}.
-     * 
+     *
      * @param scanner Source of tokens to read
      * @see #createFastEvaluator(Reader, Class, String[])
      */
@@ -777,10 +836,18 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
         Class    interfaceToImplement,
         String[] parameterNames
     ) throws CompileException, IOException {
-        if (!interfaceToImplement.isInterface()) throw new JaninoRuntimeException("\"" + interfaceToImplement + "\" is not an interface");
+        if (!interfaceToImplement.isInterface()) {
+            throw new JaninoRuntimeException("\"" + interfaceToImplement + "\" is not an interface");
+        }
 
         Method[] methods = interfaceToImplement.getDeclaredMethods();
-        if (methods.length != 1) throw new JaninoRuntimeException("Interface \"" + interfaceToImplement + "\" must declare exactly one method");
+        if (methods.length != 1) {
+            throw new JaninoRuntimeException(
+                "Interface \""
+                + interfaceToImplement
+                + "\" must declare exactly one method"
+            );
+        }
         Method methodToImplement = methods[0];
 
         this.setImplementedInterfaces(new Class[] { interfaceToImplement });

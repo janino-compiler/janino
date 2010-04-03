@@ -57,7 +57,7 @@ import org.codehaus.janino.util.resource.PathResourceFinder;
 
 /**
  * Reads a set of compilation units from the file system and searches it for specific
- * Java<sup>TM</sup> constructs, e.g. invocations of a particular method.
+ * Java&trade; constructs, e.g. invocations of a particular method.
  *
  * Usage:
  * <pre>
@@ -178,7 +178,12 @@ public class JGrep {
                                 new String[] { "uc", "invocation", "method" }
                             ));
                         } catch (Exception ex) {
-                            System.err.println("Compiling predicate expression \"" + predicateExpression + "\": " + ex.getMessage());
+                            System.err.println(
+                                "Compiling predicate expression \""
+                                + predicateExpression
+                                + "\": "
+                                + ex.getMessage()
+                            );
                             System.exit(1);
                             /* NEVER REACHED */ return;
                         }
@@ -188,7 +193,12 @@ public class JGrep {
                         try {
                             mit.actions.add(Action.getMethodInvocationAction(action));
                         } catch (Exception ex) {
-                            System.err.println("Compiling method invocation action \"" + action + "\": " + ex.getMessage());
+                            System.err.println(
+                                "Compiling method invocation action \""
+                                + action
+                                + "\": "
+                                + ex.getMessage()
+                            );
                             System.exit(1);
                             /* NEVER REACHED */ return;
                         }
@@ -226,10 +236,18 @@ public class JGrep {
 
         static MethodInvocationAction getMethodInvocationAction(String action) throws CompileException {
             if ("print-location-and-match".equals(action)) {
-                return new MethodInvocationAction() { public void execute(UnitCompiler uc, Java.Invocation invocation, IClass.IMethod method) { System.out.println(invocation.getLocation() + ": " + method); } };
+                return new MethodInvocationAction() {
+                    public void execute(UnitCompiler uc, Java.Invocation invocation, IClass.IMethod method) {
+                        System.out.println(invocation.getLocation() + ": " + method);
+                    }
+                };
             } else
             if ("print-location".equals(action)) {
-                return new MethodInvocationAction() { public void execute(UnitCompiler uc, Java.Invocation invocation, IClass.IMethod method) { System.out.println(invocation.getLocation()); } };
+                return new MethodInvocationAction() {
+                    public void execute(UnitCompiler uc, Java.Invocation invocation, IClass.IMethod method) {
+                        System.out.println(invocation.getLocation());
+                    }
+                };
             } else
             {
                 ICompilerFactory cf;
@@ -248,7 +266,9 @@ public class JGrep {
         }
     }
 
-    private static MethodInvocationTarget parseMethodInvocationPattern(String mip) throws CompileException, IOException {
+    private static MethodInvocationTarget parseMethodInvocationPattern(
+        String mip
+    ) throws CompileException, IOException {
         MethodInvocationTarget mit = new MethodInvocationTarget();
         Scanner scanner = new Scanner(null, new StringReader(mip));
         Parser parser = new Parser(scanner);
@@ -316,7 +336,10 @@ public class JGrep {
 
         void apply(UnitCompiler uc, Java.Invocation invocation, IClass.IMethod method) throws CompileException {
             if (this.optionalClassNamePattern != null) {
-                if (!typeMatches(this.optionalClassNamePattern, Descriptor.toClassName(method.getDeclaringIClass().getDescriptor()))) return;
+                if (!typeMatches(
+                    this.optionalClassNamePattern,
+                    Descriptor.toClassName(method.getDeclaringIClass().getDescriptor())
+                )) return;
             }
             if (!new StringPattern(this.methodNamePattern).matches(method.getName())) return;
             IClass[] fpts = method.getParameterTypes();
@@ -345,8 +368,12 @@ public class JGrep {
             }
         }
     }
-    public interface MethodInvocationPredicate { boolean evaluate(UnitCompiler uc, Java.Invocation invocation, IClass.IMethod method) throws Exception; }
-    public interface MethodInvocationAction { void execute(UnitCompiler uc, Java.Invocation invocation, IClass.IMethod method) throws Exception; }
+    public interface MethodInvocationPredicate {
+        boolean evaluate(UnitCompiler uc, Java.Invocation invocation, IClass.IMethod method) throws Exception;
+    }
+    public interface MethodInvocationAction {
+        void execute(UnitCompiler uc, Java.Invocation invocation, IClass.IMethod method) throws Exception;
+    }
 
     static boolean typeMatches(String pattern, String typeName) {
         return new StringPattern(pattern).matches(
@@ -356,42 +383,45 @@ public class JGrep {
         );
     }
     private static final String[] USAGE = {
-        "To be written.", // TODO
-/*
         "Usage:",
         "",
-        "  java org.codehaus.janino.Compiler [ <option> ] ... <source-file> ...",
+        "  java org.codehaus.janino.tools.JGrep [ <option> ... ] <root-dir> ... <pattern> ...",
+        "  java org.codehaus.janino.tools.JGrep -help",
         "",
-        "Supported <option>s are:",
-        "  -d <output-dir>           Where to save class files",
-        "  -sourcepath <dirlist>     Where to look for other source files",
-        "  -classpath <dirlist>      Where to look for other class files",
-        "  -extdirs <dirlist>        Where to look for other class files",
-        "  -bootclasspath <dirlist>  Where to look for other class files",
-        "  -encoding <encoding>      Encoding of source files, e.g. \"UTF-8\" or \"ISO-8859-1\"",
+        "Reads a set of compilation units from the files in the <root-dir>s and their",
+        "subdirectories and searches them for specific Java[TM] constructs, e.g.",
+        "invocations of a particular method.",
+        "",
+        "Supported <option>s are ('cp' is a 'combined pattern, like '*.java-*Generated*'):",
+        "  -dirs <dir-cp>             Ignore subdirectories which don't match",
+        "  -files <file-cp>           Include only matching files (default is '*.java')",
+        "  -classpath <classpath>",
+        "  -extdirs <classpath>",
+        "  -bootclasspath <classpath>",
+        "  -encoding <encoding>",
         "  -verbose",
-        "  -g                        Generate all debugging info",
-        "  -g:none                   Generate no debugging info",
-        "  -g:{lines,vars,source}    Generate only some debugging info",
-        "  -warn:<pattern-list>      Issue certain warnings; examples:",
-        "    -warn:*                 Enables all warnings",
-        "    -warn:IASF              Only warn against implicit access to static fields",
-        "    -warn:*-IASF            Enables all warnings, except those against implicit",
-        "                            access to static fields",
-        "    -warn:*-IA*+IASF        Enables all warnings, except those against implicit",
-        "                            accesses, but do warn against implicit access to",
-        "                            static fields",
-        "  -rebuild                  Compile all source files, even if the class files",
-        "                            seems up-to-date",
-        "  -help",
         "",
-        "The default encoding in this environment is \"" + new InputStreamReader(new ByteArrayInputStream(new byte[0])).getEncoding() + "\".",
-*/
+        "Supported <pattern>s are:",
+        "  -method-invocation <method-pattern> [ predicate:<predicate-expression> | action:<action-script> ] ...",
+        "<method-pattern> is ('<ip>' is an 'identifier pattern' like '*foo*'):",
+        "  -method-invocation <method-ip>",
+        "  -method-invocation <simple-class-ip>.<method-ip>",
+        "  -method-invocation <fully-qualified-class-ip>.<method-ip>",
+        "  -method-invocation <method-ip>([<parameter-ip>[,<parameter-ip>]...])",
+        "",
+        "<predicate-expression> is a Java[TM] expression with the following signature:",
+        "  boolean evaluate(UnitCompiler uc, Java.Invocation invocation, IClass.IMethod method)",
+        "",
+        "<action-script> is either",
+        "  print-location-and-match",
+        "  print-location",
+        ", or a Java[TM] script (method body) with the following signature:",
+        "  void execute(UnitCompiler uc, Java.Invocation invocation, IClass.IMethod method)",
     };
 
-    private /*final*/ IClassLoader iClassLoader;
-    private /*final*/ String       optionalCharacterEncoding;
-    private /*final*/ Benchmark    benchmark;
+    private final IClassLoader iClassLoader;
+    private final String       optionalCharacterEncoding;
+    private final Benchmark    benchmark;
 
     public JGrep(
         File[]  classPath,
@@ -406,15 +436,15 @@ public class JGrep {
                 optionalExtDirs,
                 classPath
             ),
-            optionalCharacterEncoding,             // optionalCharacterEncoding
-            verbose                                // verbose
+            optionalCharacterEncoding,                                        // optionalCharacterEncoding
+            verbose                                                           // verbose
         );
 
         this.benchmark.report("*** JGrep - search Java(TM) source files for specific language constructs");
         this.benchmark.report("*** For more information visit http://janino.codehaus.org");
-        this.benchmark.report("Class path",         classPath                );
-        this.benchmark.report("Ext dirs",           optionalExtDirs          );
-        this.benchmark.report("Boot class path",    optionalBootClassPath    );
+        this.benchmark.report("Class path",         classPath);
+        this.benchmark.report("Ext dirs",           optionalExtDirs);
+        this.benchmark.report("Boot class path",    optionalBootClassPath);
         this.benchmark.report("Character encoding", optionalCharacterEncoding);
     }
 
@@ -434,8 +464,8 @@ public class JGrep {
         final StringPattern[] fileNamePatterns,
         List                  methodInvocationTargets // MethodInvocationTarget
     ) throws CompileException, IOException {
-        this.benchmark.report("Root dirs",               rootDirectories                );
-        this.benchmark.report("Directory name patterns", directoryNamePatterns          );
+        this.benchmark.report("Root dirs",               rootDirectories);
+        this.benchmark.report("Directory name patterns", directoryNamePatterns);
         this.benchmark.report("File name patterns",      fileNamePatterns);
 
         this.jGrep(DirectoryIterator.traverseDirectories(
@@ -483,7 +513,10 @@ public class JGrep {
             for (Iterator it = this.parsedCompilationUnits.iterator(); it.hasNext();) {
                 final UnitCompiler uc = (UnitCompiler) it.next();
                 this.benchmark.beginReporting("Grepping \"" + uc.compilationUnit.optionalFileName + "\"");
-                class UCE extends RuntimeException { final CompileException ce; UCE(CompileException ce) { this.ce = ce; } }
+                class UCE extends RuntimeException {
+                    final CompileException ce;
+                    UCE(CompileException ce) { this.ce = ce; }
+                }
                 try {
                     new Traverser() {
 
@@ -564,7 +597,7 @@ public class JGrep {
                 this.benchmark.endReporting();
             }
         } finally {
-            try { is.close(); } catch (IOException ex) {}
+            try { is.close(); } catch (IOException ex) { }
         }
     }
 
@@ -589,7 +622,10 @@ public class JGrep {
             return new File(optionalDestinationDirectory, ClassFile.getClassFileResourceName(className));
         } else {
             int idx = className.lastIndexOf('.');
-            return new File(sourceFile.getParentFile(), ClassFile.getClassFileResourceName(className.substring(idx + 1)));
+            return new File(
+                sourceFile.getParentFile(),
+                ClassFile.getClassFileResourceName(className.substring(idx + 1))
+            );
         }
     }
 

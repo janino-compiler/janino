@@ -45,20 +45,26 @@ import org.codehaus.janino.util.iterator.ReverseListIterator;
 
 /**
  * This wrapper class defines classes that represent the elements of the
- * Java<sup>TM</sup> programming language.
+ * Java&trade; programming language.
  * <p>
  * Notices:
  * <ul>
- *   <li>"JLS1" refers to <a href="http://java.sun.com/docs/books/jls/first_edition/html/index.html">"The Java<sup>TM</sup> Language Specification, First Edition"</a>.
- *   <li>"JLS" or "JLS2" refers to <a href="http://java.sun.com/docs/books/jls/second_edition/html/j.title.doc.html">"The Java<sup>TM</sup> Language Specification, Second Edition"</a>.
+ *   <li>
+ *     "JLS1" refers to <a href="http://java.sun.com/docs/books/jls/first_edition/html/index.html">"The Java&trade;
+ *     Language Specification, First Edition"</a>.
+ *   </li>
+ *   <li>
+ *     "JLS" or "JLS2" refers to <a href="http://java.sun.com/docs/books/jls/second_edition/html/j.title.doc.html">"The
+ *     Java&trade; Language Specification, Second Edition"</a>.
+ *   </li>
  * </ul>
  */
 
-public class Java {
+public final class Java {
     private Java() {} // Don't instantiate me.
 
     public interface Scope {
-        public Scope getEnclosingScope();
+        Scope getEnclosingScope();
     }
 
     /**
@@ -66,7 +72,7 @@ public class Java {
      * location in the source code.
      */
     public interface Locatable {
-        public Location getLocation();
+        Location getLocation();
 
         /**
          * Throw a {@link CompileException} with the given message and this
@@ -74,9 +80,9 @@ public class Java {
          *
          * @param message The message to report
          */
-        public void throwCompileException(String message) throws CompileException;
+        void throwCompileException(String message) throws CompileException;
     }
-    public static abstract class Located implements Locatable {
+    public abstract static class Located implements Locatable {
         private final Location location;
 
         protected Located(Location location) {
@@ -106,10 +112,14 @@ public class Java {
         }
 
         // Implement "Scope".
-        public Scope getEnclosingScope() { throw new JaninoRuntimeException("A compilation unit has no enclosing scope"); }
+        public Scope getEnclosingScope() {
+            throw new JaninoRuntimeException("A compilation unit has no enclosing scope");
+        }
 
         public void setPackageDeclaration(PackageDeclaration packageDeclaration) {
-            if (this.optionalPackageDeclaration != null) throw new JaninoRuntimeException("Re-setting package declaration");
+            if (this.optionalPackageDeclaration != null) {
+                throw new JaninoRuntimeException("Re-setting package declaration");
+            }
             this.optionalPackageDeclaration = packageDeclaration;
         }
 
@@ -128,7 +138,9 @@ public class Java {
          * Get all classes and interfaces declared in this compilation unit.
          */
         public PackageMemberTypeDeclaration[] getPackageMemberTypeDeclarations() {
-            return (PackageMemberTypeDeclaration[]) this.packageMemberTypeDeclarations.toArray(new PackageMemberTypeDeclaration[this.packageMemberTypeDeclarations.size()]);
+            return (PackageMemberTypeDeclaration[]) this.packageMemberTypeDeclarations.toArray(
+                new PackageMemberTypeDeclaration[this.packageMemberTypeDeclarations.size()]
+            );
         }
 
         /**
@@ -172,7 +184,9 @@ public class Java {
                 super(location);
                 this.identifiers = identifiers;
             }
-            public final void accept(Visitor.ImportVisitor visitor) { visitor.visitTypeImportOnDemandDeclaration(this); }
+            public final void accept(Visitor.ImportVisitor visitor) {
+                visitor.visitTypeImportOnDemandDeclaration(this);
+            }
             public String toString() {
                 return "import " + Java.join(this.identifiers, ".") + ".*;";
             }
@@ -189,7 +203,9 @@ public class Java {
                 super(location);
                 this.identifiers = identifiers;
             }
-            public final void accept(Visitor.ImportVisitor visitor) { visitor.visitSingleStaticImportDeclaration(this); }
+            public final void accept(Visitor.ImportVisitor visitor) {
+                visitor.visitSingleStaticImportDeclaration(this);
+            }
         }
 
         /**
@@ -203,7 +219,9 @@ public class Java {
                 super(location);
                 this.identifiers = identifiers;
             }
-            public final void accept(Visitor.ImportVisitor visitor) { visitor.visitStaticImportOnDemandDeclaration(this); }
+            public final void accept(Visitor.ImportVisitor visitor) {
+                visitor.visitStaticImportOnDemandDeclaration(this);
+            }
         }
 
         public abstract static class ImportDeclaration extends Java.Located {
@@ -244,9 +262,9 @@ public class Java {
          * methods.)
          * @return <code>null</code> if a method with this name is not declared
          */
-        MethodDeclarator getMethodDeclaration(String name) ;
+        MethodDeclarator getMethodDeclaration(String name);
 
-        List/*<MethodDeclaration>*/ getMethodDeclarations() ;
+        List/*<MethodDeclaration>*/ getMethodDeclarations();
 
         /**
          * Determine the effective class name, e.g. "pkg.Outer$Inner".
@@ -271,14 +289,14 @@ public class Java {
         /**
          * Returns the doc comment of the object or <code>null</code>.
          */
-        public String getDocComment();
+        String getDocComment();
 
         /**
          * Returns <code>true</code> if the object has a doc comment and
          * the <code>&#64;deprecated</code> tag appears in the doc
          * comment.
          */
-        public boolean hasDeprecatedDocTag();
+        boolean hasDeprecatedDocTag();
     }
 
     /**
@@ -307,7 +325,7 @@ public class Java {
         /**
          * Returns the declared (not the fully qualified) name of the class or interface.
          */
-        public String getName();
+        String getName();
     }
 
     /**
@@ -370,7 +388,14 @@ public class Java {
 
 
         public void setEnclosingScope(Scope enclosingScope) {
-            if (this.enclosingScope != null && enclosingScope != this.enclosingScope) throw new JaninoRuntimeException("Enclosing scope is already set for type declaration \"" + this.toString() + "\" at " + this.getLocation());
+            if (this.enclosingScope != null && enclosingScope != this.enclosingScope) {
+                throw new JaninoRuntimeException(
+                    "Enclosing scope is already set for type declaration \""
+                    + this.toString()
+                    + "\" at "
+                    + this.getLocation()
+                );
+            }
             this.enclosingScope = enclosingScope;
         }
         public Scope getEnclosingScope() {
@@ -440,7 +465,7 @@ public class Java {
             throw new CompileException(message, this.location);
         }
 
-        abstract public String toString();
+        public abstract String toString();
 
         public int anonymousClassCount = 0; // For naming anonymous classes.
         public int localClassCount = 0;     // For naming local classes.
@@ -501,7 +526,9 @@ public class Java {
                 return new ConstructorDeclarator[] { defaultConstructor };
             }
 
-            return (ConstructorDeclarator[]) this.constructors.toArray(new ConstructorDeclarator[this.constructors.size()]);
+            return (ConstructorDeclarator[]) this.constructors.toArray(
+                new ConstructorDeclarator[this.constructors.size()]
+            );
         }
 
         // All field names start with "this$" or "val$".
@@ -522,7 +549,7 @@ public class Java {
             (this.baseType = baseType).setEnclosingScope(new EnclosingScopeOfTypeDeclaration(this));
         }
 
-        public final void accept(Visitor.TypeDeclarationVisitor visitor) {
+        public void accept(Visitor.TypeDeclarationVisitor visitor) {
             visitor.visitAnonymousClassDeclaration(this);
         }
 
@@ -539,7 +566,9 @@ public class Java {
         public String toString() { return this.getClassName(); }
     }
 
-    public abstract static class NamedClassDeclaration extends ClassDeclaration implements NamedTypeDeclaration, DocCommentable {
+    public abstract static class NamedClassDeclaration
+    extends ClassDeclaration
+    implements NamedTypeDeclaration, DocCommentable {
         private final String optionalDocComment;
         public final String  name;
         public final Type    optionalExtendedType;
@@ -557,9 +586,13 @@ public class Java {
             this.optionalDocComment   = optionalDocComment;
             this.name                 = name;
             this.optionalExtendedType = optionalExtendedType;
-            if (optionalExtendedType != null) optionalExtendedType.setEnclosingScope(new EnclosingScopeOfTypeDeclaration(this));
+            if (optionalExtendedType != null) {
+                optionalExtendedType.setEnclosingScope(new EnclosingScopeOfTypeDeclaration(this));
+            }
             this.implementedTypes     = implementedTypes;
-            for (int i = 0; i < implementedTypes.length; ++i) implementedTypes[i].setEnclosingScope(new EnclosingScopeOfTypeDeclaration(this));
+            for (int i = 0; i < implementedTypes.length; ++i) {
+                implementedTypes[i].setEnclosingScope(new EnclosingScopeOfTypeDeclaration(this));
+            }
         }
 
         public String toString() { return this.name; }
@@ -569,7 +602,9 @@ public class Java {
 
         // Implement DocCommentable.
         public String getDocComment() { return this.optionalDocComment; }
-        public boolean hasDeprecatedDocTag() { return this.optionalDocComment != null && this.optionalDocComment.indexOf("@deprecated") != -1; }
+        public boolean hasDeprecatedDocTag() {
+            return this.optionalDocComment != null && this.optionalDocComment.indexOf("@deprecated") != -1;
+        }
     }
 
     /**
@@ -585,7 +620,9 @@ public class Java {
         public Scope getEnclosingScope() { return this.typeDeclaration.getEnclosingScope(); }
     }
 
-    public static final class MemberClassDeclaration extends NamedClassDeclaration implements MemberTypeDeclaration, InnerClassDeclaration {
+    public static final class MemberClassDeclaration
+    extends NamedClassDeclaration
+    implements MemberTypeDeclaration, InnerClassDeclaration {
         public MemberClassDeclaration(
             Location             location,
             String               optionalDocComment,
@@ -662,14 +699,18 @@ public class Java {
         // Implement TypeDeclaration.
         public String getClassName() {
             for (Scope s = this.getEnclosingScope();; s = s.getEnclosingScope()) {
-                if (s instanceof Java.TypeDeclaration) return ((Java.TypeDeclaration) s).getClassName() + '$' + this.name;
+                if (s instanceof Java.TypeDeclaration) {
+                    return ((Java.TypeDeclaration) s).getClassName() + '$' + this.name;
+                }
             }
         }
 
-        public final void accept(Visitor.TypeDeclarationVisitor visitor) { visitor.visitLocalClassDeclaration(this); }
+        public void accept(Visitor.TypeDeclarationVisitor visitor) { visitor.visitLocalClassDeclaration(this); }
     }
 
-    public static final class PackageMemberClassDeclaration extends NamedClassDeclaration implements PackageMemberTypeDeclaration {
+    public static final class PackageMemberClassDeclaration
+    extends NamedClassDeclaration
+    implements PackageMemberTypeDeclaration {
         public PackageMemberClassDeclaration(
             Location location,
             String   optionalDocComment,
@@ -692,7 +733,12 @@ public class Java {
                 Mod.PROTECTED |
                 Mod.PRIVATE |
                 Mod.STATIC
-            )) != 0) this.throwCompileException("Modifiers \"protected\", \"private\" and \"static\" not allowed in package member class declaration");
+            )) != 0) {
+                this.throwCompileException(
+                    "Modifiers \"protected\", \"private\" and \"static\" not allowed in package member class "
+                    + "declaration"
+                );
+            }
         }
 
         // Implement PackageMemberTypeDeclaration.
@@ -713,15 +759,19 @@ public class Java {
             String className = this.getName();
 
             CompilationUnit compilationUnit = (CompilationUnit) this.getEnclosingScope();
-            if (compilationUnit.optionalPackageDeclaration != null) className = compilationUnit.optionalPackageDeclaration.packageName + '.' + className;
+            if (compilationUnit.optionalPackageDeclaration != null) {
+                className = compilationUnit.optionalPackageDeclaration.packageName + '.' + className;
+            }
 
             return className;
         }
 
-        public final void accept(Visitor.TypeDeclarationVisitor visitor) { visitor.visitPackageMemberClassDeclaration(this); }
+        public void accept(Visitor.TypeDeclarationVisitor visitor) { visitor.visitPackageMemberClassDeclaration(this); }
     }
 
-    public abstract static class InterfaceDeclaration extends AbstractTypeDeclaration implements NamedTypeDeclaration, DocCommentable {
+    public abstract static class InterfaceDeclaration
+    extends AbstractTypeDeclaration
+    implements NamedTypeDeclaration, DocCommentable {
         private final String    optionalDocComment;
         public /*final*/ String name;
 
@@ -736,7 +786,9 @@ public class Java {
             this.optionalDocComment = optionalDocComment;
             this.name               = name;
             this.extendedTypes      = extendedTypes;
-            for (int i = 0; i < extendedTypes.length; ++i) extendedTypes[i].setEnclosingScope(new EnclosingScopeOfTypeDeclaration(this));
+            for (int i = 0; i < extendedTypes.length; ++i) {
+                extendedTypes[i].setEnclosingScope(new EnclosingScopeOfTypeDeclaration(this));
+            }
         }
 
         public String toString() { return this.name; }
@@ -760,7 +812,9 @@ public class Java {
 
         // Implement DocCommentable.
         public String getDocComment() { return this.optionalDocComment; }
-        public boolean hasDeprecatedDocTag() { return this.optionalDocComment != null && this.optionalDocComment.indexOf("@deprecated") != -1; }
+        public boolean hasDeprecatedDocTag() {
+            return this.optionalDocComment != null && this.optionalDocComment.indexOf("@deprecated") != -1;
+        }
     }
 
     public static final class MemberInterfaceDeclaration extends InterfaceDeclaration implements MemberTypeDeclaration {
@@ -799,11 +853,17 @@ public class Java {
             return (this.getModifiers() & Mod.STATIC) != 0;
         }
 
-        public final void accept(Visitor.TypeDeclarationVisitor visitor) { visitor.visitMemberInterfaceDeclaration(this); }
-        public final void accept(Visitor.TypeBodyDeclarationVisitor visitor) { visitor.visitMemberInterfaceDeclaration(this); }
+        public void accept(Visitor.TypeDeclarationVisitor visitor) {
+            visitor.visitMemberInterfaceDeclaration(this);
+        }
+        public void accept(Visitor.TypeBodyDeclarationVisitor visitor) {
+            visitor.visitMemberInterfaceDeclaration(this);
+        }
     }
 
-    public static final class PackageMemberInterfaceDeclaration extends InterfaceDeclaration implements PackageMemberTypeDeclaration {
+    public static final class PackageMemberInterfaceDeclaration
+    extends InterfaceDeclaration
+    implements PackageMemberTypeDeclaration {
         public PackageMemberInterfaceDeclaration(
             Location        location,
             String          optionalDocComment,
@@ -824,7 +884,12 @@ public class Java {
                 Mod.PROTECTED |
                 Mod.PRIVATE |
                 Mod.STATIC
-            )) != 0) this.throwCompileException("Modifiers \"protected\", \"private\" and \"static\" not allowed in package member interface declaration");
+            )) != 0) {
+                this.throwCompileException(
+                    "Modifiers \"protected\", \"private\" and \"static\" not allowed in package member interface "
+                    + "declaration"
+                );
+            }
         }
 
         // Implement PackageMemberTypeDeclaration.
@@ -841,12 +906,16 @@ public class Java {
             String className = this.getName();
 
             CompilationUnit compilationUnit = (CompilationUnit) this.getEnclosingScope();
-            if (compilationUnit.optionalPackageDeclaration != null) className = compilationUnit.optionalPackageDeclaration.packageName + '.' + className;
+            if (compilationUnit.optionalPackageDeclaration != null) {
+                className = compilationUnit.optionalPackageDeclaration.packageName + '.' + className;
+            }
 
             return className;
         }
 
-        public final void accept(Visitor.TypeDeclarationVisitor visitor) { visitor.visitPackageMemberInterfaceDeclaration(this); }
+        public void accept(Visitor.TypeDeclarationVisitor visitor) {
+            visitor.visitPackageMemberInterfaceDeclaration(this);
+        }
     }
 
     /**
@@ -879,7 +948,15 @@ public class Java {
 
         // Implement TypeBodyDeclaration.
         public void setDeclaringType(TypeDeclaration declaringType) {
-            if (this.declaringType != null && declaringType != null) throw new JaninoRuntimeException("Declaring type for type body declaration \"" + this.toString() + "\"at " + this.getLocation() + " is already set");
+            if (this.declaringType != null && declaringType != null) {
+                throw new JaninoRuntimeException(
+                    "Declaring type for type body declaration \""
+                    + this.toString()
+                    + "\"at "
+                    + this.getLocation()
+                    + " is already set"
+                );
+            }
             this.declaringType = declaringType;
         }
         public TypeDeclaration getDeclaringType() {
@@ -902,7 +979,7 @@ public class Java {
     /**
      * Representation of an instance (JLS2 8.6) or static initializer (JLS2 8.7).
      */
-    public final static class Initializer extends AbstractTypeBodyDeclaration implements BlockStatement {
+    public static final class Initializer extends AbstractTypeBodyDeclaration implements BlockStatement {
         public final Block block;
 
         public Initializer(
@@ -919,8 +996,8 @@ public class Java {
 
         // Implement BlockStatement.
 
-        public final void accept(Visitor.TypeBodyDeclarationVisitor visitor) { visitor.visitInitializer(this); }
-        public final void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitInitializer(this); }
+        public void accept(Visitor.TypeBodyDeclarationVisitor visitor) { visitor.visitInitializer(this); }
+        public void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitInitializer(this); }
 
         public Java.LocalVariable findLocalVariable(String name) {
             return this.block.findLocalVariable(name);
@@ -983,7 +1060,9 @@ public class Java {
 
         // Implement DocCommentable.
         public String getDocComment() { return this.optionalDocComment; }
-        public boolean hasDeprecatedDocTag() { return this.optionalDocComment != null && this.optionalDocComment.indexOf("@deprecated") != -1; }
+        public boolean hasDeprecatedDocTag() {
+            return this.optionalDocComment != null && this.optionalDocComment.indexOf("@deprecated") != -1;
+        }
 
         public static final class FormalParameter extends Java.Located {
             public final boolean finaL;
@@ -1064,10 +1143,12 @@ public class Java {
             return sb.toString();
         }
 
-        public final void accept(Visitor.TypeBodyDeclarationVisitor visitor) { visitor.visitConstructorDeclarator(this); }
+        public void accept(Visitor.TypeBodyDeclarationVisitor visitor) {
+            visitor.visitConstructorDeclarator(this);
+        }
     }
 
-    public final static class MethodDeclarator extends FunctionDeclarator {
+    public static final class MethodDeclarator extends FunctionDeclarator {
         public MethodDeclarator(
             Location                             location,
             String                               optionalDocComment,
@@ -1102,7 +1183,7 @@ public class Java {
             return sb.toString();
         }
 
-        public final void accept(Visitor.TypeBodyDeclarationVisitor visitor) { visitor.visitMethodDeclarator(this); }
+        public void accept(Visitor.TypeBodyDeclarationVisitor visitor) { visitor.visitMethodDeclarator(this); }
 
         IClass.IMethod iMethod = null;
     }
@@ -1149,19 +1230,22 @@ public class Java {
 
         public String toString() {
             StringBuffer sb = new StringBuffer();
-            sb.append(Mod.shortToString(this.modifiers)).append(' ').append(this.type).append(' ').append(this.variableDeclarators[0]);
+            sb.append(Mod.shortToString(this.modifiers)).append(' ').append(this.type).append(' ');
+            sb.append(this.variableDeclarators[0]);
             for (int i = 1; i < this.variableDeclarators.length; ++i) {
                 sb.append(", ").append(this.variableDeclarators[i]);
             }
             return sb.toString();
         }
 
-        public final void accept(Visitor.TypeBodyDeclarationVisitor visitor) { visitor.visitFieldDeclaration(this); }
-        public final void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitFieldDeclaration(this); }
+        public void accept(Visitor.TypeBodyDeclarationVisitor visitor) { visitor.visitFieldDeclaration(this); }
+        public void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitFieldDeclaration(this); }
 
         // Implement DocCommentable.
         public String getDocComment() { return this.optionalDocComment; }
-        public boolean hasDeprecatedDocTag() { return this.optionalDocComment != null && this.optionalDocComment.indexOf("@deprecated") != -1; }
+        public boolean hasDeprecatedDocTag() {
+            return this.optionalDocComment != null && this.optionalDocComment.indexOf("@deprecated") != -1;
+        }
     }
     private static void setEnclosingBlockStatement(
         ArrayInitializerOrRvalue aiorv,
@@ -1180,7 +1264,7 @@ public class Java {
     }
 
     /** Used by FieldDeclaration and LocalVariableDeclarationStatement. */
-    public final static class VariableDeclarator extends Located {
+    public static final class VariableDeclarator extends Located {
         public final String                   name;
         public final int                      brackets;
         public final ArrayInitializerOrRvalue optionalInitializer;
@@ -1225,7 +1309,7 @@ public class Java {
         Java.LocalVariable findLocalVariable(String name);
     }
 
-    public static abstract class Statement extends Located implements BlockStatement {
+    public abstract static class Statement extends Located implements BlockStatement {
         private Scope enclosingScope = null;
 
         protected Statement(Location location) {
@@ -1234,7 +1318,14 @@ public class Java {
 
         // Implement "BlockStatement".
         public void setEnclosingScope(Scope enclosingScope) {
-            if (this.enclosingScope != null && enclosingScope != this.enclosingScope) throw new JaninoRuntimeException("Enclosing scope is already set for statement \"" + this.toString() + "\" at " + this.getLocation());
+            if (this.enclosingScope != null && enclosingScope != this.enclosingScope) {
+                throw new JaninoRuntimeException(
+                    "Enclosing scope is already set for statement \""
+                    + this.toString()
+                    + "\" at "
+                    + this.getLocation()
+                );
+            }
             this.enclosingScope = enclosingScope;
         }
         public Scope getEnclosingScope() { return this.enclosingScope; }
@@ -1247,7 +1338,7 @@ public class Java {
         }
     }
 
-    public final static class LabeledStatement extends BreakableStatement {
+    public static final class LabeledStatement extends BreakableStatement {
         public final String    label;
         public final Statement body;
 
@@ -1266,15 +1357,15 @@ public class Java {
 
         // Compile time members:
 
-        public final void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitLabeledStatement(this); }
+        public void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitLabeledStatement(this); }
     }
 
     /**
-     * Representation of a Java<sup>TM</sup> "block" (JLS 14.2).
+     * Representation of a Java&trade; "block" (JLS 14.2).
      * <p>
      * The statements that the block defines are executed in sequence.
      */
-    public final static class Block extends Statement {
+    public static final class Block extends Statement {
         public final List statements = new ArrayList(); // BlockStatement
 
         public Block(Location location) {
@@ -1290,7 +1381,9 @@ public class Java {
             List statements // BlockStatement
         ) {
             this.statements.addAll(statements);
-            for (Iterator it = statements.iterator(); it.hasNext();) ((BlockStatement) it.next()).setEnclosingScope(this);
+            for (Iterator it = statements.iterator(); it.hasNext();) {
+                ((BlockStatement) it.next()).setEnclosingScope(this);
+            }
         }
 
         public BlockStatement[] getStatements() {
@@ -1298,7 +1391,7 @@ public class Java {
         }
 
         // Compile time members.
-        public final void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitBlock(this); }
+        public void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitBlock(this); }
 
         public String toString() {
             return "{ ... }";
@@ -1313,7 +1406,7 @@ public class Java {
      * a "break" statement are: "COntinuable" statements ("for", "do" and
      * "while"), labeled statements, and the "switch" statement.
      */
-    public static abstract class BreakableStatement extends Statement {
+    public abstract static class BreakableStatement extends Statement {
         protected BreakableStatement(Location location) {
             super(location);
         }
@@ -1321,7 +1414,7 @@ public class Java {
         CodeContext.Offset whereToBreak = null;
     }
 
-    public static abstract class ContinuableStatement extends BreakableStatement {
+    public abstract static class ContinuableStatement extends BreakableStatement {
         protected ContinuableStatement(Location location) {
             super(location);
         }
@@ -1330,7 +1423,7 @@ public class Java {
         protected boolean            bodyHasContinue = false;
     }
 
-    public final static class ExpressionStatement extends Statement {
+    public static final class ExpressionStatement extends Statement {
         public final Rvalue rvalue;
 
         public ExpressionStatement(Rvalue rvalue) throws CompileException {
@@ -1360,10 +1453,10 @@ public class Java {
 
         // Compile time members:
 
-        public final void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitExpressionStatement(this); }
+        public void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitExpressionStatement(this); }
     }
 
-    public final static class LocalClassDeclarationStatement extends Statement {
+    public static final class LocalClassDeclarationStatement extends Statement {
         public final LocalClassDeclaration lcd;
 
         public LocalClassDeclarationStatement(Java.LocalClassDeclaration lcd) {
@@ -1374,10 +1467,12 @@ public class Java {
             return this.lcd.toString();
         }
 
-        public final void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitLocalClassDeclarationStatement(this); }
+        public void accept(Visitor.BlockStatementVisitor visitor) {
+            visitor.visitLocalClassDeclarationStatement(this);
+        }
     }
 
-    public final static class IfStatement extends Statement {
+    public static final class IfStatement extends Statement {
         public final Rvalue         condition;
         public final BlockStatement thenStatement;
         public final BlockStatement optionalElseStatement;
@@ -1405,10 +1500,10 @@ public class Java {
 
         // Compile time members:
 
-        public final void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitIfStatement(this); }
+        public void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitIfStatement(this); }
     }
 
-    public final static class ForStatement extends ContinuableStatement {
+    public static final class ForStatement extends ContinuableStatement {
         public final BlockStatement optionalInit;
         public final Rvalue         optionalCondition;
         public final Rvalue[]       optionalUpdate;
@@ -1438,10 +1533,10 @@ public class Java {
 
         // Compile time members:
 
-        public final void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitForStatement(this); }
+        public void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitForStatement(this); }
     }
 
-    public final static class WhileStatement extends ContinuableStatement {
+    public static final class WhileStatement extends ContinuableStatement {
         public final Rvalue         condition;
         public final BlockStatement body;
 
@@ -1460,10 +1555,10 @@ public class Java {
 
         // Compile time members:
 
-        public final void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitWhileStatement(this); }
+        public void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitWhileStatement(this); }
     }
 
-    public final static class TryStatement extends Statement {
+    public static final class TryStatement extends Statement {
         public final BlockStatement body;
         public final List           catchClauses; // CatchClause
         public final Block          optionalFinally;
@@ -1477,17 +1572,23 @@ public class Java {
             super(location);
             (this.body            = body).setEnclosingScope(this);
             this.catchClauses    = catchClauses;
-            for (Iterator it = catchClauses.iterator(); it.hasNext();) ((CatchClause) it.next()).setEnclosingTryStatement(this);
+            for (Iterator it = catchClauses.iterator(); it.hasNext();) {
+                ((CatchClause) it.next()).setEnclosingTryStatement(this);
+            }
             this.optionalFinally = optionalFinally;
             if (optionalFinally != null) optionalFinally.setEnclosingScope(this);
         }
         public String toString() {
-            return "try ... " + this.catchClauses.size() + (this.optionalFinally == null ? " catches" : " catches ... finally");
+            return (
+                "try ... "
+                + this.catchClauses.size()
+                + (this.optionalFinally == null ? " catches" : " catches ... finally")
+            );
         }
 
         // Compile time members:
 
-        public final void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitTryStatement(this); }
+        public void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitTryStatement(this); }
 
         CodeContext.Offset finallyOffset = null;
     }
@@ -1508,7 +1609,14 @@ public class Java {
         }
 
         public void setEnclosingTryStatement(TryStatement enclosingTryStatement) {
-            if (this.enclosingTryStatement != null && enclosingTryStatement != this.enclosingTryStatement) throw new JaninoRuntimeException("Enclosing TYR statement already set for catch clause " + this.toString() + " at " + this.getLocation());
+            if (this.enclosingTryStatement != null && enclosingTryStatement != this.enclosingTryStatement) {
+                throw new JaninoRuntimeException(
+                    "Enclosing TYR statement already set for catch clause "
+                    + this.toString()
+                    + " at "
+                    + this.getLocation()
+                );
+            }
             this.enclosingTryStatement = enclosingTryStatement;
         }
         public Scope getEnclosingScope() { return this.enclosingTryStatement; }
@@ -1560,13 +1668,16 @@ public class Java {
                 this.blockStatements = blockStatements;
             }
             public String toString() {
-                return this.caseLabels.size() + (this.hasDefaultLabel ? " case label(s) plus DEFAULT" : " case label(s)");
+                return (
+                    this.caseLabels.size()
+                    + (this.hasDefaultLabel ? " case label(s) plus DEFAULT" : " case label(s)")
+                );
             }
         }
 
         // Compile time members:
 
-        public final void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitSwitchStatement(this); }
+        public void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitSwitchStatement(this); }
     }
     static class Padder extends CodeContext.Inserter implements CodeContext.FixUp {
         public Padder(CodeContext codeContext) {
@@ -1583,7 +1694,7 @@ public class Java {
         }
     }
 
-    public final static class SynchronizedStatement extends Statement {
+    public static final class SynchronizedStatement extends Statement {
         public final Rvalue         expression;
         public final BlockStatement body;
 
@@ -1602,12 +1713,12 @@ public class Java {
 
         // Compile time members:
 
-        public final void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitSynchronizedStatement(this); }
+        public void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitSynchronizedStatement(this); }
 
         short monitorLvIndex = -1;
     }
 
-    public final static class DoStatement extends ContinuableStatement {
+    public static final class DoStatement extends ContinuableStatement {
         public final BlockStatement body;
         public final Rvalue         condition;
 
@@ -1626,10 +1737,10 @@ public class Java {
 
         // Compile time members:
 
-        public final void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitDoStatement(this); }
+        public void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitDoStatement(this); }
     }
 
-    public final static class LocalVariableDeclarationStatement extends Statement {
+    public static final class LocalVariableDeclarationStatement extends Statement {
         public final short                modifiers;
         public final Type                 type;
         public final VariableDeclarator[] variableDeclarators;
@@ -1655,7 +1766,9 @@ public class Java {
 
         // Compile time members:
 
-        public final void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitLocalVariableDeclarationStatement(this); }
+        public void accept(Visitor.BlockStatementVisitor visitor) {
+            visitor.visitLocalVariableDeclarationStatement(this);
+        }
 
         public String toString() {
             StringBuffer sb = new StringBuffer();
@@ -1668,7 +1781,7 @@ public class Java {
         }
     }
 
-    public final static class ReturnStatement extends Statement {
+    public static final class ReturnStatement extends Statement {
         public final Rvalue optionalReturnValue;
 
         public ReturnStatement(
@@ -1686,10 +1799,10 @@ public class Java {
 
         // Compile time members:
 
-        public final void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitReturnStatement(this); }
+        public void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitReturnStatement(this); }
     }
 
-    public final static class ThrowStatement extends Statement {
+    public static final class ThrowStatement extends Statement {
         public final Rvalue expression;
 
         public ThrowStatement(
@@ -1705,13 +1818,13 @@ public class Java {
 
         // Compile time members:
 
-        public final void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitThrowStatement(this); }
+        public void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitThrowStatement(this); }
     }
 
     /**
-     * Representation of the Java<sup>TM</sup> "break" statement (JLS 14.14).
+     * Representation of the Java&trade; "break" statement (JLS 14.14).
      */
-    public final static class BreakStatement extends Statement {
+    public static final class BreakStatement extends Statement {
         public final String optionalLabel;
 
         public BreakStatement(
@@ -1727,14 +1840,14 @@ public class Java {
 
         // Compile time members:
 
-        public final void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitBreakStatement(this); }
+        public void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitBreakStatement(this); }
     }
 
     /**
-     * Representation of the Java<sup>TM</sup> "continue" statement (JLS
+     * Representation of the Java&trade; "continue" statement (JLS
      * 14.15).
      */
-    public final static class ContinueStatement extends Statement {
+    public static final class ContinueStatement extends Statement {
         public final String optionalLabel;
 
         public ContinueStatement(
@@ -1750,13 +1863,13 @@ public class Java {
 
         // Compile time members:
 
-        public final void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitContinueStatement(this); }
+        public void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitContinueStatement(this); }
     }
 
     /**
      * Represents the "empty statement", i.e. the blank semicolon.
      */
-    public final static class EmptyStatement extends Statement {
+    public static final class EmptyStatement extends Statement {
         public EmptyStatement(Location location) {
             super(location);
         }
@@ -1764,14 +1877,14 @@ public class Java {
             return ";";
         }
 
-        public final void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitEmptyStatement(this); }
+        public void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitEmptyStatement(this); }
     }
 
     /**
      * Abstract base class for {@link Java.Type}, {@link Java.Rvalue} and
      * {@link Java.Lvalue}.
      */
-    public static abstract class Atom extends Located {
+    public abstract static class Atom extends Located {
         public Atom(Location location) {
             super(location);
         }
@@ -1804,9 +1917,9 @@ public class Java {
     }
 
     /**
-     * Representation of a Java<sup>TM</sup> type.
+     * Representation of a Java&trade; type.
      */
-    public static abstract class Type extends Atom {
+    public abstract static class Type extends Atom {
         private Scope enclosingScope = null;
 
         protected Type(Location location) {
@@ -1818,7 +1931,14 @@ public class Java {
          * {@link org.codehaus.janino.Java.Type} objects.
          */
         public void setEnclosingScope(final Scope enclosingScope) {
-            if (this.enclosingScope != null && enclosingScope != this.enclosingScope) throw new JaninoRuntimeException("Enclosing scope already set for type \"" + this.toString() + "\" at " + this.getLocation());
+            if (this.enclosingScope != null && enclosingScope != this.enclosingScope) {
+                throw new JaninoRuntimeException(
+                    "Enclosing scope already set for type \""
+                    + this.toString()
+                    + "\" at "
+                    + this.getLocation()
+                );
+            }
             this.enclosingScope = enclosingScope;
         }
         public Scope getEnclosingScope() {
@@ -1838,12 +1958,12 @@ public class Java {
         }
         public String toString() { return this.iClass.toString(); }
 
-        public final void accept(Visitor.AtomVisitor visitor) { visitor.visitSimpleType(this); }
-        public final void accept(Visitor.TypeVisitor visitor) { visitor.visitSimpleType(this); }
+        public void accept(Visitor.AtomVisitor visitor) { visitor.visitSimpleType(this); }
+        public void accept(Visitor.TypeVisitor visitor) { visitor.visitSimpleType(this); }
     };
 
     /**
-     * Representation of a Java<sup>TM</sup> "basic type" (obviously
+     * Representation of a Java&trade; "basic type" (obviously
      * equaivalent to a "primitive type") (JLS 4.2).
      */
     public static final class BasicType extends Type {
@@ -1869,8 +1989,8 @@ public class Java {
             }
         }
 
-        public final void accept(Visitor.TypeVisitor visitor) { visitor.visitBasicType(this); }
-        public final void accept(Visitor.AtomVisitor visitor) { visitor.visitBasicType(this); }
+        public void accept(Visitor.TypeVisitor visitor) { visitor.visitBasicType(this); }
+        public void accept(Visitor.AtomVisitor visitor) { visitor.visitBasicType(this); }
 
         public static final int VOID    = 0;
         public static final int BYTE    = 1;
@@ -1896,8 +2016,8 @@ public class Java {
 
         public String toString() { return Java.join(this.identifiers, "."); }
 
-        public final void accept(Visitor.AtomVisitor visitor) { visitor.visitReferenceType(this); }
-        public final void accept(Visitor.TypeVisitor visitor) { visitor.visitReferenceType(this); }
+        public void accept(Visitor.AtomVisitor visitor) { visitor.visitReferenceType(this); }
+        public void accept(Visitor.TypeVisitor visitor) { visitor.visitReferenceType(this); }
     }
 
     // Helper class for JLS 15.9.1
@@ -1920,13 +2040,13 @@ public class Java {
 
         public String toString() { return this.identifier; }
 
-        public final void accept(Visitor.AtomVisitor visitor) { visitor.visitRvalueMemberType(this); }
-        public final void accept(Visitor.TypeVisitor visitor) { visitor.visitRvalueMemberType(this); }
+        public void accept(Visitor.AtomVisitor visitor) { visitor.visitRvalueMemberType(this); }
+        public void accept(Visitor.TypeVisitor visitor) { visitor.visitRvalueMemberType(this); }
     }
 
 
     /**
-     * Representation of a Java<sup>TM</sup> array type (JLS 10.1).
+     * Representation of a Java&trade; array type (JLS 10.1).
      */
     public static final class ArrayType extends Type {
         public final Type componentType;
@@ -1944,8 +2064,8 @@ public class Java {
             return this.componentType.toString() + "[]";
         }
 
-        public final void accept(Visitor.AtomVisitor visitor) { visitor.visitArrayType(this); }
-        public final void accept(Visitor.TypeVisitor visitor) { visitor.visitArrayType(this); }
+        public void accept(Visitor.AtomVisitor visitor) { visitor.visitArrayType(this); }
+        public void accept(Visitor.TypeVisitor visitor) { visitor.visitArrayType(this); }
     }
 
     /**
@@ -1953,7 +2073,7 @@ public class Java {
      * a value, but cannot be assigned to: An expression that can be the
      * right-hand-side of an assignment.
      */
-    public static abstract class Rvalue extends Atom implements ArrayInitializerOrRvalue {
+    public abstract static class Rvalue extends Atom implements ArrayInitializerOrRvalue {
         private Java.BlockStatement enclosingBlockStatement = null;
 
         protected Rvalue(Location location) {
@@ -1967,7 +2087,15 @@ public class Java {
         public final void setEnclosingBlockStatement(final Java.BlockStatement enclosingBlockStatement) {
             this.accept((Visitor.RvalueVisitor) new Traverser() {
                 public void traverseRvalue(Java.Rvalue rv) {
-                    if (rv.enclosingBlockStatement != null && enclosingBlockStatement != rv.enclosingBlockStatement) throw new JaninoRuntimeException("Enclosing block statement for rvalue \"" + rv + "\" at " + rv.getLocation() + " is already set");
+                    if (rv.enclosingBlockStatement != null && enclosingBlockStatement != rv.enclosingBlockStatement) {
+                        throw new JaninoRuntimeException(
+                            "Enclosing block statement for rvalue \""
+                            + rv
+                            + "\" at "
+                            + rv.getLocation()
+                            + " is already set"
+                        );
+                    }
                     rv.enclosingBlockStatement = enclosingBlockStatement;
                     super.traverseRvalue(rv);
                 }
@@ -1976,7 +2104,14 @@ public class Java {
                     ;
                 }
                 public void traverseType(Java.Type t) {
-                    if (t.enclosingScope != null && enclosingBlockStatement != t.enclosingScope) throw new JaninoRuntimeException("Enclosing scope already set for type \"" + this.toString() + "\" at " + t.getLocation());
+                    if (t.enclosingScope != null && enclosingBlockStatement != t.enclosingScope) {
+                        throw new JaninoRuntimeException(
+                            "Enclosing scope already set for type \""
+                            + this.toString()
+                            + "\" at "
+                            + t.getLocation()
+                        );
+                    }
                     t.enclosingScope = enclosingBlockStatement;
 //                    t.setEnclosingScope(enclosingBlockStatement);
                     super.traverseType(t);
@@ -1994,15 +2129,15 @@ public class Java {
 
         public abstract void accept(Visitor.RvalueVisitor rvv);
 
-        public final static boolean JUMP_IF_TRUE  = true;
-        public final static boolean JUMP_IF_FALSE = false;
+        public static final boolean JUMP_IF_TRUE  = true;
+        public static final boolean JUMP_IF_FALSE = false;
     }
 
     /**
      * Base class for {@link Java.Rvalue}s that compile better as conditional
      * branches.
      */
-    public static abstract class BooleanRvalue extends Rvalue {
+    public abstract static class BooleanRvalue extends Rvalue {
         protected BooleanRvalue(Location location) {
             super(location);
         }
@@ -2013,7 +2148,7 @@ public class Java {
      * a value, and can be assigned to: An expression that can be the
      * left-hand-side of an assignment.
      */
-    public static abstract class Lvalue extends Rvalue {
+    public abstract static class Lvalue extends Rvalue {
         protected Lvalue(Location location) {
             super(location);
         }
@@ -2077,9 +2212,9 @@ public class Java {
 
         Atom reclassified = null;
 
-        public final void accept(Visitor.AtomVisitor visitor)   { visitor.visitAmbiguousName(this); }
-        public final void accept(Visitor.RvalueVisitor visitor) { visitor.visitAmbiguousName(this); }
-        public final void accept(Visitor.LvalueVisitor visitor) { visitor.visitAmbiguousName(this); }
+        public void accept(Visitor.AtomVisitor visitor)   { visitor.visitAmbiguousName(this); }
+        public void accept(Visitor.RvalueVisitor visitor) { visitor.visitAmbiguousName(this); }
+        public void accept(Visitor.LvalueVisitor visitor) { visitor.visitAmbiguousName(this); }
     }
 
     // Helper class for 6.5.2.1.7, 6.5.2.2.1
@@ -2092,7 +2227,7 @@ public class Java {
         }
         public String toString() { return this.name; }
 
-        public final void accept(Visitor.AtomVisitor visitor) { visitor.visitPackage(this); }
+        public void accept(Visitor.AtomVisitor visitor) { visitor.visitPackage(this); }
     }
 
     /**
@@ -2113,9 +2248,9 @@ public class Java {
 
         public String toString() { return this.localVariable.toString(); }
 
-        public final void accept(Visitor.LvalueVisitor visitor) { visitor.visitLocalVariableAccess(this); }
-        public final void accept(Visitor.RvalueVisitor visitor) { visitor.visitLocalVariableAccess(this); }
-        public final void accept(Visitor.AtomVisitor visitor) { visitor.visitLocalVariableAccess(this); }
+        public void accept(Visitor.LvalueVisitor visitor) { visitor.visitLocalVariableAccess(this); }
+        public void accept(Visitor.RvalueVisitor visitor) { visitor.visitLocalVariableAccess(this); }
+        public void accept(Visitor.AtomVisitor visitor) { visitor.visitLocalVariableAccess(this); }
     }
 
     /**
@@ -2141,9 +2276,9 @@ public class Java {
         // Implement "Atom".
         public String toString() { return this.lhs.toString() + '.' + this.field.getName(); }
 
-        public final void accept(Visitor.AtomVisitor visitor) { visitor.visitFieldAccess(this); }
-        public final void accept(Visitor.RvalueVisitor visitor) { visitor.visitFieldAccess(this); }
-        public final void accept(Visitor.LvalueVisitor visitor) { visitor.visitFieldAccess(this); }
+        public void accept(Visitor.AtomVisitor visitor) { visitor.visitFieldAccess(this); }
+        public void accept(Visitor.RvalueVisitor visitor) { visitor.visitFieldAccess(this); }
+        public void accept(Visitor.LvalueVisitor visitor) { visitor.visitFieldAccess(this); }
     }
 
     public static final class ArrayLength extends Rvalue {
@@ -2162,8 +2297,8 @@ public class Java {
         // Implement "Atom".
         public String toString() { return this.lhs.toString() + ".length"; }
 
-        public final void accept(Visitor.AtomVisitor visitor) { visitor.visitArrayLength(this); }
-        public final void accept(Visitor.RvalueVisitor visitor) { visitor.visitArrayLength(this); }
+        public void accept(Visitor.AtomVisitor visitor) { visitor.visitArrayLength(this); }
+        public void accept(Visitor.RvalueVisitor visitor) { visitor.visitArrayLength(this); }
     }
 
     /**
@@ -2185,8 +2320,8 @@ public class Java {
         // Implement "Atom".
         public String toString() { return "this"; }
 
-        public final void accept(Visitor.AtomVisitor visitor) { visitor.visitThisReference(this); }
-        public final void accept(Visitor.RvalueVisitor visitor) { visitor.visitThisReference(this); }
+        public void accept(Visitor.AtomVisitor visitor) { visitor.visitThisReference(this); }
+        public void accept(Visitor.RvalueVisitor visitor) { visitor.visitThisReference(this); }
     }
 
     /**
@@ -2237,8 +2372,8 @@ public class Java {
             return this.qualification.toString() + ".this";
         }
 
-        public final void accept(Visitor.AtomVisitor visitor) { visitor.visitQualifiedThisReference(this); }
-        public final void accept(Visitor.RvalueVisitor visitor) { visitor.visitQualifiedThisReference(this); }
+        public void accept(Visitor.AtomVisitor visitor) { visitor.visitQualifiedThisReference(this); }
+        public void accept(Visitor.RvalueVisitor visitor) { visitor.visitQualifiedThisReference(this); }
     }
 
     public static final class ClassLiteral extends Rvalue {
@@ -2257,8 +2392,8 @@ public class Java {
         //Implement "Atom".
         public String toString() { return this.type.toString() + ".class"; }
 
-        public final void accept(Visitor.AtomVisitor visitor) { visitor.visitClassLiteral(this); }
-        public final void accept(Visitor.RvalueVisitor visitor) { visitor.visitClassLiteral(this); }
+        public void accept(Visitor.AtomVisitor visitor) { visitor.visitClassLiteral(this); }
+        public void accept(Visitor.RvalueVisitor visitor) { visitor.visitClassLiteral(this); }
     }
 
     public static final class Assignment extends Rvalue {
@@ -2283,8 +2418,8 @@ public class Java {
         // Implement "Atom".
         public String toString() { return this.lhs.toString() + ' ' + this.operator + ' ' + this.rhs.toString(); }
 
-        public final void accept(Visitor.AtomVisitor visitor) { visitor.visitAssignment(this); }
-        public final void accept(Visitor.RvalueVisitor visitor) { visitor.visitAssignment(this); }
+        public void accept(Visitor.AtomVisitor visitor) { visitor.visitAssignment(this); }
+        public void accept(Visitor.RvalueVisitor visitor) { visitor.visitAssignment(this); }
     }
 
     public static final class ConditionalExpression extends Rvalue {
@@ -2303,10 +2438,12 @@ public class Java {
         }
 
         // Implement "Atom".
-        public String toString() { return this.lhs.toString() + " ? " + this.mhs.toString() + " : " + this.rhs.toString(); }
+        public String toString() {
+            return this.lhs.toString() + " ? " + this.mhs.toString() + " : " + this.rhs.toString();
+        }
 
-        public final void accept(Visitor.AtomVisitor visitor) { visitor.visitConditionalExpression(this); }
-        public final void accept(Visitor.RvalueVisitor visitor) { visitor.visitConditionalExpression(this); }
+        public void accept(Visitor.AtomVisitor visitor) { visitor.visitConditionalExpression(this); }
+        public void accept(Visitor.RvalueVisitor visitor) { visitor.visitConditionalExpression(this); }
     }
 
     /**
@@ -2342,8 +2479,8 @@ public class Java {
             );
         }
 
-        public final void accept(Visitor.AtomVisitor visitor) { visitor.visitCrement(this); }
-        public final void accept(Visitor.RvalueVisitor visitor) { visitor.visitCrement(this); }
+        public void accept(Visitor.AtomVisitor visitor) { visitor.visitCrement(this); }
+        public void accept(Visitor.RvalueVisitor visitor) { visitor.visitCrement(this); }
     }
 
     /**
@@ -2368,9 +2505,9 @@ public class Java {
         // Implement "Atom".
         public String toString() { return this.lhs.toString() + '[' + this.index + ']'; }
 
-        public final void accept(Visitor.AtomVisitor visitor) { visitor.visitArrayAccessExpression(this); }
-        public final void accept(Visitor.RvalueVisitor visitor) { visitor.visitArrayAccessExpression(this); }
-        public final void accept(Visitor.LvalueVisitor visitor) { visitor.visitArrayAccessExpression(this); }
+        public void accept(Visitor.AtomVisitor visitor) { visitor.visitArrayAccessExpression(this); }
+        public void accept(Visitor.RvalueVisitor visitor) { visitor.visitArrayAccessExpression(this); }
+        public void accept(Visitor.LvalueVisitor visitor) { visitor.visitArrayAccessExpression(this); }
     }
 
     /**
@@ -2396,9 +2533,9 @@ public class Java {
         // Implement "Atom".
         public String toString() { return this.lhs.toString() + '.' + this.fieldName; }
 
-        public final void accept(Visitor.AtomVisitor visitor) { visitor.visitFieldAccessExpression(this); }
-        public final void accept(Visitor.RvalueVisitor visitor) { visitor.visitFieldAccessExpression(this); }
-        public final void accept(Visitor.LvalueVisitor visitor) { visitor.visitFieldAccessExpression(this); }
+        public void accept(Visitor.AtomVisitor visitor) { visitor.visitFieldAccessExpression(this); }
+        public void accept(Visitor.RvalueVisitor visitor) { visitor.visitFieldAccessExpression(this); }
+        public void accept(Visitor.LvalueVisitor visitor) { visitor.visitFieldAccessExpression(this); }
 
         Rvalue value = null;
     }
@@ -2423,11 +2560,17 @@ public class Java {
         // Compile time members.
 
         // Implement "Atom".
-        public String toString() { return (this.optionalQualification == null ? "super." : this.optionalQualification.toString() + ".super.") + this.fieldName; }
+        public String toString() {
+            return (
+                this.optionalQualification == null
+                ? "super."
+                : this.optionalQualification.toString() + ".super."
+            ) + this.fieldName;
+        }
 
-        public final void accept(Visitor.AtomVisitor visitor) { visitor.visitSuperclassFieldAccessExpression(this); }
-        public final void accept(Visitor.RvalueVisitor visitor) { visitor.visitSuperclassFieldAccessExpression(this); }
-        public final void accept(Visitor.LvalueVisitor visitor) { visitor.visitSuperclassFieldAccessExpression(this); }
+        public void accept(Visitor.AtomVisitor visitor) { visitor.visitSuperclassFieldAccessExpression(this); }
+        public void accept(Visitor.RvalueVisitor visitor) { visitor.visitSuperclassFieldAccessExpression(this); }
+        public void accept(Visitor.LvalueVisitor visitor) { visitor.visitSuperclassFieldAccessExpression(this); }
 
         Rvalue value = null;
     }
@@ -2452,8 +2595,8 @@ public class Java {
         // Implement "Atom".
         public String toString() { return this.operator + this.operand.toString(); }
 
-        public final void accept(Visitor.AtomVisitor visitor) { visitor.visitUnaryOperation(this); }
-        public final void accept(Visitor.RvalueVisitor visitor) { visitor.visitUnaryOperation(this); }
+        public void accept(Visitor.AtomVisitor visitor) { visitor.visitUnaryOperation(this); }
+        public void accept(Visitor.RvalueVisitor visitor) { visitor.visitUnaryOperation(this); }
     }
 
     public static final class Instanceof extends Rvalue {
@@ -2475,12 +2618,12 @@ public class Java {
         // Implement "Atom".
         public String toString() { return this.lhs.toString() + " instanceof " + this.rhs.toString(); }
 
-        public final void accept(Visitor.AtomVisitor visitor) { visitor.visitInstanceof(this); }
-        public final void accept(Visitor.RvalueVisitor visitor) { visitor.visitInstanceof(this); }
+        public void accept(Visitor.AtomVisitor visitor) { visitor.visitInstanceof(this); }
+        public void accept(Visitor.RvalueVisitor visitor) { visitor.visitInstanceof(this); }
     }
 
     /**
-     * Representation of all non-operand-modifying Java<sup>TM</sup> binary
+     * Representation of all non-operand-modifying Java&trade; binary
      * operations.
      * <p>
      * Operations with boolean result:<br>
@@ -2535,8 +2678,8 @@ public class Java {
             return new ReverseListIterator(operands.listIterator(operands.size()));
         }
 
-        public final void accept(Visitor.AtomVisitor visitor) { visitor.visitBinaryOperation(this); }
-        public final void accept(Visitor.RvalueVisitor visitor) { visitor.visitBinaryOperation(this); }
+        public void accept(Visitor.AtomVisitor visitor) { visitor.visitBinaryOperation(this); }
+        public void accept(Visitor.RvalueVisitor visitor) { visitor.visitBinaryOperation(this); }
     }
 
     public static final class Cast extends Rvalue {
@@ -2558,11 +2701,11 @@ public class Java {
         // Implement "Atom".
         public String toString() { return '(' + this.targetType.toString() + ") " + this.value.toString(); }
 
-        public final void accept(Visitor.AtomVisitor visitor) { visitor.visitCast(this); }
-        public final void accept(Visitor.RvalueVisitor visitor) { visitor.visitCast(this); }
+        public void accept(Visitor.AtomVisitor visitor) { visitor.visitCast(this); }
+        public void accept(Visitor.RvalueVisitor visitor) { visitor.visitCast(this); }
     }
 
-    public final static class ParenthesizedExpression extends Lvalue {
+    public static final class ParenthesizedExpression extends Lvalue {
         public final Rvalue value;
 
         public ParenthesizedExpression(Location location, Rvalue value) {
@@ -2578,7 +2721,7 @@ public class Java {
         public void accept(Visitor.LvalueVisitor visitor) { visitor.visitParenthesizedExpression(this); }
     }
 
-    public static abstract class ConstructorInvocation extends Atom implements BlockStatement {
+    public abstract static class ConstructorInvocation extends Atom implements BlockStatement {
         public final Rvalue[] arguments;
         private Scope         enclosingScope = null;
 
@@ -2593,7 +2736,14 @@ public class Java {
 
         // Implement BlockStatement
         public void setEnclosingScope(Scope enclosingScope) {
-            if (this.enclosingScope != null && enclosingScope != null) throw new JaninoRuntimeException("Enclosing scope is already set for statement \"" + this.toString() + "\" at " + this.getLocation());
+            if (this.enclosingScope != null && enclosingScope != null) {
+                throw new JaninoRuntimeException(
+                    "Enclosing scope is already set for statement \""
+                    + this.toString()
+                    + "\" at "
+                    + this.getLocation()
+                );
+            }
             this.enclosingScope = enclosingScope;
         }
         public Scope getEnclosingScope() { return this.enclosingScope; }
@@ -2606,7 +2756,7 @@ public class Java {
         }
     }
 
-    public final static class AlternateConstructorInvocation extends ConstructorInvocation {
+    public static final class AlternateConstructorInvocation extends ConstructorInvocation {
         public AlternateConstructorInvocation(
             Location location,
             Rvalue[] arguments
@@ -2616,13 +2766,15 @@ public class Java {
 
         // Implement Atom.
         public String toString() { return "this()"; }
-        public void accept(Visitor.AtomVisitor visitor) { ((Visitor.BlockStatementVisitor) visitor).visitAlternateConstructorInvocation(this); }
+        public void accept(Visitor.AtomVisitor visitor) {
+            ((Visitor.BlockStatementVisitor) visitor).visitAlternateConstructorInvocation(this);
+        }
 
         // Implement BlockStatement.
         public void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitAlternateConstructorInvocation(this); }
     }
 
-    public final static class SuperConstructorInvocation extends ConstructorInvocation {
+    public static final class SuperConstructorInvocation extends ConstructorInvocation {
         public final Rvalue optionalQualification;
 
         public SuperConstructorInvocation(
@@ -2637,7 +2789,9 @@ public class Java {
 
         // Implement Atom.
         public String toString() { return "super()"; }
-        public void accept(Visitor.AtomVisitor visitor) { ((Visitor.BlockStatementVisitor) visitor).visitSuperConstructorInvocation(this); }
+        public void accept(Visitor.AtomVisitor visitor) {
+            ((Visitor.BlockStatementVisitor) visitor).visitSuperConstructorInvocation(this);
+        }
 
         // Implement BlockStatement.
         public void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitSuperConstructorInvocation(this); }
@@ -2670,8 +2824,8 @@ public class Java {
             return sb.toString();
         }
 
-        public final void accept(Visitor.AtomVisitor visitor) { visitor.visitMethodInvocation(this); }
-        public final void accept(Visitor.RvalueVisitor visitor) { visitor.visitMethodInvocation(this); }
+        public void accept(Visitor.AtomVisitor visitor) { visitor.visitMethodInvocation(this); }
+        public void accept(Visitor.RvalueVisitor visitor) { visitor.visitMethodInvocation(this); }
     }
 
     public static final class SuperclassMethodInvocation extends Invocation {
@@ -2686,11 +2840,11 @@ public class Java {
         // Implement "Atom".
         public String toString() { return "super." + this.methodName + "()"; }
 
-        public final void accept(Visitor.AtomVisitor visitor) { visitor.visitSuperclassMethodInvocation(this); }
-        public final void accept(Visitor.RvalueVisitor visitor) { visitor.visitSuperclassMethodInvocation(this); }
+        public void accept(Visitor.AtomVisitor visitor) { visitor.visitSuperclassMethodInvocation(this); }
+        public void accept(Visitor.RvalueVisitor visitor) { visitor.visitSuperclassMethodInvocation(this); }
     }
 
-    public static abstract class Invocation extends Rvalue {
+    public abstract static class Invocation extends Rvalue {
         public final Rvalue[] arguments;
         public final String methodName;
 
@@ -2761,8 +2915,8 @@ public class Java {
             return sb.toString();
         }
 
-        public final void accept(Visitor.AtomVisitor visitor) { visitor.visitNewClassInstance(this); }
-        public final void accept(Visitor.RvalueVisitor visitor) { visitor.visitNewClassInstance(this); }
+        public void accept(Visitor.AtomVisitor visitor) { visitor.visitNewClassInstance(this); }
+        public void accept(Visitor.RvalueVisitor visitor) { visitor.visitNewClassInstance(this); }
     }
 
     public static final class NewAnonymousClassInstance extends Rvalue {
@@ -2790,8 +2944,8 @@ public class Java {
             return sb.toString();
         }
 
-        public final void accept(Visitor.AtomVisitor visitor) { visitor.visitNewAnonymousClassInstance(this); }
-        public final void accept(Visitor.RvalueVisitor visitor) { visitor.visitNewAnonymousClassInstance(this); }
+        public void accept(Visitor.AtomVisitor visitor) { visitor.visitNewAnonymousClassInstance(this); }
+        public void accept(Visitor.RvalueVisitor visitor) { visitor.visitNewAnonymousClassInstance(this); }
     }
 
     // Used during compile-time.
@@ -2809,8 +2963,8 @@ public class Java {
         // Implement Atom
         public String toString() { return this.formalParameter.name; }
 
-        public final void accept(Visitor.AtomVisitor visitor) { visitor.visitParameterAccess(this); }
-        public final void accept(Visitor.RvalueVisitor visitor) { visitor.visitParameterAccess(this); }
+        public void accept(Visitor.AtomVisitor visitor) { visitor.visitParameterAccess(this); }
+        public void accept(Visitor.RvalueVisitor visitor) { visitor.visitParameterAccess(this); }
     }
 
     public static final class NewArray extends Rvalue {
@@ -2849,10 +3003,10 @@ public class Java {
 
         // Implement "Atom".
         public String toString() { return "new " + this.type.toString() + "[]..."; }
-        public final void accept(Visitor.AtomVisitor visitor) { visitor.visitNewArray(this); }
+        public void accept(Visitor.AtomVisitor visitor) { visitor.visitNewArray(this); }
 
         // Implement "Rvalue".
-        public final void accept(Visitor.RvalueVisitor visitor) { visitor.visitNewArray(this); }
+        public void accept(Visitor.RvalueVisitor visitor) { visitor.visitNewArray(this); }
     }
 
     public static final class NewInitializedArray extends Rvalue {
@@ -2871,14 +3025,14 @@ public class Java {
 
         // Implement "Atom".
         public String toString() { return "new " + this.arrayType.toString() + " { ... }"; }
-        public final void accept(Visitor.AtomVisitor visitor) { visitor.visitNewInitializedArray(this); }
+        public void accept(Visitor.AtomVisitor visitor) { visitor.visitNewInitializedArray(this); }
 
         // Implement "Rvalue".
-        public final void accept(Visitor.RvalueVisitor visitor) { visitor.visitNewInitializedArray(this); }
+        public void accept(Visitor.RvalueVisitor visitor) { visitor.visitNewInitializedArray(this); }
     }
 
     /**
-     * Represents a Java<sup>TM</sup> array initializer (JLS 10.6).
+     * Represents a Java&trade; array initializer (JLS 10.6).
      * <p>
      * Allocates an array and initializes its members with (not necessarily
      * constant) values.
@@ -2905,7 +3059,8 @@ public class Java {
         public final Object value; // The "null" literal has "value == null".
 
         /**
-         * @param value An {@link Integer}, {@link Long}, {@link Float}, {@link Double}, {@link String}, {@link Character}, {@link Boolean}, or <code>null</code>
+         * @param value An {@link Integer}, {@link Long}, {@link Float}, {@link Double}, {@link String}, {@link
+         *              Character}, {@link Boolean}, or <code>null</code>
          */
         public Literal(Location location, Object value) {
             super(location);
@@ -2927,8 +3082,8 @@ public class Java {
         // Implement "Atom".
         public String toString() { return Scanner.literalValueToString(this.value); }
 
-        public final void accept(Visitor.AtomVisitor visitor) { visitor.visitLiteral(this); }
-        public final void accept(Visitor.RvalueVisitor visitor) { visitor.visitLiteral(this); }
+        public void accept(Visitor.AtomVisitor visitor) { visitor.visitLiteral(this); }
+        public void accept(Visitor.RvalueVisitor visitor) { visitor.visitLiteral(this); }
     }
 
     /**
@@ -2969,19 +3124,19 @@ public class Java {
             return buf.toString();
         }
 
-        public short getSlotIndex() {return this.slotIndex;}
-        public void setSlotIndex(short slotIndex) {this.slotIndex = slotIndex;}
+        public short getSlotIndex() { return this.slotIndex; }
+        public void setSlotIndex(short slotIndex) { this.slotIndex = slotIndex; }
 
-        public String getName() {return this.name;}
-        public void setName(String name) {this.name = name;}
+        public String getName() { return this.name; }
+        public void setName(String name) { this.name = name; }
 
-        public Offset getStart() {return this.start;}
-        public void setStart(Offset start) {this.start = start;}
+        public Offset getStart() { return this.start; }
+        public void setStart(Offset start) { this.start = start; }
 
-        public Offset getEnd() {return this.end;}
-        public void setEnd(Offset end) {this.end = end;}
+        public Offset getEnd() { return this.end; }
+        public void setEnd(Offset end) { this.end = end; }
 
-        public IClass getType() {return this.type;}
+        public IClass getType() { return this.type; }
     }
 
     /**
@@ -3009,7 +3164,7 @@ public class Java {
             return sb.toString();
         }
 
-        public void setSlot(LocalVariableSlot slot) {this.slot = slot;}
+        public void setSlot(LocalVariableSlot slot) { this.slot = slot; }
 
         public short getSlotIndex() {
             if (this.slot == null) return -1;

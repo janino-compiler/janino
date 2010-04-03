@@ -37,7 +37,7 @@ import org.codehaus.janino.util.resource.*;
 
 /**
  * A {@link ClassLoader} that, unlike usual {@link ClassLoader}s,
- * does not load byte code, but reads Java<sup>TM</sup> source code and then scans, parses,
+ * does not load byte code, but reads Java&trade; source code and then scans, parses,
  * compiles and loads it into the virtual machine.
  * <p>
  * As with any {@link ClassLoader}, it is not possible to "update" classes after they've been
@@ -45,7 +45,7 @@ import org.codehaus.janino.util.resource.*;
  * a new one.
  */
 public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
-    private final static boolean DEBUG = false;
+    private static final boolean DEBUG = false;
 
     public JavaSourceClassLoader() {
         this(ClassLoader.getSystemClassLoader());
@@ -59,9 +59,9 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
             new EnumeratorSet(DebuggingInformation.class) // debuggingInformation
         );
     }
-    
+
     /**
-     * Set up a {@link JavaSourceClassLoader} that finds Java<sup>TM</sup> source code in a file
+     * Set up a {@link JavaSourceClassLoader} that finds Java&trade; source code in a file
      * that resides in either of the directories specified by the given source path.
      * <p>
      * You can specify to include certain debugging information in the generated class files, which
@@ -69,9 +69,11 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
      * {@link Scanner#Scanner(String, Reader)}).
      *
      * @param parentClassLoader         See {@link ClassLoader}
-     * @param optionalSourcePath A collection of directories that are searched for Java<sup>TM</sup> source files in the given order
-     * @param optionalCharacterEncoding The encoding of the Java<sup>TM</sup> source files (<code>null</code> for platform default encoding)
-     * @param debuggingInformation What kind of debugging information to generate, see {@link DebuggingInformation}
+     * @param optionalSourcePath        A collection of directories that are searched for Java&trade; source files in
+     *                                  the given order
+     * @param optionalCharacterEncoding The encoding of the Java&trade; source files (<code>null</code> for platform
+     *                                  default encoding)
+     * @param debuggingInformation      What kind of debugging information to generate, see {@link DebuggingInformation}
      */
     public JavaSourceClassLoader(
         ClassLoader   parentClassLoader,
@@ -92,17 +94,18 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
     }
 
     /**
-     * Set up a {@link JavaSourceClassLoader} that finds Java<sup>TM</sup> source code through
+     * Set up a {@link JavaSourceClassLoader} that finds Java&trade; source code through
      * a given {@link ResourceFinder}.
      * <p>
      * You can specify to include certain debugging information in the generated class files, which
      * is useful if you want to debug through the generated classes (see
      * {@link Scanner#Scanner(String, Reader)}).
      *
-     * @param parentClassLoader See {@link ClassLoader}
-     * @param sourceFinder Used to locate additional source files
-     * @param optionalCharacterEncoding The encoding of the Java<sup>TM</sup> source files (<code>null</code> for platform default encoding)
-     * @param debuggingInformation What kind of debugging information to generate, see {@link DebuggingInformation}
+     * @param parentClassLoader         See {@link ClassLoader}
+     * @param sourceFinder              Used to locate additional source files
+     * @param optionalCharacterEncoding The encoding of the Java&trade; source files (<code>null</code> for platform
+     *                                  default encoding)
+     * @param debuggingInformation      What kind of debugging information to generate, see {@link DebuggingInformation}
      */
     public JavaSourceClassLoader(
         ClassLoader    parentClassLoader,
@@ -175,7 +178,13 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 
             // Now the bytecode for our class should be available.
             bytecode = (byte[]) this.precompiledClasses.remove(name);
-            if (bytecode == null) throw new JaninoRuntimeException("SNO: Scanning, parsing and compiling class \"" + name + "\" did not create a class file!?");
+            if (bytecode == null) {
+                throw new JaninoRuntimeException(
+                    "SNO: Scanning, parsing and compiling class \""
+                    + name
+                    + "\" did not create a class file!?"
+                );
+            }
         }
 
         return this.defineBytecode(name, bytecode);
@@ -210,7 +219,10 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
                     try {
                         cfs = uc.compileUnit(this.debuggingInformation);
                     } catch (CompileException ex) {
-                        throw new ClassNotFoundException("Compiling unit \"" + uc.compilationUnit.optionalFileName + "\"", ex);
+                        throw new ClassNotFoundException(
+                            "Compiling unit \"" + uc.compilationUnit.optionalFileName + "\"",
+                            ex
+                        );
                     }
                     for (int i = 0; i < cfs.length; ++i) {
                         ClassFile cf = cfs[i];
@@ -225,14 +237,14 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
     }
 
     /**
-     * Define a set of classes, like
-     * {@link java.lang.ClassLoader#defineClass(java.lang.String, byte[], int, int)}.
-     * If the <code>bytecodes</code> contains an entry for <code>name</code>, then the
-     * {@link Class} defined for that name is returned.
+     * Define a set of classes, like {@link java.lang.ClassLoader#defineClass(java.lang.String, byte[], int, int)}. If
+     * the <code>bytecodes</code> contains an entry for <code>name</code>, then the {@link Class} defined for that name
+     * is returned.
      *
-     * @param bytecodes String name => byte[] bytecode
+     * @param bytecodes         String name => byte[] bytecode
+     * @throws ClassFormatError
      */
-    protected Class defineBytecodes(String name, Map bytecodes) throws ClassFormatError {
+    protected Class defineBytecodes(String name, Map bytecodes) {
         Class clazz = null;
         for (Iterator it = bytecodes.entrySet().iterator(); it.hasNext();) {
             Map.Entry me = (Map.Entry) it.next();
@@ -247,8 +259,10 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 
     /**
      * @see #setProtectionDomainFactory
+     *
+     * @throws ClassFormatError
      */
-    protected Class defineBytecode(String className, byte[] ba) throws ClassFormatError {
+    protected Class defineBytecode(String className, byte[] ba) {
 
         // Disassemble the the class bytecode(for debugging).
         if (JavaSourceClassLoader.DEBUG) {

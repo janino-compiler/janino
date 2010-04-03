@@ -47,7 +47,11 @@ public class LocatedException extends CausedException {
      * information (if any).
      */
     public String getMessage() {
-        return this.optionalLocation == null ? super.getMessage() : this.optionalLocation.toString() + ": " + super.getMessage();
+        return (
+            this.optionalLocation == null
+            ? super.getMessage()
+            : this.optionalLocation.toString() + ": " + super.getMessage()
+        );
     }
 
     /**

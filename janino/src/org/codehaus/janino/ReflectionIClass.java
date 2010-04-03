@@ -72,7 +72,9 @@ class ReflectionIClass extends IClass {
         if (methods.length == 0 && this.clazz.isArray()) {
             iMethods.add(new IMethod() {
                 public String   getName() { return "clone"; }
-                public IClass   getReturnType() throws CompileException { return ReflectionIClass.this.iClassLoader.OBJECT; }
+                public IClass   getReturnType() throws CompileException {
+                    return ReflectionIClass.this.iClassLoader.OBJECT;
+                }
                 public boolean  isAbstract() { return false; }
                 public boolean  isStatic() { return false; }
                 public Access   getAccess() { return Access.PUBLIC; }
@@ -171,8 +173,23 @@ class ReflectionIClass extends IClass {
             // "getParameterTypes()" includes the synthetic "enclosing instance" parameter.
             IClass outerClass = ReflectionIClass.this.getOuterIClass();
             if (outerClass != null) {
-                if (parameterTypes.length < 1) throw new CompileException("Constructor \"" + this.constructor + "\" lacks synthetic enclosing instance parameter", null);
-                if (parameterTypes[0] != outerClass) throw new CompileException("Enclosing instance parameter of constructor \"" + this.constructor + "\" has wrong type -- \"" + parameterTypes[0] + "\" vs. \"" + outerClass + "\"", null);
+                if (parameterTypes.length < 1) {
+                    throw new CompileException(
+                        "Constructor \"" + this.constructor + "\" lacks synthetic enclosing instance parameter",
+                        null
+                    );
+                }
+                if (parameterTypes[0] != outerClass) {
+                    throw new CompileException((
+                        "Enclosing instance parameter of constructor \""
+                        + this.constructor
+                        + "\" has wrong type -- \""
+                        + parameterTypes[0]
+                        + "\" vs. \""
+                        + outerClass
+                        + "\""
+                    ), null);
+                }
                 IClass[] tmp = new IClass[parameterTypes.length - 1];
                 System.arraycopy(parameterTypes, 1, tmp, 0, tmp.length);
                 parameterTypes = tmp;
@@ -265,7 +282,10 @@ class ReflectionIClass extends IClass {
                 try {
                     return this.field.get(null);
                 } catch (IllegalAccessException ex) {
-                    throw new CompileException("Field \"" + this.field.getName() + "\" is not accessible", (Location) null);
+                    throw new CompileException(
+                        "Field \"" + this.field.getName() + "\" is not accessible",
+                        (Location) null
+                    );
                 }
             }
             return null;
@@ -285,7 +305,9 @@ class ReflectionIClass extends IClass {
         } catch (ClassNotFoundException ex) {
             throw new JaninoRuntimeException("Loading IClass \"" + c.getName() + "\": " + ex);
         }
-        if (iClass == null) throw new JaninoRuntimeException("Cannot load class \"" + c.getName() + "\" through the given ClassLoader");
+        if (iClass == null) {
+            throw new JaninoRuntimeException("Cannot load class \"" + c.getName() + "\" through the given ClassLoader");
+        }
         return iClass;
     }
 

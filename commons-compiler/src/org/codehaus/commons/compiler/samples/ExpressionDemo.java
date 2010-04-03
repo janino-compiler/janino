@@ -32,7 +32,7 @@ import org.codehaus.commons.compiler.*;
  * A test program that allows you to play around with the
  * {@link org.codehaus.janino.ExpressionEvaluator ExpressionEvaluator} class.
  */
-public class ExpressionDemo extends DemoBase {
+public final class ExpressionDemo extends DemoBase {
     public static void main(String[] args) throws Exception {
         Class    optionalExpressionType = null;
         String[] parameterNames         = {};
@@ -86,13 +86,25 @@ public class ExpressionDemo extends DemoBase {
         String expression = args[i++];
 
         if (parameterTypes.length != parameterNames.length) {
-            System.err.println("Parameter type count (" + parameterTypes.length + ") and parameter name count (" + parameterNames.length + ") do not match; try \"-help\".");
+            System.err.println(
+                "Parameter type count ("
+                + parameterTypes.length
+                + ") and parameter name count ("
+                + parameterNames.length
+                + ") do not match; try \"-help\"."
+            );
             System.exit(1);
         }
 
         // One command line argument for each parameter.
         if (args.length - i != parameterNames.length) {
-            System.err.println("Parameter value count (" + (args.length - i)  + ") and parameter name count (" + parameterNames.length + ") do not match; try \"-help\".");
+            System.err.println(
+                "Parameter value count ("
+                + (args.length - i)
+                + ") and parameter name count ("
+                + parameterNames.length
+                + ") do not match; try \"-help\"."
+            );
             System.exit(1);
         }
 

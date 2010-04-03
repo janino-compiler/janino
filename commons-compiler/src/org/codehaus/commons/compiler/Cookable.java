@@ -101,7 +101,7 @@ public abstract class Cookable implements ICookable {
             is.close();
             is = null;
         } finally {
-            if (is != null) try { is.close(); } catch (IOException ex) {}
+            if (is != null) try { is.close(); } catch (IOException ex) { }
         }
     }
 

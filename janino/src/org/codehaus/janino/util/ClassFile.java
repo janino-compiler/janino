@@ -47,13 +47,13 @@ import org.codehaus.janino.JaninoRuntimeException;
 
 
 /**
- * An object that represents the Java<sup>TM</sup> "class file" format.
+ * An object that represents the Java&trade; "class file" format.
  * <p>
  * {@link #ClassFile(InputStream)} creates a {@link ClassFile} object from the bytecode
  * read from the given {@link InputStream}.
  * <p>
- * {@link #store(OutputStream)} generates Java<sup>TM</sup> bytecode
- * which is suitable for being processed by a Java<sup>TM</sup> virtual
+ * {@link #store(OutputStream)} generates Java&trade; bytecode
+ * which is suitable for being processed by a Java&trade; virtual
  * machine.
  */
 public class ClassFile {
@@ -115,7 +115,9 @@ public class ClassFile {
 
         for (Iterator it = this.attributes.iterator(); it.hasNext();) {
             AttributeInfo ai = (AttributeInfo) it.next();
-            if (ai.nameIndex == ni.shortValue() && ai instanceof InnerClassesAttribute) return (InnerClassesAttribute) ai;
+            if (ai.nameIndex == ni.shortValue() && ai instanceof InnerClassesAttribute) {
+                return (InnerClassesAttribute) ai;
+            }
         }
         return null;
     }
@@ -146,15 +148,26 @@ public class ClassFile {
      * @throws IOException
      * @throws ClassFormatError
      */
-    public ClassFile(InputStream inputStream) throws IOException, ClassFormatError {
-        DataInputStream dis = inputStream instanceof DataInputStream ? (DataInputStream) inputStream : new DataInputStream(inputStream);
+    public ClassFile(InputStream inputStream) throws IOException {
+        DataInputStream dis = (
+            inputStream instanceof DataInputStream
+            ? (DataInputStream) inputStream :
+            new DataInputStream(inputStream)
+        );
 
         int magic = dis.readInt();                           // magic
         if (magic != ClassFile.CLASS_FILE_MAGIC) throw new ClassFormatError("Invalid magic number");
 
         this.minorVersion = dis.readShort();                 // minor_version
         this.majorVersion = dis.readShort();                 // major_version
-        if (!ClassFile.isRecognizedVersion(this.majorVersion, this.minorVersion)) throw new ClassFormatError("Unrecognized class file format version " + this.majorVersion + "/" + this.minorVersion);
+        if (!ClassFile.isRecognizedVersion(this.majorVersion, this.minorVersion)) {
+            throw new ClassFormatError(
+                "Unrecognized class file format version "
+                + this.majorVersion
+                + "/"
+                + this.minorVersion
+            );
+        }
 
         this.constantPool = new ArrayList();
         this.constantPoolMap = new HashMap();
@@ -217,7 +230,8 @@ public class ClassFile {
      * class hasn't been added before, add it to the constant pool. Otherwise return the constant number for
      * that element of the pool.
      *
-     * @see <a href="http://java.sun.com/docs/books/vmspec/2nd-edition/html/ClassFile.doc.html#1221">JVM specification, section 4.4.1</a>
+     * @see <a href="http://java.sun.com/docs/books/vmspec/2nd-edition/html/ClassFile.doc.html#1221">JVM specification,
+     *      section 4.4.1</a>
      */
     public short addConstantClassInfo(String typeFD) {
         String s;
@@ -237,7 +251,8 @@ public class ClassFile {
     /**
      * Add a "CONSTANT_Fieldref_info" structure to the class file.
      *
-     * @see <a href="http://java.sun.com/docs/books/vmspec/2nd-edition/html/ClassFile.doc.html#42041">JVM specification, section 4.4.2</a>
+     * @see <a href="http://java.sun.com/docs/books/vmspec/2nd-edition/html/ClassFile.doc.html#42041">JVM specification,
+     *      section 4.4.2</a>
      */
     public short addConstantFieldrefInfo(
         String classFD,
@@ -253,7 +268,8 @@ public class ClassFile {
     /**
      * Add a "CONSTANT_Methodref_info" structure to the class file.
      *
-     * @see <a href="http://java.sun.com/docs/books/vmspec/2nd-edition/html/ClassFile.doc.html#42041">JVM specification, section 4.4.2</a>
+     * @see <a href="http://java.sun.com/docs/books/vmspec/2nd-edition/html/ClassFile.doc.html#42041">JVM specification,
+     *      section 4.4.2</a>
      */
     public short addConstantMethodrefInfo(
         String classFD,
@@ -269,7 +285,8 @@ public class ClassFile {
     /**
      * Add a "CONSTANT_InterfaceMethodref_info" structure to the class file.
      *
-     * @see <a href="http://java.sun.com/docs/books/vmspec/2nd-edition/html/ClassFile.doc.html#42041">JVM specification, section 4.4.2</a>
+     * @see <a href="http://java.sun.com/docs/books/vmspec/2nd-edition/html/ClassFile.doc.html#42041">JVM specification,
+     *      section 4.4.2</a>
      */
     public short addConstantInterfaceMethodrefInfo(
         String classFD,
@@ -285,7 +302,8 @@ public class ClassFile {
     /**
      * Add a "CONSTANT_String_info" structure to the class file.
      *
-     * @see <a href="http://java.sun.com/docs/books/vmspec/2nd-edition/html/ClassFile.doc.html#29297">JVM specification, section 4.4.3</a>
+     * @see <a href="http://java.sun.com/docs/books/vmspec/2nd-edition/html/ClassFile.doc.html#29297">JVM specification,
+     *      section 4.4.3</a>
      */
     public short addConstantStringInfo(String string) {
         return this.addToConstantPool(new ConstantStringInfo(this.addConstantUtf8Info(string)));
@@ -294,7 +312,8 @@ public class ClassFile {
     /**
      * Add a "CONSTANT_Integer_info" structure to the class file.
      *
-     * @see <a href="http://java.sun.com/docs/books/vmspec/2nd-edition/html/ClassFile.doc.html#21942">JVM specification, section 4.4.4</a>
+     * @see <a href="http://java.sun.com/docs/books/vmspec/2nd-edition/html/ClassFile.doc.html#21942">JVM specification,
+     *      section 4.4.4</a>
      */
     public short addConstantIntegerInfo(final int value) {
         return this.addToConstantPool(new ConstantIntegerInfo(value));
@@ -303,7 +322,8 @@ public class ClassFile {
     /**
      * Add a "CONSTANT_Float_info" structure to the class file.
      *
-     * @see <a href="http://java.sun.com/docs/books/vmspec/2nd-edition/html/ClassFile.doc.html#21942">JVM specification, section 4.4.4</a>
+     * @see <a href="http://java.sun.com/docs/books/vmspec/2nd-edition/html/ClassFile.doc.html#21942">JVM specification,
+     *      section 4.4.4</a>
      */
     public short addConstantFloatInfo(final float value) {
         return this.addToConstantPool(new ConstantFloatInfo(value));
@@ -312,7 +332,8 @@ public class ClassFile {
     /**
      * Add a "CONSTANT_Long_info" structure to the class file.
      *
-     * @see <a href="http://java.sun.com/docs/books/vmspec/2nd-edition/html/ClassFile.doc.html#1348">JVM specification, section 4.4.5</a>
+     * @see <a href="http://java.sun.com/docs/books/vmspec/2nd-edition/html/ClassFile.doc.html#1348">JVM specification,
+     *      section 4.4.5</a>
      */
     public short addConstantLongInfo(final long value) {
         return this.addToConstantPool(new ConstantLongInfo(value));
@@ -321,7 +342,8 @@ public class ClassFile {
     /**
      * Add a "CONSTANT_Double_info" structure to the class file.
      *
-     * @see <a href="http://java.sun.com/docs/books/vmspec/2nd-edition/html/ClassFile.doc.html#1348">JVM specification, section 4.4.5</a>
+     * @see <a href="http://java.sun.com/docs/books/vmspec/2nd-edition/html/ClassFile.doc.html#1348">JVM specification,
+     *      section 4.4.5</a>
      */
     public short addConstantDoubleInfo(final double value) {
         return this.addToConstantPool(new ConstantDoubleInfo(value));
@@ -330,7 +352,8 @@ public class ClassFile {
     /**
      * Add a "CONSTANT_NameAndType_info" structure to the class file.
      *
-     * @see <a href="http://java.sun.com/docs/books/vmspec/2nd-edition/html/ClassFile.doc.html#1327">JVM specification, section 4.4.6</a>
+     * @see <a href="http://java.sun.com/docs/books/vmspec/2nd-edition/html/ClassFile.doc.html#1327">JVM specification,
+     *      section 4.4.6</a>
      */
     private short addConstantNameAndTypeInfo(String name, String descriptor) {
         return this.addToConstantPool(new ConstantNameAndTypeInfo(
@@ -342,7 +365,8 @@ public class ClassFile {
     /**
      * Add a "CONSTANT_Utf8_info" structure to the class file.
      *
-     * @see <a href="http://java.sun.com/docs/books/vmspec/2nd-edition/html/ClassFile.doc.html#7963">JVM specification, section 4.4.7</a>
+     * @see <a href="http://java.sun.com/docs/books/vmspec/2nd-edition/html/ClassFile.doc.html#7963">JVM specification,
+     *      section 4.4.7</a>
      */
     public short addConstantUtf8Info(final String s) {
         return this.addToConstantPool(new ConstantUtf8Info(s));
@@ -393,8 +417,8 @@ public class ClassFile {
         this.constantPool.add(cpi);
         if (cpi.isWide()) this.constantPool.add(null);
 
-        this.constantPoolMap.put(cpi, new Short((short)res));
-        return (short)res;
+        this.constantPoolMap.put(cpi, new Short((short) res));
+        return (short) res;
     }
 
     public FieldInfo addFieldInfo(
@@ -653,16 +677,16 @@ public class ClassFile {
 
     private static final int CLASS_FILE_MAGIC = 0xcafebabe;
 
-    public final static short MAJOR_VERSION_JDK_1_1 = 45;
-    public final static short MINOR_VERSION_JDK_1_1 = 3;
-    public final static short MAJOR_VERSION_JDK_1_2 = 46;
-    public final static short MINOR_VERSION_JDK_1_2 = 0;
-    public final static short MAJOR_VERSION_JDK_1_3 = 47;
-    public final static short MINOR_VERSION_JDK_1_3 = 0;
-    public final static short MAJOR_VERSION_JDK_1_4 = 48;
-    public final static short MINOR_VERSION_JDK_1_4 = 0;
-    public final static short MAJOR_VERSION_JDK_1_5 = 49;
-    public final static short MINOR_VERSION_JDK_1_5 = 0;
+    public static final short MAJOR_VERSION_JDK_1_1 = 45;
+    public static final short MINOR_VERSION_JDK_1_1 = 3;
+    public static final short MAJOR_VERSION_JDK_1_2 = 46;
+    public static final short MINOR_VERSION_JDK_1_2 = 0;
+    public static final short MAJOR_VERSION_JDK_1_3 = 47;
+    public static final short MINOR_VERSION_JDK_1_3 = 0;
+    public static final short MAJOR_VERSION_JDK_1_4 = 48;
+    public static final short MINOR_VERSION_JDK_1_4 = 0;
+    public static final short MAJOR_VERSION_JDK_1_5 = 49;
+    public static final short MINOR_VERSION_JDK_1_5 = 0;
 
     private short        majorVersion;
     private short        minorVersion;
@@ -678,9 +702,9 @@ public class ClassFile {
     // Convenience.
     private /*final*/ Map constantPoolMap; // ConstantPoolInfo => Short
 
-    public static abstract class ConstantPoolInfo {
-        abstract public void store(DataOutputStream dos) throws IOException;
-        abstract public boolean isWide();
+    public abstract static class ConstantPoolInfo {
+        public abstract void store(DataOutputStream dos) throws IOException;
+        public abstract boolean isWide();
 
         private static ConstantPoolInfo loadConstantPoolInfo(DataInputStream dis) throws IOException {
             byte tag = dis.readByte();
@@ -726,7 +750,7 @@ public class ClassFile {
         }
     }
 
-    public static abstract class ConstantValuePoolInfo extends ConstantPoolInfo {
+    public abstract static class ConstantValuePoolInfo extends ConstantPoolInfo {
         public abstract Object getValue(ClassFile classFile);
     }
 
@@ -1020,7 +1044,9 @@ public class ClassFile {
         public short           getAccessFlags()     { return this.accessFlags; }
         public short           getNameIndex()       { return this.nameIndex; }
         public short           getDescriptorIndex() { return this.descriptorIndex; }
-        public AttributeInfo[] getAttributes()      { return (AttributeInfo[]) this.attributes.toArray(new AttributeInfo[this.attributes.size()]); }
+        public AttributeInfo[] getAttributes()      {
+            return (AttributeInfo[]) this.attributes.toArray(new AttributeInfo[this.attributes.size()]);
+        }
 
         public void addAttribute(AttributeInfo attribute) {
             this.attributes.add(attribute);
@@ -1063,7 +1089,9 @@ public class ClassFile {
         public short           getAccessFlags()     { return this.accessFlags; }
         public short           getNameIndex()       { return this.nameIndex; }
         public short           getDescriptorIndex() { return this.descriptorIndex; }
-        public AttributeInfo[] getAttributes()      { return (AttributeInfo[]) this.attributes.toArray(new AttributeInfo[this.attributes.size()]); }
+        public AttributeInfo[] getAttributes()      {
+            return (AttributeInfo[]) this.attributes.toArray(new AttributeInfo[this.attributes.size()]);
+        }
 
         public void addAttribute(AttributeInfo attribute) {
             this.attributes.add(attribute);
@@ -1152,7 +1180,14 @@ public class ClassFile {
             };
         }
 
-        if (bais.available() > 0) throw new ClassFormatError((ba.length - bais.available()) + " bytes of trailing garbage in body of attribute \"" + attributeName + "\"");
+        if (bais.available() > 0) {
+            throw new ClassFormatError(
+                (ba.length - bais.available())
+                + " bytes of trailing garbage in body of attribute \""
+                + attributeName
+                + "\""
+            );
+        }
 
         return result;
     }
@@ -1260,7 +1295,12 @@ public class ClassFile {
         public static class Entry {
             public final short innerClassInfoIndex, outerClassInfoIndex, innerNameIndex, innerClassAccessFlags;
 
-            public Entry(short innerClassInfoIndex, short outerClassInfoIndex, short innerNameIndex, short innerClassAccessFlags) {
+            public Entry(
+                short innerClassInfoIndex,
+                short outerClassInfoIndex,
+                short innerNameIndex,
+                short innerClassAccessFlags
+            ) {
                 this.innerClassInfoIndex   = innerClassInfoIndex;
                 this.outerClassInfoIndex   = outerClassInfoIndex;
                 this.innerNameIndex        = innerNameIndex;
@@ -1436,7 +1476,7 @@ public class ClassFile {
         private final ExceptionTableEntry[] exceptionTableEntries;
         private final AttributeInfo[]       attributes;
 
-        private CodeAttribute(
+        CodeAttribute(
             short                 attributeNameIndex,
             short                 maxStack,
             short                 maxLocals,
@@ -1452,7 +1492,11 @@ public class ClassFile {
             this.attributes            = attributes;
         }
 
-        public static AttributeInfo loadBody(short attributeNameIndex, ClassFile classFile, DataInputStream dis) throws IOException {
+        public static AttributeInfo loadBody(
+            short           attributeNameIndex,
+            ClassFile       classFile,
+            DataInputStream dis
+        ) throws IOException {
             short  maxStack = dis.readShort();                                     // max_stack
             short  maxLocals = dis.readShort();                                    // max_locals
             byte[] code = ClassFile.readLengthAndBytes(dis);                       // code_length, code
@@ -1490,8 +1534,8 @@ public class ClassFile {
             dos.writeShort(this.exceptionTableEntries.length);            // exception_table_length
             for (int i = 0; i < this.exceptionTableEntries.length; ++i) { // exception_table
                 ExceptionTableEntry ete = this.exceptionTableEntries[i];
-                dos.writeShort(ete.startPC  ); // start_pc
-                dos.writeShort(ete.endPC    ); // end_pc
+                dos.writeShort(ete.startPC);   // start_pc
+                dos.writeShort(ete.endPC);     // end_pc
                 dos.writeShort(ete.handlerPC); // handler_pc
                 dos.writeShort(ete.catchType); // catch_type
             }
@@ -1506,7 +1550,7 @@ public class ClassFile {
          * 4.7.3).
          */
         private static class ExceptionTableEntry {
-            private final short startPC, endPC, handlerPC, catchType;
+            final short startPC, endPC, handlerPC, catchType;
 
             public ExceptionTableEntry(
                 short startPC,

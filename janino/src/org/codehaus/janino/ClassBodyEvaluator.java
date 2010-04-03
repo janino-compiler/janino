@@ -40,7 +40,7 @@ import org.codehaus.janino.util.enumerator.EnumeratorSet;
  * The <code>optionalClassLoader</code> serves two purposes:
  * <ul>
  *   <li>It is used to look for classes referenced by the class body.
- *   <li>It is used to load the generated Java<sup>TM</sup> class
+ *   <li>It is used to load the generated Java&trade; class
  *   into the JVM; directly if it is a subclass of {@link
  *   ByteArrayClassLoader}, or by creation of a temporary
  *   {@link ByteArrayClassLoader} if not.
@@ -198,7 +198,11 @@ public class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEval
     }
 
     public void setImplementedInterfaces(Class[] implementedTypes) {
-        if (implementedTypes == null) throw new NullPointerException("Zero implemented types must be specified as \"new Class[0]\", not \"null\"");
+        if (implementedTypes == null) {
+            throw new NullPointerException(
+                "Zero implemented types must be specified as \"new Class[0]\", not \"null\""
+            );
+        }
         assertNotCooked();
         this.implementedTypes = implementedTypes;
     }
@@ -234,23 +238,28 @@ public class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEval
     }
 
     /**
-     * Create a {@link Java.CompilationUnit}, set the default imports, and parse the import
-     * declarations.
+     * Create a {@link Java.CompilationUnit}, set the default imports, and parse the import declarations.
      * <p>
-     * If the <code>optionalScanner</code> is given, a sequence of IMPORT directives is parsed
-     * from it and added to the compilation unit.
+     * If the <code>optionalScanner</code> is given, a sequence of IMPORT directives is parsed from it and added to the
+     * compilation unit.
      */
     protected final Java.CompilationUnit makeCompilationUnit(
         Scanner optionalScanner
     ) throws CompileException, IOException {
-        Java.CompilationUnit cu = new Java.CompilationUnit(optionalScanner == null ? null : optionalScanner.getFileName());
+        Java.CompilationUnit cu = new Java.CompilationUnit(
+            optionalScanner == null
+            ? null
+            : optionalScanner.getFileName()
+        );
 
         // Set default imports.
         if (this.optionalDefaultImports != null) {
             for (int i = 0; i < this.optionalDefaultImports.length; ++i) {
                 Scanner s = new Scanner(null, new StringReader(this.optionalDefaultImports[i]));
                 cu.addImportDeclaration(new Parser(s).parseImportDeclarationBody());
-                if (!s.peek().isEOF()) throw new CompileException("Unexpected token \"" + s.peek() + "\" in default import", s.location());
+                if (!s.peek().isEOF()) {
+                    throw new CompileException("Unexpected token \"" + s.peek() + "\" in default import", s.location());
+                }
             }
         }
 
@@ -269,8 +278,7 @@ public class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEval
      * To the given {@link Java.CompilationUnit}, add
      * <ul>
      *   <li>A class declaration with the configured name, superclass and interfaces
-     *   <li>A method declaration with the given return type, name, parameter
-     *       names and values and thrown exceptions
+     *   <li>A method declaration with the given return type, name, parameter names and values and thrown exceptions
      * </ul>
      *
      * @return The created {@link Java.ClassDeclaration} object
@@ -298,8 +306,8 @@ public class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEval
     }
 
     /**
-     * Compile the given compilation unit, load all generated classes, and
-     * return the class with the given name.
+     * Compile the given compilation unit, load all generated classes, and return the class with the given name.
+     *
      * @param compilationUnit
      * @param debuggingInformation TODO
      * @param newClassName The fully qualified class name
@@ -318,12 +326,18 @@ public class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEval
         try {
             return cl.loadClass(newClassName);
         } catch (ClassNotFoundException ex) {
-            throw new JaninoRuntimeException("SNO: Generated compilation unit does not declare class \"" + newClassName + "\"");
+            throw new JaninoRuntimeException(
+                "SNO: Generated compilation unit does not declare class \""
+                + newClassName
+                + "\""
+            );
         }
     }
 
     public Class getClazz() {
-        if (this.getClass() != ClassBodyEvaluator.class) throw new IllegalStateException("Must not be called on derived instances");
+        if (this.getClass() != ClassBodyEvaluator.class) {
+            throw new IllegalStateException("Must not be called on derived instances");
+        }
         if (this.result == null) throw new IllegalStateException("Must only be called after \"cook()\"");
         return this.result;
     }
@@ -334,11 +348,17 @@ public class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEval
         try {
             return this.getClazz().newInstance();
         } catch (InstantiationException ie) {
-            CompileException ce = new CompileException("Class is abstract, an interface, an array class, a primitive type, or void; or has no zero-parameter constructor", null);
+            CompileException ce = new CompileException((
+                "Class is abstract, an interface, an array class, a primitive type, or void; "
+                + "or has no zero-parameter constructor"
+            ), null);
             ce.initCause(ie);
             throw ce;
         } catch (IllegalAccessException iae) {
-            CompileException ce = new CompileException("The class or its zero-parameter constructor is not accessible", null);
+            CompileException ce = new CompileException(
+                "The class or its zero-parameter constructor is not accessible",
+                null
+            );
             ce.initCause(iae);
             throw ce;
         }
@@ -414,7 +434,10 @@ public class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEval
         try {
             return c.newInstance();
         } catch (InstantiationException e) {
-            throw new CompileException("Cannot instantiate abstract class -- one or more method implementations are missing", null);
+            throw new CompileException(
+                "Cannot instantiate abstract class -- one or more method implementations are missing",
+                null
+            );
         } catch (IllegalAccessException e) {
             // SNO - type and default constructor of generated class are PUBLIC.
             throw new JaninoRuntimeException(e.toString());

@@ -13,7 +13,7 @@ public class BenchmarkingTestCase extends TestCase {
 
     public BenchmarkingTestCase() {
     }
-    
+
     public BenchmarkingTestCase(String name) {
         super(name);
     }

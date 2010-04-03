@@ -46,13 +46,13 @@ public class AntCompilerAdapter extends DefaultCompilerAdapter {
      * <p>
      * The following fields of {@link DefaultCompilerAdapter} are honored:
      * <ul>
-     *   <li><code>DefaultCompilerAdapter.compileList</code> - the set of Java<sup>TM</sup> source files to compile
+     *   <li><code>DefaultCompilerAdapter.compileList</code> - the set of Java&trade; source files to compile
      *   <li><code>DefaultCompilerAdapter.destDir</code> - where to store the class files
-     *   <li><code>DefaultCompilerAdapter.compileSourcepath</code> - where to look for more Java<sup>TM</sup> source files
+     *   <li><code>DefaultCompilerAdapter.compileSourcepath</code> - where to look for more Java&trade; source files
      *   <li><code>DefaultCompilerAdapter.compileClasspath</code> - where to look for required classes
      *   <li><code>DefaultCompilerAdapter.extdirs</code>
      *   <li><code>DefaultCompilerAdapter.bootclasspath</code>
-     *   <li><code>DefaultCompilerAdapter.encoding</code> - how the Java<sup>TM</sup> source files are encoded
+     *   <li><code>DefaultCompilerAdapter.encoding</code> - how the Java&trade; source files are encoded
      *   <li><code>DefaultCompilerAdapter.verbose</code>
      *   <li><code>DefaultCompilerAdapter.debug</code>
      *   <li><code>org.apache.tools.ant.taskdefs.Javac.getDebugLevel()</code>

@@ -81,17 +81,21 @@ public class EvaluatorTests extends TestCase {
 
 
     public void testGuessParameterNames() throws Exception {
-        Set parameterNames = new HashSet(Arrays.asList(ExpressionEvaluator.guessParameterNames(new Scanner(null, new StringReader(
-            "import o.p;\n" +
-            "a + b.c + d.e() + f() + g.h.I.j() + k.l.M"
-        )))));
+        Set parameterNames = new HashSet(
+            Arrays.asList(ExpressionEvaluator.guessParameterNames(new Scanner(null, new StringReader(
+                "import o.p;\n" +
+                "a + b.c + d.e() + f() + g.h.I.j() + k.l.M"
+            ))))
+        );
         assertEquals(new HashSet(Arrays.asList(new String[] { "a", "b", "d" })), parameterNames);
 
-        parameterNames = new HashSet(Arrays.asList(ScriptEvaluator.guessParameterNames(new Scanner(null, new StringReader(
-            "import o.p;\n" +
-            "int a;\n" +
-            "return a + b.c + d.e() + f() + g.h.I.j() + k.l.M;"
-        )))));
+        parameterNames = new HashSet(
+            Arrays.asList(ScriptEvaluator.guessParameterNames(new Scanner(null, new StringReader(
+                "import o.p;\n" +
+                "int a;\n" +
+                "return a + b.c + d.e() + f() + g.h.I.j() + k.l.M;"
+            ))))
+        );
         assertEquals(new HashSet(Arrays.asList(new String[] { "b", "d" })), parameterNames);
     }
 

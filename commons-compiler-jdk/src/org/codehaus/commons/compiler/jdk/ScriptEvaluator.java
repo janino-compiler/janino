@@ -326,12 +326,24 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
         int count = readers.length;
 
         // Check array sizes.
-        if (this.optionalMethodNames      != null && this.optionalMethodNames.length      != count) throw new IllegalStateException("methodName");
-        if (this.optionalParameterNames   != null && this.optionalParameterNames.length   != count) throw new IllegalStateException("parameterNames");
-        if (this.optionalParameterTypes   != null && this.optionalParameterTypes.length   != count) throw new IllegalStateException("parameterTypes");
-        if (this.optionalReturnTypes      != null && this.optionalReturnTypes.length      != count) throw new IllegalStateException("returnTypes");
-        if (this.optionalStaticMethod     != null && this.optionalStaticMethod.length     != count) throw new IllegalStateException("staticMethod");
-        if (this.optionalThrownExceptions != null && this.optionalThrownExceptions.length != count) throw new IllegalStateException("thrownExceptions");
+        if (this.optionalMethodNames != null && this.optionalMethodNames.length != count) {
+            throw new IllegalStateException("methodName");
+        }
+        if (this.optionalParameterNames != null && this.optionalParameterNames.length != count) {
+            throw new IllegalStateException("parameterNames");
+        }
+        if (this.optionalParameterTypes != null && this.optionalParameterTypes.length != count) {
+            throw new IllegalStateException("parameterTypes");
+        }
+        if (this.optionalReturnTypes != null && this.optionalReturnTypes.length != count) {
+            throw new IllegalStateException("returnTypes");
+        }
+        if (this.optionalStaticMethod != null && this.optionalStaticMethod.length != count) {
+            throw new IllegalStateException("staticMethod");
+        }
+        if (this.optionalThrownExceptions != null && this.optionalThrownExceptions.length != count) {
+            throw new IllegalStateException("thrownExceptions");
+        }
 
         // Determine method names.
         String[] methodNames;
@@ -348,11 +360,31 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
 
         // Create methods with one block each.
         for (int i = 0; i < count; ++i) {
-            boolean    staticMethod     = this.optionalStaticMethod     == null ? true : this.optionalStaticMethod[i];
-            Class<?>   returnType       = this.optionalReturnTypes      == null ? this.getDefaultReturnType() : this.optionalReturnTypes[i];
-            String[]   parameterNames   = this.optionalParameterNames   == null ? new String[0] : this.optionalParameterNames[i];
-            Class<?>[] parameterTypes   = this.optionalParameterTypes   == null ? new Class<?>[0] : this.optionalParameterTypes[i];
-            Class<?>[] thrownExceptions = this.optionalThrownExceptions == null ? new Class<?>[0] : this.optionalThrownExceptions[i];
+            boolean staticMethod = (
+                this.optionalStaticMethod == null
+                ? true
+                : this.optionalStaticMethod[i]
+            );
+            Class<?> returnType = (
+                this.optionalReturnTypes == null
+                ? this.getDefaultReturnType()
+                : this.optionalReturnTypes[i]
+            );
+            String[] parameterNames = (
+                this.optionalParameterNames == null
+                ? new String[0]
+                : this.optionalParameterNames[i]
+            );
+            Class<?>[] parameterTypes = (
+                this.optionalParameterTypes == null
+                ? new Class<?>[0]
+                : this.optionalParameterTypes[i]
+            );
+            Class<?>[] thrownExceptions = (
+                this.optionalThrownExceptions == null
+                ? new Class<?>[0]
+                : this.optionalThrownExceptions[i]
+            );
 
             {
                 StringWriter sw = new StringWriter();

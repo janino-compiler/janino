@@ -98,7 +98,7 @@ import java.lang.reflect.InvocationTargetException;
  */
 public interface IExpressionEvaluator extends IScriptEvaluator {
 
-    public static final Class ANY_TYPE = null;
+    Class ANY_TYPE = null;
 
     /**
      * Define the type of the expression. The special type {@link #ANY_TYPE} allows the expression

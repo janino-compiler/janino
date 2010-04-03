@@ -44,11 +44,11 @@ public class MapResourceCreator implements ResourceCreator {
     public MapResourceCreator(Map map) {
         this.map = map;
     }
-    public Map getMap() {
+    public final Map getMap() {
         return this.map;
     }
 
-    public OutputStream createResource(final String resourceName) throws IOException {
+    public final OutputStream createResource(final String resourceName) throws IOException {
         return new ByteArrayOutputStream() {
             public void close() throws IOException {
                 super.close();
@@ -57,7 +57,7 @@ public class MapResourceCreator implements ResourceCreator {
         };
     }
 
-    public boolean deleteResource(String resourceName) {
+    public final boolean deleteResource(String resourceName) {
         return this.map.remove(resourceName) != null;
     }
 }

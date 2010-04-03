@@ -25,5 +25,5 @@
  */
 
 public interface IPred {
-    public boolean filter() throws Exception;
+    boolean filter() throws Exception;
 }

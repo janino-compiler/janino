@@ -38,11 +38,11 @@ public class ZipFileResourceFinder extends ResourceFinder {
     public ZipFileResourceFinder(ZipFile zipFile) {
         this.zipFile = zipFile;
     }
-    public String toString() { return "zip:" + this.zipFile.getName(); }
+    public final String toString() { return "zip:" + this.zipFile.getName(); }
 
     // Implement ResourceFinder.
 
-    public Resource findResource(final String resourceName) {
+    public final Resource findResource(final String resourceName) {
         final ZipEntry ze = this.zipFile.getEntry(resourceName);
         if (ze == null) return null;
         return new Resource() {

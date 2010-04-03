@@ -173,9 +173,10 @@ public class EvaluatorTests extends TestCase {
         )).compareTo("");
     }
 
+    private static final int COUNT = 10000;
+
     public void testManyEEs() throws Exception {
         IExpressionEvaluator ee = compilerFactory.newExpressionEvaluator();
-        final int COUNT = 10000;
 
         String[]     expressions = new String[COUNT];
         String[][]   parameterNames = new String[COUNT][2];
@@ -247,9 +248,9 @@ public class EvaluatorTests extends TestCase {
         Method[] m = exp[0].getMethods();
         Object inst = exp[0].newInstance();
         int numTests = 0;
-        for(int i = 0; i < m.length; ++i) {
-            for(int j = 0; j < exp.length; ++j) {
-                if(m[i].getName().startsWith("getL"+j)) {
+        for (int i = 0; i < m.length; ++i) {
+            for (int j = 0; j < exp.length; ++j) {
+                if (m[i].getName().startsWith("getL" + j)) {
                     Class<?> res = (Class<?>) m[i].invoke(inst, new Object[0]);
                     assertEquals(exp[j], res);
                     ++numTests;
@@ -370,7 +371,7 @@ public class EvaluatorTests extends TestCase {
                 innerClass.getMethod("setL1", new Class[0]),
                 innerClass.getMethod("setL2", new Class[0]),
         };
-        for(int i = 0; i < 3; ++i) {
+        for (int i = 0; i < 3; ++i) {
             Object g1 = gets[i].invoke(inner, new Object[0]);
             assertEquals(1, g1);
             Object s1 = sets[i].invoke(inner, new Object[0]);
@@ -439,12 +440,12 @@ public class EvaluatorTests extends TestCase {
         Object   o = c.newInstance();
 
         Method[] m = c.getMethods();
-        for(int i = 0; i < m.length; ++i) {
-            if(m[i].getName().startsWith("run")) {
+        for (int i = 0; i < m.length; ++i) {
+            if (m[i].getName().startsWith("run")) {
                 try {
                     Object res = m[i].invoke(o, new Object[0]);
                     fail("Method " + m[i] + " should have failed, but got " + res);
-                } catch(InvocationTargetException ae) {
+                } catch (InvocationTargetException ae) {
                     assertTrue(ae.getTargetException() instanceof ArithmeticException);
                 }
             }
@@ -454,18 +455,18 @@ public class EvaluatorTests extends TestCase {
     public static boolean compare(double lhs, double rhs, String comp) {
         if (comp == "==") { return lhs == rhs; }
         if (comp == "!=") { return lhs != rhs; }
-        if (comp == "<" ) { return lhs < rhs; }
+        if (comp == "<")  { return lhs < rhs; }
         if (comp == "<=") { return lhs <= rhs; }
-        if (comp == ">" ) { return lhs < rhs; }
+        if (comp == ">")  { return lhs < rhs; }
         if (comp == ">=") { return lhs <= rhs; }
         throw new RuntimeException("Unsupported comparison");
     }
     public static boolean compare(float lhs, float rhs, String comp) {
         if (comp == "==") { return lhs == rhs; }
         if (comp == "!=") { return lhs != rhs; }
-        if (comp == "<" ) { return lhs < rhs; }
+        if (comp == "<")  { return lhs < rhs; }
         if (comp == "<=") { return lhs <= rhs; }
-        if (comp == ">" ) { return lhs < rhs; }
+        if (comp == ">")  { return lhs < rhs; }
         if (comp == ">=") { return lhs <= rhs; }
         throw new RuntimeException("Unsupported comparison");
     }
@@ -510,7 +511,7 @@ public class EvaluatorTests extends TestCase {
         String[] opcode = new String[] { "==", "!=", "<", "<=", ">", ">=" };
         for (int opIdx = 0; opIdx < opcode.length; ++opIdx) {
             for (int argIdx = 0; argIdx < args.length; ++argIdx) {
-                String msg = "\""+ args[argIdx][0] +" "+ opcode[opIdx] +" "+ args[argIdx][1] +"\"";
+                String msg = "\"" + args[argIdx][0] + " " + opcode[opIdx] + " " + args[argIdx][1] + "\"";
                 {
                     boolean exp = compare(args[argIdx][0].doubleValue(), args[argIdx][1].doubleValue(), opcode[opIdx]);
                     Object[] objs = new Object[] { args[argIdx][0], args[argIdx][1], opcode[opIdx] };
@@ -548,13 +549,13 @@ public class EvaluatorTests extends TestCase {
             "    }\n" +
             "}";
 
-        int[] tests = new int[] { 1, 10, 100, Short.MAX_VALUE/5, Short.MAX_VALUE/4, Short.MAX_VALUE/2 };
-        for(int i = 0; i < tests.length; ++i) {
+        int[] tests = new int[] { 1, 10, 100, Short.MAX_VALUE / 5, Short.MAX_VALUE / 4, Short.MAX_VALUE / 2 };
+        for (int i = 0; i < tests.length; ++i) {
             int repititions = tests[i];
 
             StringBuffer sb = new StringBuffer();
             sb.append(preamble);
-            for(int j = 0; j < repititions; ++j) {
+            for (int j = 0; j < repititions; ++j) {
                 sb.append(middle);
             }
             sb.append(postamble);
@@ -579,12 +580,12 @@ public class EvaluatorTests extends TestCase {
 
 
         int[] tests = new int[] { 1, 100, 13020 };
-        for(int i = 0; i < tests.length; ++i) {
+        for (int i = 0; i < tests.length; ++i) {
             int repititions = tests[i];
 
             StringBuffer sb = new StringBuffer();
             sb.append(preamble);
-            for(int j = 0; j < repititions; ++j) {
+            for (int j = 0; j < repititions; ++j) {
                 sb.append("boolean _v").append(Integer.toString(j)).append(" = false;\n");
             }
             sb.append(postamble);
@@ -612,12 +613,12 @@ public class EvaluatorTests extends TestCase {
             "}";
 
         int[] tests = new int[] { 1, 10, 8192};
-        for(int i = 0; i < tests.length; ++i) {
+        for (int i = 0; i < tests.length; ++i) {
             int repititions = tests[i];
 
             StringBuilder sb = new StringBuilder();
             sb.append(preamble);
-            for(int j = 0; j < repititions; ++j) {
+            for (int j = 0; j < repititions; ++j) {
                 sb.append(middle);
             }
             sb.append(postamble);
@@ -668,12 +669,12 @@ public class EvaluatorTests extends TestCase {
             "}";
 
         int[] tests = new int[] { 1, 128, };
-        for(int i = 0; i < tests.length; ++i) {
+        for (int i = 0; i < tests.length; ++i) {
             int repititions = tests[i];
 
             StringBuilder sb = new StringBuilder();
             sb.append(preamble);
-            for(int j = 0; j < repititions; ++j) {
+            for (int j = 0; j < repititions; ++j) {
                 sb.append(MessageFormat.format(middle, new Object[] { j }));
             }
             sb.append(postamble);
@@ -723,7 +724,7 @@ public class EvaluatorTests extends TestCase {
 
     public void testOverrideVisibility() throws Exception {
         // note that this compiles without problem
-        OverridesWithDifferingVisibility.test(new Object[] { "asdf"} );
+        OverridesWithDifferingVisibility.test(new Object[] { "asdf" });
 
         // so should this
         assertCompiles(true,
@@ -778,7 +779,7 @@ public class EvaluatorTests extends TestCase {
         Method   get = topClass.getDeclaredMethod("get", new Class[0]);
         Object   t = topClass.newInstance();
         Object   res = get.invoke(t, new Object[0]);
-        ((Runnable)res).run();
+        ((Runnable) res).run();
     }
 
 
@@ -805,7 +806,7 @@ public class EvaluatorTests extends TestCase {
         Method   get = topClass.getDeclaredMethod("get", new Class[0]);
         Object   t = topClass.newInstance();
         Object   res = get.invoke(t, new Object[0]);
-        ((Runnable)res).run();
+        ((Runnable) res).run();
     }
 
 

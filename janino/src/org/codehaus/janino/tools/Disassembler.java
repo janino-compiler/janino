@@ -85,7 +85,9 @@ public class Disassembler {
                 d.setSourceDirectory(new File(args[++i]));
             } else
             if (arg.equals("-help")) {
+                // CHECKSTYLE(LineLengthCheck):OFF
                 System.out.println("Usage:  java jexpr.Jdisasm [ -o <output-file> ] [ -verbose ] [ -src <source-dir> ] <class-file> ...");
+                // CHECKSTYLE(LineLengthCheck):ON
                 System.exit(0);
             } else
             {
@@ -140,7 +142,7 @@ public class Disassembler {
     }
 
     /**
-     * Disassemble one Java<sup>TM</sup> class file to {@link System#out}.
+     * Disassemble one Java&trade; class file to {@link System#out}.
      *
      * @param file
      * @throws IOException
@@ -150,7 +152,7 @@ public class Disassembler {
         try {
             disasm(is);
         } finally {
-            try { is.close(); } catch (IOException ex) {}
+            try { is.close(); } catch (IOException ex) { }
         }
     }
 
@@ -230,7 +232,9 @@ public class Disassembler {
             READ_SOURCE_LINES: {
                 for (int i = 0; i < attributes.length; ++i) {
                     if (attributes[i] instanceof SourceFileAttribute) {
-                        ConstantPoolInfo cpi = Disassembler.this.getConstantPoolEntry(((SourceFileAttribute) attributes[i]).sourceFileIndex);
+                        ConstantPoolInfo cpi = Disassembler.this.getConstantPoolEntry(
+                            ((SourceFileAttribute) attributes[i]).sourceFileIndex
+                        );
                         if (cpi instanceof ConstantUtf8Info) {
                             String sourceFile = ((ConstantUtf8Info) cpi).getValue();
                             LineNumberReader lnr;
@@ -344,13 +348,24 @@ public class Disassembler {
                         } else {
                             s = ((ConstantUtf8Info) cpi).getValue();
                             if (s.length() > 80) {
-                                s = Disassembler.stringToJavaLiteral(s.substring(0, 80)) + "... (" + s.length() + " chars)";
+                                s = (
+                                    Disassembler.stringToJavaLiteral(s.substring(0, 80))
+                                    + "... ("
+                                    + s.length()
+                                    + " chars)"
+                                );
                             } else {
                                 s = Disassembler.stringToJavaLiteral(s);
                             }
                         }
                         if (Disassembler.this.verbose) {
-                            Disassembler.this.print("CONSTANT_String_info { string_index = " + stringIndex + " (" + s + ") }");
+                            Disassembler.this.print(
+                                "CONSTANT_String_info { string_index = "
+                                + stringIndex
+                                + " ("
+                                + s
+                                + ") }"
+                            );
                         } else {
                             Disassembler.this.print(s);
                         }
@@ -489,9 +504,11 @@ public class Disassembler {
         };
     }
     private interface MethodInfo {
-        public void print(
-            Map sourceLines // Integer lineNumber => String line
-        );
+
+        /**
+         * @param sourceLines Integer lineNumber => String line
+         */
+        void print(Map sourceLines);
     }
 
     private void disasmAttributeInfo(DataInputStream dis) throws IOException {
@@ -563,11 +580,15 @@ public class Disassembler {
                             for (int i = 0; i < attributes.length; ++i) {
                                 AttributeInfo a = attributes[i];
                                 if (a instanceof LocalVariableTableAttribute) {
-                                    if (localVariableTableAttribute != null) throw new JaninoRuntimeException("Duplicate LocalVariableTable attribute");
+                                    if (localVariableTableAttribute != null) {
+                                        throw new JaninoRuntimeException("Duplicate LocalVariableTable attribute");
+                                    }
                                     localVariableTableAttribute = (LocalVariableTableAttribute) a;
                                 }
                                 if (a instanceof LineNumberTableAttribute) {
-                                    if (lineNumberTableAttribute != null) throw new JaninoRuntimeException("Duplicate LineNumberTable attribute");
+                                    if (lineNumberTableAttribute != null) {
+                                        throw new JaninoRuntimeException("Duplicate LineNumberTable attribute");
+                                    }
                                     lineNumberTableAttribute = (LineNumberTableAttribute) a;
                                 }
                             }
@@ -632,7 +653,10 @@ public class Disassembler {
                                     if (outerClassInfoIndex == 0) {
                                         Disassembler.this.print("(not a member)");
                                     } else {
-                                        Disassembler.this.printConstantPoolEntry("outer_class_info_index", outerClassInfoIndex);
+                                        Disassembler.this.printConstantPoolEntry(
+                                            "outer_class_info_index",
+                                            outerClassInfoIndex
+                                        );
                                     }
                                     Disassembler.this.println();
 
@@ -644,7 +668,10 @@ public class Disassembler {
                                     }
                                     Disassembler.this.println();
 
-                                    Disassembler.this.println("inner_class_access_flags = " + decodeAccess(data[i + 3]));
+                                    Disassembler.this.println(
+                                        "inner_class_access_flags = "
+                                        + decodeAccess(data[i + 3])
+                                    );
                                 } Disassembler.this.unindentln(i == data.length - 1 ? "}" : "},");
                             }
                         } Disassembler.this.unindentln("}");
@@ -697,7 +724,7 @@ public class Disassembler {
         }
     }
     private interface AttributeInfo {
-        public void print();
+        void print();
     }
     private abstract static class SourceRelatedAttributeInfo implements AttributeInfo {
         public void print() {
@@ -768,8 +795,12 @@ public class Disassembler {
                     instructionOffset <= startPC + length &&
                     index == this.data[i + 4]
                 ) {
-                    String name       = ((ConstantUtf8Info) Disassembler.this.getConstantPoolEntry(this.data[i + 2])).getValue();
-                    String descriptor = ((ConstantUtf8Info) Disassembler.this.getConstantPoolEntry(this.data[i + 3])).getValue();
+                    String name       = (
+                        (ConstantUtf8Info) Disassembler.this.getConstantPoolEntry(this.data[i + 2])
+                    ).getValue();
+                    String descriptor = (
+                        (ConstantUtf8Info) Disassembler.this.getConstantPoolEntry(this.data[i + 3])
+                    ).getValue();
                     return Disassembler.decodeDescriptor(descriptor) + " " + name;
                 }
             }
@@ -802,7 +833,17 @@ public class Disassembler {
             this.catchType = catchType;
         }
         public void print() {
-            Disassembler.this.print("start_pc = " + this.startPC + ", end_pc = " + this.endPC + ", handler_pc = " + this.handlerPC + ", catch_type = " + this.catchType + " (");
+            Disassembler.this.print(
+                "start_pc = "
+                + this.startPC
+                + ", end_pc = "
+                + this.endPC
+                + ", handler_pc = "
+                + this.handlerPC
+                + ", catch_type = "
+                + this.catchType
+                + " ("
+            );
             if (this.catchType == 0) {
                 Disassembler.this.print("finally");
             } else {
@@ -1115,7 +1156,12 @@ public class Disassembler {
                     Operand operand;
                     if (s.equals("constantpoolindex1")) {
                         operand = new Operand() {
-                            public void disasm(DataInputStream dis, int instructionOffset, LocalVariableTableAttribute localVariableTableAttribute, Disassembler d) throws IOException {
+                            public void disasm(
+                                DataInputStream             dis,
+                                int                         instructionOffset,
+                                LocalVariableTableAttribute localVariableTableAttribute,
+                                Disassembler                d
+                            ) throws IOException {
                                 short index = (short) (0xff & dis.readByte());
                                 d.printConstantPoolEntry(index);
                             }
@@ -1123,29 +1169,52 @@ public class Disassembler {
                     } else
                     if (s.equals("constantpoolindex2")) {
                         operand = new Operand() {
-                            public void disasm(DataInputStream dis, int instructionOffset, LocalVariableTableAttribute localVariableTableAttribute, Disassembler d) throws IOException {
+                            public void disasm(
+                                DataInputStream             dis,
+                                int                         instructionOffset,
+                                LocalVariableTableAttribute localVariableTableAttribute,
+                                Disassembler                d
+                            ) throws IOException {
                                 d.printConstantPoolEntry(dis.readShort());
                             }
                         };
                     } else
                     if (s.equals("localvariablearrayindex1")) {
                         operand = new Operand() {
-                            public void disasm(DataInputStream dis, int instructionOffset, LocalVariableTableAttribute localVariableTableAttribute, Disassembler d) throws IOException {
+                            public void disasm(
+                                DataInputStream             dis,
+                                int                         instructionOffset,
+                                LocalVariableTableAttribute localVariableTableAttribute,
+                                Disassembler                d
+                            ) throws IOException {
                                 short index = dis.readByte();
                                 d.print(index);
                                 if (localVariableTableAttribute != null) {
-                                    d.print(" (" + localVariableTableAttribute.find(index, instructionOffset + 2) + ")");
+                                    d.print(
+                                        " ("
+                                        + localVariableTableAttribute.find(index, instructionOffset + 2)
+                                        + ")"
+                                    );
                                 }
                             }
                         };
                     } else
                     if (s.equals("localvariablearrayindex2")) {
                         operand = new Operand() {
-                            public void disasm(DataInputStream dis, int instructionOffset, LocalVariableTableAttribute localVariableTableAttribute, Disassembler d) throws IOException {
+                            public void disasm(
+                                DataInputStream             dis,
+                                int                         instructionOffset,
+                                LocalVariableTableAttribute localVariableTableAttribute,
+                                Disassembler                d
+                            ) throws IOException {
                                 short index = dis.readShort();
                                 d.print(index);
                                 if (localVariableTableAttribute != null) {
-                                    d.print(" (" + localVariableTableAttribute.find(index, instructionOffset + 3) + ")");
+                                    d.print(
+                                        " ("
+                                        + localVariableTableAttribute.find(index, instructionOffset + 3)
+                                        + ")"
+                                    );
                                 }
                             }
                         };
@@ -1153,7 +1222,12 @@ public class Disassembler {
                     if (s.startsWith("localvariablearrayindex_")) {
                         final short index = Short.parseShort(s.substring(s.length() - 1));
                         operand = new Operand() {
-                            public void disasm(DataInputStream dis, int instructionOffset, LocalVariableTableAttribute localVariableTableAttribute, Disassembler d) throws IOException {
+                            public void disasm(
+                                DataInputStream             dis,
+                                int                         instructionOffset,
+                                LocalVariableTableAttribute localVariableTableAttribute,
+                                Disassembler                d
+                            ) throws IOException {
                                 if (localVariableTableAttribute != null) {
                                     d.print("(" + localVariableTableAttribute.find(index, instructionOffset + 1) + ")");
                                 }
@@ -1162,35 +1236,60 @@ public class Disassembler {
                     } else
                     if (s.equals("branchoffset2")) {
                         operand = new Operand() {
-                            public void disasm(DataInputStream dis, int instructionOffset, LocalVariableTableAttribute localVariableTableAttribute, Disassembler d) throws IOException {
+                            public void disasm(
+                                DataInputStream             dis,
+                                int                         instructionOffset,
+                                LocalVariableTableAttribute localVariableTableAttribute,
+                                Disassembler                d
+                            ) throws IOException {
                                 d.print(instructionOffset + dis.readShort());
                             }
                         };
                     } else
                     if (s.equals("branchoffset4")) {
                         operand = new Operand() {
-                            public void disasm(DataInputStream dis, int instructionOffset, LocalVariableTableAttribute localVariableTableAttribute, Disassembler d) throws IOException {
+                            public void disasm(
+                                DataInputStream             dis,
+                                int                         instructionOffset,
+                                LocalVariableTableAttribute localVariableTableAttribute,
+                                Disassembler                d
+                            ) throws IOException {
                                 d.print(instructionOffset + dis.readInt());
                             }
                         };
                     } else
                     if (s.equals("signedbyte")) {
                         operand = new Operand() {
-                            public void disasm(DataInputStream dis, int instructionOffset, LocalVariableTableAttribute localVariableTableAttribute, Disassembler d) throws IOException {
+                            public void disasm(
+                                DataInputStream             dis,
+                                int                         instructionOffset,
+                                LocalVariableTableAttribute localVariableTableAttribute,
+                                Disassembler                d
+                            ) throws IOException {
                                 d.print(dis.readByte());
                             }
                         };
                     } else
                     if (s.equals("unsignedbyte")) {
                         operand = new Operand() {
-                            public void disasm(DataInputStream dis, int instructionOffset, LocalVariableTableAttribute localVariableTableAttribute, Disassembler d) throws IOException {
+                            public void disasm(
+                                DataInputStream             dis,
+                                int                         instructionOffset,
+                                LocalVariableTableAttribute localVariableTableAttribute,
+                                Disassembler                d
+                            ) throws IOException {
                                 d.print(0xff & dis.readByte());
                             }
                         };
                     } else
                     if (s.equals("atype")) {
                         operand = new Operand() {
-                            public void disasm(DataInputStream dis, int instructionOffset, LocalVariableTableAttribute localVariableTableAttribute, Disassembler d) throws IOException {
+                            public void disasm(
+                                DataInputStream             dis,
+                                int                         instructionOffset,
+                                LocalVariableTableAttribute localVariableTableAttribute,
+                                Disassembler                d
+                            ) throws IOException {
                                 byte b = dis.readByte();
                                 d.print(
                                     b ==  4 ? "BOOLEAN" :
@@ -1208,16 +1307,30 @@ public class Disassembler {
                     } else
                     if (s.equals("signedshort")) {
                         operand = new Operand() {
-                            public void disasm(DataInputStream dis, int instructionOffset, LocalVariableTableAttribute localVariableTableAttribute, Disassembler d) throws IOException {
+                            public void disasm(
+                                DataInputStream             dis,
+                                int                         instructionOffset,
+                                LocalVariableTableAttribute localVariableTableAttribute,
+                                Disassembler                d
+                            ) throws IOException {
                                 d.print(dis.readShort());
                             }
                         };
                     } else
                     if (s.equals("tableswitch")) {
                         operand = new Operand() {
-                            public void disasm(DataInputStream dis, int instructionOffset, LocalVariableTableAttribute localVariableTableAttribute, Disassembler d) throws IOException {
+                            public void disasm(
+                                DataInputStream             dis,
+                                int                         instructionOffset,
+                                LocalVariableTableAttribute localVariableTableAttribute,
+                                Disassembler                d
+                            ) throws IOException {
                                 int npads = 3 - (instructionOffset % 4);
-                                for (int i = 0; i < npads; ++i) if (dis.readByte() != (byte) 0) throw new JaninoRuntimeException("Non-zero pad byte in \"tableswitch\"");
+                                for (int i = 0; i < npads; ++i) {
+                                    if (dis.readByte() != (byte) 0) {
+                                        throw new JaninoRuntimeException("Non-zero pad byte in \"tableswitch\"");
+                                    }
+                                }
                                 d.print("default => " + (instructionOffset + dis.readInt()));
                                 int low = dis.readInt();
                                 int high = dis.readInt();
@@ -1230,7 +1343,12 @@ public class Disassembler {
                     } else
                     if (s.equals("lookupswitch")) {
                         operand = new Operand() {
-                            public void disasm(DataInputStream dis, int instructionOffset, LocalVariableTableAttribute localVariableTableAttribute, Disassembler d) throws IOException {
+                            public void disasm(
+                                DataInputStream             dis,
+                                int                         instructionOffset,
+                                LocalVariableTableAttribute localVariableTableAttribute,
+                                Disassembler                d
+                            ) throws IOException {
                                 int npads = 3 - (instructionOffset % 4);
                                 for (int i = 0; i < npads; ++i) {
                                     byte b = dis.readByte();
@@ -1248,11 +1366,27 @@ public class Disassembler {
                     } else
                     if (s.equals("wide")) {
                         operand = new Operand() {
-                            public void disasm(DataInputStream dis, int instructionOffset, LocalVariableTableAttribute localVariableTableAttribute, Disassembler d) throws IOException {
+                            public void disasm(
+                                DataInputStream             dis,
+                                int                         instructionOffset,
+                                LocalVariableTableAttribute localVariableTableAttribute,
+                                Disassembler                d
+                            ) throws IOException {
                                 int subopcode = 0xff & dis.readByte();
                                 Instruction wideInstruction = opcodeToWideInstruction[subopcode];
-                                if (wideInstruction == null) throw new JaninoRuntimeException("Invalid opcode " + subopcode + " after opcode WIDE");
-                                d.disasmInstruction(wideInstruction, dis, instructionOffset, localVariableTableAttribute);
+                                if (wideInstruction == null) {
+                                    throw new JaninoRuntimeException(
+                                        "Invalid opcode "
+                                        + subopcode
+                                        + " after opcode WIDE"
+                                    );
+                                }
+                                d.disasmInstruction(
+                                    wideInstruction,
+                                    dis,
+                                    instructionOffset,
+                                    localVariableTableAttribute
+                                );
                             }
                         };
                     } else
@@ -1356,7 +1490,7 @@ public class Disassembler {
                 this.atBOL = false;
             }
         }
-        private final static char[] INDENTATION_CHARS = new char[] { ' ', ' ' };
+        private static final char[] INDENTATION_CHARS = new char[] { ' ', ' ' };
 
         private boolean atBOL = true;
         private int      indentation = 0;
@@ -1399,19 +1533,19 @@ public class Disassembler {
 
     private static String decodeAccess(short n) {
         StringBuffer sb = new StringBuffer();
-        if ((n & 0x0007) == 0) { sb.append("package "           );               }
-        if ((n & 0x0007) == 1) { sb.append("public "            ); n &= ~0x0007; }
-        if ((n & 0x0007) == 2) { sb.append("private "           ); n &= ~0x0007; }
-        if ((n & 0x0007) == 4) { sb.append("protected "         ); n &= ~0x0007; }
-        if ((n & 0x0008) != 0) { sb.append("static "            ); n &= ~0x0008; }
-        if ((n & 0x0010) != 0) { sb.append("final "             ); n &= ~0x0010; }
+        if ((n & 0x0007) == 0) { sb.append("package ");                          }
+        if ((n & 0x0007) == 1) { sb.append("public ");             n &= ~0x0007; }
+        if ((n & 0x0007) == 2) { sb.append("private ");            n &= ~0x0007; }
+        if ((n & 0x0007) == 4) { sb.append("protected ");          n &= ~0x0007; }
+        if ((n & 0x0008) != 0) { sb.append("static ");             n &= ~0x0008; }
+        if ((n & 0x0010) != 0) { sb.append("final ");              n &= ~0x0010; }
         if ((n & 0x0020) != 0) { sb.append("super/synchronized "); n &= ~0x0020; }
-        if ((n & 0x0040) != 0) { sb.append("volatile "          ); n &= ~0x0040; }
-        if ((n & 0x0080) != 0) { sb.append("transient "         ); n &= ~0x0080; }
-        if ((n & 0x0100) != 0) { sb.append("native "            ); n &= ~0x0100; }
-        if ((n & 0x0200) != 0) { sb.append("interface "         ); n &= ~0x0200; }
-        if ((n & 0x0400) != 0) { sb.append("abstract "          ); n &= ~0x0400; }
-        if ((n & 0x0800) != 0) { sb.append("strict "            ); n &= ~0x0800; }
+        if ((n & 0x0040) != 0) { sb.append("volatile ");           n &= ~0x0040; }
+        if ((n & 0x0080) != 0) { sb.append("transient ");          n &= ~0x0080; }
+        if ((n & 0x0100) != 0) { sb.append("native ");             n &= ~0x0100; }
+        if ((n & 0x0200) != 0) { sb.append("interface ");          n &= ~0x0200; }
+        if ((n & 0x0400) != 0) { sb.append("abstract ");           n &= ~0x0400; }
+        if ((n & 0x0800) != 0) { sb.append("strict ");             n &= ~0x0800; }
         if (n != 0) sb.append("+ " + n + " ");
         return sb.substring(0, sb.length() - 1);
     }

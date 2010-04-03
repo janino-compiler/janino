@@ -258,18 +258,44 @@ public class JLS2Tests extends JaninoTestSuite {
 
         section("7.5.3 Single Static Import Declaration");
         exp(TRUE, "Static field", "import static java.util.Collections.EMPTY_SET; EMPTY_SET instanceof java.util.Set");
-        exp(TRUE, "Static field/duplicate", "import static java.util.Collections.EMPTY_SET; import static java.util.Collections.EMPTY_SET; EMPTY_SET instanceof java.util.Set");
+        exp(TRUE, "Static field/duplicate", (
+            "import static java.util.Collections.EMPTY_SET;"
+            + "import static java.util.Collections.EMPTY_SET;"
+            + "EMPTY_SET instanceof java.util.Set"
+        ));
         scr(EXEC, "Member type", "import static java.util.Map.Entry; Entry e;");
-        scr(EXEC, "Member type/duplicate", "import static java.util.Map.Entry; import static java.util.Map.Entry; Entry e;");
-        scr(COMP, "Member type/inconsistent", "import static java.util.Map.Entry; import static java.security.KeyStore.Entry; Entry e;");
-        exp(TRUE, "Static method", "import static java.util.Arrays.asList; asList(new String[] { \"HELLO\", \"WORLD\" }).size() == 2");
-        exp(TRUE, "Static method/duplicate", "import static java.util.Arrays.asList; import static java.util.Arrays.asList; asList(new String[] { \"HELLO\", \"WORLD\" }).size() == 2");
-        scr(COMP, "Static method/inconsistent", "import static java.lang.Integer.decode; import static java.lang.Long.decode; decode(\"4000000000\");");
+        scr(EXEC, "Member type/duplicate", (
+            "import static java.util.Map.Entry;"
+            + "import static java.util.Map.Entry;"
+            + "Entry e;"
+        ));
+        scr(COMP, "Member type/inconsistent", (
+            "import static java.util.Map.Entry;"
+            + "import static java.security.KeyStore.Entry;"
+            + "Entry e;"
+        ));
+        exp(TRUE, "Static method", (
+            "import static java.util.Arrays.asList;"
+            + "asList(new String[] { \"HELLO\", \"WORLD\" }).size() == 2"
+        ));
+        exp(TRUE, "Static method/duplicate", (
+            "import static java.util.Arrays.asList;"
+            + "import static java.util.Arrays.asList;"
+            + "asList(new String[] { \"HELLO\", \"WORLD\" }).size() == 2"
+        ));
+        scr(COMP, "Static method/inconsistent", (
+            "import static java.lang.Integer.decode;"
+            + "import static java.lang.Long.decode;"
+            + "decode(\"4000000000\");"
+        ));
 
         section("7.5.4 Static-Import-on-Demand Declaration");
         exp(TRUE, "Static field", "import static java.util.Collections.*; EMPTY_SET instanceof java.util.Set");
         scr(EXEC, "Member type", "import static java.util.Map.*; Entry e;");
-        exp(TRUE, "Static method", "import static java.util.Arrays.*; asList(new String[] { \"HELLO\", \"WORLD\" }).size() == 2");
+        exp(TRUE, "Static method", (
+            "import static java.util.Arrays.*;"
+            + "asList(new String[] { \"HELLO\", \"WORLD\" }).size() == 2"
+        ));
 
         section("8 Classes");
 
@@ -326,7 +352,9 @@ public class JLS2Tests extends JaninoTestSuite {
         exp(COMP, "3b", "new java.util.List()");
         exp(COMP, "3c", "new other_package.PackageClass()");
         exp(COMP, "3d", "new java.util.AbstractList()");
-        exp(TRUE, "4a", "new other_package.Foo(3).new PublicMemberClass() instanceof other_package.Foo.PublicMemberClass");
+        exp(TRUE, "4a", (
+            "new other_package.Foo(3).new PublicMemberClass() instanceof other_package.Foo.PublicMemberClass"
+        ));
         exp(PARS, "4b", "new other_package.Foo(3).new Foo.PublicMemberClass()");
         exp(PARS, "4c", "new other_package.Foo(3).new other_package.Foo.PublicMemberClass()");
         exp(COMP, "4d", "new other_package.Foo(3).new PackageMemberClass()");
@@ -411,26 +439,38 @@ public class JLS2Tests extends JaninoTestSuite {
         scr(TRUE, "1", "int i = 7; i++; return i == 8;");
         scr(TRUE, "2", "Integer i = new Integer(7); i++; return i.intValue() == 8;");
         scr(TRUE, "3", "int i = 7; return i == 7 && i++ == 7 && i == 8;");
-        scr(TRUE, "4", "Integer i = new Integer(7); return i.intValue() == 7 && (i++).intValue() == 7 && i.intValue() == 8;");
+        scr(TRUE, "4", (
+            "Integer i = new Integer(7);"
+            + "return i.intValue() == 7 && (i++).intValue() == 7 && i.intValue() == 8;"
+        ));
 
         section("15.14.3 Postfix Decrement Operator --");
         scr(TRUE, "1", "int i = 7; i--; return i == 6;");
         scr(TRUE, "2", "Integer i = new Integer(7); i--; return i.intValue() == 6;");
         scr(TRUE, "3", "int i = 7; return i == 7 && i-- == 7 && i == 6;");
-        scr(TRUE, "4", "Integer i = new Integer(7); return i.intValue() == 7 && (i--).intValue() == 7 && i.intValue() == 6;");
+        scr(TRUE, "4", (
+            "Integer i = new Integer(7);"
+            + "return i.intValue() == 7 && (i--).intValue() == 7 && i.intValue() == 6;"
+        ));
 
         section("15.15 Unary Operators");
         section("15.15.1 Prefix Increment Operator ++");
         scr(TRUE, "1", "int i = 7; ++i; return i == 8;");
         scr(TRUE, "2", "Integer i = new Integer(7); ++i; return i.intValue() == 8;");
         scr(TRUE, "3", "int i = 7; return i == 7 && ++i == 8 && i == 8;");
-        scr(TRUE, "4", "Integer i = new Integer(7); return i.intValue() == 7 && (++i).intValue() == 8 && i.intValue() == 8;");
+        scr(TRUE, "4", (
+            "Integer i = new Integer(7);"
+            + "return i.intValue() == 7 && (++i).intValue() == 8 && i.intValue() == 8;"
+        ));
 
         section("15.15.2 Prefix Decrement Operator --");
         scr(TRUE, "1", "int i = 7; --i; return i == 6;");
         scr(TRUE, "2", "Integer i = new Integer(7); --i; return i.intValue() == 6;");
         scr(TRUE, "3", "int i = 7; return i == 7 && --i == 6 && i == 6;");
-        scr(TRUE, "4", "Integer i = new Integer(7); return i.intValue() == 7 && (--i).intValue() == 6 && i.intValue() == 6;");
+        scr(TRUE, "4", (
+            "Integer i = new Integer(7);"
+            + "return i.intValue() == 7 && (--i).intValue() == 6 && i.intValue() == 6;"
+        ));
 
         section("15.15.3 Unary Plus Operator +");
         exp(TRUE, "1", "new Integer(+new Integer(7)).intValue() == 7");
@@ -447,15 +487,17 @@ public class JLS2Tests extends JaninoTestSuite {
         section("15.18 Additive Operators");
         section("15.18.1 String Concatenation Operator +");
         section("15.18.1.3 Examples of String Concatenation");
-        exp(TRUE, "1", "(\"The square root of 6.25 is \" + Math.sqrt(6.25)).equals(\"The square root of 6.25 is 2.5\")");
+        exp(TRUE, "1", (
+            "(\"The square root of 6.25 is \" + Math.sqrt(6.25)).equals(\"The square root of 6.25 is 2.5\")"
+        ));
         exp(TRUE, "2", "1 + 2 + \" fiddlers\" == \"3 fiddlers\"");
         exp(TRUE, "3", "\"fiddlers \" + 1 + 2 == \"fiddlers 12\"");
         for (int i = 65530; i <= 65537; ++i) {
             char[] ca = new char[i];
             Arrays.fill(ca, 'x');
             String s1 = new String(ca);
-            exp(TRUE, "4/" + i, "\"" + s1 +"\".length() == " + i);
-            exp(TRUE, "5/" + i, "(\"" + s1 +"\" + \"XXX\").length() == " + (i + 3));
+            exp(TRUE, "4/" + i, "\"" + s1 + "\".length() == " + i);
+            exp(TRUE, "5/" + i, "(\"" + s1 + "\" + \"XXX\").length() == " + (i + 3));
         }
 
         section("15.20 Relational Operators");

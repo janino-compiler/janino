@@ -36,8 +36,10 @@ import java.util.*;
  * {@link IteratorCollection} will iterate over its delegate only once.
  */
 public class IteratorCollection extends AbstractCollection {
-    private final Iterator iterator; // The delegate.
-    private final List     elements = new ArrayList(); // Lazily-filled collection of the elements delivered by the delegate.
+    /** The delegate. */
+    private final Iterator iterator;
+    /** Lazily-filled collection of the elements delivered by the delegate. */
+    private final List     elements = new ArrayList();
 
     public IteratorCollection(Iterator iterator) {
         this.iterator = iterator;

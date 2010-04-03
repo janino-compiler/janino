@@ -84,27 +84,27 @@ public class DemoBase {
 
         if (brackets == 0) {
             // "Class.forName("C")" does not work.
-            if (s.equals("void"   )) return void.class;
+            if (s.equals("void"))    return void.class;
             if (s.equals("boolean")) return boolean.class;
-            if (s.equals("char"   )) return char.class;
-            if (s.equals("byte"   )) return byte.class;
-            if (s.equals("short"  )) return short.class;
-            if (s.equals("int"    )) return int.class;
-            if (s.equals("long"   )) return long.class;
-            if (s.equals("float"  )) return float.class;
-            if (s.equals("double" )) return double.class;
+            if (s.equals("char"))    return char.class;
+            if (s.equals("byte"))    return byte.class;
+            if (s.equals("short"))   return short.class;
+            if (s.equals("int"))     return int.class;
+            if (s.equals("long"))    return long.class;
+            if (s.equals("float"))   return float.class;
+            if (s.equals("double"))  return double.class;
         }
 
         // Automagically convert primitive type names.
-        if (s.equals("void"   )) { s = "V"; } else
+        if (s.equals("void"))    { s = "V"; } else
         if (s.equals("boolean")) { s = "Z"; } else
-        if (s.equals("char"   )) { s = "C"; } else
-        if (s.equals("byte"   )) { s = "B"; } else
-        if (s.equals("short"  )) { s = "S"; } else
-        if (s.equals("int"    )) { s = "I"; } else
-        if (s.equals("long"   )) { s = "J"; } else
-        if (s.equals("float"  )) { s = "F"; } else
-        if (s.equals("double" )) { s = "D"; }
+        if (s.equals("char"))    { s = "C"; } else
+        if (s.equals("byte"))    { s = "B"; } else
+        if (s.equals("short"))   { s = "S"; } else
+        if (s.equals("int"))     { s = "I"; } else
+        if (s.equals("long"))    { s = "J"; } else
+        if (s.equals("float"))   { s = "F"; } else
+        if (s.equals("double"))  { s = "D"; }
 
         while (--brackets >= 0) s = '[' + s;
         try {

@@ -26,8 +26,6 @@
 
 package org.codehaus.commons.compiler;
 
-import java.io.Reader;
-
 /**
  * A simplified Java&trade; compiler that can compile only a single compilation unit. (A "compilation unit" is the
  * document stored in a ".java" file.)
@@ -56,6 +54,6 @@ public interface ISimpleCompiler extends ICookable {
      * <p>
      * This method must only be called after exactly on of the {@link #cook(String, java.io.Reader)} methods was called.
      */
-    public abstract ClassLoader getClassLoader();
+    ClassLoader getClassLoader();
 
 }

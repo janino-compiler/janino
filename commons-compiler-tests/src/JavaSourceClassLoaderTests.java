@@ -98,7 +98,12 @@ public class JavaSourceClassLoaderTests extends TestCase {
 //
 ////        assertNotNull("Remove one class file", classFileMap1.remove("org/codehaus/janino/Compiler.class"));
 //
-//        b.beginReporting("Loading class \"" + className + "\" again, but with the class files created during the first compilation being available, i.e. no source files should be recompiled");
+//        b.beginReporting(
+//            "Loading class \""
+//            + className
+//            + "\" again, but with the class files created during the first compilation being available, "
+//            + "i.e. no source files should be recompiled"
+//        );
 //        MapResourceCreator classFileResources2 = new MapResourceCreator();
 //        MapResourceFinder classFileFinder = new MapResourceFinder(classFileMap1);
 //        classFileFinder.setLastModified(System.currentTimeMillis());

@@ -55,7 +55,7 @@ import org.codehaus.commons.compiler.*;
  * );
  * System.out.println("1 + 2 = " + f.bar(1, 2)); // Evaluate the expression
  * </pre>
- * Notice: The <code>interfaceToImplement</code> must either be declared <code>public</code>,
+ * Notice: The {@code interfaceToImplement} must either be declared {@code public},
  * or with package scope in the root package (i.e. "no" package).
  * <p>
  * On my system (Intel P4, 2 GHz, MS Windows XP, JDK 1.4.1), expression "x + 1"

@@ -43,7 +43,7 @@ import org.codehaus.janino.util.enumerator.*;
  * instantly.
  */
 public class SimpleCompiler extends Cookable implements ISimpleCompiler {
-    private final static boolean DEBUG = false;
+    private static final boolean DEBUG = false;
 
     private ClassLoader parentClassLoader = Thread.currentThread().getContextClassLoader();
     private Class[]     optionalAuxiliaryClasses = null;
@@ -259,7 +259,13 @@ public class SimpleCompiler extends Cookable implements ISimpleCompiler {
             // Check whether the auxiliary class is conflicting with this ClassLoader.
             try {
                 Class c2 = super.loadClass(c.getName(), false);
-                if (c2 != c) throw new JaninoRuntimeException("Trying to add an auxiliary class \"" + c.getName() + "\" while another class with the same name is already loaded");
+                if (c2 != c) {
+                    throw new JaninoRuntimeException(
+                        "Trying to add an auxiliary class \""
+                        + c.getName()
+                        + "\" while another class with the same name is already loaded"
+                    );
+                }
             } catch (ClassNotFoundException ex) {
                 ;
             }
@@ -297,7 +303,9 @@ public class SimpleCompiler extends Cookable implements ISimpleCompiler {
     }
 
     public ClassLoader getClassLoader() {
-        if (this.getClass() != SimpleCompiler.class) throw new IllegalStateException("Must not be called on derived instances");
+        if (this.getClass() != SimpleCompiler.class) {
+            throw new IllegalStateException("Must not be called on derived instances");
+        }
         if (this.result == null) throw new IllegalStateException("Must only be called after \"cook()\"");
         return this.result;
     }
@@ -313,7 +321,9 @@ public class SimpleCompiler extends Cookable implements ISimpleCompiler {
         if (!(o instanceof SimpleCompiler)) return false;
         SimpleCompiler that = (SimpleCompiler) o;
         if (this.getClass() != that.getClass()) return false;
-        if (this.result == null || that.result == null) throw new IllegalStateException("Equality can only be checked after cooking");
+        if (this.result == null || that.result == null) {
+            throw new IllegalStateException("Equality can only be checked after cooking");
+        }
         return this.result.equals(that.result);
     }
 
@@ -338,7 +348,13 @@ public class SimpleCompiler extends Cookable implements ISimpleCompiler {
         } catch (ClassNotFoundException ex) {
             throw new JaninoRuntimeException("Loading IClass \"" + optionalClass.getName() + "\": " + ex);
         }
-        if (iClass == null) throw new JaninoRuntimeException("Cannot load class \"" + optionalClass.getName() + "\" through the given ClassLoader");
+        if (iClass == null) {
+            throw new JaninoRuntimeException(
+                "Cannot load class \""
+                + optionalClass.getName()
+                + "\" through the given ClassLoader"
+            );
+        }
 
         return new Java.SimpleType(location, iClass);
     }
@@ -359,7 +375,7 @@ public class SimpleCompiler extends Cookable implements ISimpleCompiler {
 
     /**
      * Compile the given compilation unit. (A "compilation unit" is typically the contents
-     * of a Java<sup>TM</sup> source file.)
+     * of a Java&trade; source file.)
      *
      * @param compilationUnit The parsed compilation unit
      * @param debuggingInformation What kind of debugging information to generate in the class file

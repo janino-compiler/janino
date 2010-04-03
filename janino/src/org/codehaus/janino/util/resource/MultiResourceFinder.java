@@ -44,7 +44,7 @@ public class MultiResourceFinder extends ResourceFinder {
 
     // Implement ResourceFinder.
 
-    public Resource findResource(String resourceName) {
+    public final Resource findResource(String resourceName) {
         for (Iterator it = this.resourceFinders.iterator(); it.hasNext();) {
             ResourceFinder rf = (ResourceFinder) it.next();
             Resource resource = rf.findResource(resourceName);

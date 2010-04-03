@@ -126,7 +126,13 @@ public class Compiler {
                 try {
                     debuggingInformation = new EnumeratorSet(DebuggingInformation.class, arg.substring(3));
                 } catch (EnumeratorFormatException ex) {
-                    System.err.println("Invalid debugging option \"" + arg + "\", only \"" + DebuggingInformation.ALL + "\" allowed");
+                    System.err.println(
+                        "Invalid debugging option \""
+                        + arg
+                        + "\", only \""
+                        + DebuggingInformation.ALL
+                        + "\" allowed"
+                    );
                     System.exit(1);
                 }
             } else
@@ -204,13 +210,19 @@ public class Compiler {
         "                            seems up-to-date",
         "  -help",
         "",
-        "The default encoding in this environment is \"" + new InputStreamReader(new ByteArrayInputStream(new byte[0])).getEncoding() + "\".",
+        (
+            "The default encoding in this environment is \""
+            + new InputStreamReader(new ByteArrayInputStream(new byte[0])).getEncoding()
+            + "\"."
+        ),
     };
 
     private /*final*/ ResourceFinder    classFileFinder;
-    public static final ResourceFinder  FIND_NEXT_TO_SOURCE_FILE = null; // Special value for "classFileResourceFinder".
+    /** Special value for "classFileResourceFinder". */
+    public static final ResourceFinder  FIND_NEXT_TO_SOURCE_FILE = null;
     private /*final*/ ResourceCreator   classFileCreator;
-    public static final ResourceCreator CREATE_NEXT_TO_SOURCE_FILE = null; // Special value for "classFileResourceCreator".
+    /** Special value for "classFileResourceCreator". */
+    public static final ResourceCreator CREATE_NEXT_TO_SOURCE_FILE = null;
     private /*final*/ String            optionalCharacterEncoding;
     private /*final*/ Benchmark         benchmark;
     private /*final*/ EnumeratorSet     debuggingInformation;
@@ -221,7 +233,7 @@ public class Compiler {
     private final ArrayList    parsedCompilationUnits = new ArrayList(); // UnitCompiler
 
     /**
-     * Initialize a Java<sup>TM</sup> compiler with the given parameters.
+     * Initialize a Java&trade; compiler with the given parameters.
      * <p>
      * Classes are searched in the following order:
      * <ul>
@@ -276,7 +288,7 @@ public class Compiler {
         boolean         rebuild
     ) {
         this(
-            new PathResourceFinder(                   // sourceFinder
+            new PathResourceFinder(                       // sourceFinder
                 optionalSourcePath == null ? classPath : optionalSourcePath
             ),
             IClassLoader.createJavacLikePathIClassLoader( // iClassLoader
@@ -284,38 +296,40 @@ public class Compiler {
                 optionalExtDirs,
                 classPath
             ),
-            (                                         // classFileFinder
+            (                                             // classFileFinder
                 rebuild ? ResourceFinder.EMPTY_RESOURCE_FINDER :
                 destinationDirectory == Compiler.NO_DESTINATION_DIRECTORY ? Compiler.FIND_NEXT_TO_SOURCE_FILE :
                 new DirectoryResourceFinder(destinationDirectory)
             ),
-            (                                         // classFileCreator
+            (                                             // classFileCreator
                 destinationDirectory == Compiler.NO_DESTINATION_DIRECTORY ? Compiler.CREATE_NEXT_TO_SOURCE_FILE :
                 new DirectoryResourceCreator(destinationDirectory)
             ),
-            optionalCharacterEncoding,                // optionalCharacterEncoding
-            verbose,                                  // verbose
-            debuggingInformation,                     // debuggingInformation
-            new FilterWarningHandler(                 // optionalWarningHandler
+            optionalCharacterEncoding,                    // optionalCharacterEncoding
+            verbose,                                      // verbose
+            debuggingInformation,                         // debuggingInformation
+            new FilterWarningHandler(                     // optionalWarningHandler
                 warningHandlePatterns,
-                new SimpleWarningHandler() // <= Anonymous class here is complicated because the enclosing instance is not fully initialized yet
+                new SimpleWarningHandler() // <= Anonymous class here is complicated because the enclosing instance is
+                                           // not fully initialized yet
             )
         );
 
         this.benchmark.report("*** JANINO - an embedded compiler for the Java(TM) programming language");
         this.benchmark.report("*** For more information visit http://janino.codehaus.org");
-        this.benchmark.report("Source path",             optionalSourcePath           );
-        this.benchmark.report("Class path",              classPath                    );
-        this.benchmark.report("Ext dirs",                optionalExtDirs              );
-        this.benchmark.report("Boot class path",         optionalBootClassPath        );
-        this.benchmark.report("Destination directory",   destinationDirectory         );
-        this.benchmark.report("Character encoding",      optionalCharacterEncoding    );
-        this.benchmark.report("Verbose",                 new Boolean(verbose)         );
-        this.benchmark.report("Debugging information",   debuggingInformation         );
+        this.benchmark.report("Source path",             optionalSourcePath);
+        this.benchmark.report("Class path",              classPath);
+        this.benchmark.report("Ext dirs",                optionalExtDirs);
+        this.benchmark.report("Boot class path",         optionalBootClassPath);
+        this.benchmark.report("Destination directory",   destinationDirectory);
+        this.benchmark.report("Character encoding",      optionalCharacterEncoding);
+        this.benchmark.report("Verbose",                 new Boolean(verbose));
+        this.benchmark.report("Debugging information",   debuggingInformation);
         this.benchmark.report("Warning handle patterns", warningHandlePatterns);
-        this.benchmark.report("Rebuild",                 new Boolean(rebuild)         );
+        this.benchmark.report("Rebuild",                 new Boolean(rebuild));
     }
-    public static final File NO_DESTINATION_DIRECTORY = null; // Backwards compatibility -- previously, "null" was officially documented
+    /** Backwards compatibility -- previously, "null" was officially documented. */
+    public static final File NO_DESTINATION_DIRECTORY = null;
     public static class SimpleWarningHandler implements WarningHandler {
         public void handleWarning(String handle, String message, Location optionalLocation) {
             StringBuffer sb = new StringBuffer();
@@ -390,7 +404,7 @@ public class Compiler {
     }
 
     /**
-     * Reads a set of Java<sup>TM</sup> compilation units (a.k.a. "source
+     * Reads a set of Java&trade; compilation units (a.k.a. "source
      * files") from the file system, compiles them into a set of "class
      * files" and stores these in the file system. Additional source files are
      * parsed and compiled on demand through the "source path" set of
@@ -414,10 +428,11 @@ public class Compiler {
      * Compile errors are reported as described at
      * {@link #setCompileErrorHandler(UnitCompiler.ErrorHandler)}.
      *
-     * @param sourceFiles Contain the compilation units to compile
-     * @return <code>true</code> for backwards compatibility (return value can safely be ignored)
-     * @throws CompileException Fatal compilation error, or the {@link CompileException} thrown be the installed compile error handler
-     * @throws IOException Occurred when reading from the <code>sourceFiles</code>
+     * @param sourceFiles       Contain the compilation units to compile
+     * @return                  <code>true</code> for backwards compatibility (return value can safely be ignored)
+     * @throws CompileException Fatal compilation error, or the {@link CompileException} thrown be the installed compile
+     *                          error handler
+     * @throws IOException      Occurred when reading from the <code>sourceFiles</code>
      */
     public boolean compile(File[] sourceFiles) throws CompileException, IOException {
         this.benchmark.report("Source files", sourceFiles);
@@ -489,7 +504,13 @@ public class Compiler {
                 }
 
                 // Store the compiled classes and interfaces into class files.
-                this.benchmark.beginReporting("Storing " + classFiles.length + " class file(s) resulting from compilation unit \"" + sourceFile + "\"");
+                this.benchmark.beginReporting(
+                    "Storing "
+                    + classFiles.length
+                    + " class file(s) resulting from compilation unit \""
+                    + sourceFile
+                    + "\""
+                );
                 try {
                     for (int j = 0; j < classFiles.length; ++j) {
                         this.storeClassFile(classFiles[j], sourceFile);
@@ -553,7 +574,10 @@ public class Compiler {
             return new File(optionalDestinationDirectory, ClassFile.getClassFileResourceName(className));
         } else {
             int idx = className.lastIndexOf('.');
-            return new File(sourceFile.getParentFile(), ClassFile.getClassFileResourceName(className.substring(idx + 1)));
+            return new File(
+                sourceFile.getParentFile(),
+                ClassFile.getClassFileResourceName(className.substring(idx + 1))
+            );
         }
     }
 
@@ -602,12 +626,18 @@ public class Compiler {
                 classFile.store(os);
             }
         } catch (IOException ex) {
-            try { os.close(); } catch (IOException e) {}
+            try { os.close(); } catch (IOException e) { }
             os = null;
-            if (!rc.deleteResource(classFileResourceName)) throw new IOException("Could not delete incompletely written class file \"" + classFileResourceName + "\"");
+            if (!rc.deleteResource(classFileResourceName)) {
+                throw new IOException(
+                    "Could not delete incompletely written class file \""
+                    + classFileResourceName
+                    + "\""
+                );
+            }
             throw ex;
         } finally {
-            if (os != null) try { os.close(); } catch (IOException e) {}
+            if (os != null) try { os.close(); } catch (IOException e) { }
         }
     }
 
@@ -682,7 +712,9 @@ public class Compiler {
             // Find an existing class file.
             Resource classFileResource;
             if (Compiler.this.classFileFinder != Compiler.FIND_NEXT_TO_SOURCE_FILE) {
-                classFileResource = Compiler.this.classFileFinder.findResource(ClassFile.getClassFileResourceName(className));
+                classFileResource = Compiler.this.classFileFinder.findResource(
+                    ClassFile.getClassFileResourceName(className)
+                );
             } else {
                 if (!(sourceResource instanceof FileResource)) return null;
                 File classFile = new File(
@@ -765,7 +797,7 @@ public class Compiler {
                 } catch (IOException ex) {
                     throw new ClassNotFoundException("Opening class file resource \"" + classFileResource + "\"", ex);
                 } finally {
-                    if (is != null) try { is.close(); } catch (IOException e) {}
+                    if (is != null) try { is.close(); } catch (IOException e) { }
                 }
                 ClassFileIClass result = new ClassFileIClass(
                     cf,                       // classFile

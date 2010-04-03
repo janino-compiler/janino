@@ -68,12 +68,14 @@ public class AstGeneratorVisitorTest extends TestCase {
         } else {
             ZipFile zip = new ZipFile(f);
             int i = 0;
-            for(Enumeration entries = zip.entries(); entries.hasMoreElements();) {
-                ZipEntry e = (ZipEntry)entries.nextElement();
+            for (Enumeration entries = zip.entries(); entries.hasMoreElements();) {
+                ZipEntry e = (ZipEntry) entries.nextElement();
                 String n = e.getName();
                 if (n.endsWith(".java") && n.startsWith("src/java")) {
                     n = n.substring(0, n.length() - 5).replace('/', '.');
-                    suite.addTest(new AstGeneratorVisitorTest(n, new URL("jar:file:"+zip.getName()+"!/"+e.getName())));
+                    suite.addTest(
+                        new AstGeneratorVisitorTest(n, new URL("jar:file:" + zip.getName() + "!/" + e.getName()))
+                    );
                     i++;
                 }
             }
@@ -103,8 +105,7 @@ public class AstGeneratorVisitorTest extends TestCase {
         } finally {
              try {
                  is.close();
-             } catch(Exception ex) {
-             }
+             } catch (Exception ex) { }
             long l2 = System.currentTimeMillis();
             System.err.println("  parse " + (l2 - l1) / 1000f);
 
@@ -130,10 +131,11 @@ public class AstGeneratorVisitorTest extends TestCase {
         AstCompilationUnitGenerator gen = null;
         try {
             SimpleCompiler comp = new SimpleCompiler(scanner, getClass().getClassLoader());
-            gen = (AstCompilationUnitGenerator) comp.getClassLoader().loadClass("org.codehaus.janino."+GEN_NAME).newInstance();
-
-        } catch(Throwable ex) {
-            dumpSource(name+"Gen", sw2.toString());
+            gen = (AstCompilationUnitGenerator) comp.getClassLoader().loadClass(
+                "org.codehaus.janino." + GEN_NAME
+            ).newInstance();
+        } catch (Throwable ex) {
+            dumpSource(name + "Gen", sw2.toString());
             throw ex;
 
         } finally {
@@ -145,8 +147,8 @@ public class AstGeneratorVisitorTest extends TestCase {
         Java.CompilationUnit cu2;
         try {
             cu2 = gen.generate();
-        } catch(Throwable ex) {
-            dumpSource(name+"Gen", sw2.toString());
+        } catch (Throwable ex) {
+            dumpSource(name + "Gen", sw2.toString());
             throw ex;
 
         } finally {
@@ -158,7 +160,7 @@ public class AstGeneratorVisitorTest extends TestCase {
         UnparseVisitor uv2 = new UnparseVisitor(sw3);
         uv2.unparseCompilationUnit(cu2);
 
-        assertEquals("Invalid AST "+name, sw1.toString(), sw3.toString());
+        assertEquals("Invalid AST " + name, sw1.toString(), sw3.toString());
     }
 
     private void dumpSource(String name, String source) throws IOException {
@@ -168,7 +170,7 @@ public class AstGeneratorVisitorTest extends TestCase {
     }
 
     public String getName() {
-        return super.getName()+" : "+name;
+        return super.getName() + " : " + name;
     }
 
 }

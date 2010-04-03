@@ -46,7 +46,7 @@ public class JaninoTestSuite extends StructuredTestSuite {
     public static final CompileAndExecuteTest.Mode COOK = new CompileAndExecuteTest.Mode();
     /** The test is expected to compile and execute successfully */
     public static final CompileAndExecuteTest.Mode EXEC = new CompileAndExecuteTest.Mode();
-    /** The test is expected to compile and execute successfully, and return <code>true</code> */
+    /** The test is expected to compile and execute successfully, and return {@code true} */
     public static final CompileAndExecuteTest.Mode TRUE = new CompileAndExecuteTest.Mode();
 
     public JaninoTestSuite(String name, ICompilerFactory compilerFactory) {
@@ -56,14 +56,14 @@ public class JaninoTestSuite extends StructuredTestSuite {
 
     /**
      * Add a test case that scans, parses and compiles an expression, and verifies that it
-     * evaluates to <code>true</code>.
+     * evaluates to {@code true}.
      *
      * <table>
-     *   <tr><th><code>mode</code></th><th>Meaning</th></tr>
-     *   <tr><td>COMP</td><td>The test is expected to throw a CompileException</tr>
-     *   <tr><td>COOK</td><td>The test is expected to compile successfully, but is not executed</tr>
-     *   <tr><td>EXEC</td><td>The test is expected to compile and execute successfully</tr>
-     *   <tr><td>TRUE</td><td>The test is expected to compile and execute successfully, and return <code>true</code></tr>
+     *   <tr><th>{@code mode}</th><th>Meaning</th></tr>
+     *   <tr><td>COMP</td><td>The test is expected to throw a CompileException</td></tr>
+     *   <tr><td>COOK</td><td>The test is expected to compile successfully, but is not executed</td></tr>
+     *   <tr><td>EXEC</td><td>The test is expected to compile and execute successfully</td></tr>
+     *   <tr><td>TRUE</td><td>The test is expected to compile and execute successfully, and return {@code true}</tr>
      * </table>
      *
      * @param name The name of the JUnit test case
@@ -84,7 +84,10 @@ public class JaninoTestSuite extends StructuredTestSuite {
 
             this.expressionEvaluator.setExpressionType(mode == TRUE ? boolean.class : IExpressionEvaluator.ANY_TYPE);
         }
-        public ExpressionTest setDefaultImports(String[] defaultImports) { this.expressionEvaluator.setDefaultImports(defaultImports); return this; }
+        public ExpressionTest setDefaultImports(String[] defaultImports) {
+            this.expressionEvaluator.setDefaultImports(defaultImports);
+            return this;
+        }
 
         protected void compile() throws Exception {
             this.expressionEvaluator.cook(this.expression);
@@ -97,14 +100,14 @@ public class JaninoTestSuite extends StructuredTestSuite {
 
     /**
      * Add a test case that scans, parses, compiles and executes a Janino script, and verifies
-     * that it returns <code>true</code>.
+     * that it returns {@code true}.
      *
      * <table>
-     *   <tr><th><code>mode</code></th><th>Meaning</th></tr>
+     *   <tr><th>{@code mode}</th><th>Meaning</th></tr>
      *   <tr><td>COMP</td><td>The test is expected to throw a CompileException</tr>
      *   <tr><td>COOK</td><td>The test is expected to compile successfully, but is not executed</tr>
      *   <tr><td>EXEC</td><td>The test is expected to compile and execute successfully</tr>
-     *   <tr><td>TRUE</td><td>The test is expected to compile and execute successfully, and return <code>true</code></tr>
+     *   <tr><td>TRUE</td><td>The test is expected to compile and execute successfully, and return {@code true}</tr>
      * </table>
      *
      * @param name The name of the JUnit test case
@@ -125,7 +128,10 @@ public class JaninoTestSuite extends StructuredTestSuite {
 
             this.scriptEvaluator.setReturnType(mode == TRUE ? boolean.class : void.class);
         }
-        public ScriptTest setDefaultImports(String[] defaultImports) { this.scriptEvaluator.setDefaultImports(defaultImports); return this; }
+        public ScriptTest setDefaultImports(String[] defaultImports) {
+            this.scriptEvaluator.setDefaultImports(defaultImports);
+            return this;
+        }
 
         protected void compile() throws Exception {
             this.scriptEvaluator.cook(this.script);
@@ -137,16 +143,15 @@ public class JaninoTestSuite extends StructuredTestSuite {
     }
 
     /**
-     * Add a test case that scans, parses and compiles a class body, invokes its
-     * <code>public static boolean main()</code> method and verifies that it returns
-     * <code>true</code>.
+     * Add a test case that scans, parses and compiles a class body, invokes its {@code public static boolean main()}
+     * method and verifies that it returns {@code true}.
      *
      * <table>
-     *   <tr><th><code>mode</code></th><th>Meaning</th></tr>
+     *   <tr><th>{@code mode}</th><th>Meaning</th></tr>
      *   <tr><td>COMP</td><td>The test is expected to throw a CompileException</tr>
      *   <tr><td>COOK</td><td>The test is expected to compile successfully, but is not executed</tr>
      *   <tr><td>EXEC</td><td>The test is expected to compile and execute successfully</tr>
-     *   <tr><td>TRUE</td><td>The test is expected to compile and execute successfully, and return <code>true</code></tr>
+     *   <tr><td>TRUE</td><td>The test is expected to compile and execute successfully, and return {@code true}</tr>
      * </table>
      *
      * @param name The name of the JUnit test case
@@ -181,20 +186,19 @@ public class JaninoTestSuite extends StructuredTestSuite {
     }
 
     /**
-     * Add a test case that scans, parses and compiles a compilation unit, then calls the
-     * <code>public static boolean test()</code> method of the named class, and verifies that it
-     * returns <code>true</code>.
+     * Add a test case that scans, parses and compiles a compilation unit, then calls the {@code public static boolean
+     * test()} method of the named class, and verifies that it returns {@code true}.
      *
      * <table>
-     *   <tr><th><code>mode</code></th><th>Meaning</th></tr>
+     *   <tr><th>{@code mode}</th><th>Meaning</th></tr>
      *   <tr><td>COMP</td><td>The test is expected to throw a CompileException</tr>
      *   <tr><td>COOK</td><td>The test is expected to compile successfully, but is not executed</tr>
      *   <tr><td>EXEC</td><td>The test is expected to compile and execute successfully</tr>
-     *   <tr><td>TRUE</td><td>The test is expected to compile and execute successfully, and return <code>true</code></tr>
+     *   <tr><td>TRUE</td><td>The test is expected to compile and execute successfully, and return {@code true}</tr>
      * </table>
      *
      * @param name The name of the JUnit test case
-     * @param className The name of the class with the <code>public static boolean test()</code> method
+     * @param className The name of the class with the {@code public static boolean test()} method
      */
     protected SimpleCompilerTest sim(
         SimpleCompilerTest.Mode mode,
@@ -253,10 +257,10 @@ public class JaninoTestSuite extends StructuredTestSuite {
      * A test case that calls its abstract methods {@link #compile()}, then {@link #execute()}, and
      * verifies that they throw exceptions and return results as expected.
      */
-    static abstract class CompileAndExecuteTest extends BenchmarkingTestCase {
+    abstract static class CompileAndExecuteTest extends BenchmarkingTestCase {
         protected final Mode mode;
 
-        public static class Mode { private Mode() {}}
+        public static final class Mode { private Mode() {} }
 
         public CompileAndExecuteTest(String name, Mode mode) {
             super(name);

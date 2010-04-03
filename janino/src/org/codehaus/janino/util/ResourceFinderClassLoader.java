@@ -42,7 +42,7 @@ import org.codehaus.janino.util.resource.ResourceFinder;
  * to find ".class" files.
  */
 public class ResourceFinderClassLoader extends ClassLoader {
-    private final static boolean DEBUG = false;
+    private static final boolean DEBUG = false;
 
     private final ResourceFinder resourceFinder;
 
@@ -69,7 +69,12 @@ public class ResourceFinderClassLoader extends ClassLoader {
         try {
             is = classFileResource.open();
         } catch (IOException ex) {
-            throw new JaninoRuntimeException("Opening class file resource \"" + classFileResource.getFileName() + "\": " + ex.getMessage());
+            throw new JaninoRuntimeException(
+                "Opening class file resource \""
+                + classFileResource.getFileName()
+                + "\": "
+                + ex.getMessage()
+            );
         }
 
         // Read bytecode from the resource into a byte array.
@@ -84,7 +89,7 @@ public class ResourceFinderClassLoader extends ClassLoader {
         } catch (IOException ex) {
             throw new ClassNotFoundException("Reading class file from \"" + classFileResource + "\"", ex);
         } finally {
-            try { is.close(); } catch (IOException ex) {}
+            try { is.close(); } catch (IOException ex) { }
         }
         byte[] ba = baos.toByteArray();
 

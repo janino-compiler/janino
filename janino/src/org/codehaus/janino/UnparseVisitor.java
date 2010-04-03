@@ -149,7 +149,11 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
         this.unparseDocComment(cd);
         this.unparseModifiers(cd.modifiers);
         Java.ClassDeclaration declaringClass = cd.getDeclaringClass();
-        this.pw.print(declaringClass instanceof Java.NamedClassDeclaration ? ((Java.NamedClassDeclaration) declaringClass).name : "UNNAMED");
+        this.pw.print(
+            declaringClass instanceof Java.NamedClassDeclaration
+            ? ((Java.NamedClassDeclaration) declaringClass).name
+            : "UNNAMED"
+        );
         this.unparseFunctionDeclaratorRest(cd);
         this.pw.print(' ');
         if (cd.optionalConstructorInvocation != null) {
@@ -326,7 +330,9 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
         this.unparse(ss.condition);
         this.pw.println(") {");
         for (Iterator it = ss.sbsgs.iterator(); it.hasNext();) {
-            Java.SwitchStatement.SwitchBlockStatementGroup sbgs = (Java.SwitchStatement.SwitchBlockStatementGroup) it.next();
+            Java.SwitchStatement.SwitchBlockStatementGroup sbgs = (
+                (Java.SwitchStatement.SwitchBlockStatementGroup) it.next()
+            );
             this.pw.print(AutoIndentWriter.UNINDENT);
             try {
                 for (Iterator it2 = sbgs.caseLabels.iterator(); it2.hasNext();) {
@@ -629,10 +635,16 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
      */
     private static int comparePrecedence(String operator, Java.Atom operand) {
         if (operand instanceof Java.BinaryOperation) {
-            return UnparseVisitor.getOperatorPrecedence(operator) - UnparseVisitor.getOperatorPrecedence(((Java.BinaryOperation) operand).op);
+            return (
+                UnparseVisitor.getOperatorPrecedence(operator)
+                - UnparseVisitor.getOperatorPrecedence(((Java.BinaryOperation) operand).op)
+            );
         } else
         if (operand instanceof Java.UnaryOperation) {
-            return UnparseVisitor.getOperatorPrecedence(operator) - UnparseVisitor.getOperatorPrecedence(((Java.UnaryOperation) operand).operator + "x");
+            return (
+                UnparseVisitor.getOperatorPrecedence(operator)
+                - UnparseVisitor.getOperatorPrecedence(((Java.UnaryOperation) operand).operator + "x")
+            );
         } else
         if (operand instanceof Java.ConditionalExpression) {
             return UnparseVisitor.getOperatorPrecedence(operator) - UnparseVisitor.getOperatorPrecedence("?:");
@@ -651,14 +663,17 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
         } else
         if (operand instanceof Java.Crement) {
             Java.Crement c = (Java.Crement) operand;
-            return UnparseVisitor.getOperatorPrecedence(operator) - UnparseVisitor.getOperatorPrecedence(c.pre ? c.operator + "x" : "x" + c.operator);
+            return (
+                UnparseVisitor.getOperatorPrecedence(operator)
+                - UnparseVisitor.getOperatorPrecedence(c.pre ? c.operator + "x" : "x" + c.operator)
+            );
         } else
         {
             // All other rvalues (e.g. literal) have higher precedence than any operator.
             return -1;
         }
     }
-    private static final int getOperatorPrecedence(String operator) {
+    private static int getOperatorPrecedence(String operator) {
         return ((Integer) UnparseVisitor.OPERATOR_PRECEDENCE.get(operator)).intValue();
     }
     private static final Set LEFT_ASSOCIATIVE_OPERATORS = new HashSet();
@@ -667,7 +682,8 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
     private static final Map OPERATOR_PRECEDENCE = new HashMap();
     static {
         Object[] ops = {
-            UnparseVisitor.RIGHT_ASSOCIATIVE_OPERATORS, "=", "*=", "/=", "%=", "+=", "-=", "<<=", ">>=", ">>>=", "&=", "^=", "|=",
+            UnparseVisitor.RIGHT_ASSOCIATIVE_OPERATORS, "=", "*=", "/=", "%=", "+=", "-=", "<<=", ">>=", ">>>=",
+                                                        "&=", "^=", "|=",
             UnparseVisitor.RIGHT_ASSOCIATIVE_OPERATORS, "?:",
             UnparseVisitor.LEFT_ASSOCIATIVE_OPERATORS,  "||",
             UnparseVisitor.LEFT_ASSOCIATIVE_OPERATORS,  "&&",
@@ -733,7 +749,10 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
             }
         } else
         {
-            throw new JaninoRuntimeException("Unexpected array initializer or rvalue class " + aiorv.getClass().getName());
+            throw new JaninoRuntimeException(
+                "Unexpected array initializer or rvalue class "
+                + aiorv.getClass().getName()
+            );
         }
     }
 

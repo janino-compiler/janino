@@ -41,16 +41,17 @@ public interface ResourceCreator {
     /**
      * Create the designated resource.
      *
-     * @param resourceName Designates the resource; typically structured by slashes ("/") like "<code>com/foo/pkg/Bar.class</code>"
-     * @return bytes written to this {@link OutputStream} are stored in the resource
+     * @param resourceName Designates the resource; typically structured by slashes ("/") like
+     *                     "<code>com/foo/pkg/Bar.class</code>"
+     * @return             Bytes written to this {@link OutputStream} are stored in the resource
      * @throws IOException Problems creating the resource
      */
-    public abstract OutputStream createResource(String resourceName) throws IOException;
+    OutputStream createResource(String resourceName) throws IOException;
 
     /**
      * Deletes the resource with the given name.
      *
      * @return <code>false</code> if the resource could not be deleted
      */
-    public abstract boolean deleteResource(String resourceName);
+    boolean deleteResource(String resourceName);
 }

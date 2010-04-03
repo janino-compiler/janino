@@ -96,7 +96,7 @@ public class ByteArrayJavaFileManager<M extends JavaFileManager> extends Forward
 
             public StringBufferJavaFileObject(Kind kind) {
                 super(
-                    URI.create("stringbuffer:///" + className.replace('.','/') + kind.extension),
+                    URI.create("stringbuffer:///" + className.replace('.', '/') + kind.extension),
                     kind
                 );
             }
@@ -125,7 +125,7 @@ public class ByteArrayJavaFileManager<M extends JavaFileManager> extends Forward
 
         Map<Kind, Map<String, JavaFileObject>> locationJavaFiles = this.javaFiles.get(location);
         if (locationJavaFiles == null) {
-            locationJavaFiles = new HashMap<Kind, Map<String,JavaFileObject>>();
+            locationJavaFiles = new HashMap<Kind, Map<String, JavaFileObject>>();
             this.javaFiles.put(location, locationJavaFiles);
         }
         Map<String, JavaFileObject> kindJavaFiles = locationJavaFiles.get(kind);
@@ -172,7 +172,7 @@ public class ByteArrayJavaFileManager<M extends JavaFileManager> extends Forward
 
         public ByteArrayJavaFileObject(String className, Kind kind) {
             super(
-                URI.create("bytearray:///" + className.replace('.','/') + kind.extension),
+                URI.create("bytearray:///" + className.replace('.', '/') + kind.extension),
                 kind
             );
         }
@@ -181,7 +181,7 @@ public class ByteArrayJavaFileManager<M extends JavaFileManager> extends Forward
         public OutputStream openOutputStream() throws IOException {
             return this.buffer;
         }
-        
+
         public byte[] toByteArray() {
             return this.buffer.toByteArray();
         }

@@ -75,19 +75,19 @@ public abstract class AbstractJavaSourceClassLoader extends ClassLoader {
     }
 
     /**
-     * Read Java&trade; source code for a given class name, scan, parse, compile and load
-     * it into the virtual machine, and invoke its "main()" method with the given args.
+     * Read Java&trade; source code for a given class name, scan, parse, compile and load it into the virtual machine,
+     * and invoke its "main()" method with the given arguments.
      * <p>
      * Usage is as follows:
      * <pre>
-     *   java [ <i>java-option</i> ] org.codehaus.commons.compiler.AbstractJavaSourceClassLoader [ <i>option</i> ] ... <i>class-name</i> [ <i>arg</i> ] ...
-     *     <i>java-option</i> Any valid option for the Java Virtual Machine (e.g. "-classpath <i>colon-separated-list-of-class-directories</i>")
-     *     <i>option</i>:
-     *       -sourcepath <i>colon-separated-list-of-source-directories</i>
-     *       -encoding <i>character-encoding</i>
-     *       -g                           Generate all debugging info");
-     *       -g:none                      Generate no debugging info");
-     *       -g:{lines,vars,source}       Generate only some debugging info");
+     *   java org.codehaus.commons.compiler.AbstractJavaSourceClassLoader [ <i>option</i> ] ... <i>class-name</i> [ <i>argument</i> ] ...
+     *
+     *   <i>option</i>:
+     *     -sourcepath <i>colon-separated-list-of-source-directories</i>
+     *     -encoding <i>character-encoding</i>
+     *     -g                           Generate all debugging info
+     *     -g:none                      Generate no debugging info
+     *     -g:{lines,vars,source}       Generate only some debugging info
      * </pre>
      */
     public static void main(String[] args) throws Exception {
@@ -131,10 +131,13 @@ public abstract class AbstractJavaSourceClassLoader extends ClassLoader {
             } else
             if ("-help".equals(arg)) {
                 System.out.println("Usage:");
-                System.out.println("  java [ <java-option> ] " + AbstractJavaSourceClassLoader.class.getName() + " { <option> } <class-name> { <argument> }");
-                System.out.println("Load the named class by name and invoke its \"main(String[])\" method,");
-                System.out.println("passing the given <argument>s.");
-                System.out.println("  <java-option> Any valid option for the Java Virtual Machine (e.g. \"-classpath <dir>\")");
+                System.out.println(
+                    "  java "
+                    + AbstractJavaSourceClassLoader.class.getName()
+                    + " { <option> } <class-name> { <argument> }"
+                );
+                System.out.println("Loads the named class by name and invoke its \"main(String[])\" method, passing");
+                System.out.println("the given <argument>s.");
                 System.out.println("  <option>:");
                 System.out.println("    -sourcepath <" + File.pathSeparator + "-separated-list-of-source-directories>");
                 System.out.println("    -encoding <character-encoding>");
@@ -161,7 +164,9 @@ public abstract class AbstractJavaSourceClassLoader extends ClassLoader {
         System.arraycopy(args, i, mainArgs, 0, args.length - i);
 
         // Set up a JavaSourceClassLoader or a CachingJavaSourceClassLoader.
-        AbstractJavaSourceClassLoader ajscl = CompilerFactoryFactory.getDefaultCompilerFactory().newJavaSourceClassLoader();
+        AbstractJavaSourceClassLoader ajscl = (
+            CompilerFactoryFactory.getDefaultCompilerFactory().newJavaSourceClassLoader()
+        );
         if (haveDebuggingInfo) ajscl.setDebuggingInfo(debuggingInfoLines, debuggingInfoVars, debuggingInfoSource);
         if (optionalCharacterEncoding != null) ajscl.setSourceFileCharacterEncoding(optionalCharacterEncoding);
         if (optionalSourcePath != null) ajscl.setSourcePath(optionalSourcePath);

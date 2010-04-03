@@ -76,10 +76,12 @@ public class AutoIndentWriter extends FilterWriter {
         if (this.tabulatorBuffer != null) {
             this.tabulatorBuffer.add(new StringBuffer(line.length()).append(line));
             if (line.charAt(0) == INDENT) { ++this.indentation; line = line.substring(1); }
-            if (line.charAt(0) == UNINDENT && --this.indentation < this.tabulatorIndentation) this.flushTabulatorBuffer();
+            if (line.charAt(0) == UNINDENT && --this.indentation < this.tabulatorIndentation) {
+                this.flushTabulatorBuffer();
+            }
         } else
         if (line.indexOf(TABULATOR) != -1) {
-            if (line.charAt(0) == INDENT  ) { ++this.indentation; line = line.substring(1); }
+            if (line.charAt(0) == INDENT)   { ++this.indentation; line = line.substring(1); }
             if (line.charAt(0) == UNINDENT) { --this.indentation; line = line.substring(1); }
             this.tabulatorBuffer = new ArrayList/*<StringBuffer>*/();
             this.tabulatorBuffer.add(new StringBuffer(line.length()).append(line));
@@ -87,8 +89,8 @@ public class AutoIndentWriter extends FilterWriter {
         } else
         {
             if (line.charAt(0) == CLEAR_TABULATORS) line = line.substring(1);
-            if (line.charAt(0) == INDENT          ) { ++this.indentation; line = line.substring(1); }
-            if (line.charAt(0) == UNINDENT        ) { --this.indentation; line = line.substring(1); }
+            if (line.charAt(0) == INDENT)           { ++this.indentation; line = line.substring(1); }
+            if (line.charAt(0) == UNINDENT)         { --this.indentation; line = line.substring(1); }
             if ("\r\n".indexOf(line.charAt(0)) == -1) {
                 for (int i = 0; i < this.indentation; ++i) this.out.write("    ");
             }
@@ -118,7 +120,9 @@ public class AutoIndentWriter extends FilterWriter {
                 line.deleteCharAt(idx);
             }
             for (int i = 0; i < line.length(); ++i) {
-                if (line.charAt(i) == TABULATOR) ((List/*<StringBuffer>*/) lineGroups.get(lineGroups.size() - 1)).add(line);
+                if (line.charAt(i) == TABULATOR) {
+                    ((List/*<StringBuffer>*/) lineGroups.get(lineGroups.size() - 1)).add(line);
+                }
             }
         }
         for (Iterator/*<List<StringBuffer>>*/ it = lineGroups.iterator(); it.hasNext();) {

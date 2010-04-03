@@ -52,7 +52,11 @@ public class JavaFileManagerClassLoader extends ClassLoader {
     protected Class<?> findClass(String className) throws ClassNotFoundException {
         byte[] ba;
         try {
-            JavaFileObject classFile = this.javaFileManager.getJavaFileForInput(StandardLocation.CLASS_OUTPUT, className, Kind.CLASS);
+            JavaFileObject classFile = this.javaFileManager.getJavaFileForInput(
+                StandardLocation.CLASS_OUTPUT,
+                className,
+                Kind.CLASS
+            );
             if (classFile == null) throw new ClassNotFoundException(className);
 
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -66,7 +70,7 @@ public class JavaFileManagerClassLoader extends ClassLoader {
                         baos.write(buffer, 0, count);
                     }
                 } finally {
-                    try { is.close(); } catch (Exception e) {}
+                    try { is.close(); } catch (Exception e) { }
                 }
             }
             ba = baos.toByteArray();

@@ -135,7 +135,15 @@ public class EnumeratorSet {
      * @throws EnumeratorSetTypeException if this set was constructed for a different {@link Enumerator}-derived type
      */
     public EnumeratorSet add(Enumerator value) {
-        if (value.getClass() != this.enumeratorClass) throw new EnumeratorSetTypeException("Cannot add value of type \"" + value.getClass() + "\" to set of different type \"" + this.enumeratorClass + "\"");
+        if (value.getClass() != this.enumeratorClass) {
+            throw new EnumeratorSetTypeException(
+                "Cannot add value of type \""
+                + value.getClass()
+                + "\" to set of different type \""
+                + this.enumeratorClass
+                + "\""
+            );
+        }
         Set vs = new HashSet(this.values);
         vs.add(value);
         return new EnumeratorSet(this.enumeratorClass, vs);
@@ -152,8 +160,16 @@ public class EnumeratorSet {
         Set newValues = this.values;
         for (Iterator it = values.iterator(); it.hasNext();) {
             Enumerator value = (Enumerator) it.next();
-            if (value == null) continue; 
-            if (value.getClass() != this.enumeratorClass) throw new EnumeratorSetTypeException("Cannot add value of type \"" + value.getClass() + "\" to set of different type \"" + this.enumeratorClass + "\"");
+            if (value == null) continue;
+            if (value.getClass() != this.enumeratorClass) {
+                throw new EnumeratorSetTypeException(
+                    "Cannot add value of type \""
+                    + value.getClass()
+                    + "\" to set of different type \""
+                    + this.enumeratorClass
+                    + "\""
+                );
+            }
             if (newValues == this.values) {
                 if (!newValues.contains(value)) {
                     newValues = new HashSet(newValues);
@@ -165,14 +181,22 @@ public class EnumeratorSet {
         }
         return newValues == this.values ? this : new EnumeratorSet(this.enumeratorClass, newValues);
     }
-    
+
     /**
      * Add the values of the given set to this set.
      *
      * @throws EnumeratorSetTypeException if this set was constructed for a different {@link Enumerator}-derived type
      */
     public EnumeratorSet add(EnumeratorSet that) {
-        if (that.enumeratorClass != this.enumeratorClass) throw new EnumeratorSetTypeException("Cannot add set of type \"" + that.enumeratorClass + "\" to set of different type \"" + this.enumeratorClass + "\"");
+        if (that.enumeratorClass != this.enumeratorClass) {
+            throw new EnumeratorSetTypeException(
+                "Cannot add set of type \""
+                + that.enumeratorClass
+                + "\" to set of different type \""
+                + this.enumeratorClass
+                + "\""
+            );
+        }
         Set vs;
         if (this.values.isEmpty()) {
             vs = that.values;
@@ -197,7 +221,15 @@ public class EnumeratorSet {
      * @throws EnumeratorSetTypeException if this set was constructed for a different {@link Enumerator}-derived type
      */
     public EnumeratorSet remove(Enumerator value) {
-        if (value.getClass() != this.enumeratorClass) throw new EnumeratorSetTypeException("Cannot remove value of type \"" + value.getClass() + "\" from set of different type \"" + this.enumeratorClass + "\"");
+        if (value.getClass() != this.enumeratorClass) {
+            throw new EnumeratorSetTypeException(
+                "Cannot remove value of type \""
+                + value.getClass()
+                + "\" from set of different type \""
+                + this.enumeratorClass
+                + "\""
+            );
+        }
         if (!this.values.contains(value)) return this;
         Set vs = new HashSet(this.values);
         vs.remove(value);
@@ -212,7 +244,15 @@ public class EnumeratorSet {
      * @throws EnumeratorSetTypeException if this set was constructed for a different {@link Enumerator}-derived type
      */
     public EnumeratorSet remove(EnumeratorSet that) {
-        if (that.enumeratorClass != this.enumeratorClass) throw new EnumeratorSetTypeException("Cannot remove set of type \"" + that.enumeratorClass + "\" from set of different type \"" + this.enumeratorClass + "\"");
+        if (that.enumeratorClass != this.enumeratorClass) {
+            throw new EnumeratorSetTypeException(
+                "Cannot remove set of type \""
+                + that.enumeratorClass
+                + "\" from set of different type \""
+                + this.enumeratorClass
+                + "\""
+            );
+        }
         Set vs = new HashSet(this.values);
         vs.removeAll(that.values);
         return new EnumeratorSet(this.enumeratorClass, vs);
@@ -224,7 +264,15 @@ public class EnumeratorSet {
      * @throws EnumeratorSetTypeException if this set was constructed for a different {@link Enumerator}-derived type
      */
     public boolean contains(Enumerator value) {
-        if (value.getClass() != this.enumeratorClass) throw new EnumeratorSetTypeException("Cannot check value of type \"" + value.getClass() + "\" within set of different type \"" + this.enumeratorClass + "\"");
+        if (value.getClass() != this.enumeratorClass) {
+            throw new EnumeratorSetTypeException(
+                "Cannot check value of type \""
+                + value.getClass()
+                + "\" within set of different type \""
+                + this.enumeratorClass
+                + "\""
+            );
+        }
         return this.values.contains(value);
     }
 
@@ -236,7 +284,15 @@ public class EnumeratorSet {
      * @throws EnumeratorSetTypeException if this set was constructed for a different {@link Enumerator}-derived type
      */
     public boolean containsAnyOf(EnumeratorSet that) {
-        if (that.enumeratorClass != this.enumeratorClass) throw new EnumeratorSetTypeException("Cannot compare set of type \"" + that.enumeratorClass + "\" with set of different type \"" + this.enumeratorClass + "\"");
+        if (that.enumeratorClass != this.enumeratorClass) {
+            throw new EnumeratorSetTypeException(
+                "Cannot compare set of type \""
+                + that.enumeratorClass
+                + "\" with set of different type \""
+                + this.enumeratorClass
+                + "\""
+            );
+        }
         for (Iterator it = that.values.iterator(); it.hasNext();) {
             if (this.values.contains(it.next())) return true;
         }
@@ -249,7 +305,15 @@ public class EnumeratorSet {
      * @throws EnumeratorSetTypeException if this set was constructed for a different {@link Enumerator}-derived type
      */
     public boolean containsAllOf(EnumeratorSet that) {
-        if (that.enumeratorClass != this.enumeratorClass) throw new EnumeratorSetTypeException("Cannot compare set of type \"" + that.enumeratorClass + "\" with set of different type \"" + this.enumeratorClass + "\"");
+        if (that.enumeratorClass != this.enumeratorClass) {
+            throw new EnumeratorSetTypeException(
+                "Cannot compare set of type \""
+                + that.enumeratorClass
+                + "\" with set of different type \""
+                + this.enumeratorClass
+                + "\""
+            );
+        }
         return this.values.containsAll(that.values);
     }
 
@@ -289,7 +353,8 @@ public class EnumeratorSet {
         }
         return m;
     }
-    private static final Map namedEnumeratorSets = new HashMap(); // Class enumeratorClass => String name => EnumeratorSet
+    /** Class enumeratorClass => String name => EnumeratorSet */
+    private static final Map namedEnumeratorSets = new HashMap();
 
     /**
      * Check the values' identity. Notice that the objects' names (see {@link #setName(String)} is

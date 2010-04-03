@@ -75,7 +75,7 @@ public abstract class IClass {
         public boolean           isFinal()                   { return true; }
         public boolean           isInterface()               { return false; }
         public boolean           isPrimitive()               { return true; }
-        public boolean           isPrimitiveNumeric()        { return Descriptor.isPrimitiveNumeric(this.fieldDescriptor); }
+        public boolean           isPrimitiveNumeric()    { return Descriptor.isPrimitiveNumeric(this.fieldDescriptor); }
         public Access            getAccess()                 { return Access.PUBLIC; }
     }
 
@@ -182,19 +182,19 @@ public abstract class IClass {
             boolean found = false;
             for (int j = 0; j < result.size(); ++j) {
                 IMethod o = (IMethod) result.get(j);
-                if (! o.getName().equals(m.getName())) {
+                if (!o.getName().equals(m.getName())) {
                     continue;
                 }
                 IClass mrt = m.getReturnType();
                 IClass ort = o.getReturnType();
 
-                if (! mrt.isAssignableFrom(ort)) {
+                if (!mrt.isAssignableFrom(ort)) {
                     continue;
                 }
 
                 String[] mpt = IClass.getDescriptors(m.getParameterTypes());
                 String[] opt = IClass.getDescriptors(o.getParameterTypes());
-                if (! Arrays.equals(mpt, opt)) {
+                if (!Arrays.equals(mpt, opt)) {
                     continue;
                 }
 
@@ -340,7 +340,12 @@ public abstract class IClass {
         if (!this.superclassIsCached) {
             this.superclass = this.getSuperclass2();
             this.superclassIsCached = true;
-            if (this.superclass != null && this.superclass.isSubclassOf(this)) throw new CompileException("Class circularity detected for \"" + Descriptor.toClassName(this.getDescriptor()) + "\"", null);
+            if (this.superclass != null && this.superclass.isSubclassOf(this)) {
+                throw new CompileException(
+                    "Class circularity detected for \"" + Descriptor.toClassName(this.getDescriptor()) + "\"",
+                    null
+                );
+            }
         }
         return this.superclass;
     }
@@ -366,7 +371,12 @@ public abstract class IClass {
         if (this.interfaces == null) {
             this.interfaces = this.getInterfaces2();
             for (int i = 0; i < this.interfaces.length; ++i) {
-                if (this.interfaces[i].implementsInterface(this)) throw new CompileException("Interface circularity detected for \"" + Descriptor.toClassName(this.getDescriptor()) + "\"", null);
+                if (this.interfaces[i].implementsInterface(this)) {
+                    throw new CompileException(
+                        "Interface circularity detected for \"" + Descriptor.toClassName(this.getDescriptor()) + "\"",
+                        null
+                    );
+                }
             }
         }
         return this.interfaces;
@@ -661,7 +671,11 @@ public abstract class IClass {
         if (optionalName == null) {
             result.addAll(Arrays.asList(memberTypes));
         } else {
-            String memberDescriptor = Descriptor.fromClassName(Descriptor.toClassName(this.getDescriptor()) + '$' + optionalName);
+            String memberDescriptor = Descriptor.fromClassName(
+                Descriptor.toClassName(this.getDescriptor())
+                + '$'
+                + optionalName
+            );
             for (int i = 0; i < memberTypes.length; ++i) {
                 final IClass mt = memberTypes[i];
                 if (mt.getDescriptor().equals(memberDescriptor)) {

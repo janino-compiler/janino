@@ -46,71 +46,73 @@ import java.util.*;
  */
 public class Traverser {
     private final Visitor.ComprehensiveVisitor cv = new Visitor.ComprehensiveVisitor() {
-        public final void visitSingleTypeImportDeclaration(Java.CompilationUnit.SingleTypeImportDeclaration stid)      { Traverser.this.traverseSingleTypeImportDeclaration(stid); }
+        // CHECKSTYLE(LineLengthCheck):OFF
+        public final void visitSingleTypeImportDeclaration(Java.CompilationUnit.SingleTypeImportDeclaration stid)      { Traverser.this.traverseSingleTypeImportDeclaration(stid); } // SUPPRESS CHECKSTYLE
         public final void visitTypeImportOnDemandDeclaration(Java.CompilationUnit.TypeImportOnDemandDeclaration tiodd) { Traverser.this.traverseTypeImportOnDemandDeclaration(tiodd); }
         public final void visitSingleStaticImportDeclaration(SingleStaticImportDeclaration ssid)                       { Traverser.this.traverseSingleStaticImportDeclaration(ssid); }
         public final void visitStaticImportOnDemandDeclaration(StaticImportOnDemandDeclaration siodd)                  { Traverser.this.traverseStaticImportOnDemandDeclaration(siodd); }
-        public final void visitAnonymousClassDeclaration(Java.AnonymousClassDeclaration acd)                  { Traverser.this.traverseAnonymousClassDeclaration(acd); }
-        public final void visitLocalClassDeclaration(Java.LocalClassDeclaration lcd)                          { Traverser.this.traverseLocalClassDeclaration(lcd); }
-        public final void visitPackageMemberClassDeclaration(Java.PackageMemberClassDeclaration pmcd)         { Traverser.this.traversePackageMemberClassDeclaration(pmcd); }
-        public final void visitMemberInterfaceDeclaration(Java.MemberInterfaceDeclaration mid)                { Traverser.this.traverseMemberInterfaceDeclaration(mid); }
-        public final void visitPackageMemberInterfaceDeclaration(Java.PackageMemberInterfaceDeclaration pmid) { Traverser.this.traversePackageMemberInterfaceDeclaration(pmid); }
-        public final void visitMemberClassDeclaration(Java.MemberClassDeclaration mcd)                        { Traverser.this.traverseMemberClassDeclaration(mcd); }
-        public final void visitConstructorDeclarator(Java.ConstructorDeclarator cd)                           { Traverser.this.traverseConstructorDeclarator(cd); }
-        public final void visitInitializer(Java.Initializer i)                                                { Traverser.this.traverseInitializer(i); }
-        public final void visitMethodDeclarator(Java.MethodDeclarator md)                                     { Traverser.this.traverseMethodDeclarator(md); }
-        public final void visitFieldDeclaration(Java.FieldDeclaration fd)                                     { Traverser.this.traverseFieldDeclaration(fd); }
-        public final void visitLabeledStatement(Java.LabeledStatement ls)                                     { Traverser.this.traverseLabeledStatement(ls); }
-        public final void visitBlock(Java.Block b)                                                            { Traverser.this.traverseBlock(b); }
-        public final void visitExpressionStatement(Java.ExpressionStatement es)                               { Traverser.this.traverseExpressionStatement(es); }
-        public final void visitIfStatement(Java.IfStatement is)                                               { Traverser.this.traverseIfStatement(is); }
-        public final void visitForStatement(Java.ForStatement fs)                                             { Traverser.this.traverseForStatement(fs); }
-        public final void visitWhileStatement(Java.WhileStatement ws)                                         { Traverser.this.traverseWhileStatement(ws); }
-        public final void visitTryStatement(Java.TryStatement ts)                                             { Traverser.this.traverseTryStatement(ts); }
-        public final void visitSwitchStatement(Java.SwitchStatement ss)                                       { Traverser.this.traverseSwitchStatement(ss); }
-        public final void visitSynchronizedStatement(Java.SynchronizedStatement ss)                           { Traverser.this.traverseSynchronizedStatement(ss); }
-        public final void visitDoStatement(Java.DoStatement ds)                                               { Traverser.this.traverseDoStatement(ds); }
-        public final void visitLocalVariableDeclarationStatement(Java.LocalVariableDeclarationStatement lvds) { Traverser.this.traverseLocalVariableDeclarationStatement(lvds); }
-        public final void visitReturnStatement(Java.ReturnStatement rs)                                       { Traverser.this.traverseReturnStatement(rs); }
-        public final void visitThrowStatement(Java.ThrowStatement ts)                                         { Traverser.this.traverseThrowStatement(ts); }
-        public final void visitBreakStatement(Java.BreakStatement bs)                                         { Traverser.this.traverseBreakStatement(bs); }
-        public final void visitContinueStatement(Java.ContinueStatement cs)                                   { Traverser.this.traverseContinueStatement(cs); }
-        public final void visitEmptyStatement(Java.EmptyStatement es)                                         { Traverser.this.traverseEmptyStatement(es); }
-        public final void visitLocalClassDeclarationStatement(Java.LocalClassDeclarationStatement lcds)       { Traverser.this.traverseLocalClassDeclarationStatement(lcds); }
-        public final void visitPackage(Java.Package p)                                                        { Traverser.this.traversePackage(p); }
-        public final void visitArrayLength(Java.ArrayLength al)                                               { Traverser.this.traverseArrayLength(al); }
-        public final void visitAssignment(Java.Assignment a)                                                  { Traverser.this.traverseAssignment(a); }
-        public final void visitUnaryOperation(Java.UnaryOperation uo)                                         { Traverser.this.traverseUnaryOperation(uo); }
-        public final void visitBinaryOperation(Java.BinaryOperation bo)                                       { Traverser.this.traverseBinaryOperation(bo); }
-        public final void visitCast(Java.Cast c)                                                              { Traverser.this.traverseCast(c); }
-        public final void visitClassLiteral(Java.ClassLiteral cl)                                             { Traverser.this.traverseClassLiteral(cl); }
-        public final void visitConditionalExpression(Java.ConditionalExpression ce)                           { Traverser.this.traverseConditionalExpression(ce); }
-        public final void visitCrement(Java.Crement c)                                                        { Traverser.this.traverseCrement(c); }
-        public final void visitInstanceof(Java.Instanceof io)                                                 { Traverser.this.traverseInstanceof(io); }
-        public final void visitMethodInvocation(Java.MethodInvocation mi)                                     { Traverser.this.traverseMethodInvocation(mi); }
-        public final void visitSuperclassMethodInvocation(Java.SuperclassMethodInvocation smi)                { Traverser.this.traverseSuperclassMethodInvocation(smi); }
-        public final void visitLiteral(Java.Literal l)                                                        { Traverser.this.traverseLiteral(l); }
-        public final void visitNewAnonymousClassInstance(Java.NewAnonymousClassInstance naci)                 { Traverser.this.traverseNewAnonymousClassInstance(naci); }
-        public final void visitNewArray(Java.NewArray na)                                                     { Traverser.this.traverseNewArray(na); }
-        public final void visitNewInitializedArray(Java.NewInitializedArray nia)                              { Traverser.this.traverseNewInitializedArray(nia); }
-        public final void visitNewClassInstance(Java.NewClassInstance nci)                                    { Traverser.this.traverseNewClassInstance(nci); }
-        public final void visitParameterAccess(Java.ParameterAccess pa)                                       { Traverser.this.traverseParameterAccess(pa); }
-        public final void visitQualifiedThisReference(Java.QualifiedThisReference qtr)                        { Traverser.this.traverseQualifiedThisReference(qtr); }
-        public final void visitThisReference(Java.ThisReference tr)                                           { Traverser.this.traverseThisReference(tr); }
-        public final void visitArrayType(Java.ArrayType at)                                                   { Traverser.this.traverseArrayType(at); }
-        public final void visitBasicType(Java.BasicType bt)                                                   { Traverser.this.traverseBasicType(bt); }
-        public final void visitReferenceType(Java.ReferenceType rt)                                           { Traverser.this.traverseReferenceType(rt); }
-        public final void visitRvalueMemberType(Java.RvalueMemberType rmt)                                    { Traverser.this.traverseRvalueMemberType(rmt); }
-        public final void visitSimpleType(Java.SimpleType st)                                                 { Traverser.this.traverseSimpleType(st); }
-        public final void visitAlternateConstructorInvocation(Java.AlternateConstructorInvocation aci)        { Traverser.this.traverseAlternateConstructorInvocation(aci); }
-        public final void visitSuperConstructorInvocation(Java.SuperConstructorInvocation sci)                { Traverser.this.traverseSuperConstructorInvocation(sci); }
-        public final void visitAmbiguousName(Java.AmbiguousName an)                                           { Traverser.this.traverseAmbiguousName(an); }
-        public final void visitArrayAccessExpression(Java.ArrayAccessExpression aae)                          { Traverser.this.traverseArrayAccessExpression(aae); }
-        public final void visitFieldAccess(Java.FieldAccess fa)                                               { Traverser.this.traverseFieldAccess(fa); }
-        public final void visitFieldAccessExpression(Java.FieldAccessExpression fae)                          { Traverser.this.traverseFieldAccessExpression(fae); }
-        public final void visitSuperclassFieldAccessExpression(Java.SuperclassFieldAccessExpression scfae)    { Traverser.this.traverseSuperclassFieldAccessExpression(scfae); }
-        public final void visitLocalVariableAccess(Java.LocalVariableAccess lva)                              { Traverser.this.traverseLocalVariableAccess(lva); }
-        public final void visitParenthesizedExpression(Java.ParenthesizedExpression pe)                       { Traverser.this.traverseParenthesizedExpression(pe); }
+        public final void visitAnonymousClassDeclaration(Java.AnonymousClassDeclaration acd)                           { Traverser.this.traverseAnonymousClassDeclaration(acd); }
+        public final void visitLocalClassDeclaration(Java.LocalClassDeclaration lcd)                                   { Traverser.this.traverseLocalClassDeclaration(lcd); }
+        public final void visitPackageMemberClassDeclaration(Java.PackageMemberClassDeclaration pmcd)                  { Traverser.this.traversePackageMemberClassDeclaration(pmcd); }
+        public final void visitMemberInterfaceDeclaration(Java.MemberInterfaceDeclaration mid)                         { Traverser.this.traverseMemberInterfaceDeclaration(mid); }
+        public final void visitPackageMemberInterfaceDeclaration(Java.PackageMemberInterfaceDeclaration pmid)          { Traverser.this.traversePackageMemberInterfaceDeclaration(pmid); }
+        public final void visitMemberClassDeclaration(Java.MemberClassDeclaration mcd)                                 { Traverser.this.traverseMemberClassDeclaration(mcd); }
+        public final void visitConstructorDeclarator(Java.ConstructorDeclarator cd)                                    { Traverser.this.traverseConstructorDeclarator(cd); }
+        public final void visitInitializer(Java.Initializer i)                                                         { Traverser.this.traverseInitializer(i); }
+        public final void visitMethodDeclarator(Java.MethodDeclarator md)                                              { Traverser.this.traverseMethodDeclarator(md); }
+        public final void visitFieldDeclaration(Java.FieldDeclaration fd)                                              { Traverser.this.traverseFieldDeclaration(fd); }
+        public final void visitLabeledStatement(Java.LabeledStatement ls)                                              { Traverser.this.traverseLabeledStatement(ls); }
+        public final void visitBlock(Java.Block b)                                                                     { Traverser.this.traverseBlock(b); }
+        public final void visitExpressionStatement(Java.ExpressionStatement es)                                        { Traverser.this.traverseExpressionStatement(es); }
+        public final void visitIfStatement(Java.IfStatement is)                                                        { Traverser.this.traverseIfStatement(is); }
+        public final void visitForStatement(Java.ForStatement fs)                                                      { Traverser.this.traverseForStatement(fs); }
+        public final void visitWhileStatement(Java.WhileStatement ws)                                                  { Traverser.this.traverseWhileStatement(ws); }
+        public final void visitTryStatement(Java.TryStatement ts)                                                      { Traverser.this.traverseTryStatement(ts); }
+        public final void visitSwitchStatement(Java.SwitchStatement ss)                                                { Traverser.this.traverseSwitchStatement(ss); }
+        public final void visitSynchronizedStatement(Java.SynchronizedStatement ss)                                    { Traverser.this.traverseSynchronizedStatement(ss); }
+        public final void visitDoStatement(Java.DoStatement ds)                                                        { Traverser.this.traverseDoStatement(ds); }
+        public final void visitLocalVariableDeclarationStatement(Java.LocalVariableDeclarationStatement lvds)          { Traverser.this.traverseLocalVariableDeclarationStatement(lvds); }
+        public final void visitReturnStatement(Java.ReturnStatement rs)                                                { Traverser.this.traverseReturnStatement(rs); }
+        public final void visitThrowStatement(Java.ThrowStatement ts)                                                  { Traverser.this.traverseThrowStatement(ts); }
+        public final void visitBreakStatement(Java.BreakStatement bs)                                                  { Traverser.this.traverseBreakStatement(bs); }
+        public final void visitContinueStatement(Java.ContinueStatement cs)                                            { Traverser.this.traverseContinueStatement(cs); }
+        public final void visitEmptyStatement(Java.EmptyStatement es)                                                  { Traverser.this.traverseEmptyStatement(es); }
+        public final void visitLocalClassDeclarationStatement(Java.LocalClassDeclarationStatement lcds)                { Traverser.this.traverseLocalClassDeclarationStatement(lcds); }
+        public final void visitPackage(Java.Package p)                                                                 { Traverser.this.traversePackage(p); }
+        public final void visitArrayLength(Java.ArrayLength al)                                                        { Traverser.this.traverseArrayLength(al); }
+        public final void visitAssignment(Java.Assignment a)                                                           { Traverser.this.traverseAssignment(a); }
+        public final void visitUnaryOperation(Java.UnaryOperation uo)                                                  { Traverser.this.traverseUnaryOperation(uo); }
+        public final void visitBinaryOperation(Java.BinaryOperation bo)                                                { Traverser.this.traverseBinaryOperation(bo); }
+        public final void visitCast(Java.Cast c)                                                                       { Traverser.this.traverseCast(c); }
+        public final void visitClassLiteral(Java.ClassLiteral cl)                                                      { Traverser.this.traverseClassLiteral(cl); }
+        public final void visitConditionalExpression(Java.ConditionalExpression ce)                                    { Traverser.this.traverseConditionalExpression(ce); }
+        public final void visitCrement(Java.Crement c)                                                                 { Traverser.this.traverseCrement(c); }
+        public final void visitInstanceof(Java.Instanceof io)                                                          { Traverser.this.traverseInstanceof(io); }
+        public final void visitMethodInvocation(Java.MethodInvocation mi)                                              { Traverser.this.traverseMethodInvocation(mi); }
+        public final void visitSuperclassMethodInvocation(Java.SuperclassMethodInvocation smi)                         { Traverser.this.traverseSuperclassMethodInvocation(smi); }
+        public final void visitLiteral(Java.Literal l)                                                                 { Traverser.this.traverseLiteral(l); }
+        public final void visitNewAnonymousClassInstance(Java.NewAnonymousClassInstance naci)                          { Traverser.this.traverseNewAnonymousClassInstance(naci); }
+        public final void visitNewArray(Java.NewArray na)                                                              { Traverser.this.traverseNewArray(na); }
+        public final void visitNewInitializedArray(Java.NewInitializedArray nia)                                       { Traverser.this.traverseNewInitializedArray(nia); }
+        public final void visitNewClassInstance(Java.NewClassInstance nci)                                             { Traverser.this.traverseNewClassInstance(nci); }
+        public final void visitParameterAccess(Java.ParameterAccess pa)                                                { Traverser.this.traverseParameterAccess(pa); }
+        public final void visitQualifiedThisReference(Java.QualifiedThisReference qtr)                                 { Traverser.this.traverseQualifiedThisReference(qtr); }
+        public final void visitThisReference(Java.ThisReference tr)                                                    { Traverser.this.traverseThisReference(tr); }
+        public final void visitArrayType(Java.ArrayType at)                                                            { Traverser.this.traverseArrayType(at); }
+        public final void visitBasicType(Java.BasicType bt)                                                            { Traverser.this.traverseBasicType(bt); }
+        public final void visitReferenceType(Java.ReferenceType rt)                                                    { Traverser.this.traverseReferenceType(rt); }
+        public final void visitRvalueMemberType(Java.RvalueMemberType rmt)                                             { Traverser.this.traverseRvalueMemberType(rmt); }
+        public final void visitSimpleType(Java.SimpleType st)                                                          { Traverser.this.traverseSimpleType(st); }
+        public final void visitAlternateConstructorInvocation(Java.AlternateConstructorInvocation aci)                 { Traverser.this.traverseAlternateConstructorInvocation(aci); }
+        public final void visitSuperConstructorInvocation(Java.SuperConstructorInvocation sci)                         { Traverser.this.traverseSuperConstructorInvocation(sci); }
+        public final void visitAmbiguousName(Java.AmbiguousName an)                                                    { Traverser.this.traverseAmbiguousName(an); }
+        public final void visitArrayAccessExpression(Java.ArrayAccessExpression aae)                                   { Traverser.this.traverseArrayAccessExpression(aae); }
+        public final void visitFieldAccess(Java.FieldAccess fa)                                                        { Traverser.this.traverseFieldAccess(fa); }
+        public final void visitFieldAccessExpression(Java.FieldAccessExpression fae)                                   { Traverser.this.traverseFieldAccessExpression(fae); }
+        public final void visitSuperclassFieldAccessExpression(Java.SuperclassFieldAccessExpression scfae)             { Traverser.this.traverseSuperclassFieldAccessExpression(scfae); }
+        public final void visitLocalVariableAccess(Java.LocalVariableAccess lva)                                       { Traverser.this.traverseLocalVariableAccess(lva); }
+        public final void visitParenthesizedExpression(Java.ParenthesizedExpression pe)                                { Traverser.this.traverseParenthesizedExpression(pe); }
+        // CHECKSTYLE(LineLengthCheck):ON
     };
 
     public ComprehensiveVisitor comprehensiveVisitor() {
@@ -178,7 +180,9 @@ public class Traverser {
     }
 
     public void traverseConstructorDeclarator(Java.ConstructorDeclarator cd) {
-        if (cd.optionalConstructorInvocation != null) cd.optionalConstructorInvocation.accept((Visitor.BlockStatementVisitor) this.cv);
+        if (cd.optionalConstructorInvocation != null) {
+            cd.optionalConstructorInvocation.accept((Visitor.BlockStatementVisitor) this.cv);
+        }
         this.traverseFunctionDeclarator(cd);
     }
 
@@ -228,7 +232,9 @@ public class Traverser {
         if (fs.optionalInit != null) fs.optionalInit.accept(this.cv);
         if (fs.optionalCondition != null) fs.optionalCondition.accept((Visitor.RvalueVisitor) this.cv);
         if (fs.optionalUpdate != null) {
-            for (int i = 0; i < fs.optionalUpdate.length; ++i) fs.optionalUpdate[i].accept((Visitor.RvalueVisitor) this.cv);
+            for (int i = 0; i < fs.optionalUpdate.length; ++i) {
+                fs.optionalUpdate[i].accept((Visitor.RvalueVisitor) this.cv);
+            }
         }
         fs.body.accept(this.cv);
         this.traverseContinuableStatement(fs);
@@ -252,7 +258,9 @@ public class Traverser {
     public void traverseSwitchStatement(Java.SwitchStatement ss) {
         ss.condition.accept((Visitor.RvalueVisitor) this.cv);
         for (Iterator it = ss.sbsgs.iterator(); it.hasNext();) {
-            Java.SwitchStatement.SwitchBlockStatementGroup sbsg = (Java.SwitchStatement.SwitchBlockStatementGroup) it.next();
+            Java.SwitchStatement.SwitchBlockStatementGroup sbsg = (
+                (Java.SwitchStatement.SwitchBlockStatementGroup) it.next()
+            );
             for (Iterator it2 = sbsg.caseLabels.iterator(); it2.hasNext();) {
                 ((Java.Rvalue) it2.next()).accept((Visitor.RvalueVisitor) this.cv);
             }
@@ -407,7 +415,10 @@ public class Traverser {
             for (int i = 0; i < values.length; ++i) this.traverseArrayInitializerOrRvalue(values[i]);
         } else
         {
-            throw new JaninoRuntimeException("Unexpected array initializer or rvalue class " + aiorv.getClass().getName());
+            throw new JaninoRuntimeException(
+                "Unexpected array initializer or rvalue class "
+                + aiorv.getClass().getName()
+            );
         }
     }
     public void traverseNewClassInstance(Java.NewClassInstance nci) {

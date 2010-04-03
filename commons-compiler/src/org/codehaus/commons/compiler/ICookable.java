@@ -43,7 +43,7 @@ public interface ICookable {
      * The {@link ClassLoader} that loads this classes on the boot class path, i.e. the JARs in the JRE's "lib" and
      * "lib/ext" directories, but not the JARs and class directories specified through the class path.
      */
-    public static final ClassLoader BOOT_CLASS_LOADER = ClassLoader.getSystemClassLoader().getParent();
+    ClassLoader BOOT_CLASS_LOADER = ClassLoader.getSystemClassLoader().getParent();
 
     /**
      * The "parent class loader" is used to load referenced classes. Useful values are:

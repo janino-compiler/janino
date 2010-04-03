@@ -19,25 +19,25 @@ public class Foo {
     public static void      publicStaticMethod() {}
     public void             publicMethod() {}
 
-    private static class         PrivateStaticMemberClass {}
-    private class                PrivateMemberClass {}
-    /*package*/ static class     PackageStaticMemberClass {}
-    /*package*/ class            PackageMemberClass {}
-    protected static class       ProtectedStaticMemberClass {}
-    protected class              ProtectedMemberClass {}
-    public static class          PublicStaticMemberClass {}
-    public class                 PublicMemberClass {}
-    public abstract static class PublicAbstractStaticMemberClass {}
-    public abstract class        PublicAbstractMemberClass {}
+    private static class         PrivateStaticMemberClass { }
+    private class                PrivateMemberClass { }
+    /*package*/ static class     PackageStaticMemberClass { }
+    /*package*/ class            PackageMemberClass { }
+    protected static class       ProtectedStaticMemberClass { }
+    protected class              ProtectedMemberClass { }
+    public static class          PublicStaticMemberClass { }
+    public class                 PublicMemberClass { }
+    public abstract static class PublicAbstractStaticMemberClass { }
+    public abstract class        PublicAbstractMemberClass { }
 
-    private static interface     PrivateStaticMemberInterface {}
-    private interface            PrivateMemberInterface {}
-    /*package*/ static interface PackageStaticMemberInterface {}
-    /*package*/ interface        PackageMemberInterface {}
-    protected static interface   ProtectedStaticMemberInterface {}
-    protected interface          ProtectedMemberInterface {}
-    public static interface      PublicStaticMemberInterface {}
-    public interface             PublicMemberInterface {}
+    private static interface     PrivateStaticMemberInterface { }
+    private interface            PrivateMemberInterface { }
+    /*package*/ static interface PackageStaticMemberInterface { }
+    /*package*/ interface        PackageMemberInterface { }
+    protected static interface   ProtectedStaticMemberInterface { }
+    protected interface          ProtectedMemberInterface { }
+    public static interface      PublicStaticMemberInterface { }
+    public interface             PublicMemberInterface { }
 
     void useMembersToSuppressWarnings() {
         new Foo('c');
@@ -45,10 +45,10 @@ public class Foo {
         privateMethod();
         new PrivateStaticMemberClass();
         new PrivateMemberClass();
-        new PrivateStaticMemberInterface() {};
-        new PrivateMemberInterface() {};
+        new PrivateStaticMemberInterface() { };
+        new PrivateMemberInterface() { };
     }
 }
 
-/*package*/ class     PackageClass {}
-/*package*/ interface PackageInterface {}
+/*package*/ class     PackageClass { }
+/*package*/ interface PackageInterface { }

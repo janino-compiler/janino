@@ -35,7 +35,9 @@ import java.util.*;
  *
  *     java -Xrunhprof:heap=sites,monitor=n,cutoff=0,depth=4 MyClass
  */
-public class HprofScrubber {
+public final class HprofScrubber {
+    private HprofScrubber() {}
+
     private static class Site {
         public final int allocatedBytes;
         public final int allocatedObjects;
@@ -126,7 +128,7 @@ public class HprofScrubber {
             HprofScrubber.dumpSamples((Sample[]) samples.toArray(new Sample[samples.size()]), traces);
 
         } finally {
-            try { br.close(); } catch (IOException e) {}
+            try { br.close(); } catch (IOException e) { }
         }
     }
 
@@ -149,12 +151,26 @@ public class HprofScrubber {
         System.out.println("Total:              " + totalAllocatedBytes + "  " + totalAllocatedObjects);
 
         double accumulatedPercentage = 0.0;
-        MessageFormat mf = new MessageFormat("{0,number,00000} {1,number,00.00}% {2,number,00.00}% {3,number,000000000} {4,number,000000000} {5}");
+        MessageFormat mf = new MessageFormat(
+            "{0,number,00000} {1,number,00.00}% {2,number,00.00}% {3,number,000000000} {4,number,000000000} {5}"
+        );
         for (int i = 0; i < ss.length; ++i) {
             Site site = ss[i];
             double selfPercentage = 100.0 * ((double) site.allocatedBytes / (double) totalAllocatedBytes);
             accumulatedPercentage += selfPercentage;
-    //      System.out.println((i + 1) + "      " + selfPercentage + "% " + accumulatedPercentage + "%    " + site.allocatedBytes + " " + site.allocatedObjects + " "  + site.className);
+//            System.out.println(
+//                (i + 1)
+//                + "      "
+//                + selfPercentage
+//                + "% "
+//                + accumulatedPercentage
+//                + "%    "
+//                + site.allocatedBytes
+//                + " "
+//                + site.allocatedObjects
+//                + " "
+//                + site.className
+//            );
             System.out.println(mf.format(
                 new Object[] {
                     new Integer(i + 1),
@@ -185,12 +201,24 @@ public class HprofScrubber {
         System.out.println("Total:              " + totalCount);
 
         double accumulatedPercentage = 0.0;
-        MessageFormat mf = new MessageFormat("{0,number,00000} {1,number,00.00}% {2,number,00.00}% {3,number,000000000}");
+        MessageFormat mf = new MessageFormat(
+            "{0,number,00000} {1,number,00.00}% {2,number,00.00}% {3,number,000000000}"
+        );
         for (int i = 0; i < ss.length; ++i) {
             Sample sample = ss[i];
             double selfPercentage = 100.0 * ((double) sample.count / (double) totalCount);
             accumulatedPercentage += selfPercentage;
-//          System.out.println((i + 1) + "      " + selfPercentage + "% " + accumulatedPercentage + "%    " + site.allocatedBytes + " " + site.allocatedObjects + " "  + site.className);
+//            System.out.println(
+//                (i + 1)
+//                + "      "
+//                + selfPercentage
+//                + "% "
+//                + accumulatedPercentage
+//                + "%    "
+//                + sample.count
+//                + " "
+//                + sample.traceNumber
+//            );
             System.out.println(mf.format(
                 new Object[] {
                     new Integer(i + 1),
