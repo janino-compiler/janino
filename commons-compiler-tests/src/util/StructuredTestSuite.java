@@ -38,7 +38,7 @@ import junit.framework.*;
  * sub-suite instead of this {@link junit.framework.TestSuite}.
  */
 public class StructuredTestSuite extends TestSuite {
-    private final Stack_<TestSuite> subSuites = new ArrayListStack<TestSuite>();
+    private final Stack<TestSuite> subSuites = new ArrayListStack<TestSuite>();
 
     public StructuredTestSuite() {
     }
@@ -160,7 +160,7 @@ public class StructuredTestSuite extends TestSuite {
  * "java.util" lacks a "Stack" interface.
  * {@link java.util.Stack} is a bad alternative, because it is synchronized and hence slow.
  */
-interface Stack_<T> { // Avoid name conflict with "java.util.Stack".
+interface Stack<T> { // Beware of "java.util.Stack"!
     void push(T o);
     T pop();
     T peek();
@@ -169,8 +169,8 @@ interface Stack_<T> { // Avoid name conflict with "java.util.Stack".
     void clear();
 }
 
-/** A simple implementation of the {@link Stack_} interface. */
-class ArrayListStack<T> extends ArrayList<T> implements Stack_<T> {
+/** A simple implementation of the {@link Stack} interface. */
+class ArrayListStack<T> extends ArrayList<T> implements Stack<T> {
     private static final long serialVersionUID = 1024412833860481254L;
 
     public void push(T o) { this.add(o); }
