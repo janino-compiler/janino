@@ -460,7 +460,6 @@ public class UnitCompiler {
 
         this.compileDeclaredMethods(cd, cf);
 
-
         // Compile declared constructors.
         // As a side effect of compiling methods and constructors, synthetic "class-dollar"
         // methods (which implement class literals) are generated on-the fly.
@@ -3651,7 +3650,7 @@ public class UnitCompiler {
         }
 
         // Generate the anonymous constructor for the anonymous class (JLS 15.9.5.1).
-        acd.addConstructor(new Java.ConstructorDeclarator(
+        Java.ConstructorDeclarator anonymousConstructor = new Java.ConstructorDeclarator(
             loc,                                 // location
             null,                                // optionalDocComment
             Mod.PACKAGE,                         // modifiers
@@ -3663,49 +3662,58 @@ public class UnitCompiler {
                 parameterAccesses            // arguments
             ),
             Collections.EMPTY_LIST               // optionalStatements
-        ));
+        );
 
         // Compile the anonymous class.
-        this.compile(acd);
+        acd.addConstructor(anonymousConstructor);
+        try {
+            this.compile(acd);
 
-        // Instantiate the anonymous class.
-        this.writeOpcode(naci, Opcode.NEW);
-        this.writeConstantClassInfo(this.resolve(naci.anonymousClassDeclaration).getDescriptor());
+            // Instantiate the anonymous class.
+            this.writeOpcode(naci, Opcode.NEW);
+            this.writeConstantClassInfo(this.resolve(naci.anonymousClassDeclaration).getDescriptor());
 
-        // Invoke the anonymous constructor.
-        this.writeOpcode(naci, Opcode.DUP);
-        Java.Rvalue[] arguments2;
-        if (naci.optionalQualification == null) {
-            arguments2 = naci.arguments;
-        } else {
-            arguments2 = new Java.Rvalue[naci.arguments.length + 1];
-            arguments2[0] = naci.optionalQualification;
-            System.arraycopy(naci.arguments, 0, arguments2, 1, naci.arguments.length);
+            // Invoke the anonymous constructor.
+            this.writeOpcode(naci, Opcode.DUP);
+            Java.Rvalue[] arguments2;
+            if (naci.optionalQualification == null) {
+                arguments2 = naci.arguments;
+            } else {
+                arguments2 = new Java.Rvalue[naci.arguments.length + 1];
+                arguments2[0] = naci.optionalQualification;
+                System.arraycopy(naci.arguments, 0, arguments2, 1, naci.arguments.length);
+            }
+
+            // Notice: The enclosing instance of the anonymous class is "this", not the
+            // qualification of the NewAnonymousClassInstance.
+            Java.Scope s;
+            for (
+                s = naci.getEnclosingBlockStatement();
+                !(s instanceof Java.TypeBodyDeclaration);
+                s = s.getEnclosingScope()
+            );
+            Java.ThisReference oei;
+            if (((Java.TypeBodyDeclaration) s).isStatic()) {
+                oei = null;
+            } else
+            {
+                oei = new Java.ThisReference(loc);
+                oei.setEnclosingBlockStatement(naci.getEnclosingBlockStatement());
+            }
+            this.invokeConstructor(
+                (Locatable) naci,                               // l
+                (Java.Scope) naci.getEnclosingBlockStatement(), // scope
+                oei,                                            // optionalEnclosingInstance
+                this.resolve(naci.anonymousClassDeclaration),   // targetClass
+                arguments2                                      // arguments
+            );
+        } finally {
+
+            // Remove the synthetic constructor that was temporarily added. This is necessary because this NACI
+            // expression (and all other expressions) are sometimes compiled more than once (see "fakeCompile()"),
+            // and we'd end up with TWO synthetic constructors. See JANINO-143.
+            acd.constructors.remove(acd.constructors.size() - 1);
         }
-
-        // Notice: The enclosing instance of the anonymous class is "this", not the
-        // qualification of the NewAnonymousClassInstance.
-        Java.Scope s;
-        for (
-            s = naci.getEnclosingBlockStatement();
-            !(s instanceof Java.TypeBodyDeclaration);
-            s = s.getEnclosingScope()
-        );
-        Java.ThisReference oei;
-        if (((Java.TypeBodyDeclaration) s).isStatic()) {
-            oei = null;
-        } else
-        {
-            oei = new Java.ThisReference(loc);
-            oei.setEnclosingBlockStatement(naci.getEnclosingBlockStatement());
-        }
-        this.invokeConstructor(
-            (Locatable) naci,                               // l
-            (Java.Scope) naci.getEnclosingBlockStatement(), // scope
-            oei,                                            // optionalEnclosingInstance
-            this.resolve(naci.anonymousClassDeclaration),   // targetClass
-            arguments2                                      // arguments
-        );
         return this.resolve(naci.anonymousClassDeclaration);
     }
     private IClass compileGet2(Java.ParameterAccess pa) throws CompileException {
