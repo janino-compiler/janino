@@ -83,8 +83,13 @@ h5 {
     which will use the first implementation of <code>IExpressionEvaluator</code> on the class path (be it
     <code>janino.jar</code> or <code>commons-compiler-jdk.jar</code>, or yet another implementation).
     <p>
-    The JUNIT regression test suite was restructured so that if differntiates between implementation-independent tests,
+    The JUNIT regression test suite was restructured so that if differentiates between implementation-independent tests,
     which are automatically executed against every implementation on the class path, and implementation-specific tests.
+    <p>
+    Also, the following bugs were fixed:
+    <ul>
+      <li>JANINO-143 <a href="http://jira.codehaus.org/browse/JANINO-143">java.lang.ClassFormatError: Duplicate method name&signature in class file Transformer1$1$1</a>
+    </ul>
 
     <h4>Version 2.5.16, January 26, 2010 - <a href="janino-2.5.16.zip">Download</a></h4>
     <ul>
