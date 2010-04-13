@@ -26,7 +26,7 @@
 <project name="Janino" default="default" basedir=".">
 	<property file="build.properties"/>
 
-	<target name="default" description="Build the distribution and publish everything" depends="dist,publish-all"/>
+	<target name="default" description="Build the distribution and publish everything" depends="dist"/>
 
 	<target name="publish-all" depends="get-xircles-user">
 		<echo message="rsync to janino.codehaus.org"/>
