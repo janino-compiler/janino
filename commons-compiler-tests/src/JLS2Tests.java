@@ -38,7 +38,7 @@ public class JLS2Tests extends JaninoTestSuite {
         section("3 Lexical structure");
 
         section("3.1 Unicode");
-        exp(TRUE, "1", "'\\u00e4' == '‰'");
+        exp(TRUE, "1", "'\\u00e4' == '√§'");
 
         section("3.2 Lexical Translations");
         scr(PARS, "1", "3--4");
@@ -71,7 +71,7 @@ public class JLS2Tests extends JaninoTestSuite {
 
         section("3.8 Identifiers");
         scr(EXEC, "1", "int a;");
-        scr(EXEC, "2", "int ‰‰‰;");
+        scr(EXEC, "2", "int √§√§√§;");
         scr(EXEC, "3", "int \\u0391;"); // Greek alpha
         scr(EXEC, "4", "int _aaa;");
         scr(EXEC, "5", "int $aaa;");
