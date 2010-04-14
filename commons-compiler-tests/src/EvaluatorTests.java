@@ -24,15 +24,23 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-import java.io.*;
-import java.lang.reflect.*;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.text.MessageFormat;
 import java.util.Properties;
 
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
-import org.codehaus.commons.compiler.*;
+import org.codehaus.commons.compiler.CompileException;
+import org.codehaus.commons.compiler.IClassBodyEvaluator;
+import org.codehaus.commons.compiler.ICompilerFactory;
+import org.codehaus.commons.compiler.IExpressionEvaluator;
+import org.codehaus.commons.compiler.IScriptEvaluator;
+import org.codehaus.commons.compiler.ISimpleCompiler;
 
 import for_sandbox_tests.OverridesWithDifferingVisibility;
 
@@ -61,6 +69,7 @@ public class EvaluatorTests extends TestCase {
 //        s.addTest(new EvaluatorTests("testComplicatedSyntheticAccess", compilerFactory));
 //        s.addTest(new EvaluatorTests("testStaticInitAccessProtected", compilerFactory));
         s.addTest(new EvaluatorTests("testDivByZero", compilerFactory));
+        s.addTest(new EvaluatorTests("testTrinaryOptimize", compilerFactory));
         s.addTest(new EvaluatorTests("test32kBranchLimit", compilerFactory));
         s.addTest(new EvaluatorTests("test32kConstantPool", compilerFactory));
         s.addTest(new EvaluatorTests("testHugeIntArray", compilerFactory));
@@ -450,6 +459,29 @@ public class EvaluatorTests extends TestCase {
                 }
             }
         }
+    }
+    
+    public void testTrinaryOptimize() throws Exception {
+        ISimpleCompiler sc = compilerFactory.newSimpleCompiler();
+        sc.cook(
+            "package test;\n" +
+            "public class Test {\n" +
+            "    public int runTrue() {\n" +
+            "        return true ? -1 : 1;\n" +
+            "    }\n" +
+            "    public int runFalse() {\n" +
+            "        return false ? -1 : 1;\n" +
+            "    }\n" +
+            "}"
+        );
+
+        Class<?> c = sc.getClassLoader().loadClass("test.Test");
+        Method trueMeth = c.getMethod("runTrue");
+        Method falseMeth = c.getMethod("runFalse");
+        
+        Object   o = c.newInstance();
+        assertEquals(-1, trueMeth.invoke(o, new Object[0]));
+        assertEquals(1, falseMeth.invoke(o, new Object[0]));
     }
 
     public static boolean compare(double lhs, double rhs, String comp) {

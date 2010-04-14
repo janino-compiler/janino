@@ -3840,7 +3840,7 @@ public class UnitCompiler {
             public void visitBinaryOperation(Java.BinaryOperation bo)                        { try { res[0] = UnitCompiler.this.getConstantValue2(bo); } catch (CompileException e) { throw new UCE(e); } }
             public void visitCast(Java.Cast c)                                               { try { res[0] = UnitCompiler.this.getConstantValue2(c);  } catch (CompileException e) { throw new UCE(e); } }
             public void visitClassLiteral(Java.ClassLiteral cl)                              {       res[0] = UnitCompiler.this.getConstantValue2(cl);                                                    }
-            public void visitConditionalExpression(Java.ConditionalExpression ce)            {       res[0] = UnitCompiler.this.getConstantValue2(ce);                                                    }
+            public void visitConditionalExpression(Java.ConditionalExpression ce)            { try { res[0] = UnitCompiler.this.getConstantValue2(ce); } catch (CompileException e) { throw new UCE(e); } }
             public void visitCrement(Java.Crement c)                                         {       res[0] = UnitCompiler.this.getConstantValue2(c);                                                     }
             public void visitInstanceof(Java.Instanceof io)                                  {       res[0] = UnitCompiler.this.getConstantValue2(io);                                                    }
             public void visitMethodInvocation(Java.MethodInvocation mi)                      {       res[0] = UnitCompiler.this.getConstantValue2(mi);                                                    }
@@ -3891,6 +3891,17 @@ public class UnitCompiler {
         }
         return null;
     }
+    
+    private Object getConstantValue2(Java.ConditionalExpression ce) throws CompileException {
+        Object lhsValue = this.getConstantValue(ce.lhs);
+        if (lhsValue instanceof Boolean) {
+            return ((Boolean) lhsValue).booleanValue() ?
+                this.getConstantValue(ce.mhs) :
+                this.getConstantValue(ce.rhs);
+        }
+        return null;
+    }
+    
     private Object getConstantValue2(Java.BinaryOperation bo) throws CompileException {
 
         // null == null
@@ -4111,6 +4122,8 @@ public class UnitCompiler {
         return this.getNegatedConstantValue(pe.value);
     }
     private Object getNegatedConstantValue2(Java.Literal l) throws CompileException {
+        if (l.value instanceof Byte) return new Byte((byte)-((Byte) l.value).byteValue());
+        if (l.value instanceof Short) return new Short((short)-((Short) l.value).shortValue());
         if (l.value instanceof Integer) return new Integer(-((Integer) l.value).intValue());
         if (l.value instanceof Long)    return new Long(-((Long) l.value).longValue());
         if (l.value instanceof Float)   return new Float(-((Float) l.value).floatValue());
