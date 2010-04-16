@@ -2528,14 +2528,15 @@ public class UnitCompiler {
                         );
                     }
 
-                    // null == x
-                    // x == null
-                    IClass ohsType = this.compileGetValue(lhsIsNull ? bo.rhs : bo.lhs);
-                    if (ohsType.isPrimitive()) {
-                        this.compileError(
-                            "Cannot compare \"null\" with primitive type \"" + ohsType.toString() + "\"",
-                            bo.getLocation()
-                        );
+                    // check types for x == null, null == x, but NOT null == null
+                    if (!lhsIsNull || !rhsIsNull) {
+                        IClass ohsType = this.compileGetValue(lhsIsNull ? bo.rhs : bo.lhs);
+                        if (ohsType.isPrimitive()) {
+                            this.compileError(
+                                "Cannot compare \"null\" with primitive type \"" + ohsType.toString() + "\"",
+                                bo.getLocation()
+                            );
+                        }
                     }
                     this.writeBranch(bo, Opcode.IFNULL + opIdx, dst);
                     return;

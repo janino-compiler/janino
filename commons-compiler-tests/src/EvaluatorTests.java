@@ -85,6 +85,7 @@ public class EvaluatorTests extends TestCase {
         s.addTest(new EvaluatorTests("testAbstractGrandParentsWithCovariantReturns", compilerFactory));
         s.addTest(new EvaluatorTests("testStringBuilderLength", compilerFactory));
         s.addTest(new EvaluatorTests("testBaseClassAccess", compilerFactory));
+        s.addTest(new EvaluatorTests("testNullComparator", compilerFactory));
         return s;
     }
 
@@ -871,8 +872,6 @@ public class EvaluatorTests extends TestCase {
         assertEquals(sb.length(), get.invoke(t, new Object[] { sb }));
     }
 
-
-
     public void testBaseClassAccess() throws Exception {
         assertCompiles(true,
                 "    class top extends other_package.ScopingRules {\n" +
@@ -885,6 +884,20 @@ public class EvaluatorTests extends TestCase {
                 "        public void test() {\n" +
                 "            Inner i = new Inner();\n" +
                 "            i.publicMethod();\n" +
+                "        }\n" +
+                "    }"
+        );
+    }
+
+    public void testNullComparator() throws Exception {
+        assertCompiles(true,
+                "    class Test {\n" +
+                "        public void test() {\n" +
+                "            if (null == null) {\n" +
+                "               // success\n" +
+                "            } else if (null != null) {\n" +
+                "                throw new RuntimeException();\n" +
+                "            }\n" +
                 "        }\n" +
                 "    }"
         );
