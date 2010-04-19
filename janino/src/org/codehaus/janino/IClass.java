@@ -217,10 +217,16 @@ public abstract class IClass {
 
     public static final IMethod[] NO_IMETHODS = new IMethod[0];
 
+    /**
+     * @return Whether this {@link IClass} does declare an {@link IMethod} with the given name and parameter types
+     */
     public final boolean hasIMethod(String methodName, IClass[] parameterTypes) throws CompileException {
         return findIMethod(methodName, parameterTypes) != null;
     }
 
+    /**
+     * @return The {@link IMethod} declared in this {@link IClass} with the given name and parameter types
+     */
     public final IMethod findIMethod(String methodName, IClass[] parameterTypes) throws CompileException {
         IMethod[] ims = this.getDeclaredIMethods(methodName);
         for (int i = 0; i < ims.length; ++i) {
@@ -822,6 +828,9 @@ public abstract class IClass {
         }
         public String toString() {
             StringBuffer sb = new StringBuffer();
+            sb.append(this.getAccess().toString()).append(' ');
+            if (this.isStatic()) sb.append("static ");
+            if (this.isAbstract()) sb.append("abstract ");
             try {
                 sb.append(this.getReturnType().toString());
             } catch (CompileException ex) {
