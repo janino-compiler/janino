@@ -2798,7 +2798,9 @@ public final class Java {
     }
 
     public static final class MethodInvocation extends Invocation {
-        public final Atom   optionalTarget; // null == simple method name.
+
+        /** null == method invocation by simple method name */
+        public final Atom optionalTarget;
 
         public MethodInvocation(
             Location location,
