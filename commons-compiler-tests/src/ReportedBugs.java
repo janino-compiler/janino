@@ -32,7 +32,10 @@ import util.JaninoTestSuite;
 import junit.framework.*;
 
 public class ReportedBugs extends JaninoTestSuite {
-//    public ReportedBugs(String name) { super(name); }
+
+    public static TestSuite suite() throws Exception {
+        return new ReportedBugs(CompilerFactoryFactory.getDefaultCompilerFactory());
+    }
 
     public ReportedBugs(ICompilerFactory compilerFactory) throws Exception {
         super("Regression tests for reported bugs", compilerFactory);
@@ -397,6 +400,22 @@ public class ReportedBugs extends JaninoTestSuite {
 
         section(null);
         jscl("Bug 106", new File("aux-files/Bug 106"), "b.C3");
+
+        sim(TRUE, "Bug 146/1", (
+            "class MyFile extends java.io.File {\n"
+            + "    public MyFile() { super(\"/my/file\"); }\n"
+            + "}\n"
+            + "public class Main {\n"
+            + "    public static boolean test() {\n"
+            + "        return 0 == new MyFile().compareTo(new MyFile());\n"
+            + "    }\n"
+            + "}"
+        ), "Main");
+        scr(TRUE, "Bug 146/2", (
+            "StringBuffer sb = new StringBuffer();\n"
+            + "sb.append('(');\n"
+            + "return sb.length() == 1;\n"
+        ));
     }
 
 //    /**

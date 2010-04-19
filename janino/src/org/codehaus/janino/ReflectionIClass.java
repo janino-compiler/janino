@@ -62,9 +62,10 @@ class ReflectionIClass extends IClass {
         for (int i = 0; i < methods.length; ++i) {
             Method m = methods[i];
 
-            // Skip JDK 1.5 synthetic methods (e.g. those generated for
-            // covariant return values).
-            if ((m.getModifiers() & Mod.SYNTHETIC) != 0) continue;
+            // Formerly, the Java 5 synthetic methods were skipped here, because they are not "declared", i.e. hand-
+            // written. However that turned out to be a bad idea, because with parameterized types the check that
+            // all abstract methods are implemented fails.
+//            if ((m.getModifiers() & Mod.SYNTHETIC) != 0) continue;
 
             // Wrap java.reflection.Method in an IMethod.
             iMethods.add(new ReflectionIMethod(m));

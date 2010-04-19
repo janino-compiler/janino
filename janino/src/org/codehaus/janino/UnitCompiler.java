@@ -367,7 +367,7 @@ public class UnitCompiler {
         // Check that all methods are implemented.
         if ((cd.getModifiers() & Mod.ABSTRACT) == 0) {
             IMethod[] ms = iClass.getIMethods();
-            for (int i = 0; i <  ms.length; ++i) {
+            for (int i = 0; i < ms.length; ++i) {
                 IMethod base = ms[i];
                 if (base.isAbstract()) {
                     IMethod override = iClass.findIMethod(base.getName(), base.getParameterTypes());
@@ -2531,7 +2531,7 @@ public class UnitCompiler {
                     // check types for x == null, null == x, but NOT null == null
                     if (!lhsIsNull || !rhsIsNull) {
                         IClass ohsType = this.compileGetValue(lhsIsNull ? bo.rhs : bo.lhs);
-                        if (ohsType.isPrimitive()) {
+                       if (ohsType.isPrimitive()) {
                             this.compileError(
                                 "Cannot compare \"null\" with primitive type \"" + ohsType.toString() + "\"",
                                 bo.getLocation()
@@ -6371,8 +6371,9 @@ public class UnitCompiler {
         IClass.IMethod iMethod;
         FIND_METHOD: {
 
-            // Method declared by enclosing type declarations?
             if (mi.optionalTarget == null) {
+
+                // Method invocation by simple method name... method must be declared by an enclosing type declaration.
                 for (
                     Java.Scope s = mi.getEnclosingBlockStatement();
                     !(s instanceof Java.CompilationUnit);
@@ -6389,15 +6390,14 @@ public class UnitCompiler {
                         if (iMethod != null) break FIND_METHOD;
                     }
                 }
-            }
+            } else
+            {
 
-            // Method declared by the target's type?
-            if (mi.optionalTarget != null) {
-
-                // Find methods with specified name.
+                // Method invocation by "target": "expr.meth(arguments)" -- method must be declared by the target's
+                // type.
                 iMethod = this.findIMethod(
-                        this.getType(mi.optionalTarget), // targetType
-                        mi                               // invocable
+                    this.getType(mi.optionalTarget), // targetType
+                    mi                               // invocable
                 );
                 if (iMethod != null) break FIND_METHOD;
             }
@@ -6483,6 +6483,16 @@ public class UnitCompiler {
         // Get all methods
         List ms = new ArrayList();
         this.getIMethods(targetType, invocation.methodName, ms);
+
+        // JLS2 6.4.3
+        if (targetType.isInterface()) {
+            IClass.IMethod[] oms = this.iClassLoader.OBJECT.getDeclaredIMethods(invocation.methodName);
+            for (int i = 0; i < oms.length; ++i) {
+                IClass.IMethod om = oms[i];
+                if (!om.isStatic() && om.getAccess() == Access.PUBLIC) ms.add(om);
+            }
+        }
+
         if (ms.size() == 0) return null;
 
         // Determine arguments' types, choose the most specific method
@@ -6536,15 +6546,6 @@ public class UnitCompiler {
         // Check superinterfaces.
         IClass[] interfaces = type.getInterfaces();
         for (int i = 0; i < interfaces.length; ++i) this.getIMethods(interfaces[i], methodName, v);
-
-        // JLS2 6.4.3
-        if (superclass == null && interfaces.length == 0 && type.isInterface()) {
-            IClass.IMethod[] oms = this.iClassLoader.OBJECT.getDeclaredIMethods(methodName);
-            for (int i = 0; i < oms.length; ++i) {
-                IClass.IMethod om = oms[i];
-                if (!om.isStatic() && om.getAccess() == Access.PUBLIC) v.add(om);
-            }
-        }
     }
 
     public IClass.IMethod findIMethod(Java.SuperclassMethodInvocation scmi) throws CompileException {
@@ -6597,9 +6598,11 @@ public class UnitCompiler {
             argumentTypes[i] = this.getType(arguments[i]);
         }
 
+        // Determine most specific invocable WITHOUT boxing.
         IInvocable ii = this.findMostSpecificIInvocable(l, iInvocables, argumentTypes, false, contextScope);
         if (ii != null) return ii;
 
+        // Determine most specific invocable WITH boxing.
         ii = this.findMostSpecificIInvocable(l, iInvocables, argumentTypes, true, contextScope);
         if (ii != null) return ii;
 
@@ -6729,11 +6732,9 @@ public class UnitCompiler {
 
         ONE_NON_ABSTRACT_INVOCABLE:
         if (maximallySpecificIInvocables.size() > 1 && iInvocables[0] instanceof IClass.IMethod) {
-            final IClass.IMethod im = (IClass.IMethod) maximallySpecificIInvocables.get(0);
 
-            // Check if all methods have the same signature (i.e. the types of all their
-            // parameters are identical) and exactly one of the methods is non-abstract
-            // (JLS 15.12.2.2.BL2.B1).
+            // Check if all methods have the same signature (i.e. the types of all their parameters are identical) and
+            // exactly one of the methods is non-abstract (JLS 15.12.2.2.BL2.B1).
             IClass.IMethod theNonAbstractMethod = null;
             {
                 Iterator it = maximallySpecificIInvocables.iterator();
@@ -6746,6 +6747,23 @@ public class UnitCompiler {
                         } else {
                             IClass declaringIClass = m.getDeclaringIClass();
                             IClass theNonAbstractMethodDeclaringIClass = theNonAbstractMethod.getDeclaringIClass();
+                            if (declaringIClass == theNonAbstractMethodDeclaringIClass) {
+                                if (m.getReturnType() == theNonAbstractMethod.getReturnType()) {
+                                    throw new JaninoRuntimeException(
+                                        "Two non-abstract methods '" + m + "' have the same parameter types, "
+                                        + "declaring type and return type"
+                                    );
+                                } else
+                                if (m.getReturnType().isAssignableFrom(theNonAbstractMethod.getReturnType())) {
+                                    ;
+                                } else
+                                if (theNonAbstractMethod.getReturnType().isAssignableFrom(m.getReturnType())) {
+                                    theNonAbstractMethod = m;
+                                } else
+                                {
+                                    throw new JaninoRuntimeException("Incompatible return types");
+                                }
+                            } else
                             if (declaringIClass.isAssignableFrom(theNonAbstractMethodDeclaringIClass)) {
                                 ;
                             } else
@@ -6754,8 +6772,9 @@ public class UnitCompiler {
                             } else
                             {
                                 throw new JaninoRuntimeException(
-                                    "SNO: "
-                                    + "More than one non-abstract method with same signature and same declaring class!?"
+                                    "SNO: Types declaring '"
+                                    + theNonAbstractMethod
+                                    + "' are not assignable"
                                 );
                             }
                         }
@@ -6774,6 +6793,7 @@ public class UnitCompiler {
             if (theNonAbstractMethod != null) return theNonAbstractMethod;
 
             // JLS 15.12.2.2.BL2.B1.B2
+            // Check "that exception [te1] is declared in the THROWS clause of each of the maximally specific methods".
             Set s = new HashSet();
             {
                 IClass[][] tes = new IClass[maximallySpecificIInvocables.size()][];
@@ -6784,9 +6804,6 @@ public class UnitCompiler {
                 for (int i = 0; i < tes.length; ++i) {
                     EACH_EXCEPTION:
                     for (int j = 0; j < tes[i].length; ++j) {
-
-                        // Check whether "that exception [te1] is declared in the THROWS
-                        // clause of each of the maximally specific methods".
                         IClass te1 = tes[i][j];
                         EACH_METHOD:
                         for (int k = 0; k < tes.length; ++k) {
@@ -6802,6 +6819,8 @@ public class UnitCompiler {
                 }
             }
 
+            // Return a "dummy" method.
+            final IClass.IMethod im = (IClass.IMethod) maximallySpecificIInvocables.get(0);
             final IClass[] tes = (IClass[]) s.toArray(new IClass[s.size()]);
             return im.getDeclaringIClass().new IMethod() {
                 public String   getName()                                   { return im.getName(); }

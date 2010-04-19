@@ -38,7 +38,7 @@ public class JLS2Tests extends JaninoTestSuite {
         section("3 Lexical structure");
 
         section("3.1 Unicode");
-        exp(TRUE, "1", "'\\u00e4' == 'ä'");
+        exp(TRUE, "1", "'\\u00e4' == '\u00e4'");
 
         section("3.2 Lexical Translations");
         scr(PARS, "1", "3--4");
@@ -71,7 +71,7 @@ public class JLS2Tests extends JaninoTestSuite {
 
         section("3.8 Identifiers");
         scr(EXEC, "1", "int a;");
-        scr(EXEC, "2", "int äää;");
+        scr(EXEC, "2", "int \u00e4\u00e4\u00e4;");
         scr(EXEC, "3", "int \\u0391;"); // Greek alpha
         scr(EXEC, "4", "int _aaa;");
         scr(EXEC, "5", "int $aaa;");
@@ -362,6 +362,20 @@ public class JLS2Tests extends JaninoTestSuite {
         exp(COMP, "4f", "new other_package.Foo(3).new PublicStaticMemberClass()");
         exp(COMP, "4g", "new other_package.Foo(3).new PublicMemberInterface()");
         exp(COMP, "4h", "new java.util.ArrayList().new PublicMemberClass()");
+        // The following one is tricky: A Java 6 JRE declares
+        //    public int          File.compareTo(File)
+        //    public abstract int Comparable.compareTo(Object)
+        // , and yet "File" is not abstract!
+        sim(TRUE, "5", (
+            "class MyFile extends java.io.File {\n"
+            + "    public MyFile() { super(\"/my/file\"); }\n"
+            + "}\n"
+            + "public class Main {\n"
+            + "    public static boolean test() {\n"
+            + "        return 0 == new MyFile().compareTo(new MyFile());\n"
+            + "    }\n"
+            + "}"
+        ), "Main");
 
         section("15.9.3 Choosing the Constructor and its Arguments");
         exp(EXEC, "1", "new Integer(3)");
