@@ -23,10 +23,8 @@
   POSSIBILITY OF SUCH DAMAGE.
 //-->
 
-<project name="Janino" default="default" basedir=".">
+<project name="Janino" default="dist" basedir=".">
 	<property file="build.properties"/>
-
-	<target name="default" description="Build the distribution and publish everything" depends="dist"/>
 
 	<target name="publish-all" depends="get-xircles-user">
 		<echo message="rsync to janino.codehaus.org"/>
@@ -38,11 +36,13 @@
 			<arg value="--exclude=.svn"/>
 			<arg value="favicon.ico"/>
 			<arg value="build/janino-${version}.zip"/>
+			<arg value="build/lib/commons-compiler.jar"/>
 			<arg value="build/lib/janino.jar"/>
 			<arg value="build/lib/commons-compiler-jdk.jar"/>
 			<arg value="new_bsd_license.txt"/>
 			<arg value="changelog.html"/>
 			<arg value="build/pad_file.xml"/>
+			<arg value="build/javadoc"/>
 			<arg value="../janino/src/org/codehaus/janino/samples"/>
 			<arg value="${xircles-user}@janino.codehaus.org:/projects/janino/dist/"/>
 		</exec>
@@ -69,28 +69,43 @@
 		/>
 	</target>
 
-	<target name="dist" depends="clean,janino.jar,commons-compiler-jdk.jar,javadoc">
+	<target name="dist" depends="janino-zip,pad-file"/>
+
+	<target name="janino-zip" depends="clean,commons-compiler.jar,janino.jar,commons-compiler-jdk.jar,src-zips">
 		<zip destfile="build/janino-${version}.zip" filesonly="true">
 			<zipfileset file="build/lib/commons-compiler.jar"     prefix="janino-${version}"/>
 			<zipfileset file="build/lib/janino.jar"               prefix="janino-${version}"/>
 			<zipfileset file="build/lib/commons-compiler-jdk.jar" prefix="janino-${version}"/>
 
-			<zipfileset dir="../commons-compiler/src"     prefix="janino-${version}/src/commons-compiler/src"/>
-			<zipfileset dir="../janino/src"               prefix="janino-${version}/src/janino/src"/>
-			<zipfileset dir="../commons-compiler-jdk/src" prefix="janino-${version}/src/commons-compiler-jdk/src"/>
+			<zipfileset file="build/commons-compiler-src.zip"     prefix="janino-${version}"/>
+			<zipfileset file="build/janino-src.zip"               prefix="janino-${version}"/>
+			<zipfileset file="build/commons-compiler-jdk-src.zip" prefix="janino-${version}"/>
 
-			<zipfileset dir="build/javadoc" prefix="janino-${version}/javadoc"/>
-
-			<zipfileset file="new_bsd_license.txt" prefix="janino-${version}"/>
+			<zipfileset file="README.txt"                         prefix="janino-${version}"/>
+			<zipfileset file="new_bsd_license.txt"                prefix="janino-${version}"/>
 		</zip>
+	</target>
 
-		<length file="build/lib/janino.jar" property="janino-jar-size"/>
+	<target name="pad-file">
+		<length file="build/janino-${version}.zip" property="janino-zip-size"/>
 		<copy file="pad_file-template.xml" tofile="build/pad_file.xml" encoding="ISO-8859-1">
 			<filterchain>
 				<replacestring from="@VERSION@" to="${version}"/>
-				<replacestring from="@SIZE@"    to="${janino-jar-size}"/>
+				<replacestring from="@SIZE@"    to="${janino-zip-size}"/>
 			</filterchain>
 		</copy>
+	</target>
+
+	<target name="src-zips">
+		<zip destfile="build/commons-compiler-src.zip" filesonly="true">
+			<zipfileset dir="../commons-compiler/src"/>
+		</zip>
+		<zip destfile="build/janino-src.zip" filesonly="true">
+			<zipfileset dir="../janino/src"/>
+		</zip>
+		<zip destfile="build/commons-compiler-jdk-src.zip" filesonly="true">
+			<zipfileset dir="../commons-compiler-jdk/src"/>
+		</zip>
 	</target>
 
 	<target name="compile-commons-compiler">
@@ -147,10 +162,23 @@
 		</copy>
 	</target>
 
-	<target name="janino.jar" depends="compile-commons-compiler,compile-janino">
+	<target name="commons-compiler.jar" depends="compile-commons-compiler">
+		<mkdir dir="build/lib"/>
+		<jar jarfile="build/lib/commons-compiler.jar" filesonly="true">
+			<fileset dir="build/bin-commons-compiler"/>
+		</jar>
+		<signjar
+			keystore="dummy-keystore"
+			storepass="storepass"
+			keypass="keypass"
+			jar="build/lib/commons-compiler.jar"
+			alias="dummy"
+		/>
+	</target>
+
+	<target name="janino.jar" depends="compile-janino">
 		<mkdir dir="build/lib"/>
 		<jar jarfile="build/lib/janino.jar" filesonly="true">
-			<fileset dir="build/bin-commons-compiler"/>
 			<fileset dir="build/bin-janino"/>
 		</jar>
 		<signjar
@@ -161,18 +189,10 @@
 			alias="dummy"
 		/>
 	</target>
-	<target name="janino-src.jar" depends="compile-commons-compiler,compile-janino">
-		<mkdir dir="build/lib"/>
-		<jar jarfile="build/lib/janino-src.jar" filesonly="true">
-			<fileset dir="../commons-compiler-jdk/src"/>
-			<fileset dir="../janino/src"/>
-		</jar>
-	</target>
 
-	<target name="commons-compiler-jdk.jar" depends="compile-commons-compiler,compile-commons-compiler-jdk">
+	<target name="commons-compiler-jdk.jar" depends="compile-commons-compiler-jdk">
 		<mkdir dir="build/lib"/>
 		<jar jarfile="build/lib/commons-compiler-jdk.jar" filesonly="true">
-			<fileset dir="build/bin-commons-compiler"/>
 			<fileset dir="build/bin-commons-compiler-jdk"/>
 		</jar>
 		<signjar

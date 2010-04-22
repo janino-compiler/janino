@@ -59,7 +59,7 @@
     <Includes_DirectX />
     <File_Info>
       <Filename_Long>janino-@VERSION@.zip</Filename_Long>
-      <Filename_Generic>janino.zip</Filename_Generic>
+      <Filename_Generic>janino-@VERSION@.zip</Filename_Generic>
       <File_Size_Bytes>@SIZE@</File_Size_Bytes>
     </File_Info>
     <Expire_Info>
