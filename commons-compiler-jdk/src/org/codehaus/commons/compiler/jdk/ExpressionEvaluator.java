@@ -26,9 +26,16 @@
 
 package org.codehaus.commons.compiler.jdk;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.Reader;
+import java.io.StringReader;
+import java.io.StringWriter;
 
-import org.codehaus.commons.compiler.*;
+import org.codehaus.commons.compiler.CompileException;
+import org.codehaus.commons.compiler.Cookable;
+import org.codehaus.commons.compiler.IExpressionEvaluator;
 
 /**
  * This {@link IExpressionEvaluator} is implemented by creating and compiling a temporary compilation unit defining one
@@ -213,10 +220,11 @@ public class ExpressionEvaluator extends ScriptEvaluator implements IExpressionE
                 pw.print("return org.codehaus.commons.compiler.PrimitiveWrapper.wrap(");
                 pw.write(readString(readers[i]));
                 pw.println(");");
-            } else
-            {
+            } else { 
                 returnTypes[i] = this.optionalExpressionTypes[i];
-                pw.print("return ");
+                if (returnTypes[i] != void.class && returnTypes[i] != Void.class) {
+                    pw.print("return ");
+                }
                 pw.write(readString(readers[i]));
                 pw.println(";");
             }

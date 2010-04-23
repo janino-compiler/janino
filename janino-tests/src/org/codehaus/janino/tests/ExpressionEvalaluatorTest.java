@@ -26,23 +26,38 @@
 
 package org.codehaus.janino.tests;
 
-import junit.framework.*;
+import static org.junit.Assert.assertEquals;
 
-/**
- * Bundles all JANINO-specific tests in one suite.
- */
-public class JaninoTests extends TestSuite {
+import java.io.StringReader;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
-    public static Test suite() throws Exception {
-        return new JaninoTests();
+import org.codehaus.janino.ExpressionEvaluator;
+import org.codehaus.janino.Scanner;
+import org.codehaus.janino.ScriptEvaluator;
+import org.junit.Test;
+
+public class ExpressionEvalaluatorTest {
+
+    @Test
+    public void testGuessParameterNames() throws Exception {
+        Set parameterNames = new HashSet(
+            Arrays.asList(ExpressionEvaluator.guessParameterNames(new Scanner(null, new StringReader(
+                "import o.p;\n" +
+                "a + b.c + d.e() + f() + g.h.I.j() + k.l.M"
+            ))))
+        );
+        assertEquals(new HashSet(Arrays.asList(new String[] { "a", "b", "d" })), parameterNames);
+
+        parameterNames = new HashSet(
+            Arrays.asList(ScriptEvaluator.guessParameterNames(new Scanner(null, new StringReader(
+                "import o.p;\n" +
+                "int a;\n" +
+                "return a + b.c + d.e() + f() + g.h.I.j() + k.l.M;"
+            ))))
+        );
+        assertEquals(new HashSet(Arrays.asList(new String[] { "b", "d" })), parameterNames);
     }
 
-    public JaninoTests() throws Exception {
-        super("Janino-specific test cases");
-
-        this.addTest(AstTests.suite());
-        this.addTest(CompilerTests.suite());
-        this.addTest(EvaluatorTests.suite());
-        this.addTest(UnparseTests.suite());
-    }
 }

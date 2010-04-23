@@ -24,23 +24,37 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-import java.io.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
-import org.codehaus.commons.compiler.*;
+import java.io.File;
+import java.io.StringReader;
+import java.util.Collection;
+
+import org.codehaus.commons.compiler.CompilerFactoryFactory;
+import org.codehaus.commons.compiler.ICompilerFactory;
+import org.codehaus.commons.compiler.ISimpleCompiler;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
+
 import util.JaninoTestSuite;
+import util.TestUtil;
 
-import junit.framework.*;
-
+@RunWith(Parameterized.class)
 public class ReportedBugs extends JaninoTestSuite {
-
-    public static TestSuite suite() throws Exception {
-        return new ReportedBugs(CompilerFactoryFactory.getDefaultCompilerFactory());
+    @Parameters
+    public static Collection<Object[]> compilerFactories() throws Exception {
+        return TestUtil.getCompilerFactoriesForParameters();
     }
-
+    
     public ReportedBugs(ICompilerFactory compilerFactory) throws Exception {
-        super("Regression tests for reported bugs", compilerFactory);
-
-        section("Bug 48");
+        super(compilerFactory);
+    }
+    
+    @Test
+    public void testBug48() throws Exception {
         sim(EXEC, "1", (
             "package demo;\n" +
             "public class Service {\n" +
@@ -61,26 +75,10 @@ public class ReportedBugs extends JaninoTestSuite {
             "class Broken {\n" +
             "}"
         ), "demo.Service");
-
-        section(null);
-//        this.addTest(new TestCase("Bug 53") { protected void runTest() throws Exception {
-//            assertEquals(
-//                "new Foo(a, b, 7)",
-//                newStringParser("new Foo(a, b, 7)").parsePrimary().toString()
-//            );
-//            assertEquals(
-//                "new Foo(new Object() { ... })",
-//                newStringParser(
-//                    "new Foo(new Object() {\n" +
-//                    "    void meth(String s) {\n" +
-//                    "        System.out.println(s);\n" +
-//                    "    }\n" +
-//                    "})"
-//                ).parsePrimary().toString()
-//            );
-//        }});
-
-        section("Bug 54");
+    }
+    
+    @Test
+    public void testBug54() throws Exception {
         scr(TRUE, "0", (
             "String s = \"\";\n" +
             "try {\n" +
@@ -194,15 +192,19 @@ public class ReportedBugs extends JaninoTestSuite {
             "}\n" +
             "int b = 3;\n" // Physically unreachable, but logically reachable, hence not a compile error.
         ));
-
-        section(null);
+    }
+    
+    @Test
+    public void testBug55() throws Exception {
         sim(COOK, "Bug 55", (
             "class Junk {" + "\n" +
             "    double[][] x = { { 123.4 } };" + "\n" +
             "}"
         ), null);
-
-        section(null);
+    }
+    
+    @Test
+    public void testBug56() throws Exception {
         scr(COOK, "Bug 56", (
             "int dummy3 = 3;\n" +
             "try {\n" +
@@ -223,11 +225,10 @@ public class ReportedBugs extends JaninoTestSuite {
             "    ++dummy3;\n" +
             "}\n"
         ));
-
-        // Bug 57: See JLS2Tests 14.10.
-        // Bug 60: See JLS2Tests 14.3/1.
-
-        section("Bug 63");
+    }
+    
+    @Test
+    public void testBug63() throws Exception {
         clb(COMP, "0", (
             "public static boolean main() {\n" +
             "    IPred p = new Pred();\n" +
@@ -240,10 +241,10 @@ public class ReportedBugs extends JaninoTestSuite {
             "    return !p.filter();\n" +
             "}\n"
         ));
-
-        // Bug 67: See "JavaSourceClassLoaderTests".
-
-        section("Bug 69");
+    }
+    
+    @Test
+    public void testBug69() throws Exception {
         sim(EXEC, "0", (
             "public class Test {\n" +
             "    public static void test() {\n" +
@@ -271,8 +272,10 @@ public class ReportedBugs extends JaninoTestSuite {
             "    }\n" +
             "}\n"
         ), "Test");
-
-        section("Bug 70");
+    }
+    
+    @Test
+    public void testBug70() throws Exception {
         clb(COOK, "0", (
             "public String result = \"allow\", email = null, anno = null, cnd = null, transactionID = null;\n" +
             "public String treeCode(String root) {\n" +
@@ -285,8 +288,10 @@ public class ReportedBugs extends JaninoTestSuite {
             "    return result;\n" +
             "}\n"
         ));
-
-        section("Bug 71");
+    }
+    
+    @Test
+    public void testBug71() throws Exception {
         sim(TRUE, "Alternate Constructor Invocation", (
             "public class ACI {\n" +
             "    public static boolean test() {\n" +
@@ -327,13 +332,17 @@ public class ReportedBugs extends JaninoTestSuite {
             "    }\n" +
             "}\n"
         ), "SCI");
-
-        //  Bug 78: See JLS2Tests, section 15.11.2.
-
-        section("Bug 80"); // Expression compilation is said to throw StackOverflowError!?
+    }
+    
+    @Test
+    public void testBug80() throws Exception {
+        // Expression compilation is said to throw StackOverflowError!?
         exp(COMP, "Erroneous expression", "(10).total >= 100.0 ? 0.0 : 7.95");
-
-        section("Bug 81"); // IncompatibleClassChangeError when invoking getClass() on interface references
+    }
+    
+    @Test
+    public void testBug81() throws Exception {
+        // IncompatibleClassChangeError when invoking getClass() on interface references
         scr(EXEC, "x", (
             "import java.util.ArrayList;\n" +
             "import java.util.List;\n" +
@@ -341,18 +350,21 @@ public class ReportedBugs extends JaninoTestSuite {
             "List list = new ArrayList();\n" +
             "System.out.println(list.getClass());\n"
         ));
-
-        // Bug 95: See "EvaluatorTests.testFastClassBodyEvaluator2()".
-
-        section("Bug 99");
+    }
+    
+    @Test
+    public void testBug99() throws Exception {
         // ConcurrentModificationException due to instance variable of Class type initialized using a class literal
         sim(COOK, "xyz", "class Test{Class c = String.class;}", "Test");
-
-        section("Bug 102"); // Static initializers are not executed
+    }
+    
+    @Test
+    public void testBug102() throws Exception {
+        // Static initializers are not executed
         sim(TRUE, "Static initializer", (
             "public class Test{\n" +
             "  static String x = \"\";\n" +
-            "  static { x += a; }\n" +
+            "  static { x += 0; }\n" +
             "  static int a = 7;\n" +
             "  static { x += a; }\n" +
             "  static { System.out.println(\"HELLO\");\n }\n" +
@@ -362,20 +374,20 @@ public class ReportedBugs extends JaninoTestSuite {
             "  }\n" +
             "}"
         ), "Test");
-        addTest(new TestCase("Static initializer") {
-            protected void runTest() throws Throwable {
-                ISimpleCompiler compiler = CompilerFactoryFactory.getDefaultCompilerFactory().newSimpleCompiler();
-                compiler.cook(new StringReader("public class Test{static{System.setProperty(\"foo\", \"bar\");}}"));
-                Class<?> testClass = compiler.getClassLoader().loadClass("Test"); // Only loads the class (JLS2 12.2)
-                assertNull(System.getProperty("foo"));
-                testClass.newInstance(); // Initializes the class (JLS2 12.4)
-                assertEquals("bar", System.getProperty("foo"));
-                System.getProperties().remove("foo");
-                assertNull(System.getProperty("foo"));
-            }
-        });
-
-        section("Bug 105"); // Possible to call a method of an enclosing class as if it was a member of an inner class
+        
+        ISimpleCompiler compiler = CompilerFactoryFactory.getDefaultCompilerFactory().newSimpleCompiler();
+        compiler.cook(new StringReader("public class Test{static{System.setProperty(\"foo\", \"bar\");}}"));
+        Class<?> testClass = compiler.getClassLoader().loadClass("Test"); // Only loads the class (JLS2 12.2)
+        assertNull(System.getProperty("foo"));
+        testClass.newInstance(); // Initializes the class (JLS2 12.4)
+        assertEquals("bar", System.getProperty("foo"));
+        System.getProperties().remove("foo");
+        assertNull(System.getProperty("foo"));
+    }
+    
+    @Test
+    public void testBug105() throws Exception {
+        // Possible to call a method of an enclosing class as if it was a member of an inner class
         clb(COMP, "Invalid enclosing instance method call", (
             "class Price {\n" +
             "  public int getPriceA() {\n" +
@@ -397,10 +409,11 @@ public class ReportedBugs extends JaninoTestSuite {
             "  return 17;\n" +
             "}\n"
         ));
-
-        section(null);
+    }
+    
+    @Test
+    public void testBug106() throws Exception {
         jscl("Bug 106", new File("aux-files/Bug 106"), "b.C3");
-
         sim(TRUE, "Bug 146/1", (
             "class MyFile extends java.io.File {\n"
             + "    public MyFile() { super(\"/my/file\"); }\n"
@@ -417,11 +430,4 @@ public class ReportedBugs extends JaninoTestSuite {
             + "return sb.length() == 1;\n"
         ));
     }
-
-//    /**
-//     * Create a {@link Parser} reading from a given {@link java.lang.String}.
-//     */
-//    private static Parser newStringParser(String s) throws ScanException, IOException {
-//        return new Parser(new Scanner(null, new StringReader(s)));
-//    }
 }

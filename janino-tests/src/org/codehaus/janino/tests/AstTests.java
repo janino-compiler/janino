@@ -26,18 +26,22 @@
 
 package org.codehaus.janino.tests;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
-
-import org.codehaus.commons.compiler.*;
-import org.codehaus.janino.*;
+import org.codehaus.commons.compiler.CompileException;
+import org.codehaus.commons.compiler.Location;
+import org.codehaus.janino.Java;
+import org.codehaus.janino.Mod;
+import org.codehaus.janino.SimpleCompiler;
+import org.codehaus.janino.UnparseVisitor;
 import org.codehaus.janino.Java.AmbiguousName;
 import org.codehaus.janino.Java.ArrayType;
 import org.codehaus.janino.Java.BasicType;
@@ -52,25 +56,12 @@ import org.codehaus.janino.Java.ReturnStatement;
 import org.codehaus.janino.Java.Rvalue;
 import org.codehaus.janino.Java.Type;
 import org.codehaus.janino.Java.FunctionDeclarator.FormalParameter;
+import org.junit.Test;
 
-public class AstTests extends TestCase {
+public class AstTests {
 
-    public static Test suite() {
-        TestSuite s = new TestSuite(AstTests.class.getName());
-        s.addTest(new AstTests("testSimpleAst"));
-        s.addTest(new AstTests("testLocalVariable"));
-        s.addTest(new AstTests("testBlock"));
-        s.addTest(new AstTests("testByteArrayLiteral"));
-        s.addTest(new AstTests("testClassRef"));
-        s.addTest(new AstTests("testPrecedence"));
-        s.addTest(new AstTests("testFullyQualifiedFieldRef"));
-        return s;
-    }
-
-    public AstTests(String name) { super(name); }
-
-    private static Object compileAndEval(CompilationUnit cu) throws CompileException,
-            ClassNotFoundException,
+    private static Object compileAndEval(CompilationUnit cu) throws 
+    CompileException, ClassNotFoundException,
     InstantiationException, IllegalAccessException,
     NoSuchMethodException, InvocationTargetException {
         SimpleCompiler compiler = new SimpleCompiler();
@@ -176,7 +167,7 @@ public class AstTests extends TestCase {
         );
     }
 
-
+    @Test
     public void testBlock() throws Exception {
         CompilationUnit cu = new CompilationUnit("AstTests.java");
 
@@ -210,6 +201,7 @@ public class AstTests extends TestCase {
         }
     }
 
+    @Test
     public void testByteArrayLiteral() throws Exception {
         CompilationUnit cu = new CompilationUnit("AstTests.java");
 
@@ -241,6 +233,7 @@ public class AstTests extends TestCase {
         assertEquals(exp.byteValue(), ((byte[]) res)[0]);
     }
 
+    @Test
     public void testLocalVariable() throws Exception {
         CompilationUnit cu = new CompilationUnit("AstTests.java");
 
@@ -267,6 +260,7 @@ public class AstTests extends TestCase {
         assertEquals(Double.valueOf(6.0), res);
     }
 
+    @Test
     public void testSimpleAst() throws Exception {
         CompilationUnit cu = new CompilationUnit("AstTests.java");
 
@@ -286,6 +280,7 @@ public class AstTests extends TestCase {
         assertEquals(Double.valueOf(3.0), res);
     }
 
+    @Test
     public void testClassRef() throws Exception {
         CompilationUnit cu = new CompilationUnit("AstTests.java");
 
@@ -327,6 +322,7 @@ public class AstTests extends TestCase {
         assertEquals(handMadeClass, res);
     }
 
+    @Test
     public void testPrecedence() throws Exception {
         ExpressionStatement es = new Java.ExpressionStatement(
             new Java.Assignment(
@@ -351,6 +347,7 @@ public class AstTests extends TestCase {
     }
 
 
+    @Test
     public void testFullyQualifiedFieldRef() throws Exception {
         CompilationUnit cu = new CompilationUnit("AstTests.java");
 

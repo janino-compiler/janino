@@ -26,6 +26,10 @@
 
 package org.codehaus.janino.tests;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
@@ -35,10 +39,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
 
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.Location;
@@ -59,20 +59,13 @@ import org.codehaus.janino.util.resource.MultiResourceFinder;
 import org.codehaus.janino.util.resource.Resource;
 import org.codehaus.janino.util.resource.ResourceCreator;
 import org.codehaus.janino.util.resource.ResourceFinder;
+import org.junit.Test;
 
-public class CompilerTests extends TestCase {
+public class CompilerTests {
     private static final String JANINO_SRC           = "../janino/src";
     private static final String COMMONS_COMPILER_SRC = "../commons-compiler/src";
 
-    public static Test suite() {
-        TestSuite s = new TestSuite(Compiler.class.getName());
-        s.addTest(new CompilerTests("testSelfCompile"));
-        s.addTest(new CompilerTests("testCompileErrors"));
-        return s;
-    }
-
-    public CompilerTests(String name) { super(name); }
-
+    @Test
     public void testSelfCompile() throws Exception {
         ClassLoader bootstrapClassLoader = SimpleCompiler.BOOT_CLASS_LOADER;
         File[] sourceFiles = new File[] {
@@ -231,6 +224,7 @@ public class CompilerTests extends TestCase {
         }
     }
 
+    @Test
     public void testCompileErrors() throws Exception {
         Map sources = new HashMap();
         sources.put("pkg/A.java", ( // Class A uses class B, C, D.

@@ -26,30 +26,64 @@
 
 package org.codehaus.janino.tests;
 
-import java.io.*;
-import java.util.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
-import junit.framework.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileFilter;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.io.OutputStreamWriter;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.List;
 
-import org.codehaus.commons.compiler.*;
-import org.codehaus.janino.*;
+import org.codehaus.commons.compiler.CompileException;
+import org.codehaus.janino.Java;
+import org.codehaus.janino.Mod;
+import org.codehaus.janino.Parser;
 import org.codehaus.janino.Scanner;
-import org.codehaus.janino.Java.*;
+import org.codehaus.janino.UnparseVisitor;
+import org.codehaus.janino.Visitor;
+import org.codehaus.janino.Java.AbstractTypeDeclaration;
+import org.codehaus.janino.Java.AmbiguousName;
+import org.codehaus.janino.Java.ArrayAccessExpression;
+import org.codehaus.janino.Java.ArrayLength;
+import org.codehaus.janino.Java.Assignment;
+import org.codehaus.janino.Java.Atom;
+import org.codehaus.janino.Java.BinaryOperation;
+import org.codehaus.janino.Java.Cast;
+import org.codehaus.janino.Java.ClassLiteral;
+import org.codehaus.janino.Java.CompilationUnit;
+import org.codehaus.janino.Java.ConditionalExpression;
+import org.codehaus.janino.Java.Crement;
+import org.codehaus.janino.Java.FieldAccess;
+import org.codehaus.janino.Java.FieldAccessExpression;
+import org.codehaus.janino.Java.Instanceof;
+import org.codehaus.janino.Java.Literal;
+import org.codehaus.janino.Java.LocalVariableAccess;
+import org.codehaus.janino.Java.Locatable;
+import org.codehaus.janino.Java.Located;
+import org.codehaus.janino.Java.MethodInvocation;
+import org.codehaus.janino.Java.NewAnonymousClassInstance;
+import org.codehaus.janino.Java.NewArray;
+import org.codehaus.janino.Java.NewClassInstance;
+import org.codehaus.janino.Java.NewInitializedArray;
+import org.codehaus.janino.Java.ParameterAccess;
+import org.codehaus.janino.Java.ParenthesizedExpression;
+import org.codehaus.janino.Java.QualifiedThisReference;
+import org.codehaus.janino.Java.SuperclassFieldAccessExpression;
+import org.codehaus.janino.Java.SuperclassMethodInvocation;
+import org.codehaus.janino.Java.ThisReference;
+import org.codehaus.janino.Java.Type;
+import org.codehaus.janino.Java.UnaryOperation;
 import org.codehaus.janino.util.Traverser;
+import org.junit.Test;
 
-public class UnparseTests extends TestCase {
-    public static Test suite() {
-        TestSuite s = new TestSuite(UnparseTests.class.getName());
-        s.addTest(new UnparseTests("testLiterals"));
-        s.addTest(new UnparseTests("testSimple"));
-        s.addTest(new UnparseTests("testParens"));
-        s.addTest(new UnparseTests("testMany"));
-        s.addTest(new UnparseTests("testInterface"));
-        s.addTest(new UnparseTests("testParseUnparseParseJanino"));
-        return s;
-    }
-
-    public UnparseTests(String name) { super(name); }
+public class UnparseTests {
 
     private static void helpTestExpr(String input, String expect, boolean simplify) throws Exception {
         Parser p = new Parser(new Scanner(null, new StringReader(input)));
@@ -65,7 +99,7 @@ public class UnparseTests extends TestCase {
         String s = sw.toString();
         s = UnparseTests.replace(s, "((( ", "(");
         s = UnparseTests.replace(s, " )))", ")");
-        Assert.assertEquals(expect, s);
+        assertEquals(expect, s);
     }
 
     private static String normalizeWhitespace(String input) {
@@ -284,6 +318,7 @@ public class UnparseTests extends TestCase {
         return res[0];
     }
 
+    @Test
     public void testInterface() throws Exception {
         testInterfaceHelper(false);
         testInterfaceHelper(true);
@@ -306,6 +341,7 @@ public class UnparseTests extends TestCase {
         assertEquals(correctString, normalizeWhitespace(s));
     }
 
+    @Test
     public void testLiterals() throws Exception {
         Object[][] tests = new Object[][] {
             { new Java.Literal(null, (short) 1), "((short)1)" },
@@ -319,20 +355,23 @@ public class UnparseTests extends TestCase {
             UnparseVisitor uv = new UnparseVisitor(sw);
             expr.accept(uv);
             uv.close();
-            Assert.assertEquals(expected, sw.toString());
+            assertEquals(expected, sw.toString());
         }
     }
 
+    @Test
     public void testSimple() throws Exception {
         UnparseTests.helpTestExpr("1 + 2*3", "1 + 2 * 3", false);
         UnparseTests.helpTestExpr("1 + 2*3", "1 + 2 * 3", true);
     }
 
+    @Test
     public void testParens() throws Exception {
         UnparseTests.helpTestExpr("(1 + 2)*3", "(1 + 2) * 3", false);
         UnparseTests.helpTestExpr("(1 + 2)*3", "(1 + 2) * 3", true);
     }
 
+    @Test
     public void testMany() throws Exception {
         final String[][] exprs = new String[][] {
               //input                                  expected simplified                    expect non-simplified
@@ -390,6 +429,7 @@ public class UnparseTests extends TestCase {
         }
     }
 
+    @Test
     public void testParseUnparseParseJanino() throws Exception {
 
         // Process all "*.java" files in the JANINO source tree.
@@ -422,19 +462,19 @@ public class UnparseTests extends TestCase {
                         for (int i = 0;; ++i) {
                             if (i == elements1.length) {
                                 if (i == elements2.length) break;
-                                Assert.fail("Extra element " + elements2[i]);
+                                fail("Extra element " + elements2[i]);
                             }
                             Locatable locatable1 = elements1[i];
 
                             if (i == elements2.length) {
-                                Assert.fail("Element missing: " + locatable1);
+                                fail("Element missing: " + locatable1);
                             }
                             Locatable locatable2 = elements2[i];
 
                             String s1 = locatable1.toString();
                             String s2 = locatable2.toString();
                             if (!s1.equals(s2)) {
-                                Assert.fail(
+                                fail(
                                     locatable1.getLocation().toString()
                                     + ": Expected \""
                                     + s1
@@ -481,7 +521,7 @@ public class UnparseTests extends TestCase {
      */
     private void find(File directory, FileFilter fileFilter) {
         File[] subDirectories = directory.listFiles(fileFilter);
-        if (subDirectories == null) Assert.fail(directory + " is not a directory");
+        if (subDirectories == null) fail(directory + " is not a directory");
         for (int i = 0; i < subDirectories.length; ++i) this.find(subDirectories[i], fileFilter);
     }
 }

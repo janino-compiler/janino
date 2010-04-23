@@ -24,16 +24,20 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.text.MessageFormat;
+import java.util.Collection;
 import java.util.Properties;
-
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
 
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.IClassBodyEvaluator;
@@ -41,59 +45,28 @@ import org.codehaus.commons.compiler.ICompilerFactory;
 import org.codehaus.commons.compiler.IExpressionEvaluator;
 import org.codehaus.commons.compiler.IScriptEvaluator;
 import org.codehaus.commons.compiler.ISimpleCompiler;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
+import util.TestUtil;
 import for_sandbox_tests.OverridesWithDifferingVisibility;
 
-public class EvaluatorTests extends TestCase {
-
+@RunWith(Parameterized.class)
+public class EvaluatorTests {
     private final ICompilerFactory compilerFactory;
-
-//    public static final ClassLoader BOOT_CLASS_LOADER = new ClassLoader(null) {};
-
-    public static TestSuite suite(ICompilerFactory compilerFactory) {
-        TestSuite s = new TestSuite("EvaluatorTests");
-
-        s.addTest(new EvaluatorTests("testMultiScriptEvaluator", compilerFactory));
-        s.addTest(new EvaluatorTests("testExpressionEvaluator", compilerFactory));
-        s.addTest(new EvaluatorTests("testFastClassBodyEvaluator1", compilerFactory));
-        s.addTest(new EvaluatorTests("testFastClassBodyEvaluator2", compilerFactory));
-        s.addTest(new EvaluatorTests("testFastExpressionEvaluator", compilerFactory));
-        s.addTest(new EvaluatorTests("testManyEEs", compilerFactory));
-//        s.addTest(new EvaluatorTests("testGuessParameterNames", compilerFactory));
-        s.addTest(new EvaluatorTests("testAssertNotCooked", compilerFactory));
-        s.addTest(new EvaluatorTests("testAccessingCompilingClass", compilerFactory));
-        s.addTest(new EvaluatorTests("testProtectedAccessAcrossPackages", compilerFactory));
-
-        // The following three are known to fail because of JANINO-113:
-//        s.addTest(new EvaluatorTests("testProtectedAccessWithinPackage", compilerFactory));
-//        s.addTest(new EvaluatorTests("testComplicatedSyntheticAccess", compilerFactory));
-//        s.addTest(new EvaluatorTests("testStaticInitAccessProtected", compilerFactory));
-        s.addTest(new EvaluatorTests("testDivByZero", compilerFactory));
-        s.addTest(new EvaluatorTests("testTrinaryOptimize", compilerFactory));
-        s.addTest(new EvaluatorTests("test32kBranchLimit", compilerFactory));
-        s.addTest(new EvaluatorTests("test32kConstantPool", compilerFactory));
-        s.addTest(new EvaluatorTests("testHugeIntArray", compilerFactory));
-        s.addTest(new EvaluatorTests("testStaticFieldAccess", compilerFactory));
-        s.addTest(new EvaluatorTests("testWideInstructions", compilerFactory));
-        s.addTest(new EvaluatorTests("testHandlingNaN", compilerFactory));
-        s.addTest(new EvaluatorTests("testInstanceOf", compilerFactory));
-        s.addTest(new EvaluatorTests("testOverrideVisibility", compilerFactory));
-        s.addTest(new EvaluatorTests("testCovariantReturns", compilerFactory));
-        s.addTest(new EvaluatorTests("testNonExistentImport", compilerFactory));
-        s.addTest(new EvaluatorTests("testAnonymousFieldInitializedByCapture", compilerFactory));
-        s.addTest(new EvaluatorTests("testNamedFieldInitializedByCapture", compilerFactory));
-        s.addTest(new EvaluatorTests("testAbstractGrandParentsWithCovariantReturns", compilerFactory));
-        s.addTest(new EvaluatorTests("testStringBuilderLength", compilerFactory));
-        s.addTest(new EvaluatorTests("testBaseClassAccess", compilerFactory));
-        s.addTest(new EvaluatorTests("testNullComparator", compilerFactory));
-        return s;
+    
+    @Parameters
+    public static Collection<Object[]> compilerFactories() throws Exception {
+        return TestUtil.getCompilerFactoriesForParameters();
     }
 
-    public EvaluatorTests(String name, ICompilerFactory compilerFactory) {
-        super(name);
+    public EvaluatorTests(ICompilerFactory compilerFactory) {
         this.compilerFactory = compilerFactory;
     }
 
+    @Test
     public void testMultiScriptEvaluator() throws Exception {
         String funct2 = "return a + b;";
         String funct3 = "return 0;";
@@ -109,6 +82,7 @@ public class EvaluatorTests extends TestCase {
         assertEquals(se2.getMethod(1).invoke(null, new Object[0]), new Double(0.0));
     }
 
+    @Test
     public void testExpressionEvaluator() throws Exception {
         IExpressionEvaluator ee = compilerFactory.newExpressionEvaluator();
 
@@ -120,7 +94,7 @@ public class EvaluatorTests extends TestCase {
         ee.setMethodNames(new String[] { "a", "b", "run", });
         ee.setParameters(new String[][] { { "a", "b" }, {}, {} }, new Class[][] { { int.class, int.class}, {}, {} });
 //        ee.setParentClassLoader(BOOT_CLASS_LOADER, new Class[] { for_sandbox_tests.ExternalClass.class });
-        ee.setStaticMethod(new boolean[] { false, true, true });
+        ee.setStaticMethod(new boolean[] { false, true, false });
         ee.setThrownExceptions(new Class[][] { {}, { IOException.class }, {} });
 
         ee.cook(new String[] {
@@ -128,10 +102,12 @@ public class EvaluatorTests extends TestCase {
             "new FileInputStream(\"xyz\")",
             "ExternalClass.m1()",
         });
+        
 
         {
             Method m = ee.getMethod(0);
-            assertEquals(5, m.invoke(m.getDeclaringClass().newInstance(), new Object[] { 2, 3 }));
+            Object instance = m.getDeclaringClass().newInstance();
+            assertEquals(5, m.invoke(instance, new Object[] { 2, 3 }));
         }
 
         try {
@@ -140,10 +116,17 @@ public class EvaluatorTests extends TestCase {
         } catch (InvocationTargetException ex) {
             assertTrue("FileNotFoundException", ex.getTargetException() instanceof FileNotFoundException);
         }
-
-        ee.evaluate(2, new Object[0]);
+        
+        try {
+            Method m = ee.getMethod(2);
+            Object instance = m.getDeclaringClass().newInstance();
+            m.invoke(instance, new Object[0]);
+        } catch (Exception e) {
+            fail(e.getMessage());
+        }
     }
 
+    @Test
     public void testFastClassBodyEvaluator1() throws Exception {
         IClassBodyEvaluator cbe = compilerFactory.newClassBodyEvaluator();
         cbe.setImplementedInterfaces(new Class[] { Runnable.class });
@@ -157,6 +140,7 @@ public class EvaluatorTests extends TestCase {
         ((Runnable) cbe.getClazz().newInstance()).run();
     }
 
+    @Test
     public void testFastClassBodyEvaluator2() throws Exception {
         try {
             IClassBodyEvaluator cbe = compilerFactory.newClassBodyEvaluator();
@@ -172,10 +156,12 @@ public class EvaluatorTests extends TestCase {
         }
     }
 
+    @Test
     @SuppressWarnings("unchecked")
     public void testFastExpressionEvaluator() throws Exception {
         IExpressionEvaluator ee = compilerFactory.newExpressionEvaluator();
         ee.setImplementedInterfaces(new Class[] { Comparable.class });
+        ee.setExpressionTypes(new Class[] { int.class });
         ((Comparable<String>) ee.createFastEvaluator(
             "o == null ? 3 : 4",
             Comparable.class,
@@ -185,6 +171,7 @@ public class EvaluatorTests extends TestCase {
 
     private static final int COUNT = 10000;
 
+    @Test
     public void testManyEEs() throws Exception {
         IExpressionEvaluator ee = compilerFactory.newExpressionEvaluator();
 
@@ -204,6 +191,7 @@ public class EvaluatorTests extends TestCase {
         assertEquals(165, ee.evaluate(3 * COUNT / 4, new Object[] { 77, 88 }));
     }
 
+    @Test
     public void testAssertNotCooked() throws Exception {
         IClassBodyEvaluator temp = compilerFactory.newClassBodyEvaluator();
         temp.cook("");
@@ -215,6 +203,7 @@ public class EvaluatorTests extends TestCase {
         fail();
     }
 
+    @Test
     public void testAccessingCompilingClass() throws Exception {
         ISimpleCompiler sc = compilerFactory.newSimpleCompiler();
         sc.cook("package test.simple;\n" +
@@ -272,159 +261,7 @@ public class EvaluatorTests extends TestCase {
         assertEquals(8, numTests);
     }
 
-    public void testProtectedAccessAcrossPackages() throws Exception {
-        ISimpleCompiler sc = compilerFactory.newSimpleCompiler();
-//        sc.setParentClassLoader(BOOT_CLASS_LOADER /*, new Class[] { for_sandbox_tests.ProtectedVariable.class }*/);
-        sc.cook(
-            "package test;\n" +
-            "public class Top extends for_sandbox_tests.ProtectedVariable {\n" +
-            "    public class Inner {\n" +
-            "        public int get() {\n" +
-            "            return var;\n" +
-            "        }\n" +
-            "    } \n" +
-            "}"
-        );
-    }
-
-    public void testProtectedAccessWithinPackage() throws Exception {
-        ISimpleCompiler sc = compilerFactory.newSimpleCompiler();
-//        sc.setParentClassLoader(BOOT_CLASS_LOADER /*, new Class[] { for_sandbox_tests.ProtectedVariable.class }*/);
-        sc.cook(
-            "package for_sandbox_tests;\n" +
-            "public class Top extends for_sandbox_tests.ProtectedVariable {\n" +
-            "    public class Inner {\n" +
-            "        public int get() {\n" +
-            "            return var;\n" +
-            "        }\n" +
-            "        public void set() {\n" +
-            "            var += 10;\n" +
-            "        }\n" +
-            "        public int getS() {\n" +
-            "            return svar;\n" +
-            "        }\n" +
-            "        public void setS() {\n" +
-            "            svar += 10;\n" +
-            "        }\n" +
-            "    } \n" +
-            "    public Inner createInner() {\n" +
-            "        return new Inner();\n" +
-            "    }\n" +
-            "}"
-        );
-
-        Class<?> topClass = sc.getClassLoader().loadClass("for_sandbox_tests.Top");
-        Method   createInner = topClass.getDeclaredMethod("createInner", new Class[0]);
-        Object   t = topClass.newInstance();
-        Object   i = createInner.invoke(t, new Object[0]);
-
-        Class<?> innerClass = sc.getClassLoader().loadClass("for_sandbox_tests.Top$Inner");
-        Method   get = innerClass.getDeclaredMethod("get", new Class[0]);
-        Method   getS = innerClass.getDeclaredMethod("getS", new Class[0]);
-        Method   set = innerClass.getDeclaredMethod("set", new Class[0]);
-        Method   setS = innerClass.getDeclaredMethod("setS", new Class[0]);
-
-        Object res;
-        {   // non-static
-            res = get.invoke(i, new Object[0]);
-            assertEquals(1, res);
-            set.invoke(i, new Object[0]);
-            res = get.invoke(i, new Object[0]);
-            assertEquals(11, res);
-        }
-        {   //static
-            res = getS.invoke(i, new Object[0]);
-            assertEquals(2, res);
-            setS.invoke(i, new Object[0]);
-            res = getS.invoke(i, new Object[0]);
-            assertEquals(12, res);
-        }
-    }
-
-    public void testComplicatedSyntheticAccess() throws Exception {
-        ISimpleCompiler sc = compilerFactory.newSimpleCompiler();
-//        sc.setParentClassLoader(BOOT_CLASS_LOADER /*, new Class[] { for_sandbox_tests.ProtectedVariable.class }*/);
-        sc.cook(
-            "package for_sandbox_tests;\n" +
-            "public class L0 extends for_sandbox_tests.ProtectedVariable {\n" +
-            "    public class L1 extends for_sandbox_tests.ProtectedVariable {\n" +
-            "        public class L2 extends for_sandbox_tests.ProtectedVariable {\n" +
-            "            public class Inner {\n" +
-            "                public int getL2() { return L0.L1.L2.this.var; }\n" +
-            "                public int getL1() { return L0.L1.this.var; }\n" +
-            "                public int getL0() { return L0.this.var; }\n" +
-            "                public int setL2() { return L2.this.var = 2; }\n" +
-            "                public int setL1() { return L1.this.var = 1; }\n" +
-            "                public int setL0() { return L0.this.var = 0; }\n" +
-            "            }\n" +
-            "        }\n" +
-            "    }\n" +
-            "    public L0.L1.L2.Inner createInner() {\n" +
-            "        return new L0().new L1().new L2().new Inner();\n" +
-            "    }\n" +
-            "}"
-        );
-
-        Class<?> topClass = sc.getClassLoader().loadClass("for_sandbox_tests.L0");
-        Method   createInner = topClass.getDeclaredMethod("createInner", new Class[0]);
-        Object   t = topClass.newInstance();
-        Object   inner = createInner.invoke(t, new Object[0]);
-
-        Class<?> innerClass = inner.getClass();
-        Method[] gets = new Method[] {
-                innerClass.getMethod("getL0", new Class[0]),
-                innerClass.getMethod("getL1", new Class[0]),
-                innerClass.getMethod("getL2", new Class[0]),
-        };
-        Method[] sets = new Method[] {
-                innerClass.getMethod("setL0", new Class[0]),
-                innerClass.getMethod("setL1", new Class[0]),
-                innerClass.getMethod("setL2", new Class[0]),
-        };
-        for (int i = 0; i < 3; ++i) {
-            Object g1 = gets[i].invoke(inner, new Object[0]);
-            assertEquals(1, g1);
-            Object s1 = sets[i].invoke(inner, new Object[0]);
-            assertEquals(i, s1);
-            Object g2 = gets[i].invoke(inner, new Object[0]);
-            assertEquals(i, g2);
-        }
-    }
-
-    public void testStaticInitAccessProtected() throws Exception {
-        ISimpleCompiler sc = compilerFactory.newSimpleCompiler();
-        sc.cook(
-            "package test;\n" +
-            "public class Outer extends for_sandbox_tests.ProtectedVariable  {\n" +
-            "    public class Inner {\n" +
-            "        {\n" +
-            "            int t = var;\n" +
-            "            var = svar;\n" +
-            "            svar = t;\n" +
-            "        }\n" +
-            "        private final int i = var;\n" +
-            "        private final int j = svar;\n" +
-            "        {\n" +
-            "            int t = var;\n" +
-            "            var = svar;\n" +
-            "            svar = t;\n" +
-            "        }\n" +
-            "        private final int[] a = new int[] { i, j };\n" +
-            "    }\n" +
-            "    public Inner createInner() {\n" +
-            "        return new Inner();\n" +
-            "    }\n" +
-            "}"
-        );
-
-        Class<?> topClass = sc.getClassLoader().loadClass("test.Outer");
-        Method   createInner = topClass.getDeclaredMethod("createInner", new Class[0]);
-        Object   t = topClass.newInstance();
-        assertNotNull(t);
-        Object inner = createInner.invoke(t, new Object[0]);
-        assertNotNull(inner);
-    }
-
+    @Test
     public void testDivByZero() throws Exception {
         ISimpleCompiler sc = compilerFactory.newSimpleCompiler();
         sc.cook(
@@ -462,6 +299,7 @@ public class EvaluatorTests extends TestCase {
         }
     }
     
+    @Test
     public void testTrinaryOptimize() throws Exception {
         ISimpleCompiler sc = compilerFactory.newSimpleCompiler();
         sc.cook(
@@ -504,6 +342,7 @@ public class EvaluatorTests extends TestCase {
         throw new RuntimeException("Unsupported comparison");
     }
 
+    @Test
     public void testHandlingNaN() throws Exception {
         String prog =
             "package test;\n" +
@@ -567,6 +406,7 @@ public class EvaluatorTests extends TestCase {
         }
     }
 
+    @Test
     public void test32kBranchLimit() throws Exception {
         String preamble =
             "package test;\n" +
@@ -604,6 +444,7 @@ public class EvaluatorTests extends TestCase {
         }
 
     }
+    @Test
     public void test32kConstantPool() throws Exception {
         String preamble =
             "package test;\n" +
@@ -633,6 +474,7 @@ public class EvaluatorTests extends TestCase {
     }
 
 
+    @Test
     public void testHugeIntArray() throws Exception {
         String preamble =
             "package test;\n" +
@@ -666,6 +508,7 @@ public class EvaluatorTests extends TestCase {
     }
 
 
+    @Test
     public void testStaticFieldAccess() throws Exception {
         assertCompiles(true,
             "package test;\n" +
@@ -680,6 +523,7 @@ public class EvaluatorTests extends TestCase {
         );
     }
 
+    @Test
     public void testWideInstructions() throws Exception {
         String preamble =
             "package test;\n" +
@@ -723,6 +567,7 @@ public class EvaluatorTests extends TestCase {
     }
 
 
+    @Test
     public void testInstanceOf() throws Exception {
         String test =
             "package test;\n" +
@@ -755,6 +600,7 @@ public class EvaluatorTests extends TestCase {
         assertEquals(false, mStr.invoke(null, new Object[] { null }));
     }
 
+    @Test
     public void testOverrideVisibility() throws Exception {
         // note that this compiles without problem
         OverridesWithDifferingVisibility.test(new Object[] { "asdf" });
@@ -770,6 +616,7 @@ public class EvaluatorTests extends TestCase {
         );
     }
 
+    @Test
     public void testCovariantReturns() throws Exception {
         assertCompiles(true,
                 "package test;\n" +
@@ -785,11 +632,13 @@ public class EvaluatorTests extends TestCase {
         );
     }
 
+    @Test
     public void testNonExistentImport() throws Exception {
         assertCompiles(false, "import does.not.Exist; public class Test { private final Exist e = null; }");
         assertCompiles(false, "import does.not.Exist; public class Test { }");
     }
 
+    @Test
     public void testAnonymousFieldInitializedByCapture() throws Exception {
         ISimpleCompiler sc = compilerFactory.newSimpleCompiler();
         sc.cook("public class Top {\n" +
@@ -816,6 +665,7 @@ public class EvaluatorTests extends TestCase {
     }
 
 
+    @Test
     public void testNamedFieldInitializedByCapture() throws Exception {
         ISimpleCompiler sc = compilerFactory.newSimpleCompiler();
         sc.cook("public class Top {\n" +
@@ -843,6 +693,7 @@ public class EvaluatorTests extends TestCase {
     }
 
 
+    @Test
     public void testAbstractGrandParentsWithCovariantReturns() throws Exception {
         assertCompiles(true,
                 "public class Top {\n" +
@@ -853,6 +704,7 @@ public class EvaluatorTests extends TestCase {
         );
     }
 
+    @Test
     public void testStringBuilderLength() throws Exception {
         ISimpleCompiler sc = compilerFactory.newSimpleCompiler();
         sc.cook("public class Top {\n" +
@@ -871,7 +723,8 @@ public class EvaluatorTests extends TestCase {
         sb.append("qwer");
         assertEquals(sb.length(), get.invoke(t, new Object[] { sb }));
     }
-
+    
+    @Test
     public void testBaseClassAccess() throws Exception {
         assertCompiles(true,
                 "    class top extends other_package.ScopingRules {\n" +
@@ -889,6 +742,7 @@ public class EvaluatorTests extends TestCase {
         );
     }
 
+    @Test
     public void testNullComparator() throws Exception {
         assertCompiles(true,
                 "    class Test {\n" +

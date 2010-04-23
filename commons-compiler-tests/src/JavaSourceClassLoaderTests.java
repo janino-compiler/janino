@@ -24,35 +24,41 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-import java.io.*;
 
-import junit.framework.*;
+import static org.junit.Assert.fail;
+
+import java.io.File;
+import java.util.Collection;
 
 import org.codehaus.commons.compiler.AbstractJavaSourceClassLoader;
 import org.codehaus.commons.compiler.ICompilerFactory;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
-public class JavaSourceClassLoaderTests extends TestCase {
+import util.TestUtil;
 
-    private final ICompilerFactory compilerFactory;
+@RunWith(Parameterized.class)
+public class JavaSourceClassLoaderTests {
 
     private static final File[] SOURCE_PATH = new File[] {
         new File("../janino/src"),
         new File("../commons-compiler/src"),
     };
-
-    public static Test suite(ICompilerFactory compilerFactory) {
-        TestSuite s = new TestSuite(JavaSourceClassLoaderTests.class.getName());
-        s.addTest(new JavaSourceClassLoaderTests("testJSCL", compilerFactory));
-//        s.addTest(new JavaSourceClassLoaderTests("testCJSCL", compilerFactory));
-        s.addTest(new JavaSourceClassLoaderTests("testCircularStaticImports", compilerFactory));
-        return s;
+    
+    private final ICompilerFactory compilerFactory;
+    
+    @Parameters
+    public static Collection<Object[]> compilerFactories() throws Exception {
+        return TestUtil.getCompilerFactoriesForParameters();
     }
 
-    public JavaSourceClassLoaderTests(String name, ICompilerFactory compilerFactory) {
-        super(name);
+    public JavaSourceClassLoaderTests(ICompilerFactory compilerFactory) {
         this.compilerFactory = compilerFactory;
     }
 
+    @Test
     public void testJSCL() throws Exception {
         ClassLoader systemClassLoader = ClassLoader.getSystemClassLoader();
         systemClassLoader.loadClass(this.getClass().getName());
@@ -60,109 +66,22 @@ public class JavaSourceClassLoaderTests extends TestCase {
         ClassLoader extensionsClassLoader = systemClassLoader.getParent();
         try {
             extensionsClassLoader.loadClass(this.getClass().getName());
-            fail();
+            fail("extensionsClassLoader should be separate from the current classloader");
         } catch (ClassNotFoundException cnfe) {
-            ;
+            // as we had intended
         }
         extensionsClassLoader.loadClass("java.lang.String");
-
-//        ClassLoader cl = new JavaSourceClassLoader(
-//            SimpleCompiler.BOOT_CLASS_LOADER, // parentClassLoader
-//            SOURCE_PATH,                      // optionalSourcePath
-//            null,                             // optionalCharacterEncoding
-//            DebuggingInformation.NONE         // debuggingInformation
-//        );
         AbstractJavaSourceClassLoader jscl = compilerFactory.newJavaSourceClassLoader(extensionsClassLoader);
         jscl.setSourcePath(SOURCE_PATH);
-
         jscl.loadClass("org.codehaus.janino.Compiler");
     }
 
-//    public void testCJSCL() throws Exception {
-//        String className = Compiler.class.getName();
-//
-//        Benchmark b = new Benchmark(true);
-//        b.beginReporting("Loading class \"" + className + "\" through a CachingJavaSourceClassLoader");
-//        MapResourceCreator classFileResources1 = new MapResourceCreator();
-//        new CachingJavaSourceClassLoader(
-//            SimpleCompiler.BOOT_CLASS_LOADER,     // parentClassLoader
-//            SOURCE_FINDER,                        // sourceFinder
-//            (String) null,                        // optionalCharacterEncoding
-//            ResourceFinder.EMPTY_RESOURCE_FINDER, // classFileCacheResourceFinder
-//            classFileResources1,                  // classFileResourceCreator
-//            DebuggingInformation.NONE             // debuggingInformation
-//        ).loadClass(className);
-//        Map classFileMap1 = classFileResources1.getMap();
-//        b.endReporting("Generated " + classFileMap1.size() + " class files.");
-//        assertTrue("More than 200 class files", classFileMap1.size() > 200);
-//
-////        assertNotNull("Remove one class file", classFileMap1.remove("org/codehaus/janino/Compiler.class"));
-//
-//        b.beginReporting(
-//            "Loading class \""
-//            + className
-//            + "\" again, but with the class files created during the first compilation being available, "
-//            + "i.e. no source files should be recompiled"
-//        );
-//        MapResourceCreator classFileResources2 = new MapResourceCreator();
-//        MapResourceFinder classFileFinder = new MapResourceFinder(classFileMap1);
-//        classFileFinder.setLastModified(System.currentTimeMillis());
-//        new CachingJavaSourceClassLoader(
-//            SimpleCompiler.BOOT_CLASS_LOADER, // parentClassLoader
-//            SOURCE_FINDER,                    // sourceFinder
-//            (String) null,                    // optionalCharacterEncoding
-//            classFileFinder,                  // classFileCacheResourceFinder
-//            classFileResources2,              // classFileResourceCreator
-//            DebuggingInformation.NONE         // debuggingInformation
-//        ).loadClass(className);
-//        b.endReporting("Generated " + classFileResources2.getMap().size() + " class files.");
-//        assertEquals("Files recompiled", 0, classFileResources2.getMap().size());
-//    }
-
+    @Test
     public void testCircularStaticImports() throws Exception {
-//        Map sources = new HashMap();
-//        sources.put("test/Func1.java", (
-//            "package test;\n" +
-//            "\n" +
-//            "\n" +
-//            "import static test.Func2.func2;\n" +
-//            "\n" +
-//            "public class Func1 {\n" +
-//            "    public static boolean func1() throws Exception {\n" +
-//            "        return true;\n" +
-//            "    }\n" +
-//            "} \n"
-//        ).getBytes());
-//        sources.put("test/Func2.java", (
-//            "package test;\n" +
-//            "\n" +
-//            "\n" +
-//            "import static test.Func1.func1;\n" +
-//            "\n" +
-//            "public class Func2 {\n" +
-//            "    public static boolean func2() throws Exception {\n" +
-//            "        return true;\n" +
-//            "    }\n" +
-//            "} \n"
-//        ).getBytes());
-//        Map cache = new HashMap();
-//        new CachingJavaSourceClassLoader(
-//            SimpleCompiler.BOOT_CLASS_LOADER, // parentClassLoader
-//            new MapResourceFinder(sources),   // sourceFinder
-//            (String) null,                    // optionalCharacterEncoding
-//            new MapResourceFinder(cache),     // classFileCacheResourceFinder
-//            new MapResourceCreator(cache),    // classFileResourceCreator
-//            DebuggingInformation.NONE         // debuggingInformation
-//        ).loadClass("test.Func1");
         AbstractJavaSourceClassLoader jscl = compilerFactory.newJavaSourceClassLoader(
             ClassLoader.getSystemClassLoader().getParent()
         );
         jscl.setSourcePath(new File[] { new File("aux-files/testCircularStaticImports/") });
-//        new JavaSourceClassLoader(
-//            SimpleCompiler.BOOT_CLASS_LOADER, // parentClassLoader
-//            new MapResourceFinder(sources),   // sourceFinder
-//            (String) null,                    // optionalCharacterEncoding
-//            DebuggingInformation.NONE         // debuggingInformation
         jscl.loadClass("test.Func1");
     }
 }

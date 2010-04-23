@@ -26,20 +26,23 @@
 
 package util;
 
-import java.io.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.fail;
 
-import junit.framework.*;
+import java.io.File;
 
-import org.codehaus.commons.compiler.*;
+import org.codehaus.commons.compiler.AbstractJavaSourceClassLoader;
+import org.codehaus.commons.compiler.CompileException;
+import org.codehaus.commons.compiler.IClassBodyEvaluator;
+import org.codehaus.commons.compiler.ICompilerFactory;
+import org.codehaus.commons.compiler.IExpressionEvaluator;
+import org.codehaus.commons.compiler.IScriptEvaluator;
+import org.codehaus.commons.compiler.ISimpleCompiler;
+import org.codehaus.commons.compiler.LocatedException;
 
-public class JaninoTestSuite extends StructuredTestSuite {
-
-    private final ICompilerFactory compilerFactory;
-
-    /** The test is expected to throw a ScanException @deprecated */
-    public static final CompileAndExecuteTest.Mode SCAN = new CompileAndExecuteTest.Mode();
-    /** The test is expected to throw a ParseException @deprecated */
-    public static final CompileAndExecuteTest.Mode PARS = new CompileAndExecuteTest.Mode();
+public class JaninoTestSuite {
     /** The test is expected to throw a CompileException */
     public static final CompileAndExecuteTest.Mode COMP = new CompileAndExecuteTest.Mode();
     /** The test is expected to compile successfully, but is not executed */
@@ -49,8 +52,9 @@ public class JaninoTestSuite extends StructuredTestSuite {
     /** The test is expected to compile and execute successfully, and return {@code true} */
     public static final CompileAndExecuteTest.Mode TRUE = new CompileAndExecuteTest.Mode();
 
-    public JaninoTestSuite(String name, ICompilerFactory compilerFactory) {
-        super(name);
+    protected final ICompilerFactory compilerFactory;
+
+    public JaninoTestSuite(ICompilerFactory compilerFactory) {
         this.compilerFactory = compilerFactory;
     }
 
@@ -68,11 +72,17 @@ public class JaninoTestSuite extends StructuredTestSuite {
      *
      * @param name The name of the JUnit test case
      */
-    protected ExpressionTest exp(ExpressionTest.Mode mode, String name, String expression) throws Exception {
+    protected void exp(ExpressionTest.Mode mode, String name, String expression) throws Exception {
         ExpressionTest et = new ExpressionTest(mode, name, expression);
-        addTest(et);
-        return et;
+        et.runTest();
     }
+    
+    protected void exp(ExpressionTest.Mode mode, String name, String expression, String[] defaultImports) throws Exception {
+        ExpressionTest et = new ExpressionTest(mode, name, expression);
+        et.setDefaultImports(defaultImports);
+        et.runTest();
+    }
+    
     protected class ExpressionTest extends CompileAndExecuteTest {
         private final String               expression;
         private final IExpressionEvaluator expressionEvaluator;
@@ -112,11 +122,17 @@ public class JaninoTestSuite extends StructuredTestSuite {
      *
      * @param name The name of the JUnit test case
      */
-    protected ScriptTest scr(ScriptTest.Mode mode, String name, String script) throws Exception {
+    protected void scr(ScriptTest.Mode mode, String name, String script) throws Exception {
         ScriptTest st = new ScriptTest(mode, name, script);
-        addTest(st);
-        return st;
+        st.runTest();
     }
+    
+    protected void scr(ScriptTest.Mode mode, String name, String script, String[] defaultImports) throws Exception {
+        ScriptTest st = new ScriptTest(mode, name, script);
+        st.setDefaultImports(defaultImports);
+        st.runTest();
+    }
+    
     protected class ScriptTest extends CompileAndExecuteTest {
         private final String           script;
         private final IScriptEvaluator scriptEvaluator;
@@ -156,11 +172,17 @@ public class JaninoTestSuite extends StructuredTestSuite {
      *
      * @param name The name of the JUnit test case
      */
-    protected ClassBodyTest clb(ClassBodyTest.Mode mode, String name, String classBody) throws Exception {
+    protected void clb(ClassBodyTest.Mode mode, String name, String classBody) throws Exception {
         ClassBodyTest cbt = new ClassBodyTest(name, mode, classBody);
-        addTest(cbt);
-        return cbt;
+        cbt.runTest();
     }
+    
+    protected void clb(ClassBodyTest.Mode mode, String name, String classBody, String[] defaultImports) throws Exception {
+        ClassBodyTest cbt = new ClassBodyTest(name, mode, classBody);
+        cbt.setDefaultImports(defaultImports);
+        cbt.runTest();
+    }
+    
     protected class ClassBodyTest extends CompileAndExecuteTest {
         private final String              classBody;
         private final IClassBodyEvaluator classBodyEvaluator;
@@ -200,16 +222,16 @@ public class JaninoTestSuite extends StructuredTestSuite {
      * @param name The name of the JUnit test case
      * @param className The name of the class with the {@code public static boolean test()} method
      */
-    protected SimpleCompilerTest sim(
+    protected void sim(
         SimpleCompilerTest.Mode mode,
         String                  name,
         String                  compilationUnit,
         String                  className
     ) throws Exception {
         SimpleCompilerTest sct = new SimpleCompilerTest(name, mode, compilationUnit, className);
-        addTest(sct);
-        return sct;
+        sct.runTest();
     }
+    
     protected class SimpleCompilerTest extends CompileAndExecuteTest {
         private final String          compilationUnit;
         private final String          className;
@@ -242,28 +264,22 @@ public class JaninoTestSuite extends StructuredTestSuite {
      *
      * @param className The name of the class to be loaded from the {@link JavaSourceClassLoader}
      */
-    protected void jscl(String testCaseName, final File sourceDirectory, final String className) {
-        TestCase testCase = new TestCase(testCaseName) {
-            protected void runTest() throws Throwable {
-                AbstractJavaSourceClassLoader loader = compilerFactory.newJavaSourceClassLoader();
-                loader.setSourcePath(new File[] { sourceDirectory });
-                loader.loadClass(className);
-            }
-        };
-        addTest(testCase);
+    protected void jscl(String testCaseName, final File sourceDirectory, final String className) throws Exception {
+        AbstractJavaSourceClassLoader loader = compilerFactory.newJavaSourceClassLoader();
+        loader.setSourcePath(new File[] { sourceDirectory });
+        loader.loadClass(className);
     }
 
     /**
      * A test case that calls its abstract methods {@link #compile()}, then {@link #execute()}, and
      * verifies that they throw exceptions and return results as expected.
      */
-    abstract static class CompileAndExecuteTest extends BenchmarkingTestCase {
+    abstract static class CompileAndExecuteTest {
         protected final Mode mode;
 
         public static final class Mode { private Mode() {} }
 
         public CompileAndExecuteTest(String name, Mode mode) {
-            super(name);
             // Notice: JUnit 3.8.1 gets confused if the name contains "(" and/or ",".
             if (name.indexOf('(') != -1) throw new RuntimeException("Parentheses in test name not permitted");
             if (name.indexOf(',') != -1) throw new RuntimeException("Comma in test name not permitted");
@@ -278,7 +294,7 @@ public class JaninoTestSuite extends StructuredTestSuite {
          * results as expected.
          */
         protected void runTest() throws Exception {
-            if (this.mode == COMP || this.mode == PARS || this.mode == SCAN) {
+            if (this.mode == COMP) {
                 try {
                     this.compile();
                 } catch (CompileException ex) {
@@ -287,22 +303,18 @@ public class JaninoTestSuite extends StructuredTestSuite {
                     assertEquals("CompileException", le);
                 }
                 fail("Should have thrown CompileException, but compiled successfully");
-            } else
-            if (this.mode == COOK) {
+            } else if (this.mode == COOK) {
                 this.compile();
-            } else
-            if (this.mode == EXEC) {
+            } else if (this.mode == EXEC) {
                 this.compile();
                 this.execute();
-            } else
-            if (this.mode == TRUE) {
+            } else if (this.mode == TRUE) {
                 this.compile();
                 Object result = this.execute();
                 assertNotNull("Test result", result);
                 assertSame("Test return type", Boolean.class, result.getClass());
                 assertEquals("Test result", true, ((Boolean) result).booleanValue());
-            } else
-            {
+            } else {
                 fail("Invalid mode \"" + this.mode + "\"");
             }
         }

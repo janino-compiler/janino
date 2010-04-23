@@ -24,32 +24,38 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.codehaus.commons.compiler.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
+import java.util.Collection;
+
+import org.codehaus.commons.compiler.CompileException;
+import org.codehaus.commons.compiler.ICompilerFactory;
+import org.codehaus.commons.compiler.ICookable;
+import org.codehaus.commons.compiler.IExpressionEvaluator;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
+
+import util.TestUtil;
 import for_sandbox_tests.ExternalClass;
 
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
-
-public class SandboxTests extends TestCase {
-
-    public static TestSuite suite(ICompilerFactory compilerFactory) {
-        TestSuite s = new TestSuite("SandboxTests");
-        s.addTest(new SandboxTests("testForbiddenClass", compilerFactory));
-        s.addTest(new SandboxTests("testAuxiliaryClass", compilerFactory));
-        s.addTest(new SandboxTests("testExternalBaseClass", compilerFactory));
-        return s;
+@RunWith(Parameterized.class)
+public class SandboxTests {
+    private final ICompilerFactory compilerFactory;
+    
+    @Parameters
+    public static Collection<Object[]> compilerFactories() throws Exception {
+        return TestUtil.getCompilerFactoriesForParameters();
     }
 
-    private final ICompilerFactory compilerFactory;
-
-    public SandboxTests(String name, ICompilerFactory compilerFactory) {
-        super(name);
+    public SandboxTests(ICompilerFactory compilerFactory) {
         this.compilerFactory = compilerFactory;
     }
 
+    @Test
     public void testForbiddenClass() throws Exception {
-
         // Invoke method of forbidden external class.
         try {
             IExpressionEvaluator ee = compilerFactory.newExpressionEvaluator();
@@ -61,8 +67,8 @@ public class SandboxTests extends TestCase {
         }
     }
 
+    @Test
     public void testAuxiliaryClass() throws Exception {
-
         // Invoke method of allowed external class.
         IExpressionEvaluator ee = compilerFactory.newExpressionEvaluator();
 //        ee.setParentClassLoader(null, new Class[] { ExternalClass.class });
@@ -70,6 +76,7 @@ public class SandboxTests extends TestCase {
         assertEquals(7, ((Integer) ee.evaluate(new Object[0])).intValue());
     }
 
+    @Test
     public void testExternalBaseClass() throws Exception {
 
         // Invoke method of base class.

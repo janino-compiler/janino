@@ -32,29 +32,36 @@
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import static org.junit.Assert.fail;
+
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectOutputStream;
+import java.util.Collection;
 
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.codehaus.commons.compiler.ICompilerFactory;
+import org.codehaus.commons.compiler.ISimpleCompiler;
+import org.codehaus.commons.compiler.LocatedException;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
-import org.codehaus.commons.compiler.*;
+import util.TestUtil;
 
-public class SerializationTests extends TestCase {
-
-    public static TestSuite suite(ICompilerFactory compilerFactory) {
-        TestSuite s = new TestSuite("SerializationTests");
-        s.addTest(new SerializationTests("testExceptionSerializable", compilerFactory));
-        return s;
+@RunWith(Parameterized.class)
+public class SerializationTests {
+    private final ICompilerFactory compilerFactory;
+    
+    @Parameters
+    public static Collection<Object[]> compilerFactories() throws Exception {
+        return TestUtil.getCompilerFactoriesForParameters();
     }
 
-    private final ICompilerFactory compilerFactory;
-
-    public SerializationTests(String name, ICompilerFactory compilerFactory) {
-        super(name);
+    public SerializationTests(ICompilerFactory compilerFactory) {
         this.compilerFactory = compilerFactory;
     }
 
+    @Test
     public void testExceptionSerializable() throws Exception {
         ISimpleCompiler compiler = compilerFactory.newSimpleCompiler();
         try {

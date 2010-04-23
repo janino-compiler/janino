@@ -25,66 +25,81 @@
  */
 
 import java.util.Arrays;
+import java.util.Collection;
 
 import org.codehaus.commons.compiler.ICompilerFactory;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
-import util.*;
+import util.JaninoTestSuite;
+import util.TestUtil;
 
+/**
+ * Tests against the \"Java Language Specification\"; 2nd edition
+ */
+@RunWith(Parameterized.class)
 public class JLS2Tests extends JaninoTestSuite {
-
+    @Parameters
+    public static Collection<Object[]> compilerFactories() throws Exception {
+        return TestUtil.getCompilerFactoriesForParameters();
+    }
+    
     public JLS2Tests(ICompilerFactory compilerFactory) throws Exception {
-        super("Tests against the \"Java Language Specification\"; 2nd edition", compilerFactory);
-
-        section("3 Lexical structure");
-
-        section("3.1 Unicode");
+        super(compilerFactory);
+    }
+    
+    @Test
+    public void test_3__LexicalStructure() throws Exception {
+        // 3.1. Lexical Structure -- Unicode
         exp(TRUE, "1", "'\\u00e4' == '\u00e4'");
-
-        section("3.2 Lexical Translations");
-        scr(PARS, "1", "3--4");
-
-        section("3.3 Unicode Escapes");
-        exp(SCAN, "1", "aaa\\u123gbbb");
+        
+        // 3.2. Lexical Structure -- Translations
+        scr(COMP, "1", "3--4");
+        
+        // 3.3. Lexical Structure -- Unicode Escapes
+        exp(COMP, "1", "aaa\\u123gbbb");
         exp(TRUE, "2", "\"\\u0041\".equals(\"A\")");
         exp(TRUE, "3", "\"\\uu0041\".equals(\"A\")");
         exp(TRUE, "4", "\"\\uuu0041\".equals(\"A\")");
         exp(TRUE, "5", "\"\\\\u0041\".equals(\"\\\\\" + \"u0041\")");
         exp(TRUE, "6", "\"\\\\\\u0041\".equals(\"\\\\\" + \"A\")");
-
-        section("3.4 Line Terminators");
+        
+        // 3.3. Lexical Structure -- Line Terminators
         exp(TRUE, "1", "1//\r+//\r\n2//\n==//\n\r3");
-
-        section("3.6 White Space");
+        
+        // 3.6. Lexical Structure -- White Space
         exp(TRUE, "1", "3\t\r \n==3");
-
-        section("3.7 Comments");
+        
+        // 3.7. Lexical Structure -- Comments
         exp(TRUE, "1", "7/* */==7");
         exp(TRUE, "2", "7/**/==7");
         exp(TRUE, "3", "7/***/==7");
-        exp(SCAN, "4", "7/*/==7");
+        exp(COMP, "4", "7/*/==7");
         exp(TRUE, "5", "7/*\r*/==7");
         exp(TRUE, "6", "7//\r==7");
         exp(TRUE, "7", "7//\n==7");
         exp(TRUE, "8", "7//\r\n==7");
         exp(TRUE, "9", "7//\n\r==7");
-        scr(PARS, "10", "7// /*\n\rXXX*/==7");
-
-        section("3.8 Identifiers");
+        scr(COMP, "10", "7// /*\n\rXXX*/==7");
+        
+        // 3.8. Lexical Structure -- Identifiers
         scr(EXEC, "1", "int a;");
         scr(EXEC, "2", "int \u00e4\u00e4\u00e4;");
         scr(EXEC, "3", "int \\u0391;"); // Greek alpha
         scr(EXEC, "4", "int _aaa;");
         scr(EXEC, "5", "int $aaa;");
-        scr(PARS, "6", "int 9aaa;");
-        scr(PARS, "7", "int const;");
+        scr(COMP, "6", "int 9aaa;");
+        scr(COMP, "7", "int const;");
+    }
 
-        section("3.10 Literals");
-
-        section("3.10.1 Integer Literals");
+    @Test
+    public void test_3_10_1__Literals_Integer() throws Exception {
         exp(TRUE, "1", "17 == 17L");
         exp(TRUE, "2", "255 == 0xFFl");
         exp(TRUE, "3", "17 == 021L");
-        exp(SCAN, "4", "17 == 029"); // Digit "9" not allowed in octal literal.
+        exp(COMP, "4", "17 == 029"); // Digit "9" not allowed in octal literal.
         exp(TRUE, "5", "2 * 2147483647 == -2");
         exp(TRUE, "6", "2 * -2147483648 == 0");
         exp(COMP, "7", "2147483648");
@@ -94,49 +109,60 @@ public class JLS2Tests extends JaninoTestSuite {
         exp(TRUE, "11", "-0xf == -15");
         exp(EXEC, "12", "9223372036854775807L");
         exp(COMP, "13", "9223372036854775808L");
-        exp(SCAN, "14", "9223372036854775809L");
-        exp(SCAN, "15", "99999999999999999999999999999L");
+        exp(COMP, "14", "9223372036854775809L");
+        exp(COMP, "15", "99999999999999999999999999999L");
         exp(EXEC, "16", "-9223372036854775808L");
-        exp(SCAN, "17", "-9223372036854775809L");
+        exp(COMP, "17", "-9223372036854775809L");
+    }
 
-        section("3.10.2 Floating-Point Literals");
+    @Test
+    public void test_3_10_2__Literals_FloatingPoint() throws Exception {
         exp(TRUE, "1", "1e1f == 10f");
         exp(TRUE, "2", "1E1F == 10f");
         exp(TRUE, "3", ".3f == 0.3f");
         exp(TRUE, "4", "0f == (float) 0");
         exp(EXEC, "5", "3.14f");
         exp(EXEC, "float_big",        "3.40282347e+38f");
-        exp(SCAN, "float_too_big",    "3.40282357e+38f");
+        exp(COMP, "float_too_big",    "3.40282357e+38f");
         exp(EXEC, "float_small",      "1.40239846e-45f");
-        exp(SCAN, "float_too_small",  "7.0e-46f");
+        exp(COMP, "float_too_small",  "7.0e-46f");
         exp(EXEC, "double_big",       "1.79769313486231570e+308D");
-        exp(SCAN, "double_too_big",   "1.79769313486231581e+308d");
+        exp(COMP, "double_too_big",   "1.79769313486231581e+308d");
         exp(EXEC, "double_small",     "4.94065645841246544e-324D");
-        exp(SCAN, "double_too_small", "2e-324D");
+        exp(COMP, "double_too_small", "2e-324D");
+    }
 
-        section("3.10.3 Boolean Literals");
+    @Test
+    public void test_3_10_3__Literals_Boolean() throws Exception {
         exp(TRUE, "1", "true");
+        exp(TRUE, "1", "! false");
+    }
 
-        section("3.10.4 Character Literals");
+    @Test
+    public void test_3_10_4__Literals_Character() throws Exception {
         exp(TRUE, "1", "'a' == 97");
-        exp(SCAN, "2", "'''");
-        exp(SCAN, "3", "'\\'");
-        exp(SCAN, "4", "'\n'");
-        exp(SCAN, "5", "'ax'");
-        exp(SCAN, "6", "'a\n'");
+        exp(COMP, "2", "'''");
+        exp(COMP, "3", "'\\'");
+        exp(COMP, "4", "'\n'");
+        exp(COMP, "5", "'ax'");
+        exp(COMP, "6", "'a\n'");
         exp(TRUE, "7", "'\"' == 34"); // Unescaped double quote is allowed!
+    }
 
-        section("3.10.5 String Literals");
+    @Test
+    public void test_3_10_5__Literals_String() throws Exception {
         exp(TRUE, "1",  "\"'\".charAt(0) == 39"); // Unescaped single quote is allowed!
         // Escape sequences already tested above for character literals.
         exp(TRUE, "2", "\"\\b\".charAt(0) == 8");
-        exp(SCAN, "3", "\"aaa\nbbb\"");
-        exp(SCAN, "4", "\"aaa\rbbb\"");
+        exp(COMP, "3", "\"aaa\nbbb\"");
+        exp(COMP, "4", "\"aaa\rbbb\"");
         exp(TRUE, "5", "\"aaa\" == \"aaa\"");
         exp(TRUE, "6", "\"aaa\" != \"bbb\"");
+    }
 
-        section("3.10.6 Escape Sequences for Character and String Literals");
-        exp(SCAN, "1",  "'\\u000a'"); // 0x000a is LF
+    @Test
+    public void test_3_10_6__Literals_EscapeSequences() throws Exception {
+        exp(COMP, "1",  "'\\u000a'"); // 0x000a is LF
         exp(TRUE, "2",  "'\\b' == 8");
         exp(TRUE, "3",  "'\\t' == 9");
         exp(TRUE, "4",  "'\\n' == 10");
@@ -148,27 +174,27 @@ public class JLS2Tests extends JaninoTestSuite {
         exp(TRUE, "10", "'\\0' == 0");
         exp(TRUE, "11", "'\\07' == 7");
         exp(TRUE, "12", "'\\377' == 255");
-        exp(SCAN, "13", "'\\400'");
-        exp(SCAN, "14", "'\\1234'");
+        exp(COMP, "13", "'\\400'");
+        exp(COMP, "14", "'\\1234'");
+    }
 
-        section("3.10.7 The Null Literal");
+    @Test
+    public void test_3_10_7__Literals_Null() throws Exception {
         exp(EXEC, "1", "null");
+    }
 
-        section("3.11 Separators");
+    @Test
+    public void test_3_11__Separators() throws Exception {
         scr(EXEC, "1", ";");
+    }
 
-        section("3.12 Operators");
+    @Test
+    public void test_3_12__Operators() throws Exception {
         scr(TRUE, "1", "int a = -11; a >>>= 2; return a == 1073741821;");
+    }
 
-        section("4 Types, Values, and Variables");
-
-        section("4.1 The Kinds of Types and Values");
-
-        section("5 Conversions and Promotions");
-
-        section("5.1 Kinds of Conversions");
-
-        section("5.1.7 Boxing Conversion");
+    @Test
+    public void test_5_1_7__Conversion_Boxing() throws Exception {
         scr(TRUE, "boolean 1", "Boolean   b = true;        return b.booleanValue();");
         scr(TRUE, "boolean 2", "Boolean   b = false;       return !b.booleanValue();");
         scr(TRUE, "byte",      "Byte      b = (byte) 7;    return b.equals(new Byte((byte) 7));");
@@ -178,8 +204,10 @@ public class JLS2Tests extends JaninoTestSuite {
         scr(TRUE, "long",      "Long      l = 733L;        return l.equals(new Long(733L));");
         scr(TRUE, "float",     "Float     f = 12.5F;       return f.equals(new Float(12.5F));");
         scr(TRUE, "double",    "Double    d = 14.3D;       return d.equals(new Double(14.3D));");
+    }
 
-        section("5.1.8 Unboxing Conversion");
+    @Test
+    public void test_5_1_8__Conversion_UnBoxing() throws Exception {
         exp(TRUE, "boolean 1", "Boolean.TRUE");
         exp(TRUE, "boolean 2", "!Boolean.FALSE");
         exp(TRUE, "byte",      "new Byte((byte) 9) == (byte) 9");
@@ -189,8 +217,10 @@ public class JLS2Tests extends JaninoTestSuite {
         exp(TRUE, "long",      "new Long(987654321L) == 987654321L");
         exp(TRUE, "float",     "new Float(33.3F) == 33.3F");
         exp(TRUE, "double",    "new Double(939.939D) == 939.939D");
+    }
 
-        section("5.2 Assignment Conversion");
+    @Test
+    public void test_5_2__Conversion_Assignment() throws Exception {
         scr(TRUE, "Identity 1", "int i = 7; return i == 7;");
         scr(TRUE, "Identity 2", "String s = \"S\"; return s.equals(\"S\");");
         scr(TRUE, "Widening Primitive", "long l = 7; return l == 7L;");
@@ -215,8 +245,10 @@ public class JLS2Tests extends JaninoTestSuite {
         scr(EXEC, "Constant Assignment Character 2", "Character c = 0;");
         scr(EXEC, "Constant Assignment Character 3", "Character c = 65535;");
         scr(COMP, "Constant Assignment Character 4", "Character c = 65536;");
+    }
 
-        section("5.5 Casting Conversion");
+    @Test
+    public void test_5_5__Conversion_Casting() throws Exception {
         exp(TRUE, "Identity", "7 == (int) 7");
         exp(TRUE, "Widening Primitive", "(int) 'a' == 97");
         exp(TRUE, "Narrowing Primitive", "(int) 10000000000L == 1410065408");
@@ -224,39 +256,42 @@ public class JLS2Tests extends JaninoTestSuite {
         scr(TRUE, "Narrowing Reference", "Object o = \"SS\"; return ((String) o).length() == 2;");
         exp(TRUE, "Boxing", "((Integer) 7).intValue() == 7");
         exp(TRUE, "Unboxing", "(int) new Integer(7) == 7");
+    }
 
-        section("5.6 Numeric Promotions");
-        section("5.6.1 Unary Numeric Promotion");
+    @Test
+    public void test_5_6__Conversion_NumberPromotions() throws Exception {
+        // 5.6.1 Unary Numeric Promotion
         exp(TRUE, "Unboxing 1", "-new Byte((byte) 7) == -7");
         exp(TRUE, "Unboxing 2", "-new Double(10.0D) == -10.0D");
         scr(TRUE, "Char", "char c = 'a'; return -c == -97;");
 
-        section("5.6.2 Binary Numeric Promotion");
+        // 5.6.2 Binary Numeric Promotion
         exp(TRUE, "Unboxing Double", "2.5D * new Integer(4) == 10D");
         exp(TRUE, "float", "7 % new Float(2.5F) == 2F");
         exp(TRUE, "long", "2000000000 + 2000000000L == 4000000000L");
         exp(TRUE, "byte", "(short) 32767 + (byte) 100 == 32867");
+    }
 
-        section("6 Names");
-
-        section("6.1 Declarations");
-
-        section("7 Packages");
-
-        section("7.1 Package Members");
-
-        section("7.5 Import Declarations");
-
-        section("7.5.1 Single-Type-Import Declaration");
+    @Test
+    public void test_7_5__ImportDeclarations() throws Exception {
+        // Default imports
+        exp(TRUE, "1", "new ArrayList().getClass().getName().equals(\"java.util.ArrayList\")", new String[] { "java.util.*" });
+        scr(COMP, "2", "xxx", new String[] { "java.util#" });
+        scr(COMP, "3", "xxx", new String[] { "java.util.9" });
+        scr(COMP, "4", "xxx", new String[] { "java.util.*;" });
+        clb(TRUE, "5", "public static boolean main() { return new ArrayList() instanceof List; }", new String[] { "java.util.*" });
+        exp(COMP, "6", "new ArrayList()", new String[] { "java.io.*" });
+        
+        // 7.5.1 Import Declarations -- Single-Type-Import
         exp(EXEC, "1", "import java.util.ArrayList; new ArrayList()");
         exp(EXEC, "Duplicate", "import java.util.ArrayList; import java.util.ArrayList; new ArrayList()");
         scr(COMP, "Inconsistent", "import java.util.List; import java.awt.List;");
 
-        section("7.5.2 Type-Import-on-Demand Declaration");
+        // 7.5.2 Import Declarations -- Import-on-Demand
         exp(EXEC, "1", "import java.util.*; new ArrayList()");
         exp(EXEC, "Duplicate", "import java.util.*; import java.util.*; new ArrayList()");
 
-        section("7.5.3 Single Static Import Declaration");
+        // 7.5.3 Import Declarations -- Single Static Import
         exp(TRUE, "Static field", "import static java.util.Collections.EMPTY_SET; EMPTY_SET instanceof java.util.Set");
         exp(TRUE, "Static field/duplicate", (
             "import static java.util.Collections.EMPTY_SET;"
@@ -289,65 +324,39 @@ public class JLS2Tests extends JaninoTestSuite {
             + "decode(\"4000000000\");"
         ));
 
-        section("7.5.4 Static-Import-on-Demand Declaration");
+        // 7.5.4 Import Declarations -- Static-Import-on-Demand
         exp(TRUE, "Static field", "import static java.util.Collections.*; EMPTY_SET instanceof java.util.Set");
         scr(EXEC, "Member type", "import static java.util.Map.*; Entry e;");
         exp(TRUE, "Static method", (
             "import static java.util.Arrays.*;"
             + "asList(new String[] { \"HELLO\", \"WORLD\" }).size() == 2"
         ));
+    }
 
-        section("8 Classes");
-
-        section("8.1 Class Declaration");
-
-        section("9 Interfaces");
-
-        section("9.1 Interface Declarations");
-
-        section("10 Arrays");
-
-        section("10.1 Array Types");
-
-        section("11 Exceptions");
-
-        section("11.1 The Causes of Exceptions");
-
-        section("12 Execution");
-
-        section("12.1 Virtual Machine Start-Up");
-
-        section("13 Binary Compatibility");
-
-        section("13.1 The Form of a Binary");
-
-        section("14 Blocks and Statements");
-
-        section("14.3 Local Class Declarations");
+    @Test
+    public void test_14__BlocksAndStatements() throws Exception {
+        // 14.3 Blocks and Statements -- Local Class Declarations
         scr(TRUE, "1", "class S2 extends SC { public int foo() { return 37; } }; return new S2().foo() == 37;");
 
-        section("14.8 Expression Statements");
+        // 14.8 Blocks and Statements -- Expression Statements
         scr(TRUE, "1", "int a; a = 8; ++a; a++; if (a != 10) return false; --a; a--; return a == 8;");
         scr(EXEC, "2", "System.currentTimeMillis();");
         scr(EXEC, "3", "new Object();");
-        scr(PARS, "4", "new Object[3];");
-        scr(PARS, "5", "int a; a;");
+        scr(COMP, "4", "new Object[3];");
+        scr(COMP, "5", "int a; a;");
 
-        section("14.10 The switch Statement");
+        // 14.10 Blocks and Statements -- The switch Statement
         scr(TRUE, "1", "int x = 37; switch (x) {} return x == 37;");
         scr(TRUE, "2", "int x = 37; switch (x) { default: ++x; break; } return x == 38;");
         scr(TRUE, "3", "int x = 37; switch (x) { case 36: case 37: case 38: x += x; break; } return x == 74;");
         scr(TRUE, "4", "int x = 37; switch (x) { case 36: case 37: case 1000: x += x; break; } return x == 74;");
         scr(TRUE, "5", "int x = 37; switch (x) { case -10000: break; case 10000: break; } return x == 37;");
         scr(TRUE, "6", "int x = 37; switch (x) { case -2000000000: break; case 2000000000: break; } return x == 37;");
+    }
 
-        section("15 Expressions");
-
-        section("15.1 Evaluation, Denotation, and Result");
-
-        section("15.9 Class Instance Creation Expressions");
-
-        section("15.9.1 Determining the class being Instantiated");
+    @Test
+    public void test_15_9__Expressions__ClassInstanceCreationExpressions() throws Exception {
+        // 15.9.1 Determining the class being Instantiated
         exp(TRUE, "3a", "new Object() instanceof Object");
         exp(COMP, "3b", "new java.util.List()");
         exp(COMP, "3c", "new other_package.PackageClass()");
@@ -355,13 +364,14 @@ public class JLS2Tests extends JaninoTestSuite {
         exp(TRUE, "4a", (
             "new other_package.Foo(3).new PublicMemberClass() instanceof other_package.Foo.PublicMemberClass"
         ));
-        exp(PARS, "4b", "new other_package.Foo(3).new Foo.PublicMemberClass()");
-        exp(PARS, "4c", "new other_package.Foo(3).new other_package.Foo.PublicMemberClass()");
+        exp(COMP, "4b", "new other_package.Foo(3).new Foo.PublicMemberClass()");
+        exp(COMP, "4c", "new other_package.Foo(3).new other_package.Foo.PublicMemberClass()");
         exp(COMP, "4d", "new other_package.Foo(3).new PackageMemberClass()");
         exp(COMP, "4e", "new other_package.Foo(3).new PublicAbstractMemberClass()");
         exp(COMP, "4f", "new other_package.Foo(3).new PublicStaticMemberClass()");
         exp(COMP, "4g", "new other_package.Foo(3).new PublicMemberInterface()");
         exp(COMP, "4h", "new java.util.ArrayList().new PublicMemberClass()");
+        
         // The following one is tricky: A Java 6 JRE declares
         //    public int          File.compareTo(File)
         //    public abstract int Comparable.compareTo(Object)
@@ -377,13 +387,13 @@ public class JLS2Tests extends JaninoTestSuite {
             + "}"
         ), "Main");
 
-        section("15.9.3 Choosing the Constructor and its Arguments");
+        // 15.9.3 Choosing the Constructor and its Arguments
         exp(EXEC, "1", "new Integer(3)");
         exp(EXEC, "2", "new Integer(new Integer(3))");
         exp(EXEC, "3", "new Integer(new Byte((byte) 3))");
         exp(COMP, "4", "new Integer(new Object())");
 
-        section("15.9.5 Anonymous Class Declarations");
+        // 15.9.5 Anonymous Class Declarations
         sim(EXEC, "Static anonymous class", (
             "public class Foo {\n" +
             "    public static void test() { new Foo().meth(); }\n" +
@@ -401,9 +411,11 @@ public class JLS2Tests extends JaninoTestSuite {
             "    }\n" +
             "}\n"
         ), "A");
+    }
 
-        section("15.11 Field Access Expressions");
-        section("15.11.2 Accessing Superclass Members using super");
+    @Test
+    public void test_15_11__FieldAccessExpressions() throws Exception {
+        // 15.11.2 Accessing Superclass Members using super
         sim(TRUE, "1", (
             "public class T1            { int x = 1; }\n" +
             "public class T2 extends T1 { int x = 2; }\n" +
@@ -424,10 +436,11 @@ public class JLS2Tests extends JaninoTestSuite {
             "    }\n" +
             "}\n"
          ), "T3");
+    }
 
-        section("15.12 Method Invocation Expressions");
-        section("15.12.2 Compile-Time Step 2: Determine Method Signature");
-        section("15.12.2.2 Choose the Most Specific Method");
+    @Test
+    public void test_15_12__MethodInvocationExpressions() throws Exception {
+        // 15.12.2.2 Choose the Most Specific Method
         sim(COMP, "Ambiguity 1", (
             "public class Main { public static boolean test() { return new A().meth(\"x\", \"y\"); } }\n" +
             "public class A {\n" +
@@ -435,6 +448,7 @@ public class JLS2Tests extends JaninoTestSuite {
             "    public boolean meth(Object o, String s) { return false; }\n" +
             "}\n"
         ), "Main");
+        
         // The following case is tricky: JLS2 says that the invocation is AMBIGUOUS, but only
         // JAVAC 1.2 issues an error; JAVAC 1.4.1, 1.5.0 and 1.6.0 obviously ignore the declaring
         // type and invoke "A.meth(String)".
@@ -447,9 +461,11 @@ public class JLS2Tests extends JaninoTestSuite {
             "public class A           { public boolean meth(String s) { return true; } }\n" +
             "public class B extends A { public boolean meth(Object o) { return false; } }\n"
         ), "Main");
+    }
 
-        section("15.14 Postfix Expressions");
-        section("15.14.2 Postfix Increment Operator ++");
+    @Test
+    public void test_15_14__PostfixExpressions() throws Exception {
+        // "15.14.2 Postfix Increment Operator ++
         scr(TRUE, "1", "int i = 7; i++; return i == 8;");
         scr(TRUE, "2", "Integer i = new Integer(7); i++; return i.intValue() == 8;");
         scr(TRUE, "3", "int i = 7; return i == 7 && i++ == 7 && i == 8;");
@@ -458,7 +474,7 @@ public class JLS2Tests extends JaninoTestSuite {
             + "return i.intValue() == 7 && (i++).intValue() == 7 && i.intValue() == 8;"
         ));
 
-        section("15.14.3 Postfix Decrement Operator --");
+        // 15.14.3 Postfix Decrement Operator --
         scr(TRUE, "1", "int i = 7; i--; return i == 6;");
         scr(TRUE, "2", "Integer i = new Integer(7); i--; return i.intValue() == 6;");
         scr(TRUE, "3", "int i = 7; return i == 7 && i-- == 7 && i == 6;");
@@ -466,9 +482,11 @@ public class JLS2Tests extends JaninoTestSuite {
             "Integer i = new Integer(7);"
             + "return i.intValue() == 7 && (i--).intValue() == 7 && i.intValue() == 6;"
         ));
+    }
 
-        section("15.15 Unary Operators");
-        section("15.15.1 Prefix Increment Operator ++");
+    @Test
+    public void test_15_15__UnaryOperators() throws Exception {
+        // 15.15.1 Prefix Increment Operator ++
         scr(TRUE, "1", "int i = 7; ++i; return i == 8;");
         scr(TRUE, "2", "Integer i = new Integer(7); ++i; return i.intValue() == 8;");
         scr(TRUE, "3", "int i = 7; return i == 7 && ++i == 8 && i == 8;");
@@ -477,7 +495,7 @@ public class JLS2Tests extends JaninoTestSuite {
             + "return i.intValue() == 7 && (++i).intValue() == 8 && i.intValue() == 8;"
         ));
 
-        section("15.15.2 Prefix Decrement Operator --");
+        // 15.15.2 Prefix Decrement Operator --
         scr(TRUE, "1", "int i = 7; --i; return i == 6;");
         scr(TRUE, "2", "Integer i = new Integer(7); --i; return i.intValue() == 6;");
         scr(TRUE, "3", "int i = 7; return i == 7 && --i == 6 && i == 6;");
@@ -486,21 +504,24 @@ public class JLS2Tests extends JaninoTestSuite {
             + "return i.intValue() == 7 && (--i).intValue() == 6 && i.intValue() == 6;"
         ));
 
-        section("15.15.3 Unary Plus Operator +");
+        // 15.15.3 Unary Plus Operator +
         exp(TRUE, "1", "new Integer(+new Integer(7)).intValue() == 7");
 
-        section("15.15.4 Unary Minus Operator -");
+        // 15.15.4 Unary Minus Operator -
         exp(TRUE, "1", "new Integer(-new Integer(7)).intValue() == -7");
+    }
 
-        section("15.17 Multiplicative Operators");
+    @Test
+    public void test_15_17__MultiplicativeOperators() throws Exception {
         exp(TRUE, "1", "new Integer(new Byte((byte) 2) * new Short((short) 3)).intValue() == 6");
+    }
 
-        section("15.18 Additive Operators");
+    @Test
+    public void test_15_18__AdditiveOperators() throws Exception {
+        // 15.18 Additive Operators -- Numeric
         exp(TRUE, "1", "(new Byte((byte) 7) - new Double(1.5D) + \"x\").equals(\"5.5x\")");
 
-        section("15.18 Additive Operators");
-        section("15.18.1 String Concatenation Operator +");
-        section("15.18.1.3 Examples of String Concatenation");
+        // 15.18.1.3 Additive Operators -- String Concatentation
         exp(TRUE, "1", (
             "(\"The square root of 6.25 is \" + Math.sqrt(6.25)).equals(\"The square root of 6.25 is 2.5\")"
         ));
@@ -513,42 +534,37 @@ public class JLS2Tests extends JaninoTestSuite {
             exp(TRUE, "4/" + i, "\"" + s1 + "\".length() == " + i);
             exp(TRUE, "5/" + i, "(\"" + s1 + "\" + \"XXX\").length() == " + (i + 3));
         }
+    }
 
-        section("15.20 Relational Operators");
-
-        section("15.20.1 Numerical Comparison Operators <, <=, > and >=");
+    @Test
+    public void test_15_20__RelationOperators() throws Exception {
+        // 15.20.1 Numerical Comparison Operators <, <=, > and >=
         exp(TRUE, "1", "new Integer(7) > new Byte((byte) 5)");
 
-        section("15.21 Equality Operators");
-
-        section("15.21.1 Numerical Equality Operators == and !=");
+        // 15.21.1 Numerical Equality Operators == and !=
         exp(TRUE, "1", "new Integer(7) != new Byte((byte) 5)");
         exp(TRUE, "2", "new Integer(7) == 7");
         exp(TRUE, "3", "5 == new Byte((byte) 5)");
 
-        section("15.21.2 Boolean Equality Operators == and !=");
+        // 15.21.2 Boolean Equality Operators == and !=
         exp(TRUE, "1", "new Boolean(true) != new Boolean(true)");
         exp(TRUE, "2", "new Boolean(true) == true");
         exp(TRUE, "3", "false == new Boolean(false)");
         exp(TRUE, "4", "false != true");
 
-        section("15.22.2 Boolean Logical Operators &, ^, and |");
+        // 15.22.2 Boolean Logical Operators &, ^, and |
         exp(COMP, "1", "new Boolean(true) & new Boolean(true)");
         exp(TRUE, "2", "new Boolean(true) ^ false");
         exp(TRUE, "3", "false | new Boolean(true)");
 
-        section("15.23 Conditional-And Operator &&");
+        // 15.23 Conditional-And Operator &&
         exp(TRUE, "1", "new Boolean(true) && new Boolean(true)");
         exp(TRUE, "2", "new Boolean(true) && true");
         exp(TRUE, "3", "true && new Boolean(true)");
 
-        section("15.24 Conditional-Or Operator ||");
+        // 15.24 Conditional-Or Operator ||
         exp(TRUE, "1", "new Boolean(true) || new Boolean(false)");
         exp(TRUE, "2", "new Boolean(false) || true");
         exp(TRUE, "3", "true || new Boolean(true)");
-
-        section("16 Definite Assignment");
-
-        section("16.1 Definite Assignment and Expressions");
     }
 }

@@ -67,29 +67,37 @@ public class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEval
 
     @Override
     public void setClassName(String className) {
+        assertNotCooked();
         this.className = className;
     }
 
     @Override
     public void setDefaultImports(String[] optionalDefaultImports) {
+        assertNotCooked();
         this.optionalDefaultImports = optionalDefaultImports;
     }
 
-    @Override public void setExtendedClass(@SuppressWarnings("unchecked") Class optionalExtendedType) {
+    @Override
+    public void setExtendedClass(@SuppressWarnings("unchecked") Class optionalExtendedType) {
+        assertNotCooked();
         this.optionalExtendedType = optionalExtendedType;
     }
 
     /** @deprecated */
-    @Override public void setExtendedType(@SuppressWarnings("unchecked") Class optionalExtendedClass) {
+    @Override 
+    public void setExtendedType(@SuppressWarnings("unchecked") Class optionalExtendedClass) {
         this.setExtendedClass(optionalExtendedClass);
     }
 
-    @Override public void setImplementedInterfaces(@SuppressWarnings("unchecked") Class[] implementedTypes) {
+    @Override 
+    public void setImplementedInterfaces(@SuppressWarnings("unchecked") Class[] implementedTypes) {
+        assertNotCooked();
         this.implementedTypes = implementedTypes;
     }
 
     /** @deprecated */
-    @Override public void setImplementedTypes(@SuppressWarnings("unchecked") Class[] implementedInterfaces) {
+    @Override 
+    public void setImplementedTypes(@SuppressWarnings("unchecked") Class[] implementedInterfaces) {
         this.setImplementedInterfaces(implementedInterfaces);
     }
 
@@ -160,8 +168,8 @@ public class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEval
                 pw.print("public class ");
                 pw.print(simpleClassName);
                 if (this.optionalExtendedType != null) {
-                    pw.print(" extends");
-                    pw.print(this.optionalExtendedType);
+                    pw.print(" extends ");
+                    pw.print(this.optionalExtendedType.getCanonicalName());
                 }
                 if (this.implementedTypes.length > 0) {
                     pw.print(" implements ");
