@@ -103,7 +103,7 @@
       <dependency>
         <groupId>junit</groupId>
         <artifactId>junit</artifactId>
-        <version>3.8.2</version>
+        <version>4.7</version>
       </dependency>
       <dependency>
         <groupId>org.apache.ant</groupId>
@@ -125,6 +125,8 @@
         <configuration>
           <source>1.2</source>
           <target>1.1</target>
+          <testSource>1.6</testSource>
+          <testTarget>1.6</testTarget>
         </configuration>
       </plugin>
       <plugin>
