@@ -724,6 +724,33 @@ public class EvaluatorTests {
         assertEquals(sb.length(), get.invoke(t, new Object[] { sb }));
     }
     
+
+    @Test
+    public void testCovariantClone() throws Exception {
+        ISimpleCompiler sc = compilerFactory.newSimpleCompiler();
+        sc.cook("package covariant_clone;" +
+        		"public class Child extends Middle implements java.lang.Cloneable {" +
+        		" public Child clone() throws java.lang.CloneNotSupportedException {" +
+        		"  return new Child();" +
+        		" }" +
+        	    
+        	    " public Child other(long i, Object o) {" +
+        	    "   return this;" +
+        	    " }"+
+        		"}"
+        );
+
+        // calling clone directly here would work, we need to trigger a call into the
+        // covariant version of clone from a less described version of it.
+        Class<?> topClass = sc.getClassLoader().loadClass("covariant_clone.Child");
+        Method   foo = topClass.getMethod("cloneWithArguments");
+        Method   bar = topClass.getMethod("cloneWithOutArguments");
+        Object   t = topClass.newInstance();
+
+        assertNotNull(foo.invoke(t, new Object[0]));
+        assertNotNull(bar.invoke(t, new Object[0]));
+    }
+
     @Test
     public void testBaseClassAccess() throws Exception {
         assertCompiles(true,

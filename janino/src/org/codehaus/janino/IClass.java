@@ -161,7 +161,6 @@ public abstract class IClass {
     /**
      * Returns all methods declared in the class or interface, its superclasses and its
      * superinterfaces.<br>
-     * For overridden methods, only the last non-abstract implementation is returned.
      *
      * @return an array of {@link IMethod}s that must not be modified
      */
@@ -173,46 +172,30 @@ public abstract class IClass {
         }
         return this.iMethodCache;
     }
-    /*package*/ IMethod[] iMethodCache = null;
+    private IMethod[] iMethodCache = null;
     private void getIMethods(List result) throws CompileException {
         IMethod[] ms = this.getDeclaredIMethods();
         for (int i = 0; i < ms.length; ++i) {
-            IMethod m = ms[i];
-
+            IMethod candidate = ms[i];
+            String candidateDescriptor = candidate.getDescriptor();
+            String candidateName = candidate.getName();
+            
             boolean found = false;
             for (int j = 0; j < result.size(); ++j) {
-                IMethod o = (IMethod) result.get(j);
-                if (!o.getName().equals(m.getName())) {
-                    continue;
+                IMethod oldMethod = (IMethod) result.get(j);
+                if (candidateName.equals(oldMethod.getName()) && 
+                    candidateDescriptor.equals(oldMethod.getDescriptor())) {
+                    found = true;
+                    break;
                 }
-                IClass mrt = m.getReturnType();
-                IClass ort = o.getReturnType();
-
-                if (!mrt.isAssignableFrom(ort)) {
-                    continue;
-                }
-
-                String[] mpt = IClass.getDescriptors(m.getParameterTypes());
-                String[] opt = IClass.getDescriptors(o.getParameterTypes());
-                if (!Arrays.equals(mpt, opt)) {
-                    continue;
-                }
-
-                found = true;
-                break;
             }
-            if (!found) {
-                result.add(m);
-            }
+            if (!found) result.add(candidate);
         }
-        {
-            IClass sc = this.getSuperclass();
-            if (sc != null) sc.getIMethods(result);
-        }
-        {
-            IClass[] iis = this.getInterfaces();
-            for (int i = 0; i < iis.length; ++i) iis[i].getIMethods(result);
-        }
+        IClass sc = this.getSuperclass();
+        if (sc != null) sc.getIMethods(result);
+        
+        IClass[] iis = this.getInterfaces();
+        for (int i = 0; i < iis.length; ++i) iis[i].getIMethods(result);
     }
 
     public static final IMethod[] NO_IMETHODS = new IMethod[0];

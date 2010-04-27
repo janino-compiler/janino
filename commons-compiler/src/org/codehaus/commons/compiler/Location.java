@@ -33,6 +33,7 @@ import java.io.Serializable;
  * line number and a column number.
  */
 public class Location implements Serializable {
+    public static final Location NOWHERE = new Location("<internally generated location>", (short)-1, (short)-1);
 
     private final String optionalFileName;
     private final short  lineNumber;

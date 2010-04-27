@@ -72,7 +72,9 @@ import org.codehaus.janino.Java.LocalClassDeclaration;
 import org.codehaus.janino.Java.LocalClassDeclarationStatement;
 import org.codehaus.janino.Java.LocalVariable;
 import org.codehaus.janino.Java.LocalVariableDeclarationStatement;
+import org.codehaus.janino.Java.LocalVariableSlot;
 import org.codehaus.janino.Java.Locatable;
+import org.codehaus.janino.Java.Located;
 import org.codehaus.janino.Java.ReturnStatement;
 import org.codehaus.janino.Java.Rvalue;
 import org.codehaus.janino.Java.SimpleType;
@@ -485,9 +487,29 @@ public class UnitCompiler {
         // A side effect of this call may create synthetic functions to access
         // protected parent variables
         this.compileDeclaredMemberTypes(cd, cf);
-
+        
         // Compile the aforementioned extras.
         this.compileDeclaredMethods(cd, cf, declaredMethodCount);
+        
+        {
+            // for every method look for bridge methods that need to be supplied
+            // this is used to correctly dispatch into covariant return types
+            // from existing code
+            IMethod[] ms = iClass.getIMethods();
+            for (int i = 0; i < ms.length; ++i) {
+                IMethod base = ms[i];
+                if (! base.isStatic()) {
+                    IMethod override = iClass.findIMethod(base.getName(), base.getParameterTypes());
+                    // if we overrode the method but with a DIFFERENT return type
+                    if (override != null && 
+                        ! base.getReturnType().equals(override.getReturnType())) {
+                        this.compileBridgeMethod(cf, base, override);
+                    }
+                }
+            }
+                
+        }
+
 
         // Class and instance variables.
         for (Iterator it = cd.variableDeclaratorsAndInitializers.iterator(); it.hasNext();) {
@@ -511,6 +533,7 @@ public class UnitCompiler {
         // Add the generated class file to a thread-local store.
         this.generatedClassFiles.add(cf);
     }
+
 
     /**
      * Create {@link ClassFile.FieldInfo}s for all fields declared by the
@@ -765,6 +788,68 @@ public class UnitCompiler {
             this.compile(((Java.MethodDeclarator) typeDeclaration.getMethodDeclarations().get(i)), cf);
         }
     }
+    
+
+    /**
+     * Compile a bridge method which will add a method of the signature of base that 
+     * delegates to override.
+     * @throws CompileException 
+     */
+    private void compileBridgeMethod(ClassFile cf, IMethod base, IMethod override) throws CompileException {
+        ClassFile.MethodInfo mi = cf.addMethodInfo(
+            (short)(Mod.PUBLIC | Mod.SYNTHETIC),
+            base.getName(),
+            base.getDescriptor()
+        );
+        
+        // Add "Exceptions" attribute (JVMS 4.7.4).
+        IClass[] thrownExceptions = base.getThrownExceptions();
+        if (thrownExceptions.length > 0) {
+            final short eani = cf.addConstantUtf8Info("Exceptions");
+            short[] tecciis = new short[thrownExceptions.length];
+            for (int i = 0; i < thrownExceptions.length; ++i) {
+                tecciis[i] = cf.addConstantClassInfo(thrownExceptions[i].getDescriptor());
+            }
+            mi.addAttribute(new ClassFile.ExceptionsAttribute(eani, tecciis));
+        }
+        
+        final CodeContext codeContext = new CodeContext(mi.getClassFile());
+        CodeContext savedCodeContext = this.replaceCodeContext(codeContext);
+        
+        // allocate all our local variables
+        codeContext.saveLocalVariables();
+        codeContext.allocateLocalVariable((short) 1, "this", override.getDeclaringIClass());
+        IClass[] paramTypes = override.getParameterTypes();
+        LocalVariableSlot[] locals = new LocalVariableSlot[paramTypes.length]; 
+        for (int i = 0; i < paramTypes.length; ++i) {
+            locals[i] = codeContext.allocateLocalVariable(
+                (short) Descriptor.size(paramTypes[i].getDescriptor()),
+                "param"+i,
+                paramTypes[i]);
+        }
+        
+        this.writeOpcode(Located.NOWHERE, Opcode.ALOAD_0);
+        for (int i = 0; i < locals.length; ++i) {
+            this.load(Located.NOWHERE, locals[i].getType(), locals[i].getSlotIndex());
+        }
+        this.writeOpcode(Located.NOWHERE, Opcode.INVOKEVIRTUAL);
+        this.writeConstantMethodrefInfo(
+            override.getDeclaringIClass().getDescriptor(), // classFD
+            override.getName(),                            // methodName
+            override.getDescriptor()                       // methodMD
+        );
+        this.writeOpcode(Located.NOWHERE, Opcode.ARETURN);
+        this.replaceCodeContext(savedCodeContext);
+        codeContext.flowAnalysis(override.getName());
+
+        // Add the code context as a code attribute to the MethodInfo.
+        mi.addAttribute(new ClassFile.AttributeInfo(cf.addConstantUtf8Info("Code")) {
+            protected void storeBody(DataOutputStream dos) throws IOException {
+                codeContext.storeCodeAttributeBody(dos, (short)0, (short)0);
+            }
+        });
+   }
+    
 
     /**
      * @return <tt>false</tt> if this statement cannot complete normally (JLS2
@@ -1946,21 +2031,25 @@ public class UnitCompiler {
             codeContext.flowAnalysis(fd.toString());
         }
 
-        final short[] lntani = {0};
+        final short lntani;
         if (this.debuggingInformation.contains(DebuggingInformation.LINES)) {
-            lntani[0] = classFile.addConstantUtf8Info("LineNumberTable");
+            lntani = classFile.addConstantUtf8Info("LineNumberTable");
+        } else {
+            lntani = 0;
         }
 
-        final short[] lvtani = {0};
+        final short lvtani;
         if (this.debuggingInformation.contains(DebuggingInformation.VARS)) {
             makeLocalVariableNames(codeContext, mi);
-            lvtani[0] = classFile.addConstantUtf8Info("LocalVariableTable");
+            lvtani = classFile.addConstantUtf8Info("LocalVariableTable");
+        } else {
+            lvtani = 0;
         }
 
         // Add the code context as a code attribute to the MethodInfo.
         mi.addAttribute(new ClassFile.AttributeInfo(classFile.addConstantUtf8Info("Code")) {
             protected void storeBody(DataOutputStream dos) throws IOException {
-                codeContext.storeCodeAttributeBody(dos, lntani[0], lvtani[0]);
+                codeContext.storeCodeAttributeBody(dos, lntani, lvtani);
             }
         });
     }

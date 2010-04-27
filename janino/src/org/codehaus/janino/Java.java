@@ -83,6 +83,7 @@ public final class Java {
         void throwCompileException(String message) throws CompileException;
     }
     public abstract static class Located implements Locatable {
+        public static Located NOWHERE = new Located(Location.NOWHERE) { };
         private final Location location;
 
         protected Located(Location location) {
