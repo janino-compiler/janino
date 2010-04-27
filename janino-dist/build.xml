@@ -190,15 +190,6 @@
 		/>
 	</target>
 
-    <target name="janino-src.jar" depends="compile-janino">
-        <mkdir dir="build/lib"/>
-        <jar jarfile="build/lib/janino-src.jar" filesonly="true">
-            <fileset dir="../commons-compiler-jdk/src"/>
-            <fileset dir="../janino/src"/>
-        </jar>
-    </target>
-
-
 	<target name="commons-compiler-jdk.jar" depends="compile-commons-compiler-jdk">
 		<mkdir dir="build/lib"/>
 		<jar jarfile="build/lib/commons-compiler-jdk.jar" filesonly="true">
