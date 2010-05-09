@@ -345,8 +345,8 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
         this.cook(new Scanner[] { scanner });
     }
 
-    public Object evaluate(Object[] parameterValues) throws InvocationTargetException {
-        return this.evaluate(0, parameterValues);
+    public Object evaluate(Object[] arguments) throws InvocationTargetException {
+        return this.evaluate(0, arguments);
     }
 
     public Method getMethod() {
@@ -925,10 +925,10 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
         return (String[]) parameterNames.toArray(new String[parameterNames.size()]);
     }
 
-    public Object evaluate(int idx, Object[] parameterValues) throws InvocationTargetException {
+    public Object evaluate(int idx, Object[] arguments) throws InvocationTargetException {
         if (this.result == null) throw new IllegalStateException("Must only be called after \"cook()\"");
         try {
-            return this.result[idx].invoke(null, parameterValues);
+            return this.result[idx].invoke(null, arguments);
         } catch (IllegalAccessException ex) {
             throw new JaninoRuntimeException(ex.toString());
         }
