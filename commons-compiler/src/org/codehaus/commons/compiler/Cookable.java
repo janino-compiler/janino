@@ -68,7 +68,7 @@ public abstract class Cookable implements ICookable {
         );
     }
 
-    public final void cook(String s) throws CompileException {
+    public void cook(String s) throws CompileException {
         this.cook((String) null, s);
     }
 
