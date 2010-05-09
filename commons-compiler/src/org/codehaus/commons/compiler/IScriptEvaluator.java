@@ -140,18 +140,18 @@ public interface IScriptEvaluator extends IClassBodyEvaluator {
     /**
      * Calls the script with concrete parameter values.
      * <p>
-     * Each parameter value must have the same type as specified through the "parameterTypes"
-     * parameter of {@link #setParameters(String[], Class[])}.
+     * Each argument must have the same type as specified through the "parameterTypes" parameter of {@link
+     * #setParameters(String[], Class[])}.
      * <p>
-     * Parameters of primitive type must passed with their wrapper class objects.
+     * Arguments of primitive type must passed with their wrapper class objects.
      * <p>
      * The object returned has the class as specified through {@link #setReturnType(Class)}.
      * <p>
      * This method is thread-safe.
      *
-     * @param parameterValues The concrete parameter values.
+     * @param arguments The actual parameter values.
      */
-    Object evaluate(Object[] parameterValues) throws InvocationTargetException;
+    Object evaluate(Object[] arguments) throws InvocationTargetException;
 
     /**
      * Returns the loaded {@link java.lang.reflect.Method}.
@@ -227,7 +227,7 @@ public interface IScriptEvaluator extends IClassBodyEvaluator {
     /**
      * Same as {@link #evaluate(Object[])}, but for multiple scripts.
      */
-    Object evaluate(int idx, Object[] parameterValues) throws InvocationTargetException;
+    Object evaluate(int idx, Object[] arguments) throws InvocationTargetException;
 
     /**
      * Same as {@link #getMethod()}, but for multiple scripts.
