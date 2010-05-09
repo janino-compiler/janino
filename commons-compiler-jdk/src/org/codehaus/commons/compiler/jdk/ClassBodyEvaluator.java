@@ -78,26 +78,26 @@ public class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEval
     }
 
     @Override
-    public void setExtendedClass(@SuppressWarnings("unchecked") Class optionalExtendedType) {
+    public void setExtendedClass(@SuppressWarnings("rawtypes") Class optionalExtendedType) {
         assertNotCooked();
         this.optionalExtendedType = optionalExtendedType;
     }
 
     /** @deprecated */
-    @Override 
-    public void setExtendedType(@SuppressWarnings("unchecked") Class optionalExtendedClass) {
+    @Override
+    public void setExtendedType(@SuppressWarnings("rawtypes") Class optionalExtendedClass) {
         this.setExtendedClass(optionalExtendedClass);
     }
 
-    @Override 
-    public void setImplementedInterfaces(@SuppressWarnings("unchecked") Class[] implementedTypes) {
+    @Override
+    public void setImplementedInterfaces(@SuppressWarnings("rawtypes") Class[] implementedTypes) {
         assertNotCooked();
         this.implementedTypes = implementedTypes;
     }
 
     /** @deprecated */
-    @Override 
-    public void setImplementedTypes(@SuppressWarnings("unchecked") Class[] implementedInterfaces) {
+    @Override
+    public void setImplementedTypes(@SuppressWarnings("rawtypes") Class[] implementedInterfaces) {
         this.setImplementedInterfaces(implementedInterfaces);
     }
 

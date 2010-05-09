@@ -116,18 +116,18 @@ public interface IExpressionEvaluator extends IScriptEvaluator {
     /**
      * Evaluates the expression with concrete parameter values.
      * <p>
-     * Each parameter value must have the same type as specified through the "parameterTypes"
-     * parameter of {@link #setParameters(String[], Class[])}.
+     * Each argument value must have the same type as specified through the "parameterTypes" parameter of {@link
+     * #setParameters(String[], Class[])}.
      * <p>
-     * Parameters of primitive type must passed with their wrapper class objects.
+     * Arguments of primitive type must passed with their wrapper class objects.
      * <p>
      * The object returned has the class as specified through {@link #setExpressionType(Class)}.
      * <p>
      * This method is thread-safe.
      *
-     * @param parameterValues The concrete parameter values.
+     * @param arguments The actual parameter values.
      */
-    Object evaluate(Object[] parameterValues) throws InvocationTargetException;
+    Object evaluate(Object[] arguments) throws InvocationTargetException;
 
     /**
      * If the parameter and return types of the expression are known at compile time, then a "fast" expression evaluator

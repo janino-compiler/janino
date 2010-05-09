@@ -173,11 +173,11 @@ public class ExpressionEvaluator extends ScriptEvaluator implements IExpressionE
 
     public ExpressionEvaluator() {}
 
-    public void setExpressionType(@SuppressWarnings("unchecked") Class expressionType) {
+    public void setExpressionType(@SuppressWarnings("rawtypes") Class expressionType) {
         this.setExpressionTypes(new Class[] { expressionType });
     }
 
-    public void setExpressionTypes(@SuppressWarnings("unchecked") Class[] expressionTypes) {
+    public void setExpressionTypes(@SuppressWarnings("rawtypes") Class[] expressionTypes) {
         assertNotCooked();
         this.optionalExpressionTypes = expressionTypes;
 
@@ -220,7 +220,7 @@ public class ExpressionEvaluator extends ScriptEvaluator implements IExpressionE
                 pw.print("return org.codehaus.commons.compiler.PrimitiveWrapper.wrap(");
                 pw.write(readString(readers[i]));
                 pw.println(");");
-            } else { 
+            } else {
                 returnTypes[i] = this.optionalExpressionTypes[i];
                 if (returnTypes[i] != void.class && returnTypes[i] != Void.class) {
                     pw.print("return ");
