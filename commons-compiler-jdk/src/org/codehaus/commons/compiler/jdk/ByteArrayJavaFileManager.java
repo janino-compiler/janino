@@ -35,7 +35,7 @@ import javax.tools.*;
 import javax.tools.JavaFileObject.Kind;
 
 /**
- * A {@link JavaFileManager} that stores {@link JavaFileObject}s in byte arrays, i.e. in
+ * A {@link ForwardingJavaFileManager} that stores {@link JavaFileObject}s in byte arrays, i.e. in
  * memory (as opposed to the {@link StandardJavaFileManager}, which stores them in files).
  */
 public class ByteArrayJavaFileManager<M extends JavaFileManager> extends ForwardingJavaFileManager<M> {

@@ -35,15 +35,6 @@ import javax.tools.JavaFileObject.Kind;
 import org.codehaus.commons.compiler.*;
 import org.codehaus.commons.compiler.jdk.ByteArrayJavaFileManager.ByteArrayJavaFileObject;
 
-/**
- * A {@link ClassLoader} that, unlike usual {@link ClassLoader}s,
- * does not load byte code, but reads Java&trade; source code and then scans, parses,
- * compiles and loads it into the virtual machine.
- * <p>
- * As with any {@link ClassLoader}, it is not possible to "update" classes after they've been
- * loaded. The way to achieve this is to give up on the {@link JavaSourceClassLoader} and create
- * a new one.
- */
 public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 
     private File[]             sourcePath;
@@ -56,14 +47,21 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
     private JavaCompiler    compiler;
     private JavaFileManager fileManager;
 
+    /**
+     * @see ICompilerFactory#newJavaSourceClassLoader()
+     */
     public JavaSourceClassLoader() {
         this.init();
     }
 
+    /**
+     * @see ICompilerFactory#newJavaSourceClassLoader(ClassLoader)
+     */
     public JavaSourceClassLoader(ClassLoader parentClassLoader) {
         super(parentClassLoader);
         this.init();
     }
+
 
     private void init() {
         this.compiler = ToolProvider.getSystemJavaCompiler();
@@ -72,90 +70,35 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
                 "JDK Java compiler not available - probably you're running a JRE, not a JDK"
             );
         }
+    }
 
-        // Get the original FM, which reads class files through this JVM's BOOTCLASSPATH and
-        // CLASSPATH.
-        JavaFileManager jfm = this.compiler.getStandardFileManager(null, null, null);
+    /**
+     * Creates the underlying {@link JavaFileManager} lazily, because {@link #setSourcePath(File[])} and consorts
+     * are called <i>after</i> initialization.
+     */
+    JavaFileManager getJavaFileManager() {
+        if (this.fileManager == null) {
 
-        // Wrap it so that the output files (in our case class files) are stored in memory rather
-        // than in files.
-        jfm = new ByteArrayJavaFileManager<JavaFileManager>(jfm);
-
-        // Wrap it in a file manager that finds source files through the source path.
-        jfm = new ForwardingJavaFileManager<JavaFileManager>(jfm) {
-
-            @Override
-            public JavaFileObject getJavaFileForInput(
-                Location location,
-                String   className,
-                Kind     kind
-            ) throws IOException {
-                if (location == StandardLocation.SOURCE_PATH && kind == Kind.SOURCE) {
-
-                    // Find the source file through the source path.
-                    final File sourceFile;
-                    FIND_SOURCE: {
-                        String rel = className.replace('.', File.separatorChar) + kind.extension;
-                        for (File sourceDirectory : JavaSourceClassLoader.this.sourcePath) {
-                            File f = new File(sourceDirectory, rel);
-                            if (f.exists()) {
-                                sourceFile = f.getCanonicalFile();
-                                break FIND_SOURCE;
-                            }
-                        }
-                        return null;
-                    }
-
-                    // Create and return a JavaFileObject.
-                    return new SimpleJavaFileObject(sourceFile.toURI(), kind) {
-
-                        @Override
-                        public InputStream openInputStream() throws IOException {
-                            return super.openInputStream();
-                        }
-
-                        @Override
-                        public Reader openReader(boolean ignoreEncodingErrors) throws IOException {
-                            return (
-                                JavaSourceClassLoader.this.optionalCharacterEncoding == null
-                                ? new FileReader(sourceFile)
-                                : new InputStreamReader(
-                                    new FileInputStream(sourceFile),
-                                    JavaSourceClassLoader.this.optionalCharacterEncoding
-                                )
-                            );
-                        }
-
-                        @Override
-                        public CharSequence getCharContent(boolean ignoreEncodingErrors) throws IOException {
-                            Reader r = this.openReader(true);
-                            try {
-                                return Cookable.readString(r);
-                            } finally {
-                                r.close();
-                            }
-//
-//                            // Return "null" to indicated that the contents is not available as a CharSequence;
-//                            // The caller will then use "openReader()" instead.
-//                            return null;
-                        }
-                    };
-                }
-
-                return super.getJavaFileForInput(location, className, kind);
-            }
-
-            @Override
-            public JavaFileObject getJavaFileForOutput(
-                Location   location,
-                String     className,
-                Kind       kind,
-                FileObject sibling
-            ) throws IOException {
-                return super.getJavaFileForOutput(location, className, kind, sibling);
-            }
-        };
-        this.fileManager = jfm;
+            // Get the original FM, which reads class files through this JVM's BOOTCLASSPATH and
+            // CLASSPATH.
+            JavaFileManager jfm = this.compiler.getStandardFileManager(null, null, null);
+    
+            // Wrap it so that the output files (in our case class files) are stored in memory rather
+            // than in files.
+            jfm = new ByteArrayJavaFileManager<JavaFileManager>(jfm);
+    
+            // Wrap it in a file manager that finds source files through the source path.
+            jfm = new FileInputJavaFileManager(
+                jfm,
+                StandardLocation.SOURCE_PATH,
+                Kind.SOURCE,
+                this.sourcePath,
+                this.optionalCharacterEncoding
+            );
+    
+            this.fileManager = jfm;
+        }
+        return this.fileManager;
     }
 
     @Override
@@ -198,7 +141,7 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 
             // Maybe the bytecode is already there, because the class was compiled as a side effect of a preceding
             // compilation.
-            JavaFileObject classFileObject = this.fileManager.getJavaFileForInput(
+            JavaFileObject classFileObject = this.getJavaFileManager().getJavaFileForInput(
                 StandardLocation.CLASS_OUTPUT,
                 className,
                 Kind.CLASS
@@ -207,7 +150,7 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
             if (classFileObject == null) {
 
                 // Get the sourceFile.
-                JavaFileObject sourceFileObject = this.fileManager.getJavaFileForInput(
+                JavaFileObject sourceFileObject = this.getJavaFileManager().getJavaFileForInput(
                     StandardLocation.SOURCE_PATH,
                     className,
                     Kind.SOURCE
@@ -233,7 +176,7 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
                 // Run the compiler.
                 if (!this.compiler.getTask(
                     null,                                   // out
-                    this.fileManager,                       // fileManager
+                    this.getJavaFileManager(),              // fileManager
                     new DiagnosticListener<JavaFileObject>() { // diagnosticListener
 
                         @Override
@@ -250,7 +193,7 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
                     throw new ClassNotFoundException(className + ": Compilation failed");
                 }
 
-                classFileObject = this.fileManager.getJavaFileForInput(
+                classFileObject = this.getJavaFileManager().getJavaFileForInput(
                     StandardLocation.CLASS_OUTPUT,
                     className,
                     Kind.CLASS
