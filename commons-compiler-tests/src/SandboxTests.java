@@ -56,7 +56,7 @@ public class SandboxTests {
 
     @Test
     public void testForbiddenClass() throws Exception {
-        // Invoke method of forbidden external class.
+        // Invoke method of a class that is on the CLASSPATH of this JVM, but not on the BOOTCLASSPATH.
         try {
             IExpressionEvaluator ee = compilerFactory.newExpressionEvaluator();
             ee.setParentClassLoader(ICookable.BOOT_CLASS_LOADER);
