@@ -36,7 +36,7 @@ import java.util.*;
  * code and then scans, parses, compiles and loads it into the virtual machine.
  * <p>
  * As with any {@link ClassLoader}, it is not possible to "update" classes after they've been loaded. The way to
- * achieve this is to give up on the {@link JavaSourceClassLoader} and create a new one.
+ * achieve this is to give up on the {@link AbstractJavaSourceClassLoader} and create a new one.
  */
 public abstract class AbstractJavaSourceClassLoader extends ClassLoader {
 
