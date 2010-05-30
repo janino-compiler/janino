@@ -69,7 +69,7 @@
 		/>
 	</target>
 
-	<target name="dist" depends="janino-zip,pad-file"/>
+	<target name="dist" depends="janino-zip,pad-file,javadoc"/>
 
 	<target name="janino-zip" depends="clean,commons-compiler.jar,janino.jar,commons-compiler-jdk.jar,src-zips">
 		<zip destfile="build/janino-${version}.zip" filesonly="true">
