@@ -219,10 +219,10 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
     }
 
     public void setParameters(
-        String[]                               parameterNames,
-        @SuppressWarnings("rawtypes") Class[] parameterTypes
+        String[]                              names,
+        @SuppressWarnings("rawtypes") Class[] types
     ) {
-        this.setParameters(new String[][] { parameterNames }, new Class<?>[][] {parameterTypes });
+        this.setParameters(new String[][] { names }, new Class<?>[][] { types });
     }
 
     public void setThrownExceptions(@SuppressWarnings("rawtypes") Class[] thrownExceptions) {
@@ -261,12 +261,12 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
     }
 
     public void setParameters(
-        String[][]                               parameterNames,
-        @SuppressWarnings("rawtypes") Class[][] parameterTypes
+        String[][]                              names,
+        @SuppressWarnings("rawtypes") Class[][] types
     ) {
         assertNotCooked();
-        this.optionalParameterNames = (String[][]) parameterNames.clone();
-        this.optionalParameterTypes = (Class<?>[][]) parameterTypes.clone();
+        this.optionalParameterNames = (String[][]) names.clone();
+        this.optionalParameterTypes = (Class<?>[][]) types.clone();
     }
 
     public void setThrownExceptions(@SuppressWarnings("rawtypes") Class[][] thrownExceptions) {

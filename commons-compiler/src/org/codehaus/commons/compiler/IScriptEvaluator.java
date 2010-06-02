@@ -125,12 +125,11 @@ public interface IScriptEvaluator extends IClassBodyEvaluator {
     /**
      * Define the names and types of the parameters of the generated method.
      * <p>
-     * <code>parameterNames</code> and <code>parameterTypes</code> must have the same number of
-     * elements.
+     * <code>names</code> and <code>types</code> must have the same number of elements.
      * <p>
-     * The parameters and/or the return value can be of primitive type, e.g. {@link Double#TYPE}.
+     * The parameters can be of primitive type, e.g. {@link double.class}.
      */
-    void setParameters(String[] parameterNames, Class[] parameterTypes);
+    void setParameters(String[] names, Class[] types);
 
     /**
      * Define the exceptions that the generated method may throw.
@@ -140,7 +139,7 @@ public interface IScriptEvaluator extends IClassBodyEvaluator {
     /**
      * Calls the script with concrete parameter values.
      * <p>
-     * Each argument must have the same type as specified through the "parameterTypes" parameter of {@link
+     * Each argument must have the same type as specified through the <code>parameterTypes</code> parameter of {@link
      * #setParameters(String[], Class[])}.
      * <p>
      * Arguments of primitive type must passed with their wrapper class objects.
@@ -149,7 +148,7 @@ public interface IScriptEvaluator extends IClassBodyEvaluator {
      * <p>
      * This method is thread-safe.
      *
-     * @param arguments The actual parameter values.
+     * @param arguments The actual parameter values
      */
     Object evaluate(Object[] arguments) throws InvocationTargetException;
 
@@ -185,7 +184,7 @@ public interface IScriptEvaluator extends IClassBodyEvaluator {
     /**
      * Same as {@link #setParameters(String[], Class[])}, but for multiple scripts.
      */
-    void setParameters(String[][] parameterNames, Class[][] parameterTypes);
+    void setParameters(String[][] names, Class[][] types);
 
     /**
      * Same as {@link #setThrownExceptions(Class[])}, but for multiple scripts.

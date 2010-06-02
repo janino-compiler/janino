@@ -95,10 +95,10 @@ public final class ScriptDemo extends DemoBase {
             System.exit(1);
         }
 
-        // Convert command line arguments to parameter values.
-        Object[] parameterValues = new Object[parameterNames.length];
+        // Convert command line arguments to call arguments.
+        Object[] arguments = new Object[parameterNames.length];
         for (int j = 0; j < parameterNames.length; ++j) {
-            parameterValues[j] = DemoBase.createObject(parameterTypes[j], args[i + j]);
+            arguments[j] = DemoBase.createObject(parameterTypes[j], args[i + j]);
         }
 
         // Create "ScriptEvaluator" object.
@@ -110,7 +110,7 @@ public final class ScriptDemo extends DemoBase {
         se.cook(script);
 
         // Evaluate script with actual parameter values.
-        Object res = se.evaluate(parameterValues);
+        Object res = se.evaluate(arguments);
 
         // Print script return value.
         System.out.println("Result = " + DemoBase.toString(res));

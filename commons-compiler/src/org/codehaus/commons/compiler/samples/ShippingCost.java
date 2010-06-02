@@ -44,8 +44,8 @@ public final class ShippingCost {
             System.exit(1);
         }
 
-        // Convert command line argument to parameter "total".
-        Object[] parameterValues = new Object[] { new Double(args[0]) };
+        // Convert command line argument to call argument "total".
+        Object[] arguments = new Object[] { new Double(args[0]) };
 
         // Create "ExpressionEvaluator" object.
         IExpressionEvaluator ee = CompilerFactoryFactory.getDefaultCompilerFactory().newExpressionEvaluator();
@@ -54,7 +54,7 @@ public final class ShippingCost {
         ee.cook("total >= 100.0 ? 0.0 : 7.95");
 
         // Evaluate expression with actual parameter values.
-        Object res = ee.evaluate(parameterValues);
+        Object res = ee.evaluate(arguments);
 
         // Print expression result.
         System.out.println("Result = " + (res == null ? "(null)" : res.toString()));
