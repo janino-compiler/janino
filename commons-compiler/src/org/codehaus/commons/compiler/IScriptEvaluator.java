@@ -127,7 +127,7 @@ public interface IScriptEvaluator extends IClassBodyEvaluator {
      * <p>
      * <code>names</code> and <code>types</code> must have the same number of elements.
      * <p>
-     * The parameters can be of primitive type, e.g. {@link double.class}.
+     * The parameters can be of primitive type, e.g. <code>double.class</code>.
      */
     void setParameters(String[] names, Class[] types);
 
