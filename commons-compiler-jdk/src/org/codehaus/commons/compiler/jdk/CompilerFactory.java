@@ -36,6 +36,10 @@ public class CompilerFactory extends AbstractCompilerFactory {
         return "org.codehaus.commons.compiler.jdk";
     }
 
+    public String getImplementationVersion() {
+        return CompilerFactory.class.getPackage().getImplementationVersion();
+    }
+
     public IExpressionEvaluator newExpressionEvaluator() {
         return new ExpressionEvaluator();
     }

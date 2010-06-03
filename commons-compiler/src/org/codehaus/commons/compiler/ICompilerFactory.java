@@ -35,6 +35,11 @@ public interface ICompilerFactory {
     String getId();
 
     /**
+     * @return The version of <i>this</i> implementation of the commons-compiler specification, or <code>null</code>
+     */
+    String getImplementationVersion();
+
+    /**
      * @throws UnsupportedOperationException The underlying implementation does not implement an {@link
      *                                       IExpressionEvaluator}
      * @see IExpressionEvaluator

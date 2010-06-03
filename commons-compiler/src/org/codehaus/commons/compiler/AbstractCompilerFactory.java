@@ -29,6 +29,7 @@ package org.codehaus.commons.compiler;
 public abstract class AbstractCompilerFactory implements ICompilerFactory {
 
     public abstract String getId();
+    public abstract String getImplementationVersion();
 
     public IExpressionEvaluator newExpressionEvaluator() {
         throw new UnsupportedOperationException(this.getId() + ": newExpressionEvaluator");

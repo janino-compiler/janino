@@ -116,4 +116,11 @@ public final class CompilerFactoryFactory {
             compilerFactoryClassName
         ).newInstance();
     }
+
+    /**
+     * @return The version of the commons-compiler specification, or <code>null</code>
+     */
+    public static String getSpecificationVersion() {
+        return CompilerFactoryFactory.class.getPackage().getSpecificationVersion();
+    }
 }
