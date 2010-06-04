@@ -165,6 +165,9 @@
 	<target name="commons-compiler.jar" depends="compile-commons-compiler">
 		<mkdir dir="build/lib"/>
 		<jar jarfile="build/lib/commons-compiler.jar" filesonly="true">
+			<manifest>
+				<attribute name="Specification-Version" value="${version}"/>
+			</manifest>
 			<fileset dir="build/bin-commons-compiler"/>
 		</jar>
 		<signjar
@@ -179,6 +182,10 @@
 	<target name="janino.jar" depends="compile-janino">
 		<mkdir dir="build/lib"/>
 		<jar jarfile="build/lib/janino.jar" filesonly="true">
+			<manifest>
+				<attribute name="Implementation-Version" value="${version}"/>
+				<attribute name="Implementation-URL"     value="http://janino.net"/>
+			</manifest>
 			<fileset dir="build/bin-janino"/>
 		</jar>
 		<signjar
@@ -193,6 +200,10 @@
 	<target name="commons-compiler-jdk.jar" depends="compile-commons-compiler-jdk">
 		<mkdir dir="build/lib"/>
 		<jar jarfile="build/lib/commons-compiler-jdk.jar" filesonly="true">
+			<manifest>
+				<attribute name="Implementation-Version" value="${version}"/>
+				<attribute name="Implementation-URL"     value="http://janino.net"/>
+			</manifest>
 			<fileset dir="build/bin-commons-compiler-jdk"/>
 		</jar>
 		<signjar
