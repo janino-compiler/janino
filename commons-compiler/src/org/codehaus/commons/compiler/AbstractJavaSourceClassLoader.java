@@ -94,7 +94,7 @@ public abstract class AbstractJavaSourceClassLoader extends ClassLoader {
      *     -encoding <i>character-encoding</i>
      *     -g                           Generate all debugging info
      *     -g:none                      Generate no debugging info
-     *     -g:{lines,vars,source}       Generate only some debugging info
+     *     -g:{source,lines,vars}       Generate only some debugging info
      * </pre>
      */
     public static void main(String[] args) throws Exception {
@@ -150,7 +150,7 @@ public abstract class AbstractJavaSourceClassLoader extends ClassLoader {
                 System.out.println("    -encoding <character-encoding>");
                 System.out.println("    -g                     Generate all debugging info");
                 System.out.println("    -g:none                Generate no debugging info");
-                System.out.println("    -g:{lines,vars,source} Generate only some debugging info");
+                System.out.println("    -g:{source,lines,vars} Generate only some debugging info");
                 System.exit(0);
             } else
             {
