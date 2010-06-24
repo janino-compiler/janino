@@ -38,8 +38,7 @@ import org.codehaus.janino.util.resource.*;
  * <p>
  * The application provides access to the resource storeage through a pair of a {@link
  * org.codehaus.janino.util.resource.ResourceFinder} and a {@link org.codehaus.janino.util.resource.ResourceCreator}
- * (see {@link #CachingJavaSourceClassLoader(ClassLoader, ResourceFinder, String, ResourceFinder, ResourceCreator,
- * EnumeratorSet)}.
+ * (see {@link #CachingJavaSourceClassLoader(ClassLoader, ResourceFinder, String, ResourceFinder, ResourceCreator)}.
  * <p>
  * See {@link org.codehaus.janino.JavaSourceClassLoader#main(String[])} for an example how to use this class.
  * <p>
@@ -55,8 +54,7 @@ public class CachingJavaSourceClassLoader extends JavaSourceClassLoader {
     private final ResourceFinder  sourceFinder;
 
     /**
-     * See {@link #CachingJavaSourceClassLoader(ClassLoader, ResourceFinder, String, ResourceFinder, ResourceCreator,
-     * EnumeratorSet)}.
+     * See {@link #CachingJavaSourceClassLoader(ClassLoader, ResourceFinder, String, ResourceFinder, ResourceCreator)}.
      *
      * @param optionalSourcePath Directories to scan for source files
      * @param cacheDirectory Directory to use for caching generated class files (see class description)

@@ -358,7 +358,6 @@ public class Compiler {
      * @param classFileCreator Used to store generated class files
      * @param optionalCharacterEncoding
      * @param verbose
-     * @param debuggingInformation a combination of <code>Java.DEBUGGING_...</code>
      * @param optionalWarningHandler used to issue warnings
      */
     public Compiler(
