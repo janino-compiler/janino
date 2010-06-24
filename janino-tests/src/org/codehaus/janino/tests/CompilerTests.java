@@ -44,14 +44,12 @@ import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.Location;
 import org.codehaus.janino.ClassLoaderIClassLoader;
 import org.codehaus.janino.Compiler;
-import org.codehaus.janino.DebuggingInformation;
 import org.codehaus.janino.IClassLoader;
 import org.codehaus.janino.SimpleCompiler;
 import org.codehaus.janino.UnitCompiler;
 import org.codehaus.janino.WarningHandler;
 import org.codehaus.janino.util.Benchmark;
 import org.codehaus.janino.util.ResourceFinderClassLoader;
-import org.codehaus.janino.util.enumerator.EnumeratorSet;
 import org.codehaus.janino.util.resource.DirectoryResourceFinder;
 import org.codehaus.janino.util.resource.MapResourceCreator;
 import org.codehaus.janino.util.resource.MapResourceFinder;
@@ -79,20 +77,23 @@ public class CompilerTests {
             new DirectoryResourceFinder(new File(COMMONS_COMPILER_SRC)),
         }));
         boolean verbose = false;
+        boolean debugSource = true, debugLines = true, debugVars = false;
 
         Benchmark b = new Benchmark(true);
         b.beginReporting("Compile Janino from scratch");
         MapResourceCreator classFileResources1 = new MapResourceCreator();
         {
             Compiler c = new Compiler(
-                sourceFinder,                                       // sourceFinder
-                new ClassLoaderIClassLoader(bootstrapClassLoader),  // iClassLoader
-                ResourceFinder.EMPTY_RESOURCE_FINDER,               // classFileFinder
-                classFileResources1,                                // classFileCreator
-                (String) null,                                      // optionalCharacterEncoding
-                verbose,                                            // verbose
-                DebuggingInformation.DEFAULT_DEBUGGING_INFORMATION, // debuggingInformation
-                (WarningHandler) null                               // optionalWarningHandler
+                sourceFinder,                                      // sourceFinder
+                new ClassLoaderIClassLoader(bootstrapClassLoader), // iClassLoader
+                ResourceFinder.EMPTY_RESOURCE_FINDER,              // classFileFinder
+                classFileResources1,                               // classFileCreator
+                (String) null,                                     // optionalCharacterEncoding
+                verbose,                                           // verbose
+                debugSource,                                       // debugSource
+                debugLines,                                        // debugLines
+                debugVars,                                         // debugVars
+                (WarningHandler) null                              // optionalWarningHandler
             );
             c.setCompileErrorHandler(new UnitCompiler.ErrorHandler() {
                 public void handleError(String message, Location optionalLocation) throws CompileException {
@@ -119,7 +120,9 @@ public class CompilerTests {
                 classFileResources2,                                // classFileCreator
                 (String) null,                                      // optionalCharacterEncoding
                 verbose,                                            // verbose
-                DebuggingInformation.DEFAULT_DEBUGGING_INFORMATION, // debuggingInformation
+                true,                                               // debugSource
+                true,                                               // debugLines
+                false,                                              // debugVars
                 (WarningHandler) null                               // optionalWarningHandler
             );
             c.setCompileErrorHandler(new UnitCompiler.ErrorHandler() {
@@ -190,7 +193,6 @@ public class CompilerTests {
             Object cfrc = l.instantiate(MapResourceCreator.class, new Class[] { Map.class }, new Object[] {
                 classFileMap3,
             });
-            Object di = l.getStaticField(DebuggingInformation.class, "DEFAULT_DEBUGGING_INFORMATION");
 
             Object compiler = l.instantiate(Compiler.class, new Class[] {
                 l.loadClass(ResourceFinder.class),  // sourceFinder
@@ -199,7 +201,9 @@ public class CompilerTests {
                 l.loadClass(ResourceCreator.class), // classFileResourceCreator
                 String.class,                       // optionalCharacterEncoding
                 boolean.class,                      // verbose
-                l.loadClass(EnumeratorSet.class),   // debuggingInformation
+                boolean.class,                      // debugSource
+                boolean.class,                      // debugLines
+                boolean.class,                      // debugVars
                 l.loadClass(WarningHandler.class),  // optionalWarningHandler
             }, new Object[] {
                 sf,                                     // sourceFinder
@@ -208,7 +212,9 @@ public class CompilerTests {
                 cfrc,                                   // classFileResourceCreator
                 (String) null,                          // optionalCharacterEncoding
                 verbose ? Boolean.TRUE : Boolean.FALSE, // verbose
-                di,                                     // debuggingInformation
+                new Boolean(debugSource),               // debugSource
+                new Boolean(debugLines),                // debugLines
+                new Boolean(debugVars),                 // debugVars
                 null,                                   // optionalWarningHandler
             });
             l.invoke(compiler, "compile", new Class[] { File[].class }, new Object[] { sourceFiles });
@@ -262,7 +268,9 @@ public class CompilerTests {
             new MapResourceCreator(classes),                               // classFileCreator
             (String) null,                                                 // optionalCharacterEncoding
             false,                                                         // verbose
-            DebuggingInformation.DEFAULT_DEBUGGING_INFORMATION,            // debuggingInformation
+            true,                                                          // debugSource
+            true,                                                          // debugLines
+            false,                                                         // debugVars
             (WarningHandler) null                                          // optionalWarningHandler
         );
         COMPILE: {
