@@ -96,7 +96,6 @@ import org.codehaus.janino.Java.CompilationUnit.TypeImportOnDemandDeclaration;
 import org.codehaus.janino.Visitor.BlockStatementVisitor;
 import org.codehaus.janino.Visitor.ImportVisitor;
 import org.codehaus.janino.util.ClassFile;
-import org.codehaus.janino.util.enumerator.EnumeratorSet;
 
 /**
  * This class actually implements the Java&trade; compiler. It is
@@ -262,8 +261,11 @@ public class UnitCompiler {
      * Generates an array of {@link ClassFile} objects which represent the classes and
      * interfaces declared in the compilation unit.
      */
-    public ClassFile[] compileUnit(EnumeratorSet debuggingInformation) throws CompileException {
-
+    public ClassFile[] compileUnit(boolean debugSource, boolean debugLines, boolean debugVars) throws CompileException {
+        this.debugSource = debugSource;
+        this.debugLines = debugLines;
+        this.debugVars = debugVars;
+        
         // Compile static import declarations.
         for (Iterator it = this.compilationUnit.importDeclarations.iterator(); it.hasNext();) {
             ImportDeclaration id = (ImportDeclaration) it.next();
@@ -281,7 +283,6 @@ public class UnitCompiler {
         }
 
         this.generatedClassFiles  = new ArrayList();
-        this.debuggingInformation = debuggingInformation;
 
         for (Iterator it = this.compilationUnit.packageMemberTypeDeclarations.iterator(); it.hasNext();) {
             UnitCompiler.this.compile((Java.PackageMemberTypeDeclaration) it.next());
@@ -429,7 +430,7 @@ public class UnitCompiler {
         }
 
         // Set "SourceFile" attribute.
-        if (this.debuggingInformation.contains(DebuggingInformation.SOURCE)) {
+        if (this.debugSource) {
             String sourceFileName;
             {
                 String s = cd.getLocation().getFileName();
@@ -657,7 +658,7 @@ public class UnitCompiler {
         );
 
         // Set "SourceFile" attribute.
-        if (this.debuggingInformation.contains(DebuggingInformation.SOURCE)) {
+        if (this.debugSource) {
             String sourceFileName;
             {
                 String s = id.getLocation().getFileName();
@@ -2032,14 +2033,14 @@ public class UnitCompiler {
         }
 
         final short lntani;
-        if (this.debuggingInformation.contains(DebuggingInformation.LINES)) {
+        if (this.debugLines) {
             lntani = classFile.addConstantUtf8Info("LineNumberTable");
         } else {
             lntani = 0;
         }
 
         final short lvtani;
-        if (this.debuggingInformation.contains(DebuggingInformation.VARS)) {
+        if (this.debugVars) {
             makeLocalVariableNames(codeContext, mi);
             lvtani = classFile.addConstantUtf8Info("LocalVariableTable");
         } else {
@@ -9042,9 +9043,9 @@ public class UnitCompiler {
      * ErrorHandler} counts errors and throws a {@link CompileException} when a limit is reached.
      * <p>
      * If the given {@link ErrorHandler} does not throw {@link CompileException}s, then {@link
-     * #compileUnit(EnumeratorSet)} will throw one when the compilation of the unit is finished, and errors had
+     * #compileUnit(boolean, boolean, boolean)} will throw one when the compilation of the unit is finished, and errors had
      * occurred. In other words: The {@link ErrorHandler} may throw a {@link CompileException} or not, but {@link
-     * #compileUnit(EnumeratorSet)} will definitely throw a {@link CompileException} if one or more compile errors have
+     * #compileUnit(boolean, boolean, boolean)} will definitely throw a {@link CompileException} if one or more compile errors have
      * occurred.
      *
      * @param optionalCompileErrorHandler <code>null</code> to restore the default behavior (throwing a {@link
@@ -9319,7 +9320,10 @@ public class UnitCompiler {
     private final IClassLoader iClassLoader;
     private final boolean      isStringBuilderAvailable;
     private List               generatedClassFiles;
-    private EnumeratorSet      debuggingInformation;
+
+    private boolean debugSource;
+    private boolean debugLines;
+    private boolean debugVars;
 
     /** String simpleTypeName => String[] fullyQualifiedTypeName */
     private final Map        singleTypeImports     = new HashMap();

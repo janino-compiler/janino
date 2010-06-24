@@ -41,6 +41,9 @@ public class SimpleCompiler extends Cookable implements ISimpleCompiler {
 
     private ClassLoader parentClassLoader = Thread.currentThread().getContextClassLoader();
     private ClassLoader result;
+    private boolean     debugSource;
+    private boolean     debugLines;
+    private boolean     debugVars;
 
     @Override
     public ClassLoader getClassLoader() {
@@ -126,7 +129,12 @@ public class SimpleCompiler extends Cookable implements ISimpleCompiler {
                         throw new RuntimeException(new CompileException(message, loc));
                     }
                 },
-                null,                                  // options
+                Collections.singletonList(             // options
+                    this.debugSource ? "-g:source" + (this.debugLines ? ",lines" : "") + (this.debugVars ? ",vars" : "") :
+                    this.debugLines ? "-g:lines" + (this.debugVars ? ",vars" : "") :
+                    this.debugVars ? "-g:vars" :
+                    "-g:none"
+                ),
                 null,                                  // classes
                 Collections.singleton(compilationUnit) // compilationUnits
             ).call()) {
@@ -221,6 +229,14 @@ public class SimpleCompiler extends Cookable implements ISimpleCompiler {
                 return new JavaFileManagerClassLoader(fileManager, SimpleCompiler.this.parentClassLoader);
             }
         });
+    }
+
+    
+    @Override
+    public void setDebuggingInformation(boolean debugSource, boolean debugLines, boolean debugVars) {
+        this.debugSource = debugSource;
+        this.debugLines = debugLines;
+        this.debugVars = debugVars;
     }
 
     @Override

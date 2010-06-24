@@ -492,7 +492,6 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
         // Compile and load the compilation unit.
         Class c = this.compileToClass(
             compilationUnit,                                    // compilationUnit
-            DebuggingInformation.DEFAULT_DEBUGGING_INFORMATION, // debuggingInformation
             this.className
         );
 
@@ -637,7 +636,6 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
         // Compile and load the compilation unit.
         Class c = this.compileToClass(
             compilationUnit,                                    // compilationUnit
-            DebuggingInformation.DEFAULT_DEBUGGING_INFORMATION, // debuggingInformation
             this.className
         );
 

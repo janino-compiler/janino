@@ -37,6 +37,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.codehaus.commons.compiler.CompileException;
+import org.codehaus.commons.compiler.ICookable;
 import org.codehaus.commons.compiler.Location;
 import org.codehaus.janino.util.TeeReader;
 
@@ -204,8 +205,8 @@ public class Scanner {
         // JANINO is designed to compile in memory to save the overhead of disk
         // I/O, so writing this file is only recommended for source code level
         // debugging purposes.
-        if (optionalFileName == null && Boolean.getBoolean("org.codehaus.janino.source_debugging.enable")) {
-            String dirName = System.getProperty("org.codehaus.janino.source_debugging.dir");
+        if (optionalFileName == null && Boolean.getBoolean(ICookable.SYSTEM_PROPERTY_SOURCE_DEBUGGING_ENABLE)) {
+            String dirName = System.getProperty(ICookable.SYSTEM_PROPERTY_SOURCE_DEBUGGING_DIR);
             File dir = dirName == null ? null : new File(dirName);
             File temporaryFile = File.createTempFile("janino", ".java", dir);
             temporaryFile.deleteOnExit();

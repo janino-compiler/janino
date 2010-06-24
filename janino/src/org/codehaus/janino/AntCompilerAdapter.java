@@ -31,7 +31,6 @@ import java.io.*;
 import org.apache.tools.ant.taskdefs.compilers.*;
 import org.apache.tools.ant.types.Path;
 import org.codehaus.commons.compiler.CompileException;
-import org.codehaus.janino.util.enumerator.*;
 
 /**
  * A simple {@link org.apache.tools.ant.taskdefs.compilers.CompilerAdapter} for the "ant" tool
@@ -102,19 +101,20 @@ public class AntCompilerAdapter extends DefaultCompilerAdapter {
         boolean verbose = this.verbose;
 
         // Determine debugging information.
-        EnumeratorSet debuggingInformation;
+        boolean debugSource, debugLines, debugVars;
         if (!this.debug) {
-            debuggingInformation = DebuggingInformation.NONE;
+            debugSource = debugLines = debugVars = false;
         } else {
             String debugLevel = this.attributes.getDebugLevel();
             if (debugLevel == null) {
-                debuggingInformation = DebuggingInformation.DEFAULT_DEBUGGING_INFORMATION;
+                debugSource = true;
+                debugLines = true;
+                debugVars = false;
             } else {
-                try {
-                    debuggingInformation = new EnumeratorSet(DebuggingInformation.class, debugLevel);
-                } catch (EnumeratorFormatException ex) {
-                    debuggingInformation = DebuggingInformation.NONE;
-                }
+                debugSource = debugLines = debugVars = false;
+                if (debugLevel.indexOf("source") != -1) debugSource = true;
+                if (debugLevel.indexOf("lines") != -1)  debugLines = true;
+                if (debugLevel.indexOf("vars") != -1)   debugVars = true;
             }
         }
 
@@ -128,7 +128,9 @@ public class AntCompilerAdapter extends DefaultCompilerAdapter {
                 destinationDirectory,
                 optionalCharacterEncoding,
                 verbose,
-                debuggingInformation,
+                debugSource,
+                debugLines,
+                debugVars,
                 Compiler.DEFAULT_WARNING_HANDLE_PATTERNS,
                 false                        // rebuild
             ).compile(sourceFiles);

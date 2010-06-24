@@ -32,7 +32,6 @@ import java.util.*;
 import org.codehaus.commons.compiler.*;
 import org.codehaus.janino.tools.Disassembler;
 import org.codehaus.janino.util.*;
-import org.codehaus.janino.util.enumerator.*;
 import org.codehaus.janino.util.resource.*;
 
 /**
@@ -54,42 +53,34 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
     public JavaSourceClassLoader(ClassLoader parentClassLoader) {
         this(
             parentClassLoader,
-            (File[]) null,                                // optionalSourcePath
-            null,                                         // optionalCharacterEncoding
-            new EnumeratorSet(DebuggingInformation.class) // debuggingInformation
+            (File[]) null,     // optionalSourcePath
+            null               // optionalCharacterEncoding
         );
     }
 
     /**
      * Set up a {@link JavaSourceClassLoader} that finds Java&trade; source code in a file
      * that resides in either of the directories specified by the given source path.
-     * <p>
-     * You can specify to include certain debugging information in the generated class files, which
-     * is useful if you want to debug through the generated classes (see
-     * {@link Scanner#Scanner(String, Reader)}).
      *
      * @param parentClassLoader         See {@link ClassLoader}
      * @param optionalSourcePath        A collection of directories that are searched for Java&trade; source files in
      *                                  the given order
      * @param optionalCharacterEncoding The encoding of the Java&trade; source files (<code>null</code> for platform
      *                                  default encoding)
-     * @param debuggingInformation      What kind of debugging information to generate, see {@link DebuggingInformation}
      */
     public JavaSourceClassLoader(
-        ClassLoader   parentClassLoader,
-        File[]        optionalSourcePath,
-        String        optionalCharacterEncoding,
-        EnumeratorSet debuggingInformation
+        ClassLoader parentClassLoader,
+        File[]      optionalSourcePath,
+        String      optionalCharacterEncoding
     ) {
         this(
-            parentClassLoader,         // parentClassLoader
-            (                          // sourceFinder
+            parentClassLoader,        // parentClassLoader
+            (                         // sourceFinder
                 optionalSourcePath == null ?
                 (ResourceFinder) new DirectoryResourceFinder(new File(".")) :
                 (ResourceFinder) new PathResourceFinder(optionalSourcePath)
             ),
-            optionalCharacterEncoding, // optionalCharacterEncoding
-            debuggingInformation       // debuggingInformation
+            optionalCharacterEncoding // optionalCharacterEncoding
         );
     }
 
@@ -105,26 +96,22 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
      * @param sourceFinder              Used to locate additional source files
      * @param optionalCharacterEncoding The encoding of the Java&trade; source files (<code>null</code> for platform
      *                                  default encoding)
-     * @param debuggingInformation      What kind of debugging information to generate, see {@link DebuggingInformation}
      */
     public JavaSourceClassLoader(
         ClassLoader    parentClassLoader,
         ResourceFinder sourceFinder,
-        String         optionalCharacterEncoding,
-        EnumeratorSet  debuggingInformation
+        String         optionalCharacterEncoding
     ) {
         super(parentClassLoader);
-
+        
         this.iClassLoader = new JavaSourceIClassLoader(
             sourceFinder,                                  // sourceFinder
             optionalCharacterEncoding,                     // optionalCharacterEncoding
             this.unitCompilers,                            // unitCompilers
             new ClassLoaderIClassLoader(parentClassLoader) // optionalParentIClassLoader
         );
-
-        this.debuggingInformation = debuggingInformation;
     }
-
+    
     public void setSourcePath(File[] sourcePath) {
         this.iClassLoader.setSourceFinder(new PathResourceFinder(sourcePath));
     }
@@ -133,14 +120,10 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
         this.iClassLoader.setCharacterEncoding(optionalCharacterEncoding);
     }
 
-    public void setDebuggingInfo(boolean lines, boolean vars, boolean source) {
-        this.debuggingInformation = new EnumeratorSet(DebuggingInformation.class).addAll(Arrays.asList(
-            new DebuggingInformation[] {
-                lines  ? DebuggingInformation.LINES  : null,
-                vars   ? DebuggingInformation.VARS   : null,
-                source ? DebuggingInformation.SOURCE : null,
-            }
-        ));
+    public void setDebuggingInfo(boolean debugSource, boolean debugLines, boolean debugVars) {
+        this.debugSource = debugSource;
+        this.debugLines = debugLines;
+        this.debugVars = debugVars;
     }
 
     /**
@@ -217,7 +200,7 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
                 if (!compiledUnitCompilers.contains(uc)) {
                     ClassFile[] cfs;
                     try {
-                        cfs = uc.compileUnit(this.debuggingInformation);
+                        cfs = uc.compileUnit(this.debugSource, this.debugLines, this.debugVars);
                     } catch (CompileException ex) {
                         throw new ClassNotFoundException(
                             "Compiling unit \"" + uc.compilationUnit.optionalFileName + "\"",
@@ -283,7 +266,10 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
     }
 
     private final JavaSourceIClassLoader iClassLoader;
-    private EnumeratorSet                debuggingInformation;
+
+    protected boolean debugSource = Boolean.getBoolean(ICookable.SYSTEM_PROPERTY_SOURCE_DEBUGGING_ENABLE);
+    protected boolean debugLines = this.debugSource;
+    protected boolean debugVars = this.debugSource;
 
     /**
      * Collection of parsed, but uncompiled compilation units.

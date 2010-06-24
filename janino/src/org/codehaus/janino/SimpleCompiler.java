@@ -35,7 +35,6 @@ import java.util.*;
 import org.codehaus.commons.compiler.*;
 import org.codehaus.janino.tools.Disassembler;
 import org.codehaus.janino.util.*;
-import org.codehaus.janino.util.enumerator.*;
 
 /**
  * To set up a {@link SimpleCompiler} object, proceed as described for {@link ISimpleCompiler}.
@@ -53,6 +52,10 @@ public class SimpleCompiler extends Cookable implements ISimpleCompiler {
     private IClassLoader         iClassLoader = null;
 
     private ClassLoader result = null;
+
+    protected boolean debugSource = Boolean.getBoolean(ICookable.SYSTEM_PROPERTY_SOURCE_DEBUGGING_ENABLE);
+    protected boolean debugLines = this.debugSource;
+    protected boolean debugVars = this.debugSource;
 
     public static void main(String[] args) throws Exception {
         if (args.length >= 1 && args[0].equals("-help")) {
@@ -178,6 +181,12 @@ public class SimpleCompiler extends Cookable implements ISimpleCompiler {
         this.optionalAuxiliaryClasses = auxiliaryClasses;
     }
 
+    public void setDebuggingInformation(boolean debugSource, boolean debugLines, boolean debugVars) {
+        this.debugSource = debugSource;
+        this.debugLines  = debugLines;
+        this.debugVars   = debugVars;
+    }
+
     public final void cook(
         String optionalFileName,
         Reader r
@@ -192,10 +201,7 @@ public class SimpleCompiler extends Cookable implements ISimpleCompiler {
         Java.CompilationUnit compilationUnit = new Parser(scanner).parseCompilationUnit();
 
         // Compile the classes and load them.
-        this.compileToClassLoader(
-            compilationUnit,
-            DebuggingInformation.DEFAULT_DEBUGGING_INFORMATION
-        );
+        this.compileToClassLoader(compilationUnit);
     }
 
     /**
@@ -206,10 +212,7 @@ public class SimpleCompiler extends Cookable implements ISimpleCompiler {
         this.setUpClassLoaders();
 
         // Compile the classes and load them.
-        this.compileToClassLoader(
-            compilationUnit,
-            DebuggingInformation.DEFAULT_DEBUGGING_INFORMATION
-        );
+        this.compileToClassLoader(compilationUnit);
     }
 
     /**
@@ -378,14 +381,10 @@ public class SimpleCompiler extends Cookable implements ISimpleCompiler {
      * of a Java&trade; source file.)
      *
      * @param compilationUnit The parsed compilation unit
-     * @param debuggingInformation What kind of debugging information to generate in the class file
      * @return The {@link ClassLoader} into which the compiled classes were defined
      * @throws CompileException
      */
-    protected final ClassLoader compileToClassLoader(
-        Java.CompilationUnit compilationUnit,
-        EnumeratorSet        debuggingInformation
-    ) throws CompileException {
+    protected final ClassLoader compileToClassLoader(Java.CompilationUnit compilationUnit) throws CompileException {
         if (SimpleCompiler.DEBUG) {
             UnparseVisitor.unparse(compilationUnit, new OutputStreamWriter(System.out));
         }
@@ -394,7 +393,7 @@ public class SimpleCompiler extends Cookable implements ISimpleCompiler {
         ClassFile[] classFiles = new UnitCompiler(
             compilationUnit,
             this.iClassLoader
-        ).compileUnit(debuggingInformation);
+        ).compileUnit(this.debugSource, this.debugLines, this.debugVars);
 
         // Convert the class files to bytes and store them in a Map.
         final Map classes = new HashMap(); // String className => byte[] data

@@ -43,8 +43,6 @@ import org.codehaus.janino.tools.Disassembler;
 import org.codehaus.janino.util.Benchmark;
 import org.codehaus.janino.util.ClassFile;
 import org.codehaus.janino.util.StringPattern;
-import org.codehaus.janino.util.enumerator.EnumeratorFormatException;
-import org.codehaus.janino.util.enumerator.EnumeratorSet;
 import org.codehaus.janino.util.resource.DirectoryResourceCreator;
 import org.codehaus.janino.util.resource.DirectoryResourceFinder;
 import org.codehaus.janino.util.resource.FileResource;
@@ -69,7 +67,7 @@ import org.codehaus.janino.util.resource.ResourceFinder;
  *           [ -encoding <i>encoding</i> ] \
  *           [ -verbose ] \
  *           [ -g:none ] \
- *           [ -g:{lines,vars,source} ] \
+ *           [ -g:{source,lines,vars} ] \
  *           [ -warn:<i>pattern-list</i> ] \
  *           <i>source-file</i> ...
  * java org.codehaus.janino.Compiler -help
@@ -89,7 +87,9 @@ public class Compiler {
         File[]          optionalBootClassPath     = null;
         String          optionalCharacterEncoding = null;
         boolean         verbose                   = false;
-        EnumeratorSet   debuggingInformation      = DebuggingInformation.DEFAULT_DEBUGGING_INFORMATION;
+        boolean         debugSource               = true;
+        boolean         debugLines                = true;
+        boolean         debugVars                 = false;
         StringPattern[] warningHandlePatterns     = Compiler.DEFAULT_WARNING_HANDLE_PATTERNS;
         boolean         rebuild                   = false;
 
@@ -120,21 +120,13 @@ public class Compiler {
                 verbose = true;
             } else
             if (arg.equals("-g")) {
-                debuggingInformation = DebuggingInformation.ALL;
+                debugSource = debugLines = debugVars = true;
             } else
             if (arg.startsWith("-g:")) {
-                try {
-                    debuggingInformation = new EnumeratorSet(DebuggingInformation.class, arg.substring(3));
-                } catch (EnumeratorFormatException ex) {
-                    System.err.println(
-                        "Invalid debugging option \""
-                        + arg
-                        + "\", only \""
-                        + DebuggingInformation.ALL
-                        + "\" allowed"
-                    );
-                    System.exit(1);
-                }
+                if (arg.indexOf("none")   != -1) debugSource = debugLines = debugVars = false;
+                if (arg.indexOf("source") != -1) debugSource = true;
+                if (arg.indexOf("lines")  != -1) debugLines = true;
+                if (arg.indexOf("vars")   != -1) debugVars = true;
             } else
             if (arg.startsWith("-warn:")) {
                 warningHandlePatterns = StringPattern.parseCombinedPattern(arg.substring(6));
@@ -168,7 +160,9 @@ public class Compiler {
             destinationDirectory,
             optionalCharacterEncoding,
             verbose,
-            debuggingInformation,
+            debugSource,
+            debugLines,
+            debugVars,
             warningHandlePatterns,
             rebuild
         );
@@ -197,7 +191,7 @@ public class Compiler {
         "  -verbose",
         "  -g                        Generate all debugging info",
         "  -g:none                   Generate no debugging info",
-        "  -g:{lines,vars,source}    Generate only some debugging info",
+        "  -g:{source,lines,vars}    Generate only some debugging info",
         "  -warn:<pattern-list>      Issue certain warnings; examples:",
         "    -warn:*                 Enables all warnings",
         "    -warn:IASF              Only warn against implicit access to static fields",
@@ -217,19 +211,21 @@ public class Compiler {
         ),
     };
 
-    private /*final*/ ResourceFinder    classFileFinder;
+    private final ResourceFinder        classFileFinder;
     /** Special value for "classFileResourceFinder". */
     public static final ResourceFinder  FIND_NEXT_TO_SOURCE_FILE = null;
-    private /*final*/ ResourceCreator   classFileCreator;
+    private final ResourceCreator       classFileCreator;
     /** Special value for "classFileResourceCreator". */
     public static final ResourceCreator CREATE_NEXT_TO_SOURCE_FILE = null;
-    private /*final*/ String            optionalCharacterEncoding;
-    private /*final*/ Benchmark         benchmark;
-    private /*final*/ EnumeratorSet     debuggingInformation;
-    private /*final*/ WarningHandler    optionalWarningHandler;
+    private final String                optionalCharacterEncoding;
+    private final Benchmark             benchmark;
+    private final boolean               debugSource;
+    private final boolean               debugLines;
+    private final boolean               debugVars;
+    private final WarningHandler        optionalWarningHandler;
     private UnitCompiler.ErrorHandler   optionalCompileErrorHandler = null;
 
-    private /*final*/ IClassLoader iClassLoader;
+    private final IClassLoader iClassLoader;
     private final ArrayList    parsedCompilationUnits = new ArrayList(); // UnitCompiler
 
     /**
@@ -283,7 +279,9 @@ public class Compiler {
         final File      destinationDirectory,
         final String    optionalCharacterEncoding,
         boolean         verbose,
-        EnumeratorSet   debuggingInformation,
+        boolean         debugSource,
+        boolean         debugLines,
+        boolean         debugVars,
         StringPattern[] warningHandlePatterns,
         boolean         rebuild
     ) {
@@ -307,7 +305,9 @@ public class Compiler {
             ),
             optionalCharacterEncoding,                    // optionalCharacterEncoding
             verbose,                                      // verbose
-            debuggingInformation,                         // debuggingInformation
+            debugSource,                                  // debugSource
+            debugLines,                                   // debugLines
+            debugVars,                                    // debugVars
             new FilterWarningHandler(                     // optionalWarningHandler
                 warningHandlePatterns,
                 new SimpleWarningHandler() // <= Anonymous class here is complicated because the enclosing instance is
@@ -324,7 +324,9 @@ public class Compiler {
         this.benchmark.report("Destination directory",   destinationDirectory);
         this.benchmark.report("Character encoding",      optionalCharacterEncoding);
         this.benchmark.report("Verbose",                 new Boolean(verbose));
-        this.benchmark.report("Debugging information",   debuggingInformation);
+        this.benchmark.report("Debug source",            new Boolean(debugSource));
+        this.benchmark.report("Debug lines",             new Boolean(debugSource));
+        this.benchmark.report("Debug vars",              new Boolean(debugSource));
         this.benchmark.report("Warning handle patterns", warningHandlePatterns);
         this.benchmark.report("Rebuild",                 new Boolean(rebuild));
     }
@@ -366,14 +368,18 @@ public class Compiler {
         ResourceCreator classFileCreator,
         final String    optionalCharacterEncoding,
         boolean         verbose,
-        EnumeratorSet   debuggingInformation,
+        boolean         debugSource,
+        boolean         debugLines,
+        boolean         debugVars,
         WarningHandler  optionalWarningHandler
     ) {
         this.classFileFinder           = classFileFinder;
         this.classFileCreator          = classFileCreator;
         this.optionalCharacterEncoding = optionalCharacterEncoding;
         this.benchmark                 = new Benchmark(verbose);
-        this.debuggingInformation      = debuggingInformation;
+        this.debugSource               = debugSource;
+        this.debugLines                = debugLines;
+        this.debugVars                 = debugVars;
         this.optionalWarningHandler    = optionalWarningHandler;
 
         // Set up the IClassLoader.
@@ -498,7 +504,7 @@ public class Compiler {
                 try {
 
                     // Compile the compilation unit.
-                    classFiles = unitCompiler.compileUnit(this.debuggingInformation);
+                    classFiles = unitCompiler.compileUnit(this.debugSource, this.debugLines, this.debugVars);
                 } finally {
                     this.benchmark.endReporting();
                 }

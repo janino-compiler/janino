@@ -62,6 +62,32 @@ public interface ICookable {
     void setParentClassLoader(ClassLoader optionalParentClassLoader);
 
     /**
+     * Value 'org.codehaus.janino.source_debugging.enable'.
+     * <p>
+     * Setting this system property to 'true' enables source-level debugging. Typically, this means that compilation
+     * is executed with '-g:all' instead of '-g:none'.
+     */
+    public static final String SYSTEM_PROPERTY_SOURCE_DEBUGGING_ENABLE = "org.codehaus.janino.source_debugging.enable";
+
+    /**
+     * Value 'org.codehaus.janino.source_debugging.dir'.
+     * <p>
+     * If source code is not compiled from a file, debuggers have a hard time locating the source file for source-level
+     * debugging. As a workaround, a copy of the source code is written to a temporary file, which must be included
+     * in the debugger's source path. If this system property is set, the temporary source file is created in that
+     * directory, otherwise in the default temporary-file directory.
+     * 
+     * @see File#createTempFile(String, String, File)
+     */
+    public static final String SYSTEM_PROPERTY_SOURCE_DEBUGGING_DIR = "org.codehaus.janino.source_debugging.dir";
+
+    /**
+     * Determines what kind of debugging information is included in the generates classes. The default is typically
+     * '-g:none', and '-g:all' if the system property 'org.codehaus.janino.source_debugging.enable' is set to 'true'.
+     */
+    void setDebuggingInformation(boolean debugSource, boolean debugLines, boolean debugVars);
+
+    /**
      * Reads, scans, parses and compiles Java tokens from the given {@link Reader}.
      *
      * @param optionalFileName Used when reporting errors and warnings.

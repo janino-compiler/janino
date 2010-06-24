@@ -34,7 +34,6 @@ import org.codehaus.commons.compiler.Cookable;
 import org.codehaus.commons.compiler.IClassBodyEvaluator;
 import org.codehaus.commons.compiler.ICompilerFactory;
 import org.codehaus.commons.compiler.Location;
-import org.codehaus.janino.util.enumerator.EnumeratorSet;
 
 /**
  * The <code>optionalClassLoader</code> serves two purposes:
@@ -64,9 +63,7 @@ public class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEval
      * @see #ClassBodyEvaluator()
      * @see Cookable#cook(String)
      */
-    public ClassBodyEvaluator(
-        String classBody
-    ) throws CompileException {
+    public ClassBodyEvaluator(String classBody) throws CompileException {
         this.cook(classBody);
     }
 
@@ -78,10 +75,7 @@ public class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEval
      * @see #ClassBodyEvaluator()
      * @see Cookable#cook(String, InputStream)
      */
-    public ClassBodyEvaluator(
-        String      optionalFileName,
-        InputStream is
-    ) throws CompileException, IOException {
+    public ClassBodyEvaluator(String optionalFileName, InputStream is) throws CompileException, IOException {
         this.cook(optionalFileName, is);
     }
 
@@ -93,10 +87,7 @@ public class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEval
      * @see #ClassBodyEvaluator()
      * @see Cookable#cook(String, Reader)
      */
-    public ClassBodyEvaluator(
-        String   optionalFileName,
-        Reader   reader
-    ) throws CompileException, IOException {
+    public ClassBodyEvaluator(String optionalFileName, Reader reader) throws CompileException, IOException {
         this.cook(optionalFileName, reader);
     }
 
@@ -232,7 +223,6 @@ public class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEval
         // Compile and load it.
         this.result = this.compileToClass(
             compilationUnit,              // compilationUnit
-            DebuggingInformation.ALL,     // debuggingInformation
             this.className
         );
     }
@@ -309,18 +299,16 @@ public class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEval
      * Compile the given compilation unit, load all generated classes, and return the class with the given name.
      *
      * @param compilationUnit
-     * @param debuggingInformation TODO
      * @param newClassName The fully qualified class name
      * @return The loaded class
      */
     protected final Class compileToClass(
         Java.CompilationUnit compilationUnit,
-        EnumeratorSet        debuggingInformation,
         String               newClassName
     ) throws CompileException {
 
         // Compile and load the compilation unit.
-        ClassLoader cl = this.compileToClassLoader(compilationUnit, debuggingInformation);
+        ClassLoader cl = this.compileToClassLoader(compilationUnit);
 
         // Find the generated class by name.
         try {
