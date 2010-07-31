@@ -26,11 +26,22 @@
 
 package org.codehaus.janino;
 
-import java.io.*;
-import java.util.*;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
-import org.codehaus.janino.util.*;
-import org.codehaus.janino.util.resource.*;
+import org.codehaus.janino.util.ClassFile;
+import org.codehaus.janino.util.resource.DirectoryResourceCreator;
+import org.codehaus.janino.util.resource.DirectoryResourceFinder;
+import org.codehaus.janino.util.resource.PathResourceFinder;
+import org.codehaus.janino.util.resource.Resource;
+import org.codehaus.janino.util.resource.ResourceCreator;
+import org.codehaus.janino.util.resource.ResourceFinder;
 
 /**
  * A {@link org.codehaus.janino.JavaSourceClassLoader} that uses a resource storage provided by the application to cache
@@ -116,8 +127,7 @@ public class CachingJavaSourceClassLoader extends JavaSourceClassLoader {
      * @return                        String name => byte[] bytecode, or {@code null} if no source code could be found
      * @throws ClassNotFoundException Compilation problems or class file cache I/O problems
      */
-    protected Map generateBytecodes(String className) throws ClassNotFoundException {
-
+    public Map generateBytecodes(String className) throws ClassNotFoundException {
         // Check whether a class file resource exists in the cache.
         {
             Resource classFileResource = this.classFileCacheResourceFinder.findResource(
