@@ -26,13 +26,24 @@
 
 package org.codehaus.janino;
 
-import java.io.*;
-import java.util.*;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.Reader;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 
-import org.codehaus.commons.compiler.*;
+import org.codehaus.commons.compiler.AbstractJavaSourceClassLoader;
+import org.codehaus.commons.compiler.CompileException;
+import org.codehaus.commons.compiler.ICookable;
 import org.codehaus.janino.tools.Disassembler;
-import org.codehaus.janino.util.*;
-import org.codehaus.janino.util.resource.*;
+import org.codehaus.janino.util.ClassFile;
+import org.codehaus.janino.util.resource.DirectoryResourceFinder;
+import org.codehaus.janino.util.resource.PathResourceFinder;
+import org.codehaus.janino.util.resource.ResourceFinder;
 
 /**
  * A {@link ClassLoader} that, unlike usual {@link ClassLoader}s,
@@ -188,7 +199,7 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
      * @return String name => byte[] bytecode, or <code>null</code> if no source code could be found
      * @throws ClassNotFoundException on compilation problems
      */
-    protected Map generateBytecodes(String name) throws ClassNotFoundException {
+    public Map generateBytecodes(String name) throws ClassNotFoundException {
         if (this.iClassLoader.loadIClass(Descriptor.fromClassName(name)) == null) return null;
 
         Map bytecodes = new HashMap(); // String name => byte[] bytecode
