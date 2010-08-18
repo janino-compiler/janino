@@ -160,14 +160,17 @@ public class ClassFile {
 
         this.minorVersion = dis.readShort();                 // minor_version
         this.majorVersion = dis.readShort();                 // major_version
-        if (!ClassFile.isRecognizedVersion(this.majorVersion, this.minorVersion)) {
-            throw new ClassFormatError(
-                "Unrecognized class file format version "
-                + this.majorVersion
-                + "/"
-                + this.minorVersion
-            );
-        }
+
+        // Explicitly DO NOT CHECK the major and minor version of the CLASS file, because SUN increase them with each
+        // platform update while keeping them backwards compatible.
+//        if (!ClassFile.isRecognizedVersion(this.majorVersion, this.minorVersion)) {
+//            throw new ClassFormatError(
+//                "Unrecognized class file format version "
+//                + this.majorVersion
+//                + "/"
+//                + this.minorVersion
+//            );
+//        }
 
         this.constantPool = new ArrayList();
         this.constantPoolMap = new HashMap();
@@ -213,16 +216,6 @@ public class ClassFile {
      */
     public short getMinorVersion() {
         return this.minorVersion;
-    }
-
-    public static boolean isRecognizedVersion(short majorVersion, short minorVersion) {
-        return (
-            (majorVersion == ClassFile.MAJOR_VERSION_JDK_1_1 && minorVersion == ClassFile.MINOR_VERSION_JDK_1_1) ||
-            (majorVersion == ClassFile.MAJOR_VERSION_JDK_1_2 && minorVersion == ClassFile.MINOR_VERSION_JDK_1_2) ||
-            (majorVersion == ClassFile.MAJOR_VERSION_JDK_1_3 && minorVersion == ClassFile.MINOR_VERSION_JDK_1_3) ||
-            (majorVersion == ClassFile.MAJOR_VERSION_JDK_1_4 && minorVersion == ClassFile.MINOR_VERSION_JDK_1_4) ||
-            (majorVersion == ClassFile.MAJOR_VERSION_JDK_1_5 && minorVersion == ClassFile.MINOR_VERSION_JDK_1_5)
-        );
     }
 
     /**
