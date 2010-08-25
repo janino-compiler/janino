@@ -74,12 +74,12 @@
   </Program_Info>
   <Program_Descriptions>
     <English>
-      <Keywords>Java Compiler Embedded Expression evaluation Script Scripting JVM Virtual Machine Bytecode run-time compilation JSP server pages</Keywords>
+      <Keywords>Java Compiler small fast Embedded Expression evaluation Script Scripting JVM Virtual Machine Bytecode run-time compilation JSP server pages</Keywords>
       <Char_Desc_45>Compiles and executes Java on-the-fly.</Char_Desc_45>
-      <Char_Desc_80>An embedded Java compiler that compiles expressions or scripts on-the-fly.</Char_Desc_80>
-      <Char_Desc_250>Janino is a compiler that reads a Java expression, block, or source file, and generates Java bytecode that is loaded and executed directly. It is not intended to be a development tool, but an embedded compiler for run-time compilation purposes.</Char_Desc_250>
-      <Char_Desc_450>Janino is a compiler that reads a Java expression, block, or source file, and generates Java bytecode that is loaded and executed directly. It is not intended to be a development tool, but an embedded compiler for run-time compilation purposes, such as expression evaluators or &quot;server pages&quot; engines like JSP.</Char_Desc_450>
-      <Char_Desc_2000>Janino is a compiler that reads a Java expression, block, or source file, and generates Java bytecode that is loaded and executed directly. It is not intended to be a development tool, but an embedded compiler for run-time compilation purposes, such as expression evaluators or &quot;server pages&quot; engines like JSP.
+      <Char_Desc_80>A super-small, super-fast Java compiler that compiles expressions or scripts on-the-fly.</Char_Desc_80>
+      <Char_Desc_250>Janino is a super-small, super-fast compiler that reads a Java expression, block, or source file, and generates Java bytecode that is loaded and executed directly. It is not intended to be a development tool, but an embedded compiler for run-time compilation purposes.</Char_Desc_250>
+      <Char_Desc_450>Janino is a super-small, super-fast compiler that reads a Java expression, block, or source file, and generates Java bytecode that is loaded and executed directly. It is not intended to be a development tool, but an embedded compiler for run-time compilation purposes, such as expression evaluators or &quot;server pages&quot; engines like JSP.</Char_Desc_450>
+      <Char_Desc_2000>Janino is a super-small, super-fastcompiler that reads a Java expression, block, or source file, and generates Java bytecode that is loaded and executed directly. It is not intended to be a development tool, but an embedded compiler for run-time compilation purposes, such as expression evaluators or &quot;server pages&quot; engines like JSP.
 
 Properties
 
@@ -96,12 +96,12 @@ Because this is so unflexible, the shipping cost expression should be specified 
 A simple expression evaluator would parse an expression and create a &quot;syntax tree&quot;. The expression &quot;a + b * c&quot;, for example, would compile into a &quot;Sum&quot; object who's first operand is parameter &quot;a&quot; and who's second operand is a &quot;Product&quot; object who's operands are parameters &quot;b&quot; and &quot;c&quot;. Such a syntax tree can evaluated relatively quickly. However, the run-time performance is about a factor of 100 worse than that of native Java code.</Char_Desc_2000>
     </English>
     <German>
-      <Keywords>Java Compiler Embedded Ausdruck Ausdrücke auswerten Script Scripte JVM Virtual machine Bytecode Laufzeit-Übersetzung JSP Server Pages</Keywords>
+      <Keywords>Java Compiler klein schnell Embedded Ausdruck Ausdrücke auswerten Script Scripte JVM Virtual machine Bytecode Laufzeit-Übersetzung JSP Server Pages</Keywords>
       <Char_Desc_45>Übersetzt und lädt Java on-the-fly.</Char_Desc_45>
-      <Char_Desc_80>Eine &quot;embedded&quot;-Java-Compiler, der Ausdrücke und Scripte zur Laufzeit übersetzt.</Char_Desc_80>
-      <Char_Desc_250>Ein Compiler, der einen Java-Ausdruck, -Block oder eine -Quelldatei liest und Java-Bytecode generiert, der direkt geladen und ausgeführt wird. Er ist nicht als Entwicklungswerkzeug gedacht sondern als &quot;embedded&quot;-Compiler für Laufzeitanwendungen.</Char_Desc_250>
-      <Char_Desc_450>Janino ist ein Compiler, der einen Java-Ausdruck, einen Java-Block oder eine Java-Quelldatei liest und Java-Bytecode generiert, der direkt geladen und ausgeführt wird. Er ist nicht als Entwicklungswerkzeug gedacht sondern als &quot;embedded&quot;-Compiler für Laufzeitanwendungen wie die Auswertung von Ausdrücken oder &quot;Server Pages&quot;-Engines wie JSP.</Char_Desc_450>
-      <Char_Desc_2000>Janino ist ein Compiler, der einen Java-Ausdruck, einen Java-Block oder eine Java-Quelldatei liest und Java-Bytecode generiert, der direkt geladen und ausgeführt wird. Er ist nicht als Entwicklungswerkzeug gedacht sondern als &quot;embedded&quot;-Compiler für Laufzeitanwendungen wie die Auswertung von Ausdrücken oder &quot;Server Pages&quot;-Engines wie JSP.</Char_Desc_2000>
+      <Char_Desc_80>Eine super-kleiner, super-schneller Java-Compiler, der Ausdrücke und Scripte zur Laufzeit übersetzt.</Char_Desc_80>
+      <Char_Desc_250>Ein super-kleiner, super-schneller Compiler, der einen Java-Ausdruck, -Block oder eine -Quelldatei liest und Java-Bytecode generiert, der direkt geladen und ausgeführt wird. Er ist nicht als Entwicklungswerkzeug gedacht sondern als &quot;embedded&quot;-Compiler für Laufzeitanwendungen.</Char_Desc_250>
+      <Char_Desc_450>Janino ist ein super-kleiner, super-schneller Compiler, der einen Java-Ausdruck, einen Java-Block oder eine Java-Quelldatei liest und Java-Bytecode generiert, der direkt geladen und ausgeführt wird. Er ist nicht als Entwicklungswerkzeug gedacht sondern als &quot;embedded&quot;-Compiler für Laufzeitanwendungen wie die Auswertung von Ausdrücken oder &quot;Server Pages&quot;-Engines wie JSP.</Char_Desc_450>
+      <Char_Desc_2000>Janino ist ein super-kleiner, super-schneller Compiler, der einen Java-Ausdruck, einen Java-Block oder eine Java-Quelldatei liest und Java-Bytecode generiert, der direkt geladen und ausgeführt wird. Er ist nicht als Entwicklungswerkzeug gedacht sondern als &quot;embedded&quot;-Compiler für Laufzeitanwendungen wie die Auswertung von Ausdrücken oder &quot;Server Pages&quot;-Engines wie JSP.</Char_Desc_2000>
     </German>
   </Program_Descriptions>
   <Web_Info>
@@ -123,7 +123,7 @@ A simple expression evaluator would parse an expression and create a &quot;synta
     <Distribution_Permissions />
     <EULA> Janino - An embedded Java[TM] compiler
 
- Copyright (c) 2001-2007, Arno Unkrig
+ Copyright (c) 2001-2010, Arno Unkrig
  All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
