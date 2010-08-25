@@ -430,4 +430,22 @@ public class ReportedBugs extends JaninoTestSuite {
             + "return sb.length() == 1;\n"
         ));
     }
+    
+    @Test
+    public void testBug147() throws Exception {
+        sim(COOK, "Bug 147", (
+            "public class Foo {\n"
+            + "    public static void main(String[] args) {\n"
+            + "        new Object() {\n"
+            + "            Object bar = new Object() {\n"
+            + "                public Object getObject(int i8) {\n"
+            + "                    switch (i8) { case 0: return \"sss\"; }\n"
+            + "                    return null;\n"
+            + "                }\n"
+            + "            };\n"
+            + "        };\n"
+            + "    }\n"
+            + "}"
+        ), "Foo");
+    }
 }

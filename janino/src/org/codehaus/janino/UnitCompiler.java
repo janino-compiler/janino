@@ -940,6 +940,7 @@ public class UnitCompiler {
             this.warning("DSNTC", "\"do\" statement never tests its condition", ds.getLocation());
             if (ds.whereToBreak == null) return false;
             ds.whereToBreak.set();
+            ds.whereToBreak = null;
             return true;
         }
 
@@ -947,7 +948,10 @@ public class UnitCompiler {
         ds.whereToContinue.set();
         this.compileBoolean(ds.condition, bodyOffset, Java.Rvalue.JUMP_IF_TRUE);
 
-        if (ds.whereToBreak != null) ds.whereToBreak.set();
+        if (ds.whereToBreak != null) {
+            ds.whereToBreak.set();
+            ds.whereToBreak = null;
+        }
 
         return true;
     }
@@ -1006,7 +1010,10 @@ public class UnitCompiler {
             this.codeContext.restoreLocalVariables();
         }
 
-        if (fs.whereToBreak != null) fs.whereToBreak.set();
+        if (fs.whereToBreak != null) {
+            fs.whereToBreak.set();
+            fs.whereToBreak = null;
+        }
 
         return true;
     }
@@ -1026,7 +1033,6 @@ public class UnitCompiler {
         }
 
         ws.whereToContinue = this.codeContext.new Offset();
-        ws.bodyHasContinue = false;
         this.writeBranch(ws, Opcode.GOTO, ws.whereToContinue);
 
         // Compile body.
@@ -1037,7 +1043,10 @@ public class UnitCompiler {
         ws.whereToContinue.set();
         this.compileBoolean(ws.condition, bodyOffset, Java.Rvalue.JUMP_IF_TRUE);
 
-        if (ws.whereToBreak != null) ws.whereToBreak.set();
+        if (ws.whereToBreak != null) {
+            ws.whereToBreak.set();
+            ws.whereToBreak = null;
+        }
         return true;
     }
     private boolean compileUnconditionalLoop(
@@ -1048,13 +1057,13 @@ public class UnitCompiler {
         if (optionalUpdate != null) return this.compileUnconditionalLoopWithUpdate(cs, body, optionalUpdate);
 
         cs.whereToContinue = this.codeContext.newOffset();
-        cs.bodyHasContinue = false;
 
         // Compile body.
         if (this.compile(body)) this.writeBranch(cs, Opcode.GOTO, cs.whereToContinue);
 
         if (cs.whereToBreak == null) return false;
         cs.whereToBreak.set();
+        cs.whereToBreak = null;
         return true;
     }
     private boolean compileUnconditionalLoopWithUpdate(
@@ -1081,16 +1090,18 @@ public class UnitCompiler {
 
         if (cs.whereToBreak == null) return false;
         cs.whereToBreak.set();
+        cs.whereToBreak = null;
         return true;
     }
 
     private boolean compile2(Java.LabeledStatement ls) throws CompileException {
         boolean canCompleteNormally = this.compile(ls.body);
-        if (ls.whereToBreak != null) {
-            ls.whereToBreak.set();
-            canCompleteNormally = true;
-        }
-        return canCompleteNormally;
+
+        if (ls.whereToBreak == null) return canCompleteNormally;
+
+        ls.whereToBreak.set();
+        ls.whereToBreak = null;
+        return true;
     }
     private boolean compile2(Java.SwitchStatement ss) throws CompileException {
 
@@ -1224,11 +1235,11 @@ public class UnitCompiler {
                 canCompleteNormally = this.compile(bs);
             }
         }
-        if (ss.whereToBreak != null) {
-            ss.whereToBreak.set();
-            canCompleteNormally = true;
-        }
-        return canCompleteNormally;
+        if (ss.whereToBreak == null) return canCompleteNormally;
+
+        ss.whereToBreak.set();
+        ss.whereToBreak = null;
+        return true;
     }
     private boolean compile2(Java.BreakStatement bs) throws CompileException {
 
