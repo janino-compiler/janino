@@ -1421,7 +1421,6 @@ public final class Java {
         }
 
         protected CodeContext.Offset whereToContinue = null;
-        protected boolean            bodyHasContinue = false;
     }
 
     public static final class ExpressionStatement extends Statement {

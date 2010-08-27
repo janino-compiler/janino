@@ -930,22 +930,23 @@ public class UnitCompiler {
             }
         }
 
-        ds.whereToContinue = this.codeContext.new Offset();
-        ds.bodyHasContinue = false;
-
         CodeContext.Offset bodyOffset = this.codeContext.newOffset();
 
         // Compile body.
-        if (!this.compile(ds.body) && !ds.bodyHasContinue) {
+        ds.whereToContinue = null;
+        if (!this.compile(ds.body) && ds.whereToContinue == null) {
             this.warning("DSNTC", "\"do\" statement never tests its condition", ds.getLocation());
             if (ds.whereToBreak == null) return false;
             ds.whereToBreak.set();
             ds.whereToBreak = null;
             return true;
         }
+        if (ds.whereToContinue != null) {
+            ds.whereToContinue.set();
+            ds.whereToContinue = null;
+        }
 
         // Compile condition.
-        ds.whereToContinue.set();
         this.compileBoolean(ds.condition, bodyOffset, Java.Rvalue.JUMP_IF_TRUE);
 
         if (ds.whereToBreak != null) {
@@ -985,15 +986,14 @@ public class UnitCompiler {
             this.writeBranch(fs, Opcode.GOTO, toCondition);
 
             // Compile body.
-            fs.whereToContinue = this.codeContext.new Offset();
-            fs.bodyHasContinue = false;
+            fs.whereToContinue = null;
             CodeContext.Offset bodyOffset = this.codeContext.newOffset();
             boolean bodyCCN = this.compile(fs.body);
+            if (fs.whereToContinue != null) fs.whereToContinue.set();
 
             // Compile update.
-            fs.whereToContinue.set();
             if (fs.optionalUpdate != null) {
-                if (!bodyCCN && !fs.bodyHasContinue) {
+                if (!bodyCCN && fs.whereToContinue == null) {
                     this.warning("FUUR", "For update is unreachable", fs.getLocation());
                 } else
                 {
@@ -1002,6 +1002,7 @@ public class UnitCompiler {
                     }
                 }
             }
+            fs.whereToContinue = null;
 
             // Compile condition.
             toCondition.set();
@@ -1032,15 +1033,15 @@ public class UnitCompiler {
             }
         }
 
+        // Compile body.
         ws.whereToContinue = this.codeContext.new Offset();
         this.writeBranch(ws, Opcode.GOTO, ws.whereToContinue);
-
-        // Compile body.
         CodeContext.Offset bodyOffset = this.codeContext.newOffset();
         this.compile(ws.body); // Return value (CCN) is ignored.
+        ws.whereToContinue.set();
+        ws.whereToContinue = null;
 
         // Compile condition.
-        ws.whereToContinue.set();
         this.compileBoolean(ws.condition, bodyOffset, Java.Rvalue.JUMP_IF_TRUE);
 
         if (ws.whereToBreak != null) {
@@ -1056,10 +1057,10 @@ public class UnitCompiler {
     ) throws CompileException {
         if (optionalUpdate != null) return this.compileUnconditionalLoopWithUpdate(cs, body, optionalUpdate);
 
-        cs.whereToContinue = this.codeContext.newOffset();
-
         // Compile body.
+        cs.whereToContinue = this.codeContext.newOffset();
         if (this.compile(body)) this.writeBranch(cs, Opcode.GOTO, cs.whereToContinue);
+        cs.whereToContinue = null;
 
         if (cs.whereToBreak == null) return false;
         cs.whereToBreak.set();
@@ -1071,22 +1072,22 @@ public class UnitCompiler {
         Java.BlockStatement       body,
         Java.Rvalue[]             update
     ) throws CompileException {
-        cs.whereToContinue = this.codeContext.new Offset();
-        cs.bodyHasContinue = false;
 
         // Compile body.
+        cs.whereToContinue = null;
         CodeContext.Offset bodyOffset = this.codeContext.newOffset();
         boolean bodyCCN = this.compile(body);
 
         // Compile the "update".
-        cs.whereToContinue.set();
-        if (!bodyCCN && !cs.bodyHasContinue) {
+        if (cs.whereToContinue != null) cs.whereToContinue.set();
+        if (!bodyCCN && cs.whereToContinue == null) {
             this.warning("LUUR", "Loop update is unreachable", update[0].getLocation());
         } else
         {
             for (int i = 0; i < update.length; ++i) this.compile(update[i]);
             this.writeBranch(cs, Opcode.GOTO, bodyOffset);
         }
+        cs.whereToContinue = null;
 
         if (cs.whereToBreak == null) return false;
         cs.whereToBreak.set();
@@ -1348,7 +1349,10 @@ public class UnitCompiler {
             }
         }
 
-        continuedStatement.bodyHasContinue = true;
+        if (continuedStatement.whereToContinue == null) {
+            continuedStatement.whereToContinue = this.codeContext.new Offset();
+        }
+
         this.leaveStatements(
             cs.getEnclosingScope(),                 // from
             continuedStatement.getEnclosingScope(), // to
