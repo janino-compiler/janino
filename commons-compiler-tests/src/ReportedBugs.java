@@ -55,7 +55,7 @@ public class ReportedBugs extends JaninoTestSuite {
     
     @Test
     public void testBug48() throws Exception {
-        sim(EXEC, "1", (
+        sim(EXEC, (
             "package demo;\n" +
             "public class Service {\n" +
             "    public static void test() {\n" +
@@ -65,7 +65,7 @@ public class ReportedBugs extends JaninoTestSuite {
             "    }\n" +
             "}"
         ), "demo.Service");
-        sim(EXEC, "2", (
+        sim(EXEC, (
             "package demo;\n" +
             "public class Service {\n" +
             "    public static Broken[] test() {\n" +
@@ -79,7 +79,7 @@ public class ReportedBugs extends JaninoTestSuite {
     
     @Test
     public void testBug54() throws Exception {
-        scr(TRUE, "0", (
+        scr(TRUE, (
             "String s = \"\";\n" +
             "try {\n" +
             "    {\n" +
@@ -104,7 +104,7 @@ public class ReportedBugs extends JaninoTestSuite {
             "}\n" +
             "return \"set1returnfinally\".equals(s);"
         ));
-        clb(COOK, "1", (
+        clb(COOK, (
             "void foo() {\n" +
             "    while (true) {\n" +
             "        if (true) {\n" +
@@ -124,7 +124,7 @@ public class ReportedBugs extends JaninoTestSuite {
             "    }\n" +
             "}\n"
         ));
-        clb(COOK, "2", (
+        clb(COOK, (
             "void baz1() {\n" +
             "    for (int i = 0; i < 100;) {\n" +
             "        {\n" +
@@ -136,7 +136,7 @@ public class ReportedBugs extends JaninoTestSuite {
             "    }\n" +
             "}\n"
         ));
-        clb(COOK, "3", (
+        clb(COOK, (
             "void baz2() {\n" +
             "    for (int i = 0; i < 100; i++) {\n" +
             "        {\n" +
@@ -148,21 +148,21 @@ public class ReportedBugs extends JaninoTestSuite {
             "    }\n" +
             "}\n"
         ));
-        clb(COOK, "4", (
+        clb(COOK, (
             "public void foo() throws Exception {\n" +
             "    for (int i = 0 ; true; i++) {\n" +
             "        break;\n" +
             "    }\n" +
             "}\n"
         ));
-        clb(COOK, "5", (
+        clb(COOK, (
             "public void foo() throws Exception {\n" +
             "    for (int i = 0 ; true; i++) {\n" +
             "        if (true) { break; }\n" +
             "    }\n" +
             "}\n"
         ));
-        clb(COOK, "6", (
+        clb(COOK, (
             "public void foo() throws Exception {\n" +
             "    {\n" +
             "        try {\n" +
@@ -183,7 +183,7 @@ public class ReportedBugs extends JaninoTestSuite {
             "    }\n" +
             "}\n"
         ));
-        scr(EXEC, "x", (
+        scr(EXEC, (
             "int c = 5;\n" +
             "if (c == 5) {\n" +
             "    if (true) return;\n" +
@@ -196,7 +196,7 @@ public class ReportedBugs extends JaninoTestSuite {
     
     @Test
     public void testBug55() throws Exception {
-        sim(COOK, "Bug 55", (
+        sim(COOK, (
             "class Junk {" + "\n" +
             "    double[][] x = { { 123.4 } };" + "\n" +
             "}"
@@ -205,7 +205,7 @@ public class ReportedBugs extends JaninoTestSuite {
     
     @Test
     public void testBug56() throws Exception {
-        scr(COOK, "Bug 56", (
+        scr(COOK, (
             "int dummy3 = 3;\n" +
             "try {\n" +
             "    // 3 vars must be declared in try block\n" +
@@ -229,13 +229,13 @@ public class ReportedBugs extends JaninoTestSuite {
     
     @Test
     public void testBug63() throws Exception {
-        clb(COMP, "0", (
+        clb(COMP, (
             "public static boolean main() {\n" +
             "    IPred p = new Pred();\n" +
             "    return !p.filter();\n" +
             "}\n"
         ));
-        clb(TRUE, "1", (
+        clb(TRUE, (
             "public static boolean main() {\n" +
             "    Pred p = new Pred();\n" +
             "    return !p.filter();\n" +
@@ -245,7 +245,7 @@ public class ReportedBugs extends JaninoTestSuite {
     
     @Test
     public void testBug69() throws Exception {
-        sim(EXEC, "0", (
+        sim(EXEC, (
             "public class Test {\n" +
             "    public static void test() {\n" +
             "        Object foo = baz();\n" +
@@ -276,7 +276,7 @@ public class ReportedBugs extends JaninoTestSuite {
     
     @Test
     public void testBug70() throws Exception {
-        clb(COOK, "0", (
+        clb(COOK, (
             "public String result = \"allow\", email = null, anno = null, cnd = null, transactionID = null;\n" +
             "public String treeCode(String root) {\n" +
             "    try {\n" +
@@ -292,7 +292,7 @@ public class ReportedBugs extends JaninoTestSuite {
     
     @Test
     public void testBug71() throws Exception {
-        sim(TRUE, "Alternate Constructor Invocation", (
+        sim(TRUE, (
             "public class ACI {\n" +
             "    public static boolean test() {\n" +
             "        Sub s = new ACI().new Sub(new int[] { 1, 2 });\n" +
@@ -310,7 +310,7 @@ public class ReportedBugs extends JaninoTestSuite {
             "    }\n" +
             "}\n"
         ), "ACI");
-        sim(TRUE, "Superconstructor Invocation", (
+        sim(TRUE, (
             "public class SCI {\n" +
             "    public static boolean test() {\n" +
             "        Sub s = new SCI().new Sub(1, 2);\n" +
@@ -337,13 +337,13 @@ public class ReportedBugs extends JaninoTestSuite {
     @Test
     public void testBug80() throws Exception {
         // Expression compilation is said to throw StackOverflowError!?
-        exp(COMP, "Erroneous expression", "(10).total >= 100.0 ? 0.0 : 7.95");
+        exp(COMP, "(10).total >= 100.0 ? 0.0 : 7.95");
     }
     
     @Test
     public void testBug81() throws Exception {
         // IncompatibleClassChangeError when invoking getClass() on interface references
-        scr(EXEC, "x", (
+        scr(EXEC, (
             "import java.util.ArrayList;\n" +
             "import java.util.List;\n" +
             "\n" +
@@ -355,13 +355,13 @@ public class ReportedBugs extends JaninoTestSuite {
     @Test
     public void testBug99() throws Exception {
         // ConcurrentModificationException due to instance variable of Class type initialized using a class literal
-        sim(COOK, "xyz", "class Test{Class c = String.class;}", "Test");
+        sim(COOK, "class Test{Class c = String.class;}", "Test");
     }
     
     @Test
     public void testBug102() throws Exception {
         // Static initializers are not executed
-        sim(TRUE, "Static initializer", (
+        sim(TRUE, (
             "public class Test{\n" +
             "  static String x = \"\";\n" +
             "  static { x += 0; }\n" +
@@ -388,7 +388,7 @@ public class ReportedBugs extends JaninoTestSuite {
     @Test
     public void testBug105() throws Exception {
         // Possible to call a method of an enclosing class as if it was a member of an inner class
-        clb(COMP, "Invalid enclosing instance method call", (
+        clb(COMP, (
             "class Price {\n" +
             "  public int getPriceA() {\n" +
             "    return 1;\n" +
@@ -414,7 +414,7 @@ public class ReportedBugs extends JaninoTestSuite {
     @Test
     public void testBug106() throws Exception {
         jscl("Bug 106", new File("aux-files/Bug 106"), "b.C3");
-        sim(TRUE, "Bug 146/1", (
+        sim(TRUE, (
             "class MyFile extends java.io.File {\n"
             + "    public MyFile() { super(\"/my/file\"); }\n"
             + "}\n"
@@ -424,7 +424,7 @@ public class ReportedBugs extends JaninoTestSuite {
             + "    }\n"
             + "}"
         ), "Main");
-        scr(TRUE, "Bug 146/2", (
+        scr(TRUE, (
             "StringBuffer sb = new StringBuffer();\n"
             + "sb.append('(');\n"
             + "return sb.length() == 1;\n"
@@ -433,7 +433,7 @@ public class ReportedBugs extends JaninoTestSuite {
     
     @Test
     public void testBug147() throws Exception {
-        sim(COOK, "Bug 147", (
+        sim(COOK, (
             "public class Foo {\n"
             + "    public static void main(String[] args) {\n"
             + "        new Object() {\n"
@@ -453,6 +453,6 @@ public class ReportedBugs extends JaninoTestSuite {
     public void testBug149() throws Exception {
 
         // JLS3 3.10.6: "aaa\/bbb" contains an invalid escape sequence: "\/".
-        exp(COMP, "Bug 149", "\"aaa\\/bbb\"");
+        exp(COMP, "\"aaa\\/bbb\"");
     }
 }

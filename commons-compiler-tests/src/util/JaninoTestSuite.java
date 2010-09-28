@@ -69,16 +69,14 @@ public class JaninoTestSuite {
      *   <tr><td>EXEC</td><td>The test is expected to compile and execute successfully</td></tr>
      *   <tr><td>TRUE</td><td>The test is expected to compile and execute successfully, and return {@code true}</tr>
      * </table>
-     *
-     * @param name The name of the JUnit test case
      */
-    protected void exp(ExpressionTest.Mode mode, String name, String expression) throws Exception {
-        ExpressionTest et = new ExpressionTest(mode, name, expression);
+    protected void exp(ExpressionTest.Mode mode, String expression) throws Exception {
+        ExpressionTest et = new ExpressionTest(mode, expression);
         et.runTest();
     }
     
-    protected void exp(ExpressionTest.Mode mode, String name, String expression, String[] defaultImports) throws Exception {
-        ExpressionTest et = new ExpressionTest(mode, name, expression);
+    protected void exp(ExpressionTest.Mode mode, String expression, String[] defaultImports) throws Exception {
+        ExpressionTest et = new ExpressionTest(mode, expression);
         et.setDefaultImports(defaultImports);
         et.runTest();
     }
@@ -87,8 +85,8 @@ public class JaninoTestSuite {
         private final String               expression;
         private final IExpressionEvaluator expressionEvaluator;
 
-        public ExpressionTest(Mode mode, String name, String expression) throws Exception {
-            super(name, mode);
+        public ExpressionTest(Mode mode, String expression) throws Exception {
+            super(mode);
             this.expression          = expression;
             this.expressionEvaluator = compilerFactory.newExpressionEvaluator();
 
@@ -119,16 +117,14 @@ public class JaninoTestSuite {
      *   <tr><td>EXEC</td><td>The test is expected to compile and execute successfully</tr>
      *   <tr><td>TRUE</td><td>The test is expected to compile and execute successfully, and return {@code true}</tr>
      * </table>
-     *
-     * @param name The name of the JUnit test case
      */
-    protected void scr(ScriptTest.Mode mode, String name, String script) throws Exception {
-        ScriptTest st = new ScriptTest(mode, name, script);
+    protected void scr(ScriptTest.Mode mode, String script) throws Exception {
+        ScriptTest st = new ScriptTest(mode, script);
         st.runTest();
     }
     
-    protected void scr(ScriptTest.Mode mode, String name, String script, String[] defaultImports) throws Exception {
-        ScriptTest st = new ScriptTest(mode, name, script);
+    protected void scr(ScriptTest.Mode mode, String script, String[] defaultImports) throws Exception {
+        ScriptTest st = new ScriptTest(mode, script);
         st.setDefaultImports(defaultImports);
         st.runTest();
     }
@@ -137,8 +133,8 @@ public class JaninoTestSuite {
         private final String           script;
         private final IScriptEvaluator scriptEvaluator;
 
-        public ScriptTest(Mode mode, String name, String script) throws Exception {
-            super(name, mode);
+        public ScriptTest(Mode mode, String script) throws Exception {
+            super(mode);
             this.script          = script;
             this.scriptEvaluator = compilerFactory.newScriptEvaluator();
 
@@ -169,16 +165,14 @@ public class JaninoTestSuite {
      *   <tr><td>EXEC</td><td>The test is expected to compile and execute successfully</tr>
      *   <tr><td>TRUE</td><td>The test is expected to compile and execute successfully, and return {@code true}</tr>
      * </table>
-     *
-     * @param name The name of the JUnit test case
      */
-    protected void clb(ClassBodyTest.Mode mode, String name, String classBody) throws Exception {
-        ClassBodyTest cbt = new ClassBodyTest(name, mode, classBody);
+    protected void clb(ClassBodyTest.Mode mode, String classBody) throws Exception {
+        ClassBodyTest cbt = new ClassBodyTest(mode, classBody);
         cbt.runTest();
     }
     
-    protected void clb(ClassBodyTest.Mode mode, String name, String classBody, String[] defaultImports) throws Exception {
-        ClassBodyTest cbt = new ClassBodyTest(name, mode, classBody);
+    protected void clb(ClassBodyTest.Mode mode, String classBody, String[] defaultImports) throws Exception {
+        ClassBodyTest cbt = new ClassBodyTest(mode, classBody);
         cbt.setDefaultImports(defaultImports);
         cbt.runTest();
     }
@@ -187,8 +181,8 @@ public class JaninoTestSuite {
         private final String              classBody;
         private final IClassBodyEvaluator classBodyEvaluator;
 
-        public ClassBodyTest(String name, Mode mode, String classBody) throws Exception {
-            super(name, mode);
+        public ClassBodyTest(Mode mode, String classBody) throws Exception {
+            super(mode);
             this.classBody          = classBody;
             this.classBodyEvaluator = compilerFactory.newClassBodyEvaluator();
         }
@@ -218,17 +212,14 @@ public class JaninoTestSuite {
      *   <tr><td>EXEC</td><td>The test is expected to compile and execute successfully</tr>
      *   <tr><td>TRUE</td><td>The test is expected to compile and execute successfully, and return {@code true}</tr>
      * </table>
-     *
-     * @param name The name of the JUnit test case
      * @param className The name of the class with the {@code public static boolean test()} method
      */
     protected void sim(
         SimpleCompilerTest.Mode mode,
-        String                  name,
         String                  compilationUnit,
         String                  className
     ) throws Exception {
-        SimpleCompilerTest sct = new SimpleCompilerTest(name, mode, compilationUnit, className);
+        SimpleCompilerTest sct = new SimpleCompilerTest(mode, compilationUnit, className);
         sct.runTest();
     }
     
@@ -237,8 +228,8 @@ public class JaninoTestSuite {
         private final String          className;
         private final ISimpleCompiler simpleCompiler;
 
-        public SimpleCompilerTest(String name, Mode mode, String compilationUnit, String className) throws Exception {
-            super(name, mode);
+        public SimpleCompilerTest(Mode mode, String compilationUnit, String className) throws Exception {
+            super(mode);
             this.compilationUnit = compilationUnit;
             this.className       = className;
             this.simpleCompiler  = compilerFactory.newSimpleCompiler();
@@ -279,10 +270,7 @@ public class JaninoTestSuite {
 
         public static final class Mode { private Mode() {} }
 
-        public CompileAndExecuteTest(String name, Mode mode) {
-            // Notice: JUnit 3.8.1 gets confused if the name contains "(" and/or ",".
-            if (name.indexOf('(') != -1) throw new RuntimeException("Parentheses in test name not permitted");
-            if (name.indexOf(',') != -1) throw new RuntimeException("Comma in test name not permitted");
+        public CompileAndExecuteTest(Mode mode) {
             this.mode = mode;
         }
 
