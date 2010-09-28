@@ -791,7 +791,7 @@ public class Scanner {
 
         // Scan string literal.
         if (this.nextChar == '"') {
-            StringBuffer sb = new StringBuffer("");
+            StringBuffer sb = new StringBuffer();
             this.readNextChar();
             if (this.nextChar == -1) throw new CompileException("EOF in string literal", this.location());
             if (this.nextChar == '\r' || this.nextChar == '\n') {
@@ -1210,43 +1210,54 @@ public class Scanner {
      * Consume characters until a literal character is complete.
      */
     private char unescapeCharacterLiteral() throws CompileException, IOException {
-        if (this.nextChar == -1) throw new CompileException("EOF in character literal", this.location());
+        if (this.nextChar == -1) throw new CompileException("EOF in literal", this.location());
 
         if (this.nextChar == '\r' || this.nextChar == '\n') {
             throw new CompileException("Line break in literal not allowed", this.location());
         }
 
         if (this.nextChar != '\\') {
+
+            // Not an escape sequence.
             char res = (char) this.nextChar;
             this.readNextChar();
             return res;
         }
+
+        // JLS3 3.10.6: Escape sequences for character and string literals.
         this.readNextChar();
-        int idx = "btnfr".indexOf(this.nextChar);
-        if (idx != -1) {
-            char res = "\b\t\n\f\r".charAt(idx);
-            this.readNextChar();
-            return res;
-        }
-        idx = "01234567".indexOf(this.nextChar);
-        if (idx != -1) {
-            int code = idx;
-            this.readNextChar();
-            idx = "01234567".indexOf(this.nextChar);
-            if (idx == -1) return (char) code;
-            code = 8 * code + idx;
-            this.readNextChar();
-            idx = "01234567".indexOf(this.nextChar);
-            if (idx == -1) return (char) code;
-            code = 8 * code + idx;
-            if (code > 255) throw new CompileException("Invalid octal escape", this.location());
-            this.readNextChar();
-            return (char) code;
+        {
+
+            // "\t" and friends.
+            int idx = "btnfr\"'\\".indexOf(this.nextChar);
+            if (idx != -1) {
+                char res = "\b\t\n\f\r\"'\\".charAt(idx);
+                this.readNextChar();
+                return res;
+            }
         }
 
-        char res = (char) this.nextChar;
-        this.readNextChar();
-        return res;
+        {
+
+            // Octal escapes: "\0" through "\3ff".
+            int idx = "01234567".indexOf(this.nextChar);
+            if (idx != -1) {
+                int code = idx;
+                this.readNextChar();
+                idx = "01234567".indexOf(this.nextChar);
+                if (idx == -1) return (char) code;
+                code = 8 * code + idx;
+                this.readNextChar();
+                idx = "01234567".indexOf(this.nextChar);
+                if (idx == -1) return (char) code;
+                code = 8 * code + idx;
+                if (code > 255) throw new CompileException("Invalid octal escape", this.location());
+                this.readNextChar();
+                return (char) code;
+            }
+        }
+
+        throw new CompileException("Invalid escape sequence", this.location());
     }
 
     // Read one character and store in "nextChar".
