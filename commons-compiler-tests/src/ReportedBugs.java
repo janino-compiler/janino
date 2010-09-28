@@ -448,4 +448,11 @@ public class ReportedBugs extends JaninoTestSuite {
             + "}"
         ), "Foo");
     }
+    
+    @Test
+    public void testBug149() throws Exception {
+
+        // JLS3 3.10.6: "aaa\/bbb" contains an invalid escape sequence: "\/".
+        exp(COMP, "Bug 149", "\"aaa\\/bbb\"");
+    }
 }
