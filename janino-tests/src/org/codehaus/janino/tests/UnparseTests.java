@@ -346,6 +346,12 @@ public class UnparseTests {
         Object[][] tests = new Object[][] {
             { new Java.Literal(null, (short) 1), "((short)1)" },
             { new Java.Literal(null, (byte) 1),  "((byte)1)"  },
+            { new Java.Literal(null, Double.POSITIVE_INFINITY), "Double.POSITIVE_INFINITY" },
+            { new Java.Literal(null, Double.NEGATIVE_INFINITY), "Double.NEGATIVE_INFINITY" },
+            { new Java.Literal(null, Double.NaN), "Double.NaN" },
+            { new Java.Literal(null, Float.POSITIVE_INFINITY), "Float.POSITIVE_INFINITY" },
+            { new Java.Literal(null, Float.NEGATIVE_INFINITY), "Float.NEGATIVE_INFINITY" },
+            { new Java.Literal(null, Float.NaN), "Float.NaN" },
         };
         for (int i = 0; i < tests.length; ++i) {
             Atom expr = (Atom) tests[i][0];

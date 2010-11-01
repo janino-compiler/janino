@@ -466,9 +466,26 @@ public class Scanner {
             return lv < 0L ? "0x" + Long.toHexString(lv) + 'L' : Long.toString(lv) + 'L';
         }
         if (v instanceof Float) {
+            Float fv = (Float) v;
+            if (fv.isInfinite() && fv.floatValue() > 0.0) {
+                return "Float.POSITIVE_INFINITY";
+            } else if (fv.isInfinite()) {
+                return "Float.NEGATIVE_INFINITY";
+            } else if (fv.isNaN()) {
+                return "Float.NaN";
+            }
             return v.toString() + 'F';
         }
         if (v instanceof Double) {
+            Double dv = (Double) v;
+            if (dv.isInfinite() && dv.doubleValue() > 0.0) {
+                return "Double.POSITIVE_INFINITY";
+            } else if (dv.isInfinite()) {
+                return "Double.NEGATIVE_INFINITY";
+            } else if (dv.isNaN()) {
+                return "Double.NaN";
+            }
+
             return v.toString() + 'D';
         }
         if (v instanceof Boolean) {
