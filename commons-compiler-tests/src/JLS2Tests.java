@@ -25,7 +25,7 @@
  */
 
 import java.util.Arrays;
-import java.util.Collection;
+import java.util.List;
 
 import org.codehaus.commons.compiler.ICompilerFactory;
 import org.junit.Test;
@@ -42,14 +42,14 @@ import util.TestUtil;
 @RunWith(Parameterized.class)
 public class JLS2Tests extends JaninoTestSuite {
     @Parameters
-    public static Collection<Object[]> compilerFactories() throws Exception {
+    public static List<Object[]> compilerFactories() throws Exception {
         return TestUtil.getCompilerFactoriesForParameters();
     }
     
     public JLS2Tests(ICompilerFactory compilerFactory) throws Exception {
         super(compilerFactory);
     }
-    
+
     @Test
     public void test_3__LexicalStructure() throws Exception {
         // 3.1. Lexical Structure -- Unicode
