@@ -431,6 +431,13 @@ public class Scanner {
             return Scanner.literalValueToString(this.value);
         }
     }
+
+    /**
+     * Notice that this method can handle <i>any</i> primitive value, not only those that can be written as a
+     * Java literal, e.g. <code>Double.NEGATIVE_INFINITY</code>.
+     *
+     * @param v {@link String}, or one of the Java primitive wrapper classes.
+     */
     public static String literalValueToString(Object v) {
         if (v instanceof String) {
             StringBuffer sb = new StringBuffer();
