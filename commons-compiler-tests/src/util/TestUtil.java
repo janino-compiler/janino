@@ -1,7 +1,7 @@
 package util;
 
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.List;
 
 import org.codehaus.commons.compiler.CompilerFactoryFactory;
 import org.codehaus.commons.compiler.ICompilerFactory;
@@ -11,7 +11,7 @@ public class TestUtil {
     /**
      * Return the available compiler factories in a format suitable for JUnit {@link Parameters}
      */
-    public static Collection<Object[]> getCompilerFactoriesForParameters() throws Exception {
+    public static List<Object[]> getCompilerFactoriesForParameters() throws Exception {
         ArrayList<Object[]> f = new ArrayList<Object[]>();
         for (ICompilerFactory fact : CompilerFactoryFactory.getAllCompilerFactories()) {
             f.add(new Object[] { fact });
