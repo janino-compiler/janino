@@ -474,7 +474,7 @@ public class Scanner {
             } else if (fv.isNaN()) {
                 return "Float.NaN";
             }
-            return v.toString() + 'F';
+            return v.toString() + 'F'; // This also covers "-0.0F".
         }
         if (v instanceof Double) {
             Double dv = (Double) v;
@@ -486,7 +486,7 @@ public class Scanner {
                 return "Double.NaN";
             }
 
-            return v.toString() + 'D';
+            return v.toString() + 'D'; // This also covers "-0.0D".
         }
         if (v instanceof Boolean) {
             return v.toString();

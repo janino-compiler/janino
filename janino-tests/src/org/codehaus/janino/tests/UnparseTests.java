@@ -348,9 +348,11 @@ public class UnparseTests {
             { new Java.Literal(null, (byte) 1),  "((byte)1)"  },
             { new Java.Literal(null, Double.POSITIVE_INFINITY), "Double.POSITIVE_INFINITY" },
             { new Java.Literal(null, Double.NEGATIVE_INFINITY), "Double.NEGATIVE_INFINITY" },
+            { new Java.Literal(null, -0.0D), "-0.0D" },
             { new Java.Literal(null, Double.NaN), "Double.NaN" },
             { new Java.Literal(null, Float.POSITIVE_INFINITY), "Float.POSITIVE_INFINITY" },
             { new Java.Literal(null, Float.NEGATIVE_INFINITY), "Float.NEGATIVE_INFINITY" },
+            { new Java.Literal(null, -0.0F), "-0.0F" },
             { new Java.Literal(null, Float.NaN), "Float.NaN" },
         };
         for (int i = 0; i < tests.length; ++i) {
