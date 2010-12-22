@@ -1598,6 +1598,10 @@ public final class Java {
         public final Block                              body;
         private TryStatement                            enclosingTryStatement = null;
 
+        // Compile time fields.
+
+        public boolean reachable;
+
         public CatchClause(
             Location                           location,
             FunctionDeclarator.FormalParameter caughtException,

@@ -334,24 +334,43 @@ public class JLS2Tests extends JaninoTestSuite {
     }
 
     @Test
-    public void test_14__BlocksAndStatements() throws Exception {
-        // 14.3 Blocks and Statements -- Local Class Declarations
+    public void test_14_3__LocalClassDeclarations() throws Exception {
         scr(TRUE, "class S2 extends SC { public int foo() { return 37; } }; return new S2().foo() == 37;");
+    }
 
-        // 14.8 Blocks and Statements -- Expression Statements
+    @Test
+    public void test_14_8__ExpressionStatements() throws Exception {
         scr(TRUE, "int a; a = 8; ++a; a++; if (a != 10) return false; --a; a--; return a == 8;");
         scr(EXEC, "System.currentTimeMillis();");
         scr(EXEC, "new Object();");
         scr(COMP, "new Object[3];");
         scr(COMP, "int a; a;");
+    }
 
-        // 14.10 Blocks and Statements -- The switch Statement
+    @Test
+    public void test_14_10__TheSwitchStatement() throws Exception {
         scr(TRUE, "int x = 37; switch (x) {} return x == 37;");
         scr(TRUE, "int x = 37; switch (x) { default: ++x; break; } return x == 38;");
         scr(TRUE, "int x = 37; switch (x) { case 36: case 37: case 38: x += x; break; } return x == 74;");
         scr(TRUE, "int x = 37; switch (x) { case 36: case 37: case 1000: x += x; break; } return x == 74;");
         scr(TRUE, "int x = 37; switch (x) { case -10000: break; case 10000: break; } return x == 37;");
         scr(TRUE, "int x = 37; switch (x) { case -2000000000: break; case 2000000000: break; } return x == 37;");
+    }
+    
+    @Test
+    public void test_14_20__UnreachableStatements() throws Exception {
+        clb(COMP, (
+            "public void test() throws Exception {}\n" +
+            "public void test2() {\n" +
+            "    try {\n" +
+            "        test();\n" +
+            "    } catch (Exception e) {\n" +
+            "        ;\n" +
+            "    } catch (java.io.IOException e) {\n" +
+            "        // This CATCH clause is unreachable.\n" +
+            "    }\n" +
+            "}\n"
+        ));
     }
 
     @Test

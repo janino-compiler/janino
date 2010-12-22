@@ -1752,6 +1752,20 @@ public class UnitCompiler {
                 : (short) 0
             );
 
+            // Initialize all catch clauses as "unreachable" only to check later that they ARE indeed reachable.
+            for (int i = 0; i < ts.catchClauses.size(); ++i) {
+                CatchClause cc = (Java.CatchClause) ts.catchClauses.get(i);
+                IClass caughtExceptionType = this.getType(cc.caughtException.type);
+                cc.reachable = (
+                    // Superclass or subclass of "java.lang.Error"?
+                    this.iClassLoader.ERROR.isAssignableFrom(caughtExceptionType)
+                    || caughtExceptionType.isAssignableFrom(this.iClassLoader.ERROR)
+                    // Superclass or subclass of "java.lang.RuntimeException"?
+                    || this.iClassLoader.RUNTIME_EXCEPTION.isAssignableFrom(caughtExceptionType)
+                    || caughtExceptionType.isAssignableFrom(this.iClassLoader.RUNTIME_EXCEPTION)
+                );
+            }
+            
             boolean canCompleteNormally = this.compile(ts.body);
             CodeContext.Offset afterBody = this.codeContext.newOffset();
             if (canCompleteNormally) {
@@ -1767,6 +1781,12 @@ public class UnitCompiler {
 
                             Java.CatchClause cc = (Java.CatchClause) ts.catchClauses.get(i);
                             IClass caughtExceptionType = this.getType(cc.caughtException.type);
+
+                            // Verify that the CATCH clause is reachable.
+                            if (!cc.reachable) {
+                                this.compileError("Catch clause is unreachable", cc.getLocation());
+                            }
+
                             // Allocate the "exception variable".
                             Java.LocalVariableSlot exceptionVarSlot = this.codeContext.allocateLocalVariable(
                                 (short) 1,
@@ -1778,26 +1798,26 @@ public class UnitCompiler {
                             // variable of the catch clause body.
                             UnitCompiler.this.getLocalVariable(cc.caughtException).setSlot(exceptionVarSlot);
 
-                        this.codeContext.addExceptionTableEntry(
-                            beginningOfBody,                    // startPC
-                            afterBody,                          // endPC
-                            this.codeContext.newOffset(),       // handlerPC
-                            caughtExceptionType.getDescriptor() // catchTypeFD
-                        );
-                        this.store(
-                            (Locatable) cc,      // l
-                            caughtExceptionType, // lvType
-                            evi                  // lvIndex
-                        );
+                            this.codeContext.addExceptionTableEntry(
+                                beginningOfBody,                    // startPC
+                                afterBody,                          // endPC
+                                this.codeContext.newOffset(),       // handlerPC
+                                caughtExceptionType.getDescriptor() // catchTypeFD
+                            );
+                            this.store(
+                                (Locatable) cc,      // l
+                                caughtExceptionType, // lvType
+                                evi                  // lvIndex
+                            );
 
 
-                        if (this.compile(cc.body)) {
-                            canCompleteNormally = true;
-                            if (
-                                i < ts.catchClauses.size() - 1 ||
-                                ts.optionalFinally != null
-                            ) this.writeBranch(cc, Opcode.GOTO, afterStatement);
-                        }
+                            if (this.compile(cc.body)) {
+                                canCompleteNormally = true;
+                                if (
+                                    i < ts.catchClauses.size() - 1 ||
+                                    ts.optionalFinally != null
+                                ) this.writeBranch(cc, Opcode.GOTO, afterStatement);
+                            }
                         } finally {
                             this.codeContext.restoreLocalVariables();
                     }
@@ -7046,7 +7066,28 @@ public class UnitCompiler {
                 for (int i = 0; i < ts.catchClauses.size(); ++i) {
                     Java.CatchClause cc = (Java.CatchClause) ts.catchClauses.get(i);
                     IClass caughtType = this.getType(cc.caughtException.type);
-                    if (caughtType.isAssignableFrom(type)) return;
+                    if (caughtType.isAssignableFrom(type)) {
+
+                        // This catch clause definitely catches the exception.
+                        cc.reachable = true;
+                        return;
+                    }
+
+                    CATCH_SUBTYPE:
+                    if (type.isAssignableFrom(caughtType)) {
+
+                        // This catch clause catches only a subtype of the exception type.
+                        for (int j = 0; j < i; ++j) {
+                            if (this.getType(((Java.CatchClause) ts.catchClauses.get(j)).caughtException.type).isAssignableFrom(caughtType)) {
+
+                                // A preceding catch clause is more general than this catch clause.
+                                break CATCH_SUBTYPE;
+                            }
+                        }
+
+                        // This catch clause catches PART OF the actual exceptions.
+                        cc.reachable = true;
+                    }
                 }
             } else
 
