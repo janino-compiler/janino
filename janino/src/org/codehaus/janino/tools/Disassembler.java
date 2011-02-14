@@ -47,13 +47,11 @@ import java.util.Map;
 import java.util.StringTokenizer;
 
 /**
- * A Java bytecode disassembler, comparable to JAVAP, which is part of
- * Sun's JDK.
+ * A Java bytecode disassembler, comparable to JAVAP, which is part of SUN's JDK.
  * <p>
  * Notice that this tool does not depend on any other classes or libraries (other than the
  * standard JDK library).
  */
-
 public class Disassembler {
     private IndentPrintWriter ipw = new IndentPrintWriter(System.out);
     private boolean           verbose = false;
@@ -177,8 +175,8 @@ public class Disassembler {
                     this.constantPool[i++] = null;
                 }
             }
-            this.indentln("constant_pool[] = {"); {
-                if (this.verbose) {
+            if (this.verbose) {
+                this.indentln("constant_pool[] = {"); {
                     for (short i = 1; i < this.constantPool.length;) {
                         this.print(i + ": ");
                         ConstantPoolInfo cpi = this.constantPool[i];
@@ -186,28 +184,19 @@ public class Disassembler {
                         this.println();
                         i += cpi.getSizeInConstantPool();
                     }
-                } else {
-                    this.println("(not displayed)");
-                }
-            } this.unindentln("}");
+                } this.unindentln("}");
+            }
 
             this.println("access_flags = " + decodeAccess(dis.readShort()));
 
-            short thisClass = dis.readShort();
-            this.indent("this_class = " + thisClass + " ("); {
-                this.printConstantPoolEntry(thisClass);
-            } this.unindentln(")");
+            this.printlnConstantPoolEntry("this_class", dis.readShort());
 
-            short superClass = dis.readShort();
-            this.indent("super_class = " + superClass + " ("); {
-                this.printConstantPoolEntry(superClass);
-            } this.unindentln(")");
+            this.printlnConstantPoolEntry("super_class", dis.readShort());
 
             this.indentln("interfaces[] = {"); {
                 short interfacesCount = dis.readShort();
                 for (short i = 0; i < interfacesCount; ++i) {
-                    this.printConstantPoolEntry(null, dis.readShort());
-                    this.println();
+                    this.printlnConstantPoolEntry(dis.readShort());
                 }
             } this.unindentln("}");
 
@@ -226,12 +215,7 @@ public class Disassembler {
                 for (int i = 0; i < methodsCount; ++i) methodInfos[i] = this.readMethodInfo(dis);
             }
 
-            AttributeInfo[] attributes;
-            {
-                short attributesCount = dis.readShort();
-                attributes = new AttributeInfo[attributesCount];
-                for (short i = 0; i < attributesCount; ++i) attributes[i] = this.readAttributeInfo(dis);
-            }
+            AttributeInfo[] attributes = readAttributeInfos(dis);
 
             Map sourceLines = new HashMap();
             READ_SOURCE_LINES: {
@@ -270,13 +254,28 @@ public class Disassembler {
                 }
             } this.unindentln("}");
 
-            this.indentln("attributes[] = {"); {
-                for (short i = 0; i < attributes.length; ++i) {
-                    attributes[i].print();
-                    this.println();
-                }
-            } this.unindentln("}");
+            println(attributes);
         } this.unindent("}");
+    }
+
+    private void println(AttributeInfo[] attributes) {
+        if (attributes.length == 0) return;
+        this.indentln("attributes[] = {"); {
+            for (short i = 0; i < attributes.length; ++i) {
+                attributes[i].print();
+                this.println();
+            }
+        } this.unindentln("}");
+    }
+
+    private AttributeInfo[] readAttributeInfos(DataInputStream dis) throws IOException {
+        AttributeInfo[] attributes;
+        {
+            short attributesCount = dis.readShort();
+            attributes = new AttributeInfo[attributesCount];
+            for (short i = 0; i < attributesCount; ++i) attributes[i] = this.readAttributeInfo(dis);
+        }
+        return attributes;
     }
 
     private ConstantPoolInfo readConstantPoolInfo(final DataInputStream dis) throws IOException {
@@ -300,10 +299,8 @@ public class Disassembler {
                 return new ConstantPoolInfo() {
                     public void print() {
                         Disassembler.this.indentln("CONSTANT_Fieldref_info {"); {
-                            Disassembler.this.printConstantPoolEntry("class_index", classIndex);
-                            Disassembler.this.println();
-                            Disassembler.this.printConstantPoolEntry("name_and_type_index", nameAndTypeIndex);
-                            Disassembler.this.println();
+                            Disassembler.this.printlnConstantPoolEntry("class_index", classIndex);
+                            Disassembler.this.printlnConstantPoolEntry("name_and_type_index", nameAndTypeIndex);
                         } Disassembler.this.unindent("}");
                     }
                 };
@@ -315,10 +312,8 @@ public class Disassembler {
                 return new ConstantPoolInfo() {
                     public void print() {
                         Disassembler.this.indentln("CONSTANT_Methodref_info {"); {
-                            Disassembler.this.printConstantPoolEntry("class_index", classIndex);
-                            Disassembler.this.println();
-                            Disassembler.this.printConstantPoolEntry("name_and_type_index", nameAndTypeIndex);
-                            Disassembler.this.println();
+                            Disassembler.this.printlnConstantPoolEntry("class_index", classIndex);
+                            Disassembler.this.printlnConstantPoolEntry("name_and_type_index", nameAndTypeIndex);
                         } Disassembler.this.unindent("}");
                     }
                 };
@@ -330,10 +325,8 @@ public class Disassembler {
                 return new ConstantPoolInfo() {
                     public void print() {
                         Disassembler.this.indentln("CONSTANT_InterfaceMethodref_info {"); {
-                            Disassembler.this.printConstantPoolEntry("class_index", classIndex);
-                            Disassembler.this.println();
-                            Disassembler.this.printConstantPoolEntry("name_and_type_index", nameAndTypeIndex);
-                            Disassembler.this.println();
+                            Disassembler.this.printlnConstantPoolEntry("class_index", classIndex);
+                            Disassembler.this.printlnConstantPoolEntry("name_and_type_index", nameAndTypeIndex);
                         } Disassembler.this.unindent("}");
                     }
                 };
@@ -422,10 +415,8 @@ public class Disassembler {
                 return new ConstantPoolInfo() {
                     public void print() {
                         Disassembler.this.indentln("CONSTANT_NameAndType_info {"); {
-                            Disassembler.this.printConstantPoolEntry("name_index", nameIndex);
-                            Disassembler.this.println();
-                            Disassembler.this.printConstantPoolEntry("descriptor_index", descriptorIndex);
-                            Disassembler.this.println();
+                            Disassembler.this.printlnConstantPoolEntry("name_index", nameIndex);
+                            Disassembler.this.printlnConstantPoolEntry("descriptor_index", descriptorIndex);
                         } Disassembler.this.unindent("}");
                     }
                 };
@@ -456,19 +447,11 @@ public class Disassembler {
         this.indentln("field_info {"); {
             this.println("access_flags = " + decodeAccess(dis.readShort()));
 
-            this.printConstantPoolEntry("name_index", dis.readShort());
-            this.println();
+            this.printlnConstantPoolEntry("name_index", dis.readShort());
 
-            this.printConstantPoolEntry("descriptor_index", dis.readShort());
-            this.println();
+            this.printlnConstantPoolEntry("descriptor_index", dis.readShort());
 
-            this.indentln("attributes[] = {"); {
-                short attributesCount = dis.readShort();
-                for (short i = 0; i < attributesCount; ++i) {
-                    disasmAttributeInfo(dis);
-                    this.println();
-                }
-            } this.unindentln("}");
+            println(readAttributeInfos(dis));
         } this.unindent("}");
     }
 
@@ -477,33 +460,29 @@ public class Disassembler {
         final short nameIndex = dis.readShort();
         final short descriptorIndex = dis.readShort();
         final AttributeInfo[] attributeInfos;
-        {
-            short attributesCount = dis.readShort();
-            attributeInfos = new AttributeInfo[attributesCount];
-            for (short i = 0; i < attributesCount; ++i) attributeInfos[i] = this.readAttributeInfo(dis);
-        }
+        attributeInfos = readAttributeInfos(dis);
         return new MethodInfo() {
             public void print(Map sourceLines) {
                 Disassembler.this.indentln("method_info {"); {
                     Disassembler.this.println("access_flags = " + decodeAccess(accessFlags));
 
-                    Disassembler.this.printConstantPoolEntry("name_index", nameIndex);
-                    Disassembler.this.println();
+                    Disassembler.this.printlnConstantPoolEntry("name_index", nameIndex);
 
-                    Disassembler.this.printConstantPoolEntry("descriptor_index", descriptorIndex);
-                    Disassembler.this.println();
+                    Disassembler.this.printlnConstantPoolEntry("descriptor_index", descriptorIndex);
 
-                    Disassembler.this.indentln("attributes[] = {"); {
-                        for (short i = 0; i < attributeInfos.length; ++i) {
-                            AttributeInfo ai = attributeInfos[i];
-                            if (ai instanceof SourceRelatedAttributeInfo) {
-                                ((SourceRelatedAttributeInfo) ai).print(sourceLines);
-                            } else {
-                                ai.print();
+                    if (attributeInfos.length > 0) {
+                        Disassembler.this.indentln("attributes[] = {"); {
+                            for (short i = 0; i < attributeInfos.length; ++i) {
+                                AttributeInfo ai = attributeInfos[i];
+                                if (ai instanceof SourceRelatedAttributeInfo) {
+                                    ((SourceRelatedAttributeInfo) ai).print(sourceLines);
+                                } else {
+                                    ai.print();
+                                }
+                                Disassembler.this.println();
                             }
-                            Disassembler.this.println();
-                        }
-                    } Disassembler.this.unindentln("}");
+                        } Disassembler.this.unindentln("}");
+                    }
                 } Disassembler.this.unindent("}");
             }
         };
@@ -514,10 +493,6 @@ public class Disassembler {
          * @param sourceLines Integer lineNumber => String line
          */
         void print(Map sourceLines);
-    }
-
-    private void disasmAttributeInfo(DataInputStream dis) throws IOException {
-        this.readAttributeInfo(dis).print();
     }
 
     private AttributeInfo readAttributeInfo(DataInputStream dis) throws IOException {
@@ -564,9 +539,7 @@ public class Disassembler {
             final short constantValueIndex = dis.readShort();
             return new AttributeInfo() {
                 public void print() {
-                    Disassembler.this.indent("ConstantValue " + constantValueIndex + " ("); {
-                        Disassembler.this.printConstantPoolEntry(constantValueIndex);
-                    } Disassembler.this.unindent(")");
+                    Disassembler.this.printConstantPoolEntry("ConstantValue", constantValueIndex);
                 }
             };
         } else
@@ -612,19 +585,16 @@ public class Disassembler {
                             }
                         } Disassembler.this.unindentln("}");
 
-                        Disassembler.this.indentln("exception_table = {"); {
-                            for (int i = 0; i < exceptionTable.length; ++i) {
-                                exceptionTable[i].print();
-                                Disassembler.this.println();
-                            }
-                        } Disassembler.this.unindentln("}");
+                        if (exceptionTable.length > 0) {
+                            Disassembler.this.indentln("exception_table = {"); {
+                                for (int i = 0; i < exceptionTable.length; ++i) {
+                                    exceptionTable[i].print();
+                                    Disassembler.this.println();
+                                }
+                            } Disassembler.this.unindentln("}");
+                        }
 
-                        Disassembler.this.indentln("attributes[] = {"); {
-                            for (int i = 0; i < attributes.length; ++i) {
-                                attributes[i].print();
-                                Disassembler.this.println();
-                            }
-                        } Disassembler.this.unindentln("}");
+                        println(attributes);
                     } Disassembler.this.unindent("}");
                 }
             };
@@ -637,9 +607,7 @@ public class Disassembler {
                         Disassembler.this.indentln("exception_index_table = {"); {
                             for (short i = 0; i < exceptionIndexTable.length; ++i) {
                                 short exceptionIndex = exceptionIndexTable[i];
-                                Disassembler.this.print(exceptionIndex + " (");
-                                Disassembler.this.printConstantPoolEntry(exceptionIndex);
-                                Disassembler.this.println("),");
+                                Disassembler.this.printlnConstantPoolEntry(exceptionIndex);
                             }
                         } Disassembler.this.unindentln("}");
                     } Disassembler.this.unindent("}");
@@ -654,8 +622,7 @@ public class Disassembler {
                         Disassembler.this.indentln("classes = {"); {
                             for (int i = 0; i < data.length; i += 4) {
                                 Disassembler.this.indentln("{"); {
-                                    Disassembler.this.printConstantPoolEntry("inner_class_info_index", data[i]);
-                                    Disassembler.this.println();
+                                    Disassembler.this.printlnConstantPoolEntry("inner_class_info_index", data[i]);
 
                                     short outerClassInfoIndex = data[i + 1];
                                     if (outerClassInfoIndex == 0) {
@@ -670,11 +637,10 @@ public class Disassembler {
 
                                     short innerNameIndex = data[i + 2];
                                     if (innerNameIndex == 0) {
-                                        Disassembler.this.print("(anonymous)");
+                                        Disassembler.this.println("(anonymous)");
                                     } else {
-                                        Disassembler.this.printConstantPoolEntry("inner_name_index", innerNameIndex);
+                                        Disassembler.this.printlnConstantPoolEntry("inner_name_index", innerNameIndex);
                                     }
-                                    Disassembler.this.println();
 
                                     Disassembler.this.println(
                                         "inner_class_access_flags = "
@@ -747,8 +713,7 @@ public class Disassembler {
         }
         public void print() {
             Disassembler.this.indentln("SourceFile {"); {
-                Disassembler.this.printConstantPoolEntry("sourcefile_index", this.sourceFileIndex);
-                Disassembler.this.println();
+                Disassembler.this.printlnConstantPoolEntry("sourcefile_index", this.sourceFileIndex);
             } Disassembler.this.unindent("}");
         }
     }
@@ -758,18 +723,15 @@ public class Disassembler {
             this.data = data;
         }
         public void print() {
+            if (Disassembler.this.hideLineNumbers) return;
             Disassembler.this.indentln("LineNumberTable {"); {
-                if (hideLineNumbers) {
-                    Disassembler.this.println("(not displayed)");
-                } else {
-                    Disassembler.this.indentln("line_number_table = {"); {
-                        for (short i = 0; i < this.data.length; i += 2) {
-                            Disassembler.this.print("start_pc = " + this.data[i]);
-                            Disassembler.this.print(", ");
-                            Disassembler.this.println("line_number = " + this.data[i + 1]);
-                        }
-                    } Disassembler.this.unindentln("}");
-                }
+                Disassembler.this.indentln("line_number_table = {"); {
+                    for (short i = 0; i < this.data.length; i += 2) {
+                        Disassembler.this.print("start_pc = " + this.data[i]);
+                        Disassembler.this.print(", ");
+                        Disassembler.this.println("line_number = " + this.data[i + 1]);
+                    }
+                } Disassembler.this.unindentln("}");
             } Disassembler.this.unindent("}");
         }
         public short findLineNumber(short offset) {
@@ -783,19 +745,21 @@ public class Disassembler {
         public LocalVariableTableAttribute(short[] data) { this.data = data; }
         public void print() {
             Disassembler.this.indentln("LocalVariableTable {"); {
-                Disassembler.this.indentln("local_variable_table = {"); {
-                    for (int i = 0; i < this.data.length; i += 5) {
-                        Disassembler.this.print("start_pc = " + this.data[i]);
-                        Disassembler.this.print(", ");
-                        Disassembler.this.print("length = " + this.data[i + 1]);
-                        Disassembler.this.print(", ");
-                        Disassembler.this.printConstantPoolEntry("name_index", this.data[i + 2]);
-                        Disassembler.this.print(", ");
-                        Disassembler.this.printConstantPoolEntry("descriptor_index", this.data[i + 3]);
-                        Disassembler.this.print(", ");
-                        Disassembler.this.println("index = " + this.data[i + 4]);
-                    }
-                } Disassembler.this.unindentln("}");
+                if (this.data.length > 0) {
+                    Disassembler.this.indentln("local_variable_table = {"); {
+                        for (int i = 0; i < this.data.length; i += 5) {
+                            Disassembler.this.print("start_pc = " + this.data[i]);
+                            Disassembler.this.print(", ");
+                            Disassembler.this.print("length = " + this.data[i + 1]);
+                            Disassembler.this.print(", ");
+                            Disassembler.this.printConstantPoolEntry("name_index", this.data[i + 2]);
+                            Disassembler.this.print(", ");
+                            Disassembler.this.printConstantPoolEntry("descriptor_index", this.data[i + 3]);
+                            Disassembler.this.print(", ");
+                            Disassembler.this.println("index = " + this.data[i + 4]);
+                        }
+                    } Disassembler.this.unindentln("}");
+                }
             } Disassembler.this.unindent("}");
         }
         public String find(short index, int instructionOffset) {
@@ -900,7 +864,7 @@ public class Disassembler {
                 if (lineNumber != -1) {
                     String sourceLine = (String) sourceLines.get(new Integer(lineNumber));
                     if (sourceLine == null) sourceLine = "(Source line not available)";
-                    this.println("            Line " + lineNumber + ": " + sourceLine);
+                    this.println("           *** Line " + lineNumber + ": " + sourceLine);
                 }
             }
             this.print(instructionOffset + ": ");
@@ -1421,6 +1385,11 @@ public class Disassembler {
             return null;
         }
     }
+    
+    private void printlnConstantPoolEntry(short index) {
+        this.printConstantPoolEntry(index);
+        this.println();
+    }
 
     private void printConstantPoolEntry(short index) {
         if (this.verbose) this.print(index + " (");
@@ -1436,20 +1405,18 @@ public class Disassembler {
         }
         if (this.verbose) this.print(")");
     }
+    
+    private void printlnConstantPoolEntry(String label, short index) {
+        this.printConstantPoolEntry(label, index);
+        this.println();
+    }
 
     private void printConstantPoolEntry(String label, short index) {
-        if (this.verbose) {
-            if (label != null) this.print(label + " = ");
-            this.print(index + " (");
-            this.printConstantPoolEntry(index);
-            this.print(")");
-        } else {
-            if (label != null) {
-                if (label.endsWith("_index")) label = label.substring(0, label.length() - 6);
-                this.print(label + " = ");
-            }
-            this.printConstantPoolEntry(index);
+        if (label != null) {
+            if (label.endsWith("_index")) label = label.substring(0, label.length() - 6);
+            this.print(label + " = ");
         }
+        this.printConstantPoolEntry(index);
     }
 
     private static class Instruction {
