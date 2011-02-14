@@ -46,8 +46,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
-import org.codehaus.janino.JaninoRuntimeException;
-
 /**
  * A Java bytecode disassembler, comparable to JAVAP, which is part of
  * Sun's JDK.
@@ -60,15 +58,8 @@ public class Disassembler {
     private IndentPrintWriter ipw = new IndentPrintWriter(System.out);
     private boolean           verbose = false;
     private File              sourceDirectory = new File(".");
+    private boolean           hideLineNumbers;
 
-    /**
-     * Usage:
-     * <pre>
-     *   java new.janino.tools.Disassembler [ -o <i>output-file</i> ] [ -help ]
-     * </pre>
-     * @param args
-     * @throws IOException
-     */
     public static void main(String[] args) throws IOException {
         Disassembler d = new Disassembler();
         int i;
@@ -84,10 +75,17 @@ public class Disassembler {
             if (arg.equals("-src")) {
                 d.setSourceDirectory(new File(args[++i]));
             } else
+            if (arg.equals("-hide-line-numbers")) {
+                d.setHideLineNumbers(true);
+            } else
             if (arg.equals("-help")) {
-                // CHECKSTYLE(LineLengthCheck):OFF
-                System.out.println("Usage:  java jexpr.Jdisasm [ -o <output-file> ] [ -verbose ] [ -src <source-dir> ] <class-file> ...");
-                // CHECKSTYLE(LineLengthCheck):ON
+                System.out.println("Usage:");
+                System.out.println("  java " + Disassembler.class.getName() + " [ <option> ] ... <class-file> ...");
+                System.out.println("Valid options are:");
+                System.out.println("  -o <output-file>");
+                System.out.println("  -verbose");
+                System.out.println("  -src <source-dir>");
+                System.out.println("  -hide-line-numbers");
                 System.exit(0);
             } else
             {
@@ -113,6 +111,9 @@ public class Disassembler {
     }
     public void setSourceDirectory(File sourceDirectory) {
         this.sourceDirectory = sourceDirectory;
+    }
+    public void setHideLineNumbers(boolean hideLineNumbers) {
+        this.hideLineNumbers = hideLineNumbers;
     }
 
 //    void print(byte b)   { this.ipw.print(b); }
@@ -177,12 +178,16 @@ public class Disassembler {
                 }
             }
             this.indentln("constant_pool[] = {"); {
-                for (short i = 1; i < this.constantPool.length;) {
-                    this.print(i + ": ");
-                    ConstantPoolInfo cpi = this.constantPool[i];
-                    cpi.print(); // Must be invoked only after "this.constantPool" is initialized.
-                    this.println();
-                    i += cpi.getSizeInConstantPool();
+                if (this.verbose) {
+                    for (short i = 1; i < this.constantPool.length;) {
+                        this.print(i + ": ");
+                        ConstantPoolInfo cpi = this.constantPool[i];
+                        cpi.print(); // Must be invoked only after "this.constantPool" is initialized.
+                        this.println();
+                        i += cpi.getSizeInConstantPool();
+                    }
+                } else {
+                    this.println("(not displayed)");
                 }
             } this.unindentln("}");
 
@@ -428,7 +433,7 @@ public class Disassembler {
         case 1:
             return new ConstantUtf8Info(dis.readUTF());
         default:
-            throw new JaninoRuntimeException("Invalid cp_info tag \"" + (int) tag + "\"");
+            throw new RuntimeException("Invalid cp_info tag \"" + (int) tag + "\"");
         }
     }
 
@@ -517,11 +522,9 @@ public class Disassembler {
 
     private AttributeInfo readAttributeInfo(DataInputStream dis) throws IOException {
 
-        // Determine attribute name.
-        short attributeNameIndex = dis.readShort();
         String attributeName;
         {
-            ConstantPoolInfo cpi = Disassembler.this.getConstantPoolEntry(attributeNameIndex);
+            ConstantPoolInfo cpi = Disassembler.this.getConstantPoolEntry(dis.readShort());
             if (cpi == null) {
                 attributeName = "INVALID CONSTANT POOL INDEX";
             } else
@@ -533,21 +536,26 @@ public class Disassembler {
         }
 
         // Read attribute body into byte array and create a DataInputStream.
-        int attributeLength = dis.readInt();
-        final byte[] ba = new byte[attributeLength];
-        if (dis.read(ba) != ba.length) throw new EOFException();
-        ByteArrayInputStream bais = new ByteArrayInputStream(ba);
-        DataInputStream dis2 = new DataInputStream(bais);
+        ByteArrayInputStream bais;
+        {
+            int attributeLength = dis.readInt();
+            final byte[] ba = new byte[attributeLength];
+            dis.readFully(ba);
+            bais = new ByteArrayInputStream(ba);
+        }
 
         // Parse the attribute body.
-        AttributeInfo res = this.readAttributeBody(attributeName, dis2);
+        AttributeInfo res = this.readAttributeBody(attributeName, new DataInputStream(bais));
 
         // Check for extraneous bytes.
-        int av = bais.available();
-        if (av > 0) throw new JaninoRuntimeException(av + " extraneous bytes in attribute \"" + attributeName + "\"");
+        {
+            int av = bais.available();
+            if (av > 0) throw new RuntimeException(av + " extraneous bytes in attribute \"" + attributeName + "\"");
+        }
 
         return res;
     }
+
     private AttributeInfo readAttributeBody(
         final String          attributeName,
         final DataInputStream dis
@@ -581,13 +589,13 @@ public class Disassembler {
                                 AttributeInfo a = attributes[i];
                                 if (a instanceof LocalVariableTableAttribute) {
                                     if (localVariableTableAttribute != null) {
-                                        throw new JaninoRuntimeException("Duplicate LocalVariableTable attribute");
+                                        throw new RuntimeException("Duplicate LocalVariableTable attribute");
                                     }
                                     localVariableTableAttribute = (LocalVariableTableAttribute) a;
                                 }
                                 if (a instanceof LineNumberTableAttribute) {
                                     if (lineNumberTableAttribute != null) {
-                                        throw new JaninoRuntimeException("Duplicate LineNumberTable attribute");
+                                        throw new RuntimeException("Duplicate LineNumberTable attribute");
                                     }
                                     lineNumberTableAttribute = (LineNumberTableAttribute) a;
                                 }
@@ -751,13 +759,17 @@ public class Disassembler {
         }
         public void print() {
             Disassembler.this.indentln("LineNumberTable {"); {
-                Disassembler.this.indentln("line_number_table = {"); {
-                    for (short i = 0; i < this.data.length; i += 2) {
-                        Disassembler.this.print("start_pc = " + this.data[i]);
-                        Disassembler.this.print(", ");
-                        Disassembler.this.println("line_number = " + this.data[i + 1]);
-                    }
-                } Disassembler.this.unindentln("}");
+                if (hideLineNumbers) {
+                    Disassembler.this.println("(not displayed)");
+                } else {
+                    Disassembler.this.indentln("line_number_table = {"); {
+                        for (short i = 0; i < this.data.length; i += 2) {
+                            Disassembler.this.print("start_pc = " + this.data[i]);
+                            Disassembler.this.print(", ");
+                            Disassembler.this.println("line_number = " + this.data[i + 1]);
+                        }
+                    } Disassembler.this.unindentln("}");
+                }
             } Disassembler.this.unindent("}");
         }
         public short findLineNumber(short offset) {
@@ -883,7 +895,7 @@ public class Disassembler {
             int opcode = dis.read();
             if (opcode == -1) return; // EOF
 
-            if (lineNumberTableAttribute != null) {
+            if (!this.hideLineNumbers && lineNumberTableAttribute != null) {
                 short lineNumber = lineNumberTableAttribute.findLineNumber(instructionOffset);
                 if (lineNumber != -1) {
                     String sourceLine = (String) sourceLines.get(new Integer(lineNumber));
@@ -1024,8 +1036,8 @@ public class Disassembler {
         "7   iconst_4",
         "8   iconst_5",
         "108 idiv",
-        "165 if_acmpeq",
-        "166 if_acmpne",
+        "165 if_acmpeq     branchoffset2",
+        "166 if_acmpne     branchoffset2",
         "159 if_icmpeq     branchoffset2",
         "160 if_icmpne     branchoffset2",
         "161 if_icmplt     branchoffset2",
@@ -1327,8 +1339,9 @@ public class Disassembler {
                             ) throws IOException {
                                 int npads = 3 - (instructionOffset % 4);
                                 for (int i = 0; i < npads; ++i) {
-                                    if (dis.readByte() != (byte) 0) {
-                                        throw new JaninoRuntimeException("Non-zero pad byte in \"tableswitch\"");
+                                    byte padByte = dis.readByte();
+                                    if (padByte != 0) {
+                                        throw new RuntimeException("'tableswitch' pad byte #" + i + " is not zero, but " + (0xff & padByte));
                                     }
                                 }
                                 d.print("default => " + (instructionOffset + dis.readInt()));
@@ -1375,7 +1388,7 @@ public class Disassembler {
                                 int subopcode = 0xff & dis.readByte();
                                 Instruction wideInstruction = opcodeToWideInstruction[subopcode];
                                 if (wideInstruction == null) {
-                                    throw new JaninoRuntimeException(
+                                    throw new RuntimeException(
                                         "Invalid opcode "
                                         + subopcode
                                         + " after opcode WIDE"
@@ -1391,7 +1404,7 @@ public class Disassembler {
                         };
                     } else
                     {
-                        throw new JaninoRuntimeException("Unknown operand \"" + s + "\"");
+                        throw new RuntimeException("Unknown operand \"" + s + "\"");
                     }
                     l.add(operand);
                 }
