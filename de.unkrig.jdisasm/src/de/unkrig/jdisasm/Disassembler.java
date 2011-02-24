@@ -778,7 +778,7 @@ public class Disassembler {
                             ) throws IOException {
                                 short branchTarget = (short) (instructionOffset + dis.readInt());
                                 d.branchTargets.add(branchTarget);
-                                return Integer.toString(branchTarget);
+                                return Integer.toString(0xffff & branchTarget);
                             }
                         };
                     } else
@@ -985,38 +985,6 @@ public class Disassembler {
             Disassembler                          d
         ) throws IOException;
     }
-//
-//    /**
-//     * A variant of {@link PrintWriter} that allows for convenient indentation
-//     * of output lines.
-//     */
-//    private static class IndentPrintWriter extends PrintWriter {
-//        public IndentPrintWriter(OutputStream os) { super(os); }
-//        public void write(char[] cbuf, int off, int len) {
-//            this.handleIndentation();
-//            super.write(cbuf, off, len);
-//        }
-//        public void write(String str, int off, int len) {
-//            this.handleIndentation();
-//            super.write(str, off, len);
-//        }
-//        public void println() { super.println(); this.atBOL = true; }
-//        public void indent() { ++this.indentation; }
-//        public void unindent() { --this.indentation; }
-//
-//        private void handleIndentation() {
-//            if (this.atBOL) {
-//                for (int i = 0; i < this.indentation; ++i) {
-//                    super.write(INDENTATION_CHARS, 0, INDENTATION_CHARS.length);
-//                }
-//                this.atBOL = false;
-//            }
-//        }
-//        private static final char[] INDENTATION_CHARS = new char[] { ' ', ' ' };
-//
-//        private boolean atBOL = true;
-//        private int      indentation = 0;
-//    }
 
     private static class CountingInputStream extends InputStream {
         public CountingInputStream(InputStream is) { this.is = is; }
@@ -1038,10 +1006,11 @@ public class Disassembler {
 
     private static String decodeAccess(short n) {
         StringBuilder sb = new StringBuilder();
-        if ((n & 0x0007) == 0) { sb.append("package ");                          }
+        if ((n & 0x0007) == 0) { ;                                               }
         if ((n & 0x0007) == 1) { sb.append("public ");             n &= ~0x0007; }
         if ((n & 0x0007) == 2) { sb.append("private ");            n &= ~0x0007; }
         if ((n & 0x0007) == 4) { sb.append("protected ");          n &= ~0x0007; }
+
         if ((n & 0x0008) != 0) { sb.append("static ");             n &= ~0x0008; }
         if ((n & 0x0010) != 0) { sb.append("final ");              n &= ~0x0010; }
         if ((n & 0x0020) != 0) { sb.append("super/synchronized "); n &= ~0x0020; }
@@ -1050,7 +1019,12 @@ public class Disassembler {
         if ((n & 0x0100) != 0) { sb.append("native ");             n &= ~0x0100; }
         if ((n & 0x0400) != 0) { sb.append("abstract ");           n &= ~0x0400; }
         if ((n & 0x0800) != 0) { sb.append("strict ");             n &= ~0x0800; }
+        if ((n & 0x1000) != 0) { sb.append("synthetic ");          n &= ~0x1000; }
+
         if ((n & 0x0200) != 0) { sb.append("interface ");          n &= ~0x0200; }
+        if ((n & 0x2000) != 0) { sb.append("annotation ");         n &= ~0x2000; }
+        if ((n & 0x4000) != 0) { sb.append("enum ");               n &= ~0x4000; }
+
         if (n != 0) sb.append("+ " + n + " ");
         return sb.toString();
     }
