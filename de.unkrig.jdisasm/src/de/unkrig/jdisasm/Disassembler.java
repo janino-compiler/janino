@@ -62,12 +62,19 @@ import de.unkrig.jdisasm.ClassFile.LocalVariableTableEntry;
  * <p>
  * Notice that this tool does not depend on any other classes or libraries (other than the
  * standard JDK library).
+ * <p>
+ * The disassembly is optimized to produce minimal DIFFs for changed class files: E.g. code offsets and local
+ * variable indexes are only printed if really necessary.
  */
 public class Disassembler {
-    private PrintWriter    pw = new PrintWriter(System.out);
-    private boolean        verbose = false;
-    private File           sourceDirectory = new File(".");
-    private boolean        hideLineNumbers;
+
+    // Configuration variables.
+
+    private PrintWriter pw = new PrintWriter(System.out);
+    private boolean     verbose = false;
+    private File        sourceDirectory = null;
+    private boolean     hideLineNumbers;
+
     private HashSet<Short> branchTargets;
 
     public static void main(String[] args) throws IOException {
@@ -89,13 +96,14 @@ public class Disassembler {
                 d.setHideLineNumbers(true);
             } else
             if (arg.equals("-help")) {
+                System.out.println("Prints a disassembly listing of the given JAVA[TM] class files to STDOUT.");
                 System.out.println("Usage:");
                 System.out.println("  java " + Disassembler.class.getName() + " [ <option> ] ... <class-file> ...");
                 System.out.println("Valid options are:");
-                System.out.println("  -o <output-file>");
+                System.out.println("  -o <output-file>    Store disassembly output in a file.");
                 System.out.println("  -verbose");
-                System.out.println("  -src <source-dir>");
-                System.out.println("  -hide-line-numbers");
+                System.out.println("  -src <source-dir>   Interweave the output with the class file's source code.");
+                System.out.println("  -hide-line-numbers  Don't print the line numbers.");
                 System.exit(0);
             } else
             {
@@ -351,8 +359,7 @@ public class Disassembler {
     }
 
     /**
-     * Prints the disassembled byte code.
-     * @param exceptionTable TODO
+     * Read byte code from the given {@link InputStream} and disassemble it.
      */
     private void disasmBytecode(
         InputStream                           is,
@@ -368,37 +375,47 @@ public class Disassembler {
         this.branchTargets = new HashSet<Short>();
         try {
 
+            // Disassemble the byte code into a sequence of lines.
             SortedMap<Short, String> lines = new TreeMap<Short, String>();
             for (;;) {
                 short instructionOffset = (short) cis.getCount();
-    
+
                 int opcode = dis.read();
-                if (opcode == -1) break; // EOF
-    
+                if (opcode == -1) break;
+
                 Instruction instruction = opcodeToInstruction[opcode];
                 if (instruction == null) {
-                    this.println("??? (invalid opcode \"" + opcode + "\")");
-                    continue;
+                    lines.put(instructionOffset, "??? (invalid opcode \"" + opcode + "\")");
+                } else {
+                    lines.put(instructionOffset, instruction.getMnemonic() + disasmOperands(instruction.getOperands(), dis, instructionOffset, localVariableTableAttribute, cf));
                 }
-                lines.put(instructionOffset, disasmInstruction(instruction, dis, instructionOffset, localVariableTableAttribute, cf));
             }
 
+            // Format and print the disassembly lines.
             for (Iterator<Entry<Short, String>> it = lines.entrySet().iterator(); it.hasNext();) {
                 Entry<Short, String> e = it.next();
                 short instructionOffset = e.getKey();
                 String text = e.getValue();
 
+                // Print instruction offsets only for branch targets.
                 if (this.branchTargets.contains(instructionOffset)) {
                     this.println();
                     this.println("#" + instructionOffset);
                 }
 
-                if (!this.hideLineNumbers && lineNumberTableAttribute != null) {
+                if (lineNumberTableAttribute != null) {
                     short lineNumber = findLineNumber(lineNumberTableAttribute, instructionOffset);
                     if (lineNumber != -1) {
-                        String sourceLine = (String) sourceLines.get(lineNumber);
-                        if (sourceLine == null) sourceLine = "(Source line not available)";
-                        this.println("              *** Line " + lineNumber + ": " + sourceLine);
+                        String sourceLine = sourceLines.get(lineNumber);
+                        if (sourceLine == null) {
+                            if (!this.hideLineNumbers) this.println("              *** Line " + lineNumber);
+                        } else {
+                            if (this.hideLineNumbers) {
+                                this.println("              *** " + sourceLine);
+                            } else {
+                                this.println("              *** Line " + lineNumber + ": " + sourceLine);
+                            }
+                        }
                     }
                 }
 
@@ -409,6 +426,9 @@ public class Disassembler {
         }
     }
 
+    /**
+     * @return -1 iff the offset is not associated with a line number
+     */
     private static short findLineNumber(
         LineNumberTableAttribute lnta,
         short                    offset
@@ -422,19 +442,17 @@ public class Disassembler {
     /**
      * @return The {@code instruction} converted into one line of text.
      */
-    private String disasmInstruction(
-        Instruction                           instruction,
+    private String disasmOperands(
+        Operand[]                             operands,
         DataInputStream                       dis,
         short                                 instructionOffset,
         ClassFile.LocalVariableTableAttribute localVariableTableAttribute,
         ClassFile                             cf
     ) throws IOException {
-        StringBuilder sb = new StringBuilder(instruction.getMnemonic());
-        Operand[] operands = instruction.getOperands();
-        if (operands != null) {
-            for (int i = 0; i < operands.length; ++i) {
-                sb.append(' ').append(operands[i].disasm(dis, instructionOffset, localVariableTableAttribute, cf, this));
-            }
+        if (operands == null) return "";
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < operands.length; ++i) {
+            sb.append(operands[i].disasm(dis, instructionOffset, localVariableTableAttribute, cf, this));
         }
         return sb.toString();
     }
@@ -443,26 +461,26 @@ public class Disassembler {
         "50  aaload",
         "83  aastore",
         "1   aconst_null",
-        "25  aload         localvariablearrayindex1",
-        "42  aload_0       localvariablearrayindex_0",
-        "43  aload_1       localvariablearrayindex_1",
-        "44  aload_2       localvariablearrayindex_2",
-        "45  aload_3       localvariablearrayindex_3",
-        "189 anewarray     constantpoolindex2",
+        "25  aload           localvariablearrayindex1",
+        "42  aload_0         implicitlocalvariableindex",
+        "43  aload_1         implicitlocalvariableindex",
+        "44  aload_2         implicitlocalvariableindex",
+        "45  aload_3         implicitlocalvariableindex",
+        "189 anewarray       constantpoolindex2",
         "176 areturn",
         "190 arraylength",
-        "58  astore        localvariablearrayindex1",
-        "75  astore_0      localvariablearrayindex_0",
-        "76  astore_1      localvariablearrayindex_1",
-        "77  astore_2      localvariablearrayindex_2",
-        "78  astore_3      localvariablearrayindex_3",
+        "58  astore          localvariablearrayindex1",
+        "75  astore_0        implicitlocalvariableindex",
+        "76  astore_1        implicitlocalvariableindex",
+        "77  astore_2        implicitlocalvariableindex",
+        "78  astore_3        implicitlocalvariableindex",
         "191 athrow",
         "51  baload",
         "84  bastore",
-        "16  bipush        signedbyte",
+        "16  bipush          signedbyte",
         "52  caload",
         "85  castore",
-        "192 checkcast     constantpoolindex2",
+        "192 checkcast       constantpoolindex2",
         "144 d2f",
         "142 d2i",
         "143 d2l",
@@ -474,20 +492,20 @@ public class Disassembler {
         "14  dconst_0",
         "15  dconst_1",
         "111 ddiv",
-        "24  dload         localvariablearrayindex1",
-        "38  dload_0       localvariablearrayindex_0",
-        "39  dload_1       localvariablearrayindex_1",
-        "40  dload_2       localvariablearrayindex_2",
-        "41  dload_3       localvariablearrayindex_3",
+        "24  dload           localvariablearrayindex1",
+        "38  dload_0         implicitlocalvariableindex",
+        "39  dload_1         implicitlocalvariableindex",
+        "40  dload_2         implicitlocalvariableindex",
+        "41  dload_3         implicitlocalvariableindex",
         "107 dmul",
         "119 dneg",
         "115 drem",
         "175 dreturn",
-        "57  dstore        localvariablearrayindex1",
-        "71  dstore_0      localvariablearrayindex_0",
-        "72  dstore_1      localvariablearrayindex_1",
-        "73  dstore_2      localvariablearrayindex_2",
-        "74  dstore_3      localvariablearrayindex_3",
+        "57  dstore          localvariablearrayindex1",
+        "71  dstore_0        implicitlocalvariableindex",
+        "72  dstore_1        implicitlocalvariableindex",
+        "73  dstore_2        implicitlocalvariableindex",
+        "74  dstore_3        implicitlocalvariableindex",
         "103 dsub",
         "89  dup",
         "90  dup_x1",
@@ -507,25 +525,25 @@ public class Disassembler {
         "12  fconst_1",
         "13  fconst_2",
         "110 fdiv",
-        "23  fload         localvariablearrayindex1",
-        "34  fload_0       localvariablearrayindex_0",
-        "35  fload_1       localvariablearrayindex_1",
-        "36  fload_2       localvariablearrayindex_2",
-        "37  fload_3       localvariablearrayindex_3",
+        "23  fload           localvariablearrayindex1",
+        "34  fload_0         implicitlocalvariableindex",
+        "35  fload_1         implicitlocalvariableindex",
+        "36  fload_2         implicitlocalvariableindex",
+        "37  fload_3         implicitlocalvariableindex",
         "106 fmul",
         "118 fneg",
         "114 frem",
         "174 freturn",
-        "56  fstore        localvariablearrayindex1",
-        "67  fstore_0      localvariablearrayindex_0",
-        "68  fstore_1      localvariablearrayindex_1",
-        "69  fstore_2      localvariablearrayindex_2",
-        "70  fstore_3      localvariablearrayindex_3",
+        "56  fstore          localvariablearrayindex1",
+        "67  fstore_0        implicitlocalvariableindex",
+        "68  fstore_1        implicitlocalvariableindex",
+        "69  fstore_2        implicitlocalvariableindex",
+        "70  fstore_3        implicitlocalvariableindex",
         "102 fsub",
-        "180 getfield      constantpoolindex2",
-        "178 getstatic     constantpoolindex2",
-        "167 goto          branchoffset2",
-        "200 goto_w        branchoffset4",
+        "180 getfield        constantpoolindex2",
+        "178 getstatic       constantpoolindex2",
+        "167 goto            branchoffset2",
+        "200 goto_w          branchoffset4",
         "145 i2b",
         "146 i2c",
         "135 i2d",
@@ -544,28 +562,28 @@ public class Disassembler {
         "7   iconst_4",
         "8   iconst_5",
         "108 idiv",
-        "165 if_acmpeq     branchoffset2",
-        "166 if_acmpne     branchoffset2",
-        "159 if_icmpeq     branchoffset2",
-        "160 if_icmpne     branchoffset2",
-        "161 if_icmplt     branchoffset2",
-        "162 if_icmpge     branchoffset2",
-        "163 if_icmpgt     branchoffset2",
-        "164 if_icmple     branchoffset2",
-        "153 ifeq          branchoffset2",
-        "154 ifne          branchoffset2",
-        "155 iflt          branchoffset2",
-        "156 ifge          branchoffset2",
-        "157 ifgt          branchoffset2",
-        "158 ifle          branchoffset2",
-        "199 ifnonnull     branchoffset2",
-        "198 ifnull        branchoffset2",
-        "132 iinc          localvariablearrayindex1 signedbyte",
-        "21  iload         localvariablearrayindex1",
-        "26  iload_0       localvariablearrayindex_0",
-        "27  iload_1       localvariablearrayindex_1",
-        "28  iload_2       localvariablearrayindex_2",
-        "29  iload_3       localvariablearrayindex_3",
+        "165 if_acmpeq       branchoffset2",
+        "166 if_acmpne       branchoffset2",
+        "159 if_icmpeq       branchoffset2",
+        "160 if_icmpne       branchoffset2",
+        "161 if_icmplt       branchoffset2",
+        "162 if_icmpge       branchoffset2",
+        "163 if_icmpgt       branchoffset2",
+        "164 if_icmple       branchoffset2",
+        "153 ifeq            branchoffset2",
+        "154 ifne            branchoffset2",
+        "155 iflt            branchoffset2",
+        "156 ifge            branchoffset2",
+        "157 ifgt            branchoffset2",
+        "158 ifle            branchoffset2",
+        "199 ifnonnull       branchoffset2",
+        "198 ifnull          branchoffset2",
+        "132 iinc            localvariablearrayindex1 signedbyte",
+        "21  iload           localvariablearrayindex1",
+        "26  iload_0         implicitlocalvariableindex",
+        "27  iload_1         implicitlocalvariableindex",
+        "28  iload_2         implicitlocalvariableindex",
+        "29  iload_3         implicitlocalvariableindex",
         "104 imul",
         "116 ineg",
         "193 instanceof      constantpoolindex2",
@@ -579,10 +597,10 @@ public class Disassembler {
         "120 ishl",
         "122 ishr",
         "54  istore          localvariablearrayindex1",
-        "59  istore_0        localvariablearrayindex_0",
-        "60  istore_1        localvariablearrayindex_1",
-        "61  istore_2        localvariablearrayindex_2",
-        "62  istore_3        localvariablearrayindex_3",
+        "59  istore_0        implicitlocalvariableindex",
+        "60  istore_1        implicitlocalvariableindex",
+        "61  istore_2        implicitlocalvariableindex",
+        "62  istore_3        implicitlocalvariableindex",
         "100 isub",
         "124 iushr",
         "130 ixor",
@@ -598,63 +616,63 @@ public class Disassembler {
         "148 lcmp",
         "9   lconst_0",
         "10  lconst_1",
-        "18  ldc           constantpoolindex1",
-        "19  ldc_w         constantpoolindex2",
-        "20  ldc2_w        constantpoolindex2",
+        "18  ldc             constantpoolindex1",
+        "19  ldc_w           constantpoolindex2",
+        "20  ldc2_w          constantpoolindex2",
         "109 ldiv",
-        "22  lload         localvariablearrayindex1",
-        "30  lload_0       localvariablearrayindex_0",
-        "31  lload_1       localvariablearrayindex_1",
-        "32  lload_2       localvariablearrayindex_2",
-        "33  lload_3       localvariablearrayindex_3",
+        "22  lload           localvariablearrayindex1",
+        "30  lload_0         implicitlocalvariableindex",
+        "31  lload_1         implicitlocalvariableindex",
+        "32  lload_2         implicitlocalvariableindex",
+        "33  lload_3         implicitlocalvariableindex",
         "105 lmul",
         "117 lneg",
-        "171 lookupswitch  lookupswitch",
+        "171 lookupswitch    lookupswitch",
         "129 lor",
         "113 lrem",
         "173 lreturn",
         "121 lshl",
         "123 lshr",
-        "55  lstore        localvariablearrayindex1",
-        "63  lstore_0      localvariablearrayindex_0",
-        "64  lstore_1      localvariablearrayindex_1",
-        "65  lstore_2      localvariablearrayindex_2",
-        "66  lstore_3      localvariablearrayindex_3",
+        "55  lstore          localvariablearrayindex1",
+        "63  lstore_0        implicitlocalvariableindex",
+        "64  lstore_1        implicitlocalvariableindex",
+        "65  lstore_2        implicitlocalvariableindex",
+        "66  lstore_3        implicitlocalvariableindex",
         "101 lsub",
         "125 lushr",
         "131 lxor",
         "194 monitorenter",
         "195 monitorexit",
-        "197 multianewarray constantpoolindex2 unsignedbyte",
-        "187 new           constantpoolindex2",
-        "188 newarray      atype",
+        "197 multianewarray  constantpoolindex2 unsignedbyte",
+        "187 new             constantpoolindex2",
+        "188 newarray        atype",
         "0   nop",
         "87  pop",
         "88  pop2",
-        "181 putfield      constantpoolindex2",
-        "179 putstatic     constantpoolindex2",
-        "169 ret           localvariablearrayindex1",
+        "181 putfield        constantpoolindex2",
+        "179 putstatic       constantpoolindex2",
+        "169 ret             localvariablearrayindex1",
         "177 return",
         "53  saload",
         "86  sastore",
-        "17  sipush        signedshort",
+        "17  sipush          signedshort",
         "95  swap",
-        "170 tableswitch   tableswitch",
-        "196 wide          wide",
+        "170 tableswitch     tableswitch",
+        "196 wide            wide",
     };
     private static final String[] wideInstructions = new String[] {
-        "21  iload         localvariablearrayindex2",
-        "23  fload         localvariablearrayindex2",
-        "25  aload         localvariablearrayindex2",
-        "22  lload         localvariablearrayindex2",
-        "24  dload         localvariablearrayindex2",
-        "54  istore        localvariablearrayindex2",
-        "56  fstore        localvariablearrayindex2",
-        "58  astore        localvariablearrayindex2",
-        "55  lstore        localvariablearrayindex2",
-        "57  dstore        localvariablearrayindex2",
-        "169 ret           localvariablearrayindex2",
-        "132 iinc          localvariablearrayindex2 signedshort",
+        "21  iload           localvariablearrayindex2",
+        "23  fload           localvariablearrayindex2",
+        "25  aload           localvariablearrayindex2",
+        "22  lload           localvariablearrayindex2",
+        "24  dload           localvariablearrayindex2",
+        "54  istore          localvariablearrayindex2",
+        "56  fstore          localvariablearrayindex2",
+        "58  astore          localvariablearrayindex2",
+        "55  lstore          localvariablearrayindex2",
+        "57  dstore          localvariablearrayindex2",
+        "169 ret             localvariablearrayindex2",
+        "132 iinc            localvariablearrayindex2 signedshort",
     };
     private static final Instruction[] opcodeToInstruction     = new Instruction[256];
     private static final Instruction[] opcodeToWideInstruction = new Instruction[256];
@@ -684,7 +702,7 @@ public class Disassembler {
                                 Disassembler                          d
                             ) throws IOException {
                                 short index = (short) (0xff & dis.readByte());
-                                return cf.cpi(index);
+                                return ' ' + cf.cpi(index);
                             }
                         };
                     } else
@@ -697,7 +715,7 @@ public class Disassembler {
                                 ClassFile                             cf,
                                 Disassembler                          d
                             ) throws IOException {
-                                return cf.cpi(dis.readShort());
+                                return ' ' + cf.cpi(dis.readShort());
                             }
                         };
                     } else
@@ -711,11 +729,11 @@ public class Disassembler {
                                 Disassembler                          d
                             ) throws IOException {
                                 short index = dis.readByte();
-                                String s = Short.toString(index);
+                                String lvTypeAndName = null;
                                 if (localVariableTableAttribute != null) {
-                                    s += " (" + getLocalVariableName(localVariableTableAttribute, index, (short) (instructionOffset + 2), cf) + ")";
+                                    lvTypeAndName = getLocalVariableName(localVariableTableAttribute, index, (short) (instructionOffset + 2), cf);
                                 }
-                                return s;
+                                return lvTypeAndName == null ? " " + index : ' ' + lvTypeAndName;
                             }
                         };
                     } else
@@ -729,16 +747,18 @@ public class Disassembler {
                                 Disassembler                          d
                             ) throws IOException {
                                 short index = dis.readShort();
-                                String s = Short.toString(index);
+                                String lvTypeAndName = null;
                                 if (localVariableTableAttribute != null) {
-                                    s += " (" + getLocalVariableName(localVariableTableAttribute, index, (short) (instructionOffset + 3), cf) + ")";
+                                    lvTypeAndName = getLocalVariableName(localVariableTableAttribute, index, (short) (instructionOffset + 2), cf);
                                 }
-                                return s;
+                                return lvTypeAndName == null ? " " + index : ' ' + lvTypeAndName;
                             }
                         };
                     } else
-                    if (s.startsWith("localvariablearrayindex_")) {
-                        final short index = Short.parseShort(s.substring(s.length() - 1));
+                    if (s.equals("implicitlocalvariableindex")) {
+                        // Strip the lv index from the mnemonic
+                        final short index = Short.parseShort(mnemonic.substring(mnemonic.length() - 1));
+                        mnemonic = mnemonic.substring(0, mnemonic.length() - 2);
                         operand = new Operand() {
                             public String disasm(
                                 DataInputStream                       dis,
@@ -747,8 +767,11 @@ public class Disassembler {
                                 ClassFile                             cf,
                                 Disassembler                          d
                             ) throws IOException {
-                                if (localVariableTableAttribute == null) return "";
-                                return "(" + getLocalVariableName(localVariableTableAttribute, index, (short) (instructionOffset + 1), cf) + ")";
+                                String lvTypeAndName = null;
+                                if (localVariableTableAttribute != null) {
+                                    lvTypeAndName = getLocalVariableName(localVariableTableAttribute, index, (short) (instructionOffset + 2), cf);
+                                }
+                                return lvTypeAndName == null ? "_" + index : ' ' + lvTypeAndName;
                             }
                         };
                     } else
@@ -763,7 +786,7 @@ public class Disassembler {
                             ) throws IOException {
                                 short branchTarget = (short) (instructionOffset + dis.readShort());
                                 d.branchTargets.add(branchTarget);
-                                return Integer.toString(0xffff & branchTarget);
+                                return " " + (0xffff & branchTarget);
                             }
                         };
                     } else
@@ -778,7 +801,7 @@ public class Disassembler {
                             ) throws IOException {
                                 short branchTarget = (short) (instructionOffset + dis.readInt());
                                 d.branchTargets.add(branchTarget);
-                                return Integer.toString(0xffff & branchTarget);
+                                return " " + (0xffff & branchTarget);
                             }
                         };
                     } else
@@ -791,7 +814,7 @@ public class Disassembler {
                                 ClassFile                             cf,
                                 Disassembler                          d
                             ) throws IOException {
-                                return Integer.toString(dis.readByte());
+                                return " " + dis.readByte();
                             }
                         };
                     } else
@@ -804,7 +827,7 @@ public class Disassembler {
                                 ClassFile                             cf,
                                 Disassembler                          d
                             ) throws IOException {
-                                return Integer.toString(0xff & dis.readByte());
+                                return " " + (0xff & dis.readByte());
                             }
                         };
                     } else
@@ -819,15 +842,15 @@ public class Disassembler {
                             ) throws IOException {
                                 byte b = dis.readByte();
                                 return (
-                                    b ==  4 ? "BOOLEAN" :
-                                    b ==  5 ? "CHAR" :
-                                    b ==  6 ? "FLOAT" :
-                                    b ==  7 ? "DOUBLE" :
-                                    b ==  8 ? "BYTE" :
-                                    b ==  9 ? "SHORT" :
-                                    b == 10 ? "INT" :
-                                    b == 11 ? "LONG" :
-                                    new Integer(0xff & b).toString()
+                                    b ==  4 ? " BOOLEAN" :
+                                    b ==  5 ? " CHAR" :
+                                    b ==  6 ? " FLOAT" :
+                                    b ==  7 ? " DOUBLE" :
+                                    b ==  8 ? " BYTE" :
+                                    b ==  9 ? " SHORT" :
+                                    b == 10 ? " INT" :
+                                    b == 11 ? " LONG" :
+                                    " " + (0xff & b)
                                 );
                             }
                         };
@@ -841,7 +864,7 @@ public class Disassembler {
                                 ClassFile                             cf,
                                 Disassembler                          d
                             ) throws IOException {
-                                return Integer.toString(dis.readShort());
+                                return " " + dis.readShort();
                             }
                         };
                     } else
@@ -861,7 +884,7 @@ public class Disassembler {
                                         throw new RuntimeException("'tableswitch' pad byte #" + i + " is not zero, but " + (0xff & padByte));
                                     }
                                 }
-                                StringBuilder sb = new StringBuilder("default => " + (instructionOffset + dis.readInt()));
+                                StringBuilder sb = new StringBuilder(" default => " + (instructionOffset + dis.readInt()));
                                 int low = dis.readInt();
                                 int high = dis.readInt();
                                 for (int i = low; i <= high; ++i) {
@@ -888,7 +911,7 @@ public class Disassembler {
                                         throw new RuntimeException("'tableswitch' pad byte #" + i + " is not zero, but " + (0xff & padByte));
                                     }
                                 }
-                                StringBuilder sb = new StringBuilder("default => " + (instructionOffset + dis.readInt()));
+                                StringBuilder sb = new StringBuilder(" default => " + (instructionOffset + dis.readInt()));
                                 int npairs = dis.readInt();
                                 for (int i = 0; i < npairs; ++i) {
                                     int match  = dis.readInt();
@@ -911,14 +934,14 @@ public class Disassembler {
                                 int subopcode = 0xff & dis.readByte();
                                 Instruction wideInstruction = opcodeToWideInstruction[subopcode];
                                 if (wideInstruction == null) {
-                                    throw new RuntimeException(
+                                    return (
                                         "Invalid opcode "
                                         + subopcode
                                         + " after opcode WIDE"
                                     );
                                 }
-                                return d.disasmInstruction(
-                                    wideInstruction,
+                                return wideInstruction.getMnemonic() + d.disasmOperands(
+                                    wideInstruction.getOperands(),
                                     dis,
                                     instructionOffset,
                                     localVariableTableAttribute,
@@ -938,6 +961,9 @@ public class Disassembler {
         }
     }
 
+    /**
+     * @return E.g. "java.util.List var1", or {@code null}
+     */
     private static String getLocalVariableName(
         ClassFile.LocalVariableTableAttribute lvta,
         short                                 localVariableIndex,
@@ -955,10 +981,9 @@ public class Disassembler {
                 return Descriptor.decodeFieldDescriptor(descriptor) + " " + name;
             }
         }
-        return "anonymous";
-
+        return null;
     }
-    
+
     private static class Instruction {
 
         /**

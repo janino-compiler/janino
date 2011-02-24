@@ -34,7 +34,7 @@ public class Signature {
 
     /**
      * Converts a method type signature into the form
-     * "<K, V> name(K, int, List<V>) => rettype".
+     * "&lt;K, V> name(K, int, List<V>) => rettype".
      */
     public static String decodeMethodTypeSignature(String s, String methodName, String declaringClassName) {
         Signature signature = new Signature(s);
@@ -45,7 +45,7 @@ public class Signature {
     
     /**
      * Converts a field type signature into the form
-     * "List<V>".
+     * "List&lt;V>".
      */
     public static String decodeFieldTypeSignature(String s) {
         Signature signature = new Signature(s);
@@ -156,23 +156,27 @@ public class Signature {
     }
     
     private void parseSimpleClassTypeSignature() {
+        StringBuilder sb = new StringBuilder();
         for (;;) {
             if (peekRead('/')) {
-                write('.');
+                sb.append('.');
             } else
-            if (peekReadWrite('<')) {
-                parseTypeArgument();
-                while (!peekReadWrite('>')) {
-                    write(", ");
-                    parseTypeArgument();
-                }
-                break;
-            } else
-            if (peek('.') || peek('>') || peek(';')) {
+            if (peek('<') || peek('.') || peek('>') || peek(';')) {
                 break;
             } else
             {
-                readWrite();
+                sb.append(read());
+            }
+        }
+        String s = sb.toString();
+        if (s.startsWith("java.lang.")) s = s.substring(10);
+        write(s);
+
+        if (peekReadWrite('<')) {
+            parseTypeArgument();
+            while (!peekReadWrite('>')) {
+                write(", ");
+                parseTypeArgument();
             }
         }
     }
