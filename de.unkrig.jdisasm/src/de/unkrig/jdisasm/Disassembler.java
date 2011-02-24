@@ -50,12 +50,8 @@ import java.util.SortedMap;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
 
-import de.unkrig.jdisasm.ClassFile.Attribute;
-import de.unkrig.jdisasm.ClassFile.ExceptionTableEntry;
-import de.unkrig.jdisasm.ClassFile.Field;
-import de.unkrig.jdisasm.ClassFile.LineNumberTableAttribute;
-import de.unkrig.jdisasm.ClassFile.LineNumberTableEntry;
-import de.unkrig.jdisasm.ClassFile.LocalVariableTableEntry;
+import de.unkrig.jdisasm.ClassFile.Annotation;
+import de.unkrig.jdisasm.ClassFile.RuntimeVisibleParameterAnnotationsAttribute.ParameterAnnotation;
 
 /**
  * A Java bytecode disassembler, comparable to JAVAP, which is part of SUN's JDK.
@@ -75,6 +71,8 @@ public class Disassembler {
     private File        sourceDirectory = null;
     private boolean     hideLineNumbers;
 
+    // "" for the default package; with a trailing period otherwise.
+    private String         thisClassPackageName;
     private HashSet<Short> branchTargets;
 
     public static void main(String[] args) throws IOException {
@@ -176,32 +174,50 @@ public class Disassembler {
             }
         }
 
-        String thisClassPackageName, thisClassSimpleName;
-        {
-            String thisClassName = cf.cpi(cf.thisClass);
-            int periodIndex = thisClassName.lastIndexOf('.');
-            thisClassPackageName = thisClassName.substring(0, periodIndex + 1);
-            thisClassSimpleName = thisClassName.substring(periodIndex + 1);
-
-        }
+        String thisClassName = cf.cpi(cf.thisClass);
+        this.thisClassPackageName = thisClassName.substring(0, thisClassName.lastIndexOf('.') + 1);
 
         // Package declaration.
         if (thisClassPackageName.length() > 0) {
             println("package " + thisClassPackageName.substring(0, thisClassPackageName.length() - 1) + ";");
         }
 
+        if (cf.enclosingMethodAttribute != null) {
+            String method = cf.cpi(cf.enclosingMethodAttribute.methodIndex);
+            println("// This class is enclosed by method '" + beautify(cf.cpi(cf.enclosingMethodAttribute.classIndex) + (method.startsWith("(") ? "" : ".") + method) + "'.");
+        }
+
+        // Type declaration.
         {
 
-            // Type declaration.
+            if ((cf.accessFlags & 0x1000 /*SYNTHETIC*/) != 0 || cf.syntheticAttribute != null) this.println("// This is a synthetic class.");
+
+            // Annotations.
+            if (cf.runtimeInvisibleAnnotationsAttribute != null) {
+                for (Annotation a : cf.runtimeInvisibleAnnotationsAttribute.annotations) {
+                    println(a.toString(cf));
+                }
+            }
+            if (cf.runtimeVisibleAnnotationsAttribute != null) {
+                for (Annotation a : cf.runtimeVisibleAnnotationsAttribute.annotations) {
+                    println(a.toString(cf));
+                }
+            }
+
+            // Modifiers, name.
             this.print(
-                decodeAccess(cf.accessFlags)
-                + ((cf.accessFlags & Modifier.INTERFACE) == 0 ? "class " : "")
-                + (cf.signatureAttribute != null ? Signature.decodeClassSignature(cf.cpi(cf.signatureAttribute.index), thisClassSimpleName) : thisClassSimpleName)
+                decodeAccess((short) (cf.accessFlags & ~(Modifier.SYNCHRONIZED | 0x1000/*SYNTHETIC*/)))
+                + ((cf.accessFlags & 0x6200) == 0 ? "class " : "")
+                + beautify(
+                    cf.signatureAttribute != null
+                    ? Signature.decodeClassSignature(cf.cpi(cf.signatureAttribute.index), thisClassName)
+                    : thisClassName
+                )
             );
 
             // EXTENDS clause.
             {
-                String superClassName = cf.cpi(cf.superClass);
+                String superClassName = beautify(cf.cpi(cf.superClass));
                 if (!"Object".equals(superClassName)) {
                     this.print(" extends " + superClassName);
                 }
@@ -222,24 +238,40 @@ public class Disassembler {
         // Fields.
         {
             List<String[]> lines = new ArrayList<String[]>();
-            for (Field field : cf.fields) {
+            for (ClassFile.Field field : cf.fields) {
+                
+                // Annotations.
+                if (field.runtimeInvisibleAnnotationsAttribute != null) {
+                    for (Annotation a : field.runtimeInvisibleAnnotationsAttribute.annotations) {
+                        println("    " + a.toString(cf));
+                    }
+                }
+                if (field.runtimeVisibleAnnotationsAttribute != null) {
+                    for (Annotation a : field.runtimeVisibleAnnotationsAttribute.annotations) {
+                        println("    " + a.toString(cf));
+                    }
+                }
 
                 // Pretty-print the field type.
-                String parametrizedType = (
+                String parametrizedType = beautify(
                     field.signatureAttribute == null
                     ? Descriptor.decodeFieldDescriptor(cf.cpi(field.descriptorIndex))
                     : Signature.decodeFieldTypeSignature(cf.cpi(field.signatureAttribute.index))
                 );
 
                 // Print the field declaration.
+                if ((field.accessFlags & 0x1000 /*SYNTHETIC*/) != 0 || field.syntheticAttribute != null) {
+                    lines.add(new String[] { "    // Synthetic field:" });
+                }
+                String prefix = "    " + decodeAccess((short) (field.accessFlags & ~0x1000 /*SYNTHETIC*/)) + parametrizedType + " ";
                 if (field.constantValueAttribute == null) {
                     lines.add(new String[] {
-                        "    " + decodeAccess(field.accessFlags) + parametrizedType + " ",
+                        prefix,
                         cf.cpi(field.nameIndex) + ";"
                     });
                 } else {
                     lines.add(new String[] {
-                        "    " + decodeAccess(field.accessFlags) + parametrizedType + " ",
+                        prefix,
                         cf.cpi(field.nameIndex),
                         " = " + cf.cpi(field.constantValueAttribute.constantValueIndex) + ";"
                     });
@@ -274,15 +306,47 @@ public class Disassembler {
 
         // Methods.
         for (ClassFile.Method m : cf.methods) {
+            if ((m.accessFlags & 0x1000 /*SYNTHETIC*/) != 0 || m.syntheticAttribute != null) {
+                println("    // Synthetic method:");
+            }
+            
+            // Annotations.
+            if (m.runtimeInvisibleAnnotationsAttribute != null) {
+                for (Annotation a : m.runtimeInvisibleAnnotationsAttribute.annotations) {
+                    println("    " + a.toString(cf));
+                }
+            }
+            if (m.runtimeVisibleAnnotationsAttribute != null) {
+                for (Annotation a : m.runtimeVisibleAnnotationsAttribute.annotations) {
+                    println("    " + a.toString(cf));
+                }
+            }
+
+            // Parameter annotations.
+            if (m.runtimeInvisibleParameterAnnotationsAttribute != null) {
+                for (ParameterAnnotation pa : m.runtimeInvisibleParameterAnnotationsAttribute.parameterAnnotations) {
+                    for (Annotation a : pa.annotations) {
+                        println("    " + a.toString(cf));
+                    }
+                }
+            }
+            if (m.runtimeVisibleParameterAnnotationsAttribute != null) {
+                for (ParameterAnnotation pa : m.runtimeVisibleParameterAnnotationsAttribute.parameterAnnotations) {
+                    for (Annotation a : pa.annotations) {
+                        println("    " + a.toString(cf));
+                    }
+                }
+            }
+            
             String functionName = cf.cpi(m.nameIndex);
             String functionDescriptor = cf.cpi(m.descriptorIndex);
             Disassembler.this.print(
                 "    "
-                + decodeAccess(m.accessFlags)
-                + (
+                + decodeAccess((short) (m.accessFlags & ~0x1000 /*SYNTHETIC*/))
+                + beautify(
                     m.signatureAttribute == null
-                    ? Descriptor.returnType(functionDescriptor) + " " + functionName + Descriptor.parameters(functionDescriptor)
-                    : Signature.decodeMethodTypeSignature(cf.cpi(m.signatureAttribute.index), functionName, thisClassSimpleName)
+                    ? Descriptor.decodeMethodDescriptor(functionDescriptor, functionName, thisClassName)
+                    : Signature.decodeMethodTypeSignature(cf.cpi(m.signatureAttribute.index), functionName, thisClassName)
                 )
             );
             if (m.exceptionsAttribute != null) {
@@ -310,9 +374,9 @@ public class Disassembler {
                         new ByteArrayInputStream(ca.code),
                         ca.exceptionTable,
                         ca.localVariableTableAttribute,
+                        ca.localVariableTypeTableAttribute,
                         ca.lineNumberTableAttribute,
-                        sourceLines,
-                        cf
+                        sourceLines, cf
                     );
                 } catch (IOException ignored) {
                     ;
@@ -320,7 +384,7 @@ public class Disassembler {
 
             }
             if (verbose) {
-                for (Attribute a : m.attributes) {
+                for (ClassFile.Attribute a : m.attributes) {
                     println("        // " + a);
                 }
             }
@@ -329,7 +393,7 @@ public class Disassembler {
         }
 
         if (verbose) {
-            for (Attribute a : cf.attributes) {
+            for (ClassFile.Attribute a : cf.attributes) {
                 println("    // " + a.toString());
             }
         }
@@ -362,12 +426,13 @@ public class Disassembler {
      * Read byte code from the given {@link InputStream} and disassemble it.
      */
     private void disasmBytecode(
-        InputStream                           is,
-        List<ExceptionTableEntry>             exceptionTable,
-        ClassFile.LocalVariableTableAttribute localVariableTableAttribute,
-        ClassFile.LineNumberTableAttribute    lineNumberTableAttribute,
-        Map<Short, String>                    sourceLines,
-        ClassFile                             cf
+        InputStream                               is,
+        List<ClassFile.ExceptionTableEntry>       exceptionTable,
+        ClassFile.LocalVariableTableAttribute     localVariableTableAttribute,
+        ClassFile.LocalVariableTypeTableAttribute localVariableTypeTableAttribute,
+        ClassFile.LineNumberTableAttribute        lineNumberTableAttribute,
+        Map<Short, String>                        sourceLines,
+        ClassFile                                 cf
     ) throws IOException {
         CountingInputStream cis = new CountingInputStream(is);
         DataInputStream     dis = new DataInputStream(cis);
@@ -387,7 +452,14 @@ public class Disassembler {
                 if (instruction == null) {
                     lines.put(instructionOffset, "??? (invalid opcode \"" + opcode + "\")");
                 } else {
-                    lines.put(instructionOffset, instruction.getMnemonic() + disasmOperands(instruction.getOperands(), dis, instructionOffset, localVariableTableAttribute, cf));
+                    lines.put(instructionOffset, instruction.getMnemonic() + disasmOperands(
+                        instruction.getOperands(),
+                        dis,
+                        instructionOffset,
+                        localVariableTableAttribute,
+                        localVariableTypeTableAttribute,
+                        cf
+                    ));
                 }
             }
 
@@ -430,10 +502,10 @@ public class Disassembler {
      * @return -1 iff the offset is not associated with a line number
      */
     private static short findLineNumber(
-        LineNumberTableAttribute lnta,
-        short                    offset
+        ClassFile.LineNumberTableAttribute lnta,
+        short                              offset
     ) {
-        for (LineNumberTableEntry lnte : lnta.entries) {
+        for (ClassFile.LineNumberTableEntry lnte : lnta.entries) {
             if (lnte.startPC == offset) return lnte.lineNumber;
         }
         return -1;
@@ -443,16 +515,24 @@ public class Disassembler {
      * @return The {@code instruction} converted into one line of text.
      */
     private String disasmOperands(
-        Operand[]                             operands,
-        DataInputStream                       dis,
-        short                                 instructionOffset,
-        ClassFile.LocalVariableTableAttribute localVariableTableAttribute,
-        ClassFile                             cf
+        Operand[]                                 operands,
+        DataInputStream                           dis,
+        short                                     instructionOffset,
+        ClassFile.LocalVariableTableAttribute     localVariableTableAttribute,
+        ClassFile.LocalVariableTypeTableAttribute localVariableTypeTableAttribute,
+        ClassFile                                 cf
     ) throws IOException {
         if (operands == null) return "";
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < operands.length; ++i) {
-            sb.append(operands[i].disasm(dis, instructionOffset, localVariableTableAttribute, cf, this));
+            sb.append(operands[i].disasm(
+                dis,
+                instructionOffset,
+                localVariableTableAttribute,
+                localVariableTypeTableAttribute,
+                cf,
+                this
+            ));
         }
         return sb.toString();
     }
@@ -695,43 +775,50 @@ public class Disassembler {
                     if (s.equals("constantpoolindex1")) {
                         operand = new Operand() {
                             public String disasm(
-                                DataInputStream                       dis,
-                                short                                 instructionOffset,
-                                ClassFile.LocalVariableTableAttribute localVariableTableAttribute,
-                                ClassFile                             cf,
-                                Disassembler                          d
+                                DataInputStream                           dis,
+                                short                                     instructionOffset,
+                                ClassFile.LocalVariableTableAttribute     localVariableTableAttribute,
+                                ClassFile.LocalVariableTypeTableAttribute localVariableTypeTableAttribute,
+                                ClassFile                                 cf,
+                                Disassembler                              d
                             ) throws IOException {
                                 short index = (short) (0xff & dis.readByte());
-                                return ' ' + cf.cpi(index);
+                                String t = cf.cpi(index);
+                                if (Character.isJavaIdentifierStart(t.charAt(0))) t = d.beautify(t);
+                                return ' ' + t;
                             }
                         };
                     } else
                     if (s.equals("constantpoolindex2")) {
                         operand = new Operand() {
                             public String disasm(
-                                DataInputStream                       dis,
-                                short                                 instructionOffset,
-                                ClassFile.LocalVariableTableAttribute localVariableTableAttribute,
-                                ClassFile                             cf,
-                                Disassembler                          d
+                                DataInputStream                           dis,
+                                short                                     instructionOffset,
+                                ClassFile.LocalVariableTableAttribute     localVariableTableAttribute,
+                                ClassFile.LocalVariableTypeTableAttribute localVariableTypeTableAttribute,
+                                ClassFile                                 cf,
+                                Disassembler                              d
                             ) throws IOException {
-                                return ' ' + cf.cpi(dis.readShort());
+                                String t = cf.cpi(dis.readShort());
+                                if (Character.isJavaIdentifierStart(t.charAt(0))) t = d.beautify(t);
+                                return ' ' + t;
                             }
                         };
                     } else
                     if (s.equals("localvariablearrayindex1")) {
                         operand = new Operand() {
                             public String disasm(
-                                DataInputStream                       dis,
-                                short                                 instructionOffset,
-                                ClassFile.LocalVariableTableAttribute localVariableTableAttribute,
-                                ClassFile                             cf,
-                                Disassembler                          d
+                                DataInputStream                           dis,
+                                short                                     instructionOffset,
+                                ClassFile.LocalVariableTableAttribute     localVariableTableAttribute,
+                                ClassFile.LocalVariableTypeTableAttribute localVariableTypeTableAttribute,
+                                ClassFile                                 cf,
+                                Disassembler                              d
                             ) throws IOException {
                                 short index = dis.readByte();
                                 String lvTypeAndName = null;
                                 if (localVariableTableAttribute != null) {
-                                    lvTypeAndName = getLocalVariableName(localVariableTableAttribute, index, (short) (instructionOffset + 2), cf);
+                                    lvTypeAndName = d.getLocalVariableName(localVariableTableAttribute, localVariableTypeTableAttribute, index, (short) (instructionOffset + 2), cf);
                                 }
                                 return lvTypeAndName == null ? " " + index : ' ' + lvTypeAndName;
                             }
@@ -740,16 +827,17 @@ public class Disassembler {
                     if (s.equals("localvariablearrayindex2")) {
                         operand = new Operand() {
                             public String disasm(
-                                DataInputStream                       dis,
-                                short                                 instructionOffset,
-                                ClassFile.LocalVariableTableAttribute localVariableTableAttribute,
-                                ClassFile                             cf,
-                                Disassembler                          d
+                                DataInputStream                           dis,
+                                short                                     instructionOffset,
+                                ClassFile.LocalVariableTableAttribute     localVariableTableAttribute,
+                                ClassFile.LocalVariableTypeTableAttribute localVariableTypeTableAttribute,
+                                ClassFile                                 cf,
+                                Disassembler                              d
                             ) throws IOException {
                                 short index = dis.readShort();
                                 String lvTypeAndName = null;
                                 if (localVariableTableAttribute != null) {
-                                    lvTypeAndName = getLocalVariableName(localVariableTableAttribute, index, (short) (instructionOffset + 2), cf);
+                                    lvTypeAndName = d.getLocalVariableName(localVariableTableAttribute, localVariableTypeTableAttribute, index, (short) (instructionOffset + 2), cf);
                                 }
                                 return lvTypeAndName == null ? " " + index : ' ' + lvTypeAndName;
                             }
@@ -761,15 +849,16 @@ public class Disassembler {
                         mnemonic = mnemonic.substring(0, mnemonic.length() - 2);
                         operand = new Operand() {
                             public String disasm(
-                                DataInputStream                       dis,
-                                short                                 instructionOffset,
-                                ClassFile.LocalVariableTableAttribute localVariableTableAttribute,
-                                ClassFile                             cf,
-                                Disassembler                          d
+                                DataInputStream                           dis,
+                                short                                     instructionOffset,
+                                ClassFile.LocalVariableTableAttribute     localVariableTableAttribute,
+                                ClassFile.LocalVariableTypeTableAttribute localVariableTypeTableAttribute,
+                                ClassFile                                 cf,
+                                Disassembler                              d
                             ) throws IOException {
                                 String lvTypeAndName = null;
                                 if (localVariableTableAttribute != null) {
-                                    lvTypeAndName = getLocalVariableName(localVariableTableAttribute, index, (short) (instructionOffset + 2), cf);
+                                    lvTypeAndName = d.getLocalVariableName(localVariableTableAttribute, localVariableTypeTableAttribute, index, (short) (instructionOffset + 2), cf);
                                 }
                                 return lvTypeAndName == null ? "_" + index : ' ' + lvTypeAndName;
                             }
@@ -778,11 +867,12 @@ public class Disassembler {
                     if (s.equals("branchoffset2")) {
                         operand = new Operand() {
                             public String disasm(
-                                DataInputStream                       dis,
-                                short                                 instructionOffset,
-                                ClassFile.LocalVariableTableAttribute localVariableTableAttribute,
-                                ClassFile                             cf,
-                                Disassembler                          d
+                                DataInputStream                           dis,
+                                short                                     instructionOffset,
+                                ClassFile.LocalVariableTableAttribute     localVariableTableAttribute,
+                                ClassFile.LocalVariableTypeTableAttribute localVariableTypeTableAttribute,
+                                ClassFile                                 cf,
+                                Disassembler                              d
                             ) throws IOException {
                                 short branchTarget = (short) (instructionOffset + dis.readShort());
                                 d.branchTargets.add(branchTarget);
@@ -793,11 +883,12 @@ public class Disassembler {
                     if (s.equals("branchoffset4")) {
                         operand = new Operand() {
                             public String disasm(
-                                DataInputStream                       dis,
-                                short                                 instructionOffset,
-                                ClassFile.LocalVariableTableAttribute localVariableTableAttribute,
-                                ClassFile                             cf,
-                                Disassembler                          d
+                                DataInputStream                           dis,
+                                short                                     instructionOffset,
+                                ClassFile.LocalVariableTableAttribute     localVariableTableAttribute,
+                                ClassFile.LocalVariableTypeTableAttribute localVariableTypeTableAttribute,
+                                ClassFile                                 cf,
+                                Disassembler                              d
                             ) throws IOException {
                                 short branchTarget = (short) (instructionOffset + dis.readInt());
                                 d.branchTargets.add(branchTarget);
@@ -808,11 +899,12 @@ public class Disassembler {
                     if (s.equals("signedbyte")) {
                         operand = new Operand() {
                             public String disasm(
-                                DataInputStream                       dis,
-                                short                                 instructionOffset,
-                                ClassFile.LocalVariableTableAttribute localVariableTableAttribute,
-                                ClassFile                             cf,
-                                Disassembler                          d
+                                DataInputStream                           dis,
+                                short                                     instructionOffset,
+                                ClassFile.LocalVariableTableAttribute     localVariableTableAttribute,
+                                ClassFile.LocalVariableTypeTableAttribute localVariableTypeTableAttribute,
+                                ClassFile                                 cf,
+                                Disassembler                              d
                             ) throws IOException {
                                 return " " + dis.readByte();
                             }
@@ -821,11 +913,12 @@ public class Disassembler {
                     if (s.equals("unsignedbyte")) {
                         operand = new Operand() {
                             public String disasm(
-                                DataInputStream                       dis,
-                                short                                 instructionOffset,
-                                ClassFile.LocalVariableTableAttribute localVariableTableAttribute,
-                                ClassFile                             cf,
-                                Disassembler                          d
+                                DataInputStream                           dis,
+                                short                                     instructionOffset,
+                                ClassFile.LocalVariableTableAttribute     localVariableTableAttribute,
+                                ClassFile.LocalVariableTypeTableAttribute localVariableTypeTableAttribute,
+                                ClassFile                                 cf,
+                                Disassembler                              d
                             ) throws IOException {
                                 return " " + (0xff & dis.readByte());
                             }
@@ -834,11 +927,12 @@ public class Disassembler {
                     if (s.equals("atype")) {
                         operand = new Operand() {
                             public String disasm(
-                                DataInputStream                       dis,
-                                short                                 instructionOffset,
-                                ClassFile.LocalVariableTableAttribute localVariableTableAttribute,
-                                ClassFile                             cf,
-                                Disassembler                          d
+                                DataInputStream                           dis,
+                                short                                     instructionOffset,
+                                ClassFile.LocalVariableTableAttribute     localVariableTableAttribute,
+                                ClassFile.LocalVariableTypeTableAttribute localVariableTypeTableAttribute,
+                                ClassFile                                 cf,
+                                Disassembler                              d
                             ) throws IOException {
                                 byte b = dis.readByte();
                                 return (
@@ -858,11 +952,12 @@ public class Disassembler {
                     if (s.equals("signedshort")) {
                         operand = new Operand() {
                             public String disasm(
-                                DataInputStream                       dis,
-                                short                                 instructionOffset,
-                                ClassFile.LocalVariableTableAttribute localVariableTableAttribute,
-                                ClassFile                             cf,
-                                Disassembler                          d
+                                DataInputStream                           dis,
+                                short                                     instructionOffset,
+                                ClassFile.LocalVariableTableAttribute     localVariableTableAttribute,
+                                ClassFile.LocalVariableTypeTableAttribute localVariableTypeTableAttribute,
+                                ClassFile                                 cf,
+                                Disassembler                              d
                             ) throws IOException {
                                 return " " + dis.readShort();
                             }
@@ -871,11 +966,12 @@ public class Disassembler {
                     if (s.equals("tableswitch")) {
                         operand = new Operand() {
                             public String disasm(
-                                DataInputStream                       dis,
-                                short                                 instructionOffset,
-                                ClassFile.LocalVariableTableAttribute localVariableTableAttribute,
-                                ClassFile                             cf,
-                                Disassembler                          d
+                                DataInputStream                           dis,
+                                short                                     instructionOffset,
+                                ClassFile.LocalVariableTableAttribute     localVariableTableAttribute,
+                                ClassFile.LocalVariableTypeTableAttribute localVariableTypeTableAttribute,
+                                ClassFile                                 cf,
+                                Disassembler                              d
                             ) throws IOException {
                                 int npads = 3 - (instructionOffset % 4);
                                 for (int i = 0; i < npads; ++i) {
@@ -898,11 +994,12 @@ public class Disassembler {
                     if (s.equals("lookupswitch")) {
                         operand = new Operand() {
                             public String disasm(
-                                DataInputStream                       dis,
-                                short                                 instructionOffset,
-                                ClassFile.LocalVariableTableAttribute localVariableTableAttribute,
-                                ClassFile                             cf,
-                                Disassembler                          d
+                                DataInputStream                           dis,
+                                short                                     instructionOffset,
+                                ClassFile.LocalVariableTableAttribute     localVariableTableAttribute,
+                                ClassFile.LocalVariableTypeTableAttribute localVariableTypeTableAttribute,
+                                ClassFile                                 cf,
+                                Disassembler                              d
                             ) throws IOException {
                                 int npads = 3 - (instructionOffset % 4);
                                 for (int i = 0; i < npads; ++i) {
@@ -925,11 +1022,12 @@ public class Disassembler {
                     if (s.equals("wide")) {
                         operand = new Operand() {
                             public String disasm(
-                                DataInputStream                       dis,
-                                short                                 instructionOffset,
-                                ClassFile.LocalVariableTableAttribute localVariableTableAttribute,
-                                ClassFile                             cf,
-                                Disassembler                          d
+                                DataInputStream                           dis,
+                                short                                     instructionOffset,
+                                ClassFile.LocalVariableTableAttribute     localVariableTableAttribute,
+                                ClassFile.LocalVariableTypeTableAttribute localVariableTypeTableAttribute,
+                                ClassFile                                 cf,
+                                Disassembler                              d
                             ) throws IOException {
                                 int subopcode = 0xff & dis.readByte();
                                 Instruction wideInstruction = opcodeToWideInstruction[subopcode];
@@ -945,6 +1043,7 @@ public class Disassembler {
                                     dis,
                                     instructionOffset,
                                     localVariableTableAttribute,
+                                    localVariableTypeTableAttribute,
                                     cf
                                 );
                             }
@@ -964,21 +1063,37 @@ public class Disassembler {
     /**
      * @return E.g. "java.util.List var1", or {@code null}
      */
-    private static String getLocalVariableName(
-        ClassFile.LocalVariableTableAttribute lvta,
-        short                                 localVariableIndex,
-        short                                 instructionOffset,
-        ClassFile                             cf
+    private String getLocalVariableName(
+        ClassFile.LocalVariableTableAttribute     lvta,
+        ClassFile.LocalVariableTypeTableAttribute lvtta,
+        short                                     localVariableIndex,
+        short                                     instructionOffset,
+        ClassFile                                 cf
     ) {
-        for (LocalVariableTableEntry lvte : lvta.entries) {
-            if (
-                instructionOffset >= lvte.startPC &&
-                instructionOffset <= lvte.startPC + lvte.length &&
-                localVariableIndex == lvte.index
-            ) {
-                String name = cf.cpi(lvte.nameIndex);
-                String descriptor = cf.cpi(lvte.descriptorIndex);
-                return Descriptor.decodeFieldDescriptor(descriptor) + " " + name;
+        if (lvtta != null) {
+            for (ClassFile.LocalVariableTypeTableEntry lvtte : lvtta.entries) {
+                if (
+                    instructionOffset >= lvtte.startPC &&
+                    instructionOffset <= lvtte.startPC + lvtte.length &&
+                    localVariableIndex == lvtte.index
+                ) {
+                    String localVariableName = cf.cpi(lvtte.nameIndex);
+                    String signature = cf.cpi(lvtte.signatureIndex);
+                    return beautify(Signature.decodeFieldTypeSignature(signature)) + " " + localVariableName;
+                }
+            }
+        }
+        if (lvta != null) {
+            for (ClassFile.LocalVariableTableEntry lvte : lvta.entries) {
+                if (
+                    instructionOffset >= lvte.startPC &&
+                    instructionOffset <= lvte.startPC + lvte.length &&
+                    localVariableIndex == lvte.index
+                ) {
+                    String localVariableName = cf.cpi(lvte.nameIndex);
+                    String descriptor = cf.cpi(lvte.descriptorIndex);
+                    return beautify(Descriptor.decodeFieldDescriptor(descriptor)) + " " + localVariableName;
+                }
             }
         }
         return null;
@@ -1003,11 +1118,12 @@ public class Disassembler {
     }
     private interface Operand {
         String disasm(
-            DataInputStream                       dis,
-            short                                 instructionOffset,
-            ClassFile.LocalVariableTableAttribute localVariableTableAttribute,
-            ClassFile                             cf,
-            Disassembler                          d
+            DataInputStream                           dis,
+            short                                     instructionOffset,
+            ClassFile.LocalVariableTableAttribute     localVariableTableAttribute,
+            ClassFile.LocalVariableTypeTableAttribute localVariableTypeTableAttribute,
+            ClassFile                                 cf,
+            Disassembler                              d
         ) throws IOException;
     }
 
@@ -1029,28 +1145,59 @@ public class Disassembler {
         private long count = 0L;
     }
 
+    /**
+     * Returns a series of words, in canonical order, separated with one space, and with one trailing space.
+     */
     private static String decodeAccess(short n) {
         StringBuilder sb = new StringBuilder();
-        if ((n & 0x0007) == 0) { ;                                               }
-        if ((n & 0x0007) == 1) { sb.append("public ");             n &= ~0x0007; }
-        if ((n & 0x0007) == 2) { sb.append("private ");            n &= ~0x0007; }
-        if ((n & 0x0007) == 4) { sb.append("protected ");          n &= ~0x0007; }
+        if ((n & 0x0007) == 1) { sb.append("public ");       n &= ~0x0007; }
+        if ((n & 0x0007) == 2) { sb.append("private ");      n &= ~0x0007; }
+        if ((n & 0x0007) == 4) { sb.append("protected ");    n &= ~0x0007; }
 
-        if ((n & 0x0008) != 0) { sb.append("static ");             n &= ~0x0008; }
-        if ((n & 0x0010) != 0) { sb.append("final ");              n &= ~0x0010; }
-        if ((n & 0x0020) != 0) { sb.append("super/synchronized "); n &= ~0x0020; }
-        if ((n & 0x0040) != 0) { sb.append("volatile ");           n &= ~0x0040; }
-        if ((n & 0x0080) != 0) { sb.append("transient ");          n &= ~0x0080; }
-        if ((n & 0x0100) != 0) { sb.append("native ");             n &= ~0x0100; }
-        if ((n & 0x0400) != 0) { sb.append("abstract ");           n &= ~0x0400; }
-        if ((n & 0x0800) != 0) { sb.append("strict ");             n &= ~0x0800; }
-        if ((n & 0x1000) != 0) { sb.append("synthetic ");          n &= ~0x1000; }
+        if ((n & 0x0400) != 0) { sb.append("abstract ");     n &= ~0x0400; }
+        if ((n & 0x0008) != 0) { sb.append("static ");       n &= ~0x0008; }
+        if ((n & 0x0010) != 0) { sb.append("final ");        n &= ~0x0010; }
+        if ((n & 0x0080) != 0) { sb.append("transient ");    n &= ~0x0080; }
+        if ((n & 0x0040) != 0) { sb.append("volatile ");     n &= ~0x0040; }
+        if ((n & 0x0020) != 0) { sb.append("synchronized "); n &= ~0x0020; }
+        if ((n & 0x0100) != 0) { sb.append("native ");       n &= ~0x0100; }
+        if ((n & 0x0800) != 0) { sb.append("strictfp ");     n &= ~0x0800; }
+        if ((n & 0x1000) != 0) { sb.append("synthetic ");    n &= ~0x1000; }
 
-        if ((n & 0x0200) != 0) { sb.append("interface ");          n &= ~0x0200; }
-        if ((n & 0x2000) != 0) { sb.append("annotation ");         n &= ~0x2000; }
-        if ((n & 0x4000) != 0) { sb.append("enum ");               n &= ~0x4000; }
+        if ((n & 0x0200) != 0) { sb.append("interface ");    n &= ~0x0200; }
+        if ((n & 0x2000) != 0) { sb.append("annotation ");   n &= ~0x2000; }
+        if ((n & 0x4000) != 0) { sb.append("enum ");         n &= ~0x4000; }
 
         if (n != 0) sb.append("+ " + n + " ");
         return sb.toString();
+    }
+
+    private String beautify(String s) {
+        int i = 0;
+        for (;;) {
+
+            // Find the next type name.
+            for (;;) {
+                if (i == s.length()) return s;
+                if (Character.isJavaIdentifierStart(s.charAt(i))) break;
+                i++;
+            }
+
+            // Strip redundant prefixes from the type name.
+            for (String pkg : new String[] { "java.lang.", this.thisClassPackageName }) {
+                if (s.substring(i).startsWith(pkg)) {
+                    s = s.substring(0, i) + s.substring(i + pkg.length());
+                    break;
+                }
+            }
+
+            // Skip the rest of the type name.
+            for (;;) {
+                if (i == s.length()) return s;
+                char c = s.charAt(i);
+                if (c != '.' && !Character.isJavaIdentifierPart(c)) break;
+                i++;
+            }
+        }
     }
 }

@@ -33,12 +33,22 @@ public class Signature {
     private StringBuilder out;
 
     /**
-     * Converts a method type signature into the form
-     * "&lt;K, V> name(K, int, List<V>) => rettype".
+     * Converts a method type signature into one of the following forms:
+     * <table>
+     *   <tr><th>{@code methodName}</th><th>Result</th></tr>
+     *   <tr><td>{@code <init>}</td><td>{@code DeclaringClass(int, String)}</td></tr>
+     *   <tr><td>{@code <clinit>}</td><td>(Empty string)</td></tr>
+     *   <tr><td><i>Any other</i></td><td>{@code <K, V> methodName(K, int, List<V>) => rettype}</td></tr>
+     * </table>
      */
     public static String decodeMethodTypeSignature(String s, String methodName, String declaringClassName) {
+        if ("<clinit>".equals(methodName) && "()V".equals(s)) return "";
         Signature signature = new Signature(s);
-        signature.parseMethodTypeSignature(methodName, declaringClassName);
+        signature.parseMethodTypeSignature(
+            "<init>".equals(methodName) && s.endsWith(")V")
+            ? declaringClassName
+            : methodName
+        );
         signature.eos();
         return signature.out.toString();
     }
@@ -82,7 +92,8 @@ public class Signature {
         }
     }
 
-    private void parseMethodTypeSignature(String methodName, String declaringClassName) {
+    private void parseMethodTypeSignature(String methodName) {
+        
         if (peekReadWrite('<')) {
             parseFormalTypeParameter();
             while (!peekReadWrite('>')) {
@@ -90,11 +101,7 @@ public class Signature {
                 parseFormalTypeParameter();
             }
         }
-        write(
-            "<init>".equals(methodName) ? declaringClassName :
-            "<clinit>".equals(methodName) ? "" :
-            methodName
-        );
+        write(methodName);
         readWrite('(');
         if (!peekReadWrite(')')) {
             parseTypeSignature();

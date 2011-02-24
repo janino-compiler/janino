@@ -30,20 +30,28 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
+import de.unkrig.jdisasm.ClassFile.RuntimeInvisibleParameterAnnotationsAttribute;
+import de.unkrig.jdisasm.ClassFile.RuntimeVisibleParameterAnnotationsAttribute;
+
 public class ClassFile {
-    public short                 minorVersion;
-    public short                 majorVersion;
-    public short                 accessFlags;
-    public short                 thisClass;
-    public short                 superClass;
-    public final List<Short>     interfaces = new ArrayList<Short>();
-    public final List<Field>     fields = new ArrayList<Field>();
-    public final List<Method>    methods = new ArrayList<Method>();
-    public SignatureAttribute    signatureAttribute;
-    public SourceFileAttribute   sourceFileAttribute;
-    public final List<Attribute> attributes = new ArrayList<Attribute>();
+    public short                                minorVersion;
+    public short                                majorVersion;
+    public short                                accessFlags;
+    public short                                thisClass;
+    public short                                superClass;
+    public final List<Short>                    interfaces = new ArrayList<Short>();
+    public final List<Field>                    fields = new ArrayList<Field>();
+    public final List<Method>                   methods = new ArrayList<Method>();
+    public EnclosingMethodAttribute             enclosingMethodAttribute;
+    public RuntimeInvisibleAnnotationsAttribute runtimeInvisibleAnnotationsAttribute;
+    public RuntimeVisibleAnnotationsAttribute   runtimeVisibleAnnotationsAttribute;
+    public SignatureAttribute                   signatureAttribute;
+    public SourceFileAttribute                  sourceFileAttribute;
+    public SyntheticAttribute                   syntheticAttribute;
+    public final List<Attribute>                attributes = new ArrayList<Attribute>();
 
     public ClassFile(DataInputStream dis) throws IOException {
 
@@ -89,6 +97,21 @@ public class ClassFile {
         // Class attributes.
         readAttributes(dis, new AbstractAttributeVisitor() {
 
+            public void accept(EnclosingMethodAttribute ema) {
+                enclosingMethodAttribute = ema;
+                attributes.add(ema);
+            }
+
+            public void accept(RuntimeInvisibleAnnotationsAttribute riaa) {
+                runtimeInvisibleAnnotationsAttribute = riaa;
+                attributes.add(riaa);
+            }
+
+            public void accept(RuntimeVisibleAnnotationsAttribute rvaa) {
+                runtimeVisibleAnnotationsAttribute = rvaa;
+                attributes.add(rvaa);
+            }
+
             public void accept(SignatureAttribute sa) {
                 signatureAttribute = sa;
                 attributes.add(sa);
@@ -97,6 +120,11 @@ public class ClassFile {
             public void accept(SourceFileAttribute sfa) {
                 sourceFileAttribute = sfa;
                 attributes.add(sfa);
+            }
+
+            public void accept(SyntheticAttribute sa) {
+                syntheticAttribute = sa;
+                attributes.add(sa);
             }
 
             public void acceptOther(Attribute a) {
@@ -129,8 +157,8 @@ public class ClassFile {
         public DeprecatedAttribute(DataInputStream dis) {
         }
     }
-    
-    class ClasS {
+
+    public static class ClasS {
         public Object outerClassInfoIndex;
         public Object innerClassInfoIndex;
         public Object innerNameIndex;
@@ -147,13 +175,125 @@ public class ClassFile {
         public final List<ClasS> classes = new ArrayList<ClasS>();
 
         private InnerClassesAttribute(DataInputStream dis) throws IOException {
-            short n = dis.readShort();
-            for (int i = 0; i < n; ++i) {
+            for (int i = dis.readShort(); i > 0; --i) {
                 classes.add(new ClasS(dis));
             }
         }
     }
 
+    public static class Annotation {
+        public static class ElementValuePair {
+            public static abstract class ElementValue {
+                public abstract String toString(ClassFile cf);
+            }
+
+            public short        elementNameIndex;
+            public ElementValue elementValue;
+
+            public ElementValuePair(DataInputStream dis) throws IOException {
+                this.elementNameIndex = dis.readShort();
+                this.elementValue = newElementValue(dis); 
+            }
+
+            private static ElementValue newElementValue(DataInputStream dis) throws IOException {
+                final byte tag = dis.readByte();
+                if ("BCDFTJSZs".indexOf(tag) != -1) {
+                    final short constValueIndex = dis.readShort();
+                    return new ElementValue() { public String toString(ClassFile cf) { return cf.cpi(constValueIndex); }};
+                } else
+                if (tag == 'e') {
+                    final short typeNameIndex = dis.readShort();
+                    final short constNameIndex = dis.readShort();
+                    return new ElementValue() { public String toString(ClassFile cf) { return cf.cpi(typeNameIndex) + " " + cf.cpi(constNameIndex); }};
+                } else
+                if (tag == 'c') {
+                    final short classInfoIndex = dis.readShort();
+                    return new ElementValue() { public String toString(ClassFile cf) { return cf.cpi(classInfoIndex); }};
+                } else
+                if (tag == '@') {
+                    final Annotation annotation = new Annotation(dis);
+                    return new ElementValue() { public String toString(ClassFile cf) { return annotation.toString(); }};
+                } else
+                if (tag == '[') {
+                    final List<ElementValue> values = new ArrayList<ElementValue>();
+                    for (int i = dis.readShort(); i > 0; --i) {
+                        values.add(newElementValue(dis));
+                    }
+                    return new ElementValue() { public String toString(ClassFile cf) { return values.toString(); }};
+                } else
+                {
+                    return new ElementValue() { public String toString(ClassFile cf) { return "[Invalid element value tag '" + (char) tag + "']"; }};
+                }
+            }
+
+            public String toString(ClassFile cf) {
+                return cf.cpi(this.elementNameIndex) + " = " + this.elementValue.toString(cf);
+            }
+        }
+
+        public short                        typeIndex;
+        public final List<ElementValuePair> elementValuePairs = new ArrayList<ElementValuePair>();
+
+        public Annotation(DataInputStream dis) throws IOException {
+            this.typeIndex = dis.readShort();
+            for (int i = dis.readShort(); i > 0; --i) {
+                elementValuePairs.add(new ElementValuePair(dis));
+            }
+        }
+
+        public String toString(ClassFile cf) {
+            StringBuilder sb = new StringBuilder("@").append(cf.cpi(this.typeIndex));
+            if (!this.elementValuePairs.isEmpty()) {
+                Iterator<ElementValuePair> it = this.elementValuePairs.iterator();
+                sb.append('(').append(it.next().toString(cf));
+                while (it.hasNext()) {
+                    sb.append(", ").append(it.next().toString(cf));
+                }
+                sb.append(')');
+            }
+            return sb.toString();
+        }
+    }
+
+    public static class RuntimeVisibleAnnotationsAttribute implements Attribute {
+
+        public final List<Annotation> annotations = new ArrayList<Annotation>();
+        
+        private RuntimeVisibleAnnotationsAttribute(DataInputStream dis) throws IOException {
+            for (int i = dis.readShort(); i > 0; --i) {
+                annotations.add(new Annotation(dis));
+            }
+        }
+    }
+    public static class RuntimeInvisibleAnnotationsAttribute extends RuntimeVisibleAnnotationsAttribute {
+        public RuntimeInvisibleAnnotationsAttribute(DataInputStream  dis) throws IOException { super(dis); }
+    }
+
+    public static class RuntimeVisibleParameterAnnotationsAttribute implements Attribute {
+        public static class ParameterAnnotation {
+            public final List<Annotation> annotations = new ArrayList<Annotation>();
+
+            public ParameterAnnotation(DataInputStream dis) throws IOException {
+                for (int i = dis.readShort(); i > 0; --i) {
+                    annotations.add(new Annotation(dis));
+                }
+            }
+        }
+
+        public final List<ParameterAnnotation> parameterAnnotations = new ArrayList<ParameterAnnotation>();
+
+        private RuntimeVisibleParameterAnnotationsAttribute(DataInputStream dis) throws IOException {
+            for (int j = dis.readShort(); j > 0; --j) {
+                for (int i = dis.readShort(); i > 0; --i) {
+                    parameterAnnotations.add(new ParameterAnnotation(dis));
+                }
+            }
+        }
+    }
+    public static class RuntimeInvisibleParameterAnnotationsAttribute extends RuntimeVisibleParameterAnnotationsAttribute {
+        public RuntimeInvisibleParameterAnnotationsAttribute(DataInputStream  dis) throws IOException { super(dis); }
+    }
+    
     public abstract static class ConstantPoolInfo {
         public abstract String toString() ;
         public int             getSizeInConstantPool() { return 1; }
@@ -170,7 +310,7 @@ public class ClassFile {
 
         @Override
         public String toString() {
-            return member("", cpi(descriptorIndex), cpi(nameIndex));
+            return member("", cpi(nameIndex), cpi(descriptorIndex));
         }
     }
 
@@ -216,7 +356,7 @@ public class ClassFile {
                 final short nameIndex = dis.readShort();
                 return new ConstantPoolInfo() {
                     public String toString() {
-                        return beautifyTypeName(cpi(nameIndex).replace('/', '.'));
+                        return cpi(nameIndex).replace('/', '.');
                     }
                 };
             }
@@ -308,16 +448,22 @@ public class ClassFile {
     }
 
     interface AttributeVisitor {
-        void accept(CodeAttribute               codeAttribute);
-        void accept(ConstantValueAttribute      constantValueAttributeInfo);
-        void accept(DeprecatedAttribute         deprecatedAttribute);
-        void accept(ExceptionsAttribute         exceptionsAttribute);
-        void accept(InnerClassesAttribute       innerClassesAttribute);
-        void accept(LineNumberTableAttribute    lineNumberTableAttribute);
-        void accept(LocalVariableTableAttribute localVariableTableAttribute);
-        void accept(SignatureAttribute      signatureAttributeInfo);
-        void accept(SourceFileAttribute         sourceFileAttribute);
-        void accept(SyntheticAttribute          syntheticAttribute);
+        void accept(CodeAttribute                                 ca);
+        void accept(ConstantValueAttribute                        cva);
+        void accept(DeprecatedAttribute                           da);
+        void accept(EnclosingMethodAttribute                      ema);
+        void accept(ExceptionsAttribute                           ea);
+        void accept(InnerClassesAttribute                         ica);
+        void accept(LineNumberTableAttribute                      lnta);
+        void accept(LocalVariableTableAttribute                   lvta);
+        void accept(LocalVariableTypeTableAttribute               lvtta);
+        void accept(RuntimeInvisibleAnnotationsAttribute          riaa);
+        void accept(RuntimeInvisibleParameterAnnotationsAttribute ripaa);
+        void accept(RuntimeVisibleAnnotationsAttribute            rvaa);
+        void accept(RuntimeVisibleParameterAnnotationsAttribute   rvpaa);
+        void accept(SignatureAttribute                            sa);
+        void accept(SourceFileAttribute                           sfa);
+        void accept(SyntheticAttribute                            sa);
 
         void accept(UnknownAttribute unknownAttribute);
     }
@@ -326,26 +472,35 @@ public class ClassFile {
 
         public abstract void acceptOther(Attribute ai);
 
-        public void accept(CodeAttribute               ca)   { acceptOther(ca); }
-        public void accept(ConstantValueAttribute      cva)  { acceptOther(cva); }
-        public void accept(DeprecatedAttribute         da)   { acceptOther(da); }
-        public void accept(ExceptionsAttribute         ea)   { acceptOther(ea); }
-        public void accept(InnerClassesAttribute       ica)  { acceptOther(ica); }
-        public void accept(LineNumberTableAttribute    lnta) { acceptOther(lnta); }
-        public void accept(LocalVariableTableAttribute lvta) { acceptOther(lvta); }
-        public void accept(SignatureAttribute      sa)   { acceptOther(sa); }
-        public void accept(SourceFileAttribute         sfa)  { acceptOther(sfa); }
-        public void accept(SyntheticAttribute          sa)   { acceptOther(sa); }
-        public void accept(UnknownAttribute            a)    { acceptOther(a); }
+        public void accept(CodeAttribute                                 ca)    { acceptOther(ca); }
+        public void accept(ConstantValueAttribute                        cva)   { acceptOther(cva); }
+        public void accept(DeprecatedAttribute                           da)    { acceptOther(da); }
+        public void accept(EnclosingMethodAttribute                      ema)   { acceptOther(ema); }
+        public void accept(ExceptionsAttribute                           ea)    { acceptOther(ea); }
+        public void accept(InnerClassesAttribute                         ica)   { acceptOther(ica); }
+        public void accept(LineNumberTableAttribute                      lnta)  { acceptOther(lnta); }
+        public void accept(LocalVariableTableAttribute                   lvta)  { acceptOther(lvta); }
+        public void accept(LocalVariableTypeTableAttribute               lvtta) { acceptOther(lvtta); }
+        public void accept(RuntimeInvisibleAnnotationsAttribute          riaa)  { acceptOther(riaa); }
+        public void accept(RuntimeInvisibleParameterAnnotationsAttribute ripaa) { acceptOther(ripaa); }
+        public void accept(RuntimeVisibleAnnotationsAttribute            rvaa)  { acceptOther(rvaa); }
+        public void accept(RuntimeVisibleParameterAnnotationsAttribute   rvpaa) { acceptOther(rvpaa); }
+        public void accept(SignatureAttribute                            sa)    { acceptOther(sa); }
+        public void accept(SourceFileAttribute                           sfa)   { acceptOther(sfa); }
+        public void accept(SyntheticAttribute                            sa)    { acceptOther(sa); }
+        public void accept(UnknownAttribute                              a)     { acceptOther(a); }
     }
     
     public class Field {
-        public short                  accessFlags;
-        public short                  nameIndex;
-        public short                  descriptorIndex;
-        public ConstantValueAttribute constantValueAttribute;
-        public SignatureAttribute     signatureAttribute;
-        public final List<Attribute>  attributes = new ArrayList<Attribute>();
+        public short                                accessFlags;
+        public short                                nameIndex;
+        public short                                descriptorIndex;
+        public ConstantValueAttribute               constantValueAttribute;
+        public RuntimeInvisibleAnnotationsAttribute runtimeInvisibleAnnotationsAttribute;
+        public RuntimeVisibleAnnotationsAttribute   runtimeVisibleAnnotationsAttribute;
+        public SignatureAttribute                   signatureAttribute;
+        public SyntheticAttribute                   syntheticAttribute;
+        public final List<Attribute>                attributes = new ArrayList<Attribute>();
 
         public Field(DataInputStream dis) throws IOException {
             accessFlags = dis.readShort();
@@ -357,8 +512,20 @@ public class ClassFile {
                     constantValueAttribute = cva;
                     attributes.add(cva);
                 }
+                public void accept(RuntimeInvisibleAnnotationsAttribute riaa) {
+                    runtimeInvisibleAnnotationsAttribute = riaa;
+                    attributes.add(riaa);
+                }
+                public void accept(RuntimeVisibleAnnotationsAttribute rvaa) {
+                    runtimeVisibleAnnotationsAttribute = rvaa;
+                    attributes.add(rvaa);
+                }
                 public void accept(SignatureAttribute sa) {
                     signatureAttribute = sa;
+                    attributes.add(sa);
+                }
+                public void accept(SyntheticAttribute sa) {
+                    syntheticAttribute = sa;
                     attributes.add(sa);
                 }
                 public void acceptOther(Attribute ai) {
@@ -369,13 +536,18 @@ public class ClassFile {
     }
 
     public class Method {
-        public short                 accessFlags;
-        public short                 nameIndex;
-        public short                 descriptorIndex;
-        public final List<Attribute> attributes = new ArrayList<Attribute>();
-        public CodeAttribute         codeAttribute;
-        public ExceptionsAttribute   exceptionsAttribute;
-        public SignatureAttribute    signatureAttribute;
+        public short                                         accessFlags;
+        public short                                         nameIndex;
+        public short                                         descriptorIndex;
+        public final List<Attribute>                         attributes = new ArrayList<Attribute>();
+        public CodeAttribute                                 codeAttribute;
+        public ExceptionsAttribute                           exceptionsAttribute;
+        public RuntimeInvisibleAnnotationsAttribute          runtimeInvisibleAnnotationsAttribute;
+        public RuntimeInvisibleParameterAnnotationsAttribute runtimeInvisibleParameterAnnotationsAttribute;
+        public RuntimeVisibleAnnotationsAttribute            runtimeVisibleAnnotationsAttribute;
+        public RuntimeVisibleParameterAnnotationsAttribute   runtimeVisibleParameterAnnotationsAttribute;
+        public SignatureAttribute                            signatureAttribute;
+        public SyntheticAttribute                            syntheticAttribute;
 
         public Method(DataInputStream dis) throws IOException {
             accessFlags = dis.readShort();
@@ -390,8 +562,28 @@ public class ClassFile {
                     exceptionsAttribute = ea;
                     attributes.add(ea);
                 }
+                public void accept(RuntimeInvisibleAnnotationsAttribute riaa) {
+                    runtimeInvisibleAnnotationsAttribute = riaa;
+                    attributes.add(riaa);
+                }
+                public void accept(RuntimeInvisibleParameterAnnotationsAttribute ripaa) {
+                    runtimeInvisibleParameterAnnotationsAttribute = ripaa;
+                    attributes.add(ripaa);
+                }
+                public void accept(RuntimeVisibleAnnotationsAttribute rvaa) {
+                    runtimeVisibleAnnotationsAttribute = rvaa;
+                    attributes.add(rvaa);
+                }
+                public void accept(RuntimeVisibleParameterAnnotationsAttribute rvpaa) {
+                    runtimeVisibleParameterAnnotationsAttribute = rvpaa;
+                    attributes.add(rvpaa);
+                }
                 public void accept(SignatureAttribute sa) {
                     signatureAttribute = sa;
+                    attributes.add(sa);
+                }
+                public void accept(SyntheticAttribute sa) {
+                    syntheticAttribute = sa;
                     attributes.add(sa);
                 }
                 public void acceptOther(Attribute ai) {
@@ -440,11 +632,26 @@ public class ClassFile {
         if (attributeName.equals("Code")) {
             visitor.accept(new CodeAttribute(dis));
         } else
+        if (attributeName.equals("EnclosingMethod")) {
+            visitor.accept(new EnclosingMethodAttribute(dis));
+        } else
         if (attributeName.equals("Exceptions")) {
             visitor.accept(new ExceptionsAttribute(dis));
         } else
         if (attributeName.equals("InnerClasses")) {
             visitor.accept(new InnerClassesAttribute(dis));
+        } else
+        if (attributeName.equals("RuntimeInvisibleAnnotations")) {
+            visitor.accept(new RuntimeInvisibleAnnotationsAttribute(dis));
+        } else
+        if (attributeName.equals("RuntimeInvisibleParameterAnnotations")) {
+            visitor.accept(new RuntimeInvisibleParameterAnnotationsAttribute(dis));
+        } else
+        if (attributeName.equals("RuntimeVisibleAnnotations")) {
+            visitor.accept(new RuntimeVisibleAnnotationsAttribute(dis));
+        } else
+        if (attributeName.equals("RuntimeVisibleParameterAnnotations")) {
+            visitor.accept(new RuntimeVisibleParameterAnnotationsAttribute(dis));
         } else
         if (attributeName.equals("Synthetic")) {
             visitor.accept(new SyntheticAttribute(dis));
@@ -457,6 +664,9 @@ public class ClassFile {
         } else
         if (attributeName.equals("LocalVariableTable")) {
             visitor.accept(new LocalVariableTableAttribute(dis));
+        } else
+        if (attributeName.equals("LocalVariableTypeTable")) {
+            visitor.accept(new LocalVariableTypeTableAttribute(dis));
         } else
         if (attributeName.equals("Deprecated")) {
             visitor.accept(new DeprecatedAttribute(dis));
@@ -488,6 +698,16 @@ public class ClassFile {
         }
     }
     
+    public final class EnclosingMethodAttribute implements Attribute {
+        public short classIndex;
+        public short methodIndex;
+        
+        private EnclosingMethodAttribute(DataInputStream dis) throws IOException {
+            this.classIndex = dis.readShort();
+            this.methodIndex = dis.readShort();
+        }
+    }
+    
     public final class ExceptionsAttribute implements Attribute {
         public final List<Short> exceptions = new ArrayList<Short>();
 
@@ -503,8 +723,9 @@ public class ClassFile {
         public final short                     maxLocals;
         public final byte[]                    code;
         public final List<ExceptionTableEntry> exceptionTable = new ArrayList<ExceptionTableEntry>();
-        public LocalVariableTableAttribute     localVariableTableAttribute = null;
-        public LineNumberTableAttribute        lineNumberTableAttribute = null;
+        public LocalVariableTableAttribute     localVariableTableAttribute;
+        public LocalVariableTypeTableAttribute localVariableTypeTableAttribute;
+        public LineNumberTableAttribute        lineNumberTableAttribute;
         public final List<Attribute>           attributes = new ArrayList<Attribute>();
 
         private CodeAttribute(DataInputStream dis) throws IOException {
@@ -528,6 +749,10 @@ public class ClassFile {
                 public void accept(LocalVariableTableAttribute lvta) {
                     localVariableTableAttribute = lvta;
                     attributes.add(lvta);
+                }
+                public void accept(LocalVariableTypeTableAttribute lvtta) {
+                    localVariableTypeTableAttribute = lvtta;
+                    attributes.add(lvtta);
                 }
                 public void acceptOther(Attribute ai) {
                     attributes.add(ai);
@@ -609,6 +834,32 @@ public class ClassFile {
         }
     }
 
+    class LocalVariableTypeTableEntry {
+        public short startPC;
+        public short length;
+        public short nameIndex;
+        public short signatureIndex;
+        public short index;
+
+        private LocalVariableTypeTableEntry(DataInputStream dis) throws IOException {
+            startPC        = dis.readShort();
+            length         = dis.readShort();
+            nameIndex      = dis.readShort();
+            signatureIndex = dis.readShort();
+            index          = dis.readShort();
+        }
+    }
+
+    public class LocalVariableTypeTableAttribute implements Attribute {
+        public final List<LocalVariableTypeTableEntry> entries = new ArrayList<LocalVariableTypeTableEntry>();
+
+        private LocalVariableTypeTableAttribute(DataInputStream dis) throws IOException {
+            for (short i = dis.readShort(); i > 0; --i) {
+                entries.add(new LocalVariableTypeTableEntry(dis));
+            }
+        }
+    }
+    
     public final class ConstantValueAttribute implements Attribute {
         public final short constantValueIndex;
 
@@ -657,25 +908,10 @@ public class ClassFile {
      */
     private String member(String typeName, String name, String descriptor) {
         if (descriptor.startsWith("(")) {
-            String parameters = Descriptor.parameters(descriptor);
-            String returnType = Descriptor.returnType(descriptor);
-            return (
-                "<init>".equals(name) && "void".equals(returnType) ? typeName + parameters :
-                typeName + "." + name + parameters + " => " + returnType
-            );
+            return Descriptor.decodeMethodDescriptor(descriptor, name, typeName);
         } else {
             return Descriptor.decodeFieldDescriptor(descriptor) + " " + typeName + "." + name;
         }
-    }
-
-    private String beautifyTypeName(String name) {
-//        if (thisClassPackageName.length() > 0 && name.startsWith(thisClassPackageName)) {
-//            name = name.substring(thisClassPackageName.length());
-//        } else
-        if (name.startsWith("java.lang.")) {
-            name = name.substring(10);
-        }
-        return name;
     }
 
     public short getConstantPoolSize() {

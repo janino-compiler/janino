@@ -38,27 +38,35 @@ public class Descriptor {
     }
 
     /**
-     * Extracts the return type from a function descriptor.
+     * Converts a method descriptor into one of the following forms:
+     * <table>
+     *   <tr><th>{@code methodName}</th><th>Result</th></tr>
+     *   <tr><td>{@code <init>}</td><td>{@code DeclaringClass(int, String)}</td></tr>
+     *   <tr><td>{@code <clinit>}</td><td>(Empty string)</td></tr>
+     *   <tr><td><i>Any other</i></td><td>{@code methodName(double, int, List) => rettype}</td></tr>
+     * </table>
      */
-    public static String returnType(String functionDescriptor) {
-        return parseFieldDescriptor(functionDescriptor, new int[] { functionDescriptor.indexOf(')') + 1 });
-    }
-
-    /**
-     * Extracts the parameters from a fuction descriptor.
-     *
-     * @return E.g. "(Object, int)"
-     */
-    public static String parameters(String functionDescriptor) {
-        StringBuilder sb = new StringBuilder("(");
+    public static String decodeMethodDescriptor(String functionDescriptor, String methodName, String declaringClassName) {
+        if ("<clinit>".equals(methodName) && "()V".equals(functionDescriptor)) return "";
+        StringBuilder sb = new StringBuilder();
+        sb.append (
+            "<init>".equals(methodName) && functionDescriptor.endsWith(")V")
+            ? declaringClassName
+            : methodName
+        ).append('(');
+        int[] idx = new int[] { 1 };
         if (functionDescriptor.charAt(1) != ')') {
-            int[] idx = new int[] { 1 };
             sb.append(parseFieldDescriptor(functionDescriptor, idx));
             while (functionDescriptor.charAt(idx[0]) != ')') {
                 sb.append(", ").append(parseFieldDescriptor(functionDescriptor, idx));
             }
         }
-        return sb.append(')').toString();
+        sb.append(')');
+        idx[0]++;
+        if (functionDescriptor.charAt(idx[0]) != 'V') {
+            sb.append(" => ").append(parseFieldDescriptor(functionDescriptor, idx));
+        }
+        return sb.toString();
     }
 
     private static String parseFieldDescriptor(String d, int[] idx) {
