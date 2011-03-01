@@ -99,7 +99,7 @@ public class SignatureParser {
         public TypeSignature                   returnType;
         public final List<ThrowsSignature>     thrownTypes = new ArrayList<SignatureParser.ThrowsSignature>();
     
-        public String toString(String declaringClassSimpleName, String methodName) {
+        public String toString(String declaringClassName, String methodName) {
             StringBuilder sb = new StringBuilder();
     
             // Formal type parameters.
@@ -112,10 +112,10 @@ public class SignatureParser {
     
             // Name.
             if ("<init>".equals(methodName) && returnType == SignatureParser.VOID) {
-                sb.append(declaringClassSimpleName);
+                sb.append(declaringClassName);
             } else
             {
-                sb.append(returnType.toString()).append(' ').append(methodName);
+                sb.append(declaringClassName).append('.').append(methodName);
             }
             sb.append('(');
             Iterator<TypeSignature> it = parameterTypes.iterator();
@@ -126,7 +126,9 @@ public class SignatureParser {
                     sb.append(", ");
                 }
             }
-            return sb.append(')').toString();
+            sb.append(')');
+            if (returnType != VOID) sb.append(" => ").append(returnType.toString());
+            return sb.toString();
         }
     
         public String toString() {
@@ -285,8 +287,6 @@ public class SignatureParser {
     public static final PrimitiveTypeSignature BOOLEAN = new PrimitiveTypeSignature("boolean");
 
     public static final TypeSignature VOID = new TypeSignature() { public String toString() { return "void"; }};
-
-    public static final TypeSignature UNKNOWN = new TypeSignature() { public String toString() { return "???"; }};
 
     private static TypeSignature parseFieldDescriptor(CharStream cs) throws EOFException, IOException {
         return parseTypeSignature(cs);
