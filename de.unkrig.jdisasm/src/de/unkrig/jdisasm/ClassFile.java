@@ -33,16 +33,18 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import de.unkrig.jdisasm.ClassFile.RuntimeInvisibleParameterAnnotationsAttribute;
-import de.unkrig.jdisasm.ClassFile.RuntimeVisibleParameterAnnotationsAttribute;
+import de.unkrig.jdisasm.ConstantPool.ConstantClassInfo;
+import de.unkrig.jdisasm.ConstantPool.ConstantNameAndTypeInfo;
+import de.unkrig.jdisasm.ConstantPool.ConstantUtf8Info;
 
 public class ClassFile {
     public short                                minorVersion;
     public short                                majorVersion;
+    public ConstantPool                         constantPool;
     public short                                accessFlags;
-    public short                                thisClass;
-    public short                                superClass;
-    public final List<Short>                    interfaces = new ArrayList<Short>();
+    public String                               thisClassName;
+    public String                               superClassName;
+    public final List<String>                   interfaceNames = new ArrayList<String>();
     public final List<Field>                    fields = new ArrayList<Field>();
     public final List<Method>                   methods = new ArrayList<Method>();
     public EnclosingMethodAttribute             enclosingMethodAttribute;
@@ -65,23 +67,15 @@ public class ClassFile {
         majorVersion = dis.readShort();
 
         // Load constant pool.
-        constantPool.add(null); // The magic first CP entry.
-        for (short i = dis.readShort(); i > 1; --i) {
-            ConstantPoolInfo cpi = readConstantPoolInfo(dis);
-            constantPool.add(cpi);
-            for (int j = cpi.getSizeInConstantPool(); j > 1; --j) {
-                constantPool.add(null);
-                i--;
-            }
-        }
+        constantPool = new ConstantPool(dis);
 
         accessFlags = dis.readShort();
-        thisClass = dis.readShort();
-        superClass = dis.readShort();
+        thisClassName = constantPool.getConstantClassInfo(dis.readShort()).name;
+        superClassName = constantPool.getConstantClassInfo(dis.readShort()).name;
 
         // Implemented interfaces.
         for (short i = dis.readShort(); i > 0; --i) {
-            interfaces.add(dis.readShort());
+            interfaceNames.add(constantPool.getConstantClassInfo(dis.readShort()).name);
         }
 
         // Fields.
@@ -146,112 +140,132 @@ public class ClassFile {
         }
     }
 
-    private final List<ConstantPoolInfo> constantPool = new ArrayList<ConstantPoolInfo>();
-
     public static class SyntheticAttribute implements Attribute {
-        public SyntheticAttribute(DataInputStream dis) {
+        public SyntheticAttribute(DataInputStream dis, ClassFile cf) {
         }
     }
 
     public static class DeprecatedAttribute implements Attribute {
-        public DeprecatedAttribute(DataInputStream dis) {
+        public DeprecatedAttribute(DataInputStream dis, ClassFile cf) {
         }
     }
 
     public static class ClasS {
-        public Object outerClassInfoIndex;
-        public Object innerClassInfoIndex;
-        public Object innerNameIndex;
-        public Object innerClassAccessFlags;
+        public ConstantClassInfo innerClassInfo;
+        public ConstantClassInfo outerClassInfo;
+        public ConstantUtf8Info  innerName;
+        public short             innerClassAccessFlags;
 
-        public ClasS(DataInputStream dis) throws IOException {
-            outerClassInfoIndex = dis.readShort();
-            innerClassInfoIndex = dis.readShort();
-            innerNameIndex = dis.readShort();
+        public ClasS(DataInputStream dis, ClassFile cf) throws IOException {
+            innerClassInfo = cf.constantPool.getConstantClassInfo(dis.readShort());
+            outerClassInfo = cf.constantPool.getConstantClassInfo(dis.readShort());
+            innerName = cf.constantPool.getConstantUtf8Info(dis.readShort());
             innerClassAccessFlags = dis.readShort();
         }
     }
-    public final class InnerClassesAttribute implements Attribute {
+    public static final class InnerClassesAttribute implements Attribute {
         public final List<ClasS> classes = new ArrayList<ClasS>();
 
-        private InnerClassesAttribute(DataInputStream dis) throws IOException {
+        private InnerClassesAttribute(DataInputStream dis, ClassFile cf) throws IOException {
             for (int i = dis.readShort(); i > 0; --i) {
-                classes.add(new ClasS(dis));
+                classes.add(new ClasS(dis, cf));
             }
         }
     }
 
     public static class Annotation {
         public static class ElementValuePair {
-            public static abstract class ElementValue {
-                public abstract String toString(ClassFile cf);
-            }
 
-            public short        elementNameIndex;
+            public String       elementName;
             public ElementValue elementValue;
 
-            public ElementValuePair(DataInputStream dis) throws IOException {
-                this.elementNameIndex = dis.readShort();
-                this.elementValue = newElementValue(dis); 
+            public ElementValuePair(DataInputStream dis, ClassFile cf) throws IOException {
+                this.elementName = cf.constantPool.getConstantUtf8Info(dis.readShort()).bytes; // elementNameIndex
+                this.elementValue = newElementValue(dis, cf); 
             }
 
-            private static ElementValue newElementValue(DataInputStream dis) throws IOException {
-                final byte tag = dis.readByte();
-                if ("BCDFTJSZs".indexOf(tag) != -1) {
-                    final short constValueIndex = dis.readShort();
-                    return new ElementValue() { public String toString(ClassFile cf) { return cf.cpi(constValueIndex); }};
-                } else
-                if (tag == 'e') {
-                    final short typeNameIndex = dis.readShort();
-                    final short constNameIndex = dis.readShort();
-                    return new ElementValue() { public String toString(ClassFile cf) { return cf.cpi(typeNameIndex) + " " + cf.cpi(constNameIndex); }};
-                } else
-                if (tag == 'c') {
-                    final short classInfoIndex = dis.readShort();
-                    return new ElementValue() { public String toString(ClassFile cf) { return cf.cpi(classInfoIndex); }};
-                } else
-                if (tag == '@') {
-                    final Annotation annotation = new Annotation(dis);
-                    return new ElementValue() { public String toString(ClassFile cf) { return annotation.toString(); }};
-                } else
-                if (tag == '[') {
-                    final List<ElementValue> values = new ArrayList<ElementValue>();
-                    for (int i = dis.readShort(); i > 0; --i) {
-                        values.add(newElementValue(dis));
-                    }
-                    return new ElementValue() { public String toString(ClassFile cf) { return values.toString(); }};
-                } else
-                {
-                    return new ElementValue() { public String toString(ClassFile cf) { return "[Invalid element value tag '" + (char) tag + "']"; }};
-                }
-            }
-
-            public String toString(ClassFile cf) {
-                return cf.cpi(this.elementNameIndex) + " = " + this.elementValue.toString(cf);
+            public String toString() {
+                return (
+                    "value".equals(elementName)
+                    ? this.elementValue.toString()
+                    : elementName + " = " + this.elementValue.toString()
+                );
             }
         }
 
-        public short                        typeIndex;
+        public String                       typeName;
         public final List<ElementValuePair> elementValuePairs = new ArrayList<ElementValuePair>();
 
-        public Annotation(DataInputStream dis) throws IOException {
-            this.typeIndex = dis.readShort();
+        public Annotation(DataInputStream dis, ClassFile cf) throws IOException {
+            short typeIndex = dis.readShort();
+            this.typeName = SignatureParser.decodeFieldDescriptor(cf.constantPool.getConstantUtf8Info(typeIndex).bytes).toString();
             for (int i = dis.readShort(); i > 0; --i) {
-                elementValuePairs.add(new ElementValuePair(dis));
+                elementValuePairs.add(new ElementValuePair(dis, cf));
             }
         }
 
-        public String toString(ClassFile cf) {
-            StringBuilder sb = new StringBuilder("@").append(cf.cpi(this.typeIndex));
-            if (!this.elementValuePairs.isEmpty()) {
-                Iterator<ElementValuePair> it = this.elementValuePairs.iterator();
-                sb.append('(').append(it.next().toString(cf));
+        public String toString() {
+            StringBuilder sb = new StringBuilder("@").append(this.typeName).append('(');
+            Iterator<ElementValuePair> it = this.elementValuePairs.iterator();
+            if (it.hasNext()) {
+                sb.append(it.next().toString());
                 while (it.hasNext()) {
-                    sb.append(", ").append(it.next().toString(cf));
+                    sb.append(", ").append(it.next().toString());
                 }
-                sb.append(')');
             }
-            return sb.toString();
+            return sb.append(')').toString();
+        }
+    }
+
+    public static abstract class ElementValue {
+    }
+
+    private static ElementValue newElementValue(DataInputStream dis, ClassFile cf) throws IOException {
+        final byte tag = dis.readByte();
+        if ("BCDFIJSZ".indexOf(tag) != -1) {
+            final String s = cf.constantPool.getIntegerFloatLongDouble(dis.readShort());
+            return new ElementValue() { public String toString() { return s; }};
+        } else
+        if (tag == 's') {
+            final String s = cf.constantPool.getConstantUtf8Info(dis.readShort()).bytes;
+            return new ElementValue() { public String toString() { return ConstantPool.stringToJavaLiteral(s); }};
+        } else
+        if (tag == 'e') {
+            String typeName = cf.constantPool.getConstantUtf8Info(dis.readShort()).bytes;
+            String constName = cf.constantPool.getConstantUtf8Info(dis.readShort()).bytes;
+            final String s = SignatureParser.decodeFieldDescriptor(typeName) + "." + constName;
+            return new ElementValue() { public String toString() { return s; }};
+        } else
+        if (tag == 'c') {
+            final String classInfo = cf.constantPool.getConstantUtf8Info(dis.readShort()).bytes;
+            final String s = SignatureParser.decodeFieldDescriptor(classInfo) + ".class";
+            return new ElementValue() { public String toString() { return s; }};
+        } else
+        if (tag == '@') {
+            final Annotation annotation = new Annotation(dis, cf);
+            return new ElementValue() { public String toString() { return annotation.toString(); }};
+        } else
+        if (tag == '[') {
+            final List<ElementValue> values = new ArrayList<ElementValue>();
+            for (int i = dis.readShort(); i > 0; --i) {
+                values.add(newElementValue(dis, cf));
+            }
+            return new ElementValue() { public String toString() {
+                Iterator<ElementValue> it = values.iterator();
+                if (!it.hasNext()) return "{}";
+
+                ElementValue firstValue = it.next();
+                if (!it.hasNext()) return firstValue.toString();
+
+                StringBuilder sb = new StringBuilder("{ ").append(firstValue.toString());
+                do {
+                    sb.append(", ").append(it.next().toString());
+                } while (it.hasNext());
+                return sb.append(" }").toString();
+            }};
+        } else
+        {
+            return new ElementValue() { public String toString() { return "[Invalid element value tag '" + (char) tag + "']"; }};
         }
     }
 
@@ -259,195 +273,57 @@ public class ClassFile {
 
         public final List<Annotation> annotations = new ArrayList<Annotation>();
         
-        private RuntimeVisibleAnnotationsAttribute(DataInputStream dis) throws IOException {
+        private RuntimeVisibleAnnotationsAttribute(DataInputStream dis, ClassFile cf) throws IOException {
             for (int i = dis.readShort(); i > 0; --i) {
-                annotations.add(new Annotation(dis));
+                annotations.add(new Annotation(dis, cf));
             }
         }
     }
     public static class RuntimeInvisibleAnnotationsAttribute extends RuntimeVisibleAnnotationsAttribute {
-        public RuntimeInvisibleAnnotationsAttribute(DataInputStream  dis) throws IOException { super(dis); }
+        public RuntimeInvisibleAnnotationsAttribute(DataInputStream  dis, ClassFile cf) throws IOException {
+            super(dis, cf);
+        }
+    }
+
+    public static class ParameterAnnotation {
+        public final List<Annotation> annotations = new ArrayList<Annotation>();
+
+        public ParameterAnnotation(DataInputStream dis, ClassFile cf) throws IOException {
+            for (int i = dis.readShort(); i > 0; --i) {
+                annotations.add(new Annotation(dis, cf));
+            }
+        }
     }
 
     public static class RuntimeVisibleParameterAnnotationsAttribute implements Attribute {
-        public static class ParameterAnnotation {
-            public final List<Annotation> annotations = new ArrayList<Annotation>();
-
-            public ParameterAnnotation(DataInputStream dis) throws IOException {
-                for (int i = dis.readShort(); i > 0; --i) {
-                    annotations.add(new Annotation(dis));
-                }
-            }
-        }
 
         public final List<ParameterAnnotation> parameterAnnotations = new ArrayList<ParameterAnnotation>();
 
-        private RuntimeVisibleParameterAnnotationsAttribute(DataInputStream dis) throws IOException {
+        private RuntimeVisibleParameterAnnotationsAttribute(DataInputStream dis, ClassFile cf) throws IOException {
             for (int j = dis.readShort(); j > 0; --j) {
                 for (int i = dis.readShort(); i > 0; --i) {
-                    parameterAnnotations.add(new ParameterAnnotation(dis));
+                    parameterAnnotations.add(new ParameterAnnotation(dis, cf));
                 }
             }
         }
     }
     public static class RuntimeInvisibleParameterAnnotationsAttribute extends RuntimeVisibleParameterAnnotationsAttribute {
-        public RuntimeInvisibleParameterAnnotationsAttribute(DataInputStream  dis) throws IOException { super(dis); }
+        public RuntimeInvisibleParameterAnnotationsAttribute(DataInputStream  dis, ClassFile cf) throws IOException {
+            super(dis, cf);
+        }
     }
     
-    public abstract static class ConstantPoolInfo {
-        public abstract String toString() ;
-        public int             getSizeInConstantPool() { return 1; }
-    }
+    public static class AnnotationDefaultAttribute implements Attribute {
 
-    private final class NameAndTypeConstantPoolInfo extends ConstantPoolInfo {
-        final short nameIndex;
-        final short descriptorIndex;
-
-        private NameAndTypeConstantPoolInfo(short nameIndex, short descriptorIndex) {
-            this.nameIndex = nameIndex;
-            this.descriptorIndex = descriptorIndex;
-        }
-
-        @Override
-        public String toString() {
-            return member("", cpi(nameIndex), cpi(descriptorIndex));
-        }
-    }
-
-    private class ConstantUtf8Info extends ConstantPoolInfo {
-        public ConstantUtf8Info(String value) {
-            this.value = value;
-        }
-        @Override
-        public String toString() { return this.value; }
-
-        private String value;
-    }
-    
-    public String cpi(short index) {
-        return getConstantPoolEntry(index).toString();
-    }
-
-    public ConstantPoolInfo getConstantPoolEntry(final short index) {
-        if ((index & 0xffff) < constantPool.size()) {
-            ConstantPoolInfo cpi = constantPool.get(index);
-            if (cpi == null) return new ConstantPoolInfo() {
-
-                @Override
-                public String toString() {
-                    return "[Error: NULL constant pool entry]";
-                }
-            };
-            return cpi;
-        }
-        return new ConstantPoolInfo() {
-
-            public String toString() {
-                return "[Error: Constant pool index " + (index & 0xffff) + " out of range]";
-            }
-        };
-    }
-
-    private ConstantPoolInfo readConstantPoolInfo(final DataInputStream dis) throws IOException {
-        byte tag = dis.readByte();
-        switch (tag) {
-        case 7: // CONSTANT_Class_info
-            {
-                final short nameIndex = dis.readShort();
-                return new ConstantPoolInfo() {
-                    public String toString() {
-                        return cpi(nameIndex).replace('/', '.');
-                    }
-                };
-            }
-        case 9: // CONSTANT_Fieldref_info
-            {
-                final short classIndex = dis.readShort();
-                final short nameAndTypeIndex = dis.readShort();
-                return new ConstantPoolInfo() {
-                    public String toString() {
-                        return member(cpi(classIndex), nameAndTypeIndex);
-                    }
-                };
-            }
-        case 10: // CONSTANT_Methodref_info
-            {
-                final short classIndex = dis.readShort();
-                final short nameAndTypeIndex = dis.readShort();
-                return new ConstantPoolInfo() {
-                    public String toString() {
-                        return member(cpi(classIndex), nameAndTypeIndex);
-                    }
-                };
-            }
-        case 11: // CONSTANT_InterfaceMethodref_info
-            {
-                final short classIndex = dis.readShort();
-                final short nameAndTypeIndex = dis.readShort();
-                return new ConstantPoolInfo() {
-                    public String toString() {
-                        return member(cpi(classIndex), nameAndTypeIndex);
-                    }
-                };
-            }
-        case 8: // CONSTANT_String_info
-            {
-                final short stringIndex = dis.readShort();
-                return new ConstantPoolInfo() {
-
-                    public String toString() {
-                        return stringToJavaLiteral(cpi(stringIndex));
-                    }
-                };
-            }
-        case 3: // CONSTANT_Integer_info
-            {
-                final int bytes = dis.readInt();
-                return new ConstantPoolInfo() {
-                    public String toString() {
-                        return Integer.toString(bytes);
-                    }
-                };
-            }
-        case 4: // CONSTANT_Float_info
-            {
-                final float bytes = dis.readFloat();
-                return new ConstantPoolInfo() {
-                    public String toString() {
-                        return bytes + "F";
-                    }
-                };
-            }
-        case 5: // CONSTANT_Long_info
-            {
-                final long bytes = dis.readLong();
-                return new ConstantPoolInfo() {
-                    public int getSizeInConstantPool() { return 2; }
-                    public String toString() {
-                        return bytes + "L";
-                    }
-                };
-            }
-        case 6: // CONSTANT_Double_info
-            {
-                final double bytes = dis.readDouble();
-                return new ConstantPoolInfo() {
-                    public int getSizeInConstantPool() { return 2; }
-                    public String toString() {
-                        return bytes + "D";
-                    }
-                };
-            }
-        case 12: // CONSTANT_NameAndType_info
-            return new NameAndTypeConstantPoolInfo(dis.readShort(), dis.readShort());
-        case 1: // CONSTANT_Utf8_info
-            return new ConstantUtf8Info(dis.readUTF());
-        default:
-            throw new RuntimeException("Invalid cp_info tag \"" + (int) tag + "\"");
+        public ElementValue defaultValue;
+        
+        private AnnotationDefaultAttribute(DataInputStream dis, ClassFile cf) throws IOException {
+            this.defaultValue = newElementValue(dis, cf);
         }
     }
 
     interface AttributeVisitor {
+        void accept(AnnotationDefaultAttribute                    ada);
         void accept(CodeAttribute                                 ca);
         void accept(ConstantValueAttribute                        cva);
         void accept(DeprecatedAttribute                           da);
@@ -472,6 +348,7 @@ public class ClassFile {
 
         public abstract void acceptOther(Attribute ai);
 
+        public void accept(AnnotationDefaultAttribute                    ada)   { acceptOther(ada); }
         public void accept(CodeAttribute                                 ca)    { acceptOther(ca); }
         public void accept(ConstantValueAttribute                        cva)   { acceptOther(cva); }
         public void accept(DeprecatedAttribute                           da)    { acceptOther(da); }
@@ -493,8 +370,8 @@ public class ClassFile {
     
     public class Field {
         public short                                accessFlags;
-        public short                                nameIndex;
-        public short                                descriptorIndex;
+        public String                               name;
+        public String                               descriptor;
         public ConstantValueAttribute               constantValueAttribute;
         public RuntimeInvisibleAnnotationsAttribute runtimeInvisibleAnnotationsAttribute;
         public RuntimeVisibleAnnotationsAttribute   runtimeVisibleAnnotationsAttribute;
@@ -504,8 +381,8 @@ public class ClassFile {
 
         public Field(DataInputStream dis) throws IOException {
             accessFlags = dis.readShort();
-            nameIndex = dis.readShort();
-            descriptorIndex = dis.readShort();
+            name = constantPool.getConstantUtf8Info(dis.readShort()).bytes;
+            descriptor = constantPool.getConstantUtf8Info(dis.readShort()).bytes;
 
             readAttributes(dis, new AbstractAttributeVisitor() {
                 public void accept(ConstantValueAttribute cva) {
@@ -537,9 +414,10 @@ public class ClassFile {
 
     public class Method {
         public short                                         accessFlags;
-        public short                                         nameIndex;
-        public short                                         descriptorIndex;
+        public String                                        name;
+        public String                                        descriptor;
         public final List<Attribute>                         attributes = new ArrayList<Attribute>();
+        public AnnotationDefaultAttribute                    annotationDefaultAttribute;
         public CodeAttribute                                 codeAttribute;
         public ExceptionsAttribute                           exceptionsAttribute;
         public RuntimeInvisibleAnnotationsAttribute          runtimeInvisibleAnnotationsAttribute;
@@ -551,9 +429,13 @@ public class ClassFile {
 
         public Method(DataInputStream dis) throws IOException {
             accessFlags = dis.readShort();
-            nameIndex = dis.readShort();
-            descriptorIndex = dis.readShort();
+            name = constantPool.getConstantUtf8Info(dis.readShort()).bytes;
+            descriptor = constantPool.getConstantUtf8Info(dis.readShort()).bytes;
             readAttributes(dis, new AbstractAttributeVisitor() {
+                public void accept(AnnotationDefaultAttribute ada) {
+                    annotationDefaultAttribute = ada;
+                    attributes.add(ada);
+                }
                 public void accept(CodeAttribute ca) {
                     codeAttribute = ca;
                     attributes.add(ca);
@@ -600,7 +482,7 @@ public class ClassFile {
 
     private void readAttribute(DataInputStream dis, AttributeVisitor visitor) throws IOException {
         
-        String attributeName = cpi(dis.readShort());
+        String attributeName = constantPool.getConstantUtf8Info(dis.readShort()).bytes;
         
         // Read attribute body into byte array and create a DataInputStream.
         ByteArrayInputStream bais;
@@ -617,7 +499,9 @@ public class ClassFile {
         // Check for extraneous bytes.
         {
             int av = bais.available();
-            if (av > 0) throw new RuntimeException(av + " extraneous bytes in attribute \"" + attributeName + "\"");
+            if (av > 0) {
+                throw new RuntimeException(av + " extraneous bytes in attribute \"" + attributeName + "\"");
+            }
         }
     }
 
@@ -626,99 +510,102 @@ public class ClassFile {
         final DataInputStream dis,
         AttributeVisitor      visitor
     ) throws IOException {
+        if (attributeName.equals("AnnotationDefault")) {
+            visitor.accept(new AnnotationDefaultAttribute(dis, this));
+        } else
         if (attributeName.equals("ConstantValue")) {
-            visitor.accept(new ConstantValueAttribute(dis));
+            visitor.accept(new ConstantValueAttribute(dis, this));
         } else
         if (attributeName.equals("Code")) {
-            visitor.accept(new CodeAttribute(dis));
-        } else
-        if (attributeName.equals("EnclosingMethod")) {
-            visitor.accept(new EnclosingMethodAttribute(dis));
-        } else
-        if (attributeName.equals("Exceptions")) {
-            visitor.accept(new ExceptionsAttribute(dis));
-        } else
-        if (attributeName.equals("InnerClasses")) {
-            visitor.accept(new InnerClassesAttribute(dis));
-        } else
-        if (attributeName.equals("RuntimeInvisibleAnnotations")) {
-            visitor.accept(new RuntimeInvisibleAnnotationsAttribute(dis));
-        } else
-        if (attributeName.equals("RuntimeInvisibleParameterAnnotations")) {
-            visitor.accept(new RuntimeInvisibleParameterAnnotationsAttribute(dis));
-        } else
-        if (attributeName.equals("RuntimeVisibleAnnotations")) {
-            visitor.accept(new RuntimeVisibleAnnotationsAttribute(dis));
-        } else
-        if (attributeName.equals("RuntimeVisibleParameterAnnotations")) {
-            visitor.accept(new RuntimeVisibleParameterAnnotationsAttribute(dis));
-        } else
-        if (attributeName.equals("Synthetic")) {
-            visitor.accept(new SyntheticAttribute(dis));
-        } else
-        if (attributeName.equals("SourceFile")) {
-            visitor.accept(new SourceFileAttribute(dis));
-        } else
-        if (attributeName.equals("LineNumberTable")) {
-            visitor.accept(new LineNumberTableAttribute(dis));
-        } else
-        if (attributeName.equals("LocalVariableTable")) {
-            visitor.accept(new LocalVariableTableAttribute(dis));
-        } else
-        if (attributeName.equals("LocalVariableTypeTable")) {
-            visitor.accept(new LocalVariableTypeTableAttribute(dis));
+            visitor.accept(new CodeAttribute(dis, this));
         } else
         if (attributeName.equals("Deprecated")) {
-            visitor.accept(new DeprecatedAttribute(dis));
+            visitor.accept(new DeprecatedAttribute(dis, this));
+        } else
+        if (attributeName.equals("EnclosingMethod")) {
+            visitor.accept(new EnclosingMethodAttribute(dis, this));
+        } else
+        if (attributeName.equals("Exceptions")) {
+            visitor.accept(new ExceptionsAttribute(dis, this));
+        } else
+        if (attributeName.equals("InnerClasses")) {
+            visitor.accept(new InnerClassesAttribute(dis, this));
+        } else
+        if (attributeName.equals("LineNumberTable")) {
+            visitor.accept(new LineNumberTableAttribute(dis, this));
+        } else
+        if (attributeName.equals("LocalVariableTable")) {
+            visitor.accept(new LocalVariableTableAttribute(dis, this));
+        } else
+        if (attributeName.equals("LocalVariableTypeTable")) {
+            visitor.accept(new LocalVariableTypeTableAttribute(dis, this));
+        } else
+        if (attributeName.equals("RuntimeInvisibleAnnotations")) {
+            visitor.accept(new RuntimeInvisibleAnnotationsAttribute(dis, this));
+        } else
+        if (attributeName.equals("RuntimeInvisibleParameterAnnotations")) {
+            visitor.accept(new RuntimeInvisibleParameterAnnotationsAttribute(dis, this));
+        } else
+        if (attributeName.equals("RuntimeVisibleAnnotations")) {
+            visitor.accept(new RuntimeVisibleAnnotationsAttribute(dis, this));
+        } else
+        if (attributeName.equals("RuntimeVisibleParameterAnnotations")) {
+            visitor.accept(new RuntimeVisibleParameterAnnotationsAttribute(dis, this));
         } else
         if (attributeName.equals("Signature")) {
-            visitor.accept(new SignatureAttribute(dis));
+            visitor.accept(new SignatureAttribute(dis, this));
+        } else
+        if (attributeName.equals("SourceFile")) {
+            visitor.accept(new SourceFileAttribute(dis, this));
+        } else
+        if (attributeName.equals("Synthetic")) {
+            visitor.accept(new SyntheticAttribute(dis, this));
         } else
         {
-            visitor.accept(new UnknownAttribute(dis));
+            visitor.accept(new UnknownAttribute(dis, this));
         }
     }
 
     public interface Attribute {
     }
 
-    public final class SignatureAttribute implements Attribute {
-        public final short index;
+    public static final class SignatureAttribute implements Attribute {
+        public final String signature;
 
-        private SignatureAttribute(DataInputStream dis) throws IOException {
-            index = dis.readShort();
+        private SignatureAttribute(DataInputStream dis, ClassFile cf) throws IOException {
+            signature = cf.constantPool.getConstantUtf8Info(dis.readShort()).bytes;
         }
     }
 
-    public final class UnknownAttribute implements Attribute {
+    public static final class UnknownAttribute implements Attribute {
         public byte[] info;
 
-        private UnknownAttribute(DataInputStream dis) throws IOException {
+        private UnknownAttribute(DataInputStream dis, ClassFile cf) throws IOException {
             info = readByteArray(dis, dis.available());
         }
     }
     
-    public final class EnclosingMethodAttribute implements Attribute {
-        public short classIndex;
-        public short methodIndex;
+    public static final class EnclosingMethodAttribute implements Attribute {
+        public ConstantClassInfo       clasS;
+        public ConstantNameAndTypeInfo method;
         
-        private EnclosingMethodAttribute(DataInputStream dis) throws IOException {
-            this.classIndex = dis.readShort();
-            this.methodIndex = dis.readShort();
+        private EnclosingMethodAttribute(DataInputStream dis, ClassFile cf) throws IOException {
+            this.clasS = cf.constantPool.getConstantClassInfo(dis.readShort());  // classIndex
+            this.method = cf.constantPool.getConstantNameAndTypeInfo(dis.readShort());  // methodIndex
         }
     }
     
-    public final class ExceptionsAttribute implements Attribute {
-        public final List<Short> exceptions = new ArrayList<Short>();
+    public static final class ExceptionsAttribute implements Attribute {
+        public final List<ConstantClassInfo> exceptionNames = new ArrayList<ConstantClassInfo>();
 
-        private ExceptionsAttribute(DataInputStream dis) throws IOException {
+        private ExceptionsAttribute(DataInputStream dis, ClassFile cf) throws IOException {
             for (int i = dis.readShort(); i > 0; --i) {
-                exceptions.add(dis.readShort());
+                exceptionNames.add(cf.constantPool.getConstantClassInfo(dis.readShort()));
             }
         }
     }
 
-    public final class CodeAttribute implements Attribute {
+    public static final class CodeAttribute implements Attribute {
         public final short                     maxStack;
         public final short                     maxLocals;
         public final byte[]                    code;
@@ -728,7 +615,7 @@ public class ClassFile {
         public LineNumberTableAttribute        lineNumberTableAttribute;
         public final List<Attribute>           attributes = new ArrayList<Attribute>();
 
-        private CodeAttribute(DataInputStream dis) throws IOException {
+        private CodeAttribute(DataInputStream dis, ClassFile cf) throws IOException {
             maxStack = dis.readShort();
             maxLocals = dis.readShort();
 
@@ -737,11 +624,11 @@ public class ClassFile {
 
             // Exception table.
             for (short i = dis.readShort(); i > 0; --i) {
-                exceptionTable.add(new ExceptionTableEntry(dis));
+                exceptionTable.add(new ExceptionTableEntry(dis, cf));
             }
 
             // Code attributes.
-            readAttributes(dis, new AbstractAttributeVisitor() {
+            cf.readAttributes(dis, new AbstractAttributeVisitor() {
                 public void accept(LineNumberTableAttribute lnta) {
                     lineNumberTableAttribute = lnta;
                     attributes.add(lnta);
@@ -761,17 +648,17 @@ public class ClassFile {
         }
     }
 
-    public class ExceptionTableEntry {
-        public short startPC;
-        public short endPC;
-        public short handlerPC;
-        public short catchType;
+    public static class ExceptionTableEntry {
+        public short             startPC;
+        public short             endPC;
+        public short             handlerPC;
+        public ConstantClassInfo catchType;
 
-        private ExceptionTableEntry(DataInputStream dis) throws IOException {
+        private ExceptionTableEntry(DataInputStream dis, ClassFile cf) throws IOException {
             startPC   = dis.readShort();
             endPC     = dis.readShort();
             handlerPC = dis.readShort();
-            catchType = dis.readShort();
+            catchType = cf.constantPool.getConstantClassInfo(dis.readShort());
         }
     }
 
@@ -781,11 +668,11 @@ public class ClassFile {
         return res;
     }
 
-    public class SourceFileAttribute implements Attribute {
-        public final short sourceFileIndex;
+    public static class SourceFileAttribute implements Attribute {
+        public String sourceFile;
 
-        private SourceFileAttribute(DataInputStream dis) throws IOException {
-            this.sourceFileIndex = dis.readShort();
+        private SourceFileAttribute(DataInputStream dis, ClassFile cf) throws IOException {
+            this.sourceFile = cf.constantPool.getConstantUtf8Info(dis.readShort()).bytes;
         }
     }
 
@@ -801,7 +688,7 @@ public class ClassFile {
     public class LineNumberTableAttribute implements Attribute {
         public final List<LineNumberTableEntry> entries = new ArrayList<LineNumberTableEntry>();
 
-        private LineNumberTableAttribute(DataInputStream dis) throws IOException {
+        private LineNumberTableAttribute(DataInputStream dis, ClassFile cf) throws IOException {
             for (int i = dis.readShort(); i > 0; --i) {
                 entries.add(new LineNumberTableEntry(dis));
             }
@@ -809,112 +696,62 @@ public class ClassFile {
     }
 
     class LocalVariableTableEntry {
-        public short startPC;
-        public short length;
-        public short nameIndex;
-        public short descriptorIndex;
-        public short index;
+        public short  startPC;
+        public short  length;
+        public String name;
+        public String descriptor;
+        public short  index;
 
-        private LocalVariableTableEntry(DataInputStream dis) throws IOException {
-            startPC         = dis.readShort();
-            length          = dis.readShort();
-            nameIndex       = dis.readShort();
-            descriptorIndex = dis.readShort();
-            index           = dis.readShort();
+        private LocalVariableTableEntry(DataInputStream dis, ClassFile cf) throws IOException {
+            startPC    = dis.readShort();
+            length     = dis.readShort();
+            name       = cf.constantPool.getConstantUtf8Info(dis.readShort()).bytes;
+            descriptor = cf.constantPool.getConstantUtf8Info(dis.readShort()).bytes;
+            index      = dis.readShort();
         }
     }
 
     public class LocalVariableTableAttribute implements Attribute {
         public final List<LocalVariableTableEntry> entries = new ArrayList<LocalVariableTableEntry>();
 
-        private LocalVariableTableAttribute(DataInputStream dis) throws IOException {
+        private LocalVariableTableAttribute(DataInputStream dis, ClassFile cf) throws IOException {
             for (short i = dis.readShort(); i > 0; --i) {
-                entries.add(new LocalVariableTableEntry(dis));
+                entries.add(new LocalVariableTableEntry(dis, cf));
             }
         }
     }
 
-    class LocalVariableTypeTableEntry {
-        public short startPC;
-        public short length;
-        public short nameIndex;
-        public short signatureIndex;
-        public short index;
+    public static class LocalVariableTypeTableEntry {
+        public short  startPC;
+        public short  length;
+        public String name;
+        public String signature;
+        public short  index;
 
-        private LocalVariableTypeTableEntry(DataInputStream dis) throws IOException {
-            startPC        = dis.readShort();
-            length         = dis.readShort();
-            nameIndex      = dis.readShort();
-            signatureIndex = dis.readShort();
-            index          = dis.readShort();
+        private LocalVariableTypeTableEntry(DataInputStream dis, ClassFile cf) throws IOException {
+            startPC   = dis.readShort();
+            length    = dis.readShort();
+            name      = cf.constantPool.getConstantUtf8Info(dis.readShort()).bytes;
+            signature = cf.constantPool.getConstantUtf8Info(dis.readShort()).bytes;
+            index     = dis.readShort();
         }
     }
 
-    public class LocalVariableTypeTableAttribute implements Attribute {
+    public static class LocalVariableTypeTableAttribute implements Attribute {
         public final List<LocalVariableTypeTableEntry> entries = new ArrayList<LocalVariableTypeTableEntry>();
 
-        private LocalVariableTypeTableAttribute(DataInputStream dis) throws IOException {
+        private LocalVariableTypeTableAttribute(DataInputStream dis, ClassFile cf) throws IOException {
             for (short i = dis.readShort(); i > 0; --i) {
-                entries.add(new LocalVariableTypeTableEntry(dis));
+                entries.add(new LocalVariableTypeTableEntry(dis, cf));
             }
         }
     }
     
-    public final class ConstantValueAttribute implements Attribute {
-        public final short constantValueIndex;
+    public static final class ConstantValueAttribute implements Attribute {
+        public final String constantValue;
 
-        private ConstantValueAttribute(DataInputStream dis) throws IOException {
-            this.constantValueIndex = dis.readShort();
+        private ConstantValueAttribute(DataInputStream dis, ClassFile cf) throws IOException {
+            this.constantValue = cf.constantPool.getIntegerFloatLongDoubleString(dis.readShort());
         }
-    }
-
-    private static String stringToJavaLiteral(String s) {
-        for (int i = 0; i < s.length();) {
-            char c = s.charAt(i);
-            int idx = "\r\n\"\t\b".indexOf(c);
-            if (idx == -1) {
-                ++i;
-            } else {
-                s = s.substring(0, i) + '\\' + "rn\"tb".charAt(idx) + s.substring(i + 1);
-                i += 2;
-            }
-            if (i >= 80) break;
-        }
-        return '"' + s + '"';
-    }
-
-    /**
-     * Returns one of the following:
-     * <ul>
-     *   <li>TypeName.methodName(parameterType, parameterType) => ReturnType
-     *   <li>TypeName(parameterType, parameterType)
-     *   <li>""
-     *   <li>FieldType TypeName.fieldName
-     * </ul>
-     */
-    private String member(String typeName, short nameAndTypeIndex) {
-        NameAndTypeConstantPoolInfo nat = (NameAndTypeConstantPoolInfo) getConstantPoolEntry(nameAndTypeIndex);
-        return member(typeName, cpi(nat.nameIndex), cpi(nat.descriptorIndex));
-    }
-
-    /**
-     * Returns one of the following:
-     * <ul>
-     *   <li>TypeName.methodName(parameterType, parameterType) => ReturnType
-     *   <li>TypeName(parameterType, parameterType)
-     *   <li>""
-     *   <li>FieldType TypeName.fieldName
-     * </ul>
-     */
-    private String member(String typeName, String name, String descriptor) {
-        if (descriptor.startsWith("(")) {
-            return Descriptor.decodeMethodDescriptor(descriptor, name, typeName);
-        } else {
-            return Descriptor.decodeFieldDescriptor(descriptor) + " " + typeName + "." + name;
-        }
-    }
-
-    public short getConstantPoolSize() {
-        return (short) constantPool.size();
     }
 }
