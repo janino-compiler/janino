@@ -38,8 +38,16 @@ public class StringCharStream implements CharStream {
         this.in = in;
     }
 
+    public int peek() {
+        return idx == in.length() ? -1 : in.charAt(idx);
+    }
+
     public boolean peek(char c) {
         return idx < in.length() && in.charAt(idx) == c;
+    }
+
+    public int peek(String chars) {
+        return idx == in.length() ? -1 : chars.indexOf(in.charAt(idx));
     }
 
     public char read() throws EOFException {
@@ -53,6 +61,14 @@ public class StringCharStream implements CharStream {
         idx++;
     }
 
+    public int read(String chars) throws EOFException, IOException {
+        if (idx == in.length()) throw new EOFException("Expected one of '" + chars + "' instead of end-of-input");
+        int res = chars.indexOf(in.charAt(idx));
+        if (res == -1) throw new IOException("One of '" + chars + "' expected instead of '" + in.charAt(idx) + "'");
+        idx++;
+        return res;
+    }
+
     public boolean peekRead(char c) {
         if (idx >= in.length()) return false;
         if (in.charAt(idx) == c) {
@@ -62,29 +78,19 @@ public class StringCharStream implements CharStream {
         return false;
     }
 
-    public void eos() throws IOException {
+    public int peekRead(String chars) {
+        if (idx >= in.length()) return -1;
+        int res = chars.indexOf(in.charAt(idx));
+        if (res != -1) idx++;
+        return res;
+    }
+
+    public void eoi() throws IOException {
         if (idx < in.length()) throw new IOException("Unexpected trailing characters '" + in.substring(idx) + "'");
     }
 
-    public boolean peekEos() {
+    public boolean atEoi() {
         return idx >= in.length();
-    }
-
-    public char peek() throws EOFException {
-        if (idx == in.length()) throw new EOFException("Unexpected end-of-input");
-        return in.charAt(idx);
-    }
-
-    public int peek(String chars) {
-        return idx == in.length() ? -1 : chars.indexOf(in.charAt(idx));
-    }
-
-    public int read(String chars) throws EOFException, IOException {
-        if (idx == in.length()) throw new EOFException("Expected one of '" + chars + "' instead of end-of-input");
-        int res = chars.indexOf(in.charAt(idx));
-        if (res == -1) throw new IOException("One of '" + chars + "' expected instead of '" + in.charAt(idx) + "'");
-        idx++;
-        return res;
     }
 
     public String toString() {

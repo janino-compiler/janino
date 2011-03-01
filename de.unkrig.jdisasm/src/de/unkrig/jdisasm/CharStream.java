@@ -30,22 +30,75 @@ import java.io.EOFException;
 import java.io.IOException;
 
 public interface CharStream {
+    
+    public static final int  EOI = -1;
 
-    char peek() throws EOFException;
+    /**
+     * Returns the next character on this stream but does <b>not</b> consume it.
+     *
+     * @return {@link #EOI} This stream is at end-of-input
+     */
+    int peek() throws IOException;
 
-    boolean peek(char c);
+    /**
+     * Returns whether the character stream is not at end-of-input <i>and</i> the next character on this stream equals
+     * the given character. Does <b>not</b> consume any characters.
+     */
+    boolean peek(char c) throws IOException;
 
-    int peek(String chars);
+    /**
+     * Checks whether the next character on this stream equals any of the characters of the given {@link String}. Does
+     * <b>not</b> consume any characters.
+     *
+     * @return The position of the next character in the given {@link String}, or -1
+     */
+    int peek(String chars) throws IOException;
 
-    char read() throws EOFException;
+    /**
+     * Consumes and returns the next character on this stream.
+     *
+     * @throws EOFException This stream is at end-of-input
+     */
+    char read() throws EOFException, IOException;
 
+    /**
+     * Consumes the next character on this stream and verifies that it equals the given character.
+     *
+     * @throws EOFException                 This stream is at end-of-input
+     * @throws UnexpectedCharacterException The next character does not equal the given character
+     */
     void read(char c) throws EOFException, IOException;
 
+    /**
+     * Consumes the nect character and verifies that it matches one of the characters of the given {@link String}.
+     *
+     * @return                              The position of the next character in the given {@link String}
+     * @throws EOFException                 This stream is at end-of-input
+     * @throws UnexpectedCharacterException The next character on this stream is not in the given {@link String}
+     */
     int read(String chars) throws EOFException, IOException;
 
-    boolean peekRead(char c);
+    /**
+     * If the next character on this stream equals the given character, it is consumed.
+     *
+     * @return {@codo true} iff the next character on this stream equals the given character
+     */
+    boolean peekRead(char c) throws IOException;
     
-    void eos() throws IOException;
-    
-    boolean peekEos();
+    /**
+     * If the next character on this stream is in the given {@link String}, it is consumed.
+     *
+     * @return The position of the next character in the given {@link String}, or -1
+     */
+    int peekRead(String chars) throws IOException;
+
+    /**
+     * @return Whether this stream is at end-of-input
+     */
+    boolean atEoi() throws IOException;
+
+    /**
+     * @throws UnexpectedCharacterException This stream is <i>not</i> at end-of-input
+     */
+    void eoi() throws IOException;
 }

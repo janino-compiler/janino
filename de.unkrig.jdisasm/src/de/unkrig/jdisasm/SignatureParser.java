@@ -42,7 +42,7 @@ public class SignatureParser {
     public static ClassSignature decodeClassSignature(String s) throws IOException {
         CharStream cs = new StringCharStream(s);
         ClassSignature cls = parseClassSignature(cs);
-        cs.eos();
+        cs.eoi();
         return cls;
     }
 
@@ -50,7 +50,7 @@ public class SignatureParser {
         CharStream cs = new StringCharStream(s);
         try {
             MethodTypeSignature mts = parseMethodTypeSignature(cs);
-            cs.eos();
+            cs.eoi();
             return mts;
         } catch (IOException ioe) {
             IOException ioe2 = new IOException(cs.toString() + ": " + ioe.getMessage());
@@ -62,7 +62,7 @@ public class SignatureParser {
     public static FieldTypeSignature decodeFieldTypeSignature(String s) throws IOException {
         CharStream cs = new StringCharStream(s);
         FieldTypeSignature fts = parseFieldTypeSignature(cs);
-        cs.eos();
+        cs.eoi();
         return fts;
     }
 
@@ -70,7 +70,7 @@ public class SignatureParser {
         CharStream cs = new StringCharStream(s);
         try {
             MethodTypeSignature mts = parseMethodDescriptor(cs);
-            cs.eos();
+            cs.eoi();
             return mts;
         } catch (IOException ioe) {
             IOException ioe2 = new IOException(cs.toString() + ": " + ioe.getMessage());
@@ -83,7 +83,7 @@ public class SignatureParser {
         CharStream cs = new StringCharStream(s);
         try {
             TypeSignature ts = parseFieldDescriptor(cs);
-            cs.eos();
+            cs.eoi();
             return ts;
         } catch (IOException ioe) {
             IOException ioe2 = new IOException(cs.toString() + ": " + ioe.getMessage());
@@ -304,7 +304,7 @@ public class SignatureParser {
             }
         }
         cls.superclassSignature = parseClassTypeSignature(cs);
-        while (!cs.peekEos()) cls.superinterfaceSignatures.add(parseClassTypeSignature(cs));
+        while (!cs.atEoi()) cls.superinterfaceSignatures.add(parseClassTypeSignature(cs));
         return cls;
     }
 
@@ -322,7 +322,7 @@ public class SignatureParser {
             mts.parameterTypes.add(parseTypeSignature(cs));
         }
         mts.returnType = parseReturnType(cs);
-        while (!cs.peekEos()) mts.thrownTypes.add(parseThrowsSignature(cs));
+        while (!cs.atEoi()) mts.thrownTypes.add(parseThrowsSignature(cs));
 
         return mts;
     }
