@@ -76,7 +76,8 @@ public class Disassembler {
     private PrintWriter pw = new PrintWriter(System.out);
     private boolean     verbose = false;
     private File        sourceDirectory = null;
-    private boolean     hideLineNumbers;
+    private boolean     hideLines;
+    private boolean     hideVars;
 
     // "" for the default package; with a trailing period otherwise.
     private String         thisClassPackageName;
@@ -97,18 +98,22 @@ public class Disassembler {
             if (arg.equals("-src")) {
                 d.setSourceDirectory(new File(args[++i]));
             } else
-            if (arg.equals("-hide-line-numbers")) {
-                d.setHideLineNumbers(true);
+            if (arg.equals("-hide-lines")) {
+                d.setHideLines(true);
+            } else
+            if (arg.equals("-hide-vars")) {
+                d.setHideVars(true);
             } else
             if (arg.equals("-help")) {
                 System.out.println("Prints a disassembly listing of the given JAVA[TM] class files to STDOUT.");
                 System.out.println("Usage:");
                 System.out.println("  java " + Disassembler.class.getName() + " [ <option> ] ... <class-file> ...");
                 System.out.println("Valid options are:");
-                System.out.println("  -o <output-file>    Store disassembly output in a file.");
+                System.out.println("  -o <output-file>   Store disassembly output in a file.");
                 System.out.println("  -verbose");
-                System.out.println("  -src <source-dir>   Interweave the output with the class file's source code.");
-                System.out.println("  -hide-line-numbers  Don't print the line numbers.");
+                System.out.println("  -src <source-dir>  Interweave the output with the class file's source code.");
+                System.out.println("  -hide-lines        Don't print the line numbers.");
+                System.out.println("  -hide-vars         Don't print the local variable names.");
                 System.exit(0);
             } else
             {
@@ -135,8 +140,11 @@ public class Disassembler {
     public void setSourceDirectory(File sourceDirectory) {
         this.sourceDirectory = sourceDirectory;
     }
-    public void setHideLineNumbers(boolean hideLineNumbers) {
-        this.hideLineNumbers = hideLineNumbers;
+    public void setHideLines(boolean hideLines) {
+        this.hideLines = hideLines;
+    }
+    public void setHideVars(boolean hideVars) {
+        this.hideVars = hideVars;
     }
 
     void print(String s)   { this.pw.print(s); }
@@ -399,7 +407,7 @@ public class Disassembler {
                 );
             } else
             {
-                print(mts.returnType.toString() + ' ');
+                print(beautify(mts.returnType.toString()) + ' ');
                 print(functionName);
                 print(
                     mts.parameterTypes,
@@ -474,9 +482,9 @@ public class Disassembler {
 
                 // Parameter type.
                 if (varargs && !it.hasNext() && pts instanceof SignatureParser.ArrayTypeSignature) {
-                    print(((SignatureParser.ArrayTypeSignature) pts).typeSignature.toString() + "...");
+                    print(beautify(((SignatureParser.ArrayTypeSignature) pts).typeSignature.toString()) + "...");
                 } else {
-                    print(pts.toString());
+                    print(beautify(pts.toString()));
                 }
 
                 // Parameter name.
@@ -568,9 +576,9 @@ public class Disassembler {
                     if (lineNumber != -1) {
                         String sourceLine = sourceLines.get(lineNumber);
                         if (sourceLine == null) {
-                            if (!this.hideLineNumbers) this.println("              *** Line " + lineNumber);
+                            if (!this.hideLines) this.println("              *** Line " + lineNumber);
                         } else {
-                            if (this.hideLineNumbers) {
+                            if (this.hideLines) {
                                 this.println("              *** " + sourceLine);
                             } else {
                                 this.println("              *** Line " + lineNumber + ": " + sourceLine);
@@ -753,7 +761,7 @@ public class Disassembler {
         "104 imul",
         "116 ineg",
         "193 instanceof      class2",
-        "185 invokeinterface interfacemethodref2 signedbyte signedbyte",
+        "185 invokeinterface interfacemethodref2 unusedbyte unusedbyte",
         "183 invokespecial   methodref2",
         "184 invokestatic    methodref2",
         "182 invokevirtual   methodref2",
@@ -985,7 +993,7 @@ public class Disassembler {
                             ) throws IOException {
                                 byte index = dis.readByte();
                                 LocalVariable lv = d.getLocalVariable((short) (0xff & index), (short) (instructionOffset + 2), method);
-                                return " [" + lv.typeSignature.toString() + ' ' + lv.name + ']';
+                                return d.beautify(lv.toString());
                             }
                         };
                     } else
@@ -1000,7 +1008,7 @@ public class Disassembler {
                             ) throws IOException {
                                 short index = dis.readByte();
                                 LocalVariable lv = d.getLocalVariable(index, (short) (instructionOffset + 2), method);
-                                return " [" + lv.typeSignature.toString() + ' ' + lv.name + ']';
+                                return d.beautify(lv.toString());
                             }
                         };
                     } else
@@ -1019,7 +1027,7 @@ public class Disassembler {
                                 Disassembler    d
                             ) throws IOException {
                                 lv = d.getLocalVariable(index, (short) (instructionOffset + 2), method);
-                                return " [" + d.beautify(lv.typeSignature.toString()) + ' ' + lv.name + ']';
+                                return d.beautify(lv.toString());
                             }
                         };
                     } else
@@ -1050,6 +1058,20 @@ public class Disassembler {
                                 short branchTarget = (short) (instructionOffset + dis.readInt());
                                 d.branchTargets.add(branchTarget);
                                 return " " + (0xffff & branchTarget);
+                            }
+                        };
+                    } else
+                    if (s.equals("unusedbyte")) {
+                        operand = new Operand() {
+                            public String disasm(
+                                    DataInputStream dis,
+                                    short           instructionOffset,
+                                    Method          method,
+                                    ConstantPool    cp,
+                                    Disassembler    d
+                            ) throws IOException {
+                                dis.readByte();
+                                return "";
                             }
                         };
                     } else
@@ -1215,7 +1237,24 @@ public class Disassembler {
         ClassFile.Method method
     ) {
         LocalVariable lv = new LocalVariable();
+        int firstParameter = (method.accessFlags & Modifier.STATIC) == 0 ? 1 : 0;
+        if (localVariableIndex < firstParameter) {
+            lv.name = "this";
+            return lv;
+        }
         try {
+            MethodTypeSignature mts = (
+                method.signatureAttribute != null
+                ? SignatureParser.decodeMethodTypeSignature(method.signatureAttribute.signature)
+                : SignatureParser.decodeMethodDescriptor(method.descriptor)
+            );
+            if (localVariableIndex < firstParameter + mts.parameterTypes.size()) {
+                lv.name = "p" + (localVariableIndex - firstParameter);
+                lv.optionalTypeSignature = mts.parameterTypes.get(localVariableIndex - firstParameter);
+            } else
+            {
+                lv.name = "v" + (localVariableIndex - firstParameter - mts.parameterTypes.size());
+            }
             if (method.codeAttribute != null) {
                 if (method.codeAttribute.localVariableTypeTableAttribute != null) {
                     for (ClassFile.LocalVariableTypeTableEntry lvtte : method.codeAttribute.localVariableTypeTableAttribute.entries) {
@@ -1224,8 +1263,8 @@ public class Disassembler {
                             instructionOffset <= lvtte.startPC + lvtte.length &&
                             localVariableIndex == lvtte.index
                         ) {
-                            lv.typeSignature = SignatureParser.decodeFieldTypeSignature(lvtte.signature);
-                            lv.name          =  lvtte.name;
+                            lv.optionalTypeSignature = SignatureParser.decodeFieldTypeSignature(lvtte.signature);
+                            if (!this.hideVars) lv.name =  lvtte.name;
                             return lv;
                         }
                     }
@@ -1237,40 +1276,30 @@ public class Disassembler {
                             instructionOffset <= lvte.startPC + lvte.length &&
                             localVariableIndex == lvte.index
                         ) {
-                            lv.typeSignature = SignatureParser.decodeFieldDescriptor(lvte.descriptor);
-                            lv.name          = lvte.name;
+                            lv.optionalTypeSignature = SignatureParser.decodeFieldDescriptor(lvte.descriptor);
+                            if (!this.hideVars) lv.name = lvte.name;
                             return lv;
                         }
                     }
                 }
             }
-            MethodTypeSignature mts = (
-                method.signatureAttribute != null
-                ? SignatureParser.decodeMethodTypeSignature(method.signatureAttribute.signature)
-                : SignatureParser.decodeMethodDescriptor(method.descriptor)
-            );
-            int firstParameter = (method.accessFlags & Modifier.STATIC) == 0 ? 1 : 0;
-            if (localVariableIndex < firstParameter) {
-                lv.name = "this";
-                lv.typeSignature = SignatureParser.UNKNOWN;
-            } else
-                if (localVariableIndex < firstParameter + mts.parameterTypes.size()) {
-                lv.name = "p" + (localVariableIndex - firstParameter);
-                lv.typeSignature = mts.parameterTypes.get(localVariableIndex - firstParameter);
-            } else
-            {
-                lv.name = "v" + (localVariableIndex - firstParameter - mts.parameterTypes.size());
-                lv.typeSignature = SignatureParser.UNKNOWN;
-            }
         } catch (IOException e) {
-            lv.name = "l" + localVariableIndex;
-            lv.typeSignature = SignatureParser.UNKNOWN;
+            if (lv.name == null) lv.name = "l" + localVariableIndex;
         }
         return lv;
     }
     private class LocalVariable {
-        TypeSignature typeSignature;
+        TypeSignature optionalTypeSignature;
         String        name;
+
+        public String toString() {
+            return (
+                this.optionalTypeSignature == null
+                ? " [" + this.name + ']'
+                : " [" + this.optionalTypeSignature.toString() + ' ' + this.name + ']'
+            );
+                
+        }
     }
 
     private static class Instruction {
