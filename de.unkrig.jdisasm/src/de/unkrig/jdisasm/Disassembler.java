@@ -28,6 +28,7 @@ package de.unkrig.jdisasm;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
+import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -40,17 +41,43 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
 
+import de.unkrig.jdisasm.ClassFile.AnnotationDefaultAttribute;
+import de.unkrig.jdisasm.ClassFile.Attribute;
+import de.unkrig.jdisasm.ClassFile.AttributeVisitor;
+import de.unkrig.jdisasm.ClassFile.CodeAttribute;
+import de.unkrig.jdisasm.ClassFile.ConstantValueAttribute;
+import de.unkrig.jdisasm.ClassFile.DeprecatedAttribute;
+import de.unkrig.jdisasm.ClassFile.EnclosingMethodAttribute;
+import de.unkrig.jdisasm.ClassFile.ExceptionTableEntry;
+import de.unkrig.jdisasm.ClassFile.ExceptionsAttribute;
+import de.unkrig.jdisasm.ClassFile.InnerClassesAttribute;
+import de.unkrig.jdisasm.ClassFile.LineNumberTableAttribute;
+import de.unkrig.jdisasm.ClassFile.LineNumberTableEntry;
+import de.unkrig.jdisasm.ClassFile.LocalVariableTableAttribute;
+import de.unkrig.jdisasm.ClassFile.LocalVariableTableEntry;
+import de.unkrig.jdisasm.ClassFile.LocalVariableTypeTableAttribute;
+import de.unkrig.jdisasm.ClassFile.LocalVariableTypeTableEntry;
 import de.unkrig.jdisasm.ClassFile.Method;
+import de.unkrig.jdisasm.ClassFile.RuntimeInvisibleAnnotationsAttribute;
+import de.unkrig.jdisasm.ClassFile.RuntimeInvisibleParameterAnnotationsAttribute;
+import de.unkrig.jdisasm.ClassFile.RuntimeVisibleAnnotationsAttribute;
+import de.unkrig.jdisasm.ClassFile.RuntimeVisibleParameterAnnotationsAttribute;
+import de.unkrig.jdisasm.ClassFile.SignatureAttribute;
+import de.unkrig.jdisasm.ClassFile.SourceFileAttribute;
+import de.unkrig.jdisasm.ClassFile.SyntheticAttribute;
+import de.unkrig.jdisasm.ClassFile.UnknownAttribute;
 import de.unkrig.jdisasm.ConstantPool.ConstantClassInfo;
 import de.unkrig.jdisasm.ConstantPool.ConstantFieldrefInfo;
 import de.unkrig.jdisasm.ConstantPool.ConstantInterfaceMethodrefInfo;
@@ -147,9 +174,10 @@ public class Disassembler {
         this.hideVars = hideVars;
     }
 
-    void print(String s)   { this.pw.print(s); }
-    void println()         { this.pw.println(); }
-    void println(String s) { this.pw.println(s); }
+    void print(String s)                       { this.pw.print(s); }
+    void println()                             { this.pw.println(); }
+    void println(String s)                     { this.pw.println(s); }
+    void printf(String format, Object... args) { this.pw.printf(format, args); }
 
     /**
      * Disassemble one Java&trade; class file to {@link System#out}.
@@ -453,11 +481,17 @@ public class Disassembler {
                 }
                 println("    }");
             }
-            if (verbose) {
-                for (ClassFile.Attribute a : m.attributes) {
-                    println("        // " + a);
-                }
-            }
+            print(m.attributes, "    // ", new Attribute[] {
+                m.annotationDefaultAttribute,
+                m.codeAttribute,
+                m.exceptionsAttribute,
+                m.runtimeInvisibleAnnotationsAttribute,
+                m.runtimeInvisibleParameterAnnotationsAttribute,
+                m.runtimeVisibleAnnotationsAttribute,
+                m.runtimeVisibleParameterAnnotationsAttribute,
+                m.signatureAttribute,
+                m.syntheticAttribute,
+            });
         }
 
         if (verbose) {
@@ -466,6 +500,216 @@ public class Disassembler {
             }
         }
         println("}");
+    }
+
+    private void print(
+        List<Attribute> attributes,
+        String          prefix,
+        Attribute[]     excludedAttributes
+    ) {
+        if (!verbose) {
+            Set<Attribute> ex = new HashSet<Attribute>(Arrays.asList(excludedAttributes));
+            List<Attribute> tmp = new ArrayList<ClassFile.Attribute>();
+            for (Attribute a : attributes) {
+                if (!ex.contains(a)) tmp.add(a);
+            }
+            attributes = tmp;
+        }
+        if (attributes.isEmpty()) return;
+        println(prefix + (verbose ? "Attributes:" : "Unprocessed attributes:"));
+        PrintAttributeVisitor visitor = new PrintAttributeVisitor(prefix + "  ");
+        for (Attribute a : attributes) {
+            a.accept(visitor);
+        }
+    }
+
+    public class PrintAttributeVisitor implements AttributeVisitor {
+
+        private final String prefix;
+
+        public PrintAttributeVisitor(String prefix) {
+            this.prefix = prefix;
+        }
+
+        public void visit(AnnotationDefaultAttribute ada) {
+            println(prefix + "AnnotationDefault:");
+            println(prefix + "  " + ada.defaultValue.toString());
+        }
+
+        public void visit(CodeAttribute ca) {
+            println(prefix + "Code:");
+            println(prefix + "  max_locals = " + ca.maxLocals);
+            println(prefix + "  max_stack = " + ca.maxStack);
+
+            if (ca.code != null) {
+                println(prefix + "  code = {");
+                print(ca.code);
+                println(prefix + "  }");
+            }
+
+            if (!ca.exceptionTable.isEmpty()) {
+                println(prefix + "  exception_table = {");
+                for (ExceptionTableEntry e : ca.exceptionTable) {
+                    println(prefix + "    " + e.startPC + "..." + e.endPC
+                        + ": " + beautify(e.catchType.name) + " => "
+                        + e.handlerPC);
+                }
+                println(prefix + "  }");
+            }
+
+            if (ca.localVariableTableAttribute != null && !ca.localVariableTableAttribute.entries.isEmpty()) {
+                println(prefix + "  local_variable_table = {");
+                for (LocalVariableTableEntry e : ca.localVariableTableAttribute.entries) {
+                    try {
+                        println(prefix + "    " + e.startPC + "+" + e.length + ": " + e.index + " = " + beautify(SignatureParser.decodeFieldDescriptor(e.descriptor).toString()) + " " + e.name);
+                    } catch (IOException e1) {
+                        // TODO Auto-generated catch block
+                        e1.printStackTrace();
+                    }
+                }
+                println(prefix + "  }");
+            }
+
+            if (ca.localVariableTypeTableAttribute != null && !ca.localVariableTypeTableAttribute.entries.isEmpty()) {
+                println(prefix + "  local_variable_type_table = {");
+                for (LocalVariableTypeTableEntry e : ca.localVariableTypeTableAttribute.entries) {
+                    try {
+                        println(prefix
+                            + "    "
+                            + e.startPC
+                            + "+"
+                            + e.length
+                            + ": "
+                            + e.index
+                            + " = "
+                            + beautify(SignatureParser
+                                .decodeFieldTypeSignature(e.signature)
+                                .toString()) + " " + e.name);
+                    } catch (IOException e1) {
+                        // TODO Auto-generated catch block
+                        e1.printStackTrace();
+                    }
+                }
+                println(prefix + "  }");
+            }
+
+            if (ca.lineNumberTableAttribute != null) {
+                println(prefix + "  line_number_table = {");
+                for (LineNumberTableEntry e : ca.lineNumberTableAttribute.entries) {
+                    println(prefix + "    " + e.startPC + ": Line "
+                        + e.lineNumber);
+                }
+                println(prefix + "  }");
+            }
+
+            if (!ca.attributes.isEmpty()) {
+                println(prefix + "  attributes = {");
+                PrintAttributeVisitor pav = new PrintAttributeVisitor(prefix + "    ");
+                for (Attribute a : ca.attributes) {
+                    a.accept(pav);
+                }
+                println(prefix + "  }");
+            }
+        }
+
+        private void print(byte[] data) {
+            for (int i = 0; i < data.length; i += 32) {
+                Disassembler.this.print(prefix + "   ");
+                for (int j = 0; j < 32; ++j) {
+                    int idx = i + j;
+                    if (idx >= data.length) break;
+                    printf(" %02x", 0xff & data[idx]);
+                }
+                println();
+            }
+        }
+
+        public void visit(ConstantValueAttribute cva) {
+            println(prefix + "ConstantValue:");
+            println(prefix + "  constant_value = " + cva.constantValue);
+        }
+
+        public void visit(DeprecatedAttribute da) {
+            println(prefix + "ConstantValue:");
+            println(prefix + "  -");
+        }
+
+        public void visit(EnclosingMethodAttribute ema) {
+            println(prefix + "EnclosingMethod:");
+            try {
+                println(prefix + "  class/method = " + beautify(SignatureParser.decodeMethodDescriptor(ema.method.descriptor.bytes).toString(ema.clasS.name, ema.method.name.bytes)));
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+
+        public void visit(ExceptionsAttribute ea) {
+            println(prefix + "Exceptions:");
+            println(prefix + " TBD");
+        }
+
+        public void visit(InnerClassesAttribute ica) {
+            println(prefix + "InnerClasses:");
+            println(prefix + " TBD");
+        }
+
+        public void visit(LineNumberTableAttribute lnta) {
+            println(prefix + "LineNumberTable:");
+            println(prefix + " TBD");
+        }
+
+        public void visit(LocalVariableTableAttribute lvta) {
+            println(prefix + "LocalVariableTable:");
+            println(prefix + " TBD");
+        }
+
+        public void visit(LocalVariableTypeTableAttribute lvtta) {
+            println(prefix + "LocalVariableTypeTable:");
+            println(prefix + " TBD");
+        }
+
+        public void visit(RuntimeInvisibleAnnotationsAttribute riaa) {
+            println(prefix + "RuntimeInvisibleAnnotations:");
+            println(prefix + " TBD");
+        }
+
+        public void visit(RuntimeInvisibleParameterAnnotationsAttribute ripaa) {
+            println(prefix + "RuntimeInvisibleParameterAnnotations:");
+            println(prefix + " TBD");
+        }
+
+        public void visit(RuntimeVisibleAnnotationsAttribute rvaa) {
+            println(prefix + "RuntimeVisibleAnnotations:");
+            println(prefix + " TBD");
+        }
+
+        public void visit(RuntimeVisibleParameterAnnotationsAttribute rvpaa) {
+            println(prefix + "RuntimeVisibleParameterAnnotations:");
+            println(prefix + " TBD");
+        }
+
+        public void visit(SignatureAttribute sa) {
+            println(prefix + "Signature:");
+            println(prefix + " TBD");
+        }
+
+        public void visit(SourceFileAttribute sfa) {
+            println(prefix + "SourceFile:");
+            println(prefix + " TBD");
+        }
+
+        public void visit(SyntheticAttribute sa) {
+            println(prefix + "Synthetic:");
+            println(prefix + " -");
+        }
+
+        public void visit(UnknownAttribute ua) {
+            println(prefix + ua.name + ":");
+            println(prefix + "  data = {");
+            print(ua.info);
+            println(prefix + "}");
+        }
     }
 
     private void print(

@@ -91,32 +91,32 @@ public class ClassFile {
         // Class attributes.
         readAttributes(dis, new AbstractAttributeVisitor() {
 
-            public void accept(EnclosingMethodAttribute ema) {
+            public void visit(EnclosingMethodAttribute ema) {
                 enclosingMethodAttribute = ema;
                 attributes.add(ema);
             }
 
-            public void accept(RuntimeInvisibleAnnotationsAttribute riaa) {
+            public void visit(RuntimeInvisibleAnnotationsAttribute riaa) {
                 runtimeInvisibleAnnotationsAttribute = riaa;
                 attributes.add(riaa);
             }
 
-            public void accept(RuntimeVisibleAnnotationsAttribute rvaa) {
+            public void visit(RuntimeVisibleAnnotationsAttribute rvaa) {
                 runtimeVisibleAnnotationsAttribute = rvaa;
                 attributes.add(rvaa);
             }
 
-            public void accept(SignatureAttribute sa) {
+            public void visit(SignatureAttribute sa) {
                 signatureAttribute = sa;
                 attributes.add(sa);
             }
 
-            public void accept(SourceFileAttribute sfa) {
+            public void visit(SourceFileAttribute sfa) {
                 sourceFileAttribute = sfa;
                 attributes.add(sfa);
             }
 
-            public void accept(SyntheticAttribute sa) {
+            public void visit(SyntheticAttribute sa) {
                 syntheticAttribute = sa;
                 attributes.add(sa);
             }
@@ -143,11 +143,15 @@ public class ClassFile {
     public static class SyntheticAttribute implements Attribute {
         public SyntheticAttribute(DataInputStream dis, ClassFile cf) {
         }
+
+        public void accept(AttributeVisitor visitor) { visitor.visit(this); }
     }
 
     public static class DeprecatedAttribute implements Attribute {
         public DeprecatedAttribute(DataInputStream dis, ClassFile cf) {
         }
+
+        public void accept(AttributeVisitor visitor) { visitor.visit(this); }
     }
 
     public static class ClasS {
@@ -171,6 +175,8 @@ public class ClassFile {
                 classes.add(new ClasS(dis, cf));
             }
         }
+
+        public void accept(AttributeVisitor visitor) { visitor.visit(this); }
     }
 
     public static class Annotation {
@@ -278,11 +284,16 @@ public class ClassFile {
                 annotations.add(new Annotation(dis, cf));
             }
         }
+
+        public void accept(AttributeVisitor visitor) { visitor.visit(this); }
     }
+
     public static class RuntimeInvisibleAnnotationsAttribute extends RuntimeVisibleAnnotationsAttribute {
         public RuntimeInvisibleAnnotationsAttribute(DataInputStream  dis, ClassFile cf) throws IOException {
             super(dis, cf);
         }
+
+        public void accept(AttributeVisitor visitor) { visitor.visit(this); }
     }
 
     public static class ParameterAnnotation {
@@ -306,11 +317,15 @@ public class ClassFile {
                 }
             }
         }
+
+        public void accept(AttributeVisitor visitor) { visitor.visit(this); }
     }
     public static class RuntimeInvisibleParameterAnnotationsAttribute extends RuntimeVisibleParameterAnnotationsAttribute {
         public RuntimeInvisibleParameterAnnotationsAttribute(DataInputStream  dis, ClassFile cf) throws IOException {
             super(dis, cf);
         }
+
+        public void accept(AttributeVisitor visitor) { visitor.visit(this); }
     }
     
     public static class AnnotationDefaultAttribute implements Attribute {
@@ -320,52 +335,54 @@ public class ClassFile {
         private AnnotationDefaultAttribute(DataInputStream dis, ClassFile cf) throws IOException {
             this.defaultValue = newElementValue(dis, cf);
         }
+
+        public void accept(AttributeVisitor visitor) { visitor.visit(this); }
     }
 
-    interface AttributeVisitor {
-        void accept(AnnotationDefaultAttribute                    ada);
-        void accept(CodeAttribute                                 ca);
-        void accept(ConstantValueAttribute                        cva);
-        void accept(DeprecatedAttribute                           da);
-        void accept(EnclosingMethodAttribute                      ema);
-        void accept(ExceptionsAttribute                           ea);
-        void accept(InnerClassesAttribute                         ica);
-        void accept(LineNumberTableAttribute                      lnta);
-        void accept(LocalVariableTableAttribute                   lvta);
-        void accept(LocalVariableTypeTableAttribute               lvtta);
-        void accept(RuntimeInvisibleAnnotationsAttribute          riaa);
-        void accept(RuntimeInvisibleParameterAnnotationsAttribute ripaa);
-        void accept(RuntimeVisibleAnnotationsAttribute            rvaa);
-        void accept(RuntimeVisibleParameterAnnotationsAttribute   rvpaa);
-        void accept(SignatureAttribute                            sa);
-        void accept(SourceFileAttribute                           sfa);
-        void accept(SyntheticAttribute                            sa);
+    public interface AttributeVisitor {
+        void visit(AnnotationDefaultAttribute                    ada);
+        void visit(CodeAttribute                                 ca);
+        void visit(ConstantValueAttribute                        cva);
+        void visit(DeprecatedAttribute                           da);
+        void visit(EnclosingMethodAttribute                      ema);
+        void visit(ExceptionsAttribute                           ea);
+        void visit(InnerClassesAttribute                         ica);
+        void visit(LineNumberTableAttribute                      lnta);
+        void visit(LocalVariableTableAttribute                   lvta);
+        void visit(LocalVariableTypeTableAttribute               lvtta);
+        void visit(RuntimeInvisibleAnnotationsAttribute          riaa);
+        void visit(RuntimeInvisibleParameterAnnotationsAttribute ripaa);
+        void visit(RuntimeVisibleAnnotationsAttribute            rvaa);
+        void visit(RuntimeVisibleParameterAnnotationsAttribute   rvpaa);
+        void visit(SignatureAttribute                            sa);
+        void visit(SourceFileAttribute                           sfa);
+        void visit(SyntheticAttribute                            sa);
 
-        void accept(UnknownAttribute unknownAttribute);
+        void visit(UnknownAttribute unknownAttribute);
     }
 
     public static abstract class AbstractAttributeVisitor implements AttributeVisitor {
 
         public abstract void acceptOther(Attribute ai);
 
-        public void accept(AnnotationDefaultAttribute                    ada)   { acceptOther(ada); }
-        public void accept(CodeAttribute                                 ca)    { acceptOther(ca); }
-        public void accept(ConstantValueAttribute                        cva)   { acceptOther(cva); }
-        public void accept(DeprecatedAttribute                           da)    { acceptOther(da); }
-        public void accept(EnclosingMethodAttribute                      ema)   { acceptOther(ema); }
-        public void accept(ExceptionsAttribute                           ea)    { acceptOther(ea); }
-        public void accept(InnerClassesAttribute                         ica)   { acceptOther(ica); }
-        public void accept(LineNumberTableAttribute                      lnta)  { acceptOther(lnta); }
-        public void accept(LocalVariableTableAttribute                   lvta)  { acceptOther(lvta); }
-        public void accept(LocalVariableTypeTableAttribute               lvtta) { acceptOther(lvtta); }
-        public void accept(RuntimeInvisibleAnnotationsAttribute          riaa)  { acceptOther(riaa); }
-        public void accept(RuntimeInvisibleParameterAnnotationsAttribute ripaa) { acceptOther(ripaa); }
-        public void accept(RuntimeVisibleAnnotationsAttribute            rvaa)  { acceptOther(rvaa); }
-        public void accept(RuntimeVisibleParameterAnnotationsAttribute   rvpaa) { acceptOther(rvpaa); }
-        public void accept(SignatureAttribute                            sa)    { acceptOther(sa); }
-        public void accept(SourceFileAttribute                           sfa)   { acceptOther(sfa); }
-        public void accept(SyntheticAttribute                            sa)    { acceptOther(sa); }
-        public void accept(UnknownAttribute                              a)     { acceptOther(a); }
+        public void visit(AnnotationDefaultAttribute                    ada)   { acceptOther(ada); }
+        public void visit(CodeAttribute                                 ca)    { acceptOther(ca); }
+        public void visit(ConstantValueAttribute                        cva)   { acceptOther(cva); }
+        public void visit(DeprecatedAttribute                           da)    { acceptOther(da); }
+        public void visit(EnclosingMethodAttribute                      ema)   { acceptOther(ema); }
+        public void visit(ExceptionsAttribute                           ea)    { acceptOther(ea); }
+        public void visit(InnerClassesAttribute                         ica)   { acceptOther(ica); }
+        public void visit(LineNumberTableAttribute                      lnta)  { acceptOther(lnta); }
+        public void visit(LocalVariableTableAttribute                   lvta)  { acceptOther(lvta); }
+        public void visit(LocalVariableTypeTableAttribute               lvtta) { acceptOther(lvtta); }
+        public void visit(RuntimeInvisibleAnnotationsAttribute          riaa)  { acceptOther(riaa); }
+        public void visit(RuntimeInvisibleParameterAnnotationsAttribute ripaa) { acceptOther(ripaa); }
+        public void visit(RuntimeVisibleAnnotationsAttribute            rvaa)  { acceptOther(rvaa); }
+        public void visit(RuntimeVisibleParameterAnnotationsAttribute   rvpaa) { acceptOther(rvpaa); }
+        public void visit(SignatureAttribute                            sa)    { acceptOther(sa); }
+        public void visit(SourceFileAttribute                           sfa)   { acceptOther(sfa); }
+        public void visit(SyntheticAttribute                            sa)    { acceptOther(sa); }
+        public void visit(UnknownAttribute                              a)     { acceptOther(a); }
     }
     
     public class Field {
@@ -385,23 +402,23 @@ public class ClassFile {
             descriptor = constantPool.getConstantUtf8Info(dis.readShort()).bytes;
 
             readAttributes(dis, new AbstractAttributeVisitor() {
-                public void accept(ConstantValueAttribute cva) {
+                public void visit(ConstantValueAttribute cva) {
                     constantValueAttribute = cva;
                     attributes.add(cva);
                 }
-                public void accept(RuntimeInvisibleAnnotationsAttribute riaa) {
+                public void visit(RuntimeInvisibleAnnotationsAttribute riaa) {
                     runtimeInvisibleAnnotationsAttribute = riaa;
                     attributes.add(riaa);
                 }
-                public void accept(RuntimeVisibleAnnotationsAttribute rvaa) {
+                public void visit(RuntimeVisibleAnnotationsAttribute rvaa) {
                     runtimeVisibleAnnotationsAttribute = rvaa;
                     attributes.add(rvaa);
                 }
-                public void accept(SignatureAttribute sa) {
+                public void visit(SignatureAttribute sa) {
                     signatureAttribute = sa;
                     attributes.add(sa);
                 }
-                public void accept(SyntheticAttribute sa) {
+                public void visit(SyntheticAttribute sa) {
                     syntheticAttribute = sa;
                     attributes.add(sa);
                 }
@@ -432,39 +449,39 @@ public class ClassFile {
             name = constantPool.getConstantUtf8Info(dis.readShort()).bytes;
             descriptor = constantPool.getConstantUtf8Info(dis.readShort()).bytes;
             readAttributes(dis, new AbstractAttributeVisitor() {
-                public void accept(AnnotationDefaultAttribute ada) {
+                public void visit(AnnotationDefaultAttribute ada) {
                     annotationDefaultAttribute = ada;
                     attributes.add(ada);
                 }
-                public void accept(CodeAttribute ca) {
+                public void visit(CodeAttribute ca) {
                     codeAttribute = ca;
                     attributes.add(ca);
                 }
-                public void accept(ExceptionsAttribute ea) {
+                public void visit(ExceptionsAttribute ea) {
                     exceptionsAttribute = ea;
                     attributes.add(ea);
                 }
-                public void accept(RuntimeInvisibleAnnotationsAttribute riaa) {
+                public void visit(RuntimeInvisibleAnnotationsAttribute riaa) {
                     runtimeInvisibleAnnotationsAttribute = riaa;
                     attributes.add(riaa);
                 }
-                public void accept(RuntimeInvisibleParameterAnnotationsAttribute ripaa) {
+                public void visit(RuntimeInvisibleParameterAnnotationsAttribute ripaa) {
                     runtimeInvisibleParameterAnnotationsAttribute = ripaa;
                     attributes.add(ripaa);
                 }
-                public void accept(RuntimeVisibleAnnotationsAttribute rvaa) {
+                public void visit(RuntimeVisibleAnnotationsAttribute rvaa) {
                     runtimeVisibleAnnotationsAttribute = rvaa;
                     attributes.add(rvaa);
                 }
-                public void accept(RuntimeVisibleParameterAnnotationsAttribute rvpaa) {
+                public void visit(RuntimeVisibleParameterAnnotationsAttribute rvpaa) {
                     runtimeVisibleParameterAnnotationsAttribute = rvpaa;
                     attributes.add(rvpaa);
                 }
-                public void accept(SignatureAttribute sa) {
+                public void visit(SignatureAttribute sa) {
                     signatureAttribute = sa;
                     attributes.add(sa);
                 }
-                public void accept(SyntheticAttribute sa) {
+                public void visit(SyntheticAttribute sa) {
                     syntheticAttribute = sa;
                     attributes.add(sa);
                 }
@@ -511,62 +528,63 @@ public class ClassFile {
         AttributeVisitor      visitor
     ) throws IOException {
         if (attributeName.equals("AnnotationDefault")) {
-            visitor.accept(new AnnotationDefaultAttribute(dis, this));
+            visitor.visit(new AnnotationDefaultAttribute(dis, this));
         } else
         if (attributeName.equals("ConstantValue")) {
-            visitor.accept(new ConstantValueAttribute(dis, this));
+            visitor.visit(new ConstantValueAttribute(dis, this));
         } else
         if (attributeName.equals("Code")) {
-            visitor.accept(new CodeAttribute(dis, this));
+            visitor.visit(new CodeAttribute(dis, this));
         } else
         if (attributeName.equals("Deprecated")) {
-            visitor.accept(new DeprecatedAttribute(dis, this));
+            visitor.visit(new DeprecatedAttribute(dis, this));
         } else
         if (attributeName.equals("EnclosingMethod")) {
-            visitor.accept(new EnclosingMethodAttribute(dis, this));
+            visitor.visit(new EnclosingMethodAttribute(dis, this));
         } else
         if (attributeName.equals("Exceptions")) {
-            visitor.accept(new ExceptionsAttribute(dis, this));
+            visitor.visit(new ExceptionsAttribute(dis, this));
         } else
         if (attributeName.equals("InnerClasses")) {
-            visitor.accept(new InnerClassesAttribute(dis, this));
+            visitor.visit(new InnerClassesAttribute(dis, this));
         } else
         if (attributeName.equals("LineNumberTable")) {
-            visitor.accept(new LineNumberTableAttribute(dis, this));
+            visitor.visit(new LineNumberTableAttribute(dis, this));
         } else
         if (attributeName.equals("LocalVariableTable")) {
-            visitor.accept(new LocalVariableTableAttribute(dis, this));
+            visitor.visit(new LocalVariableTableAttribute(dis, this));
         } else
         if (attributeName.equals("LocalVariableTypeTable")) {
-            visitor.accept(new LocalVariableTypeTableAttribute(dis, this));
+            visitor.visit(new LocalVariableTypeTableAttribute(dis, this));
         } else
         if (attributeName.equals("RuntimeInvisibleAnnotations")) {
-            visitor.accept(new RuntimeInvisibleAnnotationsAttribute(dis, this));
+            visitor.visit(new RuntimeInvisibleAnnotationsAttribute(dis, this));
         } else
         if (attributeName.equals("RuntimeInvisibleParameterAnnotations")) {
-            visitor.accept(new RuntimeInvisibleParameterAnnotationsAttribute(dis, this));
+            visitor.visit(new RuntimeInvisibleParameterAnnotationsAttribute(dis, this));
         } else
         if (attributeName.equals("RuntimeVisibleAnnotations")) {
-            visitor.accept(new RuntimeVisibleAnnotationsAttribute(dis, this));
+            visitor.visit(new RuntimeVisibleAnnotationsAttribute(dis, this));
         } else
         if (attributeName.equals("RuntimeVisibleParameterAnnotations")) {
-            visitor.accept(new RuntimeVisibleParameterAnnotationsAttribute(dis, this));
+            visitor.visit(new RuntimeVisibleParameterAnnotationsAttribute(dis, this));
         } else
         if (attributeName.equals("Signature")) {
-            visitor.accept(new SignatureAttribute(dis, this));
+            visitor.visit(new SignatureAttribute(dis, this));
         } else
         if (attributeName.equals("SourceFile")) {
-            visitor.accept(new SourceFileAttribute(dis, this));
+            visitor.visit(new SourceFileAttribute(dis, this));
         } else
         if (attributeName.equals("Synthetic")) {
-            visitor.accept(new SyntheticAttribute(dis, this));
+            visitor.visit(new SyntheticAttribute(dis, this));
         } else
         {
-            visitor.accept(new UnknownAttribute(dis, this));
+            visitor.visit(new UnknownAttribute(attributeName, dis, this));
         }
     }
 
     public interface Attribute {
+        void accept(AttributeVisitor visitor);
     }
 
     public static final class SignatureAttribute implements Attribute {
@@ -575,14 +593,20 @@ public class ClassFile {
         private SignatureAttribute(DataInputStream dis, ClassFile cf) throws IOException {
             signature = cf.constantPool.getConstantUtf8Info(dis.readShort()).bytes;
         }
+
+        public void accept(AttributeVisitor visitor) { visitor.visit(this); }
     }
 
     public static final class UnknownAttribute implements Attribute {
-        public byte[] info;
+        public final String name;
+        public byte[]       info;
 
-        private UnknownAttribute(DataInputStream dis, ClassFile cf) throws IOException {
+        private UnknownAttribute(String name, DataInputStream dis, ClassFile cf) throws IOException {
+            this.name = name;
             info = readByteArray(dis, dis.available());
         }
+
+        public void accept(AttributeVisitor visitor) { visitor.visit(this); }
     }
     
     public static final class EnclosingMethodAttribute implements Attribute {
@@ -593,6 +617,8 @@ public class ClassFile {
             this.clasS = cf.constantPool.getConstantClassInfo(dis.readShort());  // classIndex
             this.method = cf.constantPool.getConstantNameAndTypeInfo(dis.readShort());  // methodIndex
         }
+
+        public void accept(AttributeVisitor visitor) { visitor.visit(this); }
     }
     
     public static final class ExceptionsAttribute implements Attribute {
@@ -603,6 +629,8 @@ public class ClassFile {
                 exceptionNames.add(cf.constantPool.getConstantClassInfo(dis.readShort()));
             }
         }
+
+        public void accept(AttributeVisitor visitor) { visitor.visit(this); }
     }
 
     public static final class CodeAttribute implements Attribute {
@@ -629,15 +657,15 @@ public class ClassFile {
 
             // Code attributes.
             cf.readAttributes(dis, new AbstractAttributeVisitor() {
-                public void accept(LineNumberTableAttribute lnta) {
+                public void visit(LineNumberTableAttribute lnta) {
                     lineNumberTableAttribute = lnta;
                     attributes.add(lnta);
                 }
-                public void accept(LocalVariableTableAttribute lvta) {
+                public void visit(LocalVariableTableAttribute lvta) {
                     localVariableTableAttribute = lvta;
                     attributes.add(lvta);
                 }
-                public void accept(LocalVariableTypeTableAttribute lvtta) {
+                public void visit(LocalVariableTypeTableAttribute lvtta) {
                     localVariableTypeTableAttribute = lvtta;
                     attributes.add(lvtta);
                 }
@@ -646,6 +674,8 @@ public class ClassFile {
                 }
             });
         }
+
+        public void accept(AttributeVisitor visitor) { visitor.visit(this); }
     }
 
     public static class ExceptionTableEntry {
@@ -674,6 +704,8 @@ public class ClassFile {
         private SourceFileAttribute(DataInputStream dis, ClassFile cf) throws IOException {
             this.sourceFile = cf.constantPool.getConstantUtf8Info(dis.readShort()).bytes;
         }
+
+        public void accept(AttributeVisitor visitor) { visitor.visit(this); }
     }
 
     class LineNumberTableEntry {
@@ -693,6 +725,8 @@ public class ClassFile {
                 entries.add(new LineNumberTableEntry(dis));
             }
         }
+
+        public void accept(AttributeVisitor visitor) { visitor.visit(this); }
     }
 
     class LocalVariableTableEntry {
@@ -719,6 +753,8 @@ public class ClassFile {
                 entries.add(new LocalVariableTableEntry(dis, cf));
             }
         }
+
+        public void accept(AttributeVisitor visitor) { visitor.visit(this); }
     }
 
     public static class LocalVariableTypeTableEntry {
@@ -745,6 +781,8 @@ public class ClassFile {
                 entries.add(new LocalVariableTypeTableEntry(dis, cf));
             }
         }
+
+        public void accept(AttributeVisitor visitor) { visitor.visit(this); }
     }
     
     public static final class ConstantValueAttribute implements Attribute {
@@ -753,5 +791,7 @@ public class ClassFile {
         private ConstantValueAttribute(DataInputStream dis, ClassFile cf) throws IOException {
             this.constantValue = cf.constantPool.getIntegerFloatLongDoubleString(dis.readShort());
         }
+
+        public void accept(AttributeVisitor visitor) { visitor.visit(this); }
     }
 }
