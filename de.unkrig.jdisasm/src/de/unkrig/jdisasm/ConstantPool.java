@@ -276,18 +276,24 @@ public class ConstantPool {
         }
     }
 
-    public ConstantPoolEntry              get(short index)                               { return entries[index]; }
-    public ConstantClassInfo              getConstantClassInfo(short index)              { return (ConstantClassInfo) entries[index]; }
-    public ConstantFieldrefInfo           getConstantFieldrefInfo(short index)           { return (ConstantFieldrefInfo) entries[index]; }
-    public ConstantMethodrefInfo          getConstantMethodrefInfo(short index)          { return (ConstantMethodrefInfo) entries[index]; }
-    public ConstantInterfaceMethodrefInfo getConstantInterfaceMethodrefInfo(short index) { return (ConstantInterfaceMethodrefInfo) entries[index]; }
-    public ConstantStringInfo             getConstantStringInfo(short index)             { return (ConstantStringInfo) entries[index]; }
-    public ConstantIntegerInfo            getConstantIntegerInfo(short index)            { return (ConstantIntegerInfo) entries[index]; }
-    public ConstantFloatInfo              getConstantFloatInfo(short index)              { return (ConstantFloatInfo) entries[index]; }
-    public ConstantLongInfo               getConstantLongInfo(short index)               { return (ConstantLongInfo) entries[index]; }
-    public ConstantDoubleInfo             getConstantDoubleInfo(short index)             { return (ConstantDoubleInfo) entries[index]; }
-    public ConstantNameAndTypeInfo        getConstantNameAndTypeInfo(short index)        { return (ConstantNameAndTypeInfo) entries[index]; }
-    public ConstantUtf8Info               getConstantUtf8Info(short index)               { return (ConstantUtf8Info) entries[index]; }
+    private ConstantPoolEntry get(short index) {
+        if (index == 0) return null;
+        ConstantPoolEntry e = entries[index];
+        if (e == null) throw new NullPointerException("Unusable CP entry " + index);
+        return e;
+    }
+
+    public ConstantClassInfo              getConstantClassInfo(short index)              { return (ConstantClassInfo)              get(index); }
+    public ConstantFieldrefInfo           getConstantFieldrefInfo(short index)           { return (ConstantFieldrefInfo)           get(index); }
+    public ConstantMethodrefInfo          getConstantMethodrefInfo(short index)          { return (ConstantMethodrefInfo)          get(index); }
+    public ConstantInterfaceMethodrefInfo getConstantInterfaceMethodrefInfo(short index) { return (ConstantInterfaceMethodrefInfo) get(index); }
+    public ConstantStringInfo             getConstantStringInfo(short index)             { return (ConstantStringInfo)             get(index); }
+    public ConstantIntegerInfo            getConstantIntegerInfo(short index)            { return (ConstantIntegerInfo)            get(index); }
+    public ConstantFloatInfo              getConstantFloatInfo(short index)              { return (ConstantFloatInfo)              get(index); }
+    public ConstantLongInfo               getConstantLongInfo(short index)               { return (ConstantLongInfo)               get(index); }
+    public ConstantDoubleInfo             getConstantDoubleInfo(short index)             { return (ConstantDoubleInfo)             get(index); }
+    public ConstantNameAndTypeInfo        getConstantNameAndTypeInfo(short index)        { return (ConstantNameAndTypeInfo)        get(index); }
+    public ConstantUtf8Info               getConstantUtf8Info(short index)               { return (ConstantUtf8Info)               get(index); }
 
     /**
      * Checks that the indexed constant pool entry is of type {@code CONSTANT_(Integer|Float|Class|String)_info}, and
