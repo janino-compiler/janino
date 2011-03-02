@@ -36,6 +36,7 @@ import java.util.List;
 import de.unkrig.jdisasm.ConstantPool.ConstantClassInfo;
 import de.unkrig.jdisasm.ConstantPool.ConstantNameAndTypeInfo;
 import de.unkrig.jdisasm.ConstantPool.ConstantUtf8Info;
+import de.unkrig.jdisasm.SignatureParser.SignatureException;
 
 public class ClassFile {
     public short                                minorVersion;
@@ -204,7 +205,13 @@ public class ClassFile {
 
         public Annotation(DataInputStream dis, ClassFile cf) throws IOException {
             short typeIndex = dis.readShort();
-            this.typeName = SignatureParser.decodeFieldDescriptor(cf.constantPool.getConstantUtf8Info(typeIndex).bytes).toString();
+            try {
+                this.typeName = SignatureParser.decodeFieldDescriptor(cf.constantPool.getConstantUtf8Info(typeIndex).bytes).toString();
+            } catch (SignatureException e) {
+                IOException ioe = new IOException();
+                ioe.initCause(e);
+                throw ioe;
+            }
             for (int i = dis.readShort(); i > 0; --i) {
                 elementValuePairs.add(new ElementValuePair(dis, cf));
             }
@@ -239,13 +246,25 @@ public class ClassFile {
         if (tag == 'e') {
             String typeName = cf.constantPool.getConstantUtf8Info(dis.readShort()).bytes;
             String constName = cf.constantPool.getConstantUtf8Info(dis.readShort()).bytes;
-            final String s = SignatureParser.decodeFieldDescriptor(typeName) + "." + constName;
-            return new ElementValue() { public String toString() { return s; }};
+            try {
+                final String s = SignatureParser.decodeFieldDescriptor(typeName) + "." + constName;
+                return new ElementValue() { public String toString() { return s; }};
+            } catch (SignatureException e) {
+                IOException ioe = new IOException();
+                ioe.initCause(e);
+                throw ioe;
+            }
         } else
         if (tag == 'c') {
             final String classInfo = cf.constantPool.getConstantUtf8Info(dis.readShort()).bytes;
-            final String s = SignatureParser.decodeFieldDescriptor(classInfo) + ".class";
-            return new ElementValue() { public String toString() { return s; }};
+            try {
+                final String s = SignatureParser.decodeFieldDescriptor(classInfo) + ".class";
+                return new ElementValue() { public String toString() { return s; }};
+            } catch (SignatureException e) {
+                IOException ioe = new IOException();
+                ioe.initCause(e);
+                throw ioe;
+            }
         } else
         if (tag == '@') {
             final Annotation annotation = new Annotation(dis, cf);

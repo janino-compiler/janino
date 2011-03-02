@@ -28,7 +28,6 @@ package de.unkrig.jdisasm;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
-import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -82,8 +81,11 @@ import de.unkrig.jdisasm.ConstantPool.ConstantClassInfo;
 import de.unkrig.jdisasm.ConstantPool.ConstantFieldrefInfo;
 import de.unkrig.jdisasm.ConstantPool.ConstantInterfaceMethodrefInfo;
 import de.unkrig.jdisasm.ConstantPool.ConstantMethodrefInfo;
+import de.unkrig.jdisasm.SignatureParser.ClassSignature;
+import de.unkrig.jdisasm.SignatureParser.FieldTypeSignature;
 import de.unkrig.jdisasm.SignatureParser.FormalTypeParameter;
 import de.unkrig.jdisasm.SignatureParser.MethodTypeSignature;
+import de.unkrig.jdisasm.SignatureParser.SignatureException;
 import de.unkrig.jdisasm.SignatureParser.ThrowsSignature;
 import de.unkrig.jdisasm.SignatureParser.TypeSignature;
 
@@ -256,7 +258,7 @@ public class Disassembler {
 
             // EXTENDS and IMPLEMENTS clauses.
             if (cf.signatureAttribute != null) {
-                this.print(beautify(SignatureParser.decodeClassSignature(cf.signatureAttribute.signature).toString()));
+                this.print(beautify(decodeClassSignature(cf.signatureAttribute.signature).toString()));
             } else {
                 this.print(cf.thisClassName);
                 if (!"java.lang.Object".equals(cf.superClassName)) {
@@ -299,8 +301,8 @@ public class Disassembler {
                 // Pretty-print the field type.
                 String parametrizedType = beautify(
                     field.signatureAttribute == null
-                    ? SignatureParser.decodeFieldDescriptor(field.descriptor).toString()
-                    : SignatureParser.decodeFieldTypeSignature(field.signatureAttribute.signature).toString()
+                    ? decodeFieldDescriptor(field.descriptor).toString()
+                    : decodeFieldTypeSignature(field.signatureAttribute.signature).toString()
                 );
 
                 // Print the field declaration.
@@ -397,8 +399,8 @@ public class Disassembler {
             // Formal type parameters, name, parameters.
             MethodTypeSignature mts = (
                 m.signatureAttribute == null
-                ? SignatureParser.decodeMethodDescriptor(m.descriptor)
-                : SignatureParser.decodeMethodTypeSignature(m.signatureAttribute.signature)
+                ? decodeMethodDescriptor(m.descriptor)
+                : decodeMethodTypeSignature(m.signatureAttribute.signature)
             );
 
             // Formal type parameters.
@@ -560,12 +562,7 @@ public class Disassembler {
             if (ca.localVariableTableAttribute != null && !ca.localVariableTableAttribute.entries.isEmpty()) {
                 println(prefix + "  local_variable_table = {");
                 for (LocalVariableTableEntry e : ca.localVariableTableAttribute.entries) {
-                    try {
-                        println(prefix + "    " + e.startPC + "+" + e.length + ": " + e.index + " = " + beautify(SignatureParser.decodeFieldDescriptor(e.descriptor).toString()) + " " + e.name);
-                    } catch (IOException e1) {
-                        // TODO Auto-generated catch block
-                        e1.printStackTrace();
-                    }
+                    println(prefix + "    " + e.startPC + "+" + e.length + ": " + e.index + " = " + beautify(decodeFieldDescriptor(e.descriptor).toString()) + " " + e.name);
                 }
                 println(prefix + "  }");
             }
@@ -573,22 +570,18 @@ public class Disassembler {
             if (ca.localVariableTypeTableAttribute != null && !ca.localVariableTypeTableAttribute.entries.isEmpty()) {
                 println(prefix + "  local_variable_type_table = {");
                 for (LocalVariableTypeTableEntry e : ca.localVariableTypeTableAttribute.entries) {
-                    try {
-                        println(prefix
-                            + "    "
-                            + e.startPC
-                            + "+"
-                            + e.length
-                            + ": "
-                            + e.index
-                            + " = "
-                            + beautify(SignatureParser
-                                .decodeFieldTypeSignature(e.signature)
-                                .toString()) + " " + e.name);
-                    } catch (IOException e1) {
-                        // TODO Auto-generated catch block
-                        e1.printStackTrace();
-                    }
+                    println(prefix
+                        + "    "
+                        + e.startPC
+                        + "+"
+                        + e.length
+                        + ": "
+                        + e.index
+                        + " = "
+                        + beautify(decodeFieldTypeSignature(e.signature).toString())
+                        + " "
+                        + e.name
+                    );
                 }
                 println(prefix + "  }");
             }
@@ -636,12 +629,7 @@ public class Disassembler {
 
         public void visit(EnclosingMethodAttribute ema) {
             println(prefix + "EnclosingMethod:");
-            try {
-                println(prefix + "  class/method = " + beautify(SignatureParser.decodeMethodDescriptor(ema.method.descriptor.bytes).toString(ema.clasS.name, ema.method.name.bytes)));
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
+            println(prefix + "  class/method = " + beautify(decodeMethodDescriptor(ema.method.descriptor.bytes).toString(ema.clasS.name, ema.method.name.bytes)));
         }
 
         public void visit(ExceptionsAttribute ea) {
@@ -1165,7 +1153,7 @@ public class Disassembler {
                                 ConstantFieldrefInfo fr = cp.getConstantFieldrefInfo(dis.readShort());
                                 return (
                                     ' '
-                                    + SignatureParser.decodeFieldDescriptor(fr.nameAndType.descriptor.bytes).toString()
+                                    + d.decodeFieldDescriptor(fr.nameAndType.descriptor.bytes).toString()
                                     + ' '
                                     + d.beautify(fr.clasS.name)
                                     + '.'
@@ -1184,7 +1172,7 @@ public class Disassembler {
                                 Disassembler    d
                             ) throws IOException {
                                 ConstantMethodrefInfo mr = cp.getConstantMethodrefInfo(dis.readShort());
-                                return ' ' + d.beautify(SignatureParser.decodeMethodDescriptor(mr.nameAndType.descriptor.bytes).toString(
+                                return ' ' + d.beautify(d.decodeMethodDescriptor(mr.nameAndType.descriptor.bytes).toString(
                                     mr.clasS.name,
                                     mr.nameAndType.name.bytes
                                 ));
@@ -1201,7 +1189,7 @@ public class Disassembler {
                                 Disassembler    d
                             ) throws IOException {
                                 ConstantInterfaceMethodrefInfo imr = cp.getConstantInterfaceMethodrefInfo(dis.readShort());
-                                return ' ' + d.beautify(SignatureParser.decodeMethodDescriptor(imr.nameAndType.descriptor.bytes).toString(
+                                return ' ' + d.beautify(d.decodeMethodDescriptor(imr.nameAndType.descriptor.bytes).toString(
                                     imr.clasS.name,
                                     imr.nameAndType.name.bytes
                                 ));
@@ -1220,7 +1208,7 @@ public class Disassembler {
                                 String name = cp.getConstantClassInfo(dis.readShort()).name;
                                 return ' ' + d.beautify(
                                     name.startsWith("[")
-                                    ? SignatureParser.decodeFieldDescriptor(name).toString()
+                                    ? d.decodeFieldDescriptor(name).toString()
                                     : name.replace('/', '.')
                                 );
                             }
@@ -1269,7 +1257,7 @@ public class Disassembler {
                                 Method          method,
                                 ConstantPool    cp,
                                 Disassembler    d
-                            ) throws IOException {
+                            ) {
                                 lv = d.getLocalVariable(index, (short) (instructionOffset + 2), method);
                                 return d.beautify(lv.toString());
                             }
@@ -1486,52 +1474,105 @@ public class Disassembler {
             lv.name = "this";
             return lv;
         }
-        try {
-            MethodTypeSignature mts = (
-                method.signatureAttribute != null
-                ? SignatureParser.decodeMethodTypeSignature(method.signatureAttribute.signature)
-                : SignatureParser.decodeMethodDescriptor(method.descriptor)
-            );
-            if (localVariableIndex < firstParameter + mts.parameterTypes.size()) {
-                lv.name = "p" + (localVariableIndex - firstParameter);
-                lv.optionalTypeSignature = mts.parameterTypes.get(localVariableIndex - firstParameter);
-            } else
-            {
-                lv.name = "v" + (localVariableIndex - firstParameter - mts.parameterTypes.size());
-            }
-            if (method.codeAttribute != null) {
-                if (method.codeAttribute.localVariableTypeTableAttribute != null) {
-                    for (ClassFile.LocalVariableTypeTableEntry lvtte : method.codeAttribute.localVariableTypeTableAttribute.entries) {
-                        if (
-                            instructionOffset >= lvtte.startPC &&
-                            instructionOffset <= lvtte.startPC + lvtte.length &&
-                            localVariableIndex == lvtte.index
-                        ) {
-                            lv.optionalTypeSignature = SignatureParser.decodeFieldTypeSignature(lvtte.signature);
-                            if (!this.hideVars) lv.name =  lvtte.name;
-                            return lv;
-                        }
-                    }
-                }
-                if (method.codeAttribute.localVariableTableAttribute != null) {
-                    for (ClassFile.LocalVariableTableEntry lvte : method.codeAttribute.localVariableTableAttribute.entries) {
-                        if (
-                            instructionOffset >= lvte.startPC &&
-                            instructionOffset <= lvte.startPC + lvte.length &&
-                            localVariableIndex == lvte.index
-                        ) {
-                            lv.optionalTypeSignature = SignatureParser.decodeFieldDescriptor(lvte.descriptor);
-                            if (!this.hideVars) lv.name = lvte.name;
-                            return lv;
-                        }
+        MethodTypeSignature mts = (
+            method.signatureAttribute != null
+            ? decodeMethodTypeSignature(method.signatureAttribute.signature)
+            : decodeMethodDescriptor(method.descriptor)
+        );
+        if (localVariableIndex < firstParameter + mts.parameterTypes.size()) {
+            lv.name = "p" + (localVariableIndex - firstParameter);
+            lv.optionalTypeSignature = mts.parameterTypes.get(localVariableIndex - firstParameter);
+        } else
+        {
+            lv.name = "v" + (localVariableIndex - firstParameter - mts.parameterTypes.size());
+        }
+        if (method.codeAttribute != null) {
+            if (method.codeAttribute.localVariableTypeTableAttribute != null) {
+                for (ClassFile.LocalVariableTypeTableEntry lvtte : method.codeAttribute.localVariableTypeTableAttribute.entries) {
+                    if (
+                        instructionOffset >= lvtte.startPC &&
+                        instructionOffset <= lvtte.startPC + lvtte.length &&
+                        localVariableIndex == lvtte.index
+                    ) {
+                        lv.optionalTypeSignature = decodeFieldTypeSignature(lvtte.signature);
+                        if (!this.hideVars) lv.name =  lvtte.name;
+                        return lv;
                     }
                 }
             }
-        } catch (IOException e) {
-            if (lv.name == null) lv.name = "l" + localVariableIndex;
+            if (method.codeAttribute.localVariableTableAttribute != null) {
+                for (ClassFile.LocalVariableTableEntry lvte : method.codeAttribute.localVariableTableAttribute.entries) {
+                    if (
+                        instructionOffset >= lvte.startPC &&
+                        instructionOffset <= lvte.startPC + lvte.length &&
+                        localVariableIndex == lvte.index
+                    ) {
+                        String fd = lvte.descriptor;
+                        lv.optionalTypeSignature = decodeFieldDescriptor(fd);
+                        if (!this.hideVars) lv.name = lvte.name;
+                        return lv;
+                    }
+                }
+            }
         }
         return lv;
     }
+
+
+    private ClassSignature decodeClassSignature(String cs) {
+        try {
+            return SignatureParser.decodeClassSignature(cs);
+        } catch (SignatureException e) {
+            error("Decoding class signature '" + cs + "': " + e.getMessage());
+
+            ClassSignature res = new ClassSignature();
+            res.superclassSignature = SignatureParser.OBJECT;
+            return res;
+        }
+    }
+
+    private FieldTypeSignature decodeFieldTypeSignature(String fs) {
+        try {
+            return SignatureParser.decodeFieldTypeSignature(fs);
+        } catch (SignatureException e) {
+            error("Decoding field type signature '" + fs + "': " + e.getMessage());
+            return SignatureParser.OBJECT;
+        }
+    }
+    
+    private MethodTypeSignature decodeMethodTypeSignature(String ms) {
+        try {
+            return SignatureParser.decodeMethodTypeSignature(ms);
+        } catch (SignatureException e) {
+            error("Decoding method type signature '" + ms + "': " + e.getMessage());
+
+            MethodTypeSignature res = new MethodTypeSignature();
+            res.returnType = SignatureParser.VOID;
+            return res;
+        }
+    }
+
+    private TypeSignature decodeFieldDescriptor(String fd) {
+        try {
+            return SignatureParser.decodeFieldDescriptor(fd);
+        } catch (SignatureException e) {
+            error("Decoding field descriptor '" + fd + "': " + e.getMessage());
+            return SignatureParser.INT;
+        }
+    }
+
+    private MethodTypeSignature decodeMethodDescriptor(String md) {
+        try {
+            return SignatureParser.decodeMethodDescriptor(md);
+        } catch (SignatureException e) {
+            error("Decoding method descriptor '" + md + "': " + e.getMessage());
+
+            MethodTypeSignature res = new MethodTypeSignature();
+            res.returnType = SignatureParser.VOID;
+            return res;
+        }
+    }
+
     private class LocalVariable {
         TypeSignature optionalTypeSignature;
         String        name;
@@ -1544,6 +1585,10 @@ public class Disassembler {
             );
                 
         }
+    }
+
+    public static void error(String message) {
+        System.out.println(message);
     }
 
     private static class Instruction {
