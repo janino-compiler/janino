@@ -41,6 +41,7 @@ import java.io.PrintWriter;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -52,14 +53,15 @@ import java.util.SortedMap;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
 
+import de.unkrig.jdisasm.ClassFile.Annotation;
 import de.unkrig.jdisasm.ClassFile.AnnotationDefaultAttribute;
 import de.unkrig.jdisasm.ClassFile.Attribute;
 import de.unkrig.jdisasm.ClassFile.AttributeVisitor;
+import de.unkrig.jdisasm.ClassFile.ClasS;
 import de.unkrig.jdisasm.ClassFile.CodeAttribute;
 import de.unkrig.jdisasm.ClassFile.ConstantValueAttribute;
 import de.unkrig.jdisasm.ClassFile.DeprecatedAttribute;
 import de.unkrig.jdisasm.ClassFile.EnclosingMethodAttribute;
-import de.unkrig.jdisasm.ClassFile.ExceptionTableEntry;
 import de.unkrig.jdisasm.ClassFile.ExceptionsAttribute;
 import de.unkrig.jdisasm.ClassFile.InnerClassesAttribute;
 import de.unkrig.jdisasm.ClassFile.LineNumberTableAttribute;
@@ -69,6 +71,7 @@ import de.unkrig.jdisasm.ClassFile.LocalVariableTableEntry;
 import de.unkrig.jdisasm.ClassFile.LocalVariableTypeTableAttribute;
 import de.unkrig.jdisasm.ClassFile.LocalVariableTypeTableEntry;
 import de.unkrig.jdisasm.ClassFile.Method;
+import de.unkrig.jdisasm.ClassFile.ParameterAnnotation;
 import de.unkrig.jdisasm.ClassFile.RuntimeInvisibleAnnotationsAttribute;
 import de.unkrig.jdisasm.ClassFile.RuntimeInvisibleParameterAnnotationsAttribute;
 import de.unkrig.jdisasm.ClassFile.RuntimeVisibleAnnotationsAttribute;
@@ -187,6 +190,7 @@ public class Disassembler {
     public void disasm(File file) throws IOException {
         InputStream is = new FileInputStream(file);
         try {
+            this.pw.println();
             this.pw.println("// Disassembly of '" + file + "'.");
             disasm(is);
         } finally {
@@ -208,83 +212,89 @@ public class Disassembler {
         ClassFile cf = new ClassFile(dis);
 
         // JDK version.
-        this.println("// Class file version = " + cf.getJdkName());
+        println();
+        println("// Class file version = " + cf.getJdkName());
 
         this.thisClassPackageName = cf.thisClassName.substring(0, cf.thisClassName.lastIndexOf('.') + 1);
 
         // Package declaration.
         if (thisClassPackageName.length() > 0) {
+            println();
             println("package " + thisClassPackageName.substring(0, thisClassPackageName.length() - 1) + ";");
         }
 
+        // Enclosing method info.
         if (cf.enclosingMethodAttribute != null) {
             String methodName = cf.enclosingMethodAttribute.method.name.bytes;
             String className = cf.enclosingMethodAttribute.clasS.name;
+            println();
             println(
                 "// This class is enclosed by method '"
-                + beautify(className + (methodName.startsWith("(") ? "" : ".") + methodName)
+                + beautify(className)
+                + ("<init>".equals(methodName) ? "(...)" : "." + methodName + "(...)")
                 + "'."
             );
         }
 
         // Type declaration.
-        {
+        println();
 
-            if ((cf.accessFlags & 0x1000 /*SYNTHETIC*/) != 0 || cf.syntheticAttribute != null) this.println("// This is a synthetic class.");
+        // Access flags.
+        if ((cf.accessFlags & 0x1000 /*SYNTHETIC*/) != 0 || cf.syntheticAttribute != null) this.println("// This is a synthetic class.");
 
-            // Annotations.
-            if (cf.runtimeInvisibleAnnotationsAttribute != null) {
-                for (ClassFile.Annotation a : cf.runtimeInvisibleAnnotationsAttribute.annotations) {
-                    println(a.toString());
-                }
+        // Annotations.
+        if (cf.runtimeInvisibleAnnotationsAttribute != null) {
+            for (ClassFile.Annotation a : cf.runtimeInvisibleAnnotationsAttribute.annotations) {
+                println(a.toString());
             }
-            if (cf.runtimeVisibleAnnotationsAttribute != null) {
-                for (ClassFile.Annotation a : cf.runtimeVisibleAnnotationsAttribute.annotations) {
-                    println(a.toString());
-                }
-            }
-
-            // Modifiers, name.
-            this.print(
-                decodeAccess((short) (
-                    cf.accessFlags
-                    & ~Modifier.SYNCHRONIZED // Has no meaning but is always set for backwards compatibility
-                    & ~0x1000/*SYNTHETIC*/ // SYNTHETIC has already been printed as a comment.
-                    & ((cf.accessFlags & Modifier.INTERFACE) != 0 ? ~Modifier.ABSTRACT : 0xffff) // Suppress redundant "abstract" modifier for interfaces.
-                    & ((cf.accessFlags & 0x4000 /*ENUM*/) != 0 ? ~Modifier.FINAL : 0xffff) // Suppress redundant "final" modifier for enums.
-                ))
-                + ((cf.accessFlags & 0x6200) == 0 ? "class " : "")
-            );
-
-            // EXTENDS and IMPLEMENTS clauses.
-            if (cf.signatureAttribute != null) {
-                this.print(beautify(decodeClassSignature(cf.signatureAttribute.signature).toString()));
-            } else {
-                this.print(cf.thisClassName);
-                if (!"java.lang.Object".equals(cf.superClassName)) {
-                    this.print(" extends " + beautify(cf.superClassName));
-                }
-                List<String> ifs = cf.interfaceNames;
-                if ((cf.accessFlags & 0x2000 /*ANNOTATION*/) != 0 && ifs.contains("java.lang.annotation.Annotation")) {
-                    ifs = new ArrayList<String>(ifs);
-                    ifs.remove("java.lang.annotation.Annotation");
-                }
-                if (!ifs.isEmpty()) {
-                    Iterator<String> it = ifs.iterator();
-                    this.print(" implements " + it.next());
-                    while (it.hasNext()) {
-                        this.print(", " + it.next());
-                    }
-                }
-            }
-
-            this.println(" {");
         }
+        if (cf.runtimeVisibleAnnotationsAttribute != null) {
+            for (ClassFile.Annotation a : cf.runtimeVisibleAnnotationsAttribute.annotations) {
+                println(a.toString());
+            }
+        }
+
+        // Modifiers.
+        this.print(
+            decodeAccess((short) (
+                cf.accessFlags
+                & ~Modifier.SYNCHRONIZED // Has no meaning but is always set for backwards compatibility
+                & ~0x1000/*SYNTHETIC*/ // SYNTHETIC has already been printed as a comment.
+                & ((cf.accessFlags & Modifier.INTERFACE) != 0 ? ~Modifier.ABSTRACT : 0xffff) // Suppress redundant "abstract" modifier for interfaces.
+                & ((cf.accessFlags & 0x4000 /*ENUM*/) != 0 ? ~Modifier.FINAL : 0xffff) // Suppress redundant "final" modifier for enums.
+            ))
+            + ((cf.accessFlags & (0x4000 /*ENUM*/ | 0x2000 /*ANNOTATION*/ | Modifier.INTERFACE)) == 0 ? "class " : "")
+        );
+
+        // EXTENDS and IMPLEMENTS clauses.
+        if (cf.signatureAttribute != null) {
+            this.print(beautify(decodeClassSignature(cf.signatureAttribute.signature).toString(cf.thisClassName)));
+        } else {
+            this.print(cf.thisClassName);
+            if (!"java.lang.Object".equals(cf.superClassName)) {
+                this.print(" extends " + beautify(cf.superClassName));
+            }
+            List<String> ifs = cf.interfaceNames;
+            if ((cf.accessFlags & 0x2000 /*ANNOTATION*/) != 0 && ifs.contains("java.lang.annotation.Annotation")) {
+                ifs = new ArrayList<String>(ifs);
+                ifs.remove("java.lang.annotation.Annotation");
+            }
+            if (!ifs.isEmpty()) {
+                Iterator<String> it = ifs.iterator();
+                this.print(" implements " + it.next());
+                while (it.hasNext()) {
+                    this.print(", " + it.next());
+                }
+            }
+        }
+
+        this.println(" {");
 
         // Fields.
         {
             List<String[]> lines = new ArrayList<String[]>();
             for (ClassFile.Field field : cf.fields) {
+                lines.add(new String[0]);
                 
                 // Annotations.
                 if (field.runtimeInvisibleAnnotationsAttribute != null) {
@@ -297,19 +307,21 @@ public class Disassembler {
                         println("    " + a.toString());
                     }
                 }
+                
+                // Synthetic.
+                if ((field.accessFlags & 0x1000 /*SYNTHETIC*/) != 0 || field.syntheticAttribute != null) {
+                    lines.add(new String[] { "    // (Synthetic field)" });
+                }
 
-                // Pretty-print the field type.
+                // Access flags and field type.
                 String parametrizedType = beautify(
                     field.signatureAttribute == null
                     ? decodeFieldDescriptor(field.descriptor).toString()
                     : decodeFieldTypeSignature(field.signatureAttribute.signature).toString()
                 );
-
-                // Print the field declaration.
-                if ((field.accessFlags & 0x1000 /*SYNTHETIC*/) != 0 || field.syntheticAttribute != null) {
-                    lines.add(new String[] { "    // Synthetic field:" });
-                }
                 String prefix = "    " + decodeAccess((short) (field.accessFlags & ~0x1000 /*SYNTHETIC*/)) + parametrizedType + " ";
+
+                // Name and initializer.
                 if (field.constantValueAttribute == null) {
                     lines.add(new String[] {
                         prefix,
@@ -347,13 +359,14 @@ public class Disassembler {
             } finally {
                 lnr.close();
             }
-
         }
 
         // Methods.
         for (ClassFile.Method m : cf.methods) {
+            println();
+
             if ((m.accessFlags & 0x1000 /*SYNTHETIC*/) != 0 || m.syntheticAttribute != null) {
-                println("    // Synthetic method:");
+                println("    // (Synthetic method)");
             }
             
             // Annotations.
@@ -430,22 +443,27 @@ public class Disassembler {
             ) {
                 print(cf.thisClassName);
                 print(
+                    m.runtimeInvisibleParameterAnnotationsAttribute,
+                    m.runtimeVisibleParameterAnnotationsAttribute,
                     mts.parameterTypes,
                     m,
-                    (short) 1,
-                    (m.accessFlags & 0x0080 /*VARARGS*/) != 0
+                    (short) 1,(m.accessFlags & 0x0080 /*VARARGS*/) != 0
                 );
             } else
             {
                 print(beautify(mts.returnType.toString()) + ' ');
                 print(functionName);
                 print(
+                    m.runtimeInvisibleParameterAnnotationsAttribute,
+                    m.runtimeVisibleParameterAnnotationsAttribute,
                     mts.parameterTypes,
                     m,
                     (m.accessFlags & Modifier.STATIC) == 0 ? (short) 1 : (short) 0,
                     (m.accessFlags & 0x0080 /*VARARGS*/) != 0
                 );
             }
+
+            // Thrown types.
             if (mts.thrownTypes != null && !mts.thrownTypes.isEmpty()) {
                 Iterator<ThrowsSignature> it = mts.thrownTypes.iterator();
                 print(" throws " + beautify(it.next().toString()));
@@ -456,9 +474,13 @@ public class Disassembler {
                 print(" throws " + beautify(it.next().name));
                 while (it.hasNext()) print(", " + beautify(it.next().name));
             }
+
+            // Annotation default.
             if (m.annotationDefaultAttribute != null) {
                 print("default " + m.annotationDefaultAttribute.defaultValue);
             }
+
+            // Code.
             if (m.codeAttribute == null) {
                 println(";");
             } else {
@@ -483,6 +505,8 @@ public class Disassembler {
                 }
                 println("    }");
             }
+
+            // Method attributes.
             print(m.attributes, "    // ", new Attribute[] {
                 m.annotationDefaultAttribute,
                 m.codeAttribute,
@@ -495,13 +519,12 @@ public class Disassembler {
                 m.syntheticAttribute,
             });
         }
-
-        if (verbose) {
-            for (ClassFile.Attribute a : cf.attributes) {
-                println("    // " + a.toString());
-            }
-        }
         println("}");
+
+        PrintAttributeVisitor visitor = new PrintAttributeVisitor("// ");
+        for (Attribute a : cf.attributes) {
+            a.accept(visitor);
+        }
     }
 
     private void print(
@@ -549,52 +572,6 @@ public class Disassembler {
                 println(prefix + "  }");
             }
 
-            if (!ca.exceptionTable.isEmpty()) {
-                println(prefix + "  exception_table = {");
-                for (ExceptionTableEntry e : ca.exceptionTable) {
-                    println(prefix + "    " + e.startPC + "..." + e.endPC
-                        + ": " + beautify(e.catchType.name) + " => "
-                        + e.handlerPC);
-                }
-                println(prefix + "  }");
-            }
-
-            if (ca.localVariableTableAttribute != null && !ca.localVariableTableAttribute.entries.isEmpty()) {
-                println(prefix + "  local_variable_table = {");
-                for (LocalVariableTableEntry e : ca.localVariableTableAttribute.entries) {
-                    println(prefix + "    " + e.startPC + "+" + e.length + ": " + e.index + " = " + beautify(decodeFieldDescriptor(e.descriptor).toString()) + " " + e.name);
-                }
-                println(prefix + "  }");
-            }
-
-            if (ca.localVariableTypeTableAttribute != null && !ca.localVariableTypeTableAttribute.entries.isEmpty()) {
-                println(prefix + "  local_variable_type_table = {");
-                for (LocalVariableTypeTableEntry e : ca.localVariableTypeTableAttribute.entries) {
-                    println(prefix
-                        + "    "
-                        + e.startPC
-                        + "+"
-                        + e.length
-                        + ": "
-                        + e.index
-                        + " = "
-                        + beautify(decodeFieldTypeSignature(e.signature).toString())
-                        + " "
-                        + e.name
-                    );
-                }
-                println(prefix + "  }");
-            }
-
-            if (ca.lineNumberTableAttribute != null) {
-                println(prefix + "  line_number_table = {");
-                for (LineNumberTableEntry e : ca.lineNumberTableAttribute.entries) {
-                    println(prefix + "    " + e.startPC + ": Line "
-                        + e.lineNumber);
-                }
-                println(prefix + "  }");
-            }
-
             if (!ca.attributes.isEmpty()) {
                 println(prefix + "  attributes = {");
                 PrintAttributeVisitor pav = new PrintAttributeVisitor(prefix + "    ");
@@ -634,57 +611,91 @@ public class Disassembler {
 
         public void visit(ExceptionsAttribute ea) {
             println(prefix + "Exceptions:");
-            println(prefix + " TBD");
+            for (ConstantClassInfo en : ea.exceptionNames) {
+                println(prefix + "  " + en.name);
+            }
         }
 
         public void visit(InnerClassesAttribute ica) {
             println(prefix + "InnerClasses:");
-            println(prefix + " TBD");
+            for (ClasS c : ica.classes) {
+                println(
+                    prefix
+                    + "  "
+                    + (c.outerClassInfo == null ? "[local class]" : c.outerClassInfo.name)
+                    + " { "
+                    + decodeAccess(c.innerClassAccessFlags)
+                    + (c.innerClassInfo == null ? "[???]" : c.innerClassInfo.name)
+                    + " }"
+                );
+            }
         }
 
         public void visit(LineNumberTableAttribute lnta) {
             println(prefix + "LineNumberTable:");
-            println(prefix + " TBD");
+            for (LineNumberTableEntry e : lnta.entries) {
+                println(prefix + "  " + e.startPC + " => Line " + e.lineNumber);
+            }
         }
 
         public void visit(LocalVariableTableAttribute lvta) {
             println(prefix + "LocalVariableTable:");
-            println(prefix + " TBD");
+            for (LocalVariableTableEntry e : lvta.entries) {
+                println(prefix + "  " + e.startPC + "+" + e.length + ": " + e.index + " = " + beautify(decodeFieldDescriptor(e.descriptor).toString()) + " " + e.name);
+            }
         }
 
         public void visit(LocalVariableTypeTableAttribute lvtta) {
             println(prefix + "LocalVariableTypeTable:");
-            println(prefix + " TBD");
+            for (LocalVariableTypeTableEntry e : lvtta.entries) {
+                println(prefix + "  " + e.startPC + "+" + e.length + ": " + e.index + " = " + beautify(decodeFieldTypeSignature(e.signature).toString()) + " " + e.name);
+            }
         }
 
         public void visit(RuntimeInvisibleAnnotationsAttribute riaa) {
             println(prefix + "RuntimeInvisibleAnnotations:");
-            println(prefix + " TBD");
-        }
-
-        public void visit(RuntimeInvisibleParameterAnnotationsAttribute ripaa) {
-            println(prefix + "RuntimeInvisibleParameterAnnotations:");
-            println(prefix + " TBD");
+            for (Annotation a : riaa.annotations) {
+                println(prefix + "  " + a.toString());
+            }
         }
 
         public void visit(RuntimeVisibleAnnotationsAttribute rvaa) {
             println(prefix + "RuntimeVisibleAnnotations:");
-            println(prefix + " TBD");
+            for (Annotation a : rvaa.annotations) {
+                println(prefix + "  " + a.toString());
+            }
+        }
+        
+        public void visit(RuntimeInvisibleParameterAnnotationsAttribute ripaa) {
+            println(prefix + "RuntimeInvisibleParameterAnnotations:");
+            for (ParameterAnnotation pa : ripaa.parameterAnnotations) {
+                for (Annotation a : pa.annotations) {
+                    println(prefix + "  " + a.toString());
+                }
+            }
         }
 
         public void visit(RuntimeVisibleParameterAnnotationsAttribute rvpaa) {
             println(prefix + "RuntimeVisibleParameterAnnotations:");
-            println(prefix + " TBD");
+            for (ParameterAnnotation pa : rvpaa.parameterAnnotations) {
+                for (Annotation a : pa.annotations) {
+                    println(prefix + "  " + a.toString());
+                }
+            }
         }
 
         public void visit(SignatureAttribute sa) {
             println(prefix + "Signature:");
-            println(prefix + " TBD");
+            println(prefix + "  " + (
+                sa.signature.startsWith("L")
+                ? decodeClassSignature(sa.signature).toString("[this-class]")
+                : decodeMethodTypeSignature(sa.signature).toString("[declaring-class]", "[this-method]")
+            ));
         }
 
         public void visit(SourceFileAttribute sfa) {
             println(prefix + "SourceFile:");
-            println(prefix + " TBD");
+            println(prefix + "  " + sfa.sourceFile);
         }
 
         public void visit(SyntheticAttribute sa) {
@@ -701,16 +712,24 @@ public class Disassembler {
     }
 
     private void print(
-        List<TypeSignature> parameterTypes,
-        ClassFile.Method    method,
-        short               firstIndex,
-        boolean             varargs
+        RuntimeInvisibleParameterAnnotationsAttribute ripaa,
+        RuntimeVisibleParameterAnnotationsAttribute   rvpaa,
+        List<TypeSignature>                           parameterTypes,
+        ClassFile.Method                              method,
+        short                                         firstIndex,
+        boolean                                       varargs
     ) {
+        Iterator<ParameterAnnotation> ipas = (ripaa == null ? Collections.<ParameterAnnotation>emptyList() : ripaa.parameterAnnotations).iterator();
+        Iterator<ParameterAnnotation> vpas = (rvpaa == null ? Collections.<ParameterAnnotation>emptyList() : rvpaa.parameterAnnotations).iterator();
         print("(");
         Iterator<TypeSignature> it = parameterTypes.iterator();
         if (it.hasNext()) {
             for (;;) {
                 TypeSignature pts = it.next();
+
+                // Parameter annotations.
+                if (ipas.hasNext()) for (Annotation a : ipas.next().annotations) print(a.toString() + ' ');
+                if (vpas.hasNext()) for (Annotation a : vpas.next().annotations) print(a.toString() + ' ');
 
                 // Parameter type.
                 if (varargs && !it.hasNext() && pts instanceof SignatureParser.ArrayTypeSignature) {
@@ -743,12 +762,18 @@ public class Disassembler {
             }
         }
         for (String[] line : lines) {
-            for (int i = 0; i < line.length - 1; ++i) {
-                String column = line[i];
-                print(column);
-                print("                                                                                 ".substring(0, maxLen[i] - column.length()));
+            if (line.length == 0) {
+                println();
+            } else
+            {
+                for (int i = 0; i < line.length - 1; ++i) {
+                    String column = line[i];
+                    print(column);
+                    print("                                                                                 "
+                            .substring(0, maxLen[i] - column.length()));
+                }
+                println(line[line.length - 1]);
             }
-            println(line[line.length - 1]);
         }
     }
 
@@ -757,7 +782,7 @@ public class Disassembler {
      */
     private void disasmBytecode(
         InputStream                         is,
-        List<ClassFile.ExceptionTableEntry> exceptionTable,
+        List<ClassFile.ExceptionTableEntry> exceptionTable, // TODO
         ClassFile.LineNumberTableAttribute  lineNumberTableAttribute,
         Map<Short, String>                  sourceLines,
         ConstantPool                        cp,

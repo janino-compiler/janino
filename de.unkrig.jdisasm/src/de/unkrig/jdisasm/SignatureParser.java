@@ -48,10 +48,12 @@ public class SignatureParser {
             cls = parseClassSignature(scs);
             scs.eoi();
             return cls;
+        } catch (SignatureException e) {
+            throw new SignatureException("Class signature '" + s + "': " + e.getMessage(), e);
         } catch (EOFException e) {
-            throw new SignatureException(e.getMessage());
+            throw new SignatureException("Class signature '" + s + "': " + e.getMessage(), e);
         } catch (UnexpectedCharacterException e) {
-            throw new SignatureException(e.getMessage());
+            throw new SignatureException("Class signature '" + s + "': " + e.getMessage(), e);
         }
     }
 
@@ -61,10 +63,12 @@ public class SignatureParser {
             MethodTypeSignature mts = parseMethodTypeSignature(scs);
             scs.eoi();
             return mts;
+        } catch (SignatureException e) {
+            throw new SignatureException("Method type signature '" + s + "': " + e.getMessage(), e);
         } catch (EOFException e) {
-            throw new SignatureException(e.getMessage());
+            throw new SignatureException("Method type signature '" + s + "': " + e.getMessage(), e);
         } catch (UnexpectedCharacterException e) {
-            throw new SignatureException(e.getMessage());
+            throw new SignatureException("Method type signature '" + s + "': " + e.getMessage(), e);
         }
     }
 
@@ -74,10 +78,12 @@ public class SignatureParser {
             FieldTypeSignature fts = parseFieldTypeSignature(scs);
             scs.eoi();
             return fts;
+        } catch (SignatureException e) {
+            throw new SignatureException("Field type signature '" + s + "': " + e.getMessage(), e);
         } catch (EOFException e) {
-            throw new SignatureException(e.getMessage());
+            throw new SignatureException("Field type signature '" + s + "': " + e.getMessage(), e);
         } catch (UnexpectedCharacterException e) {
-            throw new SignatureException(e.getMessage());
+            throw new SignatureException("Field type signature '" + s + "': " + e.getMessage(), e);
         }
     }
 
@@ -87,10 +93,12 @@ public class SignatureParser {
             MethodTypeSignature mts = parseMethodDescriptor(scs);
             scs.eoi();
             return mts;
+        } catch (SignatureException e) {
+            throw new SignatureException("Method descriptor '" + s + "': " + e.getMessage(), e);
         } catch (EOFException e) {
-            throw new SignatureException(e.getMessage());
+            throw new SignatureException("Method descriptor '" + s + "': " + e.getMessage(), e);
         } catch (UnexpectedCharacterException e) {
-            throw new SignatureException(e.getMessage());
+            throw new SignatureException("Method descriptor '" + s + "': " + e.getMessage(), e);
         }
     }
     
@@ -100,10 +108,12 @@ public class SignatureParser {
             TypeSignature ts = parseFieldDescriptor(scs);
             scs.eoi();
             return ts;
+        } catch (SignatureException e) {
+            throw new SignatureException("Field descriptor '" + s + "': " + e.getMessage(), e);
         } catch (EOFException e) {
-            throw new SignatureException(e.getMessage());
+            throw new SignatureException("Field descriptor '" + s + "': " + e.getMessage(), e);
         } catch (UnexpectedCharacterException e) {
-            throw new SignatureException(e.getMessage());
+            throw new SignatureException("Field descriptor '" + s + "': " + e.getMessage(), e);
         }
     }
 
@@ -156,7 +166,7 @@ public class SignatureParser {
         public ClassTypeSignature              superclassSignature;
         public final List<ClassTypeSignature>  superinterfaceSignatures = new ArrayList<ClassTypeSignature>();
     
-        public String toString() {
+        public String toString(String className) {
             StringBuilder sb = new StringBuilder();
             if (!formalTypeParameters.isEmpty()) {
                 Iterator<FormalTypeParameter> it = formalTypeParameters.iterator();
@@ -164,7 +174,7 @@ public class SignatureParser {
                 while (it.hasNext()) sb.append(", ").append(it.next().toString());
                 sb.append('>');
             }
-            sb.append(" extends ").append(superclassSignature.toString());
+            sb.append(className).append(" extends ").append(superclassSignature.toString());
             if (!superinterfaceSignatures.isEmpty()) {
                 Iterator<ClassTypeSignature> it = superinterfaceSignatures.iterator();
                 sb.append(" implements ").append(it.next().toString());
@@ -368,7 +378,7 @@ public class SignatureParser {
         PART1:
         for (;;) {
             String s = parseIdentifier(scs);
-            switch (scs.read("<./;")) {
+            switch (scs.peek("<./;")) {
             case 0: // '<'
                 scs.read('<');
                 cts.simpleClassName = s;
@@ -386,6 +396,8 @@ public class SignatureParser {
             case 3: // ';'
                 cts.simpleClassName = s;
                 break PART1;
+            default:
+                scs.read("<./;");
             }
         }
 
@@ -507,6 +519,10 @@ public class SignatureParser {
 
         public SignatureException(String message) {
             super(message);
+        }
+        
+        public SignatureException(String message, Throwable t) {
+            super(message, t);
         }
     }
 }

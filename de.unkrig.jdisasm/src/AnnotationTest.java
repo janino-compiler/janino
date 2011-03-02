@@ -66,7 +66,18 @@ public class AnnotationTest {
 
     // Single-element annotation
     @Copyright("2002 Yoyodyne Propulsion Systems, Inc., All rights reserved.")
-    public static class OscillationOverthruster {  }
+    public static class OscillationOverthruster {
+
+        OscillationOverthruster() {
+            class Nested1 {}
+        }
+        
+        void meth(@Copyright("foo") int x) {
+            class Nested2 {
+            }
+            new Object(){};
+        }
+    }
 
     // Array-valued single-element annotation
     @Endorsers({"Children", "Unscrupulous dentists"})
