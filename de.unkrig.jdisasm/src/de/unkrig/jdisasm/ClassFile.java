@@ -208,7 +208,7 @@ public class ClassFile {
             try {
                 this.typeName = SignatureParser.decodeFieldDescriptor(cf.constantPool.getConstantUtf8Info(typeIndex).bytes).toString();
             } catch (SignatureException e) {
-                IOException ioe = new IOException();
+                IOException ioe = new IOException(e.getMessage());
                 ioe.initCause(e);
                 throw ioe;
             }
@@ -250,7 +250,7 @@ public class ClassFile {
                 final String s = SignatureParser.decodeFieldDescriptor(typeName) + "." + constName;
                 return new ElementValue() { public String toString() { return s; }};
             } catch (SignatureException e) {
-                IOException ioe = new IOException();
+                IOException ioe = new IOException(e.getMessage());
                 ioe.initCause(e);
                 throw ioe;
             }
@@ -261,7 +261,7 @@ public class ClassFile {
                 final String s = SignatureParser.decodeFieldDescriptor(classInfo) + ".class";
                 return new ElementValue() { public String toString() { return s; }};
             } catch (SignatureException e) {
-                IOException ioe = new IOException();
+                IOException ioe = new IOException(e.getMessage());
                 ioe.initCause(e);
                 throw ioe;
             }
@@ -330,10 +330,8 @@ public class ClassFile {
         public final List<ParameterAnnotation> parameterAnnotations = new ArrayList<ParameterAnnotation>();
 
         private RuntimeVisibleParameterAnnotationsAttribute(DataInputStream dis, ClassFile cf) throws IOException {
-            for (int j = dis.readShort(); j > 0; --j) {
-                for (int i = dis.readShort(); i > 0; --i) {
-                    parameterAnnotations.add(new ParameterAnnotation(dis, cf));
-                }
+            for (int i = dis.readByte(); i > 0; --i) {
+                parameterAnnotations.add(new ParameterAnnotation(dis, cf));
             }
         }
 
