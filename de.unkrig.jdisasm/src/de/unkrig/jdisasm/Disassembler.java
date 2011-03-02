@@ -62,6 +62,7 @@ import de.unkrig.jdisasm.ClassFile.CodeAttribute;
 import de.unkrig.jdisasm.ClassFile.ConstantValueAttribute;
 import de.unkrig.jdisasm.ClassFile.DeprecatedAttribute;
 import de.unkrig.jdisasm.ClassFile.EnclosingMethodAttribute;
+import de.unkrig.jdisasm.ClassFile.ExceptionTableEntry;
 import de.unkrig.jdisasm.ClassFile.ExceptionsAttribute;
 import de.unkrig.jdisasm.ClassFile.InnerClassesAttribute;
 import de.unkrig.jdisasm.ClassFile.LineNumberTableAttribute;
@@ -486,11 +487,6 @@ public class Disassembler {
             } else {
                 println(" {");
                 ClassFile.CodeAttribute ca = m.codeAttribute;
-                if (verbose) {
-                    Disassembler.this.println("        // max_stack = " + ca.maxStack);
-                    Disassembler.this.println("        // max_locals = " + ca.maxLocals);
-                }
-
                 try {
                     disasmBytecode(
                         new ByteArrayInputStream(ca.code),
@@ -521,10 +517,15 @@ public class Disassembler {
         }
         println("}");
 
-        PrintAttributeVisitor visitor = new PrintAttributeVisitor("// ");
-        for (Attribute a : cf.attributes) {
-            a.accept(visitor);
-        }
+        // Class attributes.
+        print(cf.attributes, "// ", new Attribute[] {
+            cf.enclosingMethodAttribute,
+            cf.runtimeInvisibleAnnotationsAttribute,
+            cf.runtimeVisibleAnnotationsAttribute,
+            cf.signatureAttribute,
+            cf.sourceFileAttribute,
+            cf.syntheticAttribute,
+        });
     }
 
     private void print(
@@ -624,7 +625,11 @@ public class Disassembler {
                     + "  "
                     + (c.outerClassInfo == null ? "[local class]" : c.outerClassInfo.name)
                     + " { "
-                    + decodeAccess(c.innerClassAccessFlags)
+                    + decodeAccess((short) (c.innerClassAccessFlags & ( // Hide ABSTRACT and STATIC for interfaces
+                        (c.innerClassAccessFlags & Modifier.INTERFACE) != 0
+                        ? (~Modifier.ABSTRACT & ~Modifier.STATIC)
+                        : 0xffff
+                    )))
                     + (c.innerClassInfo == null ? "[???]" : c.innerClassInfo.name)
                     + " }"
                 );
@@ -782,7 +787,7 @@ public class Disassembler {
      */
     private void disasmBytecode(
         InputStream                         is,
-        List<ClassFile.ExceptionTableEntry> exceptionTable, // TODO
+        List<ClassFile.ExceptionTableEntry> exceptionTable,
         ClassFile.LineNumberTableAttribute  lineNumberTableAttribute,
         Map<Short, String>                  sourceLines,
         ConstantPool                        cp,
@@ -793,6 +798,32 @@ public class Disassembler {
 
         this.branchTargets = new HashSet<Short>();
         try {
+
+            // Analyze TRY bodies.
+            Map<Short, Set<Short>>                                            tryStarts = new HashMap<Short, Set<Short>>();
+            Map<Short, SortedMap<Short, List<ClassFile.ExceptionTableEntry>>> tryEnds = new HashMap<Short, SortedMap<Short,List<ExceptionTableEntry>>>();
+            for (ClassFile.ExceptionTableEntry e : exceptionTable) {
+                Set<Short> s = tryStarts.get(e.startPC);
+                if (s == null) {
+                    s = new HashSet<Short>();
+                    tryStarts.put(e.startPC, s);
+                }
+                s.add(e.endPC);
+
+                SortedMap<Short, List<ExceptionTableEntry>> m = tryEnds.get(e.endPC);
+                if (m == null) {
+                    m = new TreeMap<Short, List<ExceptionTableEntry>>(Collections.reverseOrder());
+                    tryEnds.put(e.endPC, m);
+                }
+                List<ExceptionTableEntry> l = m.get(e.startPC);
+                if (l == null) {
+                    l = new ArrayList<ClassFile.ExceptionTableEntry>();
+                    m.put(e.startPC, l);
+                }
+                l.add(e);
+
+                this.branchTargets.add(e.handlerPC);
+            }
 
             // Disassemble the byte code into a sequence of lines.
             SortedMap<Short, String> lines = new TreeMap<Short, String>();
@@ -817,10 +848,41 @@ public class Disassembler {
             }
 
             // Format and print the disassembly lines.
+            String indentation = "        ";
             for (Iterator<Entry<Short, String>> it = lines.entrySet().iterator(); it.hasNext();) {
                 Entry<Short, String> e = it.next();
                 short instructionOffset = e.getKey();
                 String text = e.getValue();
+
+                // Print ends of TRY bodies.
+                {
+                    SortedMap<Short, List<ExceptionTableEntry>> m = tryEnds.get(instructionOffset);
+                    if (m != null) {
+                        for (List<ExceptionTableEntry> etes : m.values()) {
+                            indentation = indentation.substring(4);
+                            print(indentation + "} catch (");
+                            Iterator<ExceptionTableEntry> it2 = etes.iterator();
+                            for (;;) {
+                                ExceptionTableEntry ete = it2.next();
+                                print(beautify(ete.catchType.name) + " => " + ete.handlerPC);
+                                if (!it2.hasNext()) break;
+                                print(", ");
+                            }
+                            println(")");
+                        }
+                    }
+                }
+
+                // Print beginnings of TRY bodies.
+                {
+                    Set<Short> s = tryStarts.get(instructionOffset);
+                    if (s != null) {
+                        for (int i = s.size(); i > 0; i--) {
+                            println(indentation + "try {");
+                            indentation += "    ";
+                        }
+                    }
+                }
 
                 // Print instruction offsets only for branch targets.
                 if (this.branchTargets.contains(instructionOffset)) {
@@ -828,23 +890,24 @@ public class Disassembler {
                     this.println("#" + instructionOffset);
                 }
 
+                // Print source line and/or line number.
                 if (lineNumberTableAttribute != null) {
                     short lineNumber = findLineNumber(lineNumberTableAttribute, instructionOffset);
                     if (lineNumber != -1) {
                         String sourceLine = sourceLines.get(lineNumber);
                         if (sourceLine == null) {
-                            if (!this.hideLines) this.println("              *** Line " + lineNumber);
+                            if (!this.hideLines) this.println("                   *** Line " + lineNumber);
                         } else {
                             if (this.hideLines) {
-                                this.println("              *** " + sourceLine);
+                                this.println("                   *** " + sourceLine);
                             } else {
-                                this.println("              *** Line " + lineNumber + ": " + sourceLine);
+                                this.println("                   *** Line " + lineNumber + ": " + sourceLine);
                             }
                         }
                     }
                 }
 
-                this.println("        " + text);
+                this.println(indentation + text);
             }
         } finally {
             this.branchTargets = null;

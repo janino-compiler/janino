@@ -76,6 +76,27 @@ public class AnnotationTest {
             class Nested2 {
             }
             new Object(){};
+            try {
+                try {
+                    meth(1);
+                } catch (RuntimeException rte) {
+                    meth(2);
+                } catch (Error rte) {
+                    meth(3);
+                }
+
+                try {
+                    meth(4);
+                } catch (RuntimeException rte) {
+                    meth(5);
+                } catch (Error rte) {
+                    meth(6);
+                }
+            } catch (RuntimeException rte) {
+                meth(7);
+            } catch (Error rte) {
+                meth(8);
+            }
         }
     }
 
