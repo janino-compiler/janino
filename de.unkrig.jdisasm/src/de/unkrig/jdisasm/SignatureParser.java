@@ -27,10 +27,12 @@
 package de.unkrig.jdisasm;
 
 import java.io.EOFException;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+
+import de.unkrig.io.charstream.StringCharStream;
+import de.unkrig.io.charstream.UnexpectedCharacterException;
 
 /**
  * Helper class for parsing signatures and descriptors.
@@ -39,56 +41,71 @@ public class SignatureParser {
 
     private SignatureParser() {}
 
-    public static ClassSignature decodeClassSignature(String s) throws IOException {
-        CharStream cs = new StringCharStream(s);
-        ClassSignature cls = parseClassSignature(cs);
-        cs.eoi();
-        return cls;
-    }
-
-    public static MethodTypeSignature decodeMethodTypeSignature(String s) throws IOException {
-        CharStream cs = new StringCharStream(s);
+    public static ClassSignature decodeClassSignature(String s) throws SignatureException {
         try {
-            MethodTypeSignature mts = parseMethodTypeSignature(cs);
-            cs.eoi();
-            return mts;
-        } catch (IOException ioe) {
-            IOException ioe2 = new IOException(cs.toString() + ": " + ioe.getMessage());
-            ioe2.initCause(ioe);
-            throw ioe2;
+            StringCharStream scs = new StringCharStream(s);
+            ClassSignature cls;
+            cls = parseClassSignature(scs);
+            scs.eoi();
+            return cls;
+        } catch (EOFException e) {
+            throw new SignatureException(e.getMessage());
+        } catch (UnexpectedCharacterException e) {
+            throw new SignatureException(e.getMessage());
         }
     }
 
-    public static FieldTypeSignature decodeFieldTypeSignature(String s) throws IOException {
-        CharStream cs = new StringCharStream(s);
-        FieldTypeSignature fts = parseFieldTypeSignature(cs);
-        cs.eoi();
-        return fts;
+    public static MethodTypeSignature decodeMethodTypeSignature(String s) throws SignatureException {
+        try {
+            StringCharStream scs = new StringCharStream(s);
+            MethodTypeSignature mts;
+            mts = parseMethodTypeSignature(scs);
+            scs.eoi();
+            return mts;
+        } catch (EOFException e) {
+            throw new SignatureException(e.getMessage());
+        } catch (UnexpectedCharacterException e) {
+            throw new SignatureException(e.getMessage());
+        }
     }
 
-    public static MethodTypeSignature decodeMethodDescriptor(String s) throws IOException {
-        CharStream cs = new StringCharStream(s);
+    public static FieldTypeSignature decodeFieldTypeSignature(String s) throws SignatureException {
         try {
-            MethodTypeSignature mts = parseMethodDescriptor(cs);
-            cs.eoi();
+            StringCharStream scs = new StringCharStream(s);
+            FieldTypeSignature fts;
+            fts = parseFieldTypeSignature(scs);
+            scs.eoi();
+            return fts;
+        } catch (EOFException e) {
+            throw new SignatureException(e.getMessage());
+        } catch (UnexpectedCharacterException e) {
+            throw new SignatureException(e.getMessage());
+        }
+    }
+
+    public static MethodTypeSignature decodeMethodDescriptor(String s) throws SignatureException {
+        try {
+            StringCharStream scs = new StringCharStream(s);
+            MethodTypeSignature mts = parseMethodDescriptor(scs);
+            scs.eoi();
             return mts;
-        } catch (IOException ioe) {
-            IOException ioe2 = new IOException(cs.toString() + ": " + ioe.getMessage());
-            ioe2.initCause(ioe);
-            throw ioe2;
+        } catch (EOFException e) {
+            throw new SignatureException(e.getMessage());
+        } catch (UnexpectedCharacterException e) {
+            throw new SignatureException(e.getMessage());
         }
     }
     
-    public static TypeSignature decodeFieldDescriptor(String s) throws EOFException, IOException {
-        CharStream cs = new StringCharStream(s);
+    public static TypeSignature decodeFieldDescriptor(String s) throws SignatureException {
         try {
-            TypeSignature ts = parseFieldDescriptor(cs);
-            cs.eoi();
+            StringCharStream scs = new StringCharStream(s);
+            TypeSignature ts = parseFieldDescriptor(scs);
+            scs.eoi();
             return ts;
-        } catch (IOException ioe) {
-            IOException ioe2 = new IOException(cs.toString() + ": " + ioe.getMessage());
-            ioe2.initCause(ioe);
-            throw ioe2;
+        } catch (EOFException e) {
+            throw new SignatureException(e.getMessage());
+        } catch (UnexpectedCharacterException e) {
+            throw new SignatureException(e.getMessage());
         }
     }
 
@@ -181,6 +198,9 @@ public class SignatureParser {
             return sb.toString();
         }
     }
+
+    public static final ClassTypeSignature OBJECT = new ClassTypeSignature();
+    static { OBJECT.simpleClassName = "java.lang.Object"; }
 
     public static class SimpleClassTypeSignature {
         public String                   simpleClassName;
@@ -288,67 +308,67 @@ public class SignatureParser {
 
     public static final TypeSignature VOID = new TypeSignature() { public String toString() { return "void"; }};
 
-    private static TypeSignature parseFieldDescriptor(CharStream cs) throws EOFException, IOException {
-        return parseTypeSignature(cs);
+    private static TypeSignature parseFieldDescriptor(StringCharStream scs) throws EOFException, UnexpectedCharacterException, SignatureException {
+        return parseTypeSignature(scs);
     }
 
-    private static MethodTypeSignature parseMethodDescriptor(CharStream cs) throws EOFException, IOException {
-        return parseMethodTypeSignature(cs);
+    private static MethodTypeSignature parseMethodDescriptor(StringCharStream scs) throws EOFException, UnexpectedCharacterException, SignatureException {
+        return parseMethodTypeSignature(scs);
     }
 
-    private static ClassSignature parseClassSignature(CharStream cs) throws EOFException, IOException {
+    private static ClassSignature parseClassSignature(StringCharStream scs) throws EOFException, UnexpectedCharacterException, SignatureException {
         ClassSignature cls = new ClassSignature();
-        if (cs.peekRead('<')) {
-            while (!cs.peekRead('>')) {
-                cls.formalTypeParameters.add(parseFormalTypeParameter(cs));
+        if (scs.peekRead('<')) {
+            while (!scs.peekRead('>')) {
+                cls.formalTypeParameters.add(parseFormalTypeParameter(scs));
             }
         }
-        cls.superclassSignature = parseClassTypeSignature(cs);
-        while (!cs.atEoi()) cls.superinterfaceSignatures.add(parseClassTypeSignature(cs));
+        cls.superclassSignature = parseClassTypeSignature(scs);
+        while (!scs.atEoi()) cls.superinterfaceSignatures.add(parseClassTypeSignature(scs));
         return cls;
     }
 
-    private static MethodTypeSignature parseMethodTypeSignature(CharStream cs) throws EOFException, IOException {
+    private static MethodTypeSignature parseMethodTypeSignature(StringCharStream scs) throws EOFException, UnexpectedCharacterException, SignatureException {
         MethodTypeSignature mts = new MethodTypeSignature();
         
-        if (cs.peekRead('<')) {
-            while (!cs.peekRead('>')) {
-                mts.formalTypeParameters.add(parseFormalTypeParameter(cs));
+        if (scs.peekRead('<')) {
+            while (!scs.peekRead('>')) {
+                mts.formalTypeParameters.add(parseFormalTypeParameter(scs));
             }
         }
 
-        cs.read('(');
-        while (!cs.peekRead(')')) {
-            mts.parameterTypes.add(parseTypeSignature(cs));
+        scs.read('(');
+        while (!scs.peekRead(')')) {
+            mts.parameterTypes.add(parseTypeSignature(scs));
         }
-        mts.returnType = parseReturnType(cs);
-        while (!cs.atEoi()) mts.thrownTypes.add(parseThrowsSignature(cs));
+        mts.returnType = parseReturnType(scs);
+        while (!scs.atEoi()) mts.thrownTypes.add(parseThrowsSignature(scs));
 
         return mts;
     }
 
-    private static TypeSignature parseReturnType(CharStream cs) throws EOFException, IOException {
-        if (cs.peekRead('V')) return VOID;
-        return parseTypeSignature(cs);
+    private static TypeSignature parseReturnType(StringCharStream scs) throws EOFException, UnexpectedCharacterException, SignatureException {
+        if (scs.peekRead('V')) return VOID;
+        return parseTypeSignature(scs);
     }
-    private static ThrowsSignature parseThrowsSignature(CharStream cs) throws EOFException, IOException {
-        cs.read('^');
-        return cs.peek('T') ? parseTypeVariableSignature(cs) : parseClassTypeSignature(cs);
+    private static ThrowsSignature parseThrowsSignature(StringCharStream scs) throws EOFException, UnexpectedCharacterException, SignatureException {
+        scs.read('^');
+        return scs.peek('T') ? parseTypeVariableSignature(scs) : parseClassTypeSignature(scs);
     }
 
-    private static ClassTypeSignature parseClassTypeSignature(CharStream cs) throws EOFException, IOException {
+    private static ClassTypeSignature parseClassTypeSignature(StringCharStream scs) throws EOFException, UnexpectedCharacterException, SignatureException {
         ClassTypeSignature cts = new ClassTypeSignature();
-        cs.read('L');
+        scs.read('L');
 
         PART1:
         for (;;) {
-            String s = parseIdentifier(cs);
-            switch (cs.peek("<./;")) {
+            String s = parseIdentifier(scs);
+            switch (scs.read("<./;")) {
             case 0: // '<'
-                cs.read('<');
+                scs.read('<');
                 cts.simpleClassName = s;
-                while (!cs.peekRead('>')) {
-                    cts.typeArguments.add(parseTypeArgument(cs));
+                while (!scs.peekRead('>')) {
+                    cts.typeArguments.add(parseTypeArgument(scs));
                 }
                 break PART1;
             case 1: // '.'
@@ -356,119 +376,125 @@ public class SignatureParser {
                 break PART1;
             case 2: // '/'
                 cts.packageSpecifier += s + '/';
-                cs.read();
+                scs.read();
                 break;
             case 3: // ';'
                 cts.simpleClassName = s;
                 break PART1;
-            default:
-                throw new IOException("Unexpected character '" + cs.peek() + "'");
             }
         }
 
-        while (cs.peekRead('.')) {
-            cts.suffixes.add(parseSimpleClassTypeSignature(cs));
+        while (scs.peekRead('.')) {
+            cts.suffixes.add(parseSimpleClassTypeSignature(scs));
         }
-        cs.read(';');
+        scs.read(';');
 
         return cts;
     }
 
-    private static String parseIdentifier(CharStream cs) throws IOException {
-        char c = cs.read();
-        if (!Character.isJavaIdentifierStart(c)) throw new IOException("Identifier expected instead of '" + c + "'");
+    private static String parseIdentifier(StringCharStream scs) throws EOFException, SignatureException {
+        char c = scs.read();
+        if (!Character.isJavaIdentifierStart(c)) throw new SignatureException("Identifier expected instead of '" + c + "'");
         StringBuilder sb = new StringBuilder().append(c);
         for (;;) {
-            if (Character.isJavaIdentifierPart(cs.peek())) {
-                sb.append(cs.read());
+            if (Character.isJavaIdentifierPart(scs.peek())) {
+                sb.append(scs.read());
             } else {
                 return sb.toString();
             }
         }
     }
 
-    private static TypeVariableSignature parseTypeVariableSignature(CharStream cs) throws EOFException, IOException {
+    private static TypeVariableSignature parseTypeVariableSignature(StringCharStream scs) throws EOFException, SignatureException, UnexpectedCharacterException {
         TypeVariableSignature tvs = new TypeVariableSignature();
-        cs.read('T');
-        tvs.identifier = parseIdentifier(cs);
-        cs.read(';');
+        scs.read('T');
+        tvs.identifier = parseIdentifier(scs);
+        scs.read(';');
         return tvs;
     }
 
-    private static FormalTypeParameter parseFormalTypeParameter(CharStream cs) throws IOException {
+    private static FormalTypeParameter parseFormalTypeParameter(StringCharStream scs) throws EOFException, SignatureException, UnexpectedCharacterException {
         FormalTypeParameter ftp = new FormalTypeParameter();
-        ftp.identifier = parseIdentifier(cs);
-        cs.read(':');
-        if (!cs.peek(':')) {
-            ftp.optionalClassBound = parseFieldTypeSignature(cs);
+        ftp.identifier = parseIdentifier(scs);
+        scs.read(':');
+        if (!scs.peek(':')) {
+            ftp.optionalClassBound = parseFieldTypeSignature(scs);
         }
-        while (cs.peekRead(':')) {
-            ftp.interfaceBounds.add(parseFieldTypeSignature(cs));
+        while (scs.peekRead(':')) {
+            ftp.interfaceBounds.add(parseFieldTypeSignature(scs));
         }
         return ftp;
     }
 
-    private static TypeSignature parseTypeSignature(CharStream cs) throws EOFException, IOException {
-        int idx = cs.peek("BCDFIJSZ");
+    private static TypeSignature parseTypeSignature(StringCharStream scs) throws EOFException, UnexpectedCharacterException, SignatureException {
+        int idx = scs.peekRead("BCDFIJSZ");
         if (idx != -1) {
-            cs.read();
             return PRIMITIVE_TYPES[idx];
         }
-        return parseFieldTypeSignature(cs);
+        return parseFieldTypeSignature(scs);
     }
     private static final PrimitiveTypeSignature[] PRIMITIVE_TYPES = {
         BYTE, CHAR, DOUBLE, FLOAT, INT, LONG, SHORT, BOOLEAN
     };
     
-    private static FieldTypeSignature parseFieldTypeSignature(CharStream cs) throws EOFException, IOException {
-        switch (cs.peek("L[T")) {
+    private static FieldTypeSignature parseFieldTypeSignature(StringCharStream scs) throws EOFException, UnexpectedCharacterException, SignatureException {
+        switch (scs.peek("L[T")) {
         case 0:
-            return parseClassTypeSignature(cs);
+            return parseClassTypeSignature(scs);
         case 1:
-            return parseArrayTypeSignature(cs);
+            return parseArrayTypeSignature(scs);
         case 2:
-            return parseTypeVariableSignature(cs);
+            return parseTypeVariableSignature(scs);
         default:
-            throw new IOException("Class type signature, array type signature or type variable signature expected");
+            throw new SignatureException("Class type signature, array type signature or type variable signature expected");
         }
     }
 
-    private static FieldTypeSignature parseArrayTypeSignature(CharStream cs) throws EOFException, IOException {
+    private static FieldTypeSignature parseArrayTypeSignature(StringCharStream scs) throws EOFException, UnexpectedCharacterException, SignatureException {
         ArrayTypeSignature ats = new ArrayTypeSignature();
-        cs.read('[');
-        ats.typeSignature = parseTypeSignature(cs);
+        scs.read('[');
+        ats.typeSignature = parseTypeSignature(scs);
         return ats;
     }
 
-    private static SimpleClassTypeSignature parseSimpleClassTypeSignature(CharStream cs) throws IOException {
+    private static SimpleClassTypeSignature parseSimpleClassTypeSignature(StringCharStream scs) throws EOFException, SignatureException, UnexpectedCharacterException {
         SimpleClassTypeSignature scts = new SimpleClassTypeSignature();
 
-        scts.simpleClassName = parseIdentifier(cs);
-        if (cs.peekRead('<')) {
-            while (!cs.peekRead('>')) {
-                scts.typeArguments.add(parseTypeArgument(cs));
+        scts.simpleClassName = parseIdentifier(scs);
+        if (scs.peekRead('<')) {
+            while (!scs.peekRead('>')) {
+                scts.typeArguments.add(parseTypeArgument(scs));
             }
         }
         return scts;
     }
 
-    private static TypeArgument parseTypeArgument(CharStream cs) throws EOFException, IOException {
+    private static TypeArgument parseTypeArgument(StringCharStream scs) throws EOFException, UnexpectedCharacterException, SignatureException {
         TypeArgument ta = new TypeArgument();
-        if (cs.peekRead('+')) {
+        if (scs.peekRead('+')) {
             ta.mode = TypeArgument.Mode.EXTENDS;
-            ta.fieldTypeSignature = parseFieldTypeSignature(cs);
+            ta.fieldTypeSignature = parseFieldTypeSignature(scs);
         } else
-        if (cs.peekRead('-')) {
+        if (scs.peekRead('-')) {
             ta.mode = TypeArgument.Mode.SUPER;
-            ta.fieldTypeSignature = parseFieldTypeSignature(cs);
+            ta.fieldTypeSignature = parseFieldTypeSignature(scs);
         } else
-        if (cs.peekRead('*')) {
+        if (scs.peekRead('*')) {
             ta.mode = TypeArgument.Mode.ANY;
         } else
         {
             ta.mode = TypeArgument.Mode.NONE;
-            ta.fieldTypeSignature = parseFieldTypeSignature(cs);
+            ta.fieldTypeSignature = parseFieldTypeSignature(scs);
         }
         return ta;
+    }
+
+    public static class SignatureException extends Exception {
+
+        private static final long serialVersionUID = 1L;
+
+        public SignatureException(String message) {
+            super(message);
+        }
     }
 }
