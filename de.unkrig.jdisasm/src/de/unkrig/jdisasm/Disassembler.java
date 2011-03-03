@@ -64,6 +64,7 @@ import de.unkrig.jdisasm.ClassFile.DeprecatedAttribute;
 import de.unkrig.jdisasm.ClassFile.EnclosingMethodAttribute;
 import de.unkrig.jdisasm.ClassFile.ExceptionTableEntry;
 import de.unkrig.jdisasm.ClassFile.ExceptionsAttribute;
+import de.unkrig.jdisasm.ClassFile.Field;
 import de.unkrig.jdisasm.ClassFile.InnerClassesAttribute;
 import de.unkrig.jdisasm.ClassFile.LineNumberTableAttribute;
 import de.unkrig.jdisasm.ClassFile.LineNumberTableEntry;
@@ -200,6 +201,9 @@ public class Disassembler {
         }
     }
 
+    /**
+     * @param is A Java&trade; class file
+     */
     public void disasm(InputStream is) throws IOException {
         try {
             this.disasmClassFile(new DataInputStream(is));
@@ -208,6 +212,9 @@ public class Disassembler {
         }
     }
 
+    /**
+     * @param dis A Java&trade; class file
+     */
     private void disasmClassFile(DataInputStream dis) throws IOException {
 
         // Load the class file.
@@ -300,52 +307,7 @@ public class Disassembler {
         }
 
         // Print fields.
-        {
-            List<String[]> lines = new ArrayList<String[]>();
-            for (ClassFile.Field field : cf.fields) {
-                lines.add(new String[0]);
-                
-                // Annotations.
-                if (field.runtimeInvisibleAnnotationsAttribute != null) {
-                    for (ClassFile.Annotation a : field.runtimeInvisibleAnnotationsAttribute.annotations) {
-                        println("    " + a.toString());
-                    }
-                }
-                if (field.runtimeVisibleAnnotationsAttribute != null) {
-                    for (ClassFile.Annotation a : field.runtimeVisibleAnnotationsAttribute.annotations) {
-                        println("    " + a.toString());
-                    }
-                }
-                
-                // Synthetic.
-                if ((field.accessFlags & 0x1000 /*SYNTHETIC*/) != 0 || field.syntheticAttribute != null) {
-                    lines.add(new String[] { "    // (Synthetic field)" });
-                }
-
-                // Access flags and field type.
-                String parametrizedType = beautify(
-                    field.signatureAttribute == null
-                    ? decodeFieldDescriptor(field.descriptor).toString()
-                    : decodeFieldTypeSignature(field.signatureAttribute.signature).toString()
-                );
-                String prefix = "    " + decodeAccess((short) (field.accessFlags & ~0x1000 /*SYNTHETIC*/)) + parametrizedType + " ";
-
-                // Name and initializer.
-                if (field.constantValueAttribute == null) {
-                    lines.add(new String[] {
-                        prefix,
-                        field.name + ";"
-                    });
-                } else {
-                    lines.add(new String[] {
-                        prefix,
-                        field.name,
-                        " = " + field.constantValueAttribute.constantValue + ";"
-                    });
-                }
-            }
-            println(lines);
-        }
+        disasm(cf.fields);
 
         // Read source file.
         Map<Short, String> sourceLines = new HashMap<Short, String>();
@@ -372,142 +334,9 @@ public class Disassembler {
 
         // Methods.
         for (ClassFile.Method m : cf.methods) {
-            println();
-
-            // Print SYNTHETIC notice.
-            if ((m.accessFlags & 0x1000 /*SYNTHETIC*/) != 0 || m.syntheticAttribute != null) {
-                println("    // (Synthetic method)");
-            }
-            
-            // Print method annotations.
-            if (m.runtimeInvisibleAnnotationsAttribute != null) {
-                for (ClassFile.Annotation a : m.runtimeInvisibleAnnotationsAttribute.annotations) {
-                    println("    " + a.toString());
-                }
-            }
-            if (m.runtimeVisibleAnnotationsAttribute != null) {
-                for (ClassFile.Annotation a : m.runtimeVisibleAnnotationsAttribute.annotations) {
-                    println("    " + a.toString());
-                }
-            }
-
-            // Print method access flags.
-            String functionName = m.name;
-            Disassembler.this.print(
-                "    "
-                + decodeAccess((short) (
-                    m.accessFlags
-                    & ~0x1000 /*SYNTHETIC*/
-                    & ~0x0080 /*TRANSIENT/VARARGS*/
-                    & ((cf.accessFlags & Modifier.INTERFACE) != 0 ? ~(Modifier.PUBLIC | Modifier.ABSTRACT) : 0xffff)
-                ))
-            );
-
-            // Print formal type parameters.
-            MethodTypeSignature mts;
-            {
-                mts = (m.signatureAttribute == null ? decodeMethodDescriptor(m.descriptor)
-                    : decodeMethodTypeSignature(m.signatureAttribute.signature));
-                if (!mts.formalTypeParameters.isEmpty()) {
-                    Iterator<FormalTypeParameter> it = mts.formalTypeParameters
-                        .iterator();
-                    print("<" + beautify(it.next().toString()));
-                    while (it.hasNext())
-                        print(", " + beautify(it.next().toString()));
-                    print(">");
-                }
-            }
-
-            // Print method name.
-            if (
-                "<clinit>".equals(functionName)
-                && (m.accessFlags & Modifier.STATIC) != 0
-                && (m.exceptionsAttribute == null || m.exceptionsAttribute.exceptionNames.isEmpty())
-                && mts.formalTypeParameters.isEmpty()
-                && mts.parameterTypes.isEmpty()
-                && mts.returnType == SignatureParser.VOID
-                && mts.thrownTypes.isEmpty()
-            ) {
-                ;
-            } else
-            if (
-                "<init>".equals(functionName)
-                && (m.accessFlags & (Modifier.ABSTRACT | Modifier.FINAL | Modifier.INTERFACE | Modifier.STATIC)) == 0
-                && mts.returnType == SignatureParser.VOID
-            ) {
-                print(beautify(cf.thisClassName));
-                print(
-                    m.runtimeInvisibleParameterAnnotationsAttribute,
-                    m.runtimeVisibleParameterAnnotationsAttribute,
-                    mts.parameterTypes,
-                    m,
-                    (short) 1,(m.accessFlags & 0x0080 /*VARARGS*/) != 0
-                );
-            } else
-            {
-                print(beautify(mts.returnType.toString()) + ' ');
-                print(functionName);
-                print(
-                    m.runtimeInvisibleParameterAnnotationsAttribute,
-                    m.runtimeVisibleParameterAnnotationsAttribute,
-                    mts.parameterTypes,
-                    m,
-                    (m.accessFlags & Modifier.STATIC) == 0 ? (short) 1 : (short) 0,
-                    (m.accessFlags & 0x0080 /*VARARGS*/) != 0
-                );
-            }
-
-            // Thrown types.
-            if (mts.thrownTypes != null && !mts.thrownTypes.isEmpty()) {
-                Iterator<ThrowsSignature> it = mts.thrownTypes.iterator();
-                print(" throws " + beautify(it.next().toString()));
-                while (it.hasNext()) print(", " + beautify(it.next().toString()));
-            } else
-            if (m.exceptionsAttribute != null && !m.exceptionsAttribute.exceptionNames.isEmpty()) {
-                Iterator<ConstantClassInfo> it = m.exceptionsAttribute.exceptionNames.iterator();
-                print(" throws " + beautify(it.next().name));
-                while (it.hasNext()) print(", " + beautify(it.next().name));
-            }
-
-            // Annotation default.
-            if (m.annotationDefaultAttribute != null) {
-                print("default " + m.annotationDefaultAttribute.defaultValue);
-            }
-
-            // Code.
-            if (m.codeAttribute == null) {
-                println(";");
-            } else {
-                println(" {");
-                ClassFile.CodeAttribute ca = m.codeAttribute;
-                try {
-                    disasmBytecode(
-                        new ByteArrayInputStream(ca.code),
-                        ca.exceptionTable,
-                        ca.lineNumberTableAttribute,
-                        sourceLines,
-                        cf.constantPool,
-                        m
-                    );
-                } catch (IOException ignored) {
-                    ;
-                }
-                println("    }");
-            }
-
-            // Method attributes.
-            print(m.attributes, "    // ", new Attribute[] {
-                m.annotationDefaultAttribute,
-                m.codeAttribute,
-                m.exceptionsAttribute,
-                m.runtimeInvisibleAnnotationsAttribute,
-                m.runtimeInvisibleParameterAnnotationsAttribute,
-                m.runtimeVisibleAnnotationsAttribute,
-                m.runtimeVisibleParameterAnnotationsAttribute,
-                m.signatureAttribute,
-                m.syntheticAttribute,
-            });
+            disasm(m, cf, sourceLines);
         }
+
         println("}");
 
         // Class attributes.
@@ -520,6 +349,197 @@ public class Disassembler {
             cf.sourceFileAttribute,
             cf.syntheticAttribute,
         });
+    }
+
+    /**
+     * Disassemble one method.
+     */
+    private void disasm(ClassFile.Method method, ClassFile cf, Map<Short, String> sourceLines) {
+        println();
+
+        // Print SYNTHETIC notice.
+        if ((method.accessFlags & 0x1000 /*SYNTHETIC*/) != 0 || method.syntheticAttribute != null) {
+            println("    // (Synthetic method)");
+        }
+        
+        // Print method annotations.
+        if (method.runtimeInvisibleAnnotationsAttribute != null) {
+            for (ClassFile.Annotation a : method.runtimeInvisibleAnnotationsAttribute.annotations) {
+                println("    " + a.toString());
+            }
+        }
+        if (method.runtimeVisibleAnnotationsAttribute != null) {
+            for (ClassFile.Annotation a : method.runtimeVisibleAnnotationsAttribute.annotations) {
+                println("    " + a.toString());
+            }
+        }
+
+        // Print method access flags.
+        String functionName = method.name;
+        Disassembler.this.print(
+            "    "
+            + decodeAccess((short) (
+                method.accessFlags
+                & ~0x1000 /*SYNTHETIC*/
+                & ~0x0080 /*TRANSIENT/VARARGS*/
+                & ((cf.accessFlags & Modifier.INTERFACE) != 0 ? ~(Modifier.PUBLIC | Modifier.ABSTRACT) : 0xffff)
+            ))
+        );
+
+        // Print formal type parameters.
+        MethodTypeSignature mts;
+        {
+            mts = (
+                method.signatureAttribute == null
+                ? decodeMethodDescriptor(method.descriptor)
+                : decodeMethodTypeSignature(method.signatureAttribute.signature)
+            );
+            if (!mts.formalTypeParameters.isEmpty()) {
+                Iterator<FormalTypeParameter> it = mts.formalTypeParameters
+                    .iterator();
+                print("<" + beautify(it.next().toString()));
+                while (it.hasNext())
+                    print(", " + beautify(it.next().toString()));
+                print(">");
+            }
+        }
+
+        // Print method name.
+        if (
+            "<clinit>".equals(functionName)
+            && (method.accessFlags & Modifier.STATIC) != 0
+            && (method.exceptionsAttribute == null || method.exceptionsAttribute.exceptionNames.isEmpty())
+            && mts.formalTypeParameters.isEmpty()
+            && mts.parameterTypes.isEmpty()
+            && mts.returnType == SignatureParser.VOID
+            && mts.thrownTypes.isEmpty()
+        ) {
+            ;
+        } else
+        if (
+            "<init>".equals(functionName)
+            && (method.accessFlags & (Modifier.ABSTRACT | Modifier.FINAL | Modifier.INTERFACE | Modifier.STATIC)) == 0
+            && mts.returnType == SignatureParser.VOID
+        ) {
+            print(beautify(cf.thisClassName));
+            print(
+                method.runtimeInvisibleParameterAnnotationsAttribute,
+                method.runtimeVisibleParameterAnnotationsAttribute,
+                mts.parameterTypes,
+                method,
+                (short) 1,(method.accessFlags & 0x0080 /*VARARGS*/) != 0
+            );
+        } else
+        {
+            print(beautify(mts.returnType.toString()) + ' ');
+            print(functionName);
+            print(
+                method.runtimeInvisibleParameterAnnotationsAttribute,
+                method.runtimeVisibleParameterAnnotationsAttribute,
+                mts.parameterTypes,
+                method,
+                (method.accessFlags & Modifier.STATIC) == 0 ? (short) 1 : (short) 0,
+                (method.accessFlags & 0x0080 /*VARARGS*/) != 0
+            );
+        }
+
+        // Thrown types.
+        if (mts.thrownTypes != null && !mts.thrownTypes.isEmpty()) {
+            Iterator<ThrowsSignature> it = mts.thrownTypes.iterator();
+            print(" throws " + beautify(it.next().toString()));
+            while (it.hasNext()) print(", " + beautify(it.next().toString()));
+        } else
+        if (method.exceptionsAttribute != null && !method.exceptionsAttribute.exceptionNames.isEmpty()) {
+            Iterator<ConstantClassInfo> it = method.exceptionsAttribute.exceptionNames.iterator();
+            print(" throws " + beautify(it.next().name));
+            while (it.hasNext()) print(", " + beautify(it.next().name));
+        }
+
+        // Annotation default.
+        if (method.annotationDefaultAttribute != null) {
+            print("default " + method.annotationDefaultAttribute.defaultValue);
+        }
+
+        // Code.
+        if (method.codeAttribute == null) {
+            println(";");
+        } else {
+            println(" {");
+            ClassFile.CodeAttribute ca = method.codeAttribute;
+            try {
+                disasmBytecode(
+                    new ByteArrayInputStream(ca.code),
+                    ca.exceptionTable,
+                    ca.lineNumberTableAttribute,
+                    sourceLines,
+                    cf.constantPool,
+                    method
+                );
+            } catch (IOException ignored) {
+                ;
+            }
+            println("    }");
+        }
+
+        // Method attributes.
+        print(method.attributes, "    // ", new Attribute[] {
+            method.annotationDefaultAttribute,
+            method.codeAttribute,
+            method.exceptionsAttribute,
+            method.runtimeInvisibleAnnotationsAttribute,
+            method.runtimeInvisibleParameterAnnotationsAttribute,
+            method.runtimeVisibleAnnotationsAttribute,
+            method.runtimeVisibleParameterAnnotationsAttribute,
+            method.signatureAttribute,
+            method.syntheticAttribute,
+        });
+    }
+
+    private void disasm(List<Field> fields) {
+        List<String[]> lines = new ArrayList<String[]>();
+        for (ClassFile.Field field : fields) {
+            lines.add(new String[0]);
+            
+            // Annotations.
+            if (field.runtimeInvisibleAnnotationsAttribute != null) {
+                for (ClassFile.Annotation a : field.runtimeInvisibleAnnotationsAttribute.annotations) {
+                    println("    " + a.toString());
+                }
+            }
+            if (field.runtimeVisibleAnnotationsAttribute != null) {
+                for (ClassFile.Annotation a : field.runtimeVisibleAnnotationsAttribute.annotations) {
+                    println("    " + a.toString());
+                }
+            }
+            
+            // Synthetic.
+            if ((field.accessFlags & 0x1000 /*SYNTHETIC*/) != 0 || field.syntheticAttribute != null) {
+                lines.add(new String[] { "    // (Synthetic field)" });
+            }
+
+            // Access flags and field type.
+            String parametrizedType = beautify(
+                field.signatureAttribute == null
+                ? decodeFieldDescriptor(field.descriptor).toString()
+                : decodeFieldTypeSignature(field.signatureAttribute.signature).toString()
+            );
+            String prefix = "    " + decodeAccess((short) (field.accessFlags & ~0x1000 /*SYNTHETIC*/)) + parametrizedType + " ";
+
+            // Name and initializer.
+            if (field.constantValueAttribute == null) {
+                lines.add(new String[] {
+                    prefix,
+                    field.name + ";"
+                });
+            } else {
+                lines.add(new String[] {
+                    prefix,
+                    field.name,
+                    " = " + field.constantValueAttribute.constantValue + ";"
+                });
+            }
+        }
+        println(lines);
     }
 
     private String toString(ClasS c) {
@@ -749,6 +769,9 @@ public class Disassembler {
         print(")");
     }
 
+    /**
+     * Column-aligned printing.
+     */
     private void println(List<String[]> lines) {
         int maxLen[] = new int[10];
         for (String[] line : lines) {
@@ -769,8 +792,7 @@ public class Disassembler {
                 for (int i = 0; i < line.length - 1; ++i) {
                     String column = line[i];
                     print(column);
-                    print("                                                                                 "
-                            .substring(0, maxLen[i] - column.length()));
+                    print("                                                                                 ".substring(0, maxLen[i] - column.length()));
                 }
                 println(line[line.length - 1]);
             }
@@ -894,7 +916,9 @@ public class Disassembler {
                     if (lineNumber != -1) {
                         String sourceLine = sourceLines.get(lineNumber);
                         if (sourceLine == null) {
-                            if (!this.hideLines) this.println("                   *** Line " + lineNumber);
+                            if (!this.hideLines) {
+                                this.println("                   *** Line " + lineNumber);
+                            }
                         } else {
                             if (this.hideLines) {
                                 this.println("                   *** " + sourceLine);
