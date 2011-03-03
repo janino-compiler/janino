@@ -35,68 +35,68 @@ import java.io.IOException;
 public class StringCharStream implements CharStream {
 
     private final String in;
-    private int          idx;
+    private int          pos;
 
     public StringCharStream(String in) {
         this.in = in;
     }
 
     public int peek() {
-        return idx == in.length() ? -1 : in.charAt(idx);
+        return pos == in.length() ? -1 : in.charAt(pos);
     }
 
     public boolean peek(char c) {
-        return idx < in.length() && in.charAt(idx) == c;
+        return pos < in.length() && in.charAt(pos) == c;
     }
 
     public int peek(String chars) {
-        return idx == in.length() ? -1 : chars.indexOf(in.charAt(idx));
+        return pos == in.length() ? -1 : chars.indexOf(in.charAt(pos));
     }
 
     public char read() throws EOFException {
-        if (idx == in.length()) throw new EOFException("Unexpected end-of-input");
-        return in.charAt(idx++);
+        if (pos == in.length()) throw new EOFException("Unexpected end-of-input");
+        return in.charAt(pos++);
     }
 
     public void read(char c) throws EOFException, UnexpectedCharacterException {
-        if (idx == in.length()) throw new EOFException("Expected '" + c + "' instead of end-of-input");
-        if (in.charAt(idx) != c) throw new UnexpectedCharacterException("'" + c + "' expected instead of '" + in.substring(idx) + "'");
-        idx++;
+        if (pos == in.length()) throw new EOFException("Expected '" + c + "' instead of end-of-input");
+        if (in.charAt(pos) != c) throw new UnexpectedCharacterException("'" + c + "' expected instead of '" + in.substring(pos) + "'");
+        pos++;
     }
 
     public int read(String chars) throws EOFException, UnexpectedCharacterException {
-        if (idx == in.length()) throw new EOFException("Expected one of '" + chars + "' instead of end-of-input");
-        int res = chars.indexOf(in.charAt(idx));
-        if (res == -1) throw new UnexpectedCharacterException("One of '" + chars + "' expected instead of '" + in.charAt(idx) + "'");
-        idx++;
+        if (pos == in.length()) throw new EOFException("Expected one of '" + chars + "' instead of end-of-input");
+        int res = chars.indexOf(in.charAt(pos));
+        if (res == -1) throw new UnexpectedCharacterException("One of '" + chars + "' expected instead of '" + in.charAt(pos) + "'");
+        pos++;
         return res;
     }
 
     public boolean peekRead(char c) {
-        if (idx >= in.length()) return false;
-        if (in.charAt(idx) == c) {
-            idx++;
+        if (pos >= in.length()) return false;
+        if (in.charAt(pos) == c) {
+            pos++;
             return true;
         }
         return false;
     }
 
     public int peekRead(String chars) {
-        if (idx >= in.length()) return -1;
-        int res = chars.indexOf(in.charAt(idx));
-        if (res != -1) idx++;
+        if (pos >= in.length()) return -1;
+        int res = chars.indexOf(in.charAt(pos));
+        if (res != -1) pos++;
         return res;
     }
 
     public void eoi() throws UnexpectedCharacterException {
-        if (idx < in.length()) throw new UnexpectedCharacterException("Unexpected trailing characters '" + in.substring(idx) + "'");
+        if (pos < in.length()) throw new UnexpectedCharacterException("Unexpected trailing characters '" + in.substring(pos) + "'");
     }
 
     public boolean atEoi() {
-        return idx >= in.length();
+        return pos >= in.length();
     }
 
     public String toString() {
-        return "'" + in + "' at offset " + idx;
+        return "'" + in + "' at offset " + pos;
     }
 }

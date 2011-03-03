@@ -29,9 +29,14 @@ package de.unkrig.io.charstream;
 import java.io.EOFException;
 import java.io.IOException;
 
+/**
+ * This interface produces a sequence of {@code char}s. These can either be "read", which means basically the same as
+ * {@link Reader#read()}; or they can be "peeked", which means that the next character is returned, but not consumed,
+ * i.e. the next call to {@link #read} or {@link #peek} will return that character again.
+ */
 public interface CharStream {
     
-    public static final int  EOI = -1;
+    public static final int EOI = -1;
 
     /**
      * Returns the next character on this stream but does <b>not</b> consume it.
@@ -63,8 +68,8 @@ public interface CharStream {
 
     /**
      * Consumes the next character on this stream and verifies that it equals the given character.
+     *
      * @throws EOFException                 This stream is at end-of-input
-     * @throws UnexpectedCharacterException TODO
      * @throws UnexpectedCharacterException The next character does not equal the given character
      */
     void read(char c) throws EOFException, UnexpectedCharacterException;
