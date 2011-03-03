@@ -33,7 +33,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import de.unkrig.jdisasm.ClassFile.InnerClassesAttribute;
 import de.unkrig.jdisasm.ConstantPool.ConstantClassInfo;
 import de.unkrig.jdisasm.ConstantPool.ConstantNameAndTypeInfo;
 import de.unkrig.jdisasm.ConstantPool.ConstantUtf8Info;
