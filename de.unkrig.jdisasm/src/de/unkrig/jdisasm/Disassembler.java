@@ -151,6 +151,7 @@ public class Disassembler {
             } else
             {
                 System.err.println("Unrecognized command line option \"" + arg + "\"; try \"-help\".");
+                System.exit(1);
             }
         }
         if (i == args.length) {
@@ -192,7 +193,7 @@ public class Disassembler {
         InputStream is = new FileInputStream(file);
         try {
             this.pw.println();
-            this.pw.println("// Disassembly of '" + file + "'.");
+            this.pw.println("// *** Disassembly of '" + file + "'.");
             disasm(is);
         } finally {
             try { is.close(); } catch (IOException ex) { }
@@ -212,21 +213,21 @@ public class Disassembler {
         // Load the class file.
         ClassFile cf = new ClassFile(dis);
 
-        // JDK version.
+        // Print JDK version.
         println();
         println("// Class file version = " + cf.getJdkName());
 
         this.thisClassPackageName = cf.thisClassName.substring(0, cf.thisClassName.lastIndexOf('.') + 1);
 
-        // Package declaration.
+        // Print package declaration.
         if (thisClassPackageName.length() > 0) {
             println();
             println("package " + thisClassPackageName.substring(0, thisClassPackageName.length() - 1) + ";");
         }
 
-        // Enclosing method info.
+        // Print enclosing method info.
         if (cf.enclosingMethodAttribute != null) {
-            String methodName = cf.enclosingMethodAttribute.method.name.bytes;
+            String methodName = cf.enclosingMethodAttribute.method == null ? "[initializer]" : cf.enclosingMethodAttribute.method.name.bytes;
             String className = cf.enclosingMethodAttribute.clasS.name;
             println();
             println(
@@ -237,13 +238,12 @@ public class Disassembler {
             );
         }
 
-        // Type declaration.
         println();
 
-        // Access flags.
+        // Print access flags.
         if ((cf.accessFlags & 0x1000 /*SYNTHETIC*/) != 0 || cf.syntheticAttribute != null) this.println("// This is a synthetic class.");
 
-        // Annotations.
+        // Print type annotations.
         if (cf.runtimeInvisibleAnnotationsAttribute != null) {
             for (ClassFile.Annotation a : cf.runtimeInvisibleAnnotationsAttribute.annotations) {
                 println(a.toString());
@@ -255,7 +255,7 @@ public class Disassembler {
             }
         }
 
-        // Modifiers.
+        // Print type modifiers.
         this.print(
             decodeAccess((short) (
                 cf.accessFlags
@@ -267,11 +267,11 @@ public class Disassembler {
             + ((cf.accessFlags & (0x4000 /*ENUM*/ | 0x2000 /*ANNOTATION*/ | Modifier.INTERFACE)) == 0 ? "class " : "")
         );
 
-        // EXTENDS and IMPLEMENTS clauses.
+        // Print name, EXTENDS and IMPLEMENTS clauses.
         if (cf.signatureAttribute != null) {
             this.print(beautify(decodeClassSignature(cf.signatureAttribute.signature).toString(cf.thisClassName)));
         } else {
-            this.print(cf.thisClassName);
+            this.print(beautify(cf.thisClassName));
             if (!"java.lang.Object".equals(cf.superClassName)) {
                 this.print(" extends " + beautify(cf.superClassName));
             }
@@ -282,16 +282,24 @@ public class Disassembler {
             }
             if (!ifs.isEmpty()) {
                 Iterator<String> it = ifs.iterator();
-                this.print(" implements " + it.next());
+                this.print(" implements " + beautify(it.next()));
                 while (it.hasNext()) {
-                    this.print(", " + it.next());
+                    this.print(", " + beautify(it.next()));
                 }
             }
         }
 
         this.println(" {");
 
-        // Fields.
+        if (cf.innerClassesAttribute != null) {
+            println();
+            println("    // Enclosing/enclosed types:");
+            for (ClasS c : cf.innerClassesAttribute.classes) {
+                println("    //   " + toString(c));
+            }
+        }
+
+        // Print fields.
         {
             List<String[]> lines = new ArrayList<String[]>();
             for (ClassFile.Field field : cf.fields) {
@@ -366,11 +374,12 @@ public class Disassembler {
         for (ClassFile.Method m : cf.methods) {
             println();
 
+            // Print SYNTHETIC notice.
             if ((m.accessFlags & 0x1000 /*SYNTHETIC*/) != 0 || m.syntheticAttribute != null) {
                 println("    // (Synthetic method)");
             }
             
-            // Annotations.
+            // Print method annotations.
             if (m.runtimeInvisibleAnnotationsAttribute != null) {
                 for (ClassFile.Annotation a : m.runtimeInvisibleAnnotationsAttribute.annotations) {
                     println("    " + a.toString());
@@ -382,23 +391,7 @@ public class Disassembler {
                 }
             }
 
-            // Parameter annotations.
-            if (m.runtimeInvisibleParameterAnnotationsAttribute != null) {
-                for (ClassFile.ParameterAnnotation pa : m.runtimeInvisibleParameterAnnotationsAttribute.parameterAnnotations) {
-                    for (ClassFile.Annotation a : pa.annotations) {
-                        println("    " + a.toString());
-                    }
-                }
-            }
-            if (m.runtimeVisibleParameterAnnotationsAttribute != null) {
-                for (ClassFile.ParameterAnnotation pa : m.runtimeVisibleParameterAnnotationsAttribute.parameterAnnotations) {
-                    for (ClassFile.Annotation a : pa.annotations) {
-                        println("    " + a.toString());
-                    }
-                }
-            }
-
-            // Access flags.
+            // Print method access flags.
             String functionName = m.name;
             Disassembler.this.print(
                 "    "
@@ -410,22 +403,22 @@ public class Disassembler {
                 ))
             );
 
-            // Formal type parameters, name, parameters.
-            MethodTypeSignature mts = (
-                m.signatureAttribute == null
-                ? decodeMethodDescriptor(m.descriptor)
-                : decodeMethodTypeSignature(m.signatureAttribute.signature)
-            );
-
-            // Formal type parameters.
-            if (!mts.formalTypeParameters.isEmpty()) {
-                Iterator<FormalTypeParameter> it = mts.formalTypeParameters.iterator();
-                print("<" + beautify(it.next().toString()));
-                while (it.hasNext()) print(", " + beautify(it.next().toString()));
-                print(">");
+            // Print formal type parameters.
+            MethodTypeSignature mts;
+            {
+                mts = (m.signatureAttribute == null ? decodeMethodDescriptor(m.descriptor)
+                    : decodeMethodTypeSignature(m.signatureAttribute.signature));
+                if (!mts.formalTypeParameters.isEmpty()) {
+                    Iterator<FormalTypeParameter> it = mts.formalTypeParameters
+                        .iterator();
+                    print("<" + beautify(it.next().toString()));
+                    while (it.hasNext())
+                        print(", " + beautify(it.next().toString()));
+                    print(">");
+                }
             }
 
-            // Name.
+            // Print method name.
             if (
                 "<clinit>".equals(functionName)
                 && (m.accessFlags & Modifier.STATIC) != 0
@@ -442,7 +435,7 @@ public class Disassembler {
                 && (m.accessFlags & (Modifier.ABSTRACT | Modifier.FINAL | Modifier.INTERFACE | Modifier.STATIC)) == 0
                 && mts.returnType == SignatureParser.VOID
             ) {
-                print(cf.thisClassName);
+                print(beautify(cf.thisClassName));
                 print(
                     m.runtimeInvisibleParameterAnnotationsAttribute,
                     m.runtimeVisibleParameterAnnotationsAttribute,
@@ -520,12 +513,26 @@ public class Disassembler {
         // Class attributes.
         print(cf.attributes, "// ", new Attribute[] {
             cf.enclosingMethodAttribute,
+            cf.innerClassesAttribute,
             cf.runtimeInvisibleAnnotationsAttribute,
             cf.runtimeVisibleAnnotationsAttribute,
             cf.signatureAttribute,
             cf.sourceFileAttribute,
             cf.syntheticAttribute,
         });
+    }
+
+    private String toString(ClasS c) {
+        return (
+            (c.outerClassInfo == null ? "[local class]" : beautify(c.outerClassInfo.name))
+            + " { "
+            + decodeAccess((short) (c.innerClassAccessFlags & ( // Hide ABSTRACT and STATIC for interfaces
+                (c.innerClassAccessFlags & Modifier.INTERFACE) != 0
+                ? (~Modifier.ABSTRACT & ~Modifier.STATIC)
+                : 0xffff
+            )))
+            + (c.innerClassInfo == null ? "[???]" : beautify(c.innerClassInfo.name)) + " }"
+        );
     }
 
     private void print(
@@ -620,19 +627,7 @@ public class Disassembler {
         public void visit(InnerClassesAttribute ica) {
             println(prefix + "InnerClasses:");
             for (ClasS c : ica.classes) {
-                println(
-                    prefix
-                    + "  "
-                    + (c.outerClassInfo == null ? "[local class]" : c.outerClassInfo.name)
-                    + " { "
-                    + decodeAccess((short) (c.innerClassAccessFlags & ( // Hide ABSTRACT and STATIC for interfaces
-                        (c.innerClassAccessFlags & Modifier.INTERFACE) != 0
-                        ? (~Modifier.ABSTRACT & ~Modifier.STATIC)
-                        : 0xffff
-                    )))
-                    + (c.innerClassInfo == null ? "[???]" : c.innerClassInfo.name)
-                    + " }"
-                );
+                println(prefix + "  " + Disassembler.this.toString(c));
             }
         }
 
@@ -864,13 +859,22 @@ public class Disassembler {
                             Iterator<ExceptionTableEntry> it2 = etes.iterator();
                             for (;;) {
                                 ExceptionTableEntry ete = it2.next();
-                                print(beautify(ete.catchType.name) + " => " + ete.handlerPC);
+                                print(
+                                    (ete.catchType == null ? "[all exeptions]" : beautify(ete.catchType.name))
+                                    + " => "
+                                    + ete.handlerPC
+                                );
                                 if (!it2.hasNext()) break;
                                 print(", ");
                             }
                             println(")");
                         }
                     }
+                }
+
+                // Print instruction offsets only for branch targets.
+                if (this.branchTargets.contains(instructionOffset)) {
+                    this.println("#" + instructionOffset);
                 }
 
                 // Print beginnings of TRY bodies.
@@ -882,12 +886,6 @@ public class Disassembler {
                             indentation += "    ";
                         }
                     }
-                }
-
-                // Print instruction offsets only for branch targets.
-                if (this.branchTargets.contains(instructionOffset)) {
-                    this.println();
-                    this.println("#" + instructionOffset);
                 }
 
                 // Print source line and/or line number.
@@ -1241,7 +1239,7 @@ public class Disassembler {
                                 ConstantFieldrefInfo fr = cp.getConstantFieldrefInfo(dis.readShort());
                                 return (
                                     ' '
-                                    + d.decodeFieldDescriptor(fr.nameAndType.descriptor.bytes).toString()
+                                    + d.beautify(d.decodeFieldDescriptor(fr.nameAndType.descriptor.bytes).toString())
                                     + ' '
                                     + d.beautify(fr.clasS.name)
                                     + '.'
@@ -1568,11 +1566,11 @@ public class Disassembler {
             : decodeMethodDescriptor(method.descriptor)
         );
         if (localVariableIndex < firstParameter + mts.parameterTypes.size()) {
-            lv.name = "p" + (localVariableIndex - firstParameter);
+            lv.name = "p" + (1 + localVariableIndex - firstParameter);
             lv.optionalTypeSignature = mts.parameterTypes.get(localVariableIndex - firstParameter);
         } else
         {
-            lv.name = "v" + (localVariableIndex - firstParameter - mts.parameterTypes.size());
+            lv.name = "v" + (1 + localVariableIndex - firstParameter - mts.parameterTypes.size());
         }
         if (method.codeAttribute != null) {
             if (method.codeAttribute.localVariableTypeTableAttribute != null) {

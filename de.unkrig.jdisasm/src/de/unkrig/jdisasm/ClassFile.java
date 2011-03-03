@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import de.unkrig.jdisasm.ClassFile.InnerClassesAttribute;
 import de.unkrig.jdisasm.ConstantPool.ConstantClassInfo;
 import de.unkrig.jdisasm.ConstantPool.ConstantNameAndTypeInfo;
 import de.unkrig.jdisasm.ConstantPool.ConstantUtf8Info;
@@ -49,6 +50,7 @@ public class ClassFile {
     public final List<Field>                    fields = new ArrayList<Field>();
     public final List<Method>                   methods = new ArrayList<Method>();
     public EnclosingMethodAttribute             enclosingMethodAttribute;
+    public InnerClassesAttribute                innerClassesAttribute;
     public RuntimeInvisibleAnnotationsAttribute runtimeInvisibleAnnotationsAttribute;
     public RuntimeVisibleAnnotationsAttribute   runtimeVisibleAnnotationsAttribute;
     public SignatureAttribute                   signatureAttribute;
@@ -95,6 +97,11 @@ public class ClassFile {
             public void visit(EnclosingMethodAttribute ema) {
                 enclosingMethodAttribute = ema;
                 attributes.add(ema);
+            }
+
+            public void visit(InnerClassesAttribute ica) {
+                innerClassesAttribute = ica;
+                attributes.add(ica);
             }
 
             public void visit(RuntimeInvisibleAnnotationsAttribute riaa) {
