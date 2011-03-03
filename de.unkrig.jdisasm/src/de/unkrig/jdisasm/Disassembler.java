@@ -616,7 +616,7 @@ public class Disassembler {
                 for (int j = 0; j < 32; ++j) {
                     int idx = i + j;
                     if (idx >= data.length) break;
-                    printf(" %02x", 0xff & data[idx]);
+                    printf("%c%02x", j == 16 ? '-' : ' ', 0xff & data[idx]);
                 }
                 println();
             }
@@ -911,22 +911,31 @@ public class Disassembler {
                 }
 
                 // Print source line and/or line number.
-                if (lineNumberTableAttribute != null) {
+                PRINT_SOURCE_LINE: {
+                    if (lineNumberTableAttribute == null) break PRINT_SOURCE_LINE;
+
                     short lineNumber = findLineNumber(lineNumberTableAttribute, instructionOffset);
-                    if (lineNumber != -1) {
-                        String sourceLine = sourceLines.get(lineNumber);
-                        if (sourceLine == null) {
-                            if (!this.hideLines) {
-                                this.println("                   *** Line " + lineNumber);
-                            }
-                        } else {
-                            if (this.hideLines) {
-                                this.println("                   *** " + sourceLine);
-                            } else {
-                                this.println("                   *** Line " + lineNumber + ": " + sourceLine);
-                            }
+                    if (lineNumber == -1) break PRINT_SOURCE_LINE;
+
+                    String sourceLine = sourceLines.get(lineNumber);
+                    if (sourceLine == null && this.hideLines) break PRINT_SOURCE_LINE;
+
+                    StringBuilder sb = new StringBuilder(indentation);
+                    if (sourceLine == null) {
+                        sb.append("// Line ").append(lineNumber);
+                    } else {
+                        sb.append("// ");
+                        if (sb.length() < 40) {
+                            char[] spc = new char[40 - sb.length()];
+                            Arrays.fill(spc, ' ');
+                            sb.append(spc);
                         }
+                        if (!this.hideLines) {
+                            sb.append("Line ").append(lineNumber).append(": ");
+                        }
+                        sb.append(sourceLine);
                     }
+                    println(sb.toString());
                 }
 
                 this.println(indentation + text);
