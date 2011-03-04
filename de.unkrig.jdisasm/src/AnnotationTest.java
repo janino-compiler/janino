@@ -56,8 +56,9 @@ public class AnnotationTest {
     }
 
     // Annotation type declaration with nested enum type declaration
+    /** @deprecated */
     public @interface Quality {
-        enum Level { BAD, INDIFFERENT, GOOD }
+        enum Level { /** @deprecated */ BAD, INDIFFERENT, GOOD }
 
         Level value();
     }
@@ -67,11 +68,18 @@ public class AnnotationTest {
     // Single-element annotation
     @Copyright("2002 Yoyodyne Propulsion Systems, Inc., All rights reserved.")
     public static class OscillationOverthruster {
+        public int              fld1;
+        public int              fld2 = 2;
+        public final int        fld3 = 3;
+        public static final int fld4 = 4;
+        public static final int fld55555555555555555555555555555555555 = 5;
+        
 
         OscillationOverthruster() {
             class Nested1 {}
         }
-        
+
+        /** @deprecated */
         void meth(@Copyright("foo") int x) {
             class Nested2 {
             }
