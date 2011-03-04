@@ -48,6 +48,7 @@ public class ClassFile {
     public final List<String>                   interfaceNames = new ArrayList<String>();
     public final List<Field>                    fields = new ArrayList<Field>();
     public final List<Method>                   methods = new ArrayList<Method>();
+    public DeprecatedAttribute                  deprecatedAttribute;
     public EnclosingMethodAttribute             enclosingMethodAttribute;
     public InnerClassesAttribute                innerClassesAttribute;
     public RuntimeInvisibleAnnotationsAttribute runtimeInvisibleAnnotationsAttribute;
@@ -57,6 +58,24 @@ public class ClassFile {
     public SyntheticAttribute                   syntheticAttribute;
     public final List<Attribute>                attributes = new ArrayList<Attribute>();
 
+    public static final short ACC_PUBLIC       = 0x00000001;
+    public static final short ACC_PRIVATE      = 0x00000002;
+    public static final short ACC_PROTECTED    = 0x00000004;
+    public static final short ACC_STATIC       = 0x00000008;
+    public static final short ACC_FINAL        = 0x00000010;
+    public static final short ACC_SYNCHRONIZED = 0x00000020;
+    public static final short ACC_VOLATILE     = 0x00000040;
+    public static final short ACC_BRIDGE       = 0x00000040;
+    public static final short ACC_TRANSIENT    = 0x00000080;
+    public static final short ACC_VARARGS      = 0x00000080;
+    public static final short ACC_NATIVE       = 0x00000100;
+    public static final short ACC_INTERFACE    = 0x00000200;
+    public static final short ACC_ABSTRACT     = 0x00000400;
+    public static final short ACC_STRICT       = 0x00000800;
+    public static final short ACC_SYNTHETIC    = 0x00001000;
+    public static final short ACC_ANNOTATION   = 0x00002000;
+    public static final short ACC_ENUM         = 0x00004000;
+    
     public ClassFile(DataInputStream dis) throws IOException {
 
         // Magic number.
@@ -92,6 +111,11 @@ public class ClassFile {
 
         // Class attributes.
         readAttributes(dis, new AbstractAttributeVisitor() {
+
+            public void visit(DeprecatedAttribute da) {
+                deprecatedAttribute = da;
+                attributes.add(da);
+            }
 
             public void visit(EnclosingMethodAttribute ema) {
                 enclosingMethodAttribute = ema;
@@ -413,6 +437,7 @@ public class ClassFile {
         public String                               name;
         public String                               descriptor;
         public ConstantValueAttribute               constantValueAttribute;
+        public DeprecatedAttribute                  deprecatedAttribute;
         public RuntimeInvisibleAnnotationsAttribute runtimeInvisibleAnnotationsAttribute;
         public RuntimeVisibleAnnotationsAttribute   runtimeVisibleAnnotationsAttribute;
         public SignatureAttribute                   signatureAttribute;
@@ -424,27 +449,39 @@ public class ClassFile {
             name = constantPool.getConstantUtf8Info(dis.readShort()).bytes;
             descriptor = constantPool.getConstantUtf8Info(dis.readShort()).bytes;
 
+            // Read field attributes.
             readAttributes(dis, new AbstractAttributeVisitor() {
+
                 public void visit(ConstantValueAttribute cva) {
                     constantValueAttribute = cva;
                     attributes.add(cva);
                 }
+
+                public void visit(DeprecatedAttribute da) {
+                    deprecatedAttribute = da;
+                    attributes.add(da);
+                }
+
                 public void visit(RuntimeInvisibleAnnotationsAttribute riaa) {
                     runtimeInvisibleAnnotationsAttribute = riaa;
                     attributes.add(riaa);
                 }
+
                 public void visit(RuntimeVisibleAnnotationsAttribute rvaa) {
                     runtimeVisibleAnnotationsAttribute = rvaa;
                     attributes.add(rvaa);
                 }
+
                 public void visit(SignatureAttribute sa) {
                     signatureAttribute = sa;
                     attributes.add(sa);
                 }
+
                 public void visit(SyntheticAttribute sa) {
                     syntheticAttribute = sa;
                     attributes.add(sa);
                 }
+
                 public void acceptOther(Attribute ai) {
                     attributes.add(ai);
                 }
@@ -459,6 +496,7 @@ public class ClassFile {
         public final List<Attribute>                         attributes = new ArrayList<Attribute>();
         public AnnotationDefaultAttribute                    annotationDefaultAttribute;
         public CodeAttribute                                 codeAttribute;
+        public DeprecatedAttribute                           deprecatedAttribute;
         public ExceptionsAttribute                           exceptionsAttribute;
         public RuntimeInvisibleAnnotationsAttribute          runtimeInvisibleAnnotationsAttribute;
         public RuntimeInvisibleParameterAnnotationsAttribute runtimeInvisibleParameterAnnotationsAttribute;
@@ -471,6 +509,8 @@ public class ClassFile {
             accessFlags = dis.readShort();
             name = constantPool.getConstantUtf8Info(dis.readShort()).bytes;
             descriptor = constantPool.getConstantUtf8Info(dis.readShort()).bytes;
+
+            // Read method attributes.
             readAttributes(dis, new AbstractAttributeVisitor() {
                 public void visit(AnnotationDefaultAttribute ada) {
                     annotationDefaultAttribute = ada;
@@ -480,6 +520,12 @@ public class ClassFile {
                     codeAttribute = ca;
                     attributes.add(ca);
                 }
+
+                public void visit(DeprecatedAttribute da) {
+                    deprecatedAttribute = da;
+                    attributes.add(da);
+                }
+
                 public void visit(ExceptionsAttribute ea) {
                     exceptionsAttribute = ea;
                     attributes.add(ea);
