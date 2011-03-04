@@ -1,4 +1,4 @@
-#Wed Mar 02 16:57:36 CET 2011
+#Fri Mar 04 14:59:44 CET 2011
 eclipse.preferences.version=1
 org.eclipse.jdt.core.compiler.problem.annotationSuperInterface=warning
 org.eclipse.jdt.core.compiler.problem.autoboxing=ignore
@@ -39,18 +39,21 @@ org.eclipse.jdt.core.compiler.problem.potentialNullReference=ignore
 org.eclipse.jdt.core.compiler.problem.rawTypeReference=warning
 org.eclipse.jdt.core.compiler.problem.redundantNullCheck=ignore
 org.eclipse.jdt.core.compiler.problem.redundantSuperinterface=ignore
+org.eclipse.jdt.core.compiler.problem.reportMethodCanBePotentiallyStatic=ignore
+org.eclipse.jdt.core.compiler.problem.reportMethodCanBeStatic=ignore
 org.eclipse.jdt.core.compiler.problem.specialParameterHidingField=disabled
 org.eclipse.jdt.core.compiler.problem.staticAccessReceiver=warning
 org.eclipse.jdt.core.compiler.problem.suppressOptionalErrors=disabled
 org.eclipse.jdt.core.compiler.problem.suppressWarnings=enabled
 org.eclipse.jdt.core.compiler.problem.syntheticAccessEmulation=ignore
 org.eclipse.jdt.core.compiler.problem.typeParameterHiding=warning
+org.eclipse.jdt.core.compiler.problem.unavoidableGenericTypeProblems=enabled
 org.eclipse.jdt.core.compiler.problem.uncheckedTypeOperation=warning
 org.eclipse.jdt.core.compiler.problem.undocumentedEmptyBlock=ignore
 org.eclipse.jdt.core.compiler.problem.unhandledWarningToken=warning
 org.eclipse.jdt.core.compiler.problem.unnecessaryElse=ignore
 org.eclipse.jdt.core.compiler.problem.unnecessaryTypeCheck=ignore
-org.eclipse.jdt.core.compiler.problem.unqualifiedFieldAccess=ignore
+org.eclipse.jdt.core.compiler.problem.unqualifiedFieldAccess=warning
 org.eclipse.jdt.core.compiler.problem.unusedDeclaredThrownException=warning
 org.eclipse.jdt.core.compiler.problem.unusedDeclaredThrownExceptionExemptExceptionAndThrowable=disabled
 org.eclipse.jdt.core.compiler.problem.unusedDeclaredThrownExceptionIncludeDocCommentReference=disabled

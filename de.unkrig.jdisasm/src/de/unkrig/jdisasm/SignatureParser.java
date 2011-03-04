@@ -128,22 +128,22 @@ public class SignatureParser {
             StringBuilder sb = new StringBuilder();
     
             // Formal type parameters.
-            if (!formalTypeParameters.isEmpty()) {
-                Iterator<FormalTypeParameter> it = formalTypeParameters.iterator();
+            if (!this.formalTypeParameters.isEmpty()) {
+                Iterator<FormalTypeParameter> it = this.formalTypeParameters.iterator();
                 sb.append('<' + it.next().toString());
                 while (it.hasNext()) sb.append(", " + it.next().toString());
                 sb.append('>');
             }
     
             // Name.
-            if ("<init>".equals(methodName) && returnType == SignatureParser.VOID) {
+            if ("<init>".equals(methodName) && this.returnType == SignatureParser.VOID) {
                 sb.append(declaringClassName);
             } else
             {
                 sb.append(declaringClassName).append('.').append(methodName);
             }
             sb.append('(');
-            Iterator<TypeSignature> it = parameterTypes.iterator();
+            Iterator<TypeSignature> it = this.parameterTypes.iterator();
             if (it.hasNext()) {
                 for (;;) {
                     sb.append(it.next().toString());
@@ -152,7 +152,7 @@ public class SignatureParser {
                 }
             }
             sb.append(')');
-            if (returnType != VOID) sb.append(" => ").append(returnType.toString());
+            if (this.returnType != VOID) sb.append(" => ").append(this.returnType.toString());
             return sb.toString();
         }
     
@@ -168,15 +168,15 @@ public class SignatureParser {
     
         public String toString(String className) {
             StringBuilder sb = new StringBuilder();
-            if (!formalTypeParameters.isEmpty()) {
-                Iterator<FormalTypeParameter> it = formalTypeParameters.iterator();
+            if (!this.formalTypeParameters.isEmpty()) {
+                Iterator<FormalTypeParameter> it = this.formalTypeParameters.iterator();
                 sb.append('<').append(it.next().toString());
                 while (it.hasNext()) sb.append(", ").append(it.next().toString());
                 sb.append('>');
             }
-            sb.append(className).append(" extends ").append(superclassSignature.toString());
-            if (!superinterfaceSignatures.isEmpty()) {
-                Iterator<ClassTypeSignature> it = superinterfaceSignatures.iterator();
+            sb.append(className).append(" extends ").append(this.superclassSignature.toString());
+            if (!this.superinterfaceSignatures.isEmpty()) {
+                Iterator<ClassTypeSignature> it = this.superinterfaceSignatures.iterator();
                 sb.append(" implements ").append(it.next().toString());
                 while (it.hasNext()) sb.append(", ").append(it.next().toString());
             }
@@ -191,16 +191,16 @@ public class SignatureParser {
         public final List<SimpleClassTypeSignature> suffixes = new ArrayList<SignatureParser.SimpleClassTypeSignature>();
     
         public String toString() {
-            StringBuilder sb = new StringBuilder(packageSpecifier.replace('/', '.')).append(simpleClassName);
-            if (!typeArguments.isEmpty()) {
-                Iterator<TypeArgument> it = typeArguments.iterator();
+            StringBuilder sb = new StringBuilder(this.packageSpecifier.replace('/', '.')).append(this.simpleClassName);
+            if (!this.typeArguments.isEmpty()) {
+                Iterator<TypeArgument> it = this.typeArguments.iterator();
                 sb.append('<').append(it.next().toString());
                 while (it.hasNext()) {
                     sb.append(", ").append(it.next().toString());
                 }
                 sb.append('>');
             }
-            for (SimpleClassTypeSignature suffix : suffixes) {
+            for (SimpleClassTypeSignature suffix : this.suffixes) {
                 sb.append(suffix.toString());
             }
             return sb.toString();
@@ -215,9 +215,9 @@ public class SignatureParser {
         public final List<TypeArgument> typeArguments = new ArrayList<TypeArgument>();
     
         public String toString() {
-            StringBuilder sb = new StringBuilder(simpleClassName);
-            if (!typeArguments.isEmpty()) {
-                Iterator<TypeArgument> it = typeArguments.iterator();
+            StringBuilder sb = new StringBuilder(this.simpleClassName);
+            if (!this.typeArguments.isEmpty()) {
+                Iterator<TypeArgument> it = this.typeArguments.iterator();
                 sb.append('<').append(it.next().toString());
                 while (it.hasNext()) {
                     sb.append(", ").append(it.next().toString());
@@ -230,12 +230,12 @@ public class SignatureParser {
 
     public static class ArrayTypeSignature implements FieldTypeSignature {
         public TypeSignature typeSignature;
-        public String toString() { return typeSignature.toString() + "[]"; }
+        public String toString() { return this.typeSignature.toString() + "[]"; }
     }
 
     public static class TypeVariableSignature implements ThrowsSignature, FieldTypeSignature {
         public String identifier;
-        public String toString() { return identifier; }
+        public String toString() { return this.identifier; }
     }
 
     public interface TypeSignature {
@@ -252,15 +252,15 @@ public class SignatureParser {
         public final List<FieldTypeSignature> interfaceBounds = new ArrayList<SignatureParser.FieldTypeSignature>();
     
         public String toString() {
-            StringBuilder sb = new StringBuilder(identifier);
-            if (optionalClassBound == null) {
-                if (interfaceBounds.isEmpty()) return identifier;
-                Iterator<FieldTypeSignature> it = interfaceBounds.iterator();
+            StringBuilder sb = new StringBuilder(this.identifier);
+            if (this.optionalClassBound == null) {
+                if (this.interfaceBounds.isEmpty()) return this.identifier;
+                Iterator<FieldTypeSignature> it = this.interfaceBounds.iterator();
                 sb.append(" extends ").append(it.next().toString());
                 while (it.hasNext()) sb.append(" & ").append(it.next().toString());
             } else {
-                sb.append(" extends ").append(optionalClassBound.toString());
-                for (FieldTypeSignature ib : interfaceBounds) sb.append(" & ").append(ib.toString());
+                sb.append(" extends ").append(this.optionalClassBound.toString());
+                for (FieldTypeSignature ib : this.interfaceBounds) sb.append(" & ").append(ib.toString());
             }
             return sb.toString();
         }
@@ -271,7 +271,7 @@ public class SignatureParser {
         private PrimitiveTypeSignature(String typeName) {
             this.typeName = typeName;
         }
-        public String toString() { return typeName; };
+        public String toString() { return this.typeName; };
     }
 
     public static class TypeArgument {
@@ -280,15 +280,15 @@ public class SignatureParser {
         public FieldTypeSignature fieldTypeSignature;
     
         public String toString() {
-            switch (mode) {
+            switch (this.mode) {
             case EXTENDS:
-                return "extends " + fieldTypeSignature.toString();
+                return "extends " + this.fieldTypeSignature.toString();
             case SUPER:
-                return "super " + fieldTypeSignature.toString();
+                return "super " + this.fieldTypeSignature.toString();
             case ANY:
                 return "*";
             case NONE:
-                return fieldTypeSignature.toString();
+                return this.fieldTypeSignature.toString();
             }
             throw new IllegalStateException();
         }

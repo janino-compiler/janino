@@ -100,11 +100,11 @@ public class ConstantPool {
 
         abstract class RawEntry2 extends RawEntry {
             ConstantPoolEntry get(short index) {
-                if (entries[index] == null) {
-                    entries[index] = new ConstantPoolEntry() {}; // To prevent recursion.
-                    entries[index] = rawEntries[index].cook();
+                if (ConstantPool.this.entries[index] == null) {
+                    ConstantPool.this.entries[index] = new ConstantPoolEntry() {}; // To prevent recursion.
+                    ConstantPool.this.entries[index] = rawEntries[index].cook();
                 }
-                return entries[index];
+                return ConstantPool.this.entries[index];
             }
         }
 
@@ -119,7 +119,7 @@ public class ConstantPool {
                     re = new RawEntry2() {
                         ConstantPoolEntry cook() {
                             return new ConstantClassInfo() {{
-                                name = getConstantUtf8Info(nameIndex).bytes.replace('/', '.');
+                                this.name = getConstantUtf8Info(nameIndex).bytes.replace('/', '.');
                             }};
                         }
                     };
@@ -133,8 +133,8 @@ public class ConstantPool {
                     re = new RawEntry2() {
                         ConstantPoolEntry cook() {
                             return new ConstantFieldrefInfo() {{
-                                clasS = getConstantClassInfo(classIndex);
-                                nameAndType = getConstantNameAndTypeInfo(nameAndTypeIndex);
+                                this.clasS = getConstantClassInfo(classIndex);
+                                this.nameAndType = getConstantNameAndTypeInfo(nameAndTypeIndex);
                             }};
                         }
                     };
@@ -148,8 +148,8 @@ public class ConstantPool {
                     re = new RawEntry2() {
                         ConstantPoolEntry cook() {
                             return new ConstantMethodrefInfo() {{
-                                clasS = getConstantClassInfo(classIndex);
-                                nameAndType = getConstantNameAndTypeInfo(nameAndTypeIndex);
+                                this.clasS = getConstantClassInfo(classIndex);
+                                this.nameAndType = getConstantNameAndTypeInfo(nameAndTypeIndex);
                             }};
                         }
                     };
@@ -163,8 +163,8 @@ public class ConstantPool {
                     re = new RawEntry2() {
                         ConstantPoolEntry cook() {
                             return new ConstantInterfaceMethodrefInfo() {{
-                                clasS = getConstantClassInfo(classIndex);
-                                nameAndType = getConstantNameAndTypeInfo(nameAndTypeIndex);
+                                this.clasS = getConstantClassInfo(classIndex);
+                                this.nameAndType = getConstantNameAndTypeInfo(nameAndTypeIndex);
                             }};
                         }
                     };
@@ -177,7 +177,7 @@ public class ConstantPool {
                     re = new RawEntry2() {
                         ConstantPoolEntry cook() {
                             return new ConstantStringInfo() {{
-                                string = getConstantUtf8Info(stringIndex).bytes;
+                                this.string = getConstantUtf8Info(stringIndex).bytes;
                             }};
                         }
                     };
@@ -190,7 +190,7 @@ public class ConstantPool {
                     re = new RawEntry2() {
                         ConstantPoolEntry cook() {
                             return new ConstantIntegerInfo() {{
-                                bytes = byteS;
+                                this.bytes = byteS;
                             }};
                         }
                     };
@@ -203,7 +203,7 @@ public class ConstantPool {
                     re = new RawEntry2() {
                         ConstantPoolEntry cook() {
                             return new ConstantFloatInfo() {{
-                                bytes = byteS;
+                                this.bytes = byteS;
                             }};
                         }
                     };
@@ -216,7 +216,7 @@ public class ConstantPool {
                     re = new RawEntry2() {
                         ConstantPoolEntry cook() {
                             return new ConstantLongInfo() {{
-                                bytes = byteS;
+                                this.bytes = byteS;
                             }};
                         }
                     };
@@ -229,7 +229,7 @@ public class ConstantPool {
                     re = new RawEntry2() {
                         ConstantPoolEntry cook() {
                             return new ConstantDoubleInfo() {{
-                                bytes = byteS;
+                                this.bytes = byteS;
                             }};
                         }
                     };
@@ -243,8 +243,8 @@ public class ConstantPool {
                     re = new RawEntry2() {
                         ConstantPoolEntry cook() {
                             return new ConstantNameAndTypeInfo() {{
-                                name = getConstantUtf8Info(nameIndex);
-                                descriptor = getConstantUtf8Info(descriptorIndex);
+                                this.name = getConstantUtf8Info(nameIndex);
+                                this.descriptor = getConstantUtf8Info(descriptorIndex);
                             }};
                         }
                     };
@@ -257,7 +257,7 @@ public class ConstantPool {
                     re = new RawEntry2() {
                         ConstantPoolEntry cook() {
                             return new ConstantUtf8Info() {{
-                                bytes = byteS;
+                                this.bytes = byteS;
                             }};
                         }
                     };
@@ -270,15 +270,15 @@ public class ConstantPool {
             rawEntries[idx] = re;
         }
 
-        entries = new ConstantPoolEntry[count];
+        this.entries = new ConstantPoolEntry[count];
         for (int i = 0; i < count; ++i) {
-            if (entries[i] == null && rawEntries[i] != null) entries[i] = rawEntries[i].cook();
+            if (this.entries[i] == null && rawEntries[i] != null) this.entries[i] = rawEntries[i].cook();
         }
     }
 
     private ConstantPoolEntry get(short index) {
         if (index == 0) return null;
-        ConstantPoolEntry e = entries[index];
+        ConstantPoolEntry e = this.entries[index];
         if (e == null) throw new NullPointerException("Unusable CP entry " + index);
         return e;
     }
@@ -300,7 +300,7 @@ public class ConstantPool {
      * returns its value converted to {@link String}.
      */
     public String getIntegerFloatClassString(short index) {
-        ConstantPoolEntry e = entries[index];
+        ConstantPoolEntry e = this.entries[index];
         if (e instanceof ConstantIntegerInfo) return Integer.toString(((ConstantIntegerInfo) e).bytes);
         if (e instanceof ConstantFloatInfo) return Float.toString(((ConstantFloatInfo) e).bytes);
         if (e instanceof ConstantClassInfo) return ((ConstantClassInfo) e).name;
@@ -313,7 +313,7 @@ public class ConstantPool {
      * and returns its value converted to {@link String}.
      */
     public String getIntegerFloatLongDoubleString(short index) {
-        ConstantPoolEntry e = entries[index];
+        ConstantPoolEntry e = this.entries[index];
         if (e instanceof ConstantIntegerInfo) return Integer.toString(((ConstantIntegerInfo) e).bytes);
         if (e instanceof ConstantFloatInfo) return Float.toString(((ConstantFloatInfo) e).bytes);
         if (e instanceof ConstantLongInfo) return Long.toString(((ConstantLongInfo) e).bytes);
@@ -327,7 +327,7 @@ public class ConstantPool {
      * its value converted to {@link String}.
      */
     public String getLongDoubleString(short index) {
-        ConstantPoolEntry e = entries[index];
+        ConstantPoolEntry e = this.entries[index];
         if (e instanceof ConstantLongInfo) return Long.toString(((ConstantLongInfo) e).bytes) + 'L';
         if (e instanceof ConstantDoubleInfo) return Double.toString(((ConstantDoubleInfo) e).bytes) + 'D';
         throw new ClassCastException(e.getClass().getName());
@@ -338,7 +338,7 @@ public class ConstantPool {
      * returns its value converted to {@link String}.
      */
     public String getIntegerFloatLongDouble(short index) {
-        ConstantPoolEntry e = entries[index];
+        ConstantPoolEntry e = this.entries[index];
         if (e instanceof ConstantIntegerInfo) return Integer.toString(((ConstantIntegerInfo) e).bytes);
         if (e instanceof ConstantFloatInfo) return Float.toString(((ConstantFloatInfo) e).bytes);
         if (e instanceof ConstantLongInfo) return Long.toString(((ConstantLongInfo) e).bytes);
