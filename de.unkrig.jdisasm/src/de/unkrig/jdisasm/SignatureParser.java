@@ -35,7 +35,9 @@ import de.unkrig.io.charstream.StringCharStream;
 import de.unkrig.io.charstream.UnexpectedCharacterException;
 
 /**
- * Helper class for parsing signatures and descriptors.
+ * Helper class for parsing signatures and descriptors. See
+ * <a href="http://java.sun.com/docs/books/jvms/second_edition/ClassFileFormat-Java5.pdf">Java 5 class file format</a>,
+ * section 4.4.4, "Signatures".
  */
 public class SignatureParser {
 
@@ -117,9 +119,12 @@ public class SignatureParser {
         }
     }
 
+    /** Representation of the "MethodTypeSignature" clause. */
     public static class MethodTypeSignature {
     
-        public final List<FormalTypeParameter> formalTypeParameters = new ArrayList<SignatureParser.FormalTypeParameter>();
+        public final List<FormalTypeParameter> formalTypeParameters = (
+            new ArrayList<SignatureParser.FormalTypeParameter>()
+        );
         public final List<TypeSignature>       parameterTypes = new ArrayList<SignatureParser.TypeSignature>();
         public TypeSignature                   returnType;
         public final List<ThrowsSignature>     thrownTypes = new ArrayList<SignatureParser.ThrowsSignature>();
@@ -161,6 +166,7 @@ public class SignatureParser {
         }
     }
 
+    /** Representation of the "ClassSignature" clause. */
     public static class ClassSignature {
         public final List<FormalTypeParameter> formalTypeParameters = new ArrayList<FormalTypeParameter>();
         public ClassTypeSignature              superclassSignature;
@@ -184,11 +190,14 @@ public class SignatureParser {
         }
     }
 
+    /** Representation of the "ClassTypeSignature" clause. */
     public static class ClassTypeSignature implements ThrowsSignature, FieldTypeSignature {
         public String                               packageSpecifier = "";
         public String                               simpleClassName;
         public final List<TypeArgument>             typeArguments = new ArrayList<TypeArgument>();
-        public final List<SimpleClassTypeSignature> suffixes = new ArrayList<SignatureParser.SimpleClassTypeSignature>();
+        public final List<SimpleClassTypeSignature> suffixes = (
+            new ArrayList<SignatureParser.SimpleClassTypeSignature>()
+        );
     
         public String toString() {
             StringBuilder sb = new StringBuilder(this.packageSpecifier.replace('/', '.')).append(this.simpleClassName);
@@ -210,6 +219,7 @@ public class SignatureParser {
     public static final ClassTypeSignature OBJECT = new ClassTypeSignature();
     static { OBJECT.simpleClassName = "java.lang.Object"; }
 
+    /** Representation of the "SimpleClassTypeSignature" clause. */
     public static class SimpleClassTypeSignature {
         public String                   simpleClassName;
         public final List<TypeArgument> typeArguments = new ArrayList<TypeArgument>();
@@ -228,23 +238,28 @@ public class SignatureParser {
         }
     }
 
+    /** Representation of the "ArrayTypeSignature" clause. */
     public static class ArrayTypeSignature implements FieldTypeSignature {
         public TypeSignature typeSignature;
         public String toString() { return this.typeSignature.toString() + "[]"; }
     }
 
+    /** Representation of the "TypeVariableSignature" clause. */
     public static class TypeVariableSignature implements ThrowsSignature, FieldTypeSignature {
         public String identifier;
         public String toString() { return this.identifier; }
     }
 
+    /** Representation of the "TypeSignature" clause. */
     public interface TypeSignature {
-        public abstract String toString();
+        String toString();
     }
 
+    /** Representation of the "ThrowsSignature" clause. */
     public interface ThrowsSignature {
     }
 
+    /** Representation of the "FormalTypeParameter" clause. */
     public static class FormalTypeParameter {
     
         public String                         identifier;
@@ -266,6 +281,7 @@ public class SignatureParser {
         }
     }
 
+    /** Representation of the "PrimitiveTypeSignature" clause. */
     public static class PrimitiveTypeSignature implements TypeSignature {
         public final String typeName;
         private PrimitiveTypeSignature(String typeName) {
@@ -274,7 +290,9 @@ public class SignatureParser {
         public String toString() { return this.typeName; };
     }
 
+    /** Representation of the "TypeArgument" clause. */
     public static class TypeArgument {
+        /***/
         enum Mode { EXTENDS, SUPER, ANY, NONE };
         public Mode               mode;
         public FieldTypeSignature fieldTypeSignature;
@@ -294,6 +312,7 @@ public class SignatureParser {
         }
     }
 
+    /** Representation of the "FieldTypeSignature" clause. */
     public interface FieldTypeSignature extends TypeSignature {
         String toString();
     }
@@ -411,7 +430,9 @@ public class SignatureParser {
 
     private static String parseIdentifier(StringCharStream scs) throws EOFException, SignatureException {
         char c = scs.read();
-        if (!Character.isJavaIdentifierStart(c)) throw new SignatureException("Identifier expected instead of '" + c + "'");
+        if (!Character.isJavaIdentifierStart(c)) {
+            throw new SignatureException("Identifier expected instead of '" + c + "'");
+        }
         StringBuilder sb = new StringBuilder().append(c);
         for (;;) {
             if (Character.isJavaIdentifierPart(scs.peek())) {
@@ -467,7 +488,9 @@ public class SignatureParser {
         case 2:
             return parseTypeVariableSignature(scs);
         default:
-            throw new SignatureException("Class type signature, array type signature or type variable signature expected");
+            throw new SignatureException(
+                "Class type signature, array type signature or type variable signature expected"
+            );
         }
     }
 
@@ -513,6 +536,7 @@ public class SignatureParser {
         return ta;
     }
 
+    /** Signalizes am malformed signature. */
     public static class SignatureException extends Exception {
 
         private static final long serialVersionUID = 1L;
