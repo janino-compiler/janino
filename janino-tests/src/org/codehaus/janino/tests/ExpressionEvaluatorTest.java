@@ -27,18 +27,20 @@
 package org.codehaus.janino.tests;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import java.io.StringReader;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.janino.ExpressionEvaluator;
 import org.codehaus.janino.Scanner;
 import org.codehaus.janino.ScriptEvaluator;
 import org.junit.Test;
 
-public class ExpressionEvalaluatorTest {
+public class ExpressionEvaluatorTest {
 
     @Test
     public void testGuessParameterNames() throws Exception {
@@ -60,4 +62,18 @@ public class ExpressionEvalaluatorTest {
         assertEquals(new HashSet(Arrays.asList(new String[] { "b", "d" })), parameterNames);
     }
 
+    /**
+     * JANINO (as of now) does not support generics, and should clearly state the fact instead of throwing
+     * mysterious {@link CompileException}s like 'Identifier expected'.
+     */
+    @Test
+    public void testGenerics() {
+        try {
+            new ExpressionEvaluator().cook("new java.util.HashMap<String, String>()");
+        } catch (CompileException ce) {
+            if (ce.getMessage().contains("does not support generics")) return;
+            fail("Unexpected CompileException message '" + ce.getMessage() + "'");
+        }
+        fail("Usage of generics should cause a CompileException");
+    }
 }
