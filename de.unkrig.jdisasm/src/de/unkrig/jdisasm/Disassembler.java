@@ -1591,12 +1591,17 @@ public class Disassembler {
                                     }
                                 }
                                 StringBuilder sb = new StringBuilder(" default => ");
-                                sb.append(instructionOffset + dis.readInt());
+                                {
+                                    short defaultOffset = (short) (instructionOffset + dis.readInt());
+                                    sb.append(defaultOffset);
+                                    d.branchTargets.add(defaultOffset);
+                                }
                                 int low = dis.readInt();
                                 int high = dis.readInt();
                                 for (int i = low; i <= high; ++i) {
-                                    int offset = dis.readInt();
-                                    sb.append(", ").append(i).append(" => ").append(instructionOffset + offset);
+                                    short offset = (short) (instructionOffset + dis.readInt());
+                                    d.branchTargets.add(offset);
+                                    sb.append(", ").append(i).append(" => ").append(offset);
                                 }
                                 return sb.toString();
                             }
@@ -1624,12 +1629,17 @@ public class Disassembler {
                                     }
                                 }
                                 StringBuilder sb = new StringBuilder(" default => ");
-                                sb.append(instructionOffset + dis.readInt());
+                                {
+                                    short defaultOffset = (short) (instructionOffset + dis.readInt());
+                                    sb.append(defaultOffset);
+                                    d.branchTargets.add(defaultOffset);
+                                }
                                 int npairs = dis.readInt();
                                 for (int i = 0; i < npairs; ++i) {
                                     int match  = dis.readInt();
-                                    int offset = dis.readInt();
-                                    sb.append(", ").append(match).append(" => ").append(instructionOffset + offset);
+                                    short offset = (short) (instructionOffset + dis.readInt());
+                                    sb.append(", ").append(match).append(" => ").append(offset);
+                                    d.branchTargets.add((short) offset);
                                 }
                                 return sb.toString();
                             }
