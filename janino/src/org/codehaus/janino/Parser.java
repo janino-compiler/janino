@@ -261,6 +261,8 @@ public class Parser {
         String className = this.readIdentifier();
         this.verifyIdentifierIsConventionalClassOrInterfaceName(className, location);
 
+        if (this.peekOperator("<")) throwCompileException("JANINO does not support generics");
+
         Java.ReferenceType optionalExtendedType = null;
         if (this.peekKeyword("extends")) {
             this.eatToken();
@@ -1563,10 +1565,9 @@ public class Parser {
      * </pre>
      */
     public Java.ReferenceType parseReferenceType() throws CompileException, IOException {
-        return new Java.ReferenceType(
-            this.location(),                // location
-            this.parseQualifiedIdentifier() // identifiers
-        );
+        String[] identifiers = this.parseQualifiedIdentifier();
+        if (this.peekOperator("<")) throwCompileException("JANINO does not support generics");
+        return new Java.ReferenceType(this.location(), identifiers);
     }
 
     /**
