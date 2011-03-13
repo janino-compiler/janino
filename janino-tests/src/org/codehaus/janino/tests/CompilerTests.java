@@ -38,7 +38,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.Location;
@@ -282,12 +281,22 @@ public class CompilerTests {
             fail("CompileException expected");
         }
 
-        assertEquals(makeSet(new Object[] { "pkg/A.class", "pkg/B.class", }), classes.keySet());
+        assertEquals(new HashSet(Arrays.asList(new Object[] { "pkg/A.class", "pkg/B.class", })), classes.keySet());
     }
 
-    private Set makeSet(Object[] elements) {
-        Set s = new HashSet();
-        for (int i = 0; i < elements.length; ++i) s.add(elements[i]);
-        return s;
+    /**
+     * JANINO (as of now) does not support generics, and should clearly state the fact instead of throwing
+     * mysterious {@link CompileException}s like '"{" expected at start of class body'.
+     */
+    @Test
+    public void testGenerics() {
+        try {
+            new SimpleCompiler().cook("class Foo<K, V> {}");
+        } catch (CompileException ce) {
+            if (ce.getMessage().contains("does not support generics")) return;
+            fail("Unexpected CompileException message '" + ce.getMessage() + "'");
+        }
+        fail("Usage of generics should cause a CompileException");
+
     }
 }
