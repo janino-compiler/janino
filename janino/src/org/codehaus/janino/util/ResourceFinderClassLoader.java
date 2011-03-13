@@ -26,13 +26,11 @@
 
 package org.codehaus.janino.util;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
 import org.codehaus.janino.JaninoRuntimeException;
-import org.codehaus.janino.tools.Disassembler;
 import org.codehaus.janino.util.resource.Resource;
 import org.codehaus.janino.util.resource.ResourceFinder;
 
@@ -42,7 +40,6 @@ import org.codehaus.janino.util.resource.ResourceFinder;
  * to find ".class" files.
  */
 public class ResourceFinderClassLoader extends ClassLoader {
-    private static final boolean DEBUG = false;
 
     private final ResourceFinder resourceFinder;
 
@@ -92,17 +89,6 @@ public class ResourceFinderClassLoader extends ClassLoader {
             try { is.close(); } catch (IOException ex) { }
         }
         byte[] ba = baos.toByteArray();
-
-        // Disassemble the the class bytecode(for debugging).
-        if (ResourceFinderClassLoader.DEBUG) {
-            System.out.println("*** Disassembly of class \"" + className + "\":");
-            try {
-                new Disassembler().disasm(new ByteArrayInputStream(ba));
-                System.out.flush();
-            } catch (IOException ex) {
-                throw new JaninoRuntimeException("SNO: IOException despite ByteArrayInputStream");
-            }
-        }
 
         // Define the class in this ClassLoader.
         Class clazz = super.defineClass(null, ba, 0, ba.length);
