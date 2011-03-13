@@ -33,7 +33,6 @@ import java.security.PrivilegedAction;
 import java.util.*;
 
 import org.codehaus.commons.compiler.*;
-import org.codehaus.janino.tools.Disassembler;
 import org.codehaus.janino.util.*;
 
 /**
@@ -400,22 +399,6 @@ public class SimpleCompiler extends Cookable implements ISimpleCompiler {
         for (int i = 0; i < classFiles.length; ++i) {
             ClassFile cf = classFiles[i];
             classes.put(cf.getThisClassName(), cf.toByteArray());
-        }
-
-        // Disassemble all generated classes (for debugging).
-        if (SimpleCompiler.DEBUG) {
-            for (Iterator it = classes.entrySet().iterator(); it.hasNext();) {
-                Map.Entry me = (Map.Entry) it.next();
-                String className = (String) me.getKey();
-                byte[] bytecode = (byte[]) me.getValue();
-                System.out.println("*** Disassembly of class \"" + className + "\":");
-                try {
-                    new Disassembler().disasm(new ByteArrayInputStream(bytecode));
-                    System.out.flush();
-                } catch (IOException ex) {
-                    throw new JaninoRuntimeException("SNO: IOException despite ByteArrayInputStream");
-                }
-            }
         }
 
         // Create a ClassLoader that loads the generated classes.

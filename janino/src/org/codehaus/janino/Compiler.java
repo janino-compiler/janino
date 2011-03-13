@@ -28,7 +28,6 @@ package org.codehaus.janino;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -39,7 +38,6 @@ import java.util.ArrayList;
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.Location;
 import org.codehaus.janino.UnitCompiler.ErrorHandler;
-import org.codehaus.janino.tools.Disassembler;
 import org.codehaus.janino.util.Benchmark;
 import org.codehaus.janino.util.ClassFile;
 import org.codehaus.janino.util.StringPattern;
@@ -614,22 +612,7 @@ public class Compiler {
         }
         OutputStream os = rc.createResource(classFileResourceName);
         try {
-            if (DEBUG) {
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                classFile.store(baos);
-                byte[] ba = baos.toByteArray();
-                System.out.println("*** Disassembly of class \"" + classFile.getThisClassName() + "\":");
-                try {
-                    new Disassembler().disasm(new ByteArrayInputStream(ba));
-                    System.out.flush();
-                } catch (IOException ex) {
-                    throw new JaninoRuntimeException("SNO: IOException despite ByteArrayInputStream");
-                }
-                os.write(ba);
-            } else
-            {
-                classFile.store(os);
-            }
+            classFile.store(os);
         } catch (IOException ex) {
             try { os.close(); } catch (IOException e) { }
             os = null;

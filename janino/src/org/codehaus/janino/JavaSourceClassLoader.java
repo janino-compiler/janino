@@ -26,9 +26,7 @@
 
 package org.codehaus.janino;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.IOException;
 import java.io.Reader;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -39,7 +37,6 @@ import java.util.Set;
 import org.codehaus.commons.compiler.AbstractJavaSourceClassLoader;
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.ICookable;
-import org.codehaus.janino.tools.Disassembler;
 import org.codehaus.janino.util.ClassFile;
 import org.codehaus.janino.util.resource.DirectoryResourceFinder;
 import org.codehaus.janino.util.resource.PathResourceFinder;
@@ -55,7 +52,6 @@ import org.codehaus.janino.util.resource.ResourceFinder;
  * a new one.
  */
 public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
-    private static final boolean DEBUG = false;
 
     public JavaSourceClassLoader() {
         this(ClassLoader.getSystemClassLoader());
@@ -257,17 +253,6 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
      * @throws ClassFormatError
      */
     protected Class defineBytecode(String className, byte[] ba) {
-
-        // Disassemble the the class bytecode(for debugging).
-        if (JavaSourceClassLoader.DEBUG) {
-            System.out.println("*** Disassembly of class \"" + className + "\":");
-            try {
-                new Disassembler().disasm(new ByteArrayInputStream(ba));
-                System.out.flush();
-            } catch (IOException ex) {
-                throw new JaninoRuntimeException("SNO: IOException despite ByteArrayInputStream");
-            }
-        }
 
         return this.defineClass(className, ba, 0, ba.length, (
             this.optionalProtectionDomainFactory == null
