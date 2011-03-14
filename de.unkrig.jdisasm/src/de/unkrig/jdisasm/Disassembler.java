@@ -1180,6 +1180,7 @@ public class Disassembler {
         "104 imul",
         "116 ineg",
         "193 instanceof      class2",
+//      "186 invokedynamic   invokedynamic2 unusedbyte unusedbyte", // For Java 7; see http://cr.openjdk.java.net/~jrose/pres/indy-javadoc-mlvm/java/lang/invoke/package-summary.html
         "185 invokeinterface interfacemethodref2 unusedbyte unusedbyte",
         "183 invokespecial   methodref2",
         "184 invokestatic    methodref2",
