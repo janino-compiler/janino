@@ -612,5 +612,7 @@ public class JLS2Tests extends JaninoTestSuite {
         scr(TRUE, "String[] a = { \"foo\" }; a[0] += 1.0; return a[0].equals(\"foo1.0\");");
         scr(TRUE, "Integer a = 7; a += 3; return a == 10;");
         scr(TRUE, "int a = 7; a += new Integer(3); return a == 10;");
+        // JANINO-155: Compound assignment does not implement boxing conversion
+        scr(TRUE, "Double[] a = { 1.0, 2.0 }; a[0] += 1.0; return a[0] == 2.0;");
     }
 }
