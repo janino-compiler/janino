@@ -559,7 +559,10 @@ public class JLS2Tests extends JaninoTestSuite {
     public void test_15_20__RelationOperators() throws Exception {
         // 15.20.1 Numerical Comparison Operators <, <=, > and >=
         exp(TRUE, "new Integer(7) > new Byte((byte) 5)");
+    }
 
+    @Test
+    public void test_15_21__EqualityOperators() throws Exception {
         // 15.21.1 Numerical Equality Operators == and !=
         exp(TRUE, "new Integer(7) != new Byte((byte) 5)");
         exp(TRUE, "new Integer(7) == 7");
@@ -570,20 +573,44 @@ public class JLS2Tests extends JaninoTestSuite {
         exp(TRUE, "new Boolean(true) == true");
         exp(TRUE, "false == new Boolean(false)");
         exp(TRUE, "false != true");
+    }
 
+    @Test
+    public void test_15_22__BitwiseAndLogicalOperators() throws Exception {
         // 15.22.2 Boolean Logical Operators &, ^, and |
         exp(COMP, "new Boolean(true) & new Boolean(true)");
         exp(TRUE, "new Boolean(true) ^ false");
         exp(TRUE, "false | new Boolean(true)");
+    }
 
+    @Test
+    public void test_15_23__ConditionalAndOperator() throws Exception {
         // 15.23 Conditional-And Operator &&
         exp(TRUE, "new Boolean(true) && new Boolean(true)");
         exp(TRUE, "new Boolean(true) && true");
         exp(TRUE, "true && new Boolean(true)");
+    }
 
+    @Test
+    public void test_15_24__ConditionalOrOperator() throws Exception {
         // 15.24 Conditional-Or Operator ||
         exp(TRUE, "new Boolean(true) || new Boolean(false)");
         exp(TRUE, "new Boolean(false) || true");
         exp(TRUE, "true || new Boolean(true)");
+    }
+    
+    @Test
+    public void test_15_26__ConditionalOrOperator() throws Exception {
+        // 15.26.2 Compound Assignment Operators
+        scr(TRUE, "int a = 7; a += 3; return a == 10;");
+        scr(TRUE, "int a = 7; a %= 3; return a == 1;");
+        scr(COMP, "Object a = \"foo\"; a += 3;");
+        scr(COMP, "int a = 7; a += \"foo\";");
+        scr(TRUE, "String a = \"foo\"; a += 3; return a.equals(\"foo3\");");
+        scr(TRUE, "String a = \"foo\"; a += 'o'; return a.equals(\"fooo\");");
+        scr(TRUE, "String a = \"foo\"; a += 1.0; return a.equals(\"foo1.0\");");
+        scr(TRUE, "String[] a = { \"foo\" }; a[0] += 1.0; return a[0].equals(\"foo1.0\");");
+        scr(TRUE, "Integer a = 7; a += 3; return a == 10;");
+        scr(TRUE, "int a = 7; a += new Integer(3); return a == 10;");
     }
 }
