@@ -2386,15 +2386,15 @@ public class UnitCompiler {
             ).intern(), // <= IMPORTANT!
             a.rhs                 // rhs
         );
+
         // Convert the result to LHS type (JLS2 15.26.2).
         if (
-            !this.tryIdentityConversion(resultType, lhsType) &&
-            !this.tryNarrowingPrimitiveConversion(
-                (Locatable) a,   // l
-                resultType,      // sourceType
-                lhsType          // destinationType
-            )
-        ) throw new JaninoRuntimeException("SNO: \"" + a.operator + "\" reconversion failed");
+            !this.tryIdentityConversion(resultType, lhsType)
+            && !this.tryNarrowingPrimitiveConversion((Locatable) a, resultType, lhsType)
+            && !this.tryBoxingConversion((Locatable) a, resultType, lhsType) // Java 5
+        ) this.compileError("Operand types unsuitable for '" + a.operator + "'", a.getLocation());
+
+        // Assign the result to the left operand.
         this.compileSet(a.lhs);
     }
     private void compile2(Java.Crement c) throws CompileException {
