@@ -398,7 +398,15 @@ public class SimpleCompiler extends Cookable implements ISimpleCompiler {
         final Map classes = new HashMap(); // String className => byte[] data
         for (int i = 0; i < classFiles.length; ++i) {
             ClassFile cf = classFiles[i];
-            classes.put(cf.getThisClassName(), cf.toByteArray());
+            byte[] contents = cf.toByteArray();
+            if (DEBUG) {
+                try {
+                    new de.unkrig.jdisasm.Disassembler().disasm(new ByteArrayInputStream(contents));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            classes.put(cf.getThisClassName(), contents);
         }
 
         // Create a ClassLoader that loads the generated classes.

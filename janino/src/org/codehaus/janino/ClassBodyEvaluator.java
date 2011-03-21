@@ -206,7 +206,8 @@ public class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEval
     public void cook(Scanner scanner) throws CompileException, IOException {
         this.setUpClassLoaders();
 
-        Java.CompilationUnit compilationUnit = this.makeCompilationUnit(scanner);
+        Parser parser = new Parser(scanner);
+        Java.CompilationUnit compilationUnit = this.makeCompilationUnit(parser);
 
         // Add class declaration.
         Java.ClassDeclaration cd = this.addPackageMemberClassDeclaration(
@@ -215,8 +216,7 @@ public class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEval
         );
 
         // Parse class body declarations (member declarations) until EOF.
-        Parser parser = new Parser(scanner);
-        while (!scanner.peek().isEOF()) {
+        while (!parser.peekEOF()) {
             parser.parseClassBodyDeclaration(cd);
         }
 
@@ -230,34 +230,28 @@ public class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEval
     /**
      * Create a {@link Java.CompilationUnit}, set the default imports, and parse the import declarations.
      * <p>
-     * If the <code>optionalScanner</code> is given, a sequence of IMPORT directives is parsed from it and added to the
+     * If the <code>optionalParser</code> is given, a sequence of IMPORT directives is parsed from it and added to the
      * compilation unit.
      */
-    protected final Java.CompilationUnit makeCompilationUnit(
-        Scanner optionalScanner
-    ) throws CompileException, IOException {
-        Java.CompilationUnit cu = new Java.CompilationUnit(
-            optionalScanner == null
-            ? null
-            : optionalScanner.getFileName()
-        );
+    protected final Java.CompilationUnit makeCompilationUnit(Parser optionalParser) throws CompileException, IOException {
+        Java.CompilationUnit cu = new Java.CompilationUnit(optionalParser == null ? null : optionalParser.getScanner().getFileName());
 
         // Set default imports.
         if (this.optionalDefaultImports != null) {
             for (int i = 0; i < this.optionalDefaultImports.length; ++i) {
                 Scanner s = new Scanner(null, new StringReader(this.optionalDefaultImports[i]));
-                cu.addImportDeclaration(new Parser(s).parseImportDeclarationBody());
-                if (!s.peek().isEOF()) {
-                    throw new CompileException("Unexpected token \"" + s.peek() + "\" in default import", s.location());
+                Parser parser2 = new Parser(s);
+                cu.addImportDeclaration(parser2.parseImportDeclarationBody());
+                if (!parser2.peekEOF()) {
+                    throw new CompileException("Unexpected token \"" + parser2.peek() + "\" in default import", s.location());
                 }
             }
         }
 
         // Parse all available IMPORT declarations.
-        if (optionalScanner != null) {
-            Parser parser = new Parser(optionalScanner);
-            while (optionalScanner.peek().isKeyword("import")) {
-                cu.addImportDeclaration(parser.parseImportDeclaration());
+        if (optionalParser != null) {
+            while (optionalParser.peek("import")) {
+                cu.addImportDeclaration(optionalParser.parseImportDeclaration());
             }
         }
 

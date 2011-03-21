@@ -244,12 +244,10 @@ public class ExpressionEvaluator extends ScriptEvaluator implements IExpressionE
     }
 
     protected List/*<BlockStatement>*/ makeStatements(
-        int     idx,
-        Scanner scanner
+        int    idx,
+        Parser parser
     ) throws CompileException, IOException {
         List/*<BlockStatement>*/ statements = new ArrayList();
-
-        Parser parser = new Parser(scanner);
 
         // Parse the expression.
         Rvalue value = parser.parseExpression().toRvalueOrPE();
@@ -265,9 +263,9 @@ public class ExpressionEvaluator extends ScriptEvaluator implements IExpressionE
             // wrapping of primitive types.
             if (et == ANY_TYPE) {
                 value = new Java.MethodInvocation(
-                    scanner.location(),         // location
+                    parser.location(),         // location
                     new Java.ReferenceType(     // optionalTarget
-                        scanner.location(),                                                           // location
+                        parser.location(),                                                           // location
                         new String[] { "org", "codehaus", "commons", "compiler", "PrimitiveWrapper" } // identifiers
                     ),
                     "wrap",                     // methodName
@@ -282,10 +280,10 @@ public class ExpressionEvaluator extends ScriptEvaluator implements IExpressionE
             }
 
             // Add a return statement.
-            statements.add(new Java.ReturnStatement(scanner.location(), value));
+            statements.add(new Java.ReturnStatement(parser.location(), value));
         }
-        if (!scanner.peek().isEOF()) {
-            throw new CompileException("Unexpected token \"" + scanner.peek() + "\"", scanner.location());
+        if (!parser.peekEOF()) {
+            throw new CompileException("Unexpected token \"" + parser.peek() + "\"", parser.location());
         }
 
         return statements;
@@ -379,12 +377,12 @@ public class ExpressionEvaluator extends ScriptEvaluator implements IExpressionE
         Parser parser = new Parser(scanner);
 
         // Eat optional leading import declarations.
-        while (scanner.peek().isKeyword("import")) parser.parseImportDeclaration();
+        while (parser.peek("import")) parser.parseImportDeclaration();
 
         // Parse the expression.
         Rvalue rvalue = parser.parseExpression().toRvalueOrPE();
-        if (!scanner.peek().isEOF()) {
-            throw new CompileException("Unexpected token \"" + scanner.peek() + "\"", scanner.location());
+        if (!parser.peekEOF()) {
+            throw new CompileException("Unexpected token \"" + parser.peek() + "\"", scanner.location());
         }
 
         // Traverse the expression for ambiguous names and guess which of them are parameter names.

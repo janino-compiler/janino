@@ -275,30 +275,28 @@ public class JGrep {
 
         for (;;) {
             String s = JGrep.readIdentifierPattern(parser);
-            if (parser.peekOperator("(")) {
+            if (parser.peekRead("(")) {
                 mit.methodNamePattern = s;
-                parser.eatToken();
                 List l = new ArrayList();
-                if (!parser.peekOperator(")")) {
+                if (!parser.peekRead(")")) {
                     for (;;) {
                         l.add(JGrep.readIdentifierPattern(parser));
-                        if (parser.peekOperator(")")) break;
-                        parser.readOperator(",");
+                        if (parser.peek(")")) break;
+                        parser.read(",");
                     }
                 }
                 mit.optionalArgumentTypeNamePatterns = (String[]) l.toArray(new String[l.size()]);
                 return mit;
             } else
-            if (parser.peekOperator(".")) {
+            if (parser.peekRead(".")) {
                 if (mit.optionalClassNamePattern == null) {
                     mit.optionalClassNamePattern = s;
                 } else
                 {
                     mit.optionalClassNamePattern += '.' + s;
                 }
-                parser.eatToken();
             } else
-            if (scanner.peek().isEOF()) {
+            if (parser.peekEOF()) {
                 mit.methodNamePattern = s;
                 return mit;
             }
@@ -307,19 +305,17 @@ public class JGrep {
 
     private static String readIdentifierPattern(Parser p) throws CompileException, IOException {
         StringBuffer sb = new StringBuffer();
-        if (p.peekOperator("*")) {
+        if (p.peekRead("*")) {
             sb.append('*');
-            p.eatToken();
         } else
         {
             sb.append(p.readIdentifier());
         }
         for (;;) {
-            if (p.peekOperator("*")) {
+            if (p.peekRead("*")) {
                 sb.append('*');
-                p.eatToken();
             } else
-            if (p.peekIdentifier()) {
+            if (p.peekIdentifier() != null) {
                 sb.append(p.readIdentifier());
             } else
             {

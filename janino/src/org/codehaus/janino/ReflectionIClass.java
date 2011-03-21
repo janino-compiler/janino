@@ -289,7 +289,7 @@ class ReflectionIClass extends IClass {
                     );
                 }
             }
-            return null;
+            return NOT_CONSTANT;
         }
 
         final Field field;

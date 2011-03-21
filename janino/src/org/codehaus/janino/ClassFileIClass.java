@@ -415,7 +415,7 @@ public class ClassFileIClass extends IClass {
             }
         }
 
-        Object ocv = null;
+        Object ocv = IClass.NOT_CONSTANT;
         if (cva != null) {
             ClassFile.ConstantPoolInfo cpi = this.classFile.getConstantPoolInfo(cva.getConstantValueIndex());
             if (cpi instanceof ClassFile.ConstantValuePoolInfo) {

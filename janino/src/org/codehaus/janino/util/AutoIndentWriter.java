@@ -34,10 +34,10 @@ import java.util.*;
  * trailing opening braces ('{') and leading closing braces ('}').
  */
 public class AutoIndentWriter extends FilterWriter {
-    public static final char TABULATOR        = '\uffff';
-    public static final char CLEAR_TABULATORS = '\ufffe';
-    public static final char INDENT           = '\ufffd';
-    public static final char UNINDENT         = '\ufffc';
+    public static final char TABULATOR        = 0xffff;
+    public static final char CLEAR_TABULATORS = 0xfffe;
+    public static final char INDENT           = 0xfffd;
+    public static final char UNINDENT         = 0xfffc;
 
     StringBuffer           lineBuffer = new StringBuffer();
     int                    indentation = 0;
@@ -223,6 +223,11 @@ public class AutoIndentWriter extends FilterWriter {
     }
 
     public void flush() throws IOException {
+        if (this.tabulatorBuffer != null) this.flushTabulatorBuffer();
+        if (this.lineBuffer.length() > 0) {
+            this.line(this.lineBuffer.toString());
+            this.lineBuffer.setLength(0);
+        }
         this.out.flush();
     }
 }

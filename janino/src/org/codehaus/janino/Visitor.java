@@ -108,7 +108,12 @@ public class Visitor {
         void visitInstanceof(Java.Instanceof io);
         void visitMethodInvocation(Java.MethodInvocation mi);
         void visitSuperclassMethodInvocation(Java.SuperclassMethodInvocation smi);
-        void visitLiteral(Java.Literal l);
+        void visitIntegerLiteral(Java.IntegerLiteral il);
+        void visitFloatingPointLiteral(Java.FloatingPointLiteral fpl);
+        void visitBooleanLiteral(Java.BooleanLiteral bl);
+        void visitCharacterLiteral(Java.CharacterLiteral cl);
+        void visitStringLiteral(Java.StringLiteral sl);
+        void visitNullLiteral(Java.NullLiteral nl);
         void visitNewAnonymousClassInstance(Java.NewAnonymousClassInstance naci);
         void visitNewArray(Java.NewArray na);
         void visitNewInitializedArray(Java.NewInitializedArray nia);

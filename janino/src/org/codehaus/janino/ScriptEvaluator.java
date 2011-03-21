@@ -405,9 +405,17 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
     public final void cook(Scanner[] scanners) throws CompileException, IOException {
         if (scanners == null) throw new NullPointerException();
 
+        Parser[] parsers = new Parser[scanners.length];
+        for (int i = 0; i < scanners.length; ++i) {
+            parsers[i] = new Parser(scanners[i]);
+        }
+        cook(parsers);
+    }
+    public final void cook(Parser[] parsers) throws CompileException, IOException {
+
         // The "dimension" of this ScriptEvaluator, i.e. how many scripts are cooked at the same
         // time.
-        int count = scanners.length;
+        int count = parsers.length;
 
         // Check array sizes.
         if (this.optionalMethodNames != null && this.optionalMethodNames.length != count) {
@@ -432,10 +440,10 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
         this.setUpClassLoaders();
 
         // Create compilation unit.
-        Java.CompilationUnit compilationUnit = this.makeCompilationUnit(count == 1 ? scanners[0] : null);
+        Java.CompilationUnit compilationUnit = this.makeCompilationUnit(count == 1 ? parsers[0] : null);
 
         // Create class declaration.
-        Java.ClassDeclaration cd = this.addPackageMemberClassDeclaration(scanners[0].location(), compilationUnit);
+        Java.ClassDeclaration cd = this.addPackageMemberClassDeclaration(parsers[0].location(), compilationUnit);
 
         // Determine method names.
         String[] methodNames;
@@ -449,9 +457,9 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
 
         // Create methods with one block each.
         for (int i = 0; i < count; ++i) {
-            Scanner scanner = scanners[i];
+            Parser parser = parsers[i];
 
-            List statements = this.makeStatements(i, scanner);
+            List statements = this.makeStatements(i, parser);
 
             // Determine the following script properties AFTER the call to "makeBlock()",
             // because "makeBlock()" may modify these script properties on-the-fly.
@@ -478,7 +486,7 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
             );
 
             cd.addDeclaredMethod(this.makeMethodDeclaration(
-                scanner.location(), // location
+                parser.location(), // location
                 staticMethod,       // staticMethod
                 returnType,         // returnType
                 methodNames[i],     // methodName
@@ -490,10 +498,7 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
         }
 
         // Compile and load the compilation unit.
-        Class c = this.compileToClass(
-            compilationUnit,                                    // compilationUnit
-            this.className
-        );
+        Class c = this.compileToClass(compilationUnit, this.className);
 
         // Find the script methods by name.
         this.result = new Method[count];
@@ -615,12 +620,11 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
      * them to the block.
      */
     protected List/*<BlockStatement>*/ makeStatements(
-        int     idx,
-        Scanner scanner
+        int    idx,
+        Parser parser
     ) throws CompileException, IOException {
         List/*<BlockStatement>*/ statements = new ArrayList();
-        Parser parser = new Parser(scanner);
-        while (!scanner.peek().isEOF()) {
+        while (!parser.peekEOF()) {
             statements.add(parser.parseBlockStatement());
         }
 
@@ -887,11 +891,11 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
         Parser parser = new Parser(scanner);
 
         // Eat optional leading import declarations.
-        while (scanner.peek().isKeyword("import")) parser.parseImportDeclaration();
+        while (parser.peek("import")) parser.parseImportDeclaration();
 
         // Parse the script statements into a block.
         Java.Block block = new Java.Block(scanner.location());
-        while (!scanner.peek().isEOF()) block.addStatement(parser.parseBlockStatement());
+        while (!parser.peekEOF()) block.addStatement(parser.parseBlockStatement());
 
         // Traverse the block for ambiguous names and guess which of them are parameter names.
         final Set localVariableNames = new HashSet();

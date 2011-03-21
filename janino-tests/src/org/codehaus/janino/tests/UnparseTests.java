@@ -43,6 +43,12 @@ import java.util.List;
 
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.janino.Java;
+import org.codehaus.janino.Java.BooleanLiteral;
+import org.codehaus.janino.Java.CharacterLiteral;
+import org.codehaus.janino.Java.FloatingPointLiteral;
+import org.codehaus.janino.Java.IntegerLiteral;
+import org.codehaus.janino.Java.NullLiteral;
+import org.codehaus.janino.Java.StringLiteral;
 import org.codehaus.janino.Mod;
 import org.codehaus.janino.Parser;
 import org.codehaus.janino.Scanner;
@@ -63,7 +69,6 @@ import org.codehaus.janino.Java.Crement;
 import org.codehaus.janino.Java.FieldAccess;
 import org.codehaus.janino.Java.FieldAccessExpression;
 import org.codehaus.janino.Java.Instanceof;
-import org.codehaus.janino.Java.Literal;
 import org.codehaus.janino.Java.LocalVariableAccess;
 import org.codehaus.janino.Java.Locatable;
 import org.codehaus.janino.Java.Located;
@@ -207,8 +212,28 @@ public class UnparseTests {
                 );
             }
 
-            public void visitLiteral(Literal l) {
-                res[0] = l;
+            public void visitIntegerLiteral(IntegerLiteral il) {
+                res[0] = il;
+            }
+
+            public void visitFloatingPointLiteral(FloatingPointLiteral fpl) {
+                res[0] = fpl;
+            }
+
+            public void visitBooleanLiteral(BooleanLiteral bl) {
+                res[0] = bl;
+            }
+
+            public void visitCharacterLiteral(CharacterLiteral cl) {
+                res[0] = cl;
+            }
+
+            public void visitStringLiteral(StringLiteral sl) {
+                res[0] = sl;
+            }
+
+            public void visitNullLiteral(NullLiteral nl) {
+                res[0] = nl;
             }
 
             public void visitMethodInvocation(MethodInvocation mi) {
@@ -344,16 +369,8 @@ public class UnparseTests {
     @Test
     public void testLiterals() throws Exception {
         Object[][] tests = new Object[][] {
-            { new Java.Literal(null, (short) 1), "((short)1)" },
-            { new Java.Literal(null, (byte) 1),  "((byte)1)"  },
-            { new Java.Literal(null, Double.POSITIVE_INFINITY), "Double.POSITIVE_INFINITY" },
-            { new Java.Literal(null, Double.NEGATIVE_INFINITY), "Double.NEGATIVE_INFINITY" },
-            { new Java.Literal(null, -0.0D), "-0.0D" },
-            { new Java.Literal(null, Double.NaN), "Double.NaN" },
-            { new Java.Literal(null, Float.POSITIVE_INFINITY), "Float.POSITIVE_INFINITY" },
-            { new Java.Literal(null, Float.NEGATIVE_INFINITY), "Float.NEGATIVE_INFINITY" },
-            { new Java.Literal(null, -0.0F), "-0.0F" },
-            { new Java.Literal(null, Float.NaN), "Float.NaN" },
+            { new FloatingPointLiteral(null, "-0.0D"), "-0.0D" },
+            { new FloatingPointLiteral(null, "-0.0F"), "-0.0F" },
         };
         for (int i = 0; i < tests.length; ++i) {
             Atom expr = (Atom) tests[i][0];
@@ -411,13 +428,13 @@ public class UnparseTests {
             { "(\"asdf\" + \"qwer\").length()",        null,                                  null                  },
             { "-(a++)",                                "-a++",                                null                  },
             { "-1",                                    null,                                  null                  },
-            { "-0x1",                                  "-1",                                  "-1"                  },
-            { "-0x7fffffff",                           "-2147483647",                         "-2147483647"         },
+            { "-0x1",                                  "-0x1",                                "-0x1"                },
+            { "-0x7fffffff",                           "-0x7fffffff",                         "-0x7fffffff"         },
             { "-0x80000000",                           "-0x80000000",                         "-0x80000000"         },
             { "-0x80000001",                           "-0x80000001",                         "-0x80000001"         },
-            { "-0x1l",                                 "-1L",                                 "-1L",                },
-            { "-0x7fffffffffffffffl",                  "-9223372036854775807L",               "-9223372036854775807L"},
-            { "-0x8000000000000000l",                  "-0x8000000000000000L",                "-0x8000000000000000L"},
+            { "-0x1l",                                 "-0x1l",                               "-0x1l",              },
+            { "-0x7fffffffffffffffl",                  "-0x7fffffffffffffffl",                "-0x7fffffffffffffffl"},
+            { "-0x8000000000000000l",                  "-0x8000000000000000l",                "-0x8000000000000000l"},
         };
 
         for (int i = 0; i < exprs.length; ++i) {
@@ -457,11 +474,11 @@ public class UnparseTests {
                         is.close();
 
                         // Unparse the compilation unit, then parse again.
-                        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                        UnparseVisitor.unparse(cu1, new OutputStreamWriter(baos));
-                        byte[] ba = baos.toByteArray();
+                        StringWriter sw = new StringWriter();
+                        UnparseVisitor.unparse(cu1, sw);
+                        String text = sw.toString();
                         CompilationUnit cu2 = new Parser(
-                            new Scanner(f.toString(), new ByteArrayInputStream(ba))
+                            new Scanner(f.toString(), new StringReader(text))
                         ).parseCompilationUnit();
 
                         // Compare the two ASTs.

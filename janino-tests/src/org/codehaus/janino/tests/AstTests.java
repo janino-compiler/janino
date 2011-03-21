@@ -39,6 +39,8 @@ import java.util.List;
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.Location;
 import org.codehaus.janino.Java;
+import org.codehaus.janino.Java.FloatingPointLiteral;
+import org.codehaus.janino.Java.IntegerLiteral;
 import org.codehaus.janino.Mod;
 import org.codehaus.janino.SimpleCompiler;
 import org.codehaus.janino.UnparseVisitor;
@@ -48,7 +50,6 @@ import org.codehaus.janino.Java.BasicType;
 import org.codehaus.janino.Java.Block;
 import org.codehaus.janino.Java.CompilationUnit;
 import org.codehaus.janino.Java.ExpressionStatement;
-import org.codehaus.janino.Java.Literal;
 import org.codehaus.janino.Java.LocalVariableDeclarationStatement;
 import org.codehaus.janino.Java.MethodDeclarator;
 import org.codehaus.janino.Java.PackageMemberClassDeclaration;
@@ -107,13 +108,12 @@ public class AstTests {
         return new Java.BinaryOperation(getLocation(), l1, op, l2);
     }
 
-    private static Literal createLiteral(double d) {
-        return createLiteral(Double.valueOf(d));
+    private static IntegerLiteral createIntegerLiteral(String value) {
+        return new IntegerLiteral(getLocation(), value);
     }
-
-
-    private static Literal createLiteral(Object o) {
-        return new Literal(getLocation(), o);
+    
+    private static FloatingPointLiteral createFloatingPointLiteral(String value) {
+        return new FloatingPointLiteral(getLocation(), value);
     }
 
     private static void createMethod(PackageMemberClassDeclaration clazz, List statements, Type returnType) {
@@ -131,7 +131,7 @@ public class AstTests {
     }
 
 
-    private static LocalVariableDeclarationStatement createVarDecl(String name, double value) {
+    private static LocalVariableDeclarationStatement createVarDecl(String name, String fPValue) {
         return new Java.LocalVariableDeclarationStatement(
             getLocation(),
             (short) 0,
@@ -141,7 +141,7 @@ public class AstTests {
                     getLocation(),
                     name,
                     0,
-                    createLiteral(value)
+                    createFloatingPointLiteral(fPValue)
                 )
             }
         );
@@ -176,7 +176,7 @@ public class AstTests {
         List/*<Statement>*/ body = new ArrayList();
 
         Block sub = new Block(getLocation());
-        sub.addStatement(createVarDecl("x", 2.0));
+        sub.addStatement(createVarDecl("x", "2.0"));
 
         body.add(sub);
         body.add(
@@ -186,7 +186,7 @@ public class AstTests {
                     getLocation(),
                     createVariableRef("x"),
                     "*",
-                    createLiteral(3)
+                    createIntegerLiteral("3")
                 )
             )
         );
@@ -218,7 +218,7 @@ public class AstTests {
                     new Java.ArrayInitializer(
                         getLocation(),
                         new Java.Rvalue[] {
-                            createLiteral(exp)
+                            createIntegerLiteral("1")
                         }
                     )
                 )
@@ -240,7 +240,7 @@ public class AstTests {
         PackageMemberClassDeclaration clazz = createClass(cu);
 
         List/*<Statement>*/ body = new ArrayList();
-        body.add(createVarDecl("x", 2.0));
+        body.add(createVarDecl("x", "2.0"));
         body.add(
             new ReturnStatement(
                 getLocation(),
@@ -248,7 +248,7 @@ public class AstTests {
                     getLocation(),
                     createVariableRef("x"),
                     "*",
-                    createLiteral(3)
+                    createIntegerLiteral("3")
                 )
             )
         );
@@ -270,7 +270,7 @@ public class AstTests {
         body.add(
             new ReturnStatement(
                 getLocation(),
-                createLiteral(3.0)
+                createFloatingPointLiteral("3.0")
             )
         );
 
@@ -333,8 +333,8 @@ public class AstTests {
                 ),
                 "=",
                 createOp(
-                    createLiteral(1), "*",
-                    createOp(createLiteral(2), "+", createLiteral(3))
+                    createIntegerLiteral("1"), "*",
+                    createOp(createIntegerLiteral("2"), "+", createIntegerLiteral("3"))
                 )
             )
         );
@@ -343,7 +343,7 @@ public class AstTests {
         UnparseVisitor uv = new UnparseVisitor(sw);
         uv.visitExpressionStatement(es);
         uv.close();
-        assertEquals("x = 1.0D * ((( 2.0D + 3.0D )));", sw.toString());
+        assertEquals("x = 1 * ((( 2 + 3 )));", sw.toString());
     }
 
 

@@ -90,7 +90,12 @@ public class Traverser {
         public final void visitInstanceof(Java.Instanceof io)                                                          { Traverser.this.traverseInstanceof(io); }
         public final void visitMethodInvocation(Java.MethodInvocation mi)                                              { Traverser.this.traverseMethodInvocation(mi); }
         public final void visitSuperclassMethodInvocation(Java.SuperclassMethodInvocation smi)                         { Traverser.this.traverseSuperclassMethodInvocation(smi); }
-        public final void visitLiteral(Java.Literal l)                                                                 { Traverser.this.traverseLiteral(l); }
+        public final void visitIntegerLiteral(Java.IntegerLiteral il)                                                  { Traverser.this.traverseIntegerLiteral(il); }
+        public final void visitFloatingPointLiteral(Java.FloatingPointLiteral fpl)                                     { Traverser.this.traverseFloatingPointLiteral(fpl); }
+        public final void visitBooleanLiteral(Java.BooleanLiteral bl)                                                  { Traverser.this.traverseBooleanLiteral(bl); }
+        public final void visitCharacterLiteral(Java.CharacterLiteral cl)                                              { Traverser.this.traverseCharacterLiteral(cl); }
+        public final void visitStringLiteral(Java.StringLiteral sl)                                                    { Traverser.this.traverseStringLiteral(sl); }
+        public final void visitNullLiteral(Java.NullLiteral nl)                                                        { Traverser.this.traverseNullLiteral(nl); }
         public final void visitNewAnonymousClassInstance(Java.NewAnonymousClassInstance naci)                          { Traverser.this.traverseNewAnonymousClassInstance(naci); }
         public final void visitNewArray(Java.NewArray na)                                                              { Traverser.this.traverseNewArray(na); }
         public final void visitNewInitializedArray(Java.NewInitializedArray nia)                                       { Traverser.this.traverseNewInitializedArray(nia); }
@@ -387,6 +392,13 @@ public class Traverser {
     public void traverseLiteral(Java.Literal l) {
         this.traverseRvalue(l);
     }
+
+    public void traverseIntegerLiteral(Java.IntegerLiteral il)              { this.traverseLiteral(il); }
+    public void traverseFloatingPointLiteral(Java.FloatingPointLiteral fpl) { this.traverseLiteral(fpl); }
+    public void traverseBooleanLiteral(Java.BooleanLiteral bl)              { this.traverseLiteral(bl); }
+    public void traverseCharacterLiteral(Java.CharacterLiteral cl)          { this.traverseLiteral(cl); }
+    public void traverseStringLiteral(Java.StringLiteral sl)                { this.traverseLiteral(sl); }
+    public void traverseNullLiteral(Java.NullLiteral nl)                    { this.traverseLiteral(nl); }
 
     public void traverseNewAnonymousClassInstance(Java.NewAnonymousClassInstance naci) {
         if (naci.optionalQualification != null) naci.optionalQualification.accept((Visitor.RvalueVisitor) this.cv);

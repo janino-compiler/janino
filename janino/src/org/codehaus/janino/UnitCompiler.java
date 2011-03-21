@@ -47,54 +47,118 @@ import org.codehaus.commons.compiler.Location;
 import org.codehaus.janino.IClass.IField;
 import org.codehaus.janino.IClass.IInvocable;
 import org.codehaus.janino.IClass.IMethod;
+import org.codehaus.janino.Java.AbstractTypeDeclaration;
 import org.codehaus.janino.Java.AlternateConstructorInvocation;
+import org.codehaus.janino.Java.AmbiguousName;
 import org.codehaus.janino.Java.AnonymousClassDeclaration;
+import org.codehaus.janino.Java.ArrayAccessExpression;
+import org.codehaus.janino.Java.ArrayInitializer;
 import org.codehaus.janino.Java.ArrayInitializerOrRvalue;
+import org.codehaus.janino.Java.ArrayLength;
+import org.codehaus.janino.Java.ArrayType;
+import org.codehaus.janino.Java.Assignment;
+import org.codehaus.janino.Java.Atom;
+import org.codehaus.janino.Java.BasicType;
+import org.codehaus.janino.Java.BinaryOperation;
 import org.codehaus.janino.Java.Block;
 import org.codehaus.janino.Java.BlockStatement;
+import org.codehaus.janino.Java.BooleanLiteral;
+import org.codehaus.janino.Java.BooleanRvalue;
 import org.codehaus.janino.Java.BreakStatement;
+import org.codehaus.janino.Java.BreakableStatement;
+import org.codehaus.janino.Java.Cast;
 import org.codehaus.janino.Java.CatchClause;
-import org.codehaus.janino.Java.ConstructorDeclarator;
-import org.codehaus.janino.Java.ConstructorInvocation;
-import org.codehaus.janino.Java.ContinueStatement;
-import org.codehaus.janino.Java.DoStatement;
-import org.codehaus.janino.Java.EmptyStatement;
-import org.codehaus.janino.Java.ExpressionStatement;
-import org.codehaus.janino.Java.FieldAccess;
-import org.codehaus.janino.Java.FieldDeclaration;
-import org.codehaus.janino.Java.ForStatement;
-import org.codehaus.janino.Java.FunctionDeclarator;
-import org.codehaus.janino.Java.IfStatement;
-import org.codehaus.janino.Java.Initializer;
-import org.codehaus.janino.Java.Invocation;
-import org.codehaus.janino.Java.LabeledStatement;
-import org.codehaus.janino.Java.LocalClassDeclaration;
-import org.codehaus.janino.Java.LocalClassDeclarationStatement;
-import org.codehaus.janino.Java.LocalVariable;
-import org.codehaus.janino.Java.LocalVariableDeclarationStatement;
-import org.codehaus.janino.Java.LocalVariableSlot;
-import org.codehaus.janino.Java.Locatable;
-import org.codehaus.janino.Java.Located;
-import org.codehaus.janino.Java.ReturnStatement;
-import org.codehaus.janino.Java.Rvalue;
-import org.codehaus.janino.Java.SimpleType;
-import org.codehaus.janino.Java.Statement;
-import org.codehaus.janino.Java.SuperConstructorInvocation;
-import org.codehaus.janino.Java.SuperclassFieldAccessExpression;
-import org.codehaus.janino.Java.SwitchStatement;
-import org.codehaus.janino.Java.SynchronizedStatement;
-import org.codehaus.janino.Java.ThrowStatement;
-import org.codehaus.janino.Java.TryStatement;
-import org.codehaus.janino.Java.TypeBodyDeclaration;
-import org.codehaus.janino.Java.VariableDeclarator;
-import org.codehaus.janino.Java.WhileStatement;
+import org.codehaus.janino.Java.CharacterLiteral;
+import org.codehaus.janino.Java.ClassDeclaration;
+import org.codehaus.janino.Java.ClassLiteral;
+import org.codehaus.janino.Java.CompilationUnit;
 import org.codehaus.janino.Java.CompilationUnit.ImportDeclaration;
 import org.codehaus.janino.Java.CompilationUnit.SingleStaticImportDeclaration;
 import org.codehaus.janino.Java.CompilationUnit.SingleTypeImportDeclaration;
 import org.codehaus.janino.Java.CompilationUnit.StaticImportOnDemandDeclaration;
 import org.codehaus.janino.Java.CompilationUnit.TypeImportOnDemandDeclaration;
+import org.codehaus.janino.Java.ConditionalExpression;
+import org.codehaus.janino.Java.ConstructorDeclarator;
+import org.codehaus.janino.Java.ConstructorInvocation;
+import org.codehaus.janino.Java.ContinuableStatement;
+import org.codehaus.janino.Java.ContinueStatement;
+import org.codehaus.janino.Java.Crement;
+import org.codehaus.janino.Java.DoStatement;
+import org.codehaus.janino.Java.DocCommentable;
+import org.codehaus.janino.Java.EmptyStatement;
+import org.codehaus.janino.Java.ExpressionStatement;
+import org.codehaus.janino.Java.FieldAccess;
+import org.codehaus.janino.Java.FieldAccessExpression;
+import org.codehaus.janino.Java.FieldDeclaration;
+import org.codehaus.janino.Java.FloatingPointLiteral;
+import org.codehaus.janino.Java.ForStatement;
+import org.codehaus.janino.Java.FunctionDeclarator;
+import org.codehaus.janino.Java.IfStatement;
+import org.codehaus.janino.Java.Initializer;
+import org.codehaus.janino.Java.InnerClassDeclaration;
+import org.codehaus.janino.Java.Instanceof;
+import org.codehaus.janino.Java.IntegerLiteral;
+import org.codehaus.janino.Java.InterfaceDeclaration;
+import org.codehaus.janino.Java.Invocation;
+import org.codehaus.janino.Java.LabeledStatement;
+import org.codehaus.janino.Java.Literal;
+import org.codehaus.janino.Java.LocalClassDeclaration;
+import org.codehaus.janino.Java.LocalClassDeclarationStatement;
+import org.codehaus.janino.Java.LocalVariable;
+import org.codehaus.janino.Java.LocalVariableAccess;
+import org.codehaus.janino.Java.LocalVariableDeclarationStatement;
+import org.codehaus.janino.Java.LocalVariableSlot;
+import org.codehaus.janino.Java.Locatable;
+import org.codehaus.janino.Java.Located;
+import org.codehaus.janino.Java.Lvalue;
+import org.codehaus.janino.Java.MemberClassDeclaration;
+import org.codehaus.janino.Java.MemberInterfaceDeclaration;
+import org.codehaus.janino.Java.MemberTypeDeclaration;
+import org.codehaus.janino.Java.MethodDeclarator;
+import org.codehaus.janino.Java.MethodInvocation;
+import org.codehaus.janino.Java.NamedClassDeclaration;
+import org.codehaus.janino.Java.NamedTypeDeclaration;
+import org.codehaus.janino.Java.NewAnonymousClassInstance;
+import org.codehaus.janino.Java.NewArray;
+import org.codehaus.janino.Java.NewClassInstance;
+import org.codehaus.janino.Java.NewInitializedArray;
+import org.codehaus.janino.Java.Package;
+import org.codehaus.janino.Java.PackageMemberInterfaceDeclaration;
+import org.codehaus.janino.Java.NullLiteral;
+import org.codehaus.janino.Java.PackageMemberClassDeclaration;
+import org.codehaus.janino.Java.PackageMemberTypeDeclaration;
+import org.codehaus.janino.Java.Padder;
+import org.codehaus.janino.Java.ParameterAccess;
+import org.codehaus.janino.Java.ParenthesizedExpression;
+import org.codehaus.janino.Java.QualifiedThisReference;
+import org.codehaus.janino.Java.ReferenceType;
+import org.codehaus.janino.Java.ReturnStatement;
+import org.codehaus.janino.Java.Rvalue;
+import org.codehaus.janino.Java.RvalueMemberType;
+import org.codehaus.janino.Java.Scope;
+import org.codehaus.janino.Java.SimpleType;
+import org.codehaus.janino.Java.Statement;
+import org.codehaus.janino.Java.StringLiteral;
+import org.codehaus.janino.Java.SuperConstructorInvocation;
+import org.codehaus.janino.Java.SuperclassFieldAccessExpression;
+import org.codehaus.janino.Java.SuperclassMethodInvocation;
+import org.codehaus.janino.Java.SwitchStatement;
+import org.codehaus.janino.Java.SynchronizedStatement;
+import org.codehaus.janino.Java.ThisReference;
+import org.codehaus.janino.Java.ThrowStatement;
+import org.codehaus.janino.Java.TryStatement;
+import org.codehaus.janino.Java.Type;
+import org.codehaus.janino.Java.TypeBodyDeclaration;
+import org.codehaus.janino.Java.TypeDeclaration;
+import org.codehaus.janino.Java.UnaryOperation;
+import org.codehaus.janino.Java.VariableDeclarator;
+import org.codehaus.janino.Java.WhileStatement;
+import org.codehaus.janino.Visitor.AtomVisitor;
 import org.codehaus.janino.Visitor.BlockStatementVisitor;
 import org.codehaus.janino.Visitor.ImportVisitor;
+import org.codehaus.janino.Visitor.LvalueVisitor;
+import org.codehaus.janino.Visitor.RvalueVisitor;
+import org.codehaus.janino.Visitor.TypeDeclarationVisitor;
 import org.codehaus.janino.util.ClassFile;
 
 /**
@@ -124,8 +188,8 @@ public class UnitCompiler {
     private static final int STRING_CONCAT_LIMIT = 3;
 
     public UnitCompiler(
-        Java.CompilationUnit compilationUnit,
-        IClassLoader         iClassLoader
+        CompilationUnit compilationUnit,
+        IClassLoader    iClassLoader
     ) throws CompileException {
         this.compilationUnit = compilationUnit;
         this.iClassLoader    = iClassLoader;
@@ -285,7 +349,7 @@ public class UnitCompiler {
         this.generatedClassFiles  = new ArrayList();
 
         for (Iterator it = this.compilationUnit.packageMemberTypeDeclarations.iterator(); it.hasNext();) {
-            UnitCompiler.this.compile((Java.PackageMemberTypeDeclaration) it.next());
+            UnitCompiler.this.compile((PackageMemberTypeDeclaration) it.next());
         }
 
         if (this.compileErrorCount > 0) {
@@ -303,16 +367,16 @@ public class UnitCompiler {
 
     // ------------ TypeDeclaration.compile() -------------
 
-    private void compile(Java.TypeDeclaration td) throws CompileException {
+    private void compile(TypeDeclaration td) throws CompileException {
         class UCE extends RuntimeException { final CompileException ce; UCE(CompileException ce) { this.ce = ce; } }
-        Visitor.TypeDeclarationVisitor tdv = new Visitor.TypeDeclarationVisitor() {
+        TypeDeclarationVisitor tdv = new TypeDeclarationVisitor() {
             // CHECKSTYLE(LineLengthCheck):OFF
-            public void visitAnonymousClassDeclaration(Java.AnonymousClassDeclaration acd)                  { try { UnitCompiler.this.compile2(acd);                                      } catch (CompileException e) { throw new UCE(e); } }
-            public void visitLocalClassDeclaration(Java.LocalClassDeclaration lcd)                          { try { UnitCompiler.this.compile2(lcd);                                      } catch (CompileException e) { throw new UCE(e); } }
-            public void visitPackageMemberClassDeclaration(Java.PackageMemberClassDeclaration pmcd)         { try { UnitCompiler.this.compile2((Java.PackageMemberTypeDeclaration) pmcd); } catch (CompileException e) { throw new UCE(e); } }
-            public void visitMemberInterfaceDeclaration(Java.MemberInterfaceDeclaration mid)                { try { UnitCompiler.this.compile2(mid);                                      } catch (CompileException e) { throw new UCE(e); } }
-            public void visitPackageMemberInterfaceDeclaration(Java.PackageMemberInterfaceDeclaration pmid) { try { UnitCompiler.this.compile2((Java.PackageMemberTypeDeclaration) pmid); } catch (CompileException e) { throw new UCE(e); } }
-            public void visitMemberClassDeclaration(Java.MemberClassDeclaration mcd)                        { try { UnitCompiler.this.compile2(mcd);                                      } catch (CompileException e) { throw new UCE(e); } }
+            public void visitAnonymousClassDeclaration(AnonymousClassDeclaration acd)                  { try { UnitCompiler.this.compile2(acd);                                 } catch (CompileException e) { throw new UCE(e); } }
+            public void visitLocalClassDeclaration(LocalClassDeclaration lcd)                          { try { UnitCompiler.this.compile2(lcd);                                 } catch (CompileException e) { throw new UCE(e); } }
+            public void visitPackageMemberClassDeclaration(PackageMemberClassDeclaration pmcd)         { try { UnitCompiler.this.compile2((PackageMemberTypeDeclaration) pmcd); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitMemberInterfaceDeclaration(MemberInterfaceDeclaration mid)                { try { UnitCompiler.this.compile2(mid);                                 } catch (CompileException e) { throw new UCE(e); } }
+            public void visitPackageMemberInterfaceDeclaration(PackageMemberInterfaceDeclaration pmid) { try { UnitCompiler.this.compile2((PackageMemberTypeDeclaration) pmid); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitMemberClassDeclaration(MemberClassDeclaration mcd)                        { try { UnitCompiler.this.compile2(mcd);                                 } catch (CompileException e) { throw new UCE(e); } }
             // CHECKSTYLE(LineLengthCheck):ON
         };
         try {
@@ -321,8 +385,8 @@ public class UnitCompiler {
             throw uce.ce;
         }
     }
-    public void compile2(Java.PackageMemberTypeDeclaration pmtd) throws CompileException {
-        Java.CompilationUnit declaringCompilationUnit = pmtd.getDeclaringCompilationUnit();
+    public void compile2(PackageMemberTypeDeclaration pmtd) throws CompileException {
+        CompilationUnit declaringCompilationUnit = pmtd.getDeclaringCompilationUnit();
 
         // Check for conflict with single-type-import (7.6).
         {
@@ -340,7 +404,7 @@ public class UnitCompiler {
 
         // Check for redefinition within compilation unit (7.6).
         {
-            Java.PackageMemberTypeDeclaration otherPMTD = declaringCompilationUnit.getPackageMemberTypeDeclaration(
+            PackageMemberTypeDeclaration otherPMTD = declaringCompilationUnit.getPackageMemberTypeDeclaration(
                 pmtd.getName()
             );
             if (otherPMTD != pmtd) {
@@ -353,18 +417,18 @@ public class UnitCompiler {
             }
         }
 
-        if (pmtd instanceof Java.NamedClassDeclaration) {
-            this.compile2((Java.NamedClassDeclaration) pmtd);
+        if (pmtd instanceof NamedClassDeclaration) {
+            this.compile2((NamedClassDeclaration) pmtd);
         } else
-        if (pmtd instanceof Java.InterfaceDeclaration) {
-            this.compile2((Java.InterfaceDeclaration) pmtd);
+        if (pmtd instanceof InterfaceDeclaration) {
+            this.compile2((InterfaceDeclaration) pmtd);
         } else
         {
             throw new JaninoRuntimeException("PMTD of unexpected type " + pmtd.getClass().getName());
         }
     }
 
-    public void compile2(Java.ClassDeclaration cd) throws CompileException {
+    public void compile2(ClassDeclaration cd) throws CompileException {
         IClass iClass = this.resolve(cd);
 
         // Check that all methods are implemented.
@@ -398,14 +462,14 @@ public class UnitCompiler {
         );
 
         // Add InnerClasses attribute entry for this class declaration.
-        if (cd.getEnclosingScope() instanceof Java.CompilationUnit) {
+        if (cd.getEnclosingScope() instanceof CompilationUnit) {
             ;
         } else
-        if (cd.getEnclosingScope() instanceof Java.Block) {
+        if (cd.getEnclosingScope() instanceof Block) {
             short innerClassInfoIndex = cf.addConstantClassInfo(iClass.getDescriptor());
             short innerNameIndex = (
-                this instanceof Java.NamedTypeDeclaration ?
-                cf.addConstantUtf8Info(((Java.NamedTypeDeclaration) this).getName()) :
+                this instanceof NamedTypeDeclaration ?
+                cf.addConstantUtf8Info(((NamedTypeDeclaration) this).getName()) :
                 (short) 0
             );
             cf.addInnerClassesAttributeEntry(new ClassFile.InnerClassesAttribute.Entry(
@@ -415,12 +479,12 @@ public class UnitCompiler {
                 cd.getModifiers()    // innerClassAccessFlags
             ));
         } else
-        if (cd.getEnclosingScope() instanceof Java.TypeDeclaration) {
+        if (cd.getEnclosingScope() instanceof TypeDeclaration) {
             short innerClassInfoIndex = cf.addConstantClassInfo(iClass.getDescriptor());
             short outerClassInfoIndex = cf.addConstantClassInfo(
-                this.resolve(((Java.TypeDeclaration) cd.getEnclosingScope())).getDescriptor()
+                this.resolve(((TypeDeclaration) cd.getEnclosingScope())).getDescriptor()
             );
-            short innerNameIndex = cf.addConstantUtf8Info(((Java.MemberTypeDeclaration) cd).getName());
+            short innerNameIndex = cf.addConstantUtf8Info(((MemberTypeDeclaration) cd).getName());
             cf.addInnerClassesAttributeEntry(new ClassFile.InnerClassesAttribute.Entry(
                 innerClassInfoIndex, // innerClassInfoIndex
                 outerClassInfoIndex, // outerClassInfoIndex
@@ -436,8 +500,8 @@ public class UnitCompiler {
                 String s = cd.getLocation().getFileName();
                 if (s != null) {
                     sourceFileName = new File(s).getName();
-                } else if (cd instanceof Java.NamedTypeDeclaration) {
-                    sourceFileName = ((Java.NamedTypeDeclaration) cd).getName() + ".java";
+                } else if (cd instanceof NamedTypeDeclaration) {
+                    sourceFileName = ((NamedTypeDeclaration) cd).getName() + ".java";
                 } else {
                     sourceFileName = "ANONYMOUS.java";
                 }
@@ -446,16 +510,16 @@ public class UnitCompiler {
         }
 
         // Add "Deprecated" attribute (JVMS 4.7.10)
-        if (cd instanceof Java.DocCommentable) {
-            if (((Java.DocCommentable) cd).hasDeprecatedDocTag()) cf.addDeprecatedAttribute();
+        if (cd instanceof DocCommentable) {
+            if (((DocCommentable) cd).hasDeprecatedDocTag()) cf.addDeprecatedAttribute();
         }
 
         // Optional: Generate and compile class initialization method.
         {
             List/*<BlockStatement>*/ statements = new ArrayList();
             for (Iterator it = cd.variableDeclaratorsAndInitializers.iterator(); it.hasNext();) {
-                Java.TypeBodyDeclaration tbd = (Java.TypeBodyDeclaration) it.next();
-                if (tbd.isStatic()) statements.add((Java.BlockStatement) tbd);
+                TypeBodyDeclaration tbd = (TypeBodyDeclaration) it.next();
+                if (tbd.isStatic()) statements.add((BlockStatement) tbd);
             }
 
             this.maybeCreateInitMethod(cd, cf, statements);
@@ -470,7 +534,7 @@ public class UnitCompiler {
         int declaredMethodCount = cd.getMethodDeclarations().size();
         {
             int syntheticFieldCount = cd.syntheticFields.size();
-            Java.ConstructorDeclarator[] cds = cd.getConstructors();
+            ConstructorDeclarator[] cds = cd.getConstructors();
             for (int i = 0; i < cds.length; ++i) {
                 this.compile(cds[i], cf);
                 if (syntheticFieldCount != cd.syntheticFields.size()) {
@@ -514,9 +578,9 @@ public class UnitCompiler {
 
         // Class and instance variables.
         for (Iterator it = cd.variableDeclaratorsAndInitializers.iterator(); it.hasNext();) {
-            Java.TypeBodyDeclaration tbd = (Java.TypeBodyDeclaration) it.next();
-            if (!(tbd instanceof Java.FieldDeclaration)) continue;
-            this.addFields((Java.FieldDeclaration) tbd, cf);
+            TypeBodyDeclaration tbd = (TypeBodyDeclaration) it.next();
+            if (!(tbd instanceof FieldDeclaration)) continue;
+            this.addFields((FieldDeclaration) tbd, cf);
         }
 
         // Synthetic fields.
@@ -538,23 +602,20 @@ public class UnitCompiler {
 
     /**
      * Create {@link ClassFile.FieldInfo}s for all fields declared by the
-     * given {@link Java.FieldDeclaration}.
+     * given {@link FieldDeclaration}.
      */
-    private void addFields(Java.FieldDeclaration fd, ClassFile cf) throws CompileException {
+    private void addFields(FieldDeclaration fd, ClassFile cf) throws CompileException {
         for (int j = 0; j < fd.variableDeclarators.length; ++j) {
-            Java.VariableDeclarator vd = fd.variableDeclarators[j];
-            Java.Type type = fd.type;
-            for (int k = 0; k < vd.brackets; ++k) type = new Java.ArrayType(type);
+            VariableDeclarator vd = fd.variableDeclarators[j];
+            Type type = fd.type;
+            for (int k = 0; k < vd.brackets; ++k) type = new ArrayType(type);
 
-            Object ocv = null;
+            Object ocv = NOT_CONSTANT;
             if (
-                (fd.modifiers & Mod.FINAL) != 0 &&
-                vd.optionalInitializer != null
+                (fd.modifiers & Mod.FINAL) != 0
+                && vd.optionalInitializer instanceof Rvalue
             ) {
-                if (vd.optionalInitializer instanceof Java.Rvalue) {
-                    ocv = this.getConstantValue((Java.Rvalue) vd.optionalInitializer);
-                }
-                if (ocv == Java.Rvalue.CONSTANT_VALUE_NULL) ocv = null;
+                ocv = this.getConstantValue((Rvalue) vd.optionalInitializer);
             }
 
             ClassFile.FieldInfo fi;
@@ -567,7 +628,7 @@ public class UnitCompiler {
                     Mod.changeAccess(fd.modifiers, Mod.PACKAGE), // modifiers
                     vd.name,                                     // fieldName
                     this.getType(type).getDescriptor(),          // fieldTypeFD
-                    ocv                                          // optionalConstantValue
+                    ocv == NOT_CONSTANT ? null : ocv             // optionalConstantValue
                 );
             } else
             {
@@ -575,7 +636,7 @@ public class UnitCompiler {
                     fd.modifiers,                       // modifiers
                     vd.name,                            // fieldName
                     this.getType(type).getDescriptor(), // fieldTypeFD
-                    ocv                                 // optionalConstantValue
+                    ocv == NOT_CONSTANT ? null : ocv    // optionalConstantValue
                 );
             }
 
@@ -586,15 +647,15 @@ public class UnitCompiler {
         }
     }
 
-    public void compile2(Java.AnonymousClassDeclaration acd) throws CompileException {
-        this.compile2((Java.InnerClassDeclaration) acd);
+    public void compile2(AnonymousClassDeclaration acd) throws CompileException {
+        this.compile2((InnerClassDeclaration) acd);
     }
 
-    public void compile2(Java.LocalClassDeclaration lcd) throws CompileException {
-        this.compile2((Java.InnerClassDeclaration) lcd);
+    public void compile2(LocalClassDeclaration lcd) throws CompileException {
+        this.compile2((InnerClassDeclaration) lcd);
     }
 
-    public void compile2(Java.InnerClassDeclaration icd) throws CompileException {
+    public void compile2(InnerClassDeclaration icd) throws CompileException {
 
         // Define a synthetic "this$..." field if there is an enclosing instance.
         {
@@ -604,14 +665,14 @@ public class UnitCompiler {
                 icd.defineSyntheticField(new SimpleIField(
                     this.resolve(icd),
                     "this$" + (nesting - 2),
-                    this.resolve((Java.TypeDeclaration) ocs.get(1))
+                    this.resolve((TypeDeclaration) ocs.get(1))
                 ));
             }
         }
 
         // For classes that enclose surrounding scopes, trawl their initializers looking for synthetic fields.
         if (icd instanceof AnonymousClassDeclaration || icd instanceof LocalClassDeclaration) {
-            Java.ClassDeclaration cd = (Java.ClassDeclaration) icd;
+            ClassDeclaration cd = (ClassDeclaration) icd;
             for (int i = 0; i < cd.variableDeclaratorsAndInitializers.size(); ++i) {
                 TypeBodyDeclaration tbd = (TypeBodyDeclaration) cd.variableDeclaratorsAndInitializers.get(i);
                 if (tbd instanceof FieldDeclaration) {
@@ -626,14 +687,14 @@ public class UnitCompiler {
             }
         }
 
-        this.compile2((Java.ClassDeclaration) icd);
+        this.compile2((ClassDeclaration) icd);
     }
 
-    public void compile2(final Java.MemberClassDeclaration mcd) throws CompileException {
-        this.compile2((Java.InnerClassDeclaration) mcd);
+    public void compile2(final MemberClassDeclaration mcd) throws CompileException {
+        this.compile2((InnerClassDeclaration) mcd);
     }
 
-    public void compile2(Java.InterfaceDeclaration id) throws CompileException {
+    public void compile2(InterfaceDeclaration id) throws CompileException {
         IClass iClass = this.resolve(id);
 
         // Determine extended interfaces.
@@ -686,9 +747,9 @@ public class UnitCompiler {
 
         // Class variables.
         for (int i = 0; i < id.constantDeclarations.size(); ++i) {
-            Java.BlockStatement bs = (Java.BlockStatement) id.constantDeclarations.get(i);
-            if (!(bs instanceof Java.FieldDeclaration)) continue;
-            this.addFields((Java.FieldDeclaration) bs, cf);
+            BlockStatement bs = (BlockStatement) id.constantDeclarations.get(i);
+            if (!(bs instanceof FieldDeclaration)) continue;
+            this.addFields((FieldDeclaration) bs, cf);
         }
 
         compileDeclaredMemberTypes(id, cf);
@@ -705,24 +766,24 @@ public class UnitCompiler {
      * @throws CompileException
      */
     private void maybeCreateInitMethod(
-        Java.AbstractTypeDeclaration decl,
-        ClassFile                    cf,
-        List/*<BlockStatement>*/     statements
+        AbstractTypeDeclaration  decl,
+        ClassFile                cf,
+        List/*<BlockStatement>*/ statements
     ) throws CompileException {
         // Create interface initialization method iff there is any initialization code.
         if (this.generatesCode2ListStatements(statements)) {
-            Java.MethodDeclarator md = new Java.MethodDeclarator(
-                decl.getLocation(),                               // location
-                null,                                           // optionalDocComment
-                (short) (Mod.STATIC | Mod.PUBLIC),              // modifiers
-                new Java.BasicType(                             // type
+            MethodDeclarator md = new MethodDeclarator(
+                decl.getLocation(),                        // location
+                null,                                      // optionalDocComment
+                (short) (Mod.STATIC | Mod.PUBLIC),         // modifiers
+                new BasicType(                             // type
                     decl.getLocation(),
-                    Java.BasicType.VOID
+                    BasicType.VOID
                 ),
-                "<clinit>",                                     // name
-                new Java.FunctionDeclarator.FormalParameter[0], // formalParameters
-                new Java.ReferenceType[0],                      // thrownExcaptions
-                statements                                      // optionalStatements
+                "<clinit>",                                // name
+                new FunctionDeclarator.FormalParameter[0], // formalParameters
+                new ReferenceType[0],                      // thrownExcaptions
+                statements                                 // optionalStatements
             );
             md.setDeclaringType(decl);
             this.compile(md, cf);
@@ -737,17 +798,17 @@ public class UnitCompiler {
      * @throws CompileException
      */
     private void compileDeclaredMemberTypes(
-        Java.TypeDeclaration decl,
-        ClassFile            cf
+        TypeDeclaration decl,
+        ClassFile       cf
     ) throws CompileException {
         for (Iterator it = decl.getMemberTypeDeclarations().iterator(); it.hasNext();) {
-            Java.TypeDeclaration td = ((Java.MemberTypeDeclaration) it.next());
+            TypeDeclaration td = ((MemberTypeDeclaration) it.next());
             this.compile(td);
 
             // Add InnerClasses attribute entry for member type declaration.
             short innerClassInfoIndex = cf.addConstantClassInfo(this.resolve(td).getDescriptor());
             short outerClassInfoIndex = cf.addConstantClassInfo(this.resolve(decl).getDescriptor());
-            short innerNameIndex      = cf.addConstantUtf8Info(((Java.MemberTypeDeclaration) td).getName());
+            short innerNameIndex      = cf.addConstantUtf8Info(((MemberTypeDeclaration) td).getName());
             cf.addInnerClassesAttributeEntry(new ClassFile.InnerClassesAttribute.Entry(
                 innerClassInfoIndex, // innerClassInfoIndex
                 outerClassInfoIndex, // outerClassInfoIndex
@@ -764,8 +825,8 @@ public class UnitCompiler {
      * @throws CompileException
      */
     private void compileDeclaredMethods(
-        Java.AbstractTypeDeclaration typeDeclaration,
-        ClassFile                    cf
+        AbstractTypeDeclaration typeDeclaration,
+        ClassFile               cf
     ) throws CompileException {
         compileDeclaredMethods(typeDeclaration, cf, 0);
     }
@@ -777,16 +838,16 @@ public class UnitCompiler {
      * @throws CompileException
      */
     private void compileDeclaredMethods(
-        Java.TypeDeclaration typeDeclaration,
-        ClassFile            cf,
-        int                  startPos
+        TypeDeclaration typeDeclaration,
+        ClassFile       cf,
+        int             startPos
     ) throws CompileException {
 
         // Notice that as a side effect of compiling methods, synthetic "class-dollar"
         // methods (which implement class literals) are generated on-the fly. Hence, we
         // must not use an Iterator here.
         for (int i = startPos; i < typeDeclaration.getMethodDeclarations().size(); ++i) {
-            this.compile(((Java.MethodDeclarator) typeDeclaration.getMethodDeclarations().get(i)), cf);
+            this.compile(((MethodDeclarator) typeDeclaration.getMethodDeclarations().get(i)), cf);
         }
     }
     
@@ -798,7 +859,7 @@ public class UnitCompiler {
      */
     private void compileBridgeMethod(ClassFile cf, IMethod base, IMethod override) throws CompileException {
         ClassFile.MethodInfo mi = cf.addMethodInfo(
-            (short)(Mod.PUBLIC | Mod.SYNTHETIC),
+            (short) (Mod.PUBLIC | Mod.SYNTHETIC),
             base.getName(),
             base.getDescriptor()
         );
@@ -856,32 +917,32 @@ public class UnitCompiler {
      * @return <tt>false</tt> if this statement cannot complete normally (JLS2
      * 14.20)
      */
-    private boolean compile(Java.BlockStatement bs) throws CompileException {
+    private boolean compile(BlockStatement bs) throws CompileException {
         final boolean[] res = new boolean[1];
         class UCE extends RuntimeException { final CompileException ce; UCE(CompileException ce) { this.ce = ce; } }
-        Visitor.BlockStatementVisitor bsv = new Visitor.BlockStatementVisitor() {
+        BlockStatementVisitor bsv = new BlockStatementVisitor() {
             // CHECKSTYLE(LineLengthCheck):OFF
-            public void visitInitializer(Java.Initializer i)                                                { try { res[0] = UnitCompiler.this.compile2(i);    } catch (CompileException e) { throw new UCE(e); } }
-            public void visitFieldDeclaration(Java.FieldDeclaration fd)                                     { try { res[0] = UnitCompiler.this.compile2(fd);   } catch (CompileException e) { throw new UCE(e); } }
-            public void visitLabeledStatement(Java.LabeledStatement ls)                                     { try { res[0] = UnitCompiler.this.compile2(ls);   } catch (CompileException e) { throw new UCE(e); } }
-            public void visitBlock(Java.Block b)                                                            { try { res[0] = UnitCompiler.this.compile2(b);    } catch (CompileException e) { throw new UCE(e); } }
-            public void visitExpressionStatement(Java.ExpressionStatement es)                               { try { res[0] = UnitCompiler.this.compile2(es);   } catch (CompileException e) { throw new UCE(e); } }
-            public void visitIfStatement(Java.IfStatement is)                                               { try { res[0] = UnitCompiler.this.compile2(is);   } catch (CompileException e) { throw new UCE(e); } }
-            public void visitForStatement(Java.ForStatement fs)                                             { try { res[0] = UnitCompiler.this.compile2(fs);   } catch (CompileException e) { throw new UCE(e); } }
-            public void visitWhileStatement(Java.WhileStatement ws)                                         { try { res[0] = UnitCompiler.this.compile2(ws);   } catch (CompileException e) { throw new UCE(e); } }
-            public void visitTryStatement(Java.TryStatement ts)                                             { try { res[0] = UnitCompiler.this.compile2(ts);   } catch (CompileException e) { throw new UCE(e); } }
-            public void visitSwitchStatement(Java.SwitchStatement ss)                                       { try { res[0] = UnitCompiler.this.compile2(ss);   } catch (CompileException e) { throw new UCE(e); } }
-            public void visitSynchronizedStatement(Java.SynchronizedStatement ss)                           { try { res[0] = UnitCompiler.this.compile2(ss);   } catch (CompileException e) { throw new UCE(e); } }
-            public void visitDoStatement(Java.DoStatement ds)                                               { try { res[0] = UnitCompiler.this.compile2(ds);   } catch (CompileException e) { throw new UCE(e); } }
-            public void visitLocalVariableDeclarationStatement(Java.LocalVariableDeclarationStatement lvds) { try { res[0] = UnitCompiler.this.compile2(lvds); } catch (CompileException e) { throw new UCE(e); } }
-            public void visitReturnStatement(Java.ReturnStatement rs)                                       { try { res[0] = UnitCompiler.this.compile2(rs);   } catch (CompileException e) { throw new UCE(e); } }
-            public void visitThrowStatement(Java.ThrowStatement ts)                                         { try { res[0] = UnitCompiler.this.compile2(ts);   } catch (CompileException e) { throw new UCE(e); } }
-            public void visitBreakStatement(Java.BreakStatement bs)                                         { try { res[0] = UnitCompiler.this.compile2(bs);   } catch (CompileException e) { throw new UCE(e); } }
-            public void visitContinueStatement(Java.ContinueStatement cs)                                   { try { res[0] = UnitCompiler.this.compile2(cs);   } catch (CompileException e) { throw new UCE(e); } }
-            public void visitEmptyStatement(Java.EmptyStatement es)                                         { res[0] = UnitCompiler.this.compile2(es); }
-            public void visitLocalClassDeclarationStatement(Java.LocalClassDeclarationStatement lcds)       { try { res[0] = UnitCompiler.this.compile2(lcds); } catch (CompileException e) { throw new UCE(e); } }
-            public void visitAlternateConstructorInvocation(Java.AlternateConstructorInvocation aci)        { try { res[0] = UnitCompiler.this.compile2(aci);  } catch (CompileException e) { throw new UCE(e); } }
-            public void visitSuperConstructorInvocation(Java.SuperConstructorInvocation sci)                { try { res[0] = UnitCompiler.this.compile2(sci);  } catch (CompileException e) { throw new UCE(e); } }
+            public void visitInitializer(Initializer i)                                                { try { res[0] = UnitCompiler.this.compile2(i);    } catch (CompileException e) { throw new UCE(e); } }
+            public void visitFieldDeclaration(FieldDeclaration fd)                                     { try { res[0] = UnitCompiler.this.compile2(fd);   } catch (CompileException e) { throw new UCE(e); } }
+            public void visitLabeledStatement(LabeledStatement ls)                                     { try { res[0] = UnitCompiler.this.compile2(ls);   } catch (CompileException e) { throw new UCE(e); } }
+            public void visitBlock(Block b)                                                            { try { res[0] = UnitCompiler.this.compile2(b);    } catch (CompileException e) { throw new UCE(e); } }
+            public void visitExpressionStatement(ExpressionStatement es)                               { try { res[0] = UnitCompiler.this.compile2(es);   } catch (CompileException e) { throw new UCE(e); } }
+            public void visitIfStatement(IfStatement is)                                               { try { res[0] = UnitCompiler.this.compile2(is);   } catch (CompileException e) { throw new UCE(e); } }
+            public void visitForStatement(ForStatement fs)                                             { try { res[0] = UnitCompiler.this.compile2(fs);   } catch (CompileException e) { throw new UCE(e); } }
+            public void visitWhileStatement(WhileStatement ws)                                         { try { res[0] = UnitCompiler.this.compile2(ws);   } catch (CompileException e) { throw new UCE(e); } }
+            public void visitTryStatement(TryStatement ts)                                             { try { res[0] = UnitCompiler.this.compile2(ts);   } catch (CompileException e) { throw new UCE(e); } }
+            public void visitSwitchStatement(SwitchStatement ss)                                       { try { res[0] = UnitCompiler.this.compile2(ss);   } catch (CompileException e) { throw new UCE(e); } }
+            public void visitSynchronizedStatement(SynchronizedStatement ss)                           { try { res[0] = UnitCompiler.this.compile2(ss);   } catch (CompileException e) { throw new UCE(e); } }
+            public void visitDoStatement(DoStatement ds)                                               { try { res[0] = UnitCompiler.this.compile2(ds);   } catch (CompileException e) { throw new UCE(e); } }
+            public void visitLocalVariableDeclarationStatement(LocalVariableDeclarationStatement lvds) { try { res[0] = UnitCompiler.this.compile2(lvds); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitReturnStatement(ReturnStatement rs)                                       { try { res[0] = UnitCompiler.this.compile2(rs);   } catch (CompileException e) { throw new UCE(e); } }
+            public void visitThrowStatement(ThrowStatement ts)                                         { try { res[0] = UnitCompiler.this.compile2(ts);   } catch (CompileException e) { throw new UCE(e); } }
+            public void visitBreakStatement(BreakStatement bs)                                         { try { res[0] = UnitCompiler.this.compile2(bs);   } catch (CompileException e) { throw new UCE(e); } }
+            public void visitContinueStatement(ContinueStatement cs)                                   { try { res[0] = UnitCompiler.this.compile2(cs);   } catch (CompileException e) { throw new UCE(e); } }
+            public void visitEmptyStatement(EmptyStatement es)                                         {       res[0] = UnitCompiler.this.compile2(es);                                                      }
+            public void visitLocalClassDeclarationStatement(LocalClassDeclarationStatement lcds)       { try { res[0] = UnitCompiler.this.compile2(lcds); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitAlternateConstructorInvocation(AlternateConstructorInvocation aci)        { try { res[0] = UnitCompiler.this.compile2(aci);  } catch (CompileException e) { throw new UCE(e); } }
+            public void visitSuperConstructorInvocation(SuperConstructorInvocation sci)                { try { res[0] = UnitCompiler.this.compile2(sci);  } catch (CompileException e) { throw new UCE(e); } }
             // CHECKSTYLE(LineLengthCheck):ON
         };
         try {
@@ -891,10 +952,10 @@ public class UnitCompiler {
             throw uce.ce;
         }
     }
-    private boolean compile2(Java.Initializer i) throws CompileException {
+    private boolean compile2(Initializer i) throws CompileException {
         return this.compile(i.block);
     }
-    private boolean compile2(Java.Block b) throws CompileException {
+    private boolean compile2(Block b) throws CompileException {
         this.codeContext.saveLocalVariables();
         try {
             return compileStatements(b.statements);
@@ -906,7 +967,7 @@ public class UnitCompiler {
     private boolean compileStatements(List statements) throws CompileException {
         boolean previousStatementCanCompleteNormally = true;
         for (int i = 0; i < statements.size(); ++i) {
-            Java.BlockStatement bs = (Java.BlockStatement) statements.get(i);
+            BlockStatement bs = (BlockStatement) statements.get(i);
             if (!previousStatementCanCompleteNormally && this.generatesCode(bs)) {
                 this.compileError("Statement is unreachable", bs.getLocation());
                 break;
@@ -915,9 +976,9 @@ public class UnitCompiler {
         }
         return previousStatementCanCompleteNormally;
     }
-    private boolean compile2(Java.DoStatement ds) throws CompileException {
+    private boolean compile2(DoStatement ds) throws CompileException {
         Object cvc = this.getConstantValue(ds.condition);
-        if (cvc != null) {
+        if (cvc != NOT_CONSTANT) {
             if (Boolean.TRUE.equals(cvc)) {
                 this.warning("DSTC", (
                     "Condition of DO statement is always TRUE; "
@@ -947,7 +1008,7 @@ public class UnitCompiler {
         }
 
         // Compile condition.
-        this.compileBoolean(ds.condition, bodyOffset, Java.Rvalue.JUMP_IF_TRUE);
+        this.compileBoolean(ds.condition, bodyOffset, Rvalue.JUMP_IF_TRUE);
 
         if (ds.whereToBreak != null) {
             ds.whereToBreak.set();
@@ -956,7 +1017,7 @@ public class UnitCompiler {
 
         return true;
     }
-    private boolean compile2(Java.ForStatement fs) throws CompileException {
+    private boolean compile2(ForStatement fs) throws CompileException {
         this.codeContext.saveLocalVariables();
         try {
 
@@ -968,7 +1029,7 @@ public class UnitCompiler {
             } else
             {
                 Object cvc = this.getConstantValue(fs.optionalCondition);
-                if (cvc != null) {
+                if (cvc != NOT_CONSTANT) {
                     if (Boolean.TRUE.equals(cvc)) {
                         this.warning("FSTC", (
                             "Condition of FOR statement is always TRUE; "
@@ -1006,7 +1067,7 @@ public class UnitCompiler {
 
             // Compile condition.
             toCondition.set();
-            this.compileBoolean(fs.optionalCondition, bodyOffset, Java.Rvalue.JUMP_IF_TRUE);
+            this.compileBoolean(fs.optionalCondition, bodyOffset, Rvalue.JUMP_IF_TRUE);
         } finally {
             this.codeContext.restoreLocalVariables();
         }
@@ -1018,9 +1079,9 @@ public class UnitCompiler {
 
         return true;
     }
-    private boolean compile2(Java.WhileStatement ws) throws CompileException {
+    private boolean compile2(WhileStatement ws) throws CompileException {
         Object cvc = this.getConstantValue(ws.condition);
-        if (cvc != null) {
+        if (cvc != NOT_CONSTANT) {
             if (Boolean.TRUE.equals(cvc)) {
                 this.warning("WSTC", (
                     "Condition of WHILE statement is always TRUE; "
@@ -1042,7 +1103,7 @@ public class UnitCompiler {
         ws.whereToContinue = null;
 
         // Compile condition.
-        this.compileBoolean(ws.condition, bodyOffset, Java.Rvalue.JUMP_IF_TRUE);
+        this.compileBoolean(ws.condition, bodyOffset, Rvalue.JUMP_IF_TRUE);
 
         if (ws.whereToBreak != null) {
             ws.whereToBreak.set();
@@ -1051,9 +1112,9 @@ public class UnitCompiler {
         return true;
     }
     private boolean compileUnconditionalLoop(
-        Java.ContinuableStatement cs,
-        Java.BlockStatement       body,
-        Java.Rvalue[]             optionalUpdate
+        ContinuableStatement cs,
+        BlockStatement       body,
+        Rvalue[]             optionalUpdate
     ) throws CompileException {
         if (optionalUpdate != null) return this.compileUnconditionalLoopWithUpdate(cs, body, optionalUpdate);
 
@@ -1068,9 +1129,9 @@ public class UnitCompiler {
         return true;
     }
     private boolean compileUnconditionalLoopWithUpdate(
-        Java.ContinuableStatement cs,
-        Java.BlockStatement       body,
-        Java.Rvalue[]             update
+        ContinuableStatement cs,
+        BlockStatement       body,
+        Rvalue[]             update
     ) throws CompileException {
 
         // Compile body.
@@ -1095,7 +1156,7 @@ public class UnitCompiler {
         return true;
     }
 
-    private boolean compile2(Java.LabeledStatement ls) throws CompileException {
+    private boolean compile2(LabeledStatement ls) throws CompileException {
         boolean canCompleteNormally = this.compile(ls.body);
 
         if (ls.whereToBreak == null) return canCompleteNormally;
@@ -1104,7 +1165,7 @@ public class UnitCompiler {
         ls.whereToBreak = null;
         return true;
     }
-    private boolean compile2(Java.SwitchStatement ss) throws CompileException {
+    private boolean compile2(SwitchStatement ss) throws CompileException {
 
         // Compute condition.
         IClass switchExpressionType = this.compileGetValue(ss.condition);
@@ -1120,16 +1181,16 @@ public class UnitCompiler {
         CodeContext.Offset   defaultLabelOffset = null;
         CodeContext.Offset[] sbsgOffsets = new CodeContext.Offset[ss.sbsgs.size()];
         for (int i = 0; i < ss.sbsgs.size(); ++i) {
-            Java.SwitchStatement.SwitchBlockStatementGroup sbsg = (
-                (Java.SwitchStatement.SwitchBlockStatementGroup) ss.sbsgs.get(i)
+            SwitchStatement.SwitchBlockStatementGroup sbsg = (
+                (SwitchStatement.SwitchBlockStatementGroup) ss.sbsgs.get(i)
             );
             sbsgOffsets[i] = this.codeContext.new Offset();
             for (int j = 0; j < sbsg.caseLabels.size(); ++j) {
 
                 // Verify that case label value is a constant.
-                Java.Rvalue rv = (Java.Rvalue) sbsg.caseLabels.get(j);
+                Rvalue rv = (Rvalue) sbsg.caseLabels.get(j);
                 Object cv = this.getConstantValue(rv);
-                if (cv == null) {
+                if (cv == NOT_CONSTANT) {
                     this.compileError("Value of \"case\" label does not pose a constant value", rv.getLocation());
                     cv = new Integer(99);
                 }
@@ -1190,7 +1251,7 @@ public class UnitCompiler {
             int high = ((Integer) caseLabelMap.lastKey()).intValue();
 
             this.writeOpcode(ss, Opcode.TABLESWITCH);
-            new Java.Padder(this.codeContext).set();
+            new Padder(this.codeContext).set();
             this.writeOffset(switchOffset, defaultLabelOffset);
             this.writeInt(low);
             this.writeInt(high);
@@ -1208,7 +1269,7 @@ public class UnitCompiler {
             }
         } else {
             this.writeOpcode(ss, Opcode.LOOKUPSWITCH);
-            new Java.Padder(this.codeContext).set();
+            new Padder(this.codeContext).set();
             this.writeOffset(switchOffset, defaultLabelOffset);
             this.writeInt(caseLabelMap.size());
             Iterator si = caseLabelMap.entrySet().iterator();
@@ -1222,13 +1283,13 @@ public class UnitCompiler {
         // Compile statement groups.
         boolean canCompleteNormally = true;
         for (int i = 0; i < ss.sbsgs.size(); ++i) {
-            Java.SwitchStatement.SwitchBlockStatementGroup sbsg = (
-                (Java.SwitchStatement.SwitchBlockStatementGroup) ss.sbsgs.get(i)
+            SwitchStatement.SwitchBlockStatementGroup sbsg = (
+                (SwitchStatement.SwitchBlockStatementGroup) ss.sbsgs.get(i)
             );
             sbsgOffsets[i].set();
             canCompleteNormally = true;
             for (int j = 0; j < sbsg.blockStatements.size(); ++j) {
-                Java.BlockStatement bs = (Java.BlockStatement) sbsg.blockStatements.get(j);
+                BlockStatement bs = (BlockStatement) sbsg.blockStatements.get(j);
                 if (!canCompleteNormally) {
                     this.compileError("Statement is unreachable", bs.getLocation());
                     break;
@@ -1242,18 +1303,18 @@ public class UnitCompiler {
         ss.whereToBreak = null;
         return true;
     }
-    private boolean compile2(Java.BreakStatement bs) throws CompileException {
+    private boolean compile2(BreakStatement bs) throws CompileException {
 
         // Find the broken statement.
-        Java.BreakableStatement brokenStatement = null;
+        BreakableStatement brokenStatement = null;
         if (bs.optionalLabel == null) {
             for (
-                Java.Scope s = bs.getEnclosingScope();
-                s instanceof Java.Statement || s instanceof Java.CatchClause;
+                Scope s = bs.getEnclosingScope();
+                s instanceof Statement || s instanceof CatchClause;
                 s = s.getEnclosingScope()
             ) {
-                if (s instanceof Java.BreakableStatement) {
-                    brokenStatement = (Java.BreakableStatement) s;
+                if (s instanceof BreakableStatement) {
+                    brokenStatement = (BreakableStatement) s;
                     break;
                 }
             }
@@ -1263,12 +1324,12 @@ public class UnitCompiler {
             }
         } else {
             for (
-                Java.Scope s = bs.getEnclosingScope();
-                s instanceof Java.Statement || s instanceof Java.CatchClause;
+                Scope s = bs.getEnclosingScope();
+                s instanceof Statement || s instanceof CatchClause;
                 s = s.getEnclosingScope()
             ) {
-                if (s instanceof Java.LabeledStatement) {
-                    Java.LabeledStatement ls = (Java.LabeledStatement) s;
+                if (s instanceof LabeledStatement) {
+                    LabeledStatement ls = (LabeledStatement) s;
                     if (ls.label.equals(bs.optionalLabel)) {
                         brokenStatement = ls;
                         break;
@@ -1295,18 +1356,18 @@ public class UnitCompiler {
         this.writeBranch(bs, Opcode.GOTO, this.getWhereToBreak(brokenStatement));
         return false;
     }
-    private boolean compile2(Java.ContinueStatement cs) throws CompileException {
+    private boolean compile2(ContinueStatement cs) throws CompileException {
 
         // Find the continued statement.
-        Java.ContinuableStatement continuedStatement = null;
+        ContinuableStatement continuedStatement = null;
         if (cs.optionalLabel == null) {
             for (
-                Java.Scope s = cs.getEnclosingScope();
-                s instanceof Java.Statement || s instanceof Java.CatchClause;
+                Scope s = cs.getEnclosingScope();
+                s instanceof Statement || s instanceof CatchClause;
                 s = s.getEnclosingScope()
             ) {
-                if (s instanceof Java.ContinuableStatement) {
-                    continuedStatement = (Java.ContinuableStatement) s;
+                if (s instanceof ContinuableStatement) {
+                    continuedStatement = (ContinuableStatement) s;
                     break;
                 }
             }
@@ -1319,20 +1380,20 @@ public class UnitCompiler {
             }
         } else {
             for (
-                Java.Scope s = cs.getEnclosingScope();
-                s instanceof Java.Statement || s instanceof Java.CatchClause;
+                Scope s = cs.getEnclosingScope();
+                s instanceof Statement || s instanceof CatchClause;
                 s = s.getEnclosingScope()
             ) {
-                if (s instanceof Java.LabeledStatement) {
-                    Java.LabeledStatement ls = (Java.LabeledStatement) s;
+                if (s instanceof LabeledStatement) {
+                    LabeledStatement ls = (LabeledStatement) s;
                     if (ls.label.equals(cs.optionalLabel)) {
-                        Java.Statement st = ls.body;
-                        while (st instanceof Java.LabeledStatement) st = ((Java.LabeledStatement) st).body;
-                        if (!(st instanceof Java.ContinuableStatement)) {
+                        Statement st = ls.body;
+                        while (st instanceof LabeledStatement) st = ((LabeledStatement) st).body;
+                        if (!(st instanceof ContinuableStatement)) {
                             this.compileError("Labeled statement is not continuable", st.getLocation());
                             return false;
                         }
-                        continuedStatement = (Java.ContinuableStatement) st;
+                        continuedStatement = (ContinuableStatement) st;
                         break;
                     }
                 }
@@ -1361,26 +1422,26 @@ public class UnitCompiler {
         this.writeBranch(cs, Opcode.GOTO, continuedStatement.whereToContinue);
         return false;
     }
-    private boolean compile2(Java.EmptyStatement es) {
+    private boolean compile2(EmptyStatement es) {
         return true;
     }
-    private boolean compile2(Java.ExpressionStatement ee) throws CompileException {
+    private boolean compile2(ExpressionStatement ee) throws CompileException {
         this.compile(ee.rvalue);
         return true;
     }
-    private boolean compile2(Java.FieldDeclaration fd) throws CompileException {
+    private boolean compile2(FieldDeclaration fd) throws CompileException {
         for (int i = 0; i < fd.variableDeclarators.length; ++i) {
-            Java.VariableDeclarator vd = fd.variableDeclarators[i];
+            VariableDeclarator vd = fd.variableDeclarators[i];
 
-            Java.ArrayInitializerOrRvalue initializer = this.getNonConstantFinalInitializer(fd, vd);
+            ArrayInitializerOrRvalue initializer = this.getNonConstantFinalInitializer(fd, vd);
             if (initializer == null) continue;
 
             if ((fd.modifiers & Mod.STATIC) == 0) {
                 this.writeOpcode(fd, Opcode.ALOAD_0);
             }
             IClass fieldType = this.getType(fd.type);
-            if (initializer instanceof Java.Rvalue) {
-                Java.Rvalue rvalue = (Java.Rvalue) initializer;
+            if (initializer instanceof Rvalue) {
+                Rvalue rvalue = (Rvalue) initializer;
                 IClass initializerType = this.compileGetValue(rvalue);
                 fieldType = fieldType.getArrayIClass(vd.brackets, this.iClassLoader.OBJECT);
                 this.assignmentConversion(
@@ -1390,8 +1451,8 @@ public class UnitCompiler {
                     this.getConstantValue(rvalue) // optionalConstantValue
                 );
             } else
-            if (initializer instanceof Java.ArrayInitializer) {
-                this.compileGetValue((Java.ArrayInitializer) initializer, fieldType);
+            if (initializer instanceof ArrayInitializer) {
+                this.compileGetValue((ArrayInitializer) initializer, fieldType);
             } else
             {
                 throw new JaninoRuntimeException(
@@ -1416,18 +1477,18 @@ public class UnitCompiler {
         }
         return true;
     }
-    private boolean compile2(Java.IfStatement is) throws CompileException {
+    private boolean compile2(IfStatement is) throws CompileException {
         Object cv = this.getConstantValue(is.condition);
-        Java.BlockStatement es = (
+        BlockStatement es = (
             is.optionalElseStatement != null
             ? is.optionalElseStatement
-            : new Java.EmptyStatement(is.thenStatement.getLocation())
+            : new EmptyStatement(is.thenStatement.getLocation())
         );
         if (cv instanceof Boolean) {
 
             // Constant condition.
             this.fakeCompile(is.condition);
-            Java.BlockStatement seeingStatement, blindStatement;
+            BlockStatement seeingStatement, blindStatement;
             if (((Boolean) cv).booleanValue()) {
                 seeingStatement = is.thenStatement;
                 blindStatement  = es;
@@ -1448,9 +1509,9 @@ public class UnitCompiler {
             // written to a "fake" code context, i.e. be thrown away.
 
             // Constant-condition-IF statement only enclosed by blocks?
-            Java.Scope s = is.getEnclosingScope();
-            while (s instanceof Java.Block) s = s.getEnclosingScope();
-            if (s instanceof Java.FunctionDeclarator) {
+            Scope s = is.getEnclosingScope();
+            while (s instanceof Block) s = s.getEnclosingScope();
+            if (s instanceof FunctionDeclarator) {
 
                 // Yes, compile rest of method to /dev/null.
                 throw UnitCompiler.STOP_COMPILING_CODE;
@@ -1461,7 +1522,7 @@ public class UnitCompiler {
                 CodeContext.Offset off = this.codeContext.newOffset();
                 this.codeContext.pushInserter(ins);
                 try {
-                    this.pushConstant(is, new Integer(0));
+                    this.pushConstant(is, Boolean.FALSE);
                     this.writeBranch((Locatable) is, Opcode.IFNE, off);
                 } finally {
                     this.codeContext.popInserter();
@@ -1477,7 +1538,7 @@ public class UnitCompiler {
                 // if (expression) statement else statement
                 CodeContext.Offset eso = this.codeContext.new Offset();
                 CodeContext.Offset end = this.codeContext.new Offset();
-                this.compileBoolean(is.condition, eso, Java.Rvalue.JUMP_IF_FALSE);
+                this.compileBoolean(is.condition, eso, Rvalue.JUMP_IF_FALSE);
                 boolean tsccn = this.compile(is.thenStatement);
                 if (tsccn) this.writeBranch((Locatable) is, Opcode.GOTO, end);
                 eso.set();
@@ -1488,7 +1549,7 @@ public class UnitCompiler {
 
                 // if (expression) statement else ;
                 CodeContext.Offset end = this.codeContext.new Offset();
-                this.compileBoolean(is.condition, end, Java.Rvalue.JUMP_IF_FALSE);
+                this.compileBoolean(is.condition, end, Rvalue.JUMP_IF_FALSE);
                 this.compile(is.thenStatement);
                 end.set();
                 return true;
@@ -1498,7 +1559,7 @@ public class UnitCompiler {
 
                 // if (expression) ; else statement
                 CodeContext.Offset end = this.codeContext.new Offset();
-                this.compileBoolean(is.condition, end, Java.Rvalue.JUMP_IF_TRUE);
+                this.compileBoolean(is.condition, end, Rvalue.JUMP_IF_TRUE);
                 this.compile(es);
                 end.set();
                 return true;
@@ -1516,10 +1577,10 @@ public class UnitCompiler {
         "SNO: This exception should have been caught and processed"
     );
 
-    private boolean compile2(Java.LocalClassDeclarationStatement lcds) throws CompileException {
+    private boolean compile2(LocalClassDeclarationStatement lcds) throws CompileException {
 
         // Check for redefinition.
-        Java.LocalClassDeclaration otherLCD = this.findLocalClassDeclaration(lcds, lcds.lcd.name);
+        LocalClassDeclaration otherLCD = this.findLocalClassDeclaration(lcds, lcds.lcd.name);
         if (otherLCD != lcds.lcd) {
             this.compileError(
                 "Redeclaration of local class \""
@@ -1536,24 +1597,24 @@ public class UnitCompiler {
     /**
      * Find a local class declared in any block enclosing the given block statement.
      */
-    private Java.LocalClassDeclaration findLocalClassDeclaration(Java.Scope s, String name) {
+    private LocalClassDeclaration findLocalClassDeclaration(Scope s, String name) {
         for (;;) {
-            Java.Scope es = s.getEnclosingScope();
-            if (es instanceof Java.CompilationUnit) break;
+            Scope es = s.getEnclosingScope();
+            if (es instanceof CompilationUnit) break;
             if (
-                s instanceof Java.BlockStatement
-                && (es instanceof Java.Block || es instanceof Java.FunctionDeclarator)
+                s instanceof BlockStatement
+                && (es instanceof Block || es instanceof FunctionDeclarator)
             ) {
-                Java.BlockStatement bs = (Java.BlockStatement) s;
+                BlockStatement bs = (BlockStatement) s;
                 List                statements = (
-                    es instanceof Java.BlockStatement
-                    ? ((Java.Block) es).statements
-                    : ((Java.FunctionDeclarator) es).optionalStatements
+                    es instanceof BlockStatement
+                    ? ((Block) es).statements
+                    : ((FunctionDeclarator) es).optionalStatements
                 );
                 for (Iterator it = statements.iterator(); it.hasNext();) {
-                    Java.BlockStatement bs2 = (Java.BlockStatement) it.next();
-                    if (bs2 instanceof Java.LocalClassDeclarationStatement) {
-                        Java.LocalClassDeclarationStatement lcds = ((Java.LocalClassDeclarationStatement) bs2);
+                    BlockStatement bs2 = (BlockStatement) it.next();
+                    if (bs2 instanceof LocalClassDeclarationStatement) {
+                        LocalClassDeclarationStatement lcds = ((LocalClassDeclarationStatement) bs2);
                         if (lcds.lcd.name.equals(name)) return lcds.lcd;
                     }
                     if (bs2 == bs) break;
@@ -1564,7 +1625,7 @@ public class UnitCompiler {
         return null;
     }
 
-    private boolean compile2(Java.LocalVariableDeclarationStatement lvds) throws CompileException {
+    private boolean compile2(LocalVariableDeclarationStatement lvds) throws CompileException {
         if ((lvds.modifiers & ~Mod.FINAL) != 0) {
             this.compileError(
                 "The only allowed modifier in local variable declarations is \"final\"",
@@ -1573,16 +1634,16 @@ public class UnitCompiler {
         }
 
         for (int j = 0; j < lvds.variableDeclarators.length; ++j) {
-            Java.VariableDeclarator vd = lvds.variableDeclarators[j];
+            VariableDeclarator vd = lvds.variableDeclarators[j];
 
-            Java.LocalVariable lv = this.getLocalVariable(lvds, vd);
+            LocalVariable lv = this.getLocalVariable(lvds, vd);
             lv.setSlot(
                 this.codeContext.allocateLocalVariable(Descriptor.size(lv.type.getDescriptor()), vd.name, lv.type)
             );
 
             if (vd.optionalInitializer != null) {
-                if (vd.optionalInitializer instanceof Java.Rvalue) {
-                    Java.Rvalue rhs = (Java.Rvalue) vd.optionalInitializer;
+                if (vd.optionalInitializer instanceof Rvalue) {
+                    Rvalue rhs = (Rvalue) vd.optionalInitializer;
                     this.assignmentConversion(
                         (Locatable) lvds,          // l
                         this.compileGetValue(rhs), // sourceType
@@ -1590,8 +1651,8 @@ public class UnitCompiler {
                         this.getConstantValue(rhs) // optionalConstantValue
                     );
                 } else
-                if (vd.optionalInitializer instanceof Java.ArrayInitializer) {
-                    this.compileGetValue((Java.ArrayInitializer) vd.optionalInitializer, lv.type);
+                if (vd.optionalInitializer instanceof ArrayInitializer) {
+                    this.compileGetValue((ArrayInitializer) vd.optionalInitializer, lv.type);
                 } else
                 {
                     throw new JaninoRuntimeException(
@@ -1609,29 +1670,29 @@ public class UnitCompiler {
         return true;
     }
 
-    public Java.LocalVariable getLocalVariable(
-        Java.LocalVariableDeclarationStatement lvds,
-        Java.VariableDeclarator                vd
+    public LocalVariable getLocalVariable(
+        LocalVariableDeclarationStatement lvds,
+        VariableDeclarator                vd
     ) throws CompileException {
         if (vd.localVariable == null) {
 
             // Determine variable type.
-            Java.Type variableType = lvds.type;
-            for (int k = 0; k < vd.brackets; ++k) variableType = new Java.ArrayType(variableType);
+            Type variableType = lvds.type;
+            for (int k = 0; k < vd.brackets; ++k) variableType = new ArrayType(variableType);
 
-            vd.localVariable = new Java.LocalVariable((lvds.modifiers & Mod.FINAL) != 0, this.getType(variableType));
+            vd.localVariable = new LocalVariable((lvds.modifiers & Mod.FINAL) != 0, this.getType(variableType));
         }
         return vd.localVariable;
     }
 
-    private boolean compile2(Java.ReturnStatement rs) throws CompileException {
+    private boolean compile2(ReturnStatement rs) throws CompileException {
 
         // Determine enclosing block, function and compilation Unit.
-        Java.FunctionDeclarator enclosingFunction = null;
+        FunctionDeclarator enclosingFunction = null;
         {
-            Java.Scope s = rs.getEnclosingScope();
-            while (s instanceof Java.Statement || s instanceof Java.CatchClause) s = s.getEnclosingScope();
-            enclosingFunction = (Java.FunctionDeclarator) s;
+            Scope s = rs.getEnclosingScope();
+            while (s instanceof Statement || s instanceof CatchClause) s = s.getEnclosingScope();
+            enclosingFunction = (FunctionDeclarator) s;
         }
 
         IClass returnType = this.getReturnType(enclosingFunction);
@@ -1665,7 +1726,7 @@ public class UnitCompiler {
         this.writeOpcode(rs, Opcode.IRETURN + this.ilfda(returnType));
         return false;
     }
-    private boolean compile2(Java.SynchronizedStatement ss) throws CompileException {
+    private boolean compile2(SynchronizedStatement ss) throws CompileException {
 
         // Evaluate monitor object expression.
         if (!this.iClassLoader.OBJECT.isAssignableFrom(this.compileGetValue(ss.expression))) {
@@ -1719,7 +1780,7 @@ public class UnitCompiler {
 
         return canCompleteNormally;
     }
-    private boolean compile2(Java.ThrowStatement ts) throws CompileException {
+    private boolean compile2(ThrowStatement ts) throws CompileException {
         IClass expressionType = this.compileGetValue(ts.expression);
         this.checkThrownException(
             (Locatable) ts,        // l
@@ -1729,7 +1790,7 @@ public class UnitCompiler {
         this.writeOpcode(ts, Opcode.ATHROW);
         return false;
     }
-    private boolean compile2(Java.TryStatement ts) throws CompileException {
+    private boolean compile2(TryStatement ts) throws CompileException {
         if (ts.optionalFinally != null) ts.finallyOffset = this.codeContext.new Offset();
 
         CodeContext.Offset beginningOfBody = this.codeContext.newOffset();
@@ -1754,7 +1815,7 @@ public class UnitCompiler {
 
             // Initialize all catch clauses as "unreachable" only to check later that they ARE indeed reachable.
             for (int i = 0; i < ts.catchClauses.size(); ++i) {
-                CatchClause cc = (Java.CatchClause) ts.catchClauses.get(i);
+                CatchClause cc = (CatchClause) ts.catchClauses.get(i);
                 IClass caughtExceptionType = this.getType(cc.caughtException.type);
                 cc.reachable = (
                     // Superclass or subclass of "java.lang.Error"?
@@ -1779,7 +1840,7 @@ public class UnitCompiler {
                         try {
                             this.codeContext.saveLocalVariables();
 
-                            Java.CatchClause cc = (Java.CatchClause) ts.catchClauses.get(i);
+                            CatchClause cc = (CatchClause) ts.catchClauses.get(i);
                             IClass caughtExceptionType = this.getType(cc.caughtException.type);
 
                             // Verify that the CATCH clause is reachable.
@@ -1788,7 +1849,7 @@ public class UnitCompiler {
                             }
 
                             // Allocate the "exception variable".
-                            Java.LocalVariableSlot exceptionVarSlot = this.codeContext.allocateLocalVariable(
+                            LocalVariableSlot exceptionVarSlot = this.codeContext.allocateLocalVariable(
                                 (short) 1,
                                 cc.caughtException.name,
                                 caughtExceptionType
@@ -1890,11 +1951,11 @@ public class UnitCompiler {
 
     // ------------ FunctionDeclarator.compile() -------------
 
-    private void compile(Java.FunctionDeclarator fd, final ClassFile classFile) throws CompileException {
+    private void compile(FunctionDeclarator fd, final ClassFile classFile) throws CompileException {
         ClassFile.MethodInfo mi;
 
         if (Mod.isPrivateAccess(fd.modifiers)) {
-            if (fd instanceof Java.MethodDeclarator && !fd.isStatic()) {
+            if (fd instanceof MethodDeclarator && !fd.isStatic()) {
 
                 // To make the non-static private method invocable for enclosing types, enclosed types
                 // and types enclosed by the same type, it is modified as follows:
@@ -1906,7 +1967,7 @@ public class UnitCompiler {
                     (short) (Mod.changeAccess(fd.modifiers, Mod.PACKAGE) | Mod.STATIC), // accessFlags
                     fd.name + '$',                               // name
                     MethodDescriptor.prependParameter(           // methodMD
-                        this.toIMethod((Java.MethodDeclarator) fd).getDescriptor(),
+                        this.toIMethod((MethodDeclarator) fd).getDescriptor(),
                         this.resolve(fd.getDeclaringType()).getDescriptor()
                     )
                 );
@@ -1962,8 +2023,8 @@ public class UnitCompiler {
                 this.codeContext.allocateLocalVariable((short) 1, "this", this.resolve(fd.getDeclaringType()));
             }
 
-            if (fd instanceof Java.ConstructorDeclarator) {
-                Java.ConstructorDeclarator constructorDeclarator = (Java.ConstructorDeclarator) fd;
+            if (fd instanceof ConstructorDeclarator) {
+                ConstructorDeclarator constructorDeclarator = (ConstructorDeclarator) fd;
 
                 // Reserve space for synthetic parameters ("this$...", "val$...").
                 for (
@@ -1971,7 +2032,7 @@ public class UnitCompiler {
                     it.hasNext();
                 ) {
                     IClass.IField sf = (IClass.IField) it.next();
-                    Java.LocalVariable lv = new Java.LocalVariable(true, sf.getType());
+                    LocalVariable lv = new LocalVariable(true, sf.getType());
 
                     lv.setSlot(this.codeContext.allocateLocalVariable(Descriptor.size(sf.getDescriptor()), null, null));
                     constructorDeclarator.syntheticParameters.put(sf.getName(), lv);
@@ -1981,31 +2042,31 @@ public class UnitCompiler {
             this.buildLocalVariableMap(fd);
 
             // Compile the constructor preamble.
-            if (fd instanceof Java.ConstructorDeclarator) {
-                Java.ConstructorDeclarator cd = (Java.ConstructorDeclarator) fd;
+            if (fd instanceof ConstructorDeclarator) {
+                ConstructorDeclarator cd = (ConstructorDeclarator) fd;
                 if (cd.optionalConstructorInvocation != null) {
                     this.compile(cd.optionalConstructorInvocation);
-                    if (cd.optionalConstructorInvocation instanceof Java.SuperConstructorInvocation) {
+                    if (cd.optionalConstructorInvocation instanceof SuperConstructorInvocation) {
                         this.assignSyntheticParametersToSyntheticFields(cd);
                         this.initializeInstanceVariablesAndInvokeInstanceInitializers(cd);
                     }
                 } else {
 
                     // Determine qualification for superconstructor invocation.
-                    Java.QualifiedThisReference qualification = null;
+                    QualifiedThisReference qualification = null;
                     IClass outerClassOfSuperclass = this.resolve(
                         cd.getDeclaringClass()
                     ).getSuperclass().getOuterIClass();
                     if (outerClassOfSuperclass != null) {
-//                        qualification = new Java.QualifiedThisReference(
+//                        qualification = new QualifiedThisReference(
 //                            cd.getLocation(),        // location
 //                            cd.getDeclaringClass(),  // declaringClass
 //                            cd,                      // declaringTypeBodyDeclaration
 //                            outerClassOfSuperclass   // targetIClass
 //                        );
-                        qualification = new Java.QualifiedThisReference(
+                        qualification = new QualifiedThisReference(
                             cd.getLocation(),    // location
-                            new Java.SimpleType( // qualification
+                            new SimpleType( // qualification
                                 cd.getLocation(),
                                 outerClassOfSuperclass
                             )
@@ -2013,10 +2074,10 @@ public class UnitCompiler {
                     }
 
                     // Invoke the superconstructor.
-                    Java.SuperConstructorInvocation sci = new Java.SuperConstructorInvocation(
+                    SuperConstructorInvocation sci = new SuperConstructorInvocation(
                         cd.getLocation(),       // location
                         qualification,          // optionalQualification
-                        new Java.Rvalue[0]      // arguments
+                        new Rvalue[0]      // arguments
                     );
                     sci.setEnclosingScope(fd);
                     this.compile(sci);
@@ -2098,7 +2159,7 @@ public class UnitCompiler {
         cf.addConstantUtf8Info("LocalVariableTable");
 
         while (iter.hasNext()) {
-            Java.LocalVariableSlot slot = (Java.LocalVariableSlot) iter.next();
+            LocalVariableSlot slot = (LocalVariableSlot) iter.next();
 
             if (slot.getName() != null) {
                 String typeName = slot.getType().getDescriptor();
@@ -2114,8 +2175,8 @@ public class UnitCompiler {
 
         // Add function parameters.
         for (int i = 0; i < fd.formalParameters.length; ++i) {
-            Java.FunctionDeclarator.FormalParameter fp = fd.formalParameters[i];
-            Java.LocalVariable lv = this.getLocalVariable(fp);
+            FunctionDeclarator.FormalParameter fp = fd.formalParameters[i];
+            LocalVariable lv = this.getLocalVariable(fp);
             lv.setSlot(this.codeContext.allocateLocalVariable(
                 Descriptor.size(lv.type.getDescriptor()),
                 fp.name,
@@ -2234,7 +2295,7 @@ public class UnitCompiler {
         ts.localVariables = localVars;
         this.buildLocalVariableMap(ts.body, localVars);
         for (Iterator it = ts.catchClauses.iterator(); it.hasNext();) {
-            Java.CatchClause cc = (Java.CatchClause) it.next();
+            CatchClause cc = (CatchClause) it.next();
             this.buildLocalVariableMap(cc, localVars);
         }
         if (ts.optionalFinally != null) {
@@ -2257,8 +2318,8 @@ public class UnitCompiler {
         Map newVars = new HashMap();
         newVars.putAll(localVars);
         for (int i = 0; i < lvds.variableDeclarators.length; ++i) {
-            Java.VariableDeclarator vd = lvds.variableDeclarators[i];
-            Java.LocalVariable lv = UnitCompiler.this.getLocalVariable(lvds, vd);
+            VariableDeclarator vd = lvds.variableDeclarators[i];
+            LocalVariable lv = UnitCompiler.this.getLocalVariable(lvds, vd);
             if (newVars.put(vd.name, lv) != null) {
                 this.compileError("Redefinition of local variable \"" + vd.name + "\" ", vd.getLocation());
             }
@@ -2274,11 +2335,9 @@ public class UnitCompiler {
         this.buildLocalVariableMap(cc.body, vars);
     }
 
-
-
-    public Java.LocalVariable getLocalVariable(Java.FunctionDeclarator.FormalParameter fp) throws CompileException {
+    public LocalVariable getLocalVariable(FunctionDeclarator.FormalParameter fp) throws CompileException {
         if (fp.localVariable == null) {
-            fp.localVariable = new Java.LocalVariable(fp.finaL, this.getType(fp.type));
+            fp.localVariable = new LocalVariable(fp.finaL, this.getType(fp.type));
         }
         return fp.localVariable;
     }
@@ -2288,13 +2347,13 @@ public class UnitCompiler {
     /**
      * Call to check whether the given {@link ArrayInitializerOrRvalue} compiles or not.
      */
-    private void fakeCompile(Java.ArrayInitializerOrRvalue aior) throws CompileException {
-        if (aior instanceof Java.Rvalue) {
-            Java.Rvalue rv = (Java.Rvalue) aior;
+    private void fakeCompile(ArrayInitializerOrRvalue aior) throws CompileException {
+        if (aior instanceof Rvalue) {
+            Rvalue rv = (Rvalue) aior;
             this.fakeCompile(rv);
         }
-        if (aior instanceof Java.ArrayInitializer) {
-            Java.ArrayInitializer ai = (Java.ArrayInitializer) aior;
+        if (aior instanceof ArrayInitializer) {
+            ArrayInitializer ai = (ArrayInitializer) aior;
             for (int i = 0; i < ai.values.length; ++i) {
                 fakeCompile(ai.values[i]);
             }
@@ -2302,9 +2361,9 @@ public class UnitCompiler {
     }
 
     /**
-     * Call to check whether the given {@link Java.Rvalue} compiles or not.
+     * Call to check whether the given {@link Rvalue} compiles or not.
      */
-    private void fakeCompile(Java.Rvalue rv) throws CompileException {
+    private void fakeCompile(Rvalue rv) throws CompileException {
         CodeContext savedCodeContext = this.replaceCodeContext(this.createDummyCodeContext());
         try {
             this.compileContext(rv);
@@ -2315,40 +2374,45 @@ public class UnitCompiler {
     }
 
     /**
-     * Some {@link Java.Rvalue}s compile more efficiently when their value
+     * Some {@link Rvalue}s compile more efficiently when their value
      * is not needed, e.g. "i++".
      */
-    private void compile(Java.Rvalue rv) throws CompileException {
+    private void compile(Rvalue rv) throws CompileException {
         class UCE extends RuntimeException { final CompileException ce; UCE(CompileException ce) { this.ce = ce; } }
-        Visitor.RvalueVisitor rvv = new Visitor.RvalueVisitor() {
+        RvalueVisitor rvv = new RvalueVisitor() {
             // CHECKSTYLE(LineLengthCheck):OFF
-            public void visitArrayLength(Java.ArrayLength al)                                       { try { UnitCompiler.this.compile2(al);    } catch (CompileException e) { throw new UCE(e); } }
-            public void visitAssignment(Java.Assignment a)                                          { try { UnitCompiler.this.compile2(a);     } catch (CompileException e) { throw new UCE(e); } }
-            public void visitUnaryOperation(Java.UnaryOperation uo)                                 { try { UnitCompiler.this.compile2(uo);    } catch (CompileException e) { throw new UCE(e); } }
-            public void visitBinaryOperation(Java.BinaryOperation bo)                               { try { UnitCompiler.this.compile2(bo);    } catch (CompileException e) { throw new UCE(e); } }
-            public void visitCast(Java.Cast c)                                                      { try { UnitCompiler.this.compile2(c);     } catch (CompileException e) { throw new UCE(e); } }
-            public void visitClassLiteral(Java.ClassLiteral cl)                                     { try { UnitCompiler.this.compile2(cl);    } catch (CompileException e) { throw new UCE(e); } }
-            public void visitConditionalExpression(Java.ConditionalExpression ce)                   { try { UnitCompiler.this.compile2(ce);    } catch (CompileException e) { throw new UCE(e); } }
-            public void visitCrement(Java.Crement c)                                                { try { UnitCompiler.this.compile2(c);     } catch (CompileException e) { throw new UCE(e); } }
-            public void visitInstanceof(Java.Instanceof io)                                         { try { UnitCompiler.this.compile2(io);    } catch (CompileException e) { throw new UCE(e); } }
-            public void visitMethodInvocation(Java.MethodInvocation mi)                             { try { UnitCompiler.this.compile2(mi);    } catch (CompileException e) { throw new UCE(e); } }
-            public void visitSuperclassMethodInvocation(Java.SuperclassMethodInvocation smi)        { try { UnitCompiler.this.compile2(smi);   } catch (CompileException e) { throw new UCE(e); } }
-            public void visitLiteral(Java.Literal l)                                                { try { UnitCompiler.this.compile2(l);     } catch (CompileException e) { throw new UCE(e); } }
-            public void visitNewAnonymousClassInstance(Java.NewAnonymousClassInstance naci)         { try { UnitCompiler.this.compile2(naci);  } catch (CompileException e) { throw new UCE(e); } }
-            public void visitNewArray(Java.NewArray na)                                             { try { UnitCompiler.this.compile2(na);    } catch (CompileException e) { throw new UCE(e); } }
-            public void visitNewInitializedArray(Java.NewInitializedArray nia)                      { try { UnitCompiler.this.compile2(nia);   } catch (CompileException e) { throw new UCE(e); } }
-            public void visitNewClassInstance(Java.NewClassInstance nci)                            { try { UnitCompiler.this.compile2(nci);   } catch (CompileException e) { throw new UCE(e); } }
-            public void visitParameterAccess(Java.ParameterAccess pa)                               { try { UnitCompiler.this.compile2(pa);    } catch (CompileException e) { throw new UCE(e); } }
-            public void visitQualifiedThisReference(Java.QualifiedThisReference qtr)                { try { UnitCompiler.this.compile2(qtr);   } catch (CompileException e) { throw new UCE(e); } }
-            public void visitThisReference(Java.ThisReference tr)                                   { try { UnitCompiler.this.compile2(tr);    } catch (CompileException e) { throw new UCE(e); } }
+            public void visitArrayLength(ArrayLength al)                                       { try { UnitCompiler.this.compile2(al);    } catch (CompileException e) { throw new UCE(e); } }
+            public void visitAssignment(Assignment a)                                          { try { UnitCompiler.this.compile2(a);     } catch (CompileException e) { throw new UCE(e); } }
+            public void visitUnaryOperation(UnaryOperation uo)                                 { try { UnitCompiler.this.compile2(uo);    } catch (CompileException e) { throw new UCE(e); } }
+            public void visitBinaryOperation(BinaryOperation bo)                               { try { UnitCompiler.this.compile2(bo);    } catch (CompileException e) { throw new UCE(e); } }
+            public void visitCast(Cast c)                                                      { try { UnitCompiler.this.compile2(c);     } catch (CompileException e) { throw new UCE(e); } }
+            public void visitClassLiteral(ClassLiteral cl)                                     { try { UnitCompiler.this.compile2(cl);    } catch (CompileException e) { throw new UCE(e); } }
+            public void visitConditionalExpression(ConditionalExpression ce)                   { try { UnitCompiler.this.compile2(ce);    } catch (CompileException e) { throw new UCE(e); } }
+            public void visitCrement(Crement c)                                                { try { UnitCompiler.this.compile2(c);     } catch (CompileException e) { throw new UCE(e); } }
+            public void visitInstanceof(Instanceof io)                                         { try { UnitCompiler.this.compile2(io);    } catch (CompileException e) { throw new UCE(e); } }
+            public void visitMethodInvocation(MethodInvocation mi)                             { try { UnitCompiler.this.compile2(mi);    } catch (CompileException e) { throw new UCE(e); } }
+            public void visitSuperclassMethodInvocation(SuperclassMethodInvocation smi)        { try { UnitCompiler.this.compile2(smi);   } catch (CompileException e) { throw new UCE(e); } }
+            public void visitIntegerLiteral(IntegerLiteral il)                                 { try { UnitCompiler.this.compile2(il);    } catch (CompileException e) { throw new UCE(e); } }
+            public void visitFloatingPointLiteral(FloatingPointLiteral fpl)                    { try { UnitCompiler.this.compile2(fpl);   } catch (CompileException e) { throw new UCE(e); } }
+            public void visitBooleanLiteral(BooleanLiteral bl)                                 { try { UnitCompiler.this.compile2(bl);    } catch (CompileException e) { throw new UCE(e); } }
+            public void visitCharacterLiteral(CharacterLiteral cl)                             { try { UnitCompiler.this.compile2(cl);    } catch (CompileException e) { throw new UCE(e); } }
+            public void visitStringLiteral(StringLiteral sl)                                   { try { UnitCompiler.this.compile2(sl);    } catch (CompileException e) { throw new UCE(e); } }
+            public void visitNullLiteral(NullLiteral nl)                                       { try { UnitCompiler.this.compile2(nl);    } catch (CompileException e) { throw new UCE(e); } }
+            public void visitNewAnonymousClassInstance(NewAnonymousClassInstance naci)         { try { UnitCompiler.this.compile2(naci);  } catch (CompileException e) { throw new UCE(e); } }
+            public void visitNewArray(NewArray na)                                             { try { UnitCompiler.this.compile2(na);    } catch (CompileException e) { throw new UCE(e); } }
+            public void visitNewInitializedArray(NewInitializedArray nia)                      { try { UnitCompiler.this.compile2(nia);   } catch (CompileException e) { throw new UCE(e); } }
+            public void visitNewClassInstance(NewClassInstance nci)                            { try { UnitCompiler.this.compile2(nci);   } catch (CompileException e) { throw new UCE(e); } }
+            public void visitParameterAccess(ParameterAccess pa)                               { try { UnitCompiler.this.compile2(pa);    } catch (CompileException e) { throw new UCE(e); } }
+            public void visitQualifiedThisReference(QualifiedThisReference qtr)                { try { UnitCompiler.this.compile2(qtr);   } catch (CompileException e) { throw new UCE(e); } }
+            public void visitThisReference(ThisReference tr)                                   { try { UnitCompiler.this.compile2(tr);    } catch (CompileException e) { throw new UCE(e); } }
 
-            public void visitAmbiguousName(Java.AmbiguousName an)                                   { try { UnitCompiler.this.compile2(an);    } catch (CompileException e) { throw new UCE(e); } }
-            public void visitArrayAccessExpression(Java.ArrayAccessExpression aae)                  { try { UnitCompiler.this.compile2(aae);   } catch (CompileException e) { throw new UCE(e); } };
-            public void visitFieldAccess(Java.FieldAccess fa)                                       { try { UnitCompiler.this.compile2(fa);    } catch (CompileException e) { throw new UCE(e); } }
-            public void visitFieldAccessExpression(Java.FieldAccessExpression fae)                  { try { UnitCompiler.this.compile2(fae);   } catch (CompileException e) { throw new UCE(e); } }
+            public void visitAmbiguousName(AmbiguousName an)                                   { try { UnitCompiler.this.compile2(an);    } catch (CompileException e) { throw new UCE(e); } }
+            public void visitArrayAccessExpression(ArrayAccessExpression aae)                  { try { UnitCompiler.this.compile2(aae);   } catch (CompileException e) { throw new UCE(e); } };
+            public void visitFieldAccess(FieldAccess fa)                                       { try { UnitCompiler.this.compile2(fa);    } catch (CompileException e) { throw new UCE(e); } }
+            public void visitFieldAccessExpression(FieldAccessExpression fae)                  { try { UnitCompiler.this.compile2(fae);   } catch (CompileException e) { throw new UCE(e); } }
             public void visitSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae) { try { UnitCompiler.this.compile2(scfae); } catch (CompileException e) { throw new UCE(e); } }
-            public void visitLocalVariableAccess(Java.LocalVariableAccess lva)                      { try { UnitCompiler.this.compile2(lva);   } catch (CompileException e) { throw new UCE(e); } }
-            public void visitParenthesizedExpression(Java.ParenthesizedExpression pe)               { try { UnitCompiler.this.compile2(pe);    } catch (CompileException e) { throw new UCE(e); } }
+            public void visitLocalVariableAccess(LocalVariableAccess lva)                      { try { UnitCompiler.this.compile2(lva);   } catch (CompileException e) { throw new UCE(e); } }
+            public void visitParenthesizedExpression(ParenthesizedExpression pe)               { try { UnitCompiler.this.compile2(pe);    } catch (CompileException e) { throw new UCE(e); } }
             // CHECKSTYLE(LineLengthCheck):ON
         };
         try {
@@ -2357,10 +2421,10 @@ public class UnitCompiler {
             throw uce.ce;
         }
     }
-    private void compile2(Java.Rvalue rv) throws CompileException {
+    private void compile2(Rvalue rv) throws CompileException {
         this.pop((Locatable) rv, this.compileGetValue(rv));
     }
-    private void compile2(Java.Assignment a) throws CompileException {
+    private void compile2(Assignment a) throws CompileException {
         if (a.operator == "=") {
             this.compileContext(a.lhs);
             this.assignmentConversion(
@@ -2397,10 +2461,10 @@ public class UnitCompiler {
         // Assign the result to the left operand.
         this.compileSet(a.lhs);
     }
-    private void compile2(Java.Crement c) throws CompileException {
+    private void compile2(Crement c) throws CompileException {
 
         // Optimized crement of integer local variable.
-        Java.LocalVariable lv = this.isIntLV(c);
+        LocalVariable lv = this.isIntLV(c);
         if (lv != null) {
             compileLocalVariableCrement(c, lv);
             return;
@@ -2429,32 +2493,32 @@ public class UnitCompiler {
         this.reverseUnaryNumericPromotion((Locatable) c, promotedType, type);
         this.compileSet(c.operand);
     }
-    private void compile2(Java.ParenthesizedExpression pe) throws CompileException {
+    private void compile2(ParenthesizedExpression pe) throws CompileException {
         this.compile(pe.value);
     }
 
-    private boolean compile2(Java.AlternateConstructorInvocation aci) throws CompileException {
-        Java.ConstructorDeclarator declaringConstructor = (Java.ConstructorDeclarator) aci.getEnclosingScope();
+    private boolean compile2(AlternateConstructorInvocation aci) throws CompileException {
+        ConstructorDeclarator declaringConstructor = (ConstructorDeclarator) aci.getEnclosingScope();
         IClass                     declaringIClass = this.resolve(declaringConstructor.getDeclaringClass());
 
         this.writeOpcode(aci, Opcode.ALOAD_0);
         if (declaringIClass.getOuterIClass() != null) this.writeOpcode(aci, Opcode.ALOAD_1);
         this.invokeConstructor(
             (Locatable) aci,                   // l
-            (Java.Scope) declaringConstructor, // scope
-            (Java.Rvalue) null,                // optionalEnclosingInstance
+            (Scope) declaringConstructor, // scope
+            (Rvalue) null,                // optionalEnclosingInstance
             declaringIClass,                   // targetClass
             aci.arguments                      // arguments
         );
         return true;
     }
-    private boolean compile2(Java.SuperConstructorInvocation sci) throws CompileException {
-        Java.ConstructorDeclarator declaringConstructor = (Java.ConstructorDeclarator) sci.getEnclosingScope();
+    private boolean compile2(SuperConstructorInvocation sci) throws CompileException {
+        ConstructorDeclarator declaringConstructor = (ConstructorDeclarator) sci.getEnclosingScope();
         this.writeOpcode(sci, Opcode.ALOAD_0);
-        Java.ClassDeclaration declaringClass = declaringConstructor.getDeclaringClass();
+        ClassDeclaration declaringClass = declaringConstructor.getDeclaringClass();
         IClass superclass = this.resolve(declaringClass).getSuperclass();
 
-        Java.Rvalue optionalEnclosingInstance;
+        Rvalue optionalEnclosingInstance;
         if (sci.optionalQualification != null) {
             optionalEnclosingInstance = sci.optionalQualification;
         } else {
@@ -2462,9 +2526,9 @@ public class UnitCompiler {
             if (outerIClassOfSuperclass == null) {
                 optionalEnclosingInstance = null;
             } else {
-                optionalEnclosingInstance = new Java.QualifiedThisReference(
+                optionalEnclosingInstance = new QualifiedThisReference(
                     sci.getLocation(),   // location
-                    new Java.SimpleType( // qualification
+                    new SimpleType( // qualification
                         sci.getLocation(),
                         outerIClassOfSuperclass
                     )
@@ -2474,7 +2538,7 @@ public class UnitCompiler {
         }
         this.invokeConstructor(
             (Locatable) sci,                   // l
-            (Java.Scope) declaringConstructor, // scope
+            (Scope) declaringConstructor, // scope
             optionalEnclosingInstance,         // optionalEnclosingInstance
             superclass,                        // targetClass
             sci.arguments                      // arguments
@@ -2483,46 +2547,51 @@ public class UnitCompiler {
     }
 
     /**
-     * Some {@link Java.Rvalue}s compile more efficiently when their value is the condition for a branch.
+     * Some {@link Rvalue}s compile more efficiently when their value is the condition for a branch.
      * <p>
      * Notice that if "this" is a constant, then either <code>dst</code> is never branched to, or it is unconditionally
      * branched to. "Unexamined code" errors may result during bytecode validation.
      */
     private void compileBoolean(
-        Java.Rvalue              rv,
+        Rvalue                   rv,
         final CodeContext.Offset dst,        // Where to jump.
         final boolean            orientation // JUMP_IF_TRUE or JUMP_IF_FALSE.
     ) throws CompileException {
         class UCE extends RuntimeException { final CompileException ce; UCE(CompileException ce) { this.ce = ce; } }
-        Visitor.RvalueVisitor rvv = new Visitor.RvalueVisitor() {
+        RvalueVisitor rvv = new RvalueVisitor() {
             // CHECKSTYLE(LineLengthCheck):OFF
-            public void visitArrayLength(Java.ArrayLength al)                                { try { UnitCompiler.this.compileBoolean2(al,   dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
-            public void visitAssignment(Java.Assignment a)                                   { try { UnitCompiler.this.compileBoolean2(a,    dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
-            public void visitUnaryOperation(Java.UnaryOperation uo)                          { try { UnitCompiler.this.compileBoolean2(uo,   dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
-            public void visitBinaryOperation(Java.BinaryOperation bo)                        { try { UnitCompiler.this.compileBoolean2(bo,   dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
-            public void visitCast(Java.Cast c)                                               { try { UnitCompiler.this.compileBoolean2(c,    dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
-            public void visitClassLiteral(Java.ClassLiteral cl)                              { try { UnitCompiler.this.compileBoolean2(cl,   dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
-            public void visitConditionalExpression(Java.ConditionalExpression ce)            { try { UnitCompiler.this.compileBoolean2(ce,   dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
-            public void visitCrement(Java.Crement c)                                         { try { UnitCompiler.this.compileBoolean2(c,    dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
-            public void visitInstanceof(Java.Instanceof io)                                  { try { UnitCompiler.this.compileBoolean2(io,   dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
-            public void visitMethodInvocation(Java.MethodInvocation mi)                      { try { UnitCompiler.this.compileBoolean2(mi,   dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
-            public void visitSuperclassMethodInvocation(Java.SuperclassMethodInvocation smi) { try { UnitCompiler.this.compileBoolean2(smi,  dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
-            public void visitLiteral(Java.Literal l)                                         { try { UnitCompiler.this.compileBoolean2(l,    dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
-            public void visitNewAnonymousClassInstance(Java.NewAnonymousClassInstance naci)  { try { UnitCompiler.this.compileBoolean2(naci, dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
-            public void visitNewArray(Java.NewArray na)                                      { try { UnitCompiler.this.compileBoolean2(na,   dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
-            public void visitNewInitializedArray(Java.NewInitializedArray nia)               { try { UnitCompiler.this.compileBoolean2(nia,  dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
-            public void visitNewClassInstance(Java.NewClassInstance nci)                     { try { UnitCompiler.this.compileBoolean2(nci,  dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
-            public void visitParameterAccess(Java.ParameterAccess pa)                        { try { UnitCompiler.this.compileBoolean2(pa,   dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
-            public void visitQualifiedThisReference(Java.QualifiedThisReference qtr)         { try { UnitCompiler.this.compileBoolean2(qtr,  dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
-            public void visitThisReference(Java.ThisReference tr)                            { try { UnitCompiler.this.compileBoolean2(tr,   dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitArrayLength(ArrayLength al)                                { try { UnitCompiler.this.compileBoolean2(al,   dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitAssignment(Assignment a)                                   { try { UnitCompiler.this.compileBoolean2(a,    dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitUnaryOperation(UnaryOperation uo)                          { try { UnitCompiler.this.compileBoolean2(uo,   dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitBinaryOperation(BinaryOperation bo)                        { try { UnitCompiler.this.compileBoolean2(bo,   dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitCast(Cast c)                                               { try { UnitCompiler.this.compileBoolean2(c,    dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitClassLiteral(ClassLiteral cl)                              { try { UnitCompiler.this.compileBoolean2(cl,   dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitConditionalExpression(ConditionalExpression ce)            { try { UnitCompiler.this.compileBoolean2(ce,   dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitCrement(Crement c)                                         { try { UnitCompiler.this.compileBoolean2(c,    dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitInstanceof(Instanceof io)                                  { try { UnitCompiler.this.compileBoolean2(io,   dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitMethodInvocation(MethodInvocation mi)                      { try { UnitCompiler.this.compileBoolean2(mi,   dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitSuperclassMethodInvocation(SuperclassMethodInvocation smi) { try { UnitCompiler.this.compileBoolean2(smi,  dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitIntegerLiteral(IntegerLiteral il)                          { try { UnitCompiler.this.compileBoolean2(il,   dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitFloatingPointLiteral(FloatingPointLiteral fpl)             { try { UnitCompiler.this.compileBoolean2(fpl,  dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitBooleanLiteral(BooleanLiteral bl)                          { try { UnitCompiler.this.compileBoolean2(bl,   dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitCharacterLiteral(CharacterLiteral cl)                      { try { UnitCompiler.this.compileBoolean2(cl,   dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitStringLiteral(StringLiteral sl)                            { try { UnitCompiler.this.compileBoolean2(sl,   dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitNullLiteral(NullLiteral nl)                                { try { UnitCompiler.this.compileBoolean2(nl,   dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitNewAnonymousClassInstance(NewAnonymousClassInstance naci)  { try { UnitCompiler.this.compileBoolean2(naci, dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitNewArray(NewArray na)                                      { try { UnitCompiler.this.compileBoolean2(na,   dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitNewInitializedArray(NewInitializedArray nia)               { try { UnitCompiler.this.compileBoolean2(nia,  dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitNewClassInstance(NewClassInstance nci)                     { try { UnitCompiler.this.compileBoolean2(nci,  dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitParameterAccess(ParameterAccess pa)                        { try { UnitCompiler.this.compileBoolean2(pa,   dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitQualifiedThisReference(QualifiedThisReference qtr)         { try { UnitCompiler.this.compileBoolean2(qtr,  dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitThisReference(ThisReference tr)                            { try { UnitCompiler.this.compileBoolean2(tr,   dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
 
-            public void visitAmbiguousName(Java.AmbiguousName an)                                        { try { UnitCompiler.this.compileBoolean2(an,    dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
-            public void visitArrayAccessExpression(Java.ArrayAccessExpression aae)                       { try { UnitCompiler.this.compileBoolean2(aae,   dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
-            public void visitFieldAccess(Java.FieldAccess fa)                                            { try { UnitCompiler.this.compileBoolean2(fa,    dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
-            public void visitFieldAccessExpression(Java.FieldAccessExpression fae)                       { try { UnitCompiler.this.compileBoolean2(fae,   dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
-            public void visitSuperclassFieldAccessExpression(Java.SuperclassFieldAccessExpression scfae) { try { UnitCompiler.this.compileBoolean2(scfae, dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
-            public void visitLocalVariableAccess(Java.LocalVariableAccess lva)                           { try { UnitCompiler.this.compileBoolean2(lva,   dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
-            public void visitParenthesizedExpression(Java.ParenthesizedExpression pe)                    { try { UnitCompiler.this.compileBoolean2(pe,    dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitAmbiguousName(AmbiguousName an)                                        { try { UnitCompiler.this.compileBoolean2(an,    dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitArrayAccessExpression(ArrayAccessExpression aae)                       { try { UnitCompiler.this.compileBoolean2(aae,   dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitFieldAccess(FieldAccess fa)                                            { try { UnitCompiler.this.compileBoolean2(fa,    dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitFieldAccessExpression(FieldAccessExpression fae)                       { try { UnitCompiler.this.compileBoolean2(fae,   dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae) { try { UnitCompiler.this.compileBoolean2(scfae, dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitLocalVariableAccess(LocalVariableAccess lva)                           { try { UnitCompiler.this.compileBoolean2(lva,   dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitParenthesizedExpression(ParenthesizedExpression pe)                    { try { UnitCompiler.this.compileBoolean2(pe,    dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
             // CHECKSTYLE(LineLengthCheck):ON
         };
         try {
@@ -2532,7 +2601,7 @@ public class UnitCompiler {
         }
     }
     private void compileBoolean2(
-        Java.Rvalue        rv,
+        Rvalue        rv,
         CodeContext.Offset dst,        // Where to jump.
         boolean            orientation // JUMP_IF_TRUE or JUMP_IF_FALSE.
     ) throws CompileException {
@@ -2544,10 +2613,10 @@ public class UnitCompiler {
         if (type != IClass.BOOLEAN) {
             this.compileError("Not a boolean expression", rv.getLocation());
         }
-        this.writeBranch(rv, orientation == Java.Rvalue.JUMP_IF_TRUE ? Opcode.IFNE : Opcode.IFEQ, dst);
+        this.writeBranch(rv, orientation == Rvalue.JUMP_IF_TRUE ? Opcode.IFNE : Opcode.IFEQ, dst);
     }
     private void compileBoolean2(
-        Java.UnaryOperation ue,
+        UnaryOperation     ue,
         CodeContext.Offset dst,        // Where to jump.
         boolean            orientation // JUMP_IF_TRUE or JUMP_IF_FALSE.
     ) throws CompileException {
@@ -2559,13 +2628,13 @@ public class UnitCompiler {
         this.compileError("Boolean expression expected", ue.getLocation());
     }
     private void compileBoolean2(
-        Java.BinaryOperation bo,
+        BinaryOperation bo,
         CodeContext.Offset   dst,        // Where to jump.
         boolean              orientation // JUMP_IF_TRUE or JUMP_IF_FALSE.
     ) throws CompileException {
 
         if (bo.op == "|" || bo.op == "^" || bo.op == "&") {
-            this.compileBoolean2((Java.Rvalue) bo, dst, orientation);
+            this.compileBoolean2((Rvalue) bo, dst, orientation);
             return;
         }
 
@@ -2577,14 +2646,14 @@ public class UnitCompiler {
                     this.compileBoolean(
                         bo.rhs,
                         dst,
-                        Java.Rvalue.JUMP_IF_TRUE ^ orientation == Java.Rvalue.JUMP_IF_FALSE
+                        Rvalue.JUMP_IF_TRUE ^ orientation == Rvalue.JUMP_IF_FALSE
                     );
                 } else {
                     // "false && a", "true || a"
                     this.compileBoolean(
                         bo.lhs,
                         dst,
-                        Java.Rvalue.JUMP_IF_TRUE ^ orientation == Java.Rvalue.JUMP_IF_FALSE
+                        Rvalue.JUMP_IF_TRUE ^ orientation == Rvalue.JUMP_IF_FALSE
                     );
                     this.fakeCompile(bo.rhs);
                 }
@@ -2597,7 +2666,7 @@ public class UnitCompiler {
                     this.compileBoolean(
                         bo.lhs,
                         dst,
-                        Java.Rvalue.JUMP_IF_TRUE ^ orientation == Java.Rvalue.JUMP_IF_FALSE
+                        Rvalue.JUMP_IF_TRUE ^ orientation == Rvalue.JUMP_IF_FALSE
                     );
                 } else {
                     // "a && false", "a || true"
@@ -2605,18 +2674,18 @@ public class UnitCompiler {
                     this.compileBoolean(
                         bo.rhs,
                         dst,
-                        Java.Rvalue.JUMP_IF_TRUE ^ orientation == Java.Rvalue.JUMP_IF_FALSE
+                        Rvalue.JUMP_IF_TRUE ^ orientation == Rvalue.JUMP_IF_FALSE
                     );
                 }
                 return;
             }
-            if (bo.op == "||" ^ orientation == Java.Rvalue.JUMP_IF_FALSE) {
-                this.compileBoolean(bo.lhs, dst, Java.Rvalue.JUMP_IF_TRUE ^ orientation == Java.Rvalue.JUMP_IF_FALSE);
-                this.compileBoolean(bo.rhs, dst, Java.Rvalue.JUMP_IF_TRUE ^ orientation == Java.Rvalue.JUMP_IF_FALSE);
+            if (bo.op == "||" ^ orientation == Rvalue.JUMP_IF_FALSE) {
+                this.compileBoolean(bo.lhs, dst, Rvalue.JUMP_IF_TRUE ^ orientation == Rvalue.JUMP_IF_FALSE);
+                this.compileBoolean(bo.rhs, dst, Rvalue.JUMP_IF_TRUE ^ orientation == Rvalue.JUMP_IF_FALSE);
             } else {
                 CodeContext.Offset end = this.codeContext.new Offset();
-                this.compileBoolean(bo.lhs, end, Java.Rvalue.JUMP_IF_FALSE ^ orientation == Java.Rvalue.JUMP_IF_FALSE);
-                this.compileBoolean(bo.rhs, dst, Java.Rvalue.JUMP_IF_TRUE ^ orientation == Java.Rvalue.JUMP_IF_FALSE);
+                this.compileBoolean(bo.lhs, end, Rvalue.JUMP_IF_FALSE ^ orientation == Rvalue.JUMP_IF_FALSE);
+                this.compileBoolean(bo.rhs, dst, Rvalue.JUMP_IF_TRUE ^ orientation == Rvalue.JUMP_IF_FALSE);
                 end.set();
             }
             return;
@@ -2638,12 +2707,12 @@ public class UnitCompiler {
                 bo.op == ">"  ? 4 :
                 bo.op == "<=" ? 5 : Integer.MIN_VALUE
             );
-            if (orientation == Java.Rvalue.JUMP_IF_FALSE) opIdx ^= 1;
+            if (orientation == Rvalue.JUMP_IF_FALSE) opIdx ^= 1;
 
             // Comparison with "null".
             {
-                boolean lhsIsNull = this.getConstantValue(bo.lhs) == Java.Rvalue.CONSTANT_VALUE_NULL;
-                boolean rhsIsNull = this.getConstantValue(bo.rhs) == Java.Rvalue.CONSTANT_VALUE_NULL;
+                boolean lhsIsNull = this.getConstantValue(bo.lhs) == null;
+                boolean rhsIsNull = this.getConstantValue(bo.rhs) == null;
 
                 if (lhsIsNull || rhsIsNull) {
                     if (bo.op != "==" && bo.op != "!=") {
@@ -2746,6 +2815,10 @@ public class UnitCompiler {
                 if (bo.op != "==" && bo.op != "!=") {
                     this.compileError("Operator \"" + bo.op + "\" not allowed on reference operands", bo.getLocation());
                 }
+                if (
+                    !isCastReferenceConvertible(lhsType, rhsType) ||
+                    !isCastReferenceConvertible(rhsType, lhsType)
+                ) this.compileError("Incomparable types '" + lhsType + "' and '" + rhsType + "'", bo.getLocation());
                 this.writeBranch(bo, Opcode.IF_ACMPEQ + opIdx, dst);
                 return;
             }
@@ -2756,7 +2829,7 @@ public class UnitCompiler {
         this.compileError("Boolean expression expected", bo.getLocation());
     }
     private void compileBoolean2(
-        Java.ParenthesizedExpression pe,
+        ParenthesizedExpression pe,
         CodeContext.Offset dst,
         boolean orientation
     ) throws CompileException {
@@ -2765,45 +2838,50 @@ public class UnitCompiler {
 
     /**
      * Generates code that determines the context of the {@link
-     * Java.Rvalue} and puts it on the operand stack. Most expressions
+     * Rvalue} and puts it on the operand stack. Most expressions
      * do not have a "context", but some do. E.g. for "x[y]", the context
      * is "x, y". The bottom line is that for statements like "x[y] += 3"
      * the context is only evaluated once.
      *
      * @return The size of the context on the operand stack
      */
-    private int compileContext(Java.Rvalue rv) throws CompileException {
+    private int compileContext(Rvalue rv) throws CompileException {
         final int[] res = new int[1];
         class UCE extends RuntimeException { final CompileException ce; UCE(CompileException ce) { this.ce = ce; } }
-        Visitor.RvalueVisitor rvv = new Visitor.RvalueVisitor() {
+        RvalueVisitor rvv = new RvalueVisitor() {
             // CHECKSTYLE(LineLengthCheck):OFF
-            public void visitArrayLength(Java.ArrayLength al)                                { try { res[0] = UnitCompiler.this.compileContext2(al); } catch (CompileException e) { throw new UCE(e); } }
-            public void visitAssignment(Java.Assignment a)                                   { res[0] = UnitCompiler.this.compileContext2(a); }
-            public void visitUnaryOperation(Java.UnaryOperation uo)                          { res[0] = UnitCompiler.this.compileContext2(uo); }
-            public void visitBinaryOperation(Java.BinaryOperation bo)                        { res[0] = UnitCompiler.this.compileContext2(bo); }
-            public void visitCast(Java.Cast c)                                               { res[0] = UnitCompiler.this.compileContext2(c); }
-            public void visitClassLiteral(Java.ClassLiteral cl)                              { res[0] = UnitCompiler.this.compileContext2(cl); }
-            public void visitConditionalExpression(Java.ConditionalExpression ce)            { res[0] = UnitCompiler.this.compileContext2(ce); }
-            public void visitCrement(Java.Crement c)                                         { res[0] = UnitCompiler.this.compileContext2(c); }
-            public void visitInstanceof(Java.Instanceof io)                                  { res[0] = UnitCompiler.this.compileContext2(io); }
-            public void visitMethodInvocation(Java.MethodInvocation mi)                      { res[0] = UnitCompiler.this.compileContext2(mi); }
-            public void visitSuperclassMethodInvocation(Java.SuperclassMethodInvocation smi) { res[0] = UnitCompiler.this.compileContext2(smi); }
-            public void visitLiteral(Java.Literal l)                                         { res[0] = UnitCompiler.this.compileContext2(l); }
-            public void visitNewAnonymousClassInstance(Java.NewAnonymousClassInstance naci)  { res[0] = UnitCompiler.this.compileContext2(naci); }
-            public void visitNewArray(Java.NewArray na)                                      { res[0] = UnitCompiler.this.compileContext2(na); }
-            public void visitNewInitializedArray(Java.NewInitializedArray nia)               { res[0] = UnitCompiler.this.compileContext2(nia); }
-            public void visitNewClassInstance(Java.NewClassInstance nci)                     { res[0] = UnitCompiler.this.compileContext2(nci); }
-            public void visitParameterAccess(Java.ParameterAccess pa)                        { res[0] = UnitCompiler.this.compileContext2(pa); }
-            public void visitQualifiedThisReference(Java.QualifiedThisReference qtr)         { res[0] = UnitCompiler.this.compileContext2(qtr); }
-            public void visitThisReference(Java.ThisReference tr)                            { res[0] = UnitCompiler.this.compileContext2(tr); }
+            public void visitArrayLength(ArrayLength al)                                { try { res[0] = UnitCompiler.this.compileContext2(al); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitAssignment(Assignment a)                                   { res[0] = UnitCompiler.this.compileContext2(a); }
+            public void visitUnaryOperation(UnaryOperation uo)                          { res[0] = UnitCompiler.this.compileContext2(uo); }
+            public void visitBinaryOperation(BinaryOperation bo)                        { res[0] = UnitCompiler.this.compileContext2(bo); }
+            public void visitCast(Cast c)                                               { res[0] = UnitCompiler.this.compileContext2(c); }
+            public void visitClassLiteral(ClassLiteral cl)                              { res[0] = UnitCompiler.this.compileContext2(cl); }
+            public void visitConditionalExpression(ConditionalExpression ce)            { res[0] = UnitCompiler.this.compileContext2(ce); }
+            public void visitCrement(Crement c)                                         { res[0] = UnitCompiler.this.compileContext2(c); }
+            public void visitInstanceof(Instanceof io)                                  { res[0] = UnitCompiler.this.compileContext2(io); }
+            public void visitMethodInvocation(MethodInvocation mi)                      { res[0] = UnitCompiler.this.compileContext2(mi); }
+            public void visitSuperclassMethodInvocation(SuperclassMethodInvocation smi) { res[0] = UnitCompiler.this.compileContext2(smi); }
+            public void visitIntegerLiteral(IntegerLiteral il)                          { res[0] = UnitCompiler.this.compileContext2(il); }
+            public void visitFloatingPointLiteral(FloatingPointLiteral fpl)             { res[0] = UnitCompiler.this.compileContext2(fpl); }
+            public void visitBooleanLiteral(BooleanLiteral bl)                          { res[0] = UnitCompiler.this.compileContext2(bl); }
+            public void visitCharacterLiteral(CharacterLiteral cl)                      { res[0] = UnitCompiler.this.compileContext2(cl); }
+            public void visitStringLiteral(StringLiteral sl)                            { res[0] = UnitCompiler.this.compileContext2(sl); }
+            public void visitNullLiteral(NullLiteral nl)                                { res[0] = UnitCompiler.this.compileContext2(nl); }
+            public void visitNewAnonymousClassInstance(NewAnonymousClassInstance naci)  { res[0] = UnitCompiler.this.compileContext2(naci); }
+            public void visitNewArray(NewArray na)                                      { res[0] = UnitCompiler.this.compileContext2(na); }
+            public void visitNewInitializedArray(NewInitializedArray nia)               { res[0] = UnitCompiler.this.compileContext2(nia); }
+            public void visitNewClassInstance(NewClassInstance nci)                     { res[0] = UnitCompiler.this.compileContext2(nci); }
+            public void visitParameterAccess(ParameterAccess pa)                        { res[0] = UnitCompiler.this.compileContext2(pa); }
+            public void visitQualifiedThisReference(QualifiedThisReference qtr)         { res[0] = UnitCompiler.this.compileContext2(qtr); }
+            public void visitThisReference(ThisReference tr)                            { res[0] = UnitCompiler.this.compileContext2(tr); }
 
-            public void visitAmbiguousName(Java.AmbiguousName an)                                        { try { res[0] = UnitCompiler.this.compileContext2(an); } catch (CompileException e) { throw new UCE(e); } }
-            public void visitArrayAccessExpression(Java.ArrayAccessExpression aae)                       { try { res[0] = UnitCompiler.this.compileContext2(aae); } catch (CompileException e) { throw new UCE(e); } };
-            public void visitFieldAccess(Java.FieldAccess fa)                                            { try { res[0] = UnitCompiler.this.compileContext2(fa); } catch (CompileException e) { throw new UCE(e); } }
-            public void visitFieldAccessExpression(Java.FieldAccessExpression fae)                       { try { res[0] = UnitCompiler.this.compileContext2(fae); } catch (CompileException e) { throw new UCE(e); } }
-            public void visitSuperclassFieldAccessExpression(Java.SuperclassFieldAccessExpression scfae) { try { res[0] = UnitCompiler.this.compileContext2(scfae); } catch (CompileException e) { throw new UCE(e); } }
-            public void visitLocalVariableAccess(Java.LocalVariableAccess lva)                           { res[0] = UnitCompiler.this.compileContext2(lva); }
-            public void visitParenthesizedExpression(Java.ParenthesizedExpression pe)                    { try { res[0] = UnitCompiler.this.compileContext2(pe); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitAmbiguousName(AmbiguousName an)                                        { try { res[0] = UnitCompiler.this.compileContext2(an); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitArrayAccessExpression(ArrayAccessExpression aae)                       { try { res[0] = UnitCompiler.this.compileContext2(aae); } catch (CompileException e) { throw new UCE(e); } };
+            public void visitFieldAccess(FieldAccess fa)                                            { try { res[0] = UnitCompiler.this.compileContext2(fa); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitFieldAccessExpression(FieldAccessExpression fae)                       { try { res[0] = UnitCompiler.this.compileContext2(fae); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae) { try { res[0] = UnitCompiler.this.compileContext2(scfae); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitLocalVariableAccess(LocalVariableAccess lva)                           { res[0] = UnitCompiler.this.compileContext2(lva); }
+            public void visitParenthesizedExpression(ParenthesizedExpression pe)                    { try { res[0] = UnitCompiler.this.compileContext2(pe); } catch (CompileException e) { throw new UCE(e); } }
             // CHECKSTYLE(LineLengthCheck):ON
         };
         try {
@@ -2813,13 +2891,13 @@ public class UnitCompiler {
             throw uce.ce;
         }
     }
-    private int compileContext2(Java.Rvalue rv) {
+    private int compileContext2(Rvalue rv) {
         return 0;
     }
-    private int compileContext2(Java.AmbiguousName an) throws CompileException {
+    private int compileContext2(AmbiguousName an) throws CompileException {
         return this.compileContext(this.toRvalueOrCE(this.reclassify(an)));
     }
-    private int compileContext2(Java.FieldAccess fa) throws CompileException {
+    private int compileContext2(FieldAccess fa) throws CompileException {
         if (fa.field.isStatic()) {
             Rvalue rv = fa.lhs.toRvalue();
             if (rv != null) {
@@ -2837,13 +2915,13 @@ public class UnitCompiler {
             return 1;
         }
     }
-    private int compileContext2(Java.ArrayLength al) throws CompileException {
+    private int compileContext2(ArrayLength al) throws CompileException {
         if (!this.compileGetValue(al.lhs).isArray()) {
             this.compileError("Cannot determine length of non-array type", al.getLocation());
         }
         return 1;
     }
-    private int compileContext2(Java.ArrayAccessExpression aae) throws CompileException {
+    private int compileContext2(ArrayAccessExpression aae) throws CompileException {
         IClass lhsType = this.compileGetValue(aae.lhs);
         if (!lhsType.isArray()) {
             this.compileError(
@@ -2867,58 +2945,63 @@ public class UnitCompiler {
 
         return 2;
     }
-    private int compileContext2(Java.FieldAccessExpression fae) throws CompileException {
+    private int compileContext2(FieldAccessExpression fae) throws CompileException {
         this.determineValue(fae);
         return this.compileContext(fae.value);
     }
-    private int compileContext2(Java.SuperclassFieldAccessExpression scfae) throws CompileException {
+    private int compileContext2(SuperclassFieldAccessExpression scfae) throws CompileException {
         this.determineValue(scfae);
         return this.compileContext(scfae.value);
     }
-    private int compileContext2(Java.ParenthesizedExpression pe) throws CompileException {
+    private int compileContext2(ParenthesizedExpression pe) throws CompileException {
         return this.compileContext(pe.value);
     }
 
     /**
-     * Generates code that determines the value of the {@link Java.Rvalue}
+     * Generates code that determines the value of the {@link Rvalue}
      * and puts it on the operand stack. This method relies on that the
-     * "context" of the {@link Java.Rvalue} is on top of the operand stack
-     * (see {@link #compileContext(Java.Rvalue)}).
+     * "context" of the {@link Rvalue} is on top of the operand stack
+     * (see {@link #compileContext(Rvalue)}).
      *
-     * @return The type of the {@link Java.Rvalue}
+     * @return The type of the {@link Rvalue}
      */
-    private IClass compileGet(Java.Rvalue rv) throws CompileException {
+    private IClass compileGet(Rvalue rv) throws CompileException {
         final IClass[] res = new IClass[1];
         class UCE extends RuntimeException { final CompileException ce; UCE(CompileException ce) { this.ce = ce; } }
-        Visitor.RvalueVisitor rvv = new Visitor.RvalueVisitor() {
+        RvalueVisitor rvv = new RvalueVisitor() {
             // CHECKSTYLE(LineLengthCheck):OFF
-            public void visitArrayLength(Java.ArrayLength al)                                { res[0] = UnitCompiler.this.compileGet2(al); }
-            public void visitAssignment(Java.Assignment a)                                   { try { res[0] = UnitCompiler.this.compileGet2(a);    } catch (CompileException e) { throw new UCE(e); } }
-            public void visitUnaryOperation(Java.UnaryOperation uo)                          { try { res[0] = UnitCompiler.this.compileGet2(uo);   } catch (CompileException e) { throw new UCE(e); } }
-            public void visitBinaryOperation(Java.BinaryOperation bo)                        { try { res[0] = UnitCompiler.this.compileGet2(bo);   } catch (CompileException e) { throw new UCE(e); } }
-            public void visitCast(Java.Cast c)                                               { try { res[0] = UnitCompiler.this.compileGet2(c);    } catch (CompileException e) { throw new UCE(e); } }
-            public void visitClassLiteral(Java.ClassLiteral cl)                              { try { res[0] = UnitCompiler.this.compileGet2(cl);   } catch (CompileException e) { throw new UCE(e); } }
-            public void visitConditionalExpression(Java.ConditionalExpression ce)            { try { res[0] = UnitCompiler.this.compileGet2(ce);   } catch (CompileException e) { throw new UCE(e); } }
-            public void visitCrement(Java.Crement c)                                         { try { res[0] = UnitCompiler.this.compileGet2(c);    } catch (CompileException e) { throw new UCE(e); } }
-            public void visitInstanceof(Java.Instanceof io)                                  { try { res[0] = UnitCompiler.this.compileGet2(io);   } catch (CompileException e) { throw new UCE(e); } }
-            public void visitMethodInvocation(Java.MethodInvocation mi)                      { try { res[0] = UnitCompiler.this.compileGet2(mi);   } catch (CompileException e) { throw new UCE(e); } }
-            public void visitSuperclassMethodInvocation(Java.SuperclassMethodInvocation smi) { try { res[0] = UnitCompiler.this.compileGet2(smi);  } catch (CompileException e) { throw new UCE(e); } }
-            public void visitLiteral(Java.Literal l)                                         { try { res[0] = UnitCompiler.this.compileGet2(l);    } catch (CompileException e) { throw new UCE(e); } }
-            public void visitNewAnonymousClassInstance(Java.NewAnonymousClassInstance naci)  { try { res[0] = UnitCompiler.this.compileGet2(naci); } catch (CompileException e) { throw new UCE(e); } }
-            public void visitNewArray(Java.NewArray na)                                      { try { res[0] = UnitCompiler.this.compileGet2(na);   } catch (CompileException e) { throw new UCE(e); } }
-            public void visitNewInitializedArray(Java.NewInitializedArray nia)               { try { res[0] = UnitCompiler.this.compileGet2(nia);  } catch (CompileException e) { throw new UCE(e); } }
-            public void visitNewClassInstance(Java.NewClassInstance nci)                     { try { res[0] = UnitCompiler.this.compileGet2(nci);  } catch (CompileException e) { throw new UCE(e); } }
-            public void visitParameterAccess(Java.ParameterAccess pa)                        { try { res[0] = UnitCompiler.this.compileGet2(pa);   } catch (CompileException e) { throw new UCE(e); } }
-            public void visitQualifiedThisReference(Java.QualifiedThisReference qtr)         { try { res[0] = UnitCompiler.this.compileGet2(qtr);  } catch (CompileException e) { throw new UCE(e); } }
-            public void visitThisReference(Java.ThisReference tr)                            { try { res[0] = UnitCompiler.this.compileGet2(tr);   } catch (CompileException e) { throw new UCE(e); } }
+            public void visitArrayLength(ArrayLength al)                                { res[0] = UnitCompiler.this.compileGet2(al); }
+            public void visitAssignment(Assignment a)                                   { try { res[0] = UnitCompiler.this.compileGet2(a);    } catch (CompileException e) { throw new UCE(e); } }
+            public void visitUnaryOperation(UnaryOperation uo)                          { try { res[0] = UnitCompiler.this.compileGet2(uo);   } catch (CompileException e) { throw new UCE(e); } }
+            public void visitBinaryOperation(BinaryOperation bo)                        { try { res[0] = UnitCompiler.this.compileGet2(bo);   } catch (CompileException e) { throw new UCE(e); } }
+            public void visitCast(Cast c)                                               { try { res[0] = UnitCompiler.this.compileGet2(c);    } catch (CompileException e) { throw new UCE(e); } }
+            public void visitClassLiteral(ClassLiteral cl)                              { try { res[0] = UnitCompiler.this.compileGet2(cl);   } catch (CompileException e) { throw new UCE(e); } }
+            public void visitConditionalExpression(ConditionalExpression ce)            { try { res[0] = UnitCompiler.this.compileGet2(ce);   } catch (CompileException e) { throw new UCE(e); } }
+            public void visitCrement(Crement c)                                         { try { res[0] = UnitCompiler.this.compileGet2(c);    } catch (CompileException e) { throw new UCE(e); } }
+            public void visitInstanceof(Instanceof io)                                  { try { res[0] = UnitCompiler.this.compileGet2(io);   } catch (CompileException e) { throw new UCE(e); } }
+            public void visitMethodInvocation(MethodInvocation mi)                      { try { res[0] = UnitCompiler.this.compileGet2(mi);   } catch (CompileException e) { throw new UCE(e); } }
+            public void visitSuperclassMethodInvocation(SuperclassMethodInvocation smi) { try { res[0] = UnitCompiler.this.compileGet2(smi);  } catch (CompileException e) { throw new UCE(e); } }
+            public void visitIntegerLiteral(IntegerLiteral il)                          { try { res[0] = UnitCompiler.this.compileGet2(il);   } catch (CompileException e) { throw new UCE(e); } }
+            public void visitFloatingPointLiteral(FloatingPointLiteral fpl)             { try { res[0] = UnitCompiler.this.compileGet2(fpl);  } catch (CompileException e) { throw new UCE(e); } }
+            public void visitBooleanLiteral(BooleanLiteral bl)                          { try { res[0] = UnitCompiler.this.compileGet2(bl);   } catch (CompileException e) { throw new UCE(e); } }
+            public void visitCharacterLiteral(CharacterLiteral cl)                      { try { res[0] = UnitCompiler.this.compileGet2(cl);   } catch (CompileException e) { throw new UCE(e); } }
+            public void visitStringLiteral(StringLiteral sl)                            { try { res[0] = UnitCompiler.this.compileGet2(sl);   } catch (CompileException e) { throw new UCE(e); } }
+            public void visitNullLiteral(NullLiteral nl)                                { try { res[0] = UnitCompiler.this.compileGet2(nl);   } catch (CompileException e) { throw new UCE(e); } }
+            public void visitNewAnonymousClassInstance(NewAnonymousClassInstance naci)  { try { res[0] = UnitCompiler.this.compileGet2(naci); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitNewArray(NewArray na)                                      { try { res[0] = UnitCompiler.this.compileGet2(na);   } catch (CompileException e) { throw new UCE(e); } }
+            public void visitNewInitializedArray(NewInitializedArray nia)               { try { res[0] = UnitCompiler.this.compileGet2(nia);  } catch (CompileException e) { throw new UCE(e); } }
+            public void visitNewClassInstance(NewClassInstance nci)                     { try { res[0] = UnitCompiler.this.compileGet2(nci);  } catch (CompileException e) { throw new UCE(e); } }
+            public void visitParameterAccess(ParameterAccess pa)                        { try { res[0] = UnitCompiler.this.compileGet2(pa);   } catch (CompileException e) { throw new UCE(e); } }
+            public void visitQualifiedThisReference(QualifiedThisReference qtr)         { try { res[0] = UnitCompiler.this.compileGet2(qtr);  } catch (CompileException e) { throw new UCE(e); } }
+            public void visitThisReference(ThisReference tr)                            { try { res[0] = UnitCompiler.this.compileGet2(tr);   } catch (CompileException e) { throw new UCE(e); } }
 
-            public void visitAmbiguousName(Java.AmbiguousName an)                                        { try { res[0] = UnitCompiler.this.compileGet2(an);    } catch (CompileException e) { throw new UCE(e); } }
-            public void visitArrayAccessExpression(Java.ArrayAccessExpression aae)                       { try { res[0] = UnitCompiler.this.compileGet2(aae);   } catch (CompileException e) { throw new UCE(e); } };
-            public void visitFieldAccess(Java.FieldAccess fa)                                            { try { res[0] = UnitCompiler.this.compileGet2(fa);    } catch (CompileException e) { throw new UCE(e); } }
-            public void visitFieldAccessExpression(Java.FieldAccessExpression fae)                       { try { res[0] = UnitCompiler.this.compileGet2(fae);   } catch (CompileException e) { throw new UCE(e); } }
-            public void visitSuperclassFieldAccessExpression(Java.SuperclassFieldAccessExpression scfae) { try { res[0] = UnitCompiler.this.compileGet2(scfae); } catch (CompileException e) { throw new UCE(e); } }
-            public void visitLocalVariableAccess(Java.LocalVariableAccess lva)                           { res[0] = UnitCompiler.this.compileGet2(lva); }
-            public void visitParenthesizedExpression(Java.ParenthesizedExpression pe)                    { try { res[0] = UnitCompiler.this.compileGet2(pe);    } catch (CompileException e) { throw new UCE(e); } }
+            public void visitAmbiguousName(AmbiguousName an)                                        { try { res[0] = UnitCompiler.this.compileGet2(an);    } catch (CompileException e) { throw new UCE(e); } }
+            public void visitArrayAccessExpression(ArrayAccessExpression aae)                       { try { res[0] = UnitCompiler.this.compileGet2(aae);   } catch (CompileException e) { throw new UCE(e); } };
+            public void visitFieldAccess(FieldAccess fa)                                            { try { res[0] = UnitCompiler.this.compileGet2(fa);    } catch (CompileException e) { throw new UCE(e); } }
+            public void visitFieldAccessExpression(FieldAccessExpression fae)                       { try { res[0] = UnitCompiler.this.compileGet2(fae);   } catch (CompileException e) { throw new UCE(e); } }
+            public void visitSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae) { try { res[0] = UnitCompiler.this.compileGet2(scfae); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitLocalVariableAccess(LocalVariableAccess lva)                           { res[0] = UnitCompiler.this.compileGet2(lva); }
+            public void visitParenthesizedExpression(ParenthesizedExpression pe)                    { try { res[0] = UnitCompiler.this.compileGet2(pe);    } catch (CompileException e) { throw new UCE(e); } }
             // CHECKSTYLE(LineLengthCheck):ON
         };
         try {
@@ -2928,9 +3011,9 @@ public class UnitCompiler {
             throw uce.ce;
         }
     }
-    private IClass compileGet2(Java.BooleanRvalue brv) throws CompileException {
+    private IClass compileGet2(BooleanRvalue brv) throws CompileException {
         CodeContext.Offset isTrue = this.codeContext.new Offset();
-        this.compileBoolean(brv, isTrue, Java.Rvalue.JUMP_IF_TRUE);
+        this.compileBoolean(brv, isTrue, Rvalue.JUMP_IF_TRUE);
         this.writeOpcode(brv, Opcode.ICONST_0);
         CodeContext.Offset end = this.codeContext.new Offset();
         this.writeBranch(brv, Opcode.GOTO, end);
@@ -2940,13 +3023,13 @@ public class UnitCompiler {
 
         return IClass.BOOLEAN;
     }
-    private IClass compileGet2(Java.AmbiguousName an) throws CompileException {
+    private IClass compileGet2(AmbiguousName an) throws CompileException {
         return this.compileGet(this.toRvalueOrCE(this.reclassify(an)));
     }
-    private IClass compileGet2(Java.LocalVariableAccess lva) {
+    private IClass compileGet2(LocalVariableAccess lva) {
         return this.load((Locatable) lva, lva.localVariable);
     }
-    private IClass compileGet2(Java.FieldAccess fa) throws CompileException {
+    private IClass compileGet2(FieldAccess fa) throws CompileException {
         this.checkAccessible(fa.field, fa.getEnclosingBlockStatement());
         if (fa.field.isStatic()) {
             this.writeOpcode(fa, Opcode.GETSTATIC);
@@ -2960,15 +3043,15 @@ public class UnitCompiler {
         );
         return fa.field.getType();
     }
-    private IClass compileGet2(Java.ArrayLength al) {
+    private IClass compileGet2(ArrayLength al) {
         this.writeOpcode(al, Opcode.ARRAYLENGTH);
         return IClass.INT;
     }
-    private IClass compileGet2(Java.ThisReference tr) throws CompileException {
+    private IClass compileGet2(ThisReference tr) throws CompileException {
         this.referenceThis((Locatable) tr);
         return this.getIClass(tr);
     }
-    private IClass compileGet2(Java.QualifiedThisReference qtr) throws CompileException {
+    private IClass compileGet2(QualifiedThisReference qtr) throws CompileException {
         this.referenceThis(
             (Locatable) qtr,                           // l
             this.getDeclaringClass(qtr),               // declaringClass
@@ -2977,7 +3060,7 @@ public class UnitCompiler {
         );
         return this.getTargetIClass(qtr);
     }
-    private IClass compileGet2(Java.ClassLiteral cl) throws CompileException {
+    private IClass compileGet2(ClassLiteral cl) throws CompileException {
         Location loc = cl.getLocation();
         final IClassLoader icl = this.iClassLoader;
         IClass iClass = this.getType(cl.type);
@@ -3012,10 +3095,10 @@ public class UnitCompiler {
 
         // Non-primitive class literal.
 
-        Java.TypeDeclaration declaringType;
-        for (Java.Scope s = cl.getEnclosingBlockStatement();; s = s.getEnclosingScope()) {
-            if (s instanceof Java.TypeDeclaration) {
-                declaringType = (Java.AbstractTypeDeclaration) s;
+        TypeDeclaration declaringType;
+        for (Scope s = cl.getEnclosingBlockStatement();; s = s.getEnclosingScope()) {
+            if (s instanceof TypeDeclaration) {
+                declaringType = (AbstractTypeDeclaration) s;
                 break;
             }
         }
@@ -3027,11 +3110,11 @@ public class UnitCompiler {
         // Determine the statics of the declaring class (this is where static fields
         // declarations are found).
         List statics; // TypeBodyDeclaration
-        if (declaringType instanceof Java.ClassDeclaration) {
-            statics = ((Java.ClassDeclaration) declaringType).variableDeclaratorsAndInitializers;
+        if (declaringType instanceof ClassDeclaration) {
+            statics = ((ClassDeclaration) declaringType).variableDeclaratorsAndInitializers;
         } else
-        if (declaringType instanceof Java.InterfaceDeclaration) {
-            statics = ((Java.InterfaceDeclaration) declaringType).constantDeclarations;
+        if (declaringType instanceof InterfaceDeclaration) {
+            statics = ((InterfaceDeclaration) declaringType).constantDeclarations;
         } else {
             throw new JaninoRuntimeException(
                 "SNO: AbstractTypeDeclaration is neither ClassDeclaration nor InterfaceDeclaration"
@@ -3065,10 +3148,10 @@ public class UnitCompiler {
         {
             boolean hasClassDollarField = false;
             BLOCK_STATEMENTS: for (Iterator it = statics.iterator(); it.hasNext();) {
-                Java.TypeBodyDeclaration tbd = (Java.TypeBodyDeclaration) it.next();
+                TypeBodyDeclaration tbd = (TypeBodyDeclaration) it.next();
                 if (!tbd.isStatic()) continue;
-                if (tbd instanceof Java.FieldDeclaration) {
-                    Java.FieldDeclaration fd = (Java.FieldDeclaration) tbd;
+                if (tbd instanceof FieldDeclaration) {
+                    FieldDeclaration fd = (FieldDeclaration) tbd;
                     IClass.IField[] fds = this.getIFields(fd);
                     for (int j = 0; j < fds.length; ++j) {
                         if (fds[j].getName().equals(classDollarFieldName)) {
@@ -3079,26 +3162,26 @@ public class UnitCompiler {
                 }
             }
             if (!hasClassDollarField) {
-                Java.Type classType = new Java.SimpleType(loc, icl.CLASS);
-                Java.FieldDeclaration fd = new Java.FieldDeclaration(
+                Type classType = new SimpleType(loc, icl.CLASS);
+                FieldDeclaration fd = new FieldDeclaration(
                     loc,                            // location
                     null,                           // optionalDocComment
                     Mod.STATIC,                     // modifiers
                     classType,                      // type
-                    new Java.VariableDeclarator[] { // variableDeclarators
-                        new Java.VariableDeclarator(
+                    new VariableDeclarator[] { // variableDeclarators
+                        new VariableDeclarator(
                             loc,                  // location
                             classDollarFieldName, // name
                             0,                    // brackets
-                            (Java.Rvalue) null    // optionalInitializer
+                            (Rvalue) null    // optionalInitializer
                         )
                     }
                 );
-                if (declaringType instanceof Java.ClassDeclaration) {
-                    ((Java.ClassDeclaration) declaringType).addVariableDeclaratorOrInitializer(fd);
+                if (declaringType instanceof ClassDeclaration) {
+                    ((ClassDeclaration) declaringType).addVariableDeclaratorOrInitializer(fd);
                 } else
-                if (declaringType instanceof Java.InterfaceDeclaration) {
-                    ((Java.InterfaceDeclaration) declaringType).addConstantDeclaration(fd);
+                if (declaringType instanceof InterfaceDeclaration) {
+                    ((InterfaceDeclaration) declaringType).addConstantDeclaration(fd);
                 } else {
                     throw new JaninoRuntimeException(
                         "SNO: AbstractTypeDeclaration is neither ClassDeclaration nor InterfaceDeclaration"
@@ -3108,33 +3191,33 @@ public class UnitCompiler {
         }
 
         // return (class$X != null) ? class$X : (class$X = class$("X"));
-        Java.Type declaringClassOrInterfaceType = new Java.SimpleType(loc, this.resolve(declaringType));
-        Java.Lvalue classDollarFieldAccess = new Java.FieldAccessExpression(
+        Type declaringClassOrInterfaceType = new SimpleType(loc, this.resolve(declaringType));
+        Lvalue classDollarFieldAccess = new FieldAccessExpression(
             loc,                           // location
             declaringClassOrInterfaceType, // lhs
             classDollarFieldName           // fieldName
         );
-        Java.ConditionalExpression ce = new Java.ConditionalExpression(
-            loc,                            // location
-            new Java.BinaryOperation(       // lhs
-                loc,                        // location
-                classDollarFieldAccess,     // lhs
-                "!=",                       // op
-                new Java.Literal(loc, null) // rhs
+        ConditionalExpression ce = new ConditionalExpression(
+            loc,                           // location
+            new BinaryOperation(      // lhs
+                loc,                              // location
+                classDollarFieldAccess,           // lhs
+                "!=",                             // op
+                new NullLiteral(loc, "null") // rhs
             ),
             classDollarFieldAccess,        // mhs
-            new Java.Assignment(           // rhs
-                loc,                       // location
-                classDollarFieldAccess,    // lhs
-                "=",                       // operator
-                new Java.MethodInvocation( // rhs
+            new Assignment(           // rhs
+                loc,                         // location
+                classDollarFieldAccess,      // lhs
+                "=",                         // operator
+                new MethodInvocation(   // rhs
                     loc,                           // location
                     declaringClassOrInterfaceType, // optionalTarget
                     "class$",                      // methodName
-                    new Java.Rvalue[] {            // arguments
-                        new Java.Literal(
-                            loc,      // location
-                            className // constantValue
+                    new Rvalue[] {            // arguments
+                        new StringLiteral(
+                            loc,                  // location
+                            '"' + className + '"' // constantValue
                         )
                     }
                 )
@@ -3143,7 +3226,7 @@ public class UnitCompiler {
         ce.setEnclosingBlockStatement(cl.getEnclosingBlockStatement());
         return this.compileGet(ce);
     }
-    private IClass compileGet2(Java.Assignment a) throws CompileException {
+    private IClass compileGet2(Assignment a) throws CompileException {
         if (a.operator == "=") {
             int lhsCS = this.compileContext(a.lhs);
             IClass rhsType = this.compileGetValue(a.rhs);
@@ -3194,35 +3277,36 @@ public class UnitCompiler {
         this.compileSet(a.lhs);
         return lhsType;
     }
-    private IClass compileGet2(Java.ConditionalExpression ce) throws CompileException {
+    private IClass compileGet2(ConditionalExpression ce) throws CompileException {
         IClass mhsType, rhsType;
         CodeContext.Inserter mhsConvertInserter, rhsConvertInserter;
         CodeContext.Offset toEnd = this.codeContext.new Offset();
-        Object cv = this.getConstantValue(ce.lhs);
-        if (cv instanceof Boolean) {
-            if (((Boolean) cv).booleanValue()) {
+        {
+            Object cv = this.getConstantValue(ce.lhs);
+            if (cv instanceof Boolean) {
+                if (((Boolean) cv).booleanValue()) {
+                    mhsType = this.compileGetValue(ce.mhs);
+                    mhsConvertInserter = this.codeContext.newInserter();
+                    rhsType = this.getType(ce.rhs);
+                    rhsConvertInserter = null;
+                } else {
+                    mhsType = this.getType(ce.mhs);
+                    mhsConvertInserter = null;
+                    rhsType = this.compileGetValue(ce.rhs);
+                    rhsConvertInserter = this.codeContext.currentInserter();
+                }
+            } else {
+                CodeContext.Offset toRhs = this.codeContext.new Offset();
+
+                this.compileBoolean(ce.lhs, toRhs, Rvalue.JUMP_IF_FALSE);
                 mhsType = this.compileGetValue(ce.mhs);
                 mhsConvertInserter = this.codeContext.newInserter();
-                rhsType = this.getType(ce.rhs);
-                rhsConvertInserter = null;
-            } else {
-                mhsType = this.getType(ce.mhs);
-                mhsConvertInserter = null;
+                this.writeBranch(ce, Opcode.GOTO, toEnd);
+                toRhs.set();
                 rhsType = this.compileGetValue(ce.rhs);
                 rhsConvertInserter = this.codeContext.currentInserter();
             }
-        } else {
-            CodeContext.Offset toRhs = this.codeContext.new Offset();
-
-            this.compileBoolean(ce.lhs, toRhs, Java.Rvalue.JUMP_IF_FALSE);
-            mhsType = this.compileGetValue(ce.mhs);
-            mhsConvertInserter = this.codeContext.newInserter();
-            this.writeBranch(ce, Opcode.GOTO, toEnd);
-            toRhs.set();
-            rhsType = this.compileGetValue(ce.rhs);
-            rhsConvertInserter = this.codeContext.currentInserter();
         }
-
         IClass expressionType;
         if (mhsType == rhsType) {
 
@@ -3246,12 +3330,12 @@ public class UnitCompiler {
                 rhsConvertInserter  // convertInserter2
             );
         } else
-        if (this.getConstantValue(ce.mhs) == Java.Rvalue.CONSTANT_VALUE_NULL && !rhsType.isPrimitive()) {
+        if (this.getConstantValue(ce.mhs) == null && !rhsType.isPrimitive()) {
 
             // JLS 15.25.1.3 (null : reference)
             expressionType = rhsType;
         } else
-        if (!mhsType.isPrimitive() && this.getConstantValue(ce.rhs) == Java.Rvalue.CONSTANT_VALUE_NULL) {
+        if (!mhsType.isPrimitive() && this.getConstantValue(ce.rhs) == null) {
 
             // JLS 15.25.1.3 (reference : null)
             expressionType = mhsType;
@@ -3281,10 +3365,10 @@ public class UnitCompiler {
 
         return expressionType;
     }
-    private IClass compileGet2(Java.Crement c) throws CompileException {
+    private IClass compileGet2(Crement c) throws CompileException {
 
         // Optimized crement of integer local variable.
-        Java.LocalVariable lv = this.isIntLV(c);
+        LocalVariable lv = this.isIntLV(c);
         if (lv != null) {
             if (!c.pre) this.load((Locatable) c, lv);
             compileLocalVariableCrement(c, lv);
@@ -3326,7 +3410,7 @@ public class UnitCompiler {
 
         return type;
     }
-    private void compileLocalVariableCrement(Java.Crement c, Java.LocalVariable lv) {
+    private void compileLocalVariableCrement(Crement c, LocalVariable lv) {
         if (lv.getSlotIndex() > 255) {
             this.writeOpcode(c, Opcode.WIDE);
             this.writeOpcode(c, Opcode.IINC);
@@ -3338,22 +3422,22 @@ public class UnitCompiler {
             this.writeByte(c.operator == "++" ? 1 : -1);
         }
     }
-    private IClass compileGet2(Java.ArrayAccessExpression aae) throws CompileException {
+    private IClass compileGet2(ArrayAccessExpression aae) throws CompileException {
         IClass lhsComponentType = this.getType(aae);
         this.writeOpcode(aae, Opcode.IALOAD + UnitCompiler.ilfdabcs(lhsComponentType));
         return lhsComponentType;
     }
-    private IClass compileGet2(Java.FieldAccessExpression fae) throws CompileException {
+    private IClass compileGet2(FieldAccessExpression fae) throws CompileException {
         this.determineValue(fae);
         return this.compileGet(fae.value);
     }
-    private IClass compileGet2(Java.SuperclassFieldAccessExpression scfae) throws CompileException {
+    private IClass compileGet2(SuperclassFieldAccessExpression scfae) throws CompileException {
         this.determineValue(scfae);
         return this.compileGet(scfae.value);
     }
-    private IClass compileGet2(Java.UnaryOperation uo) throws CompileException {
+    private IClass compileGet2(UnaryOperation uo) throws CompileException {
         if (uo.operator == "!") {
-            return this.compileGet2((Java.BooleanRvalue) uo);
+            return this.compileGet2((BooleanRvalue) uo);
         }
 
         if (uo.operator == "+") {
@@ -3365,11 +3449,11 @@ public class UnitCompiler {
 
         if (uo.operator == "-") {
 
-            // Special handling for negated literals.
-            if (uo.operand instanceof Java.Literal) {
-                Java.Literal l = (Java.Literal) uo.operand;
-                this.pushConstant((Locatable) uo, this.getNegatedConstantValue2(l));
-                return this.unaryNumericPromotion((Locatable) uo, this.getType2(l));
+            {
+                Object ncv = this.getNegatedConstantValue(uo.operand);
+                if (ncv != NOT_CONSTANT) {
+                    return this.unaryNumericPromotion((Locatable) uo, this.pushConstant((Locatable) uo, ncv));
+                }
             }
 
             IClass promotedType = this.unaryNumericPromotion(
@@ -3401,7 +3485,7 @@ public class UnitCompiler {
         this.compileError("Unexpected operator \"" + uo.operator + "\"", uo.getLocation());
         return this.iClassLoader.OBJECT;
     }
-    private IClass compileGet2(Java.Instanceof io) throws CompileException {
+    private IClass compileGet2(Instanceof io) throws CompileException {
         IClass lhsType = this.compileGetValue(io.lhs);
         IClass rhsType = this.getType(io.rhs);
         if (
@@ -3418,7 +3502,7 @@ public class UnitCompiler {
         }
         return IClass.BOOLEAN;
     }
-    private IClass compileGet2(Java.BinaryOperation bo) throws CompileException {
+    private IClass compileGet2(BinaryOperation bo) throws CompileException {
         if (
             bo.op == "||" ||
             bo.op == "&&" ||
@@ -3430,7 +3514,7 @@ public class UnitCompiler {
             bo.op == ">="
         ) {
             // Eventually calls "compileBoolean()".
-            return this.compileGet2((Java.BooleanRvalue) bo);
+            return this.compileGet2((BooleanRvalue) bo);
         }
 
         // Implements "| ^ & * / % + - << >> >>>".
@@ -3441,7 +3525,7 @@ public class UnitCompiler {
             bo.op                       // operator
         );
     }
-    private IClass compileGet2(Java.Cast c) throws CompileException {
+    private IClass compileGet2(Cast c) throws CompileException {
 
         // JLS3 5.5 Casting Conversion
         IClass tt = this.getType(c.targetType);
@@ -3457,27 +3541,27 @@ public class UnitCompiler {
         ) this.compileError("Cannot cast \"" + vt + "\" to \"" + tt + "\"", c.getLocation());
         return tt;
     }
-    private IClass compileGet2(Java.ParenthesizedExpression pe) throws CompileException {
+    private IClass compileGet2(ParenthesizedExpression pe) throws CompileException {
         return this.compileGet(pe.value);
     }
-    private IClass compileGet2(Java.MethodInvocation mi) throws CompileException {
+    private IClass compileGet2(MethodInvocation mi) throws CompileException {
         IClass.IMethod iMethod = this.findIMethod(mi);
 
         if (mi.optionalTarget == null) {
 
             // JLS2 6.5.7.1, 15.12.4.1.1.1
-            Java.TypeBodyDeclaration scopeTBD;
-            Java.ClassDeclaration    scopeClassDeclaration;
+            TypeBodyDeclaration scopeTBD;
+            ClassDeclaration    scopeClassDeclaration;
             {
-                Java.Scope s;
+                Scope s;
                 for (
                     s = mi.getEnclosingBlockStatement();
-                    !(s instanceof Java.TypeBodyDeclaration);
+                    !(s instanceof TypeBodyDeclaration);
                     s = s.getEnclosingScope()
                 );
-                scopeTBD = (Java.TypeBodyDeclaration) s;
-                if (!(s instanceof Java.ClassDeclaration)) s = s.getEnclosingScope();
-                scopeClassDeclaration = (Java.ClassDeclaration) s;
+                scopeTBD = (TypeBodyDeclaration) s;
+                if (!(s instanceof ClassDeclaration)) s = s.getEnclosingScope();
+                scopeClassDeclaration = (ClassDeclaration) s;
             }
             if (iMethod.isStatic()) {
                 this.warning(
@@ -3590,16 +3674,16 @@ public class UnitCompiler {
         }
         return iMethod.getReturnType();
     }
-    private IClass compileGet2(Java.SuperclassMethodInvocation scmi) throws CompileException {
+    private IClass compileGet2(SuperclassMethodInvocation scmi) throws CompileException {
         IClass.IMethod iMethod = this.findIMethod(scmi);
 
-        Java.Scope s;
+        Scope s;
         for (
             s = scmi.getEnclosingBlockStatement();
-            s instanceof Java.Statement || s instanceof Java.CatchClause;
+            s instanceof Statement || s instanceof CatchClause;
             s = s.getEnclosingScope()
         );
-        Java.FunctionDeclarator fd = s instanceof Java.FunctionDeclarator ? (Java.FunctionDeclarator) s : null;
+        FunctionDeclarator fd = s instanceof FunctionDeclarator ? (FunctionDeclarator) s : null;
         if (fd == null) {
             this.compileError("Cannot invoke superclass method in non-method scope", scmi.getLocation());
             return IClass.INT;
@@ -3629,7 +3713,7 @@ public class UnitCompiler {
         );
         return iMethod.getReturnType();
     }
-    private IClass compileGet2(Java.NewClassInstance nci) throws CompileException {
+    private IClass compileGet2(NewClassInstance nci) throws CompileException {
         if (nci.iClass == null) nci.iClass = this.getType(nci.type);
 
         this.writeOpcode(nci, Opcode.NEW);
@@ -3643,7 +3727,7 @@ public class UnitCompiler {
         }
 
         // Determine the enclosing instance for the new object.
-        Java.Rvalue optionalEnclosingInstance;
+        Rvalue optionalEnclosingInstance;
         if (nci.optionalQualification != null) {
             if (nci.iClass.getOuterIClass() == null) {
                 this.compileError("Static member class cannot be instantiated with qualified NEW");
@@ -3652,13 +3736,13 @@ public class UnitCompiler {
             // Enclosing instance defined by qualification (JLS 15.9.2.BL1.B3.B2).
             optionalEnclosingInstance = nci.optionalQualification;
         } else {
-            Java.Scope s = nci.getEnclosingBlockStatement();
-            for (; !(s instanceof Java.TypeBodyDeclaration); s = s.getEnclosingScope());
-            Java.TypeBodyDeclaration enclosingTypeBodyDeclaration = (Java.TypeBodyDeclaration) s;
-            Java.TypeDeclaration enclosingTypeDeclaration = (Java.TypeDeclaration) s.getEnclosingScope();
+            Scope s = nci.getEnclosingBlockStatement();
+            for (; !(s instanceof TypeBodyDeclaration); s = s.getEnclosingScope());
+            TypeBodyDeclaration enclosingTypeBodyDeclaration = (TypeBodyDeclaration) s;
+            TypeDeclaration enclosingTypeDeclaration = (TypeDeclaration) s.getEnclosingScope();
 
             if (
-                !(enclosingTypeDeclaration instanceof Java.ClassDeclaration)
+                !(enclosingTypeDeclaration instanceof ClassDeclaration)
                 || enclosingTypeBodyDeclaration.isStatic()
             ) {
 
@@ -3686,16 +3770,16 @@ public class UnitCompiler {
                     // Find an appropriate enclosing instance for the new inner class object among
                     // the enclosing instances of the current object (JLS
                     // 15.9.2.BL1.B3.B1.B2).
-//                    Java.ClassDeclaration outerClassDeclaration = (Java.ClassDeclaration) enclosingTypeDeclaration;
-//                    optionalEnclosingInstance = new Java.QualifiedThisReference(
+//                    ClassDeclaration outerClassDeclaration = (ClassDeclaration) enclosingTypeDeclaration;
+//                    optionalEnclosingInstance = new QualifiedThisReference(
 //                        nci.getLocation(),            // location
 //                        outerClassDeclaration,        // declaringClass
 //                        enclosingTypeBodyDeclaration, // declaringTypeBodyDeclaration
 //                        optionalOuterIClass           // targetIClass
 //                    );
-                    optionalEnclosingInstance = new Java.QualifiedThisReference(
+                    optionalEnclosingInstance = new QualifiedThisReference(
                         nci.getLocation(),   // location
-                        new Java.SimpleType( // qualification
+                        new SimpleType( // qualification
                             nci.getLocation(),
                             optionalOuterIClass
                         )
@@ -3714,10 +3798,10 @@ public class UnitCompiler {
         );
         return nci.iClass;
     }
-    private IClass compileGet2(Java.NewAnonymousClassInstance naci) throws CompileException {
+    private IClass compileGet2(NewAnonymousClassInstance naci) throws CompileException {
 
         // Find constructors.
-        Java.AnonymousClassDeclaration acd = naci.anonymousClassDeclaration;
+        AnonymousClassDeclaration acd = naci.anonymousClassDeclaration;
         IClass sc = this.resolve(acd).getSuperclass();
         IClass.IConstructor[] iConstructors = sc.getDeclaredIConstructors();
         if (iConstructors.length == 0) throw new JaninoRuntimeException("SNO: Base class has no constructors");
@@ -3733,61 +3817,61 @@ public class UnitCompiler {
         IClass[] pts = iConstructor.getParameterTypes();
 
         // Determine formal parameters of anonymous constructor.
-        Java.FunctionDeclarator.FormalParameter[] fps;
+        FunctionDeclarator.FormalParameter[] fps;
         Location loc = naci.getLocation();
         {
             List l = new ArrayList(); // FormalParameter
 
             // Pass the enclosing instance of the base class as parameter #1.
-            if (naci.optionalQualification != null) l.add(new Java.FunctionDeclarator.FormalParameter(
+            if (naci.optionalQualification != null) l.add(new FunctionDeclarator.FormalParameter(
                 loc,                                                                // location
                 true,                                                               // finaL
-                new Java.SimpleType(loc, this.getType(naci.optionalQualification)), // type
+                new SimpleType(loc, this.getType(naci.optionalQualification)), // type
                 "this$base"                                                         // name
             ));
-            for (int i = 0; i < pts.length; ++i) l.add(new Java.FunctionDeclarator.FormalParameter(
-                loc,                              // location
-                true,                             // finaL
-                new Java.SimpleType(loc, pts[i]), // type
-                "p" + i                           // name
+            for (int i = 0; i < pts.length; ++i) l.add(new FunctionDeclarator.FormalParameter(
+                loc,                         // location
+                true,                        // finaL
+                new SimpleType(loc, pts[i]), // type
+                "p" + i                      // name
             ));
-            fps = (Java.FunctionDeclarator.FormalParameter[]) l.toArray(
-                new Java.FunctionDeclarator.FormalParameter[l.size()]
+            fps = (FunctionDeclarator.FormalParameter[]) l.toArray(
+                new FunctionDeclarator.FormalParameter[l.size()]
             );
         }
 
         // Determine thrown exceptions of anonymous constructor.
         IClass[] tes = iConstructor.getThrownExceptions();
-        Java.Type[]   tets = new Java.Type[tes.length];
-        for (int i = 0; i < tes.length; ++i) tets[i] = new Java.SimpleType(loc, tes[i]);
+        Type[]   tets = new Type[tes.length];
+        for (int i = 0; i < tes.length; ++i) tets[i] = new SimpleType(loc, tes[i]);
 
         // The anonymous constructor merely invokes the constructor of its superclass.
         int j = 0;
-        Java.Rvalue optionalQualificationAccess;
+        Rvalue optionalQualificationAccess;
         if (naci.optionalQualification == null) {
             optionalQualificationAccess = null;
         } else
         {
-            optionalQualificationAccess = new Java.ParameterAccess(loc, fps[j++]);
+            optionalQualificationAccess = new ParameterAccess(loc, fps[j++]);
         }
-        Java.Rvalue[] parameterAccesses = new Java.Rvalue[pts.length];
+        Rvalue[] parameterAccesses = new Rvalue[pts.length];
         for (int i = 0; i < pts.length; ++i) {
-            parameterAccesses[i] = new Java.ParameterAccess(loc, fps[j++]);
+            parameterAccesses[i] = new ParameterAccess(loc, fps[j++]);
         }
 
         // Generate the anonymous constructor for the anonymous class (JLS 15.9.5.1).
-        Java.ConstructorDeclarator anonymousConstructor = new Java.ConstructorDeclarator(
-            loc,                                 // location
-            null,                                // optionalDocComment
-            Mod.PACKAGE,                         // modifiers
-            fps,                                 // formalParameters
-            tets,                                // thrownExceptions
-            new Java.SuperConstructorInvocation( // optionalExplicitConstructorInvocation
+        ConstructorDeclarator anonymousConstructor = new ConstructorDeclarator(
+            loc,                            // location
+            null,                           // optionalDocComment
+            Mod.PACKAGE,                    // modifiers
+            fps,                            // formalParameters
+            tets,                           // thrownExceptions
+            new SuperConstructorInvocation( // optionalExplicitConstructorInvocation
                 loc,                         // location
                 optionalQualificationAccess, // optionalQualification
                 parameterAccesses            // arguments
             ),
-            Collections.EMPTY_LIST               // optionalStatements
+            Collections.EMPTY_LIST          // optionalStatements
         );
 
         // Compile the anonymous class.
@@ -3801,34 +3885,34 @@ public class UnitCompiler {
 
             // Invoke the anonymous constructor.
             this.writeOpcode(naci, Opcode.DUP);
-            Java.Rvalue[] arguments2;
+            Rvalue[] arguments2;
             if (naci.optionalQualification == null) {
                 arguments2 = naci.arguments;
             } else {
-                arguments2 = new Java.Rvalue[naci.arguments.length + 1];
+                arguments2 = new Rvalue[naci.arguments.length + 1];
                 arguments2[0] = naci.optionalQualification;
                 System.arraycopy(naci.arguments, 0, arguments2, 1, naci.arguments.length);
             }
 
             // Notice: The enclosing instance of the anonymous class is "this", not the
             // qualification of the NewAnonymousClassInstance.
-            Java.Scope s;
+            Scope s;
             for (
                 s = naci.getEnclosingBlockStatement();
-                !(s instanceof Java.TypeBodyDeclaration);
+                !(s instanceof TypeBodyDeclaration);
                 s = s.getEnclosingScope()
             );
-            Java.ThisReference oei;
-            if (((Java.TypeBodyDeclaration) s).isStatic()) {
+            ThisReference oei;
+            if (((TypeBodyDeclaration) s).isStatic()) {
                 oei = null;
             } else
             {
-                oei = new Java.ThisReference(loc);
+                oei = new ThisReference(loc);
                 oei.setEnclosingBlockStatement(naci.getEnclosingBlockStatement());
             }
             this.invokeConstructor(
                 (Locatable) naci,                               // l
-                (Java.Scope) naci.getEnclosingBlockStatement(), // scope
+                (Scope) naci.getEnclosingBlockStatement(), // scope
                 oei,                                            // optionalEnclosingInstance
                 this.resolve(naci.anonymousClassDeclaration),   // targetClass
                 arguments2                                      // arguments
@@ -3842,12 +3926,12 @@ public class UnitCompiler {
         }
         return this.resolve(naci.anonymousClassDeclaration);
     }
-    private IClass compileGet2(Java.ParameterAccess pa) throws CompileException {
-        Java.LocalVariable lv = this.getLocalVariable(pa.formalParameter);
+    private IClass compileGet2(ParameterAccess pa) throws CompileException {
+        LocalVariable lv = this.getLocalVariable(pa.formalParameter);
         this.load((Locatable) pa, lv);
         return lv.type;
     }
-    private IClass compileGet2(Java.NewArray na) throws CompileException {
+    private IClass compileGet2(NewArray na) throws CompileException {
         for (int i = 0; i < na.dimExprs.length; ++i) {
             IClass dimType = this.compileGetValue(na.dimExprs[i]);
             if (dimType != IClass.INT && this.unaryNumericPromotion(
@@ -3863,12 +3947,12 @@ public class UnitCompiler {
             this.getType(na.type) // componentType
         );
     }
-    private IClass compileGet2(Java.NewInitializedArray nia) throws CompileException {
+    private IClass compileGet2(NewInitializedArray nia) throws CompileException {
         IClass at = this.getType(nia.arrayType);
         this.compileGetValue(nia.arrayInitializer, at);
         return at;
     }
-    private void compileGetValue(Java.ArrayInitializer ai, IClass arrayType) throws CompileException {
+    private void compileGetValue(ArrayInitializer ai, IClass arrayType) throws CompileException {
         if (!arrayType.isArray()) {
             this.compileError("Array initializer not allowed for non-array type \"" + arrayType.toString() + "\"");
         }
@@ -3885,9 +3969,9 @@ public class UnitCompiler {
         for (int i = 0; i < ai.values.length; ++i) {
             this.writeOpcode(ai, Opcode.DUP);
             this.pushConstant((Locatable) ai, new Integer(i));
-            Java.ArrayInitializerOrRvalue aiorv = ai.values[i];
-            if (aiorv instanceof Java.Rvalue) {
-                Java.Rvalue rv = (Java.Rvalue) aiorv;
+            ArrayInitializerOrRvalue aiorv = ai.values[i];
+            if (aiorv instanceof Rvalue) {
+                Rvalue rv = (Rvalue) aiorv;
                 this.assignmentConversion(
                     (Locatable) ai,           // l
                     this.compileGetValue(rv), // sourceType
@@ -3895,8 +3979,8 @@ public class UnitCompiler {
                     this.getConstantValue(rv) // optionalConstantValue
                 );
             } else
-            if (aiorv instanceof Java.ArrayInitializer) {
-                this.compileGetValue((Java.ArrayInitializer) aiorv, ct);
+            if (aiorv instanceof ArrayInitializer) {
+                this.compileGetValue((ArrayInitializer) aiorv, ct);
             } else
             {
                 throw new JaninoRuntimeException(
@@ -3906,23 +3990,19 @@ public class UnitCompiler {
             this.writeOpcode(ai, Opcode.IASTORE + UnitCompiler.ilfdabcs(ct));
         }
     }
-    private IClass compileGet2(Java.Literal l) throws CompileException {
-        if (
-            l.value == Scanner.MAGIC_INTEGER ||
-            l.value == Scanner.MAGIC_LONG
-        ) this.compileError("This literal value may only appear in a negated context", l.getLocation());
-        return this.pushConstant((Locatable) l, l.value == null ? Java.Rvalue.CONSTANT_VALUE_NULL : l.value);
+    private IClass compileGet2(Literal l) throws CompileException {
+        return this.pushConstant((Locatable) l, this.getConstantValue(l));
     }
 
     /**
-     * Convenience function that calls {@link #compileContext(Java.Rvalue)}
-     * and {@link #compileGet(Java.Rvalue)}.
+     * Convenience function that calls {@link #compileContext(Rvalue)}
+     * and {@link #compileGet(Rvalue)}.
      *
      * @return The type of the Rvalue
      */
-    private IClass compileGetValue(Java.Rvalue rv) throws CompileException {
+    private IClass compileGetValue(Rvalue rv) throws CompileException {
         Object cv = this.getConstantValue(rv);
-        if (cv != null) {
+        if (cv != NOT_CONSTANT) {
             this.fakeCompile(rv); // To check that, e.g., "a" compiles in "true || a".
             this.pushConstant((Locatable) rv, cv);
             return this.getType(rv);
@@ -3935,58 +4015,55 @@ public class UnitCompiler {
     // -------------------- Rvalue.getConstantValue() -----------------
 
     /**
-     * Attempts to evaluate as a constant expression.
-     * <p>
-     * <table>
-     *   <tr><th>Expression type</th><th>Return value type</th></tr>
-     *   <tr><td>String</td><td>String</td></tr>
-     *   <tr><td>byte</td><td>Byte</td></tr>
-     *   <tr><td>short</td><td>Short</td></tr>
-     *   <tr><td>int</td><td>Integer</td></tr>
-     *   <tr><td>boolean</td><td>Boolean</td></tr>
-     *   <tr><td>char</td><td>Character</td></tr>
-     *   <tr><td>float</td><td>Float</td></tr>
-     *   <tr><td>long</td><td>Long</td></tr>
-     *   <tr><td>double</td><td>Double</td></tr>
-     *   <tr><td>null</td><td>{@link Java.Rvalue#CONSTANT_VALUE_NULL}</td></tr>
-     * </table>
-     *
-     * @return <code>null</code> iff the rvalue is not a constant value
+     * Special return value for the {@link #getConstantValue(Rvalue)} method family indicating that the given
+     * {@link Rvalue} does not evaluate to a constant value.
      */
-    public final Object getConstantValue(Java.Rvalue rv) throws CompileException {
-        if (rv.constantValue != Java.Rvalue.CONSTANT_VALUE_UNKNOWN) return rv.constantValue;
+    public static final Object NOT_CONSTANT = IClass.NOT_CONSTANT;
+
+    /**
+     * Attempts to evaluate as a constant expression.
+     *
+     * @return {@link #NOT_CONSTANT} iff the rvalue is not a constant value
+     */
+    public final Object getConstantValue(Rvalue rv) throws CompileException {
+        if (rv.constantValue != Rvalue.CONSTANT_VALUE_UNKNOWN) return rv.constantValue;
 
         final Object[] res = new Object[1];
         class UCE extends RuntimeException { final CompileException ce; UCE(CompileException ce) { this.ce = ce; } }
-        Visitor.RvalueVisitor rvv = new Visitor.RvalueVisitor() {
+        RvalueVisitor rvv = new RvalueVisitor() {
             // CHECKSTYLE(LineLengthCheck):OFF
-            public void visitArrayLength(Java.ArrayLength al)                                {       res[0] = UnitCompiler.this.getConstantValue2(al);                                                    }
-            public void visitAssignment(Java.Assignment a)                                   {       res[0] = UnitCompiler.this.getConstantValue2(a);                                                     }
-            public void visitUnaryOperation(Java.UnaryOperation uo)                          { try { res[0] = UnitCompiler.this.getConstantValue2(uo); } catch (CompileException e) { throw new UCE(e); } }
-            public void visitBinaryOperation(Java.BinaryOperation bo)                        { try { res[0] = UnitCompiler.this.getConstantValue2(bo); } catch (CompileException e) { throw new UCE(e); } }
-            public void visitCast(Java.Cast c)                                               { try { res[0] = UnitCompiler.this.getConstantValue2(c);  } catch (CompileException e) { throw new UCE(e); } }
-            public void visitClassLiteral(Java.ClassLiteral cl)                              {       res[0] = UnitCompiler.this.getConstantValue2(cl);                                                    }
-            public void visitConditionalExpression(Java.ConditionalExpression ce)            { try { res[0] = UnitCompiler.this.getConstantValue2(ce); } catch (CompileException e) { throw new UCE(e); } }
-            public void visitCrement(Java.Crement c)                                         {       res[0] = UnitCompiler.this.getConstantValue2(c);                                                     }
-            public void visitInstanceof(Java.Instanceof io)                                  {       res[0] = UnitCompiler.this.getConstantValue2(io);                                                    }
-            public void visitMethodInvocation(Java.MethodInvocation mi)                      {       res[0] = UnitCompiler.this.getConstantValue2(mi);                                                    }
-            public void visitSuperclassMethodInvocation(Java.SuperclassMethodInvocation smi) {       res[0] = UnitCompiler.this.getConstantValue2(smi);                                                   }
-            public void visitLiteral(Java.Literal l)                                         { try { res[0] = UnitCompiler.this.getConstantValue2(l);  } catch (CompileException e) { throw new UCE(e); } }
-            public void visitNewAnonymousClassInstance(Java.NewAnonymousClassInstance naci)  {       res[0] = UnitCompiler.this.getConstantValue2(naci);                                                  }
-            public void visitNewArray(Java.NewArray na)                                      {       res[0] = UnitCompiler.this.getConstantValue2(na);                                                    }
-            public void visitNewInitializedArray(Java.NewInitializedArray nia)               {       res[0] = UnitCompiler.this.getConstantValue2(nia);                                                   }
-            public void visitNewClassInstance(Java.NewClassInstance nci)                     {       res[0] = UnitCompiler.this.getConstantValue2(nci);                                                   }
-            public void visitParameterAccess(Java.ParameterAccess pa)                        {       res[0] = UnitCompiler.this.getConstantValue2(pa);                                                    }
-            public void visitQualifiedThisReference(Java.QualifiedThisReference qtr)         {       res[0] = UnitCompiler.this.getConstantValue2(qtr);                                                   }
-            public void visitThisReference(Java.ThisReference tr)                            {       res[0] = UnitCompiler.this.getConstantValue2(tr);                                                    }
+            public void visitArrayLength(ArrayLength al)                                {       res[0] = UnitCompiler.this.getConstantValue2(al);                                                    }
+            public void visitAssignment(Assignment a)                                   {       res[0] = UnitCompiler.this.getConstantValue2(a);                                                     }
+            public void visitUnaryOperation(UnaryOperation uo)                          { try { res[0] = UnitCompiler.this.getConstantValue2(uo); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitBinaryOperation(BinaryOperation bo)                        { try { res[0] = UnitCompiler.this.getConstantValue2(bo); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitCast(Cast c)                                               { try { res[0] = UnitCompiler.this.getConstantValue2(c);  } catch (CompileException e) { throw new UCE(e); } }
+            public void visitClassLiteral(ClassLiteral cl)                              {       res[0] = UnitCompiler.this.getConstantValue2(cl);                                                    }
+            public void visitConditionalExpression(ConditionalExpression ce)            { try { res[0] = UnitCompiler.this.getConstantValue2(ce); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitCrement(Crement c)                                         {       res[0] = UnitCompiler.this.getConstantValue2(c);                                                     }
+            public void visitInstanceof(Instanceof io)                                  {       res[0] = UnitCompiler.this.getConstantValue2(io);                                                    }
+            public void visitMethodInvocation(MethodInvocation mi)                      {       res[0] = UnitCompiler.this.getConstantValue2(mi);                                                    }
+            public void visitSuperclassMethodInvocation(SuperclassMethodInvocation smi) {       res[0] = UnitCompiler.this.getConstantValue2(smi);                                                   }
+            public void visitIntegerLiteral(IntegerLiteral il)                          { try { res[0] = UnitCompiler.this.getConstantValue2(il); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitFloatingPointLiteral(FloatingPointLiteral fpl)             { try { res[0] = UnitCompiler.this.getConstantValue2(fpl);} catch (CompileException e) { throw new UCE(e); } }
+            public void visitBooleanLiteral(BooleanLiteral bl)                          {       res[0] = UnitCompiler.this.getConstantValue2(bl);                                                    }
+            public void visitCharacterLiteral(CharacterLiteral cl)                      {       res[0] = UnitCompiler.this.getConstantValue2(cl);                                                    }
+            public void visitStringLiteral(StringLiteral sl)                            {       res[0] = UnitCompiler.this.getConstantValue2(sl);                                                    }
+            public void visitNullLiteral(NullLiteral nl)                                {       res[0] = UnitCompiler.this.getConstantValue2(nl);                                                    }
+            public void visitNewAnonymousClassInstance(NewAnonymousClassInstance naci)  {       res[0] = UnitCompiler.this.getConstantValue2(naci);                                                  }
+            public void visitNewArray(NewArray na)                                      {       res[0] = UnitCompiler.this.getConstantValue2(na);                                                    }
+            public void visitNewInitializedArray(NewInitializedArray nia)               {       res[0] = UnitCompiler.this.getConstantValue2(nia);                                                   }
+            public void visitNewClassInstance(NewClassInstance nci)                     {       res[0] = UnitCompiler.this.getConstantValue2(nci);                                                   }
+            public void visitParameterAccess(ParameterAccess pa)                        {       res[0] = UnitCompiler.this.getConstantValue2(pa);                                                    }
+            public void visitQualifiedThisReference(QualifiedThisReference qtr)         {       res[0] = UnitCompiler.this.getConstantValue2(qtr);                                                   }
+            public void visitThisReference(ThisReference tr)                            {       res[0] = UnitCompiler.this.getConstantValue2(tr);                                                    }
 
-            public void visitAmbiguousName(Java.AmbiguousName an)                                        { try { res[0] = UnitCompiler.this.getConstantValue2(an); } catch (CompileException e) { throw new UCE(e); } }
-            public void visitArrayAccessExpression(Java.ArrayAccessExpression aae)                       {       res[0] = UnitCompiler.this.getConstantValue2(aae);                                                   }
-            public void visitFieldAccess(Java.FieldAccess fa)                                            { try { res[0] = UnitCompiler.this.getConstantValue2(fa); } catch (CompileException e) { throw new UCE(e); } }
-            public void visitFieldAccessExpression(Java.FieldAccessExpression fae)                       {       res[0] = UnitCompiler.this.getConstantValue2(fae);                                                   }
-            public void visitSuperclassFieldAccessExpression(Java.SuperclassFieldAccessExpression scfae) {       res[0] = UnitCompiler.this.getConstantValue2(scfae);                                                 }
-            public void visitLocalVariableAccess(Java.LocalVariableAccess lva)                           {       res[0] = UnitCompiler.this.getConstantValue2(lva);                                                   }
-            public void visitParenthesizedExpression(Java.ParenthesizedExpression pe)                    { try { res[0] = UnitCompiler.this.getConstantValue2(pe); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitAmbiguousName(AmbiguousName an)                                        { try { res[0] = UnitCompiler.this.getConstantValue2(an); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitArrayAccessExpression(ArrayAccessExpression aae)                       {       res[0] = UnitCompiler.this.getConstantValue2(aae);                                                   }
+            public void visitFieldAccess(FieldAccess fa)                                            { try { res[0] = UnitCompiler.this.getConstantValue2(fa); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitFieldAccessExpression(FieldAccessExpression fae)                       {       res[0] = UnitCompiler.this.getConstantValue2(fae);                                                   }
+            public void visitSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae) {       res[0] = UnitCompiler.this.getConstantValue2(scfae);                                                 }
+            public void visitLocalVariableAccess(LocalVariableAccess lva)                           {       res[0] = UnitCompiler.this.getConstantValue2(lva);                                                   }
+            public void visitParenthesizedExpression(ParenthesizedExpression pe)                    { try { res[0] = UnitCompiler.this.getConstantValue2(pe); } catch (CompileException e) { throw new UCE(e); } }
             // CHECKSTYLE(LineLengthCheck):ON
         };
         try {
@@ -3997,48 +4074,44 @@ public class UnitCompiler {
             throw uce.ce;
         }
     }
-    private Object getConstantValue2(Java.Rvalue rv) {
-        return null;
+    private Object getConstantValue2(Rvalue rv) {
+        return NOT_CONSTANT;
     }
-    private Object getConstantValue2(Java.AmbiguousName an) throws CompileException {
+    private Object getConstantValue2(AmbiguousName an) throws CompileException {
         return this.getConstantValue(this.toRvalueOrCE(this.reclassify(an)));
     }
-    private Object getConstantValue2(Java.FieldAccess fa) throws CompileException {
+    private Object getConstantValue2(FieldAccess fa) throws CompileException {
         return fa.field.getConstantValue();
     }
-    private Object getConstantValue2(Java.UnaryOperation uo) throws CompileException {
+    private Object getConstantValue2(UnaryOperation uo) throws CompileException {
         if (uo.operator.equals("+")) return this.getConstantValue(uo.operand);
         if (uo.operator.equals("-")) return this.getNegatedConstantValue(uo.operand);
         if (uo.operator.equals("!")) {
             Object cv = this.getConstantValue(uo.operand);
-            return cv instanceof Boolean ? (
-                ((Boolean) cv).booleanValue() ? Boolean.FALSE : Boolean.TRUE
-            ) : null;
+            return (
+                cv == Boolean.TRUE ? Boolean.FALSE :
+                cv == Boolean.FALSE ? Boolean.TRUE :
+                NOT_CONSTANT
+            );
         }
-        return null;
+        return NOT_CONSTANT;
     }
     
-    private Object getConstantValue2(Java.ConditionalExpression ce) throws CompileException {
+    private Object getConstantValue2(ConditionalExpression ce) throws CompileException {
         Object lhsValue = this.getConstantValue(ce.lhs);
         if (lhsValue instanceof Boolean) {
-            return ((Boolean) lhsValue).booleanValue() ?
+            return (
+                ((Boolean) lhsValue).booleanValue() ?
                 this.getConstantValue(ce.mhs) :
-                this.getConstantValue(ce.rhs);
+                this.getConstantValue(ce.rhs)
+            );
         }
-        return null;
+        return NOT_CONSTANT;
     }
     
-    private Object getConstantValue2(Java.BinaryOperation bo) throws CompileException {
+    private Object getConstantValue2(BinaryOperation bo) throws CompileException {
 
-        // null == null
-        // null != null
-        if (
-            (bo.op == "==" || bo.op == "!=") &&
-            this.getConstantValue(bo.lhs) == Java.Rvalue.CONSTANT_VALUE_NULL &&
-            this.getConstantValue(bo.rhs) == Java.Rvalue.CONSTANT_VALUE_NULL
-        ) return bo.op == "==" ? Boolean.TRUE : Boolean.FALSE;
-
-        // "|", "^", "&", "*", "/", "%", "+", "-".
+        // "|", "^", "&", "*", "/", "%", "+", "-", "==", "!=".
         if (
             bo.op == "|" ||
             bo.op == "^" ||
@@ -4047,14 +4120,16 @@ public class UnitCompiler {
             bo.op == "/" ||
             bo.op == "%" ||
             bo.op == "+" ||
-            bo.op == "-"
+            bo.op == "-" ||
+            bo.op == "==" ||
+            bo.op == "!="
         ) {
 
             // Unroll the constant operands.
             List cvs = new ArrayList();
             for (Iterator it = bo.unrollLeftAssociation(); it.hasNext();) {
-                Object cv = this.getConstantValue(((Java.Rvalue) it.next()));
-                if (cv == null) return null;
+                Object cv = this.getConstantValue(((Rvalue) it.next()));
+                if (cv == NOT_CONSTANT) return NOT_CONSTANT;
                 cvs.add(cv);
             }
 
@@ -4062,80 +4137,117 @@ public class UnitCompiler {
             Iterator it = cvs.iterator();
             Object lhs = it.next();
             while (it.hasNext()) {
+                if (lhs == NOT_CONSTANT) return NOT_CONSTANT;
+
                 Object rhs = it.next();
 
                 // String concatenation?
                 if (bo.op == "+" && (lhs instanceof String || rhs instanceof String)) {
-                    StringBuffer sb = new StringBuffer();
-                    sb.append(lhs.toString()).append(rhs.toString());
+                    StringBuffer sb = new StringBuffer(lhs.toString()).append(rhs);
                     while (it.hasNext()) sb.append(it.next().toString());
                     return sb.toString();
                 }
 
-                if (!(lhs instanceof Number) || !(rhs instanceof Number)) return null;
-
-                try {
-                    // Numeric binary operation.
-                    if (lhs instanceof Double || rhs instanceof Double) {
-                        double lhsD = ((Number) lhs).doubleValue();
-                        double rhsD = ((Number) rhs).doubleValue();
-                        lhs = (
-                            bo.op == "*" ? new Double(lhsD * rhsD) :
-                            bo.op == "/" ? new Double(lhsD / rhsD) :
-                            bo.op == "%" ? new Double(lhsD % rhsD) :
-                            bo.op == "+" ? new Double(lhsD + rhsD) :
-                            bo.op == "-" ? new Double(lhsD - rhsD) :
-                            null
-                        );
-                    } else
-                    if (lhs instanceof Float || rhs instanceof Float) {
-                        float lhsF = ((Number) lhs).floatValue();
-                        float rhsF = ((Number) rhs).floatValue();
-                        lhs = (
-                            bo.op == "*" ? new Float(lhsF * rhsF) :
-                            bo.op == "/" ? new Float(lhsF / rhsF) :
-                            bo.op == "%" ? new Float(lhsF % rhsF) :
-                            bo.op == "+" ? new Float(lhsF + rhsF) :
-                            bo.op == "-" ? new Float(lhsF - rhsF) :
-                            null
-                        );
-                    } else
-                    if (lhs instanceof Long || rhs instanceof Long) {
-                        long lhsL = ((Number) lhs).longValue();
-                        long rhsL = ((Number) rhs).longValue();
-                        lhs = (
-                            bo.op == "|" ? new Long(lhsL | rhsL) :
-                            bo.op == "^" ? new Long(lhsL ^ rhsL) :
-                            bo.op == "&" ? new Long(lhsL & rhsL) :
-                            bo.op == "*" ? new Long(lhsL * rhsL) :
-                            bo.op == "/" ? new Long(lhsL / rhsL) :
-                            bo.op == "%" ? new Long(lhsL % rhsL) :
-                            bo.op == "+" ? new Long(lhsL + rhsL) :
-                            bo.op == "-" ? new Long(lhsL - rhsL) :
-                            null
-                        );
-                    } else
-                    {
-                        int lhsI = ((Number) lhs).intValue();
-                        int rhsI = ((Number) rhs).intValue();
-                        lhs = (
-                            bo.op == "|" ? new Integer(lhsI | rhsI) :
-                            bo.op == "^" ? new Integer(lhsI ^ rhsI) :
-                            bo.op == "&" ? new Integer(lhsI & rhsI) :
-                            bo.op == "*" ? new Integer(lhsI * rhsI) :
-                            bo.op == "/" ? new Integer(lhsI / rhsI) :
-                            bo.op == "%" ? new Integer(lhsI % rhsI) :
-                            bo.op == "+" ? new Integer(lhsI + rhsI) :
-                            bo.op == "-" ? new Integer(lhsI - rhsI) :
-                            null
-                        );
+                if (lhs instanceof Number && rhs instanceof Number) {
+                    try {
+                        if (lhs instanceof Double || rhs instanceof Double) {
+                            double lhsD = ((Number) lhs).doubleValue();
+                            double rhsD = ((Number) rhs).doubleValue();
+                            lhs = (
+                                bo.op == "*" ? new Double(lhsD * rhsD) :
+                                bo.op == "/" ? new Double(lhsD / rhsD) :
+                                bo.op == "%" ? new Double(lhsD % rhsD) :
+                                bo.op == "+" ? new Double(lhsD + rhsD) :
+                                bo.op == "-" ? new Double(lhsD - rhsD) :
+                                bo.op == "==" ? Boolean.valueOf(lhsD == rhsD) :
+                                bo.op == "!=" ? Boolean.valueOf(lhsD != rhsD) :
+                                NOT_CONSTANT
+                            );
+                            continue;
+                        }
+                        if (lhs instanceof Float || rhs instanceof Float) {
+                            float lhsF = ((Number) lhs).floatValue();
+                            float rhsF = ((Number) rhs).floatValue();
+                            lhs = (
+                                bo.op == "*" ? new Float(lhsF * rhsF) :
+                                bo.op == "/" ? new Float(lhsF / rhsF) :
+                                bo.op == "%" ? new Float(lhsF % rhsF) :
+                                bo.op == "+" ? new Float(lhsF + rhsF) :
+                                bo.op == "-" ? new Float(lhsF - rhsF) :
+                                bo.op == "==" ? Boolean.valueOf(lhsF == rhsF) :
+                                bo.op == "!=" ? Boolean.valueOf(lhsF != rhsF) :
+                                NOT_CONSTANT
+                            );
+                            continue;
+                        }
+                        if (lhs instanceof Long || rhs instanceof Long) {
+                            long lhsL = ((Number) lhs).longValue();
+                            long rhsL = ((Number) rhs).longValue();
+                            lhs = (
+                                bo.op == "|" ? new Long(lhsL | rhsL) :
+                                bo.op == "^" ? new Long(lhsL ^ rhsL) :
+                                bo.op == "&" ? new Long(lhsL & rhsL) :
+                                bo.op == "*" ? new Long(lhsL * rhsL) :
+                                bo.op == "/" ? new Long(lhsL / rhsL) :
+                                bo.op == "%" ? new Long(lhsL % rhsL) :
+                                bo.op == "+" ? new Long(lhsL + rhsL) :
+                                bo.op == "-" ? new Long(lhsL - rhsL) :
+                                bo.op == "==" ? Boolean.valueOf(lhsL == rhsL) :
+                                bo.op == "!=" ? Boolean.valueOf(lhsL != rhsL) :
+                                NOT_CONSTANT
+                            );
+                            continue;
+                        }
+                        if (
+                            lhs instanceof Integer || lhs instanceof Byte || lhs instanceof Short ||
+                            rhs instanceof Integer || lhs instanceof Byte || lhs instanceof Short
+                        ) {
+                            int lhsI = ((Number) lhs).intValue();
+                            int rhsI = ((Number) rhs).intValue();
+                            lhs = (
+                                bo.op == "|" ? new Integer(lhsI | rhsI) :
+                                bo.op == "^" ? new Integer(lhsI ^ rhsI) :
+                                bo.op == "&" ? new Integer(lhsI & rhsI) :
+                                bo.op == "*" ? new Integer(lhsI * rhsI) :
+                                bo.op == "/" ? new Integer(lhsI / rhsI) :
+                                bo.op == "%" ? new Integer(lhsI % rhsI) :
+                                bo.op == "+" ? new Integer(lhsI + rhsI) :
+                                bo.op == "-" ? new Integer(lhsI - rhsI) :
+                                bo.op == "==" ? Boolean.valueOf(lhsI == rhsI) :
+                                bo.op == "!=" ? Boolean.valueOf(lhsI != rhsI) :
+                                NOT_CONSTANT
+                            );
+                            continue;
+                        }
+                    } catch (ArithmeticException ae) {
+                        // Most likely a divide by zero or modulo by zero.
+                        // Guess we can't make this expression into a constant.
+                        return NOT_CONSTANT;
                     }
-                    if (lhs == null) return null;
-                } catch (ArithmeticException ae) {
-                    // Most likely a divide by zero or modulo by zero.
-                    // Guess we can't make this expression into a constant.
-                    return null;
+                    throw new IllegalStateException();
                 }
+
+                if (lhs instanceof Character && rhs instanceof Character) {
+                    char lhsC = ((Character) lhs).charValue();
+                    char rhsC = ((Character) rhs).charValue();
+                    lhs = (
+                        bo.op == "==" ? Boolean.valueOf(lhsC == rhsC) :
+                        bo.op == "!=" ? Boolean.valueOf(lhsC != rhsC) :
+                        NOT_CONSTANT
+                    );
+                    continue;
+                }
+
+                if (lhs == null || rhs == null) {
+                    lhs = (
+                        bo.op == "==" ? Boolean.valueOf(lhs == rhs) :
+                        bo.op == "!=" ? Boolean.valueOf(lhs != rhs) :
+                        NOT_CONSTANT
+                    );
+                    continue;
+                }
+
+                return NOT_CONSTANT;
             }
             return lhs;
         }
@@ -4156,11 +4268,11 @@ public class UnitCompiler {
             }
         }
 
-        return null;
+        return NOT_CONSTANT;
     }
-    private Object getConstantValue2(Java.Cast c) throws CompileException {
+    private Object getConstantValue2(Cast c) throws CompileException {
         Object cv = this.getConstantValue(c.value);
-        if (cv == null) return null;
+        if (cv == NOT_CONSTANT) return NOT_CONSTANT;
 
         if (cv instanceof Number) {
             IClass tt = this.getType(c.targetType);
@@ -4172,59 +4284,161 @@ public class UnitCompiler {
             if (tt == IClass.DOUBLE) return new Double(((Number) cv).doubleValue());
         }
 
-        return null;
+        return NOT_CONSTANT;
     }
-    private Object getConstantValue2(Java.ParenthesizedExpression pe) throws CompileException {
+    private Object getConstantValue2(ParenthesizedExpression pe) throws CompileException {
         return this.getConstantValue(pe.value);
     }
-    private Object getConstantValue2(Java.Literal l) throws CompileException {
-        if (
-            l.value == Scanner.MAGIC_INTEGER ||
-            l.value == Scanner.MAGIC_LONG
-        ) this.compileError("This literal value may only appear in a negated context", l.getLocation());
-        return l.value == null ? Java.Rvalue.CONSTANT_VALUE_NULL : l.value;
+    private Object getConstantValue2(IntegerLiteral il) throws CompileException {
+        String v = il.value;
+        if (v.startsWith("0x")) {
+            return (
+                v.endsWith("L") || v.endsWith("l")
+                ? (Object) Long.valueOf(hex2Long(il, v.substring(2, v.length() - 1)))
+                : Integer.valueOf(hex2Int(il, v.substring(2)))
+            );
+        }
+        if (v.startsWith("0")) {
+            return (
+                v.endsWith("L") || v.endsWith("l")
+                ? (Object) Long.valueOf(oct2Long(il, v.substring(0, v.length() - 1)))
+                : Integer.valueOf(oct2Int(il, v))
+            );
+        }
+        try {
+            return (
+                v.endsWith("L") || v.endsWith("l")
+                ? (Object) new Long(v.substring(0, v.length() - 1))
+                : new Integer(v)
+            );
+        } catch (NumberFormatException e) {
+            throw compileException(il, "Value of decimal integer literal '" + v + "' is out of range");
+        }
+    }
+    private Object getConstantValue2(FloatingPointLiteral fpl) throws CompileException {
+        String v = fpl.value;
+        char lastChar = v.charAt(v.length() - 1);
+        if (lastChar == 'f' || lastChar == 'F') {
+            v = v.substring(0, v.length() - 1);
+
+            float fv;
+            try {
+                fv = Float.parseFloat(v);
+            } catch (NumberFormatException e) {
+                throw new JaninoRuntimeException("SNO: parsing float literal '" + v + "': " + e.getMessage(), e);
+            }
+            if (Float.isInfinite(fv)) {
+                throw compileException(fpl, "Value of float literal '" + v + "' is out of range");
+            }
+            if (Float.isNaN(fv)) {
+                throw new JaninoRuntimeException("SNO: parsing float literal '" + v + "' results in NaN");
+            }
+    
+            // Check for FLOAT underrun.
+            if (fv == 0.0F) {
+                for (int i = 0; i < v.length(); ++i) {
+                    char c = v.charAt(i);
+                    if ("123456789".indexOf(c) != -1) {
+                        throw compileException(fpl,  "Literal '" + v + "' is too small to be represented as a float");
+                    }
+                    if (c != '0' && c != '.') break;
+                }
+            }
+
+            return new Float(fv);
+        }
+
+        if (lastChar == 'd' || lastChar == 'D') v = v.substring(0, v.length() - 1);
+
+        double dv;
+        try {
+            dv = Double.parseDouble(v);
+        } catch (NumberFormatException e) {
+            throw new JaninoRuntimeException("SNO: parsing double literal '" + v + "': " + e.getMessage(), e);
+        }
+        if (Double.isInfinite(dv)) {
+            throw compileException(fpl, "Value of double literal '" + v + "' is out of range");
+        }
+        if (Double.isNaN(dv)) {
+            throw new JaninoRuntimeException("SNO: parsing double literal '" + v + "' results is NaN");
+        }
+
+        // Check for DOUBLE underrun.
+        if (dv == 0.0F) {
+            for (int i = 0; i < v.length(); ++i) {
+                char c = v.charAt(i);
+                if ("123456789".indexOf(c) != -1) {
+                    throw compileException(fpl, "Literal '" + v + "' is too small to be represented as a double");
+                }
+                if (c != '0' && c != '.') break;
+            }
+        }
+
+        return new Double(dv);
+    }
+    private Object getConstantValue2(BooleanLiteral bl) {
+        if (bl.value == "true") return Boolean.TRUE;
+        if (bl.value == "false") return Boolean.FALSE;
+        throw new JaninoRuntimeException(bl.value);
+    }
+    private Object getConstantValue2(CharacterLiteral cl) {
+        String v = cl.value;
+        return Character.valueOf(unescape(v.substring(1, v.length() - 1)).charAt(0));
+    }
+    private Object getConstantValue2(StringLiteral sl) {
+        String v = sl.value;
+        return unescape(v.substring(1, v.length() - 1));
+    }
+    private Object getConstantValue2(NullLiteral nl) {
+        return null;
     }
 
     /**
-     * Attempts to evaluate the negated value of a constant {@link Java.Rvalue}.
+     * Attempts to evaluate the negated value of a constant {@link Rvalue}.
      * This is particularly relevant for the smallest value of an integer or
      * long literal.
      *
-     * @return null if value is not constant; otherwise a String, Byte,
-     * Short, Integer, Boolean, Character, Float, Long or Double
+     * @return {@link #NOT_CONSTANT} iff value is not constant; otherwise a {@link String}, {@link Byte}, {@link
+     *         Short}, {@link Integer}, {@link Boolean}, {@link Character}, {@link Float}, {@link Long}, {@link Double}
+     *         or <code>null</code>
      */
-    private Object getNegatedConstantValue(Java.Rvalue rv) throws CompileException {
+    private Object getNegatedConstantValue(Rvalue rv) throws CompileException {
         final Object[] res = new Object[1];
         class UCE extends RuntimeException { final CompileException ce; UCE(CompileException ce) { this.ce = ce; } }
-        Visitor.RvalueVisitor rvv = new Visitor.RvalueVisitor() {
+        RvalueVisitor rvv = new RvalueVisitor() {
             // CHECKSTYLE(LineLengthCheck):OFF
-            public void visitArrayLength(Java.ArrayLength al)                                {       res[0] = UnitCompiler.this.getNegatedConstantValue2(al);                                                    }
-            public void visitAssignment(Java.Assignment a)                                   {       res[0] = UnitCompiler.this.getNegatedConstantValue2(a);                                                     }
-            public void visitUnaryOperation(Java.UnaryOperation uo)                          { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(uo); } catch (CompileException e) { throw new UCE(e); } }
-            public void visitBinaryOperation(Java.BinaryOperation bo)                        {       res[0] = UnitCompiler.this.getNegatedConstantValue2(bo);                                                    }
-            public void visitCast(Java.Cast c)                                               {       res[0] = UnitCompiler.this.getNegatedConstantValue2(c);                                                     }
-            public void visitClassLiteral(Java.ClassLiteral cl)                              {       res[0] = UnitCompiler.this.getNegatedConstantValue2(cl);                                                    }
-            public void visitConditionalExpression(Java.ConditionalExpression ce)            {       res[0] = UnitCompiler.this.getNegatedConstantValue2(ce);                                                    }
-            public void visitCrement(Java.Crement c)                                         {       res[0] = UnitCompiler.this.getNegatedConstantValue2(c);                                                     }
-            public void visitInstanceof(Java.Instanceof io)                                  {       res[0] = UnitCompiler.this.getNegatedConstantValue2(io);                                                    }
-            public void visitMethodInvocation(Java.MethodInvocation mi)                      {       res[0] = UnitCompiler.this.getNegatedConstantValue2(mi);                                                    }
-            public void visitSuperclassMethodInvocation(Java.SuperclassMethodInvocation smi) {       res[0] = UnitCompiler.this.getNegatedConstantValue2(smi);                                                   }
-            public void visitLiteral(Java.Literal l)                                         { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(l); } catch (CompileException e) { throw new UCE(e); }  }
-            public void visitNewAnonymousClassInstance(Java.NewAnonymousClassInstance naci)  {       res[0] = UnitCompiler.this.getNegatedConstantValue2(naci);                                                  }
-            public void visitNewArray(Java.NewArray na)                                      {       res[0] = UnitCompiler.this.getNegatedConstantValue2(na);                                                    }
-            public void visitNewInitializedArray(Java.NewInitializedArray nia)               {       res[0] = UnitCompiler.this.getNegatedConstantValue2(nia);                                                   }
-            public void visitNewClassInstance(Java.NewClassInstance nci)                     {       res[0] = UnitCompiler.this.getNegatedConstantValue2(nci);                                                   }
-            public void visitParameterAccess(Java.ParameterAccess pa)                        {       res[0] = UnitCompiler.this.getNegatedConstantValue2(pa);                                                    }
-            public void visitQualifiedThisReference(Java.QualifiedThisReference qtr)         {       res[0] = UnitCompiler.this.getNegatedConstantValue2(qtr);                                                   }
-            public void visitThisReference(Java.ThisReference tr)                            {       res[0] = UnitCompiler.this.getNegatedConstantValue2(tr);                                                    }
+            public void visitArrayLength(ArrayLength al)                                { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(al);   } catch (CompileException e) { throw new UCE(e); } }
+            public void visitAssignment(Assignment a)                                   { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(a);    } catch (CompileException e) { throw new UCE(e); } }
+            public void visitUnaryOperation(UnaryOperation uo)                          { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(uo);   } catch (CompileException e) { throw new UCE(e); } }
+            public void visitBinaryOperation(BinaryOperation bo)                        { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(bo);   } catch (CompileException e) { throw new UCE(e); } }
+            public void visitCast(Cast c)                                               { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(c);    } catch (CompileException e) { throw new UCE(e); } }
+            public void visitClassLiteral(ClassLiteral cl)                              { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(cl);   } catch (CompileException e) { throw new UCE(e); } }
+            public void visitConditionalExpression(ConditionalExpression ce)            { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(ce);   } catch (CompileException e) { throw new UCE(e); } }
+            public void visitCrement(Crement c)                                         { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(c);    } catch (CompileException e) { throw new UCE(e); } }
+            public void visitInstanceof(Instanceof io)                                  { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(io);   } catch (CompileException e) { throw new UCE(e); } }
+            public void visitMethodInvocation(MethodInvocation mi)                      { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(mi);   } catch (CompileException e) { throw new UCE(e); } }
+            public void visitSuperclassMethodInvocation(SuperclassMethodInvocation smi) { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(smi);  } catch (CompileException e) { throw new UCE(e); } }
+            public void visitIntegerLiteral(IntegerLiteral il)                          { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(il);   } catch (CompileException e) { throw new UCE(e); } }
+            public void visitFloatingPointLiteral(FloatingPointLiteral fpl)             { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(fpl);  } catch (CompileException e) { throw new UCE(e); } }
+            public void visitBooleanLiteral(BooleanLiteral bl)                          { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(bl);   } catch (CompileException e) { throw new UCE(e); } }
+            public void visitCharacterLiteral(CharacterLiteral cl)                      { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(cl);   } catch (CompileException e) { throw new UCE(e); } }
+            public void visitStringLiteral(StringLiteral sl)                            { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(sl);   } catch (CompileException e) { throw new UCE(e); } }
+            public void visitNullLiteral(NullLiteral nl)                                { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(nl);   } catch (CompileException e) { throw new UCE(e); } }
+            public void visitNewAnonymousClassInstance(NewAnonymousClassInstance naci)  { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(naci); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitNewArray(NewArray na)                                      { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(na);   } catch (CompileException e) { throw new UCE(e); } }
+            public void visitNewInitializedArray(NewInitializedArray nia)               { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(nia);  } catch (CompileException e) { throw new UCE(e); } }
+            public void visitNewClassInstance(NewClassInstance nci)                     { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(nci);  } catch (CompileException e) { throw new UCE(e); } }
+            public void visitParameterAccess(ParameterAccess pa)                        { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(pa);   } catch (CompileException e) { throw new UCE(e); } }
+            public void visitQualifiedThisReference(QualifiedThisReference qtr)         { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(qtr);  } catch (CompileException e) { throw new UCE(e); } }
+            public void visitThisReference(ThisReference tr)                            { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(tr);   } catch (CompileException e) { throw new UCE(e); } }
 
-            public void visitAmbiguousName(Java.AmbiguousName an)                                        {       res[0] = UnitCompiler.this.getNegatedConstantValue2(an);                                                    }
-            public void visitArrayAccessExpression(Java.ArrayAccessExpression aae)                       {       res[0] = UnitCompiler.this.getNegatedConstantValue2(aae);                                                   }
-            public void visitFieldAccess(Java.FieldAccess fa)                                            {       res[0] = UnitCompiler.this.getNegatedConstantValue2(fa);                                                    }
-            public void visitFieldAccessExpression(Java.FieldAccessExpression fae)                       {       res[0] = UnitCompiler.this.getNegatedConstantValue2(fae);                                                   }
-            public void visitSuperclassFieldAccessExpression(Java.SuperclassFieldAccessExpression scfae) {       res[0] = UnitCompiler.this.getNegatedConstantValue2(scfae);                                                 }
-            public void visitLocalVariableAccess(Java.LocalVariableAccess lva)                           {       res[0] = UnitCompiler.this.getNegatedConstantValue2(lva);                                                   }
-            public void visitParenthesizedExpression(Java.ParenthesizedExpression pe)                    { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(pe); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitAmbiguousName(AmbiguousName an)                                        { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(an);    } catch (CompileException e) { throw new UCE(e); } }
+            public void visitArrayAccessExpression(ArrayAccessExpression aae)                       { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(aae);   } catch (CompileException e) { throw new UCE(e); } }
+            public void visitFieldAccess(FieldAccess fa)                                            { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(fa);    } catch (CompileException e) { throw new UCE(e); } }
+            public void visitFieldAccessExpression(FieldAccessExpression fae)                       { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(fae);   } catch (CompileException e) { throw new UCE(e); } }
+            public void visitSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae) { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(scfae); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitLocalVariableAccess(LocalVariableAccess lva)                           { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(lva);   } catch (CompileException e) { throw new UCE(e); } }
+            public void visitParenthesizedExpression(ParenthesizedExpression pe)                    { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(pe);    } catch (CompileException e) { throw new UCE(e); } }
             // CHECKSTYLE(LineLengthCheck):ON
         };
         try {
@@ -4234,63 +4448,73 @@ public class UnitCompiler {
             throw uce.ce;
         }
     }
-    private Object getNegatedConstantValue2(Java.Rvalue rv) {
-        return null;
+    private Object getNegatedConstantValue2(Rvalue rv) throws CompileException {
+        Object cv = getConstantValue(rv);
+        if (cv instanceof Byte)    return new Byte((byte) -((Byte) cv).byteValue());
+        if (cv instanceof Short)   return new Short((short) -((Short) cv).shortValue());
+        if (cv instanceof Integer) return new Integer(-((Integer) cv).intValue());
+        if (cv instanceof Long)    return new Long(-((Long) cv).longValue());
+        if (cv instanceof Float)   return new Float(-((Float) cv).floatValue());
+        if (cv instanceof Double)  return new Double(-((Double) cv).doubleValue());
+        return NOT_CONSTANT;
     }
-    private Object getNegatedConstantValue2(Java.UnaryOperation uo) throws CompileException {
+    private Object getNegatedConstantValue2(UnaryOperation uo) throws CompileException {
         return (
             uo.operator.equals("+") ? this.getNegatedConstantValue(uo.operand) :
             uo.operator.equals("-") ? this.getConstantValue(uo.operand) :
-            null
+            NOT_CONSTANT
         );
     }
-    private Object getNegatedConstantValue2(Java.ParenthesizedExpression pe) throws CompileException {
+    private Object getNegatedConstantValue2(ParenthesizedExpression pe) throws CompileException {
         return this.getNegatedConstantValue(pe.value);
     }
-    private Object getNegatedConstantValue2(Java.Literal l) throws CompileException {
-        if (l.value instanceof Byte) return new Byte((byte)-((Byte) l.value).byteValue());
-        if (l.value instanceof Short) return new Short((short)-((Short) l.value).shortValue());
-        if (l.value instanceof Integer) return new Integer(-((Integer) l.value).intValue());
-        if (l.value instanceof Long)    return new Long(-((Long) l.value).longValue());
-        if (l.value instanceof Float)   return new Float(-((Float) l.value).floatValue());
-        if (l.value instanceof Double)  return new Double(-((Double) l.value).doubleValue());
-
-        this.compileError("Cannot negate this literal", l.getLocation());
-        return null;
+    private Object getNegatedConstantValue2(IntegerLiteral il) throws CompileException {
+        String v = il.value;
+        if ("2147483648".equals(v) || "020000000000".equals(v)) {
+            return new Integer(Integer.MIN_VALUE);
+        }
+        char lastChar = v.charAt(v.length() - 1);
+        if (lastChar == 'l' || lastChar == 'L') {
+            String v2 = v.substring(0, v.length() - 1);
+            if ("9223372036854775808".equals(v2) || "01000000000000000000000".equals(v2)) {
+                return new Long(Long.MIN_VALUE);
+            }
+        }
+        return getNegatedConstantValue2((Rvalue) il);
     }
 
     // ------------ BlockStatement.generatesCode() -------------
 
     /**
-     * Check whether invocation of {@link #compile(Java.BlockStatement)} would
+     * Check whether invocation of {@link #compile(BlockStatement)} would
      * generate more than zero code bytes.
      */
-    private boolean generatesCode(Java.BlockStatement bs) throws CompileException {
+    private boolean generatesCode(BlockStatement bs) throws CompileException {
         final boolean[] res = new boolean[1];
         class UCE extends RuntimeException { final CompileException ce; UCE(CompileException ce) { this.ce = ce; } }
-        Visitor.BlockStatementVisitor bsv = new Visitor.BlockStatementVisitor() {
+        BlockStatementVisitor bsv = new BlockStatementVisitor() {
             // CHECKSTYLE(LineLengthCheck):OFF
-            public void visitInitializer(Java.Initializer i)                                                { try { res[0] = UnitCompiler.this.generatesCode2(i);  } catch (CompileException e) { throw new UCE(e); } }
-            public void visitFieldDeclaration(Java.FieldDeclaration fd)                                     { try { res[0] = UnitCompiler.this.generatesCode2(fd); } catch (CompileException e) { throw new UCE(e); } }
-            public void visitLabeledStatement(Java.LabeledStatement ls)                                     {       res[0] = UnitCompiler.this.generatesCode2(ls);                                                    }
-            public void visitBlock(Java.Block b)                                                            { try { res[0] = UnitCompiler.this.generatesCode2(b);  } catch (CompileException e) { throw new UCE(e); } }
-            public void visitExpressionStatement(Java.ExpressionStatement es)                               {       res[0] = UnitCompiler.this.generatesCode2(es);                                                    }
-            public void visitIfStatement(Java.IfStatement is)                                               {       res[0] = UnitCompiler.this.generatesCode2(is);                                                    }
-            public void visitForStatement(Java.ForStatement fs)                                             {       res[0] = UnitCompiler.this.generatesCode2(fs);                                                    }
-            public void visitWhileStatement(Java.WhileStatement ws)                                         {       res[0] = UnitCompiler.this.generatesCode2(ws);                                                    }
-            public void visitTryStatement(Java.TryStatement ts)                                             {       res[0] = UnitCompiler.this.generatesCode2(ts);                                                    }
-            public void visitSwitchStatement(Java.SwitchStatement ss)                                       {       res[0] = UnitCompiler.this.generatesCode2(ss);                                                    }
-            public void visitSynchronizedStatement(Java.SynchronizedStatement ss)                           {       res[0] = UnitCompiler.this.generatesCode2(ss);                                                    }
-            public void visitDoStatement(Java.DoStatement ds)                                               {       res[0] = UnitCompiler.this.generatesCode2(ds);                                                    }
-            public void visitLocalVariableDeclarationStatement(Java.LocalVariableDeclarationStatement lvds) {       res[0] = UnitCompiler.this.generatesCode2(lvds);                                                  }
-            public void visitReturnStatement(Java.ReturnStatement rs)                                       {       res[0] = UnitCompiler.this.generatesCode2(rs);                                                    }
-            public void visitThrowStatement(Java.ThrowStatement ts)                                         {       res[0] = UnitCompiler.this.generatesCode2(ts);                                                    }
-            public void visitBreakStatement(Java.BreakStatement bs)                                         {       res[0] = UnitCompiler.this.generatesCode2(bs);                                                    }
-            public void visitContinueStatement(Java.ContinueStatement cs)                                   {       res[0] = UnitCompiler.this.generatesCode2(cs);                                                    }
-            public void visitEmptyStatement(Java.EmptyStatement es)                                         {       res[0] = UnitCompiler.this.generatesCode2(es);                                                    }
-            public void visitLocalClassDeclarationStatement(Java.LocalClassDeclarationStatement lcds)       {       res[0] = UnitCompiler.this.generatesCode2(lcds);                                                  }
-            public void visitAlternateConstructorInvocation(Java.AlternateConstructorInvocation aci)        {       res[0] = UnitCompiler.this.generatesCode2(aci);                                                   }
-            public void visitSuperConstructorInvocation(Java.SuperConstructorInvocation sci)                {       res[0] = UnitCompiler.this.generatesCode2(sci);                                                   }
+            public void visitInitializer(Initializer i)                                                { try { res[0] = UnitCompiler.this.generatesCode2(i);  } catch (CompileException e) { throw new UCE(e); } }
+            public void visitFieldDeclaration(FieldDeclaration fd)                                     { try { res[0] = UnitCompiler.this.generatesCode2(fd); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitLabeledStatement(LabeledStatement ls)                                     {       res[0] = UnitCompiler.this.generatesCode2(ls);                                                    }
+            public void visitBlock(Block b)                                                            { try { res[0] = UnitCompiler.this.generatesCode2(b);  } catch (CompileException e) { throw new UCE(e); } }
+            public void visitExpressionStatement(ExpressionStatement es)                               {       res[0] = UnitCompiler.this.generatesCode2(es);                                                    }
+            public void visitIfStatement(IfStatement is)                                               {       res[0] = UnitCompiler.this.generatesCode2(is);                                                    }
+            public void visitForStatement(ForStatement fs)                                             {       res[0] = UnitCompiler.this.generatesCode2(fs);                                                    }
+            public void visitWhileStatement(WhileStatement ws)                                         {       res[0] = UnitCompiler.this.generatesCode2(ws);                                                    }
+            public void visitTryStatement(TryStatement ts)                                             {       res[0] = UnitCompiler.this.generatesCode2(ts);                                                    }
+            public void visitSwitchStatement(SwitchStatement ss)                                       {       res[0] = UnitCompiler.this.generatesCode2(ss);                                                    }
+            public void visitSynchronizedStatement(SynchronizedStatement ss)                           {       res[0] = UnitCompiler.this.generatesCode2(ss);                                                    }
+            public void visitDoStatement(DoStatement ds)                                               {       res[0] = UnitCompiler.this.generatesCode2(ds);                                                    }
+            public void visitLocalVariableDeclarationStatement(LocalVariableDeclarationStatement lvds) {       res[0] = UnitCompiler.this.generatesCode2(lvds);                                                  }
+            public void visitReturnStatement(ReturnStatement rs)                                       {       res[0] = UnitCompiler.this.generatesCode2(rs);                                                    }
+            public void visitThrowStatement(ThrowStatement ts)                                         {       res[0] = UnitCompiler.this.generatesCode2(ts);                                                    }
+            public void visitBreakStatement(BreakStatement bs)                                         {       res[0] = UnitCompiler.this.generatesCode2(bs);                                                    }
+            public void visitContinueStatement(ContinueStatement cs)                                   {       res[0] = UnitCompiler.this.generatesCode2(cs);                                                    }
+            public void visitEmptyStatement(EmptyStatement es)                                         {       res[0] = UnitCompiler.this.generatesCode2(es);                                                    }
+            public void visitLocalClassDeclarationStatement(LocalClassDeclarationStatement lcds)       {       res[0] = UnitCompiler.this.generatesCode2(lcds);                                                  }
+            public void visitAlternateConstructorInvocation(AlternateConstructorInvocation aci)        {       res[0] = UnitCompiler.this.generatesCode2(aci);                                                   }
+            public void visitSuperConstructorInvocation(SuperConstructorInvocation sci)                {       res[0] = UnitCompiler.this.generatesCode2(sci);                                                   }
             // CHECKSTYLE(LineLengthCheck):ON
         };
         try {
@@ -4300,24 +4524,24 @@ public class UnitCompiler {
             throw uce.ce;
         }
     }
-    public boolean generatesCode2(Java.BlockStatement bs) { return true; }
-    public boolean generatesCode2(Java.EmptyStatement es) { return false; }
-    public boolean generatesCode2(Java.LocalClassDeclarationStatement lcds) { return false; }
-    public boolean generatesCode2(Java.Initializer i) throws CompileException { return this.generatesCode(i.block); }
+    public boolean generatesCode2(BlockStatement bs) { return true; }
+    public boolean generatesCode2(EmptyStatement es) { return false; }
+    public boolean generatesCode2(LocalClassDeclarationStatement lcds) { return false; }
+    public boolean generatesCode2(Initializer i) throws CompileException { return this.generatesCode(i.block); }
     public boolean generatesCode2ListStatements(List/*<BlockStatement>*/ l) throws CompileException {
         for (int i = 0; i < l.size(); ++i) {
-            if (this.generatesCode(((Java.BlockStatement) l.get(i)))) return true;
+            if (this.generatesCode(((BlockStatement) l.get(i)))) return true;
         }
         return false;
     }
-    public boolean generatesCode2(Java.Block b) throws CompileException {
+    public boolean generatesCode2(Block b) throws CompileException {
         return generatesCode2ListStatements(b.statements);
     }
-    public boolean generatesCode2(Java.FieldDeclaration fd) throws CompileException {
+    public boolean generatesCode2(FieldDeclaration fd) throws CompileException {
         // Code is only generated if at least one of the declared variables has a
         // non-constant-final initializer.
         for (int i = 0; i < fd.variableDeclarators.length; ++i) {
-            Java.VariableDeclarator vd = fd.variableDeclarators[i];
+            VariableDeclarator vd = fd.variableDeclarators[i];
             if (this.getNonConstantFinalInitializer(fd, vd) != null) return true;
         }
         return false;
@@ -4333,43 +4557,43 @@ public class UnitCompiler {
      * <p>
      * Notice: If <code>optionalStackValueType</code> is <code>null</code>, then the operand stack is empty; otherwise
      * exactly one operand with that type is on the stack. This information is vital to implementations of {@link
-     * #leave(Java.BlockStatement, IClass)} that require a specific operand stack state (e.g. an empty operand stack for
+     * #leave(BlockStatement, IClass)} that require a specific operand stack state (e.g. an empty operand stack for
      * JSR).
      */
-    private void leave(Java.BlockStatement bs, final IClass optionalStackValueType) {
-        Visitor.BlockStatementVisitor bsv = new Visitor.BlockStatementVisitor() {
+    private void leave(BlockStatement bs, final IClass optionalStackValueType) {
+        BlockStatementVisitor bsv = new BlockStatementVisitor() {
             // CHECKSTYLE(LineLengthCheck):OFF
-            public void visitInitializer(Java.Initializer i)                                                  { UnitCompiler.this.leave2(i,    optionalStackValueType); }
-            public void visitFieldDeclaration(Java.FieldDeclaration fd)                                       { UnitCompiler.this.leave2(fd,   optionalStackValueType); }
-            public void visitLabeledStatement(Java.LabeledStatement ls)                                       { UnitCompiler.this.leave2(ls,   optionalStackValueType); }
-            public void visitBlock(Java.Block b)                                                              { UnitCompiler.this.leave2(b,    optionalStackValueType); }
-            public void visitExpressionStatement(Java.ExpressionStatement es)                                 { UnitCompiler.this.leave2(es,   optionalStackValueType); }
-            public void visitIfStatement(Java.IfStatement is)                                                 { UnitCompiler.this.leave2(is,   optionalStackValueType); }
-            public void visitForStatement(Java.ForStatement fs)                                               { UnitCompiler.this.leave2(fs,   optionalStackValueType); }
-            public void visitWhileStatement(Java.WhileStatement ws)                                           { UnitCompiler.this.leave2(ws,   optionalStackValueType); }
-            public void visitTryStatement(Java.TryStatement ts)                                               { UnitCompiler.this.leave2(ts,   optionalStackValueType); }
-            public void visitSwitchStatement(Java.SwitchStatement ss)                                         { UnitCompiler.this.leave2(ss,   optionalStackValueType); }
-            public void visitSynchronizedStatement(Java.SynchronizedStatement ss)                             { UnitCompiler.this.leave2(ss,   optionalStackValueType); }
-            public void visitDoStatement(Java.DoStatement ds)                                                 { UnitCompiler.this.leave2(ds,   optionalStackValueType); }
-            public void visitLocalVariableDeclarationStatement(Java.LocalVariableDeclarationStatement lvds)   { UnitCompiler.this.leave2(lvds, optionalStackValueType); }
-            public void visitReturnStatement(Java.ReturnStatement rs)                                         { UnitCompiler.this.leave2(rs,   optionalStackValueType); }
-            public void visitThrowStatement(Java.ThrowStatement ts)                                           { UnitCompiler.this.leave2(ts,   optionalStackValueType); }
-            public void visitBreakStatement(Java.BreakStatement bs)                                           { UnitCompiler.this.leave2(bs,   optionalStackValueType); }
-            public void visitContinueStatement(Java.ContinueStatement cs)                                     { UnitCompiler.this.leave2(cs,   optionalStackValueType); }
-            public void visitEmptyStatement(Java.EmptyStatement es)                                           { UnitCompiler.this.leave2(es,   optionalStackValueType); }
-            public void visitLocalClassDeclarationStatement(Java.LocalClassDeclarationStatement lcds)         { UnitCompiler.this.leave2(lcds, optionalStackValueType); }
-            public void visitAlternateConstructorInvocation(Java.AlternateConstructorInvocation aci)          { UnitCompiler.this.leave2(aci,  optionalStackValueType); }
-            public void visitSuperConstructorInvocation(Java.SuperConstructorInvocation sci)                  { UnitCompiler.this.leave2(sci,  optionalStackValueType); }
+            public void visitInitializer(Initializer i)                                                  { UnitCompiler.this.leave2(i,    optionalStackValueType); }
+            public void visitFieldDeclaration(FieldDeclaration fd)                                       { UnitCompiler.this.leave2(fd,   optionalStackValueType); }
+            public void visitLabeledStatement(LabeledStatement ls)                                       { UnitCompiler.this.leave2(ls,   optionalStackValueType); }
+            public void visitBlock(Block b)                                                              { UnitCompiler.this.leave2(b,    optionalStackValueType); }
+            public void visitExpressionStatement(ExpressionStatement es)                                 { UnitCompiler.this.leave2(es,   optionalStackValueType); }
+            public void visitIfStatement(IfStatement is)                                                 { UnitCompiler.this.leave2(is,   optionalStackValueType); }
+            public void visitForStatement(ForStatement fs)                                               { UnitCompiler.this.leave2(fs,   optionalStackValueType); }
+            public void visitWhileStatement(WhileStatement ws)                                           { UnitCompiler.this.leave2(ws,   optionalStackValueType); }
+            public void visitTryStatement(TryStatement ts)                                               { UnitCompiler.this.leave2(ts,   optionalStackValueType); }
+            public void visitSwitchStatement(SwitchStatement ss)                                         { UnitCompiler.this.leave2(ss,   optionalStackValueType); }
+            public void visitSynchronizedStatement(SynchronizedStatement ss)                             { UnitCompiler.this.leave2(ss,   optionalStackValueType); }
+            public void visitDoStatement(DoStatement ds)                                                 { UnitCompiler.this.leave2(ds,   optionalStackValueType); }
+            public void visitLocalVariableDeclarationStatement(LocalVariableDeclarationStatement lvds)   { UnitCompiler.this.leave2(lvds, optionalStackValueType); }
+            public void visitReturnStatement(ReturnStatement rs)                                         { UnitCompiler.this.leave2(rs,   optionalStackValueType); }
+            public void visitThrowStatement(ThrowStatement ts)                                           { UnitCompiler.this.leave2(ts,   optionalStackValueType); }
+            public void visitBreakStatement(BreakStatement bs)                                           { UnitCompiler.this.leave2(bs,   optionalStackValueType); }
+            public void visitContinueStatement(ContinueStatement cs)                                     { UnitCompiler.this.leave2(cs,   optionalStackValueType); }
+            public void visitEmptyStatement(EmptyStatement es)                                           { UnitCompiler.this.leave2(es,   optionalStackValueType); }
+            public void visitLocalClassDeclarationStatement(LocalClassDeclarationStatement lcds)         { UnitCompiler.this.leave2(lcds, optionalStackValueType); }
+            public void visitAlternateConstructorInvocation(AlternateConstructorInvocation aci)          { UnitCompiler.this.leave2(aci,  optionalStackValueType); }
+            public void visitSuperConstructorInvocation(SuperConstructorInvocation sci)                  { UnitCompiler.this.leave2(sci,  optionalStackValueType); }
             // CHECKSTYLE(LineLengthCheck):ON
         };
         bs.accept(bsv);
     }
-    public void leave2(Java.BlockStatement bs, IClass optionalStackValueType) { ; }
-    public void leave2(Java.SynchronizedStatement ss, IClass optionalStackValueType) {
+    public void leave2(BlockStatement bs, IClass optionalStackValueType) { ; }
+    public void leave2(SynchronizedStatement ss, IClass optionalStackValueType) {
         this.load((Locatable) ss, this.iClassLoader.OBJECT, ss.monitorLvIndex);
         this.writeOpcode(ss, Opcode.MONITOREXIT);
     }
-    public void leave2(Java.TryStatement ts, IClass optionalStackValueType) {
+    public void leave2(TryStatement ts, IClass optionalStackValueType) {
         if (ts.finallyOffset != null) {
 
             this.codeContext.saveLocalVariables();
@@ -4400,22 +4624,22 @@ public class UnitCompiler {
     // ---------------- Lvalue.compileSet() -----------------
 
     /**
-     * Generates code that stores a value in the {@link Java.Lvalue}.
-     * Expects the {@link Java.Lvalue}'s context (see {@link
-     * #compileContext}) and a value of the {@link Java.Lvalue}'s type
+     * Generates code that stores a value in the {@link Lvalue}.
+     * Expects the {@link Lvalue}'s context (see {@link
+     * #compileContext}) and a value of the {@link Lvalue}'s type
      * on the operand stack.
      */
-    private void compileSet(Java.Lvalue lv) throws CompileException {
+    private void compileSet(Lvalue lv) throws CompileException {
         class UCE extends RuntimeException { final CompileException ce; UCE(CompileException ce) { this.ce = ce; } }
-        Visitor.LvalueVisitor lvv = new Visitor.LvalueVisitor() {
+        LvalueVisitor lvv = new LvalueVisitor() {
             // CHECKSTYLE(LineLengthCheck):OFF
-            public void visitAmbiguousName(Java.AmbiguousName an)                                          { try { UnitCompiler.this.compileSet2(an);    } catch (CompileException e) { throw new UCE(e); } }
-            public void visitArrayAccessExpression(Java.ArrayAccessExpression aae)                         { try { UnitCompiler.this.compileSet2(aae);   } catch (CompileException e) { throw new UCE(e); } }
-            public void visitFieldAccess(Java.FieldAccess fa)                                              { try { UnitCompiler.this.compileSet2(fa);    } catch (CompileException e) { throw new UCE(e); } }
-            public void visitFieldAccessExpression(Java.FieldAccessExpression fae)                         { try { UnitCompiler.this.compileSet2(fae);   } catch (CompileException e) { throw new UCE(e); } }
-            public void visitSuperclassFieldAccessExpression(Java.SuperclassFieldAccessExpression scfae)   { try { UnitCompiler.this.compileSet2(scfae); } catch (CompileException e) { throw new UCE(e); } }
-            public void visitLocalVariableAccess(Java.LocalVariableAccess lva)                             {       UnitCompiler.this.compileSet2(lva);                                                      }
-            public void visitParenthesizedExpression(Java.ParenthesizedExpression pe)                      { try { UnitCompiler.this.compileSet2(pe);    } catch (CompileException e) { throw new UCE(e); } }
+            public void visitAmbiguousName(AmbiguousName an)                                          { try { UnitCompiler.this.compileSet2(an);    } catch (CompileException e) { throw new UCE(e); } }
+            public void visitArrayAccessExpression(ArrayAccessExpression aae)                         { try { UnitCompiler.this.compileSet2(aae);   } catch (CompileException e) { throw new UCE(e); } }
+            public void visitFieldAccess(FieldAccess fa)                                              { try { UnitCompiler.this.compileSet2(fa);    } catch (CompileException e) { throw new UCE(e); } }
+            public void visitFieldAccessExpression(FieldAccessExpression fae)                         { try { UnitCompiler.this.compileSet2(fae);   } catch (CompileException e) { throw new UCE(e); } }
+            public void visitSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae)   { try { UnitCompiler.this.compileSet2(scfae); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitLocalVariableAccess(LocalVariableAccess lva)                             {       UnitCompiler.this.compileSet2(lva);                                                      }
+            public void visitParenthesizedExpression(ParenthesizedExpression pe)                      { try { UnitCompiler.this.compileSet2(pe);    } catch (CompileException e) { throw new UCE(e); } }
             // CHECKSTYLE(LineLengthCheck):ON
         };
         try {
@@ -4424,17 +4648,17 @@ public class UnitCompiler {
             throw uce.ce;
         }
     }
-    private void compileSet2(Java.AmbiguousName an) throws CompileException {
+    private void compileSet2(AmbiguousName an) throws CompileException {
         this.compileSet(this.toLvalueOrCE(this.reclassify(an)));
     }
-    private void compileSet2(Java.LocalVariableAccess lva) {
+    private void compileSet2(LocalVariableAccess lva) {
         this.store(
             (Locatable) lva,
             lva.localVariable.type,
             lva.localVariable
         );
     }
-    private void compileSet2(Java.FieldAccess fa) throws CompileException {
+    private void compileSet2(FieldAccess fa) throws CompileException {
         this.checkAccessible(fa.field, fa.getEnclosingBlockStatement());
         this.writeOpcode(fa, (
             fa.field.isStatic() ?
@@ -4447,64 +4671,69 @@ public class UnitCompiler {
             fa.field.getDescriptor()                       // fieldFD
         );
     }
-    private void compileSet2(Java.ArrayAccessExpression aae) throws CompileException {
+    private void compileSet2(ArrayAccessExpression aae) throws CompileException {
         this.writeOpcode(aae, Opcode.IASTORE + UnitCompiler.ilfdabcs(this.getType(aae)));
     }
-    private void compileSet2(Java.FieldAccessExpression fae) throws CompileException {
+    private void compileSet2(FieldAccessExpression fae) throws CompileException {
         this.determineValue(fae);
         this.compileSet(this.toLvalueOrCE(fae.value));
     }
-    private void compileSet2(Java.SuperclassFieldAccessExpression scfae) throws CompileException {
+    private void compileSet2(SuperclassFieldAccessExpression scfae) throws CompileException {
         this.determineValue(scfae);
         this.compileSet(this.toLvalueOrCE(scfae.value));
     }
-    private void compileSet2(Java.ParenthesizedExpression pe) throws CompileException {
+    private void compileSet2(ParenthesizedExpression pe) throws CompileException {
         this.compileSet(this.toLvalueOrCE(pe.value));
     }
 
     // ---------------- Atom.getType() ----------------
 
-    private IClass getType(Java.Atom a) throws CompileException {
+    private IClass getType(Atom a) throws CompileException {
         final IClass[] res = new IClass[1];
         class UCE extends RuntimeException { final CompileException ce; UCE(CompileException ce) { this.ce = ce; } }
-        Visitor.AtomVisitor av = new Visitor.AtomVisitor() {
+        AtomVisitor av = new AtomVisitor() {
             // CHECKSTYLE(LineLengthCheck):OFF
             // AtomVisitor
-            public void visitPackage(Java.Package p) { try { res[0] = UnitCompiler.this.getType2(p); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitPackage(Package p) { try { res[0] = UnitCompiler.this.getType2(p); } catch (CompileException e) { throw new UCE(e); } }
             // TypeVisitor
-            public void visitArrayType(Java.ArrayType at)                { try { res[0] = UnitCompiler.this.getType2(at);  } catch (CompileException e) { throw new UCE(e); } }
-            public void visitBasicType(Java.BasicType bt)                {       res[0] = UnitCompiler.this.getType2(bt);                                                     }
-            public void visitReferenceType(Java.ReferenceType rt)        { try { res[0] = UnitCompiler.this.getType2(rt);  } catch (CompileException e) { throw new UCE(e); } }
-            public void visitRvalueMemberType(Java.RvalueMemberType rmt) { try { res[0] = UnitCompiler.this.getType2(rmt); } catch (CompileException e) { throw new UCE(e); } }
-            public void visitSimpleType(Java.SimpleType st)              {       res[0] = UnitCompiler.this.getType2(st);                                                     }
+            public void visitArrayType(ArrayType at)                { try { res[0] = UnitCompiler.this.getType2(at);  } catch (CompileException e) { throw new UCE(e); } }
+            public void visitBasicType(BasicType bt)                {       res[0] = UnitCompiler.this.getType2(bt);                                                     }
+            public void visitReferenceType(ReferenceType rt)        { try { res[0] = UnitCompiler.this.getType2(rt);  } catch (CompileException e) { throw new UCE(e); } }
+            public void visitRvalueMemberType(RvalueMemberType rmt) { try { res[0] = UnitCompiler.this.getType2(rmt); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitSimpleType(SimpleType st)              {       res[0] = UnitCompiler.this.getType2(st);                                                     }
             // RvalueVisitor
-            public void visitArrayLength(Java.ArrayLength al)                                {       res[0] = UnitCompiler.this.getType2(al);                                                     }
-            public void visitAssignment(Java.Assignment a)                                   { try { res[0] = UnitCompiler.this.getType2(a);   } catch (CompileException e) { throw new UCE(e); } }
-            public void visitUnaryOperation(Java.UnaryOperation uo)                          { try { res[0] = UnitCompiler.this.getType2(uo);  } catch (CompileException e) { throw new UCE(e); } }
-            public void visitBinaryOperation(Java.BinaryOperation bo)                        { try { res[0] = UnitCompiler.this.getType2(bo);  } catch (CompileException e) { throw new UCE(e); } }
-            public void visitCast(Java.Cast c)                                               { try { res[0] = UnitCompiler.this.getType2(c);   } catch (CompileException e) { throw new UCE(e); } }
-            public void visitClassLiteral(Java.ClassLiteral cl)                              {       res[0] = UnitCompiler.this.getType2(cl);                                                     }
-            public void visitConditionalExpression(Java.ConditionalExpression ce)            { try { res[0] = UnitCompiler.this.getType2(ce);  } catch (CompileException e) { throw new UCE(e); } }
-            public void visitCrement(Java.Crement c)                                         { try { res[0] = UnitCompiler.this.getType2(c);   } catch (CompileException e) { throw new UCE(e); } }
-            public void visitInstanceof(Java.Instanceof io)                                  {       res[0] = UnitCompiler.this.getType2(io);                                                     }
-            public void visitMethodInvocation(Java.MethodInvocation mi)                      { try { res[0] = UnitCompiler.this.getType2(mi);  } catch (CompileException e) { throw new UCE(e); } }
-            public void visitSuperclassMethodInvocation(Java.SuperclassMethodInvocation smi) { try { res[0] = UnitCompiler.this.getType2(smi); } catch (CompileException e) { throw new UCE(e); } }
-            public void visitLiteral(Java.Literal l)                                         {       res[0] = UnitCompiler.this.getType2(l);                                                      }
-            public void visitNewAnonymousClassInstance(Java.NewAnonymousClassInstance naci)  {       res[0] = UnitCompiler.this.getType2(naci);                                                   }
-            public void visitNewArray(Java.NewArray na)                                      { try { res[0] = UnitCompiler.this.getType2(na);  } catch (CompileException e) { throw new UCE(e); } }
-            public void visitNewInitializedArray(Java.NewInitializedArray nia)               { try { res[0] = UnitCompiler.this.getType2(nia); } catch (CompileException e) { throw new UCE(e); } }
-            public void visitNewClassInstance(Java.NewClassInstance nci)                     { try { res[0] = UnitCompiler.this.getType2(nci); } catch (CompileException e) { throw new UCE(e); } }
-            public void visitParameterAccess(Java.ParameterAccess pa)                        { try { res[0] = UnitCompiler.this.getType2(pa);  } catch (CompileException e) { throw new UCE(e); } }
-            public void visitQualifiedThisReference(Java.QualifiedThisReference qtr)         { try { res[0] = UnitCompiler.this.getType2(qtr); } catch (CompileException e) { throw new UCE(e); } }
-            public void visitThisReference(Java.ThisReference tr)                            { try { res[0] = UnitCompiler.this.getType2(tr);  } catch (CompileException e) { throw new UCE(e); } }
+            public void visitArrayLength(ArrayLength al)                                {       res[0] = UnitCompiler.this.getType2(al);                                                     }
+            public void visitAssignment(Assignment a)                                   { try { res[0] = UnitCompiler.this.getType2(a);   } catch (CompileException e) { throw new UCE(e); } }
+            public void visitUnaryOperation(UnaryOperation uo)                          { try { res[0] = UnitCompiler.this.getType2(uo);  } catch (CompileException e) { throw new UCE(e); } }
+            public void visitBinaryOperation(BinaryOperation bo)                        { try { res[0] = UnitCompiler.this.getType2(bo);  } catch (CompileException e) { throw new UCE(e); } }
+            public void visitCast(Cast c)                                               { try { res[0] = UnitCompiler.this.getType2(c);   } catch (CompileException e) { throw new UCE(e); } }
+            public void visitClassLiteral(ClassLiteral cl)                              {       res[0] = UnitCompiler.this.getType2(cl);                                                     }
+            public void visitConditionalExpression(ConditionalExpression ce)            { try { res[0] = UnitCompiler.this.getType2(ce);  } catch (CompileException e) { throw new UCE(e); } }
+            public void visitCrement(Crement c)                                         { try { res[0] = UnitCompiler.this.getType2(c);   } catch (CompileException e) { throw new UCE(e); } }
+            public void visitInstanceof(Instanceof io)                                  {       res[0] = UnitCompiler.this.getType2(io);                                                     }
+            public void visitMethodInvocation(MethodInvocation mi)                      { try { res[0] = UnitCompiler.this.getType2(mi);  } catch (CompileException e) { throw new UCE(e); } }
+            public void visitSuperclassMethodInvocation(SuperclassMethodInvocation smi) { try { res[0] = UnitCompiler.this.getType2(smi); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitIntegerLiteral(IntegerLiteral il)                          {       res[0] = UnitCompiler.this.getType2(il);                                                   }
+            public void visitFloatingPointLiteral(FloatingPointLiteral fpl)             {       res[0] = UnitCompiler.this.getType2(fpl);                                                  }
+            public void visitBooleanLiteral(BooleanLiteral bl)                          {       res[0] = UnitCompiler.this.getType2(bl);                                                   }
+            public void visitCharacterLiteral(CharacterLiteral cl)                      {       res[0] = UnitCompiler.this.getType2(cl);                                                   }
+            public void visitStringLiteral(StringLiteral sl)                            {       res[0] = UnitCompiler.this.getType2(sl);                                                   }
+            public void visitNullLiteral(NullLiteral nl)                                {       res[0] = UnitCompiler.this.getType2(nl);                                                   }
+            public void visitNewAnonymousClassInstance(NewAnonymousClassInstance naci)  {       res[0] = UnitCompiler.this.getType2(naci);                                                   }
+            public void visitNewArray(NewArray na)                                      { try { res[0] = UnitCompiler.this.getType2(na);  } catch (CompileException e) { throw new UCE(e); } }
+            public void visitNewInitializedArray(NewInitializedArray nia)               { try { res[0] = UnitCompiler.this.getType2(nia); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitNewClassInstance(NewClassInstance nci)                     { try { res[0] = UnitCompiler.this.getType2(nci); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitParameterAccess(ParameterAccess pa)                        { try { res[0] = UnitCompiler.this.getType2(pa);  } catch (CompileException e) { throw new UCE(e); } }
+            public void visitQualifiedThisReference(QualifiedThisReference qtr)         { try { res[0] = UnitCompiler.this.getType2(qtr); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitThisReference(ThisReference tr)                            { try { res[0] = UnitCompiler.this.getType2(tr);  } catch (CompileException e) { throw new UCE(e); } }
             // LvalueVisitor
-            public void visitAmbiguousName(Java.AmbiguousName an)                                        { try { res[0] = UnitCompiler.this.getType2(an);    } catch (CompileException e) { throw new UCE(e); } }
-            public void visitArrayAccessExpression(Java.ArrayAccessExpression aae)                       { try { res[0] = UnitCompiler.this.getType2(aae);   } catch (CompileException e) { throw new UCE(e); } }
-            public void visitFieldAccess(Java.FieldAccess fa)                                            { try { res[0] = UnitCompiler.this.getType2(fa);    } catch (CompileException e) { throw new UCE(e); } }
-            public void visitFieldAccessExpression(Java.FieldAccessExpression fae)                       { try { res[0] = UnitCompiler.this.getType2(fae);   } catch (CompileException e) { throw new UCE(e); } }
-            public void visitSuperclassFieldAccessExpression(Java.SuperclassFieldAccessExpression scfae) { try { res[0] = UnitCompiler.this.getType2(scfae); } catch (CompileException e) { throw new UCE(e); } }
-            public void visitLocalVariableAccess(Java.LocalVariableAccess lva)                           {       res[0] = UnitCompiler.this.getType2(lva);                                                      }
-            public void visitParenthesizedExpression(Java.ParenthesizedExpression pe)                    { try { res[0] = UnitCompiler.this.getType2(pe);    } catch (CompileException e) { throw new UCE(e); } }
+            public void visitAmbiguousName(AmbiguousName an)                                        { try { res[0] = UnitCompiler.this.getType2(an);    } catch (CompileException e) { throw new UCE(e); } }
+            public void visitArrayAccessExpression(ArrayAccessExpression aae)                       { try { res[0] = UnitCompiler.this.getType2(aae);   } catch (CompileException e) { throw new UCE(e); } }
+            public void visitFieldAccess(FieldAccess fa)                                            { try { res[0] = UnitCompiler.this.getType2(fa);    } catch (CompileException e) { throw new UCE(e); } }
+            public void visitFieldAccessExpression(FieldAccessExpression fae)                       { try { res[0] = UnitCompiler.this.getType2(fae);   } catch (CompileException e) { throw new UCE(e); } }
+            public void visitSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae) { try { res[0] = UnitCompiler.this.getType2(scfae); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitLocalVariableAccess(LocalVariableAccess lva)                           {       res[0] = UnitCompiler.this.getType2(lva);                                                      }
+            public void visitParenthesizedExpression(ParenthesizedExpression pe)                    { try { res[0] = UnitCompiler.this.getType2(pe);    } catch (CompileException e) { throw new UCE(e); } }
             // CHECKSTYLE(LineLengthCheck):ON
         };
         try {
@@ -4514,34 +4743,34 @@ public class UnitCompiler {
             throw uce.ce;
         }
     }
-    private IClass getType2(Java.SimpleType st) { return st.iClass; }
-    private IClass getType2(Java.BasicType bt) {
+    private IClass getType2(SimpleType st) { return st.iClass; }
+    private IClass getType2(BasicType bt) {
         switch (bt.index) {
-            case Java.BasicType.VOID:    return IClass.VOID;
-            case Java.BasicType.BYTE:    return IClass.BYTE;
-            case Java.BasicType.SHORT:   return IClass.SHORT;
-            case Java.BasicType.CHAR:    return IClass.CHAR;
-            case Java.BasicType.INT:     return IClass.INT;
-            case Java.BasicType.LONG:    return IClass.LONG;
-            case Java.BasicType.FLOAT:   return IClass.FLOAT;
-            case Java.BasicType.DOUBLE:  return IClass.DOUBLE;
-            case Java.BasicType.BOOLEAN: return IClass.BOOLEAN;
+            case BasicType.VOID:    return IClass.VOID;
+            case BasicType.BYTE:    return IClass.BYTE;
+            case BasicType.SHORT:   return IClass.SHORT;
+            case BasicType.CHAR:    return IClass.CHAR;
+            case BasicType.INT:     return IClass.INT;
+            case BasicType.LONG:    return IClass.LONG;
+            case BasicType.FLOAT:   return IClass.FLOAT;
+            case BasicType.DOUBLE:  return IClass.DOUBLE;
+            case BasicType.BOOLEAN: return IClass.BOOLEAN;
             default: throw new JaninoRuntimeException("Invalid index " + bt.index);
         }
     }
-    private IClass getType2(Java.ReferenceType rt) throws CompileException {
-        Java.BlockStatement  scopeBlockStatement = null;
-        Java.TypeDeclaration scopeTypeDeclaration = null;
-        Java.CompilationUnit scopeCompilationUnit;
-        for (Java.Scope s = rt.getEnclosingScope();; s = s.getEnclosingScope()) {
-            if (s instanceof Java.BlockStatement && scopeBlockStatement == null) {
-                scopeBlockStatement = (Java.BlockStatement) s;
+    private IClass getType2(ReferenceType rt) throws CompileException {
+        BlockStatement  scopeBlockStatement = null;
+        TypeDeclaration scopeTypeDeclaration = null;
+        CompilationUnit scopeCompilationUnit;
+        for (Scope s = rt.getEnclosingScope();; s = s.getEnclosingScope()) {
+            if (s instanceof BlockStatement && scopeBlockStatement == null) {
+                scopeBlockStatement = (BlockStatement) s;
             }
-            if (s instanceof Java.TypeDeclaration && scopeTypeDeclaration == null) {
-                scopeTypeDeclaration = (Java.TypeDeclaration) s;
+            if (s instanceof TypeDeclaration && scopeTypeDeclaration == null) {
+                scopeTypeDeclaration = (TypeDeclaration) s;
             }
-            if (s instanceof Java.CompilationUnit) {
-                scopeCompilationUnit = (Java.CompilationUnit) s;
+            if (s instanceof CompilationUnit) {
+                scopeCompilationUnit = (CompilationUnit) s;
                 break;
             }
         }
@@ -4553,20 +4782,20 @@ public class UnitCompiler {
 
             // 6.5.5.1.1 Local class.
             {
-                Java.LocalClassDeclaration lcd = this.findLocalClassDeclaration(rt.getEnclosingScope(), simpleTypeName);
+                LocalClassDeclaration lcd = this.findLocalClassDeclaration(rt.getEnclosingScope(), simpleTypeName);
                 if (lcd != null) return this.resolve(lcd);
             }
 
             // 6.5.5.1.2 Member type.
             if (scopeTypeDeclaration != null) { // If enclosed by another type declaration...
                 for (
-                    Java.Scope s = scopeTypeDeclaration;
-                    !(s instanceof Java.CompilationUnit);
+                    Scope s = scopeTypeDeclaration;
+                    !(s instanceof CompilationUnit);
                     s = s.getEnclosingScope()
                 ) {
-                    if (s instanceof Java.TypeDeclaration) {
+                    if (s instanceof TypeDeclaration) {
                         IClass mt = this.findMemberType(
-                            this.resolve((Java.AbstractTypeDeclaration) s),
+                            this.resolve((AbstractTypeDeclaration) s),
                             simpleTypeName,
                             rt.getLocation()
                         );
@@ -4585,10 +4814,10 @@ public class UnitCompiler {
 
                 // 6.5.5.1.4b Type declared in same compilation unit.
                 {
-                    Java.PackageMemberTypeDeclaration pmtd = (
+                    PackageMemberTypeDeclaration pmtd = (
                         scopeCompilationUnit.getPackageMemberTypeDeclaration(simpleTypeName)
                     );
-                    if (pmtd != null) return this.resolve((Java.AbstractTypeDeclaration) pmtd);
+                    if (pmtd != null) return this.resolve((AbstractTypeDeclaration) pmtd);
                 }
             }
 
@@ -4668,7 +4897,7 @@ public class UnitCompiler {
         } else {
 
             // 6.5.5.2 Qualified type name (two or more identifiers).
-            Java.Atom q = this.reclassifyName(
+            Atom q = this.reclassifyName(
                 rt.getLocation(),
                 rt.getEnclosingScope(),
                 rt.identifiers,
@@ -4676,7 +4905,7 @@ public class UnitCompiler {
             );
 
             // 6.5.5.2.1 PACKAGE.CLASS
-            if (q instanceof Java.Package) {
+            if (q instanceof Package) {
                 String className = Java.join(rt.identifiers, ".");
                 IClass result = findClassByName(rt.getLocation(), className);
                 if (result != null) return result;
@@ -4702,7 +4931,7 @@ public class UnitCompiler {
         }
     }
 
-    private IClass getType2(Java.RvalueMemberType rvmt) throws CompileException {
+    private IClass getType2(RvalueMemberType rvmt) throws CompileException {
         IClass rvt = this.getType(rvmt.rvalue);
         IClass memberType = this.findMemberType(rvt, rvmt.identifier, rvmt.getLocation());
         if (memberType == null) {
@@ -4710,38 +4939,38 @@ public class UnitCompiler {
         }
         return memberType;
     }
-    private IClass getType2(Java.ArrayType at) throws CompileException {
+    private IClass getType2(ArrayType at) throws CompileException {
         return this.getType(at.componentType).getArrayIClass(this.iClassLoader.OBJECT);
     }
-    private IClass getType2(Java.AmbiguousName an) throws CompileException {
+    private IClass getType2(AmbiguousName an) throws CompileException {
         return this.getType(this.reclassify(an));
     }
-    private IClass getType2(Java.Package p) throws CompileException {
+    private IClass getType2(Package p) throws CompileException {
         this.compileError("Unknown variable or type \"" + p.name + "\"", p.getLocation());
         return this.iClassLoader.OBJECT;
     }
-    private IClass getType2(Java.LocalVariableAccess lva) {
+    private IClass getType2(LocalVariableAccess lva) {
         return lva.localVariable.type;
     }
-    private IClass getType2(Java.FieldAccess fa) throws CompileException {
+    private IClass getType2(FieldAccess fa) throws CompileException {
         return fa.field.getType();
     }
-    private IClass getType2(Java.ArrayLength al) {
+    private IClass getType2(ArrayLength al) {
         return IClass.INT;
     }
-    private IClass getType2(Java.ThisReference tr) throws CompileException {
+    private IClass getType2(ThisReference tr) throws CompileException {
         return this.getIClass(tr);
     }
-    private IClass getType2(Java.QualifiedThisReference qtr) throws CompileException {
+    private IClass getType2(QualifiedThisReference qtr) throws CompileException {
         return this.getTargetIClass(qtr);
     }
-    private IClass getType2(Java.ClassLiteral cl) {
+    private IClass getType2(ClassLiteral cl) {
         return this.iClassLoader.CLASS;
     }
-    private IClass getType2(Java.Assignment a) throws CompileException {
+    private IClass getType2(Assignment a) throws CompileException {
         return this.getType(a.lhs);
     }
-    private IClass getType2(Java.ConditionalExpression ce) throws CompileException {
+    private IClass getType2(ConditionalExpression ce) throws CompileException {
         IClass mhsType = this.getType(ce.mhs);
         IClass rhsType = this.getType(ce.rhs);
 
@@ -4759,14 +4988,14 @@ public class UnitCompiler {
             // TODO JLS 15.25.1.2.2
 
             // JLS 15.25.1.2.3
-            return this.binaryNumericPromotionType((Java.Locatable) ce, mhsType, rhsType);
+            return this.binaryNumericPromotionType((Locatable) ce, mhsType, rhsType);
         } else
-        if (this.getConstantValue(ce.mhs) == Java.Rvalue.CONSTANT_VALUE_NULL && !rhsType.isPrimitive()) {
+        if (this.getConstantValue(ce.mhs) == null && !rhsType.isPrimitive()) {
 
             // JLS 15.25.1.3 (null : reference)
             return rhsType;
         } else
-        if (!mhsType.isPrimitive() && this.getConstantValue(ce.rhs) == Java.Rvalue.CONSTANT_VALUE_NULL) {
+        if (!mhsType.isPrimitive() && this.getConstantValue(ce.rhs) == null) {
 
             // JLS 15.25.1.3 (reference : null)
             return mhsType;
@@ -4793,21 +5022,21 @@ public class UnitCompiler {
             return this.iClassLoader.OBJECT;
         }
     }
-    private IClass getType2(Java.Crement c) throws CompileException {
+    private IClass getType2(Crement c) throws CompileException {
         return this.getType(c.operand);
     }
-    private IClass getType2(Java.ArrayAccessExpression aae) throws CompileException {
+    private IClass getType2(ArrayAccessExpression aae) throws CompileException {
         return this.getType(aae.lhs).getComponentType();
     }
-    private IClass getType2(Java.FieldAccessExpression fae) throws CompileException {
+    private IClass getType2(FieldAccessExpression fae) throws CompileException {
         this.determineValue(fae);
         return this.getType(fae.value);
     }
-    private IClass getType2(Java.SuperclassFieldAccessExpression scfae) throws CompileException {
+    private IClass getType2(SuperclassFieldAccessExpression scfae) throws CompileException {
         this.determineValue(scfae);
         return this.getType(scfae.value);
     }
-    private IClass getType2(Java.UnaryOperation uo) throws CompileException {
+    private IClass getType2(UnaryOperation uo) throws CompileException {
         if (uo.operator == "!") return IClass.BOOLEAN;
 
         if (
@@ -4819,10 +5048,10 @@ public class UnitCompiler {
         this.compileError("Unexpected operator \"" + uo.operator + "\"", uo.getLocation());
         return IClass.BOOLEAN;
     }
-    private IClass getType2(Java.Instanceof io) {
+    private IClass getType2(Instanceof io) {
         return IClass.BOOLEAN;
     }
-    private IClass getType2(Java.BinaryOperation bo) throws CompileException {
+    private IClass getType2(BinaryOperation bo) throws CompileException {
         if (
             bo.op == "||" ||
             bo.op == "&&" ||
@@ -4844,7 +5073,7 @@ public class UnitCompiler {
                 lhsType == IClass.BOOLEAN || lhsType == this.iClassLoader.BOOLEAN ?
                 IClass.BOOLEAN :
                 this.binaryNumericPromotionType(
-                    (Java.Locatable) bo,
+                    (Locatable) bo,
                     lhsType,
                     this.getType(bo.rhs)
                 )
@@ -4864,14 +5093,14 @@ public class UnitCompiler {
             Iterator ops = bo.unrollLeftAssociation();
 
             // Check the far left operand type.
-            IClass lhsType = this.getUnboxedType(this.getType(((Java.Rvalue) ops.next())));
+            IClass lhsType = this.getUnboxedType(this.getType(((Rvalue) ops.next())));
             if (bo.op == "+" && lhsType == icl.STRING) return icl.STRING;
 
             // Determine the expression type.
             do {
-                IClass rhsType = this.getUnboxedType(this.getType(((Java.Rvalue) ops.next())));
+                IClass rhsType = this.getUnboxedType(this.getType(((Rvalue) ops.next())));
                 if (bo.op == "+" && rhsType == icl.STRING) return icl.STRING;
-                lhsType = this.binaryNumericPromotionType((Java.Locatable) bo, lhsType, rhsType);
+                lhsType = this.binaryNumericPromotionType((Locatable) bo, lhsType, rhsType);
             } while (ops.hasNext());
             return lhsType;
         }
@@ -4892,95 +5121,109 @@ public class UnitCompiler {
         IClass c = this.isUnboxingConvertible(type);
         return c != null ? c : type;
     }
-    private IClass getType2(Java.Cast c) throws CompileException {
+    private IClass getType2(Cast c) throws CompileException {
         return this.getType(c.targetType);
     }
-    private IClass getType2(Java.ParenthesizedExpression pe) throws CompileException {
+    private IClass getType2(ParenthesizedExpression pe) throws CompileException {
         return this.getType(pe.value);
     }
-    private IClass getType2(Java.MethodInvocation mi) throws CompileException {
+    private IClass getType2(MethodInvocation mi) throws CompileException {
         if (mi.iMethod == null) {
             mi.iMethod = this.findIMethod(mi);
         }
         return mi.iMethod.getReturnType();
     }
-    private IClass getType2(Java.SuperclassMethodInvocation scmi) throws CompileException {
+    private IClass getType2(SuperclassMethodInvocation scmi) throws CompileException {
         return this.findIMethod(scmi).getReturnType();
     }
-    private IClass getType2(Java.NewClassInstance nci) throws CompileException {
+    private IClass getType2(NewClassInstance nci) throws CompileException {
         if (nci.iClass == null) nci.iClass = this.getType(nci.type);
         return nci.iClass;
     }
-    private IClass getType2(Java.NewAnonymousClassInstance naci) {
+    private IClass getType2(NewAnonymousClassInstance naci) {
         return this.resolve(naci.anonymousClassDeclaration);
     }
-    private IClass getType2(Java.ParameterAccess pa) throws CompileException {
+    private IClass getType2(ParameterAccess pa) throws CompileException {
         return this.getLocalVariable(pa.formalParameter).type;
     }
-    private IClass getType2(Java.NewArray na) throws CompileException {
+    private IClass getType2(NewArray na) throws CompileException {
         IClass res = this.getType(na.type);
         return res.getArrayIClass(na.dimExprs.length + na.dims, this.iClassLoader.OBJECT);
     }
-    private IClass getType2(Java.NewInitializedArray nia) throws CompileException {
+    private IClass getType2(NewInitializedArray nia) throws CompileException {
         return this.getType(nia.arrayType);
     }
-    private IClass getType2(Java.Literal l) {
-        if (l.value instanceof Short)     return IClass.SHORT;
-        if (l.value instanceof Byte)      return IClass.BYTE;
-        if (l.value instanceof Integer)   return IClass.INT;
-        if (l.value instanceof Long)      return IClass.LONG;
-        if (l.value instanceof Float)     return IClass.FLOAT;
-        if (l.value instanceof Double)    return IClass.DOUBLE;
-        if (l.value instanceof String)    return this.iClassLoader.STRING;
-        if (l.value instanceof Character) return IClass.CHAR;
-        if (l.value instanceof Boolean)   return IClass.BOOLEAN;
-        if (l.value == null)              return IClass.VOID;
-        throw new JaninoRuntimeException("SNO: Unidentifiable literal type \"" + l.value.getClass().getName() + "\"");
+    private IClass getType2(IntegerLiteral il) {
+        String v = il.value;
+        char lastChar = v.charAt(v.length() - 1);
+        return lastChar == 'l' || lastChar == 'L' ? IClass.LONG : IClass.INT;
+    }
+    private IClass getType2(FloatingPointLiteral fpl) {
+        String v = fpl.value;
+        char lastChar = v.charAt(v.length() - 1);
+        return lastChar == 'f' || lastChar == 'F' ? IClass.FLOAT : IClass.DOUBLE;
+    }
+    private IClass getType2(BooleanLiteral bl) {
+        return IClass.BOOLEAN;
+    }
+    private IClass getType2(CharacterLiteral cl) {
+        return IClass.CHAR;
+    }
+    private IClass getType2(StringLiteral sl) {
+        return this.iClassLoader.STRING;
+    }
+    private IClass getType2(NullLiteral nl) {
+        return IClass.VOID;
     }
 
     // ---------------- Atom.isType() ---------------
 
-    private boolean isType(Java.Atom a) throws CompileException {
+    private boolean isType(Atom a) throws CompileException {
         final boolean[] res = new boolean[1];
         class UCE extends RuntimeException { final CompileException ce; UCE(CompileException ce) { this.ce = ce; } }
-        Visitor.AtomVisitor av = new Visitor.AtomVisitor() {
+        AtomVisitor av = new AtomVisitor() {
             // CHECKSTYLE(LineLengthCheck):OFF
             // AtomVisitor
-            public void visitPackage(Java.Package p) { res[0] = UnitCompiler.this.isType2(p); }
+            public void visitPackage(Package p) { res[0] = UnitCompiler.this.isType2(p); }
             // TypeVisitor
-            public void visitArrayType(Java.ArrayType at)                { res[0] = UnitCompiler.this.isType2(at);  }
-            public void visitBasicType(Java.BasicType bt)                { res[0] = UnitCompiler.this.isType2(bt);  }
-            public void visitReferenceType(Java.ReferenceType rt)        { res[0] = UnitCompiler.this.isType2(rt);  }
-            public void visitRvalueMemberType(Java.RvalueMemberType rmt) { res[0] = UnitCompiler.this.isType2(rmt); }
-            public void visitSimpleType(Java.SimpleType st)              { res[0] = UnitCompiler.this.isType2(st);  }
+            public void visitArrayType(ArrayType at)                { res[0] = UnitCompiler.this.isType2(at);  }
+            public void visitBasicType(BasicType bt)                { res[0] = UnitCompiler.this.isType2(bt);  }
+            public void visitReferenceType(ReferenceType rt)        { res[0] = UnitCompiler.this.isType2(rt);  }
+            public void visitRvalueMemberType(RvalueMemberType rmt) { res[0] = UnitCompiler.this.isType2(rmt); }
+            public void visitSimpleType(SimpleType st)              { res[0] = UnitCompiler.this.isType2(st);  }
             // RvalueVisitor
-            public void visitArrayLength(Java.ArrayLength al)                                { res[0] = UnitCompiler.this.isType2(al);   }
-            public void visitAssignment(Java.Assignment a)                                   { res[0] = UnitCompiler.this.isType2(a);    }
-            public void visitUnaryOperation(Java.UnaryOperation uo)                          { res[0] = UnitCompiler.this.isType2(uo);   }
-            public void visitBinaryOperation(Java.BinaryOperation bo)                        { res[0] = UnitCompiler.this.isType2(bo);   }
-            public void visitCast(Java.Cast c)                                               { res[0] = UnitCompiler.this.isType2(c);    }
-            public void visitClassLiteral(Java.ClassLiteral cl)                              { res[0] = UnitCompiler.this.isType2(cl);   }
-            public void visitConditionalExpression(Java.ConditionalExpression ce)            { res[0] = UnitCompiler.this.isType2(ce);   }
-            public void visitCrement(Java.Crement c)                                         { res[0] = UnitCompiler.this.isType2(c);    }
-            public void visitInstanceof(Java.Instanceof io)                                  { res[0] = UnitCompiler.this.isType2(io);   }
-            public void visitMethodInvocation(Java.MethodInvocation mi)                      { res[0] = UnitCompiler.this.isType2(mi);   }
-            public void visitSuperclassMethodInvocation(Java.SuperclassMethodInvocation smi) { res[0] = UnitCompiler.this.isType2(smi);  }
-            public void visitLiteral(Java.Literal l)                                         { res[0] = UnitCompiler.this.isType2(l);    }
-            public void visitNewAnonymousClassInstance(Java.NewAnonymousClassInstance naci)  { res[0] = UnitCompiler.this.isType2(naci); }
-            public void visitNewArray(Java.NewArray na)                                      { res[0] = UnitCompiler.this.isType2(na);   }
-            public void visitNewInitializedArray(Java.NewInitializedArray nia)               { res[0] = UnitCompiler.this.isType2(nia);  }
-            public void visitNewClassInstance(Java.NewClassInstance nci)                     { res[0] = UnitCompiler.this.isType2(nci);  }
-            public void visitParameterAccess(Java.ParameterAccess pa)                        { res[0] = UnitCompiler.this.isType2(pa);   }
-            public void visitQualifiedThisReference(Java.QualifiedThisReference qtr)         { res[0] = UnitCompiler.this.isType2(qtr);  }
-            public void visitThisReference(Java.ThisReference tr)                            { res[0] = UnitCompiler.this.isType2(tr);   }
+            public void visitArrayLength(ArrayLength al)                                { res[0] = UnitCompiler.this.isType2(al);   }
+            public void visitAssignment(Assignment a)                                   { res[0] = UnitCompiler.this.isType2(a);    }
+            public void visitUnaryOperation(UnaryOperation uo)                          { res[0] = UnitCompiler.this.isType2(uo);   }
+            public void visitBinaryOperation(BinaryOperation bo)                        { res[0] = UnitCompiler.this.isType2(bo);   }
+            public void visitCast(Cast c)                                               { res[0] = UnitCompiler.this.isType2(c);    }
+            public void visitClassLiteral(ClassLiteral cl)                              { res[0] = UnitCompiler.this.isType2(cl);   }
+            public void visitConditionalExpression(ConditionalExpression ce)            { res[0] = UnitCompiler.this.isType2(ce);   }
+            public void visitCrement(Crement c)                                         { res[0] = UnitCompiler.this.isType2(c);    }
+            public void visitInstanceof(Instanceof io)                                  { res[0] = UnitCompiler.this.isType2(io);   }
+            public void visitMethodInvocation(MethodInvocation mi)                      { res[0] = UnitCompiler.this.isType2(mi);   }
+            public void visitSuperclassMethodInvocation(SuperclassMethodInvocation smi) { res[0] = UnitCompiler.this.isType2(smi);  }
+            public void visitIntegerLiteral(IntegerLiteral il)                          { res[0] = UnitCompiler.this.isType2(il);   }
+            public void visitFloatingPointLiteral(FloatingPointLiteral fpl)             { res[0] = UnitCompiler.this.isType2(fpl);  }
+            public void visitBooleanLiteral(BooleanLiteral bl)                          { res[0] = UnitCompiler.this.isType2(bl);   }
+            public void visitCharacterLiteral(CharacterLiteral cl)                      { res[0] = UnitCompiler.this.isType2(cl);   }
+            public void visitStringLiteral(StringLiteral sl)                            { res[0] = UnitCompiler.this.isType2(sl);   }
+            public void visitNullLiteral(NullLiteral nl)                                { res[0] = UnitCompiler.this.isType2(nl);   }
+            public void visitNewAnonymousClassInstance(NewAnonymousClassInstance naci)  { res[0] = UnitCompiler.this.isType2(naci); }
+            public void visitNewArray(NewArray na)                                      { res[0] = UnitCompiler.this.isType2(na);   }
+            public void visitNewInitializedArray(NewInitializedArray nia)               { res[0] = UnitCompiler.this.isType2(nia);  }
+            public void visitNewClassInstance(NewClassInstance nci)                     { res[0] = UnitCompiler.this.isType2(nci);  }
+            public void visitParameterAccess(ParameterAccess pa)                        { res[0] = UnitCompiler.this.isType2(pa);   }
+            public void visitQualifiedThisReference(QualifiedThisReference qtr)         { res[0] = UnitCompiler.this.isType2(qtr);  }
+            public void visitThisReference(ThisReference tr)                            { res[0] = UnitCompiler.this.isType2(tr);   }
             // LvalueVisitor
-            public void visitAmbiguousName(Java.AmbiguousName an)                                        { try { res[0] = UnitCompiler.this.isType2(an); } catch (CompileException e) { throw new UCE(e); } }
-            public void visitArrayAccessExpression(Java.ArrayAccessExpression aae)                       {       res[0] = UnitCompiler.this.isType2(aae);                                                   }
-            public void visitFieldAccess(Java.FieldAccess fa)                                            {       res[0] = UnitCompiler.this.isType2(fa);                                                    }
-            public void visitFieldAccessExpression(Java.FieldAccessExpression fae)                       {       res[0] = UnitCompiler.this.isType2(fae);                                                   }
-            public void visitSuperclassFieldAccessExpression(Java.SuperclassFieldAccessExpression scfae) {       res[0] = UnitCompiler.this.isType2(scfae);                                                 }
-            public void visitLocalVariableAccess(Java.LocalVariableAccess lva)                           {       res[0] = UnitCompiler.this.isType2(lva);                                                   }
-            public void visitParenthesizedExpression(Java.ParenthesizedExpression pe)                    {       res[0] = UnitCompiler.this.isType2(pe);                                                    }
+            public void visitAmbiguousName(AmbiguousName an)                                        { try { res[0] = UnitCompiler.this.isType2(an); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitArrayAccessExpression(ArrayAccessExpression aae)                       {       res[0] = UnitCompiler.this.isType2(aae);                                                   }
+            public void visitFieldAccess(FieldAccess fa)                                            {       res[0] = UnitCompiler.this.isType2(fa);                                                    }
+            public void visitFieldAccessExpression(FieldAccessExpression fae)                       {       res[0] = UnitCompiler.this.isType2(fae);                                                   }
+            public void visitSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae) {       res[0] = UnitCompiler.this.isType2(scfae);                                                 }
+            public void visitLocalVariableAccess(LocalVariableAccess lva)                           {       res[0] = UnitCompiler.this.isType2(lva);                                                   }
+            public void visitParenthesizedExpression(ParenthesizedExpression pe)                    {       res[0] = UnitCompiler.this.isType2(pe);                                                    }
             // CHECKSTYLE(LineLengthCheck):ON
         };
         try {
@@ -4990,10 +5233,10 @@ public class UnitCompiler {
             throw uce.ce;
         }
     }
-    private boolean isType2(Java.Atom a) {
-        return a instanceof Java.Type;
+    private boolean isType2(Atom a) {
+        return a instanceof Type;
     }
-    private boolean isType2(Java.AmbiguousName an) throws CompileException {
+    private boolean isType2(AmbiguousName an) throws CompileException {
         return this.isType(this.reclassify(an));
     }
 
@@ -5003,7 +5246,7 @@ public class UnitCompiler {
      */
     private boolean isAccessible(
         IClass.IMember member,
-        Java.Scope     contextScope
+        Scope     contextScope
     ) throws CompileException {
         // you have to check that both the class and member are accessible in this scope
         IClass declaringIClass = member.getDeclaringIClass();
@@ -5018,7 +5261,7 @@ public class UnitCompiler {
      */
     private void checkAccessible(
         IClass.IMember      member,
-        Java.BlockStatement contextBlockStatement
+        BlockStatement contextBlockStatement
     ) throws CompileException {
         // you have to check that both the class and member are accessible in this scope
         IClass declaringIClass = member.getDeclaringIClass();
@@ -5034,7 +5277,7 @@ public class UnitCompiler {
     private boolean isAccessible(
         IClass     iClassDeclaringMember,
         Access     memberAccess,
-        Java.Scope contextScope
+        Scope contextScope
     ) throws CompileException {
         return null == this.internalCheckAccessible(iClassDeclaringMember, memberAccess, contextScope);
     }
@@ -5047,7 +5290,7 @@ public class UnitCompiler {
     private void checkAccessible(
         IClass              iClassDeclaringMember,
         Access              memberAccess,
-        Java.BlockStatement contextBlockStatement
+        BlockStatement contextBlockStatement
     ) throws CompileException {
         String message = this.internalCheckAccessible(iClassDeclaringMember, memberAccess, contextBlockStatement);
         if (message != null) this.compileError(message, contextBlockStatement.getLocation());
@@ -5059,7 +5302,7 @@ public class UnitCompiler {
     private String internalCheckAccessible(
         IClass     iClassDeclaringMember,
         Access     memberAccess,
-        Java.Scope contextScope
+        Scope contextScope
     ) throws CompileException {
 
         // At this point, memberAccess is PUBLIC, DEFAULT, PROECTEDED or PRIVATE.
@@ -5071,9 +5314,9 @@ public class UnitCompiler {
 
         // Determine the class declaring the context block statement.
         IClass iClassDeclaringContextBlockStatement;
-        for (Java.Scope s = contextScope;; s = s.getEnclosingScope()) {
-            if (s instanceof Java.TypeDeclaration) {
-                iClassDeclaringContextBlockStatement = this.resolve((Java.TypeDeclaration) s);
+        for (Scope s = contextScope;; s = s.getEnclosingScope()) {
+            if (s instanceof TypeDeclaration) {
+                iClassDeclaringContextBlockStatement = this.resolve((TypeDeclaration) s);
                 break;
             }
         }
@@ -5148,7 +5391,7 @@ public class UnitCompiler {
      */
     private boolean isAccessible(
         IClass     type,
-        Java.Scope contextScope
+        Scope contextScope
     ) throws CompileException {
         return null == this.internalCheckAccessible(type, contextScope);
     }
@@ -5159,7 +5402,7 @@ public class UnitCompiler {
      */
     private void checkAccessible(
         IClass              type,
-        Java.BlockStatement contextBlockStatement
+        BlockStatement contextBlockStatement
     ) throws CompileException {
         String message = this.internalCheckAccessible(type, contextBlockStatement);
         if (message != null) this.compileError(message, contextBlockStatement.getLocation());
@@ -5167,7 +5410,7 @@ public class UnitCompiler {
 
     private String internalCheckAccessible(
         IClass     type,
-        Java.Scope contextScope
+        Scope contextScope
     ) throws CompileException {
 
         // Determine the type declaring the type.
@@ -5182,9 +5425,9 @@ public class UnitCompiler {
 
                 // Determine the type declaring the context block statement.
                 IClass iClassDeclaringContextBlockStatement;
-                for (Java.Scope s = contextScope;; s = s.getEnclosingScope()) {
-                    if (s instanceof Java.TypeDeclaration) {
-                        iClassDeclaringContextBlockStatement = this.resolve((Java.TypeDeclaration) s);
+                for (Scope s = contextScope;; s = s.getEnclosingScope()) {
+                    if (s instanceof TypeDeclaration) {
+                        iClassDeclaringContextBlockStatement = this.resolve((TypeDeclaration) s);
                         break;
                     }
                 }
@@ -5208,31 +5451,31 @@ public class UnitCompiler {
         return this.internalCheckAccessible(iClassDeclaringType, type.getAccess(), contextScope);
     }
 
-    private Java.Type toTypeOrCE(Java.Atom a) throws CompileException {
-        Java.Type result = a.toType();
+    private Type toTypeOrCE(Atom a) throws CompileException {
+        Type result = a.toType();
         if (result == null) {
             this.compileError("Expression \"" + a.toString() + "\" is not a type", a.getLocation());
-            return new Java.SimpleType(a.getLocation(), this.iClassLoader.OBJECT);
+            return new SimpleType(a.getLocation(), this.iClassLoader.OBJECT);
         }
         return result;
     }
-    private Java.Rvalue toRvalueOrCE(final Java.Atom a) throws CompileException {
-        Java.Rvalue result = a.toRvalue();
+    private Rvalue toRvalueOrCE(final Atom a) throws CompileException {
+        Rvalue result = a.toRvalue();
         if (result == null) {
             this.compileError("Expression \"" + a.toString() + "\" is not an rvalue", a.getLocation());
-            return new Java.Literal(a.getLocation(), "X");
+            return new StringLiteral(a.getLocation(), "\"X\"");
         }
         return result;
     }
-    public final Java.Lvalue toLvalueOrCE(final Java.Atom a) throws CompileException {
-        Java.Lvalue result = a.toLvalue();
+    public final Lvalue toLvalueOrCE(final Atom a) throws CompileException {
+        Lvalue result = a.toLvalue();
         if (result == null) {
             this.compileError("Expression \"" + a.toString() + "\" is not an lvalue", a.getLocation());
-            return new Java.Lvalue(a.getLocation()) {
+            return new Lvalue(a.getLocation()) {
                 public String toString() { return a.toString(); }
-                public void accept(Visitor.AtomVisitor visitor) {}
-                public void accept(Visitor.RvalueVisitor visitor) {}
-                public void accept(Visitor.LvalueVisitor visitor) {}
+                public void accept(AtomVisitor visitor) {}
+                public void accept(RvalueVisitor visitor) {}
+                public void accept(LvalueVisitor visitor) {}
             };
         }
         return result;
@@ -5242,10 +5485,10 @@ public class UnitCompiler {
      * Copies the values of the synthetic parameters of this constructor ("this$..." and
      * "val$...") to the synthetic fields of the object ("this$..." and "val$...").
      */
-    void assignSyntheticParametersToSyntheticFields(Java.ConstructorDeclarator cd) throws CompileException {
+    void assignSyntheticParametersToSyntheticFields(ConstructorDeclarator cd) throws CompileException {
         for (Iterator it = cd.getDeclaringClass().syntheticFields.values().iterator(); it.hasNext();) {
             IClass.IField sf = (IClass.IField) it.next();
-            Java.LocalVariable syntheticParameter = (Java.LocalVariable) cd.syntheticParameters.get(sf.getName());
+            LocalVariable syntheticParameter = (LocalVariable) cd.syntheticParameters.get(sf.getName());
             if (syntheticParameter == null) {
                 throw new JaninoRuntimeException(
                     "SNO: Synthetic parameter for synthetic field \""
@@ -5253,15 +5496,15 @@ public class UnitCompiler {
                     + "\" not found"
                 );
             }
-            Java.ExpressionStatement es = new Java.ExpressionStatement(new Java.Assignment(
+            ExpressionStatement es = new ExpressionStatement(new Assignment(
                 cd.getLocation(),             // location
-                new Java.FieldAccess(         // lhs
+                new FieldAccess(         // lhs
                     cd.getLocation(),                         // location
-                    new Java.ThisReference(cd.getLocation()), // lhs
+                    new ThisReference(cd.getLocation()), // lhs
                     sf                                        // field
                 ),
                 "=",                          // operator
-                new Java.LocalVariableAccess( // rhs
+                new LocalVariableAccess( // rhs
                     cd.getLocation(),  // location
                     syntheticParameter // localVariable
                 )
@@ -5276,14 +5519,14 @@ public class UnitCompiler {
      * lexical order.
      */
     void initializeInstanceVariablesAndInvokeInstanceInitializers(
-        Java.ConstructorDeclarator cd
+        ConstructorDeclarator cd
     ) throws CompileException {
         for (int i = 0; i < cd.getDeclaringClass().variableDeclaratorsAndInitializers.size(); ++i) {
-            Java.TypeBodyDeclaration tbd = (
-                (Java.TypeBodyDeclaration) cd.getDeclaringClass().variableDeclaratorsAndInitializers.get(i)
+            TypeBodyDeclaration tbd = (
+                (TypeBodyDeclaration) cd.getDeclaringClass().variableDeclaratorsAndInitializers.get(i)
             );
             if (!tbd.isStatic()) {
-                Java.BlockStatement bs = (Java.BlockStatement) tbd;
+                BlockStatement bs = (BlockStatement) tbd;
                 if (!this.compile(bs)) {
                     this.compileError(
                         "Instance variable declarator or instance initializer does not complete normally",
@@ -5300,13 +5543,13 @@ public class UnitCompiler {
      * "try...catch" statements are executed.
      */
     private void leaveStatements(
-        Java.Scope  from,
-        Java.Scope  to,
+        Scope  from,
+        Scope  to,
         IClass optionalStackValueType
     ) {
-        for (Java.Scope s = from; s != to; s = s.getEnclosingScope()) {
-            if (s instanceof Java.BlockStatement) {
-                this.leave((Java.BlockStatement) s, optionalStackValueType);
+        for (Scope s = from; s != to; s = s.getEnclosingScope()) {
+            if (s instanceof BlockStatement) {
+                this.leave((BlockStatement) s, optionalStackValueType);
             }
         }
     }
@@ -5321,12 +5564,12 @@ public class UnitCompiler {
         Locatable   l,
         IClass      lhsType,
         String      operator,
-        Java.Rvalue rhs
+        Rvalue rhs
     ) throws CompileException {
         return this.compileArithmeticOperation(
             l,
             lhsType,
-            Arrays.asList(new Java.Rvalue[] { rhs }).iterator(),
+            Arrays.asList(new Rvalue[] { rhs }).iterator(),
             operator
         );
     }
@@ -5356,7 +5599,7 @@ public class UnitCompiler {
             );
 
             do {
-                Java.Rvalue operand = (Java.Rvalue) operands.next();
+                Rvalue operand = (Rvalue) operands.next();
 
                 if (type == null) {
                     type = this.compileGetValue(operand);
@@ -5389,8 +5632,8 @@ public class UnitCompiler {
                         type = promotedType;
                     } else
                     if (
-                        (type == IClass.BOOLEAN && this.getUnboxedType(rhsType) == IClass.BOOLEAN) ||
-                        (this.getUnboxedType(type) == IClass.BOOLEAN && rhsType == IClass.BOOLEAN)
+                        (type == IClass.BOOLEAN || this.getUnboxedType(type) == IClass.BOOLEAN) &&
+                        (rhsType == IClass.BOOLEAN || this.getUnboxedType(rhsType) == IClass.BOOLEAN)
                     ) {
                         IClassLoader icl = this.iClassLoader;
                         if (type == icl.BOOLEAN) {
@@ -5440,7 +5683,7 @@ public class UnitCompiler {
             );
 
             do {
-                Java.Rvalue operand = (Java.Rvalue) operands.next();
+                Rvalue operand = (Rvalue) operands.next();
 
                 IClass operandType = this.getType(operand);
                 IClassLoader icl = this.iClassLoader;
@@ -5493,7 +5736,7 @@ public class UnitCompiler {
             );
 
             do {
-                Java.Rvalue operand = (Java.Rvalue) operands.next();
+                Rvalue operand = (Rvalue) operands.next();
 
                 if (type == null) {
                     type = this.compileGetValue(operand);
@@ -5538,12 +5781,12 @@ public class UnitCompiler {
     /**
      * @param type If non-null, the first operand with that type is already on the stack
      * @param operand The next operand
-     * @param operands All following operands ({@link Iterator} over {@link Java.Rvalue}s)
+     * @param operands All following operands ({@link Iterator} over {@link Rvalue}s)
      */
     private IClass compileStringConcatenation(
         final Locatable l,
         IClass          type,
-        Java.Rvalue     operand,
+        Rvalue     operand,
         Iterator        operands
     ) throws CompileException {
         boolean operandOnStack;
@@ -5559,32 +5802,32 @@ public class UnitCompiler {
         List tmp = new ArrayList(); // Compilable
         do {
             Object cv = this.getConstantValue(operand);
-            if (cv == null) {
+            if (cv == NOT_CONSTANT) {
                 // Non-constant operand.
-                final Java.Rvalue finalOperand = operand;
+                final Rvalue finalOperand = operand;
                 tmp.add(new Compilable() {
                     public void compile() throws CompileException {
                         UnitCompiler.this.stringConversion(l, UnitCompiler.this.compileGetValue(finalOperand));
                     }
                 });
 
-                operand = operands.hasNext() ? (Java.Rvalue) operands.next() : null;
+                operand = operands.hasNext() ? (Rvalue) operands.next() : null;
             } else
             {
                 // Constant operand. Check to see whether the next operand is also constant.
                 if (operands.hasNext()) {
-                    operand = (Java.Rvalue) operands.next();
+                    operand = (Rvalue) operands.next();
                     Object cv2 = this.getConstantValue(operand);
-                    if (cv2 != null) {
+                    if (cv2 != NOT_CONSTANT) {
                         StringBuffer sb = new StringBuffer(cv.toString()).append(cv2);
                         for (;;) {
                             if (!operands.hasNext()) {
                                 operand = null;
                                 break;
                             }
-                            operand = (Java.Rvalue) operands.next();
+                            operand = (Rvalue) operands.next();
                             Object cv3 = this.getConstantValue(operand);
-                            if (cv3 == null) break;
+                            if (cv3 == NOT_CONSTANT) break;
                             sb.append(cv3);
                         }
                         cv = sb.toString();
@@ -5652,7 +5895,7 @@ public class UnitCompiler {
         this.writeOpcode(l, Opcode.INVOKESPECIAL);
         this.writeConstantMethodrefInfo(
             stringBuilferFD,
-            "<init>",                                // classFD
+            "<init>",                                        // classFD
             "(" + Descriptor.STRING + ")" + Descriptor.VOID_ // methodMD
         );
         while (it.hasNext()) {
@@ -5713,10 +5956,10 @@ public class UnitCompiler {
      */
     private void invokeConstructor(
         Locatable     l,
-        Java.Scope    scope,
-        Java.Rvalue   optionalEnclosingInstance,
+        Scope    scope,
+        Rvalue   optionalEnclosingInstance,
         IClass        targetClass,
-        Java.Rvalue[] arguments
+        Rvalue[] arguments
     ) throws CompileException {
 
         // Find constructors.
@@ -5763,27 +6006,27 @@ public class UnitCompiler {
             IClass.IField[] syntheticFields = targetClass.getSyntheticIFields();
 
             // Determine enclosing function declarator and type declaration.
-            Java.TypeBodyDeclaration scopeTBD;
-            Java.TypeDeclaration     scopeTypeDeclaration;
+            TypeBodyDeclaration scopeTBD;
+            TypeDeclaration     scopeTypeDeclaration;
             {
-                Java.Scope s = scope;
-                for (; !(s instanceof Java.TypeBodyDeclaration); s = s.getEnclosingScope());
-                scopeTBD             = (Java.TypeBodyDeclaration) s;
+                Scope s = scope;
+                for (; !(s instanceof TypeBodyDeclaration); s = s.getEnclosingScope());
+                scopeTBD             = (TypeBodyDeclaration) s;
                 scopeTypeDeclaration = scopeTBD.getDeclaringType();
             }
 
-            if (!(scopeTypeDeclaration instanceof Java.ClassDeclaration)) {
+            if (!(scopeTypeDeclaration instanceof ClassDeclaration)) {
                 if (syntheticFields.length > 0) {
                     throw new JaninoRuntimeException("SNO: Target class has synthetic fields");
                 }
             } else {
-                Java.ClassDeclaration scopeClassDeclaration = (Java.ClassDeclaration) scopeTypeDeclaration;
+                ClassDeclaration scopeClassDeclaration = (ClassDeclaration) scopeTypeDeclaration;
                 for (int i = 0; i < syntheticFields.length; ++i) {
                     IClass.IField sf = syntheticFields[i];
                     if (!sf.getName().startsWith("val$")) continue;
                     IClass.IField eisf = (IClass.IField) scopeClassDeclaration.syntheticFields.get(sf.getName());
                     if (eisf != null) {
-                        if (scopeTBD instanceof Java.MethodDeclarator) {
+                        if (scopeTBD instanceof MethodDeclarator) {
                             this.load(l, this.resolve(scopeClassDeclaration), 0);
                             this.writeOpcode(l, Opcode.GETFIELD);
                             this.writeConstantFieldrefInfo(
@@ -5792,10 +6035,10 @@ public class UnitCompiler {
                                 sf.getDescriptor()                                   // fieldFD
                             );
                         } else
-                        if (scopeTBD instanceof Java.ConstructorDeclarator) {
-                            Java.ConstructorDeclarator constructorDeclarator = (Java.ConstructorDeclarator) scopeTBD;
-                            Java.LocalVariable syntheticParameter = (
-                                (Java.LocalVariable) constructorDeclarator.syntheticParameters.get(sf.getName())
+                        if (scopeTBD instanceof ConstructorDeclarator) {
+                            ConstructorDeclarator constructorDeclarator = (ConstructorDeclarator) scopeTBD;
+                            LocalVariable syntheticParameter = (
+                                (LocalVariable) constructorDeclarator.syntheticParameters.get(sf.getName())
                             );
                             if (syntheticParameter == null) {
                                 this.compileError((
@@ -5817,33 +6060,33 @@ public class UnitCompiler {
                         }
                     } else {
                         String localVariableName = sf.getName().substring(4);
-                        Java.LocalVariable lv;
+                        LocalVariable lv;
                         DETERMINE_LV: {
-                            Java.Scope s;
+                            Scope s;
 
                             // Does one of the enclosing blocks declare a local variable with that name?
-                            for (s = scope; s instanceof Java.BlockStatement; s = s.getEnclosingScope()) {
-                                Java.BlockStatement bs = (Java.BlockStatement) s;
-                                Java.Scope es = bs.getEnclosingScope();
+                            for (s = scope; s instanceof BlockStatement; s = s.getEnclosingScope()) {
+                                BlockStatement bs = (BlockStatement) s;
+                                Scope es = bs.getEnclosingScope();
                                 List statements;
-                                if (es instanceof Java.Block) {
-                                    statements = ((Java.Block) es).statements;
+                                if (es instanceof Block) {
+                                    statements = ((Block) es).statements;
                                 } else
-                                if (es instanceof Java.FunctionDeclarator) {
-                                    statements = ((Java.FunctionDeclarator) es).optionalStatements;
+                                if (es instanceof FunctionDeclarator) {
+                                    statements = ((FunctionDeclarator) es).optionalStatements;
                                 } else
                                 {
                                     continue;
                                 }
 
                                 for (Iterator it = statements.iterator();;) {
-                                    Java.BlockStatement bs2 = (Java.BlockStatement) it.next();
+                                    BlockStatement bs2 = (BlockStatement) it.next();
                                     if (bs2 == bs) break;
-                                    if (bs2 instanceof Java.LocalVariableDeclarationStatement) {
-                                        Java.LocalVariableDeclarationStatement lvds = (
-                                            (Java.LocalVariableDeclarationStatement) bs2
+                                    if (bs2 instanceof LocalVariableDeclarationStatement) {
+                                        LocalVariableDeclarationStatement lvds = (
+                                            (LocalVariableDeclarationStatement) bs2
                                         );
-                                        Java.VariableDeclarator[] vds = lvds.variableDeclarators;
+                                        VariableDeclarator[] vds = lvds.variableDeclarators;
                                         for (int j = 0; j < vds.length; ++j) {
                                             if (vds[j].name.equals(localVariableName)) {
                                                 lv = this.getLocalVariable(lvds, vds[j]);
@@ -5855,10 +6098,10 @@ public class UnitCompiler {
                             }
 
                             // Does the declaring function declare a parameter with that name?
-                            while (!(s instanceof Java.FunctionDeclarator)) s = s.getEnclosingScope();
-                            Java.FunctionDeclarator fd = (Java.FunctionDeclarator) s;
+                            while (!(s instanceof FunctionDeclarator)) s = s.getEnclosingScope();
+                            FunctionDeclarator fd = (FunctionDeclarator) s;
                             for (int j = 0; j < fd.formalParameters.length; ++j) {
-                                Java.FunctionDeclarator.FormalParameter fp = fd.formalParameters[j];
+                                FunctionDeclarator.FormalParameter fp = fd.formalParameters[j];
                                 if (fp.name.equals(localVariableName)) {
                                     lv = this.getLocalVariable(fp);
                                     break DETERMINE_LV;
@@ -5898,10 +6141,10 @@ public class UnitCompiler {
         );
     }
 
-    /*package*/ IClass.IField[] getIFields(final Java.FieldDeclaration fd) {
+    /*package*/ IClass.IField[] getIFields(final FieldDeclaration fd) {
         IClass.IField[] res = new IClass.IField[fd.variableDeclarators.length];
         for (int i = 0; i < res.length; ++i) {
-            final Java.VariableDeclarator vd = fd.variableDeclarators[i];
+            final VariableDeclarator vd = fd.variableDeclarators[i];
             res[i] = this.resolve(fd.getDeclaringType()).new IField() {
 
                 // Implement IMember.
@@ -5932,18 +6175,18 @@ public class UnitCompiler {
                 public Object getConstantValue() throws CompileException {
                     if (
                         (fd.modifiers & Mod.FINAL) != 0 &&
-                        vd.optionalInitializer instanceof Java.Rvalue
+                        vd.optionalInitializer instanceof Rvalue
                     ) {
                         Object constantInitializerValue = UnitCompiler.this.getConstantValue(
-                            (Java.Rvalue) vd.optionalInitializer
+                            (Rvalue) vd.optionalInitializer
                         );
-                        if (constantInitializerValue != null) return UnitCompiler.this.assignmentConversion(
+                        if (constantInitializerValue != NOT_CONSTANT) return UnitCompiler.this.assignmentConversion(
                             (Locatable) vd.optionalInitializer, // l
                             constantInitializerValue,           // value
                             this.getType()                      // targetType
                         );
                     }
-                    return null;
+                    return NOT_CONSTANT;
                 }
             };
         }
@@ -5951,14 +6194,14 @@ public class UnitCompiler {
     }
 
     /**
-     * Determine the non-constant-final initializer of the given {@link Java.VariableDeclarator}.
+     * Determine the non-constant-final initializer of the given {@link VariableDeclarator}.
      *
      * @return <code>null</code> if the variable is declared without an initializer or if the initializer is
      *         constant-final
      */
-    Java.ArrayInitializerOrRvalue getNonConstantFinalInitializer(
-        Java.FieldDeclaration fd,
-        Java.VariableDeclarator vd
+    ArrayInitializerOrRvalue getNonConstantFinalInitializer(
+        FieldDeclaration fd,
+        VariableDeclarator vd
     ) throws CompileException {
 
         // Check if optional initializer exists.
@@ -5968,18 +6211,18 @@ public class UnitCompiler {
         if (
             (fd.modifiers & Mod.STATIC) != 0 &&
             (fd.modifiers & Mod.FINAL) != 0 &&
-            vd.optionalInitializer instanceof Java.Rvalue &&
-            this.getConstantValue((Java.Rvalue) vd.optionalInitializer) != null
+            vd.optionalInitializer instanceof Rvalue &&
+            this.getConstantValue((Rvalue) vd.optionalInitializer) != NOT_CONSTANT
         ) return null;
 
         return vd.optionalInitializer;
     }
 
-    private Java.Atom reclassify(Java.AmbiguousName an) throws CompileException {
+    private Atom reclassify(AmbiguousName an) throws CompileException {
         if (an.reclassified == null) {
             an.reclassified = this.reclassifyName(
                 an.getLocation(),
-                (Java.Scope) an.getEnclosingBlockStatement(),
+                (Scope) an.getEnclosingBlockStatement(),
                 an.identifiers, an.n
             );
         }
@@ -5997,9 +6240,9 @@ public class UnitCompiler {
      * @param n
      * @throws CompileException
      */
-    private Java.Atom reclassifyName(
+    private Atom reclassifyName(
         Location       location,
-        Java.Scope     scope,
+        Scope     scope,
         final String[] identifiers,
         int            n
     ) throws CompileException {
@@ -6011,7 +6254,7 @@ public class UnitCompiler {
         );
 
         // 6.5.2.2
-        Java.Atom lhs = this.reclassifyName(
+        Atom lhs = this.reclassifyName(
             location,
             scope,
             identifiers, n - 1
@@ -6020,22 +6263,22 @@ public class UnitCompiler {
 
         // 6.5.2.2.1
         if (UnitCompiler.DEBUG) System.out.println("lhs = " + lhs);
-        if (lhs instanceof Java.Package) {
-            String className = ((Java.Package) lhs).name + '.' + rhs;
+        if (lhs instanceof Package) {
+            String className = ((Package) lhs).name + '.' + rhs;
             IClass result = findClassByName(location, className);
-            if (result != null) return new Java.SimpleType(location, result);
+            if (result != null) return new SimpleType(location, result);
 
-            return new Java.Package(location, className);
+            return new Package(location, className);
         }
 
         // 6.5.2.2.3.2 EXPRESSION.length
         if (rhs.equals("length") && this.getType(lhs).isArray()) {
-            Java.ArrayLength al = new Java.ArrayLength(location, this.toRvalueOrCE(lhs));
-            if (!(scope instanceof Java.BlockStatement)) {
+            ArrayLength al = new ArrayLength(location, this.toRvalueOrCE(lhs));
+            if (!(scope instanceof BlockStatement)) {
                 this.compileError("\".length\" only allowed in expression context");
                 return al;
             }
-            al.setEnclosingBlockStatement((Java.BlockStatement) scope);
+            al.setEnclosingBlockStatement((BlockStatement) scope);
             return al;
         }
 
@@ -6049,12 +6292,12 @@ public class UnitCompiler {
             if (field != null) {
                 // 6.5.2.2.2.2 TYPE.FIELD
                 // 6.5.2.2.3.2 EXPRESSION.FIELD
-                Java.FieldAccess fa = new Java.FieldAccess(
+                FieldAccess fa = new FieldAccess(
                     location,
                     lhs,
                     field
                 );
-                fa.setEnclosingBlockStatement((Java.BlockStatement) scope);
+                fa.setEnclosingBlockStatement((BlockStatement) scope);
                 return fa;
             }
         }
@@ -6068,7 +6311,7 @@ public class UnitCompiler {
 
                 // 6.5.2.2.2.3 TYPE.TYPE
                 // 6.5.2.2.3.3 EXPRESSION.TYPE
-                return new Java.SimpleType(location, memberType);
+                return new SimpleType(location, memberType);
             }
         }
 
@@ -6076,9 +6319,9 @@ public class UnitCompiler {
             "\"" + rhs + "\" is neither a method, a field, nor a member class of \"" + lhsType + "\"",
             location
         );
-        return new Java.Atom(location) {
+        return new Atom(location) {
             public String toString() { return Java.join(identifiers, "."); }
-            public final void accept(Visitor.AtomVisitor visitor) {}
+            public final void accept(AtomVisitor visitor) {}
         };
     }
 
@@ -6100,34 +6343,34 @@ public class UnitCompiler {
      * @param identifier
      * @throws CompileException
      */
-    private Java.Atom reclassifyName(
+    private Atom reclassifyName(
         Location     location,
-        Java.Scope   scope,
+        Scope   scope,
         final String identifier
     ) throws CompileException {
 
         // Determine scope block statement, type body declaration, type and compilation unit.
-        Java.BlockStatement          scopeBlockStatement = null;
-        Java.TypeBodyDeclaration     scopeTBD = null;
-        Java.AbstractTypeDeclaration scopeTypeDeclaration = null;
-        Java.CompilationUnit         scopeCompilationUnit;
+        BlockStatement          scopeBlockStatement = null;
+        TypeBodyDeclaration     scopeTBD = null;
+        AbstractTypeDeclaration scopeTypeDeclaration = null;
+        CompilationUnit         scopeCompilationUnit;
         {
-            Java.Scope s = scope;
-            if (s instanceof Java.BlockStatement) scopeBlockStatement = (Java.BlockStatement) s;
+            Scope s = scope;
+            if (s instanceof BlockStatement) scopeBlockStatement = (BlockStatement) s;
             while (
-                (s instanceof Java.BlockStatement || s instanceof Java.CatchClause)
-                && !(s instanceof Java.TypeBodyDeclaration)
+                (s instanceof BlockStatement || s instanceof CatchClause)
+                && !(s instanceof TypeBodyDeclaration)
             ) s = s.getEnclosingScope();
-            if (s instanceof Java.TypeBodyDeclaration) {
-                scopeTBD = (Java.TypeBodyDeclaration) s;
+            if (s instanceof TypeBodyDeclaration) {
+                scopeTBD = (TypeBodyDeclaration) s;
                 s = s.getEnclosingScope();
             }
-            if (s instanceof Java.TypeDeclaration) {
-                scopeTypeDeclaration = (Java.AbstractTypeDeclaration) s;
+            if (s instanceof TypeDeclaration) {
+                scopeTypeDeclaration = (AbstractTypeDeclaration) s;
                 s = s.getEnclosingScope();
             }
-            while (!(s instanceof Java.CompilationUnit)) s = s.getEnclosingScope();
-            scopeCompilationUnit = (Java.CompilationUnit) s;
+            while (!(s instanceof CompilationUnit)) s = s.getEnclosingScope();
+            scopeCompilationUnit = (CompilationUnit) s;
         }
 
         // 6.5.2.1.BL1
@@ -6135,27 +6378,27 @@ public class UnitCompiler {
         // 6.5.2.BL1.B1.B1.1 (JLS3: 6.5.2.BL1.B1.B1.1) / 6.5.6.1.1 Local variable.
         // 6.5.2.BL1.B1.B1.2 (JLS3: 6.5.2.BL1.B1.B1.2) / 6.5.6.1.1 Parameter.
         {
-            Java.Scope s = scope;
-            if (s instanceof Java.BlockStatement) {
-                Java.BlockStatement bs = (BlockStatement) s;
-                Java.LocalVariable lv = bs.findLocalVariable(identifier);
+            Scope s = scope;
+            if (s instanceof BlockStatement) {
+                BlockStatement bs = (BlockStatement) s;
+                LocalVariable lv = bs.findLocalVariable(identifier);
                 if (lv != null) {
-                    Java.LocalVariableAccess lva = new Java.LocalVariableAccess(location, lv);
+                    LocalVariableAccess lva = new LocalVariableAccess(location, lv);
                     lva.setEnclosingBlockStatement(bs);
                     return lva;
                 }
                 s = s.getEnclosingScope();
             }
-            while (s instanceof Java.BlockStatement || s instanceof Java.CatchClause) s = s.getEnclosingScope();
-            if (s instanceof Java.FunctionDeclarator) {
+            while (s instanceof BlockStatement || s instanceof CatchClause) s = s.getEnclosingScope();
+            if (s instanceof FunctionDeclarator) {
                 s = s.getEnclosingScope();
             }
-            if (s instanceof Java.InnerClassDeclaration) {
-                Java.InnerClassDeclaration icd = (Java.InnerClassDeclaration) s;
+            if (s instanceof InnerClassDeclaration) {
+                InnerClassDeclaration icd = (InnerClassDeclaration) s;
                 s = s.getEnclosingScope();
-                if (s instanceof Java.AnonymousClassDeclaration) s = s.getEnclosingScope();
-                while (s instanceof Java.BlockStatement) {
-                    Java.LocalVariable lv = ((Java.BlockStatement) s).findLocalVariable(identifier);
+                if (s instanceof AnonymousClassDeclaration) s = s.getEnclosingScope();
+                while (s instanceof BlockStatement) {
+                    LocalVariable lv = ((BlockStatement) s).findLocalVariable(identifier);
                     if (lv != null) {
                         if (!lv.finaL) {
                             this.compileError(
@@ -6171,36 +6414,36 @@ public class UnitCompiler {
                             lvType
                         );
                         icd.defineSyntheticField(iField);
-                        Java.FieldAccess fa = new Java.FieldAccess(
+                        FieldAccess fa = new FieldAccess(
                             location,                        // location
-                            new Java.QualifiedThisReference( // lhs
+                            new QualifiedThisReference( // lhs
                                 location,                                        // location
-                                new Java.SimpleType(location, this.resolve(icd)) // qualification
+                                new SimpleType(location, this.resolve(icd)) // qualification
                             ),
                             iField                           // field
                         );
-                        fa.setEnclosingBlockStatement((Java.BlockStatement) scope);
+                        fa.setEnclosingBlockStatement((BlockStatement) scope);
                         return fa;
                     }
                     s = s.getEnclosingScope();
-                    while (s instanceof Java.BlockStatement) s = s.getEnclosingScope();
-                    if (!(s instanceof Java.FunctionDeclarator)) break;
+                    while (s instanceof BlockStatement) s = s.getEnclosingScope();
+                    if (!(s instanceof FunctionDeclarator)) break;
                     s = s.getEnclosingScope();
-                    if (!(s instanceof Java.InnerClassDeclaration)) break;
-                    icd = (Java.InnerClassDeclaration) s;
+                    if (!(s instanceof InnerClassDeclaration)) break;
+                    icd = (InnerClassDeclaration) s;
                     s = s.getEnclosingScope();
                 }
             }
         }
 
         // 6.5.2.BL1.B1.B1.3 (JLS3: 6.5.2.BL1.B1.B1.3) / 6.5.6.1.2.1 Field.
-        Java.BlockStatement enclosingBlockStatement = null;
-        for (Java.Scope s = scope; !(s instanceof Java.CompilationUnit); s = s.getEnclosingScope()) {
-            if (s instanceof Java.BlockStatement && enclosingBlockStatement == null) {
-                enclosingBlockStatement = (Java.BlockStatement) s;
+        BlockStatement enclosingBlockStatement = null;
+        for (Scope s = scope; !(s instanceof CompilationUnit); s = s.getEnclosingScope()) {
+            if (s instanceof BlockStatement && enclosingBlockStatement == null) {
+                enclosingBlockStatement = (BlockStatement) s;
             }
-            if (s instanceof Java.TypeDeclaration) {
-                final Java.AbstractTypeDeclaration enclosingTypeDecl = (Java.AbstractTypeDeclaration) s;
+            if (s instanceof TypeDeclaration) {
+                final AbstractTypeDeclaration enclosingTypeDecl = (AbstractTypeDeclaration) s;
                 final IClass etd = UnitCompiler.this.resolve(enclosingTypeDecl);
                 final IClass.IField f = this.findIField(etd, identifier, location);
                 if (f != null) {
@@ -6235,8 +6478,8 @@ public class UnitCompiler {
                         ), location);
                     }
 
-                    Java.SimpleType ct = new Java.SimpleType(scopeTypeDeclaration.getLocation(), (IClass) etd);
-                    Java.Atom lhs;
+                    SimpleType ct = new SimpleType(scopeTypeDeclaration.getLocation(), (IClass) etd);
+                    Atom lhs;
                     if (scopeTBD.isStatic()) {
 
                         // Field access in static method context.
@@ -6252,10 +6495,10 @@ public class UnitCompiler {
                         } else {
 
                             // Access to non-static field.
-                            lhs = new Java.QualifiedThisReference(location, ct);
+                            lhs = new QualifiedThisReference(location, ct);
                         }
                     }
-                    Java.Rvalue res = new Java.FieldAccess(
+                    Rvalue res = new FieldAccess(
                         location,
                         lhs,
                         f
@@ -6320,12 +6563,12 @@ public class UnitCompiler {
         }
 
         // Hack: "java" MUST be a package, not a class.
-        if (identifier.equals("java")) return new Java.Package(location, identifier);
+        if (identifier.equals("java")) return new Package(location, identifier);
 
         // 6.5.2.BL1.B1.B2.1 (JLS3: 6.5.2.BL1.B1.B3.2) Local class.
         {
-            Java.LocalClassDeclaration lcd = this.findLocalClassDeclaration(scope, identifier);
-            if (lcd != null) return new Java.SimpleType(location, this.resolve(lcd));
+            LocalClassDeclaration lcd = this.findLocalClassDeclaration(scope, identifier);
+            if (lcd != null) return new SimpleType(location, this.resolve(lcd));
         }
 
         // 6.5.2.BL1.B1.B2.2 (JLS3: 6.5.2.BL1.B1.B3.3) Member type.
@@ -6335,21 +6578,21 @@ public class UnitCompiler {
                 identifier,
                 location
             );
-            if (memberType != null) return new Java.SimpleType(location, memberType);
+            if (memberType != null) return new SimpleType(location, memberType);
         }
 
         // 6.5.2.BL1.B1.B3.1 (JLS3: 6.5.2.BL1.B1.B4.1) Single type import.
         {
             IClass iClass = this.importSingleType(identifier, location);
-            if (iClass != null) return new Java.SimpleType(location, iClass);
+            if (iClass != null) return new SimpleType(location, iClass);
         }
 
         // 6.5.2.BL1.B1.B3.2 (JLS3: 6.5.2.BL1.B1.B3.1) Package member class/interface declared in this compilation unit.
         // Notice that JLS2 looks this up AFTER local class, member type, single type import, while
         // JLS3 looks this up BEFORE local class, member type, single type import.
         {
-            Java.PackageMemberTypeDeclaration pmtd = scopeCompilationUnit.getPackageMemberTypeDeclaration(identifier);
-            if (pmtd != null) return new Java.SimpleType(location, this.resolve((Java.AbstractTypeDeclaration) pmtd));
+            PackageMemberTypeDeclaration pmtd = scopeCompilationUnit.getPackageMemberTypeDeclaration(identifier);
+            if (pmtd != null) return new SimpleType(location, this.resolve((AbstractTypeDeclaration) pmtd));
         }
 
         // 6.5.2.BL1.B1.B4 Class or interface declared in same package.
@@ -6361,14 +6604,14 @@ public class UnitCompiler {
                 scopeCompilationUnit.optionalPackageDeclaration.packageName + '.' + identifier
             );
             IClass result = findClassByName(location, className);
-            if (result != null) return new Java.SimpleType(location, result);
+            if (result != null) return new SimpleType(location, result);
         }
 
         // 6.5.2.BL1.B1.B5 (JLS3: 6.5.2.BL1.B1.B4.2), 6.5.2.BL1.B1.B6 Type-import-on-demand.
         {
             IClass importedClass = this.importTypeOnDemand(identifier, location);
             if (importedClass != null) {
-                return new Java.SimpleType(location, importedClass);
+                return new SimpleType(location, importedClass);
             }
         }
 
@@ -6406,20 +6649,20 @@ public class UnitCompiler {
                     }
                 }
             }
-            if (importedType != null) return new Java.SimpleType(null, importedType);
+            if (importedType != null) return new SimpleType(null, importedType);
         }
 
         // 6.5.2.BL1.B1.B7 Package name
-        return new Java.Package(location, identifier);
+        return new Package(location, identifier);
     }
 
-    private void determineValue(Java.FieldAccessExpression fae) throws CompileException {
+    private void determineValue(FieldAccessExpression fae) throws CompileException {
         if (fae.value != null) return;
 
         IClass lhsType = this.getType(fae.lhs);
 
         if (fae.fieldName.equals("length") && lhsType.isArray()) {
-            fae.value = new Java.ArrayLength(
+            fae.value = new ArrayLength(
                 fae.getLocation(),
                 this.toRvalueOrCE(fae.lhs)
             );
@@ -6430,16 +6673,16 @@ public class UnitCompiler {
                     "\"" + this.getType(fae.lhs).toString() + "\" has no field \"" + fae.fieldName + "\"",
                     fae.getLocation()
                 );
-                fae.value = new Java.Rvalue(fae.getLocation()) {
+                fae.value = new Rvalue(fae.getLocation()) {
 //                    public IClass compileGet() throws CompileException { return this.iClassLoader.OBJECT; }
                     public String toString() { return "???"; }
-                    public final void accept(Visitor.AtomVisitor visitor) {}
-                    public final void accept(Visitor.RvalueVisitor visitor) {}
+                    public final void accept(AtomVisitor visitor) {}
+                    public final void accept(RvalueVisitor visitor) {}
                 };
                 return;
             }
 
-            fae.value = new Java.FieldAccess(
+            fae.value = new FieldAccess(
                 fae.getLocation(),
                 fae.lhs,
                 iField
@@ -6449,12 +6692,12 @@ public class UnitCompiler {
     }
 
     /** "super.fld", "Type.super.fld" */
-    private void determineValue(Java.SuperclassFieldAccessExpression scfae) throws CompileException {
+    private void determineValue(SuperclassFieldAccessExpression scfae) throws CompileException {
         if (scfae.value != null) return;
 
         Rvalue lhs;
         {
-            Java.ThisReference tr = new Java.ThisReference(scfae.getLocation());
+            ThisReference tr = new ThisReference(scfae.getLocation());
             tr.setEnclosingBlockStatement(scfae.getEnclosingBlockStatement());
             IClass type;
             if (scfae.optionalQualification != null) {
@@ -6463,20 +6706,20 @@ public class UnitCompiler {
             {
                 type = this.getType(tr);
             }
-            lhs = new Java.Cast(scfae.getLocation(), new SimpleType(scfae.getLocation(), type.getSuperclass()), tr);
+            lhs = new Cast(scfae.getLocation(), new SimpleType(scfae.getLocation(), type.getSuperclass()), tr);
         }
 
         IClass.IField iField = this.findIField(this.getType(lhs), scfae.fieldName, scfae.getLocation());
         if (iField == null) {
             this.compileError("Class has no field \"" + scfae.fieldName + "\"", scfae.getLocation());
-            scfae.value = new Java.Rvalue(scfae.getLocation()) {
+            scfae.value = new Rvalue(scfae.getLocation()) {
                 public String toString() { return "???"; }
-                public final void accept(Visitor.AtomVisitor visitor) {}
-                public final void accept(Visitor.RvalueVisitor visitor) {}
+                public final void accept(AtomVisitor visitor) {}
+                public final void accept(RvalueVisitor visitor) {}
             };
             return;
         }
-        scfae.value = new Java.FieldAccess(
+        scfae.value = new FieldAccess(
             scfae.getLocation(),
             lhs,
             iField
@@ -6492,7 +6735,7 @@ public class UnitCompiler {
      *
      * @return The selected {@link IClass.IMethod} or <code>null</code>
      */
-    public IClass.IMethod findIMethod(Java.MethodInvocation mi) throws CompileException {
+    public IClass.IMethod findIMethod(MethodInvocation mi) throws CompileException {
         IClass.IMethod iMethod;
         FIND_METHOD: {
 
@@ -6500,12 +6743,12 @@ public class UnitCompiler {
 
                 // Method invocation by simple method name... method must be declared by an enclosing type declaration.
                 for (
-                    Java.Scope s = mi.getEnclosingBlockStatement();
-                    !(s instanceof Java.CompilationUnit);
+                    Scope s = mi.getEnclosingBlockStatement();
+                    !(s instanceof CompilationUnit);
                     s = s.getEnclosingScope()
                 ) {
-                    if (s instanceof Java.TypeDeclaration) {
-                        Java.TypeDeclaration td = (Java.TypeDeclaration) s;
+                    if (s instanceof TypeDeclaration) {
+                        TypeDeclaration td = (TypeDeclaration) s;
 
                         // Find methods with specified name.
                         iMethod = this.findIMethod(
@@ -6673,17 +6916,17 @@ public class UnitCompiler {
         for (int i = 0; i < interfaces.length; ++i) this.getIMethods(interfaces[i], methodName, v);
     }
 
-    public IClass.IMethod findIMethod(Java.SuperclassMethodInvocation scmi) throws CompileException {
-        Java.ClassDeclaration declaringClass;
-        for (Java.Scope s = scmi.getEnclosingBlockStatement();; s = s.getEnclosingScope()) {
-            if (s instanceof Java.FunctionDeclarator) {
-                Java.FunctionDeclarator fd = (Java.FunctionDeclarator) s;
+    public IClass.IMethod findIMethod(SuperclassMethodInvocation scmi) throws CompileException {
+        ClassDeclaration declaringClass;
+        for (Scope s = scmi.getEnclosingBlockStatement();; s = s.getEnclosingScope()) {
+            if (s instanceof FunctionDeclarator) {
+                FunctionDeclarator fd = (FunctionDeclarator) s;
                 if ((fd.modifiers & Mod.STATIC) != 0) {
                     this.compileError("Superclass method cannot be invoked in static context", scmi.getLocation());
                 }
             }
-            if (s instanceof Java.ClassDeclaration) {
-                declaringClass = (Java.ClassDeclaration) s;
+            if (s instanceof ClassDeclaration) {
+                declaringClass = (ClassDeclaration) s;
                 break;
             }
         }
@@ -6714,7 +6957,7 @@ public class UnitCompiler {
         Locatable          l,
         final IInvocable[] iInvocables,
         Rvalue[]           arguments,
-        Java.Scope         contextScope
+        Scope         contextScope
     ) throws CompileException {
 
         // Determine arguments' types.
@@ -6785,7 +7028,7 @@ public class UnitCompiler {
         final IInvocable[] iInvocables,
         final IClass[]     argumentTypes,
         boolean            boxingPermitted,
-        Java.Scope         contextScope
+        Scope         contextScope
     ) throws CompileException {
         if (UnitCompiler.DEBUG) {
             System.out.println("Argument types:");
@@ -7030,7 +7273,7 @@ public class UnitCompiler {
             this.checkThrownException(
                 (Locatable) in,                              // l
                 thrownExceptions[i],                         // type
-                (Java.Scope) in.getEnclosingBlockStatement() // scope
+                (Scope) in.getEnclosingBlockStatement() // scope
             );
         }
     }
@@ -7041,7 +7284,7 @@ public class UnitCompiler {
     private void checkThrownException(
         Locatable  l,
         IClass     type,
-        Java.Scope scope
+        Scope scope
     ) throws CompileException {
 
         // Thrown object must be assignable to "Throwable".
@@ -7061,10 +7304,10 @@ public class UnitCompiler {
         for (;; scope = scope.getEnclosingScope()) {
 
             // Match against enclosing "try...catch" blocks.
-            if (scope instanceof Java.TryStatement) {
-                Java.TryStatement ts = (Java.TryStatement) scope;
+            if (scope instanceof TryStatement) {
+                TryStatement ts = (TryStatement) scope;
                 for (int i = 0; i < ts.catchClauses.size(); ++i) {
-                    Java.CatchClause cc = (Java.CatchClause) ts.catchClauses.get(i);
+                    CatchClause cc = (CatchClause) ts.catchClauses.get(i);
                     IClass caughtType = this.getType(cc.caughtException.type);
                     if (caughtType.isAssignableFrom(type)) {
 
@@ -7078,7 +7321,7 @@ public class UnitCompiler {
 
                         // This catch clause catches only a subtype of the exception type.
                         for (int j = 0; j < i; ++j) {
-                            if (this.getType(((Java.CatchClause) ts.catchClauses.get(j)).caughtException.type).isAssignableFrom(caughtType)) {
+                            if (this.getType(((CatchClause) ts.catchClauses.get(j)).caughtException.type).isAssignableFrom(caughtType)) {
 
                                 // A preceding catch clause is more general than this catch clause.
                                 break CATCH_SUBTYPE;
@@ -7092,8 +7335,8 @@ public class UnitCompiler {
             } else
 
             // Match against "throws" clause of declaring function.
-            if (scope instanceof Java.FunctionDeclarator) {
-                Java.FunctionDeclarator fd = (Java.FunctionDeclarator) scope;
+            if (scope instanceof FunctionDeclarator) {
+                FunctionDeclarator fd = (FunctionDeclarator) scope;
                 for (int i = 0; i < fd.thrownExceptions.length; ++i) {
                     IClass te = this.getType(fd.thrownExceptions[i]);
                     if (te.isAssignableFrom(type)) return;
@@ -7101,7 +7344,7 @@ public class UnitCompiler {
                 break;
             } else
 
-            if (scope instanceof Java.TypeBodyDeclaration) {
+            if (scope instanceof TypeBodyDeclaration) {
                 break;
             }
         }
@@ -7114,7 +7357,7 @@ public class UnitCompiler {
         ), l.getLocation());
     }
 
-    private IClass getTargetIClass(Java.QualifiedThisReference qtr) throws CompileException {
+    private IClass getTargetIClass(QualifiedThisReference qtr) throws CompileException {
 
         // Determine target type.
         if (qtr.targetIClass == null) {
@@ -7126,15 +7369,15 @@ public class UnitCompiler {
     /**
      * Checks whether the operand is an integer-like local variable.
      */
-    Java.LocalVariable isIntLV(Java.Crement c) throws CompileException {
-        if (!(c.operand instanceof Java.AmbiguousName)) return null;
-        Java.AmbiguousName an = (Java.AmbiguousName) c.operand;
+    LocalVariable isIntLV(Crement c) throws CompileException {
+        if (!(c.operand instanceof AmbiguousName)) return null;
+        AmbiguousName an = (AmbiguousName) c.operand;
 
-        Java.Atom rec = this.reclassify(an);
-        if (!(rec instanceof Java.LocalVariableAccess)) return null;
-        Java.LocalVariableAccess lva = (Java.LocalVariableAccess) rec;
+        Atom rec = this.reclassify(an);
+        if (!(rec instanceof LocalVariableAccess)) return null;
+        LocalVariableAccess lva = (LocalVariableAccess) rec;
 
-        Java.LocalVariable lv = lva.localVariable;
+        LocalVariable lv = lva.localVariable;
         if (lv.finaL) this.compileError("Must not increment or decrement \"final\" local variable", lva.getLocation());
         if (
             lv.type == IClass.BYTE  ||
@@ -7145,14 +7388,14 @@ public class UnitCompiler {
         return null;
     }
 
-    private IClass resolve(final Java.TypeDeclaration td) {
-        final Java.AbstractTypeDeclaration atd = (Java.AbstractTypeDeclaration) td;
+    private IClass resolve(final TypeDeclaration td) {
+        final AbstractTypeDeclaration atd = (AbstractTypeDeclaration) td;
         if (atd.resolvedType == null) atd.resolvedType = new IClass() {
             protected IClass.IMethod[] getDeclaredIMethods2() {
                 IClass.IMethod[] res = new IClass.IMethod[atd.getMethodDeclarations().size()];
                 int i = 0;
                 for (Iterator it = atd.getMethodDeclarations().iterator(); it.hasNext();) {
-                    res[i++] = UnitCompiler.this.toIMethod((Java.MethodDeclarator) it.next());
+                    res[i++] = UnitCompiler.this.toIMethod((MethodDeclarator) it.next());
                 }
                 return res;
             }
@@ -7163,21 +7406,21 @@ public class UnitCompiler {
                     IClass[] mts = new IClass[mtds.size()];
                     int i = 0;
                     for (Iterator it = mtds.iterator(); it.hasNext();) {
-                        mts[i++] = UnitCompiler.this.resolve((Java.AbstractTypeDeclaration) it.next());
+                        mts[i++] = UnitCompiler.this.resolve((AbstractTypeDeclaration) it.next());
                     }
                     this.declaredClasses = mts;
                 }
                 return this.declaredClasses;
             }
             protected IClass getDeclaringIClass2() {
-                Java.Scope s = atd;
-                for (; !(s instanceof Java.TypeBodyDeclaration); s = s.getEnclosingScope()) {
-                    if (s instanceof Java.CompilationUnit) return null;
+                Scope s = atd;
+                for (; !(s instanceof TypeBodyDeclaration); s = s.getEnclosingScope()) {
+                    if (s instanceof CompilationUnit) return null;
                 }
-                return UnitCompiler.this.resolve((Java.AbstractTypeDeclaration) s.getEnclosingScope());
+                return UnitCompiler.this.resolve((AbstractTypeDeclaration) s.getEnclosingScope());
             }
             protected IClass getOuterIClass2() throws CompileException {
-                Java.AbstractTypeDeclaration oc = (Java.AbstractTypeDeclaration) UnitCompiler.getOuterClass(atd);
+                AbstractTypeDeclaration oc = (AbstractTypeDeclaration) UnitCompiler.getOuterClass(atd);
                 if (oc == null) return null;
                 return UnitCompiler.this.resolve(oc);
             }
@@ -7192,8 +7435,8 @@ public class UnitCompiler {
             public boolean           isPrimitive() { return false; }
             public boolean           isPrimitiveNumeric() { return false; }
             protected IConstructor[] getDeclaredIConstructors2() {
-                if (atd instanceof Java.ClassDeclaration) {
-                    Java.ConstructorDeclarator[] cs = ((Java.ClassDeclaration) atd).getConstructors();
+                if (atd instanceof ClassDeclaration) {
+                    ConstructorDeclarator[] cs = ((ClassDeclaration) atd).getConstructors();
 
                     IClass.IConstructor[] res = new IClass.IConstructor[cs.length];
                     for (int i = 0; i < cs.length; ++i) res[i] = UnitCompiler.this.toIConstructor(cs[i]);
@@ -7202,30 +7445,30 @@ public class UnitCompiler {
                 return new IClass.IConstructor[0];
             }
             protected IField[] getDeclaredIFields2() {
-                if (atd instanceof Java.ClassDeclaration) {
-                    Java.ClassDeclaration cd = (Java.ClassDeclaration) atd;
+                if (atd instanceof ClassDeclaration) {
+                    ClassDeclaration cd = (ClassDeclaration) atd;
                     List l = new ArrayList(); // IClass.IField
 
                     // Determine variable declarators of type declaration.
                     for (int i = 0; i < cd.variableDeclaratorsAndInitializers.size(); ++i) {
-                        Java.BlockStatement vdoi = (Java.BlockStatement) cd.variableDeclaratorsAndInitializers.get(i);
-                        if (vdoi instanceof Java.FieldDeclaration) {
-                            Java.FieldDeclaration fd = (Java.FieldDeclaration) vdoi;
+                        BlockStatement vdoi = (BlockStatement) cd.variableDeclaratorsAndInitializers.get(i);
+                        if (vdoi instanceof FieldDeclaration) {
+                            FieldDeclaration fd = (FieldDeclaration) vdoi;
                             IClass.IField[] flds = UnitCompiler.this.getIFields(fd);
                             for (int j = 0; j < flds.length; ++j) l.add(flds[j]);
                         }
                     }
                     return (IClass.IField[]) l.toArray(new IClass.IField[l.size()]);
                 } else
-                if (atd instanceof Java.InterfaceDeclaration) {
-                    Java.InterfaceDeclaration id = (Java.InterfaceDeclaration) atd;
+                if (atd instanceof InterfaceDeclaration) {
+                    InterfaceDeclaration id = (InterfaceDeclaration) atd;
                     List l = new ArrayList();
 
                     // Determine static fields.
                     for (int i = 0; i < id.constantDeclarations.size(); ++i) {
-                        Java.BlockStatement bs = (Java.BlockStatement) id.constantDeclarations.get(i);
-                        if (bs instanceof Java.FieldDeclaration) {
-                            Java.FieldDeclaration fd = (Java.FieldDeclaration) bs;
+                        BlockStatement bs = (BlockStatement) id.constantDeclarations.get(i);
+                        if (bs instanceof FieldDeclaration) {
+                            FieldDeclaration fd = (FieldDeclaration) bs;
                             IClass.IField[] flds = UnitCompiler.this.getIFields(fd);
                             for (int j = 0; j < flds.length; ++j) l.add(flds[j]);
                         }
@@ -7238,19 +7481,19 @@ public class UnitCompiler {
                 }
             }
             public IField[] getSyntheticIFields() {
-                if (atd instanceof Java.ClassDeclaration) {
-                    Collection c = ((Java.ClassDeclaration) atd).syntheticFields.values();
+                if (atd instanceof ClassDeclaration) {
+                    Collection c = ((ClassDeclaration) atd).syntheticFields.values();
                     return (IField[]) c.toArray(new IField[c.size()]);
                 }
                 return new IField[0];
             }
             protected IClass getSuperclass2() throws CompileException {
-                if (atd instanceof Java.AnonymousClassDeclaration) {
-                    IClass bt = UnitCompiler.this.getType(((Java.AnonymousClassDeclaration) atd).baseType);
+                if (atd instanceof AnonymousClassDeclaration) {
+                    IClass bt = UnitCompiler.this.getType(((AnonymousClassDeclaration) atd).baseType);
                     return bt.isInterface() ? UnitCompiler.this.iClassLoader.OBJECT : bt;
                 }
-                if (atd instanceof Java.NamedClassDeclaration) {
-                    Java.NamedClassDeclaration ncd = (Java.NamedClassDeclaration) atd;
+                if (atd instanceof NamedClassDeclaration) {
+                    NamedClassDeclaration ncd = (NamedClassDeclaration) atd;
                     if (ncd.optionalExtendedType == null) return UnitCompiler.this.iClassLoader.OBJECT;
                     IClass superclass = UnitCompiler.this.getType(ncd.optionalExtendedType);
                     if (superclass.isInterface()) {
@@ -7266,12 +7509,12 @@ public class UnitCompiler {
             public Access getAccess() { return UnitCompiler.modifiers2Access(atd.getModifiers()); }
             public boolean isFinal() { return (atd.getModifiers() & Mod.FINAL) != 0;  }
             protected IClass[] getInterfaces2() throws CompileException {
-                if (atd instanceof Java.AnonymousClassDeclaration) {
-                    IClass bt = UnitCompiler.this.getType(((Java.AnonymousClassDeclaration) atd).baseType);
+                if (atd instanceof AnonymousClassDeclaration) {
+                    IClass bt = UnitCompiler.this.getType(((AnonymousClassDeclaration) atd).baseType);
                     return bt.isInterface() ? new IClass[] { bt } : new IClass[0];
                 } else
-                if (atd instanceof Java.NamedClassDeclaration) {
-                    Java.NamedClassDeclaration ncd = (Java.NamedClassDeclaration) atd;
+                if (atd instanceof NamedClassDeclaration) {
+                    NamedClassDeclaration ncd = (NamedClassDeclaration) atd;
                     IClass[] res = new IClass[ncd.implementedTypes.length];
                     for (int i = 0; i < res.length; ++i) {
                         res[i] = UnitCompiler.this.getType(ncd.implementedTypes[i]);
@@ -7285,8 +7528,8 @@ public class UnitCompiler {
                     }
                     return res;
                 } else
-                if (atd instanceof Java.InterfaceDeclaration) {
-                    Java.InterfaceDeclaration id = (Java.InterfaceDeclaration) atd;
+                if (atd instanceof InterfaceDeclaration) {
+                    InterfaceDeclaration id = (InterfaceDeclaration) atd;
                     IClass[] res = new IClass[id.extendedTypes.length];
                     for (int i = 0; i < res.length; ++i) {
                         res[i] = UnitCompiler.this.getType(id.extendedTypes[i]);
@@ -7307,11 +7550,11 @@ public class UnitCompiler {
             }
             public boolean isAbstract() {
                 return (
-                    (atd instanceof Java.InterfaceDeclaration)
+                    (atd instanceof InterfaceDeclaration)
                     || (atd.getModifiers() & Mod.ABSTRACT) != 0
                 );
             }
-            public boolean isInterface() { return atd instanceof Java.InterfaceDeclaration; }
+            public boolean isInterface() { return atd instanceof InterfaceDeclaration; }
         };
 
         return atd.resolvedType;
@@ -7319,8 +7562,8 @@ public class UnitCompiler {
 
     private void referenceThis(
         Locatable                l,
-        Java.ClassDeclaration    declaringClass,
-        Java.TypeBodyDeclaration declaringTypeBodyDeclaration,
+        ClassDeclaration    declaringClass,
+        TypeBodyDeclaration declaringTypeBodyDeclaration,
         IClass                   targetIClass
     ) throws CompileException {
         List path = UnitCompiler.getOuterClasses(declaringClass);
@@ -7344,7 +7587,7 @@ public class UnitCompiler {
                 //
                 // However, this strategy bears the risk of ambiguities, because "O" may be
                 // assignable from more than one enclosing class.
-                if (targetIClass.isAssignableFrom(this.resolve((Java.AbstractTypeDeclaration) path.get(j)))) {
+                if (targetIClass.isAssignableFrom(this.resolve((AbstractTypeDeclaration) path.get(j)))) {
                     break TARGET_FOUND;
                 }
             }
@@ -7355,18 +7598,18 @@ public class UnitCompiler {
         }
 
         int i;
-        if (declaringTypeBodyDeclaration instanceof Java.ConstructorDeclarator) {
+        if (declaringTypeBodyDeclaration instanceof ConstructorDeclarator) {
             if (j == 0) {
                 this.writeOpcode(l, Opcode.ALOAD_0);
                 return;
             }
 
-            Java.ConstructorDeclarator constructorDeclarator = (
-                (Java.ConstructorDeclarator) declaringTypeBodyDeclaration
+            ConstructorDeclarator constructorDeclarator = (
+                (ConstructorDeclarator) declaringTypeBodyDeclaration
             );
             String spn = "this$" + (path.size() - 2);
-            Java.LocalVariable syntheticParameter = (
-                (Java.LocalVariable) constructorDeclarator.syntheticParameters.get(spn)
+            LocalVariable syntheticParameter = (
+                (LocalVariable) constructorDeclarator.syntheticParameters.get(spn)
             );
             if (syntheticParameter == null) {
                 throw new JaninoRuntimeException("SNO: Synthetic parameter \"" + spn + "\" not found");
@@ -7379,10 +7622,10 @@ public class UnitCompiler {
         }
         for (; i < j; ++i) {
             final String fieldName = "this$" + (path.size() - i - 2);
-            final Java.InnerClassDeclaration inner = (Java.InnerClassDeclaration) path.get(i);
-            IClass iic = this.resolve((Java.AbstractTypeDeclaration) inner);
-            final Java.TypeDeclaration outer = (Java.TypeDeclaration) path.get(i + 1);
-            final IClass oic = this.resolve((Java.AbstractTypeDeclaration) outer);
+            final InnerClassDeclaration inner = (InnerClassDeclaration) path.get(i);
+            IClass iic = this.resolve((AbstractTypeDeclaration) inner);
+            final TypeDeclaration outer = (TypeDeclaration) path.get(i + 1);
+            final IClass oic = this.resolve((AbstractTypeDeclaration) outer);
             inner.defineSyntheticField(new SimpleIField(
                 iic,
                 fieldName,
@@ -7399,91 +7642,91 @@ public class UnitCompiler {
 
     /**
      * Return a list consisting of the given <code>inner</code> class and all its outer classes.
-     * @return {@link List} of {@link Java.TypeDeclaration}
+     * @return {@link List} of {@link TypeDeclaration}
      */
-    private static List getOuterClasses(Java.TypeDeclaration inner) {
+    private static List getOuterClasses(TypeDeclaration inner) {
         List path = new ArrayList();
-        for (Java.TypeDeclaration ic = inner; ic != null; ic = UnitCompiler.getOuterClass(ic)) path.add(ic);
+        for (TypeDeclaration ic = inner; ic != null; ic = UnitCompiler.getOuterClass(ic)) path.add(ic);
         return path;
     }
 
-    /*package*/ static Java.TypeDeclaration getOuterClass(Java.TypeDeclaration atd) {
+    /*package*/ static TypeDeclaration getOuterClass(TypeDeclaration atd) {
 
         // Package member class declaration.
-        if (atd instanceof Java.PackageMemberClassDeclaration) return null;
+        if (atd instanceof PackageMemberClassDeclaration) return null;
 
         // Local class declaration.
-        if (atd instanceof Java.LocalClassDeclaration) {
-            Java.Scope s = atd.getEnclosingScope();
-            for (; !(s instanceof Java.FunctionDeclarator); s = s.getEnclosingScope());
+        if (atd instanceof LocalClassDeclaration) {
+            Scope s = atd.getEnclosingScope();
+            for (; !(s instanceof FunctionDeclarator); s = s.getEnclosingScope());
             if (
-                (s instanceof Java.MethodDeclarator)
-                && (((Java.FunctionDeclarator) s).modifiers & Mod.STATIC) != 0
+                (s instanceof MethodDeclarator)
+                && (((FunctionDeclarator) s).modifiers & Mod.STATIC) != 0
             ) return null;
-            for (; !(s instanceof Java.TypeDeclaration); s = s.getEnclosingScope());
-            Java.TypeDeclaration immediatelyEnclosingTypeDeclaration = (Java.TypeDeclaration) s;
+            for (; !(s instanceof TypeDeclaration); s = s.getEnclosingScope());
+            TypeDeclaration immediatelyEnclosingTypeDeclaration = (TypeDeclaration) s;
             return (
-                immediatelyEnclosingTypeDeclaration instanceof Java.ClassDeclaration
+                immediatelyEnclosingTypeDeclaration instanceof ClassDeclaration
             ) ? immediatelyEnclosingTypeDeclaration : null;
         }
 
         // Member class declaration.
         if (
-            atd instanceof Java.MemberClassDeclaration &&
-            (((Java.MemberClassDeclaration) atd).getModifiers() & Mod.STATIC) != 0
+            atd instanceof MemberClassDeclaration &&
+            (((MemberClassDeclaration) atd).getModifiers() & Mod.STATIC) != 0
         ) return null;
 
         // Anonymous class declaration, interface declaration
-        Java.Scope s = atd;
-        for (; !(s instanceof Java.TypeBodyDeclaration); s = s.getEnclosingScope()) {
-            if (s instanceof Java.ConstructorInvocation) return null;
-            if (s instanceof Java.CompilationUnit) return null;
+        Scope s = atd;
+        for (; !(s instanceof TypeBodyDeclaration); s = s.getEnclosingScope()) {
+            if (s instanceof ConstructorInvocation) return null;
+            if (s instanceof CompilationUnit) return null;
         }
-        //if (!(s instanceof Java.ClassDeclaration)) return null;
-        if (((Java.TypeBodyDeclaration) s).isStatic()) return null;
-        return (Java.AbstractTypeDeclaration) s.getEnclosingScope();
+        //if (!(s instanceof ClassDeclaration)) return null;
+        if (((TypeBodyDeclaration) s).isStatic()) return null;
+        return (AbstractTypeDeclaration) s.getEnclosingScope();
     }
 
-    private IClass getIClass(Java.ThisReference tr) throws CompileException {
+    private IClass getIClass(ThisReference tr) throws CompileException {
         if (tr.iClass == null) {
 
             // Compile error if in static function context.
-            Java.Scope s;
+            Scope s;
             for (
                 s = tr.getEnclosingBlockStatement();
-                s instanceof Java.Statement || s instanceof Java.CatchClause;
+                s instanceof Statement || s instanceof CatchClause;
                 s = s.getEnclosingScope()
             );
-            if (s instanceof Java.FunctionDeclarator) {
-                Java.FunctionDeclarator function = (Java.FunctionDeclarator) s;
+            if (s instanceof FunctionDeclarator) {
+                FunctionDeclarator function = (FunctionDeclarator) s;
                 if ((function.modifiers & Mod.STATIC) != 0) {
                     this.compileError("No current instance available in static method", tr.getLocation());
                 }
             }
 
             // Determine declaring type.
-            while (!(s instanceof Java.TypeDeclaration)) {
+            while (!(s instanceof TypeDeclaration)) {
                 s = s.getEnclosingScope();
             }
-            if (!(s instanceof Java.ClassDeclaration)) {
+            if (!(s instanceof ClassDeclaration)) {
                 this.compileError("Only methods of classes can have a current instance", tr.getLocation());
             }
-            tr.iClass = this.resolve((Java.ClassDeclaration) s);
+            tr.iClass = this.resolve((ClassDeclaration) s);
         }
         return tr.iClass;
     }
 
-    private IClass getReturnType(Java.FunctionDeclarator fd) throws CompileException {
+    private IClass getReturnType(FunctionDeclarator fd) throws CompileException {
         if (fd.returnType == null) {
             fd.returnType = this.getType(fd.type);
         }
         return fd.returnType;
     }
 
-    /*package*/ IClass.IConstructor toIConstructor(final Java.ConstructorDeclarator cd) {
+    /*package*/ IClass.IConstructor toIConstructor(final ConstructorDeclarator cd) {
         if (cd.iConstructor != null) return cd.iConstructor;
 
-        cd.iConstructor = this.resolve((Java.AbstractTypeDeclaration) cd.getDeclaringType()).new IConstructor() {
+        cd.iConstructor = this.resolve((AbstractTypeDeclaration) cd.getDeclaringType()).new IConstructor() {
 
             // Implement IMember.
             public Access getAccess() {
@@ -7503,7 +7746,7 @@ public class UnitCompiler {
 
             // Implement IInvocable.
             public String getDescriptor() throws CompileException {
-                if (!(cd.getDeclaringClass() instanceof Java.InnerClassDeclaration)) return super.getDescriptor();
+                if (!(cd.getDeclaringClass() instanceof InnerClassDeclaration)) return super.getDescriptor();
 
                 List l = new ArrayList();
 
@@ -7516,7 +7759,7 @@ public class UnitCompiler {
                     IClass.IField sf = (IClass.IField) it.next();
                     if (sf.getName().startsWith("val$")) l.add(sf.getType().getDescriptor());
                 }
-                Java.FunctionDeclarator.FormalParameter[] fps = cd.formalParameters;
+                FunctionDeclarator.FormalParameter[] fps = cd.formalParameters;
                 for (int i = 0; i < fps.length; ++i) {
                     l.add(UnitCompiler.this.getType(fps[i].type).getDescriptor());
                 }
@@ -7525,7 +7768,7 @@ public class UnitCompiler {
             }
 
             public IClass[] getParameterTypes() throws CompileException {
-                Java.FunctionDeclarator.FormalParameter[] fps = cd.formalParameters;
+                FunctionDeclarator.FormalParameter[] fps = cd.formalParameters;
                 IClass[] res = new IClass[fps.length];
                 for (int i = 0; i < fps.length; ++i) {
                     res[i] = UnitCompiler.this.getType(fps[i].type);
@@ -7544,7 +7787,7 @@ public class UnitCompiler {
                 StringBuffer sb = new StringBuffer();
                 sb.append(cd.getDeclaringType().getClassName());
                 sb.append('(');
-                Java.FunctionDeclarator.FormalParameter[] fps = cd.formalParameters;
+                FunctionDeclarator.FormalParameter[] fps = cd.formalParameters;
                 for (int i = 0; i < fps.length; ++i) {
                     if (i != 0) sb.append(", ");
                     try {
@@ -7559,9 +7802,9 @@ public class UnitCompiler {
         return cd.iConstructor;
     }
 
-    public IClass.IMethod toIMethod(final Java.MethodDeclarator md) {
+    public IClass.IMethod toIMethod(final MethodDeclarator md) {
         if (md.iMethod != null) return md.iMethod;
-        md.iMethod = this.resolve((Java.AbstractTypeDeclaration) md.getDeclaringType()).new IMethod() {
+        md.iMethod = this.resolve((AbstractTypeDeclaration) md.getDeclaringType()).new IMethod() {
 
             // Implement IMember.
             public Access getAccess() {
@@ -7581,7 +7824,7 @@ public class UnitCompiler {
 
             // Implement IInvocable.
             public IClass[] getParameterTypes() throws CompileException {
-                Java.FunctionDeclarator.FormalParameter[] fps = md.formalParameters;
+                FunctionDeclarator.FormalParameter[] fps = md.formalParameters;
                 IClass[] res = new IClass[fps.length];
                 for (int i = 0; i < fps.length; ++i) {
                     res[i] = UnitCompiler.this.getType(fps[i].type);
@@ -7600,7 +7843,7 @@ public class UnitCompiler {
             public boolean isStatic() { return (md.modifiers & Mod.STATIC) != 0; }
             public boolean isAbstract() {
                 return (
-                    (md.getDeclaringType() instanceof Java.InterfaceDeclaration)
+                    (md.getDeclaringType() instanceof InterfaceDeclaration)
                     || (md.modifiers & Mod.ABSTRACT) != 0
                 );
             }
@@ -7612,12 +7855,12 @@ public class UnitCompiler {
         return md.iMethod;
     }
 
-    private IClass.IInvocable toIInvocable(Java.FunctionDeclarator fd) {
-        if (fd instanceof Java.ConstructorDeclarator) {
-            return this.toIConstructor((Java.ConstructorDeclarator) fd);
+    private IClass.IInvocable toIInvocable(FunctionDeclarator fd) {
+        if (fd instanceof ConstructorDeclarator) {
+            return this.toIConstructor((ConstructorDeclarator) fd);
         } else
-        if (fd instanceof Java.MethodDeclarator) {
-            return this.toIMethod((Java.MethodDeclarator) fd);
+        if (fd instanceof MethodDeclarator) {
+            return this.toIMethod((MethodDeclarator) fd);
         } else
         {
             throw new JaninoRuntimeException(
@@ -7687,7 +7930,7 @@ public class UnitCompiler {
         return importedClass;
     }
     private final Map onDemandImportableTypes = new HashMap();   // String simpleTypeName => IClass
-    private void declareClassDollarMethod(Java.ClassLiteral cl) {
+    private void declareClassDollarMethod(ClassLiteral cl) {
 
         // Method "class$" is not yet declared; declare it like
         //
@@ -7700,22 +7943,22 @@ public class UnitCompiler {
         //   }
         //
         Location loc = cl.getLocation();
-        Java.AbstractTypeDeclaration declaringType;
-        for (Java.Scope s = cl.getEnclosingBlockStatement();; s = s.getEnclosingScope()) {
-            if (s instanceof Java.AbstractTypeDeclaration) {
-                declaringType = (Java.AbstractTypeDeclaration) s;
+        AbstractTypeDeclaration declaringType;
+        for (Scope s = cl.getEnclosingBlockStatement();; s = s.getEnclosingScope()) {
+            if (s instanceof AbstractTypeDeclaration) {
+                declaringType = (AbstractTypeDeclaration) s;
                 break;
             }
         }
 
         // try {
         // return Class.forName(className);
-        Java.MethodInvocation mi = new Java.MethodInvocation(
+        MethodInvocation mi = new MethodInvocation(
             loc,                                               // location
-            new Java.SimpleType(loc, this.iClassLoader.CLASS), // optionalTarget
+            new SimpleType(loc, this.iClassLoader.CLASS), // optionalTarget
             "forName",                                         // methodName
-            new Java.Rvalue[] {                                // arguments
-                new Java.AmbiguousName(loc, new String[] { "className" })
+            new Rvalue[] {                                // arguments
+                new AmbiguousName(loc, new String[] { "className" })
             }
         );
 
@@ -7740,36 +7983,36 @@ public class UnitCompiler {
         }
 
         // catch (ClassNotFoundException e) {
-        Java.Block b = new Java.Block(loc);
+        Block b = new Block(loc);
         // throw new NoClassDefFoundError(e.getMessage());
-        b.addStatement(new Java.ThrowStatement(loc, new Java.NewClassInstance(
+        b.addStatement(new ThrowStatement(loc, new NewClassInstance(
             loc,                                                  // location
-            (Java.Rvalue) null,                                   // optionalQualification
-            new Java.SimpleType(loc, noClassDefFoundErrorIClass), // type
-            new Java.Rvalue[] {                                   // arguments
-                new Java.MethodInvocation(
+            (Rvalue) null,                                   // optionalQualification
+            new SimpleType(loc, noClassDefFoundErrorIClass), // type
+            new Rvalue[] {                                   // arguments
+                new MethodInvocation(
                     loc,                                               // location
-                    new Java.AmbiguousName(loc, new String[] { "ex"}), // optionalTarget
+                    new AmbiguousName(loc, new String[] { "ex"}), // optionalTarget
                     "getMessage",                                      // methodName
-                    new Java.Rvalue[0]                                 // arguments
+                    new Rvalue[0]                                 // arguments
                 )
             }
         )));
 
         List l = new ArrayList();
-        l.add(new Java.CatchClause(
+        l.add(new CatchClause(
             loc,                                         // location
-            new Java.FunctionDeclarator.FormalParameter( // caughtException
+            new FunctionDeclarator.FormalParameter( // caughtException
                 loc,                                                    // location
                 true,                                                   // finaL
-                new Java.SimpleType(loc, classNotFoundExceptionIClass), // type
+                new SimpleType(loc, classNotFoundExceptionIClass), // type
                 "ex"                                                    // name
             ),
             b                                            // body
         ));
-        Java.TryStatement ts = new Java.TryStatement(
+        TryStatement ts = new TryStatement(
             loc,                               // location
-            new Java.ReturnStatement(loc, mi), // body
+            new ReturnStatement(loc, mi), // body
             l,                                 // catchClauses
             null                               // optionalFinally
         );
@@ -7778,20 +8021,20 @@ public class UnitCompiler {
         statements.add(ts);
 
         // Class class$(String className)
-        Java.FunctionDeclarator.FormalParameter fp = new Java.FunctionDeclarator.FormalParameter(
+        FunctionDeclarator.FormalParameter fp = new FunctionDeclarator.FormalParameter(
             loc,                                                // location
             false,                                              // finaL
-            new Java.SimpleType(loc, this.iClassLoader.STRING), // type
+            new SimpleType(loc, this.iClassLoader.STRING), // type
             "className"                                         // name
         );
-        Java.MethodDeclarator cdmd = new Java.MethodDeclarator(
+        MethodDeclarator cdmd = new MethodDeclarator(
             loc,                                                  // location
             null,                                                 // optionalDocComment
             Mod.STATIC,                                           // modifiers
-            new Java.SimpleType(loc, this.iClassLoader.CLASS),    // type
+            new SimpleType(loc, this.iClassLoader.CLASS),    // type
             "class$",                                             // name
-            new Java.FunctionDeclarator.FormalParameter[] { fp }, // formalParameters
-            new Java.Type[0],                                     // thrownExceptions
+            new FunctionDeclarator.FormalParameter[] { fp }, // formalParameters
+            new Type[0],                                     // thrownExceptions
             statements                                            // optionalStatements
         );
 
@@ -7799,41 +8042,61 @@ public class UnitCompiler {
         declaringType.invalidateMethodCaches();
     }
 
+    /**
+     * @param value See {@link Token#value}, numerics optionally with a '-' prefix
+     */
     private IClass pushConstant(Locatable l, Object value) {
-        if (
-            value instanceof Integer   ||
-            value instanceof Short     ||
-            value instanceof Character ||
-            value instanceof Byte
-        ) {
-            int i = (
-                value instanceof Character ?
-                ((Character) value).charValue() :
-                ((Number) value).intValue()
-            );
-            if (i >= -1 && i <= 5) {
-                this.writeOpcode(l, Opcode.ICONST_0 + i);
+
+        PUSH_INTEGER_CONSTANT: {
+            int iv;
+            if (value instanceof Character) {
+                iv = ((Character) value).charValue();
             } else
-            if (i >= Byte.MIN_VALUE && i <= Byte.MAX_VALUE) {
+            if (value instanceof Byte) {
+                iv = ((Byte) value).intValue();
+            } else
+            if (value instanceof Short) {
+                iv = ((Short) value).intValue();
+            } else
+            if (value instanceof Integer) {
+                iv = ((Integer) value).intValue();
+            } else
+            {
+                break PUSH_INTEGER_CONSTANT;
+            }
+
+            if (iv >= -1 && iv <= 5) {
+                this.writeOpcode(l, Opcode.ICONST_0 + iv);
+            } else
+            if (iv >= Byte.MIN_VALUE && iv <= Byte.MAX_VALUE) {
                 this.writeOpcode(l, Opcode.BIPUSH);
-                this.writeByte((byte) i);
-            } else {
-                this.writeLDC(l, this.addConstantIntegerInfo(i));
+                this.writeByte((byte) iv);
+            } else
+            {
+                this.writeLDC(l, this.addConstantIntegerInfo(iv));
             }
             return IClass.INT;
         }
+
         if (value instanceof Long) {
             long lv = ((Long) value).longValue();
-            if (lv >= 0L && lv <= 1L) {
-                this.writeOpcode(l, Opcode.LCONST_0 + (int) lv);
-            } else {
+            
+            if (lv == 0L) {
+                this.writeOpcode(l, Opcode.LCONST_0);
+            } else
+            if (lv == 1L) {
+                this.writeOpcode(l, Opcode.LCONST_1);
+            } else
+            {
                 this.writeOpcode(l, Opcode.LDC2_W);
                 this.writeConstantLongInfo(lv);
             }
             return IClass.LONG;
         }
+
         if (value instanceof Float) {
             float fv = ((Float) value).floatValue();
+  
             if (
                 Float.floatToIntBits(fv) == Float.floatToIntBits(0.0F) // POSITIVE zero!
                 || fv == 1.0F
@@ -7846,8 +8109,10 @@ public class UnitCompiler {
             }
             return IClass.FLOAT;
         }
+
         if (value instanceof Double) {
             double dv = ((Double) value).doubleValue();
+
             if (
                 Double.doubleToLongBits(dv) == Double.doubleToLongBits(0.0D) // POSITIVE zero!
                 || dv == 1.0D
@@ -7860,6 +8125,7 @@ public class UnitCompiler {
             }
             return IClass.DOUBLE;
         }
+
         if (value instanceof String) {
             String s = (String) value;
             String[] ss = UnitCompiler.makeUTF8Able(s);
@@ -7869,21 +8135,73 @@ public class UnitCompiler {
                 this.writeOpcode(l, Opcode.INVOKEVIRTUAL);
                 this.writeConstantMethodrefInfo(
                     Descriptor.STRING,
-                    "concat",                                // classFD
+                    "concat",                                         // classFD
                     "(" + Descriptor.STRING + ")" + Descriptor.STRING // methodMD
                 );
             }
             return this.iClassLoader.STRING;
         }
-        if (value instanceof Boolean) {
-            this.writeOpcode(l, ((Boolean) value).booleanValue() ? Opcode.ICONST_1 : Opcode.ICONST_0);
+
+        if (Boolean.TRUE.equals(value)) {
+            this.writeOpcode(l, Opcode.ICONST_1);
             return IClass.BOOLEAN;
         }
-        if (value == Java.Rvalue.CONSTANT_VALUE_NULL) {
+
+        if (Boolean.FALSE.equals(value)) {
+            this.writeOpcode(l, Opcode.ICONST_0);
+            return IClass.BOOLEAN;
+        }
+
+        if (value == null) {
             this.writeOpcode(l, Opcode.ACONST_NULL);
             return IClass.VOID;
         }
-        throw new JaninoRuntimeException("Unknown literal type \"" + value.getClass().getName() + "\"");
+
+        throw new JaninoRuntimeException("Unknown literal '" + value + "'");
+    }
+
+    private static int hex2Int(Locatable l, String value) throws CompileException {
+        int result = 0;
+        for (int i = 0; i < value.length(); ++i) {
+            if ((result & 0xf0000000) != 0) {
+                throw compileException(l, "Value of hexadecimal integer literal \"" + value + "\" is out of range");
+            }
+            result = (result << 4) + Character.digit(value.charAt(i), 16);
+        }
+        return result;
+    }
+
+    private static int oct2Int(Locatable l, String value) throws CompileException {
+        int result = 0;
+        for (int i = 0; i < value.length(); ++i) {
+            if ((result & 0xe0000000) != 0) {
+                throw compileException(l, "Value of octal integer literal \"" + value + "\" is out of range");
+            }
+            result = (result << 3) + Character.digit(value.charAt(i), 8);
+        }
+        return result;
+    }
+    
+    private static long hex2Long(Locatable l, String value) throws CompileException {
+        long result = 0L;
+        for (int i = 0; i < value.length(); ++i) {
+            if ((result & 0xf000000000000000L) != 0L) {
+                throw compileException(l, "Value of hexadecimal long literal \"" + value + "\" is out of range");
+            }
+            result = (result << 4) + Character.digit(value.charAt(i), 16);
+        }
+        return result;
+    }
+
+    private static long oct2Long(Locatable l, String value) throws CompileException {
+        long result = 0L;
+        for (int i = 0; i < value.length(); ++i) {
+            if ((result & 0xe000000000000000L) != 0) {
+                throw compileException(l, "Value of octal long literal \"" + value + "\" is out of range");
+            }
+            result = (result << 3) + Character.digit(value.charAt(i), 8);
+        }
+        return result;
     }
 
     /**
@@ -7998,7 +8316,7 @@ public class UnitCompiler {
         }
 
         // 5.2 Special narrowing primitive conversion.
-        if (optionalConstantValue != null) {
+        if (optionalConstantValue != NOT_CONSTANT) {
             if (this.tryConstantAssignmentConversion(
                 l,
                 optionalConstantValue, // constantValue
@@ -8020,88 +8338,86 @@ public class UnitCompiler {
         Object    value,
         IClass    targetType
     ) throws CompileException {
-        Object result = null;
-
         if (targetType == IClass.BOOLEAN) {
-            if (value instanceof Boolean) result = value;
+            if (value instanceof Boolean) return value;
         } else
         if (targetType == this.iClassLoader.STRING) {
-            if (value instanceof String) result = value;
+            if (value instanceof String) return value;
         } else
         if (targetType == IClass.BYTE) {
             if (value instanceof Byte) {
-                result = value;
+                return value;
             } else
             if (value instanceof Short || value instanceof Integer) {
                 int x = ((Number) value).intValue();
-                if (x >= Byte.MIN_VALUE && x <= Byte.MAX_VALUE) result = new Byte((byte) x);
+                if (x >= Byte.MIN_VALUE && x <= Byte.MAX_VALUE) return new Byte((byte) x);
             } else
             if (value instanceof Character) {
                 int x = ((Character) value).charValue();
-                if (x >= Byte.MIN_VALUE && x <= Byte.MAX_VALUE) result = new Byte((byte) x);
+                if (x >= Byte.MIN_VALUE && x <= Byte.MAX_VALUE) return new Byte((byte) x);
             }
         } else
         if (targetType == IClass.SHORT) {
             if (value instanceof Byte) {
-                result = new Short(((Number) value).shortValue());
+                return new Short(((Number) value).shortValue());
             } else
             if (value instanceof Short) {
-                result = value;
+                return value;
             } else
             if (value instanceof Character) {
                 int x = ((Character) value).charValue();
-                if (x >= Short.MIN_VALUE && x <= Short.MAX_VALUE) result = new Short((short) x);
+                if (x >= Short.MIN_VALUE && x <= Short.MAX_VALUE) return new Short((short) x);
             } else
             if (value instanceof Integer) {
                 int x = ((Integer) value).intValue();
-                if (x >= Short.MIN_VALUE && x <= Short.MAX_VALUE) result = new Short((short) x);
+                if (x >= Short.MIN_VALUE && x <= Short.MAX_VALUE) return new Short((short) x);
             }
         } else
         if (targetType == IClass.CHAR) {
             if (value instanceof Short) {
-                result = value;
+                return value;
             } else
             if (value instanceof Byte || value instanceof Short || value instanceof Integer) {
                 int x = ((Number) value).intValue();
-                if (x >= Character.MIN_VALUE && x <= Character.MAX_VALUE) result = new Character((char) x);
+                if (x >= Character.MIN_VALUE && x <= Character.MAX_VALUE) return new Character((char) x);
             }
         } else
         if (targetType == IClass.INT) {
             if (value instanceof Integer) {
-                result = value;
+                return value;
             } else
             if (value instanceof Byte || value instanceof Short) {
-                result = new Integer(((Number) value).intValue());
+                return new Integer(((Number) value).intValue());
             } else
             if (value instanceof Character) {
-                result = new Integer(((Character) value).charValue());
+                return new Integer(((Character) value).charValue());
             }
         } else
         if (targetType == IClass.LONG) {
             if (value instanceof Long) {
-                result = value;
+                return value;
             } else
             if (value instanceof Byte || value instanceof Short || value instanceof Integer) {
-                result = new Long(((Number) value).longValue());
+                return new Long(((Number) value).longValue());
             } else
             if (value instanceof Character) {
-                result = new Long(((Character) value).charValue());
+                return new Long(((Character) value).charValue());
             }
         } else
         if (targetType == IClass.FLOAT) {
             if (value instanceof Float) {
-                result = value;
+                return value;
             } else
             if (value instanceof Byte || value instanceof Short || value instanceof Integer || value instanceof Long) {
-                result = new Float(((Number) value).floatValue());
+                return new Float(((Number) value).floatValue());
             } else
             if (value instanceof Character) {
-                result = new Float(((Character) value).charValue());
+                return new Float(((Character) value).charValue());
             }
         } else
         if (targetType == IClass.DOUBLE) {
             if (value instanceof Double) {
-                result = value;
+                return value;
             } else
             if (
                 value instanceof Byte
@@ -8110,25 +8426,33 @@ public class UnitCompiler {
                 || value instanceof Long
                 || value instanceof Float
             ) {
-                result = new Double(((Number) value).doubleValue());
+                return new Double(((Number) value).doubleValue());
             } else
             if (value instanceof Character) {
-                result = new Double(((Character) value).charValue());
+                return new Double(((Character) value).charValue());
             }
         } else
-        if (value == Java.Rvalue.CONSTANT_VALUE_NULL && !targetType.isPrimitive()) {
-            result = value;
+        if (value == null && !targetType.isPrimitive()) {
+            return null;
         }
-        if (result == null) {
+
+        if (value == null) {
             this.compileError((
-                "Cannot convert constant of type \""
-                + value.getClass().getName()
-                + "\" to type \""
+                "Cannot convert 'null' to type '"
                 + targetType.toString()
-                + "\""
+                + "'"
+            ), l.getLocation());
+        } else
+        {
+            this.compileError((
+                "Cannot convert constant of type '"
+                + value.getClass().getName()
+                + "' to type '"
+                + targetType.toString()
+                + "'"
             ), l.getLocation());
         }
-        return result;
+        return value;
     }
 
     /**
@@ -8274,7 +8598,7 @@ public class UnitCompiler {
     }
 
     private IClass binaryNumericPromotionType(
-        Java.Locatable locatable,
+        Locatable locatable,
         IClass    type1,
         IClass    type2
     ) throws CompileException {
@@ -8651,6 +8975,17 @@ public class UnitCompiler {
         return true;
     }
 
+    /**
+     * JLS2 5.5
+     */
+    private boolean isCastReferenceConvertible(IClass sourceType, IClass targetType) throws CompileException {
+        return (
+            isIdentityConvertible(sourceType, targetType)
+            || isWideningReferenceConvertible(sourceType, targetType)
+            || isNarrowingReferenceConvertible(sourceType, targetType)
+        );
+    }
+
     /*
      * @return the boxed type or <code>null</code>
      */
@@ -8795,10 +9130,7 @@ public class UnitCompiler {
     }
 
     // Load the value of a local variable onto the stack and return its type.
-    private IClass load(
-        Locatable          l,
-        Java.LocalVariable localVariable
-    ) {
+    private IClass load(Locatable l, LocalVariable localVariable) {
         this.load(
             l,
             localVariable.type,
@@ -8832,9 +9164,9 @@ public class UnitCompiler {
      * described in JLS 5.2 is applied.
      */
     private void store(
-        Locatable          l,
-        IClass             valueType,
-        Java.LocalVariable localVariable
+        Locatable     l,
+        IClass        valueType,
+        LocalVariable localVariable
     ) {
         this.store(
             l,                                    // l
@@ -9034,13 +9366,13 @@ public class UnitCompiler {
         }
 
         StringTokenizer st = new StringTokenizer(className, "$");
-        Java.TypeDeclaration td = this.compilationUnit.getPackageMemberTypeDeclaration(st.nextToken());
+        TypeDeclaration td = this.compilationUnit.getPackageMemberTypeDeclaration(st.nextToken());
         if (td == null) return null;
         while (st.hasMoreTokens()) {
             td = td.getMemberTypeDeclaration(st.nextToken());
             if (td == null) return null;
         }
-        return this.resolve((Java.AbstractTypeDeclaration) td);
+        return this.resolve((AbstractTypeDeclaration) td);
     }
 
     /**
@@ -9153,13 +9485,13 @@ public class UnitCompiler {
         this.codeContext.write((short) -1, (byte) (v >> 24), (byte) (v >> 16), (byte) (v >> 8), (byte) v);
     }
 
-    private void writeOpcode(Java.Locatable l, int opcode) {
+    private void writeOpcode(Locatable l, int opcode) {
         this.codeContext.write(l.getLocation().getLineNumber(), (byte) opcode);
     }
-    private void writeOpcodes(Java.Locatable l, byte[] opcodes) {
+    private void writeOpcodes(Locatable l, byte[] opcodes) {
         this.codeContext.write(l.getLocation().getLineNumber(), opcodes);
     }
-    private void writeBranch(Java.Locatable l, int opcode, final CodeContext.Offset dst) {
+    private void writeBranch(Locatable l, int opcode, final CodeContext.Offset dst) {
         this.codeContext.writeBranch(l.getLocation().getLineNumber(), opcode, dst);
     }
     private void writeOffset(CodeContext.Offset src, final CodeContext.Offset dst) {
@@ -9217,37 +9549,37 @@ public class UnitCompiler {
         ca.writeShort((short) -1, ca.getClassFile().addConstantDoubleInfo(value));
     }
 
-    public CodeContext.Offset getWhereToBreak(Java.BreakableStatement bs) {
+    public CodeContext.Offset getWhereToBreak(BreakableStatement bs) {
         if (bs.whereToBreak == null) {
             bs.whereToBreak = this.codeContext.new Offset();
         }
         return bs.whereToBreak;
     }
 
-    private Java.TypeBodyDeclaration getDeclaringTypeBodyDeclaration(
-        Java.QualifiedThisReference qtr
+    private TypeBodyDeclaration getDeclaringTypeBodyDeclaration(
+        QualifiedThisReference qtr
     ) throws CompileException {
         if (qtr.declaringTypeBodyDeclaration == null) {
 
             // Compile error if in static function context.
-            Java.Scope s;
+            Scope s;
             for (
                 s = qtr.getEnclosingBlockStatement();
-                !(s instanceof Java.TypeBodyDeclaration);
+                !(s instanceof TypeBodyDeclaration);
                 s = s.getEnclosingScope()
             );
-            qtr.declaringTypeBodyDeclaration = (Java.TypeBodyDeclaration) s;
+            qtr.declaringTypeBodyDeclaration = (TypeBodyDeclaration) s;
             if (qtr.declaringTypeBodyDeclaration.isStatic()) {
                 this.compileError("No current instance available in static method", qtr.getLocation());
             }
 
             // Determine declaring type.
-            qtr.declaringClass = (Java.ClassDeclaration) qtr.declaringTypeBodyDeclaration.getDeclaringType();
+            qtr.declaringClass = (ClassDeclaration) qtr.declaringTypeBodyDeclaration.getDeclaringType();
         }
         return qtr.declaringTypeBodyDeclaration;
     }
 
-    private Java.ClassDeclaration getDeclaringClass(Java.QualifiedThisReference qtr) throws CompileException {
+    private ClassDeclaration getDeclaringClass(QualifiedThisReference qtr) throws CompileException {
         if (qtr.declaringClass == null) {
             this.getDeclaringTypeBodyDeclaration(qtr);
         }
@@ -9326,7 +9658,7 @@ public class UnitCompiler {
             this.name = name;
             this.type = type;
         }
-        public Object  getConstantValue() { return null; }
+        public Object  getConstantValue() { return NOT_CONSTANT; }
         public String  getName()          { return this.name; }
         public IClass  getType()          { return this.type; }
         public boolean isStatic()         { return false; }
@@ -9361,6 +9693,52 @@ public class UnitCompiler {
         return tmp;
     }
 
+    private static CompileException compileException(Locatable l, String message) {
+        return new CompileException(message, l.getLocation());
+    }
+
+    private String unescape(String s) {
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < s.length();) {
+            char c = s.charAt(i++);
+            if (c != '\\') {
+                sb.append(c);
+                continue;
+            }
+
+            c = s.charAt(i++);
+            {
+                int idx = "btnfr\"'\\".indexOf(c);
+                if (idx != -1) {
+                    sb.append("\b\t\n\f\r\"'\\".charAt(idx));
+                    continue;
+                }
+            }
+
+            {
+                int x = Character.digit(c, 8);
+                if (x == -1) throw new JaninoRuntimeException("Invalid escape sequence '\\" + c + "'");
+                if (i < s.length()) {
+                    c = s.charAt(i);
+                    int secondDigit = Character.digit(c, 8);
+                    if (secondDigit != -1) {
+                        x = 8 * x + secondDigit;
+                        i++;
+                        if (i < s.length() && x <= 037) {
+                            int thirdDigit = Character.digit(c, 8);
+                            if (thirdDigit != -1) {
+                                x = 8 * x + thirdDigit;
+                                i++;
+                            }
+                        }
+                    }
+                }
+                sb.append((char) x);
+            }
+        }
+        return sb.toString();
+    }
+
     // Used to write byte code while compiling one constructor/method.
     private CodeContext codeContext = null;
 
@@ -9371,7 +9749,7 @@ public class UnitCompiler {
     // Used for elaborate warning handling.
     private WarningHandler optionalWarningHandler = null;
 
-    public final Java.CompilationUnit compilationUnit;
+    public final CompilationUnit compilationUnit;
 
     private final IClassLoader iClassLoader;
     private final boolean      isStringBuilderAvailable;

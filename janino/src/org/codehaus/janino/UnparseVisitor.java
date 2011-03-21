@@ -92,11 +92,10 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
     }
 
     /**
-     * Flushes all generated code and closes the {@link Writer} that was passed
-     * to {@link #UnparseVisitor(Writer)}.
+     * Flushes all generated code.
      */
     public void close() {
-        this.pw.close();
+        this.pw.flush();
     }
 
     public void unparseCompilationUnit(Java.CompilationUnit cu) {
@@ -502,7 +501,12 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
         this.pw.print(" instanceof ");
         this.unparseType(io.rhs);
     }
-    public void visitLiteral(Java.Literal l) { this.pw.print(l.toString()); }
+    public void visitIntegerLiteral(Java.IntegerLiteral il)              { this.pw.print(il.value); }
+    public void visitFloatingPointLiteral(Java.FloatingPointLiteral fpl) { this.pw.print(fpl.value); }
+    public void visitBooleanLiteral(Java.BooleanLiteral bl)              { this.pw.print(bl.value); }
+    public void visitCharacterLiteral(Java.CharacterLiteral cl)          { this.pw.print(cl.value); }
+    public void visitStringLiteral(Java.StringLiteral sl)                { this.pw.print(sl.value); }
+    public void visitNullLiteral(Java.NullLiteral nl)                    { this.pw.print(nl.value); }
     public void visitLocalVariableAccess(Java.LocalVariableAccess lva) { this.pw.print(lva.toString()); }
     public void visitNewArray(Java.NewArray na) {
         this.pw.print("new ");

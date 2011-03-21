@@ -31,6 +31,7 @@ package org.codehaus.janino;
  * to allow for client libraries to intercept them more easily.
  */
 public class JaninoRuntimeException extends RuntimeException {
-    public JaninoRuntimeException()               {                 }
-    public JaninoRuntimeException(String message) { super(message); }
+    public JaninoRuntimeException()                            {                    }
+    public JaninoRuntimeException(String message)              { super(message);    }
+    public JaninoRuntimeException(String message, Throwable t) { super(message, t); }
 }

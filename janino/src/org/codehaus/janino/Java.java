@@ -42,7 +42,6 @@ import org.codehaus.janino.CodeContext.Offset;
 import org.codehaus.janino.util.Traverser;
 import org.codehaus.janino.util.iterator.ReverseListIterator;
 
-
 /**
  * This wrapper class defines classes that represent the elements of the
  * Java&trade; programming language.
@@ -2127,9 +2126,10 @@ public final class Java {
         }
         public Rvalue toRvalue() { return this; }
 
-        static final Object CONSTANT_VALUE_UNKNOWN = new Object();
-        Object              constantValue = Java.Rvalue.CONSTANT_VALUE_UNKNOWN;
-        public static final Object CONSTANT_VALUE_NULL = new Throwable();
+        static final Object CONSTANT_VALUE_UNKNOWN = new Object() {
+            public String toString() { return "CONSTANT_VALUE_UNKNOWN"; }
+        };
+        Object constantValue = Java.Rvalue.CONSTANT_VALUE_UNKNOWN;
 
         public abstract void accept(Visitor.RvalueVisitor rvv);
 
@@ -3061,35 +3061,57 @@ public final class Java {
     public interface ArrayInitializerOrRvalue {
     }
 
-    public static final class Literal extends Rvalue {
-        public final Object value; // The "null" literal has "value == null".
+    public static abstract class Literal extends Rvalue {
+        public final String value;
 
         /**
-         * @param value An {@link Integer}, {@link Long}, {@link Float}, {@link Double}, {@link String}, {@link
-         *              Character}, {@link Boolean}, or <code>null</code>
+         * @param value The text of the literal token, as in the source code.
          */
-        public Literal(Location location, Object value) {
+        public Literal(Location location, String value) {
             super(location);
-            if (!(
-                value instanceof Integer
-                || value instanceof Long
-                || value instanceof Float
-                || value instanceof Double
-                || value instanceof String
-                || value instanceof Character
-                || value instanceof Boolean
-                || value instanceof Short
-                || value instanceof Byte
-                || value == null
-            )) throw new IllegalArgumentException(value.getClass().getName());
             this.value = value;
         }
 
         // Implement "Atom".
-        public String toString() { return Scanner.literalValueToString(this.value); }
+        public String toString() {
+            return this.value;
+        }
+    }
 
-        public void accept(Visitor.AtomVisitor visitor) { visitor.visitLiteral(this); }
-        public void accept(Visitor.RvalueVisitor visitor) { visitor.visitLiteral(this); }
+    public static final class IntegerLiteral extends Literal {
+        public IntegerLiteral(Location location, String value) { super(location, value); }
+        public void accept(Visitor.AtomVisitor visitor) { visitor.visitIntegerLiteral(this); }
+        public void accept(Visitor.RvalueVisitor visitor) { visitor.visitIntegerLiteral(this); }
+    }
+    
+    public static final class FloatingPointLiteral extends Literal {
+        public FloatingPointLiteral(Location location, String value) { super(location, value); }
+        public void accept(Visitor.AtomVisitor visitor) { visitor.visitFloatingPointLiteral(this); }
+        public void accept(Visitor.RvalueVisitor visitor) { visitor.visitFloatingPointLiteral(this); }
+    }
+
+    public static final class BooleanLiteral extends Literal {
+        public BooleanLiteral(Location location, String value) { super(location, value); }
+        public void accept(Visitor.AtomVisitor visitor) { visitor.visitBooleanLiteral(this); }
+        public void accept(Visitor.RvalueVisitor visitor) { visitor.visitBooleanLiteral(this); }
+    }
+
+    public static final class CharacterLiteral extends Literal {
+        public CharacterLiteral(Location location, String value) { super(location, value); }
+        public void accept(Visitor.AtomVisitor visitor) { visitor.visitCharacterLiteral(this); }
+        public void accept(Visitor.RvalueVisitor visitor) { visitor.visitCharacterLiteral(this); }
+    }
+
+    public static final class StringLiteral extends Literal {
+        public StringLiteral(Location location, String value) { super(location, value); }
+        public void accept(Visitor.AtomVisitor visitor) { visitor.visitStringLiteral(this); }
+        public void accept(Visitor.RvalueVisitor visitor) { visitor.visitStringLiteral(this); }
+    }
+
+    public static final class NullLiteral extends Literal {
+        public NullLiteral(Location location, String value) { super(location, value); }
+        public void accept(Visitor.AtomVisitor visitor) { visitor.visitNullLiteral(this); }
+        public void accept(Visitor.RvalueVisitor visitor) { visitor.visitNullLiteral(this); }
     }
 
     /**

@@ -563,9 +563,11 @@ public class JLS2Tests extends JaninoTestSuite {
 
     @Test
     public void test_15_21__EqualityOperators() throws Exception {
+
         // 15.21.1 Numerical Equality Operators == and !=
-        exp(TRUE, "new Integer(7) != new Byte((byte) 5)");
+        exp(COMP, "new Integer(7) != new Byte((byte) 5)");
         exp(TRUE, "new Integer(7) == 7");
+        exp(TRUE, "new Byte((byte) -7) == -7");
         exp(TRUE, "5 == new Byte((byte) 5)");
 
         // 15.21.2 Boolean Equality Operators == and !=
@@ -573,12 +575,18 @@ public class JLS2Tests extends JaninoTestSuite {
         exp(TRUE, "new Boolean(true) == true");
         exp(TRUE, "false == new Boolean(false)");
         exp(TRUE, "false != true");
+        
+        // 15.21.3 Reference Equality Operators == and !=
+        exp(TRUE, "new Object() != new Object()");
+        exp(TRUE, "new Object() != null");
+        exp(TRUE, "new Object() != \"foo\"");
+        exp(COMP, "new Integer(3) == \"foo\"");
     }
 
     @Test
     public void test_15_22__BitwiseAndLogicalOperators() throws Exception {
         // 15.22.2 Boolean Logical Operators &, ^, and |
-        exp(COMP, "new Boolean(true) & new Boolean(true)");
+        exp(TRUE, "new Boolean(true) & new Boolean(true)");
         exp(TRUE, "new Boolean(true) ^ false");
         exp(TRUE, "false | new Boolean(true)");
     }

@@ -44,6 +44,14 @@ import org.codehaus.commons.compiler.CompileException;
 public abstract class IClass {
     private static final boolean DEBUG = false;
 
+    /**
+     * Special return value for {@link IField#getConstantValue()} indicating that the field does <i>not</i> have a
+     * constant value.
+     */
+    public static final Object NOT_CONSTANT = new Object() {
+        public String toString() { return "NOT_CONSTANT"; }
+    };
+
     public static final IClass VOID    = new PrimitiveIClass(Descriptor.VOID_);
     public static final IClass BYTE    = new PrimitiveIClass(Descriptor.BYTE_);
     public static final IClass CHAR    = new PrimitiveIClass(Descriptor.CHAR_);

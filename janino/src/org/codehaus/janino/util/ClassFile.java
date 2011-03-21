@@ -57,6 +57,7 @@ import org.codehaus.janino.JaninoRuntimeException;
  * machine.
  */
 public class ClassFile {
+
     /**
      * Construct from parsed components.
      * @param accessFlags as defined by {@link org.codehaus.janino.Mod}
