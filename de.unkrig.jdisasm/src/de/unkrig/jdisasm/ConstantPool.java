@@ -128,21 +128,21 @@ public class ConstantPool {
             }
             abstract ConstantPoolEntry get(short index);
         }
-        final RawEntry[] rawEntries = new RawEntry[count];
+        final RawEntry[] rawEntries = new RawEntry[0xffff & count];
 
         /***/
         abstract class RawEntry2 extends RawEntry {
             ConstantPoolEntry get(short index) {
-                if (ConstantPool.this.entries[index] == null) {
-                    ConstantPool.this.entries[index] = new ConstantPoolEntry() { }; // To prevent recursion.
-                    ConstantPool.this.entries[index] = rawEntries[index].cook();
+                if (ConstantPool.this.entries[0xffff & index] == null) {
+                    ConstantPool.this.entries[0xffff & index] = new ConstantPoolEntry() { }; // To prevent recursion.
+                    ConstantPool.this.entries[0xffff & index] = rawEntries[0xffff & index].cook();
                 }
-                return ConstantPool.this.entries[index];
+                return ConstantPool.this.entries[0xffff & index];
             }
         }
 
-        for (short i = 1; i < count;) {
-            int idx = i;
+        for (short i = 1; i != count;) {
+            int idx = 0xffff & i;
             RawEntry re;
             byte tag = dis.readByte();
             switch (tag) {
@@ -303,15 +303,15 @@ public class ConstantPool {
             rawEntries[idx] = re;
         }
 
-        this.entries = new ConstantPoolEntry[count];
-        for (int i = 0; i < count; ++i) {
+        this.entries = new ConstantPoolEntry[0xffff & count];
+        for (int i = 0; i < (0xffff & count); ++i) {
             if (this.entries[i] == null && rawEntries[i] != null) this.entries[i] = rawEntries[i].cook();
         }
     }
 
     private ConstantPoolEntry get(short index) {
         if (index == 0) return null;
-        ConstantPoolEntry e = this.entries[index];
+        ConstantPoolEntry e = this.entries[0xffff & index];
         if (e == null) throw new NullPointerException("Unusable CP entry " + index);
         return e;
     }
