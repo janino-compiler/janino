@@ -36,7 +36,7 @@ import java.io.IOException;
  */
 public interface CharStream {
     
-    public static final int EOI = -1;
+    int EOI = -1;
 
     /**
      * Returns the next character on this stream but does <b>not</b> consume it.

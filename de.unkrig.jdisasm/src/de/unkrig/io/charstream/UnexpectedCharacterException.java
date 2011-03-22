@@ -28,6 +28,9 @@ package de.unkrig.io.charstream;
 
 import java.io.IOException;
 
+/**
+ * Indicates that {@link CharStream#read} did not find the character(s) it expected.
+ */
 public class UnexpectedCharacterException extends IOException {
    
     private static final long serialVersionUID = 1L;

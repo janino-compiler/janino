@@ -42,61 +42,85 @@ public class StringCharStream implements CharStream {
     }
 
     public int peek() {
-        return pos == in.length() ? -1 : in.charAt(pos);
+        return this.pos == this.in.length() ? -1 : this.in.charAt(this.pos);
     }
 
     public boolean peek(char c) {
-        return pos < in.length() && in.charAt(pos) == c;
+        return this.pos < this.in.length() && this.in.charAt(this.pos) == c;
     }
 
     public int peek(String chars) {
-        return pos == in.length() ? -1 : chars.indexOf(in.charAt(pos));
+        return this.pos == this.in.length() ? -1 : chars.indexOf(this.in.charAt(this.pos));
     }
 
     public char read() throws EOFException {
-        if (pos == in.length()) throw new EOFException("Unexpected end-of-input");
-        return in.charAt(pos++);
+        if (this.pos == this.in.length()) throw new EOFException("Unexpected end-of-input");
+        return this.in.charAt(this.pos++);
     }
 
     public void read(char c) throws EOFException, UnexpectedCharacterException {
-        if (pos == in.length()) throw new EOFException("Expected '" + c + "' instead of end-of-input");
-        if (in.charAt(pos) != c) throw new UnexpectedCharacterException("'" + c + "' expected instead of '" + in.substring(pos) + "'");
-        pos++;
+        if (this.pos == this.in.length()) throw new EOFException("Expected '" + c + "' instead of end-of-input");
+        if (this.in.charAt(this.pos) != c) {
+            throw new UnexpectedCharacterException(
+                "'"
+                + c
+                + "' expected instead of '"
+                + this.in.substring(this.pos)
+                + "'"
+            );
+        }
+        this.pos++;
     }
 
     public int read(String chars) throws EOFException, UnexpectedCharacterException {
-        if (pos == in.length()) throw new EOFException("Expected one of '" + chars + "' instead of end-of-input");
-        int res = chars.indexOf(in.charAt(pos));
-        if (res == -1) throw new UnexpectedCharacterException("One of '" + chars + "' expected instead of '" + in.charAt(pos) + "'");
-        pos++;
+        if (this.pos == this.in.length()) {
+            throw new EOFException("Expected one of '" + chars + "' instead of end-of-input");
+        }
+        int res = chars.indexOf(this.in.charAt(this.pos));
+        if (res == -1) {
+            throw new UnexpectedCharacterException(
+                "One of '"
+                + chars
+                + "' expected instead of '"
+                + this.in.charAt(this.pos)
+                + "'"
+            );
+        }
+        this.pos++;
         return res;
     }
 
     public boolean peekRead(char c) {
-        if (pos >= in.length()) return false;
-        if (in.charAt(pos) == c) {
-            pos++;
+        if (this.pos >= this.in.length()) return false;
+        if (this.in.charAt(this.pos) == c) {
+            this.pos++;
             return true;
         }
         return false;
     }
 
     public int peekRead(String chars) {
-        if (pos >= in.length()) return -1;
-        int res = chars.indexOf(in.charAt(pos));
-        if (res != -1) pos++;
+        if (this.pos >= this.in.length()) return -1;
+        int res = chars.indexOf(this.in.charAt(this.pos));
+        if (res != -1) this.pos++;
         return res;
     }
 
     public void eoi() throws UnexpectedCharacterException {
-        if (pos < in.length()) throw new UnexpectedCharacterException("Unexpected trailing characters '" + in.substring(pos) + "'");
+        if (this.pos < this.in.length()) {
+            throw new UnexpectedCharacterException(
+                "Unexpected trailing characters '"
+                + this.in.substring(this.pos)
+                + "'"
+            );
+        }
     }
 
     public boolean atEoi() {
-        return pos >= in.length();
+        return this.pos >= this.in.length();
     }
 
     public String toString() {
-        return "'" + in + "' at offset " + pos;
+        return "'" + this.in + "' at offset " + this.pos;
     }
 }
