@@ -108,8 +108,8 @@ public class SimpleCompiler extends Cookable implements ISimpleCompiler {
         // Run the compiler.
         try {
             if (!compiler.getTask(
-                null,                                  // out
-                fileManager,                           // fileManager
+                null,                                      // out
+                fileManager,                               // fileManager
                 new DiagnosticListener<JavaFileObject>() { // diagnosticListener
 
                     @Override
@@ -129,14 +129,17 @@ public class SimpleCompiler extends Cookable implements ISimpleCompiler {
                         throw new RuntimeException(new CompileException(message, loc));
                     }
                 },
-                Collections.singletonList(             // options
-                    this.debugSource ? "-g:source" + (this.debugLines ? ",lines" : "") + (this.debugVars ? ",vars" : "") :
-                    this.debugLines ? "-g:lines" + (this.debugVars ? ",vars" : "") :
-                    this.debugVars ? "-g:vars" :
-                    "-g:none"
+                Collections.singletonList(                 // options
+                    this.debugSource
+                    ? "-g:source" + (this.debugLines ? ",lines" : "") + (this.debugVars ? ",vars" : "")
+                    : this.debugLines
+                    ? "-g:lines" + (this.debugVars ? ",vars" : "")
+                    : this.debugVars
+                    ? "-g:vars"
+                    : "-g:none"
                 ),
-                null,                                  // classes
-                Collections.singleton(compilationUnit) // compilationUnits
+                null,                                      // classes
+                Collections.singleton(compilationUnit)     // compilationUnits
             ).call()) {
                 throw new CompileException("Compilation failed", null);
             }
@@ -231,7 +234,6 @@ public class SimpleCompiler extends Cookable implements ISimpleCompiler {
         });
     }
 
-    
     @Override
     public void setDebuggingInformation(boolean debugSource, boolean debugLines, boolean debugVars) {
         this.debugSource = debugSource;

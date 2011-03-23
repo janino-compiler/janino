@@ -46,9 +46,9 @@ public class JavaSourceClassLoaderTests {
         new File("../janino/src"),
         new File("../commons-compiler/src"),
     };
-    
+
     private final ICompilerFactory compilerFactory;
-    
+
     @Parameters
     public static Collection<Object[]> compilerFactories() throws Exception {
         return TestUtil.getCompilerFactoriesForParameters();

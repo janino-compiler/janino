@@ -13,12 +13,15 @@ import org.codehaus.janino.Scanner;
  * This class is part of a sudo test to find errors in multi-threaded coded in Janino.
  * It is not run directly as part of an automated test; instead it should be run by
  * the perl script in janino-tests/util/MultiThreadedIssueTest.pl
- * 
+ *
  * That script will run this test in a loop and keep track of failures and successes.
  * It should always succeed; however, for the bug reported this test would fail ~1/8
  * of the time.
  */
-public class MultiThreadedIssueTest {
+public final class MultiThreadedIssueTest {
+
+    private MultiThreadedIssueTest() {}
+
     public interface Calculator {
         double[] calc(int multiplier);
     }
@@ -30,7 +33,7 @@ public class MultiThreadedIssueTest {
         Runnable runnable = new Runnable() {
             public void run() {
                 final Calculator calculator = create(random.nextInt(100));
-                calculator.calc((int)Math.random());
+                calculator.calc((int) Math.random());
             }
         };
 
@@ -41,10 +44,10 @@ public class MultiThreadedIssueTest {
             threads.add(thread);
         }
         for (int i = 0; i < threads.size(); ++i) {
-            ((Thread)threads.get(i)).start();
+            ((Thread) threads.get(i)).start();
         }
         for (int i = 0; i < threads.size(); ++i) {
-            ((Thread)threads.get(i)).join();
+            ((Thread) threads.get(i)).join();
         }
         if (!running.get()) {
             System.exit(1);

@@ -56,7 +56,7 @@ import for_sandbox_tests.OverridesWithDifferingVisibility;
 @RunWith(Parameterized.class)
 public class EvaluatorTests {
     private final ICompilerFactory compilerFactory;
-    
+
     @Parameters
     public static Collection<Object[]> compilerFactories() throws Exception {
         return TestUtil.getCompilerFactoriesForParameters();
@@ -102,7 +102,6 @@ public class EvaluatorTests {
             "new FileInputStream(\"xyz\")",
             "ExternalClass.m1()",
         });
-        
 
         {
             Method m = ee.getMethod(0);
@@ -116,7 +115,7 @@ public class EvaluatorTests {
         } catch (InvocationTargetException ex) {
             assertTrue("FileNotFoundException", ex.getTargetException() instanceof FileNotFoundException);
         }
-        
+
         try {
             Method m = ee.getMethod(2);
             Object instance = m.getDeclaringClass().newInstance();
@@ -298,7 +297,7 @@ public class EvaluatorTests {
             }
         }
     }
-    
+
     @Test
     public void testTrinaryOptimize() throws Exception {
         ISimpleCompiler sc = compilerFactory.newSimpleCompiler();
@@ -317,7 +316,7 @@ public class EvaluatorTests {
         Class<?> c = sc.getClassLoader().loadClass("test.Test");
         Method trueMeth = c.getMethod("runTrue");
         Method falseMeth = c.getMethod("runFalse");
-        
+
         Object   o = c.newInstance();
         assertEquals(-1, trueMeth.invoke(o, new Object[0]));
         assertEquals(1, falseMeth.invoke(o, new Object[0]));
@@ -723,21 +722,20 @@ public class EvaluatorTests {
         sb.append("qwer");
         assertEquals(sb.length(), get.invoke(t, new Object[] { sb }));
     }
-    
 
     @Test
     public void testCovariantClone() throws Exception {
         ISimpleCompiler sc = compilerFactory.newSimpleCompiler();
-        sc.cook("package covariant_clone;" +
-        		"public class Child extends Middle implements java.lang.Cloneable {" +
-        		" public Child clone() throws java.lang.CloneNotSupportedException {" +
-        		"  return new Child();" +
-        		" }" +
-        	    
-        	    " public Child other(long i, Object o) {" +
-        	    "   return this;" +
-        	    " }"+
-        		"}"
+        sc.cook(
+            "package covariant_clone;" +
+            "public class Child extends Middle implements java.lang.Cloneable {" +
+            "    public Child clone() throws java.lang.CloneNotSupportedException {" +
+            "        return new Child();" +
+            "    }" +
+            "    public Child other(long i, Object o) {" +
+            "        return this;" +
+            "    }" +
+            "}"
         );
 
         // calling clone directly here would work, we need to trigger a call into the

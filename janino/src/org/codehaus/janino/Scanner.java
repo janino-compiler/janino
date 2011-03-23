@@ -612,7 +612,10 @@ public class Scanner {
                     state = 1;
                 } else
                 {
-                    throw new CompileException("Numeric literal begins with invalid character '" + (char) this.nextChar + "'", this.location());
+                    throw new CompileException(
+                        "Numeric literal begins with invalid character '" + (char) this.nextChar + "'",
+                        this.location()
+                    );
                 }
                 break;
 
@@ -827,7 +830,7 @@ public class Scanner {
                 char firstChar = (char) this.nextChar;
                 sb.append(firstChar);
                 this.readNextChar();
- 
+
                 idx = "01234567".indexOf(this.nextChar);
                 if (idx == -1) return;
                 sb.append((char) this.nextChar);
@@ -835,7 +838,9 @@ public class Scanner {
 
                 idx = "01234567".indexOf(this.nextChar);
                 if (idx == -1) return;
-                if ("0123".indexOf(firstChar) == -1) throw new CompileException("Invalid octal escape", this.location());
+                if ("0123".indexOf(firstChar) == -1) {
+                    throw new CompileException("Invalid octal escape", this.location());
+                }
                 sb.append((char) this.nextChar);
                 this.readNextChar();
                 return;

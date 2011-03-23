@@ -82,7 +82,7 @@ public final class Java {
         void throwCompileException(String message) throws CompileException;
     }
     public abstract static class Located implements Locatable {
-        public static Located NOWHERE = new Located(Location.NOWHERE) { };
+        public static final Located NOWHERE = new Located(Location.NOWHERE) { };
         private final Location location;
 
         protected Located(Location location) {
@@ -3083,7 +3083,7 @@ public final class Java {
         public void accept(Visitor.AtomVisitor visitor) { visitor.visitIntegerLiteral(this); }
         public void accept(Visitor.RvalueVisitor visitor) { visitor.visitIntegerLiteral(this); }
     }
-    
+
     public static final class FloatingPointLiteral extends Literal {
         public FloatingPointLiteral(Location location, String value) { super(location, value); }
         public void accept(Visitor.AtomVisitor visitor) { visitor.visitFloatingPointLiteral(this); }

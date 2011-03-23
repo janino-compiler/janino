@@ -43,7 +43,7 @@ import util.TestUtil;
 @RunWith(Parameterized.class)
 public class ScopingTests {
     private final ICompilerFactory compilerFactory;
-    
+
     @Parameters
     public static Collection<Object[]> compilerFactories() throws Exception {
         return TestUtil.getCompilerFactoriesForParameters();
@@ -52,11 +52,11 @@ public class ScopingTests {
     public ScopingTests(ICompilerFactory compilerFactory) {
         this.compilerFactory = compilerFactory;
     }
-    
+
     private void setParentClassLoader(ISimpleCompiler sc) {
 //        sc.setParentClassLoader(BOOT_CLASS_LOADER /*, new Class[] { for_sandbox_tests.ProtectedVariable.class }*/);
     }
-    
+
     @Test
     public void testProtectedAccessAcrossPackages() throws Exception {
         ISimpleCompiler sc = compilerFactory.newSimpleCompiler();
@@ -180,7 +180,7 @@ public class ScopingTests {
             assertEquals(i, g2);
         }
     }
-    
+
     @Test
     @Ignore("Known failure - JANINO-113")
     public void testStaticInitAccessProtected() throws Exception {

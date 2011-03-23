@@ -7,7 +7,7 @@ import org.codehaus.commons.compiler.CompilerFactoryFactory;
 import org.codehaus.commons.compiler.ICompilerFactory;
 import org.junit.runners.Parameterized.Parameters;
 
-public class TestUtil {
+public final class TestUtil {
     /**
      * Return the available compiler factories in a format suitable for JUnit {@link Parameters}
      */
@@ -21,6 +21,6 @@ public class TestUtil {
         }
         return f;
     }
-    
+
     private TestUtil() { }
 }

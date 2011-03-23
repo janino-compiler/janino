@@ -45,7 +45,7 @@ public class JLS2Tests extends JaninoTestSuite {
     public static List<Object[]> compilerFactories() throws Exception {
         return TestUtil.getCompilerFactoriesForParameters();
     }
-    
+
     public JLS2Tests(ICompilerFactory compilerFactory) throws Exception {
         super(compilerFactory);
     }
@@ -54,10 +54,10 @@ public class JLS2Tests extends JaninoTestSuite {
     public void test_3__LexicalStructure() throws Exception {
         // 3.1. Lexical Structure -- Unicode
         exp(TRUE, "'\\u00e4' == '\u00e4'");
-        
+
         // 3.2. Lexical Structure -- Translations
         scr(COMP, "3--4");
-        
+
         // 3.3. Lexical Structure -- Unicode Escapes
         exp(COMP, "aaa\\u123gbbb");
         exp(TRUE, "\"\\u0041\".equals(\"A\")");
@@ -65,13 +65,13 @@ public class JLS2Tests extends JaninoTestSuite {
         exp(TRUE, "\"\\uuu0041\".equals(\"A\")");
         exp(TRUE, "\"\\\\u0041\".equals(\"\\\\\" + \"u0041\")");
         exp(TRUE, "\"\\\\\\u0041\".equals(\"\\\\\" + \"A\")");
-        
+
         // 3.3. Lexical Structure -- Line Terminators
         exp(TRUE, "1//\r+//\r\n2//\n==//\n\r3");
-        
+
         // 3.6. Lexical Structure -- White Space
         exp(TRUE, "3\t\r \n==3");
-        
+
         // 3.7. Lexical Structure -- Comments
         exp(TRUE, "7/* */==7");
         exp(TRUE, "7/**/==7");
@@ -83,7 +83,7 @@ public class JLS2Tests extends JaninoTestSuite {
         exp(TRUE, "7//\r\n==7");
         exp(TRUE, "7//\n\r==7");
         scr(COMP, "7// /*\n\rXXX*/==7");
-        
+
         // 3.8. Lexical Structure -- Identifiers
         scr(EXEC, "int a;");
         scr(EXEC, "int \u00e4\u00e4\u00e4;");
@@ -275,13 +275,21 @@ public class JLS2Tests extends JaninoTestSuite {
     @Test
     public void test_7_5__ImportDeclarations() throws Exception {
         // Default imports
-        exp(TRUE, "new ArrayList().getClass().getName().equals(\"java.util.ArrayList\")", new String[] { "java.util.*" });
+        exp(
+            TRUE,
+            "new ArrayList().getClass().getName().equals(\"java.util.ArrayList\")",
+            new String[] { "java.util.*" }
+        );
         scr(COMP, "xxx", new String[] { "java.util#" });
         scr(COMP, "xxx", new String[] { "java.util.9" });
         scr(COMP, "xxx", new String[] { "java.util.*;" });
-        clb(TRUE, "public static boolean main() { return new ArrayList() instanceof List; }", new String[] { "java.util.*" });
+        clb(
+            TRUE,
+            "public static boolean main() { return new ArrayList() instanceof List; }",
+            new String[] { "java.util.*" }
+        );
         exp(COMP, "new ArrayList()", new String[] { "java.io.*" });
-        
+
         // 7.5.1 Import Declarations -- Single-Type-Import
         exp(EXEC, "import java.util.ArrayList; new ArrayList()");
         exp(EXEC, "import java.util.ArrayList; import java.util.ArrayList; new ArrayList()");
@@ -356,7 +364,7 @@ public class JLS2Tests extends JaninoTestSuite {
         scr(TRUE, "int x = 37; switch (x) { case -10000: break; case 10000: break; } return x == 37;");
         scr(TRUE, "int x = 37; switch (x) { case -2000000000: break; case 2000000000: break; } return x == 37;");
     }
-    
+
     @Test
     public void test_14_20__UnreachableStatements() throws Exception {
         clb(COMP, (
@@ -390,7 +398,7 @@ public class JLS2Tests extends JaninoTestSuite {
         exp(COMP, "new other_package.Foo(3).new PublicStaticMemberClass()");
         exp(COMP, "new other_package.Foo(3).new PublicMemberInterface()");
         exp(COMP, "new java.util.ArrayList().new PublicMemberClass()");
-        
+
         // The following one is tricky: A Java 6 JRE declares
         //    public int          File.compareTo(File)
         //    public abstract int Comparable.compareTo(Object)
@@ -467,7 +475,7 @@ public class JLS2Tests extends JaninoTestSuite {
             "    public boolean meth(Object o, String s) { return false; }\n" +
             "}\n"
         ), "Main");
-        
+
         // The following case is tricky: JLS2 says that the invocation is AMBIGUOUS, but only
         // JAVAC 1.2 issues an error; JAVAC 1.4.1, 1.5.0 and 1.6.0 obviously ignore the declaring
         // type and invoke "A.meth(String)".
@@ -575,7 +583,7 @@ public class JLS2Tests extends JaninoTestSuite {
         exp(TRUE, "new Boolean(true) == true");
         exp(TRUE, "false == new Boolean(false)");
         exp(TRUE, "false != true");
-        
+
         // 15.21.3 Reference Equality Operators == and !=
         exp(TRUE, "new Object() != new Object()");
         exp(TRUE, "new Object() != null");
@@ -606,7 +614,7 @@ public class JLS2Tests extends JaninoTestSuite {
         exp(TRUE, "new Boolean(false) || true");
         exp(TRUE, "true || new Boolean(true)");
     }
-    
+
     @Test
     public void test_15_26__ConditionalOrOperator() throws Exception {
         // 15.26.2 Compound Assignment Operators

@@ -74,13 +74,13 @@ public class JaninoTestSuite {
         ExpressionTest et = new ExpressionTest(mode, expression);
         et.runTest();
     }
-    
+
     protected void exp(ExpressionTest.Mode mode, String expression, String[] defaultImports) throws Exception {
         ExpressionTest et = new ExpressionTest(mode, expression);
         et.setDefaultImports(defaultImports);
         et.runTest();
     }
-    
+
     protected class ExpressionTest extends CompileAndExecuteTest {
         private final String               expression;
         private final IExpressionEvaluator expressionEvaluator;
@@ -122,13 +122,13 @@ public class JaninoTestSuite {
         ScriptTest st = new ScriptTest(mode, script);
         st.runTest();
     }
-    
+
     protected void scr(ScriptTest.Mode mode, String script, String[] defaultImports) throws Exception {
         ScriptTest st = new ScriptTest(mode, script);
         st.setDefaultImports(defaultImports);
         st.runTest();
     }
-    
+
     protected class ScriptTest extends CompileAndExecuteTest {
         private final String           script;
         private final IScriptEvaluator scriptEvaluator;
@@ -170,13 +170,13 @@ public class JaninoTestSuite {
         ClassBodyTest cbt = new ClassBodyTest(mode, classBody);
         cbt.runTest();
     }
-    
+
     protected void clb(ClassBodyTest.Mode mode, String classBody, String[] defaultImports) throws Exception {
         ClassBodyTest cbt = new ClassBodyTest(mode, classBody);
         cbt.setDefaultImports(defaultImports);
         cbt.runTest();
     }
-    
+
     protected class ClassBodyTest extends CompileAndExecuteTest {
         private final String              classBody;
         private final IClassBodyEvaluator classBodyEvaluator;
@@ -222,7 +222,7 @@ public class JaninoTestSuite {
         SimpleCompilerTest sct = new SimpleCompilerTest(mode, compilationUnit, className);
         sct.runTest();
     }
-    
+
     protected class SimpleCompilerTest extends CompileAndExecuteTest {
         private final String          compilationUnit;
         private final String          className;

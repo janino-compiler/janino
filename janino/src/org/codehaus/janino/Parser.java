@@ -1107,7 +1107,7 @@ public class Parser {
         }
 
         Statement stmt = (
-            this.peek("{")            ? this.parseBlock():
+            this.peek("{")            ? this.parseBlock() :
             this.peek("if")           ? this.parseIfStatement() :
             this.peek("for")          ? this.parseForStatement() :
             this.peek("while")        ? this.parseWhileStatement() :
@@ -1534,7 +1534,7 @@ public class Parser {
         BasicType.BYTE, BasicType.SHORT, BasicType.CHAR, BasicType.INT, BasicType.LONG, BasicType.FLOAT,
         BasicType.DOUBLE, BasicType.BOOLEAN
     };
-    
+
     /**
      * <pre>
      *   ReferenceType := QualifiedIdentifier
@@ -1954,14 +1954,14 @@ public class Parser {
             if (this.peek("(")) {
                 // Name Arguments
                 return new MethodInvocation(
-                    this.location(),                                // location
+                    this.location(),                           // location
                     qi.length == 1 ? null : new AmbiguousName( // optionalTarget
                         location,       // location
                         qi,             // identifiers
                         qi.length - 1   // n
                     ),
-                    qi[qi.length - 1],                              // methodName
-                    this.parseArguments()                           // arguments
+                    qi[qi.length - 1],                         // methodName
+                    this.parseArguments()                      // arguments
                 );
             }
             if (this.peek("[") && this.peekNextButOne("]")) {
@@ -2356,7 +2356,7 @@ public class Parser {
     public int peek(String[] values) throws CompileException, IOException {
         return indexOf(values, this.peek().value);
     }
-    
+
     public int peek(int[] types) throws CompileException, IOException {
         return indexOf(types, this.peek().type);
     }
@@ -2373,7 +2373,9 @@ public class Parser {
     public int read(String[] values) throws CompileException, IOException {
         String s = this.read().value;
         int idx = indexOf(values, s);
-        if (idx == -1) throw this.compileException("One of '" + join(values, " ") + "' expected instead of '" + s + "'");
+        if (idx == -1) {
+            throw this.compileException("One of '" + join(values, " ") + "' expected instead of '" + s + "'");
+        }
         return idx;
     }
 
@@ -2440,7 +2442,7 @@ public class Parser {
         }
         return -1;
     }
-    
+
     private static int indexOf(int[] values, int subject) {
         for (int i = 0; i < values.length; ++i) {
             if (values[i] == subject) return i;

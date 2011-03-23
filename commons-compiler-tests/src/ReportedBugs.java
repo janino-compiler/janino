@@ -48,11 +48,11 @@ public class ReportedBugs extends JaninoTestSuite {
     public static Collection<Object[]> compilerFactories() throws Exception {
         return TestUtil.getCompilerFactoriesForParameters();
     }
-    
+
     public ReportedBugs(ICompilerFactory compilerFactory) throws Exception {
         super(compilerFactory);
     }
-    
+
     @Test
     public void testBug48() throws Exception {
         sim(EXEC, (
@@ -76,7 +76,7 @@ public class ReportedBugs extends JaninoTestSuite {
             "}"
         ), "demo.Service");
     }
-    
+
     @Test
     public void testBug54() throws Exception {
         scr(TRUE, (
@@ -193,7 +193,7 @@ public class ReportedBugs extends JaninoTestSuite {
             "int b = 3;\n" // Physically unreachable, but logically reachable, hence not a compile error.
         ));
     }
-    
+
     @Test
     public void testBug55() throws Exception {
         sim(COOK, (
@@ -202,7 +202,7 @@ public class ReportedBugs extends JaninoTestSuite {
             "}"
         ), null);
     }
-    
+
     @Test
     public void testBug56() throws Exception {
         scr(COOK, (
@@ -226,7 +226,7 @@ public class ReportedBugs extends JaninoTestSuite {
             "}\n"
         ));
     }
-    
+
     @Test
     public void testBug63() throws Exception {
         clb(COMP, (
@@ -242,7 +242,7 @@ public class ReportedBugs extends JaninoTestSuite {
             "}\n"
         ));
     }
-    
+
     @Test
     public void testBug69() throws Exception {
         sim(EXEC, (
@@ -273,7 +273,7 @@ public class ReportedBugs extends JaninoTestSuite {
             "}\n"
         ), "Test");
     }
-    
+
     @Test
     public void testBug70() throws Exception {
         clb(COOK, (
@@ -289,7 +289,7 @@ public class ReportedBugs extends JaninoTestSuite {
             "}\n"
         ));
     }
-    
+
     @Test
     public void testBug71() throws Exception {
         sim(TRUE, (
@@ -333,13 +333,13 @@ public class ReportedBugs extends JaninoTestSuite {
             "}\n"
         ), "SCI");
     }
-    
+
     @Test
     public void testBug80() throws Exception {
         // Expression compilation is said to throw StackOverflowError!?
         exp(COMP, "(10).total >= 100.0 ? 0.0 : 7.95");
     }
-    
+
     @Test
     public void testBug81() throws Exception {
         // IncompatibleClassChangeError when invoking getClass() on interface references
@@ -351,13 +351,13 @@ public class ReportedBugs extends JaninoTestSuite {
             "System.out.println(list.getClass());\n"
         ));
     }
-    
+
     @Test
     public void testBug99() throws Exception {
         // ConcurrentModificationException due to instance variable of Class type initialized using a class literal
         sim(COOK, "class Test{Class c = String.class;}", "Test");
     }
-    
+
     @Test
     public void testBug102() throws Exception {
         // Static initializers are not executed
@@ -374,7 +374,7 @@ public class ReportedBugs extends JaninoTestSuite {
             "  }\n" +
             "}"
         ), "Test");
-        
+
         ISimpleCompiler compiler = CompilerFactoryFactory.getDefaultCompilerFactory().newSimpleCompiler();
         compiler.cook(new StringReader("public class Test{static{System.setProperty(\"foo\", \"bar\");}}"));
         Class<?> testClass = compiler.getClassLoader().loadClass("Test"); // Only loads the class (JLS2 12.2)
@@ -384,7 +384,7 @@ public class ReportedBugs extends JaninoTestSuite {
         System.getProperties().remove("foo");
         assertNull(System.getProperty("foo"));
     }
-    
+
     @Test
     public void testBug105() throws Exception {
         // Possible to call a method of an enclosing class as if it was a member of an inner class
@@ -410,7 +410,7 @@ public class ReportedBugs extends JaninoTestSuite {
             "}\n"
         ));
     }
-    
+
     @Test
     public void testBug106() throws Exception {
         jscl("Bug 106", new File("aux-files/Bug 106"), "b.C3");
@@ -430,7 +430,7 @@ public class ReportedBugs extends JaninoTestSuite {
             + "return sb.length() == 1;\n"
         ));
     }
-    
+
     @Test
     public void testBug147() throws Exception {
         sim(COOK, (
@@ -448,7 +448,7 @@ public class ReportedBugs extends JaninoTestSuite {
             + "}"
         ), "Foo");
     }
-    
+
     @Test
     public void testBug149() throws Exception {
 

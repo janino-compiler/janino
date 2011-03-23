@@ -67,7 +67,7 @@ public interface ICookable {
      * Setting this system property to 'true' enables source-level debugging. Typically, this means that compilation
      * is executed with '-g:all' instead of '-g:none'.
      */
-    public static final String SYSTEM_PROPERTY_SOURCE_DEBUGGING_ENABLE = "org.codehaus.janino.source_debugging.enable";
+    String SYSTEM_PROPERTY_SOURCE_DEBUGGING_ENABLE = "org.codehaus.janino.source_debugging.enable";
 
     /**
      * Value 'org.codehaus.janino.source_debugging.dir'.
@@ -76,10 +76,10 @@ public interface ICookable {
      * debugging. As a workaround, a copy of the source code is written to a temporary file, which must be included
      * in the debugger's source path. If this system property is set, the temporary source file is created in that
      * directory, otherwise in the default temporary-file directory.
-     * 
+     *
      * @see File#createTempFile(String, String, File)
      */
-    public static final String SYSTEM_PROPERTY_SOURCE_DEBUGGING_DIR = "org.codehaus.janino.source_debugging.dir";
+    String SYSTEM_PROPERTY_SOURCE_DEBUGGING_DIR = "org.codehaus.janino.source_debugging.dir";
 
     /**
      * Determines what kind of debugging information is included in the generates classes. The default is typically

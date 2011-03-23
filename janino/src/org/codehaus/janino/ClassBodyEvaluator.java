@@ -191,7 +191,7 @@ public class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEval
     public void setImplementedInterfaces(Class[] implementedTypes) {
         if (implementedTypes == null) {
             throw new NullPointerException(
-                "Zero implemented types must be specified as \"new Class[0]\", not \"null\""
+                "Zero implemented types must be specified as 'new Class[0]', not 'null'"
             );
         }
         assertNotCooked();
@@ -233,8 +233,13 @@ public class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEval
      * If the <code>optionalParser</code> is given, a sequence of IMPORT directives is parsed from it and added to the
      * compilation unit.
      */
-    protected final Java.CompilationUnit makeCompilationUnit(Parser optionalParser) throws CompileException, IOException {
-        Java.CompilationUnit cu = new Java.CompilationUnit(optionalParser == null ? null : optionalParser.getScanner().getFileName());
+    protected final Java.CompilationUnit makeCompilationUnit(Parser optionalParser)
+    throws CompileException, IOException {
+        Java.CompilationUnit cu = (
+            new Java.CompilationUnit(optionalParser == null
+            ? null
+            : optionalParser.getScanner().getFileName())
+        );
 
         // Set default imports.
         if (this.optionalDefaultImports != null) {
@@ -243,7 +248,10 @@ public class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEval
                 Parser parser2 = new Parser(s);
                 cu.addImportDeclaration(parser2.parseImportDeclarationBody());
                 if (!parser2.peekEOF()) {
-                    throw new CompileException("Unexpected token \"" + parser2.peek() + "\" in default import", s.location());
+                    throw new CompileException(
+                        "Unexpected token '" + parser2.peek() + "' in default import",
+                        s.location()
+                    );
                 }
             }
         }
@@ -309,9 +317,9 @@ public class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEval
             return cl.loadClass(newClassName);
         } catch (ClassNotFoundException ex) {
             throw new JaninoRuntimeException(
-                "SNO: Generated compilation unit does not declare class \""
+                "SNO: Generated compilation unit does not declare class '"
                 + newClassName
-                + "\""
+                + "'"
             );
         }
     }
@@ -320,7 +328,7 @@ public class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEval
         if (this.getClass() != ClassBodyEvaluator.class) {
             throw new IllegalStateException("Must not be called on derived instances");
         }
-        if (this.result == null) throw new IllegalStateException("Must only be called after \"cook()\"");
+        if (this.result == null) throw new IllegalStateException("Must only be called after 'cook()'");
         return this.result;
     }
 

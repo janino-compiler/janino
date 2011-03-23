@@ -110,7 +110,7 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
         String         optionalCharacterEncoding
     ) {
         super(parentClassLoader);
-        
+
         this.iClassLoader = new JavaSourceIClassLoader(
             sourceFinder,                                  // sourceFinder
             optionalCharacterEncoding,                     // optionalCharacterEncoding
@@ -118,7 +118,7 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
             new ClassLoaderIClassLoader(parentClassLoader) // optionalParentIClassLoader
         );
     }
-    
+
     public void setSourcePath(File[] sourcePath) {
         this.iClassLoader.setSourceFinder(new PathResourceFinder(sourcePath));
     }

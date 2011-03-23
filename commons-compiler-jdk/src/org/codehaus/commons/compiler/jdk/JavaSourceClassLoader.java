@@ -82,11 +82,11 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
             // Get the original FM, which reads class files through this JVM's BOOTCLASSPATH and
             // CLASSPATH.
             JavaFileManager jfm = this.compiler.getStandardFileManager(null, null, null);
-    
+
             // Wrap it so that the output files (in our case class files) are stored in memory rather
             // than in files.
             jfm = new ByteArrayJavaFileManager<JavaFileManager>(jfm);
-    
+
             // Wrap it in a file manager that finds source files through the source path.
             jfm = new FileInputJavaFileManager(
                 jfm,
@@ -95,7 +95,7 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
                 this.sourcePath,
                 this.optionalCharacterEncoding
             );
-    
+
             this.fileManager = jfm;
         }
         return this.fileManager;

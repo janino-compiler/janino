@@ -31,7 +31,6 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.StringWriter;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -61,10 +60,7 @@ import org.junit.Test;
 
 public class AstTests {
 
-    private static Object compileAndEval(CompilationUnit cu) throws 
-    CompileException, ClassNotFoundException,
-    InstantiationException, IllegalAccessException,
-    NoSuchMethodException, InvocationTargetException {
+    private static Object compileAndEval(CompilationUnit cu) throws Exception {
         SimpleCompiler compiler = new SimpleCompiler();
         compiler.cook(cu);
 
@@ -111,7 +107,7 @@ public class AstTests {
     private static IntegerLiteral createIntegerLiteral(String value) {
         return new IntegerLiteral(getLocation(), value);
     }
-    
+
     private static FloatingPointLiteral createFloatingPointLiteral(String value) {
         return new FloatingPointLiteral(getLocation(), value);
     }

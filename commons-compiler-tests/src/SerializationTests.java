@@ -51,7 +51,7 @@ import util.TestUtil;
 @RunWith(Parameterized.class)
 public class SerializationTests {
     private final ICompilerFactory compilerFactory;
-    
+
     @Parameters
     public static Collection<Object[]> compilerFactories() throws Exception {
         return TestUtil.getCompilerFactoriesForParameters();

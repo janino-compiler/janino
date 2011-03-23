@@ -329,7 +329,7 @@ public class UnitCompiler {
         this.debugSource = debugSource;
         this.debugLines = debugLines;
         this.debugVars = debugVars;
-        
+
         // Compile static import declarations.
         for (Iterator it = this.compilationUnit.importDeclarations.iterator(); it.hasNext();) {
             ImportDeclaration id = (ImportDeclaration) it.next();
@@ -552,10 +552,10 @@ public class UnitCompiler {
         // A side effect of this call may create synthetic functions to access
         // protected parent variables
         this.compileDeclaredMemberTypes(cd, cf);
-        
+
         // Compile the aforementioned extras.
         this.compileDeclaredMethods(cd, cf, declaredMethodCount);
-        
+
         {
             // for every method look for bridge methods that need to be supplied
             // this is used to correctly dispatch into covariant return types
@@ -563,18 +563,19 @@ public class UnitCompiler {
             IMethod[] ms = iClass.getIMethods();
             for (int i = 0; i < ms.length; ++i) {
                 IMethod base = ms[i];
-                if (! base.isStatic()) {
+                if (!base.isStatic()) {
                     IMethod override = iClass.findIMethod(base.getName(), base.getParameterTypes());
-                    // if we overrode the method but with a DIFFERENT return type
-                    if (override != null && 
-                        ! base.getReturnType().equals(override.getReturnType())) {
+
+                    // If we overrode the method but with a DIFFERENT return type.
+                    if (
+                        override != null
+                        && !base.getReturnType().equals(override.getReturnType())
+                    ) {
                         this.compileBridgeMethod(cf, base, override);
                     }
                 }
             }
-                
         }
-
 
         // Class and instance variables.
         for (Iterator it = cd.variableDeclaratorsAndInitializers.iterator(); it.hasNext();) {
@@ -850,12 +851,9 @@ public class UnitCompiler {
             this.compile(((MethodDeclarator) typeDeclaration.getMethodDeclarations().get(i)), cf);
         }
     }
-    
 
     /**
-     * Compile a bridge method which will add a method of the signature of base that 
-     * delegates to override.
-     * @throws CompileException 
+     * Compile a bridge method which will add a method of the signature of base that delegates to override.
      */
     private void compileBridgeMethod(ClassFile cf, IMethod base, IMethod override) throws CompileException {
         ClassFile.MethodInfo mi = cf.addMethodInfo(
@@ -863,7 +861,7 @@ public class UnitCompiler {
             base.getName(),
             base.getDescriptor()
         );
-        
+
         // Add "Exceptions" attribute (JVMS 4.7.4).
         IClass[] thrownExceptions = base.getThrownExceptions();
         if (thrownExceptions.length > 0) {
@@ -874,22 +872,22 @@ public class UnitCompiler {
             }
             mi.addAttribute(new ClassFile.ExceptionsAttribute(eani, tecciis));
         }
-        
+
         final CodeContext codeContext = new CodeContext(mi.getClassFile());
         CodeContext savedCodeContext = this.replaceCodeContext(codeContext);
-        
+
         // allocate all our local variables
         codeContext.saveLocalVariables();
         codeContext.allocateLocalVariable((short) 1, "this", override.getDeclaringIClass());
         IClass[] paramTypes = override.getParameterTypes();
-        LocalVariableSlot[] locals = new LocalVariableSlot[paramTypes.length]; 
+        LocalVariableSlot[] locals = new LocalVariableSlot[paramTypes.length];
         for (int i = 0; i < paramTypes.length; ++i) {
             locals[i] = codeContext.allocateLocalVariable(
                 (short) Descriptor.size(paramTypes[i].getDescriptor()),
-                "param"+i,
+                "param" + i,
                 paramTypes[i]);
         }
-        
+
         this.writeOpcode(Located.NOWHERE, Opcode.ALOAD_0);
         for (int i = 0; i < locals.length; ++i) {
             this.load(Located.NOWHERE, locals[i].getType(), locals[i].getSlotIndex());
@@ -907,11 +905,10 @@ public class UnitCompiler {
         // Add the code context as a code attribute to the MethodInfo.
         mi.addAttribute(new ClassFile.AttributeInfo(cf.addConstantUtf8Info("Code")) {
             protected void storeBody(DataOutputStream dos) throws IOException {
-                codeContext.storeCodeAttributeBody(dos, (short)0, (short)0);
+                codeContext.storeCodeAttributeBody(dos, (short) 0, (short) 0);
             }
         });
    }
-    
 
     /**
      * @return <tt>false</tt> if this statement cannot complete normally (JLS2
@@ -1826,7 +1823,7 @@ public class UnitCompiler {
                     || caughtExceptionType.isAssignableFrom(this.iClassLoader.RUNTIME_EXCEPTION)
                 );
             }
-            
+
             boolean canCompleteNormally = this.compile(ts.body);
             CodeContext.Offset afterBody = this.codeContext.newOffset();
             if (canCompleteNormally) {
@@ -2065,8 +2062,8 @@ public class UnitCompiler {
 //                            outerClassOfSuperclass   // targetIClass
 //                        );
                         qualification = new QualifiedThisReference(
-                            cd.getLocation(),    // location
-                            new SimpleType( // qualification
+                            cd.getLocation(), // location
+                            new SimpleType(   // qualification
                                 cd.getLocation(),
                                 outerClassOfSuperclass
                             )
@@ -2527,8 +2524,8 @@ public class UnitCompiler {
                 optionalEnclosingInstance = null;
             } else {
                 optionalEnclosingInstance = new QualifiedThisReference(
-                    sci.getLocation(),   // location
-                    new SimpleType( // qualification
+                    sci.getLocation(), // location
+                    new SimpleType(    // qualification
                         sci.getLocation(),
                         outerIClassOfSuperclass
                     )
@@ -3198,23 +3195,23 @@ public class UnitCompiler {
             classDollarFieldName           // fieldName
         );
         ConditionalExpression ce = new ConditionalExpression(
-            loc,                           // location
+            loc,                      // location
             new BinaryOperation(      // lhs
-                loc,                              // location
-                classDollarFieldAccess,           // lhs
-                "!=",                             // op
-                new NullLiteral(loc, "null") // rhs
-            ),
-            classDollarFieldAccess,        // mhs
-            new Assignment(           // rhs
                 loc,                         // location
                 classDollarFieldAccess,      // lhs
-                "=",                         // operator
+                "!=",                        // op
+                new NullLiteral(loc, "null") // rhs
+            ),
+            classDollarFieldAccess,   // mhs
+            new Assignment(           // rhs
+                loc,                    // location
+                classDollarFieldAccess, // lhs
+                "=",                    // operator
                 new MethodInvocation(   // rhs
                     loc,                           // location
                     declaringClassOrInterfaceType, // optionalTarget
                     "class$",                      // methodName
-                    new Rvalue[] {            // arguments
+                    new Rvalue[] {                 // arguments
                         new StringLiteral(
                             loc,                  // location
                             '"' + className + '"' // constantValue
@@ -3778,8 +3775,8 @@ public class UnitCompiler {
 //                        optionalOuterIClass           // targetIClass
 //                    );
                     optionalEnclosingInstance = new QualifiedThisReference(
-                        nci.getLocation(),   // location
-                        new SimpleType( // qualification
+                        nci.getLocation(), // location
+                        new SimpleType(    // qualification
                             nci.getLocation(),
                             optionalOuterIClass
                         )
@@ -4032,30 +4029,30 @@ public class UnitCompiler {
         class UCE extends RuntimeException { final CompileException ce; UCE(CompileException ce) { this.ce = ce; } }
         RvalueVisitor rvv = new RvalueVisitor() {
             // CHECKSTYLE(LineLengthCheck):OFF
-            public void visitArrayLength(ArrayLength al)                                {       res[0] = UnitCompiler.this.getConstantValue2(al);                                                    }
-            public void visitAssignment(Assignment a)                                   {       res[0] = UnitCompiler.this.getConstantValue2(a);                                                     }
-            public void visitUnaryOperation(UnaryOperation uo)                          { try { res[0] = UnitCompiler.this.getConstantValue2(uo); } catch (CompileException e) { throw new UCE(e); } }
-            public void visitBinaryOperation(BinaryOperation bo)                        { try { res[0] = UnitCompiler.this.getConstantValue2(bo); } catch (CompileException e) { throw new UCE(e); } }
-            public void visitCast(Cast c)                                               { try { res[0] = UnitCompiler.this.getConstantValue2(c);  } catch (CompileException e) { throw new UCE(e); } }
-            public void visitClassLiteral(ClassLiteral cl)                              {       res[0] = UnitCompiler.this.getConstantValue2(cl);                                                    }
-            public void visitConditionalExpression(ConditionalExpression ce)            { try { res[0] = UnitCompiler.this.getConstantValue2(ce); } catch (CompileException e) { throw new UCE(e); } }
-            public void visitCrement(Crement c)                                         {       res[0] = UnitCompiler.this.getConstantValue2(c);                                                     }
-            public void visitInstanceof(Instanceof io)                                  {       res[0] = UnitCompiler.this.getConstantValue2(io);                                                    }
-            public void visitMethodInvocation(MethodInvocation mi)                      {       res[0] = UnitCompiler.this.getConstantValue2(mi);                                                    }
-            public void visitSuperclassMethodInvocation(SuperclassMethodInvocation smi) {       res[0] = UnitCompiler.this.getConstantValue2(smi);                                                   }
-            public void visitIntegerLiteral(IntegerLiteral il)                          { try { res[0] = UnitCompiler.this.getConstantValue2(il); } catch (CompileException e) { throw new UCE(e); } }
-            public void visitFloatingPointLiteral(FloatingPointLiteral fpl)             { try { res[0] = UnitCompiler.this.getConstantValue2(fpl);} catch (CompileException e) { throw new UCE(e); } }
-            public void visitBooleanLiteral(BooleanLiteral bl)                          {       res[0] = UnitCompiler.this.getConstantValue2(bl);                                                    }
-            public void visitCharacterLiteral(CharacterLiteral cl)                      {       res[0] = UnitCompiler.this.getConstantValue2(cl);                                                    }
-            public void visitStringLiteral(StringLiteral sl)                            {       res[0] = UnitCompiler.this.getConstantValue2(sl);                                                    }
-            public void visitNullLiteral(NullLiteral nl)                                {       res[0] = UnitCompiler.this.getConstantValue2(nl);                                                    }
-            public void visitNewAnonymousClassInstance(NewAnonymousClassInstance naci)  {       res[0] = UnitCompiler.this.getConstantValue2(naci);                                                  }
-            public void visitNewArray(NewArray na)                                      {       res[0] = UnitCompiler.this.getConstantValue2(na);                                                    }
-            public void visitNewInitializedArray(NewInitializedArray nia)               {       res[0] = UnitCompiler.this.getConstantValue2(nia);                                                   }
-            public void visitNewClassInstance(NewClassInstance nci)                     {       res[0] = UnitCompiler.this.getConstantValue2(nci);                                                   }
-            public void visitParameterAccess(ParameterAccess pa)                        {       res[0] = UnitCompiler.this.getConstantValue2(pa);                                                    }
-            public void visitQualifiedThisReference(QualifiedThisReference qtr)         {       res[0] = UnitCompiler.this.getConstantValue2(qtr);                                                   }
-            public void visitThisReference(ThisReference tr)                            {       res[0] = UnitCompiler.this.getConstantValue2(tr);                                                    }
+            public void visitArrayLength(ArrayLength al)                                {       res[0] = UnitCompiler.this.getConstantValue2(al);                                                     }
+            public void visitAssignment(Assignment a)                                   {       res[0] = UnitCompiler.this.getConstantValue2(a);                                                      }
+            public void visitUnaryOperation(UnaryOperation uo)                          { try { res[0] = UnitCompiler.this.getConstantValue2(uo);  } catch (CompileException e) { throw new UCE(e); } }
+            public void visitBinaryOperation(BinaryOperation bo)                        { try { res[0] = UnitCompiler.this.getConstantValue2(bo);  } catch (CompileException e) { throw new UCE(e); } }
+            public void visitCast(Cast c)                                               { try { res[0] = UnitCompiler.this.getConstantValue2(c);   } catch (CompileException e) { throw new UCE(e); } }
+            public void visitClassLiteral(ClassLiteral cl)                              {       res[0] = UnitCompiler.this.getConstantValue2(cl);                                                     }
+            public void visitConditionalExpression(ConditionalExpression ce)            { try { res[0] = UnitCompiler.this.getConstantValue2(ce);  } catch (CompileException e) { throw new UCE(e); } }
+            public void visitCrement(Crement c)                                         {       res[0] = UnitCompiler.this.getConstantValue2(c);                                                      }
+            public void visitInstanceof(Instanceof io)                                  {       res[0] = UnitCompiler.this.getConstantValue2(io);                                                     }
+            public void visitMethodInvocation(MethodInvocation mi)                      {       res[0] = UnitCompiler.this.getConstantValue2(mi);                                                     }
+            public void visitSuperclassMethodInvocation(SuperclassMethodInvocation smi) {       res[0] = UnitCompiler.this.getConstantValue2(smi);                                                    }
+            public void visitIntegerLiteral(IntegerLiteral il)                          { try { res[0] = UnitCompiler.this.getConstantValue2(il);  } catch (CompileException e) { throw new UCE(e); } }
+            public void visitFloatingPointLiteral(FloatingPointLiteral fpl)             { try { res[0] = UnitCompiler.this.getConstantValue2(fpl); } catch (CompileException e) { throw new UCE(e); } }
+            public void visitBooleanLiteral(BooleanLiteral bl)                          {       res[0] = UnitCompiler.this.getConstantValue2(bl);                                                     }
+            public void visitCharacterLiteral(CharacterLiteral cl)                      {       res[0] = UnitCompiler.this.getConstantValue2(cl);                                                     }
+            public void visitStringLiteral(StringLiteral sl)                            {       res[0] = UnitCompiler.this.getConstantValue2(sl);                                                     }
+            public void visitNullLiteral(NullLiteral nl)                                {       res[0] = UnitCompiler.this.getConstantValue2(nl);                                                     }
+            public void visitNewAnonymousClassInstance(NewAnonymousClassInstance naci)  {       res[0] = UnitCompiler.this.getConstantValue2(naci);                                                   }
+            public void visitNewArray(NewArray na)                                      {       res[0] = UnitCompiler.this.getConstantValue2(na);                                                     }
+            public void visitNewInitializedArray(NewInitializedArray nia)               {       res[0] = UnitCompiler.this.getConstantValue2(nia);                                                    }
+            public void visitNewClassInstance(NewClassInstance nci)                     {       res[0] = UnitCompiler.this.getConstantValue2(nci);                                                    }
+            public void visitParameterAccess(ParameterAccess pa)                        {       res[0] = UnitCompiler.this.getConstantValue2(pa);                                                     }
+            public void visitQualifiedThisReference(QualifiedThisReference qtr)         {       res[0] = UnitCompiler.this.getConstantValue2(qtr);                                                    }
+            public void visitThisReference(ThisReference tr)                            {       res[0] = UnitCompiler.this.getConstantValue2(tr);                                                     }
 
             public void visitAmbiguousName(AmbiguousName an)                                        { try { res[0] = UnitCompiler.this.getConstantValue2(an); } catch (CompileException e) { throw new UCE(e); } }
             public void visitArrayAccessExpression(ArrayAccessExpression aae)                       {       res[0] = UnitCompiler.this.getConstantValue2(aae);                                                   }
@@ -4096,7 +4093,7 @@ public class UnitCompiler {
         }
         return NOT_CONSTANT;
     }
-    
+
     private Object getConstantValue2(ConditionalExpression ce) throws CompileException {
         Object lhsValue = this.getConstantValue(ce.lhs);
         if (lhsValue instanceof Boolean) {
@@ -4108,7 +4105,7 @@ public class UnitCompiler {
         }
         return NOT_CONSTANT;
     }
-    
+
     private Object getConstantValue2(BinaryOperation bo) throws CompileException {
 
         // "|", "^", "&", "*", "/", "%", "+", "-", "==", "!=".
@@ -4333,7 +4330,7 @@ public class UnitCompiler {
             if (Float.isNaN(fv)) {
                 throw new JaninoRuntimeException("SNO: parsing float literal '" + v + "' results in NaN");
             }
-    
+
             // Check for FLOAT underrun.
             if (fv == 0.0F) {
                 for (int i = 0; i < v.length(); ++i) {
@@ -5497,13 +5494,13 @@ public class UnitCompiler {
                 );
             }
             ExpressionStatement es = new ExpressionStatement(new Assignment(
-                cd.getLocation(),             // location
+                cd.getLocation(),        // location
                 new FieldAccess(         // lhs
-                    cd.getLocation(),                         // location
+                    cd.getLocation(),                    // location
                     new ThisReference(cd.getLocation()), // lhs
-                    sf                                        // field
+                    sf                                   // field
                 ),
-                "=",                          // operator
+                "=",                     // operator
                 new LocalVariableAccess( // rhs
                     cd.getLocation(),  // location
                     syntheticParameter // localVariable
@@ -5930,9 +5927,9 @@ public class UnitCompiler {
     ) {
         this.writeOpcode(l, Opcode.INVOKESTATIC);
         this.writeConstantMethodrefInfo(
-            Descriptor.STRING,
-            "valueOf", // classFD
-            "(" + ((   // methodMD
+            Descriptor.STRING, // classFD
+            "valueOf",         // methodName
+            "(" + ((           // methodMD
                 sourceType == IClass.BOOLEAN ||
                 sourceType == IClass.CHAR    ||
                 sourceType == IClass.LONG    ||
@@ -6415,12 +6412,12 @@ public class UnitCompiler {
                         );
                         icd.defineSyntheticField(iField);
                         FieldAccess fa = new FieldAccess(
-                            location,                        // location
+                            location,                   // location
                             new QualifiedThisReference( // lhs
-                                location,                                        // location
+                                location,                                   // location
                                 new SimpleType(location, this.resolve(icd)) // qualification
                             ),
-                            iField                           // field
+                            iField                      // field
                         );
                         fa.setEnclosingBlockStatement((BlockStatement) scope);
                         return fa;
@@ -7321,7 +7318,9 @@ public class UnitCompiler {
 
                         // This catch clause catches only a subtype of the exception type.
                         for (int j = 0; j < i; ++j) {
-                            if (this.getType(((CatchClause) ts.catchClauses.get(j)).caughtException.type).isAssignableFrom(caughtType)) {
+                            if (this.getType(
+                                ((CatchClause) ts.catchClauses.get(j)).caughtException.type
+                            ).isAssignableFrom(caughtType)) {
 
                                 // A preceding catch clause is more general than this catch clause.
                                 break CATCH_SUBTYPE;
@@ -8001,20 +8000,20 @@ public class UnitCompiler {
 
         List l = new ArrayList();
         l.add(new CatchClause(
-            loc,                                         // location
+            loc,                                    // location
             new FunctionDeclarator.FormalParameter( // caughtException
-                loc,                                                    // location
-                true,                                                   // finaL
+                loc,                                               // location
+                true,                                              // finaL
                 new SimpleType(loc, classNotFoundExceptionIClass), // type
-                "ex"                                                    // name
+                "ex"                                               // name
             ),
-            b                                            // body
+            b                                       // body
         ));
         TryStatement ts = new TryStatement(
-            loc,                               // location
+            loc,                          // location
             new ReturnStatement(loc, mi), // body
-            l,                                 // catchClauses
-            null                               // optionalFinally
+            l,                            // catchClauses
+            null                          // optionalFinally
         );
 
         List statements = new ArrayList(); // BlockStatement
@@ -8080,7 +8079,7 @@ public class UnitCompiler {
 
         if (value instanceof Long) {
             long lv = ((Long) value).longValue();
-            
+
             if (lv == 0L) {
                 this.writeOpcode(l, Opcode.LCONST_0);
             } else
@@ -8096,7 +8095,7 @@ public class UnitCompiler {
 
         if (value instanceof Float) {
             float fv = ((Float) value).floatValue();
-  
+
             if (
                 Float.floatToIntBits(fv) == Float.floatToIntBits(0.0F) // POSITIVE zero!
                 || fv == 1.0F
@@ -8181,7 +8180,7 @@ public class UnitCompiler {
         }
         return result;
     }
-    
+
     private static long hex2Long(Locatable l, String value) throws CompileException {
         long result = 0L;
         for (int i = 0; i < value.length(); ++i) {
@@ -9431,10 +9430,10 @@ public class UnitCompiler {
      * ErrorHandler} counts errors and throws a {@link CompileException} when a limit is reached.
      * <p>
      * If the given {@link ErrorHandler} does not throw {@link CompileException}s, then {@link
-     * #compileUnit(boolean, boolean, boolean)} will throw one when the compilation of the unit is finished, and errors had
-     * occurred. In other words: The {@link ErrorHandler} may throw a {@link CompileException} or not, but {@link
-     * #compileUnit(boolean, boolean, boolean)} will definitely throw a {@link CompileException} if one or more compile errors have
-     * occurred.
+     * #compileUnit(boolean, boolean, boolean)} will throw one when the compilation of the unit is finished, and errors
+     * had occurred. In other words: The {@link ErrorHandler} may throw a {@link CompileException} or not, but {@link
+     * #compileUnit(boolean, boolean, boolean)} will definitely throw a {@link CompileException} if one or more compile
+     * errors have occurred.
      *
      * @param optionalCompileErrorHandler <code>null</code> to restore the default behavior (throwing a {@link
      *                                    CompileException}

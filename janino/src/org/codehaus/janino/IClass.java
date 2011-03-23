@@ -183,25 +183,26 @@ public abstract class IClass {
     private IMethod[] iMethodCache = null;
     private void getIMethods(List result) throws CompileException {
         IMethod[] ms = this.getDeclaredIMethods();
+
+        SCAN_DECLARED_METHODS:
         for (int i = 0; i < ms.length; ++i) {
             IMethod candidate = ms[i];
             String candidateDescriptor = candidate.getDescriptor();
             String candidateName = candidate.getName();
-            
-            boolean found = false;
+
+            // Check if a method with the same name and descriptor has been added before.
             for (int j = 0; j < result.size(); ++j) {
                 IMethod oldMethod = (IMethod) result.get(j);
-                if (candidateName.equals(oldMethod.getName()) && 
-                    candidateDescriptor.equals(oldMethod.getDescriptor())) {
-                    found = true;
-                    break;
-                }
+                if (
+                    candidateName.equals(oldMethod.getName())
+                    && candidateDescriptor.equals(oldMethod.getDescriptor())
+                ) continue SCAN_DECLARED_METHODS;
             }
-            if (!found) result.add(candidate);
+            result.add(candidate);
         }
         IClass sc = this.getSuperclass();
         if (sc != null) sc.getIMethods(result);
-        
+
         IClass[] iis = this.getInterfaces();
         for (int i = 0; i < iis.length; ++i) iis[i].getIMethods(result);
     }
