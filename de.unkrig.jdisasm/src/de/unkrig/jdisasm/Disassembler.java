@@ -56,6 +56,7 @@ import java.io.InputStream;
 import java.io.LineNumberReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -69,6 +70,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
+import java.util.regex.Pattern;
 
 import de.unkrig.jdisasm.ClassFile.Annotation;
 import de.unkrig.jdisasm.ClassFile.AnnotationDefaultAttribute;
@@ -177,8 +179,15 @@ public class Disassembler {
             System.err.println("Class file name missing, try \"-help\".");
             System.exit(1);
         }
+        Pattern IS_URL = Pattern.compile("\\w\\w+:.*");
         for (; i < args.length; ++i) {
-            d.disasm(new File(args[i]));
+            String name = args[i];
+            if (IS_URL.matcher(name).matches()) {
+                d.disasm(new URL(name));
+            } else
+            {
+                d.disasm(new File(name));
+            }
         }
     }
 
@@ -219,6 +228,17 @@ public class Disassembler {
         }
     }
 
+    public void disasm(URL location) throws IOException {
+        InputStream is = location.openConnection().getInputStream();
+        try {
+            this.pw.println();
+            this.pw.println("// *** Disassembly of '" + location + "'.");
+            disasm(is);
+        } finally {
+            try { is.close(); } catch (IOException ex) { }
+        }
+    }
+    
     /**
      * @param is A Java&trade; class file
      */
