@@ -10,19 +10,19 @@ public class Foo {
     protected   Foo(boolean b) {}
     private     Foo(char c) {}
 
-    private static void     privateStaticMethod() {}
-    private void            privateMethod() {}
-    /*package*/ static void packageStaticMethod() {}
-    /*package*/ void        packageMethod() {}
-    protected static void   protectedStaticMethod() {}
-    protected void          protectedMethod() {}
-    public static void      publicStaticMethod() {}
-    public void             publicMethod() {}
+    private static void   privateStaticMethod() {}
+    private void          privateMethod() {}
+    static void           packageStaticMethod() {}
+    void                  packageMethod() {}
+    protected static void protectedStaticMethod() {}
+    protected void        protectedMethod() {}
+    public static void    publicStaticMethod() {}
+    public void           publicMethod() {}
 
     private static class         PrivateStaticMemberClass { }
     private class                PrivateMemberClass { }
-    /*package*/ static class     PackageStaticMemberClass { }
-    /*package*/ class            PackageMemberClass { }
+    static class                 PackageStaticMemberClass { }
+    class                        PackageMemberClass { }
     protected static class       ProtectedStaticMemberClass { }
     protected class              ProtectedMemberClass { }
     public static class          PublicStaticMemberClass { }
@@ -32,8 +32,8 @@ public class Foo {
 
     private static interface     PrivateStaticMemberInterface { }
     private interface            PrivateMemberInterface { }
-    /*package*/ static interface PackageStaticMemberInterface { }
-    /*package*/ interface        PackageMemberInterface { }
+    static interface             PackageStaticMemberInterface { }
+    interface                    PackageMemberInterface { }
     protected static interface   ProtectedStaticMemberInterface { }
     protected interface          ProtectedMemberInterface { }
     public static interface      PublicStaticMemberInterface { }
@@ -50,5 +50,5 @@ public class Foo {
     }
 }
 
-/*package*/ class     PackageClass { }
-/*package*/ interface PackageInterface { }
+class     PackageClass { }
+interface PackageInterface { }

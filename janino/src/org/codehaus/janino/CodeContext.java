@@ -115,10 +115,10 @@ public class CodeContext {
      * @return The slot index of the allocated variable
      */
     public short allocateLocalVariable(
-            short size
+        short size
     ) {
         return allocateLocalVariable(size, null, null).getSlotIndex();
-        }
+    }
 
     /**
      * Allocate space for a local variable of the given size (1 or 2)
@@ -134,11 +134,7 @@ public class CodeContext {
      * @param name The variable name, if it's null, the variable won't be written to the localvariabletable
      * @param type The variable type. if the name isn't null, the type is needed to write to the localvariabletable
      */
-    public Java.LocalVariableSlot allocateLocalVariable(
-        short size,
-        String name,
-        IClass type
-    ) {
+    public Java.LocalVariableSlot allocateLocalVariable(short size, String name, IClass type) {
         List currentVars = null;
 
         if (this.scopedVars.size() == 0) {
@@ -254,8 +250,8 @@ public class CodeContext {
     }
 
     protected ClassFile.AttributeInfo storeLocalVariableTable(
-            DataOutputStream dos,
-            short localVariableTableAttributeNameIndex
+        DataOutputStream dos,
+        short            localVariableTableAttributeNameIndex
     ) {
         ClassFile       cf = getClassFile();
         Iterator        iter = getAllLocalVars().iterator();
@@ -272,11 +268,11 @@ public class CodeContext {
 //                System.out.println("slot: " + slot + ", typeSlot: " + classSlot + ", varSlot: " + varNameSlot);
 
                 ClassFile.LocalVariableTableAttribute.Entry entry = new ClassFile.LocalVariableTableAttribute.Entry(
-                        (short) slot.getStart().offset,
-                        (short) (slot.getEnd().offset - slot.getStart().offset),
-                        varNameSlot,
-                        classSlot,
-                        slot.getSlotIndex()
+                    (short) slot.getStart().offset,
+                    (short) (slot.getEnd().offset - slot.getStart().offset),
+                    varNameSlot,
+                    classSlot,
+                    slot.getSlotIndex()
                 );
                 entryList.add(entry);
             }
@@ -692,19 +688,24 @@ public class CodeContext {
      */
     private int extract32BitValue(int bias, int offset, byte[] code) {
         int res = bias + (
-            (code[offset]              << 24) +
-            ((0xff & code[offset + 1]) << 16) +
-            ((0xff & code[offset + 2]) <<  8) +
-            (0xff & code[offset + 3])
+            (code[offset] << 24)
+            + ((0xff & code[offset + 1]) << 16)
+            + ((0xff & code[offset + 2]) << 8)
+            + (0xff & code[offset + 3])
         );
         if (CodeContext.DEBUG) {
             System.out.println("extract32BitValue(bias, offset) = (" + bias + ", " + offset + ")");
             System.out.println(
-                "bytes = {" +
-                code[offset] + ", " +
-                code[offset + 1] + ", " +
-                code[offset + 2] + ", " +
-                code[offset + 3] + "}"
+                ""
+                + "bytes = {"
+                + code[offset]
+                + ", "
+                + code[offset + 1]
+                + ", "
+                + code[offset + 2]
+                + ", "
+                + code[offset + 3]
+                + "}"
             );
             System.out.println("result = " + res);
         }
@@ -773,9 +774,9 @@ public class CodeContext {
     private int determineArgumentsSize(short idx) {
         ClassFile.ConstantPoolInfo cpi = this.classFile.getConstantPoolInfo(idx);
         ClassFile.ConstantNameAndTypeInfo nat = (ClassFile.ConstantNameAndTypeInfo) this.classFile.getConstantPoolInfo(
-            cpi instanceof ClassFile.ConstantInterfaceMethodrefInfo ?
-            ((ClassFile.ConstantInterfaceMethodrefInfo) cpi).getNameAndTypeIndex() :
-            ((ClassFile.ConstantMethodrefInfo) cpi).getNameAndTypeIndex()
+            cpi instanceof ClassFile.ConstantInterfaceMethodrefInfo
+            ? ((ClassFile.ConstantInterfaceMethodrefInfo) cpi).getNameAndTypeIndex()
+            : ((ClassFile.ConstantMethodrefInfo) cpi).getNameAndTypeIndex()
         );
         ClassFile.ConstantUtf8Info cui = (
             (ClassFile.ConstantUtf8Info) this.classFile.getConstantPoolInfo(nat.getDescriptorIndex())
@@ -993,14 +994,16 @@ public class CodeContext {
                 //we want to insert the data without skewing our source position,
                 //so we will cache it and then restore it later.
                 int pos = this.source.offset;
-                CodeContext.this.pushInserter(this.source); {
+                CodeContext.this.pushInserter(this.source);
+                {
                     // promotion to a wide instruction only requires 2 extra bytes
                     // everything else requires a new GOTO_W instruction after a negated if
                     CodeContext.this.makeSpace(
                         (short) -1,
                         this.opcode == Opcode.GOTO ? 2 : this.opcode == Opcode.JSR ? 2 : 5
                     );
-                } CodeContext.this.popInserter();
+                }
+                CodeContext.this.popInserter();
                 this.source.offset = pos;
                 this.expanded = true;
                 return false;
@@ -1094,10 +1097,9 @@ public class CodeContext {
             this.destination = destination;
         }
         public boolean relocate() {
-            if (
-                this.source.offset == Offset.UNSET ||
-                this.destination.offset == Offset.UNSET
-            ) throw new JaninoRuntimeException("Cannot relocate offset branch to unset destination offset");
+            if (this.source.offset == Offset.UNSET || this.destination.offset == Offset.UNSET) {
+                throw new JaninoRuntimeException("Cannot relocate offset branch to unset destination offset");
+            }
             int offset = this.destination.offset - this.source.offset;
             byte[] ba = new byte[] {
                 (byte) (offset >> 24),

@@ -62,14 +62,15 @@ public class ScopingTests {
         ISimpleCompiler sc = compilerFactory.newSimpleCompiler();
         setParentClassLoader(sc);
         sc.cook(
-            "package test;\n" +
-            "public class Top extends for_sandbox_tests.ProtectedVariable {\n" +
-            "    public class Inner {\n" +
-            "        public int get() {\n" +
-            "            return var;\n" +
-            "        }\n" +
-            "    } \n" +
-            "}"
+            ""
+            + "package test;\n"
+            + "public class Top extends for_sandbox_tests.ProtectedVariable {\n"
+            + "    public class Inner {\n"
+            + "        public int get() {\n"
+            + "            return var;\n"
+            + "        }\n"
+            + "    } \n"
+            + "}"
         );
     }
 
@@ -79,26 +80,27 @@ public class ScopingTests {
         ISimpleCompiler sc = compilerFactory.newSimpleCompiler();
         setParentClassLoader(sc);
         sc.cook(
-            "package for_sandbox_tests;\n" +
-            "public class Top extends for_sandbox_tests.ProtectedVariable {\n" +
-            "    public class Inner {\n" +
-            "        public int get() {\n" +
-            "            return var;\n" +
-            "        }\n" +
-            "        public void set() {\n" +
-            "            var += 10;\n" +
-            "        }\n" +
-            "        public int getS() {\n" +
-            "            return svar;\n" +
-            "        }\n" +
-            "        public void setS() {\n" +
-            "            svar += 10;\n" +
-            "        }\n" +
-            "    } \n" +
-            "    public Inner createInner() {\n" +
-            "        return new Inner();\n" +
-            "    }\n" +
-            "}"
+            ""
+            + "package for_sandbox_tests;\n"
+            + "public class Top extends for_sandbox_tests.ProtectedVariable {\n"
+            + "    public class Inner {\n"
+            + "        public int get() {\n"
+            + "            return var;\n"
+            + "        }\n"
+            + "        public void set() {\n"
+            + "            var += 10;\n"
+            + "        }\n"
+            + "        public int getS() {\n"
+            + "            return svar;\n"
+            + "        }\n"
+            + "        public void setS() {\n"
+            + "            svar += 10;\n"
+            + "        }\n"
+            + "    } \n"
+            + "    public Inner createInner() {\n"
+            + "        return new Inner();\n"
+            + "    }\n"
+            + "}"
         );
 
         Class<?> topClass = sc.getClassLoader().loadClass("for_sandbox_tests.Top");
@@ -135,24 +137,25 @@ public class ScopingTests {
         ISimpleCompiler sc = compilerFactory.newSimpleCompiler();
         setParentClassLoader(sc);
         sc.cook(
-            "package for_sandbox_tests;\n" +
-            "public class L0 extends for_sandbox_tests.ProtectedVariable {\n" +
-            "    public class L1 extends for_sandbox_tests.ProtectedVariable {\n" +
-            "        public class L2 extends for_sandbox_tests.ProtectedVariable {\n" +
-            "            public class Inner {\n" +
-            "                public int getL2() { return L0.L1.L2.this.var; }\n" +
-            "                public int getL1() { return L0.L1.this.var; }\n" +
-            "                public int getL0() { return L0.this.var; }\n" +
-            "                public int setL2() { return L2.this.var = 2; }\n" +
-            "                public int setL1() { return L1.this.var = 1; }\n" +
-            "                public int setL0() { return L0.this.var = 0; }\n" +
-            "            }\n" +
-            "        }\n" +
-            "    }\n" +
-            "    public L0.L1.L2.Inner createInner() {\n" +
-            "        return new L0().new L1().new L2().new Inner();\n" +
-            "    }\n" +
-            "}"
+            ""
+            + "package for_sandbox_tests;\n"
+            + "public class L0 extends for_sandbox_tests.ProtectedVariable {\n"
+            + "    public class L1 extends for_sandbox_tests.ProtectedVariable {\n"
+            + "        public class L2 extends for_sandbox_tests.ProtectedVariable {\n"
+            + "            public class Inner {\n"
+            + "                public int getL2() { return L0.L1.L2.this.var; }\n"
+            + "                public int getL1() { return L0.L1.this.var; }\n"
+            + "                public int getL0() { return L0.this.var; }\n"
+            + "                public int setL2() { return L2.this.var = 2; }\n"
+            + "                public int setL1() { return L1.this.var = 1; }\n"
+            + "                public int setL0() { return L0.this.var = 0; }\n"
+            + "            }\n"
+            + "        }\n"
+            + "    }\n"
+            + "    public L0.L1.L2.Inner createInner() {\n"
+            + "        return new L0().new L1().new L2().new Inner();\n"
+            + "    }\n"
+            + "}"
         );
 
         Class<?> topClass = sc.getClassLoader().loadClass("for_sandbox_tests.L0");
@@ -162,14 +165,14 @@ public class ScopingTests {
 
         Class<?> innerClass = inner.getClass();
         Method[] gets = new Method[] {
-                innerClass.getMethod("getL0", new Class[0]),
-                innerClass.getMethod("getL1", new Class[0]),
-                innerClass.getMethod("getL2", new Class[0]),
+            innerClass.getMethod("getL0", new Class[0]),
+            innerClass.getMethod("getL1", new Class[0]),
+            innerClass.getMethod("getL2", new Class[0]),
         };
         Method[] sets = new Method[] {
-                innerClass.getMethod("setL0", new Class[0]),
-                innerClass.getMethod("setL1", new Class[0]),
-                innerClass.getMethod("setL2", new Class[0]),
+            innerClass.getMethod("setL0", new Class[0]),
+            innerClass.getMethod("setL1", new Class[0]),
+            innerClass.getMethod("setL2", new Class[0]),
         };
         for (int i = 0; i < 3; ++i) {
             Object g1 = gets[i].invoke(inner, new Object[0]);
@@ -186,27 +189,28 @@ public class ScopingTests {
     public void testStaticInitAccessProtected() throws Exception {
         ISimpleCompiler sc = compilerFactory.newSimpleCompiler();
         sc.cook(
-            "package test;\n" +
-            "public class Outer extends for_sandbox_tests.ProtectedVariable  {\n" +
-            "    public class Inner {\n" +
-            "        {\n" +
-            "            int t = var;\n" +
-            "            var = svar;\n" +
-            "            svar = t;\n" +
-            "        }\n" +
-            "        private final int i = var;\n" +
-            "        private final int j = svar;\n" +
-            "        {\n" +
-            "            int t = var;\n" +
-            "            var = svar;\n" +
-            "            svar = t;\n" +
-            "        }\n" +
-            "        private final int[] a = new int[] { i, j };\n" +
-            "    }\n" +
-            "    public Inner createInner() {\n" +
-            "        return new Inner();\n" +
-            "    }\n" +
-            "}"
+            ""
+            + "package test;\n"
+            + "public class Outer extends for_sandbox_tests.ProtectedVariable  {\n"
+            + "    public class Inner {\n"
+            + "        {\n"
+            + "            int t = var;\n"
+            + "            var = svar;\n"
+            + "            svar = t;\n"
+            + "        }\n"
+            + "        private final int i = var;\n"
+            + "        private final int j = svar;\n"
+            + "        {\n"
+            + "            int t = var;\n"
+            + "            var = svar;\n"
+            + "            svar = t;\n"
+            + "        }\n"
+            + "        private final int[] a = new int[] { i, j };\n"
+            + "    }\n"
+            + "    public Inner createInner() {\n"
+            + "        return new Inner();\n"
+            + "    }\n"
+            + "}"
         );
 
         Class<?> topClass = sc.getClassLoader().loadClass("test.Outer");

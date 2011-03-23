@@ -64,11 +64,11 @@ public final class MultiThreadedIssueTest {
         try {
             final String name = "Calculator_" + version.getAndAdd(1);
             return (Calculator) ClassBodyEvaluator.createFastClassBodyEvaluator(
-                    new Scanner(name, new StringReader(javaCode)),
-                    name,
-                    null,
-                    new Class[]{Calculator.class},
-                    Thread.currentThread().getContextClassLoader()
+                new Scanner(name, new StringReader(javaCode)),
+                name,
+                null,
+                new Class[]{Calculator.class},
+                Thread.currentThread().getContextClassLoader()
             );
         } catch (Exception e) {
             e.printStackTrace();

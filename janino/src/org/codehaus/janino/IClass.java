@@ -164,7 +164,7 @@ public abstract class IClass {
         IMethod[] methods = (IMethod[]) this.declaredIMethodCache.get(methodName);
         return methods == null ? IClass.NO_IMETHODS : methods;
     }
-    /*package*/ Map declaredIMethodCache = null; // String methodName => IMethod[]
+    Map declaredIMethodCache = null; // String methodName => IMethod[]
 
     /**
      * Returns all methods declared in the class or interface, its superclasses and its

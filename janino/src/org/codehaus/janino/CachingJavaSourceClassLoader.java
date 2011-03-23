@@ -79,9 +79,9 @@ public class CachingJavaSourceClassLoader extends JavaSourceClassLoader {
         this(
             parentClassLoader,                           // parentClassLoader
             (                                            // sourceFinder
-                optionalSourcePath == null ?
-                (ResourceFinder) new DirectoryResourceFinder(new File(".")) :
-                (ResourceFinder) new PathResourceFinder(optionalSourcePath)
+                optionalSourcePath == null
+                ? (ResourceFinder) new DirectoryResourceFinder(new File("."))
+                : (ResourceFinder) new PathResourceFinder(optionalSourcePath)
             ),
             optionalCharacterEncoding,                   // optionalCharacterEncoding
             new DirectoryResourceFinder(cacheDirectory), // classFileCacheResourceFinder

@@ -372,7 +372,7 @@ public final class Java {
         private final List     declaredClassesAndInterfaces = new ArrayList(); // MemberTypeDeclaration
         private Scope          enclosingScope = null;
 
-        /*package*/ IClass resolvedType = null;
+        IClass resolvedType = null;
 
         public AbstractTypeDeclaration(
             Location location,
@@ -729,11 +729,7 @@ public final class Java {
             );
 
             // Check for forbidden modifiers (JLS 7.6).
-            if ((modifiers & (
-                Mod.PROTECTED |
-                Mod.PRIVATE |
-                Mod.STATIC
-            )) != 0) {
+            if ((modifiers & (Mod.PROTECTED | Mod.PRIVATE | Mod.STATIC)) != 0) {
                 this.throwCompileException(
                     "Modifiers \"protected\", \"private\" and \"static\" not allowed in package member class "
                     + "declaration"
@@ -880,11 +876,7 @@ public final class Java {
             );
 
             // Check for forbidden modifiers (JLS 7.6).
-            if ((modifiers & (
-                Mod.PROTECTED |
-                Mod.PRIVATE |
-                Mod.STATIC
-            )) != 0) {
+            if ((modifiers & (Mod.PROTECTED | Mod.PRIVATE | Mod.STATIC)) != 0) {
                 this.throwCompileException(
                     "Modifiers \"protected\", \"private\" and \"static\" not allowed in package member interface "
                     + "declaration"
@@ -1509,7 +1501,7 @@ public final class Java {
         public final BlockStatement body;
 
         public ForStatement(
-            Location location,
+            Location       location,
             BlockStatement optionalInit,
             Rvalue         optionalCondition,
             Rvalue[]       optionalUpdate,
@@ -1690,9 +1682,11 @@ public final class Java {
             int x = this.offset % 4;
             if (x != 0) {
                 CodeContext ca = this.getCodeContext();
-                ca.pushInserter(this); {
+                ca.pushInserter(this);
+                {
                     ca.makeSpace((short) -1, 4 - x);
-                } ca.popInserter();
+                }
+                ca.popInserter();
             }
         }
     }
@@ -1979,16 +1973,26 @@ public final class Java {
 
         public String toString() {
             switch (this.index) {
-                case BasicType.VOID:    return "void";
-                case BasicType.BYTE:    return "byte";
-                case BasicType.SHORT:   return "short";
-                case BasicType.CHAR:    return "char";
-                case BasicType.INT:     return "int";
-                case BasicType.LONG:    return "long";
-                case BasicType.FLOAT:   return "float";
-                case BasicType.DOUBLE:  return "double";
-                case BasicType.BOOLEAN: return "boolean";
-                default: throw new JaninoRuntimeException("Invalid index " + this.index);
+            case BasicType.VOID:
+                return "void";
+            case BasicType.BYTE:
+                return "byte";
+            case BasicType.SHORT:
+                return "short";
+            case BasicType.CHAR:
+                return "char";
+            case BasicType.INT:
+                return "int";
+            case BasicType.LONG:
+                return "long";
+            case BasicType.FLOAT:
+                return "float";
+            case BasicType.DOUBLE:
+                return "double";
+            case BasicType.BOOLEAN:
+                return "boolean";
+            default:
+                throw new JaninoRuntimeException("Invalid index " + this.index);
             }
         }
 
@@ -2476,11 +2480,7 @@ public final class Java {
 
         // Implement "Atom".
         public String toString() {
-            return (
-                this.pre ?
-                this.operator + this.operand :
-                this.operand + this.operator
-            );
+            return this.pre ? this.operator + this.operand : this.operand + this.operator;
         }
 
         public void accept(Visitor.AtomVisitor visitor) { visitor.visitCrement(this); }
@@ -2669,10 +2669,7 @@ public final class Java {
             for (;;) {
                 operands.add(x.rhs);
                 Rvalue lhs = x.lhs;
-                if (
-                    lhs instanceof BinaryOperation &&
-                    ((BinaryOperation) lhs).op == this.op
-                ) {
+                if (lhs instanceof BinaryOperation && ((BinaryOperation) lhs).op == this.op) {
                     x = (BinaryOperation) lhs;
                 } else {
                     operands.add(lhs);
@@ -2854,11 +2851,7 @@ public final class Java {
         public final Rvalue[] arguments;
         public final String methodName;
 
-        protected Invocation(
-            Location location,
-            String methodName,
-            Rvalue[] arguments
-        ) {
+        protected Invocation(Location location, String methodName, Rvalue[] arguments) {
             super(location);
             this.methodName = methodName;
             this.arguments = arguments;
@@ -2958,10 +2951,7 @@ public final class Java {
     public static final class ParameterAccess extends Rvalue {
         public final FunctionDeclarator.FormalParameter formalParameter;
 
-        public ParameterAccess(
-            Location             location,
-            FunctionDeclarator.FormalParameter formalParameter
-        ) {
+        public ParameterAccess(Location location, FunctionDeclarator.FormalParameter formalParameter) {
             super(location);
             this.formalParameter   = formalParameter;
         }

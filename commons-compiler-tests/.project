@@ -24,7 +24,7 @@
 		<link>
 			<name>jdk1.6.0_17-jre-lib-logging.properties</name>
 			<type>1</type>
-			<location>/home/fowles/C::/Program Files/Java/jdk1.6.0_17/jre/lib/logging.properties</location>
+			<location>C:/home/fowles/C::/Program Files/Java/jdk1.6.0_17/jre/lib/logging.properties</location>
 		</link>
 	</linkedResources>
 </projectDescription>

@@ -111,15 +111,33 @@ public final class Descriptor {
                 idx = idx2;
             }
             break;
-        case 'V': sb.append("void");    break;
-        case 'B': sb.append("byte");    break;
-        case 'C': sb.append("char");    break;
-        case 'D': sb.append("double");  break;
-        case 'F': sb.append("float");   break;
-        case 'I': sb.append("int");     break;
-        case 'J': sb.append("long");    break;
-        case 'S': sb.append("short");   break;
-        case 'Z': sb.append("boolean"); break;
+        case 'V':
+            sb.append("void");
+            break;
+        case 'B':
+            sb.append("byte");
+            break;
+        case 'C':
+            sb.append("char");
+            break;
+        case 'D':
+            sb.append("double");
+            break;
+        case 'F':
+            sb.append("float");
+            break;
+        case 'I':
+            sb.append("int");
+            break;
+        case 'J':
+            sb.append("long");
+            break;
+        case 'S':
+            sb.append("short");
+            break;
+        case 'Z':
+            sb.append("boolean");
+            break;
         default:
             throw new JaninoRuntimeException("Invalid descriptor \"" + d + "\"");
         }
@@ -156,15 +174,15 @@ public final class Descriptor {
         String res = (String) Descriptor.descriptorToClassName.get(d);
         if (res != null) { return res; }
 
-            char firstChar = d.charAt(0);
-            if (firstChar == 'L' && d.endsWith(";")) {
-                // Class or interface -- convert "Ljava/lang/String;" to "java.lang.String".
-                return d.substring(1, d.length() - 1).replace('/', '.');
-            }
-            if (firstChar == '[') {
-                // Array type -- convert "[Ljava/lang/String;" to "[Ljava.lang.String;".
-                return d.replace('/', '.');
-            }
+        char firstChar = d.charAt(0);
+        if (firstChar == 'L' && d.endsWith(";")) {
+            // Class or interface -- convert "Ljava/lang/String;" to "java.lang.String".
+            return d.substring(1, d.length() - 1).replace('/', '.');
+        }
+        if (firstChar == '[') {
+            // Array type -- convert "[Ljava/lang/String;" to "[Ljava.lang.String;".
+            return d.replace('/', '.');
+        }
         throw new JaninoRuntimeException("(Invalid field descriptor \"" + d + "\")");
     }
 

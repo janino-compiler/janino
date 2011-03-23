@@ -351,9 +351,13 @@ public class UnparseTests {
         if (interfaceMod) {
             modifier |= Mod.INTERFACE;
         }
-        Java.PackageMemberInterfaceDeclaration decl =
-            new Java.PackageMemberInterfaceDeclaration(null, "foo",
-                modifier, "Foo", new Type[0]);
+        Java.PackageMemberInterfaceDeclaration decl = new Java.PackageMemberInterfaceDeclaration(
+            null,
+            "foo",
+            modifier,
+            "Foo",
+            new Type[0]
+        );
         StringWriter sw = new StringWriter();
         UnparseVisitor uv = new UnparseVisitor(sw);
         decl.accept(uv);

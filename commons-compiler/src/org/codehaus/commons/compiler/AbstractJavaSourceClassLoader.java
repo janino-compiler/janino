@@ -73,6 +73,9 @@ public abstract class AbstractJavaSourceClassLoader extends ClassLoader {
         this.optionalProtectionDomainFactory = optionalProtectionDomainFactory;
     }
 
+    /**
+     * @see AbstractJavaSourceClassLoader#setProtectionDomainFactory
+     */
     public interface ProtectionDomainFactory {
 
         /**

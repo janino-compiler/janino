@@ -382,12 +382,14 @@ public class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEval
             scanner,                                // scanner
             IClassBodyEvaluator.DEFAULT_CLASS_NAME, // className
             (                                       // optionalExtendedType
-                optionalBaseType != null && !optionalBaseType.isInterface() ?
-                optionalBaseType : null
+                optionalBaseType != null && !optionalBaseType.isInterface()
+                ? optionalBaseType
+                : null
             ),
             (                                       // implementedTypes
-                optionalBaseType != null && optionalBaseType.isInterface() ?
-                new Class[] { optionalBaseType } : new Class[0]
+                optionalBaseType != null && optionalBaseType.isInterface()
+                ? new Class[] { optionalBaseType }
+                : new Class[0]
             ),
             optionalParentClassLoader               // optionalParentClassLoader
         );

@@ -71,10 +71,10 @@ public class EvaluatorTests {
         String funct2 = "return a + b;";
         String funct3 = "return 0;";
         IScriptEvaluator se2 = compilerFactory.newScriptEvaluator();
-        se2.setReturnTypes(new Class[] { double.class , double.class});
+        se2.setReturnTypes(new Class[] { double.class , double.class });
         se2.setMethodNames(new String[] { "funct2", "funct3" });
         String[][] params2 = { {"a", "b"}, {} };
-        Class<?>[][] paramsType2 = { {double.class, double.class}, {} };
+        Class<?>[][] paramsType2 = { { double.class, double.class }, {} };
         se2.setParameters(params2, paramsType2);
         se2.setStaticMethod(new boolean[] { true, true });
         se2.cook(new String[] {funct2, funct3});
@@ -130,11 +130,12 @@ public class EvaluatorTests {
         IClassBodyEvaluator cbe = compilerFactory.newClassBodyEvaluator();
         cbe.setImplementedInterfaces(new Class[] { Runnable.class });
         cbe.cook(
-            "import java.util.*;\n" +
-            "public void run() {\n" +
-            "    new ArrayList();\n" +
-            "    new other_package.Foo(7);\n" +
-            "}\n"
+            ""
+            + "import java.util.*;\n"
+            + "public void run() {\n"
+            + "    new ArrayList();\n"
+            + "    new other_package.Foo(7);\n"
+            + "}\n"
         );
         ((Runnable) cbe.getClazz().newInstance()).run();
     }
@@ -145,9 +146,10 @@ public class EvaluatorTests {
             IClassBodyEvaluator cbe = compilerFactory.newClassBodyEvaluator();
             cbe.setImplementedInterfaces(new Class[] { Runnable.class });
             cbe.cook(
-                "public void m() { // Implement \"m()\" instead of \"run()\".\n" +
-                "    System.out.println(\"Got here\");\n" +
-                "}"
+                ""
+                + "public void m() { // Implement \"m()\" instead of \"run()\".\n"
+                + "    System.out.println(\"Got here\");\n"
+                + "}"
             );
             fail("CompileException expected");
         } catch (CompileException ex) {
@@ -205,36 +207,38 @@ public class EvaluatorTests {
     @Test
     public void testAccessingCompilingClass() throws Exception {
         ISimpleCompiler sc = compilerFactory.newSimpleCompiler();
-        sc.cook("package test.simple;\n" +
-                "public class L0 {\n" +
-                "    public static class L1 {\n" +
-                "        public static class L2 { }\n" +
-                "    } \n" +
-                "    public Class getL0_1() {\n" +
-                "        return L0.class;\n" +
-                "    }\n" +
-                "    public Class getL0_2() {\n" +
-                "        return test.simple.L0.class;\n" +
-                "    }\n" +
-                "    public Class getL1_1() {\n" +
-                "        return L1.class;\n" +
-                "    }\n" +
-                "    public Class getL1_2() {\n" +
-                "        return L0.L1.class;\n" +
-                "    }\n" +
-                "    public Class getL1_3() {\n" +
-                "        return test.simple.L0.L1.class;\n" +
-                "    }\n" +
-                "    public Class getL2_1() {\n" +
-                "        return L1.L2.class;\n" +
-                "    }\n" +
-                "    public Class getL2_2() {\n" +
-                "        return L0.L1.L2.class;\n" +
-                "    }\n" +
-                "    public Class getL2_3() {\n" +
-                "        return test.simple.L0.L1.L2.class;\n" +
-                "    }\n" +
-                "}"
+        sc.cook(
+            ""
+            + "package test.simple;\n"
+            + "public class L0 {\n"
+            + "    public static class L1 {\n"
+            + "        public static class L2 { }\n"
+            + "    } \n"
+            + "    public Class getL0_1() {\n"
+            + "        return L0.class;\n"
+            + "    }\n"
+            + "    public Class getL0_2() {\n"
+            + "        return test.simple.L0.class;\n"
+            + "    }\n"
+            + "    public Class getL1_1() {\n"
+            + "        return L1.class;\n"
+            + "    }\n"
+            + "    public Class getL1_2() {\n"
+            + "        return L0.L1.class;\n"
+            + "    }\n"
+            + "    public Class getL1_3() {\n"
+            + "        return test.simple.L0.L1.class;\n"
+            + "    }\n"
+            + "    public Class getL2_1() {\n"
+            + "        return L1.L2.class;\n"
+            + "    }\n"
+            + "    public Class getL2_2() {\n"
+            + "        return L0.L1.L2.class;\n"
+            + "    }\n"
+            + "    public Class getL2_3() {\n"
+            + "        return test.simple.L0.L1.L2.class;\n"
+            + "    }\n"
+            + "}"
         );
         Class<?>[] exp = new Class[] {
             sc.getClassLoader().loadClass("test.simple.L0"),
@@ -264,21 +268,22 @@ public class EvaluatorTests {
     public void testDivByZero() throws Exception {
         ISimpleCompiler sc = compilerFactory.newSimpleCompiler();
         sc.cook(
-            "package test;\n" +
-            "public class Test {\n" +
-            "    public int runIntDiv() {\n" +
-            "        return 1 / 0;\n" +
-            "    }\n" +
-            "    public int runIntMod() {\n" +
-            "        return 1 % 0;\n" +
-            "    }\n" +
-            "    public long runLongDiv() {\n" +
-            "        return 1L / 0;\n" +
-            "    }\n" +
-            "    public long runLongMod() {\n" +
-            "        return 1L % 0;\n" +
-            "    }\n" +
-            "}"
+            ""
+            + "package test;\n"
+            + "public class Test {\n"
+            + "    public int runIntDiv() {\n"
+            + "        return 1 / 0;\n"
+            + "    }\n"
+            + "    public int runIntMod() {\n"
+            + "        return 1 % 0;\n"
+            + "    }\n"
+            + "    public long runLongDiv() {\n"
+            + "        return 1L / 0;\n"
+            + "    }\n"
+            + "    public long runLongMod() {\n"
+            + "        return 1L % 0;\n"
+            + "    }\n"
+            + "}"
         );
 
 
@@ -302,15 +307,16 @@ public class EvaluatorTests {
     public void testTrinaryOptimize() throws Exception {
         ISimpleCompiler sc = compilerFactory.newSimpleCompiler();
         sc.cook(
-            "package test;\n" +
-            "public class Test {\n" +
-            "    public int runTrue() {\n" +
-            "        return true ? -1 : 1;\n" +
-            "    }\n" +
-            "    public int runFalse() {\n" +
-            "        return false ? -1 : 1;\n" +
-            "    }\n" +
-            "}"
+            ""
+            + "package test;\n"
+            + "public class Test {\n"
+            + "    public int runTrue() {\n"
+            + "        return true ? -1 : 1;\n"
+            + "    }\n"
+            + "    public int runFalse() {\n"
+            + "        return false ? -1 : 1;\n"
+            + "    }\n"
+            + "}"
         );
 
         Class<?> c = sc.getClassLoader().loadClass("test.Test");
@@ -344,27 +350,28 @@ public class EvaluatorTests {
     @Test
     public void testHandlingNaN() throws Exception {
         String prog =
-            "package test;\n" +
-            "public class Test {\n" +
-                "public static boolean compare(double lhs, double rhs, String comp) {" +
-                    "if (comp == \"==\") { return lhs == rhs; }" +
-                    "if (comp == \"!=\") { return lhs != rhs; }" +
-                    "if (comp == \"<\" ) { return lhs < rhs; }" +
-                    "if (comp == \"<=\") { return lhs <= rhs; }" +
-                    "if (comp == \">\" ) { return lhs < rhs; }" +
-                    "if (comp == \">=\") { return lhs <= rhs; }" +
-                    "throw new RuntimeException(\"Unsupported comparison\");" +
-                "}" +
-                "public static boolean compare(float lhs, float rhs, String comp) {" +
-                    "if (comp == \"==\") { return lhs == rhs; }" +
-                    "if (comp == \"!=\") { return lhs != rhs; }" +
-                    "if (comp == \"<\" ) { return lhs < rhs; }" +
-                    "if (comp == \"<=\") { return lhs <= rhs; }" +
-                    "if (comp == \">\" ) { return lhs < rhs; }" +
-                    "if (comp == \">=\") { return lhs <= rhs; }" +
-                    "throw new RuntimeException(\"Unsupported comparison\");" +
-                "}" +
-            "}";
+            ""
+            + "package test;\n"
+            + "public class Test {\n"
+            + "    public static boolean compare(double lhs, double rhs, String comp) {"
+            + "        if (comp == \"==\") { return lhs == rhs; }"
+            + "        if (comp == \"!=\") { return lhs != rhs; }"
+            + "        if (comp == \"<\" ) { return lhs < rhs; }"
+            + "        if (comp == \"<=\") { return lhs <= rhs; }"
+            + "        if (comp == \">\" ) { return lhs < rhs; }"
+            + "        if (comp == \">=\") { return lhs <= rhs; }"
+            + "        throw new RuntimeException(\"Unsupported comparison\");"
+            + "    }"
+            + "    public static boolean compare(float lhs, float rhs, String comp) {"
+            + "        if (comp == \"==\") { return lhs == rhs; }"
+            + "        if (comp == \"!=\") { return lhs != rhs; }"
+            + "        if (comp == \"<\" ) { return lhs < rhs; }"
+            + "        if (comp == \"<=\") { return lhs <= rhs; }"
+            + "        if (comp == \">\" ) { return lhs < rhs; }"
+            + "        if (comp == \">=\") { return lhs <= rhs; }"
+            + "        throw new RuntimeException(\"Unsupported comparison\");"
+            + "    }"
+            + "}";
         ISimpleCompiler sc = compilerFactory.newSimpleCompiler();
         sc.cook(prog);
 
@@ -372,12 +379,12 @@ public class EvaluatorTests {
         Method     dm = c.getMethod("compare", new Class[] { double.class, double.class, String.class });
         Method     fm = c.getMethod("compare", new Class[] { float.class, float.class, String.class });
         Double[][] args = new Double[][] {
-                { new Double(Double.NaN), new Double(Double.NaN) },
-                { new Double(Double.NaN), new Double(1.0) },
-                { new Double(1.0), new Double(Double.NaN) },
-                { new Double(1.0), new Double(2.0) },
-                { new Double(2.0), new Double(1.0) },
-                { new Double(1.0), new Double(1.0) },
+            { new Double(Double.NaN), new Double(Double.NaN) },
+            { new Double(Double.NaN), new Double(1.0) },
+            { new Double(1.0), new Double(Double.NaN) },
+            { new Double(1.0), new Double(2.0) },
+            { new Double(2.0), new Double(1.0) },
+            { new Double(1.0), new Double(1.0) },
         };
         String[] opcode = new String[] { "==", "!=", "<", "<=", ">", ">=" };
         for (int opIdx = 0; opIdx < opcode.length; ++opIdx) {
@@ -394,9 +401,9 @@ public class EvaluatorTests {
                     msg = "float: " + msg;
                     boolean exp = compare(args[argIdx][0].floatValue(), args[argIdx][1].floatValue(), opcode[opIdx]);
                     Object[] objs = new Object[] {
-                            new Float(args[argIdx][0].floatValue()),
-                            new Float(args[argIdx][1].floatValue()),
-                            opcode[opIdx]
+                        new Float(args[argIdx][0].floatValue()),
+                        new Float(args[argIdx][1].floatValue()),
+                        opcode[opIdx]
                     };
                     Object actual = fm.invoke(null, objs);
                     assertEquals(msg, exp, actual);
@@ -407,19 +414,25 @@ public class EvaluatorTests {
 
     @Test
     public void test32kBranchLimit() throws Exception {
-        String preamble =
-            "package test;\n" +
-            "public class Test {\n" +
-            "    public int run() {\n" +
-            "        int res = 0;\n" +
-            "        for(int i = 0; i < 2; ++i) {\n";
-        String middle =
-            "            ++res;\n";
-        String postamble =
-            "        }\n" +
-            "        return res;\n" +
-            "    }\n" +
-            "}";
+        String preamble = (
+            ""
+            + "package test;\n"
+            + "public class Test {\n"
+            + "    public int run() {\n"
+            + "        int res = 0;\n"
+            + "        for(int i = 0; i < 2; ++i) {\n"
+        );
+        String middle = (
+            ""
+            + "            ++res;\n"
+        );
+        String postamble = (
+            ""
+            + "        }\n"
+            + "        return res;\n"
+            + "    }\n"
+            + "}"
+        );
 
         int[] tests = new int[] { 1, 10, 100, Short.MAX_VALUE / 5, Short.MAX_VALUE / 4, Short.MAX_VALUE / 2 };
         for (int i = 0; i < tests.length; ++i) {
@@ -445,12 +458,14 @@ public class EvaluatorTests {
     }
     @Test
     public void test32kConstantPool() throws Exception {
-        String preamble =
-            "package test;\n" +
-            "public class Test {\n";
-        String postamble =
-            "}";
-
+        String preamble = (
+            ""
+            + "package test;\n"
+            + "public class Test {\n"
+        );
+        String postamble = (
+            "}"
+        );
 
         int[] tests = new int[] { 1, 100, 13020 };
         for (int i = 0; i < tests.length; ++i) {
@@ -475,16 +490,23 @@ public class EvaluatorTests {
 
     @Test
     public void testHugeIntArray() throws Exception {
-        String preamble =
-            "package test;\n" +
-            "public class Test {\n" +
-            "    public int[] run() {\n" +
-            "        return 1.0 > 2.0 ? null : new int[] {";
-        String middle = " 123,";
-        String postamble =
-            "        };\n" +
-            "    }\n" +
-            "}";
+        String preamble = (
+            ""
+            + "package test;\n"
+            + "public class Test {\n"
+            + "    public int[] run() {\n"
+            + "        return 1.0 > 2.0 ? null : new int[] {"
+        );
+        String middle = (
+            ""
+            + "            123,"
+        );
+        String postamble = (
+            ""
+            + "        };\n"
+            + "    }\n"
+            + "}"
+        );
 
         int[] tests = new int[] { 1, 10, 8192};
         for (int i = 0; i < tests.length; ++i) {
@@ -509,40 +531,47 @@ public class EvaluatorTests {
 
     @Test
     public void testStaticFieldAccess() throws Exception {
-        assertCompiles(true,
-            "package test;\n" +
-            "public class Test {\n" +
-            "    public static class Inner {\n" +
-            "        public static int i = 0;\n" +
-            "    }\n" +
-            "    public int runTest(Inner in) {\n" +
-            "        return in.i;\n" +
-            "    }\n" +
-            "}"
-        );
+        assertCompiles(true, (
+            ""
+            + "package test;\n"
+            + "public class Test {\n"
+            + "    public static class Inner {\n"
+            + "        public static int i = 0;\n"
+            + "    }\n"
+            + "    public int runTest(Inner in) {\n"
+            + "        return in.i;\n"
+            + "    }\n"
+            + "}"
+        ));
     }
 
     @Test
     public void testWideInstructions() throws Exception {
-        String preamble =
-            "package test;\n" +
-            "public class Test {\n" +
-            "    public static String run() {\n";
-        String middle =
-            "Object o_{0,number,#}; int i_{0,number,#};\n";
-        String postamble =
-            "        int i = (int)0; ++i; i = (int)(i*i);\n" +
-            "        double d = (double)0.0; ++d; d = (double)(d*d);\n" +
-            "        float f = (float)0.0; ++f; f = (float)(f*f);\n" +
-            "        short s = (short)0; ++s; s = (short)(s*s);\n" +
-            "        long l = (long)0; ++l; l = (long)(l*l);\n" +
-            "        boolean b = false; b = !b;\n" +
-            "        Object o = \"hi\"; o = o.toString();\n" +
-            "        String res = o.toString() +\" \"+ i +\" \"+ d +\" \"+  f +\" \"+ s +\" \"+ l +\" \"+ b;\n" +
-            "        try { res = res + \" try\"; } finally { res = res + \" finally\"; }\n" +
-            "        return res;\n" +
-            "    };\n" +
-            "}";
+        String preamble = (
+            ""
+            + "package test;\n"
+            + "public class Test {\n"
+            + "    public static String run() {\n"
+        );
+        String middle = (
+            ""
+            + "        Object o_{0,number,#}; int i_{0,number,#};\n"
+        );
+        String postamble = (
+            ""
+            + "        int i = (int)0; ++i; i = (int)(i*i);\n"
+            + "        double d = (double)0.0; ++d; d = (double)(d*d);\n"
+            + "        float f = (float)0.0; ++f; f = (float)(f*f);\n"
+            + "        short s = (short)0; ++s; s = (short)(s*s);\n"
+            + "        long l = (long)0; ++l; l = (long)(l*l);\n"
+            + "        boolean b = false; b = !b;\n"
+            + "        Object o = \"hi\"; o = o.toString();\n"
+            + "        String res = o.toString() +\" \"+ i +\" \"+ d +\" \"+  f +\" \"+ s +\" \"+ l +\" \"+ b;\n"
+            + "        try { res = res + \" try\"; } finally { res = res + \" finally\"; }\n"
+            + "        return res;\n"
+            + "    };\n"
+            + "}"
+        );
 
         int[] tests = new int[] { 1, 128, };
         for (int i = 0; i < tests.length; ++i) {
@@ -568,19 +597,21 @@ public class EvaluatorTests {
 
     @Test
     public void testInstanceOf() throws Exception {
-        String test =
-            "package test;\n" +
-            "public class Test {\n" +
-            "    public static boolean run(String o) {\n" +
-            "        return o instanceof String;" +
-            "    };\n" +
-            "    public static boolean run(Object o) {\n" +
-            "        return o instanceof String;" +
-            "    };\n" +
-            "    public static boolean run() {\n" +
-            "        return null instanceof String;" +
-            "    };\n" +
-            "}";
+        String test = (
+            ""
+            + "package test;\n"
+            + "public class Test {\n"
+            + "    public static boolean run(String o) {\n"
+            + "        return o instanceof String;"
+            + "    };\n"
+            + "    public static boolean run(Object o) {\n"
+            + "        return o instanceof String;"
+            + "    };\n"
+            + "    public static boolean run() {\n"
+            + "        return null instanceof String;"
+            + "    };\n"
+            + "}"
+        );
 
         ISimpleCompiler sc = compilerFactory.newSimpleCompiler();
         sc.cook(test);
@@ -605,30 +636,33 @@ public class EvaluatorTests {
         OverridesWithDifferingVisibility.test(new Object[] { "asdf" });
 
         // so should this
-        assertCompiles(true,
-            "package test;\n" +
-            "public class Test {\n" +
-            "    public void runTest() {\n" +
-            "       for_sandbox_tests.OverridesWithDifferingVisibility.test(new Object[] { \"asdf\"} );\n" +
-            "    }\n" +
-            "}"
-        );
+        assertCompiles(true, (
+            ""
+            + "package test;\n"
+            + "public class Test {\n"
+            + "    public void runTest() {\n"
+            + "       for_sandbox_tests.OverridesWithDifferingVisibility.test(new Object[] { \"asdf\"} );\n"
+            + "    }\n"
+            + "}\n"
+        ));
     }
 
     @Test
     public void testCovariantReturns() throws Exception {
-        assertCompiles(true,
-                "package test;\n" +
-                "public class Test extends for_sandbox_tests.CovariantReturns {\n" +
-                "    public Test overrideMe() { return this; }\n" +
-                "}"
-        );
-        assertCompiles(false,
-                "package test;\n" +
-                "public class Test2 extends for_sandbox_tests.CovariantReturns {\n" +
-                "    public Integer overrideMe() { return null; }\n" +
-                "}"
-        );
+        assertCompiles(true, (
+            ""
+            + "package test;\n"
+            + "public class Test extends for_sandbox_tests.CovariantReturns {\n"
+            + "    public Test overrideMe() { return this; }\n"
+            + "}"
+        ));
+        assertCompiles(false, (
+            ""
+            + "package test;\n"
+            + "public class Test2 extends for_sandbox_tests.CovariantReturns {\n"
+            + "    public Integer overrideMe() { return null; }\n"
+            + "}"
+        ));
     }
 
     @Test
@@ -640,20 +674,24 @@ public class EvaluatorTests {
     @Test
     public void testAnonymousFieldInitializedByCapture() throws Exception {
         ISimpleCompiler sc = compilerFactory.newSimpleCompiler();
-        sc.cook("public class Top {\n" +
-                "  public Runnable get() {\n" +
-                "    final String foo = \"foo\";\n" +
-                "    final String cow = \"cow\";\n" +
-                "    final String moo = \"moo\";\n" +
-                "    return new Runnable() {\n" +
-                "      public void run() {\n" +
-                "        if (bar == null) {\n" +
-                "          throw new RuntimeException();\n" +
-                "      } }\n" +
-                "      private String bar = foo;\n" +
-                "      private String[] cowparts = { moo, cow };\n" +
-                "    };\n" +
-                "} }"
+        sc.cook(
+            ""
+            + "public class Top {\n"
+            + "    public Runnable get() {\n"
+            + "        final String foo = \"foo\";\n"
+            + "        final String cow = \"cow\";\n"
+            + "        final String moo = \"moo\";\n"
+            + "        return new Runnable() {\n"
+            + "            public void run() {\n"
+            + "               if (bar == null) {\n"
+            + "                   throw new RuntimeException();\n"
+            + "               }\n"
+            + "            }\n"
+            + "            private String bar = foo;\n"
+            + "            private String[] cowparts = { moo, cow };\n"
+            + "        };\n"
+            + "    }\n"
+            + "}\n"
         );
 
         Class<?> topClass = sc.getClassLoader().loadClass("Top");
@@ -667,21 +705,25 @@ public class EvaluatorTests {
     @Test
     public void testNamedFieldInitializedByCapture() throws Exception {
         ISimpleCompiler sc = compilerFactory.newSimpleCompiler();
-        sc.cook("public class Top {\n" +
-                "  public Runnable get() {\n" +
-                "    final String foo = \"foo\";\n" +
-                "    final String cow = \"cow\";\n" +
-                "    final String moo = \"moo\";\n" +
-                "    class R implements Runnable {\n" +
-                "      public void run() {\n" +
-                "        if (bar == null) {\n" +
-                "          throw new RuntimeException();\n" +
-                "      } }\n" +
-                "      private String bar = foo;\n" +
-                "      private String[] cowparts = { moo, cow };\n" +
-                "    }\n" +
-                "    return new R();" +
-                "} }"
+        sc.cook(
+            ""
+            + "public class Top {\n"
+            + "    public Runnable get() {\n"
+            + "        final String foo = \"foo\";\n"
+            + "        final String cow = \"cow\";\n"
+            + "        final String moo = \"moo\";\n"
+            + "        class R implements Runnable {\n"
+            + "            public void run() {\n"
+            + "                if (bar == null) {\n"
+            + "                    throw new RuntimeException();\n"
+            + "                }\n"
+            + "            }\n"
+            + "            private String bar = foo;\n"
+            + "            private String[] cowparts = { moo, cow };\n"
+            + "        }\n"
+            + "        return new R();"
+            + "    }\n"
+            + "}\n"
         );
 
         Class<?> topClass = sc.getClassLoader().loadClass("Top");
@@ -694,21 +736,24 @@ public class EvaluatorTests {
 
     @Test
     public void testAbstractGrandParentsWithCovariantReturns() throws Exception {
-        assertCompiles(true,
-                "public class Top {\n" +
-                "  private static class IndentPrintWriter extends java.io.PrintWriter { " +
-                "    public IndentPrintWriter(java.io.OutputStream os) { super(os); }" +
-                "  }" +
-                "}"
-        );
+        assertCompiles(true, (
+            ""
+            + "public class Top {\n"
+            + "    private static class IndentPrintWriter extends java.io.PrintWriter { "
+            + "        public IndentPrintWriter(java.io.OutputStream os) { super(os); }"
+            + "    }"
+            + "}"
+        ));
     }
 
     @Test
     public void testStringBuilderLength() throws Exception {
         ISimpleCompiler sc = compilerFactory.newSimpleCompiler();
-        sc.cook("public class Top {\n" +
-                "  public int len(StringBuilder sb) { return sb.length(); }" +
-                "}"
+        sc.cook(
+            ""
+            + "public class Top {\n"
+            + "  public int len(StringBuilder sb) { return sb.length(); }\n"
+            + "}\n"
         );
 
         Class<?> topClass = sc.getClassLoader().loadClass("Top");
@@ -727,15 +772,16 @@ public class EvaluatorTests {
     public void testCovariantClone() throws Exception {
         ISimpleCompiler sc = compilerFactory.newSimpleCompiler();
         sc.cook(
-            "package covariant_clone;" +
-            "public class Child extends Middle implements java.lang.Cloneable {" +
-            "    public Child clone() throws java.lang.CloneNotSupportedException {" +
-            "        return new Child();" +
-            "    }" +
-            "    public Child other(long i, Object o) {" +
-            "        return this;" +
-            "    }" +
-            "}"
+            ""
+            + "package covariant_clone;\n"
+            + "public class Child extends Middle implements java.lang.Cloneable {\n"
+            + "    public Child clone() throws java.lang.CloneNotSupportedException {\n"
+            + "        return new Child();\n"
+            + "    }\n"
+            + "    public Child other(long i, Object o) {\n"
+            + "        return this;\n"
+            + "    }\n"
+            + "}\n"
         );
 
         // calling clone directly here would work, we need to trigger a call into the
@@ -751,35 +797,37 @@ public class EvaluatorTests {
 
     @Test
     public void testBaseClassAccess() throws Exception {
-        assertCompiles(true,
-                "    class top extends other_package.ScopingRules {\n" +
-                "        class Inner extends other_package.ScopingRules.ProtectedInner {\n" +
-                "            public void test() {\n" +
-                "                publicMethod();\n" +
-                "            }\n" +
-                "        }\n" +
-                "        \n" +
-                "        public void test() {\n" +
-                "            Inner i = new Inner();\n" +
-                "            i.publicMethod();\n" +
-                "        }\n" +
-                "    }"
-        );
+        assertCompiles(true, (
+            ""
+            + "class top extends other_package.ScopingRules {\n"
+            + "    class Inner extends other_package.ScopingRules.ProtectedInner {\n"
+            + "        public void test() {\n"
+            + "            publicMethod();\n"
+            + "        }\n"
+            + "    }\n"
+            + "\n"
+            + "    public void test() {\n"
+            + "        Inner i = new Inner();\n"
+            + "        i.publicMethod();\n"
+            + "    }\n"
+            + "}\n"
+        ));
     }
 
     @Test
     public void testNullComparator() throws Exception {
-        assertCompiles(true,
-                "    class Test {\n" +
-                "        public void test() {\n" +
-                "            if (null == null) {\n" +
-                "               // success\n" +
-                "            } else if (null != null) {\n" +
-                "                throw new RuntimeException();\n" +
-                "            }\n" +
-                "        }\n" +
-                "    }"
-        );
+        assertCompiles(true, (
+            ""
+            + "class Test {\n"
+            + "    public void test() {\n"
+            + "        if (null == null) {\n"
+            + "           // success\n"
+            + "        } else if (null != null) {\n"
+            + "            throw new RuntimeException();\n"
+            + "        }\n"
+            + "    }\n"
+            + "}\n"
+        ));
     }
 
     public ISimpleCompiler assertCompiles(boolean shouldCompile, CharSequence prog) throws Exception {

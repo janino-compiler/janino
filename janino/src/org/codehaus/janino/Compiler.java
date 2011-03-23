@@ -118,10 +118,12 @@ public class Compiler {
                 verbose = true;
             } else
             if (arg.equals("-g")) {
-                debugSource = debugLines = debugVars = true;
+                debugSource = true;
+                debugLines = true;
+                debugVars = true;
             } else
             if (arg.startsWith("-g:")) {
-                if (arg.indexOf("none")   != -1) debugSource = debugLines = debugVars = false;
+                if (arg.indexOf("none")   != -1) debugSource = (debugLines = (debugVars = false));
                 if (arg.indexOf("source") != -1) debugSource = true;
                 if (arg.indexOf("lines")  != -1) debugLines = true;
                 if (arg.indexOf("vars")   != -1) debugVars = true;
@@ -293,13 +295,16 @@ public class Compiler {
                 classPath
             ),
             (                                             // classFileFinder
-                rebuild ? ResourceFinder.EMPTY_RESOURCE_FINDER :
-                destinationDirectory == Compiler.NO_DESTINATION_DIRECTORY ? Compiler.FIND_NEXT_TO_SOURCE_FILE :
-                new DirectoryResourceFinder(destinationDirectory)
+                rebuild
+                ? ResourceFinder.EMPTY_RESOURCE_FINDER
+                : destinationDirectory == Compiler.NO_DESTINATION_DIRECTORY
+                ? Compiler.FIND_NEXT_TO_SOURCE_FILE
+                : new DirectoryResourceFinder(destinationDirectory)
             ),
             (                                             // classFileCreator
-                destinationDirectory == Compiler.NO_DESTINATION_DIRECTORY ? Compiler.CREATE_NEXT_TO_SOURCE_FILE :
-                new DirectoryResourceCreator(destinationDirectory)
+                destinationDirectory == Compiler.NO_DESTINATION_DIRECTORY
+                ? Compiler.CREATE_NEXT_TO_SOURCE_FILE
+                : new DirectoryResourceCreator(destinationDirectory)
             ),
             optionalCharacterEncoding,                    // optionalCharacterEncoding
             verbose,                                      // verbose
@@ -734,7 +739,7 @@ public class Compiler {
          */
         private IClass defineIClassFromSourceResource(
             Resource sourceResource,
-            String                  className
+            String   className
         ) throws ClassNotFoundException {
 
             // Parse the source file.

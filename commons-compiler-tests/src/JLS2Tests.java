@@ -368,16 +368,17 @@ public class JLS2Tests extends JaninoTestSuite {
     @Test
     public void test_14_20__UnreachableStatements() throws Exception {
         clb(COMP, (
-            "public void test() throws Exception {}\n" +
-            "public void test2() {\n" +
-            "    try {\n" +
-            "        test();\n" +
-            "    } catch (Exception e) {\n" +
-            "        ;\n" +
-            "    } catch (java.io.IOException e) {\n" +
-            "        // This CATCH clause is unreachable.\n" +
-            "    }\n" +
-            "}\n"
+            ""
+            + "public void test() throws Exception {}\n"
+            + "public void test2() {\n"
+            + "    try {\n"
+            + "        test();\n"
+            + "    } catch (Exception e) {\n"
+            + "        ;\n"
+            + "    } catch (java.io.IOException e) {\n"
+            + "        // This CATCH clause is unreachable.\n"
+            + "    }\n"
+            + "}\n"
         ));
     }
 
@@ -422,21 +423,23 @@ public class JLS2Tests extends JaninoTestSuite {
 
         // 15.9.5 Anonymous Class Declarations
         sim(EXEC, (
-            "public class Foo {\n" +
-            "    public static void test() { new Foo().meth(); }\n" +
-            "    private Object meth() {\n" +
-            "        return new Object() {};\n" +
-            "    }\n" +
-            "}\n"
+            ""
+            + "public class Foo {\n"
+            + "    public static void test() { new Foo().meth(); }\n"
+            + "    private Object meth() {\n"
+            + "        return new Object() {};\n"
+            + "    }\n"
+            + "}\n"
         ), "Foo");
         sim(EXEC, (
-            "public class A {\n" +
-            "    public static void test() { new A(); }\n" +
-            "    public A(Object o) {}\n" +
-            "    public A() {\n" +
-            "        this(new Object() {});\n" +
-            "    }\n" +
-            "}\n"
+            ""
+            + "public class A {\n"
+            + "    public static void test() { new A(); }\n"
+            + "    public A(Object o) {}\n"
+            + "    public A() {\n"
+            + "        this(new Object() {});\n"
+            + "    }\n"
+            + "}\n"
         ), "A");
     }
 
@@ -444,36 +447,38 @@ public class JLS2Tests extends JaninoTestSuite {
     public void test_15_11__FieldAccessExpressions() throws Exception {
         // 15.11.2 Accessing Superclass Members using super
         sim(TRUE, (
-            "public class T1            { int x = 1; }\n" +
-            "public class T2 extends T1 { int x = 2; }\n" +
-            "public class T3 extends T2 {\n" +
-            "    int x = 3;\n" +
-            "    public static boolean test() {\n" +
-            "        return new T3().test2();\n" +
-            "    }\n" +
-            "    public boolean test2() {\n" +
-            "        return (\n" +
-            "            x == 3\n" +
-            "            && super.x == 2\n" +
-            "            && T3.super.x == 2\n" +
-            "//            && T2.super.x == 1\n" + // <= Does not work with the SUN JDK 1.6 compiler
-            "            && ((T2) this).x == 2\n" +
-            "            && ((T1) this).x == 1\n" +
-            "        );\n" +
-            "    }\n" +
-            "}\n"
-         ), "T3");
+            ""
+            + "public class T1            { int x = 1; }\n"
+            + "public class T2 extends T1 { int x = 2; }\n"
+            + "public class T3 extends T2 {\n"
+            + "    int x = 3;\n"
+            + "    public static boolean test() {\n"
+            + "        return new T3().test2();\n"
+            + "    }\n"
+            + "    public boolean test2() {\n"
+            + "        return (\n"
+            + "            x == 3\n"
+            + "            && super.x == 2\n"
+            + "            && T3.super.x == 2\n"
+            + "//            && T2.super.x == 1\n" // <= Does not work with the SUN JDK 1.6 compiler
+            + "            && ((T2) this).x == 2\n"
+            + "            && ((T1) this).x == 1\n"
+            + "        );\n"
+            + "    }\n"
+            + "}\n"
+        ), "T3");
     }
 
     @Test
     public void test_15_12__MethodInvocationExpressions() throws Exception {
         // 15.12.2.2 Choose the Most Specific Method
         sim(COMP, (
-            "public class Main { public static boolean test() { return new A().meth(\"x\", \"y\"); } }\n" +
-            "public class A {\n" +
-            "    public boolean meth(String s, Object o) { return true; }\n" +
-            "    public boolean meth(Object o, String s) { return false; }\n" +
-            "}\n"
+            ""
+            + "public class Main { public static boolean test() { return new A().meth(\"x\", \"y\"); } }\n"
+            + "public class A {\n"
+            + "    public boolean meth(String s, Object o) { return true; }\n"
+            + "    public boolean meth(Object o, String s) { return false; }\n"
+            + "}\n"
         ), "Main");
 
         // The following case is tricky: JLS2 says that the invocation is AMBIGUOUS, but only
@@ -484,9 +489,10 @@ public class JLS2Tests extends JaninoTestSuite {
         //
         // See also JANINO-79 and "IClass.IInvocable.isMoreSpecificThan()".
         sim(TRUE, (
-            "public class Main        { public static boolean test()  { return new B().meth(\"x\"); } }\n" +
-            "public class A           { public boolean meth(String s) { return true; } }\n" +
-            "public class B extends A { public boolean meth(Object o) { return false; } }\n"
+            ""
+            + "public class Main        { public static boolean test()  { return new B().meth(\"x\"); } }\n"
+            + "public class A           { public boolean meth(String s) { return true; } }\n"
+            + "public class B extends A { public boolean meth(Object o) { return false; } }\n"
         ), "Main");
     }
 

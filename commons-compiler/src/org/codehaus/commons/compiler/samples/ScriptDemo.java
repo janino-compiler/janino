@@ -60,22 +60,22 @@ public final class ScriptDemo extends DemoBase {
                 optionalDefaultImports = DemoBase.explode(args[++i]);
             } else
            if (arg.equals("-help")) {
-                System.err.println("Usage:");
-                System.err.println("  ScriptDemo { <option> } <script> { <parameter-value> }");
-                System.err.println("Valid options are");
-                System.err.println(" -rt <return-type>                            (default: void)");
-                System.err.println(" -pn <comma-separated-parameter-names>        (default: none)");
-                System.err.println(" -pt <comma-separated-parameter-types>        (default: none)");
-                System.err.println(" -te <comma-separated-thrown-exception-types> (default: none)");
-                System.err.println(" -di <comma-separated-default-imports>        (default: none)");
-                System.err.println(" -help");
-                System.err.println("The number of parameter names, types and values must be identical.");
-                System.exit(0);
-            } else
-            {
-                System.err.println("Invalid command line option \"" + arg + "\"; try \"-help\".");
-                System.exit(1);
-            }
+               System.err.println("Usage:");
+               System.err.println("  ScriptDemo { <option> } <script> { <parameter-value> }");
+               System.err.println("Valid options are");
+               System.err.println(" -rt <return-type>                            (default: void)");
+               System.err.println(" -pn <comma-separated-parameter-names>        (default: none)");
+               System.err.println(" -pt <comma-separated-parameter-types>        (default: none)");
+               System.err.println(" -te <comma-separated-thrown-exception-types> (default: none)");
+               System.err.println(" -di <comma-separated-default-imports>        (default: none)");
+               System.err.println(" -help");
+               System.err.println("The number of parameter names, types and values must be identical.");
+               System.exit(0);
+           } else
+           {
+               System.err.println("Invalid command line option \"" + arg + "\"; try \"-help\".");
+               System.exit(1);
+           }
         }
 
         if (i == args.length) {

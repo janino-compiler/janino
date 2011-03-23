@@ -165,7 +165,7 @@ public interface IExpressionEvaluator extends IScriptEvaluator {
      * <code>public</code>, or with <code>protected</code> or default access in the package of the compiled class (see
      * {@link #setClassName(String)}.
      */
-     Object createFastEvaluator(
+    Object createFastEvaluator(
         String   expression,
         Class    interfaceToImplement,
         String[] parameterNames

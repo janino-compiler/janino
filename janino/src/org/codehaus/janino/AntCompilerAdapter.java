@@ -80,9 +80,9 @@ public class AntCompilerAdapter extends DefaultCompilerAdapter {
 
         // Determine the source path.
         File[] optionalSourcePath = AntCompilerAdapter.pathToFiles(
-            this.compileSourcepath != null ?
-            this.compileSourcepath :
-            this.src
+            this.compileSourcepath != null
+            ? this.compileSourcepath
+            : this.src
         );
 
         // Determine the class path.
@@ -103,7 +103,9 @@ public class AntCompilerAdapter extends DefaultCompilerAdapter {
         // Determine debugging information.
         boolean debugSource, debugLines, debugVars;
         if (!this.debug) {
-            debugSource = debugLines = debugVars = false;
+            debugSource = false;
+            debugLines = false;
+            debugVars = false;
         } else {
             String debugLevel = this.attributes.getDebugLevel();
             if (debugLevel == null) {
@@ -111,7 +113,9 @@ public class AntCompilerAdapter extends DefaultCompilerAdapter {
                 debugLines = true;
                 debugVars = false;
             } else {
-                debugSource = debugLines = debugVars = false;
+                debugSource = false;
+                debugLines = false;
+                debugVars = false;
                 if (debugLevel.indexOf("source") != -1) debugSource = true;
                 if (debugLevel.indexOf("lines") != -1)  debugLines = true;
                 if (debugLevel.indexOf("vars") != -1)   debugVars = true;

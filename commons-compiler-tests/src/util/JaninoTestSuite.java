@@ -195,7 +195,6 @@ public class JaninoTestSuite {
             this.classBodyEvaluator.cook(this.classBody);
         }
 
-        @SuppressWarnings("unchecked")
         protected Object execute() throws Exception {
             return this.classBodyEvaluator.getClazz().getMethod("main", new Class[0]).invoke(null, new Object[0]);
         }

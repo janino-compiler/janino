@@ -105,9 +105,9 @@ public class CompilerTests {
         b.endReporting("Generated " + classFileMap1.size() + " class files.");
 
         b.beginReporting(
-                "Compile Janino again, but with the class files created during the first compilation being available, "
-                + "i.e. only the explicitly given source files should be recompiled"
-            );
+            "Compile Janino again, but with the class files created during the first compilation being available, "
+            + "i.e. only the explicitly given source files should be recompiled"
+        );
         MapResourceCreator classFileResources2 = new MapResourceCreator();
         MapResourceFinder classFileFinder = new MapResourceFinder(classFileMap1);
         classFileFinder.setLastModified(System.currentTimeMillis());
@@ -171,7 +171,7 @@ public class CompilerTests {
             ) throws InvocationTargetException, IllegalAccessException, NoSuchMethodException {
                 return object.getClass().getDeclaredMethod(methodName, parameterTypes).invoke(object, arguments);
             }
-        };
+        }
         Loader l = new Loader();
         Map classFileMap3 = new HashMap();
         {
@@ -233,29 +233,33 @@ public class CompilerTests {
     public void testCompileErrors() throws Exception {
         Map sources = new HashMap();
         sources.put("pkg/A.java", ( // Class A uses class B, C, D.
-            "package pkg;\n" +
-            "public class A {\n" +
-            "    void meth() {\n" +
-            "        new B();\n" +
-            "        new C();\n" +
-            "        new D();\n" +
-            "    }\n" +
-            "}\n"
+            ""
+            + "package pkg;\n"
+            + "public class A {\n"
+            + "    void meth() {\n"
+            + "        new B();\n"
+            + "        new C();\n"
+            + "        new D();\n"
+            + "    }\n"
+            + "}\n"
         ).getBytes());
         sources.put("pkg/B.java", (
-            "package pkg;\n" +
-            "public class B {\n" +
-            "}\n"
+            ""
+            + "package pkg;\n"
+            + "public class B {\n"
+            + "}\n"
         ).getBytes());
         sources.put("pkg/C.java", ( // Class C contains a compile error.
-            "package pkg;\n" +
-            "public class C extends E {\n" + // Compile error, because a class "E" is not defined.
-            "}\n"
+            ""
+            + "package pkg;\n"
+            + "public class C extends E {\n" // Compile error, because a class "E" is not defined.
+            + "}\n"
         ).getBytes());
         sources.put("pkg/D.java", (
-            "package pkg;\n" +
-            "public class D {\n" +
-            "}\n"
+            ""
+            + "package pkg;\n"
+            + "public class D {\n"
+            + "}\n"
         ).getBytes());
         ResourceFinder sourceFinder = new MapResourceFinder(sources);
 

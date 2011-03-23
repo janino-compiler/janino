@@ -221,9 +221,7 @@ public class AstTests {
             )
         );
 
-        createMethod(clazz, body,
-            createByteArrayType()
-        );
+        createMethod(clazz, body, createByteArrayType());
 
         Object res = compileAndEval(cu);
         assertEquals(exp.byteValue(), ((byte[]) res)[0]);
@@ -299,12 +297,7 @@ public class AstTests {
             )
         );
 
-        createMethod(clazz, body,
-            new Java.ReferenceType(
-                getLocation(),
-                new String[] { "java", "lang", "Class" }
-            )
-        );
+        createMethod(clazz, body, new Java.ReferenceType(getLocation(), new String[] { "java", "lang", "Class" }));
 
         SimpleCompiler compiler = new SimpleCompiler();
         compiler.cook(cu);

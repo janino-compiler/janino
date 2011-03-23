@@ -37,25 +37,22 @@ public class DemoBase {
     protected DemoBase() {}
 
     public static Object createObject(
-        Class type,
+        Class  type,
         String value
-    ) throws
-    NoSuchMethodException,
-    InstantiationException,
-    InvocationTargetException,
-    IllegalAccessException {
+    ) throws NoSuchMethodException, InstantiationException, InvocationTargetException, IllegalAccessException {
 
         // Wrap primitive parameters.
         if (type.isPrimitive()) {
             type = (
-                type == boolean.class ? Boolean.class   :
-                type == char.class    ? Character.class :
-                type == byte.class    ? Byte.class      :
-                type == short.class   ? Short.class     :
-                type == int.class     ? Integer.class   :
-                type == long.class    ? Long.class      :
-                type == float.class   ? Float.class     :
-                type == double.class  ? Double.class    : void.class
+                type == boolean.class ? Boolean.class
+                : type == char.class ? Character.class
+                : type == byte.class ? Byte.class
+                : type == short.class ? Short.class
+                : type == int.class ? Integer.class
+                : type == long.class ? Long.class
+                : type == float.class ? Float.class
+                : type == double.class ? Double.class
+                : void.class
             );
         }
 

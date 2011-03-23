@@ -28,6 +28,9 @@ package org.codehaus.commons.compiler;
 
 import java.io.*;
 
+/**
+ * Base class for a simple {@link ICookable}.
+ */
 public abstract class Cookable implements ICookable {
 
     public abstract void cook(

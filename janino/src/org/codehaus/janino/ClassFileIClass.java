@@ -445,10 +445,10 @@ public class ClassFileIClass extends IClass {
 
     private static Access accessFlags2Access(short accessFlags) {
         return (
-            (accessFlags & Mod.PUBLIC)    != 0 ? Access.PUBLIC    :
-            (accessFlags & Mod.PROTECTED) != 0 ? Access.PROTECTED :
-            (accessFlags & Mod.PRIVATE)   != 0 ? Access.PRIVATE   :
-            Access.DEFAULT
+            (accessFlags & Mod.PUBLIC)    != 0 ? Access.PUBLIC
+            : (accessFlags & Mod.PROTECTED) != 0 ? Access.PROTECTED
+            : (accessFlags & Mod.PRIVATE)   != 0 ? Access.PRIVATE
+            : Access.DEFAULT
         );
     }
 }

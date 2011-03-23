@@ -106,16 +106,16 @@ public abstract class IClassLoader {
 
         if (Descriptor.isPrimitive(fieldDescriptor)) {
             return (
-                fieldDescriptor.equals(Descriptor.VOID_)    ? IClass.VOID    :
-                fieldDescriptor.equals(Descriptor.BYTE_)    ? IClass.BYTE    :
-                fieldDescriptor.equals(Descriptor.CHAR_)    ? IClass.CHAR    :
-                fieldDescriptor.equals(Descriptor.DOUBLE_)  ? IClass.DOUBLE  :
-                fieldDescriptor.equals(Descriptor.FLOAT_)   ? IClass.FLOAT   :
-                fieldDescriptor.equals(Descriptor.INT_)     ? IClass.INT     :
-                fieldDescriptor.equals(Descriptor.LONG_)    ? IClass.LONG    :
-                fieldDescriptor.equals(Descriptor.SHORT_)   ? IClass.SHORT   :
-                fieldDescriptor.equals(Descriptor.BOOLEAN_) ? IClass.BOOLEAN :
-                null
+                fieldDescriptor.equals(Descriptor.VOID_) ? IClass.VOID
+                : fieldDescriptor.equals(Descriptor.BYTE_) ? IClass.BYTE
+                : fieldDescriptor.equals(Descriptor.CHAR_) ? IClass.CHAR
+                : fieldDescriptor.equals(Descriptor.DOUBLE_) ? IClass.DOUBLE
+                : fieldDescriptor.equals(Descriptor.FLOAT_) ? IClass.FLOAT
+                : fieldDescriptor.equals(Descriptor.INT_) ? IClass.INT
+                : fieldDescriptor.equals(Descriptor.LONG_) ? IClass.LONG
+                : fieldDescriptor.equals(Descriptor.SHORT_) ? IClass.SHORT
+                : fieldDescriptor.equals(Descriptor.BOOLEAN_) ? IClass.BOOLEAN
+                : null
             );
         }
 
