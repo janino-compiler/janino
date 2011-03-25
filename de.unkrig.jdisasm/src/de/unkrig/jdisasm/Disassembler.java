@@ -1200,8 +1200,8 @@ public class Disassembler {
         "104 imul",
         "116 ineg",
         "193 instanceof      class2",
-//      "186 invokedynamic   invokedynamic2 unusedbyte unusedbyte", // For Java 7; see http://cr.openjdk.java.net/~jrose/pres/indy-javadoc-mlvm/java/lang/invoke/package-summary.html
-        "185 invokeinterface interfacemethodref2 unusedbyte unusedbyte",
+//      "186 invokedynamic   invokedynamic2", // For Java 7; see http://cr.openjdk.java.net/~jrose/pres/indy-javadoc-mlvm/java/lang/invoke/package-summary.html
+        "185 invokeinterface interfacemethodref2",
         "183 invokespecial   methodref2",
         "184 invokestatic    methodref2",
         "182 invokevirtual   methodref2",
@@ -1402,6 +1402,8 @@ public class Disassembler {
                                 ConstantInterfaceMethodrefInfo imr = cp.getConstantInterfaceMethodrefInfo(
                                     dis.readShort()
                                 );
+                                dis.readByte();
+                                dis.readByte();
                                 return (
                                     ' '
                                     + d.beautify(decodeMethodDescriptor(imr.nameAndType.descriptor.bytes).toString(
@@ -1510,20 +1512,6 @@ public class Disassembler {
                                 short branchTarget = (short) (instructionOffset + dis.readInt());
                                 d.branchTargets.add(branchTarget);
                                 return " " + (0xffff & branchTarget);
-                            }
-                        };
-                    } else
-                    if (s.equals("unusedbyte")) {
-                        operand = new Operand() {
-                            public String disasm(
-                                DataInputStream dis,
-                                short           instructionOffset,
-                                Method          method,
-                                ConstantPool    cp,
-                                Disassembler    d
-                            ) throws IOException {
-                                dis.readByte();
-                                return "";
                             }
                         };
                     } else
