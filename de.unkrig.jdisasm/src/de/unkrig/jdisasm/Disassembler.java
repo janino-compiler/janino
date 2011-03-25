@@ -1074,7 +1074,7 @@ public class Disassembler {
         "50  aaload",
         "83  aastore",
         "1   aconst_null",
-        "25  aload           localvariablearrayindex1",
+        "25  aload           localvariableindex1",
         "42  aload_0         implicitlocalvariableindex",
         "43  aload_1         implicitlocalvariableindex",
         "44  aload_2         implicitlocalvariableindex",
@@ -1082,7 +1082,7 @@ public class Disassembler {
         "189 anewarray       class2",
         "176 areturn",
         "190 arraylength",
-        "58  astore          localvariablearrayindex1",
+        "58  astore          localvariableindex1",
         "75  astore_0        implicitlocalvariableindex",
         "76  astore_1        implicitlocalvariableindex",
         "77  astore_2        implicitlocalvariableindex",
@@ -1105,7 +1105,7 @@ public class Disassembler {
         "14  dconst_0",
         "15  dconst_1",
         "111 ddiv",
-        "24  dload           localvariablearrayindex1",
+        "24  dload           localvariableindex1",
         "38  dload_0         implicitlocalvariableindex",
         "39  dload_1         implicitlocalvariableindex",
         "40  dload_2         implicitlocalvariableindex",
@@ -1114,7 +1114,7 @@ public class Disassembler {
         "119 dneg",
         "115 drem",
         "175 dreturn",
-        "57  dstore          localvariablearrayindex1",
+        "57  dstore          localvariableindex1",
         "71  dstore_0        implicitlocalvariableindex",
         "72  dstore_1        implicitlocalvariableindex",
         "73  dstore_2        implicitlocalvariableindex",
@@ -1138,7 +1138,7 @@ public class Disassembler {
         "12  fconst_1",
         "13  fconst_2",
         "110 fdiv",
-        "23  fload           localvariablearrayindex1",
+        "23  fload           localvariableindex1",
         "34  fload_0         implicitlocalvariableindex",
         "35  fload_1         implicitlocalvariableindex",
         "36  fload_2         implicitlocalvariableindex",
@@ -1147,7 +1147,7 @@ public class Disassembler {
         "118 fneg",
         "114 frem",
         "174 freturn",
-        "56  fstore          localvariablearrayindex1",
+        "56  fstore          localvariableindex1",
         "67  fstore_0        implicitlocalvariableindex",
         "68  fstore_1        implicitlocalvariableindex",
         "69  fstore_2        implicitlocalvariableindex",
@@ -1191,8 +1191,8 @@ public class Disassembler {
         "158 ifle            branchoffset2",
         "199 ifnonnull       branchoffset2",
         "198 ifnull          branchoffset2",
-        "132 iinc            localvariablearrayindex1 signedbyte",
-        "21  iload           localvariablearrayindex1",
+        "132 iinc            localvariableindex1 signedbyte",
+        "21  iload           localvariableindex1",
         "26  iload_0         implicitlocalvariableindex",
         "27  iload_1         implicitlocalvariableindex",
         "28  iload_2         implicitlocalvariableindex",
@@ -1210,7 +1210,7 @@ public class Disassembler {
         "172 ireturn",
         "120 ishl",
         "122 ishr",
-        "54  istore          localvariablearrayindex1",
+        "54  istore          localvariableindex1",
         "59  istore_0        implicitlocalvariableindex",
         "60  istore_1        implicitlocalvariableindex",
         "61  istore_2        implicitlocalvariableindex",
@@ -1234,7 +1234,7 @@ public class Disassembler {
         "19  ldc_w           intfloatclassstring2",
         "20  ldc2_w          longdouble2",
         "109 ldiv",
-        "22  lload           localvariablearrayindex1",
+        "22  lload           localvariableindex1",
         "30  lload_0         implicitlocalvariableindex",
         "31  lload_1         implicitlocalvariableindex",
         "32  lload_2         implicitlocalvariableindex",
@@ -1247,7 +1247,7 @@ public class Disassembler {
         "173 lreturn",
         "121 lshl",
         "123 lshr",
-        "55  lstore          localvariablearrayindex1",
+        "55  lstore          localvariableindex1",
         "63  lstore_0        implicitlocalvariableindex",
         "64  lstore_1        implicitlocalvariableindex",
         "65  lstore_2        implicitlocalvariableindex",
@@ -1265,7 +1265,7 @@ public class Disassembler {
         "88  pop2",
         "181 putfield        fieldref2",
         "179 putstatic       fieldref2",
-        "169 ret             localvariablearrayindex1",
+        "169 ret             localvariableindex1",
         "177 return",
         "53  saload",
         "86  sastore",
@@ -1275,18 +1275,18 @@ public class Disassembler {
         "196 wide            wide",
     };
     private static final String[] wideInstructions = new String[] {
-        "21  iload           localvariablearrayindex2",
-        "23  fload           localvariablearrayindex2",
-        "25  aload           localvariablearrayindex2",
-        "22  lload           localvariablearrayindex2",
-        "24  dload           localvariablearrayindex2",
-        "54  istore          localvariablearrayindex2",
-        "56  fstore          localvariablearrayindex2",
-        "58  astore          localvariablearrayindex2",
-        "55  lstore          localvariablearrayindex2",
-        "57  dstore          localvariablearrayindex2",
-        "169 ret             localvariablearrayindex2",
-        "132 iinc            localvariablearrayindex2 signedshort",
+        "21  iload           localvariableindex2",
+        "23  fload           localvariableindex2",
+        "25  aload           localvariableindex2",
+        "22  lload           localvariableindex2",
+        "24  dload           localvariableindex2",
+        "54  istore          localvariableindex2",
+        "56  fstore          localvariableindex2",
+        "58  astore          localvariableindex2",
+        "55  lstore          localvariableindex2",
+        "57  dstore          localvariableindex2",
+        "169 ret             localvariableindex2",
+        "132 iinc            localvariableindex2 signedshort",
     };
     private static final Instruction[] opcodeToInstruction     = new Instruction[256];
     private static final Instruction[] opcodeToWideInstruction = new Instruction[256];
@@ -1432,7 +1432,7 @@ public class Disassembler {
                             }
                         };
                     } else
-                    if (s.equals("localvariablearrayindex1")) {
+                    if (s.equals("localvariableindex1")) {
                         operand = new Operand() {
                             public String disasm(
                                 DataInputStream dis,
@@ -1451,7 +1451,7 @@ public class Disassembler {
                             }
                         };
                     } else
-                    if (s.equals("localvariablearrayindex2")) {
+                    if (s.equals("localvariableindex2")) {
                         operand = new Operand() {
                             public String disasm(
                                 DataInputStream dis,
