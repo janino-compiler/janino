@@ -130,8 +130,8 @@ public class Disassembler {
     private boolean     hideVars;
 
     // "" for the default package; with a trailing period otherwise.
-    private String         thisClassPackageName;
-    private HashSet<Short> branchTargets;
+    private String           thisClassPackageName;
+    private HashSet<Integer> branchTargets;
 
     private static final List<ParameterAnnotation> NO_PARAMETER_ANNOTATIONS = (
         Collections.<ParameterAnnotation>emptyList()
@@ -223,6 +223,12 @@ public class Disassembler {
             this.pw.println();
             this.pw.println("// *** Disassembly of '" + file + "'.");
             disasm(is);
+        } catch (IOException ioe) {
+            IOException ioe2 = new IOException("Disassembling '" + file + "': " + ioe.getMessage());
+            ioe2.initCause(ioe);
+            throw ioe2;
+        } catch (RuntimeException re) {
+            throw new RuntimeException("Disassembling '" + file + "': " + re.getMessage(), re);
         } finally {
             try { is.close(); } catch (IOException ex) { }
         }
@@ -234,6 +240,12 @@ public class Disassembler {
             this.pw.println();
             this.pw.println("// *** Disassembly of '" + location + "'.");
             disasm(is);
+        } catch (IOException ioe) {
+            IOException ioe2 = new IOException("Disassembling '" + location + "': " + ioe.getMessage());
+            ioe2.initCause(ioe);
+            throw ioe2;
+        } catch (RuntimeException re) {
+            throw new RuntimeException("Disassembling '" + location + "': " + re.getMessage(), re);
         } finally {
             try { is.close(); } catch (IOException ex) { }
         }
@@ -360,7 +372,7 @@ public class Disassembler {
         disasm(cf.fields);
 
         // Read source file.
-        Map<Short, String> sourceLines = new HashMap<Short, String>();
+        Map<Integer, String> sourceLines = new HashMap<Integer, String>();
         READ_SOURCE_LINES:
         if (cf.sourceFileAttribute != null) {
             String sourceFile = cf.sourceFileAttribute.sourceFile;
@@ -375,7 +387,7 @@ public class Disassembler {
                 for (;;) {
                     String sl = lnr.readLine();
                     if (sl == null) break;
-                    sourceLines.put((short) lnr.getLineNumber(), sl);
+                    sourceLines.put(lnr.getLineNumber(), sl);
                 }
             } finally {
                 lnr.close();
@@ -405,7 +417,7 @@ public class Disassembler {
     /**
      * Disassemble one method.
      */
-    private void disasm(Method method, ClassFile cf, Map<Short, String> sourceLines) {
+    private void disasm(Method method, ClassFile cf, Map<Integer, String> sourceLines) {
         println();
 
         // Print SYNTHETIC notice.
@@ -732,7 +744,7 @@ public class Disassembler {
         public void visit(LineNumberTableAttribute lnta) {
             println(this.prefix + "LineNumberTable:");
             for (LineNumberTableAttribute.Entry e : lnta.entries) {
-                println(this.prefix + "  " + e.startPC + " => Line " + e.lineNumber);
+                println(this.prefix + "  " + (0xffff & e.startPC) + " => Line " + (0xffff & e.lineNumber));
             }
         }
 
@@ -887,47 +899,47 @@ public class Disassembler {
         InputStream               is,
         List<ExceptionTableEntry> exceptionTable,
         LineNumberTableAttribute  lineNumberTableAttribute,
-        Map<Short, String>        sourceLines,
+        Map<Integer, String>      sourceLines,
         ConstantPool              cp,
         Method                    method
     ) throws IOException {
         CountingInputStream cis = new CountingInputStream(is);
         DataInputStream     dis = new DataInputStream(cis);
 
-        this.branchTargets = new HashSet<Short>();
+        this.branchTargets = new HashSet<Integer>();
         try {
 
             // Analyze TRY bodies.
 
             // startPC => { endPC }
-            Map<Short, Set<Short>> tryStarts = new HashMap<Short, Set<Short>>();
+            Map<Integer, Set<Integer>> tryStarts = new HashMap<Integer, Set<Integer>>();
 
             // endPC => startPC => ExceptionTableEntry
-            Map<Short, SortedMap<Short, List<ExceptionTableEntry>>> tryEnds = (
-                new HashMap<Short, SortedMap<Short, List<ExceptionTableEntry>>>()
+            Map<Integer, SortedMap<Integer, List<ExceptionTableEntry>>> tryEnds = (
+                new HashMap<Integer, SortedMap<Integer, List<ExceptionTableEntry>>>()
             );
 
             for (ExceptionTableEntry e : exceptionTable) {
-                Set<Short> s = tryStarts.get(e.startPC);
+                Set<Integer> s = tryStarts.get(0xffff & e.startPC);
                 if (s == null) {
-                    s = new HashSet<Short>();
-                    tryStarts.put(e.startPC, s);
+                    s = new HashSet<Integer>();
+                    tryStarts.put(0xffff & e.startPC, s);
                 }
-                s.add(e.endPC);
+                s.add(0xffff & e.endPC);
 
-                SortedMap<Short, List<ExceptionTableEntry>> m = tryEnds.get(e.endPC);
+                SortedMap<Integer, List<ExceptionTableEntry>> m = tryEnds.get(0xffff & e.endPC);
                 if (m == null) {
-                    m = new TreeMap<Short, List<ExceptionTableEntry>>(Collections.reverseOrder());
-                    tryEnds.put(e.endPC, m);
+                    m = new TreeMap<Integer, List<ExceptionTableEntry>>(Collections.reverseOrder());
+                    tryEnds.put(0xffff & e.endPC, m);
                 }
-                List<ExceptionTableEntry> l = m.get(e.startPC);
+                List<ExceptionTableEntry> l = m.get(0xffff & e.startPC);
                 if (l == null) {
                     l = new ArrayList<ExceptionTableEntry>();
-                    m.put(e.startPC, l);
+                    m.put(0xffff & e.startPC, l);
                 }
                 l.add(e);
 
-                this.branchTargets.add(e.handlerPC);
+                this.branchTargets.add(0xffff & e.handlerPC);
             }
 
             // Disassemble the byte code into a sequence of lines.
@@ -956,12 +968,12 @@ public class Disassembler {
             String indentation = "        ";
             for (Iterator<Entry<Short, String>> it = lines.entrySet().iterator(); it.hasNext();) {
                 Entry<Short, String> e = it.next();
-                short instructionOffset = e.getKey();
+                int instructionOffset = 0xffff & e.getKey();
                 String text = e.getValue();
 
                 // Print ends of TRY bodies.
                 {
-                    SortedMap<Short, List<ExceptionTableEntry>> m = tryEnds.get(instructionOffset);
+                    SortedMap<Integer, List<ExceptionTableEntry>> m = tryEnds.get(instructionOffset);
                     if (m != null) {
                         for (List<ExceptionTableEntry> etes : m.values()) {
                             indentation = indentation.substring(4);
@@ -989,7 +1001,7 @@ public class Disassembler {
 
                 // Print beginnings of TRY bodies.
                 {
-                    Set<Short> s = tryStarts.get(instructionOffset);
+                    Set<Integer> s = tryStarts.get(instructionOffset);
                     if (s != null) {
                         for (int i = s.size(); i > 0; i--) {
                             println(indentation + "try {");
@@ -1002,7 +1014,7 @@ public class Disassembler {
                 PRINT_SOURCE_LINE: {
                     if (lineNumberTableAttribute == null) break PRINT_SOURCE_LINE;
 
-                    short lineNumber = findLineNumber(lineNumberTableAttribute, instructionOffset);
+                    int lineNumber = findLineNumber(lineNumberTableAttribute, instructionOffset);
                     if (lineNumber == -1) break PRINT_SOURCE_LINE;
 
                     String sourceLine = sourceLines.get(lineNumber);
@@ -1036,12 +1048,12 @@ public class Disassembler {
     /**
      * @return -1 iff the offset is not associated with a line number
      */
-    private static short findLineNumber(
+    private static int findLineNumber(
         LineNumberTableAttribute lnta,
-        short                    offset
+        int                      offset
     ) {
         for (LineNumberTableAttribute.Entry lnte : lnta.entries) {
-            if (lnte.startPC == offset) return lnte.lineNumber;
+            if ((0xffff & lnte.startPC) == offset) return 0xffff & lnte.lineNumber;
         }
         return -1;
     }
@@ -1494,9 +1506,9 @@ public class Disassembler {
                                 ConstantPool    cp,
                                 Disassembler    d
                             ) throws IOException {
-                                short branchTarget = (short) (instructionOffset + dis.readShort());
+                                int branchTarget = instructionOffset + dis.readShort();
                                 d.branchTargets.add(branchTarget);
-                                return " " + (0xffff & branchTarget);
+                                return " #" + branchTarget;
                             }
                         };
                     } else
@@ -1509,9 +1521,9 @@ public class Disassembler {
                                 ConstantPool    cp,
                                 Disassembler    d
                             ) throws IOException {
-                                short branchTarget = (short) (instructionOffset + dis.readInt());
+                                int branchTarget = instructionOffset + dis.readInt();
                                 d.branchTargets.add(branchTarget);
-                                return " " + (0xffff & branchTarget);
+                                return " #" + branchTarget;
                             }
                         };
                     } else
@@ -1601,14 +1613,14 @@ public class Disassembler {
                                 }
                                 StringBuilder sb = new StringBuilder(" default => ");
                                 {
-                                    short defaultOffset = (short) (instructionOffset + dis.readInt());
+                                    int defaultOffset = instructionOffset + dis.readInt();
                                     sb.append(defaultOffset);
                                     d.branchTargets.add(defaultOffset);
                                 }
                                 int low = dis.readInt();
                                 int high = dis.readInt();
                                 for (int i = low; i <= high; ++i) {
-                                    short offset = (short) (instructionOffset + dis.readInt());
+                                    int offset = instructionOffset + dis.readInt();
                                     d.branchTargets.add(offset);
                                     sb.append(", ").append(i).append(" => ").append(offset);
                                 }
@@ -1639,16 +1651,16 @@ public class Disassembler {
                                 }
                                 StringBuilder sb = new StringBuilder(" default => ");
                                 {
-                                    short defaultOffset = (short) (instructionOffset + dis.readInt());
+                                    int defaultOffset = instructionOffset + dis.readInt();
                                     sb.append(defaultOffset);
                                     d.branchTargets.add(defaultOffset);
                                 }
                                 int npairs = dis.readInt();
                                 for (int i = 0; i < npairs; ++i) {
                                     int match  = dis.readInt();
-                                    short offset = (short) (instructionOffset + dis.readInt());
+                                    int offset = instructionOffset + dis.readInt();
                                     sb.append(", ").append(match).append(" => ").append(offset);
-                                    d.branchTargets.add((short) offset);
+                                    d.branchTargets.add(offset);
                                 }
                                 return sb.toString();
                             }
