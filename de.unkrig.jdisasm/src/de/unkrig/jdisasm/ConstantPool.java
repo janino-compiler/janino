@@ -110,7 +110,7 @@ public class ConstantPool {
      * @throws ArrayIndexOutOfBoundsException An index is too small or to great
      */
     public ConstantPool(DataInputStream dis) throws IOException {
-        short count = dis.readShort();
+        int count = 0xffff & dis.readShort();
 
         // Read the entries into a temporary data structure - this is necessary because there may be forward
         // references.
@@ -128,7 +128,7 @@ public class ConstantPool {
             }
             abstract ConstantPoolEntry get(short index);
         }
-        final RawEntry[] rawEntries = new RawEntry[0xffff & count];
+        final RawEntry[] rawEntries = new RawEntry[count];
 
         /***/
         abstract class RawEntry2 extends RawEntry {
@@ -141,8 +141,8 @@ public class ConstantPool {
             }
         }
 
-        for (short i = 1; i != count;) {
-            int idx = 0xffff & i;
+        for (int i = 1; i < count;) {
+            int idx = i;
             RawEntry re;
             byte tag = dis.readByte();
             switch (tag) {
@@ -298,13 +298,13 @@ public class ConstantPool {
                     break;
                 }
             default:
-                throw new RuntimeException("Invalid cp_info tag \"" + (int) tag + "\"");
+                throw new RuntimeException("Invalid cp_info tag '" + (int) tag + "' on entry #" + i + " of " + count);
             }
             rawEntries[idx] = re;
         }
 
-        this.entries = new ConstantPoolEntry[0xffff & count];
-        for (int i = 0; i < (0xffff & count); ++i) {
+        this.entries = new ConstantPoolEntry[count];
+        for (int i = 0; i < count; ++i) {
             if (this.entries[i] == null && rawEntries[i] != null) this.entries[i] = rawEntries[i].cook();
         }
     }
