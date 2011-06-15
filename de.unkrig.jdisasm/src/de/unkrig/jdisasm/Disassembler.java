@@ -130,7 +130,7 @@ public class Disassembler {
     private boolean     hideVars;
 
     // "" for the default package; with a trailing period otherwise.
-    private String           thisClassPackageName;
+    private String         thisClassPackageName;
     private HashSet<Integer> branchTargets;
 
     private static final List<ParameterAnnotation> NO_PARAMETER_ANNOTATIONS = (
@@ -142,7 +142,7 @@ public class Disassembler {
         int i;
         for (i = 0; i < args.length; ++i) {
             String arg = args[i];
-            if (arg.charAt(0) != '-') break;
+            if (arg.charAt(0) != '-' || arg.length() == 1) break;
             if (arg.equals("-o")) {
                 d.setOut(new FileOutputStream(args[++i]));
             } else
@@ -159,9 +159,10 @@ public class Disassembler {
                 d.setHideVars(true);
             } else
             if (arg.equals("-help")) {
-                System.out.println("Prints a disassembly listing of the given JAVA[TM] class files to STDOUT.");
+                System.out.println("Prints a disassembly listing of the given JAVA[TM] class files (or STDIN) to ");
+                System.out.println("STDOUT.");
                 System.out.println("Usage:");
-                System.out.println("  java " + Disassembler.class.getName() + " [ <option> ] ... <class-file> ...");
+                System.out.println("  java " + Disassembler.class.getName() + " [ <option> ] ... [ <class-file> ] ...");
                 System.out.println("Valid options are:");
                 System.out.println("  -o <output-file>   Store disassembly output in a file.");
                 System.out.println("  -verbose");
@@ -176,17 +177,20 @@ public class Disassembler {
             }
         }
         if (i == args.length) {
-            System.err.println("Class file name missing, try \"-help\".");
-            System.exit(1);
-        }
-        Pattern IS_URL = Pattern.compile("\\w\\w+:.*");
-        for (; i < args.length; ++i) {
-            String name = args[i];
-            if (IS_URL.matcher(name).matches()) {
-                d.disasm(new URL(name));
-            } else
-            {
-                d.disasm(new File(name));
+            d.disasm(System.in);
+        } else {
+            Pattern IS_URL = Pattern.compile("\\w\\w+:.*");
+            for (; i < args.length; ++i) {
+                String name = args[i];
+                if ("-".equals(name)) {
+                    d.disasm(System.in);
+                } else
+                if (IS_URL.matcher(name).matches()) {
+                    d.disasm(new URL(name));
+                } else
+                {
+                    d.disasm(new File(name));
+                }
             }
         }
     }
