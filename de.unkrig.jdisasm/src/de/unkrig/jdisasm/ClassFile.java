@@ -103,13 +103,35 @@ public class ClassFile {
         }
 
         // Fields.
-        for (short i = dis.readShort(); i > 0; --i) {
-            this.fields.add(new Field(dis));
+        {
+            short n = dis.readShort();
+            for (short i = 0; i < n; i++) {
+                try {
+                    this.fields.add(new Field(dis));
+                } catch (IOException ioe) {
+                    IOException ioe2 = new IOException("Reading field #" + i + " of " + n + ": " + ioe.getMessage());
+                    ioe2.initCause(ioe);
+                    throw ioe2;
+                } catch (RuntimeException re) {
+                    throw new RuntimeException("Reading field #" + i + " of " + n + ": " + re.getMessage(), re);
+                }
+            }
         }
 
         // Methods.
-        for (short i = dis.readShort(); i > 0; --i) {
-            this.methods.add(new Method(dis));
+        {
+            short n = dis.readShort();
+            for (short i = 0; i < n; i++) {
+                try {
+                    this.methods.add(new Method(dis));
+                } catch (IOException ioe) {
+                    IOException ioe2 = new IOException("Reading method #" + i + " of " + n + ": " + ioe.getMessage());
+                    ioe2.initCause(ioe);
+                    throw ioe2;
+                } catch (RuntimeException re) {
+                    throw new RuntimeException("Reading method #" + i + " of " + n + ": " + re.getMessage(), re);
+                }
+            }
         }
 
         // Class attributes.
@@ -260,65 +282,84 @@ public class ClassFile {
             this.name = ClassFile.this.constantPool.getConstantUtf8Info(dis.readShort()).bytes;
             this.descriptor = ClassFile.this.constantPool.getConstantUtf8Info(dis.readShort()).bytes;
     
-            // Read method attributes.
-            readAttributes(dis, new AbstractAttributeVisitor() {
-                public void visit(AnnotationDefaultAttribute ada) {
-                    Method.this.annotationDefaultAttribute = ada;
-                    Method.this.attributes.add(ada);
-                }
-                public void visit(CodeAttribute ca) {
-                    Method.this.codeAttribute = ca;
-                    Method.this.attributes.add(ca);
-                }
-    
-                public void visit(DeprecatedAttribute da) {
-                    Method.this.deprecatedAttribute = da;
-                    Method.this.attributes.add(da);
-                }
-    
-                public void visit(ExceptionsAttribute ea) {
-                    Method.this.exceptionsAttribute = ea;
-                    Method.this.attributes.add(ea);
-                }
-                public void visit(RuntimeInvisibleAnnotationsAttribute riaa) {
-                    Method.this.runtimeInvisibleAnnotationsAttribute = riaa;
-                    Method.this.attributes.add(riaa);
-                }
-                public void visit(RuntimeInvisibleParameterAnnotationsAttribute ripaa) {
-                    Method.this.runtimeInvisibleParameterAnnotationsAttribute = ripaa;
-                    Method.this.attributes.add(ripaa);
-                }
-                public void visit(RuntimeVisibleAnnotationsAttribute rvaa) {
-                    Method.this.runtimeVisibleAnnotationsAttribute = rvaa;
-                    Method.this.attributes.add(rvaa);
-                }
-                public void visit(RuntimeVisibleParameterAnnotationsAttribute rvpaa) {
-                    Method.this.runtimeVisibleParameterAnnotationsAttribute = rvpaa;
-                    Method.this.attributes.add(rvpaa);
-                }
-                public void visit(SignatureAttribute sa) {
-                    Method.this.signatureAttribute = sa;
-                    Method.this.attributes.add(sa);
-                }
-                public void visit(SyntheticAttribute sa) {
-                    Method.this.syntheticAttribute = sa;
-                    Method.this.attributes.add(sa);
-                }
-                public void acceptOther(Attribute ai) {
-                    Method.this.attributes.add(ai);
-                }
-            });
+            try {
+                // Read method attributes.
+                readAttributes(dis, new AbstractAttributeVisitor() {
+                    public void visit(AnnotationDefaultAttribute ada) {
+                        Method.this.annotationDefaultAttribute = ada;
+                        Method.this.attributes.add(ada);
+                    }
+                    public void visit(CodeAttribute ca) {
+                        Method.this.codeAttribute = ca;
+                        Method.this.attributes.add(ca);
+                    }
+   
+                    public void visit(DeprecatedAttribute da) {
+                        Method.this.deprecatedAttribute = da;
+                        Method.this.attributes.add(da);
+                    }
+   
+                    public void visit(ExceptionsAttribute ea) {
+                        Method.this.exceptionsAttribute = ea;
+                        Method.this.attributes.add(ea);
+                    }
+                    public void visit(RuntimeInvisibleAnnotationsAttribute riaa) {
+                        Method.this.runtimeInvisibleAnnotationsAttribute = riaa;
+                        Method.this.attributes.add(riaa);
+                    }
+                    public void visit(RuntimeInvisibleParameterAnnotationsAttribute ripaa) {
+                        Method.this.runtimeInvisibleParameterAnnotationsAttribute = ripaa;
+                        Method.this.attributes.add(ripaa);
+                    }
+                    public void visit(RuntimeVisibleAnnotationsAttribute rvaa) {
+                        Method.this.runtimeVisibleAnnotationsAttribute = rvaa;
+                        Method.this.attributes.add(rvaa);
+                    }
+                    public void visit(RuntimeVisibleParameterAnnotationsAttribute rvpaa) {
+                        Method.this.runtimeVisibleParameterAnnotationsAttribute = rvpaa;
+                        Method.this.attributes.add(rvpaa);
+                    }
+                    public void visit(SignatureAttribute sa) {
+                        Method.this.signatureAttribute = sa;
+                        Method.this.attributes.add(sa);
+                    }
+                    public void visit(SyntheticAttribute sa) {
+                        Method.this.syntheticAttribute = sa;
+                        Method.this.attributes.add(sa);
+                    }
+                    public void acceptOther(Attribute ai) {
+                        Method.this.attributes.add(ai);
+                    }
+                });
+            } catch (IOException ioe) {
+                IOException ioe2 = new IOException("Parsing method '" + this.name + "' [" + this.descriptor + "]: " + ioe.getMessage());
+                ioe2.initCause(ioe);
+                throw ioe2;
+            } catch (RuntimeException re) {
+                throw new RuntimeException("Parsing method '" + this.name + "' [" + this.descriptor + "]: " + re.getMessage(), re);
+            }
         }
     }
 
     /** Representation of an attribute in a Java&trade; class file. */
     public interface Attribute {
-        void accept(AttributeVisitor visitor);
+        void   accept(AttributeVisitor visitor);
+        String getName();
     }
 
     private void readAttributes(DataInputStream dis, AttributeVisitor visitor) throws IOException {
         short n = dis.readShort();
-        for (int i = 0; i < n; ++i) readAttribute(dis, visitor);
+        for (int i = 0; i < n; ++i) {
+            try {
+                readAttribute(dis, visitor);
+            } catch (IOException ioe) {
+                IOException ioe2 = new IOException("Reading attribute #" + i + " of " + n + ": " + ioe.getMessage());
+                ioe2.initCause(ioe);
+                throw ioe2;
+            } catch (RuntimeException re) {
+                throw new RuntimeException("Reading attribute #" + i + " of " + n + ": " + re.getMessage(), re);
+            }
+        }
     }
 
     private void readAttribute(DataInputStream dis, AttributeVisitor visitor) throws IOException {
@@ -409,6 +450,8 @@ public class ClassFile {
 
     /** The visitor for {@Attribute}. */
     public interface AttributeVisitor {
+        enum Context { CLASS, FIELD, METHOD };
+
         void visit(AnnotationDefaultAttribute                    ada);
         void visit(CodeAttribute                                 ca);
         void visit(ConstantValueAttribute                        cva);
@@ -466,6 +509,8 @@ public class ClassFile {
         }
     
         public void accept(AttributeVisitor visitor) { visitor.visit(this); }
+
+        public String getName() { return this.name; }
     }
 
     /** Representation of a {@code Synthetic} attribute. */
@@ -474,6 +519,8 @@ public class ClassFile {
         }
 
         public void accept(AttributeVisitor visitor) { visitor.visit(this); }
+
+        public String getName() { return "Synthetic"; }
     }
 
     /** Representation of a {@code Deprecated} attribute. */
@@ -482,6 +529,8 @@ public class ClassFile {
         }
 
         public void accept(AttributeVisitor visitor) { visitor.visit(this); }
+
+        public String getName() { return "Deprecated"; }
     }
 
     /** Representation of a {@code InnerClasses} attribute. */
@@ -511,6 +560,8 @@ public class ClassFile {
         }
 
         public void accept(AttributeVisitor visitor) { visitor.visit(this); }
+
+        public String getName() { return "InnerClasses"; }
     }
 
     /** Representation of the {@code RuntimeVisibleAnnotations} attribute. */
@@ -519,12 +570,14 @@ public class ClassFile {
         public final List<Annotation> annotations = new ArrayList<Annotation>();
         
         private RuntimeVisibleAnnotationsAttribute(DataInputStream dis, ClassFile cf) throws IOException {
-            for (int i = dis.readShort(); i > 0; --i) {
+            for (int i = 0xffff & dis.readShort(); i > 0; --i) {
                 this.annotations.add(new Annotation(dis, cf));
             }
         }
 
         public void accept(AttributeVisitor visitor) { visitor.visit(this); }
+
+        public String getName() { return "RuntimeVisibleAnnotations"; }
     }
 
     /** Representation of the {@code RuntimeInvisibleAnnotations} attribute. */
@@ -559,6 +612,8 @@ public class ClassFile {
         }
 
         public void accept(AttributeVisitor visitor) { visitor.visit(this); }
+
+        public String getName() { return "RuntimeVisibleParameterAnnotations"; }
     }
 
     /** Representation of the {@code RuntimeInvisibleParameterAnnotations} attribute. */
@@ -581,6 +636,8 @@ public class ClassFile {
         }
 
         public void accept(AttributeVisitor visitor) { visitor.visit(this); }
+
+        public String getName() { return "AnnotationDefault"; }
     }
 
     /** Helper class for the {@code Runtime*visible*Annotations} attributes. */
@@ -716,19 +773,23 @@ public class ClassFile {
         }
 
         public void accept(AttributeVisitor visitor) { visitor.visit(this); }
+
+        public String getName() { return "Signature"; }
     }
     
     /** Representation of the {@code EnclosingMethod} attribute. */
     public static final class EnclosingMethodAttribute implements Attribute {
         public ConstantClassInfo       clasS;
-        public ConstantNameAndTypeInfo method;
+        public ConstantNameAndTypeInfo optionalMethod;
         
         private EnclosingMethodAttribute(DataInputStream dis, ClassFile cf) throws IOException {
             this.clasS = cf.constantPool.getConstantClassInfo(dis.readShort());  // classIndex
-            this.method = cf.constantPool.getConstantNameAndTypeInfo(dis.readShort());  // methodIndex
+            this.optionalMethod = cf.constantPool.getConstantNameAndTypeInfo(dis.readShort());  // methodIndex
         }
 
         public void accept(AttributeVisitor visitor) { visitor.visit(this); }
+
+        public String getName() { return "EnclosingMethod"; }
     }
     
     /** Representation of the {@code Exceptions} attribute. */
@@ -742,6 +803,8 @@ public class ClassFile {
         }
 
         public void accept(AttributeVisitor visitor) { visitor.visit(this); }
+
+        public String getName() { return "Exceptions"; }
     }
 
     /** Representation of the {@code Code} attribute. */
@@ -788,6 +851,8 @@ public class ClassFile {
         }
 
         public void accept(AttributeVisitor visitor) { visitor.visit(this); }
+
+        public String getName() { return "Code"; }
     }
 
     /** helper class for {@link CodeAttribute}. */
@@ -814,31 +879,35 @@ public class ClassFile {
         }
 
         public void accept(AttributeVisitor visitor) { visitor.visit(this); }
+
+        public String getName() { return "SourceFile"; }
     }
 
     /** Representation of the {@code LineNumberTable} attribute. */
     public class LineNumberTableAttribute implements Attribute {
 
-        /** Helper class for {@link LineNumberTableAttribute}. */
-        public class Entry {
-            public short startPC;
-            public short lineNumber;
-
-            private Entry(DataInputStream dis) throws IOException {
-                this.startPC = dis.readShort();
-                this.lineNumber = dis.readShort();
-            }
-        }
-
-        public final List<Entry> entries = new ArrayList<Entry>();
+        public final List<LineNumberTableEntry> entries = new ArrayList<LineNumberTableEntry>();
 
         private LineNumberTableAttribute(DataInputStream dis, ClassFile cf) throws IOException {
             for (int i = dis.readShort(); i > 0; --i) {
-                this.entries.add(new Entry(dis));
+                this.entries.add(new LineNumberTableEntry(dis));
             }
         }
 
         public void accept(AttributeVisitor visitor) { visitor.visit(this); }
+
+        public String getName() { return "LineNumberTable"; }
+    }
+
+    /** Helper class for {@link LineNumberTableAttribute}. */
+    public static class LineNumberTableEntry {
+        public short startPC;
+        public short lineNumber;
+
+        private LineNumberTableEntry(DataInputStream dis) throws IOException {
+            this.startPC = dis.readShort();
+            this.lineNumber = dis.readShort();
+        }
     }
 
     /** Representation of the {@code LocalVariableTable} attribute. */
@@ -870,6 +939,8 @@ public class ClassFile {
         }
 
         public void accept(AttributeVisitor visitor) { visitor.visit(this); }
+
+        public String getName() { return "LocalVariableTable"; }
     }
 
     /** Representation of the {@code LocalVariableTypeTable} attribute. */
@@ -901,6 +972,8 @@ public class ClassFile {
         }
 
         public void accept(AttributeVisitor visitor) { visitor.visit(this); }
+
+        public String getName() { return "LocalVariableTypeTable"; }
     }
     
     /** Representation of the {@code ConstantValue} attribute. */
@@ -912,6 +985,8 @@ public class ClassFile {
         }
 
         public void accept(AttributeVisitor visitor) { visitor.visit(this); }
+
+        public String getName() { return "ConstantValue"; }
     }
     
     private static byte[] readByteArray(DataInputStream dis, int size) throws IOException {

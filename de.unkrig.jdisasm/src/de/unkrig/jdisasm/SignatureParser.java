@@ -74,6 +74,21 @@ public class SignatureParser {
         }
     }
 
+    public static TypeSignature decodeTypeSignature(String s) throws SignatureException {
+        try {
+            StringCharStream scs = new StringCharStream(s);
+            TypeSignature ts = parseTypeSignature(scs);
+            scs.eoi();
+            return ts;
+        } catch (SignatureException e) {
+            throw new SignatureException("Field type signature '" + s + "': " + e.getMessage(), e);
+        } catch (EOFException e) {
+            throw new SignatureException("Field type signature '" + s + "': " + e.getMessage(), e);
+        } catch (UnexpectedCharacterException e) {
+            throw new SignatureException("Field type signature '" + s + "': " + e.getMessage(), e);
+        }
+    }
+
     public static FieldTypeSignature decodeFieldTypeSignature(String s) throws SignatureException {
         try {
             StringCharStream scs = new StringCharStream(s);
@@ -88,7 +103,7 @@ public class SignatureParser {
             throw new SignatureException("Field type signature '" + s + "': " + e.getMessage(), e);
         }
     }
-
+    
     public static MethodTypeSignature decodeMethodDescriptor(String s) throws SignatureException {
         try {
             StringCharStream scs = new StringCharStream(s);
