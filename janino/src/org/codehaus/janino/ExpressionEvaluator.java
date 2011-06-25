@@ -239,6 +239,14 @@ public class ExpressionEvaluator extends ScriptEvaluator implements IExpressionE
         super.setReturnTypes(returnTypes);
     }
 
+    public final void setReturnType(Class returnType) {
+        throw new AssertionError("Must not be used on an ExpressionEvaluator; use 'setExpressionType()' instead");
+    }
+
+    public final void setReturnTypes(Class[] returnTypes) {
+        throw new AssertionError("Must not be used on an ExpressionEvaluator; use 'setExpressionTypes()' instead");
+    }
+
     protected Class getDefaultReturnType() {
         return Object.class;
     }

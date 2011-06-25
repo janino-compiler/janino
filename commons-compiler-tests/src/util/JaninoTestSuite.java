@@ -32,6 +32,7 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.fail;
 
 import java.io.File;
+import java.lang.reflect.Method;
 
 import org.codehaus.commons.compiler.AbstractJavaSourceClassLoader;
 import org.codehaus.commons.compiler.CompileException;
@@ -196,7 +197,8 @@ public class JaninoTestSuite {
         }
 
         protected Object execute() throws Exception {
-            return this.classBodyEvaluator.getClazz().getMethod("main", new Class[0]).invoke(null, new Object[0]);
+            @SuppressWarnings("unchecked") Method method = this.classBodyEvaluator.getClazz().getMethod("main", new Class[0]);
+            return method.invoke(null, new Object[0]);
         }
     }
 

@@ -33,6 +33,7 @@ import java.util.Collection;
 
 import org.codehaus.commons.compiler.CompilerFactoryFactory;
 import org.codehaus.commons.compiler.ICompilerFactory;
+import org.codehaus.commons.compiler.IExpressionEvaluator;
 import org.codehaus.commons.compiler.ISimpleCompiler;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -475,5 +476,12 @@ public class ReportedBugs extends JaninoTestSuite {
 
         // JLS3 3.10.6: "aaa\/bbb" contains an invalid escape sequence: "\/".
         exp(COMP, "\"aaa\\/bbb\"");
+    }
+    
+    @SuppressWarnings("deprecation")
+    @Test(expected=AssertionError.class)
+    public void testBug157() throws Exception {
+        IExpressionEvaluator evaluator = CompilerFactoryFactory.getDefaultCompilerFactory().newExpressionEvaluator();
+        evaluator.setReturnType(Long.class);
     }
 }

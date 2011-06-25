@@ -111,7 +111,20 @@ public interface IExpressionEvaluator extends IScriptEvaluator {
      */
     void setExpressionType(Class expressionType);
 
+    /**
+     * Same as {@link #setExpressionType(Class)}, but for multiple expressions.
+     */
     void setExpressionTypes(Class[] expressionTypes);
+
+    /**
+     * @deprecated Must not be used on an {@link IExpressionEvaluator}; use {@link #setExpressionType(Class)} instead.
+     */
+    void setReturnType(Class returnType);
+
+    /**
+     * @deprecated Must not be used on an {@link IExpressionEvaluator}; use {@link #setExpressionTypes(Class)} instead.
+     */
+    void setReturnTypes(Class[] returnTypes);
 
     /**
      * Evaluates the expression with concrete parameter values.

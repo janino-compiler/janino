@@ -32,6 +32,7 @@ import java.util.*;
 
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.Cookable;
+import org.codehaus.commons.compiler.IExpressionEvaluator;
 import org.codehaus.commons.compiler.IScriptEvaluator;
 import org.codehaus.commons.compiler.Location;
 import org.codehaus.janino.Java.AmbiguousName;
@@ -854,7 +855,13 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
 
         this.setImplementedInterfaces(new Class[] { interfaceToImplement });
         this.setStaticMethod(false);
-        this.setReturnType(methodToImplement.getReturnType());
+        if (this instanceof IExpressionEvaluator) {
+
+            // Must not call "IExpressionEvaluator.setReturnType()".
+            ((IExpressionEvaluator) this).setExpressionType(methodToImplement.getReturnType());
+        } else {
+            this.setReturnType(methodToImplement.getReturnType());
+        }
         this.setMethodName(methodToImplement.getName());
         this.setParameters(parameterNames, methodToImplement.getParameterTypes());
         this.setThrownExceptions(methodToImplement.getExceptionTypes());
