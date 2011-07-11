@@ -256,6 +256,14 @@ public class JLS2Tests extends JaninoTestSuite {
         scr(TRUE, "Object o = \"SS\"; return ((String) o).length() == 2;");
         exp(TRUE, "((Integer) 7).intValue() == 7");
         exp(TRUE, "(int) new Integer(7) == 7");
+
+        // Boxing conversion followed by widening reference conversion - not described in the JLS3, but supported
+        // by JAVAC. See JLS3 5.5, and JANINO-153.
+        exp(TRUE, "null != (Comparable) 5.0");
+
+        // Unboxing conversion followed by widening primitive conversion - not described in the JLS3, but supported
+        // by JAVAC. See JLS3 5.5, and JANINO-153.
+        exp(TRUE, "0L != (long) new Integer(8)");
     }
 
     @Test
