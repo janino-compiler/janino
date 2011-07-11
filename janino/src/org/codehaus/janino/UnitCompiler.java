@@ -457,7 +457,7 @@ public class UnitCompiler {
         ClassFile cf = new ClassFile(
             (short) (cd.getModifiers() | Mod.SUPER),      // accessFlags
             iClass.getDescriptor(),                       // thisClassFD
-            iClass.getSuperclass().getDescriptor(),       // superClassFD
+            iClass.getSuperclass().getDescriptor(),       // superclassFD
             IClass.getDescriptors(iClass.getInterfaces()) // interfaceFDs
         );
 
@@ -588,9 +588,9 @@ public class UnitCompiler {
         for (Iterator it = cd.syntheticFields.values().iterator(); it.hasNext();) {
             IClass.IField f = (IClass.IField) it.next();
             cf.addFieldInfo(
-                Mod.PACKAGE,                 // modifiers,
-                f.getName(),                 // fieldName,
-                f.getType().getDescriptor(), // fieldTypeFD,
+                Mod.PACKAGE,                 // accessFlags
+                f.getName(),                 // fieldName
+                f.getType().getDescriptor(), // fieldTypeFD
                 null                         // optionalConstantValue
             );
         }
@@ -626,7 +626,7 @@ public class UnitCompiler {
                 // enclosed by the same type, it is modified as follows:
                 //  + Access is changed from PRIVATE to PACKAGE
                 fi = cf.addFieldInfo(
-                    Mod.changeAccess(fd.modifiers, Mod.PACKAGE), // modifiers
+                    Mod.changeAccess(fd.modifiers, Mod.PACKAGE), // accessFlags
                     vd.name,                                     // fieldName
                     this.getType(type).getDescriptor(),          // fieldTypeFD
                     ocv == NOT_CONSTANT ? null : ocv             // optionalConstantValue
@@ -634,7 +634,7 @@ public class UnitCompiler {
             } else
             {
                 fi = cf.addFieldInfo(
-                    fd.modifiers,                       // modifiers
+                    fd.modifiers,                       // accessFlags
                     vd.name,                            // fieldName
                     this.getType(type).getDescriptor(), // fieldTypeFD
                     ocv == NOT_CONSTANT ? null : ocv    // optionalConstantValue
@@ -708,15 +708,15 @@ public class UnitCompiler {
 
         // Create "ClassFile" object.
         ClassFile cf = new ClassFile(
-            (short) (                         // accessFlags
+            (short) (               // accessFlags
                 id.getModifiers() |
                 Mod.SUPER |
                 Mod.INTERFACE |
                 Mod.ABSTRACT
             ),
-            iClass.getDescriptor(),           // thisClassFD
-            Descriptor.OBJECT,                // superClassFD
-            interfaceDescriptors              // interfaceFDs
+            iClass.getDescriptor(), // thisClassFD
+            Descriptor.OBJECT,      // superclassFD
+            interfaceDescriptors    // interfaceFDs
         );
 
         // Set "SourceFile" attribute.
@@ -783,7 +783,7 @@ public class UnitCompiler {
                 ),
                 "<clinit>",                                // name
                 new FunctionDeclarator.FormalParameter[0], // formalParameters
-                new ReferenceType[0],                      // thrownExcaptions
+                new ReferenceType[0],                      // thrownExceptions
                 statements                                 // optionalStatements
             );
             md.setDeclaringType(decl);
@@ -876,7 +876,7 @@ public class UnitCompiler {
         final CodeContext codeContext = new CodeContext(mi.getClassFile());
         CodeContext savedCodeContext = this.replaceCodeContext(codeContext);
 
-        // allocate all our local variables
+        // Allocate all our local variables.
         codeContext.saveLocalVariables();
         codeContext.allocateLocalVariable((short) 1, "this", override.getDeclaringIClass());
         IClass[] paramTypes = override.getParameterTypes();
@@ -1444,7 +1444,7 @@ public class UnitCompiler {
                 this.assignmentConversion(
                     (Locatable) fd,               // l
                     initializerType,              // sourceType
-                    fieldType,                    // destinationType
+                    fieldType,                    // targetType
                     this.getConstantValue(rvalue) // optionalConstantValue
                 );
             } else
@@ -1467,8 +1467,8 @@ public class UnitCompiler {
                 this.writeOpcode(fd, Opcode.PUTFIELD);
             }
             this.writeConstantFieldrefInfo(
-                this.resolve(fd.getDeclaringType()).getDescriptor(),
-                vd.name, // classFD
+                this.resolve(fd.getDeclaringType()).getDescriptor(), // classFD
+                vd.name,                                             // fieldName
                 fieldType.getDescriptor()                            // fieldFD
             );
         }
@@ -1901,14 +1901,14 @@ public class UnitCompiler {
                     short evi = this.codeContext.allocateLocalVariable((short) 1);
                     this.store(
                         (Locatable) ts.optionalFinally, // l
-                        this.iClassLoader.OBJECT,       // valueType
-                        evi                             // localVariableIndex
+                        this.iClassLoader.OBJECT,       // lvType
+                        evi                             // lvIndex
                     );
                     this.writeBranch(ts.optionalFinally, Opcode.JSR, ts.finallyOffset);
                     this.load(
                         (Locatable) ts.optionalFinally, // l
-                        this.iClassLoader.OBJECT,       // valueType
-                        evi                             // localVariableIndex
+                        this.iClassLoader.OBJECT,       // type
+                        evi                             // index
                     );
                     this.writeOpcode(ts.optionalFinally, Opcode.ATHROW);
 
@@ -1916,8 +1916,8 @@ public class UnitCompiler {
                     ts.finallyOffset.set();
                     this.store(
                         (Locatable) ts.optionalFinally, // l
-                        this.iClassLoader.OBJECT,       // valueType
-                        pcLVIndex                       // localVariableIndex
+                        this.iClassLoader.OBJECT,       // lvType
+                        pcLVIndex                       // lvIndex
                     );
                     if (this.compile(ts.optionalFinally)) {
                         if (pcLVIndex > 255) {
@@ -1962,10 +1962,10 @@ public class UnitCompiler {
                 //  + A parameter of type "declaring class" is prepended to the signature
                 mi = classFile.addMethodInfo(
                     (short) (Mod.changeAccess(fd.modifiers, Mod.PACKAGE) | Mod.STATIC), // accessFlags
-                    fd.name + '$',                               // name
-                    MethodDescriptor.prependParameter(           // methodMD
-                        this.toIMethod((MethodDeclarator) fd).getDescriptor(),
-                        this.resolve(fd.getDeclaringType()).getDescriptor()
+                    fd.name + '$',                                                      // methodName
+                    MethodDescriptor.prependParameter(                                  // methodMD
+                        this.toIMethod((MethodDeclarator) fd).getDescriptor(), // md
+                        this.resolve(fd.getDeclaringType()).getDescriptor()    // parameterFD
                     )
                 );
             } else
@@ -1976,7 +1976,7 @@ public class UnitCompiler {
                 //  + Access is changed from PRIVATE to PACKAGE
                 mi = classFile.addMethodInfo(
                     Mod.changeAccess(fd.modifiers, Mod.PACKAGE), // accessFlags
-                    fd.name,                                     // name
+                    fd.name,                                     // methodName
                     this.toIInvocable(fd).getDescriptor()        // methodMD
                 );
             }
@@ -1984,7 +1984,7 @@ public class UnitCompiler {
         {
             mi = classFile.addMethodInfo(
                 fd.modifiers,                         // accessFlags
-                fd.name,                              // name
+                fd.name,                              // methodName
                 this.toIInvocable(fd).getDescriptor() // methodMD
             );
         }
@@ -2072,8 +2072,8 @@ public class UnitCompiler {
 
                     // Invoke the superconstructor.
                     SuperConstructorInvocation sci = new SuperConstructorInvocation(
-                        cd.getLocation(),       // location
-                        qualification,          // optionalQualification
+                        cd.getLocation(),  // location
+                        qualification,     // optionalQualification
                         new Rvalue[0]      // arguments
                     );
                     sci.setEnclosingScope(fd);
@@ -2501,11 +2501,11 @@ public class UnitCompiler {
         this.writeOpcode(aci, Opcode.ALOAD_0);
         if (declaringIClass.getOuterIClass() != null) this.writeOpcode(aci, Opcode.ALOAD_1);
         this.invokeConstructor(
-            (Locatable) aci,                   // l
+            (Locatable) aci,              // l
             (Scope) declaringConstructor, // scope
             (Rvalue) null,                // optionalEnclosingInstance
-            declaringIClass,                   // targetClass
-            aci.arguments                      // arguments
+            declaringIClass,              // targetClass
+            aci.arguments                 // arguments
         );
         return true;
     }
@@ -2524,21 +2524,18 @@ public class UnitCompiler {
                 optionalEnclosingInstance = null;
             } else {
                 optionalEnclosingInstance = new QualifiedThisReference(
-                    sci.getLocation(), // location
-                    new SimpleType(    // qualification
-                        sci.getLocation(),
-                        outerIClassOfSuperclass
-                    )
+                    sci.getLocation(),                                         // location
+                    new SimpleType(sci.getLocation(), outerIClassOfSuperclass) // qualification
                 );
                 optionalEnclosingInstance.setEnclosingBlockStatement(sci);
             }
         }
         this.invokeConstructor(
-            (Locatable) sci,                   // l
+            (Locatable) sci,              // l
             (Scope) declaringConstructor, // scope
-            optionalEnclosingInstance,         // optionalEnclosingInstance
-            superclass,                        // targetClass
-            sci.arguments                      // arguments
+            optionalEnclosingInstance,    // optionalEnclosingInstance
+            superclass,                   // targetClass
+            sci.arguments                 // arguments
         );
         return true;
     }
@@ -3034,8 +3031,8 @@ public class UnitCompiler {
             this.writeOpcode(fa, Opcode.GETFIELD);
         }
         this.writeConstantFieldrefInfo(
-            fa.field.getDeclaringIClass().getDescriptor(),
-            fa.field.getName(), // classFD
+            fa.field.getDeclaringIClass().getDescriptor(), // classFD
+            fa.field.getName(),                            // fieldName
             fa.field.getType().getDescriptor()             // fieldFD
         );
         return fa.field.getType();
@@ -3083,8 +3080,8 @@ public class UnitCompiler {
             }
 
             this.writeConstantFieldrefInfo(
-                wrapperClassDescriptor,
-                "TYPE", // classFD
+                wrapperClassDescriptor, // classFD
+                "TYPE",                 // fieldName
                 "Ljava/lang/Class;"     // fieldFD
             );
             return icl.CLASS;
@@ -3100,12 +3097,10 @@ public class UnitCompiler {
             }
         }
 
-        // Check if synthetic method "static Class class$(String className)" is already
-        // declared.
+        // Check if synthetic method "static Class class$(String className)" is already declared.
         if (declaringType.getMethodDeclaration("class$") == null) this.declareClassDollarMethod(cl);
 
-        // Determine the statics of the declaring class (this is where static fields
-        // declarations are found).
+        // Determine the statics of the declaring class (this is where static fields declarations are found).
         List statics; // TypeBodyDeclaration
         if (declaringType instanceof ClassDeclaration) {
             statics = ((ClassDeclaration) declaringType).variableDeclaratorsAndInitializers;
@@ -3161,16 +3156,16 @@ public class UnitCompiler {
             if (!hasClassDollarField) {
                 Type classType = new SimpleType(loc, icl.CLASS);
                 FieldDeclaration fd = new FieldDeclaration(
-                    loc,                            // location
-                    null,                           // optionalDocComment
-                    Mod.STATIC,                     // modifiers
-                    classType,                      // type
+                    loc,                       // location
+                    null,                      // optionalDocComment
+                    Mod.STATIC,                // modifiers
+                    classType,                 // type
                     new VariableDeclarator[] { // variableDeclarators
                         new VariableDeclarator(
                             loc,                  // location
                             classDollarFieldName, // name
                             0,                    // brackets
-                            (Rvalue) null    // optionalInitializer
+                            (Rvalue) null         // optionalInitializer
                         )
                     }
                 );
@@ -3213,8 +3208,8 @@ public class UnitCompiler {
                     "class$",                      // methodName
                     new Rvalue[] {                 // arguments
                         new StringLiteral(
-                            loc,                  // location
-                            '"' + className + '"' // constantValue
+                            loc,                    // location
+                            '"' + className + '"'   // constantValue
                         )
                     }
                 )
@@ -3263,7 +3258,7 @@ public class UnitCompiler {
             !this.tryNarrowingPrimitiveConversion(
                 (Locatable) a, // l
                 resultType,    // sourceType
-                lhsType        // destinationType
+                lhsType        // targetType
             )
         ) throw new JaninoRuntimeException("SNO: \"" + a.operator + "\" reconversion failed");
         this.dupx(
@@ -3651,8 +3646,8 @@ public class UnitCompiler {
         if (iMethod.getDeclaringIClass().isInterface()) {
             this.writeOpcode(mi, Opcode.INVOKEINTERFACE);
             this.writeConstantInterfaceMethodrefInfo(
-                iMethod.getDeclaringIClass().getDescriptor(),                                           // locatable
-                iMethod.getName(), // classFD
+                iMethod.getDeclaringIClass().getDescriptor(), // classFD
+                iMethod.getName(),                            // methodName
                 iMethod.getDescriptor()                       // methodMD
             );
             IClass[] pts = iMethod.getParameterTypes();
@@ -3673,8 +3668,8 @@ public class UnitCompiler {
                 // Hence, the invocation of such a method must be modified accordingly.
                 this.writeOpcode(mi, Opcode.INVOKESTATIC);
                 this.writeConstantMethodrefInfo(
-                    iMethod.getDeclaringIClass().getDescriptor(), // locatable
-                    iMethod.getName() + '$',                      // classFD
+                    iMethod.getDeclaringIClass().getDescriptor(), // classFD
+                    iMethod.getName() + '$',                      // methodName
                     MethodDescriptor.prependParameter(            // methodMD
                         iMethod.getDescriptor(),
                         iMethod.getDeclaringIClass().getDescriptor()
@@ -3830,7 +3825,7 @@ public class UnitCompiler {
             (Locatable) naci, // l
             iConstructors,    // iInvocables
             naci.arguments,   // arguments
-            acd
+            acd               // contextScope
         );
 
         IClass[] pts = iConstructor.getParameterTypes();
@@ -3843,10 +3838,10 @@ public class UnitCompiler {
 
             // Pass the enclosing instance of the base class as parameter #1.
             if (naci.optionalQualification != null) l.add(new FunctionDeclarator.FormalParameter(
-                loc,                                                                // location
-                true,                                                               // finaL
+                loc,                                                           // location
+                true,                                                          // finaL
                 new SimpleType(loc, this.getType(naci.optionalQualification)), // type
-                "this$base"                                                         // name
+                "this$base"                                                    // name
             ));
             for (int i = 0; i < pts.length; ++i) l.add(new FunctionDeclarator.FormalParameter(
                 loc,                         // location
@@ -3885,7 +3880,7 @@ public class UnitCompiler {
             Mod.PACKAGE,                    // modifiers
             fps,                            // formalParameters
             tets,                           // thrownExceptions
-            new SuperConstructorInvocation( // optionalExplicitConstructorInvocation
+            new SuperConstructorInvocation( // optionalConstructorInvocation
                 loc,                         // location
                 optionalQualificationAccess, // optionalQualification
                 parameterAccesses            // arguments
@@ -3930,11 +3925,11 @@ public class UnitCompiler {
                 oei.setEnclosingBlockStatement(naci.getEnclosingBlockStatement());
             }
             this.invokeConstructor(
-                (Locatable) naci,                               // l
-                (Scope) naci.getEnclosingBlockStatement(), // scope
-                oei,                                            // optionalEnclosingInstance
-                this.resolve(naci.anonymousClassDeclaration),   // targetClass
-                arguments2                                      // arguments
+                (Locatable) naci,                             // l
+                (Scope) naci.getEnclosingBlockStatement(),    // scope
+                oei,                                          // optionalEnclosingInstance
+                this.resolve(naci.anonymousClassDeclaration), // targetClass
+                arguments2                                    // arguments
             );
         } finally {
 
@@ -4557,8 +4552,7 @@ public class UnitCompiler {
         return generatesCode2ListStatements(b.statements);
     }
     public boolean generatesCode2(FieldDeclaration fd) throws CompileException {
-        // Code is only generated if at least one of the declared variables has a
-        // non-constant-final initializer.
+        // Code is only generated if at least one of the declared variables has a non-constant-final initializer.
         for (int i = 0; i < fd.variableDeclarators.length; ++i) {
             VariableDeclarator vd = fd.variableDeclarators[i];
             if (this.getNonConstantFinalInitializer(fd, vd) != null) return true;
@@ -4619,9 +4613,8 @@ public class UnitCompiler {
             try {
                 short sv = 0;
 
-                // Obviously, JSR must always be executed with the operand stack being
-                // empty; otherwise we get "java.lang.VerifyError: Inconsistent stack height
-                // 1 != 2"
+                // Obviously, JSR must always be executed with the operand stack being empty; otherwise we get
+                // "java.lang.VerifyError: Inconsistent stack height 1 != 2"
                 if (optionalStackValueType != null) {
                     sv = this.codeContext.allocateLocalVariable(
                         Descriptor.size(optionalStackValueType.getDescriptor())
@@ -4685,8 +4678,8 @@ public class UnitCompiler {
             Opcode.PUTFIELD
         ));
         this.writeConstantFieldrefInfo(
-            fa.field.getDeclaringIClass().getDescriptor(),
-            fa.field.getName(), // classFD
+            fa.field.getDeclaringIClass().getDescriptor(), // classFD
+            fa.field.getName(),                            // fieldName
             fa.field.getDescriptor()                       // fieldFD
         );
     }
@@ -4840,8 +4833,7 @@ public class UnitCompiler {
                 }
             }
 
-            // 6.5.5.1.5 Type declared in other compilation unit of same
-            // package.
+            // 6.5.5.1.5 Type declared in other compilation unit of same package.
             {
                 String pkg = (
                     scopeCompilationUnit.optionalPackageDeclaration == null ? null :
@@ -5267,7 +5259,8 @@ public class UnitCompiler {
         IClass.IMember member,
         Scope     contextScope
     ) throws CompileException {
-        // you have to check that both the class and member are accessible in this scope
+
+        // You have to check that both the class and member are accessible in this scope.
         IClass declaringIClass = member.getDeclaringIClass();
         boolean acc = this.isAccessible(declaringIClass, contextScope);
         acc = acc && this.isAccessible(declaringIClass, member.getAccess(), contextScope);
@@ -5282,7 +5275,8 @@ public class UnitCompiler {
         IClass.IMember      member,
         BlockStatement contextBlockStatement
     ) throws CompileException {
-        // you have to check that both the class and member are accessible in this scope
+
+        // You have to check that both the class and member are accessible in this scope.
         IClass declaringIClass = member.getDeclaringIClass();
         this.checkAccessible(declaringIClass, contextBlockStatement);
         this.checkAccessible(declaringIClass, member.getAccess(), contextBlockStatement);
@@ -5343,8 +5337,7 @@ public class UnitCompiler {
         // Access is always allowed for block statements declared in the same class as the member.
         if (iClassDeclaringContextBlockStatement == iClassDeclaringMember) return null;
 
-        // Check whether the member and the context block statement are enclosed by the same
-        // top-level type.
+        // Check whether the member and the context block statement are enclosed by the same top-level type.
         {
             IClass topLevelIClassEnclosingMember = iClassDeclaringMember;
                 for (IClass c = iClassDeclaringMember.getDeclaringIClass(); c != null; c = c.getDeclaringIClass()) {
@@ -5366,8 +5359,7 @@ public class UnitCompiler {
 
         // At this point, the member is DEFAULT or PROTECTED accessible.
 
-        // Check whether the member and the context block statement are declared in the same
-        // package.
+        // Check whether the member and the context block statement are declared in the same package.
         if (Descriptor.areInSamePackage(
             iClassDeclaringMember.getDescriptor(),
             iClassDeclaringContextBlockStatement.getDescriptor()
@@ -5385,8 +5377,8 @@ public class UnitCompiler {
 
         // At this point, the member is PROTECTED accessible.
 
-        // Check whether the class declaring the context block statement is a subclass of the
-        // class declaring the member or a nested class whose parent is a subclass
+        // Check whether the class declaring the context block statement is a subclass of the class declaring the
+        // member or a nested class whose parent is a subclass
         IClass parentClass = iClassDeclaringContextBlockStatement;
         do {
             if (iClassDeclaringMember.isAssignableFrom(parentClass)) {
@@ -5868,8 +5860,8 @@ public class UnitCompiler {
             }
         } while (operand != null);
 
-        // At this point "tmp" contains an optimized sequence of Strings (representing constant
-        // portions) and Rvalues (non-constant portions).
+        // At this point "tmp" contains an optimized sequence of Strings (representing constant portions) and Rvalues
+        // (non-constant portions).
 
         if (tmp.size() <= (operandOnStack ? STRING_CONCAT_LIMIT - 1 : STRING_CONCAT_LIMIT)) {
 
@@ -5882,8 +5874,8 @@ public class UnitCompiler {
                 if (operandOnStack) {
                     this.writeOpcode(l, Opcode.INVOKEVIRTUAL);
                     this.writeConstantMethodrefInfo(
-                        Descriptor.STRING,
-                        "concat",                                         // classFD
+                        Descriptor.STRING,                                // classFD
+                        "concat",                                         // methodName
                         "(" + Descriptor.STRING + ")" + Descriptor.STRING // methodMD
                     );
                 } else
@@ -5913,8 +5905,8 @@ public class UnitCompiler {
         }
         this.writeOpcode(l, Opcode.INVOKESPECIAL);
         this.writeConstantMethodrefInfo(
-            stringBuilferFD,
-            "<init>",                                        // classFD
+            stringBuilferFD,                                 // classFD
+            "<init>",                                        // methodName
             "(" + Descriptor.STRING + ")" + Descriptor.VOID_ // methodMD
         );
         while (it.hasNext()) {
@@ -5923,8 +5915,8 @@ public class UnitCompiler {
             // "StringBuffer.append(b)":
             this.writeOpcode(l, Opcode.INVOKEVIRTUAL);
             this.writeConstantMethodrefInfo(
-                stringBuilferFD,
-                "append",                                // classFD
+                stringBuilferFD,                                // classFD
+                "append",                                       // methodName
                 "(" + Descriptor.STRING + ")" + stringBuilferFD // methodMD
             );
         }
@@ -5932,9 +5924,9 @@ public class UnitCompiler {
         // "StringBuffer.toString()":
         this.writeOpcode(l, Opcode.INVOKEVIRTUAL);
         this.writeConstantMethodrefInfo(
-            stringBuilferFD,
-            "toString",           // classFD
-            "()" + Descriptor.STRING   // methodMD
+            stringBuilferFD,         // classFD
+            "toString",              // methodName
+            "()" + Descriptor.STRING // methodMD
         );
         return this.iClassLoader.STRING;
     }
@@ -5990,7 +5982,7 @@ public class UnitCompiler {
         }
 
         IClass.IConstructor iConstructor = (IClass.IConstructor) this.findMostSpecificIInvocable(
-            l,
+            l,             // l
             iConstructors, // iInvocables
             arguments,     // arguments
             scope          // contextScope
@@ -6049,8 +6041,8 @@ public class UnitCompiler {
                             this.load(l, this.resolve(scopeClassDeclaration), 0);
                             this.writeOpcode(l, Opcode.GETFIELD);
                             this.writeConstantFieldrefInfo(
-                                this.resolve(scopeClassDeclaration).getDescriptor(),
-                                sf.getName(), // classFD
+                                this.resolve(scopeClassDeclaration).getDescriptor(), // classFD
+                                sf.getName(),                                        // fieldName
                                 sf.getDescriptor()                                   // fieldFD
                             );
                         } else
@@ -6150,12 +6142,11 @@ public class UnitCompiler {
         }
 
         // Invoke!
-        // Notice that the method descriptor is "iConstructor.getDescriptor()" prepended with the
-        // synthetic parameters.
+        // Notice that the method descriptor is "iConstructor.getDescriptor()" prepended with the synthetic parameters.
         this.writeOpcode(l, Opcode.INVOKESPECIAL);
         this.writeConstantMethodrefInfo(
-            targetClass.getDescriptor(),
-            "<init>", // classFD
+            targetClass.getDescriptor(), // classFD
+            "<init>",                    // methodName
             iConstructor.getDescriptor() // methodMD
         );
     }
@@ -6303,8 +6294,8 @@ public class UnitCompiler {
 
         IClass lhsType = this.getType(lhs);
 
-        // Notice: Don't need to check for 6.5.2.2.2.1 TYPE.METHOD and 6.5.2.2.3.1
-        // EXPRESSION.METHOD here because that has been done before.
+        // Notice: Don't need to check for 6.5.2.2.2.1 TYPE.METHOD and 6.5.2.2.3.1 EXPRESSION.METHOD here because that
+        // has been done before.
 
         {
             IClass.IField field = this.findIField(lhsType, rhs, location);
@@ -6606,9 +6597,10 @@ public class UnitCompiler {
             if (iClass != null) return new SimpleType(location, iClass);
         }
 
-        // 6.5.2.BL1.B1.B3.2 (JLS3: 6.5.2.BL1.B1.B3.1) Package member class/interface declared in this compilation unit.
-        // Notice that JLS2 looks this up AFTER local class, member type, single type import, while
-        // JLS3 looks this up BEFORE local class, member type, single type import.
+        // 6.5.2.BL1.B1.B3.2 (JLS3: 6.5.2.BL1.B1.B3.1) Package member class/interface declared in this compilation
+        // unit.
+        // Notice that JLS2 looks this up AFTER local class, member type, single type import, while JLS3 looks this up
+        // BEFORE local class, member type, single type import.
         {
             PackageMemberTypeDeclaration pmtd = scopeCompilationUnit.getPackageMemberTypeDeclaration(identifier);
             if (pmtd != null) return new SimpleType(location, this.resolve((AbstractTypeDeclaration) pmtd));
@@ -6867,7 +6859,7 @@ public class UnitCompiler {
         Invocation invocation
     ) throws CompileException {
 
-        // Get all methods
+        // Get all methods.
         List ms = new ArrayList();
         this.getIMethods(targetType, invocation.methodName, ms);
 
@@ -6882,9 +6874,9 @@ public class UnitCompiler {
 
         if (ms.size() == 0) return null;
 
-        // Determine arguments' types, choose the most specific method
+        // Determine arguments' types, choose the most specific method.
         return (IClass.IMethod) this.findMostSpecificIInvocable(
-            (Locatable) invocation,                                       // loc
+            (Locatable) invocation,                                       // l
             (IClass.IMethod[]) ms.toArray(new IClass.IMethod[ms.size()]), // iInvocables
             invocation.arguments,                                         // arguments
             invocation.getEnclosingBlockStatement()                       // contextScope
@@ -7010,8 +7002,7 @@ public class UnitCompiler {
         }
         this.compileError(sb.toString(), l.getLocation());
 
-        // Well, returning a "fake" IInvocable is a bit tricky, because the iInvocables
-        // can be of different types.
+        // Well, returning a "fake" IInvocable is a bit tricky, because the iInvocables can be of different types.
         if (iInvocables[0] instanceof IClass.IConstructor) {
             return iInvocables[0].getDeclaringIClass().new IConstructor() {
                 public IClass[] getParameterTypes()   { return argumentTypes; }
@@ -7290,8 +7281,8 @@ public class UnitCompiler {
         IClass[] thrownExceptions = iMethod.getThrownExceptions();
         for (int i = 0; i < thrownExceptions.length; ++i) {
             this.checkThrownException(
-                (Locatable) in,                              // l
-                thrownExceptions[i],                         // type
+                (Locatable) in,                         // l
+                thrownExceptions[i],                    // type
                 (Scope) in.getEnclosingBlockStatement() // scope
             );
         }
@@ -7597,8 +7588,7 @@ public class UnitCompiler {
         TARGET_FOUND: {
             for (j = 0; j < path.size(); ++j) {
 
-                // Notice: JLS 15.9.2.BL1.B3.B1.B2 seems to be wrong: Obviously, JAVAC does not
-                // only allow
+                // Notice: JLS 15.9.2.BL1.B3.B1.B2 seems to be wrong: Obviously, JAVAC does not only allow
                 //
                 //    O is the nth lexically enclosing class
                 //
@@ -7606,8 +7596,8 @@ public class UnitCompiler {
                 //
                 //    O is assignable from the nth lexically enclosing class
                 //
-                // However, this strategy bears the risk of ambiguities, because "O" may be
-                // assignable from more than one enclosing class.
+                // However, this strategy bears the risk of ambiguities, because "O" may be assignable from more than
+                // one enclosing class.
                 if (targetIClass.isAssignableFrom(this.resolve((AbstractTypeDeclaration) path.get(j)))) {
                     break TARGET_FOUND;
                 }
@@ -7654,8 +7644,8 @@ public class UnitCompiler {
             ));
             this.writeOpcode(l, Opcode.GETFIELD);
             this.writeConstantFieldrefInfo(
-                iic.getDescriptor(),
-                fieldName, // classFD
+                iic.getDescriptor(), // classFD
+                fieldName,           // fieldName
                 oic.getDescriptor()  // fieldFD
             );
         }
@@ -7924,8 +7914,7 @@ public class UnitCompiler {
      */
     public IClass importTypeOnDemand(String simpleTypeName, Location location) throws CompileException {
 
-        // Check cache. (A cache for unimportable types is not required, because
-        // the class is importable 99.9%.)
+        // Check cache. (A cache for unimportable types is not required, because the class is importable 99.9%.)
         IClass importedClass = (IClass) this.onDemandImportableTypes.get(simpleTypeName);
         if (importedClass != null) return importedClass;
 
@@ -7975,9 +7964,9 @@ public class UnitCompiler {
         // try {
         // return Class.forName(className);
         MethodInvocation mi = new MethodInvocation(
-            loc,                                               // location
+            loc,                                          // location
             new SimpleType(loc, this.iClassLoader.CLASS), // optionalTarget
-            "forName",                                         // methodName
+            "forName",                                    // methodName
             new Rvalue[] {                                // arguments
                 new AmbiguousName(loc, new String[] { "className" })
             }
@@ -8007,15 +7996,15 @@ public class UnitCompiler {
         Block b = new Block(loc);
         // throw new NoClassDefFoundError(e.getMessage());
         b.addStatement(new ThrowStatement(loc, new NewClassInstance(
-            loc,                                                  // location
+            loc,                                              // location
             (Rvalue) null,                                   // optionalQualification
             new SimpleType(loc, noClassDefFoundErrorIClass), // type
             new Rvalue[] {                                   // arguments
                 new MethodInvocation(
-                    loc,                                               // location
-                    new AmbiguousName(loc, new String[] { "ex"}), // optionalTarget
-                    "getMessage",                                      // methodName
-                    new Rvalue[0]                                 // arguments
+                    loc,                                           // location
+                    new AmbiguousName(loc, new String[] { "ex" }), // optionalTarget
+                    "getMessage",                                  // methodName
+                    new Rvalue[0]                                  // arguments
                 )
             }
         )));
@@ -8043,20 +8032,20 @@ public class UnitCompiler {
 
         // Class class$(String className)
         FunctionDeclarator.FormalParameter fp = new FunctionDeclarator.FormalParameter(
-            loc,                                                // location
-            false,                                              // finaL
+            loc,                                           // location
+            false,                                         // finaL
             new SimpleType(loc, this.iClassLoader.STRING), // type
-            "className"                                         // name
+            "className"                                    // name
         );
         MethodDeclarator cdmd = new MethodDeclarator(
-            loc,                                                  // location
-            null,                                                 // optionalDocComment
-            Mod.STATIC,                                           // modifiers
+            loc,                                             // location
+            null,                                            // optionalDocComment
+            Mod.STATIC,                                      // modifiers
             new SimpleType(loc, this.iClassLoader.CLASS),    // type
-            "class$",                                             // name
+            "class$",                                        // name
             new FunctionDeclarator.FormalParameter[] { fp }, // formalParameters
             new Type[0],                                     // thrownExceptions
-            statements                                            // optionalStatements
+            statements                                       // optionalStatements
         );
 
         declaringType.addDeclaredMethod(cdmd);
@@ -8155,8 +8144,8 @@ public class UnitCompiler {
                 this.writeLDC(l, this.addConstantStringInfo(ss[i]));
                 this.writeOpcode(l, Opcode.INVOKEVIRTUAL);
                 this.writeConstantMethodrefInfo(
-                    Descriptor.STRING,
-                    "concat",                                         // classFD
+                    Descriptor.STRING,                                // classFD
+                    "concat",                                         // methodName
                     "(" + Descriptor.STRING + ")" + Descriptor.STRING // methodMD
                 );
             }
@@ -9007,7 +8996,7 @@ public class UnitCompiler {
         );
     }
 
-    /*
+    /**
      * @return the boxed type or <code>null</code>
      */
     private IClass isBoxingConvertible(IClass sourceType) {
@@ -9045,8 +9034,8 @@ public class UnitCompiler {
         if (targetType.hasIMethod("valueOf", new IClass[] { sourceType })) {
             this.writeOpcode(l, Opcode.INVOKESTATIC);
             this.writeConstantMethodrefInfo(
-                targetType.getDescriptor(),
-                "valueOf",                                         // classFD
+                targetType.getDescriptor(),                                         // classFD
+                "valueOf",                                                          // methodName
                 '(' + sourceType.getDescriptor() + ')' + targetType.getDescriptor() // methodFD
             );
             return;
@@ -9065,13 +9054,14 @@ public class UnitCompiler {
         }
         this.writeOpcode(l, Opcode.INVOKESPECIAL);
         this.writeConstantMethodrefInfo(
-            targetType.getDescriptor(),
-            "<init>",                               // classFD
+            targetType.getDescriptor(),                               // classFD
+            "<init>",                                                 // methodName
             '(' + sourceType.getDescriptor() + ')' + Descriptor.VOID_ // methodMD
         );
     }
 
-    /*
+    /**
+     * 
      * @return the unboxed type or <code>null</code>
      */
     private IClass isUnboxingConvertible(IClass sourceType) {
@@ -9108,8 +9098,8 @@ public class UnitCompiler {
         // "source.targetValue()"
         this.writeOpcode(l, Opcode.INVOKEVIRTUAL);
         this.writeConstantMethodrefInfo(
-            sourceType.getDescriptor(),
-            targetType.toString() + "Value",       // classFD
+            sourceType.getDescriptor(),       // classFD
+            targetType.toString() + "Value",  // methodName
             "()" + targetType.getDescriptor() // methodFD
         );
     }
@@ -9121,8 +9111,7 @@ public class UnitCompiler {
      */
     private IClass loadFullyQualifiedClass(String[] identifiers) throws CompileException {
 
-        // Compose the descriptor (like "La/b/c;") and remember the positions of the slashes
-        // (2 and 4).
+        // Compose the descriptor (like "La/b/c;") and remember the positions of the slashes (2 and 4).
         int[] slashes = new int[identifiers.length - 1];
         StringBuffer sb = new StringBuffer("L");
         for (int i = 0;; ++i) {
@@ -9190,9 +9179,9 @@ public class UnitCompiler {
         LocalVariable localVariable
     ) {
         this.store(
-            l,                                    // l
-            localVariable.type,                   // lvType
-            localVariable.getSlotIndex()          // lvIndex
+            l,                           // l
+            localVariable.type,          // lvType
+            localVariable.getSlotIndex() // lvIndex
         );
     }
     private void store(
