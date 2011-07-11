@@ -3528,14 +3528,36 @@ public class UnitCompiler {
         IClass tt = this.getType(c.targetType);
         IClass vt = this.compileGetValue(c.value);
         if (
-            !this.tryIdentityConversion(vt, tt) &&
-            !this.tryWideningPrimitiveConversion((Locatable) c, vt, tt) &&
-            !this.tryNarrowingPrimitiveConversion((Locatable) c, vt, tt) &&
-            !this.tryWideningReferenceConversion(vt, tt) &&
-            !this.tryNarrowingReferenceConversion((Locatable) c, vt, tt) &&
-            !this.tryBoxingConversion((Locatable) c, vt, tt) &&
-            !this.tryUnboxingConversion((Locatable) c, vt, tt)
-        ) this.compileError("Cannot cast \"" + vt + "\" to \"" + tt + "\"", c.getLocation());
+            this.tryIdentityConversion(vt, tt)
+            || this.tryWideningPrimitiveConversion((Locatable) c, vt, tt)
+            || this.tryNarrowingPrimitiveConversion((Locatable) c, vt, tt)
+            || this.tryWideningReferenceConversion(vt, tt)
+            || this.tryNarrowingReferenceConversion((Locatable) c, vt, tt)
+            || this.tryBoxingConversion((Locatable) c, vt, tt)
+            || this.tryUnboxingConversion((Locatable) c, vt, tt)
+        ) return tt;
+
+        // JAVAC obviously also permits 'boxing conversion followed by widening reference conversion' and 'unboxing
+        // conversion followed by widening primitive conversion', although these are not described by the JLS3
+        // (http://java.sun.com/docs/books/jls/third_edition/html/conversions.html#5.5). For the sake of compatibility,
+        // we implement them.
+        // See also http://jira.codehaus.org/browse/JANINO-153
+        {
+            IClass boxedType = this.isBoxingConvertible(vt);
+            if (boxedType != null && this.isWideningReferenceConvertible(boxedType, tt)) {
+                this.boxingConversion(c, vt, boxedType);
+                return tt;
+            }
+
+            IClass unboxedType = this.isUnboxingConvertible(vt);
+            if (unboxedType != null && this.isWideningPrimitiveConvertible(unboxedType, tt)) {
+                this.unboxingConversion(c, vt, unboxedType);
+                this.tryWideningPrimitiveConversion(c, unboxedType, tt);
+                return tt;
+            }
+        }
+
+        this.compileError("Cannot cast \"" + vt + "\" to \"" + tt + "\"", c.getLocation());
         return tt;
     }
     private IClass compileGet2(ParenthesizedExpression pe) throws CompileException {

@@ -484,4 +484,44 @@ public class ReportedBugs extends JaninoTestSuite {
         IExpressionEvaluator evaluator = CompilerFactoryFactory.getDefaultCompilerFactory().newExpressionEvaluator();
         evaluator.setReturnType(Long.class);
     }
+
+    @Test
+    public void testBug153_1() throws Exception {
+        scr(EXEC, "Comparable x = 5.0;");
+    }
+
+    @Test
+    public void testBug153_2() throws Exception {
+
+        // JLS3 says about casting conversion
+        // (http://java.sun.com/docs/books/jls/third_edition/html/conversions.html#5.5):
+        //
+        //    Casting contexts allow the use of:
+        // ...
+        //     * a boxing conversion (§5.1.7)
+        //
+        // , but obviously (JAVAC) a boxing conversion followed by a widening reference conversion is also
+        // permitted (as for assignment conversion).
+        scr(EXEC, "Comparable x = (Comparable) 5.0;");
+    }
+
+    @Test
+    public void testBug153_3() throws Exception {
+        scr(EXEC, "long x = new Integer(8);");
+    }
+
+    @Test
+    public void testBug153_4() throws Exception {
+
+        // JLS3 says about casting conversion
+        // (http://java.sun.com/docs/books/jls/third_edition/html/conversions.html#5.5):
+        //
+        //    Casting contexts allow the use of:
+        // ...
+        //     * an unboxing conversion (§5.1.8)
+        //
+        // , but obviously (JAVAC) an unboxing conversion followed by a widening primitive conversion is also
+        // permitted (as for assignment conversion).
+        scr(EXEC, "long x = (long) new Integer(8);");
+    }
 }
