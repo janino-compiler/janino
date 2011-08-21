@@ -365,6 +365,12 @@ public class Disassembler {
 
         this.println(" {");
 
+        // Report constant pool size.
+        if (this.verbose) {
+            println();
+            println("    // Constant pool size: " + cf.constantPool.getSize());
+        }
+
         // Print enclosing/enclosed types.
         if (cf.innerClassesAttribute != null) {
             println();
@@ -753,7 +759,7 @@ public class Disassembler {
         public void visit(LineNumberTableAttribute lnta) {
             println(this.prefix + "LineNumberTable:");
             for (LineNumberTableEntry e : lnta.entries) {
-                println(this.prefix + "  " + (0xffff & e.startPC) + " => Line " + (0xffff & e.lineNumber));
+                println(this.prefix + "  " + e.startPC + " => Line " + e.lineNumber);
             }
         }
 
@@ -763,7 +769,7 @@ public class Disassembler {
                 println(
                     this.prefix
                     + "  "
-                    + e.startPC
+                    + (0xffff & e.startPC)
                     + "+"
                     + e.length
                     + ": "
@@ -897,7 +903,7 @@ public class Disassembler {
                 }
 
                 // Parameter name.
-                print(' ' + getLocalVariable(firstIndex, (short) 0, method).name);
+                print(' ' + getLocalVariable(firstIndex, 0, method).name);
 
                 if (!it.hasNext()) break;
                 firstIndex++;
@@ -927,40 +933,40 @@ public class Disassembler {
             // Analyze TRY bodies.
 
             // startPC => { endPC }
-            Map<Integer, Set<Integer>> tryStarts = new HashMap<Integer, Set<Integer>>();
+            SortedMap<Integer, Set<Integer>> tryStarts = new TreeMap<Integer, Set<Integer>>();
 
             // endPC => startPC => ExceptionTableEntry
-            Map<Integer, SortedMap<Integer, List<ExceptionTableEntry>>> tryEnds = (
-                new HashMap<Integer, SortedMap<Integer, List<ExceptionTableEntry>>>()
+            SortedMap<Integer, SortedMap<Integer, List<ExceptionTableEntry>>> tryEnds = (
+                new TreeMap<Integer, SortedMap<Integer, List<ExceptionTableEntry>>>()
             );
 
             for (ExceptionTableEntry e : exceptionTable) {
-                Set<Integer> s = tryStarts.get(0xffff & e.startPC);
+                Set<Integer> s = tryStarts.get(e.startPC);
                 if (s == null) {
                     s = new HashSet<Integer>();
-                    tryStarts.put(0xffff & e.startPC, s);
+                    tryStarts.put(e.startPC, s);
                 }
-                s.add(0xffff & e.endPC);
+                s.add(e.endPC);
 
-                SortedMap<Integer, List<ExceptionTableEntry>> m = tryEnds.get(0xffff & e.endPC);
+                SortedMap<Integer, List<ExceptionTableEntry>> m = tryEnds.get(e.endPC);
                 if (m == null) {
                     m = new TreeMap<Integer, List<ExceptionTableEntry>>(Collections.reverseOrder());
-                    tryEnds.put(0xffff & e.endPC, m);
+                    tryEnds.put(e.endPC, m);
                 }
-                List<ExceptionTableEntry> l = m.get(0xffff & e.startPC);
+                List<ExceptionTableEntry> l = m.get(e.startPC);
                 if (l == null) {
                     l = new ArrayList<ExceptionTableEntry>();
-                    m.put(0xffff & e.startPC, l);
+                    m.put(e.startPC, l);
                 }
                 l.add(e);
 
-                this.branchTargets.add(0xffff & e.handlerPC);
+                this.branchTargets.add(e.handlerPC);
             }
 
             // Disassemble the byte code into a sequence of lines.
-            SortedMap<Short, String> lines = new TreeMap<Short, String>();
+            SortedMap<Integer /*instructionOffset*/, String /*text*/> lines = new TreeMap<Integer, String>();
             for (;;) {
-                short instructionOffset = (short) cis.getCount();
+                int instructionOffset = (int) cis.getCount();
 
                 int opcode = dis.read();
                 if (opcode == -1) break;
@@ -978,9 +984,9 @@ public class Disassembler {
                             cp
                         ));
                     } catch (RuntimeException rte) {
-                        for (Iterator<Entry<Short, String>> it = lines.entrySet().iterator(); it.hasNext();) {
-                            Entry<Short, String> e = it.next();
-                            println("#" + (0xffff & e.getKey()) + " " + e.getValue());
+                        for (Iterator<Entry<Integer, String>> it = lines.entrySet().iterator(); it.hasNext();) {
+                            Entry<Integer, String> e = it.next();
+                            println("#" + e.getKey() + " " + e.getValue());
                         }
                         throw new RuntimeException("Instruction '" + instruction + "', pc=" + instructionOffset, rte);
                     }
@@ -989,32 +995,37 @@ public class Disassembler {
 
             // Format and print the disassembly lines.
             String indentation = "        ";
-            for (Iterator<Entry<Short, String>> it = lines.entrySet().iterator(); it.hasNext();) {
-                Entry<Short, String> e = it.next();
-                int instructionOffset = 0xffff & e.getKey();
+            for (Entry<Integer, String> e : lines.entrySet()) {
+                int instructionOffset = e.getKey();
                 String text = e.getValue();
 
                 // Print ends of TRY bodies.
-                {
-                    SortedMap<Integer, List<ExceptionTableEntry>> m = tryEnds.get(instructionOffset);
-                    if (m != null) {
-                        for (List<ExceptionTableEntry> etes : m.values()) {
-                            indentation = indentation.substring(4);
-                            print(indentation + "} catch (");
-                            Iterator<ExceptionTableEntry> it2 = etes.iterator();
-                            for (;;) {
-                                ExceptionTableEntry ete = it2.next();
-                                print(
-                                    (ete.catchType == null ? "[all exeptions]" : beautify(ete.catchType.name))
-                                    + " => "
-                                    + ete.handlerPC
-                                );
-                                if (!it2.hasNext()) break;
-                                print(", ");
-                            }
-                            println(")");
+                for (Iterator<Entry<Integer, SortedMap<Integer, List<ExceptionTableEntry>>>> it = tryEnds.entrySet().iterator(); it.hasNext();) {
+                    Entry<Integer, SortedMap<Integer, List<ExceptionTableEntry>>> e2 = it.next();
+                    int endPC = e2.getKey().intValue();
+                    if (endPC > instructionOffset) break;
+
+                    SortedMap<Integer, List<ExceptionTableEntry>> startPC2ETE = e2.getValue();
+                    for (Entry<Integer, List<ExceptionTableEntry>> e3 : startPC2ETE.entrySet()) {
+                        List<ExceptionTableEntry> etes = e3.getValue();
+                        if (endPC < instructionOffset) {
+                            error("Exception table entry ends at invalid code array index " + endPC + " (current instruction offset is " + instructionOffset + ")");
                         }
+                        indentation = indentation.substring(4);
+                        print(indentation + "} catch (");
+                        for (Iterator<ExceptionTableEntry> it2 = etes.iterator();;) {
+                            ExceptionTableEntry ete = it2.next();
+                            print(
+                                (ete.catchType == null ? "[all exceptions]" : beautify(ete.catchType.name))
+                                + " => "
+                                + ete.handlerPC
+                            );
+                            if (!it2.hasNext()) break;
+                            print(", ");
+                        }
+                        println(")");
                     }
+                    it.remove();
                 }
 
                 // Print instruction offsets only for branch targets.
@@ -1023,14 +1034,19 @@ public class Disassembler {
                 }
 
                 // Print beginnings of TRY bodies.
-                {
-                    Set<Integer> s = tryStarts.get(instructionOffset);
-                    if (s != null) {
-                        for (int i = s.size(); i > 0; i--) {
-                            println(indentation + "try {");
-                            indentation += "    ";
+                for (Iterator<Entry<Integer, Set<Integer>>> it = tryStarts.entrySet().iterator(); it.hasNext();) {
+                    Entry<Integer, Set<Integer>> sc = it.next();
+                    Integer startPC = sc.getKey();
+                    if (startPC > instructionOffset) break;
+
+                    for (int i = sc.getValue().size(); i > 0; i--) {
+                        if (startPC < instructionOffset) {
+                            error("Exception table entry starts at invalid code array index " + startPC + " (current instruction offset is " + instructionOffset + ")");
                         }
+                        println(indentation + "try {");
+                        indentation += "    ";
                     }
+                    it.remove();
                 }
 
                 // Print source line and/or line number.
@@ -1076,7 +1092,7 @@ public class Disassembler {
         int                      offset
     ) {
         for (LineNumberTableEntry lnte : lnta.entries) {
-            if ((0xffff & lnte.startPC) == offset) return 0xffff & lnte.lineNumber;
+            if (lnte.startPC == offset) return lnte.lineNumber;
         }
         return -1;
     }
@@ -1087,7 +1103,7 @@ public class Disassembler {
     private String disasmOperands(
         Operand[]       operands,
         DataInputStream dis,
-        short           instructionOffset,
+        int             instructionOffset,
         Method          method,
         ConstantPool    cp
     ) throws IOException {
@@ -1345,7 +1361,7 @@ public class Disassembler {
                         operand = new Operand() {
                             public String disasm(
                                 DataInputStream dis,
-                                short           instructionOffset,
+                                int             instructionOffset,
                                 Method          method,
                                 ConstantPool    cp,
                                 Disassembler    d
@@ -1360,7 +1376,7 @@ public class Disassembler {
                         operand = new Operand() {
                             public String disasm(
                                 DataInputStream dis,
-                                short           instructionOffset,
+                                int             instructionOffset,
                                 Method          method,
                                 ConstantPool    cp,
                                 Disassembler    d
@@ -1375,7 +1391,7 @@ public class Disassembler {
                         operand = new Operand() {
                             public String disasm(
                                 DataInputStream dis,
-                                short           instructionOffset,
+                                int             instructionOffset,
                                 Method          method,
                                 ConstantPool    cp,
                                 Disassembler    d
@@ -1388,7 +1404,7 @@ public class Disassembler {
                         operand = new Operand() {
                             public String disasm(
                                 DataInputStream dis,
-                                short           instructionOffset,
+                                int             instructionOffset,
                                 Method          method,
                                 ConstantPool    cp,
                                 Disassembler    d
@@ -1396,7 +1412,7 @@ public class Disassembler {
                                 ConstantFieldrefInfo fr = cp.getConstantFieldrefInfo(dis.readShort());
                                 return (
                                     ' '
-                                    + d.beautify(decodeFieldDescriptor(fr.nameAndType.descriptor.bytes).toString())
+                                    + d.beautify(d.decodeFieldDescriptor(fr.nameAndType.descriptor.bytes).toString())
                                     + ' '
                                     + d.beautify(fr.clasS.name)
                                     + '.'
@@ -1409,7 +1425,7 @@ public class Disassembler {
                         operand = new Operand() {
                             public String disasm(
                                 DataInputStream dis,
-                                short           instructionOffset,
+                                int             instructionOffset,
                                 Method          method,
                                 ConstantPool    cp,
                                 Disassembler    d
@@ -1417,7 +1433,7 @@ public class Disassembler {
                                 ConstantMethodrefInfo mr = cp.getConstantMethodrefInfo(dis.readShort());
                                 return (
                                     ' '
-                                    + d.beautify(decodeMethodDescriptor(mr.nameAndType.descriptor.bytes).toString(
+                                    + d.beautify(d.decodeMethodDescriptor(mr.nameAndType.descriptor.bytes).toString(
                                         mr.clasS.name,
                                         mr.nameAndType.name.bytes
                                     ))
@@ -1429,7 +1445,7 @@ public class Disassembler {
                         operand = new Operand() {
                             public String disasm(
                                 DataInputStream dis,
-                                short           instructionOffset,
+                                int             instructionOffset,
                                 Method          method,
                                 ConstantPool    cp,
                                 Disassembler    d
@@ -1441,7 +1457,7 @@ public class Disassembler {
                                 dis.readByte();
                                 return (
                                     ' '
-                                    + d.beautify(decodeMethodDescriptor(imr.nameAndType.descriptor.bytes).toString(
+                                    + d.beautify(d.decodeMethodDescriptor(imr.nameAndType.descriptor.bytes).toString(
                                         imr.clasS.name,
                                         imr.nameAndType.name.bytes
                                     ))
@@ -1453,7 +1469,7 @@ public class Disassembler {
                         operand = new Operand() {
                             public String disasm(
                                 DataInputStream dis,
-                                short           instructionOffset,
+                                int             instructionOffset,
                                 Method          method,
                                 ConstantPool    cp,
                                 Disassembler    d
@@ -1461,7 +1477,7 @@ public class Disassembler {
                                 String name = cp.getConstantClassInfo(dis.readShort()).name;
                                 return ' ' + d.beautify(
                                     name.startsWith("[")
-                                    ? decodeFieldDescriptor(name).toString()
+                                    ? d.decodeFieldDescriptor(name).toString()
                                     : name.replace('/', '.')
                                 );
                             }
@@ -1471,7 +1487,7 @@ public class Disassembler {
                         operand = new Operand() {
                             public String disasm(
                                 DataInputStream dis,
-                                short           instructionOffset,
+                                int             instructionOffset,
                                 Method          method,
                                 ConstantPool    cp,
                                 Disassembler    d
@@ -1479,7 +1495,7 @@ public class Disassembler {
                                 byte index = dis.readByte();
                                 LocalVariable lv = d.getLocalVariable(
                                     (short) (0xff & index),
-                                    (short) (instructionOffset + 2),
+                                    instructionOffset + 2,
                                     method
                                 );
                                 return d.beautify(lv.toString());
@@ -1490,13 +1506,13 @@ public class Disassembler {
                         operand = new Operand() {
                             public String disasm(
                                 DataInputStream dis,
-                                short           instructionOffset,
+                                int             instructionOffset,
                                 Method          method,
                                 ConstantPool    cp,
                                 Disassembler    d
                             ) throws IOException {
-                                short index = dis.readByte();
-                                LocalVariable lv = d.getLocalVariable(index, (short) (instructionOffset + 2), method);
+                                short index = dis.readShort();
+                                LocalVariable lv = d.getLocalVariable(index, instructionOffset + 2, method);
                                 return d.beautify(lv.toString());
                             }
                         };
@@ -1510,12 +1526,12 @@ public class Disassembler {
 
                             public String disasm(
                                 DataInputStream dis,
-                                short           instructionOffset,
+                                int             instructionOffset,
                                 Method          method,
                                 ConstantPool    cp,
                                 Disassembler    d
                             ) {
-                                this.lv = d.getLocalVariable(index, (short) (instructionOffset + 2), method);
+                                this.lv = d.getLocalVariable(index, instructionOffset, method);
                                 return d.beautify(this.lv.toString());
                             }
                         };
@@ -1524,7 +1540,7 @@ public class Disassembler {
                         operand = new Operand() {
                             public String disasm(
                                 DataInputStream dis,
-                                short           instructionOffset,
+                                int             instructionOffset,
                                 Method          method,
                                 ConstantPool    cp,
                                 Disassembler    d
@@ -1539,7 +1555,7 @@ public class Disassembler {
                         operand = new Operand() {
                             public String disasm(
                                 DataInputStream dis,
-                                short           instructionOffset,
+                                int             instructionOffset,
                                 Method          method,
                                 ConstantPool    cp,
                                 Disassembler    d
@@ -1554,7 +1570,7 @@ public class Disassembler {
                         operand = new Operand() {
                             public String disasm(
                                 DataInputStream dis,
-                                short           instructionOffset,
+                                int             instructionOffset,
                                 Method          method,
                                 ConstantPool    cp,
                                 Disassembler    d
@@ -1567,7 +1583,7 @@ public class Disassembler {
                         operand = new Operand() {
                             public String disasm(
                                 DataInputStream dis,
-                                short           instructionOffset,
+                                int             instructionOffset,
                                 Method          method,
                                 ConstantPool    cp,
                                 Disassembler    d
@@ -1580,7 +1596,7 @@ public class Disassembler {
                         operand = new Operand() {
                             public String disasm(
                                 DataInputStream dis,
-                                short           instructionOffset,
+                                int             instructionOffset,
                                 Method          method,
                                 ConstantPool    cp,
                                 Disassembler    d
@@ -1604,7 +1620,7 @@ public class Disassembler {
                         operand = new Operand() {
                             public String disasm(
                                 DataInputStream dis,
-                                short           instructionOffset,
+                                int             instructionOffset,
                                 Method          method,
                                 ConstantPool    cp,
                                 Disassembler    d
@@ -1617,7 +1633,7 @@ public class Disassembler {
                         operand = new Operand() {
                             public String disasm(
                                 DataInputStream dis,
-                                short           instructionOffset,
+                                int             instructionOffset,
                                 Method          method,
                                 ConstantPool    cp,
                                 Disassembler    d
@@ -1655,7 +1671,7 @@ public class Disassembler {
                         operand = new Operand() {
                             public String disasm(
                                 DataInputStream dis,
-                                short           instructionOffset,
+                                int             instructionOffset,
                                 Method          method,
                                 ConstantPool    cp,
                                 Disassembler    d
@@ -1693,7 +1709,7 @@ public class Disassembler {
                         operand = new Operand() {
                             public String disasm(
                                 DataInputStream dis,
-                                short           instructionOffset,
+                                int             instructionOffset,
                                 Method          method,
                                 ConstantPool    cp,
                                 Disassembler    d
@@ -1730,7 +1746,7 @@ public class Disassembler {
 
     private LocalVariable getLocalVariable(
         short  localVariableIndex,
-        short  instructionOffset,
+        int    instructionOffset,
         Method method
     ) {
         LocalVariable lv = new LocalVariable();
@@ -1789,7 +1805,7 @@ public class Disassembler {
         return lv;
     }
 
-    private static ClassSignature decodeClassSignature(String cs) {
+    private ClassSignature decodeClassSignature(String cs) {
         try {
             return SignatureParser.decodeClassSignature(cs);
         } catch (SignatureException e) {
@@ -1801,7 +1817,7 @@ public class Disassembler {
         }
     }
 
-    private static FieldTypeSignature decodeFieldTypeSignature(String fs) {
+    private FieldTypeSignature decodeFieldTypeSignature(String fs) {
         try {
             return SignatureParser.decodeFieldTypeSignature(fs);
         } catch (SignatureException e) {
@@ -1810,7 +1826,7 @@ public class Disassembler {
         }
     }
     
-    private static MethodTypeSignature decodeMethodTypeSignature(String ms) {
+    private MethodTypeSignature decodeMethodTypeSignature(String ms) {
         try {
             return SignatureParser.decodeMethodTypeSignature(ms);
         } catch (SignatureException e) {
@@ -1822,7 +1838,7 @@ public class Disassembler {
         }
     }
 
-    private static TypeSignature decodeFieldDescriptor(String fd) {
+    private TypeSignature decodeFieldDescriptor(String fd) {
         try {
             return SignatureParser.decodeFieldDescriptor(fd);
         } catch (SignatureException e) {
@@ -1831,7 +1847,7 @@ public class Disassembler {
         }
     }
 
-    private static MethodTypeSignature decodeMethodDescriptor(String md) {
+    private MethodTypeSignature decodeMethodDescriptor(String md) {
         try {
             return SignatureParser.decodeMethodDescriptor(md);
         } catch (SignatureException e) {
@@ -1860,8 +1876,8 @@ public class Disassembler {
         }
     }
 
-    public static void error(String message) {
-        System.out.println(message);
+    public void error(String message) {
+        this.pw.println("*** Error: " + message);
     }
 
     /**
@@ -1892,7 +1908,7 @@ public class Disassembler {
     private interface Operand {
         String disasm(
             DataInputStream dis,
-            short           instructionOffset,
+            int             instructionOffset,
             Method          method,
             ConstantPool    cp,
             Disassembler    d

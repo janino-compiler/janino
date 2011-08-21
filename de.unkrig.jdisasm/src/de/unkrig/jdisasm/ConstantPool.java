@@ -365,7 +365,11 @@ public class ConstantPool {
 
     private ConstantPoolEntry get(short index) {
         if (index == 0) return null;
-        ConstantPoolEntry e = this.entries[0xffff & index];
+        int ii = 0xffff & index;
+        if (ii >= this.entries.length) {
+            throw new IllegalArgumentException("Illegal constant pool index " + ii + " - only 0..." + (this.entries.length - 1) + " allowed");
+        }
+        ConstantPoolEntry e = this.entries[ii];
         if (e == null) throw new NullPointerException("Unusable CP entry " + index);
         return e;
     }
@@ -395,12 +399,12 @@ public class ConstantPool {
      * returns its value converted to {@link String}.
      */
     public String getIntegerFloatClassString(short index) {
-        ConstantPoolEntry e = this.entries[index];
+        ConstantPoolEntry e = get(index);
         if (e instanceof ConstantIntegerInfo) return Integer.toString(((ConstantIntegerInfo) e).bytes);
         if (e instanceof ConstantFloatInfo) return Float.toString(((ConstantFloatInfo) e).bytes);
         if (e instanceof ConstantClassInfo) return ((ConstantClassInfo) e).name;
         if (e instanceof ConstantStringInfo) return stringToJavaLiteral(((ConstantStringInfo) e).string);
-        throw new ClassCastException("CP index " + index + ": " + e);
+        throw new ClassCastException("CP index " + (0xffff & index) + ": " + e);
     }
 
     /**
@@ -408,13 +412,13 @@ public class ConstantPool {
      * and returns its value converted to {@link String}.
      */
     public String getIntegerFloatLongDoubleString(short index) {
-        ConstantPoolEntry e = this.entries[index];
+        ConstantPoolEntry e = get(index);
         if (e instanceof ConstantIntegerInfo) return Integer.toString(((ConstantIntegerInfo) e).bytes);
         if (e instanceof ConstantFloatInfo) return Float.toString(((ConstantFloatInfo) e).bytes);
         if (e instanceof ConstantLongInfo) return Long.toString(((ConstantLongInfo) e).bytes);
         if (e instanceof ConstantDoubleInfo) return Double.toString(((ConstantDoubleInfo) e).bytes);
         if (e instanceof ConstantStringInfo) return stringToJavaLiteral(((ConstantStringInfo) e).string);
-        throw new ClassCastException("CP index " + index + ": " + e);
+        throw new ClassCastException("CP index " + (0xffff & index) + ": " + e);
     }
     
     /**
@@ -422,10 +426,10 @@ public class ConstantPool {
      * its value converted to {@link String}.
      */
     public String getLongDoubleString(short index) {
-        ConstantPoolEntry e = this.entries[index];
+        ConstantPoolEntry e = get(index);
         if (e instanceof ConstantLongInfo) return Long.toString(((ConstantLongInfo) e).bytes) + 'L';
         if (e instanceof ConstantDoubleInfo) return Double.toString(((ConstantDoubleInfo) e).bytes) + 'D';
-        throw new ClassCastException("CP index " + index + ": " + e);
+        throw new ClassCastException("CP index " + (0xffff & index) + ": " + e);
     }
     
     /**
@@ -433,12 +437,16 @@ public class ConstantPool {
      * returns its value converted to {@link String}.
      */
     public String getIntegerFloatLongDouble(short index) {
-        ConstantPoolEntry e = this.entries[index];
+        ConstantPoolEntry e = get(index);
         if (e instanceof ConstantIntegerInfo) return Integer.toString(((ConstantIntegerInfo) e).bytes);
         if (e instanceof ConstantFloatInfo) return Float.toString(((ConstantFloatInfo) e).bytes);
         if (e instanceof ConstantLongInfo) return Long.toString(((ConstantLongInfo) e).bytes);
         if (e instanceof ConstantDoubleInfo) return Double.toString(((ConstantDoubleInfo) e).bytes);
-        throw new ClassCastException("CP index " + index + ": " + e);
+        throw new ClassCastException("CP index " + (0xffff & index) + ": " + e);
+    }
+
+    public int getSize() {
+        return this.entries.length;
     }
 
     public static String stringToJavaLiteral(String s) {
