@@ -857,16 +857,21 @@ public class ClassFile {
 
     /** helper class for {@link CodeAttribute}. */
     public static class ExceptionTableEntry {
-        public short             startPC;
-        public short             endPC;
-        public short             handlerPC;
+        public int               startPC;
+        public int               endPC;
+        public int               handlerPC;
         public ConstantClassInfo catchType;
 
         private ExceptionTableEntry(DataInputStream dis, ClassFile cf) throws IOException {
-            this.startPC   = dis.readShort();
-            this.endPC     = dis.readShort();
-            this.handlerPC = dis.readShort();
+            this.startPC   = 0xffff & dis.readShort();
+            this.endPC     = 0xffff & dis.readShort();
+            this.handlerPC = 0xffff & dis.readShort();
             this.catchType = cf.constantPool.getConstantClassInfo(dis.readShort());
+        }
+
+        @Override
+        public String toString() {
+            return "startPC=" + this.startPC + " endPC=" + this.endPC + " handlerPC=" + this.handlerPC + " catchType=" + this.catchType;
         }
     }
 
@@ -901,12 +906,12 @@ public class ClassFile {
 
     /** Helper class for {@link LineNumberTableAttribute}. */
     public static class LineNumberTableEntry {
-        public short startPC;
-        public short lineNumber;
+        public int startPC;
+        public int lineNumber;
 
         private LineNumberTableEntry(DataInputStream dis) throws IOException {
-            this.startPC = dis.readShort();
-            this.lineNumber = dis.readShort();
+            this.startPC    = 0xffff & dis.readShort();
+            this.lineNumber = 0xffff & dis.readShort();
         }
     }
 
@@ -948,15 +953,15 @@ public class ClassFile {
 
         /** Helper class for {@link LocalVariableTypeTableAttribute}. */
         public static class Entry {
-            public short  startPC;
-            public short  length;
+            public int    startPC;
+            public int    length;
             public String name;
             public String signature;
             public short  index;
 
             private Entry(DataInputStream dis, ClassFile cf) throws IOException {
-                this.startPC   = dis.readShort();
-                this.length    = dis.readShort();
+                this.startPC   = 0xffff & dis.readShort();
+                this.length    = 0xffff & dis.readShort();
                 this.name      = cf.constantPool.getConstantUtf8Info(dis.readShort()).bytes;
                 this.signature = cf.constantPool.getConstantUtf8Info(dis.readShort()).bytes;
                 this.index     = dis.readShort();
