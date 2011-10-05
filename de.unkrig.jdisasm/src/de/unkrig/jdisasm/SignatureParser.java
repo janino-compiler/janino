@@ -118,7 +118,7 @@ public class SignatureParser {
             throw new SignatureException("Method descriptor '" + s + "': " + e.getMessage(), e);
         }
     }
-    
+
     public static TypeSignature decodeFieldDescriptor(String s) throws SignatureException {
         try {
             StringCharStream scs = new StringCharStream(s);
@@ -131,6 +131,21 @@ public class SignatureParser {
             throw new SignatureException("Field descriptor '" + s + "': " + e.getMessage(), e);
         } catch (UnexpectedCharacterException e) {
             throw new SignatureException("Field descriptor '" + s + "': " + e.getMessage(), e);
+        }
+    }
+    
+    public static TypeSignature decodeReturnType(String s) throws SignatureException {
+        try {
+            StringCharStream scs = new StringCharStream(s);
+            TypeSignature ts = parseReturnType(scs);
+            scs.eoi();
+            return ts;
+        } catch (SignatureException e) {
+            throw new SignatureException("Return type '" + s + "': " + e.getMessage(), e);
+        } catch (EOFException e) {
+            throw new SignatureException("Return type '" + s + "': " + e.getMessage(), e);
+        } catch (UnexpectedCharacterException e) {
+            throw new SignatureException("Return type '" + s + "': " + e.getMessage(), e);
         }
     }
 
@@ -397,9 +412,8 @@ public class SignatureParser {
         return mts;
     }
 
-    private static TypeSignature parseReturnType(
-        StringCharStream scs
-    ) throws EOFException, UnexpectedCharacterException, SignatureException {
+    private static TypeSignature parseReturnType(StringCharStream scs)
+    throws EOFException, UnexpectedCharacterException, SignatureException {
         if (scs.peekRead('V')) return VOID;
         return parseTypeSignature(scs);
     }
@@ -490,9 +504,8 @@ public class SignatureParser {
         return ftp;
     }
 
-    private static TypeSignature parseTypeSignature(
-        StringCharStream scs
-    ) throws EOFException, UnexpectedCharacterException, SignatureException {
+    private static TypeSignature parseTypeSignature(StringCharStream scs)
+    throws EOFException, UnexpectedCharacterException, SignatureException {
         int idx = scs.peekRead("BCDFIJSZ");
         if (idx != -1) {
             return PRIMITIVE_TYPES[idx];
