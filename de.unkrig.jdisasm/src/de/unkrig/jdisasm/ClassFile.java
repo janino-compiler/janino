@@ -82,8 +82,11 @@ public class ClassFile {
     public ClassFile(DataInputStream dis) throws IOException {
 
         // Magic number.
-        if (dis.readInt() != 0xcafebabe) {
-            throw new IOException("Wrong magic number - this is not a valid class file");
+        {
+            int magic = dis.readInt();
+            if (magic != 0xcafebabe) {
+                throw new IOException("Wrong magic number 0x" + Integer.toHexString(magic) + " - this is not a valid class file");
+            }
         }
 
         // JDK version.
@@ -107,14 +110,14 @@ public class ClassFile {
             short n = dis.readShort();
             for (short i = 0; i < n; i++) {
                 try {
-                    this.fields.add(new Field(dis));
+            this.fields.add(new Field(dis));
                 } catch (IOException ioe) {
                     IOException ioe2 = new IOException("Reading field #" + i + " of " + n + ": " + ioe.getMessage());
                     ioe2.initCause(ioe);
                     throw ioe2;
                 } catch (RuntimeException re) {
                     throw new RuntimeException("Reading field #" + i + " of " + n + ": " + re.getMessage(), re);
-                }
+        }
             }
         }
 
@@ -123,7 +126,7 @@ public class ClassFile {
             short n = dis.readShort();
             for (short i = 0; i < n; i++) {
                 try {
-                    this.methods.add(new Method(dis));
+            this.methods.add(new Method(dis));
                 } catch (IOException ioe) {
                     IOException ioe2 = new IOException("Reading method #" + i + " of " + n + ": " + ioe.getMessage());
                     ioe2.initCause(ioe);
@@ -293,12 +296,12 @@ public class ClassFile {
                         Method.this.codeAttribute = ca;
                         Method.this.attributes.add(ca);
                     }
-   
+        
                     public void visit(DeprecatedAttribute da) {
                         Method.this.deprecatedAttribute = da;
                         Method.this.attributes.add(da);
                     }
-   
+        
                     public void visit(ExceptionsAttribute ea) {
                         Method.this.exceptionsAttribute = ea;
                         Method.this.attributes.add(ea);
@@ -343,7 +346,7 @@ public class ClassFile {
 
     /** Representation of an attribute in a Java&trade; class file. */
     public interface Attribute {
-        void   accept(AttributeVisitor visitor);
+        void accept(AttributeVisitor visitor);
         String getName();
     }
 
@@ -365,25 +368,33 @@ public class ClassFile {
     private void readAttribute(DataInputStream dis, AttributeVisitor visitor) throws IOException {
         
         String attributeName = this.constantPool.getConstantUtf8Info(dis.readShort()).bytes;
-        
-        // Read attribute body into byte array and create a DataInputStream.
-        ByteArrayInputStream bais;
-        {
-            int attributeLength = dis.readInt();
-            final byte[] ba = new byte[attributeLength];
-            dis.readFully(ba);
-            bais = new ByteArrayInputStream(ba);
-        }
-        
-        // Parse the attribute body.
-        this.readAttributeBody(attributeName, new DataInputStream(bais), visitor);
-        
-        // Check for extraneous bytes.
-        {
-            int av = bais.available();
-            if (av > 0) {
-                throw new RuntimeException(av + " extraneous bytes in attribute \"" + attributeName + "\"");
+
+        try {
+            // Read attribute body into byte array and create a DataInputStream.
+            ByteArrayInputStream bais;
+            {
+                int attributeLength = dis.readInt();
+                final byte[] ba = new byte[attributeLength];
+                dis.readFully(ba);
+                bais = new ByteArrayInputStream(ba);
             }
+            
+            // Parse the attribute body.
+            this.readAttributeBody(attributeName, new DataInputStream(bais), visitor);
+            
+            // Check for extraneous bytes.
+            {
+                int av = bais.available();
+                if (av > 0) {
+                    throw new RuntimeException(av + " extraneous bytes in attribute body");
+                }
+            }
+        } catch (IOException ioe) {
+            IOException ioe2 = new IOException("Reading attribute '" + attributeName + "': " + ioe.getMessage());
+            ioe2.initCause(ioe);
+            throw ioe2;
+        } catch (RuntimeException re) {
+            throw new RuntimeException("Reading attribute '" + attributeName + "': " + re.getMessage(), re);
         }
     }
 
@@ -718,7 +729,7 @@ public class ClassFile {
                 final String s = SignatureParser.decodeFieldDescriptor(typeName) + "." + constName;
                 return new ElementValue() { public String toString() { return s; }};
             } catch (SignatureException e) {
-                IOException ioe = new IOException(e.getMessage());
+                IOException ioe = new IOException("Decoding enum constant element value: " + e.getMessage());
                 ioe.initCause(e);
                 throw ioe;
             }
@@ -726,11 +737,11 @@ public class ClassFile {
         if (tag == 'c') {
             final String classInfo = cf.constantPool.getConstantUtf8Info(dis.readShort()).bytes;
             try {
-                final String s = SignatureParser.decodeFieldDescriptor(classInfo) + ".class";
+                final String s = SignatureParser.decodeReturnType(classInfo) + ".class";
                 return new ElementValue() { public String toString() { return s; }};
-            } catch (SignatureException e) {
-                IOException ioe = new IOException(e.getMessage());
-                ioe.initCause(e);
+            } catch (SignatureException se) {
+                IOException ioe = new IOException("Decoding class element value: " + se.getMessage());
+                ioe.initCause(se);
                 throw ioe;
             }
         } else
@@ -902,7 +913,7 @@ public class ClassFile {
         public void accept(AttributeVisitor visitor) { visitor.visit(this); }
 
         public String getName() { return "LineNumberTable"; }
-    }
+            }
 
     /** Helper class for {@link LineNumberTableAttribute}. */
     public static class LineNumberTableEntry {
