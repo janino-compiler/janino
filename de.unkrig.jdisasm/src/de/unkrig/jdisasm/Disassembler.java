@@ -51,6 +51,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.LineNumberReader;
@@ -132,8 +133,8 @@ public class Disassembler {
     private boolean     hideVars;
 
     // "" for the default package; with a trailing period otherwise.
-    private String           thisClassPackageName;
-    private HashSet<Integer> branchTargets;
+    private String       thisClassPackageName;
+    private Set<Integer> branchTargets;
 
     private static final List<ParameterAnnotation> NO_PARAMETER_ANNOTATIONS = (
         Collections.<ParameterAnnotation>emptyList()
@@ -184,9 +185,9 @@ public class Disassembler {
             Pattern IS_URL = Pattern.compile("\\w\\w+:.*");
             for (; i < args.length; ++i) {
                 String name = args[i];
-                    if ("-".equals(name)) {
-                        d.disasm(System.in);
-                    } else
+                if ("-".equals(name)) {
+                    d.disasm(System.in);
+                } else
                 if (IS_URL.matcher(name).matches()) {
                     d.disasm(new URL(name));
                 } else
@@ -431,141 +432,152 @@ public class Disassembler {
      */
     private void disasm(Method method, ClassFile cf, Map<Integer, String> sourceLines) {
         try {
-            println();
-            // Print SYNTHETIC notice.
-            if ((method.accessFlags & ACC_SYNTHETIC) != 0 || method.syntheticAttribute != null) {
-                println("    // (Synthetic method)");
+        println();
+
+        // Print SYNTHETIC notice.
+        if ((method.accessFlags & ACC_SYNTHETIC) != 0 || method.syntheticAttribute != null) {
+            println("    // (Synthetic method)");
+        }
+        
+        // Print BRIDGE notice.
+        if ((method.accessFlags & ACC_BRIDGE) != 0) {
+            println("    // (Bridge method)");
+        }
+
+        // Print DEPRECATED notice.
+        if (method.deprecatedAttribute != null) this.println("    /** @deprecated */");
+        
+        // Print method annotations.
+        if (method.runtimeInvisibleAnnotationsAttribute != null) {
+            for (Annotation a : method.runtimeInvisibleAnnotationsAttribute.annotations) {
+                println("    " + a.toString());
             }
-            // Print BRIDGE notice.
-            if ((method.accessFlags & ACC_BRIDGE) != 0) {
-                println("    // (Bridge method)");
+        }
+        if (method.runtimeVisibleAnnotationsAttribute != null) {
+            for (Annotation a : method.runtimeVisibleAnnotationsAttribute.annotations) {
+                println("    " + a.toString());
             }
-            // Print DEPRECATED notice.
-            if (method.deprecatedAttribute != null) this.println("    /** @deprecated */");
-            // Print method annotations.
-            if (method.runtimeInvisibleAnnotationsAttribute != null) {
-                for (Annotation a : method.runtimeInvisibleAnnotationsAttribute.annotations) {
-                    println("    " + a.toString());
-                }
-            }
-            if (method.runtimeVisibleAnnotationsAttribute != null) {
-                for (Annotation a : method.runtimeVisibleAnnotationsAttribute.annotations) {
-                    println("    " + a.toString());
-                }
-            }
-            // Print method access flags.
-            String functionName = method.name;
-            Disassembler.this.print(
-                "    "
-                + decodeAccess((short) (
-                    method.accessFlags
-                    & ~ACC_SYNTHETIC
-                    & ~ACC_BRIDGE
-                    & ~ACC_VARARGS
-                    & ((cf.accessFlags & ACC_INTERFACE) != 0 ? ~(ACC_PUBLIC | ACC_ABSTRACT) : 0xffff)
-                ))
+        }
+
+        // Print method access flags.
+        String functionName = method.name;
+        Disassembler.this.print(
+            "    "
+            + decodeAccess((short) (
+                method.accessFlags
+                & ~ACC_SYNTHETIC
+                & ~ACC_BRIDGE
+                & ~ACC_VARARGS
+                & ((cf.accessFlags & ACC_INTERFACE) != 0 ? ~(ACC_PUBLIC | ACC_ABSTRACT) : 0xffff)
+            ))
+        );
+
+        // Print formal type parameters.
+        MethodTypeSignature mts;
+        {
+            mts = (
+                method.signatureAttribute == null
+                ? decodeMethodDescriptor(method.descriptor)
+                : decodeMethodTypeSignature(method.signatureAttribute.signature)
             );
-            // Print formal type parameters.
-            MethodTypeSignature mts;
-            {
-                mts = (
-                    method.signatureAttribute == null
-                    ? decodeMethodDescriptor(method.descriptor)
-                    : decodeMethodTypeSignature(method.signatureAttribute.signature)
-                );
-                if (!mts.formalTypeParameters.isEmpty()) {
+            if (!mts.formalTypeParameters.isEmpty()) {
                     Iterator<FormalTypeParameter> it = mts.formalTypeParameters.iterator();
-                    print("<" + beautify(it.next().toString()));
-                    while (it.hasNext()) print(", " + beautify(it.next().toString()));
-                    print(">");
-                }
-            }
-            // Print method name.
-            if (
-                "<clinit>".equals(functionName)
-                && (method.accessFlags & ACC_STATIC) != 0
-                && (method.exceptionsAttribute == null || method.exceptionsAttribute.exceptionNames.isEmpty())
-                && mts.formalTypeParameters.isEmpty()
-                && mts.parameterTypes.isEmpty()
-                && mts.returnType == SignatureParser.VOID
-                && mts.thrownTypes.isEmpty()
-            ) {
-                ;
-            } else
-            if (
-                "<init>".equals(functionName)
-                && (method.accessFlags & (ACC_ABSTRACT | ACC_FINAL | ACC_INTERFACE | ACC_STATIC)) == 0
-                && mts.returnType == SignatureParser.VOID
-            ) {
-                print(beautify(cf.thisClassName));
-                print(
-                    method.runtimeInvisibleParameterAnnotationsAttribute,
-                    method.runtimeVisibleParameterAnnotationsAttribute,
-                    mts.parameterTypes,
-                    method,
-                    (short) 1,
-                    (method.accessFlags & ACC_VARARGS) != 0
-                );
-            } else
-            {
-                print(beautify(mts.returnType.toString()) + ' ');
-                print(functionName);
-                print(
-                    method.runtimeInvisibleParameterAnnotationsAttribute,
-                    method.runtimeVisibleParameterAnnotationsAttribute,
-                    mts.parameterTypes,
-                    method,
-                    (method.accessFlags & ACC_STATIC) == 0 ? (short) 1 : (short) 0,
-                    (method.accessFlags & ACC_VARARGS) != 0
-                );
-            }
-            // Thrown types.
-            if (mts.thrownTypes != null && !mts.thrownTypes.isEmpty()) {
-                Iterator<ThrowsSignature> it = mts.thrownTypes.iterator();
-                print(" throws " + beautify(it.next().toString()));
+                print("<" + beautify(it.next().toString()));
                 while (it.hasNext()) print(", " + beautify(it.next().toString()));
-            } else
-            if (method.exceptionsAttribute != null && !method.exceptionsAttribute.exceptionNames.isEmpty()) {
-                Iterator<ConstantClassInfo> it = method.exceptionsAttribute.exceptionNames.iterator();
-                print(" throws " + beautify(it.next().name));
-                while (it.hasNext()) print(", " + beautify(it.next().name));
+                print(">");
             }
-            // Annotation default.
-            if (method.annotationDefaultAttribute != null) {
-                print("default " + method.annotationDefaultAttribute.defaultValue);
-            }
-            // Code.
-            if (method.codeAttribute == null) {
-                println(";");
-            } else {
-                println(" {");
-                CodeAttribute ca = method.codeAttribute;
-                try {
-                    disasmBytecode(
-                        new ByteArrayInputStream(ca.code),
-                        ca.exceptionTable,
-                        ca.lineNumberTableAttribute,
-                        sourceLines,
-                        cf.constantPool,
-                        method
-                    );
-                } catch (IOException ignored) {
-                    ;
-                }
-                println("    }");
-            }
-            // Print method attributes.
-            print(method.attributes, "    // ", new Attribute[] {
-                method.annotationDefaultAttribute,
-                method.codeAttribute,
-                method.deprecatedAttribute,
-                method.exceptionsAttribute,
-                method.runtimeInvisibleAnnotationsAttribute,
+        }
+
+        // Print method name.
+        if (
+            "<clinit>".equals(functionName)
+            && (method.accessFlags & ACC_STATIC) != 0
+            && (method.exceptionsAttribute == null || method.exceptionsAttribute.exceptionNames.isEmpty())
+            && mts.formalTypeParameters.isEmpty()
+            && mts.parameterTypes.isEmpty()
+            && mts.returnType == SignatureParser.VOID
+            && mts.thrownTypes.isEmpty()
+        ) {
+            ;
+        } else
+        if (
+            "<init>".equals(functionName)
+            && (method.accessFlags & (ACC_ABSTRACT | ACC_FINAL | ACC_INTERFACE | ACC_STATIC)) == 0
+            && mts.returnType == SignatureParser.VOID
+        ) {
+            print(beautify(cf.thisClassName));
+            print(
                 method.runtimeInvisibleParameterAnnotationsAttribute,
-                method.runtimeVisibleAnnotationsAttribute,
                 method.runtimeVisibleParameterAnnotationsAttribute,
-                method.signatureAttribute,
-                method.syntheticAttribute,
+                mts.parameterTypes,
+                method,
+                (short) 1,
+                (method.accessFlags & ACC_VARARGS) != 0
+            );
+        } else
+        {
+            print(beautify(mts.returnType.toString()) + ' ');
+            print(functionName);
+            print(
+                method.runtimeInvisibleParameterAnnotationsAttribute,
+                method.runtimeVisibleParameterAnnotationsAttribute,
+                mts.parameterTypes,
+                method,
+                (method.accessFlags & ACC_STATIC) == 0 ? (short) 1 : (short) 0,
+                (method.accessFlags & ACC_VARARGS) != 0
+            );
+        }
+
+        // Thrown types.
+        if (mts.thrownTypes != null && !mts.thrownTypes.isEmpty()) {
+            Iterator<ThrowsSignature> it = mts.thrownTypes.iterator();
+            print(" throws " + beautify(it.next().toString()));
+            while (it.hasNext()) print(", " + beautify(it.next().toString()));
+        } else
+        if (method.exceptionsAttribute != null && !method.exceptionsAttribute.exceptionNames.isEmpty()) {
+            Iterator<ConstantClassInfo> it = method.exceptionsAttribute.exceptionNames.iterator();
+            print(" throws " + beautify(it.next().name));
+            while (it.hasNext()) print(", " + beautify(it.next().name));
+        }
+
+        // Annotation default.
+        if (method.annotationDefaultAttribute != null) {
+            print("default " + method.annotationDefaultAttribute.defaultValue);
+        }
+
+        // Code.
+        if (method.codeAttribute == null) {
+            println(";");
+        } else {
+            println(" {");
+            CodeAttribute ca = method.codeAttribute;
+            try {
+                disasmBytecode(
+                    new ByteArrayInputStream(ca.code),
+                    ca.exceptionTable,
+                    ca.lineNumberTableAttribute,
+                    sourceLines,
+                    cf.constantPool,
+                    method
+                );
+            } catch (IOException ignored) {
+                ;
+            }
+            println("    }");
+        }
+
+        // Print method attributes.
+        print(method.attributes, "    // ", new Attribute[] {
+            method.annotationDefaultAttribute,
+            method.codeAttribute,
+            method.deprecatedAttribute,
+            method.exceptionsAttribute,
+            method.runtimeInvisibleAnnotationsAttribute,
+            method.runtimeInvisibleParameterAnnotationsAttribute,
+            method.runtimeVisibleAnnotationsAttribute,
+            method.runtimeVisibleParameterAnnotationsAttribute,
+            method.signatureAttribute,
+            method.syntheticAttribute,
             }, AttributeVisitor.Context.METHOD);
         } catch (RuntimeException rte) {
             throw new RuntimeException("Method '" + method.name + "' " + method.descriptor, rte);
@@ -642,8 +654,8 @@ public class Disassembler {
     }
 
     private void print(
-        List<Attribute>          attributes,
-        String                   prefix,
+        List<Attribute> attributes,
+        String          prefix,
         Attribute[]              excludedAttributes,
         AttributeVisitor.Context context
     ) {
@@ -652,7 +664,7 @@ public class Disassembler {
         // Strip excluded attributes.
         if (!this.verbose) {
             tmp.removeAll(Arrays.asList(excludedAttributes));
-        }
+            }
         if (tmp.isEmpty()) return;
 
         Collections.sort(tmp, new Comparator<Attribute>() {
@@ -671,7 +683,7 @@ public class Disassembler {
      */
     public class PrintAttributeVisitor implements AttributeVisitor {
 
-        private final String  prefix;
+        private final String prefix;
         private final Context context;
 
         public PrintAttributeVisitor(String prefix, Context context) {
@@ -932,34 +944,40 @@ public class Disassembler {
 
             // Analyze TRY bodies.
 
-            // startPC => { endPC }
-            SortedMap<Integer, Set<Integer>> tryStarts = new TreeMap<Integer, Set<Integer>>();
+            // startPC => [ endPC ]
+            SortedMap<Integer, List<Integer>> tryStarts = new TreeMap<Integer, List<Integer>>();
 
-            // endPC => startPC => ExceptionTableEntry
+            // endPC => startPC => [ ExceptionTableEntry ]
             SortedMap<Integer, SortedMap<Integer, List<ExceptionTableEntry>>> tryEnds = (
                 new TreeMap<Integer, SortedMap<Integer, List<ExceptionTableEntry>>>()
             );
 
             for (ExceptionTableEntry e : exceptionTable) {
-                Set<Integer> s = tryStarts.get(e.startPC);
-                if (s == null) {
-                    s = new HashSet<Integer>();
-                    tryStarts.put(e.startPC, s);
-                }
-                s.add(e.endPC);
 
-                SortedMap<Integer, List<ExceptionTableEntry>> m = tryEnds.get(e.endPC);
-                if (m == null) {
-                    m = new TreeMap<Integer, List<ExceptionTableEntry>>(Collections.reverseOrder());
-                    tryEnds.put(e.endPC, m);
+                // Register the entry in "tryStarts".
+                {
+                    List<Integer> l = tryStarts.get(e.startPC);
+                    if (l == null) {
+                        l = new ArrayList<Integer>();
+                        tryStarts.put(e.startPC, l);
+                    }
+                    l.add(e.endPC);
                 }
-                List<ExceptionTableEntry> l = m.get(e.startPC);
-                if (l == null) {
-                    l = new ArrayList<ExceptionTableEntry>();
-                    m.put(e.startPC, l);
-                }
-                l.add(e);
 
+                // Register the entry in "tryEnds".
+                {
+                    SortedMap<Integer, List<ExceptionTableEntry>> m = tryEnds.get(e.endPC);
+                    if (m == null) {
+                        m = new TreeMap<Integer, List<ExceptionTableEntry>>(Collections.reverseOrder());
+                        tryEnds.put(e.endPC, m);
+                    }
+                    List<ExceptionTableEntry> l = m.get(e.startPC);
+                    if (l == null) {
+                        l = new ArrayList<ExceptionTableEntry>();
+                        m.put(e.startPC, l);
+                    }
+                    l.add(e);
+                }
                 this.branchTargets.add(e.handlerPC);
             }
 
@@ -976,13 +994,13 @@ public class Disassembler {
                     lines.put(instructionOffset, "??? (invalid opcode \"" + opcode + "\")");
                 } else {
                     try {
-                        lines.put(instructionOffset, instruction.getMnemonic() + disasmOperands(
-                            instruction.getOperands(),
-                            dis,
-                            instructionOffset,
-                            method,
-                            cp
-                        ));
+                    lines.put(instructionOffset, instruction.getMnemonic() + disasmOperands(
+                        instruction.getOperands(),
+                        dis,
+                        instructionOffset,
+                        method,
+                        cp
+                    ));
                     } catch (RuntimeException rte) {
                         for (Iterator<Entry<Integer, String>> it = lines.entrySet().iterator(); it.hasNext();) {
                             Entry<Integer, String> e = it.next();
@@ -1034,8 +1052,8 @@ public class Disassembler {
                 }
 
                 // Print beginnings of TRY bodies.
-                for (Iterator<Entry<Integer, Set<Integer>>> it = tryStarts.entrySet().iterator(); it.hasNext();) {
-                    Entry<Integer, Set<Integer>> sc = it.next();
+                for (Iterator<Entry<Integer, List<Integer>>> it = tryStarts.entrySet().iterator(); it.hasNext();) {
+                    Entry<Integer, List<Integer>> sc = it.next();
                     Integer startPC = sc.getKey();
                     if (startPC > instructionOffset) break;
 
@@ -1918,21 +1936,25 @@ public class Disassembler {
     /**
      * An {@link InputStream} that counts how many bytes have been read so far.
      */
-    private static class CountingInputStream extends InputStream {
-        public CountingInputStream(InputStream is) { this.is = is; }
+    private static class CountingInputStream extends FilterInputStream {
+        public CountingInputStream(InputStream is) {
+            super(is);
+        }
+
         public int read() throws IOException {
-            int res = this.is.read();
+            int res = super.read();
             if (res != -1) ++this.count;
             return res;
         }
+
         public int read(byte[] b, int off, int len) throws IOException {
             int res = super.read(b, off, len);
             if (res != -1) this.count += res;
             return res;
         }
+
         public long getCount() { return this.count; }
 
-        private InputStream is;
         private long count = 0L;
     }
 
