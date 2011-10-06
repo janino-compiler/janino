@@ -228,17 +228,7 @@ public class Disassembler {
 
     void print(String s)                       { this.pw.print(s); }
     void println()                             { this.pw.println(); }
-    void println(String s)                     {
-        try {
-            this.pw.println(s);
-        } catch (InternalError ie) {
-            ie.printStackTrace();
-            for (int i = 0; i < s.length(); i++) {
-                System.err.print(" " + (int) s.charAt(i));
-                System.err.println();
-            }
-        }
-    }
+    void println(String s)                     { this.pw.println(s); }
     void printf(String format, Object... args) { this.pw.printf(format, args); }
 
     /**
