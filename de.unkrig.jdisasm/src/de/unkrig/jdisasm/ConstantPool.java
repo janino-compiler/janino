@@ -41,6 +41,10 @@ public class ConstantPool {
 
     /** Representation of a CONSTANT_Class_info entry. */
     public static class ConstantClassInfo implements ConstantPoolEntry {
+
+        /**
+         * Fully qualified (dot-separated) class name.
+         */
         public String name;
 
         public String toString() {

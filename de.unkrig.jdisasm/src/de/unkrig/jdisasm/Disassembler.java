@@ -128,6 +128,10 @@ public class Disassembler {
 
     private PrintWriter pw = new PrintWriter(System.out);
     private boolean     verbose = false;
+
+    /**
+     * {@code null} means "do not attempt to find the source file".
+     */
     private File        sourceDirectory = null;
     private boolean     hideLines;
     private boolean     hideVars;
@@ -206,9 +210,15 @@ public class Disassembler {
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
+
+    /**
+     * Where to look for source files; {@code null} disables source file loading. Source file loading is disabled by
+     * default.
+     */
     public void setSourceDirectory(File sourceDirectory) {
         this.sourceDirectory = sourceDirectory;
     }
+
     public void setHideLines(boolean hideLines) {
         this.hideLines = hideLines;
     }
@@ -218,7 +228,17 @@ public class Disassembler {
 
     void print(String s)                       { this.pw.print(s); }
     void println()                             { this.pw.println(); }
-    void println(String s)                     { this.pw.println(s); }
+    void println(String s)                     {
+        try {
+            this.pw.println(s);
+        } catch (InternalError ie) {
+            ie.printStackTrace();
+            for (int i = 0; i < s.length(); i++) {
+                System.err.print(" " + (int) s.charAt(i));
+                System.err.println();
+            }
+        }
+    }
     void printf(String format, Object... args) { this.pw.printf(format, args); }
 
     /**
@@ -347,7 +367,7 @@ public class Disassembler {
             this.print(beautify(decodeClassSignature(cf.signatureAttribute.signature).toString(cf.thisClassName)));
         } else {
             this.print(beautify(cf.thisClassName));
-            if (!"java.lang.Object".equals(cf.superClassName)) {
+            if (cf.superClassName != null && !"java.lang.Object".equals(cf.superClassName)) {
                 this.print(" extends " + beautify(cf.superClassName));
             }
             List<String> ifs = cf.interfaceNames;
@@ -387,7 +407,7 @@ public class Disassembler {
         // Read source file.
         Map<Integer, String> sourceLines = new HashMap<Integer, String>();
         READ_SOURCE_LINES:
-        if (cf.sourceFileAttribute != null) {
+        if (cf.sourceFileAttribute != null && this.sourceDirectory != null) {
             String sourceFile = cf.sourceFileAttribute.sourceFile;
             LineNumberReader lnr;
             try {

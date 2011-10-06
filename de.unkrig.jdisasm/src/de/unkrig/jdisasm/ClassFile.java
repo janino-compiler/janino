@@ -46,8 +46,21 @@ public class ClassFile {
     public short                                majorVersion;
     public ConstantPool                         constantPool;
     public short                                accessFlags;
+
+    /**
+     * The fully qualified (dot-separated) name of this type.
+     */
     public String                               thisClassName;
+
+    /**
+     * The fully qualified (dot-separated) name of the superclass of this type; "java.lang.Object" iff this type is an
+     * interface; {@code null} iff this type is {@link Object}.
+     */
     public String                               superClassName;
+
+    /**
+     * Fully qualified (dot-separated) names of the interfaces that this type implements.
+     */
     public final List<String>                   interfaceNames = new ArrayList<String>();
     public final List<Field>                    fields = new ArrayList<Field>();
     public final List<Method>                   methods = new ArrayList<Method>();
@@ -85,7 +98,7 @@ public class ClassFile {
         {
             int magic = dis.readInt();
             if (magic != 0xcafebabe) {
-                throw new IOException("Wrong magic number 0x" + Integer.toHexString(magic) + " - this is not a valid class file");
+                throw new ClassFileFormatException("Wrong magic number 0x" + Integer.toHexString(magic));
             }
         }
 
@@ -96,9 +109,17 @@ public class ClassFile {
         // Load constant pool.
         this.constantPool = new ConstantPool(dis);
 
+        // Access flags.
         this.accessFlags = dis.readShort();
+
+        // Class name.
         this.thisClassName = this.constantPool.getConstantClassInfo(dis.readShort()).name;
-        this.superClassName = this.constantPool.getConstantClassInfo(dis.readShort()).name;
+
+        // Superclass.
+        {
+            ConstantClassInfo superclassCci = this.constantPool.getConstantClassInfo(dis.readShort());
+            this.superClassName = superclassCci == null ? null : superclassCci.name;
+        }
 
         // Implemented interfaces.
         for (short i = dis.readShort(); i > 0; --i) {
@@ -110,7 +131,7 @@ public class ClassFile {
             short n = dis.readShort();
             for (short i = 0; i < n; i++) {
                 try {
-            this.fields.add(new Field(dis));
+                    this.fields.add(new Field(dis));
                 } catch (IOException ioe) {
                     IOException ioe2 = new IOException("Reading field #" + i + " of " + n + ": " + ioe.getMessage());
                     ioe2.initCause(ioe);
@@ -126,7 +147,7 @@ public class ClassFile {
             short n = dis.readShort();
             for (short i = 0; i < n; i++) {
                 try {
-            this.methods.add(new Method(dis));
+                    this.methods.add(new Method(dis));
                 } catch (IOException ioe) {
                     IOException ioe2 = new IOException("Reading method #" + i + " of " + n + ": " + ioe.getMessage());
                     ioe2.initCause(ioe);
@@ -684,9 +705,7 @@ public class ClassFile {
                     cf.constantPool.getConstantUtf8Info(typeIndex).bytes
                 ).toString();
             } catch (SignatureException e) {
-                IOException ioe = new IOException(e.getMessage());
-                ioe.initCause(e);
-                throw ioe;
+                throw new ClassFileFormatException("Decoding annotation type: " + e.getMessage(), e);
             }
             for (int i = dis.readShort(); i > 0; --i) {
                 this.elementValuePairs.add(new ElementValuePair(dis, cf));
@@ -728,10 +747,8 @@ public class ClassFile {
             try {
                 final String s = SignatureParser.decodeFieldDescriptor(typeName) + "." + constName;
                 return new ElementValue() { public String toString() { return s; }};
-            } catch (SignatureException e) {
-                IOException ioe = new IOException("Decoding enum constant element value: " + e.getMessage());
-                ioe.initCause(e);
-                throw ioe;
+            } catch (SignatureException se) {
+                throw new ClassFileFormatException("Decoding enum constant element value: " + se.getMessage(), se);
             }
         } else
         if (tag == 'c') {
@@ -740,9 +757,7 @@ public class ClassFile {
                 final String s = SignatureParser.decodeReturnType(classInfo) + ".class";
                 return new ElementValue() { public String toString() { return s; }};
             } catch (SignatureException se) {
-                IOException ioe = new IOException("Decoding class element value: " + se.getMessage());
-                ioe.initCause(se);
-                throw ioe;
+                throw new ClassFileFormatException("Decoding class element value: " + se.getMessage(), se);
             }
         } else
         if (tag == '@') {
