@@ -465,13 +465,22 @@ public class SignatureParser {
     }
 
     private static String parseIdentifier(StringCharStream scs) throws EOFException, SignatureException {
-        char c = scs.read();
-        if (!Character.isJavaIdentifierStart(c)) {
-            throw new SignatureException("Identifier expected instead of '" + c + "'");
+        StringBuilder sb = new StringBuilder();
+        {
+            char c = scs.read();
+            if (!Character.isJavaIdentifierStart(c)) {
+                throw new SignatureException("Identifier expected instead of '" + c + "'");
+            }
+            sb.append(c);
         }
-        StringBuilder sb = new StringBuilder().append(c);
         for (;;) {
-            if (Character.isJavaIdentifierPart(scs.peek())) {
+            int c = scs.peek();
+
+            // Funny: 'sun/jdbc/odbc/ee/PoolWorker.class' of the IBM 1.6.0 JRE for HPUX and SOLARIS has an annotation
+            // of type 'sun/Proprietary+Annotation' (yes, with a '+' sign in it!). That is neither allowed by the
+            // JLS (http://java.sun.com/docs/books/jls/third_edition/html/lexical.html#40625) nor does
+            // 'isJavaIdentifier[Part]()' return TRUE for the plus sign.
+            if (Character.isJavaIdentifierPart(c) /*|| c == '+'*/) {
                 sb.append(scs.read());
             } else {
                 return sb.toString();
