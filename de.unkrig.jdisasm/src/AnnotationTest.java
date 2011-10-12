@@ -77,12 +77,16 @@ public class AnnotationTest {
 
         OscillationOverthruster() {
             class Nested1 {}
+            new Nested1();
         }
 
         /** @deprecated */
         void meth(@Copyright("foo") int x) {
+
             class Nested2 {
             }
+            new Nested2();
+
             new Object(){};
             try {
                 try {
@@ -149,6 +153,7 @@ public class AnnotationTest {
         for (int i = 1; i < values.length; ++i) {
             if (values[i].compareTo(min) < 0) {
                 min = values[i];
+                if (i < 0) throw (EX) null;
             }
         }
         return min;
