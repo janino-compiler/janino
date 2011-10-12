@@ -480,7 +480,7 @@ public class SignatureParser {
             // of type 'sun/Proprietary+Annotation' (yes, with a '+' sign in it!). That is neither allowed by the
             // JLS (http://java.sun.com/docs/books/jls/third_edition/html/lexical.html#40625) nor does
             // 'isJavaIdentifier[Part]()' return TRUE for the plus sign.
-            if (Character.isJavaIdentifierPart(c) /*|| c == '+'*/) {
+            if (Character.isJavaIdentifierPart(c) || c == '+') {
                 sb.append(scs.read());
             } else {
                 return sb.toString();
