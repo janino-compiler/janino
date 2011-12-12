@@ -57,6 +57,7 @@ import java.io.InputStream;
 import java.io.LineNumberReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.io.Writer;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -203,10 +204,15 @@ public class Disassembler {
     }
 
     public Disassembler() {}
+    
+    public void setOut(Writer writer) {
+        this.pw = writer instanceof PrintWriter ? (PrintWriter) writer : new PrintWriter(writer);
+    }
 
     public void setOut(OutputStream os) {
         this.pw = new PrintWriter(os);
     }
+
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
