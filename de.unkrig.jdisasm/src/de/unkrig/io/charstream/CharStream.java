@@ -35,7 +35,7 @@ import java.io.IOException;
  * i.e. the next call to {@link #read} or {@link #peek} will return that character again.
  */
 public interface CharStream {
-    
+
     int EOI = -1;
 
     /**
@@ -89,7 +89,7 @@ public interface CharStream {
      * @return {@codo true} iff the next character on this stream equals the given character
      */
     boolean peekRead(char c) throws IOException;
-    
+
     /**
      * If the next character on this stream is in the given {@link String}, it is consumed.
      *

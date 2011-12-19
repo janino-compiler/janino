@@ -103,7 +103,7 @@ public class SignatureParser {
             throw new SignatureException("Field type signature '" + s + "': " + e.getMessage(), e);
         }
     }
-    
+
     public static MethodTypeSignature decodeMethodDescriptor(String s) throws SignatureException {
         try {
             StringCharStream scs = new StringCharStream(s);
@@ -133,7 +133,7 @@ public class SignatureParser {
             throw new SignatureException("Field descriptor '" + s + "': " + e.getMessage(), e);
         }
     }
-    
+
     public static TypeSignature decodeReturnType(String s) throws SignatureException {
         try {
             StringCharStream scs = new StringCharStream(s);
@@ -151,17 +151,17 @@ public class SignatureParser {
 
     /** Representation of the "MethodTypeSignature" clause. */
     public static class MethodTypeSignature {
-    
+
         public final List<FormalTypeParameter> formalTypeParameters = (
             new ArrayList<SignatureParser.FormalTypeParameter>()
         );
         public final List<TypeSignature>       parameterTypes = new ArrayList<SignatureParser.TypeSignature>();
         public TypeSignature                   returnType;
         public final List<ThrowsSignature>     thrownTypes = new ArrayList<SignatureParser.ThrowsSignature>();
-    
+
         public String toString(String declaringClassName, String methodName) {
             StringBuilder sb = new StringBuilder();
-    
+
             // Formal type parameters.
             if (!this.formalTypeParameters.isEmpty()) {
                 Iterator<FormalTypeParameter> it = this.formalTypeParameters.iterator();
@@ -169,7 +169,7 @@ public class SignatureParser {
                 while (it.hasNext()) sb.append(", " + it.next().toString());
                 sb.append('>');
             }
-    
+
             // Name.
             if ("<init>".equals(methodName) && this.returnType == SignatureParser.VOID) {
                 sb.append(declaringClassName);
@@ -190,7 +190,7 @@ public class SignatureParser {
             if (this.returnType != VOID) sb.append(" => ").append(this.returnType.toString());
             return sb.toString();
         }
-    
+
         public String toString() {
             return "*** Cannot easily be converted into String ***";
         }
@@ -201,7 +201,7 @@ public class SignatureParser {
         public final List<FormalTypeParameter> formalTypeParameters = new ArrayList<FormalTypeParameter>();
         public ClassTypeSignature              superclassSignature;
         public final List<ClassTypeSignature>  superinterfaceSignatures = new ArrayList<ClassTypeSignature>();
-    
+
         public String toString(String className) {
             StringBuilder sb = new StringBuilder();
             if (!this.formalTypeParameters.isEmpty()) {
@@ -228,7 +228,7 @@ public class SignatureParser {
         public final List<SimpleClassTypeSignature> suffixes = (
             new ArrayList<SignatureParser.SimpleClassTypeSignature>()
         );
-    
+
         public String toString() {
             StringBuilder sb = new StringBuilder(this.packageSpecifier.replace('/', '.')).append(this.simpleClassName);
             if (!this.typeArguments.isEmpty()) {
@@ -253,7 +253,7 @@ public class SignatureParser {
     public static class SimpleClassTypeSignature {
         public String                   simpleClassName;
         public final List<TypeArgument> typeArguments = new ArrayList<TypeArgument>();
-    
+
         public String toString() {
             StringBuilder sb = new StringBuilder(this.simpleClassName);
             if (!this.typeArguments.isEmpty()) {
@@ -291,11 +291,11 @@ public class SignatureParser {
 
     /** Representation of the "FormalTypeParameter" clause. */
     public static class FormalTypeParameter {
-    
+
         public String                         identifier;
         public FieldTypeSignature             optionalClassBound;
         public final List<FieldTypeSignature> interfaceBounds = new ArrayList<SignatureParser.FieldTypeSignature>();
-    
+
         public String toString() {
             StringBuilder sb = new StringBuilder(this.identifier);
             if (this.optionalClassBound == null) {
@@ -326,7 +326,7 @@ public class SignatureParser {
         enum Mode { EXTENDS, SUPER, ANY, NONE };
         public Mode               mode;
         public FieldTypeSignature fieldTypeSignature;
-    
+
         public String toString() {
             switch (this.mode) {
             case EXTENDS:
@@ -395,7 +395,7 @@ public class SignatureParser {
         StringCharStream scs
     ) throws EOFException, UnexpectedCharacterException, SignatureException {
         MethodTypeSignature mts = new MethodTypeSignature();
-        
+
         if (scs.peekRead('<')) {
             while (!scs.peekRead('>')) {
                 mts.formalTypeParameters.add(parseFormalTypeParameter(scs));
@@ -515,7 +515,7 @@ public class SignatureParser {
     private static final PrimitiveTypeSignature[] PRIMITIVE_TYPES = {
         BYTE, CHAR, DOUBLE, FLOAT, INT, LONG, SHORT, BOOLEAN
     };
-    
+
     private static FieldTypeSignature parseFieldTypeSignature(
         StringCharStream scs
     ) throws EOFException, UnexpectedCharacterException, SignatureException {
@@ -586,7 +586,7 @@ public class SignatureParser {
         public SignatureException(String message) {
             super(message);
         }
-        
+
         public SignatureException(String message, Throwable t) {
             super(message, t);
         }

@@ -424,7 +424,7 @@ public class ConstantPool {
         if (e instanceof ConstantStringInfo) return stringToJavaLiteral(((ConstantStringInfo) e).string);
         throw new ClassCastException("CP index " + (0xffff & index) + ": " + e);
     }
-    
+
     /**
      * Checks that the indexed constant pool entry is of type {@code CONSTANT_(Long|Double|String)_info}, and returns
      * its value converted to {@link String}.
@@ -435,7 +435,7 @@ public class ConstantPool {
         if (e instanceof ConstantDoubleInfo) return Double.toString(((ConstantDoubleInfo) e).bytes) + 'D';
         throw new ClassCastException("CP index " + (0xffff & index) + ": " + e);
     }
-    
+
     /**
      * Checks that the indexed constant pool entry is of type {@code CONSTANT_(Integer|Float|Long|Double)_info}, and
      * returns its value converted to {@link String}.

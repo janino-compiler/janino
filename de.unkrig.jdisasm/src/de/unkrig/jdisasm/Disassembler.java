@@ -204,7 +204,7 @@ public class Disassembler {
     }
 
     public Disassembler() {}
-    
+
     public void setOut(Writer writer) {
         this.pw = writer instanceof PrintWriter ? (PrintWriter) writer : new PrintWriter(writer);
     }
@@ -273,7 +273,7 @@ public class Disassembler {
             try { is.close(); } catch (IOException ex) { }
         }
     }
-    
+
     /**
      * @param is A Java&trade; class file
      */
@@ -454,7 +454,7 @@ public class Disassembler {
         if ((method.accessFlags & ACC_SYNTHETIC) != 0 || method.syntheticAttribute != null) {
             println("    // (Synthetic method)");
         }
-        
+
         // Print BRIDGE notice.
         if ((method.accessFlags & ACC_BRIDGE) != 0) {
             println("    // (Bridge method)");
@@ -462,7 +462,7 @@ public class Disassembler {
 
         // Print DEPRECATED notice.
         if (method.deprecatedAttribute != null) this.println("    /** @deprecated */");
-        
+
         // Print method annotations.
         if (method.runtimeInvisibleAnnotationsAttribute != null) {
             for (Annotation a : method.runtimeInvisibleAnnotationsAttribute.annotations) {
@@ -603,7 +603,7 @@ public class Disassembler {
     private void disasm(List<Field> fields) {
         for (Field field : fields) {
             println();
-            
+
             // Print field annotations.
             if (field.runtimeInvisibleAnnotationsAttribute != null) {
                 for (Annotation a : field.runtimeInvisibleAnnotationsAttribute.annotations) {
@@ -615,12 +615,12 @@ public class Disassembler {
                     println("    " + a.toString());
                 }
             }
-            
+
             // print SYNTHETIC notice.
             if ((field.accessFlags & ACC_SYNTHETIC) != 0 || field.syntheticAttribute != null) {
                 println("    // (Synthetic field)");
             }
-            
+
             // Print DEPRECATED notice.
             if (field.deprecatedAttribute != null) println("    /** @deprecated */");
 
@@ -842,7 +842,7 @@ public class Disassembler {
                 println(this.prefix + "  " + a.toString());
             }
         }
-        
+
         public void visit(RuntimeInvisibleParameterAnnotationsAttribute ripaa) {
             println(this.prefix + "RuntimeInvisibleParameterAnnotations:");
             for (ParameterAnnotation pa : ripaa.parameterAnnotations) {
@@ -1859,7 +1859,7 @@ public class Disassembler {
             return SignatureParser.OBJECT;
         }
     }
-    
+
     private MethodTypeSignature decodeMethodTypeSignature(String ms) {
         try {
             return SignatureParser.decodeMethodTypeSignature(ms);
@@ -1906,7 +1906,7 @@ public class Disassembler {
                 ? " [" + this.name + ']'
                 : " [" + this.optionalTypeSignature.toString() + ' ' + this.name + ']'
             );
-                
+
         }
     }
 

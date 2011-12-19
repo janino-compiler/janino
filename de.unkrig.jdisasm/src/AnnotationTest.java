@@ -9,9 +9,9 @@ public class AnnotationTest {
 //    }
     // Annotation type declaration with defaults on some elements
     public @interface RequestForEnhancement {
-        int    id();       // No default - must be specified in 
+        int    id();       // No default - must be specified in
                                                             // each annotation
-        String synopsis(); // No default - must be specified in 
+        String synopsis(); // No default - must be specified in
                                                             // each annotation
         String engineer()  default "[unassigned]";
         String date()      default "[unimplemented]";
@@ -43,10 +43,10 @@ public class AnnotationTest {
         Name value();
     }
 
-    // Annotation type declaration with bounded wildcard to 
+    // Annotation type declaration with bounded wildcard to
     // restrict Class annotation
-    // The annotation type declaration below presumes the existence 
-    // of this interface, which describes a formatter for Java 
+    // The annotation type declaration below presumes the existence
+    // of this interface, which describes a formatter for Java
     // programming language source code
     public interface Formatter { }
 
@@ -73,7 +73,7 @@ public class AnnotationTest {
         public final int        fld3 = 3;
         public static final int fld4 = 4;
         public static final int fld55555555555555555555555555555555555 = 5;
-        
+
 
         OscillationOverthruster() {
             class Nested1 {}

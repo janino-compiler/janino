@@ -91,7 +91,7 @@ public class ClassFile {
     public static final short ACC_SYNTHETIC    = 0x00001000;
     public static final short ACC_ANNOTATION   = 0x00002000;
     public static final short ACC_ENUM         = 0x00004000;
-    
+
     public ClassFile(DataInputStream dis) throws IOException {
 
         // Magic number.
@@ -238,45 +238,45 @@ public class ClassFile {
         public SignatureAttribute                   signatureAttribute;
         public SyntheticAttribute                   syntheticAttribute;
         public final List<Attribute>                attributes = new ArrayList<Attribute>();
-    
+
         public Field(DataInputStream dis) throws IOException {
             this.accessFlags = dis.readShort();
             this.name = ClassFile.this.constantPool.getConstantUtf8Info(dis.readShort()).bytes;
             this.descriptor = ClassFile.this.constantPool.getConstantUtf8Info(dis.readShort()).bytes;
-    
+
             // Read field attributes.
             readAttributes(dis, new AbstractAttributeVisitor() {
-    
+
                 public void visit(ConstantValueAttribute cva) {
                     Field.this.constantValueAttribute = cva;
                     Field.this.attributes.add(cva);
                 }
-    
+
                 public void visit(DeprecatedAttribute da) {
                     Field.this.deprecatedAttribute = da;
                     Field.this.attributes.add(da);
                 }
-    
+
                 public void visit(RuntimeInvisibleAnnotationsAttribute riaa) {
                     Field.this.runtimeInvisibleAnnotationsAttribute = riaa;
                     Field.this.attributes.add(riaa);
                 }
-    
+
                 public void visit(RuntimeVisibleAnnotationsAttribute rvaa) {
                     Field.this.runtimeVisibleAnnotationsAttribute = rvaa;
                     Field.this.attributes.add(rvaa);
                 }
-    
+
                 public void visit(SignatureAttribute sa) {
                     Field.this.signatureAttribute = sa;
                     Field.this.attributes.add(sa);
                 }
-    
+
                 public void visit(SyntheticAttribute sa) {
                     Field.this.syntheticAttribute = sa;
                     Field.this.attributes.add(sa);
                 }
-    
+
                 public void acceptOther(Attribute ai) {
                     Field.this.attributes.add(ai);
                 }
@@ -300,12 +300,12 @@ public class ClassFile {
         public RuntimeVisibleParameterAnnotationsAttribute   runtimeVisibleParameterAnnotationsAttribute;
         public SignatureAttribute                            signatureAttribute;
         public SyntheticAttribute                            syntheticAttribute;
-    
+
         public Method(DataInputStream dis) throws IOException {
             this.accessFlags = dis.readShort();
             this.name = ClassFile.this.constantPool.getConstantUtf8Info(dis.readShort()).bytes;
             this.descriptor = ClassFile.this.constantPool.getConstantUtf8Info(dis.readShort()).bytes;
-    
+
             try {
                 // Read method attributes.
                 readAttributes(dis, new AbstractAttributeVisitor() {
@@ -317,12 +317,12 @@ public class ClassFile {
                         Method.this.codeAttribute = ca;
                         Method.this.attributes.add(ca);
                     }
-        
+
                     public void visit(DeprecatedAttribute da) {
                         Method.this.deprecatedAttribute = da;
                         Method.this.attributes.add(da);
                     }
-        
+
                     public void visit(ExceptionsAttribute ea) {
                         Method.this.exceptionsAttribute = ea;
                         Method.this.attributes.add(ea);
@@ -387,7 +387,7 @@ public class ClassFile {
     }
 
     private void readAttribute(DataInputStream dis, AttributeVisitor visitor) throws IOException {
-        
+
         String attributeName = this.constantPool.getConstantUtf8Info(dis.readShort()).bytes;
 
         try {
@@ -399,10 +399,10 @@ public class ClassFile {
                 dis.readFully(ba);
                 bais = new ByteArrayInputStream(ba);
             }
-            
+
             // Parse the attribute body.
             this.readAttributeBody(attributeName, new DataInputStream(bais), visitor);
-            
+
             // Check for extraneous bytes.
             {
                 int av = bais.available();
@@ -501,15 +501,15 @@ public class ClassFile {
         void visit(SignatureAttribute                            sa);
         void visit(SourceFileAttribute                           sfa);
         void visit(SyntheticAttribute                            sa);
-    
+
         void visit(UnknownAttribute unknownAttribute);
     }
 
     /** Default implementation of the {@link AttributeVisitor}. */
     public static abstract class AbstractAttributeVisitor implements AttributeVisitor {
-    
+
         public abstract void acceptOther(Attribute ai);
-    
+
         public void visit(AnnotationDefaultAttribute                    ada)   { acceptOther(ada); }
         public void visit(CodeAttribute                                 ca)    { acceptOther(ca); }
         public void visit(ConstantValueAttribute                        cva)   { acceptOther(cva); }
@@ -534,12 +534,12 @@ public class ClassFile {
     public static final class UnknownAttribute implements Attribute {
         public final String name;
         public byte[]       info;
-    
+
         private UnknownAttribute(String name, DataInputStream dis, ClassFile cf) throws IOException {
             this.name = name;
             this.info = readByteArray(dis, dis.available());
         }
-    
+
         public void accept(AttributeVisitor visitor) { visitor.visit(this); }
 
         public String getName() { return this.name; }
@@ -600,7 +600,7 @@ public class ClassFile {
     public static class RuntimeVisibleAnnotationsAttribute implements Attribute {
 
         public final List<Annotation> annotations = new ArrayList<Annotation>();
-        
+
         private RuntimeVisibleAnnotationsAttribute(DataInputStream dis, ClassFile cf) throws IOException {
             for (int i = 0xffff & dis.readShort(); i > 0; --i) {
                 this.annotations.add(new Annotation(dis, cf));
@@ -657,12 +657,12 @@ public class ClassFile {
 
         public void accept(AttributeVisitor visitor) { visitor.visit(this); }
     }
-    
+
     /** Representation of the {@code AnnotationDefault} attribute. */
     public static class AnnotationDefaultAttribute implements Attribute {
 
         public ElementValue defaultValue;
-        
+
         private AnnotationDefaultAttribute(DataInputStream dis, ClassFile cf) throws IOException {
             this.defaultValue = newElementValue(dis, cf);
         }
@@ -674,18 +674,18 @@ public class ClassFile {
 
     /** Helper class for the {@code Runtime*visible*Annotations} attributes. */
     public static class Annotation {
-    
+
         /** Helper class for the {@code Runtime*visible*Annotations} attributes. */
         public static class ElementValuePair {
-    
+
             public String       elementName;
             public ElementValue elementValue;
-    
+
             public ElementValuePair(DataInputStream dis, ClassFile cf) throws IOException {
                 this.elementName = cf.constantPool.getConstantUtf8Info(dis.readShort()).bytes; // elementNameIndex
-                this.elementValue = newElementValue(dis, cf); 
+                this.elementValue = newElementValue(dis, cf);
             }
-    
+
             public String toString() {
                 return (
                     "value".equals(this.elementName)
@@ -694,10 +694,10 @@ public class ClassFile {
                 );
             }
         }
-    
+
         public String                       typeName;
         public final List<ElementValuePair> elementValuePairs = new ArrayList<ElementValuePair>();
-    
+
         public Annotation(DataInputStream dis, ClassFile cf) throws IOException {
             short typeIndex = dis.readShort();
             try {
@@ -711,7 +711,7 @@ public class ClassFile {
                 this.elementValuePairs.add(new ElementValuePair(dis, cf));
             }
         }
-    
+
         public String toString() {
             StringBuilder sb = new StringBuilder("@").append(this.typeName).append('(');
             Iterator<ElementValuePair> it = this.elementValuePairs.iterator();
@@ -772,10 +772,10 @@ public class ClassFile {
             return new ElementValue() { public String toString() {
                 Iterator<ElementValue> it = values.iterator();
                 if (!it.hasNext()) return "{}";
-    
+
                 ElementValue firstValue = it.next();
                 if (!it.hasNext()) return firstValue.toString();
-    
+
                 StringBuilder sb = new StringBuilder("{ ").append(firstValue.toString());
                 do {
                     sb.append(", ").append(it.next().toString());
@@ -802,12 +802,12 @@ public class ClassFile {
 
         public String getName() { return "Signature"; }
     }
-    
+
     /** Representation of the {@code EnclosingMethod} attribute. */
     public static final class EnclosingMethodAttribute implements Attribute {
         public ConstantClassInfo       clasS;
         public ConstantNameAndTypeInfo optionalMethod;
-        
+
         private EnclosingMethodAttribute(DataInputStream dis, ClassFile cf) throws IOException {
             this.clasS = cf.constantPool.getConstantClassInfo(dis.readShort());  // classIndex
             this.optionalMethod = cf.constantPool.getConstantNameAndTypeInfo(dis.readShort());  // methodIndex
@@ -817,7 +817,7 @@ public class ClassFile {
 
         public String getName() { return "EnclosingMethod"; }
     }
-    
+
     /** Representation of the {@code Exceptions} attribute. */
     public static final class ExceptionsAttribute implements Attribute {
         public final List<ConstantClassInfo> exceptionNames = new ArrayList<ConstantClassInfo>();
@@ -1006,7 +1006,7 @@ public class ClassFile {
 
         public String getName() { return "LocalVariableTypeTable"; }
     }
-    
+
     /** Representation of the {@code ConstantValue} attribute. */
     public static final class ConstantValueAttribute implements Attribute {
         public final String constantValue;
@@ -1019,7 +1019,7 @@ public class ClassFile {
 
         public String getName() { return "ConstantValue"; }
     }
-    
+
     private static byte[] readByteArray(DataInputStream dis, int size) throws IOException {
         byte[] res = new byte[size];
         dis.readFully(res);
