@@ -56,7 +56,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.LineNumberReader;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.net.URL;
 import java.util.ArrayList;
@@ -209,8 +211,12 @@ public class Disassembler {
         this.pw = writer instanceof PrintWriter ? (PrintWriter) writer : new PrintWriter(writer);
     }
 
-    public void setOut(OutputStream os) {
-        this.pw = new PrintWriter(os);
+    public void setOut(OutputStream stream) {
+        this.pw = new PrintWriter(stream);
+    }
+
+    public void setOut(OutputStream stream, String charsetName) throws UnsupportedEncodingException {
+        this.pw = new PrintWriter(new OutputStreamWriter(stream, charsetName));
     }
 
     public void setVerbose(boolean verbose) {
