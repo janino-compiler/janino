@@ -420,22 +420,22 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
 
         // Check array sizes.
         if (this.optionalMethodNames != null && this.optionalMethodNames.length != count) {
-            throw new IllegalStateException("methodName");
+            throw new IllegalStateException("methodName count");
         }
         if (this.optionalParameterNames != null && this.optionalParameterNames.length != count) {
-            throw new IllegalStateException("parameterNames");
+            throw new IllegalStateException("parameterNames count");
         }
         if (this.optionalParameterTypes != null && this.optionalParameterTypes.length != count) {
-            throw new IllegalStateException("parameterTypes");
+            throw new IllegalStateException("parameterTypes count");
         }
         if (this.optionalReturnTypes != null && this.optionalReturnTypes.length != count) {
-            throw new IllegalStateException("returnTypes");
+            throw new IllegalStateException("returnTypes count");
         }
         if (this.optionalStaticMethod != null && this.optionalStaticMethod.length != count) {
-            throw new IllegalStateException("staticMethod");
+            throw new IllegalStateException("staticMethod count");
         }
         if (this.optionalThrownExceptions != null && this.optionalThrownExceptions.length != count) {
-            throw new IllegalStateException("thrownExceptions");
+            throw new IllegalStateException("thrownExceptions count");
         }
 
         this.setUpClassLoaders();
