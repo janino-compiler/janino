@@ -61,25 +61,22 @@ public class ClassLoaderIClassLoader extends IClassLoader {
         return this.classLoader;
     }
 
-    /**
-     * Find a new {@link IClass} by descriptor.
-     */
     protected IClass findIClass(String descriptor) throws ClassNotFoundException {
-
-        //
-        // See also [ 931385 ] Janino 2.0 throwing exception on arrays of java.io.File:
-        //
-        // "ClassLoader.loadClass()" and "Class.forName()" should be identical,
-        // but "ClassLoader.loadClass("[Ljava.lang.Object;")" throws a
-        // ClassNotFoundException under JDK 1.5.0 beta.
-        // Unclear whether this a beta version bug and SUN will fix this in the final
-        // release, but "Class.forName()" seems to work fine in all cases, so we
-        // use that.
-        //
 
         Class clazz;
         try {
-//            clazz = this.classLoader.loadClass(className);
+
+            //
+            // See also [ 931385 ] Janino 2.0 throwing exception on arrays of java.io.File:
+            //
+            // "ClassLoader.loadClass()" and "Class.forName()" should be identical,
+            // but "ClassLoader.loadClass("[Ljava.lang.Object;")" throws a
+            // ClassNotFoundException under JDK 1.5.0 beta.
+            // Unclear whether this a beta version bug and SUN will fix this in the final
+            // release, but "Class.forName()" seems to work fine in all cases, so we
+            // use that.
+            //
+//            clazz = this.classLoader.loadClass(Descriptor.toClassName(descriptor));
             clazz = Class.forName(Descriptor.toClassName(descriptor), false, this.classLoader);
         } catch (ClassNotFoundException e) {
             if (e.getException() == null) {
