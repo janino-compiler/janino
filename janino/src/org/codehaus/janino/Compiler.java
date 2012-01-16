@@ -457,9 +457,7 @@ public class Compiler {
      * @param sourceResources Contain the compilation units to compile
      * @return <code>true</code> for backwards compatibility (return value can safely be ignored)
      */
-    public boolean compile(
-        Resource[] sourceResources
-    ) throws CompileException, IOException {
+    public boolean compile(Resource[] sourceResources) throws CompileException, IOException {
 
         // Set up the compile error handler as described at "setCompileErrorHandler()".
         UnitCompiler.ErrorHandler ceh = (
