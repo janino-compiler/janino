@@ -2050,23 +2050,14 @@ public class UnitCompiler {
                 } else {
 
                     // Determine qualification for superconstructor invocation.
-                    QualifiedThisReference qualification = null;
                     IClass outerClassOfSuperclass = this.resolve(
                         cd.getDeclaringClass()
                     ).getSuperclass().getOuterIClass();
+                    QualifiedThisReference qualification = null;
                     if (outerClassOfSuperclass != null) {
-//                        qualification = new QualifiedThisReference(
-//                            cd.getLocation(),        // location
-//                            cd.getDeclaringClass(),  // declaringClass
-//                            cd,                      // declaringTypeBodyDeclaration
-//                            outerClassOfSuperclass   // targetIClass
-//                        );
                         qualification = new QualifiedThisReference(
-                            cd.getLocation(), // location
-                            new SimpleType(   // qualification
-                                cd.getLocation(),
-                                outerClassOfSuperclass
-                            )
+                            cd.getLocation(),                                        // location
+                            new SimpleType(cd.getLocation(), outerClassOfSuperclass) // qualification
                         );
                     }
 
