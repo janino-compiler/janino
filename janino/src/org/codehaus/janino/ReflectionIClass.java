@@ -142,6 +142,10 @@ class ReflectionIClass extends IClass {
         );
     }
 
+    public Class getClazz() {
+        return this.clazz;
+    }
+
     /**
      * @return E.g. "int", "int[][]", "pkg1.pkg2.Outer$Inner[]"
      */

@@ -438,8 +438,6 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
             throw new IllegalStateException("thrownExceptions count");
         }
 
-        this.setUpClassLoaders();
-
         // Create compilation unit.
         Java.CompilationUnit compilationUnit = this.makeCompilationUnit(count == 1 ? parsers[0] : null);
 

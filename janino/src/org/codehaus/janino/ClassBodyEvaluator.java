@@ -204,7 +204,6 @@ public class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEval
     }
 
     public void cook(Scanner scanner) throws CompileException, IOException {
-        this.setUpClassLoaders();
 
         Parser parser = new Parser(scanner);
         Java.CompilationUnit compilationUnit = this.makeCompilationUnit(parser);
