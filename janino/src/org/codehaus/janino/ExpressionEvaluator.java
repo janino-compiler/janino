@@ -283,7 +283,7 @@ public class ExpressionEvaluator extends ScriptEvaluator implements IExpressionE
                 // Make sure "PrimitiveWrapper" is compiled.
                 PrimitiveWrapper.wrap(99);
 
-                // Add "PrimitiveWrapper" as an auxiliary class.
+                // Verify that "PrimitiveWrapper" is loadable.
                 this.classToType(null, PrimitiveWrapper.class);
             }
 
