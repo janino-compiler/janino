@@ -156,28 +156,30 @@ public class SimpleCompiler extends Cookable implements ISimpleCompiler {
 
     public SimpleCompiler() {}
 
+    /**
+     * @see #setParentClassLoader(ClassLoader, Class[])
+     */
     public void setParentClassLoader(ClassLoader optionalParentClassLoader) {
         this.setParentClassLoader(optionalParentClassLoader, null);
     }
 
     /**
-     * Allow references to the classes loaded through this parent class loader
-     * (@see {@link #setParentClassLoader(ClassLoader)}), plus the extra
-     * <code>auxiliaryClasses</code>.
+     * Allow references to the classes loaded through this parent class loader (@see {@link
+     * #setParentClassLoader(ClassLoader)}), plus the extra <code>auxiliaryClasses</code>.
      * <p>
-     * Notice that the <code>auxiliaryClasses</code> must either be loadable through the
+     * Notice that the <code>optionalAuxiliaryClasses</code> must either be loadable through the
      * <code>optionalParentClassLoader</code> (in which case they have no effect), or
      * <b>no class with the same name</b> must be loadable through the
      * <code>optionalParentClassLoader</code>.
      */
-    public void setParentClassLoader(ClassLoader optionalParentClassLoader, Class[] auxiliaryClasses) {
+    public void setParentClassLoader(ClassLoader optionalParentClassLoader, Class[] optionalAuxiliaryClasses) {
         assertNotCooked();
         this.parentClassLoader = (
             optionalParentClassLoader != null
             ? optionalParentClassLoader
             : Thread.currentThread().getContextClassLoader()
         );
-        this.optionalAuxiliaryClasses = auxiliaryClasses;
+        this.optionalAuxiliaryClasses = optionalAuxiliaryClasses;
     }
 
     public void setDebuggingInformation(boolean debugSource, boolean debugLines, boolean debugVars) {
@@ -186,13 +188,18 @@ public class SimpleCompiler extends Cookable implements ISimpleCompiler {
         this.debugVars   = debugVars;
     }
 
-    public final void cook(
-        String optionalFileName,
-        Reader r
-    ) throws CompileException, IOException {
+    /**
+     * Scans, parses and ompiles a given compilation unit from the given {@link Reader}. After completion, {@link
+     * #getClassLoader()} returns a {@link ClassLoader} that allows for access to the compiled classes.
+     */
+    public final void cook(String optionalFileName, Reader r) throws CompileException, IOException {
         this.cook(new Scanner(optionalFileName, r));
     }
 
+    /**
+     * Scans, parses and ompiles a given compilation unit from the given scanner. After completion, {@link
+     * #getClassLoader()} returns a {@link ClassLoader} that allows for access to the compiled classes.
+     */
     public void cook(Scanner scanner) throws CompileException, IOException {
         this.setUpClassLoaders();
 
@@ -336,10 +343,7 @@ public class SimpleCompiler extends Cookable implements ISimpleCompiler {
     /**
      * Wrap a reflection {@link Class} in a {@link Java.Type} object.
      */
-    protected Java.Type classToType(
-        Location    location,
-        final Class optionalClass
-    ) {
+    protected Java.Type classToType(Location location, final Class optionalClass) {
         if (optionalClass == null) return null;
 
         this.classLoader.addAuxiliaryClass(optionalClass);
@@ -379,8 +383,8 @@ public class SimpleCompiler extends Cookable implements ISimpleCompiler {
      * Compile the given compilation unit. (A "compilation unit" is typically the contents
      * of a Java&trade; source file.)
      *
-     * @param compilationUnit The parsed compilation unit
-     * @return The {@link ClassLoader} into which the compiled classes were defined
+     * @param compilationUnit   The parsed compilation unit
+     * @return                  The {@link ClassLoader} into which the compiled classes were defined
      * @throws CompileException
      */
     protected final ClassLoader compileToClassLoader(Java.CompilationUnit compilationUnit) throws CompileException {
