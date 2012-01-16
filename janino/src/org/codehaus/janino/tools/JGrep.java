@@ -79,7 +79,7 @@ import org.codehaus.janino.util.resource.PathResourceFinder;
  */
 public class JGrep {
     private static final boolean DEBUG = false;
-    private List         parsedCompilationUnits = new ArrayList(); // UnitCompiler
+    private final List         parsedCompilationUnits = new ArrayList(); // UnitCompiler
 
     /**
      * Command line interface.

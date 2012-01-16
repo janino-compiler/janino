@@ -102,7 +102,7 @@ public final class Java {
      * Holds the result of {@link Parser#parseCompilationUnit}.
      */
     public static final class CompilationUnit implements Scope {
-        public /*final*/          String optionalFileName;
+        public final              String optionalFileName;
         public PackageDeclaration optionalPackageDeclaration    = null;
         public final List         importDeclarations            = new ArrayList(); // ImportDeclaration
         public final List         packageMemberTypeDeclarations = new ArrayList(); // PackageMemberTypeDeclaration
@@ -768,8 +768,8 @@ public final class Java {
     public abstract static class InterfaceDeclaration
     extends AbstractTypeDeclaration
     implements NamedTypeDeclaration, DocCommentable {
-        private final String    optionalDocComment;
-        public /*final*/ String name;
+        private final String optionalDocComment;
+        public final String  name;
 
         protected InterfaceDeclaration(
             Location location,
@@ -797,8 +797,8 @@ public final class Java {
             if (this.resolvedType != null) this.resolvedType.clearIFieldCaches();
         }
 
-        public /*final*/ Type[] extendedTypes;
-        public final List       constantDeclarations = new ArrayList(); // FieldDeclaration
+        public final Type[] extendedTypes;
+        public final List   constantDeclarations = new ArrayList(); // FieldDeclaration
 
         // Set during "compile()".
         IClass[] interfaces = null;
@@ -1087,8 +1087,8 @@ public final class Java {
     }
 
     public static final class ConstructorDeclarator extends FunctionDeclarator {
-        IClass.IConstructor          iConstructor = null;
-        public ConstructorInvocation optionalConstructorInvocation = null;
+        IClass.IConstructor                iConstructor = null;
+        public final ConstructorInvocation optionalConstructorInvocation;
 
         public ConstructorDeclarator(
             Location                             location,
@@ -1119,7 +1119,7 @@ public final class Java {
 
         // Compile time members.
 
-        Map syntheticParameters = new HashMap(); // String name => LocalVariable
+        final Map syntheticParameters = new HashMap(); // String name => LocalVariable
 
         // Implement "FunctionDeclarator":
 
@@ -1964,7 +1964,7 @@ public final class Java {
      * equaivalent to a "primitive type") (JLS 4.2).
      */
     public static final class BasicType extends Type {
-        public /*final*/ int index;
+        public final int index;
 
         public BasicType(Location location, int index) {
             super(location);
@@ -2242,7 +2242,7 @@ public final class Java {
      * Representation of a local variable access -- used during compilation.
      */
     public static final class LocalVariableAccess extends Lvalue {
-        public /*final*/ LocalVariable localVariable;
+        public final LocalVariable localVariable;
 
         public LocalVariableAccess(
             Location      location,
@@ -3111,11 +3111,10 @@ public final class Java {
      * offsets can be ignored.
      */
     public static class LocalVariableSlot {
-        private short  slotIndex = -1;
-        private String name;
-        private IClass type;
-        private Offset start;
-        private Offset end;
+        private short        slotIndex = -1;
+        private String       name;
+        private final IClass type;
+        private Offset       start, end;
 
         public LocalVariableSlot(
             String name,

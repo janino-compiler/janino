@@ -876,12 +876,12 @@ public class Scanner {
 //System.out.println("'" + (char) nextChar + "' = " + (int) nextChar);
     }
 
-    private /*final*/ String optionalFileName;
-    private /*final*/ Reader in;
-    private int              nextChar  = -1; // Always valid (one character read-ahead).
-    private boolean          crLfPending = false;
-    private short            nextCharLineNumber;
-    private short            nextCharColumnNumber;
+    private final String optionalFileName;
+    private final Reader in;
+    private int          nextChar  = -1; // Always valid (one character read-ahead).
+    private boolean      crLfPending = false;
+    private short        nextCharLineNumber;
+    private short        nextCharColumnNumber;
 
     /**
      * Line number of the previously produced token (typically starting at one).

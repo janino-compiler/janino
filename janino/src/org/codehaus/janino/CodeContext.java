@@ -50,30 +50,31 @@ public class CodeContext {
     private static final byte    UNEXAMINED = -1;
     private static final byte    INVALID_OFFSET = -2;
     private static final int     MAX_STACK_SIZE = 254;
-    private /*final*/ ClassFile classFile;
 
+    private final ClassFile classFile;
     private short           maxStack;
     private short           maxLocals;
     private byte[]          code;
-    private /*final*/ Offset    beginning;
-    private /*final*/ Inserter  end;
+    private final Offset    beginning;
+    private final Inserter  end;
     private Inserter        currentInserter;
-    private /*final*/ List      exceptionTableEntries; // ExceptionTableEntry
+    private final List      exceptionTableEntries; // ExceptionTableEntry
 
     /**
      * List of Java.LocalVariableSlot objects that contain all the local variables that
      * are allocated in any block in this CodeContext.
      */
-    private List           allLocalVars = new ArrayList();
+    private final List allLocalVars = new ArrayList();
+
     /**
      * List of List of Java.LocalVariableSlot objects. Each List of Java.LocalVariableSlot is
      * the local variables allocated for a block. They are pushed and poped onto the list together
      * to make allocation of the next local variable slot easy.
      */
-    private List           scopedVars = new ArrayList();
-    private short          nextLocalVariableSlot = 0;
+    private final List scopedVars = new ArrayList();
 
-    private final List     relocatables = new ArrayList();
+    private short      nextLocalVariableSlot = 0;
+    private final List relocatables = new ArrayList();
 
     /**
      * Create an empty "Code" attribute.
@@ -1049,10 +1050,10 @@ public class CodeContext {
             return true;
         }
 
-        private boolean expanded; //marks whether this has been expanded to account for a wide branch
-        private final int opcode;
+        private boolean        expanded; //marks whether this has been expanded to account for a wide branch
+        private final int      opcode;
         private final Inserter source;
-        private final Offset destination;
+        private final Offset   destination;
     }
 
     /**
@@ -1169,7 +1170,7 @@ public class CodeContext {
      */
     public class Offset {
         int              offset = Offset.UNSET;
-        Offset             prev = null, next = null;
+        Offset           prev = null, next = null;
         static final int UNSET = -1;
 
         /**

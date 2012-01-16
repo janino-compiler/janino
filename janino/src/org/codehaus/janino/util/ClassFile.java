@@ -684,17 +684,17 @@ public class ClassFile {
 
     private short        majorVersion;
     private short        minorVersion;
-    public /*final*/ List    constantPool; // ConstantPoolInfo
-    public /*final*/ short   accessFlags;
-    public /*final*/ short   thisClass;
-    public /*final*/ short   superclass;
-    public /*final*/ short[] interfaces;
-    public /*final*/ List    fieldInfos;   // FieldInfo
-    public /*final*/ List    methodInfos;  // MethodInfo
-    private /*final*/ List   attributes;   // AttributeInfo
+    public final List    constantPool; // ConstantPoolInfo
+    public final short   accessFlags;
+    public final short   thisClass;
+    public final short   superclass;
+    public final short[] interfaces;
+    public final List    fieldInfos;   // FieldInfo
+    public final List    methodInfos;  // MethodInfo
+    private final List   attributes;   // AttributeInfo
 
     // Convenience.
-    private /*final*/ Map constantPoolMap; // ConstantPoolInfo => Short
+    private final Map constantPoolMap; // ConstantPoolInfo => Short
 
     public abstract static class ConstantPoolInfo {
         public abstract void store(DataOutputStream dos) throws IOException;

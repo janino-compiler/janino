@@ -36,8 +36,8 @@ import org.codehaus.commons.compiler.Location;
  * Wraps a {@link java.lang.Class} in an {@link org.codehaus.janino.IClass}.
  */
 class ReflectionIClass extends IClass {
-    private /*final*/ Class        clazz;
-    private /*final*/ IClassLoader iClassLoader;
+    private final Class        clazz;
+    private final IClassLoader iClassLoader;
 
     /**
      * @param iClassLoader required to load other {@link IClass}es on <code>get...()</code>.

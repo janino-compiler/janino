@@ -93,5 +93,5 @@ public class ClassLoaderIClassLoader extends IClassLoader {
         return result;
     }
 
-    private /*final*/ ClassLoader classLoader;
+    private final ClassLoader classLoader;
 }
