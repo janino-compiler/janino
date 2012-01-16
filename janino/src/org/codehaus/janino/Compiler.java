@@ -355,13 +355,12 @@ public class Compiler {
      * {@link ResourceFinder#EMPTY_RESOURCE_FINDER} as the
      * <code>classFileResourceFinder</code>.
      *
-     * @param sourceFinder Finds extra Java compilation units that need to be compiled (a.k.a. "sourcepath")
-     * @param iClassLoader loads auxiliary {@link IClass}es; e.g. <code>new ClassLoaderIClassLoader(ClassLoader)</code>
-     * @param classFileFinder Where to look for up-to-date class files that need not be compiled
-     * @param classFileCreator Used to store generated class files
-     * @param optionalCharacterEncoding
-     * @param verbose
-     * @param optionalWarningHandler used to issue warnings
+     * @param sourceFinder           Finds extra Java compilation units that need to be compiled (a.k.a. "-sourcepath")
+     * @param iClassLoader           Loads auxiliary {@link IClass}es (a.k.a. "-classpath"), e.g. <code>new
+     *                               ClassLoaderIClassLoader(ClassLoader)</code>
+     * @param classFileFinder        Where to look for up-to-date class files that need not be compiled (a.k.a. "-d")
+     * @param classFileCreator       Used to store generated class files (a.k.a. "-d")
+     * @param optionalWarningHandler Used to issue warnings
      */
     public Compiler(
         ResourceFinder  sourceFinder,
