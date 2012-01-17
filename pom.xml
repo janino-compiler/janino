@@ -4,6 +4,12 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
+  <parent>
+    <groupId>org.codehaus</groupId>
+    <artifactId>codehaus-parent</artifactId>
+    <version>4</version>
+  </parent>
+
   <groupId>org.codehaus.janino</groupId>
   <artifactId>janino-parent</artifactId>
   <version>2.6.2-SNAPSHOT</version>
@@ -82,10 +88,6 @@
     <system>Jira</system>
     <url>http://jira.codehaus.org/browse/JANINO</url>
   </issueManagement>
-
-  <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-  </properties>
 
   <dependencyManagement>
     <dependencies>
@@ -260,22 +262,4 @@
       </reporting>
     </profile>
   </profiles>
-
-  <distributionManagement>
-    <repository>
-      <id>codehaus.org</id>
-      <name>Janino Central Repository</name>
-      <url>dav:https://dav.codehaus.org/repository/janino/</url>
-    </repository>
-    <snapshotRepository>
-      <id>codehaus.org</id>
-      <name>Janino Central Development Repository</name>
-      <url>dav:https://dav.codehaus.org/snapshots.repository/janino/</url>
-    </snapshotRepository>
-    <site>
-      <id>codehaus.org</id>
-      <name>Janino Website</name>
-      <url>dav:https://dav.codehaus.org/janino/</url>
-    </site>
-  </distributionManagement>
 </project>
