@@ -191,6 +191,7 @@ public class SignatureParser {
             return sb.toString();
         }
 
+        @Override
         public String toString() {
             return "*** Cannot easily be converted into String ***";
         }
@@ -229,6 +230,7 @@ public class SignatureParser {
             new ArrayList<SignatureParser.SimpleClassTypeSignature>()
         );
 
+        @Override
         public String toString() {
             StringBuilder sb = new StringBuilder(this.packageSpecifier.replace('/', '.')).append(this.simpleClassName);
             if (!this.typeArguments.isEmpty()) {
@@ -254,6 +256,7 @@ public class SignatureParser {
         public String                   simpleClassName;
         public final List<TypeArgument> typeArguments = new ArrayList<TypeArgument>();
 
+        @Override
         public String toString() {
             StringBuilder sb = new StringBuilder(this.simpleClassName);
             if (!this.typeArguments.isEmpty()) {
@@ -271,12 +274,14 @@ public class SignatureParser {
     /** Representation of the "ArrayTypeSignature" clause. */
     public static class ArrayTypeSignature implements FieldTypeSignature {
         public TypeSignature typeSignature;
+        @Override
         public String toString() { return this.typeSignature.toString() + "[]"; }
     }
 
     /** Representation of the "TypeVariableSignature" clause. */
     public static class TypeVariableSignature implements ThrowsSignature, FieldTypeSignature {
         public String identifier;
+        @Override
         public String toString() { return this.identifier; }
     }
 
@@ -296,6 +301,7 @@ public class SignatureParser {
         public FieldTypeSignature             optionalClassBound;
         public final List<FieldTypeSignature> interfaceBounds = new ArrayList<SignatureParser.FieldTypeSignature>();
 
+        @Override
         public String toString() {
             StringBuilder sb = new StringBuilder(this.identifier);
             if (this.optionalClassBound == null) {
@@ -314,9 +320,10 @@ public class SignatureParser {
     /** Representation of the "PrimitiveTypeSignature" clause. */
     public static class PrimitiveTypeSignature implements TypeSignature {
         public final String typeName;
-        private PrimitiveTypeSignature(String typeName) {
+        PrimitiveTypeSignature(String typeName) {
             this.typeName = typeName;
         }
+        @Override
         public String toString() { return this.typeName; };
     }
 
@@ -327,6 +334,7 @@ public class SignatureParser {
         public Mode               mode;
         public FieldTypeSignature fieldTypeSignature;
 
+        @Override
         public String toString() {
             switch (this.mode) {
             case EXTENDS:
@@ -363,7 +371,8 @@ public class SignatureParser {
 
     public static final PrimitiveTypeSignature BOOLEAN = new PrimitiveTypeSignature("boolean");
 
-    public static final TypeSignature VOID = new TypeSignature() { public String toString() { return "void"; }};
+    public static final TypeSignature VOID = new TypeSignature() { @Override
+    public String toString() { return "void"; }};
 
     private static TypeSignature parseFieldDescriptor(
         StringCharStream scs

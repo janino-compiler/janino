@@ -120,6 +120,7 @@ public class StringCharStream implements CharStream {
         return this.pos >= this.in.length();
     }
 
+    @Override
     public String toString() {
         return "'" + this.in + "' at offset " + this.pos;
     }

@@ -139,9 +139,12 @@ public class Disassembler {
     private boolean     hideLines;
     private boolean     hideVars;
 
-    // "" for the default package; with a trailing period otherwise.
-    private String       thisClassPackageName;
-    private Set<Integer> branchTargets;
+    /**
+     * "" for the default package; with a trailing period otherwise.
+     */
+    private String thisClassPackageName;
+
+    Set<Integer> branchTargets;
 
     private static final List<ParameterAnnotation> NO_PARAMETER_ANNOTATIONS = (
         Collections.<ParameterAnnotation>emptyList()
@@ -662,7 +665,7 @@ public class Disassembler {
         }
     }
 
-    private String toString(InnerClassesAttribute.ClasS c) {
+    String toString(InnerClassesAttribute.ClasS c) {
         return (
             (c.outerClassInfo == null ? "[local class]" : beautify(c.outerClassInfo.name))
             + " { "
@@ -1011,7 +1014,7 @@ public class Disassembler {
                 int opcode = dis.read();
                 if (opcode == -1) break;
 
-                Instruction instruction = opcodeToInstruction[opcode];
+                Instruction instruction = OPCODE_TO_INSTRUCTION[opcode];
                 if (instruction == null) {
                     lines.put(instructionOffset, "??? (invalid opcode \"" + opcode + "\")");
                 } else {
@@ -1140,7 +1143,7 @@ public class Disassembler {
     /**
      * @return The {@code instruction} converted into one line of text.
      */
-    private String disasmOperands(
+    String disasmOperands(
         Operand[]       operands,
         DataInputStream dis,
         int             instructionOffset,
@@ -1161,7 +1164,7 @@ public class Disassembler {
         return sb.toString();
     }
 
-    private static final String[] instructions = new String[] {
+    private static final Instruction[] OPCODE_TO_INSTRUCTION = compileInstructions(new String[] {
         "50  aaload",
         "83  aastore",
         "1   aconst_null",
@@ -1291,7 +1294,7 @@ public class Disassembler {
         "104 imul",
         "116 ineg",
         "193 instanceof      class2",
-//      "186 invokedynamic   invokedynamic2", // For Java 7; see http://cr.openjdk.java.net/~jrose/pres/indy-javadoc-mlvm/java/lang/invoke/package-summary.html
+    //      "186 invokedynamic   invokedynamic2", // For Java 7; see http://cr.openjdk.java.net/~jrose/pres/indy-javadoc-mlvm/java/lang/invoke/package-summary.html
         "185 invokeinterface interfacemethodref2",
         "183 invokespecial   methodref2",
         "184 invokestatic    methodref2",
@@ -1364,8 +1367,9 @@ public class Disassembler {
         "95  swap",
         "170 tableswitch     tableswitch",
         "196 wide            wide",
-    };
-    private static final String[] wideInstructions = new String[] {
+    });
+
+    static final Instruction[] OPCODE_TO_WIDE_INSTRUCTION = compileInstructions(new String[] {
         "21  iload           localvariableindex2",
         "23  fload           localvariableindex2",
         "25  aload           localvariableindex2",
@@ -1378,14 +1382,11 @@ public class Disassembler {
         "57  dstore          localvariableindex2",
         "169 ret             localvariableindex2",
         "132 iinc            localvariableindex2 signedshort",
-    };
-    private static final Instruction[] opcodeToInstruction     = new Instruction[256];
-    private static final Instruction[] opcodeToWideInstruction = new Instruction[256];
-    static {
-        compileInstructions(instructions, opcodeToInstruction);
-        compileInstructions(wideInstructions, opcodeToWideInstruction);
-    }
-    private static void compileInstructions(String[] instructions, Instruction[] opcodeToInstruction) {
+    });
+
+    private static Instruction[] compileInstructions(String[] instructions) {
+        Instruction[] result = new Instruction[256];
+
         for (int j = 0; j < instructions.length; ++j) {
             StringTokenizer st = new StringTokenizer(instructions[j]);
             String os = st.nextToken();
@@ -1755,7 +1756,7 @@ public class Disassembler {
                                 Disassembler    d
                             ) throws IOException {
                                 int subopcode = 0xff & dis.readByte();
-                                Instruction wideInstruction = opcodeToWideInstruction[subopcode];
+                                Instruction wideInstruction = OPCODE_TO_WIDE_INSTRUCTION[subopcode];
                                 if (wideInstruction == null) {
                                     return (
                                         "Invalid opcode "
@@ -1780,11 +1781,12 @@ public class Disassembler {
                 }
                 operands = l.toArray(new Operand[l.size()]);
             }
-            opcodeToInstruction[opcode] = new Instruction(mnemonic, operands);
+            result[opcode] = new Instruction(mnemonic, operands);
         }
+        return result;
     }
 
-    private LocalVariable getLocalVariable(
+    LocalVariable getLocalVariable(
         short  localVariableIndex,
         int    instructionOffset,
         Method method
@@ -1845,7 +1847,7 @@ public class Disassembler {
         return lv;
     }
 
-    private ClassSignature decodeClassSignature(String cs) {
+    ClassSignature decodeClassSignature(String cs) {
         try {
             return SignatureParser.decodeClassSignature(cs);
         } catch (SignatureException e) {
@@ -1857,7 +1859,7 @@ public class Disassembler {
         }
     }
 
-    private FieldTypeSignature decodeFieldTypeSignature(String fs) {
+    FieldTypeSignature decodeFieldTypeSignature(String fs) {
         try {
             return SignatureParser.decodeFieldTypeSignature(fs);
         } catch (SignatureException e) {
@@ -1866,7 +1868,7 @@ public class Disassembler {
         }
     }
 
-    private MethodTypeSignature decodeMethodTypeSignature(String ms) {
+    MethodTypeSignature decodeMethodTypeSignature(String ms) {
         try {
             return SignatureParser.decodeMethodTypeSignature(ms);
         } catch (SignatureException e) {
@@ -1878,7 +1880,7 @@ public class Disassembler {
         }
     }
 
-    private TypeSignature decodeFieldDescriptor(String fd) {
+    TypeSignature decodeFieldDescriptor(String fd) {
         try {
             return SignatureParser.decodeFieldDescriptor(fd);
         } catch (SignatureException e) {
@@ -1887,7 +1889,7 @@ public class Disassembler {
         }
     }
 
-    private MethodTypeSignature decodeMethodDescriptor(String md) {
+    MethodTypeSignature decodeMethodDescriptor(String md) {
         try {
             return SignatureParser.decodeMethodDescriptor(md);
         } catch (SignatureException e) {
@@ -1902,10 +1904,11 @@ public class Disassembler {
     /**
      * Representation of a local variable reference in the {@code Code} attribute.
      */
-    private class LocalVariable {
+    class LocalVariable {
         TypeSignature optionalTypeSignature;
         String        name;
 
+        @Override
         public String toString() {
             return (
                 this.optionalTypeSignature == null
@@ -1935,6 +1938,7 @@ public class Disassembler {
         public String    getMnemonic() { return this.mnemonic; }
         public Operand[] getOperands() { return this.operands; }
 
+        @Override
         public String toString() {
             return this.mnemonic;
         }
@@ -1963,12 +1967,14 @@ public class Disassembler {
             super(is);
         }
 
+        @Override
         public int read() throws IOException {
             int res = super.read();
             if (res != -1) ++this.count;
             return res;
         }
 
+        @Override
         public int read(byte[] b, int off, int len) throws IOException {
             int res = super.read(b, off, len);
             if (res != -1) this.count += res;
@@ -2007,7 +2013,7 @@ public class Disassembler {
         return sb.toString();
     }
 
-    private String beautify(String s) {
+    String beautify(String s) {
         int i = 0;
         for (;;) {
 

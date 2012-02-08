@@ -47,6 +47,7 @@ public class ConstantPool {
          */
         public String name;
 
+        @Override
         public String toString() {
             return "Class " + this.name;
         }
@@ -57,6 +58,7 @@ public class ConstantPool {
         public ConstantClassInfo       clasS;
         public ConstantNameAndTypeInfo nameAndType;
 
+        @Override
         public String toString() {
             return "Fieldref " + this.clasS + this.nameAndType;
         }
@@ -67,6 +69,7 @@ public class ConstantPool {
         public ConstantClassInfo       clasS;
         public ConstantNameAndTypeInfo nameAndType;
 
+        @Override
         public String toString() {
             return "Methodref " + this.clasS + this.nameAndType;
         }
@@ -77,6 +80,7 @@ public class ConstantPool {
         public ConstantClassInfo       clasS;
         public ConstantNameAndTypeInfo nameAndType;
 
+        @Override
         public String toString() {
             return "InterfaceMethodref " + this.clasS + this.nameAndType;
         }
@@ -86,6 +90,7 @@ public class ConstantPool {
     public static class ConstantStringInfo implements ConstantPoolEntry {
         public String string;
 
+        @Override
         public String toString() {
             return "String " + this.string;
         }
@@ -95,6 +100,7 @@ public class ConstantPool {
     public static class ConstantIntegerInfo implements ConstantPoolEntry {
         public int bytes;
 
+        @Override
         public String toString() {
             return "Integer " + this.bytes;
         }
@@ -104,6 +110,7 @@ public class ConstantPool {
     public static class ConstantFloatInfo implements ConstantPoolEntry {
         public float bytes;
 
+        @Override
         public String toString() {
             return "Float " + this.bytes;
         }
@@ -113,6 +120,7 @@ public class ConstantPool {
     public static class ConstantLongInfo implements ConstantPoolEntry {
         public long bytes;
 
+        @Override
         public String toString() {
             return "Long " + this.bytes;
         }
@@ -122,6 +130,7 @@ public class ConstantPool {
     public static class ConstantDoubleInfo implements ConstantPoolEntry {
         public double bytes;
 
+        @Override
         public String toString() {
             return "Double " + this.bytes;
         }
@@ -132,6 +141,7 @@ public class ConstantPool {
         public ConstantUtf8Info name;
         public ConstantUtf8Info descriptor;
 
+        @Override
         public String toString() {
             return "NameAndType " + this.name + ' ' + this.descriptor;
         }
@@ -141,12 +151,13 @@ public class ConstantPool {
     public static class ConstantUtf8Info implements ConstantPoolEntry {
         public String bytes;
 
+        @Override
         public String toString() {
             return "Utf8 " + this.bytes;
         }
     }
 
-    private final ConstantPoolEntry[] entries;
+    final ConstantPoolEntry[] entries;
 
     /**
      * Reads a constant pool from the given {@link InputStream}. Afterwards, entries can be retrieved by invoking
@@ -180,6 +191,7 @@ public class ConstantPool {
 
         /***/
         abstract class RawEntry2 extends RawEntry {
+            @Override
             ConstantPoolEntry get(short index) {
                 if (ConstantPool.this.entries[0xffff & index] == null) {
                     ConstantPool.this.entries[0xffff & index] = new ConstantPoolEntry() {
@@ -204,6 +216,7 @@ public class ConstantPool {
                 {
                     final short nameIndex = dis.readShort();
                     re = new RawEntry2() {
+                        @Override
                         ConstantPoolEntry cook() {
                             return new ConstantClassInfo() { {
                                 this.name = getConstantUtf8Info(nameIndex).bytes.replace('/', '.');
@@ -218,6 +231,7 @@ public class ConstantPool {
                     final short classIndex = dis.readShort();
                     final short nameAndTypeIndex = dis.readShort();
                     re = new RawEntry2() {
+                        @Override
                         ConstantPoolEntry cook() {
                             return new ConstantFieldrefInfo() { {
                                 this.clasS = getConstantClassInfo(classIndex);
@@ -233,6 +247,7 @@ public class ConstantPool {
                     final short classIndex = dis.readShort();
                     final short nameAndTypeIndex = dis.readShort();
                     re = new RawEntry2() {
+                        @Override
                         ConstantPoolEntry cook() {
                             return new ConstantMethodrefInfo() { {
                                 this.clasS = getConstantClassInfo(classIndex);
@@ -248,6 +263,7 @@ public class ConstantPool {
                     final short classIndex = dis.readShort();
                     final short nameAndTypeIndex = dis.readShort();
                     re = new RawEntry2() {
+                        @Override
                         ConstantPoolEntry cook() {
                             return new ConstantInterfaceMethodrefInfo() { {
                                 this.clasS = getConstantClassInfo(classIndex);
@@ -262,6 +278,7 @@ public class ConstantPool {
                 {
                     final short stringIndex = dis.readShort();
                     re = new RawEntry2() {
+                        @Override
                         ConstantPoolEntry cook() {
                             return new ConstantStringInfo() { {
                                 this.string = getConstantUtf8Info(stringIndex).bytes;
@@ -275,6 +292,7 @@ public class ConstantPool {
                 {
                     final int byteS = dis.readInt();
                     re = new RawEntry2() {
+                        @Override
                         ConstantPoolEntry cook() {
                             return new ConstantIntegerInfo() { {
                                 this.bytes = byteS;
@@ -288,6 +306,7 @@ public class ConstantPool {
                 {
                     final float byteS = dis.readFloat();
                     re = new RawEntry2() {
+                        @Override
                         ConstantPoolEntry cook() {
                             return new ConstantFloatInfo() { {
                                 this.bytes = byteS;
@@ -301,6 +320,7 @@ public class ConstantPool {
                 {
                     final long byteS = dis.readLong();
                     re = new RawEntry2() {
+                        @Override
                         ConstantPoolEntry cook() {
                             return new ConstantLongInfo() { {
                                 this.bytes = byteS;
@@ -314,6 +334,7 @@ public class ConstantPool {
                 {
                     final double byteS = dis.readDouble();
                     re = new RawEntry2() {
+                        @Override
                         ConstantPoolEntry cook() {
                             return new ConstantDoubleInfo() { {
                                 this.bytes = byteS;
@@ -328,6 +349,7 @@ public class ConstantPool {
                     final short nameIndex = dis.readShort();
                     final short descriptorIndex = dis.readShort();
                     re = new RawEntry2() {
+                        @Override
                         ConstantPoolEntry cook() {
                             return new ConstantNameAndTypeInfo() { {
                                 this.name = getConstantUtf8Info(nameIndex);
@@ -342,6 +364,7 @@ public class ConstantPool {
                 {
                     final String byteS = dis.readUTF();
                     re = new RawEntry2() {
+                        @Override
                         ConstantPoolEntry cook() {
                             return new ConstantUtf8Info() { {
                                 this.bytes = byteS;
