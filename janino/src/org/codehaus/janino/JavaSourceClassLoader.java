@@ -153,7 +153,7 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
      *
      * @throws ClassNotFoundException
      */
-    protected Class findClass(String name) throws ClassNotFoundException {
+    protected synchronized Class findClass(String name) throws ClassNotFoundException {
 
         // Check if the bytecode for that class was generated already.
         byte[] bytecode = (byte[]) this.precompiledClasses.remove(name);
@@ -185,7 +185,7 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
      * yet defined i.e. which were not yet passed to
      * {@link ClassLoader#defineClass(java.lang.String, byte[], int, int)}.
      */
-    Map precompiledClasses = new HashMap(); // String name => byte[] bytecode
+    private Map precompiledClasses = new HashMap(); // String name => byte[] bytecode
 
     /**
      * Find, scan, parse the right compilation unit. Compile the parsed compilation unit to
@@ -195,7 +195,7 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
      * @return String name => byte[] bytecode, or <code>null</code> if no source code could be found
      * @throws ClassNotFoundException on compilation problems
      */
-    public Map generateBytecodes(String name) throws ClassNotFoundException {
+    protected Map generateBytecodes(String name) throws ClassNotFoundException {
         if (this.iClassLoader.loadIClass(Descriptor.fromClassName(name)) == null) return null;
 
         Map bytecodes = new HashMap(); // String name => byte[] bytecode
@@ -227,32 +227,11 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
     }
 
     /**
-     * Define a set of classes, like {@link java.lang.ClassLoader#defineClass(java.lang.String, byte[], int, int)}. If
-     * the <code>bytecodes</code> contains an entry for <code>name</code>, then the {@link Class} defined for that name
-     * is returned.
-     *
-     * @param bytecodes         String name => byte[] bytecode
-     * @throws ClassFormatError
-     */
-    protected Class defineBytecodes(String name, Map bytecodes) {
-        Class clazz = null;
-        for (Iterator it = bytecodes.entrySet().iterator(); it.hasNext();) {
-            Map.Entry me = (Map.Entry) it.next();
-            String name2 = (String) me.getKey();
-            byte[] ba = (byte[]) me.getValue();
-
-            Class c = this.defineBytecode(name2, ba);
-            if (name2.equals(name)) clazz = c;
-        }
-        return clazz;
-    }
-
-    /**
      * @see #setProtectionDomainFactory
      *
      * @throws ClassFormatError
      */
-    protected Class defineBytecode(String className, byte[] ba) {
+    private Class defineBytecode(String className, byte[] ba) {
 
         return this.defineClass(className, ba, 0, ba.length, (
             this.optionalProtectionDomainFactory == null
@@ -263,9 +242,9 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 
     private final JavaSourceIClassLoader iClassLoader;
 
-    protected boolean debugSource = Boolean.getBoolean(ICookable.SYSTEM_PROPERTY_SOURCE_DEBUGGING_ENABLE);
-    protected boolean debugLines = this.debugSource;
-    protected boolean debugVars = this.debugSource;
+    private boolean debugSource = Boolean.getBoolean(ICookable.SYSTEM_PROPERTY_SOURCE_DEBUGGING_ENABLE);
+    private boolean debugLines = this.debugSource;
+    private boolean debugVars = this.debugSource;
 
     /**
      * Collection of parsed, but uncompiled compilation units.

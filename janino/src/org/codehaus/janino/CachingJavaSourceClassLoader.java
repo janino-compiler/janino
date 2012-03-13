@@ -127,7 +127,7 @@ public class CachingJavaSourceClassLoader extends JavaSourceClassLoader {
      * @return                        String name => byte[] bytecode, or {@code null} if no source code could be found
      * @throws ClassNotFoundException Compilation problems or class file cache I/O problems
      */
-    public Map generateBytecodes(String className) throws ClassNotFoundException {
+    protected Map generateBytecodes(String className) throws ClassNotFoundException {
         // Check whether a class file resource exists in the cache.
         {
             Resource classFileResource = this.classFileCacheResourceFinder.findResource(
