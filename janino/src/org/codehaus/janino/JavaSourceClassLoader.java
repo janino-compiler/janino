@@ -153,7 +153,8 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
      *
      * @throws ClassNotFoundException
      */
-    protected synchronized Class findClass(String name) throws ClassNotFoundException {
+    protected /*synchronized <- No need to synchronize, because 'loadClass()' is synchronized */ Class
+    findClass(String name) throws ClassNotFoundException {
 
         // Check if the bytecode for that class was generated already.
         byte[] bytecode = (byte[]) this.precompiledClasses.remove(name);
