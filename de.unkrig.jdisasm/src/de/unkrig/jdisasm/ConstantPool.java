@@ -429,7 +429,7 @@ public class ConstantPool {
         ConstantPoolEntry e = get(index);
         if (e instanceof ConstantIntegerInfo) return Integer.toString(((ConstantIntegerInfo) e).bytes);
         if (e instanceof ConstantFloatInfo) return Float.toString(((ConstantFloatInfo) e).bytes);
-        if (e instanceof ConstantClassInfo) return ((ConstantClassInfo) e).name;
+        if (e instanceof ConstantClassInfo) return ((ConstantClassInfo) e).name + ".class";
         if (e instanceof ConstantStringInfo) return stringToJavaLiteral(((ConstantStringInfo) e).string);
         throw new ClassCastException("CP index " + (0xffff & index) + ": " + e);
     }
