@@ -30,6 +30,8 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import de.unkrig.jdisasm.SignatureParser.SignatureException;
+
 /**
  * Representation of the "constant pool" in a Java&trade; class file.
  */
@@ -49,7 +51,7 @@ public class ConstantPool {
 
         @Override
         public String toString() {
-            return "Class " + this.name;
+            return this.name + ".class";
         }
     }
 
@@ -60,7 +62,17 @@ public class ConstantPool {
 
         @Override
         public String toString() {
-            return "Fieldref " + this.clasS + this.nameAndType;
+            try {
+                return (
+                    this.clasS.name
+                    + "::"
+                    + SignatureParser.decodeFieldDescriptor(this.nameAndType.descriptor.toString())
+                    + " "
+                    + this.nameAndType.name
+                );
+            } catch (SignatureException e) {
+                return this.clasS.name + "::" + this.nameAndType;
+            }
         }
     }
 
@@ -71,7 +83,18 @@ public class ConstantPool {
 
         @Override
         public String toString() {
-            return "Methodref " + this.clasS + this.nameAndType;
+            try {
+                return (
+                    this.clasS.name
+                    + "::"
+                    + SignatureParser.decodeMethodDescriptor(this.nameAndType.descriptor.toString()).toString(
+                        this.clasS.name,
+                        this.nameAndType.name.toString()
+                    )
+                );
+            } catch (SignatureException e) {
+                return this.clasS.name + "::" + this.nameAndType;
+            }
         }
     }
 
@@ -82,7 +105,18 @@ public class ConstantPool {
 
         @Override
         public String toString() {
-            return "InterfaceMethodref " + this.clasS + this.nameAndType;
+            try {
+                return (
+                    this.clasS.name
+                    + ":::"
+                    + SignatureParser.decodeMethodDescriptor(this.nameAndType.descriptor.toString()).toString(
+                        this.clasS.name,
+                        this.nameAndType.name.toString()
+                    )
+                );
+            } catch (SignatureException e) {
+                return this.clasS.name + ":::" + this.nameAndType;
+            }
         }
     }
 
@@ -92,7 +126,7 @@ public class ConstantPool {
 
         @Override
         public String toString() {
-            return "String " + this.string;
+            return stringToJavaLiteral(this.string);
         }
     }
 
@@ -102,7 +136,7 @@ public class ConstantPool {
 
         @Override
         public String toString() {
-            return "Integer " + this.bytes;
+            return Integer.toString(this.bytes);
         }
     }
 
@@ -112,7 +146,7 @@ public class ConstantPool {
 
         @Override
         public String toString() {
-            return "Float " + this.bytes;
+            return this.bytes + "F";
         }
     }
 
@@ -122,7 +156,7 @@ public class ConstantPool {
 
         @Override
         public String toString() {
-            return "Long " + this.bytes;
+            return this.bytes + "L";
         }
     }
 
@@ -132,7 +166,7 @@ public class ConstantPool {
 
         @Override
         public String toString() {
-            return "Double " + this.bytes;
+            return this.bytes + "D";
         }
     }
 
@@ -143,7 +177,7 @@ public class ConstantPool {
 
         @Override
         public String toString() {
-            return "NameAndType " + this.name + ' ' + this.descriptor;
+            return this.name + " : " + this.descriptor;
         }
     }
 
@@ -153,7 +187,7 @@ public class ConstantPool {
 
         @Override
         public String toString() {
-            return "Utf8 " + this.bytes;
+            return this.bytes;
         }
     }
 
@@ -195,12 +229,8 @@ public class ConstantPool {
             ConstantPoolEntry get(short index) {
                 if (ConstantPool.this.entries[0xffff & index] == null) {
                     ConstantPool.this.entries[0xffff & index] = new ConstantPoolEntry() {
-
-                        @Override
-                        public String toString() {
-                            // TODO Auto-generated method stub
-                            return null;
-                        } }; // To prevent recursion.
+                        @Override public String toString() { return null; }
+                    }; // To prevent recursion.
                     ConstantPool.this.entries[0xffff & index] = rawEntries[0xffff & index].cook();
                 }
                 return ConstantPool.this.entries[0xffff & index];
@@ -390,7 +420,7 @@ public class ConstantPool {
         }
     }
 
-    private ConstantPoolEntry get(short index) {
+    public ConstantPoolEntry get(short index) {
         if (index == 0) return null;
         int ii = 0xffff & index;
         if (ii >= this.entries.length) {
@@ -427,10 +457,10 @@ public class ConstantPool {
      */
     public String getIntegerFloatClassString(short index) {
         ConstantPoolEntry e = get(index);
-        if (e instanceof ConstantIntegerInfo) return Integer.toString(((ConstantIntegerInfo) e).bytes);
-        if (e instanceof ConstantFloatInfo) return Float.toString(((ConstantFloatInfo) e).bytes);
-        if (e instanceof ConstantClassInfo) return ((ConstantClassInfo) e).name + ".class";
-        if (e instanceof ConstantStringInfo) return stringToJavaLiteral(((ConstantStringInfo) e).string);
+        if (e instanceof ConstantIntegerInfo) return e.toString();
+        if (e instanceof ConstantFloatInfo) return e.toString();
+        if (e instanceof ConstantClassInfo) return e.toString();
+        if (e instanceof ConstantStringInfo) return e.toString();
         throw new ClassCastException("CP index " + (0xffff & index) + ": " + e);
     }
 
@@ -440,10 +470,10 @@ public class ConstantPool {
      */
     public String getIntegerFloatLongDoubleString(short index) {
         ConstantPoolEntry e = get(index);
-        if (e instanceof ConstantIntegerInfo) return Integer.toString(((ConstantIntegerInfo) e).bytes);
-        if (e instanceof ConstantFloatInfo) return Float.toString(((ConstantFloatInfo) e).bytes);
-        if (e instanceof ConstantLongInfo) return Long.toString(((ConstantLongInfo) e).bytes);
-        if (e instanceof ConstantDoubleInfo) return Double.toString(((ConstantDoubleInfo) e).bytes);
+        if (e instanceof ConstantIntegerInfo) return e.toString();
+        if (e instanceof ConstantFloatInfo) return e.toString();
+        if (e instanceof ConstantLongInfo) return e.toString();
+        if (e instanceof ConstantDoubleInfo) return e.toString();
         if (e instanceof ConstantStringInfo) return stringToJavaLiteral(((ConstantStringInfo) e).string);
         throw new ClassCastException("CP index " + (0xffff & index) + ": " + e);
     }
@@ -454,8 +484,8 @@ public class ConstantPool {
      */
     public String getLongDoubleString(short index) {
         ConstantPoolEntry e = get(index);
-        if (e instanceof ConstantLongInfo) return Long.toString(((ConstantLongInfo) e).bytes) + 'L';
-        if (e instanceof ConstantDoubleInfo) return Double.toString(((ConstantDoubleInfo) e).bytes) + 'D';
+        if (e instanceof ConstantLongInfo) return e.toString();
+        if (e instanceof ConstantDoubleInfo) return e.toString();
         throw new ClassCastException("CP index " + (0xffff & index) + ": " + e);
     }
 
@@ -465,10 +495,10 @@ public class ConstantPool {
      */
     public String getIntegerFloatLongDouble(short index) {
         ConstantPoolEntry e = get(index);
-        if (e instanceof ConstantIntegerInfo) return Integer.toString(((ConstantIntegerInfo) e).bytes);
-        if (e instanceof ConstantFloatInfo) return Float.toString(((ConstantFloatInfo) e).bytes);
-        if (e instanceof ConstantLongInfo) return Long.toString(((ConstantLongInfo) e).bytes);
-        if (e instanceof ConstantDoubleInfo) return Double.toString(((ConstantDoubleInfo) e).bytes);
+        if (e instanceof ConstantIntegerInfo) return e.toString();
+        if (e instanceof ConstantFloatInfo) return e.toString();
+        if (e instanceof ConstantLongInfo) return e.toString();
+        if (e instanceof ConstantDoubleInfo) return e.toString();
         throw new ClassCastException("CP index " + (0xffff & index) + ": " + e);
     }
 

@@ -107,6 +107,7 @@ import de.unkrig.jdisasm.ConstantPool.ConstantClassInfo;
 import de.unkrig.jdisasm.ConstantPool.ConstantFieldrefInfo;
 import de.unkrig.jdisasm.ConstantPool.ConstantInterfaceMethodrefInfo;
 import de.unkrig.jdisasm.ConstantPool.ConstantMethodrefInfo;
+import de.unkrig.jdisasm.ConstantPool.ConstantPoolEntry;
 import de.unkrig.jdisasm.SignatureParser.ArrayTypeSignature;
 import de.unkrig.jdisasm.SignatureParser.ClassSignature;
 import de.unkrig.jdisasm.SignatureParser.FieldTypeSignature;
@@ -130,7 +131,7 @@ public class Disassembler {
     // Configuration variables.
 
     private PrintWriter pw = new PrintWriter(System.out);
-    private boolean     verbose = false;
+    boolean             verbose = false;
 
     /**
      * {@code null} means "do not attempt to find the source file".
@@ -391,10 +392,21 @@ public class Disassembler {
 
         this.println(" {");
 
-        // Report constant pool size.
-        if (this.verbose) {
-            println();
-            println("    // Constant pool size: " + cf.constantPool.getSize());
+        // Dump the constant pool.
+        {
+            if (this.verbose) {
+                println();
+                println("    // Constant pool dump:");
+                ConstantPool cp = cf.constantPool;
+                for (int i = 0; i < cp.getSize(); i++) {
+                    ConstantPoolEntry constantPoolEntry = cp.get((short) i);
+                    if (constantPoolEntry == null) continue;
+                    println("    //   #" + i + ": " + beautify(constantPoolEntry.toString()));
+                }
+            } else {
+                println();
+                println("    // Constant pool size: " + cf.constantPool.getSize());
+            }
         }
 
         // Print enclosing/enclosed types.
@@ -1407,8 +1419,10 @@ public class Disassembler {
                                 ConstantPool    cp,
                                 Disassembler    d
                             ) throws IOException {
-                                String t = cp.getIntegerFloatClassString((short) (0xff & dis.readByte()));
+                                short index = (short) (0xff & dis.readByte());
+                                String t = cp.getIntegerFloatClassString(index);
                                 if (Character.isJavaIdentifierStart(t.charAt(0))) t = d.beautify(t);
+                                if (d.verbose) t += " (#" + (0xffff & index) + ")";
                                 return ' ' + t;
                             }
                         };
@@ -1422,8 +1436,10 @@ public class Disassembler {
                                 ConstantPool    cp,
                                 Disassembler    d
                             ) throws IOException {
-                                String t = cp.getIntegerFloatClassString(dis.readShort());
+                                short index = dis.readShort();
+                                String t = cp.getIntegerFloatClassString(index);
                                 if (Character.isJavaIdentifierStart(t.charAt(0))) t = d.beautify(t);
+                                if (d.verbose) t += " (#" + (0xffff & index) + ")";
                                 return ' ' + t;
                             }
                         };
@@ -1437,7 +1453,10 @@ public class Disassembler {
                                 ConstantPool    cp,
                                 Disassembler    d
                             ) throws IOException {
-                                return ' ' + cp.getLongDoubleString(dis.readShort());
+                                short index = dis.readShort();
+                                String t = cp.getLongDoubleString(index);
+                                if (d.verbose) t += " (#" + (0xffff & index) + ")";
+                                return ' ' + t;
                             }
                         };
                     } else
@@ -1450,15 +1469,17 @@ public class Disassembler {
                                 ConstantPool    cp,
                                 Disassembler    d
                             ) throws IOException {
-                                ConstantFieldrefInfo fr = cp.getConstantFieldrefInfo(dis.readShort());
-                                return (
-                                    ' '
-                                    + d.beautify(d.decodeFieldDescriptor(fr.nameAndType.descriptor.bytes).toString())
+                                short index = dis.readShort();
+                                ConstantFieldrefInfo fr = cp.getConstantFieldrefInfo(index);
+                                String t = (
+                                    d.beautify(d.decodeFieldDescriptor(fr.nameAndType.descriptor.bytes).toString())
                                     + ' '
                                     + d.beautify(fr.clasS.name)
                                     + '.'
                                     + fr.nameAndType.name.bytes
                                 );
+                                if (d.verbose) t += " (#" + (0xffff & index) + ")";
+                                return ' ' + t;
                             }
                         };
                     } else
@@ -1471,14 +1492,16 @@ public class Disassembler {
                                 ConstantPool    cp,
                                 Disassembler    d
                             ) throws IOException {
-                                ConstantMethodrefInfo mr = cp.getConstantMethodrefInfo(dis.readShort());
-                                return (
-                                    ' '
-                                    + d.beautify(d.decodeMethodDescriptor(mr.nameAndType.descriptor.bytes).toString(
+                                short index = dis.readShort();
+                                ConstantMethodrefInfo mr = cp.getConstantMethodrefInfo(index);
+                                String t = d.beautify(
+                                    d.decodeMethodDescriptor(mr.nameAndType.descriptor.bytes).toString(
                                         mr.clasS.name,
                                         mr.nameAndType.name.bytes
-                                    ))
+                                    )
                                 );
+                                if (d.verbose) t += " (#" + (0xffff & index) + ")";
+                                return ' ' + t;
                             }
                         };
                     } else
@@ -1491,18 +1514,18 @@ public class Disassembler {
                                 ConstantPool    cp,
                                 Disassembler    d
                             ) throws IOException {
-                                ConstantInterfaceMethodrefInfo imr = cp.getConstantInterfaceMethodrefInfo(
-                                    dis.readShort()
-                                );
+                                short index = dis.readShort();
+                                ConstantInterfaceMethodrefInfo imr = cp.getConstantInterfaceMethodrefInfo(index);
                                 dis.readByte();
                                 dis.readByte();
-                                return (
-                                    ' '
-                                    + d.beautify(d.decodeMethodDescriptor(imr.nameAndType.descriptor.bytes).toString(
+                                String t = d.beautify(
+                                    d.decodeMethodDescriptor(imr.nameAndType.descriptor.bytes).toString(
                                         imr.clasS.name,
                                         imr.nameAndType.name.bytes
-                                    ))
+                                    )
                                 );
+                                if (d.verbose) t += " (#" + (0xffff & index) + ")";
+                                return ' ' + t;
                             }
                         };
                     } else
@@ -1515,12 +1538,15 @@ public class Disassembler {
                                 ConstantPool    cp,
                                 Disassembler    d
                             ) throws IOException {
-                                String name = cp.getConstantClassInfo(dis.readShort()).name;
-                                return ' ' + d.beautify(
+                                short index = dis.readShort();
+                                String name = cp.getConstantClassInfo(index).name;
+                                String t = d.beautify(
                                     name.startsWith("[")
                                     ? d.decodeFieldDescriptor(name).toString()
                                     : name.replace('/', '.')
                                 );
+                                if (d.verbose) t += " (#" + (0xffff & index) + ")";
+                                return ' ' + t;
                             }
                         };
                     } else
