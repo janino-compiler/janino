@@ -1534,6 +1534,8 @@ public class Disassembler {
                                 Disassembler    d
                             ) throws IOException {
                                 byte index = dis.readByte();
+                                // For an initial assignment (e.g. 'istore 7'), the local variable is only visible
+                                // AFTER this instruction.
                                 LocalVariable lv = d.getLocalVariable(
                                     (short) (0xff & index),
                                     instructionOffset + 2,
@@ -1553,7 +1555,9 @@ public class Disassembler {
                                 Disassembler    d
                             ) throws IOException {
                                 short index = dis.readShort();
-                                LocalVariable lv = d.getLocalVariable(index, instructionOffset + 2, method);
+                                // For an initial assignment (e.g. 'wide istore 300'), the local variable is only
+                                // visible AFTER this instruction.
+                                LocalVariable lv = d.getLocalVariable(index, instructionOffset + 4, method);
                                 return d.beautify(lv.toString());
                             }
                         };
@@ -1572,7 +1576,9 @@ public class Disassembler {
                                 ConstantPool    cp,
                                 Disassembler    d
                             ) {
-                                this.lv = d.getLocalVariable(index, instructionOffset, method);
+                                // For an initial assignment (e.g. 'istore_3'), the local variable is only visible
+                                // AFTER this instruction.
+                                this.lv = d.getLocalVariable(index, instructionOffset + 1, method);
                                 return d.beautify(this.lv.toString());
                             }
                         };
