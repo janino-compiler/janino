@@ -393,19 +393,14 @@ public class Disassembler {
         this.println(" {");
 
         // Dump the constant pool.
-        {
-            if (this.verbose) {
-                println();
-                println("    // Constant pool dump:");
-                ConstantPool cp = cf.constantPool;
-                for (int i = 0; i < cp.getSize(); i++) {
-                    ConstantPoolEntry constantPoolEntry = cp.get((short) i);
-                    if (constantPoolEntry == null) continue;
-                    println("    //   #" + i + ": " + beautify(constantPoolEntry.toString()));
-                }
-            } else {
-                println();
-                println("    // Constant pool size: " + cf.constantPool.getSize());
+        if (this.verbose) {
+            println();
+            println("    // Constant pool dump:");
+            ConstantPool cp = cf.constantPool;
+            for (int i = 0; i < cp.getSize(); i++) {
+                ConstantPoolEntry constantPoolEntry = cp.get((short) i);
+                if (constantPoolEntry == null) continue;
+                println("    //   #" + i + ": " + beautify(constantPoolEntry.toString()));
             }
         }
 
