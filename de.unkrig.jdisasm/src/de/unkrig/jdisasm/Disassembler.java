@@ -66,12 +66,10 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.SortedMap;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
@@ -137,15 +135,17 @@ public class Disassembler {
      * {@code null} means "do not attempt to find the source file".
      */
     private File        sourceDirectory = null;
-    private boolean     hideLines;
-    private boolean     hideVars;
+
+    private boolean hideLines;
+    private boolean hideVars;
+	private boolean symbolicLabels;
 
     /**
      * "" for the default package; with a trailing period otherwise.
      */
     private String thisClassPackageName;
 
-    Set<Integer> branchTargets;
+    Map<Integer /*offset*/, String /*label*/> branchTargets;
 
     private static final List<ParameterAnnotation> NO_PARAMETER_ANNOTATIONS = (
         Collections.<ParameterAnnotation>emptyList()
@@ -172,6 +172,9 @@ public class Disassembler {
             if (arg.equals("-hide-vars")) {
                 d.setHideVars(true);
             } else
+        	if (arg.equals("-symbolic-labels")) {
+        		d.setSymbolicLabels(true);
+        	} else
             if (arg.equals("-help")) {
                 System.out.println("Prints a disassembly listing of the given JAVA[TM] class files (or STDIN) to ");
                 System.out.println("STDOUT.");
@@ -183,6 +186,7 @@ public class Disassembler {
                 System.out.println("  -src <source-dir>  Interweave the output with the class file's source code.");
                 System.out.println("  -hide-lines        Don't print the line numbers.");
                 System.out.println("  -hide-vars         Don't print the local variable names.");
+                System.out.println("  -symbolic-labels   Use symbolic labels instead of offsets.");
                 System.exit(0);
             } else
             {
@@ -231,15 +235,24 @@ public class Disassembler {
      * Where to look for source files; {@code null} disables source file loading. Source file loading is disabled by
      * default.
      */
-    public void setSourceDirectory(File sourceDirectory) {
+    public void
+    setSourceDirectory(File sourceDirectory) {
         this.sourceDirectory = sourceDirectory;
     }
 
-    public void setHideLines(boolean hideLines) {
+    public void
+    setHideLines(boolean hideLines) {
         this.hideLines = hideLines;
     }
-    public void setHideVars(boolean hideVars) {
+
+    public void
+    setHideVars(boolean hideVars) {
         this.hideVars = hideVars;
+    }
+
+    public void
+    setSymbolicLabels(boolean symbolicLabels) {
+		this.symbolicLabels = symbolicLabels;
     }
 
     void print(String s)                       { this.pw.print(s); }
@@ -971,7 +984,7 @@ public class Disassembler {
         CountingInputStream cis = new CountingInputStream(is);
         DataInputStream     dis = new DataInputStream(cis);
 
-        this.branchTargets = new HashSet<Integer>();
+        this.branchTargets = new HashMap<Integer, String>();
         try {
 
             // Analyze TRY bodies.
@@ -1010,7 +1023,7 @@ public class Disassembler {
                     }
                     l.add(e);
                 }
-                this.branchTargets.add(e.handlerPC);
+                addBranchTarget(e.handlerPC);
             }
 
             // Disassemble the byte code into a sequence of lines.
@@ -1079,8 +1092,9 @@ public class Disassembler {
                 }
 
                 // Print instruction offsets only for branch targets.
-                if (this.branchTargets.contains(instructionOffset)) {
-                    this.println("#" + instructionOffset);
+                {
+                	String label = getBranchTarget(instructionOffset);
+                	if (label != null) this.println(label);
                 }
 
                 // Print beginnings of TRY bodies.
@@ -1133,6 +1147,16 @@ public class Disassembler {
             this.branchTargets = null;
         }
     }
+
+	String
+	getBranchTarget(int offset) {
+		return this.branchTargets.get(offset);
+	}
+
+	void
+	addBranchTarget(int offset) {
+		this.branchTargets.put(offset, this.symbolicLabels ? "L" + this.branchTargets.size() : "#" + offset);
+	}
 
     /**
      * @return -1 iff the offset is not associated with a line number
@@ -1417,7 +1441,7 @@ public class Disassembler {
                                 short index = (short) (0xff & dis.readByte());
                                 String t = cp.getIntegerFloatClassString(index);
                                 if (Character.isJavaIdentifierStart(t.charAt(0))) t = d.beautify(t);
-                                if (d.verbose) t += " (#" + (0xffff & index) + ")";
+                                if (d.verbose) t += " (" + d.getBranchTarget(0xffff & index) + ")";
                                 return ' ' + t;
                             }
                         };
@@ -1434,7 +1458,7 @@ public class Disassembler {
                                 short index = dis.readShort();
                                 String t = cp.getIntegerFloatClassString(index);
                                 if (Character.isJavaIdentifierStart(t.charAt(0))) t = d.beautify(t);
-                                if (d.verbose) t += " (#" + (0xffff & index) + ")";
+                                if (d.verbose) t += " (" + d.getBranchTarget(0xffff & index) + ")";
                                 return ' ' + t;
                             }
                         };
@@ -1450,7 +1474,7 @@ public class Disassembler {
                             ) throws IOException {
                                 short index = dis.readShort();
                                 String t = cp.getLongDoubleString(index);
-                                if (d.verbose) t += " (#" + (0xffff & index) + ")";
+                                if (d.verbose) t += " (" + d.getBranchTarget(0xffff & index) + ")";
                                 return ' ' + t;
                             }
                         };
@@ -1473,7 +1497,7 @@ public class Disassembler {
                                     + '.'
                                     + fr.nameAndType.name.bytes
                                 );
-                                if (d.verbose) t += " (#" + (0xffff & index) + ")";
+                                if (d.verbose) t += " (" + d.getBranchTarget(0xffff & index) + ")";
                                 return ' ' + t;
                             }
                         };
@@ -1495,7 +1519,7 @@ public class Disassembler {
                                         mr.nameAndType.name.bytes
                                     )
                                 );
-                                if (d.verbose) t += " (#" + (0xffff & index) + ")";
+                                if (d.verbose) t += " (" + d.getBranchTarget(0xffff & index) + ")";
                                 return ' ' + t;
                             }
                         };
@@ -1519,7 +1543,7 @@ public class Disassembler {
                                         imr.nameAndType.name.bytes
                                     )
                                 );
-                                if (d.verbose) t += " (#" + (0xffff & index) + ")";
+                                if (d.verbose) t += " (" + d.getBranchTarget(0xffff & index) + ")";
                                 return ' ' + t;
                             }
                         };
@@ -1540,7 +1564,7 @@ public class Disassembler {
                                     ? d.decodeFieldDescriptor(name).toString()
                                     : name.replace('/', '.')
                                 );
-                                if (d.verbose) t += " (#" + (0xffff & index) + ")";
+                                if (d.verbose) t += " (" + d.getBranchTarget(0xffff & index) + ")";
                                 return ' ' + t;
                             }
                         };
@@ -1614,8 +1638,8 @@ public class Disassembler {
                                 Disassembler    d
                             ) throws IOException {
                                 int branchTarget = instructionOffset + dis.readShort();
-                                d.branchTargets.add(branchTarget);
-                                return " #" + branchTarget;
+                                d.addBranchTarget(branchTarget);
+                                return " " + d.getBranchTarget(branchTarget);
                             }
                         };
                     } else
@@ -1629,8 +1653,8 @@ public class Disassembler {
                                 Disassembler    d
                             ) throws IOException {
                                 int branchTarget = instructionOffset + dis.readInt();
-                                d.branchTargets.add(branchTarget);
-                                return " #" + branchTarget;
+                                d.addBranchTarget(branchTarget);
+                                return " " + d.getBranchTarget(branchTarget);
                             }
                         };
                     } else
@@ -1722,13 +1746,13 @@ public class Disassembler {
                                 {
                                     int defaultOffset = instructionOffset + dis.readInt();
                                     sb.append(defaultOffset);
-                                    d.branchTargets.add(defaultOffset);
+                                    d.addBranchTarget(defaultOffset);
                                 }
                                 int low = dis.readInt();
                                 int high = dis.readInt();
                                 for (int i = low; i <= high; ++i) {
                                     int offset = instructionOffset + dis.readInt();
-                                    d.branchTargets.add(offset);
+                                    d.addBranchTarget(offset);
                                     sb.append(", ").append(i).append(" => ").append(offset);
                                 }
                                 return sb.toString();
@@ -1760,14 +1784,14 @@ public class Disassembler {
                                 {
                                     int defaultOffset = instructionOffset + dis.readInt();
                                     sb.append(defaultOffset);
-                                    d.branchTargets.add(defaultOffset);
+                                    d.addBranchTarget(defaultOffset);
                                 }
                                 int npairs = dis.readInt();
                                 for (int i = 0; i < npairs; ++i) {
                                     int match  = dis.readInt();
                                     int offset = instructionOffset + dis.readInt();
                                     sb.append(", ").append(match).append(" => ").append(offset);
-                                    d.branchTargets.add(offset);
+                                    d.addBranchTarget(offset);
                                 }
                                 return sb.toString();
                             }
