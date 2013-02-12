@@ -744,15 +744,14 @@ public class ClassFile {
 
         @Override
         public String toString() {
-            StringBuilder sb = new StringBuilder("@").append(this.typeName).append('(');
-            Iterator<ElementValuePair> it = this.elementValuePairs.iterator();
-            if (it.hasNext()) {
-                sb.append(it.next().toString());
-                while (it.hasNext()) {
-                    sb.append(", ").append(it.next().toString());
-                }
+            StringBuilder sb = new StringBuilder("@").append(this.typeName);
+            if (!this.elementValuePairs.isEmpty()) {
+                Iterator<ElementValuePair> it = this.elementValuePairs.iterator();
+                sb.append('(').append(it.next());
+                while (it.hasNext()) sb.append(", ").append(it.next());
+                return sb.append(')').toString();
             }
-            return sb.append(')').toString();
+            return sb.toString();
         }
     }
 
