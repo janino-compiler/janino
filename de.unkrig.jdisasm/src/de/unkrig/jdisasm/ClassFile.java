@@ -597,23 +597,16 @@ class ClassFile {
     /** Representation of a {@code Synthetic} attribute. */
     public static
     class SyntheticAttribute implements Attribute {
-        public
-        SyntheticAttribute(DataInputStream dis, ClassFile cf) {
-        }
-
-        public void accept(AttributeVisitor visitor) { visitor.visit(this); }
-
+        public        SyntheticAttribute(DataInputStream dis, ClassFile cf) {}
+        public void   accept(AttributeVisitor visitor) { visitor.visit(this); }
         public String getName() { return "Synthetic"; }
     }
 
     /** Representation of a {@code Deprecated} attribute. */
     public static
     class DeprecatedAttribute implements Attribute {
-
-        public DeprecatedAttribute(DataInputStream dis, ClassFile cf) {}
-
-        public void accept(AttributeVisitor visitor) { visitor.visit(this); }
-
+        public        DeprecatedAttribute(DataInputStream dis, ClassFile cf) {}
+        public void   accept(AttributeVisitor visitor) { visitor.visit(this); }
         public String getName() { return "Deprecated"; }
     }
 
@@ -683,6 +676,7 @@ class ClassFile {
     /** Helper class for {@link RuntimeVisibleParameterAnnotationsAttribute}. */
     public static
     class ParameterAnnotation {
+
         public final List<Annotation> annotations = new ArrayList<Annotation>();
 
         public
@@ -714,6 +708,7 @@ class ClassFile {
     public static
     class RuntimeInvisibleParameterAnnotationsAttribute
     extends RuntimeVisibleParameterAnnotationsAttribute {
+
         public
         RuntimeInvisibleParameterAnnotationsAttribute(DataInputStream  dis, ClassFile cf) throws IOException {
             super(dis, cf);
@@ -867,7 +862,9 @@ class ClassFile {
     }
 
     /** Representation of the {@code Signature} attribute. */
-    public static final class SignatureAttribute implements Attribute {
+    public static final
+    class SignatureAttribute implements Attribute {
+
         public final String signature;
 
         SignatureAttribute(DataInputStream dis, ClassFile cf) throws IOException {
@@ -880,7 +877,9 @@ class ClassFile {
     }
 
     /** Representation of the {@code EnclosingMethod} attribute. */
-    public static final class EnclosingMethodAttribute implements Attribute {
+    public static final
+    class EnclosingMethodAttribute implements Attribute {
+
         public ConstantClassInfo       clasS;
         public ConstantNameAndTypeInfo optionalMethod;
 
@@ -895,7 +894,8 @@ class ClassFile {
     }
 
     /** Representation of the {@code Exceptions} attribute. */
-    public static final class ExceptionsAttribute implements Attribute {
+    public static final
+    class ExceptionsAttribute implements Attribute {
         public final List<ConstantClassInfo> exceptionNames = new ArrayList<ConstantClassInfo>();
 
         ExceptionsAttribute(DataInputStream dis, ClassFile cf) throws IOException {
@@ -910,7 +910,8 @@ class ClassFile {
     }
 
     /** Representation of the {@code Code} attribute. */
-    public static final class CodeAttribute implements Attribute {
+    public static final
+    class CodeAttribute implements Attribute {
         public final short                     maxStack;
         public final short                     maxLocals;
         public final byte[]                    code;
@@ -1019,6 +1020,7 @@ class ClassFile {
     /** Helper class for {@link LineNumberTableAttribute}. */
     public static
     class LineNumberTableEntry {
+
         public int startPC;
         public int lineNumber;
 
@@ -1098,7 +1100,8 @@ class ClassFile {
     }
 
     /** Representation of the {@code ConstantValue} attribute. */
-    public static final class ConstantValueAttribute implements Attribute {
+    public static final
+    class ConstantValueAttribute implements Attribute {
         public final String constantValue;
 
         ConstantValueAttribute(DataInputStream dis, ClassFile cf) throws IOException {
