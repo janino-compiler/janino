@@ -1,6 +1,7 @@
 
 @SuppressWarnings("unused")
-public class AnnotationTest {
+public
+class AnnotationTest {
 
 //    public @interface RequestForEnhancement {
 //        int    id();        // Unique ID number associated with RFE
@@ -49,7 +50,8 @@ public class AnnotationTest {
     // The annotation type declaration below presumes the existence
     // of this interface, which describes a formatter for Java
     // programming language source code
-    public interface Formatter { }
+    public
+    interface Formatter { }
 
     // Designates a formatter to pretty-print the annotated class.
     public @interface PrettyPrinter {
@@ -69,7 +71,8 @@ public class AnnotationTest {
 
     // Single-element annotation
     @Copyright("2002 Yoyodyne Propulsion Systems, Inc., All rights reserved.")
-    public static class OscillationOverthruster {
+    public static
+    class OscillationOverthruster {
         public int              fld1;
         public int              fld2 = 2;
         public final int        fld3 = 3;
@@ -82,8 +85,8 @@ public class AnnotationTest {
         }
 
         /** @deprecated */
-        @Deprecated
-        void meth(@Copyright("foo") int x) {
+        @Deprecated void
+        meth(@Copyright("foo") int x) {
             class Nested2 {
             }
             new Object(){};
@@ -113,37 +116,46 @@ public class AnnotationTest {
 
     // Array-valued single-element annotation
     @Endorsers({"Children", "Unscrupulous dentists"})
-    public static class Lollipop {  }
+    public static
+    class Lollipop {  }
 
     // Single-element array-valued single-element annotation
     @Endorsers("Epicurus")
-    public static class Pleasure {  }
+    public static
+    class Pleasure {  }
 
     // Single-element complex annotation
     @Author(@Name(first = "Joe", last = "Hacker"))
-    public static class BitTwiddle {  }
+    public static
+    class BitTwiddle {  }
 
     // Normal annotation with default values
     @RequestForEnhancement(
         id       = 4561414,
         synopsis = "Balance the federal budget"
     )
-    public static void balanceFederalBudget() {
+
+    public static void
+    balanceFederalBudget() {
         throw new UnsupportedOperationException("Not implemented");
     }
 
     // Single-element annotation with Class element restricted by bounded wildcard
     // The annotation presumes the existence of this class.
-    public static class GorgeousFormatter implements Formatter {  }
+    public static
+    class GorgeousFormatter implements Formatter {  }
 
     @PrettyPrinter(GorgeousFormatter.class)
-    public static class Petunia { }
+    public static
+    class Petunia { }
     // This annotation is illegal, as String is not a subtype of Formatter!!
-//    @PrettyPrinter(String.class) public static class Begonia { ... }
+//    @PrettyPrinter(String.class) public static
+//    class Begonia { ... }
 
     //Annotation using enum type declared inside the annotation type
     @Quality(Quality.Level.GOOD)
-    public static class Karma {
+    public static
+    class Karma {
     }
 
     public static <T extends Comparable<T>, EX extends Exception> T min(int ii, T... values) throws RuntimeException, EX {

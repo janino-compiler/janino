@@ -31,14 +31,17 @@ import java.io.IOException;
 /**
  * Indicates that {@link CharStream#read} did not find the character(s) it expected.
  */
-public class UnexpectedCharacterException extends IOException {
+public
+class UnexpectedCharacterException extends IOException {
 
     private static final long serialVersionUID = 1L;
 
-    public UnexpectedCharacterException() {
+    public
+    UnexpectedCharacterException() {
     }
 
-    public UnexpectedCharacterException(String message) {
+    public
+    UnexpectedCharacterException(String message) {
         super(message);
     }
 }

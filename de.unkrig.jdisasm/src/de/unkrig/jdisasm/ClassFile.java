@@ -41,7 +41,8 @@ import de.unkrig.jdisasm.SignatureParser.SignatureException;
 /**
  * Representation of a Java&trade; class file.
  */
-public class ClassFile {
+public
+class ClassFile {
     public short                                minorVersion;
     public short                                majorVersion;
     public ConstantPool                         constantPool;
@@ -92,7 +93,8 @@ public class ClassFile {
     public static final short ACC_ANNOTATION   = 0x00002000;
     public static final short ACC_ENUM         = 0x00004000;
 
-    public ClassFile(DataInputStream dis) throws IOException {
+    public
+    ClassFile(DataInputStream dis) throws IOException {
 
         // Magic number.
         {
@@ -161,62 +163,63 @@ public class ClassFile {
         // Class attributes.
         readAttributes(dis, new AbstractAttributeVisitor() {
 
-            @Override
-            public void visit(DeprecatedAttribute da) {
+            @Override public void
+            visit(DeprecatedAttribute da) {
                 ClassFile.this.deprecatedAttribute = da;
                 ClassFile.this.attributes.add(da);
             }
 
-            @Override
-            public void visit(EnclosingMethodAttribute ema) {
+            @Override public void
+            visit(EnclosingMethodAttribute ema) {
                 ClassFile.this.enclosingMethodAttribute = ema;
                 ClassFile.this.attributes.add(ema);
             }
 
-            @Override
-            public void visit(InnerClassesAttribute ica) {
+            @Override public void
+            visit(InnerClassesAttribute ica) {
                 ClassFile.this.innerClassesAttribute = ica;
                 ClassFile.this.attributes.add(ica);
             }
 
-            @Override
-            public void visit(RuntimeInvisibleAnnotationsAttribute riaa) {
+            @Override public void
+            visit(RuntimeInvisibleAnnotationsAttribute riaa) {
                 ClassFile.this.runtimeInvisibleAnnotationsAttribute = riaa;
                 ClassFile.this.attributes.add(riaa);
             }
 
-            @Override
-            public void visit(RuntimeVisibleAnnotationsAttribute rvaa) {
+            @Override public void
+            visit(RuntimeVisibleAnnotationsAttribute rvaa) {
                 ClassFile.this.runtimeVisibleAnnotationsAttribute = rvaa;
                 ClassFile.this.attributes.add(rvaa);
             }
 
-            @Override
-            public void visit(SignatureAttribute sa) {
+            @Override public void
+            visit(SignatureAttribute sa) {
                 ClassFile.this.signatureAttribute = sa;
                 ClassFile.this.attributes.add(sa);
             }
 
-            @Override
-            public void visit(SourceFileAttribute sfa) {
+            @Override public void
+            visit(SourceFileAttribute sfa) {
                 ClassFile.this.sourceFileAttribute = sfa;
                 ClassFile.this.attributes.add(sfa);
             }
 
-            @Override
-            public void visit(SyntheticAttribute sa) {
+            @Override public void
+            visit(SyntheticAttribute sa) {
                 ClassFile.this.syntheticAttribute = sa;
                 ClassFile.this.attributes.add(sa);
             }
 
-            @Override
-            public void acceptOther(Attribute a) {
+            @Override public void
+            acceptOther(Attribute a) {
                 ClassFile.this.attributes.add(a);
             }
         });
     }
 
-    public String getJdkName() {
+    public String
+    getJdkName() {
         switch (this.majorVersion) {
         case 50:
             return "J2SE 6.0";
@@ -236,7 +239,8 @@ public class ClassFile {
     }
 
     /** Representation of a field description in a Java&trade; class file. */
-    public class Field {
+    public
+    class Field {
         public short                                accessFlags;
         public String                               name;
         public String                               descriptor;
@@ -248,7 +252,8 @@ public class ClassFile {
         public SyntheticAttribute                   syntheticAttribute;
         public final List<Attribute>                attributes = new ArrayList<Attribute>();
 
-        public Field(DataInputStream dis) throws IOException {
+        public
+        Field(DataInputStream dis) throws IOException {
             this.accessFlags = dis.readShort();
             this.name = ClassFile.this.constantPool.getConstantUtf8Info(dis.readShort()).bytes;
             this.descriptor = ClassFile.this.constantPool.getConstantUtf8Info(dis.readShort()).bytes;
@@ -256,44 +261,44 @@ public class ClassFile {
             // Read field attributes.
             readAttributes(dis, new AbstractAttributeVisitor() {
 
-                @Override
-                public void visit(ConstantValueAttribute cva) {
+                @Override public void
+                visit(ConstantValueAttribute cva) {
                     Field.this.constantValueAttribute = cva;
                     Field.this.attributes.add(cva);
                 }
 
-                @Override
-                public void visit(DeprecatedAttribute da) {
+                @Override public void
+                visit(DeprecatedAttribute da) {
                     Field.this.deprecatedAttribute = da;
                     Field.this.attributes.add(da);
                 }
 
-                @Override
-                public void visit(RuntimeInvisibleAnnotationsAttribute riaa) {
+                @Override public void
+                visit(RuntimeInvisibleAnnotationsAttribute riaa) {
                     Field.this.runtimeInvisibleAnnotationsAttribute = riaa;
                     Field.this.attributes.add(riaa);
                 }
 
-                @Override
-                public void visit(RuntimeVisibleAnnotationsAttribute rvaa) {
+                @Override public void
+                visit(RuntimeVisibleAnnotationsAttribute rvaa) {
                     Field.this.runtimeVisibleAnnotationsAttribute = rvaa;
                     Field.this.attributes.add(rvaa);
                 }
 
-                @Override
-                public void visit(SignatureAttribute sa) {
+                @Override public void
+                visit(SignatureAttribute sa) {
                     Field.this.signatureAttribute = sa;
                     Field.this.attributes.add(sa);
                 }
 
-                @Override
-                public void visit(SyntheticAttribute sa) {
+                @Override public void
+                visit(SyntheticAttribute sa) {
                     Field.this.syntheticAttribute = sa;
                     Field.this.attributes.add(sa);
                 }
 
-                @Override
-                public void acceptOther(Attribute ai) {
+                @Override public void
+                acceptOther(Attribute ai) {
                     Field.this.attributes.add(ai);
                 }
             });
@@ -301,7 +306,8 @@ public class ClassFile {
     }
 
     /** Representation of a method in a Java&trade; class file. */
-    public class Method {
+    public
+    class Method {
         public short                                         accessFlags;
         public String                                        name;
         public String                                        descriptor;
@@ -317,68 +323,79 @@ public class ClassFile {
         public SignatureAttribute                            signatureAttribute;
         public SyntheticAttribute                            syntheticAttribute;
 
-        public Method(DataInputStream dis) throws IOException {
+        public
+        Method(DataInputStream dis) throws IOException {
             this.accessFlags = dis.readShort();
             this.name = ClassFile.this.constantPool.getConstantUtf8Info(dis.readShort()).bytes;
             this.descriptor = ClassFile.this.constantPool.getConstantUtf8Info(dis.readShort()).bytes;
 
             try {
+
                 // Read method attributes.
                 readAttributes(dis, new AbstractAttributeVisitor() {
-                    @Override
-                    public void visit(AnnotationDefaultAttribute ada) {
+
+                    @Override public void
+                    visit(AnnotationDefaultAttribute ada) {
                         Method.this.annotationDefaultAttribute = ada;
                         Method.this.attributes.add(ada);
                     }
-                    @Override
-                    public void visit(CodeAttribute ca) {
+
+                    @Override public void
+                    visit(CodeAttribute ca) {
                         Method.this.codeAttribute = ca;
                         Method.this.attributes.add(ca);
                     }
 
-                    @Override
-                    public void visit(DeprecatedAttribute da) {
+                    @Override public void
+                    visit(DeprecatedAttribute da) {
                         Method.this.deprecatedAttribute = da;
                         Method.this.attributes.add(da);
                     }
 
-                    @Override
-                    public void visit(ExceptionsAttribute ea) {
+                    @Override public void
+                    visit(ExceptionsAttribute ea) {
                         Method.this.exceptionsAttribute = ea;
                         Method.this.attributes.add(ea);
                     }
-                    @Override
-                    public void visit(RuntimeInvisibleAnnotationsAttribute riaa) {
+
+                    @Override public void
+                    visit(RuntimeInvisibleAnnotationsAttribute riaa) {
                         Method.this.runtimeInvisibleAnnotationsAttribute = riaa;
                         Method.this.attributes.add(riaa);
                     }
-                    @Override
-                    public void visit(RuntimeInvisibleParameterAnnotationsAttribute ripaa) {
+
+                    @Override public void
+                    visit(RuntimeInvisibleParameterAnnotationsAttribute ripaa) {
                         Method.this.runtimeInvisibleParameterAnnotationsAttribute = ripaa;
                         Method.this.attributes.add(ripaa);
                     }
-                    @Override
-                    public void visit(RuntimeVisibleAnnotationsAttribute rvaa) {
+
+                    @Override public void
+                    visit(RuntimeVisibleAnnotationsAttribute rvaa) {
                         Method.this.runtimeVisibleAnnotationsAttribute = rvaa;
                         Method.this.attributes.add(rvaa);
                     }
-                    @Override
-                    public void visit(RuntimeVisibleParameterAnnotationsAttribute rvpaa) {
+
+                    @Override public void
+                    visit(RuntimeVisibleParameterAnnotationsAttribute rvpaa) {
                         Method.this.runtimeVisibleParameterAnnotationsAttribute = rvpaa;
                         Method.this.attributes.add(rvpaa);
                     }
-                    @Override
-                    public void visit(SignatureAttribute sa) {
+
+                    @Override public void
+                    visit(SignatureAttribute sa) {
                         Method.this.signatureAttribute = sa;
                         Method.this.attributes.add(sa);
                     }
-                    @Override
-                    public void visit(SyntheticAttribute sa) {
+
+                    @Override public void
+                    visit(SyntheticAttribute sa) {
                         Method.this.syntheticAttribute = sa;
                         Method.this.attributes.add(sa);
                     }
-                    @Override
-                    public void acceptOther(Attribute ai) {
+
+                    @Override public void
+                    acceptOther(Attribute ai) {
                         Method.this.attributes.add(ai);
                     }
                 });
@@ -393,12 +410,14 @@ public class ClassFile {
     }
 
     /** Representation of an attribute in a Java&trade; class file. */
-    public interface Attribute {
+    public
+    interface Attribute {
         void accept(AttributeVisitor visitor);
         String getName();
     }
 
-    void readAttributes(DataInputStream dis, AttributeVisitor visitor) throws IOException {
+    void
+    readAttributes(DataInputStream dis, AttributeVisitor visitor) throws IOException {
         short n = dis.readShort();
         for (int i = 0; i < n; ++i) {
             try {
@@ -413,7 +432,8 @@ public class ClassFile {
         }
     }
 
-    private void readAttribute(DataInputStream dis, AttributeVisitor visitor) throws IOException {
+    private void
+    readAttribute(DataInputStream dis, AttributeVisitor visitor) throws IOException {
 
         String attributeName = this.constantPool.getConstantUtf8Info(dis.readShort()).bytes;
 
@@ -508,7 +528,8 @@ public class ClassFile {
     }
 
     /** The visitor for {@Attribute}. */
-    public interface AttributeVisitor {
+    public
+    interface AttributeVisitor {
         enum Context { CLASS, FIELD, METHOD };
 
         void visit(AnnotationDefaultAttribute                    ada);
@@ -533,7 +554,8 @@ public class ClassFile {
     }
 
     /** Default implementation of the {@link AttributeVisitor}. */
-    public static abstract class AbstractAttributeVisitor implements AttributeVisitor {
+    public static abstract
+    class AbstractAttributeVisitor implements AttributeVisitor {
 
         public abstract void acceptOther(Attribute ai);
 
@@ -573,8 +595,10 @@ public class ClassFile {
     }
 
     /** Representation of a {@code Synthetic} attribute. */
-    public static class SyntheticAttribute implements Attribute {
-        public SyntheticAttribute(DataInputStream dis, ClassFile cf) {
+    public static
+    class SyntheticAttribute implements Attribute {
+        public
+        SyntheticAttribute(DataInputStream dis, ClassFile cf) {
         }
 
         public void accept(AttributeVisitor visitor) { visitor.visit(this); }
@@ -583,9 +607,10 @@ public class ClassFile {
     }
 
     /** Representation of a {@code Deprecated} attribute. */
-    public static class DeprecatedAttribute implements Attribute {
-        public DeprecatedAttribute(DataInputStream dis, ClassFile cf) {
-        }
+    public static
+    class DeprecatedAttribute implements Attribute {
+
+        public DeprecatedAttribute(DataInputStream dis, ClassFile cf) {}
 
         public void accept(AttributeVisitor visitor) { visitor.visit(this); }
 
@@ -596,13 +621,16 @@ public class ClassFile {
     public static final class InnerClassesAttribute implements Attribute {
 
         /** Helper class for {@link InnerClassesAttribute}. */
-        public static class ClasS {
+        public static
+        class ClasS {
+
             public ConstantClassInfo innerClassInfo;
             public ConstantClassInfo outerClassInfo;
             public ConstantUtf8Info  innerName;
             public short             innerClassAccessFlags;
 
-            public ClasS(DataInputStream dis, ClassFile cf) throws IOException {
+            public
+            ClasS(DataInputStream dis, ClassFile cf) throws IOException {
                 this.innerClassInfo = cf.constantPool.getConstantClassInfo(dis.readShort());
                 this.outerClassInfo = cf.constantPool.getConstantClassInfo(dis.readShort());
                 this.innerName = cf.constantPool.getConstantUtf8Info(dis.readShort());
@@ -624,7 +652,8 @@ public class ClassFile {
     }
 
     /** Representation of the {@code RuntimeVisibleAnnotations} attribute. */
-    public static class RuntimeVisibleAnnotationsAttribute implements Attribute {
+    public static
+    class RuntimeVisibleAnnotationsAttribute implements Attribute {
 
         public final List<Annotation> annotations = new ArrayList<Annotation>();
 
@@ -640,20 +669,24 @@ public class ClassFile {
     }
 
     /** Representation of the {@code RuntimeInvisibleAnnotations} attribute. */
-    public static class RuntimeInvisibleAnnotationsAttribute extends RuntimeVisibleAnnotationsAttribute {
-        public RuntimeInvisibleAnnotationsAttribute(DataInputStream  dis, ClassFile cf) throws IOException {
+    public static
+    class RuntimeInvisibleAnnotationsAttribute extends RuntimeVisibleAnnotationsAttribute {
+
+        public
+        RuntimeInvisibleAnnotationsAttribute(DataInputStream  dis, ClassFile cf) throws IOException {
             super(dis, cf);
         }
 
-        @Override
-        public void accept(AttributeVisitor visitor) { visitor.visit(this); }
+        @Override public void accept(AttributeVisitor visitor) { visitor.visit(this); }
     }
 
     /** Helper class for {@link RuntimeVisibleParameterAnnotationsAttribute}. */
-    public static class ParameterAnnotation {
+    public static
+    class ParameterAnnotation {
         public final List<Annotation> annotations = new ArrayList<Annotation>();
 
-        public ParameterAnnotation(DataInputStream dis, ClassFile cf) throws IOException {
+        public
+        ParameterAnnotation(DataInputStream dis, ClassFile cf) throws IOException {
             for (int i = dis.readShort(); i > 0; --i) {
                 this.annotations.add(new Annotation(dis, cf));
             }
@@ -661,7 +694,8 @@ public class ClassFile {
     }
 
     /** Representation of the {@code RuntimeVisibleParameterAnnotations} attribute. */
-    public static class RuntimeVisibleParameterAnnotationsAttribute implements Attribute {
+    public static
+    class RuntimeVisibleParameterAnnotationsAttribute implements Attribute {
 
         public final List<ParameterAnnotation> parameterAnnotations = new ArrayList<ParameterAnnotation>();
 
@@ -677,18 +711,20 @@ public class ClassFile {
     }
 
     /** Representation of the {@code RuntimeInvisibleParameterAnnotations} attribute. */
-    public static class RuntimeInvisibleParameterAnnotationsAttribute
+    public static
+    class RuntimeInvisibleParameterAnnotationsAttribute
     extends RuntimeVisibleParameterAnnotationsAttribute {
-        public RuntimeInvisibleParameterAnnotationsAttribute(DataInputStream  dis, ClassFile cf) throws IOException {
+        public
+        RuntimeInvisibleParameterAnnotationsAttribute(DataInputStream  dis, ClassFile cf) throws IOException {
             super(dis, cf);
         }
 
-        @Override
-        public void accept(AttributeVisitor visitor) { visitor.visit(this); }
+        @Override public void accept(AttributeVisitor visitor) { visitor.visit(this); }
     }
 
     /** Representation of the {@code AnnotationDefault} attribute. */
-    public static class AnnotationDefaultAttribute implements Attribute {
+    public static
+    class AnnotationDefaultAttribute implements Attribute {
 
         public ElementValue defaultValue;
 
@@ -702,21 +738,24 @@ public class ClassFile {
     }
 
     /** Helper class for the {@code Runtime*visible*Annotations} attributes. */
-    public static class Annotation {
+    public static
+    class Annotation {
 
         /** Helper class for the {@code Runtime*visible*Annotations} attributes. */
-        public static class ElementValuePair {
+        public static
+        class ElementValuePair {
 
             public String       elementName;
             public ElementValue elementValue;
 
-            public ElementValuePair(DataInputStream dis, ClassFile cf) throws IOException {
+            public
+            ElementValuePair(DataInputStream dis, ClassFile cf) throws IOException {
                 this.elementName = cf.constantPool.getConstantUtf8Info(dis.readShort()).bytes; // elementNameIndex
                 this.elementValue = newElementValue(dis, cf);
             }
 
-            @Override
-            public String toString() {
+            @Override public String
+            toString() {
                 return (
                     "value".equals(this.elementName)
                     ? this.elementValue.toString()
@@ -728,7 +767,8 @@ public class ClassFile {
         public String                       typeName;
         public final List<ElementValuePair> elementValuePairs = new ArrayList<ElementValuePair>();
 
-        public Annotation(DataInputStream dis, ClassFile cf) throws IOException {
+        public
+        Annotation(DataInputStream dis, ClassFile cf) throws IOException {
             short typeIndex = dis.readShort();
             try {
                 this.typeName = SignatureParser.decodeFieldDescriptor(
@@ -742,8 +782,8 @@ public class ClassFile {
             }
         }
 
-        @Override
-        public String toString() {
+        @Override public String
+        toString() {
             StringBuilder sb = new StringBuilder("@").append(this.typeName);
             if (!this.elementValuePairs.isEmpty()) {
                 Iterator<ElementValuePair> it = this.elementValuePairs.iterator();
@@ -758,28 +798,27 @@ public class ClassFile {
     /**
      * Representation of an annotation element value.
      */
-    public interface ElementValue {
+    public
+    interface ElementValue {
     }
 
-    static ElementValue newElementValue(DataInputStream dis, ClassFile cf) throws IOException {
+    static ElementValue
+    newElementValue(DataInputStream dis, ClassFile cf) throws IOException {
         final byte tag = dis.readByte();
         if ("BCDFIJSZ".indexOf(tag) != -1) {
             final String s = cf.constantPool.getIntegerFloatLongDouble(dis.readShort());
-            return new ElementValue() { @Override
-            public String toString() { return s; }};
+            return new ElementValue() { @Override public String toString() { return s; }};
         } else
         if (tag == 's') {
             final String s = cf.constantPool.getConstantUtf8Info(dis.readShort()).bytes;
-            return new ElementValue() { @Override
-            public String toString() { return ConstantPool.stringToJavaLiteral(s); }};
+            return new ElementValue() { @Override public String toString() { return ConstantPool.stringToJavaLiteral(s); }};
         } else
         if (tag == 'e') {
             String typeName = cf.constantPool.getConstantUtf8Info(dis.readShort()).bytes;
             String constName = cf.constantPool.getConstantUtf8Info(dis.readShort()).bytes;
             try {
                 final String s = SignatureParser.decodeFieldDescriptor(typeName) + "." + constName;
-                return new ElementValue() { @Override
-                public String toString() { return s; }};
+                return new ElementValue() { @Override public String toString() { return s; }};
             } catch (SignatureException se) {
                 throw new ClassFileFormatException("Decoding enum constant element value: " + se.getMessage(), se);
             }
@@ -788,41 +827,41 @@ public class ClassFile {
             final String classInfo = cf.constantPool.getConstantUtf8Info(dis.readShort()).bytes;
             try {
                 final String s = SignatureParser.decodeReturnType(classInfo) + ".class";
-                return new ElementValue() { @Override
-                public String toString() { return s; }};
+                return new ElementValue() { @Override public String toString() { return s; }};
             } catch (SignatureException se) {
                 throw new ClassFileFormatException("Decoding class element value: " + se.getMessage(), se);
             }
         } else
         if (tag == '@') {
             final Annotation annotation = new Annotation(dis, cf);
-            return new ElementValue() { @Override
-            public String toString() { return annotation.toString(); }};
+            return new ElementValue() { @Override public String toString() { return annotation.toString(); }};
         } else
         if (tag == '[') {
             final List<ElementValue> values = new ArrayList<ElementValue>();
             for (int i = dis.readShort(); i > 0; --i) {
                 values.add(newElementValue(dis, cf));
             }
-            return new ElementValue() { @Override
-            public String toString() {
-                Iterator<ElementValue> it = values.iterator();
-                if (!it.hasNext()) return "{}";
+            return new ElementValue() {
 
-                ElementValue firstValue = it.next();
-                if (!it.hasNext()) return firstValue.toString();
+                @Override public String
+                toString() {
+                    Iterator<ElementValue> it = values.iterator();
+                    if (!it.hasNext()) return "{}";
 
-                StringBuilder sb = new StringBuilder("{ ").append(firstValue.toString());
-                do {
-                    sb.append(", ").append(it.next().toString());
-                } while (it.hasNext());
-                return sb.append(" }").toString();
-            }};
+                    ElementValue firstValue = it.next();
+                    if (!it.hasNext()) return firstValue.toString();
+
+                    StringBuilder sb = new StringBuilder("{ ").append(firstValue.toString());
+                    do {
+                        sb.append(", ").append(it.next().toString());
+                    } while (it.hasNext());
+                    return sb.append(" }").toString();
+                }
+            };
         } else
         {
             return new ElementValue() {
-                @Override
-                public String toString() { return "[Invalid element value tag '" + (char) tag + "']"; }
+                @Override public String toString() { return "[Invalid element value tag '" + (char) tag + "']"; }
             };
         }
     }
@@ -895,23 +934,26 @@ public class ClassFile {
 
             // Code attributes.
             cf.readAttributes(dis, new AbstractAttributeVisitor() {
-                @Override
-                public void visit(LineNumberTableAttribute lnta) {
+
+                @Override public void
+                visit(LineNumberTableAttribute lnta) {
                     CodeAttribute.this.lineNumberTableAttribute = lnta;
                     CodeAttribute.this.attributes.add(lnta);
                 }
-                @Override
-                public void visit(LocalVariableTableAttribute lvta) {
+
+                @Override public void
+                visit(LocalVariableTableAttribute lvta) {
                     CodeAttribute.this.localVariableTableAttribute = lvta;
                     CodeAttribute.this.attributes.add(lvta);
                 }
-                @Override
-                public void visit(LocalVariableTypeTableAttribute lvtta) {
+                @Override public void
+                visit(LocalVariableTypeTableAttribute lvtta) {
                     CodeAttribute.this.localVariableTypeTableAttribute = lvtta;
                     CodeAttribute.this.attributes.add(lvtta);
                 }
-                @Override
-                public void acceptOther(Attribute ai) {
+
+                @Override public void
+                acceptOther(Attribute ai) {
                     CodeAttribute.this.attributes.add(ai);
                 }
             });
@@ -923,7 +965,8 @@ public class ClassFile {
     }
 
     /** helper class for {@link CodeAttribute}. */
-    public static class ExceptionTableEntry {
+    public static
+    class ExceptionTableEntry {
         public int               startPC;
         public int               endPC;
         public int               handlerPC;
@@ -936,14 +979,15 @@ public class ClassFile {
             this.catchType = cf.constantPool.getConstantClassInfo(dis.readShort());
         }
 
-        @Override
-        public String toString() {
+        @Override public String
+        toString() {
             return "startPC=" + this.startPC + " endPC=" + this.endPC + " handlerPC=" + this.handlerPC + " catchType=" + this.catchType;
         }
     }
 
     /** Representation of the {@code SourceFile} attribute. */
-    public static class SourceFileAttribute implements Attribute {
+    public static
+    class SourceFileAttribute implements Attribute {
         public String sourceFile;
 
         SourceFileAttribute(DataInputStream dis, ClassFile cf) throws IOException {
@@ -956,7 +1000,8 @@ public class ClassFile {
     }
 
     /** Representation of the {@code LineNumberTable} attribute. */
-    public class LineNumberTableAttribute implements Attribute {
+    public
+    class LineNumberTableAttribute implements Attribute {
 
         public final List<LineNumberTableEntry> entries = new ArrayList<LineNumberTableEntry>();
 
@@ -972,7 +1017,8 @@ public class ClassFile {
             }
 
     /** Helper class for {@link LineNumberTableAttribute}. */
-    public static class LineNumberTableEntry {
+    public static
+    class LineNumberTableEntry {
         public int startPC;
         public int lineNumber;
 
@@ -983,7 +1029,8 @@ public class ClassFile {
     }
 
     /** Representation of the {@code LocalVariableTable} attribute. */
-    public class LocalVariableTableAttribute implements Attribute {
+    public
+    class LocalVariableTableAttribute implements Attribute {
 
         /** Helper class for {@link LocalVariableTableAttribute}. */
         class Entry {
@@ -1016,10 +1063,12 @@ public class ClassFile {
     }
 
     /** Representation of the {@code LocalVariableTypeTable} attribute. */
-    public static class LocalVariableTypeTableAttribute implements Attribute {
+    public static
+    class LocalVariableTypeTableAttribute implements Attribute {
 
         /** Helper class for {@link LocalVariableTypeTableAttribute}. */
-        public static class Entry {
+        public static
+        class Entry {
             public int    startPC;
             public int    length;
             public String name;

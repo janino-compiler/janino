@@ -32,33 +32,40 @@ import java.io.IOException;
 /**
  * Reads from a {@link String}. Notice that none of the overridden methods throw {@link IOException}.
  */
-public class StringCharStream implements CharStream {
+public
+class StringCharStream implements CharStream {
 
     private final String in;
     private int          pos;
 
-    public StringCharStream(String in) {
+    public
+    StringCharStream(String in) {
         this.in = in;
     }
 
-    public int peek() {
+    public int
+    peek() {
         return this.pos == this.in.length() ? -1 : this.in.charAt(this.pos);
     }
 
-    public boolean peek(char c) {
+    public boolean
+    peek(char c) {
         return this.pos < this.in.length() && this.in.charAt(this.pos) == c;
     }
 
-    public int peek(String chars) {
+    public int
+    peek(String chars) {
         return this.pos == this.in.length() ? -1 : chars.indexOf(this.in.charAt(this.pos));
     }
 
-    public char read() throws EOFException {
+    public char
+    read() throws EOFException {
         if (this.pos == this.in.length()) throw new EOFException("Unexpected end-of-input");
         return this.in.charAt(this.pos++);
     }
 
-    public void read(char c) throws EOFException, UnexpectedCharacterException {
+    public void
+    read(char c) throws EOFException, UnexpectedCharacterException {
         if (this.pos == this.in.length()) throw new EOFException("Expected '" + c + "' instead of end-of-input");
         if (this.in.charAt(this.pos) != c) {
             throw new UnexpectedCharacterException(
@@ -72,7 +79,8 @@ public class StringCharStream implements CharStream {
         this.pos++;
     }
 
-    public int read(String chars) throws EOFException, UnexpectedCharacterException {
+    public int
+    read(String chars) throws EOFException, UnexpectedCharacterException {
         if (this.pos == this.in.length()) {
             throw new EOFException("Expected one of '" + chars + "' instead of end-of-input");
         }
@@ -90,7 +98,8 @@ public class StringCharStream implements CharStream {
         return res;
     }
 
-    public boolean peekRead(char c) {
+    public boolean
+    peekRead(char c) {
         if (this.pos >= this.in.length()) return false;
         if (this.in.charAt(this.pos) == c) {
             this.pos++;
@@ -99,14 +108,16 @@ public class StringCharStream implements CharStream {
         return false;
     }
 
-    public int peekRead(String chars) {
+    public int
+    peekRead(String chars) {
         if (this.pos >= this.in.length()) return -1;
         int res = chars.indexOf(this.in.charAt(this.pos));
         if (res != -1) this.pos++;
         return res;
     }
 
-    public void eoi() throws UnexpectedCharacterException {
+    public void
+    eoi() throws UnexpectedCharacterException {
         if (this.pos < this.in.length()) {
             throw new UnexpectedCharacterException(
                 "Unexpected trailing characters '"
@@ -116,12 +127,13 @@ public class StringCharStream implements CharStream {
         }
     }
 
-    public boolean atEoi() {
+    public boolean
+    atEoi() {
         return this.pos >= this.in.length();
     }
 
-    @Override
-    public String toString() {
+    @Override public String
+    toString() {
         return "'" + this.in + "' at offset " + this.pos;
     }
 }

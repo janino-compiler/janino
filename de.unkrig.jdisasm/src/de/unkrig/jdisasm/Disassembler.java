@@ -124,7 +124,8 @@ import de.unkrig.jdisasm.SignatureParser.TypeSignature;
  * The disassembly is optimized to produce minimal DIFFs for changed class files: E.g. code offsets and local
  * variable indexes are only printed if really necessary.
  */
-public class Disassembler {
+public
+class Disassembler {
 
     // Configuration variables.
 
@@ -134,8 +135,7 @@ public class Disassembler {
     /**
      * {@code null} means "do not attempt to find the source file".
      */
-    private File        sourceDirectory = null;
-
+    private File    sourceDirectory = null;
     private boolean hideLines;
     private boolean hideVars;
 	private boolean symbolicLabels;
@@ -151,7 +151,8 @@ public class Disassembler {
         Collections.<ParameterAnnotation>emptyList()
     );
 
-    public static void main(String[] args) throws IOException {
+    public static void
+    main(String[] args) throws IOException {
         Disassembler d = new Disassembler();
         int i;
         for (i = 0; i < args.length; ++i) {
@@ -215,19 +216,23 @@ public class Disassembler {
 
     public Disassembler() {}
 
-    public void setOut(Writer writer) {
+    public void
+    setOut(Writer writer) {
         this.pw = writer instanceof PrintWriter ? (PrintWriter) writer : new PrintWriter(writer);
     }
 
-    public void setOut(OutputStream stream) {
+    public void
+    setOut(OutputStream stream) {
         this.pw = new PrintWriter(stream);
     }
 
-    public void setOut(OutputStream stream, String charsetName) throws UnsupportedEncodingException {
+    public void
+    setOut(OutputStream stream, String charsetName) throws UnsupportedEncodingException {
         this.pw = new PrintWriter(new OutputStreamWriter(stream, charsetName));
     }
 
-    public void setVerbose(boolean verbose) {
+    public void
+    setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
@@ -244,7 +249,6 @@ public class Disassembler {
     setHideLines(boolean hideLines) {
         this.hideLines = hideLines;
     }
-
     public void
     setHideVars(boolean hideVars) {
         this.hideVars = hideVars;
@@ -263,7 +267,8 @@ public class Disassembler {
     /**
      * Disassemble one Java&trade; class file to {@link System#out}.
      */
-    public void disasm(File file) throws IOException {
+    public void
+    disasm(File file) throws IOException {
         InputStream is = new FileInputStream(file);
         try {
             this.pw.println();
@@ -280,7 +285,8 @@ public class Disassembler {
         }
     }
 
-    public void disasm(URL location) throws IOException {
+    public void
+    disasm(URL location) throws IOException {
         InputStream is = location.openConnection().getInputStream();
         try {
             this.pw.println();
@@ -300,7 +306,8 @@ public class Disassembler {
     /**
      * @param is A Java&trade; class file
      */
-    public void disasm(InputStream is) throws IOException {
+    public void
+    disasm(InputStream is) throws IOException {
         try {
             this.disasmClassFile(new DataInputStream(is));
         } finally {
@@ -311,7 +318,8 @@ public class Disassembler {
     /**
      * @param dis A Java&trade; class file
      */
-    private void disasmClassFile(DataInputStream dis) throws IOException {
+    private void
+    disasmClassFile(DataInputStream dis) throws IOException {
 
         // Load the class file.
         ClassFile cf = new ClassFile(dis);
@@ -475,7 +483,8 @@ public class Disassembler {
     /**
      * Disassemble one method.
      */
-    private void disasm(Method method, ClassFile cf, Map<Integer, String> sourceLines) {
+    private void
+    disasm(Method method, ClassFile cf, Map<Integer, String> sourceLines) {
         try {
         println();
 
@@ -629,7 +638,8 @@ public class Disassembler {
         }
     }
 
-    private void disasm(List<Field> fields) {
+    private void
+    disasm(List<Field> fields) {
         for (Field field : fields) {
             println();
 
@@ -685,7 +695,8 @@ public class Disassembler {
         }
     }
 
-    String toString(InnerClassesAttribute.ClasS c) {
+    String
+    toString(InnerClassesAttribute.ClasS c) {
         return (
             (c.outerClassInfo == null ? "[local class]" : beautify(c.outerClassInfo.name))
             + " { "
@@ -726,22 +737,26 @@ public class Disassembler {
     /**
      * Prints an {@link Attribute}.
      */
-    public class PrintAttributeVisitor implements AttributeVisitor {
+    public
+    class PrintAttributeVisitor implements AttributeVisitor {
 
         private final String prefix;
         private final Context context;
 
-        public PrintAttributeVisitor(String prefix, Context context) {
+        public
+        PrintAttributeVisitor(String prefix, Context context) {
             this.prefix = prefix;
             this.context = context;
         }
 
-        public void visit(AnnotationDefaultAttribute ada) {
+        public void
+        visit(AnnotationDefaultAttribute ada) {
             println(this.prefix + "AnnotationDefault:");
             println(this.prefix + "  " + ada.defaultValue.toString());
         }
 
-        public void visit(CodeAttribute ca) {
+        public void
+        visit(CodeAttribute ca) {
             println(this.prefix + "Code:");
             println(this.prefix + "  max_locals = " + ca.maxLocals);
             println(this.prefix + "  max_stack = " + ca.maxStack);
@@ -766,7 +781,8 @@ public class Disassembler {
             }
         }
 
-        private void print(byte[] data) {
+        private void
+        print(byte[] data) {
             for (int i = 0; i < data.length; i += 32) {
                 Disassembler.this.print(this.prefix + "   ");
                 for (int j = 0; j < 32; ++j) {
@@ -778,17 +794,20 @@ public class Disassembler {
             }
         }
 
-        public void visit(ConstantValueAttribute cva) {
+        public void
+        visit(ConstantValueAttribute cva) {
             println(this.prefix + "ConstantValue:");
             println(this.prefix + "  constant_value = " + cva.constantValue);
         }
 
-        public void visit(DeprecatedAttribute da) {
+        public void
+        visit(DeprecatedAttribute da) {
             println(this.prefix + "DeprecatedAttribute:");
             println(this.prefix + "  -");
         }
 
-        public void visit(EnclosingMethodAttribute ema) {
+        public void
+        visit(EnclosingMethodAttribute ema) {
             println(this.prefix + "EnclosingMethod:");
             println(this.prefix + "  class/method = " + (
                 ema.optionalMethod == null
@@ -799,28 +818,32 @@ public class Disassembler {
             ));
         }
 
-        public void visit(ExceptionsAttribute ea) {
+        public void
+        visit(ExceptionsAttribute ea) {
             println(this.prefix + "Exceptions:");
             for (ConstantClassInfo en : ea.exceptionNames) {
                 println(this.prefix + "  " + en.name);
             }
         }
 
-        public void visit(InnerClassesAttribute ica) {
+        public void
+        visit(InnerClassesAttribute ica) {
             println(this.prefix + "InnerClasses:");
             for (InnerClassesAttribute.ClasS c : ica.classes) {
                 println(this.prefix + "  " + Disassembler.this.toString(c));
             }
         }
 
-        public void visit(LineNumberTableAttribute lnta) {
+        public void
+        visit(LineNumberTableAttribute lnta) {
             println(this.prefix + "LineNumberTable:");
             for (LineNumberTableEntry e : lnta.entries) {
                 println(this.prefix + "  " + e.startPC + " => Line " + e.lineNumber);
             }
         }
 
-        public void visit(LocalVariableTableAttribute lvta) {
+        public void
+        visit(LocalVariableTableAttribute lvta) {
             println(this.prefix + "LocalVariableTable:");
             for (LocalVariableTableAttribute.Entry e : lvta.entries) {
                 println(
@@ -839,7 +862,8 @@ public class Disassembler {
             }
         }
 
-        public void visit(LocalVariableTypeTableAttribute lvtta) {
+        public void
+        visit(LocalVariableTypeTableAttribute lvtta) {
             println(this.prefix + "LocalVariableTypeTable:");
             for (LocalVariableTypeTableAttribute.Entry e : lvtta.entries) {
                 println(
@@ -858,21 +882,24 @@ public class Disassembler {
             }
         }
 
-        public void visit(RuntimeInvisibleAnnotationsAttribute riaa) {
+        public void
+        visit(RuntimeInvisibleAnnotationsAttribute riaa) {
             println(this.prefix + "RuntimeInvisibleAnnotations:");
             for (Annotation a : riaa.annotations) {
                 println(this.prefix + "  " + a.toString());
             }
         }
 
-        public void visit(RuntimeVisibleAnnotationsAttribute rvaa) {
+        public void
+        visit(RuntimeVisibleAnnotationsAttribute rvaa) {
             println(this.prefix + "RuntimeVisibleAnnotations:");
             for (Annotation a : rvaa.annotations) {
                 println(this.prefix + "  " + a.toString());
             }
         }
 
-        public void visit(RuntimeInvisibleParameterAnnotationsAttribute ripaa) {
+        public void
+        visit(RuntimeInvisibleParameterAnnotationsAttribute ripaa) {
             println(this.prefix + "RuntimeInvisibleParameterAnnotations:");
             for (ParameterAnnotation pa : ripaa.parameterAnnotations) {
                 for (Annotation a : pa.annotations) {
@@ -881,7 +908,8 @@ public class Disassembler {
             }
         }
 
-        public void visit(RuntimeVisibleParameterAnnotationsAttribute rvpaa) {
+        public void
+        visit(RuntimeVisibleParameterAnnotationsAttribute rvpaa) {
             println(this.prefix + "RuntimeVisibleParameterAnnotations:");
             for (ParameterAnnotation pa : rvpaa.parameterAnnotations) {
                 for (Annotation a : pa.annotations) {
@@ -890,7 +918,8 @@ public class Disassembler {
             }
         }
 
-        public void visit(SignatureAttribute sa) {
+        public void
+        visit(SignatureAttribute sa) {
             println(this.prefix + "Signature:");
             switch (this.context) {
             case CLASS:
@@ -905,17 +934,20 @@ public class Disassembler {
             }
         }
 
-        public void visit(SourceFileAttribute sfa) {
+        public void
+        visit(SourceFileAttribute sfa) {
             println(this.prefix + "SourceFile:");
             println(this.prefix + "  " + sfa.sourceFile);
         }
 
-        public void visit(SyntheticAttribute sa) {
+        public void
+        visit(SyntheticAttribute sa) {
             println(this.prefix + "Synthetic:");
             println(this.prefix + " -");
         }
 
-        public void visit(UnknownAttribute ua) {
+        public void
+        visit(UnknownAttribute ua) {
             println(this.prefix + ua.name + ":");
             println(this.prefix + "  data = {");
             print(ua.info);
@@ -1898,7 +1930,8 @@ public class Disassembler {
         return lv;
     }
 
-    ClassSignature decodeClassSignature(String cs) {
+    ClassSignature
+    decodeClassSignature(String cs) {
         try {
             return SignatureParser.decodeClassSignature(cs);
         } catch (SignatureException e) {
@@ -1910,7 +1943,8 @@ public class Disassembler {
         }
     }
 
-    FieldTypeSignature decodeFieldTypeSignature(String fs) {
+    FieldTypeSignature
+    decodeFieldTypeSignature(String fs) {
         try {
             return SignatureParser.decodeFieldTypeSignature(fs);
         } catch (SignatureException e) {
@@ -1919,7 +1953,8 @@ public class Disassembler {
         }
     }
 
-    MethodTypeSignature decodeMethodTypeSignature(String ms) {
+    MethodTypeSignature
+    decodeMethodTypeSignature(String ms) {
         try {
             return SignatureParser.decodeMethodTypeSignature(ms);
         } catch (SignatureException e) {
@@ -1931,7 +1966,8 @@ public class Disassembler {
         }
     }
 
-    TypeSignature decodeFieldDescriptor(String fd) {
+    TypeSignature
+    decodeFieldDescriptor(String fd) {
         try {
             return SignatureParser.decodeFieldDescriptor(fd);
         } catch (SignatureException e) {
@@ -1940,7 +1976,8 @@ public class Disassembler {
         }
     }
 
-    MethodTypeSignature decodeMethodDescriptor(String md) {
+    MethodTypeSignature
+    decodeMethodDescriptor(String md) {
         try {
             return SignatureParser.decodeMethodDescriptor(md);
         } catch (SignatureException e) {
@@ -1959,8 +1996,8 @@ public class Disassembler {
         TypeSignature optionalTypeSignature;
         String        name;
 
-        @Override
-        public String toString() {
+        @Override public String
+        toString() {
             return (
                 this.optionalTypeSignature == null
                 ? " [" + this.name + ']'
@@ -1970,27 +2007,30 @@ public class Disassembler {
         }
     }
 
-    public void error(String message) {
+    public void
+    error(String message) {
         this.pw.println("*** Error: " + message);
     }
 
     /**
      * Static description of a Java&trade; byte code instruction.
      */
-    private static class Instruction {
+    private static
+    class Instruction {
 
         /**
          * @param operands <code>null</code> is equivalent to "zero operands"
          */
-        public Instruction(String mnemonic, Operand[] operands) {
+        public
+        Instruction(String mnemonic, Operand[] operands) {
             this.mnemonic = mnemonic;
             this.operands = operands;
         }
         public String    getMnemonic() { return this.mnemonic; }
         public Operand[] getOperands() { return this.operands; }
 
-        @Override
-        public String toString() {
+        @Override public String
+        toString() {
             return this.mnemonic;
         }
         private final String    mnemonic;
@@ -2000,7 +2040,8 @@ public class Disassembler {
     /**
      * Static description of an operand of a Java&trade; byte code instruction.
      */
-    private interface Operand {
+    private
+    interface Operand {
         String disasm(
             DataInputStream dis,
             int             instructionOffset,
@@ -2013,20 +2054,23 @@ public class Disassembler {
     /**
      * An {@link InputStream} that counts how many bytes have been read so far.
      */
-    private static class CountingInputStream extends FilterInputStream {
-        public CountingInputStream(InputStream is) {
+    private static
+    class CountingInputStream extends FilterInputStream {
+
+        public
+        CountingInputStream(InputStream is) {
             super(is);
         }
 
-        @Override
-        public int read() throws IOException {
+        @Override public int
+        read() throws IOException {
             int res = super.read();
             if (res != -1) ++this.count;
             return res;
         }
 
-        @Override
-        public int read(byte[] b, int off, int len) throws IOException {
+        @Override public int
+        read(byte[] b, int off, int len) throws IOException {
             int res = super.read(b, off, len);
             if (res != -1) this.count += res;
             return res;
@@ -2040,7 +2084,8 @@ public class Disassembler {
     /**
      * Returns a series of words, in canonical order, separated with one space, and with one trailing space.
      */
-    private static String decodeAccess(short n) {
+    private static String
+    decodeAccess(short n) {
         StringBuilder sb = new StringBuilder();
         if ((n & ACC_PUBLIC) != 0)       { sb.append("public ");       n &= ~ACC_PUBLIC; }
         if ((n & ACC_PRIVATE) != 0)      { sb.append("private ");      n &= ~ACC_PRIVATE; }
@@ -2064,7 +2109,8 @@ public class Disassembler {
         return sb.toString();
     }
 
-    String beautify(String s) {
+    String
+    beautify(String s) {
         int i = 0;
         for (;;) {
 

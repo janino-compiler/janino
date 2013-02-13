@@ -35,33 +35,37 @@ import de.unkrig.jdisasm.SignatureParser.SignatureException;
 /**
  * Representation of the "constant pool" in a Java&trade; class file.
  */
-public class ConstantPool {
+public
+class ConstantPool {
 
     /** Representation of a constant pool entry. */
-    public interface ConstantPoolEntry {
+    public
+    interface ConstantPoolEntry {
     }
 
     /** Representation of a CONSTANT_Class_info entry. */
-    public static class ConstantClassInfo implements ConstantPoolEntry {
+    public static
+    class ConstantClassInfo implements ConstantPoolEntry {
 
         /**
          * Fully qualified (dot-separated) class name.
          */
         public String name;
 
-        @Override
-        public String toString() {
+        @Override public String
+        toString() {
             return this.name + ".class";
         }
     }
 
     /** Representation of a CONSTANT_Fieldref_info entry. */
-    public static class ConstantFieldrefInfo implements ConstantPoolEntry {
+    public static
+    class ConstantFieldrefInfo implements ConstantPoolEntry {
         public ConstantClassInfo       clasS;
         public ConstantNameAndTypeInfo nameAndType;
 
-        @Override
-        public String toString() {
+        @Override public String
+        toString() {
             try {
                 return (
                     this.clasS.name
@@ -77,12 +81,13 @@ public class ConstantPool {
     }
 
     /** Representation of a CONSTANT_Methodref_info entry. */
-    public static class ConstantMethodrefInfo implements ConstantPoolEntry {
+    public static
+    class ConstantMethodrefInfo implements ConstantPoolEntry {
         public ConstantClassInfo       clasS;
         public ConstantNameAndTypeInfo nameAndType;
 
-        @Override
-        public String toString() {
+        @Override public String
+        toString() {
             try {
                 return (
                     this.clasS.name
@@ -99,12 +104,13 @@ public class ConstantPool {
     }
 
     /** Representation of a CONSTANT_InterfaceMethodref_info entry. */
-    public static class ConstantInterfaceMethodrefInfo implements ConstantPoolEntry {
+    public static
+    class ConstantInterfaceMethodrefInfo implements ConstantPoolEntry {
         public ConstantClassInfo       clasS;
         public ConstantNameAndTypeInfo nameAndType;
 
-        @Override
-        public String toString() {
+        @Override public String
+        toString() {
             try {
                 return (
                     this.clasS.name
@@ -121,72 +127,79 @@ public class ConstantPool {
     }
 
     /** Representation of a CONSTANT_String_info entry. */
-    public static class ConstantStringInfo implements ConstantPoolEntry {
+    public static
+    class ConstantStringInfo implements ConstantPoolEntry {
         public String string;
 
-        @Override
-        public String toString() {
+        @Override public String
+        toString() {
             return stringToJavaLiteral(this.string);
         }
     }
 
     /** Representation of a CONSTANT_Integer_info entry. */
-    public static class ConstantIntegerInfo implements ConstantPoolEntry {
+    public static
+    class ConstantIntegerInfo implements ConstantPoolEntry {
         public int bytes;
 
-        @Override
-        public String toString() {
+        @Override public String
+        toString() {
             return Integer.toString(this.bytes);
         }
     }
 
     /** Representation of a CONSTANT_Float_info entry. */
-    public static class ConstantFloatInfo implements ConstantPoolEntry {
+    public static
+    class ConstantFloatInfo implements ConstantPoolEntry {
         public float bytes;
 
-        @Override
-        public String toString() {
+        @Override public String
+        toString() {
             return this.bytes + "F";
         }
     }
 
     /** Representation of a CONSTANT_Long_info entry. */
-    public static class ConstantLongInfo implements ConstantPoolEntry {
+    public static
+    class ConstantLongInfo implements ConstantPoolEntry {
         public long bytes;
 
-        @Override
-        public String toString() {
+        @Override public String
+        toString() {
             return this.bytes + "L";
         }
     }
 
     /** Representation of a CONSTANT_Double_info entry. */
-    public static class ConstantDoubleInfo implements ConstantPoolEntry {
+    public static
+    class ConstantDoubleInfo implements ConstantPoolEntry {
         public double bytes;
 
-        @Override
-        public String toString() {
+        @Override public String
+        toString() {
             return this.bytes + "D";
         }
     }
 
     /** Representation of a CONSTANT_NameAndType_info entry. */
-    public static class ConstantNameAndTypeInfo implements ConstantPoolEntry {
+    public static
+    class ConstantNameAndTypeInfo implements ConstantPoolEntry {
         public ConstantUtf8Info name;
         public ConstantUtf8Info descriptor;
 
-        @Override
-        public String toString() {
+        @Override public String
+        toString() {
             return this.name + " : " + this.descriptor;
         }
     }
 
     /** Representation of a CONSTANT_Utf8_info entry. */
-    public static class ConstantUtf8Info implements ConstantPoolEntry {
+    public static
+    class ConstantUtf8Info implements ConstantPoolEntry {
         public String bytes;
 
-        @Override
-        public String toString() {
+        @Override public String
+        toString() {
             return this.bytes;
         }
     }
@@ -202,21 +215,31 @@ public class ConstantPool {
      *                                        or DOUBLE entry) is referenced
      * @throws ArrayIndexOutOfBoundsException An index is too small or to great
      */
-    public ConstantPool(DataInputStream dis) throws IOException {
+    public
+    ConstantPool(DataInputStream dis) throws IOException {
         int count = 0xffff & dis.readShort();
 
         // Read the entries into a temporary data structure - this is necessary because there may be forward
         // references.
         /***/
-        abstract class RawEntry {
-            abstract ConstantPoolEntry cook();
-            ConstantClassInfo getConstantClassInfo(short index) {
+        abstract
+        class RawEntry {
+
+            abstract ConstantPoolEntry
+            cook();
+
+            ConstantClassInfo
+            getConstantClassInfo(short index) {
                 return (ConstantClassInfo) get(index);
             }
-            ConstantNameAndTypeInfo getConstantNameAndTypeInfo(short index) {
+
+            ConstantNameAndTypeInfo
+            getConstantNameAndTypeInfo(short index) {
                 return (ConstantNameAndTypeInfo) get(index);
             }
-            ConstantUtf8Info getConstantUtf8Info(short index) {
+
+            ConstantUtf8Info
+            getConstantUtf8Info(short index) {
                 return (ConstantUtf8Info) get(index);
             }
             abstract ConstantPoolEntry get(short index);
@@ -224,9 +247,11 @@ public class ConstantPool {
         final RawEntry[] rawEntries = new RawEntry[count];
 
         /***/
-        abstract class RawEntry2 extends RawEntry {
-            @Override
-            ConstantPoolEntry get(short index) {
+        abstract
+        class RawEntry2 extends RawEntry {
+
+            @Override ConstantPoolEntry
+            get(short index) {
                 if (ConstantPool.this.entries[0xffff & index] == null) {
                     ConstantPool.this.entries[0xffff & index] = new ConstantPoolEntry() {
                         @Override public String toString() { return null; }
@@ -246,8 +271,9 @@ public class ConstantPool {
                 {
                     final short nameIndex = dis.readShort();
                     re = new RawEntry2() {
-                        @Override
-                        ConstantPoolEntry cook() {
+
+                        @Override ConstantPoolEntry
+                        cook() {
                             return new ConstantClassInfo() { {
                                 this.name = getConstantUtf8Info(nameIndex).bytes.replace('/', '.');
                             } };
@@ -261,8 +287,9 @@ public class ConstantPool {
                     final short classIndex = dis.readShort();
                     final short nameAndTypeIndex = dis.readShort();
                     re = new RawEntry2() {
-                        @Override
-                        ConstantPoolEntry cook() {
+
+                        @Override ConstantPoolEntry
+                        cook() {
                             return new ConstantFieldrefInfo() { {
                                 this.clasS = getConstantClassInfo(classIndex);
                                 this.nameAndType = getConstantNameAndTypeInfo(nameAndTypeIndex);
@@ -277,8 +304,9 @@ public class ConstantPool {
                     final short classIndex = dis.readShort();
                     final short nameAndTypeIndex = dis.readShort();
                     re = new RawEntry2() {
-                        @Override
-                        ConstantPoolEntry cook() {
+
+                        @Override ConstantPoolEntry
+                        cook() {
                             return new ConstantMethodrefInfo() { {
                                 this.clasS = getConstantClassInfo(classIndex);
                                 this.nameAndType = getConstantNameAndTypeInfo(nameAndTypeIndex);
@@ -293,8 +321,9 @@ public class ConstantPool {
                     final short classIndex = dis.readShort();
                     final short nameAndTypeIndex = dis.readShort();
                     re = new RawEntry2() {
-                        @Override
-                        ConstantPoolEntry cook() {
+
+                        @Override ConstantPoolEntry
+                        cook() {
                             return new ConstantInterfaceMethodrefInfo() { {
                                 this.clasS = getConstantClassInfo(classIndex);
                                 this.nameAndType = getConstantNameAndTypeInfo(nameAndTypeIndex);
@@ -308,8 +337,9 @@ public class ConstantPool {
                 {
                     final short stringIndex = dis.readShort();
                     re = new RawEntry2() {
-                        @Override
-                        ConstantPoolEntry cook() {
+
+                        @Override ConstantPoolEntry
+                        cook() {
                             return new ConstantStringInfo() { {
                                 this.string = getConstantUtf8Info(stringIndex).bytes;
                             } };
@@ -322,8 +352,9 @@ public class ConstantPool {
                 {
                     final int byteS = dis.readInt();
                     re = new RawEntry2() {
-                        @Override
-                        ConstantPoolEntry cook() {
+
+                        @Override ConstantPoolEntry
+                        cook() {
                             return new ConstantIntegerInfo() { {
                                 this.bytes = byteS;
                             } };
@@ -336,8 +367,9 @@ public class ConstantPool {
                 {
                     final float byteS = dis.readFloat();
                     re = new RawEntry2() {
-                        @Override
-                        ConstantPoolEntry cook() {
+
+                        @Override ConstantPoolEntry
+                        cook() {
                             return new ConstantFloatInfo() { {
                                 this.bytes = byteS;
                             } };
@@ -350,8 +382,9 @@ public class ConstantPool {
                 {
                     final long byteS = dis.readLong();
                     re = new RawEntry2() {
-                        @Override
-                        ConstantPoolEntry cook() {
+
+                        @Override ConstantPoolEntry
+                        cook() {
                             return new ConstantLongInfo() { {
                                 this.bytes = byteS;
                             } };
@@ -364,8 +397,9 @@ public class ConstantPool {
                 {
                     final double byteS = dis.readDouble();
                     re = new RawEntry2() {
-                        @Override
-                        ConstantPoolEntry cook() {
+
+                        @Override ConstantPoolEntry
+                        cook() {
                             return new ConstantDoubleInfo() { {
                                 this.bytes = byteS;
                             } };
@@ -379,8 +413,9 @@ public class ConstantPool {
                     final short nameIndex = dis.readShort();
                     final short descriptorIndex = dis.readShort();
                     re = new RawEntry2() {
-                        @Override
-                        ConstantPoolEntry cook() {
+
+                        @Override ConstantPoolEntry
+                        cook() {
                             return new ConstantNameAndTypeInfo() { {
                                 this.name = getConstantUtf8Info(nameIndex);
                                 this.descriptor = getConstantUtf8Info(descriptorIndex);
@@ -394,8 +429,9 @@ public class ConstantPool {
                 {
                     final String byteS = dis.readUTF();
                     re = new RawEntry2() {
-                        @Override
-                        ConstantPoolEntry cook() {
+
+                        @Override ConstantPoolEntry
+                        cook() {
                             return new ConstantUtf8Info() { {
                                 this.bytes = byteS;
                             } };
@@ -420,7 +456,8 @@ public class ConstantPool {
         }
     }
 
-    public ConstantPoolEntry get(short index) {
+    public ConstantPoolEntry
+    get(short index) {
         if (index == 0) return null;
         int ii = 0xffff & index;
         if (ii >= this.entries.length) {
@@ -432,7 +469,8 @@ public class ConstantPool {
     }
 
     /* CHECKSTYLE LineLength:OFF */
-    public ConstantClassInfo getConstantClassInfo(short index) {
+    public ConstantClassInfo
+    getConstantClassInfo(short index) {
         try {
             return (ConstantClassInfo) get(index);
         } catch (ClassCastException cce) {
@@ -455,7 +493,8 @@ public class ConstantPool {
      * Checks that the indexed constant pool entry is of type {@code CONSTANT_(Integer|Float|Class|String)_info}, and
      * returns its value converted to {@link String}.
      */
-    public String getIntegerFloatClassString(short index) {
+    public String
+    getIntegerFloatClassString(short index) {
         ConstantPoolEntry e = get(index);
         if (e instanceof ConstantIntegerInfo) return e.toString();
         if (e instanceof ConstantFloatInfo) return e.toString();
@@ -468,7 +507,8 @@ public class ConstantPool {
      * Checks that the indexed constant pool entry is of type {@code CONSTANT_(Integer|Float|Long|Double|String)_info},
      * and returns its value converted to {@link String}.
      */
-    public String getIntegerFloatLongDoubleString(short index) {
+    public String
+    getIntegerFloatLongDoubleString(short index) {
         ConstantPoolEntry e = get(index);
         if (e instanceof ConstantIntegerInfo) return e.toString();
         if (e instanceof ConstantFloatInfo) return e.toString();
@@ -482,7 +522,8 @@ public class ConstantPool {
      * Checks that the indexed constant pool entry is of type {@code CONSTANT_(Long|Double|String)_info}, and returns
      * its value converted to {@link String}.
      */
-    public String getLongDoubleString(short index) {
+    public String
+    getLongDoubleString(short index) {
         ConstantPoolEntry e = get(index);
         if (e instanceof ConstantLongInfo) return e.toString();
         if (e instanceof ConstantDoubleInfo) return e.toString();
@@ -493,7 +534,8 @@ public class ConstantPool {
      * Checks that the indexed constant pool entry is of type {@code CONSTANT_(Integer|Float|Long|Double)_info}, and
      * returns its value converted to {@link String}.
      */
-    public String getIntegerFloatLongDouble(short index) {
+    public String
+    getIntegerFloatLongDouble(short index) {
         ConstantPoolEntry e = get(index);
         if (e instanceof ConstantIntegerInfo) return e.toString();
         if (e instanceof ConstantFloatInfo) return e.toString();
@@ -502,11 +544,13 @@ public class ConstantPool {
         throw new ClassCastException("CP index " + (0xffff & index) + ": " + e);
     }
 
-    public int getSize() {
+    public int
+    getSize() {
         return this.entries.length;
     }
 
-    public static String stringToJavaLiteral(String s) {
+    public static String
+    stringToJavaLiteral(String s) {
         for (int i = 0; i < s.length();) {
             char c = s.charAt(i);
             int idx = "\r\n\"\t\b".indexOf(c);

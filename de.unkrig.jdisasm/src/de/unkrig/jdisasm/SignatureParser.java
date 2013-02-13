@@ -39,11 +39,13 @@ import de.unkrig.io.charstream.UnexpectedCharacterException;
  * <a href="http://java.sun.com/docs/books/jvms/second_edition/ClassFileFormat-Java5.pdf">Java 5 class file format</a>,
  * section 4.4.4, "Signatures".
  */
-public class SignatureParser {
+public
+class SignatureParser {
 
     private SignatureParser() {}
 
-    public static ClassSignature decodeClassSignature(String s) throws SignatureException {
+    public static ClassSignature
+    decodeClassSignature(String s) throws SignatureException {
         try {
             StringCharStream scs = new StringCharStream(s);
             ClassSignature cls;
@@ -59,7 +61,8 @@ public class SignatureParser {
         }
     }
 
-    public static MethodTypeSignature decodeMethodTypeSignature(String s) throws SignatureException {
+    public static MethodTypeSignature
+    decodeMethodTypeSignature(String s) throws SignatureException {
         try {
             StringCharStream scs = new StringCharStream(s);
             MethodTypeSignature mts = parseMethodTypeSignature(scs);
@@ -74,7 +77,8 @@ public class SignatureParser {
         }
     }
 
-    public static TypeSignature decodeTypeSignature(String s) throws SignatureException {
+    public static TypeSignature
+    decodeTypeSignature(String s) throws SignatureException {
         try {
             StringCharStream scs = new StringCharStream(s);
             TypeSignature ts = parseTypeSignature(scs);
@@ -89,7 +93,8 @@ public class SignatureParser {
         }
     }
 
-    public static FieldTypeSignature decodeFieldTypeSignature(String s) throws SignatureException {
+    public static FieldTypeSignature
+    decodeFieldTypeSignature(String s) throws SignatureException {
         try {
             StringCharStream scs = new StringCharStream(s);
             FieldTypeSignature fts = parseFieldTypeSignature(scs);
@@ -104,7 +109,8 @@ public class SignatureParser {
         }
     }
 
-    public static MethodTypeSignature decodeMethodDescriptor(String s) throws SignatureException {
+    public static MethodTypeSignature
+    decodeMethodDescriptor(String s) throws SignatureException {
         try {
             StringCharStream scs = new StringCharStream(s);
             MethodTypeSignature mts = parseMethodDescriptor(scs);
@@ -119,7 +125,8 @@ public class SignatureParser {
         }
     }
 
-    public static TypeSignature decodeFieldDescriptor(String s) throws SignatureException {
+    public static TypeSignature
+    decodeFieldDescriptor(String s) throws SignatureException {
         try {
             StringCharStream scs = new StringCharStream(s);
             TypeSignature ts = parseFieldDescriptor(scs);
@@ -134,7 +141,8 @@ public class SignatureParser {
         }
     }
 
-    public static TypeSignature decodeReturnType(String s) throws SignatureException {
+    public static TypeSignature
+    decodeReturnType(String s) throws SignatureException {
         try {
             StringCharStream scs = new StringCharStream(s);
             TypeSignature ts = parseReturnType(scs);
@@ -150,7 +158,8 @@ public class SignatureParser {
     }
 
     /** Representation of the "MethodTypeSignature" clause. */
-    public static class MethodTypeSignature {
+    public static
+    class MethodTypeSignature {
 
         public final List<FormalTypeParameter> formalTypeParameters = (
             new ArrayList<SignatureParser.FormalTypeParameter>()
@@ -159,7 +168,8 @@ public class SignatureParser {
         public TypeSignature                   returnType;
         public final List<ThrowsSignature>     thrownTypes = new ArrayList<SignatureParser.ThrowsSignature>();
 
-        public String toString(String declaringClassName, String methodName) {
+        public String
+        toString(String declaringClassName, String methodName) {
             StringBuilder sb = new StringBuilder();
 
             // Formal type parameters.
@@ -191,19 +201,21 @@ public class SignatureParser {
             return sb.toString();
         }
 
-        @Override
-        public String toString() {
+        @Override public String
+        toString() {
             return "*** Cannot easily be converted into String ***";
         }
     }
 
     /** Representation of the "ClassSignature" clause. */
-    public static class ClassSignature {
+    public static
+    class ClassSignature {
         public final List<FormalTypeParameter> formalTypeParameters = new ArrayList<FormalTypeParameter>();
         public ClassTypeSignature              superclassSignature;
         public final List<ClassTypeSignature>  superinterfaceSignatures = new ArrayList<ClassTypeSignature>();
 
-        public String toString(String className) {
+        public String
+        toString(String className) {
             StringBuilder sb = new StringBuilder();
             if (!this.formalTypeParameters.isEmpty()) {
                 Iterator<FormalTypeParameter> it = this.formalTypeParameters.iterator();
@@ -222,7 +234,8 @@ public class SignatureParser {
     }
 
     /** Representation of the "ClassTypeSignature" clause. */
-    public static class ClassTypeSignature implements ThrowsSignature, FieldTypeSignature {
+    public static
+    class ClassTypeSignature implements ThrowsSignature, FieldTypeSignature {
         public String                               packageSpecifier = "";
         public String                               simpleClassName;
         public final List<TypeArgument>             typeArguments = new ArrayList<TypeArgument>();
@@ -230,8 +243,8 @@ public class SignatureParser {
             new ArrayList<SignatureParser.SimpleClassTypeSignature>()
         );
 
-        @Override
-        public String toString() {
+        @Override public String
+        toString() {
             StringBuilder sb = new StringBuilder(this.packageSpecifier.replace('/', '.')).append(this.simpleClassName);
             if (!this.typeArguments.isEmpty()) {
                 Iterator<TypeArgument> it = this.typeArguments.iterator();
@@ -252,12 +265,13 @@ public class SignatureParser {
     static { OBJECT.simpleClassName = "java.lang.Object"; }
 
     /** Representation of the "SimpleClassTypeSignature" clause. */
-    public static class SimpleClassTypeSignature {
+    public static
+    class SimpleClassTypeSignature {
         public String                   simpleClassName;
         public final List<TypeArgument> typeArguments = new ArrayList<TypeArgument>();
 
-        @Override
-        public String toString() {
+        @Override public String
+        toString() {
             StringBuilder sb = new StringBuilder(this.simpleClassName);
             if (!this.typeArguments.isEmpty()) {
                 Iterator<TypeArgument> it = this.typeArguments.iterator();
@@ -272,37 +286,40 @@ public class SignatureParser {
     }
 
     /** Representation of the "ArrayTypeSignature" clause. */
-    public static class ArrayTypeSignature implements FieldTypeSignature {
+    public static
+    class ArrayTypeSignature implements FieldTypeSignature {
         public TypeSignature typeSignature;
-        @Override
-        public String toString() { return this.typeSignature.toString() + "[]"; }
+        @Override public String toString() { return this.typeSignature.toString() + "[]"; }
     }
 
     /** Representation of the "TypeVariableSignature" clause. */
-    public static class TypeVariableSignature implements ThrowsSignature, FieldTypeSignature {
+    public static
+    class TypeVariableSignature implements ThrowsSignature, FieldTypeSignature {
         public String identifier;
-        @Override
-        public String toString() { return this.identifier; }
+        @Override public String toString() { return this.identifier; }
     }
 
     /** Representation of the "TypeSignature" clause. */
-    public interface TypeSignature {
+    public
+    interface TypeSignature {
         String toString();
     }
 
     /** Representation of the "ThrowsSignature" clause. */
-    public interface ThrowsSignature {
+    public
+    interface ThrowsSignature {
     }
 
     /** Representation of the "FormalTypeParameter" clause. */
-    public static class FormalTypeParameter {
+    public static
+    class FormalTypeParameter {
 
         public String                         identifier;
         public FieldTypeSignature             optionalClassBound;
         public final List<FieldTypeSignature> interfaceBounds = new ArrayList<SignatureParser.FieldTypeSignature>();
 
-        @Override
-        public String toString() {
+        @Override public String
+        toString() {
             StringBuilder sb = new StringBuilder(this.identifier);
             if (this.optionalClassBound == null) {
                 if (this.interfaceBounds.isEmpty()) return this.identifier;
@@ -318,24 +335,25 @@ public class SignatureParser {
     }
 
     /** Representation of the "PrimitiveTypeSignature" clause. */
-    public static class PrimitiveTypeSignature implements TypeSignature {
+    public static
+    class PrimitiveTypeSignature implements TypeSignature {
         public final String typeName;
         PrimitiveTypeSignature(String typeName) {
             this.typeName = typeName;
         }
-        @Override
-        public String toString() { return this.typeName; };
+        @Override public String toString() { return this.typeName; };
     }
 
     /** Representation of the "TypeArgument" clause. */
-    public static class TypeArgument {
+    public static
+    class TypeArgument {
         /***/
         enum Mode { EXTENDS, SUPER, ANY, NONE };
         public Mode               mode;
         public FieldTypeSignature fieldTypeSignature;
 
-        @Override
-        public String toString() {
+        @Override public String
+        toString() {
             switch (this.mode) {
             case EXTENDS:
                 return "extends " + this.fieldTypeSignature.toString();
@@ -351,7 +369,8 @@ public class SignatureParser {
     }
 
     /** Representation of the "FieldTypeSignature" clause. */
-    public interface FieldTypeSignature extends TypeSignature {
+    public
+    interface FieldTypeSignature extends TypeSignature {
         String toString();
     }
 
@@ -371,8 +390,7 @@ public class SignatureParser {
 
     public static final PrimitiveTypeSignature BOOLEAN = new PrimitiveTypeSignature("boolean");
 
-    public static final TypeSignature VOID = new TypeSignature() { @Override
-    public String toString() { return "void"; }};
+    public static final TypeSignature VOID = new TypeSignature() { @Override public String toString() { return "void"; }};
 
     private static TypeSignature parseFieldDescriptor(
         StringCharStream scs
@@ -473,7 +491,8 @@ public class SignatureParser {
         return cts;
     }
 
-    private static String parseIdentifier(StringCharStream scs) throws EOFException, SignatureException {
+    private static String
+    parseIdentifier(StringCharStream scs) throws EOFException, SignatureException {
         char c = scs.read();
         if (!Character.isJavaIdentifierStart(c)) {
             throw new SignatureException("Identifier expected instead of '" + c + "'");
@@ -588,15 +607,18 @@ public class SignatureParser {
     }
 
     /** Signalizes am malformed signature. */
-    public static class SignatureException extends Exception {
+    public static
+    class SignatureException extends Exception {
 
         private static final long serialVersionUID = 1L;
 
-        public SignatureException(String message) {
+        public
+        SignatureException(String message) {
             super(message);
         }
 
-        public SignatureException(String message, Throwable t) {
+        public
+        SignatureException(String message, Throwable t) {
             super(message, t);
         }
     }
