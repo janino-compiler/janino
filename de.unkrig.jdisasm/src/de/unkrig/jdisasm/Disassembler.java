@@ -48,7 +48,6 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FilterInputStream;
@@ -66,15 +65,19 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
 import java.util.regex.Pattern;
 
+import de.unkrig.commons.nullanalysis.NotNullByDefault;
+import de.unkrig.commons.nullanalysis.Nullable;
 import de.unkrig.jdisasm.ClassFile.Annotation;
 import de.unkrig.jdisasm.ClassFile.AnnotationDefaultAttribute;
 import de.unkrig.jdisasm.ClassFile.Attribute;
@@ -105,9 +108,11 @@ import de.unkrig.jdisasm.ConstantPool.ConstantClassInfo;
 import de.unkrig.jdisasm.ConstantPool.ConstantFieldrefInfo;
 import de.unkrig.jdisasm.ConstantPool.ConstantInterfaceMethodrefInfo;
 import de.unkrig.jdisasm.ConstantPool.ConstantMethodrefInfo;
+import de.unkrig.jdisasm.ConstantPool.ConstantNameAndTypeInfo;
 import de.unkrig.jdisasm.ConstantPool.ConstantPoolEntry;
 import de.unkrig.jdisasm.SignatureParser.ArrayTypeSignature;
 import de.unkrig.jdisasm.SignatureParser.ClassSignature;
+import de.unkrig.jdisasm.SignatureParser.ClassTypeSignature;
 import de.unkrig.jdisasm.SignatureParser.FieldTypeSignature;
 import de.unkrig.jdisasm.SignatureParser.FormalTypeParameter;
 import de.unkrig.jdisasm.SignatureParser.MethodTypeSignature;
@@ -116,16 +121,22 @@ import de.unkrig.jdisasm.SignatureParser.ThrowsSignature;
 import de.unkrig.jdisasm.SignatureParser.TypeSignature;
 
 /**
- * A Java bytecode disassembler, comparable to JAVAP, which is part of SUN's JDK.
+ * A Java bytecode disassembler, comparable to JAVAP, which is part of ORACLE's JDK.
  * <p>
- * Notice that this tool does not depend on any other classes or libraries (other than the
- * standard JDK library).
+ * Notice that this tool does not depend on any other classes or libraries (other than the standard JDK library).
  * <p>
  * The disassembly is optimized to produce minimal DIFFs for changed class files: E.g. code offsets and local
  * variable indexes are only printed if really necessary.
  */
 public
 class Disassembler {
+
+    private static final List<ConstantClassInfo>   NO_CONSTANT_CLASS_INFOS   = Collections.<ConstantClassInfo>emptyList();
+    private static final List<ThrowsSignature>     NO_THROWS_SIGNATURES      = Collections.<ThrowsSignature>emptyList();
+    private static final List<TypeSignature>       NO_TYPE_SIGNATURES        = Collections.<TypeSignature>emptyList();
+    private static final List<ClassTypeSignature>  NO_CLASS_TYPE_SIGNATURES  = Collections.<ClassTypeSignature>emptyList();
+    private static final List<FormalTypeParameter> NO_FORMAL_TYPE_PARAMETERS = Collections.<FormalTypeParameter>emptyList();
+    private static final List<ParameterAnnotation> NO_PARAMETER_ANNOTATIONS  = Collections.<ParameterAnnotation>emptyList();
 
     // Configuration variables.
 
@@ -135,21 +146,17 @@ class Disassembler {
     /**
      * {@code null} means "do not attempt to find the source file".
      */
-    private File    sourceDirectory = null;
-    private boolean hideLines;
-    private boolean hideVars;
-	private boolean symbolicLabels;
+    private @Nullable File sourceDirectory = null;
+    private boolean        hideLines;
+    private boolean        hideVars;
+	private boolean        symbolicLabels;
 
     /**
      * "" for the default package; with a trailing period otherwise.
      */
-    private String thisClassPackageName;
+    private @Nullable String thisClassPackageName;
 
-    Map<Integer /*offset*/, String /*label*/> branchTargets;
-
-    private static final List<ParameterAnnotation> NO_PARAMETER_ANNOTATIONS = (
-        Collections.<ParameterAnnotation>emptyList()
-    );
+    private @Nullable Map<Integer /*offset*/, String /*label*/> branchTargets;
 
     public static void
     main(String[] args) throws IOException {
@@ -180,7 +187,7 @@ class Disassembler {
                 System.out.println("Prints a disassembly listing of the given JAVA[TM] class files (or STDIN) to ");
                 System.out.println("STDOUT.");
                 System.out.println("Usage:");
-                System.out.println("  java " + Disassembler.class.getName() + " [ <option> ] ... [ <class-file> ] ...");
+                System.out.println("  java " + Disassembler.class.getName() + " [ <option> ] ... [ <class-file-name> | <class-file-url> | '-' ] ...");
                 System.out.println("Valid options are:");
                 System.out.println("  -o <output-file>   Store disassembly output in a file.");
                 System.out.println("  -verbose");
@@ -309,7 +316,7 @@ class Disassembler {
     public void
     disasm(InputStream is) throws IOException {
         try {
-            this.disasmClassFile(new DataInputStream(is));
+            this.disassembleClassFile(new DataInputStream(is));
         } finally {
             this.pw.flush();
         }
@@ -319,7 +326,7 @@ class Disassembler {
      * @param dis A Java&trade; class file
      */
     private void
-    disasmClassFile(DataInputStream dis) throws IOException {
+    disassembleClassFile(DataInputStream dis) throws IOException {
 
         // Load the class file.
         ClassFile cf = new ClassFile(dis);
@@ -328,22 +335,20 @@ class Disassembler {
         println();
         println("// Class file version = " + cf.getJdkName());
 
-        this.thisClassPackageName = cf.thisClassName.substring(0, cf.thisClassName.lastIndexOf('.') + 1);
+        String tcpn = this.thisClassPackageName = cf.thisClassName.substring(0, cf.thisClassName.lastIndexOf('.') + 1);
 
         // Print package declaration.
-        if (this.thisClassPackageName.length() > 0) {
+        if (tcpn.length() > 0) {
             println();
-            println("package " + this.thisClassPackageName.substring(0, this.thisClassPackageName.length() - 1) + ";");
+            println("package " + tcpn.substring(0, tcpn.length() - 1) + ";");
         }
 
         // Print enclosing method info.
-        if (cf.enclosingMethodAttribute != null) {
-            String methodName = (
-                cf.enclosingMethodAttribute.optionalMethod == null
-                ? "[initializer]"
-                : cf.enclosingMethodAttribute.optionalMethod.name.bytes
-            );
-            String className = cf.enclosingMethodAttribute.clasS.name;
+        EnclosingMethodAttribute ema = cf.enclosingMethodAttribute;
+        if (ema != null) {
+            ConstantNameAndTypeInfo m = ema.method;
+            String methodName = m == null ? "[initializer]" : m.name.bytes;
+            String className = ema.clasS.name;
             println();
             println(
                 "// This class is enclosed by method '"
@@ -364,14 +369,16 @@ class Disassembler {
         if (cf.deprecatedAttribute != null) this.println("/** @deprecated */");
 
         // Print type annotations.
-        if (cf.runtimeInvisibleAnnotationsAttribute != null) {
-            for (Annotation a : cf.runtimeInvisibleAnnotationsAttribute.annotations) {
-                println(a.toString());
+        {
+            RuntimeInvisibleAnnotationsAttribute riaa = cf.runtimeInvisibleAnnotationsAttribute;
+            if (riaa != null) {
+                for (Annotation a : riaa.annotations) println(a.toString());
             }
         }
-        if (cf.runtimeVisibleAnnotationsAttribute != null) {
-            for (Annotation a : cf.runtimeVisibleAnnotationsAttribute.annotations) {
-                println(a.toString());
+        {
+            RuntimeVisibleAnnotationsAttribute rvaa = cf.runtimeVisibleAnnotationsAttribute;
+            if (rvaa != null) {
+                for (Annotation a : rvaa.annotations) println(a.toString());
             }
         }
 
@@ -390,23 +397,27 @@ class Disassembler {
         );
 
         // Print name, EXTENDS and IMPLEMENTS clauses.
-        if (cf.signatureAttribute != null) {
-            this.print(beautify(decodeClassSignature(cf.signatureAttribute.signature).toString(cf.thisClassName)));
-        } else {
-            this.print(beautify(cf.thisClassName));
-            if (cf.superClassName != null && !"java.lang.Object".equals(cf.superClassName)) {
-                this.print(" extends " + beautify(cf.superClassName));
-            }
-            List<String> ifs = cf.interfaceNames;
-            if ((cf.accessFlags & ACC_ANNOTATION) != 0 && ifs.contains("java.lang.annotation.Annotation")) {
-                ifs = new ArrayList<String>(ifs);
-                ifs.remove("java.lang.annotation.Annotation");
-            }
-            if (!ifs.isEmpty()) {
-                Iterator<String> it = ifs.iterator();
-                this.print(" implements " + beautify(it.next()));
-                while (it.hasNext()) {
-                    this.print(", " + beautify(it.next()));
+        {
+            SignatureAttribute sa = cf.signatureAttribute;
+            if (sa != null) {
+                this.print(beautify(decodeClassSignature(sa.signature).toString(cf.thisClassName)));
+            } else {
+                this.print(beautify(cf.thisClassName));
+                {
+                    String scn = cf.superClassName;
+                    if (scn != null && !"java.lang.Object".equals(scn)) this.print(" extends " + beautify(scn));
+                }
+                List<String> ifs = cf.interfaceNames;
+                if ((cf.accessFlags & ACC_ANNOTATION) != 0 && ifs.contains("java.lang.annotation.Annotation")) {
+                    ifs = new ArrayList<String>(ifs);
+                    ifs.remove("java.lang.annotation.Annotation");
+                }
+                if (!ifs.isEmpty()) {
+                    Iterator<String> it = ifs.iterator();
+                    this.print(" implements " + beautify(it.next()));
+                    while (it.hasNext()) {
+                        this.print(", " + beautify(it.next()));
+                    }
                 }
             }
         }
@@ -419,36 +430,48 @@ class Disassembler {
             println("    // Constant pool dump:");
             ConstantPool cp = cf.constantPool;
             for (int i = 0; i < cp.getSize(); i++) {
-                ConstantPoolEntry constantPoolEntry = cp.get((short) i);
+                ConstantPoolEntry constantPoolEntry = cp.getOptional((short) i, ConstantPoolEntry.class);
                 if (constantPoolEntry == null) continue;
                 println("    //   #" + i + ": " + beautify(constantPoolEntry.toString()));
             }
         }
 
         // Print enclosing/enclosed types.
-        if (cf.innerClassesAttribute != null) {
-            println();
-            println("    // Enclosing/enclosed types:");
-            for (InnerClassesAttribute.ClasS c : cf.innerClassesAttribute.classes) {
-                println("    //   " + toString(c));
+        {
+            InnerClassesAttribute ica = cf.innerClassesAttribute;
+            if (ica != null) {
+                println();
+                println("    // Enclosing/enclosed types:");
+                for (InnerClassesAttribute.ClasS c : ica.classes) {
+                    println("    //   " + toString(c));
+                }
             }
         }
 
         // Print fields.
-        disasm(cf.fields);
+        disassembleFields(cf.fields);
 
         // Read source file.
         Map<Integer, String> sourceLines = new HashMap<Integer, String>();
         READ_SOURCE_LINES:
-        if (cf.sourceFileAttribute != null && this.sourceDirectory != null) {
-            String sourceFile = cf.sourceFileAttribute.sourceFile;
-            LineNumberReader lnr;
-            try {
-                lnr = new LineNumberReader(new FileReader(new File(this.sourceDirectory, sourceFile)));
-            } catch (FileNotFoundException ex) {
-                ;
-                break READ_SOURCE_LINES;
+        if (this.sourceDirectory != null) {
+            SourceFileAttribute sfa = cf.sourceFileAttribute;
+            if (sfa == null) break READ_SOURCE_LINES;
+
+            File sourceFile = new File(this.sourceDirectory, sfa.sourceFile);
+
+            if (!sourceFile.exists()) {
+                String toplevelClassName;
+                {
+                    toplevelClassName = cf.thisClassName;
+                    int idx = toplevelClassName.indexOf('$');
+                    if (idx != -1) toplevelClassName = toplevelClassName.substring(0, idx);
+                }
+                sourceFile = new File(this.sourceDirectory, toplevelClassName.replace('.', File.separatorChar) + ".java");
             }
+            if (!sourceFile.exists()) break READ_SOURCE_LINES;
+
+            LineNumberReader lnr = new LineNumberReader(new FileReader(sourceFile));
             try {
                 for (;;) {
                     String sl = lnr.readLine();
@@ -456,21 +479,21 @@ class Disassembler {
                     sourceLines.put(lnr.getLineNumber(), sl);
                 }
             } finally {
-                lnr.close();
+                try { lnr.close(); } catch (Exception e) {}
             }
         }
 
         // Methods.
         for (Method m : cf.methods) {
-            disasm(m, cf, sourceLines);
+            disassembleMethod(m, cf, sourceLines);
         }
 
         println("}");
 
         // Print class attributes.
-        print(cf.attributes, "// ", new Attribute[] {
+        printAttributes(cf.attributes, "// ", new Attribute[] {
             cf.deprecatedAttribute,
-            cf.enclosingMethodAttribute,
+            ema,
             cf.innerClassesAttribute,
             cf.runtimeInvisibleAnnotationsAttribute,
             cf.runtimeVisibleAnnotationsAttribute,
@@ -484,154 +507,162 @@ class Disassembler {
      * Disassemble one method.
      */
     private void
-    disasm(Method method, ClassFile cf, Map<Integer, String> sourceLines) {
+    disassembleMethod(Method method, ClassFile cf, Map<Integer, String> sourceLines) {
         try {
-        println();
 
-        // Print SYNTHETIC notice.
-        if ((method.accessFlags & ACC_SYNTHETIC) != 0 || method.syntheticAttribute != null) {
-            println("    // (Synthetic method)");
-        }
+            // One blank line before each method declaration.
+            println();
 
-        // Print BRIDGE notice.
-        if ((method.accessFlags & ACC_BRIDGE) != 0) {
-            println("    // (Bridge method)");
-        }
-
-        // Print DEPRECATED notice.
-        if (method.deprecatedAttribute != null) this.println("    /** @deprecated */");
-
-        // Print method annotations.
-        if (method.runtimeInvisibleAnnotationsAttribute != null) {
-            for (Annotation a : method.runtimeInvisibleAnnotationsAttribute.annotations) {
-                println("    " + a.toString());
+            // Print SYNTHETIC notice.
+            if ((method.accessFlags & ACC_SYNTHETIC) != 0 || method.syntheticAttribute != null) {
+                println("    // (Synthetic method)");
             }
-        }
-        if (method.runtimeVisibleAnnotationsAttribute != null) {
-            for (Annotation a : method.runtimeVisibleAnnotationsAttribute.annotations) {
-                println("    " + a.toString());
+
+            // Print BRIDGE notice.
+            if ((method.accessFlags & ACC_BRIDGE) != 0) println("    // (Bridge method)");
+
+            // Print DEPRECATED notice.
+            if (method.deprecatedAttribute != null) this.println("    /** @deprecated */");
+
+            // Print method annotations.
+            {
+                RuntimeInvisibleAnnotationsAttribute riaa = method.runtimeInvisibleAnnotationsAttribute;
+                if (riaa != null) {
+                    for (Annotation a : riaa.annotations) println("    " + a.toString());
+                }
             }
-        }
-
-        // Print method access flags.
-        String functionName = method.name;
-        Disassembler.this.print(
-            "    "
-            + decodeAccess((short) (
-                method.accessFlags
-                & ~ACC_SYNTHETIC
-                & ~ACC_BRIDGE
-                & ~ACC_VARARGS
-                & ((cf.accessFlags & ACC_INTERFACE) != 0 ? ~(ACC_PUBLIC | ACC_ABSTRACT) : 0xffff)
-            ))
-        );
-
-        // Print formal type parameters.
-        MethodTypeSignature mts;
-        {
-            mts = (
-                method.signatureAttribute == null
-                ? decodeMethodDescriptor(method.descriptor)
-                : decodeMethodTypeSignature(method.signatureAttribute.signature)
-            );
-            if (!mts.formalTypeParameters.isEmpty()) {
-                    Iterator<FormalTypeParameter> it = mts.formalTypeParameters.iterator();
-                print("<" + beautify(it.next().toString()));
-                while (it.hasNext()) print(", " + beautify(it.next().toString()));
-                print(">");
+            {
+                RuntimeVisibleAnnotationsAttribute rvaa = method.runtimeVisibleAnnotationsAttribute;
+                if (rvaa != null) {
+                    for (Annotation a : rvaa.annotations) println("    " + a.toString());
+                }
             }
-        }
 
-        // Print method name.
-        if (
-            "<clinit>".equals(functionName)
-            && (method.accessFlags & ACC_STATIC) != 0
-            && (method.exceptionsAttribute == null || method.exceptionsAttribute.exceptionNames.isEmpty())
-            && mts.formalTypeParameters.isEmpty()
-            && mts.parameterTypes.isEmpty()
-            && mts.returnType == SignatureParser.VOID
-            && mts.thrownTypes.isEmpty()
-        ) {
-            ;
-        } else
-        if (
-            "<init>".equals(functionName)
-            && (method.accessFlags & (ACC_ABSTRACT | ACC_FINAL | ACC_INTERFACE | ACC_STATIC)) == 0
-            && mts.returnType == SignatureParser.VOID
-        ) {
-            print(beautify(cf.thisClassName));
-            print(
-                method.runtimeInvisibleParameterAnnotationsAttribute,
-                method.runtimeVisibleParameterAnnotationsAttribute,
-                mts.parameterTypes,
-                method,
-                (short) 1,
-                (method.accessFlags & ACC_VARARGS) != 0
+            // Print method access flags.
+            String functionName = method.name;
+            Disassembler.this.print(
+                "    "
+                + decodeAccess((short) (
+                    method.accessFlags
+                    & ~ACC_SYNTHETIC
+                    & ~ACC_BRIDGE
+                    & ~ACC_VARARGS
+                    & ((cf.accessFlags & ACC_INTERFACE) != 0 ? ~(ACC_PUBLIC | ACC_ABSTRACT) : 0xffff)
+                ))
             );
-        } else
-        {
-            print(beautify(mts.returnType.toString()) + ' ');
-            print(functionName);
-            print(
-                method.runtimeInvisibleParameterAnnotationsAttribute,
-                method.runtimeVisibleParameterAnnotationsAttribute,
-                mts.parameterTypes,
-                method,
-                (method.accessFlags & ACC_STATIC) == 0 ? (short) 1 : (short) 0,
-                (method.accessFlags & ACC_VARARGS) != 0
-            );
-        }
 
-        // Thrown types.
-        if (mts.thrownTypes != null && !mts.thrownTypes.isEmpty()) {
-            Iterator<ThrowsSignature> it = mts.thrownTypes.iterator();
-            print(" throws " + beautify(it.next().toString()));
-            while (it.hasNext()) print(", " + beautify(it.next().toString()));
-        } else
-        if (method.exceptionsAttribute != null && !method.exceptionsAttribute.exceptionNames.isEmpty()) {
-            Iterator<ConstantClassInfo> it = method.exceptionsAttribute.exceptionNames.iterator();
-            print(" throws " + beautify(it.next().name));
-            while (it.hasNext()) print(", " + beautify(it.next().name));
-        }
+            // Print formal type parameters.
+            MethodTypeSignature mts;
+            {
+                SignatureAttribute sa = method.signatureAttribute;
+                mts = sa == null ? decodeMethodDescriptor(method.descriptor) : decodeMethodTypeSignature(sa.signature);
+                if (!mts.formalTypeParameters.isEmpty()) {
+                        Iterator<FormalTypeParameter> it = mts.formalTypeParameters.iterator();
+                    print("<" + beautify(it.next().toString()));
+                    while (it.hasNext()) print(", " + beautify(it.next().toString()));
+                    print(">");
+                }
+            }
 
-        // Annotation default.
-        if (method.annotationDefaultAttribute != null) {
-            print("default " + method.annotationDefaultAttribute.defaultValue);
-        }
-
-        // Code.
-        if (method.codeAttribute == null) {
-            println(";");
-        } else {
-            println(" {");
-            CodeAttribute ca = method.codeAttribute;
-            try {
-                disasmBytecode(
-                    new ByteArrayInputStream(ca.code),
-                    ca.exceptionTable,
-                    ca.lineNumberTableAttribute,
-                    sourceLines,
-                    cf.constantPool,
-                    method
-                );
-            } catch (IOException ignored) {
+            // Print method name.
+            List<ConstantClassInfo> exceptionNames;
+            {
+                ExceptionsAttribute ea = method.exceptionsAttribute;
+                exceptionNames = ea == null ? NO_CONSTANT_CLASS_INFOS : ea.exceptionNames;
+            }
+            if (
+                "<clinit>".equals(functionName)
+                && (method.accessFlags & ACC_STATIC) != 0
+                && exceptionNames.isEmpty()
+                && mts.formalTypeParameters.isEmpty()
+                && mts.parameterTypes.isEmpty()
+                && mts.returnType == SignatureParser.VOID
+                && mts.thrownTypes.isEmpty()
+            ) {
                 ;
+            } else
+            if (
+                "<init>".equals(functionName)
+                && (method.accessFlags & (ACC_ABSTRACT | ACC_FINAL | ACC_INTERFACE | ACC_STATIC)) == 0
+                && mts.formalTypeParameters.isEmpty()
+                && mts.returnType == SignatureParser.VOID
+            ) {
+                print(beautify(cf.thisClassName));
+                printParameters(
+                    method.runtimeInvisibleParameterAnnotationsAttribute,
+                    method.runtimeVisibleParameterAnnotationsAttribute,
+                    mts.parameterTypes,
+                    method,
+                    (short) 1,
+                    (method.accessFlags & ACC_VARARGS) != 0
+                );
+            } else
+            {
+                print(beautify(mts.returnType.toString()) + ' ');
+                print(functionName);
+                printParameters(
+                    method.runtimeInvisibleParameterAnnotationsAttribute,
+                    method.runtimeVisibleParameterAnnotationsAttribute,
+                    mts.parameterTypes,
+                    method,
+                    (method.accessFlags & ACC_STATIC) == 0 ? (short) 1 : (short) 0,
+                    (method.accessFlags & ACC_VARARGS) != 0
+                );
             }
-            println("    }");
-        }
 
-        // Print method attributes.
-        print(method.attributes, "    // ", new Attribute[] {
-            method.annotationDefaultAttribute,
-            method.codeAttribute,
-            method.deprecatedAttribute,
-            method.exceptionsAttribute,
-            method.runtimeInvisibleAnnotationsAttribute,
-            method.runtimeInvisibleParameterAnnotationsAttribute,
-            method.runtimeVisibleAnnotationsAttribute,
-            method.runtimeVisibleParameterAnnotationsAttribute,
-            method.signatureAttribute,
-            method.syntheticAttribute,
+            // Thrown types.
+            if (!mts.thrownTypes.isEmpty()) {
+                Iterator<ThrowsSignature> it = mts.thrownTypes.iterator();
+                print(" throws " + beautify(it.next().toString()));
+                while (it.hasNext()) print(", " + beautify(it.next().toString()));
+            } else
+            if (!exceptionNames.isEmpty()) {
+                Iterator<ConstantClassInfo> it = exceptionNames.iterator();
+                print(" throws " + beautify(it.next().name));
+                while (it.hasNext()) print(", " + beautify(it.next().name));
+            }
+
+            // Annotation default.
+            {
+                AnnotationDefaultAttribute ada = method.annotationDefaultAttribute;
+                if (ada != null) print("default " + ada.defaultValue);
+            }
+
+            // Code.
+            {
+                CodeAttribute ca = method.codeAttribute;
+                if (ca == null) {
+                    println(";");
+                } else {
+                    println(" {");
+                    try {
+                        disassembleBytecode(
+                            new ByteArrayInputStream(ca.code),
+                            ca.exceptionTable,
+                            ca.lineNumberTableAttribute,
+                            sourceLines,
+                            cf.constantPool,
+                            method
+                        );
+                    } catch (IOException ignored) {
+                        ;
+                    }
+                    println("    }");
+                }
+            }
+
+            // Print method attributes.
+            printAttributes(method.attributes, "    // ", new Attribute[] {
+                method.annotationDefaultAttribute,
+                method.codeAttribute,
+                method.deprecatedAttribute,
+                method.exceptionsAttribute,
+                method.runtimeInvisibleAnnotationsAttribute,
+                method.runtimeInvisibleParameterAnnotationsAttribute,
+                method.runtimeVisibleAnnotationsAttribute,
+                method.runtimeVisibleParameterAnnotationsAttribute,
+                method.signatureAttribute,
+                method.syntheticAttribute,
             }, AttributeVisitor.Context.METHOD);
         } catch (RuntimeException rte) {
             throw new RuntimeException("Method '" + method.name + "' " + method.descriptor, rte);
@@ -639,19 +670,21 @@ class Disassembler {
     }
 
     private void
-    disasm(List<Field> fields) {
+    disassembleFields(List<Field> fields) {
         for (Field field : fields) {
             println();
 
             // Print field annotations.
-            if (field.runtimeInvisibleAnnotationsAttribute != null) {
-                for (Annotation a : field.runtimeInvisibleAnnotationsAttribute.annotations) {
-                    println("    " + a.toString());
+            {
+                RuntimeInvisibleAnnotationsAttribute riaa = field.runtimeInvisibleAnnotationsAttribute;
+                if (riaa != null) {
+                    for (Annotation a : riaa.annotations) println("    " + a.toString());
                 }
             }
-            if (field.runtimeVisibleAnnotationsAttribute != null) {
-                for (Annotation a : field.runtimeVisibleAnnotationsAttribute.annotations) {
-                    println("    " + a.toString());
+            {
+                RuntimeVisibleAnnotationsAttribute rvaa = field.runtimeVisibleAnnotationsAttribute;
+                if (rvaa != null) {
+                    for (Annotation a : rvaa.annotations) println("    " + a.toString());
                 }
             }
 
@@ -664,27 +697,34 @@ class Disassembler {
             if (field.deprecatedAttribute != null) println("    /** @deprecated */");
 
             // Print field access flags and field type.
-            String parametrizedType = beautify(
-                field.signatureAttribute == null
-                ? decodeFieldDescriptor(field.descriptor).toString()
-                : decodeFieldTypeSignature(field.signatureAttribute.signature).toString()
-            );
-            String prefix = (
-                "    "
-                + decodeAccess((short) (field.accessFlags & ~ACC_SYNTHETIC))
-                + parametrizedType
-                + " "
-            );
+            String parametrizedType;
+            {
+                SignatureAttribute sa = field.signatureAttribute;
+                parametrizedType = beautify(
+                    sa == null
+                    ? decodeFieldDescriptor(field.descriptor).toString()
+                    : decodeFieldTypeSignature(sa.signature).toString()
+                );
+            }
 
             // Print field name and initializer.
-            if (field.constantValueAttribute == null) {
-                printf("%-40s %s;%n", prefix, field.name);
-            } else {
-                printf("%-40s %-15s = %s;%n", prefix, field.name, field.constantValueAttribute.constantValue);
+            {
+                String prefix = (
+                    "    "
+                    + decodeAccess((short) (field.accessFlags & ~ACC_SYNTHETIC))
+                    + parametrizedType
+                    + " "
+                );
+                ConstantValueAttribute cva = field.constantValueAttribute;
+                if (cva == null) {
+                    printf("%-40s %s;%n", prefix, field.name);
+                } else {
+                    printf("%-40s %-15s = %s;%n", prefix, field.name, cva.constantValue);
+                }
             }
 
             // Print field attributes.
-            print(field.attributes, "    // ", new Attribute[] {
+            printAttributes(field.attributes, "    // ", new Attribute[] {
                 field.constantValueAttribute,
                 field.deprecatedAttribute,
                 field.runtimeInvisibleAnnotationsAttribute,
@@ -697,21 +737,24 @@ class Disassembler {
 
     String
     toString(InnerClassesAttribute.ClasS c) {
+        ConstantClassInfo oci = c.outerClassInfo;
+        ConstantClassInfo ici = c.innerClassInfo;
         return (
-            (c.outerClassInfo == null ? "[local class]" : beautify(c.outerClassInfo.name))
+            (oci == null ? "[local class]" : beautify(oci.name))
             + " { "
             + decodeAccess((short) (c.innerClassAccessFlags & ( // Hide ABSTRACT and STATIC for interfaces
                 (c.innerClassAccessFlags & ACC_INTERFACE) != 0
                 ? (~ACC_ABSTRACT & ~ACC_STATIC)
                 : 0xffff
             )))
-            + (c.innerClassInfo == null ? "[???]" : beautify(c.innerClassInfo.name)) + " }"
+            + ((c.innerClassAccessFlags & (ACC_ENUM | ACC_ANNOTATION | ACC_INTERFACE)) == 0 ? "class " : "")
+            + beautify(ici.name) + " }"
         );
     }
 
-    private void print(
-        List<Attribute> attributes,
-        String          prefix,
+    private void printAttributes(
+        List<Attribute>          attributes,
+        String                   prefix,
         Attribute[]              excludedAttributes,
         AttributeVisitor.Context context
     ) {
@@ -720,18 +763,16 @@ class Disassembler {
         // Strip excluded attributes.
         if (!this.verbose) {
             tmp.removeAll(Arrays.asList(excludedAttributes));
-            }
+        }
         if (tmp.isEmpty()) return;
 
         Collections.sort(tmp, new Comparator<Attribute>() {
-            public int compare(Attribute a1, Attribute a2) { return a1.getName().compareTo(a2.getName()); }
+            @Override public int compare(Attribute a1, Attribute a2) { return a1.getName().compareTo(a2.getName()); }
         });
 
         println(prefix + (this.verbose ? "Attributes:" : "Unprocessed attributes:"));
         PrintAttributeVisitor visitor = new PrintAttributeVisitor(prefix + "  ", context);
-        for (Attribute a : tmp) {
-            a.accept(visitor);
-        }
+        for (Attribute a : tmp) a.accept(visitor);
     }
 
     /**
@@ -749,30 +790,28 @@ class Disassembler {
             this.context = context;
         }
 
-        public void
+        @Override public void
         visit(AnnotationDefaultAttribute ada) {
             println(this.prefix + "AnnotationDefault:");
             println(this.prefix + "  " + ada.defaultValue.toString());
         }
 
-        public void
+        @Override public void
         visit(CodeAttribute ca) {
             println(this.prefix + "Code:");
             println(this.prefix + "  max_locals = " + ca.maxLocals);
             println(this.prefix + "  max_stack = " + ca.maxStack);
 
-            if (ca.code != null) {
-                println(this.prefix + "  code = {");
-                print(ca.code);
-                println(this.prefix + "  }");
-            }
+            println(this.prefix + "  code = {");
+            print(ca.code);
+            println(this.prefix + "  }");
 
             if (!ca.attributes.isEmpty()) {
                 println(this.prefix + "  attributes = {");
                 PrintAttributeVisitor pav = new PrintAttributeVisitor(this.prefix + "    ", Context.METHOD);
                 List<Attribute> tmp = ca.attributes;
                 Collections.sort(tmp, new Comparator<Attribute>() {
-                    public int compare(Attribute a1, Attribute a2) { return a1.getName().compareTo(a2.getName()); }
+                    @Override public int compare(Attribute a1, Attribute a2) { return a1.getName().compareTo(a2.getName()); }
                 });
                 for (Attribute a : tmp) {
                     a.accept(pav);
@@ -794,31 +833,30 @@ class Disassembler {
             }
         }
 
-        public void
+        @Override public void
         visit(ConstantValueAttribute cva) {
             println(this.prefix + "ConstantValue:");
             println(this.prefix + "  constant_value = " + cva.constantValue);
         }
 
-        public void
+        @Override public void
         visit(DeprecatedAttribute da) {
             println(this.prefix + "DeprecatedAttribute:");
             println(this.prefix + "  -");
         }
 
-        public void
+        @Override public void
         visit(EnclosingMethodAttribute ema) {
             println(this.prefix + "EnclosingMethod:");
+            ConstantNameAndTypeInfo m = ema.method;
             println(this.prefix + "  class/method = " + (
-                ema.optionalMethod == null
+                m == null
                 ? "(none)"
-                : beautify(decodeMethodDescriptor(
-                    ema.optionalMethod.descriptor.bytes
-                ).toString(ema.clasS.name, ema.optionalMethod.name.bytes))
+                : beautify(decodeMethodDescriptor(m.descriptor.bytes).toString(ema.clasS.name, m.name.bytes))
             ));
         }
 
-        public void
+        @Override public void
         visit(ExceptionsAttribute ea) {
             println(this.prefix + "Exceptions:");
             for (ConstantClassInfo en : ea.exceptionNames) {
@@ -826,7 +864,7 @@ class Disassembler {
             }
         }
 
-        public void
+        @Override public void
         visit(InnerClassesAttribute ica) {
             println(this.prefix + "InnerClasses:");
             for (InnerClassesAttribute.ClasS c : ica.classes) {
@@ -834,7 +872,7 @@ class Disassembler {
             }
         }
 
-        public void
+        @Override public void
         visit(LineNumberTableAttribute lnta) {
             println(this.prefix + "LineNumberTable:");
             for (LineNumberTableEntry e : lnta.entries) {
@@ -842,7 +880,7 @@ class Disassembler {
             }
         }
 
-        public void
+        @Override public void
         visit(LocalVariableTableAttribute lvta) {
             println(this.prefix + "LocalVariableTable:");
             for (LocalVariableTableAttribute.Entry e : lvta.entries) {
@@ -862,7 +900,7 @@ class Disassembler {
             }
         }
 
-        public void
+        @Override public void
         visit(LocalVariableTypeTableAttribute lvtta) {
             println(this.prefix + "LocalVariableTypeTable:");
             for (LocalVariableTypeTableAttribute.Entry e : lvtta.entries) {
@@ -882,7 +920,7 @@ class Disassembler {
             }
         }
 
-        public void
+        @Override public void
         visit(RuntimeInvisibleAnnotationsAttribute riaa) {
             println(this.prefix + "RuntimeInvisibleAnnotations:");
             for (Annotation a : riaa.annotations) {
@@ -890,7 +928,7 @@ class Disassembler {
             }
         }
 
-        public void
+        @Override public void
         visit(RuntimeVisibleAnnotationsAttribute rvaa) {
             println(this.prefix + "RuntimeVisibleAnnotations:");
             for (Annotation a : rvaa.annotations) {
@@ -898,7 +936,7 @@ class Disassembler {
             }
         }
 
-        public void
+        @Override public void
         visit(RuntimeInvisibleParameterAnnotationsAttribute ripaa) {
             println(this.prefix + "RuntimeInvisibleParameterAnnotations:");
             for (ParameterAnnotation pa : ripaa.parameterAnnotations) {
@@ -908,7 +946,7 @@ class Disassembler {
             }
         }
 
-        public void
+        @Override public void
         visit(RuntimeVisibleParameterAnnotationsAttribute rvpaa) {
             println(this.prefix + "RuntimeVisibleParameterAnnotations:");
             for (ParameterAnnotation pa : rvpaa.parameterAnnotations) {
@@ -918,7 +956,7 @@ class Disassembler {
             }
         }
 
-        public void
+        @Override public void
         visit(SignatureAttribute sa) {
             println(this.prefix + "Signature:");
             switch (this.context) {
@@ -934,19 +972,19 @@ class Disassembler {
             }
         }
 
-        public void
+        @Override public void
         visit(SourceFileAttribute sfa) {
             println(this.prefix + "SourceFile:");
             println(this.prefix + "  " + sfa.sourceFile);
         }
 
-        public void
+        @Override public void
         visit(SyntheticAttribute sa) {
             println(this.prefix + "Synthetic:");
             println(this.prefix + " -");
         }
 
-        public void
+        @Override public void
         visit(UnknownAttribute ua) {
             println(this.prefix + ua.name + ":");
             println(this.prefix + "  data = {");
@@ -955,13 +993,13 @@ class Disassembler {
         }
     }
 
-    private void print(
-        RuntimeInvisibleParameterAnnotationsAttribute ripaa,
-        RuntimeVisibleParameterAnnotationsAttribute   rvpaa,
-        List<TypeSignature>                           parameterTypes,
-        Method                                        method,
-        short                                         firstIndex,
-        boolean                                       varargs
+    private void printParameters(
+        @Nullable RuntimeInvisibleParameterAnnotationsAttribute ripaa,
+        @Nullable RuntimeVisibleParameterAnnotationsAttribute   rvpaa,
+        List<TypeSignature>                                     parameterTypes,
+        Method                                                  method,
+        short                                                   firstIndex,
+        boolean                                                 varargs
     ) {
         Iterator<ParameterAnnotation> ipas = (
             ripaa == null
@@ -1005,13 +1043,13 @@ class Disassembler {
     /**
      * Read byte code from the given {@link InputStream} and disassemble it.
      */
-    private void disasmBytecode(
-        InputStream               is,
-        List<ExceptionTableEntry> exceptionTable,
-        LineNumberTableAttribute  lineNumberTableAttribute,
-        Map<Integer, String>      sourceLines,
-        ConstantPool              cp,
-        Method                    method
+    private void disassembleBytecode(
+        InputStream                        is,
+        List<ExceptionTableEntry>          exceptionTable,
+        @Nullable LineNumberTableAttribute lineNumberTableAttribute,
+        Map<Integer, String>               sourceLines,
+        ConstantPool                       cp,
+        Method                             method
     ) throws IOException {
         CountingInputStream cis = new CountingInputStream(is);
         DataInputStream     dis = new DataInputStream(cis);
@@ -1021,8 +1059,8 @@ class Disassembler {
 
             // Analyze TRY bodies.
 
-            // startPC => [ endPC ]
-            SortedMap<Integer, List<Integer>> tryStarts = new TreeMap<Integer, List<Integer>>();
+            // startPC => { endPC }
+            SortedMap<Integer, Set<Integer>> tryStarts = new TreeMap<Integer, Set<Integer>>();
 
             // endPC => startPC => [ ExceptionTableEntry ]
             SortedMap<Integer, SortedMap<Integer, List<ExceptionTableEntry>>> tryEnds = (
@@ -1033,12 +1071,12 @@ class Disassembler {
 
                 // Register the entry in "tryStarts".
                 {
-                    List<Integer> l = tryStarts.get(e.startPC);
-                    if (l == null) {
-                        l = new ArrayList<Integer>();
-                        tryStarts.put(e.startPC, l);
+                    Set<Integer> s = tryStarts.get(e.startPC);
+                    if (s == null) {
+                        s = new HashSet<Integer>();
+                        tryStarts.put(e.startPC, s);
                     }
-                    l.add(e.endPC);
+                    s.add(e.endPC);
                 }
 
                 // Register the entry in "tryEnds".
@@ -1055,7 +1093,6 @@ class Disassembler {
                     }
                     l.add(e);
                 }
-                addBranchTarget(e.handlerPC);
             }
 
             // Disassemble the byte code into a sequence of lines.
@@ -1071,13 +1108,13 @@ class Disassembler {
                     lines.put(instructionOffset, "??? (invalid opcode \"" + opcode + "\")");
                 } else {
                     try {
-                    lines.put(instructionOffset, instruction.getMnemonic() + disasmOperands(
-                        instruction.getOperands(),
-                        dis,
-                        instructionOffset,
-                        method,
-                        cp
-                    ));
+                        lines.put(instructionOffset, instruction.getMnemonic() + disassembleOperands(
+                            instruction.getOperands(),
+                            dis,
+                            instructionOffset,
+                            method,
+                            cp
+                        ));
                     } catch (RuntimeException rte) {
                         for (Iterator<Entry<Integer, String>> it = lines.entrySet().iterator(); it.hasNext();) {
                             Entry<Integer, String> e = it.next();
@@ -1110,11 +1147,8 @@ class Disassembler {
                         print(indentation + "} catch (");
                         for (Iterator<ExceptionTableEntry> it2 = etes.iterator();;) {
                             ExceptionTableEntry ete = it2.next();
-                            print(
-                                (ete.catchType == null ? "[all exceptions]" : beautify(ete.catchType.name))
-                                + " => "
-                                + ete.handlerPC
-                            );
+                            ConstantClassInfo ct = ete.catchType;
+                            print((ct == null ? "[all exceptions]" : beautify(ct.name)) + " => " + branchTarget(ete.handlerPC));
                             if (!it2.hasNext()) break;
                             print(", ");
                         }
@@ -1125,13 +1159,13 @@ class Disassembler {
 
                 // Print instruction offsets only for branch targets.
                 {
-                	String label = getBranchTarget(instructionOffset);
+                	String label = this.branchTargets.get(instructionOffset);
                 	if (label != null) this.println(label);
                 }
 
                 // Print beginnings of TRY bodies.
-                for (Iterator<Entry<Integer, List<Integer>>> it = tryStarts.entrySet().iterator(); it.hasNext();) {
-                    Entry<Integer, List<Integer>> sc = it.next();
+                for (Iterator<Entry<Integer, Set<Integer>>> it = tryStarts.entrySet().iterator(); it.hasNext();) {
+                    Entry<Integer, Set<Integer>> sc = it.next();
                     Integer startPC = sc.getKey();
                     if (startPC > instructionOffset) break;
 
@@ -1180,14 +1214,16 @@ class Disassembler {
         }
     }
 
-	String
-	getBranchTarget(int offset) {
-		return this.branchTargets.get(offset);
-	}
-
-	void
-	addBranchTarget(int offset) {
-		this.branchTargets.put(offset, this.symbolicLabels ? "L" + this.branchTargets.size() : "#" + offset);
+	private @Nullable String
+	branchTarget(int offset) {
+		Map<Integer, String> bts = this.branchTargets;
+		assert bts != null;
+        String label = bts.get(offset);
+        if (label == null) {
+            label = this.symbolicLabels ? "L" + (1 + bts.size()) : "#" + offset;
+            bts.put(offset, label);
+        }
+        return label;
 	}
 
     /**
@@ -1204,19 +1240,18 @@ class Disassembler {
     }
 
     /**
-     * @return The {@code instruction} converted into one line of text.
+     * @return The {@code operands} converted into one line of text, prefixed and separated by one space.
      */
-    String disasmOperands(
+    String disassembleOperands(
         Operand[]       operands,
         DataInputStream dis,
         int             instructionOffset,
         Method          method,
         ConstantPool    cp
     ) throws IOException {
-        if (operands == null) return "";
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < operands.length; ++i) {
-            sb.append(operands[i].disasm(
+            sb.append(operands[i].disassemble(
                 dis,
                 instructionOffset,
                 method,
@@ -1227,243 +1262,247 @@ class Disassembler {
         return sb.toString();
     }
 
-    private static final Instruction[] OPCODE_TO_INSTRUCTION = compileInstructions(new String[] {
-        "50  aaload",
-        "83  aastore",
-        "1   aconst_null",
-        "25  aload           localvariableindex1",
-        "42  aload_0         implicitlocalvariableindex",
-        "43  aload_1         implicitlocalvariableindex",
-        "44  aload_2         implicitlocalvariableindex",
-        "45  aload_3         implicitlocalvariableindex",
-        "189 anewarray       class2",
-        "176 areturn",
-        "190 arraylength",
-        "58  astore          localvariableindex1",
-        "75  astore_0        implicitlocalvariableindex",
-        "76  astore_1        implicitlocalvariableindex",
-        "77  astore_2        implicitlocalvariableindex",
-        "78  astore_3        implicitlocalvariableindex",
-        "191 athrow",
-        "51  baload",
-        "84  bastore",
-        "16  bipush          signedbyte",
-        "52  caload",
-        "85  castore",
-        "192 checkcast       class2",
-        "144 d2f",
-        "142 d2i",
-        "143 d2l",
-        "99  dadd",
-        "49  daload",
-        "82  dastore",
-        "152 dcmpg",
-        "151 dcmpl",
-        "14  dconst_0",
-        "15  dconst_1",
-        "111 ddiv",
-        "24  dload           localvariableindex1",
-        "38  dload_0         implicitlocalvariableindex",
-        "39  dload_1         implicitlocalvariableindex",
-        "40  dload_2         implicitlocalvariableindex",
-        "41  dload_3         implicitlocalvariableindex",
-        "107 dmul",
-        "119 dneg",
-        "115 drem",
-        "175 dreturn",
-        "57  dstore          localvariableindex1",
-        "71  dstore_0        implicitlocalvariableindex",
-        "72  dstore_1        implicitlocalvariableindex",
-        "73  dstore_2        implicitlocalvariableindex",
-        "74  dstore_3        implicitlocalvariableindex",
-        "103 dsub",
-        "89  dup",
-        "90  dup_x1",
-        "91  dup_x2",
-        "92  dup2",
-        "93  dup2_x1",
-        "94  dup2_x2",
-        "141 f2d",
-        "139 f2i",
-        "140 f2l",
-        "98  fadd",
-        "48  faload",
-        "81  fastore",
-        "150 fcmpg",
-        "149 fcmpl",
-        "11  fconst_0",
-        "12  fconst_1",
-        "13  fconst_2",
-        "110 fdiv",
-        "23  fload           localvariableindex1",
-        "34  fload_0         implicitlocalvariableindex",
-        "35  fload_1         implicitlocalvariableindex",
-        "36  fload_2         implicitlocalvariableindex",
-        "37  fload_3         implicitlocalvariableindex",
-        "106 fmul",
-        "118 fneg",
-        "114 frem",
-        "174 freturn",
-        "56  fstore          localvariableindex1",
-        "67  fstore_0        implicitlocalvariableindex",
-        "68  fstore_1        implicitlocalvariableindex",
-        "69  fstore_2        implicitlocalvariableindex",
-        "70  fstore_3        implicitlocalvariableindex",
-        "102 fsub",
-        "180 getfield        fieldref2",
-        "178 getstatic       fieldref2",
-        "167 goto            branchoffset2",
-        "200 goto_w          branchoffset4",
-        "145 i2b",
-        "146 i2c",
-        "135 i2d",
-        "134 i2f",
-        "133 i2l",
-        "147 i2s",
-        "96  iadd",
-        "46  iaload",
-        "126 iand",
-        "79  iastore",
-        "2   iconst_m1",
-        "3   iconst_0",
-        "4   iconst_1",
-        "5   iconst_2",
-        "6   iconst_3",
-        "7   iconst_4",
-        "8   iconst_5",
-        "108 idiv",
-        "165 if_acmpeq       branchoffset2",
-        "166 if_acmpne       branchoffset2",
-        "159 if_icmpeq       branchoffset2",
-        "160 if_icmpne       branchoffset2",
-        "161 if_icmplt       branchoffset2",
-        "162 if_icmpge       branchoffset2",
-        "163 if_icmpgt       branchoffset2",
-        "164 if_icmple       branchoffset2",
-        "153 ifeq            branchoffset2",
-        "154 ifne            branchoffset2",
-        "155 iflt            branchoffset2",
-        "156 ifge            branchoffset2",
-        "157 ifgt            branchoffset2",
-        "158 ifle            branchoffset2",
-        "199 ifnonnull       branchoffset2",
-        "198 ifnull          branchoffset2",
-        "132 iinc            localvariableindex1 signedbyte",
-        "21  iload           localvariableindex1",
-        "26  iload_0         implicitlocalvariableindex",
-        "27  iload_1         implicitlocalvariableindex",
-        "28  iload_2         implicitlocalvariableindex",
-        "29  iload_3         implicitlocalvariableindex",
-        "104 imul",
-        "116 ineg",
-        "193 instanceof      class2",
-    //      "186 invokedynamic   invokedynamic2", // For Java 7; see http://cr.openjdk.java.net/~jrose/pres/indy-javadoc-mlvm/java/lang/invoke/package-summary.html
-        "185 invokeinterface interfacemethodref2",
-        "183 invokespecial   methodref2",
-        "184 invokestatic    methodref2",
-        "182 invokevirtual   methodref2",
-        "128 ior",
-        "112 irem",
-        "172 ireturn",
-        "120 ishl",
-        "122 ishr",
-        "54  istore          localvariableindex1",
-        "59  istore_0        implicitlocalvariableindex",
-        "60  istore_1        implicitlocalvariableindex",
-        "61  istore_2        implicitlocalvariableindex",
-        "62  istore_3        implicitlocalvariableindex",
-        "100 isub",
-        "124 iushr",
-        "130 ixor",
-        "168 jsr             branchoffset2",
-        "201 jsr_w           branchoffset4",
-        "138 l2d",
-        "137 l2f",
-        "136 l2i",
-        "97  ladd",
-        "47  laload",
-        "127 land",
-        "80  lastore",
-        "148 lcmp",
-        "9   lconst_0",
-        "10  lconst_1",
-        "18  ldc             intfloatclassstring1",
-        "19  ldc_w           intfloatclassstring2",
-        "20  ldc2_w          longdouble2",
-        "109 ldiv",
-        "22  lload           localvariableindex1",
-        "30  lload_0         implicitlocalvariableindex",
-        "31  lload_1         implicitlocalvariableindex",
-        "32  lload_2         implicitlocalvariableindex",
-        "33  lload_3         implicitlocalvariableindex",
-        "105 lmul",
-        "117 lneg",
-        "171 lookupswitch    lookupswitch",
-        "129 lor",
-        "113 lrem",
-        "173 lreturn",
-        "121 lshl",
-        "123 lshr",
-        "55  lstore          localvariableindex1",
-        "63  lstore_0        implicitlocalvariableindex",
-        "64  lstore_1        implicitlocalvariableindex",
-        "65  lstore_2        implicitlocalvariableindex",
-        "66  lstore_3        implicitlocalvariableindex",
-        "101 lsub",
-        "125 lushr",
-        "131 lxor",
-        "194 monitorenter",
-        "195 monitorexit",
-        "197 multianewarray  class2 unsignedbyte",
-        "187 new             class2",
-        "188 newarray        atype",
-        "0   nop",
-        "87  pop",
-        "88  pop2",
-        "181 putfield        fieldref2",
-        "179 putstatic       fieldref2",
-        "169 ret             localvariableindex1",
-        "177 return",
-        "53  saload",
-        "86  sastore",
-        "17  sipush          signedshort",
-        "95  swap",
-        "170 tableswitch     tableswitch",
-        "196 wide            wide",
-    });
+    private static final Instruction[] OPCODE_TO_INSTRUCTION = compileInstructions(
+        "50  aaload\n" +
+        "83  aastore\n" +
+        "1   aconst_null\n" +
+        "25  aload           localvariableindex1\n" +
+        "42  aload_0         implicitlocalvariableindex\n" +
+        "43  aload_1         implicitlocalvariableindex\n" +
+        "44  aload_2         implicitlocalvariableindex\n" +
+        "45  aload_3         implicitlocalvariableindex\n" +
+        "189 anewarray       class2\n" +
+        "176 areturn\n" +
+        "190 arraylength\n" +
+        "58  astore          localvariableindex1\n" +
+        "75  astore_0        implicitlocalvariableindex\n" +
+        "76  astore_1        implicitlocalvariableindex\n" +
+        "77  astore_2        implicitlocalvariableindex\n" +
+        "78  astore_3        implicitlocalvariableindex\n" +
+        "191 athrow\n" +
+        "51  baload\n" +
+        "84  bastore\n" +
+        "16  bipush          signedbyte\n" +
+        "52  caload\n" +
+        "85  castore\n" +
+        "192 checkcast       class2\n" +
+        "144 d2f\n" +
+        "142 d2i\n" +
+        "143 d2l\n" +
+        "99  dadd\n" +
+        "49  daload\n" +
+        "82  dastore\n" +
+        "152 dcmpg\n" +
+        "151 dcmpl\n" +
+        "14  dconst_0\n" +
+        "15  dconst_1\n" +
+        "111 ddiv\n" +
+        "24  dload           localvariableindex1\n" +
+        "38  dload_0         implicitlocalvariableindex\n" +
+        "39  dload_1         implicitlocalvariableindex\n" +
+        "40  dload_2         implicitlocalvariableindex\n" +
+        "41  dload_3         implicitlocalvariableindex\n" +
+        "107 dmul\n" +
+        "119 dneg\n" +
+        "115 drem\n" +
+        "175 dreturn\n" +
+        "57  dstore          localvariableindex1\n" +
+        "71  dstore_0        implicitlocalvariableindex\n" +
+        "72  dstore_1        implicitlocalvariableindex\n" +
+        "73  dstore_2        implicitlocalvariableindex\n" +
+        "74  dstore_3        implicitlocalvariableindex\n" +
+        "103 dsub\n" +
+        "89  dup\n" +
+        "90  dup_x1\n" +
+        "91  dup_x2\n" +
+        "92  dup2\n" +
+        "93  dup2_x1\n" +
+        "94  dup2_x2\n" +
+        "141 f2d\n" +
+        "139 f2i\n" +
+        "140 f2l\n" +
+        "98  fadd\n" +
+        "48  faload\n" +
+        "81  fastore\n" +
+        "150 fcmpg\n" +
+        "149 fcmpl\n" +
+        "11  fconst_0\n" +
+        "12  fconst_1\n" +
+        "13  fconst_2\n" +
+        "110 fdiv\n" +
+        "23  fload           localvariableindex1\n" +
+        "34  fload_0         implicitlocalvariableindex\n" +
+        "35  fload_1         implicitlocalvariableindex\n" +
+        "36  fload_2         implicitlocalvariableindex\n" +
+        "37  fload_3         implicitlocalvariableindex\n" +
+        "106 fmul\n" +
+        "118 fneg\n" +
+        "114 frem\n" +
+        "174 freturn\n" +
+        "56  fstore          localvariableindex1\n" +
+        "67  fstore_0        implicitlocalvariableindex\n" +
+        "68  fstore_1        implicitlocalvariableindex\n" +
+        "69  fstore_2        implicitlocalvariableindex\n" +
+        "70  fstore_3        implicitlocalvariableindex\n" +
+        "102 fsub\n" +
+        "180 getfield        fieldref2\n" +
+        "178 getstatic       fieldref2\n" +
+        "167 goto            branchoffset2\n" +
+        "200 goto_w          branchoffset4\n" +
+        "145 i2b\n" +
+        "146 i2c\n" +
+        "135 i2d\n" +
+        "134 i2f\n" +
+        "133 i2l\n" +
+        "147 i2s\n" +
+        "96  iadd\n" +
+        "46  iaload\n" +
+        "126 iand\n" +
+        "79  iastore\n" +
+        "2   iconst_m1\n" +
+        "3   iconst_0\n" +
+        "4   iconst_1\n" +
+        "5   iconst_2\n" +
+        "6   iconst_3\n" +
+        "7   iconst_4\n" +
+        "8   iconst_5\n" +
+        "108 idiv\n" +
+        "165 if_acmpeq       branchoffset2\n" +
+        "166 if_acmpne       branchoffset2\n" +
+        "159 if_icmpeq       branchoffset2\n" +
+        "160 if_icmpne       branchoffset2\n" +
+        "161 if_icmplt       branchoffset2\n" +
+        "162 if_icmpge       branchoffset2\n" +
+        "163 if_icmpgt       branchoffset2\n" +
+        "164 if_icmple       branchoffset2\n" +
+        "153 ifeq            branchoffset2\n" +
+        "154 ifne            branchoffset2\n" +
+        "155 iflt            branchoffset2\n" +
+        "156 ifge            branchoffset2\n" +
+        "157 ifgt            branchoffset2\n" +
+        "158 ifle            branchoffset2\n" +
+        "199 ifnonnull       branchoffset2\n" +
+        "198 ifnull          branchoffset2\n" +
+        "132 iinc            localvariableindex1 signedbyte\n" +
+        "21  iload           localvariableindex1\n" +
+        "26  iload_0         implicitlocalvariableindex\n" +
+        "27  iload_1         implicitlocalvariableindex\n" +
+        "28  iload_2         implicitlocalvariableindex\n" +
+        "29  iload_3         implicitlocalvariableindex\n" +
+        "104 imul\n" +
+        "116 ineg\n" +
+        "193 instanceof      class2\n" +
+    //      "186 invokedynamic   invokedynamic2\n" + // For Java 7; see http://cr.openjdk.java.net/~jrose/pres/indy-javadoc-mlvm/java/lang/invoke/package-summary.html
+        "185 invokeinterface interfacemethodref2\n" +
+        "183 invokespecial   methodref2\n" +
+        "184 invokestatic    methodref2\n" +
+        "182 invokevirtual   methodref2\n" +
+        "128 ior\n" +
+        "112 irem\n" +
+        "172 ireturn\n" +
+        "120 ishl\n" +
+        "122 ishr\n" +
+        "54  istore          localvariableindex1\n" +
+        "59  istore_0        implicitlocalvariableindex\n" +
+        "60  istore_1        implicitlocalvariableindex\n" +
+        "61  istore_2        implicitlocalvariableindex\n" +
+        "62  istore_3        implicitlocalvariableindex\n" +
+        "100 isub\n" +
+        "124 iushr\n" +
+        "130 ixor\n" +
+        "168 jsr             branchoffset2\n" +
+        "201 jsr_w           branchoffset4\n" +
+        "138 l2d\n" +
+        "137 l2f\n" +
+        "136 l2i\n" +
+        "97  ladd\n" +
+        "47  laload\n" +
+        "127 land\n" +
+        "80  lastore\n" +
+        "148 lcmp\n" +
+        "9   lconst_0\n" +
+        "10  lconst_1\n" +
+        "18  ldc             intfloatclassstring1\n" +
+        "19  ldc_w           intfloatclassstring2\n" +
+        "20  ldc2_w          longdouble2\n" +
+        "109 ldiv\n" +
+        "22  lload           localvariableindex1\n" +
+        "30  lload_0         implicitlocalvariableindex\n" +
+        "31  lload_1         implicitlocalvariableindex\n" +
+        "32  lload_2         implicitlocalvariableindex\n" +
+        "33  lload_3         implicitlocalvariableindex\n" +
+        "105 lmul\n" +
+        "117 lneg\n" +
+        "171 lookupswitch    lookupswitch\n" +
+        "129 lor\n" +
+        "113 lrem\n" +
+        "173 lreturn\n" +
+        "121 lshl\n" +
+        "123 lshr\n" +
+        "55  lstore          localvariableindex1\n" +
+        "63  lstore_0        implicitlocalvariableindex\n" +
+        "64  lstore_1        implicitlocalvariableindex\n" +
+        "65  lstore_2        implicitlocalvariableindex\n" +
+        "66  lstore_3        implicitlocalvariableindex\n" +
+        "101 lsub\n" +
+        "125 lushr\n" +
+        "131 lxor\n" +
+        "194 monitorenter\n" +
+        "195 monitorexit\n" +
+        "197 multianewarray  class2 unsignedbyte\n" +
+        "187 new             class2\n" +
+        "188 newarray        atype\n" +
+        "0   nop\n" +
+        "87  pop\n" +
+        "88  pop2\n" +
+        "181 putfield        fieldref2\n" +
+        "179 putstatic       fieldref2\n" +
+        "169 ret             localvariableindex1\n" +
+        "177 return\n" +
+        "53  saload\n" +
+        "86  sastore\n" +
+        "17  sipush          signedshort\n" +
+        "95  swap\n" +
+        "170 tableswitch     tableswitch\n" +
+        "196 wide            wide\n"
+    );
 
-    static final Instruction[] OPCODE_TO_WIDE_INSTRUCTION = compileInstructions(new String[] {
-        "21  iload           localvariableindex2",
-        "23  fload           localvariableindex2",
-        "25  aload           localvariableindex2",
-        "22  lload           localvariableindex2",
-        "24  dload           localvariableindex2",
-        "54  istore          localvariableindex2",
-        "56  fstore          localvariableindex2",
-        "58  astore          localvariableindex2",
-        "55  lstore          localvariableindex2",
-        "57  dstore          localvariableindex2",
-        "169 ret             localvariableindex2",
-        "132 iinc            localvariableindex2 signedshort",
-    });
+    static final Instruction[] OPCODE_TO_WIDE_INSTRUCTION = compileInstructions(
+        "21  iload           localvariableindex2\n" +
+        "23  fload           localvariableindex2\n" +
+        "25  aload           localvariableindex2\n" +
+        "22  lload           localvariableindex2\n" +
+        "24  dload           localvariableindex2\n" +
+        "54  istore          localvariableindex2\n" +
+        "56  fstore          localvariableindex2\n" +
+        "58  astore          localvariableindex2\n" +
+        "55  lstore          localvariableindex2\n" +
+        "57  dstore          localvariableindex2\n" +
+        "169 ret             localvariableindex2\n" +
+        "132 iinc            localvariableindex2 signedshort\n"
+    );
 
-    private static Instruction[] compileInstructions(String[] instructions) {
+    private static Instruction[] compileInstructions(String instructions) {
         Instruction[] result = new Instruction[256];
 
-        for (int j = 0; j < instructions.length; ++j) {
-            StringTokenizer st = new StringTokenizer(instructions[j]);
-            String os = st.nextToken();
+        for (StringTokenizer st1 = new StringTokenizer(instructions, "\n"); st1.hasMoreTokens();) {
+            StringTokenizer st2 = new StringTokenizer(st1.nextToken());
+            String os = st2.nextToken();
             int opcode = Integer.parseInt(os);
-            String mnemonic = st.nextToken();
-            Operand[] operands = null;
-            if (st.hasMoreTokens()) {
+            String mnemonic = st2.nextToken();
+            Operand[] operands;
+            if (!st2.hasMoreTokens()) {
+                operands = new Operand[0];
+            } else {
                 List<Operand> l = new ArrayList<Operand>();
-                while (st.hasMoreTokens()) {
-                    String s = st.nextToken();
+                while (st2.hasMoreTokens()) {
+                    String s = st2.nextToken();
                     Operand operand;
                     if (s.equals("intfloatclassstring1")) {
                         operand = new Operand() {
-                            public String disasm(
+
+                            @Override public String
+                            disassemble(
                                 DataInputStream dis,
                                 int             instructionOffset,
                                 Method          method,
@@ -1473,14 +1512,16 @@ class Disassembler {
                                 short index = (short) (0xff & dis.readByte());
                                 String t = cp.getIntegerFloatClassString(index);
                                 if (Character.isJavaIdentifierStart(t.charAt(0))) t = d.beautify(t);
-                                if (d.verbose) t += " (" + d.getBranchTarget(0xffff & index) + ")";
+                                if (d.verbose) t += " (" + (0xffff & index) + ")";
                                 return ' ' + t;
                             }
                         };
                     } else
                     if (s.equals("intfloatclassstring2")) {
                         operand = new Operand() {
-                            public String disasm(
+
+                            @Override public String
+                            disassemble(
                                 DataInputStream dis,
                                 int             instructionOffset,
                                 Method          method,
@@ -1490,14 +1531,16 @@ class Disassembler {
                                 short index = dis.readShort();
                                 String t = cp.getIntegerFloatClassString(index);
                                 if (Character.isJavaIdentifierStart(t.charAt(0))) t = d.beautify(t);
-                                if (d.verbose) t += " (" + d.getBranchTarget(0xffff & index) + ")";
+                                if (d.verbose) t += " (" + (0xffff & index) + ")";
                                 return ' ' + t;
                             }
                         };
                     } else
                     if (s.equals("longdouble2")) {
                         operand = new Operand() {
-                            public String disasm(
+
+                            @Override public String
+                            disassemble(
                                 DataInputStream dis,
                                 int             instructionOffset,
                                 Method          method,
@@ -1506,14 +1549,16 @@ class Disassembler {
                             ) throws IOException {
                                 short index = dis.readShort();
                                 String t = cp.getLongDoubleString(index);
-                                if (d.verbose) t += " (" + d.getBranchTarget(0xffff & index) + ")";
+                                if (d.verbose) t += " (" + (0xffff & index) + ")";
                                 return ' ' + t;
                             }
                         };
                     } else
                     if (s.equals("fieldref2")) {
                         operand = new Operand() {
-                            public String disasm(
+
+                            @Override public String
+                            disassemble(
                                 DataInputStream dis,
                                 int             instructionOffset,
                                 Method          method,
@@ -1521,7 +1566,7 @@ class Disassembler {
                                 Disassembler    d
                             ) throws IOException {
                                 short index = dis.readShort();
-                                ConstantFieldrefInfo fr = cp.getConstantFieldrefInfo(index);
+                                ConstantFieldrefInfo fr = cp.get(index, ConstantFieldrefInfo.class);
                                 String t = (
                                     d.beautify(d.decodeFieldDescriptor(fr.nameAndType.descriptor.bytes).toString())
                                     + ' '
@@ -1529,14 +1574,16 @@ class Disassembler {
                                     + '.'
                                     + fr.nameAndType.name.bytes
                                 );
-                                if (d.verbose) t += " (" + d.getBranchTarget(0xffff & index) + ")";
+                                if (d.verbose) t += " (" + (0xffff & index) + ")";
                                 return ' ' + t;
                             }
                         };
                     } else
                     if (s.equals("methodref2")) {
                         operand = new Operand() {
-                            public String disasm(
+
+                            @Override public String
+                            disassemble(
                                 DataInputStream dis,
                                 int             instructionOffset,
                                 Method          method,
@@ -1544,21 +1591,23 @@ class Disassembler {
                                 Disassembler    d
                             ) throws IOException {
                                 short index = dis.readShort();
-                                ConstantMethodrefInfo mr = cp.getConstantMethodrefInfo(index);
+                                ConstantMethodrefInfo mr = cp.get(index, ConstantMethodrefInfo.class);
                                 String t = d.beautify(
                                     d.decodeMethodDescriptor(mr.nameAndType.descriptor.bytes).toString(
                                         mr.clasS.name,
                                         mr.nameAndType.name.bytes
                                     )
                                 );
-                                if (d.verbose) t += " (" + d.getBranchTarget(0xffff & index) + ")";
+                                if (d.verbose) t += " (" + (0xffff & index) + ")";
                                 return ' ' + t;
                             }
                         };
                     } else
                     if (s.equals("interfacemethodref2")) {
                         operand = new Operand() {
-                            public String disasm(
+
+                            @Override public String
+                            disassemble(
                                 DataInputStream dis,
                                 int             instructionOffset,
                                 Method          method,
@@ -1566,7 +1615,7 @@ class Disassembler {
                                 Disassembler    d
                             ) throws IOException {
                                 short index = dis.readShort();
-                                ConstantInterfaceMethodrefInfo imr = cp.getConstantInterfaceMethodrefInfo(index);
+                                ConstantInterfaceMethodrefInfo imr = cp.get(index, ConstantInterfaceMethodrefInfo.class);
                                 dis.readByte();
                                 dis.readByte();
                                 String t = d.beautify(
@@ -1575,14 +1624,16 @@ class Disassembler {
                                         imr.nameAndType.name.bytes
                                     )
                                 );
-                                if (d.verbose) t += " (" + d.getBranchTarget(0xffff & index) + ")";
+                                if (d.verbose) t += " (" + (0xffff & index) + ")";
                                 return ' ' + t;
                             }
                         };
                     } else
                     if (s.equals("class2")) {
                         operand = new Operand() {
-                            public String disasm(
+
+                            @Override public String
+                            disassemble(
                                 DataInputStream dis,
                                 int             instructionOffset,
                                 Method          method,
@@ -1590,20 +1641,22 @@ class Disassembler {
                                 Disassembler    d
                             ) throws IOException {
                                 short index = dis.readShort();
-                                String name = cp.getConstantClassInfo(index).name;
+                                String name = cp.get(index, ConstantClassInfo.class).name;
                                 String t = d.beautify(
                                     name.startsWith("[")
                                     ? d.decodeFieldDescriptor(name).toString()
                                     : name.replace('/', '.')
                                 );
-                                if (d.verbose) t += " (" + d.getBranchTarget(0xffff & index) + ")";
+                                if (d.verbose) t += " (" + (0xffff & index) + ")";
                                 return ' ' + t;
                             }
                         };
                     } else
                     if (s.equals("localvariableindex1")) {
                         operand = new Operand() {
-                            public String disasm(
+
+                            @Override public String
+                            disassemble(
                                 DataInputStream dis,
                                 int             instructionOffset,
                                 Method          method,
@@ -1624,7 +1677,9 @@ class Disassembler {
                     } else
                     if (s.equals("localvariableindex2")) {
                         operand = new Operand() {
-                            public String disasm(
+
+                            @Override public String
+                            disassemble(
                                 DataInputStream dis,
                                 int             instructionOffset,
                                 Method          method,
@@ -1644,55 +1699,58 @@ class Disassembler {
                         final short index = Short.parseShort(mnemonic.substring(mnemonic.length() - 1));
                         mnemonic = mnemonic.substring(0, mnemonic.length() - 2);
                         operand = new Operand() {
-                            private LocalVariable lv;
 
-                            public String disasm(
+                            @Override public String
+                            disassemble(
                                 DataInputStream dis,
                                 int             instructionOffset,
                                 Method          method,
                                 ConstantPool    cp,
                                 Disassembler    d
                             ) {
+
                                 // For an initial assignment (e.g. 'istore_3'), the local variable is only visible
                                 // AFTER this instruction.
-                                this.lv = d.getLocalVariable(index, instructionOffset + 1, method);
-                                return d.beautify(this.lv.toString());
+                                LocalVariable lv = d.getLocalVariable(index, instructionOffset + 1, method);
+                                return d.beautify(lv.toString());
                             }
                         };
                     } else
                     if (s.equals("branchoffset2")) {
                         operand = new Operand() {
-                            public String disasm(
+
+                            @Override public String
+                            disassemble(
                                 DataInputStream dis,
                                 int             instructionOffset,
                                 Method          method,
                                 ConstantPool    cp,
                                 Disassembler    d
                             ) throws IOException {
-                                int branchTarget = instructionOffset + dis.readShort();
-                                d.addBranchTarget(branchTarget);
-                                return " " + d.getBranchTarget(branchTarget);
+                                return " " + d.branchTarget(instructionOffset + dis.readShort());
                             }
                         };
                     } else
                     if (s.equals("branchoffset4")) {
                         operand = new Operand() {
-                            public String disasm(
+
+                            @Override public String
+                            disassemble(
                                 DataInputStream dis,
                                 int             instructionOffset,
                                 Method          method,
                                 ConstantPool    cp,
                                 Disassembler    d
                             ) throws IOException {
-                                int branchTarget = instructionOffset + dis.readInt();
-                                d.addBranchTarget(branchTarget);
-                                return " " + d.getBranchTarget(branchTarget);
+                                return " " + d.branchTarget(instructionOffset + dis.readInt());
                             }
                         };
                     } else
                     if (s.equals("signedbyte")) {
                         operand = new Operand() {
-                            public String disasm(
+
+                            @Override public String
+                            disassemble(
                                 DataInputStream dis,
                                 int             instructionOffset,
                                 Method          method,
@@ -1705,7 +1763,9 @@ class Disassembler {
                     } else
                     if (s.equals("unsignedbyte")) {
                         operand = new Operand() {
-                            public String disasm(
+
+                            @Override public String
+                            disassemble(
                                 DataInputStream dis,
                                 int             instructionOffset,
                                 Method          method,
@@ -1718,7 +1778,9 @@ class Disassembler {
                     } else
                     if (s.equals("atype")) {
                         operand = new Operand() {
-                            public String disasm(
+
+                            @Override public String
+                            disassemble(
                                 DataInputStream dis,
                                 int             instructionOffset,
                                 Method          method,
@@ -1742,7 +1804,9 @@ class Disassembler {
                     } else
                     if (s.equals("signedshort")) {
                         operand = new Operand() {
-                            public String disasm(
+
+                            @Override public String
+                            disassemble(
                                 DataInputStream dis,
                                 int             instructionOffset,
                                 Method          method,
@@ -1755,7 +1819,9 @@ class Disassembler {
                     } else
                     if (s.equals("tableswitch")) {
                         operand = new Operand() {
-                            public String disasm(
+
+                            @Override public String
+                            disassemble(
                                 DataInputStream dis,
                                 int             instructionOffset,
                                 Method          method,
@@ -1774,18 +1840,13 @@ class Disassembler {
                                         );
                                     }
                                 }
-                                StringBuilder sb = new StringBuilder(" default => ");
-                                {
-                                    int defaultOffset = instructionOffset + dis.readInt();
-                                    sb.append(defaultOffset);
-                                    d.addBranchTarget(defaultOffset);
-                                }
+
+                                StringBuilder sb = new StringBuilder(" default => ").append(d.branchTarget(instructionOffset + dis.readInt()));
+
                                 int low = dis.readInt();
                                 int high = dis.readInt();
                                 for (int i = low; i <= high; ++i) {
-                                    int offset = instructionOffset + dis.readInt();
-                                    d.addBranchTarget(offset);
-                                    sb.append(", ").append(i).append(" => ").append(offset);
+                                    sb.append(", ").append(i).append(" => ").append(d.branchTarget(instructionOffset + dis.readInt()));
                                 }
                                 return sb.toString();
                             }
@@ -1793,7 +1854,9 @@ class Disassembler {
                     } else
                     if (s.equals("lookupswitch")) {
                         operand = new Operand() {
-                            public String disasm(
+
+                            @Override public String
+                            disassemble(
                                 DataInputStream dis,
                                 int             instructionOffset,
                                 Method          method,
@@ -1812,18 +1875,14 @@ class Disassembler {
                                         );
                                     }
                                 }
-                                StringBuilder sb = new StringBuilder(" default => ");
-                                {
-                                    int defaultOffset = instructionOffset + dis.readInt();
-                                    sb.append(defaultOffset);
-                                    d.addBranchTarget(defaultOffset);
-                                }
+
+                                StringBuilder sb = new StringBuilder(" default => ").append(d.branchTarget(instructionOffset + dis.readInt()));
+
                                 int npairs = dis.readInt();
                                 for (int i = 0; i < npairs; ++i) {
                                     int match  = dis.readInt();
                                     int offset = instructionOffset + dis.readInt();
-                                    sb.append(", ").append(match).append(" => ").append(offset);
-                                    d.addBranchTarget(offset);
+                                    sb.append(", ").append(match).append(" => ").append(d.branchTarget(offset));
                                 }
                                 return sb.toString();
                             }
@@ -1831,7 +1890,9 @@ class Disassembler {
                     } else
                     if (s.equals("wide")) {
                         operand = new Operand() {
-                            public String disasm(
+
+                            @Override public String
+                            disassemble(
                                 DataInputStream dis,
                                 int             instructionOffset,
                                 Method          method,
@@ -1847,7 +1908,7 @@ class Disassembler {
                                         + " after opcode WIDE"
                                     );
                                 }
-                                return wideInstruction.getMnemonic() + d.disasmOperands(
+                                return wideInstruction.getMnemonic() + d.disassembleOperands(
                                     wideInstruction.getOperands(),
                                     dis,
                                     instructionOffset,
@@ -1864,6 +1925,10 @@ class Disassembler {
                 }
                 operands = l.toArray(new Operand[l.size()]);
             }
+
+            // Pad the mnemonic to 15 characters so the first operands are vertically aligned.
+            mnemonic += "               ".substring(mnemonic.length());
+
             result[opcode] = new Instruction(mnemonic, operands);
         }
         return result;
@@ -1874,60 +1939,69 @@ class Disassembler {
         int    instructionOffset,
         Method method
     ) {
-        LocalVariable lv = new LocalVariable();
+
+        // Calculate index of first parameter.
         int firstParameter = (method.accessFlags & ACC_STATIC) == 0 ? 1 : 0;
         if (localVariableIndex < firstParameter) {
-            lv.name = "this";
-            return lv;
+            return new LocalVariable(null, "this");
         }
-        MethodTypeSignature mts = (
-            method.signatureAttribute != null
-            ? decodeMethodTypeSignature(method.signatureAttribute.signature)
-            : decodeMethodDescriptor(method.descriptor)
-        );
-        if (localVariableIndex < firstParameter + mts.parameterTypes.size()) {
-            lv.name = "p" + (1 + localVariableIndex - firstParameter);
-            lv.optionalTypeSignature = mts.parameterTypes.get(localVariableIndex - firstParameter);
-        } else
+
+        List<TypeSignature> parameterTypes;
         {
-            lv.name = "v" + (1 + localVariableIndex - firstParameter - mts.parameterTypes.size());
+            SignatureAttribute sa = method.signatureAttribute;
+            MethodTypeSignature mts = sa != null ? decodeMethodTypeSignature(sa.signature) : decodeMethodDescriptor(method.descriptor);
+            parameterTypes = mts.parameterTypes;
         }
-        if (method.codeAttribute != null) {
-            if (method.codeAttribute.localVariableTypeTableAttribute != null) {
-                for (
-                    LocalVariableTypeTableAttribute.Entry lvtte
-                    : method.codeAttribute.localVariableTypeTableAttribute.entries
-                ) {
+
+        // Calculate index of first local variable.
+        int firstLocalVariable = firstParameter + parameterTypes.size();
+
+        String defaultName = (
+            localVariableIndex < firstLocalVariable
+            ? "p" + (1 + localVariableIndex - firstParameter)
+            : "v" + (1 + localVariableIndex - firstLocalVariable)
+        );
+
+        CodeAttribute ca = method.codeAttribute;
+        if (ca != null && (localVariableIndex >= firstLocalVariable || !this.hideVars)) {
+            LocalVariableTypeTableAttribute lvtta = ca.localVariableTypeTableAttribute;
+            if (lvtta != null) {
+                for (LocalVariableTypeTableAttribute.Entry lvtte : lvtta.entries) {
                     if (
                         instructionOffset >= lvtte.startPC
                         && instructionOffset <= lvtte.startPC + lvtte.length
                         && localVariableIndex == lvtte.index
                     ) {
-                        lv.optionalTypeSignature = decodeFieldTypeSignature(lvtte.signature);
-                        if (!this.hideVars) lv.name =  lvtte.name;
-                        return lv;
+                        return new LocalVariable(
+                            decodeFieldTypeSignature(lvtte.signature),
+                            this.hideVars ? defaultName : lvtte.name
+                        );
                     }
                 }
             }
-            if (method.codeAttribute.localVariableTableAttribute != null) {
-                for (
-                    LocalVariableTableAttribute.Entry lvte
-                    : method.codeAttribute.localVariableTableAttribute.entries
-                ) {
+
+            LocalVariableTableAttribute lvta = ca.localVariableTableAttribute;
+            if (lvta != null) {
+                for (LocalVariableTableAttribute.Entry lvte : lvta.entries) {
                     if (
                         instructionOffset >= lvte.startPC
                         && instructionOffset <= lvte.startPC + lvte.length
                         && localVariableIndex == lvte.index
                     ) {
-                        String fd = lvte.descriptor;
-                        lv.optionalTypeSignature = decodeFieldDescriptor(fd);
-                        if (!this.hideVars) lv.name = lvte.name;
-                        return lv;
+                        return new LocalVariable(
+                            decodeFieldDescriptor(lvte.descriptor),
+                            this.hideVars ? defaultName : lvte.name
+                        );
                     }
                 }
             }
         }
-        return lv;
+
+        if (localVariableIndex < firstLocalVariable) {
+            return new LocalVariable(parameterTypes.get(localVariableIndex - firstParameter), defaultName);
+        } else {
+            return new LocalVariable(null, defaultName);
+        }
     }
 
     ClassSignature
@@ -1936,10 +2010,7 @@ class Disassembler {
             return SignatureParser.decodeClassSignature(cs);
         } catch (SignatureException e) {
             error("Decoding class signature '" + cs + "': " + e.getMessage());
-
-            ClassSignature res = new ClassSignature();
-            res.superclassSignature = SignatureParser.OBJECT;
-            return res;
+            return new ClassSignature(NO_FORMAL_TYPE_PARAMETERS, SignatureParser.OBJECT, NO_CLASS_TYPE_SIGNATURES);
         }
     }
 
@@ -1959,10 +2030,7 @@ class Disassembler {
             return SignatureParser.decodeMethodTypeSignature(ms);
         } catch (SignatureException e) {
             error("Decoding method type signature '" + ms + "': " + e.getMessage());
-
-            MethodTypeSignature res = new MethodTypeSignature();
-            res.returnType = SignatureParser.VOID;
-            return res;
+            return new MethodTypeSignature(NO_FORMAL_TYPE_PARAMETERS, NO_TYPE_SIGNATURES, SignatureParser.VOID, NO_THROWS_SIGNATURES);
         }
     }
 
@@ -1982,10 +2050,7 @@ class Disassembler {
             return SignatureParser.decodeMethodDescriptor(md);
         } catch (SignatureException e) {
             error("Decoding method descriptor '" + md + "': " + e.getMessage());
-
-            MethodTypeSignature res = new MethodTypeSignature();
-            res.returnType = SignatureParser.VOID;
-            return res;
+            return new MethodTypeSignature(NO_FORMAL_TYPE_PARAMETERS, NO_TYPE_SIGNATURES, SignatureParser.VOID, NO_THROWS_SIGNATURES);
         }
     }
 
@@ -1993,17 +2058,18 @@ class Disassembler {
      * Representation of a local variable reference in the {@code Code} attribute.
      */
     class LocalVariable {
-        TypeSignature optionalTypeSignature;
-        String        name;
+        final @Nullable TypeSignature typeSignature;
+        final String                  name;
+
+        public LocalVariable(@Nullable TypeSignature typeSignature, String name) {
+            this.typeSignature = typeSignature;
+            this.name          = name;
+        }
 
         @Override public String
         toString() {
-            return (
-                this.optionalTypeSignature == null
-                ? " [" + this.name + ']'
-                : " [" + this.optionalTypeSignature.toString() + ' ' + this.name + ']'
-            );
-
+            TypeSignature ts = this.typeSignature;
+            return ts == null ? " [" + this.name + ']' : " [" + ts.toString() + ' ' + this.name + ']';
         }
     }
 
@@ -2042,7 +2108,11 @@ class Disassembler {
      */
     private
     interface Operand {
-        String disasm(
+
+        /**
+         * @return One space and this operand disassembled
+         */
+        String disassemble(
             DataInputStream dis,
             int             instructionOffset,
             Method          method,
@@ -2054,7 +2124,7 @@ class Disassembler {
     /**
      * An {@link InputStream} that counts how many bytes have been read so far.
      */
-    private static
+    @NotNullByDefault(false) private static
     class CountingInputStream extends FilterInputStream {
 
         public
@@ -2109,7 +2179,7 @@ class Disassembler {
         return sb.toString();
     }
 
-    String
+    private String
     beautify(String s) {
         int i = 0;
         for (;;) {

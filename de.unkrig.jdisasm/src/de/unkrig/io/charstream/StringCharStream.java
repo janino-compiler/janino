@@ -43,28 +43,28 @@ class StringCharStream implements CharStream {
         this.in = in;
     }
 
-    public int
+    @Override public int
     peek() {
         return this.pos == this.in.length() ? -1 : this.in.charAt(this.pos);
     }
 
-    public boolean
+    @Override public boolean
     peek(char c) {
         return this.pos < this.in.length() && this.in.charAt(this.pos) == c;
     }
 
-    public int
+    @Override public int
     peek(String chars) {
         return this.pos == this.in.length() ? -1 : chars.indexOf(this.in.charAt(this.pos));
     }
 
-    public char
+    @Override public char
     read() throws EOFException {
         if (this.pos == this.in.length()) throw new EOFException("Unexpected end-of-input");
         return this.in.charAt(this.pos++);
     }
 
-    public void
+    @Override public void
     read(char c) throws EOFException, UnexpectedCharacterException {
         if (this.pos == this.in.length()) throw new EOFException("Expected '" + c + "' instead of end-of-input");
         if (this.in.charAt(this.pos) != c) {
@@ -79,7 +79,7 @@ class StringCharStream implements CharStream {
         this.pos++;
     }
 
-    public int
+    @Override public int
     read(String chars) throws EOFException, UnexpectedCharacterException {
         if (this.pos == this.in.length()) {
             throw new EOFException("Expected one of '" + chars + "' instead of end-of-input");
@@ -98,7 +98,7 @@ class StringCharStream implements CharStream {
         return res;
     }
 
-    public boolean
+    @Override public boolean
     peekRead(char c) {
         if (this.pos >= this.in.length()) return false;
         if (this.in.charAt(this.pos) == c) {
@@ -108,7 +108,7 @@ class StringCharStream implements CharStream {
         return false;
     }
 
-    public int
+    @Override public int
     peekRead(String chars) {
         if (this.pos >= this.in.length()) return -1;
         int res = chars.indexOf(this.in.charAt(this.pos));
@@ -116,7 +116,7 @@ class StringCharStream implements CharStream {
         return res;
     }
 
-    public void
+    @Override public void
     eoi() throws UnexpectedCharacterException {
         if (this.pos < this.in.length()) {
             throw new UnexpectedCharacterException(
@@ -127,7 +127,7 @@ class StringCharStream implements CharStream {
         }
     }
 
-    public boolean
+    @Override public boolean
     atEoi() {
         return this.pos >= this.in.length();
     }

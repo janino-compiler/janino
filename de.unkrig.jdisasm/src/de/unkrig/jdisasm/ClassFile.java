@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import de.unkrig.commons.nullanalysis.Nullable;
 import de.unkrig.jdisasm.ConstantPool.ConstantClassInfo;
 import de.unkrig.jdisasm.ConstantPool.ConstantNameAndTypeInfo;
 import de.unkrig.jdisasm.ConstantPool.ConstantUtf8Info;
@@ -43,37 +44,37 @@ import de.unkrig.jdisasm.SignatureParser.SignatureException;
  */
 public
 class ClassFile {
-    public short                                minorVersion;
-    public short                                majorVersion;
-    public ConstantPool                         constantPool;
-    public short                                accessFlags;
+    public short        minorVersion;
+    public short        majorVersion;
+    public ConstantPool constantPool;
+    public short        accessFlags;
 
     /**
      * The fully qualified (dot-separated) name of this type.
      */
-    public String                               thisClassName;
+    public String thisClassName;
 
     /**
      * The fully qualified (dot-separated) name of the superclass of this type; "java.lang.Object" iff this type is an
      * interface; {@code null} iff this type is {@link Object}.
      */
-    public String                               superClassName;
+    public @Nullable String superClassName;
 
     /**
      * Fully qualified (dot-separated) names of the interfaces that this type implements.
      */
-    public final List<String>                   interfaceNames = new ArrayList<String>();
-    public final List<Field>                    fields = new ArrayList<Field>();
-    public final List<Method>                   methods = new ArrayList<Method>();
-    public DeprecatedAttribute                  deprecatedAttribute;
-    public EnclosingMethodAttribute             enclosingMethodAttribute;
-    public InnerClassesAttribute                innerClassesAttribute;
-    public RuntimeInvisibleAnnotationsAttribute runtimeInvisibleAnnotationsAttribute;
-    public RuntimeVisibleAnnotationsAttribute   runtimeVisibleAnnotationsAttribute;
-    public SignatureAttribute                   signatureAttribute;
-    public SourceFileAttribute                  sourceFileAttribute;
-    public SyntheticAttribute                   syntheticAttribute;
-    public final List<Attribute>                attributes = new ArrayList<Attribute>();
+    public final List<String>                             interfaceNames = new ArrayList<String>();
+    public final List<Field>                              fields = new ArrayList<Field>();
+    public final List<Method>                             methods = new ArrayList<Method>();
+    public @Nullable DeprecatedAttribute                  deprecatedAttribute;
+    public @Nullable EnclosingMethodAttribute             enclosingMethodAttribute;
+    public @Nullable InnerClassesAttribute                innerClassesAttribute;
+    public @Nullable RuntimeInvisibleAnnotationsAttribute runtimeInvisibleAnnotationsAttribute;
+    public @Nullable RuntimeVisibleAnnotationsAttribute   runtimeVisibleAnnotationsAttribute;
+    public @Nullable SignatureAttribute                   signatureAttribute;
+    public @Nullable SourceFileAttribute                  sourceFileAttribute;
+    public @Nullable SyntheticAttribute                   syntheticAttribute;
+    public final List<Attribute>                          attributes = new ArrayList<Attribute>();
 
     public static final short ACC_PUBLIC       = 0x00000001;
     public static final short ACC_PRIVATE      = 0x00000002;
@@ -115,17 +116,17 @@ class ClassFile {
         this.accessFlags = dis.readShort();
 
         // Class name.
-        this.thisClassName = this.constantPool.getConstantClassInfo(dis.readShort()).name;
+        this.thisClassName = this.constantPool.get(dis.readShort(), ConstantClassInfo.class).name;
 
         // Superclass.
         {
-            ConstantClassInfo superclassCci = this.constantPool.getConstantClassInfo(dis.readShort());
+            ConstantClassInfo superclassCci = this.constantPool.getOptional(dis.readShort(), ConstantClassInfo.class);
             this.superClassName = superclassCci == null ? null : superclassCci.name;
         }
 
         // Implemented interfaces.
         for (short i = dis.readShort(); i > 0; --i) {
-            this.interfaceNames.add(this.constantPool.getConstantClassInfo(dis.readShort()).name);
+            this.interfaceNames.add(this.constantPool.get(dis.readShort(), ConstantClassInfo.class).name);
         }
 
         // Fields.
@@ -241,22 +242,22 @@ class ClassFile {
     /** Representation of a field description in a Java&trade; class file. */
     public
     class Field {
-        public short                                accessFlags;
-        public String                               name;
-        public String                               descriptor;
-        public ConstantValueAttribute               constantValueAttribute;
-        public DeprecatedAttribute                  deprecatedAttribute;
-        public RuntimeInvisibleAnnotationsAttribute runtimeInvisibleAnnotationsAttribute;
-        public RuntimeVisibleAnnotationsAttribute   runtimeVisibleAnnotationsAttribute;
-        public SignatureAttribute                   signatureAttribute;
-        public SyntheticAttribute                   syntheticAttribute;
-        public final List<Attribute>                attributes = new ArrayList<Attribute>();
+        public short                                          accessFlags;
+        public String                                         name;
+        public String                                         descriptor;
+        public @Nullable ConstantValueAttribute               constantValueAttribute;
+        public @Nullable DeprecatedAttribute                  deprecatedAttribute;
+        public @Nullable RuntimeInvisibleAnnotationsAttribute runtimeInvisibleAnnotationsAttribute;
+        public @Nullable RuntimeVisibleAnnotationsAttribute   runtimeVisibleAnnotationsAttribute;
+        public @Nullable SignatureAttribute                   signatureAttribute;
+        public @Nullable SyntheticAttribute                   syntheticAttribute;
+        public final List<Attribute>                          attributes = new ArrayList<Attribute>();
 
         public
         Field(DataInputStream dis) throws IOException {
             this.accessFlags = dis.readShort();
-            this.name = ClassFile.this.constantPool.getConstantUtf8Info(dis.readShort()).bytes;
-            this.descriptor = ClassFile.this.constantPool.getConstantUtf8Info(dis.readShort()).bytes;
+            this.name        = ClassFile.this.constantPool.get(dis.readShort(), ConstantUtf8Info.class).bytes;
+            this.descriptor  = ClassFile.this.constantPool.get(dis.readShort(), ConstantUtf8Info.class).bytes;
 
             // Read field attributes.
             readAttributes(dis, new AbstractAttributeVisitor() {
@@ -308,26 +309,26 @@ class ClassFile {
     /** Representation of a method in a Java&trade; class file. */
     public
     class Method {
-        public short                                         accessFlags;
-        public String                                        name;
-        public String                                        descriptor;
-        public final List<Attribute>                         attributes = new ArrayList<Attribute>();
-        public AnnotationDefaultAttribute                    annotationDefaultAttribute;
-        public CodeAttribute                                 codeAttribute;
-        public DeprecatedAttribute                           deprecatedAttribute;
-        public ExceptionsAttribute                           exceptionsAttribute;
-        public RuntimeInvisibleAnnotationsAttribute          runtimeInvisibleAnnotationsAttribute;
-        public RuntimeInvisibleParameterAnnotationsAttribute runtimeInvisibleParameterAnnotationsAttribute;
-        public RuntimeVisibleAnnotationsAttribute            runtimeVisibleAnnotationsAttribute;
-        public RuntimeVisibleParameterAnnotationsAttribute   runtimeVisibleParameterAnnotationsAttribute;
-        public SignatureAttribute                            signatureAttribute;
-        public SyntheticAttribute                            syntheticAttribute;
+        public short                                                   accessFlags;
+        public String                                                  name;
+        public String                                                  descriptor;
+        public final List<Attribute>                                   attributes = new ArrayList<Attribute>();
+        public @Nullable AnnotationDefaultAttribute                    annotationDefaultAttribute;
+        public @Nullable CodeAttribute                                 codeAttribute;
+        public @Nullable DeprecatedAttribute                           deprecatedAttribute;
+        public @Nullable ExceptionsAttribute                           exceptionsAttribute;
+        public @Nullable RuntimeInvisibleAnnotationsAttribute          runtimeInvisibleAnnotationsAttribute;
+        public @Nullable RuntimeInvisibleParameterAnnotationsAttribute runtimeInvisibleParameterAnnotationsAttribute;
+        public @Nullable RuntimeVisibleAnnotationsAttribute            runtimeVisibleAnnotationsAttribute;
+        public @Nullable RuntimeVisibleParameterAnnotationsAttribute   runtimeVisibleParameterAnnotationsAttribute;
+        public @Nullable SignatureAttribute                            signatureAttribute;
+        public @Nullable SyntheticAttribute                            syntheticAttribute;
 
         public
         Method(DataInputStream dis) throws IOException {
             this.accessFlags = dis.readShort();
-            this.name = ClassFile.this.constantPool.getConstantUtf8Info(dis.readShort()).bytes;
-            this.descriptor = ClassFile.this.constantPool.getConstantUtf8Info(dis.readShort()).bytes;
+            this.name        = ClassFile.this.constantPool.get(dis.readShort(), ConstantUtf8Info.class).bytes;
+            this.descriptor  = ClassFile.this.constantPool.get(dis.readShort(), ConstantUtf8Info.class).bytes;
 
             try {
 
@@ -435,7 +436,7 @@ class ClassFile {
     private void
     readAttribute(DataInputStream dis, AttributeVisitor visitor) throws IOException {
 
-        String attributeName = this.constantPool.getConstantUtf8Info(dis.readShort()).bytes;
+        String attributeName = this.constantPool.get(dis.readShort(), ConstantUtf8Info.class).bytes;
 
         try {
             // Read attribute body into byte array and create a DataInputStream.
@@ -559,24 +560,24 @@ class ClassFile {
 
         public abstract void acceptOther(Attribute ai);
 
-        public void visit(AnnotationDefaultAttribute                    ada)   { acceptOther(ada); }
-        public void visit(CodeAttribute                                 ca)    { acceptOther(ca); }
-        public void visit(ConstantValueAttribute                        cva)   { acceptOther(cva); }
-        public void visit(DeprecatedAttribute                           da)    { acceptOther(da); }
-        public void visit(EnclosingMethodAttribute                      ema)   { acceptOther(ema); }
-        public void visit(ExceptionsAttribute                           ea)    { acceptOther(ea); }
-        public void visit(InnerClassesAttribute                         ica)   { acceptOther(ica); }
-        public void visit(LineNumberTableAttribute                      lnta)  { acceptOther(lnta); }
-        public void visit(LocalVariableTableAttribute                   lvta)  { acceptOther(lvta); }
-        public void visit(LocalVariableTypeTableAttribute               lvtta) { acceptOther(lvtta); }
-        public void visit(RuntimeInvisibleAnnotationsAttribute          riaa)  { acceptOther(riaa); }
-        public void visit(RuntimeInvisibleParameterAnnotationsAttribute ripaa) { acceptOther(ripaa); }
-        public void visit(RuntimeVisibleAnnotationsAttribute            rvaa)  { acceptOther(rvaa); }
-        public void visit(RuntimeVisibleParameterAnnotationsAttribute   rvpaa) { acceptOther(rvpaa); }
-        public void visit(SignatureAttribute                            sa)    { acceptOther(sa); }
-        public void visit(SourceFileAttribute                           sfa)   { acceptOther(sfa); }
-        public void visit(SyntheticAttribute                            sa)    { acceptOther(sa); }
-        public void visit(UnknownAttribute                              a)     { acceptOther(a); }
+        @Override public void visit(AnnotationDefaultAttribute                    ada)   { acceptOther(ada); }
+        @Override public void visit(CodeAttribute                                 ca)    { acceptOther(ca); }
+        @Override public void visit(ConstantValueAttribute                        cva)   { acceptOther(cva); }
+        @Override public void visit(DeprecatedAttribute                           da)    { acceptOther(da); }
+        @Override public void visit(EnclosingMethodAttribute                      ema)   { acceptOther(ema); }
+        @Override public void visit(ExceptionsAttribute                           ea)    { acceptOther(ea); }
+        @Override public void visit(InnerClassesAttribute                         ica)   { acceptOther(ica); }
+        @Override public void visit(LineNumberTableAttribute                      lnta)  { acceptOther(lnta); }
+        @Override public void visit(LocalVariableTableAttribute                   lvta)  { acceptOther(lvta); }
+        @Override public void visit(LocalVariableTypeTableAttribute               lvtta) { acceptOther(lvtta); }
+        @Override public void visit(RuntimeInvisibleAnnotationsAttribute          riaa)  { acceptOther(riaa); }
+        @Override public void visit(RuntimeInvisibleParameterAnnotationsAttribute ripaa) { acceptOther(ripaa); }
+        @Override public void visit(RuntimeVisibleAnnotationsAttribute            rvaa)  { acceptOther(rvaa); }
+        @Override public void visit(RuntimeVisibleParameterAnnotationsAttribute   rvpaa) { acceptOther(rvpaa); }
+        @Override public void visit(SignatureAttribute                            sa)    { acceptOther(sa); }
+        @Override public void visit(SourceFileAttribute                           sfa)   { acceptOther(sfa); }
+        @Override public void visit(SyntheticAttribute                            sa)    { acceptOther(sa); }
+        @Override public void visit(UnknownAttribute                              a)     { acceptOther(a); }
     }
 
     /** Representation of an attribute with an unknown name. */
@@ -589,25 +590,24 @@ class ClassFile {
             this.info = readByteArray(dis, dis.available());
         }
 
-        public void accept(AttributeVisitor visitor) { visitor.visit(this); }
-
-        public String getName() { return this.name; }
+        @Override public void   accept(AttributeVisitor visitor) { visitor.visit(this); }
+        @Override public String getName()                        { return this.name; }
     }
 
     /** Representation of a {@code Synthetic} attribute. */
     public static
     class SyntheticAttribute implements Attribute {
-        public        SyntheticAttribute(DataInputStream dis, ClassFile cf) {}
-        public void   accept(AttributeVisitor visitor) { visitor.visit(this); }
-        public String getName() { return "Synthetic"; }
+        public                  SyntheticAttribute(DataInputStream dis, ClassFile cf) {}
+        @Override public void   accept(AttributeVisitor visitor) { visitor.visit(this); }
+        @Override public String getName()                        { return "Synthetic"; }
     }
 
     /** Representation of a {@code Deprecated} attribute. */
     public static
     class DeprecatedAttribute implements Attribute {
-        public        DeprecatedAttribute(DataInputStream dis, ClassFile cf) {}
-        public void   accept(AttributeVisitor visitor) { visitor.visit(this); }
-        public String getName() { return "Deprecated"; }
+        public                  DeprecatedAttribute(DataInputStream dis, ClassFile cf) {}
+        @Override public void   accept(AttributeVisitor visitor) { visitor.visit(this); }
+        @Override public String getName()                        { return "Deprecated"; }
     }
 
     /** Representation of a {@code InnerClasses} attribute. */
@@ -617,16 +617,19 @@ class ClassFile {
         public static
         class ClasS {
 
-            public ConstantClassInfo innerClassInfo;
-            public ConstantClassInfo outerClassInfo;
-            public ConstantUtf8Info  innerName;
-            public short             innerClassAccessFlags;
+            public final ConstantClassInfo           innerClassInfo;
+            /**  {@code null} == top-level type or anonymous class */
+            public final @Nullable ConstantClassInfo outerClassInfo;
+            /**  Original simple name; {@code null} == anonymous */
+            public final @Nullable ConstantUtf8Info  innerName;
+            /** Original access flags */
+            public final short                       innerClassAccessFlags;
 
             public
             ClasS(DataInputStream dis, ClassFile cf) throws IOException {
-                this.innerClassInfo = cf.constantPool.getConstantClassInfo(dis.readShort());
-                this.outerClassInfo = cf.constantPool.getConstantClassInfo(dis.readShort());
-                this.innerName = cf.constantPool.getConstantUtf8Info(dis.readShort());
+                this.innerClassInfo        = cf.constantPool.get(dis.readShort(), ConstantClassInfo.class);
+                this.outerClassInfo        = cf.constantPool.getOptional(dis.readShort(), ConstantClassInfo.class);
+                this.innerName             = cf.constantPool.getOptional(dis.readShort(), ConstantUtf8Info.class);
                 this.innerClassAccessFlags = dis.readShort();
             }
         }
@@ -639,9 +642,8 @@ class ClassFile {
             }
         }
 
-        public void accept(AttributeVisitor visitor) { visitor.visit(this); }
-
-        public String getName() { return "InnerClasses"; }
+        @Override public void   accept(AttributeVisitor visitor) { visitor.visit(this); }
+        @Override public String getName()                        { return "InnerClasses"; }
     }
 
     /** Representation of the {@code RuntimeVisibleAnnotations} attribute. */
@@ -656,9 +658,8 @@ class ClassFile {
             }
         }
 
-        public void accept(AttributeVisitor visitor) { visitor.visit(this); }
-
-        public String getName() { return "RuntimeVisibleAnnotations"; }
+        @Override public void   accept(AttributeVisitor visitor) { visitor.visit(this); }
+        @Override public String getName()                        { return "RuntimeVisibleAnnotations"; }
     }
 
     /** Representation of the {@code RuntimeInvisibleAnnotations} attribute. */
@@ -699,9 +700,8 @@ class ClassFile {
             }
         }
 
-        public void accept(AttributeVisitor visitor) { visitor.visit(this); }
-
-        public String getName() { return "RuntimeVisibleParameterAnnotations"; }
+        @Override public void   accept(AttributeVisitor visitor) { visitor.visit(this); }
+        @Override public String getName()                        { return "RuntimeVisibleParameterAnnotations"; }
     }
 
     /** Representation of the {@code RuntimeInvisibleParameterAnnotations} attribute. */
@@ -727,9 +727,8 @@ class ClassFile {
             this.defaultValue = newElementValue(dis, cf);
         }
 
-        public void accept(AttributeVisitor visitor) { visitor.visit(this); }
-
-        public String getName() { return "AnnotationDefault"; }
+        @Override public void   accept(AttributeVisitor visitor) { visitor.visit(this); }
+        @Override public String getName()                        { return "AnnotationDefault"; }
     }
 
     /** Helper class for the {@code Runtime*visible*Annotations} attributes. */
@@ -740,12 +739,12 @@ class ClassFile {
         public static
         class ElementValuePair {
 
-            public String       elementName;
-            public ElementValue elementValue;
+            public final String       elementName;
+            public final ElementValue elementValue;
 
             public
             ElementValuePair(DataInputStream dis, ClassFile cf) throws IOException {
-                this.elementName = cf.constantPool.getConstantUtf8Info(dis.readShort()).bytes; // elementNameIndex
+                this.elementName = cf.constantPool.get(dis.readShort(), ConstantUtf8Info.class).bytes;
                 this.elementValue = newElementValue(dis, cf);
             }
 
@@ -767,7 +766,7 @@ class ClassFile {
             short typeIndex = dis.readShort();
             try {
                 this.typeName = SignatureParser.decodeFieldDescriptor(
-                    cf.constantPool.getConstantUtf8Info(typeIndex).bytes
+                    cf.constantPool.get(typeIndex, ConstantUtf8Info.class).bytes
                 ).toString();
             } catch (SignatureException e) {
                 throw new ClassFileFormatException("Decoding annotation type: " + e.getMessage(), e);
@@ -805,12 +804,12 @@ class ClassFile {
             return new ElementValue() { @Override public String toString() { return s; }};
         } else
         if (tag == 's') {
-            final String s = cf.constantPool.getConstantUtf8Info(dis.readShort()).bytes;
+            final String s = cf.constantPool.get(dis.readShort(), ConstantUtf8Info.class).bytes;
             return new ElementValue() { @Override public String toString() { return ConstantPool.stringToJavaLiteral(s); }};
         } else
         if (tag == 'e') {
-            String typeName = cf.constantPool.getConstantUtf8Info(dis.readShort()).bytes;
-            String constName = cf.constantPool.getConstantUtf8Info(dis.readShort()).bytes;
+            String typeName = cf.constantPool.get(dis.readShort(), ConstantUtf8Info.class).bytes;
+            String constName = cf.constantPool.get(dis.readShort(), ConstantUtf8Info.class).bytes;
             try {
                 final String s = SignatureParser.decodeFieldDescriptor(typeName) + "." + constName;
                 return new ElementValue() { @Override public String toString() { return s; }};
@@ -819,7 +818,7 @@ class ClassFile {
             }
         } else
         if (tag == 'c') {
-            final String classInfo = cf.constantPool.getConstantUtf8Info(dis.readShort()).bytes;
+            final String classInfo = cf.constantPool.get(dis.readShort(), ConstantUtf8Info.class).bytes;
             try {
                 final String s = SignatureParser.decodeReturnType(classInfo) + ".class";
                 return new ElementValue() { @Override public String toString() { return s; }};
@@ -868,29 +867,29 @@ class ClassFile {
         public final String signature;
 
         SignatureAttribute(DataInputStream dis, ClassFile cf) throws IOException {
-            this.signature = cf.constantPool.getConstantUtf8Info(dis.readShort()).bytes;
+            this.signature = cf.constantPool.get(dis.readShort(), ConstantUtf8Info.class).bytes;
         }
 
-        public void accept(AttributeVisitor visitor) { visitor.visit(this); }
-
-        public String getName() { return "Signature"; }
+        @Override public void   accept(AttributeVisitor visitor) { visitor.visit(this); }
+        @Override public String getName()                        { return "Signature"; }
     }
 
     /** Representation of the {@code EnclosingMethod} attribute. */
     public static final
     class EnclosingMethodAttribute implements Attribute {
 
-        public ConstantClassInfo       clasS;
-        public ConstantNameAndTypeInfo optionalMethod;
+        public ConstantClassInfo clasS;
+
+        /** null == not enclosed by a constructor or a method, i.e. a field initializer */
+        public @Nullable ConstantNameAndTypeInfo method;
 
         EnclosingMethodAttribute(DataInputStream dis, ClassFile cf) throws IOException {
-            this.clasS = cf.constantPool.getConstantClassInfo(dis.readShort());  // classIndex
-            this.optionalMethod = cf.constantPool.getConstantNameAndTypeInfo(dis.readShort());  // methodIndex
+            this.clasS  = cf.constantPool.get(dis.readShort(), ConstantClassInfo.class);
+            this.method = cf.constantPool.getOptional(dis.readShort(), ConstantNameAndTypeInfo.class);
         }
 
-        public void accept(AttributeVisitor visitor) { visitor.visit(this); }
-
-        public String getName() { return "EnclosingMethod"; }
+        @Override public void   accept(AttributeVisitor visitor) { visitor.visit(this); }
+        @Override public String getName()                        { return "EnclosingMethod"; }
     }
 
     /** Representation of the {@code Exceptions} attribute. */
@@ -900,26 +899,25 @@ class ClassFile {
 
         ExceptionsAttribute(DataInputStream dis, ClassFile cf) throws IOException {
             for (int i = dis.readShort(); i > 0; --i) {
-                this.exceptionNames.add(cf.constantPool.getConstantClassInfo(dis.readShort()));
+                this.exceptionNames.add(cf.constantPool.get(dis.readShort(), ConstantClassInfo.class));
             }
         }
 
-        public void accept(AttributeVisitor visitor) { visitor.visit(this); }
-
-        public String getName() { return "Exceptions"; }
+        @Override public void   accept(AttributeVisitor visitor) { visitor.visit(this); }
+        @Override public String getName()                        { return "Exceptions"; }
     }
 
     /** Representation of the {@code Code} attribute. */
     public static final
     class CodeAttribute implements Attribute {
-        public final short                     maxStack;
-        public final short                     maxLocals;
-        public final byte[]                    code;
-        public final List<ExceptionTableEntry> exceptionTable = new ArrayList<ExceptionTableEntry>();
-        public LocalVariableTableAttribute     localVariableTableAttribute;
-        public LocalVariableTypeTableAttribute localVariableTypeTableAttribute;
-        public LineNumberTableAttribute        lineNumberTableAttribute;
-        public final List<Attribute>           attributes = new ArrayList<Attribute>();
+        public final short                               maxStack;
+        public final short                               maxLocals;
+        public final byte[]                              code;
+        public final List<ExceptionTableEntry>           exceptionTable = new ArrayList<ExceptionTableEntry>();
+        public @Nullable LocalVariableTableAttribute     localVariableTableAttribute;
+        public @Nullable LocalVariableTypeTableAttribute localVariableTypeTableAttribute;
+        public @Nullable LineNumberTableAttribute        lineNumberTableAttribute;
+        public final List<Attribute>                     attributes = new ArrayList<Attribute>();
 
         CodeAttribute(DataInputStream dis, ClassFile cf) throws IOException {
             this.maxStack = dis.readShort();
@@ -960,24 +958,23 @@ class ClassFile {
             });
         }
 
-        public void accept(AttributeVisitor visitor) { visitor.visit(this); }
-
-        public String getName() { return "Code"; }
+        @Override public void   accept(AttributeVisitor visitor) { visitor.visit(this); }
+        @Override public String getName()                        { return "Code"; }
     }
 
     /** helper class for {@link CodeAttribute}. */
     public static
     class ExceptionTableEntry {
-        public int               startPC;
-        public int               endPC;
-        public int               handlerPC;
-        public ConstantClassInfo catchType;
+        public int                         startPC;
+        public int                         endPC;
+        public int                         handlerPC;
+        public @Nullable ConstantClassInfo catchType; // null == all exceptions, i.e. FINALLY
 
         ExceptionTableEntry(DataInputStream dis, ClassFile cf) throws IOException {
             this.startPC   = 0xffff & dis.readShort();
             this.endPC     = 0xffff & dis.readShort();
             this.handlerPC = 0xffff & dis.readShort();
-            this.catchType = cf.constantPool.getConstantClassInfo(dis.readShort());
+            this.catchType = cf.constantPool.getOptional(dis.readShort(), ConstantClassInfo.class);
         }
 
         @Override public String
@@ -992,12 +989,11 @@ class ClassFile {
         public String sourceFile;
 
         SourceFileAttribute(DataInputStream dis, ClassFile cf) throws IOException {
-            this.sourceFile = cf.constantPool.getConstantUtf8Info(dis.readShort()).bytes;
+            this.sourceFile = cf.constantPool.get(dis.readShort(), ConstantUtf8Info.class).bytes;
         }
 
-        public void accept(AttributeVisitor visitor) { visitor.visit(this); }
-
-        public String getName() { return "SourceFile"; }
+        @Override public void   accept(AttributeVisitor visitor) { visitor.visit(this); }
+        @Override public String getName()                        { return "SourceFile"; }
     }
 
     /** Representation of the {@code LineNumberTable} attribute. */
@@ -1012,10 +1008,9 @@ class ClassFile {
             }
         }
 
-        public void accept(AttributeVisitor visitor) { visitor.visit(this); }
-
-        public String getName() { return "LineNumberTable"; }
-            }
+        @Override public void   accept(AttributeVisitor visitor) { visitor.visit(this); }
+        @Override public String getName()                        { return "LineNumberTable"; }
+    }
 
     /** Helper class for {@link LineNumberTableAttribute}. */
     public static
@@ -1036,17 +1031,17 @@ class ClassFile {
 
         /** Helper class for {@link LocalVariableTableAttribute}. */
         class Entry {
-            public short  startPC;
-            public short  length;
-            public String name;
-            public String descriptor;
-            public short  index;
+            public final short  startPC;
+            public final short  length;
+            public final String name;
+            public final String descriptor;
+            public final short  index;
 
             Entry(DataInputStream dis, ClassFile cf) throws IOException {
                 this.startPC    = dis.readShort();
                 this.length     = dis.readShort();
-                this.name       = cf.constantPool.getConstantUtf8Info(dis.readShort()).bytes;
-                this.descriptor = cf.constantPool.getConstantUtf8Info(dis.readShort()).bytes;
+                this.name       = cf.constantPool.get(dis.readShort(), ConstantUtf8Info.class).bytes;
+                this.descriptor = cf.constantPool.get(dis.readShort(), ConstantUtf8Info.class).bytes;
                 this.index      = dis.readShort();
             }
         }
@@ -1059,9 +1054,8 @@ class ClassFile {
             }
         }
 
-        public void accept(AttributeVisitor visitor) { visitor.visit(this); }
-
-        public String getName() { return "LocalVariableTable"; }
+        @Override public void   accept(AttributeVisitor visitor) { visitor.visit(this); }
+        @Override public String getName()                        { return "LocalVariableTable"; }
     }
 
     /** Representation of the {@code LocalVariableTypeTable} attribute. */
@@ -1071,17 +1065,17 @@ class ClassFile {
         /** Helper class for {@link LocalVariableTypeTableAttribute}. */
         public static
         class Entry {
-            public int    startPC;
-            public int    length;
-            public String name;
-            public String signature;
-            public short  index;
+            public final int    startPC;
+            public final int    length;
+            public final String name;
+            public final String signature;
+            public final short  index;
 
             Entry(DataInputStream dis, ClassFile cf) throws IOException {
                 this.startPC   = 0xffff & dis.readShort();
                 this.length    = 0xffff & dis.readShort();
-                this.name      = cf.constantPool.getConstantUtf8Info(dis.readShort()).bytes;
-                this.signature = cf.constantPool.getConstantUtf8Info(dis.readShort()).bytes;
+                this.name      = cf.constantPool.get(dis.readShort(), ConstantUtf8Info.class).bytes;
+                this.signature = cf.constantPool.get(dis.readShort(), ConstantUtf8Info.class).bytes;
                 this.index     = dis.readShort();
             }
         }
@@ -1094,9 +1088,8 @@ class ClassFile {
             }
         }
 
-        public void accept(AttributeVisitor visitor) { visitor.visit(this); }
-
-        public String getName() { return "LocalVariableTypeTable"; }
+        @Override public void   accept(AttributeVisitor visitor) { visitor.visit(this); }
+        @Override public String getName()                        { return "LocalVariableTypeTable"; }
     }
 
     /** Representation of the {@code ConstantValue} attribute. */
@@ -1108,9 +1101,8 @@ class ClassFile {
             this.constantValue = cf.constantPool.getIntegerFloatLongDoubleString(dis.readShort());
         }
 
-        public void accept(AttributeVisitor visitor) { visitor.visit(this); }
-
-        public String getName() { return "ConstantValue"; }
+        @Override public void   accept(AttributeVisitor visitor) { visitor.visit(this); }
+        @Override public String getName()                        { return "ConstantValue"; }
     }
 
     static byte[] readByteArray(DataInputStream dis, int size) throws IOException {
