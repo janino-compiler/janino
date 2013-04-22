@@ -74,9 +74,9 @@ class AnnotationTest {
     public static
     class OscillationOverthruster {
         public int              fld1;
-        public int              fld2 = 2;
-        public final int        fld3 = 3;
-        public static final int fld4 = 4;
+        public int              fld2                                   = 2;
+        public final int        fld3                                   = 3;
+        public static final int fld4                                   = 4;
         public static final int fld55555555555555555555555555555555555 = 5;
 
 
