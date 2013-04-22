@@ -67,7 +67,8 @@ class ConstantPool {
         public final ConstantClassInfo       clasS;
         public final ConstantNameAndTypeInfo nameAndType;
 
-        public ConstantFieldrefInfo(ConstantClassInfo clasS, ConstantNameAndTypeInfo nameAndType) {
+        public
+        ConstantFieldrefInfo(ConstantClassInfo clasS, ConstantNameAndTypeInfo nameAndType) {
             this.clasS = clasS;
             this.nameAndType = nameAndType;
         }
@@ -94,7 +95,8 @@ class ConstantPool {
         public final ConstantClassInfo       clasS;
         public final ConstantNameAndTypeInfo nameAndType;
 
-        public ConstantMethodrefInfo(ConstantClassInfo clasS, ConstantNameAndTypeInfo nameAndType) {
+        public
+        ConstantMethodrefInfo(ConstantClassInfo clasS, ConstantNameAndTypeInfo nameAndType) {
             this.clasS = clasS;
             this.nameAndType = nameAndType;
         }
@@ -122,7 +124,8 @@ class ConstantPool {
         public final ConstantClassInfo       clasS;
         public final ConstantNameAndTypeInfo nameAndType;
 
-        public ConstantInterfaceMethodrefInfo(ConstantClassInfo clasS, ConstantNameAndTypeInfo nameAndType) {
+        public
+        ConstantInterfaceMethodrefInfo(ConstantClassInfo clasS, ConstantNameAndTypeInfo nameAndType) {
             this.clasS = clasS;
             this.nameAndType = nameAndType;
         }
@@ -149,14 +152,11 @@ class ConstantPool {
     class ConstantStringInfo implements ConstantPoolEntry {
         public final String string;
 
-        public ConstantStringInfo(String string) {
-            this.string = string;
-        }
+        public
+        ConstantStringInfo(String string) { this.string = string; }
 
         @Override public String
-        toString() {
-            return stringToJavaLiteral(this.string);
-        }
+        toString() { return stringToJavaLiteral(this.string); }
     }
 
     /** Representation of a CONSTANT_Integer_info entry. */
@@ -209,7 +209,8 @@ class ConstantPool {
         public final ConstantUtf8Info name;
         public final ConstantUtf8Info descriptor;
 
-        public ConstantNameAndTypeInfo(ConstantUtf8Info name, ConstantUtf8Info descriptor) {
+        public
+        ConstantNameAndTypeInfo(ConstantUtf8Info name, ConstantUtf8Info descriptor) {
             this.name = name;
             this.descriptor = descriptor;
         }
@@ -226,9 +227,8 @@ class ConstantPool {
 
         public final String bytes;
 
-        public ConstantUtf8Info(String bytes) {
-            this.bytes = bytes;
-        }
+        public
+        ConstantUtf8Info(String bytes) { this.bytes = bytes; }
 
         @Override public String
         toString() {
@@ -295,9 +295,9 @@ class ConstantPool {
         }
 
         for (int i = 1; i < count;) {
-            int idx = i;
+            int      idx = i;
             RawEntry re;
-            byte tag = dis.readByte();
+            byte     tag = dis.readByte();
             switch (tag) {
             case 7: // CONSTANT_Class_info
                 {
@@ -314,7 +314,7 @@ class ConstantPool {
                 }
             case 9: // CONSTANT_Fieldref_info
                 {
-                    final short classIndex = dis.readShort();
+                    final short classIndex       = dis.readShort();
                     final short nameAndTypeIndex = dis.readShort();
                     re = new RawEntry2() {
 
@@ -331,7 +331,7 @@ class ConstantPool {
                 }
             case 10: // CONSTANT_Methodref_info
                 {
-                    final short classIndex = dis.readShort();
+                    final short classIndex       = dis.readShort();
                     final short nameAndTypeIndex = dis.readShort();
                     re = new RawEntry2() {
 
@@ -348,7 +348,7 @@ class ConstantPool {
                 }
             case 11: // CONSTANT_InterfaceMethodref_info
                 {
-                    final short classIndex = dis.readShort();
+                    final short classIndex       = dis.readShort();
                     final short nameAndTypeIndex = dis.readShort();
                     re = new RawEntry2() {
 
@@ -438,7 +438,7 @@ class ConstantPool {
                 }
             case 12: // CONSTANT_NameAndType_info
                 {
-                    final short nameIndex = dis.readShort();
+                    final short nameIndex       = dis.readShort();
                     final short descriptorIndex = dis.readShort();
                     re = new RawEntry2() {
 
@@ -581,8 +581,8 @@ class ConstantPool {
     public static String
     stringToJavaLiteral(String s) {
         for (int i = 0; i < s.length();) {
-            char c = s.charAt(i);
-            int idx = "\r\n\"\t\b".indexOf(c);
+            char c   = s.charAt(i);
+            int  idx = "\r\n\"\t\b".indexOf(c);
             if (idx == -1) {
                 ++i;
             } else {

@@ -158,7 +158,8 @@ class AnnotationTest {
     class Karma {
     }
 
-    public static <T extends Comparable<T>, EX extends Exception> T min(int ii, T... values) throws RuntimeException, EX {
+    public static <T extends Comparable<T>, EX extends Exception> T
+    min(int ii, T... values) throws RuntimeException, EX {
         if (values.length == 0) throw new IllegalArgumentException();
         T min = values[0];
         for (int i = 1; i < values.length; ++i) {

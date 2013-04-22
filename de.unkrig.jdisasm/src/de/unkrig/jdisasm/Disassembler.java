@@ -140,7 +140,7 @@ class Disassembler {
 
     // Configuration variables.
 
-    private PrintWriter pw = new PrintWriter(System.out);
+    private PrintWriter pw      = new PrintWriter(System.out);
     boolean             verbose = false;
 
     /**
@@ -149,7 +149,7 @@ class Disassembler {
     private @Nullable File sourceDirectory = null;
     private boolean        hideLines;
     private boolean        hideVars;
-	private boolean        symbolicLabels;
+    private boolean        symbolicLabels;
 
     /**
      * "" for the default package; with a trailing period otherwise.
@@ -161,7 +161,7 @@ class Disassembler {
     public static void
     main(String[] args) throws IOException {
         Disassembler d = new Disassembler();
-        int i;
+        int          i;
         for (i = 0; i < args.length; ++i) {
             String arg = args[i];
             if (arg.charAt(0) != '-' || arg.length() == 1) break;
@@ -180,9 +180,9 @@ class Disassembler {
             if (arg.equals("-hide-vars")) {
                 d.setHideVars(true);
             } else
-        	if (arg.equals("-symbolic-labels")) {
-        		d.setSymbolicLabels(true);
-        	} else
+            if (arg.equals("-symbolic-labels")) {
+                d.setSymbolicLabels(true);
+            } else
             if (arg.equals("-help")) {
                 System.out.println("Prints a disassembly listing of the given JAVA[TM] class files (or STDIN) to ");
                 System.out.println("STDOUT.");
@@ -263,7 +263,7 @@ class Disassembler {
 
     public void
     setSymbolicLabels(boolean symbolicLabels) {
-		this.symbolicLabels = symbolicLabels;
+        this.symbolicLabels = symbolicLabels;
     }
 
     void print(String s)                       { this.pw.print(s); }
@@ -335,7 +335,7 @@ class Disassembler {
         println();
         println("// Class file version = " + cf.getJdkName());
 
-        String tcpn = this.thisClassPackageName = cf.thisClassName.substring(0, cf.thisClassName.lastIndexOf('.') + 1);
+        String tcpn = (this.thisClassPackageName = cf.thisClassName.substring(0, cf.thisClassName.lastIndexOf('.') + 1));
 
         // Print package declaration.
         if (tcpn.length() > 0) {
@@ -346,9 +346,9 @@ class Disassembler {
         // Print enclosing method info.
         EnclosingMethodAttribute ema = cf.enclosingMethodAttribute;
         if (ema != null) {
-            ConstantNameAndTypeInfo m = ema.method;
-            String methodName = m == null ? "[initializer]" : m.name.bytes;
-            String className = ema.clasS.name;
+            ConstantNameAndTypeInfo m          = ema.method;
+            String                  methodName = m == null ? "[initializer]" : m.name.bytes;
+            String                  className  = ema.clasS.name;
             println();
             println(
                 "// This class is enclosed by method '"
@@ -557,7 +557,7 @@ class Disassembler {
                 SignatureAttribute sa = method.signatureAttribute;
                 mts = sa == null ? decodeMethodDescriptor(method.descriptor) : decodeMethodTypeSignature(sa.signature);
                 if (!mts.formalTypeParameters.isEmpty()) {
-                        Iterator<FormalTypeParameter> it = mts.formalTypeParameters.iterator();
+                    Iterator<FormalTypeParameter> it = mts.formalTypeParameters.iterator();
                     print("<" + beautify(it.next().toString()));
                     while (it.hasNext()) print(", " + beautify(it.next().toString()));
                     print(">");
@@ -752,7 +752,8 @@ class Disassembler {
         );
     }
 
-    private void printAttributes(
+    private void
+    printAttributes(
         List<Attribute>          attributes,
         String                   prefix,
         Attribute[]              excludedAttributes,
@@ -767,7 +768,8 @@ class Disassembler {
         if (tmp.isEmpty()) return;
 
         Collections.sort(tmp, new Comparator<Attribute>() {
-            @Override public int compare(Attribute a1, Attribute a2) { return a1.getName().compareTo(a2.getName()); }
+            @SuppressWarnings("null") @Override public int
+            compare(Attribute a1, Attribute a2) { return a1.getName().compareTo(a2.getName()); }
         });
 
         println(prefix + (this.verbose ? "Attributes:" : "Unprocessed attributes:"));
@@ -781,7 +783,7 @@ class Disassembler {
     public
     class PrintAttributeVisitor implements AttributeVisitor {
 
-        private final String prefix;
+        private final String  prefix;
         private final Context context;
 
         public
@@ -809,9 +811,11 @@ class Disassembler {
             if (!ca.attributes.isEmpty()) {
                 println(this.prefix + "  attributes = {");
                 PrintAttributeVisitor pav = new PrintAttributeVisitor(this.prefix + "    ", Context.METHOD);
-                List<Attribute> tmp = ca.attributes;
+                List<Attribute>       tmp = ca.attributes;
                 Collections.sort(tmp, new Comparator<Attribute>() {
-                    @Override public int compare(Attribute a1, Attribute a2) { return a1.getName().compareTo(a2.getName()); }
+
+                    @SuppressWarnings("null") @Override public int
+                    compare(Attribute a1, Attribute a2) { return a1.getName().compareTo(a2.getName()); }
                 });
                 for (Attribute a : tmp) {
                     a.accept(pav);
@@ -993,7 +997,8 @@ class Disassembler {
         }
     }
 
-    private void printParameters(
+    private void
+    printParameters(
         @Nullable RuntimeInvisibleParameterAnnotationsAttribute ripaa,
         @Nullable RuntimeVisibleParameterAnnotationsAttribute   rvpaa,
         List<TypeSignature>                                     parameterTypes,
@@ -1043,7 +1048,8 @@ class Disassembler {
     /**
      * Read byte code from the given {@link InputStream} and disassemble it.
      */
-    private void disassembleBytecode(
+    private void
+    disassembleBytecode(
         InputStream                        is,
         List<ExceptionTableEntry>          exceptionTable,
         @Nullable LineNumberTableAttribute lineNumberTableAttribute,
@@ -1128,13 +1134,13 @@ class Disassembler {
             // Format and print the disassembly lines.
             String indentation = "        ";
             for (Entry<Integer, String> e : lines.entrySet()) {
-                int instructionOffset = e.getKey();
-                String text = e.getValue();
+                int    instructionOffset = e.getKey();
+                String text              = e.getValue();
 
                 // Print ends of TRY bodies.
                 for (Iterator<Entry<Integer, SortedMap<Integer, List<ExceptionTableEntry>>>> it = tryEnds.entrySet().iterator(); it.hasNext();) {
-                    Entry<Integer, SortedMap<Integer, List<ExceptionTableEntry>>> e2 = it.next();
-                    int endPC = e2.getKey().intValue();
+                    Entry<Integer, SortedMap<Integer, List<ExceptionTableEntry>>> e2    = it.next();
+                    int                                                           endPC = e2.getKey().intValue();
                     if (endPC > instructionOffset) break;
 
                     SortedMap<Integer, List<ExceptionTableEntry>> startPC2ETE = e2.getValue();
@@ -1147,7 +1153,7 @@ class Disassembler {
                         print(indentation + "} catch (");
                         for (Iterator<ExceptionTableEntry> it2 = etes.iterator();;) {
                             ExceptionTableEntry ete = it2.next();
-                            ConstantClassInfo ct = ete.catchType;
+                            ConstantClassInfo   ct  = ete.catchType;
                             print((ct == null ? "[all exceptions]" : beautify(ct.name)) + " => " + branchTarget(ete.handlerPC));
                             if (!it2.hasNext()) break;
                             print(", ");
@@ -1159,14 +1165,14 @@ class Disassembler {
 
                 // Print instruction offsets only for branch targets.
                 {
-                	String label = this.branchTargets.get(instructionOffset);
-                	if (label != null) this.println(label);
+                    String label = this.branchTargets.get(instructionOffset);
+                    if (label != null) this.println(label);
                 }
 
                 // Print beginnings of TRY bodies.
                 for (Iterator<Entry<Integer, Set<Integer>>> it = tryStarts.entrySet().iterator(); it.hasNext();) {
-                    Entry<Integer, Set<Integer>> sc = it.next();
-                    Integer startPC = sc.getKey();
+                    Entry<Integer, Set<Integer>> sc      = it.next();
+                    Integer                      startPC = sc.getKey();
                     if (startPC > instructionOffset) break;
 
                     for (int i = sc.getValue().size(); i > 0; i--) {
@@ -1214,25 +1220,23 @@ class Disassembler {
         }
     }
 
-	private @Nullable String
-	branchTarget(int offset) {
-		Map<Integer, String> bts = this.branchTargets;
-		assert bts != null;
+    private @Nullable String
+    branchTarget(int offset) {
+        Map<Integer, String> bts = this.branchTargets;
+        assert bts != null;
         String label = bts.get(offset);
         if (label == null) {
             label = this.symbolicLabels ? "L" + (1 + bts.size()) : "#" + offset;
             bts.put(offset, label);
         }
         return label;
-	}
+    }
 
     /**
      * @return -1 iff the offset is not associated with a line number
      */
-    private static int findLineNumber(
-        LineNumberTableAttribute lnta,
-        int                      offset
-    ) {
+    private static int
+    findLineNumber(LineNumberTableAttribute lnta, int offset) {
         for (LineNumberTableEntry lnte : lnta.entries) {
             if (lnte.startPC == offset) return lnte.lineNumber;
         }
@@ -1242,7 +1246,8 @@ class Disassembler {
     /**
      * @return The {@code operands} converted into one line of text, prefixed and separated by one space.
      */
-    String disassembleOperands(
+    String
+    disassembleOperands(
         Operand[]       operands,
         DataInputStream dis,
         int             instructionOffset,
@@ -1482,21 +1487,22 @@ class Disassembler {
         "132 iinc            localvariableindex2 signedshort\n"
     );
 
-    private static Instruction[] compileInstructions(String instructions) {
+    private static Instruction[]
+    compileInstructions(String instructions) {
         Instruction[] result = new Instruction[256];
 
         for (StringTokenizer st1 = new StringTokenizer(instructions, "\n"); st1.hasMoreTokens();) {
-            StringTokenizer st2 = new StringTokenizer(st1.nextToken());
-            String os = st2.nextToken();
-            int opcode = Integer.parseInt(os);
-            String mnemonic = st2.nextToken();
-            Operand[] operands;
+            StringTokenizer st2      = new StringTokenizer(st1.nextToken());
+            String          os       = st2.nextToken();
+            int             opcode   = Integer.parseInt(os);
+            String          mnemonic = st2.nextToken();
+            Operand[]       operands;
             if (!st2.hasMoreTokens()) {
                 operands = new Operand[0];
             } else {
                 List<Operand> l = new ArrayList<Operand>();
                 while (st2.hasMoreTokens()) {
-                    String s = st2.nextToken();
+                    String  s = st2.nextToken();
                     Operand operand;
                     if (s.equals("intfloatclassstring1")) {
                         operand = new Operand() {
@@ -1509,8 +1515,8 @@ class Disassembler {
                                 ConstantPool    cp,
                                 Disassembler    d
                             ) throws IOException {
-                                short index = (short) (0xff & dis.readByte());
-                                String t = cp.getIntegerFloatClassString(index);
+                                short  index = (short) (0xff & dis.readByte());
+                                String t     = cp.getIntegerFloatClassString(index);
                                 if (Character.isJavaIdentifierStart(t.charAt(0))) t = d.beautify(t);
                                 if (d.verbose) t += " (" + (0xffff & index) + ")";
                                 return ' ' + t;
@@ -1528,8 +1534,8 @@ class Disassembler {
                                 ConstantPool    cp,
                                 Disassembler    d
                             ) throws IOException {
-                                short index = dis.readShort();
-                                String t = cp.getIntegerFloatClassString(index);
+                                short  index = dis.readShort();
+                                String t     = cp.getIntegerFloatClassString(index);
                                 if (Character.isJavaIdentifierStart(t.charAt(0))) t = d.beautify(t);
                                 if (d.verbose) t += " (" + (0xffff & index) + ")";
                                 return ' ' + t;
@@ -1547,8 +1553,8 @@ class Disassembler {
                                 ConstantPool    cp,
                                 Disassembler    d
                             ) throws IOException {
-                                short index = dis.readShort();
-                                String t = cp.getLongDoubleString(index);
+                                short  index = dis.readShort();
+                                String t     = cp.getLongDoubleString(index);
                                 if (d.verbose) t += " (" + (0xffff & index) + ")";
                                 return ' ' + t;
                             }
@@ -1565,9 +1571,9 @@ class Disassembler {
                                 ConstantPool    cp,
                                 Disassembler    d
                             ) throws IOException {
-                                short index = dis.readShort();
-                                ConstantFieldrefInfo fr = cp.get(index, ConstantFieldrefInfo.class);
-                                String t = (
+                                short                index = dis.readShort();
+                                ConstantFieldrefInfo fr    = cp.get(index, ConstantFieldrefInfo.class);
+                                String               t     = (
                                     d.beautify(d.decodeFieldDescriptor(fr.nameAndType.descriptor.bytes).toString())
                                     + ' '
                                     + d.beautify(fr.clasS.name)
@@ -1590,9 +1596,9 @@ class Disassembler {
                                 ConstantPool    cp,
                                 Disassembler    d
                             ) throws IOException {
-                                short index = dis.readShort();
-                                ConstantMethodrefInfo mr = cp.get(index, ConstantMethodrefInfo.class);
-                                String t = d.beautify(
+                                short                 index = dis.readShort();
+                                ConstantMethodrefInfo mr    = cp.get(index, ConstantMethodrefInfo.class);
+                                String                t     = d.beautify(
                                     d.decodeMethodDescriptor(mr.nameAndType.descriptor.bytes).toString(
                                         mr.clasS.name,
                                         mr.nameAndType.name.bytes
@@ -1614,8 +1620,8 @@ class Disassembler {
                                 ConstantPool    cp,
                                 Disassembler    d
                             ) throws IOException {
-                                short index = dis.readShort();
-                                ConstantInterfaceMethodrefInfo imr = cp.get(index, ConstantInterfaceMethodrefInfo.class);
+                                short                          index = dis.readShort();
+                                ConstantInterfaceMethodrefInfo imr   = cp.get(index, ConstantInterfaceMethodrefInfo.class);
                                 dis.readByte();
                                 dis.readByte();
                                 String t = d.beautify(
@@ -1640,9 +1646,9 @@ class Disassembler {
                                 ConstantPool    cp,
                                 Disassembler    d
                             ) throws IOException {
-                                short index = dis.readShort();
-                                String name = cp.get(index, ConstantClassInfo.class).name;
-                                String t = d.beautify(
+                                short  index = dis.readShort();
+                                String name  = cp.get(index, ConstantClassInfo.class).name;
+                                String t     = d.beautify(
                                     name.startsWith("[")
                                     ? d.decodeFieldDescriptor(name).toString()
                                     : name.replace('/', '.')
@@ -1843,7 +1849,7 @@ class Disassembler {
 
                                 StringBuilder sb = new StringBuilder(" default => ").append(d.branchTarget(instructionOffset + dis.readInt()));
 
-                                int low = dis.readInt();
+                                int low  = dis.readInt();
                                 int high = dis.readInt();
                                 for (int i = low; i <= high; ++i) {
                                     sb.append(", ").append(i).append(" => ").append(d.branchTarget(instructionOffset + dis.readInt()));
@@ -1899,7 +1905,7 @@ class Disassembler {
                                 ConstantPool    cp,
                                 Disassembler    d
                             ) throws IOException {
-                                int subopcode = 0xff & dis.readByte();
+                                int         subopcode       = 0xff & dis.readByte();
                                 Instruction wideInstruction = OPCODE_TO_WIDE_INSTRUCTION[subopcode];
                                 if (wideInstruction == null) {
                                     return (
@@ -1934,11 +1940,8 @@ class Disassembler {
         return result;
     }
 
-    LocalVariable getLocalVariable(
-        short  localVariableIndex,
-        int    instructionOffset,
-        Method method
-    ) {
+    LocalVariable
+    getLocalVariable(short localVariableIndex, int  instructionOffset, Method method) {
 
         // Calculate index of first parameter.
         int firstParameter = (method.accessFlags & ACC_STATIC) == 0 ? 1 : 0;
@@ -1948,7 +1951,7 @@ class Disassembler {
 
         List<TypeSignature> parameterTypes;
         {
-            SignatureAttribute sa = method.signatureAttribute;
+            SignatureAttribute  sa  = method.signatureAttribute;
             MethodTypeSignature mts = sa != null ? decodeMethodTypeSignature(sa.signature) : decodeMethodDescriptor(method.descriptor);
             parameterTypes = mts.parameterTypes;
         }
@@ -2061,7 +2064,8 @@ class Disassembler {
         final @Nullable TypeSignature typeSignature;
         final String                  name;
 
-        public LocalVariable(@Nullable TypeSignature typeSignature, String name) {
+        public
+        LocalVariable(@Nullable TypeSignature typeSignature, String name) {
             this.typeSignature = typeSignature;
             this.name          = name;
         }
@@ -2112,7 +2116,8 @@ class Disassembler {
         /**
          * @return One space and this operand disassembled
          */
-        String disassemble(
+        String
+        disassemble(
             DataInputStream dis,
             int             instructionOffset,
             Method          method,

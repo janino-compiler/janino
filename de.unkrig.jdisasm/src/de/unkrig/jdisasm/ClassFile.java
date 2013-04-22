@@ -64,8 +64,8 @@ class ClassFile {
      * Fully qualified (dot-separated) names of the interfaces that this type implements.
      */
     public final List<String>                             interfaceNames = new ArrayList<String>();
-    public final List<Field>                              fields = new ArrayList<Field>();
-    public final List<Method>                             methods = new ArrayList<Method>();
+    public final List<Field>                              fields         = new ArrayList<Field>();
+    public final List<Method>                             methods        = new ArrayList<Method>();
     public @Nullable DeprecatedAttribute                  deprecatedAttribute;
     public @Nullable EnclosingMethodAttribute             enclosingMethodAttribute;
     public @Nullable InnerClassesAttribute                innerClassesAttribute;
@@ -141,7 +141,7 @@ class ClassFile {
                     throw ioe2;
                 } catch (RuntimeException re) {
                     throw new RuntimeException("Reading field #" + i + " of " + n + ": " + re.getMessage(), re);
-        }
+                }
             }
         }
 
@@ -413,7 +413,7 @@ class ClassFile {
     /** Representation of an attribute in a Java&trade; class file. */
     public
     interface Attribute {
-        void accept(AttributeVisitor visitor);
+        void   accept(AttributeVisitor visitor);
         String getName();
     }
 
@@ -442,8 +442,8 @@ class ClassFile {
             // Read attribute body into byte array and create a DataInputStream.
             ByteArrayInputStream bais;
             {
-                int attributeLength = dis.readInt();
-                final byte[] ba = new byte[attributeLength];
+                int          attributeLength = dis.readInt();
+                final byte[] ba              = new byte[attributeLength];
                 dis.readFully(ba);
                 bais = new ByteArrayInputStream(ba);
             }
@@ -467,7 +467,8 @@ class ClassFile {
         }
     }
 
-    private void readAttributeBody(
+    private void
+    readAttributeBody(
         final String          attributeName,
         final DataInputStream dis,
         AttributeVisitor      visitor
@@ -531,7 +532,7 @@ class ClassFile {
     /** The visitor for {@Attribute}. */
     public
     interface AttributeVisitor {
-        enum Context { CLASS, FIELD, METHOD };
+        enum Context { CLASS, FIELD, METHOD }
 
         void visit(AnnotationDefaultAttribute                    ada);
         void visit(CodeAttribute                                 ca);
@@ -581,7 +582,8 @@ class ClassFile {
     }
 
     /** Representation of an attribute with an unknown name. */
-    public static final class UnknownAttribute implements Attribute {
+    public static final
+    class UnknownAttribute implements Attribute {
         public final String name;
         public byte[]       info;
 
@@ -611,7 +613,8 @@ class ClassFile {
     }
 
     /** Representation of a {@code InnerClasses} attribute. */
-    public static final class InnerClassesAttribute implements Attribute {
+    public static final
+    class InnerClassesAttribute implements Attribute {
 
         /** Helper class for {@link InnerClassesAttribute}. */
         public static
@@ -808,7 +811,7 @@ class ClassFile {
             return new ElementValue() { @Override public String toString() { return ConstantPool.stringToJavaLiteral(s); }};
         } else
         if (tag == 'e') {
-            String typeName = cf.constantPool.get(dis.readShort(), ConstantUtf8Info.class).bytes;
+            String typeName  = cf.constantPool.get(dis.readShort(), ConstantUtf8Info.class).bytes;
             String constName = cf.constantPool.get(dis.readShort(), ConstantUtf8Info.class).bytes;
             try {
                 final String s = SignatureParser.decodeFieldDescriptor(typeName) + "." + constName;
@@ -1105,7 +1108,8 @@ class ClassFile {
         @Override public String getName()                        { return "ConstantValue"; }
     }
 
-    static byte[] readByteArray(DataInputStream dis, int size) throws IOException {
+    static byte[]
+    readByteArray(DataInputStream dis, int size) throws IOException {
         byte[] res = new byte[size];
         dis.readFully(res);
         return res;
