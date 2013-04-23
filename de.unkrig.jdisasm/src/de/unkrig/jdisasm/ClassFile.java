@@ -600,16 +600,16 @@ class ClassFile {
     public static
     class SyntheticAttribute implements Attribute {
         public                  SyntheticAttribute(DataInputStream dis, ClassFile cf) {}
-        @Override public void   accept(AttributeVisitor visitor) { visitor.visit(this); }
-        @Override public String getName()                        { return "Synthetic"; }
+        @Override public void   accept(AttributeVisitor visitor)                      { visitor.visit(this); }
+        @Override public String getName()                                             { return "Synthetic"; }
     }
 
     /** Representation of a {@code Deprecated} attribute. */
     public static
     class DeprecatedAttribute implements Attribute {
         public                  DeprecatedAttribute(DataInputStream dis, ClassFile cf) {}
-        @Override public void   accept(AttributeVisitor visitor) { visitor.visit(this); }
-        @Override public String getName()                        { return "Deprecated"; }
+        @Override public void   accept(AttributeVisitor visitor)                       { visitor.visit(this); }
+        @Override public String getName()                                              { return "Deprecated"; }
     }
 
     /** Representation of a {@code InnerClasses} attribute. */
@@ -747,7 +747,7 @@ class ClassFile {
 
             public
             ElementValuePair(DataInputStream dis, ClassFile cf) throws IOException {
-                this.elementName = cf.constantPool.get(dis.readShort(), ConstantUtf8Info.class).bytes;
+                this.elementName  = cf.constantPool.get(dis.readShort(), ConstantUtf8Info.class).bytes;
                 this.elementValue = newElementValue(dis, cf);
             }
 
@@ -923,7 +923,7 @@ class ClassFile {
         public final List<Attribute>                     attributes = new ArrayList<Attribute>();
 
         CodeAttribute(DataInputStream dis, ClassFile cf) throws IOException {
-            this.maxStack = dis.readShort();
+            this.maxStack  = dis.readShort();
             this.maxLocals = dis.readShort();
 
             // Byte code.

@@ -69,7 +69,7 @@ class ConstantPool {
 
         public
         ConstantFieldrefInfo(ConstantClassInfo clasS, ConstantNameAndTypeInfo nameAndType) {
-            this.clasS = clasS;
+            this.clasS       = clasS;
             this.nameAndType = nameAndType;
         }
 
@@ -97,7 +97,7 @@ class ConstantPool {
 
         public
         ConstantMethodrefInfo(ConstantClassInfo clasS, ConstantNameAndTypeInfo nameAndType) {
-            this.clasS = clasS;
+            this.clasS       = clasS;
             this.nameAndType = nameAndType;
         }
 
@@ -126,7 +126,7 @@ class ConstantPool {
 
         public
         ConstantInterfaceMethodrefInfo(ConstantClassInfo clasS, ConstantNameAndTypeInfo nameAndType) {
-            this.clasS = clasS;
+            this.clasS       = clasS;
             this.nameAndType = nameAndType;
         }
 
@@ -211,7 +211,7 @@ class ConstantPool {
 
         public
         ConstantNameAndTypeInfo(ConstantUtf8Info name, ConstantUtf8Info descriptor) {
-            this.name = name;
+            this.name       = name;
             this.descriptor = descriptor;
         }
 

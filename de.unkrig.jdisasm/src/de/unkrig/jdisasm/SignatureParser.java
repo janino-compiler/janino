@@ -234,8 +234,8 @@ class SignatureParser {
             ClassTypeSignature        superclassSignature,
             List<ClassTypeSignature>  superinterfaceSignatures
         ) {
-            this.formalTypeParameters = formalTypeParameters;
-            this.superclassSignature = superclassSignature;
+            this.formalTypeParameters     = formalTypeParameters;
+            this.superclassSignature      = superclassSignature;
             this.superinterfaceSignatures = superinterfaceSignatures;
         }
         public String
@@ -273,9 +273,9 @@ class SignatureParser {
             List<SimpleClassTypeSignature> suffixes
         ) {
             this.packageSpecifier = packageSpecifier;
-            this.simpleClassName = simpleClassName;
-            this.typeArguments = typeArguments;
-            this.suffixes = suffixes;
+            this.simpleClassName  = simpleClassName;
+            this.typeArguments    = typeArguments;
+            this.suffixes         = suffixes;
         }
 
         @Override public String
@@ -312,7 +312,7 @@ class SignatureParser {
         public
         SimpleClassTypeSignature(String simpleClassName, List<TypeArgument> typeArguments) {
             this.simpleClassName = simpleClassName;
-            this.typeArguments = typeArguments;
+            this.typeArguments   = typeArguments;
         }
 
         @Override public String
@@ -379,8 +379,8 @@ class SignatureParser {
             @Nullable FieldTypeSignature classBound,
             List<FieldTypeSignature>     interfaceBounds
         ) {
-            this.identifier = identifier;
-            this.classBound = classBound;
+            this.identifier      = identifier;
+            this.classBound      = classBound;
             this.interfaceBounds = interfaceBounds;
         }
 
@@ -427,7 +427,7 @@ class SignatureParser {
         public
         TypeArgument(Mode mode, @Nullable FieldTypeSignature fieldTypeSignature) {
             assert mode == Mode.ANY ^ fieldTypeSignature == null;
-            this.mode = mode;
+            this.mode               = mode;
             this.fieldTypeSignature = fieldTypeSignature;
         }
 

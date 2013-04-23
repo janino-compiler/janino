@@ -768,7 +768,8 @@ class Disassembler {
         if (tmp.isEmpty()) return;
 
         Collections.sort(tmp, new Comparator<Attribute>() {
-            @SuppressWarnings("null") @Override public int
+
+            @Override public int
             compare(Attribute a1, Attribute a2) { return a1.getName().compareTo(a2.getName()); }
         });
 
@@ -788,7 +789,7 @@ class Disassembler {
 
         public
         PrintAttributeVisitor(String prefix, Context context) {
-            this.prefix = prefix;
+            this.prefix  = prefix;
             this.context = context;
         }
 
@@ -814,7 +815,7 @@ class Disassembler {
                 List<Attribute>       tmp = ca.attributes;
                 Collections.sort(tmp, new Comparator<Attribute>() {
 
-                    @SuppressWarnings("null") @Override public int
+                    @Override public int
                     compare(Attribute a1, Attribute a2) { return a1.getName().compareTo(a2.getName()); }
                 });
                 for (Attribute a : tmp) {
@@ -1704,7 +1705,7 @@ class Disassembler {
                         // Strip the lv index from the mnemonic
                         final short index = Short.parseShort(mnemonic.substring(mnemonic.length() - 1));
                         mnemonic = mnemonic.substring(0, mnemonic.length() - 2);
-                        operand = new Operand() {
+                        operand  = new Operand() {
 
                             @Override public String
                             disassemble(

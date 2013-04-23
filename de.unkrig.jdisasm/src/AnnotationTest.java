@@ -1,6 +1,6 @@
+import de.unkrig.commons.nullanalysis.NotNullByDefault;
 
-@SuppressWarnings("unused")
-public
+@SuppressWarnings("unused") @NotNullByDefault public
 class AnnotationTest {
 
 //    public @interface RequestForEnhancement {
