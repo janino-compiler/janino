@@ -10,7 +10,8 @@ class AnnotationTest {
 //        String date();      // Date RFE was implemented
 //    }
     // Annotation type declaration with defaults on some elements
-    public @interface RequestForEnhancement {
+    public
+    @interface RequestForEnhancement {
         int    id();       // No default - must be specified in
                                                             // each annotation
         String synopsis(); // No default - must be specified in
@@ -19,29 +20,35 @@ class AnnotationTest {
         String date()      default "[unimplemented]";
     }
 
-    public @interface Preliminary { }
+    public
+    @interface Preliminary { }
 
-    public @interface Copyright {
+    public
+    @interface Copyright {
         String value();
     }
 
     /**
      * Associates a list of endorsers with the annotated class.
      */
-    public @interface Endorsers {
+    public
+    @interface Endorsers {
         String[] value();
     }
 
-    public @interface Name {
+    public
+    @interface Name {
         String first();
         String last();
     }
 
-    public @interface Author {
+    public
+    @interface Author {
         Name value();
     }
 
-    public @interface Reviewer {
+    public
+    @interface Reviewer {
         Name value();
     }
 
@@ -54,13 +61,15 @@ class AnnotationTest {
     interface Formatter { }
 
     // Designates a formatter to pretty-print the annotated class.
-    public @interface PrettyPrinter {
+    public
+    @interface PrettyPrinter {
         Class<? extends Formatter> value();
     }
 
     // Annotation type declaration with nested enum type declaration
     /** @deprecated */
-    @Deprecated public @interface Quality {
+    @Deprecated public
+    @interface Quality {
         enum Level { /** @deprecated */ @Deprecated BAD, INDIFFERENT, GOOD }
 
         Level value();
