@@ -60,8 +60,7 @@ class AnnotationTest {
 
     // Annotation type declaration with nested enum type declaration
     /** @deprecated */
-    @Deprecated
-    public @interface Quality {
+    @Deprecated public @interface Quality {
         enum Level { /** @deprecated */ @Deprecated BAD, INDIFFERENT, GOOD }
 
         Level value();
@@ -70,8 +69,7 @@ class AnnotationTest {
     // USES
 
     // Single-element annotation
-    @Copyright("2002 Yoyodyne Propulsion Systems, Inc., All rights reserved.")
-    public static
+    @Copyright("2002 Yoyodyne Propulsion Systems, Inc., All rights reserved.") public static
     class OscillationOverthruster {
         public int              fld1;
         public int              fld2                                   = 2;
@@ -115,27 +113,22 @@ class AnnotationTest {
     }
 
     // Array-valued single-element annotation
-    @Endorsers({"Children", "Unscrupulous dentists"})
-    public static
+    @Endorsers({"Children", "Unscrupulous dentists"}) public static
     class Lollipop {  }
 
     // Single-element array-valued single-element annotation
-    @Endorsers("Epicurus")
-    public static
+    @Endorsers("Epicurus") public static
     class Pleasure {  }
 
     // Single-element complex annotation
-    @Author(@Name(first = "Joe", last = "Hacker"))
-    public static
+    @Author(@Name(first = "Joe", last = "Hacker")) public static
     class BitTwiddle {  }
 
     // Normal annotation with default values
     @RequestForEnhancement(
         id       = 4561414,
         synopsis = "Balance the federal budget"
-    )
-
-    public static void
+    ) public static void
     balanceFederalBudget() {
         throw new UnsupportedOperationException("Not implemented");
     }
@@ -145,16 +138,14 @@ class AnnotationTest {
     public static
     class GorgeousFormatter implements Formatter {  }
 
-    @PrettyPrinter(GorgeousFormatter.class)
-    public static
+    @PrettyPrinter(GorgeousFormatter.class) public static
     class Petunia { }
     // This annotation is illegal, as String is not a subtype of Formatter!!
 //    @PrettyPrinter(String.class) public static
 //    class Begonia { ... }
 
     //Annotation using enum type declared inside the annotation type
-    @Quality(Quality.Level.GOOD)
-    public static
+    @Quality(Quality.Level.GOOD) public static
     class Karma {
     }
 
