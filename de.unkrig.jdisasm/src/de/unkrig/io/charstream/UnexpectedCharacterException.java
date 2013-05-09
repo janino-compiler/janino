@@ -2,7 +2,7 @@
 /*
  * JDISASM - A Java[TM] class file disassembler
  *
- * Copyright (c) 2001-2011, Arno Unkrig
+ * Copyright (c) 2001, Arno Unkrig
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
@@ -31,7 +31,7 @@ import java.io.IOException;
 /**
  * Indicates that {@link CharStream#read} did not find the character(s) it expected.
  */
-public
+public // SUPPRESS CHECKSTYLE CauseParameterInExceptionCheck
 class UnexpectedCharacterException extends IOException {
 
     private static final long serialVersionUID = 1L;

@@ -2,7 +2,7 @@
 /*
  * JDISASM - A Java[TM] class file disassembler
  *
- * Copyright (c) 2001-2011, Arno Unkrig
+ * Copyright (c) 2001, Arno Unkrig
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
@@ -58,22 +58,23 @@ class ClassFile {
      * The fully qualified (dot-separated) name of the superclass of this type; "java.lang.Object" iff this type is an
      * interface; {@code null} iff this type is {@link Object}.
      */
-    public @Nullable String superClassName;
+    @Nullable public String superClassName;
 
     /**
      * Fully qualified (dot-separated) names of the interfaces that this type implements.
      */
-    public final List<String>                             interfaceNames = new ArrayList<String>();
+    public final List<String> interfaceNames = new ArrayList<String>();
+
     public final List<Field>                              fields         = new ArrayList<Field>();
     public final List<Method>                             methods        = new ArrayList<Method>();
-    public @Nullable DeprecatedAttribute                  deprecatedAttribute;
-    public @Nullable EnclosingMethodAttribute             enclosingMethodAttribute;
-    public @Nullable InnerClassesAttribute                innerClassesAttribute;
-    public @Nullable RuntimeInvisibleAnnotationsAttribute runtimeInvisibleAnnotationsAttribute;
-    public @Nullable RuntimeVisibleAnnotationsAttribute   runtimeVisibleAnnotationsAttribute;
-    public @Nullable SignatureAttribute                   signatureAttribute;
-    public @Nullable SourceFileAttribute                  sourceFileAttribute;
-    public @Nullable SyntheticAttribute                   syntheticAttribute;
+    @Nullable public DeprecatedAttribute                  deprecatedAttribute;
+    @Nullable public EnclosingMethodAttribute             enclosingMethodAttribute;
+    @Nullable public InnerClassesAttribute                innerClassesAttribute;
+    @Nullable public RuntimeInvisibleAnnotationsAttribute runtimeInvisibleAnnotationsAttribute;
+    @Nullable public RuntimeVisibleAnnotationsAttribute   runtimeVisibleAnnotationsAttribute;
+    @Nullable public SignatureAttribute                   signatureAttribute;
+    @Nullable public SourceFileAttribute                  sourceFileAttribute;
+    @Nullable public SyntheticAttribute                   syntheticAttribute;
     public final List<Attribute>                          attributes = new ArrayList<Attribute>();
 
     public static final short ACC_PUBLIC       = 0x00000001;
@@ -138,7 +139,7 @@ class ClassFile {
                 } catch (IOException ioe) {
                     IOException ioe2 = new IOException("Reading field #" + i + " of " + n + ": " + ioe.getMessage());
                     ioe2.initCause(ioe);
-                    throw ioe2;
+                    throw ioe2; // SUPPRESS CHECKSTYLE Avoid Hiding Cause of the Exception
                 } catch (RuntimeException re) {
                     throw new RuntimeException("Reading field #" + i + " of " + n + ": " + re.getMessage(), re);
                 }
@@ -154,7 +155,7 @@ class ClassFile {
                 } catch (IOException ioe) {
                     IOException ioe2 = new IOException("Reading method #" + i + " of " + n + ": " + ioe.getMessage());
                     ioe2.initCause(ioe);
-                    throw ioe2;
+                    throw ioe2; // SUPPRESS CHECKSTYLE Avoid Hiding Cause of the Exception
                 } catch (RuntimeException re) {
                     throw new RuntimeException("Reading method #" + i + " of " + n + ": " + re.getMessage(), re);
                 }
@@ -245,12 +246,12 @@ class ClassFile {
         public short                                          accessFlags;
         public String                                         name;
         public String                                         descriptor;
-        public @Nullable ConstantValueAttribute               constantValueAttribute;
-        public @Nullable DeprecatedAttribute                  deprecatedAttribute;
-        public @Nullable RuntimeInvisibleAnnotationsAttribute runtimeInvisibleAnnotationsAttribute;
-        public @Nullable RuntimeVisibleAnnotationsAttribute   runtimeVisibleAnnotationsAttribute;
-        public @Nullable SignatureAttribute                   signatureAttribute;
-        public @Nullable SyntheticAttribute                   syntheticAttribute;
+        @Nullable public ConstantValueAttribute               constantValueAttribute;
+        @Nullable public DeprecatedAttribute                  deprecatedAttribute;
+        @Nullable public RuntimeInvisibleAnnotationsAttribute runtimeInvisibleAnnotationsAttribute;
+        @Nullable public RuntimeVisibleAnnotationsAttribute   runtimeVisibleAnnotationsAttribute;
+        @Nullable public SignatureAttribute                   signatureAttribute;
+        @Nullable public SyntheticAttribute                   syntheticAttribute;
         public final List<Attribute>                          attributes = new ArrayList<Attribute>();
 
         public
@@ -313,16 +314,16 @@ class ClassFile {
         public String                                                  name;
         public String                                                  descriptor;
         public final List<Attribute>                                   attributes = new ArrayList<Attribute>();
-        public @Nullable AnnotationDefaultAttribute                    annotationDefaultAttribute;
-        public @Nullable CodeAttribute                                 codeAttribute;
-        public @Nullable DeprecatedAttribute                           deprecatedAttribute;
-        public @Nullable ExceptionsAttribute                           exceptionsAttribute;
-        public @Nullable RuntimeInvisibleAnnotationsAttribute          runtimeInvisibleAnnotationsAttribute;
-        public @Nullable RuntimeInvisibleParameterAnnotationsAttribute runtimeInvisibleParameterAnnotationsAttribute;
-        public @Nullable RuntimeVisibleAnnotationsAttribute            runtimeVisibleAnnotationsAttribute;
-        public @Nullable RuntimeVisibleParameterAnnotationsAttribute   runtimeVisibleParameterAnnotationsAttribute;
-        public @Nullable SignatureAttribute                            signatureAttribute;
-        public @Nullable SyntheticAttribute                            syntheticAttribute;
+        @Nullable public AnnotationDefaultAttribute                    annotationDefaultAttribute;
+        @Nullable public CodeAttribute                                 codeAttribute;
+        @Nullable public DeprecatedAttribute                           deprecatedAttribute;
+        @Nullable public ExceptionsAttribute                           exceptionsAttribute;
+        @Nullable public RuntimeInvisibleAnnotationsAttribute          runtimeInvisibleAnnotationsAttribute;
+        @Nullable public RuntimeInvisibleParameterAnnotationsAttribute runtimeInvisibleParameterAnnotationsAttribute;
+        @Nullable public RuntimeVisibleAnnotationsAttribute            runtimeVisibleAnnotationsAttribute;
+        @Nullable public RuntimeVisibleParameterAnnotationsAttribute   runtimeVisibleParameterAnnotationsAttribute;
+        @Nullable public SignatureAttribute                            signatureAttribute;
+        @Nullable public SyntheticAttribute                            syntheticAttribute;
 
         public
         Method(DataInputStream dis) throws IOException {
@@ -417,7 +418,7 @@ class ClassFile {
         String getName();
     }
 
-    void
+    final void
     readAttributes(DataInputStream dis, AttributeVisitor visitor) throws IOException {
         short n = dis.readShort();
         for (int i = 0; i < n; ++i) {

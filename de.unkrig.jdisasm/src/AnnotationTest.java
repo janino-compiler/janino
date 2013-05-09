@@ -83,8 +83,8 @@ class AnnotationTest {
         public int              fld1;
         public int              fld2                                   = 2;
         public final int        fld3                                   = 3;
-        public static final int fld4                                   = 4;
-        public static final int fld55555555555555555555555555555555555 = 5;
+        public static final int FLD4                                   = 4;
+        public static final int FLD55555555555555555555555555555555555 = 5;
 
 
         OscillationOverthruster() {
@@ -96,33 +96,33 @@ class AnnotationTest {
         meth(@Copyright("foo") int x) {
             class Nested2 {
             }
-            new Object(){};
+            new Object() {};
             try {
                 try {
-                    meth(1);
+                    this.meth(1);
                 } catch (RuntimeException rte) {
-                    meth(2);
+                    this.meth(2);
                 } catch (Error rte) {
-                    meth(3);
+                    this.meth(3);
                 }
 
                 try {
-                    meth(4);
+                    this.meth(4);
                 } catch (RuntimeException rte) {
-                    meth(5);
+                    this.meth(5);
                 } catch (Error rte) {
-                    meth(6);
+                    this.meth(6);
                 }
             } catch (RuntimeException rte) {
-                meth(7);
+                this.meth(7);
             } catch (Error rte) {
-                meth(8);
+                this.meth(8);
             }
         }
     }
 
     // Array-valued single-element annotation
-    @Endorsers({"Children", "Unscrupulous dentists"}) public static
+    @Endorsers({"Children", "Unscrupulous dentists" }) public static
     class Lollipop {  }
 
     // Single-element array-valued single-element annotation
