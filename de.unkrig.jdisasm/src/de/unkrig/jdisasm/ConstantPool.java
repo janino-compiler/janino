@@ -2,7 +2,7 @@
 /*
  * JDISASM - A Java[TM] class file disassembler
  *
- * Copyright (c) 2001-2011, Arno Unkrig
+ * Copyright (c) 2001, Arno Unkrig
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
@@ -274,7 +274,9 @@ class ConstantPool {
             getConstantUtf8Info(short index) {
                 return (ConstantUtf8Info) get(index);
             }
-            abstract ConstantPoolEntry get(short index);
+
+            abstract ConstantPoolEntry
+            get(short index);
         }
         final RawEntry[] rawEntries = new RawEntry[count];
 
@@ -486,12 +488,18 @@ class ConstantPool {
     get(short index, Class<T> clasS) {
         int ii = 0xffff & index;
         if (ii == 0 || ii >= this.entries.length) {
-            throw new IllegalArgumentException("Illegal constant pool index " + ii + " - only 1..." + (this.entries.length - 1) + " allowed");
+            throw new IllegalArgumentException(
+                "Illegal constant pool index " + ii + " - only 1..." + (this.entries.length - 1) + " allowed"
+            );
         }
 
         ConstantPoolEntry e = this.entries[ii];
         if (e == null) throw new NullPointerException("Unusable CP entry " + index);
-        if (!clasS.isAssignableFrom(e.getClass())) throw new RuntimeException("CP entry #" + index + " is a '" + e.getClass().getName() + "', not a '" + clasS.getName() + "'");
+        if (!clasS.isAssignableFrom(e.getClass())) {
+            throw new RuntimeException(
+                "CP entry #" + index + " is a '" + e.getClass().getName() + "', not a '" + clasS.getName() + "'"
+            );
+        }
 
         @SuppressWarnings("unchecked") T result = (T) e;
         return result;
@@ -500,18 +508,24 @@ class ConstantPool {
     /**
      * @return {@code null} iff {@code index == 0}
      */
-    public @Nullable <T extends ConstantPoolEntry> T
+    @Nullable public <T extends ConstantPoolEntry> T
     getOptional(short index, Class<T> clasS) {
         if (index == 0) return null;
 
         int ii = 0xffff & index;
         if (ii >= this.entries.length) {
-            throw new IllegalArgumentException("Illegal constant pool index " + ii + " - only 0..." + (this.entries.length - 1) + " allowed");
+            throw new IllegalArgumentException(
+                "Illegal constant pool index " + ii + " - only 0..." + (this.entries.length - 1) + " allowed"
+            );
         }
 
         ConstantPoolEntry e = this.entries[ii];
         if (e == null) throw new NullPointerException("Unusable CP entry " + index);
-        if (!clasS.isAssignableFrom(e.getClass())) throw new RuntimeException("CP entry #" + index + " is a '" + e.getClass().getName() + "', not a '" + clasS.getName() + "'");
+        if (!clasS.isAssignableFrom(e.getClass())) {
+            throw new RuntimeException(
+                "CP entry #" + index + " is a '" + e.getClass().getName() + "', not a '" + clasS.getName() + "'"
+            );
+        }
 
         @SuppressWarnings("unchecked") T result = (T) e;
         return result;
@@ -523,7 +537,7 @@ class ConstantPool {
      */
     public String
     getIntegerFloatClassString(short index) {
-        ConstantPoolEntry e = get(index, ConstantPoolEntry.class);
+        ConstantPoolEntry e = this.get(index, ConstantPoolEntry.class);
         if (e instanceof ConstantIntegerInfo) return e.toString();
         if (e instanceof ConstantFloatInfo) return e.toString();
         if (e instanceof ConstantClassInfo) return e.toString();
@@ -537,7 +551,7 @@ class ConstantPool {
      */
     public String
     getIntegerFloatLongDoubleString(short index) {
-        ConstantPoolEntry e = get(index, ConstantPoolEntry.class);
+        ConstantPoolEntry e = this.get(index, ConstantPoolEntry.class);
         if (e instanceof ConstantIntegerInfo) return e.toString();
         if (e instanceof ConstantFloatInfo) return e.toString();
         if (e instanceof ConstantLongInfo) return e.toString();
@@ -552,7 +566,7 @@ class ConstantPool {
      */
     public String
     getLongDoubleString(short index) {
-        ConstantPoolEntry e = get(index, ConstantPoolEntry.class);
+        ConstantPoolEntry e = this.get(index, ConstantPoolEntry.class);
         if (e instanceof ConstantLongInfo) return e.toString();
         if (e instanceof ConstantDoubleInfo) return e.toString();
         if (e instanceof ConstantStringInfo) return stringToJavaLiteral(((ConstantStringInfo) e).string);
@@ -565,7 +579,7 @@ class ConstantPool {
      */
     public String
     getIntegerFloatLongDouble(short index) {
-        ConstantPoolEntry e = get(index, ConstantPoolEntry.class);
+        ConstantPoolEntry e = this.get(index, ConstantPoolEntry.class);
         if (e instanceof ConstantIntegerInfo) return e.toString();
         if (e instanceof ConstantFloatInfo) return e.toString();
         if (e instanceof ConstantLongInfo) return e.toString();

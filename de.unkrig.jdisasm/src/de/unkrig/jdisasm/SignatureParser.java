@@ -2,7 +2,7 @@
 /*
  * JDISASM - A Java[TM] class file disassembler
  *
- * Copyright (c) 2001-2011, Arno Unkrig
+ * Copyright (c) 2001, Arno Unkrig
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
@@ -41,7 +41,7 @@ import de.unkrig.io.charstream.UnexpectedCharacterException;
  * <a href="http://java.sun.com/docs/books/jvms/second_edition/ClassFileFormat-Java5.pdf">Java 5 class file format</a>,
  * section 4.4.4, "Signatures".
  */
-public
+public final
 class SignatureParser {
 
     private SignatureParser() {}
@@ -370,7 +370,7 @@ class SignatureParser {
     class FormalTypeParameter {
 
         public final String                       identifier;
-        public final @Nullable FieldTypeSignature classBound;
+        @Nullable public final FieldTypeSignature classBound;
         public final List<FieldTypeSignature>     interfaceBounds;
 
         public
@@ -388,10 +388,10 @@ class SignatureParser {
         toString() {
             FieldTypeSignature cb = this.classBound;
             if (cb == null) {
-                if (this.interfaceBounds.isEmpty()) return this.identifier;
-
                 Iterator<FieldTypeSignature> it = this.interfaceBounds.iterator();
-                StringBuilder                sb = new StringBuilder(this.identifier).append(" extends ").append(it.next().toString());
+                if (!it.hasNext()) return this.identifier;
+
+                StringBuilder sb = new StringBuilder(this.identifier).append(" extends ").append(it.next().toString());
                 while (it.hasNext()) sb.append(" & ").append(it.next().toString());
                 return sb.toString();
             } else {
@@ -419,7 +419,7 @@ class SignatureParser {
         enum Mode { EXTENDS, SUPER, ANY, NONE }
 
         public final Mode                         mode;
-        public final @Nullable FieldTypeSignature fieldTypeSignature;
+        @Nullable public final FieldTypeSignature fieldTypeSignature;
 
         /**
          * @param fieldTypeSignature {@code null} iff {@code mode == ANY}
@@ -462,7 +462,9 @@ class SignatureParser {
     public static final PrimitiveTypeSignature SHORT   = new PrimitiveTypeSignature("short");
     public static final PrimitiveTypeSignature BOOLEAN = new PrimitiveTypeSignature("boolean");
 
-    public static final TypeSignature VOID = new TypeSignature() { @Override public String toString() { return "void"; }};
+    public static final TypeSignature VOID = new TypeSignature() {
+        @Override public String toString() { return "void"; }
+    };
 
     private static TypeSignature
     parseFieldDescriptor(StringCharStream scs) throws EOFException, UnexpectedCharacterException, SignatureException {

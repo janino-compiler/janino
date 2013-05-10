@@ -402,11 +402,16 @@ class ClassFile {
                     }
                 });
             } catch (IOException ioe) {
-                IOException ioe2 = new IOException("Parsing method '" + this.name + "' [" + this.descriptor + "]: " + ioe.getMessage());
+                IOException ioe2 = new IOException(
+                    "Parsing method '" + this.name + "' [" + this.descriptor + "]: " + ioe.getMessage()
+                );
                 ioe2.initCause(ioe);
-                throw ioe2;
+                throw ioe2; // SUPPRESS CHECKSTYLE AvoidLosing
             } catch (RuntimeException re) {
-                throw new RuntimeException("Parsing method '" + this.name + "' [" + this.descriptor + "]: " + re.getMessage(), re);
+                throw new RuntimeException(
+                    "Parsing method '" + this.name + "' [" + this.descriptor + "]: " + re.getMessage(),
+                    re
+                );
             }
         }
     }
@@ -427,7 +432,7 @@ class ClassFile {
             } catch (IOException ioe) {
                 IOException ioe2 = new IOException("Reading attribute #" + i + " of " + n + ": " + ioe.getMessage());
                 ioe2.initCause(ioe);
-                throw ioe2;
+                throw ioe2; // SUPPRESS CHECKSTYLE AvoidLosing
             } catch (RuntimeException re) {
                 throw new RuntimeException("Reading attribute #" + i + " of " + n + ": " + re.getMessage(), re);
             }
@@ -462,7 +467,7 @@ class ClassFile {
         } catch (IOException ioe) {
             IOException ioe2 = new IOException("Reading attribute '" + attributeName + "': " + ioe.getMessage());
             ioe2.initCause(ioe);
-            throw ioe2;
+            throw ioe2; // SUPPRESS CHECKSTYLE AvoidLosing
         } catch (RuntimeException re) {
             throw new RuntimeException("Reading attribute '" + attributeName + "': " + re.getMessage(), re);
         }
@@ -474,55 +479,55 @@ class ClassFile {
         final DataInputStream dis,
         AttributeVisitor      visitor
     ) throws IOException {
-        if (attributeName.equals("AnnotationDefault")) {
+        if ("AnnotationDefault".equals(attributeName)) {
             visitor.visit(new AnnotationDefaultAttribute(dis, this));
         } else
-        if (attributeName.equals("ConstantValue")) {
+        if ("ConstantValue".equals(attributeName)) {
             visitor.visit(new ConstantValueAttribute(dis, this));
         } else
-        if (attributeName.equals("Code")) {
+        if ("Code".equals(attributeName)) {
             visitor.visit(new CodeAttribute(dis, this));
         } else
-        if (attributeName.equals("Deprecated")) {
+        if ("Deprecated".equals(attributeName)) {
             visitor.visit(new DeprecatedAttribute(dis, this));
         } else
-        if (attributeName.equals("EnclosingMethod")) {
+        if ("EnclosingMethod".equals(attributeName)) {
             visitor.visit(new EnclosingMethodAttribute(dis, this));
         } else
-        if (attributeName.equals("Exceptions")) {
+        if ("Exceptions".equals(attributeName)) {
             visitor.visit(new ExceptionsAttribute(dis, this));
         } else
-        if (attributeName.equals("InnerClasses")) {
+        if ("InnerClasses".equals(attributeName)) {
             visitor.visit(new InnerClassesAttribute(dis, this));
         } else
-        if (attributeName.equals("LineNumberTable")) {
+        if ("LineNumberTable".equals(attributeName)) {
             visitor.visit(new LineNumberTableAttribute(dis, this));
         } else
-        if (attributeName.equals("LocalVariableTable")) {
+        if ("LocalVariableTable".equals(attributeName)) {
             visitor.visit(new LocalVariableTableAttribute(dis, this));
         } else
-        if (attributeName.equals("LocalVariableTypeTable")) {
+        if ("LocalVariableTypeTable".equals(attributeName)) {
             visitor.visit(new LocalVariableTypeTableAttribute(dis, this));
         } else
-        if (attributeName.equals("RuntimeInvisibleAnnotations")) {
+        if ("RuntimeInvisibleAnnotations".equals(attributeName)) {
             visitor.visit(new RuntimeInvisibleAnnotationsAttribute(dis, this));
         } else
-        if (attributeName.equals("RuntimeInvisibleParameterAnnotations")) {
+        if ("RuntimeInvisibleParameterAnnotations".equals(attributeName)) {
             visitor.visit(new RuntimeInvisibleParameterAnnotationsAttribute(dis, this));
         } else
-        if (attributeName.equals("RuntimeVisibleAnnotations")) {
+        if ("RuntimeVisibleAnnotations".equals(attributeName)) {
             visitor.visit(new RuntimeVisibleAnnotationsAttribute(dis, this));
         } else
-        if (attributeName.equals("RuntimeVisibleParameterAnnotations")) {
+        if ("RuntimeVisibleParameterAnnotations".equals(attributeName)) {
             visitor.visit(new RuntimeVisibleParameterAnnotationsAttribute(dis, this));
         } else
-        if (attributeName.equals("Signature")) {
+        if ("Signature".equals(attributeName)) {
             visitor.visit(new SignatureAttribute(dis, this));
         } else
-        if (attributeName.equals("SourceFile")) {
+        if ("SourceFile".equals(attributeName)) {
             visitor.visit(new SourceFileAttribute(dis, this));
         } else
-        if (attributeName.equals("Synthetic")) {
+        if ("Synthetic".equals(attributeName)) {
             visitor.visit(new SyntheticAttribute(dis, this));
         } else
         {
@@ -557,29 +562,29 @@ class ClassFile {
     }
 
     /** Default implementation of the {@link AttributeVisitor}. */
-    public static abstract
+    public abstract static
     class AbstractAttributeVisitor implements AttributeVisitor {
 
         public abstract void acceptOther(Attribute ai);
 
-        @Override public void visit(AnnotationDefaultAttribute                    ada)   { acceptOther(ada); }
-        @Override public void visit(CodeAttribute                                 ca)    { acceptOther(ca); }
-        @Override public void visit(ConstantValueAttribute                        cva)   { acceptOther(cva); }
-        @Override public void visit(DeprecatedAttribute                           da)    { acceptOther(da); }
-        @Override public void visit(EnclosingMethodAttribute                      ema)   { acceptOther(ema); }
-        @Override public void visit(ExceptionsAttribute                           ea)    { acceptOther(ea); }
-        @Override public void visit(InnerClassesAttribute                         ica)   { acceptOther(ica); }
-        @Override public void visit(LineNumberTableAttribute                      lnta)  { acceptOther(lnta); }
-        @Override public void visit(LocalVariableTableAttribute                   lvta)  { acceptOther(lvta); }
-        @Override public void visit(LocalVariableTypeTableAttribute               lvtta) { acceptOther(lvtta); }
-        @Override public void visit(RuntimeInvisibleAnnotationsAttribute          riaa)  { acceptOther(riaa); }
-        @Override public void visit(RuntimeInvisibleParameterAnnotationsAttribute ripaa) { acceptOther(ripaa); }
-        @Override public void visit(RuntimeVisibleAnnotationsAttribute            rvaa)  { acceptOther(rvaa); }
-        @Override public void visit(RuntimeVisibleParameterAnnotationsAttribute   rvpaa) { acceptOther(rvpaa); }
-        @Override public void visit(SignatureAttribute                            sa)    { acceptOther(sa); }
-        @Override public void visit(SourceFileAttribute                           sfa)   { acceptOther(sfa); }
-        @Override public void visit(SyntheticAttribute                            sa)    { acceptOther(sa); }
-        @Override public void visit(UnknownAttribute                              a)     { acceptOther(a); }
+        @Override public void visit(AnnotationDefaultAttribute                    ada)   { this.acceptOther(ada); }
+        @Override public void visit(CodeAttribute                                 ca)    { this.acceptOther(ca); }
+        @Override public void visit(ConstantValueAttribute                        cva)   { this.acceptOther(cva); }
+        @Override public void visit(DeprecatedAttribute                           da)    { this.acceptOther(da); }
+        @Override public void visit(EnclosingMethodAttribute                      ema)   { this.acceptOther(ema); }
+        @Override public void visit(ExceptionsAttribute                           ea)    { this.acceptOther(ea); }
+        @Override public void visit(InnerClassesAttribute                         ica)   { this.acceptOther(ica); }
+        @Override public void visit(LineNumberTableAttribute                      lnta)  { this.acceptOther(lnta); }
+        @Override public void visit(LocalVariableTableAttribute                   lvta)  { this.acceptOther(lvta); }
+        @Override public void visit(LocalVariableTypeTableAttribute               lvtta) { this.acceptOther(lvtta); }
+        @Override public void visit(RuntimeInvisibleAnnotationsAttribute          riaa)  { this.acceptOther(riaa); }
+        @Override public void visit(RuntimeInvisibleParameterAnnotationsAttribute ripaa) { this.acceptOther(ripaa); }
+        @Override public void visit(RuntimeVisibleAnnotationsAttribute            rvaa)  { this.acceptOther(rvaa); }
+        @Override public void visit(RuntimeVisibleParameterAnnotationsAttribute   rvpaa) { this.acceptOther(rvpaa); }
+        @Override public void visit(SignatureAttribute                            sa)    { this.acceptOther(sa); }
+        @Override public void visit(SourceFileAttribute                           sfa)   { this.acceptOther(sfa); }
+        @Override public void visit(SyntheticAttribute                            sa)    { this.acceptOther(sa); }
+        @Override public void visit(UnknownAttribute                              a)     { this.acceptOther(a); }
     }
 
     /** Representation of an attribute with an unknown name. */
@@ -623,9 +628,9 @@ class ClassFile {
 
             public final ConstantClassInfo           innerClassInfo;
             /**  {@code null} == top-level type or anonymous class */
-            public final @Nullable ConstantClassInfo outerClassInfo;
+            @Nullable public final ConstantClassInfo outerClassInfo;
             /**  Original simple name; {@code null} == anonymous */
-            public final @Nullable ConstantUtf8Info  innerName;
+            @Nullable public final ConstantUtf8Info  innerName;
             /** Original access flags */
             public final short                       innerClassAccessFlags;
 
@@ -809,7 +814,9 @@ class ClassFile {
         } else
         if (tag == 's') {
             final String s = cf.constantPool.get(dis.readShort(), ConstantUtf8Info.class).bytes;
-            return new ElementValue() { @Override public String toString() { return ConstantPool.stringToJavaLiteral(s); }};
+            return new ElementValue() {
+                @Override public String toString() { return ConstantPool.stringToJavaLiteral(s); }
+            };
         } else
         if (tag == 'e') {
             String typeName  = cf.constantPool.get(dis.readShort(), ConstantUtf8Info.class).bytes;
@@ -885,7 +892,7 @@ class ClassFile {
         public ConstantClassInfo clasS;
 
         /** null == not enclosed by a constructor or a method, i.e. a field initializer */
-        public @Nullable ConstantNameAndTypeInfo method;
+        @Nullable public ConstantNameAndTypeInfo method;
 
         EnclosingMethodAttribute(DataInputStream dis, ClassFile cf) throws IOException {
             this.clasS  = cf.constantPool.get(dis.readShort(), ConstantClassInfo.class);
@@ -918,9 +925,9 @@ class ClassFile {
         public final short                               maxLocals;
         public final byte[]                              code;
         public final List<ExceptionTableEntry>           exceptionTable = new ArrayList<ExceptionTableEntry>();
-        public @Nullable LocalVariableTableAttribute     localVariableTableAttribute;
-        public @Nullable LocalVariableTypeTableAttribute localVariableTypeTableAttribute;
-        public @Nullable LineNumberTableAttribute        lineNumberTableAttribute;
+        @Nullable public LocalVariableTableAttribute     localVariableTableAttribute;
+        @Nullable public LocalVariableTypeTableAttribute localVariableTypeTableAttribute;
+        @Nullable public LineNumberTableAttribute        lineNumberTableAttribute;
         public final List<Attribute>                     attributes = new ArrayList<Attribute>();
 
         CodeAttribute(DataInputStream dis, ClassFile cf) throws IOException {
@@ -969,21 +976,30 @@ class ClassFile {
     /** helper class for {@link CodeAttribute}. */
     public static
     class ExceptionTableEntry {
-        public int                         startPC;
-        public int                         endPC;
-        public int                         handlerPC;
-        public @Nullable ConstantClassInfo catchType; // null == all exceptions, i.e. FINALLY
+        public int                         startPc;
+        public int                         endPc;
+        public int                         handlerPc;
+        @Nullable public ConstantClassInfo catchType; // null == all exceptions, i.e. FINALLY
 
         ExceptionTableEntry(DataInputStream dis, ClassFile cf) throws IOException {
-            this.startPC   = 0xffff & dis.readShort();
-            this.endPC     = 0xffff & dis.readShort();
-            this.handlerPC = 0xffff & dis.readShort();
+            this.startPc   = 0xffff & dis.readShort();
+            this.endPc     = 0xffff & dis.readShort();
+            this.handlerPc = 0xffff & dis.readShort();
             this.catchType = cf.constantPool.getOptional(dis.readShort(), ConstantClassInfo.class);
         }
 
         @Override public String
         toString() {
-            return "startPC=" + this.startPC + " endPC=" + this.endPC + " handlerPC=" + this.handlerPC + " catchType=" + this.catchType;
+            return (
+                "startPC="
+                + this.startPc
+                + " endPC="
+                + this.endPc
+                + " handlerPC="
+                + this.handlerPc
+                + " catchType="
+                + this.catchType
+            );
         }
     }
 
@@ -1020,11 +1036,11 @@ class ClassFile {
     public static
     class LineNumberTableEntry {
 
-        public int startPC;
+        public int startPc;
         public int lineNumber;
 
         LineNumberTableEntry(DataInputStream dis) throws IOException {
-            this.startPC    = 0xffff & dis.readShort();
+            this.startPc    = 0xffff & dis.readShort();
             this.lineNumber = 0xffff & dis.readShort();
         }
     }

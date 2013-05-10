@@ -2,7 +2,7 @@
 /*
  * JDISASM - A Java[TM] class file disassembler
  *
- * Copyright (c) 2001-2011, Arno Unkrig
+ * Copyright (c) 2001, Arno Unkrig
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
@@ -131,12 +131,14 @@ import de.unkrig.jdisasm.SignatureParser.TypeSignature;
 public
 class Disassembler {
 
+    // CHECKSTYLE LineLengthCheck:OFF
     private static final List<ConstantClassInfo>   NO_CONSTANT_CLASS_INFOS   = Collections.<ConstantClassInfo>emptyList();
     private static final List<ThrowsSignature>     NO_THROWS_SIGNATURES      = Collections.<ThrowsSignature>emptyList();
     private static final List<TypeSignature>       NO_TYPE_SIGNATURES        = Collections.<TypeSignature>emptyList();
     private static final List<ClassTypeSignature>  NO_CLASS_TYPE_SIGNATURES  = Collections.<ClassTypeSignature>emptyList();
     private static final List<FormalTypeParameter> NO_FORMAL_TYPE_PARAMETERS = Collections.<FormalTypeParameter>emptyList();
     private static final List<ParameterAnnotation> NO_PARAMETER_ANNOTATIONS  = Collections.<ParameterAnnotation>emptyList();
+    // CHECKSTYLE LineLengthCheck:ON
 
     // Configuration variables.
 
@@ -146,7 +148,7 @@ class Disassembler {
     /**
      * {@code null} means "do not attempt to find the source file".
      */
-    private @Nullable File sourceDirectory = null;
+    @Nullable private File sourceDirectory = null;
     private boolean        hideLines;
     private boolean        hideVars;
     private boolean        symbolicLabels;
@@ -154,9 +156,9 @@ class Disassembler {
     /**
      * "" for the default package; with a trailing period otherwise.
      */
-    private @Nullable String thisClassPackageName;
+    @Nullable private String thisClassPackageName;
 
-    private @Nullable Map<Integer /*offset*/, String /*label*/> branchTargets;
+    @Nullable private Map<Integer /*offset*/, String /*label*/> branchTargets;
 
     public static void
     main(String[] args) throws IOException {
@@ -165,25 +167,27 @@ class Disassembler {
         for (i = 0; i < args.length; ++i) {
             String arg = args[i];
             if (arg.charAt(0) != '-' || arg.length() == 1) break;
-            if (arg.equals("-o")) {
+            if ("-o".equals(arg)) {
                 d.setOut(new FileOutputStream(args[++i]));
             } else
-            if (arg.equals("-verbose")) {
+            if ("-verbose".equals(arg)) {
                 d.setVerbose(true);
             } else
-            if (arg.equals("-src")) {
+            if ("-src".equals(arg)) {
                 d.setSourceDirectory(new File(args[++i]));
             } else
-            if (arg.equals("-hide-lines")) {
+            if ("-hide-lines".equals(arg)) {
                 d.setHideLines(true);
             } else
-            if (arg.equals("-hide-vars")) {
+            if ("-hide-vars".equals(arg)) {
                 d.setHideVars(true);
             } else
-            if (arg.equals("-symbolic-labels")) {
+            if ("-symbolic-labels".equals(arg)) {
                 d.setSymbolicLabels(true);
             } else
-            if (arg.equals("-help")) {
+            if ("-help".equals(arg)) {
+
+                // CHECKSTYLE LineLengthCheck:OFF
                 System.out.println("Prints a disassembly listing of the given JAVA[TM] class files (or STDIN) to ");
                 System.out.println("STDOUT.");
                 System.out.println("Usage:");
@@ -195,6 +199,8 @@ class Disassembler {
                 System.out.println("  -hide-lines        Don't print the line numbers.");
                 System.out.println("  -hide-vars         Don't print the local variable names.");
                 System.out.println("  -symbolic-labels   Use symbolic labels instead of offsets.");
+                // CHECKSTYLE LineLengthCheck:ON
+
                 System.exit(0);
             } else
             {
@@ -205,7 +211,6 @@ class Disassembler {
         if (i == args.length) {
             d.disasm(System.in);
         } else {
-            Pattern IS_URL = Pattern.compile("\\w\\w+:.*");
             for (; i < args.length; ++i) {
                 String name = args[i];
                 if ("-".equals(name)) {
@@ -220,6 +225,7 @@ class Disassembler {
             }
         }
     }
+    private static final Pattern IS_URL = Pattern.compile("\\w\\w+:.*");
 
     public Disassembler() {}
 
@@ -280,11 +286,11 @@ class Disassembler {
         try {
             this.pw.println();
             this.pw.println("// *** Disassembly of '" + file + "'.");
-            disasm(is);
+            this.disasm(is);
         } catch (IOException ioe) {
             IOException ioe2 = new IOException("Disassembling '" + file + "': " + ioe.getMessage());
             ioe2.initCause(ioe);
-            throw ioe2;
+            throw ioe2; // SUPPRESS CHECKSTYLE AvoidLosing
         } catch (RuntimeException re) {
             throw new RuntimeException("Disassembling '" + file + "': " + re.getMessage(), re);
         } finally {
@@ -298,11 +304,11 @@ class Disassembler {
         try {
             this.pw.println();
             this.pw.println("// *** Disassembly of '" + location + "'.");
-            disasm(is);
+            this.disasm(is);
         } catch (IOException ioe) {
             IOException ioe2 = new IOException("Disassembling '" + location + "': " + ioe.getMessage());
             ioe2.initCause(ioe);
-            throw ioe2;
+            throw ioe2; // SUPPRESS CHECKSTYLE AvoidLosing
         } catch (RuntimeException re) {
             throw new RuntimeException("Disassembling '" + location + "': " + re.getMessage(), re);
         } finally {
@@ -332,15 +338,17 @@ class Disassembler {
         ClassFile cf = new ClassFile(dis);
 
         // Print JDK version.
-        println();
-        println("// Class file version = " + cf.getJdkName());
+        this.println();
+        this.println("// Class file version = " + cf.getJdkName());
 
-        String tcpn = (this.thisClassPackageName = cf.thisClassName.substring(0, cf.thisClassName.lastIndexOf('.') + 1));
+        String tcpn = (
+            this.thisClassPackageName = cf.thisClassName.substring(0, cf.thisClassName.lastIndexOf('.') + 1)
+        );
 
         // Print package declaration.
         if (tcpn.length() > 0) {
-            println();
-            println("package " + tcpn.substring(0, tcpn.length() - 1) + ";");
+            this.println();
+            this.println("package " + tcpn.substring(0, tcpn.length() - 1) + ";");
         }
 
         // Print enclosing method info.
@@ -349,8 +357,8 @@ class Disassembler {
             ConstantNameAndTypeInfo m          = ema.method;
             String                  methodName = m == null ? "[initializer]" : m.name.bytes;
             String                  className  = ema.clasS.name;
-            println();
-            println(
+            this.println();
+            this.println(
                 "// This class is enclosed by method '"
                 + beautify(className)
                 + ("<init>".equals(methodName) ? "(...)" : "." + methodName + "(...)")
@@ -358,7 +366,7 @@ class Disassembler {
             );
         }
 
-        println();
+        this.println();
 
         // Print SYNTHETIC notice.
         if ((cf.accessFlags & ACC_SYNTHETIC) != 0 || cf.syntheticAttribute != null) {
@@ -372,13 +380,13 @@ class Disassembler {
         {
             RuntimeInvisibleAnnotationsAttribute riaa = cf.runtimeInvisibleAnnotationsAttribute;
             if (riaa != null) {
-                for (Annotation a : riaa.annotations) println(a.toString());
+                for (Annotation a : riaa.annotations) this.println(a.toString());
             }
         }
         {
             RuntimeVisibleAnnotationsAttribute rvaa = cf.runtimeVisibleAnnotationsAttribute;
             if (rvaa != null) {
-                for (Annotation a : rvaa.annotations) println(a.toString());
+                for (Annotation a : rvaa.annotations) this.println(a.toString());
             }
         }
 
@@ -426,13 +434,13 @@ class Disassembler {
 
         // Dump the constant pool.
         if (this.verbose) {
-            println();
-            println("    // Constant pool dump:");
+            this.println();
+            this.println("    // Constant pool dump:");
             ConstantPool cp = cf.constantPool;
             for (int i = 0; i < cp.getSize(); i++) {
                 ConstantPoolEntry constantPoolEntry = cp.getOptional((short) i, ConstantPoolEntry.class);
                 if (constantPoolEntry == null) continue;
-                println("    //   #" + i + ": " + beautify(constantPoolEntry.toString()));
+                this.println("    //   #" + i + ": " + beautify(constantPoolEntry.toString()));
             }
         }
 
@@ -440,10 +448,10 @@ class Disassembler {
         {
             InnerClassesAttribute ica = cf.innerClassesAttribute;
             if (ica != null) {
-                println();
-                println("    // Enclosing/enclosed types:");
+                this.println();
+                this.println("    // Enclosing/enclosed types:");
                 for (InnerClassesAttribute.ClasS c : ica.classes) {
-                    println("    //   " + toString(c));
+                    this.println("    //   " + toString(c));
                 }
             }
         }
@@ -467,7 +475,10 @@ class Disassembler {
                     int idx = toplevelClassName.indexOf('$');
                     if (idx != -1) toplevelClassName = toplevelClassName.substring(0, idx);
                 }
-                sourceFile = new File(this.sourceDirectory, toplevelClassName.replace('.', File.separatorChar) + ".java");
+                sourceFile = new File(
+                    this.sourceDirectory,
+                    toplevelClassName.replace('.', File.separatorChar) + ".java"
+                );
             }
             if (!sourceFile.exists()) break READ_SOURCE_LINES;
 
@@ -488,7 +499,7 @@ class Disassembler {
             disassembleMethod(m, cf, sourceLines);
         }
 
-        println("}");
+        this.println("}");
 
         // Print class attributes.
         printAttributes(cf.attributes, "// ", new Attribute[] {
@@ -511,15 +522,15 @@ class Disassembler {
         try {
 
             // One blank line before each method declaration.
-            println();
+            this.println();
 
             // Print SYNTHETIC notice.
             if ((method.accessFlags & ACC_SYNTHETIC) != 0 || method.syntheticAttribute != null) {
-                println("    // (Synthetic method)");
+                this.println("    // (Synthetic method)");
             }
 
             // Print BRIDGE notice.
-            if ((method.accessFlags & ACC_BRIDGE) != 0) println("    // (Bridge method)");
+            if ((method.accessFlags & ACC_BRIDGE) != 0) this.println("    // (Bridge method)");
 
             // Print DEPRECATED notice.
             if (method.deprecatedAttribute != null) this.println("    /** @deprecated */");
@@ -528,13 +539,13 @@ class Disassembler {
             {
                 RuntimeInvisibleAnnotationsAttribute riaa = method.runtimeInvisibleAnnotationsAttribute;
                 if (riaa != null) {
-                    for (Annotation a : riaa.annotations) println("    " + a.toString());
+                    for (Annotation a : riaa.annotations) this.println("    " + a.toString());
                 }
             }
             {
                 RuntimeVisibleAnnotationsAttribute rvaa = method.runtimeVisibleAnnotationsAttribute;
                 if (rvaa != null) {
-                    for (Annotation a : rvaa.annotations) println("    " + a.toString());
+                    for (Annotation a : rvaa.annotations) this.println("    " + a.toString());
                 }
             }
 
@@ -558,9 +569,9 @@ class Disassembler {
                 mts = sa == null ? decodeMethodDescriptor(method.descriptor) : decodeMethodTypeSignature(sa.signature);
                 if (!mts.formalTypeParameters.isEmpty()) {
                     Iterator<FormalTypeParameter> it = mts.formalTypeParameters.iterator();
-                    print("<" + beautify(it.next().toString()));
-                    while (it.hasNext()) print(", " + beautify(it.next().toString()));
-                    print(">");
+                    this.print("<" + beautify(it.next().toString()));
+                    while (it.hasNext()) this.print(", " + beautify(it.next().toString()));
+                    this.print(">");
                 }
             }
 
@@ -587,7 +598,7 @@ class Disassembler {
                 && mts.formalTypeParameters.isEmpty()
                 && mts.returnType == SignatureParser.VOID
             ) {
-                print(beautify(cf.thisClassName));
+                this.print(beautify(cf.thisClassName));
                 printParameters(
                     method.runtimeInvisibleParameterAnnotationsAttribute,
                     method.runtimeVisibleParameterAnnotationsAttribute,
@@ -598,8 +609,8 @@ class Disassembler {
                 );
             } else
             {
-                print(beautify(mts.returnType.toString()) + ' ');
-                print(functionName);
+                this.print(beautify(mts.returnType.toString()) + ' ');
+                this.print(functionName);
                 printParameters(
                     method.runtimeInvisibleParameterAnnotationsAttribute,
                     method.runtimeVisibleParameterAnnotationsAttribute,
@@ -613,28 +624,28 @@ class Disassembler {
             // Thrown types.
             if (!mts.thrownTypes.isEmpty()) {
                 Iterator<ThrowsSignature> it = mts.thrownTypes.iterator();
-                print(" throws " + beautify(it.next().toString()));
-                while (it.hasNext()) print(", " + beautify(it.next().toString()));
+                this.print(" throws " + beautify(it.next().toString()));
+                while (it.hasNext()) this.print(", " + beautify(it.next().toString()));
             } else
             if (!exceptionNames.isEmpty()) {
                 Iterator<ConstantClassInfo> it = exceptionNames.iterator();
-                print(" throws " + beautify(it.next().name));
-                while (it.hasNext()) print(", " + beautify(it.next().name));
+                this.print(" throws " + beautify(it.next().name));
+                while (it.hasNext()) this.print(", " + beautify(it.next().name));
             }
 
             // Annotation default.
             {
                 AnnotationDefaultAttribute ada = method.annotationDefaultAttribute;
-                if (ada != null) print("default " + ada.defaultValue);
+                if (ada != null) this.print("default " + ada.defaultValue);
             }
 
             // Code.
             {
                 CodeAttribute ca = method.codeAttribute;
                 if (ca == null) {
-                    println(";");
+                    this.println(";");
                 } else {
-                    println(" {");
+                    this.println(" {");
                     try {
                         disassembleBytecode(
                             new ByteArrayInputStream(ca.code),
@@ -647,7 +658,7 @@ class Disassembler {
                     } catch (IOException ignored) {
                         ;
                     }
-                    println("    }");
+                    this.println("    }");
                 }
             }
 
@@ -672,29 +683,29 @@ class Disassembler {
     private void
     disassembleFields(List<Field> fields) {
         for (Field field : fields) {
-            println();
+            this.println();
 
             // Print field annotations.
             {
                 RuntimeInvisibleAnnotationsAttribute riaa = field.runtimeInvisibleAnnotationsAttribute;
                 if (riaa != null) {
-                    for (Annotation a : riaa.annotations) println("    " + a.toString());
+                    for (Annotation a : riaa.annotations) this.println("    " + a.toString());
                 }
             }
             {
                 RuntimeVisibleAnnotationsAttribute rvaa = field.runtimeVisibleAnnotationsAttribute;
                 if (rvaa != null) {
-                    for (Annotation a : rvaa.annotations) println("    " + a.toString());
+                    for (Annotation a : rvaa.annotations) this.println("    " + a.toString());
                 }
             }
 
             // print SYNTHETIC notice.
             if ((field.accessFlags & ACC_SYNTHETIC) != 0 || field.syntheticAttribute != null) {
-                println("    // (Synthetic field)");
+                this.println("    // (Synthetic field)");
             }
 
             // Print DEPRECATED notice.
-            if (field.deprecatedAttribute != null) println("    /** @deprecated */");
+            if (field.deprecatedAttribute != null) this.println("    /** @deprecated */");
 
             // Print field access flags and field type.
             String parametrizedType;
@@ -717,9 +728,9 @@ class Disassembler {
                 );
                 ConstantValueAttribute cva = field.constantValueAttribute;
                 if (cva == null) {
-                    printf("%-40s %s;%n", prefix, field.name);
+                    this.printf("%-40s %s;%n", prefix, field.name);
                 } else {
-                    printf("%-40s %-15s = %s;%n", prefix, field.name, cva.constantValue);
+                    this.printf("%-40s %-15s = %s;%n", prefix, field.name, cva.constantValue);
                 }
             }
 
@@ -773,7 +784,7 @@ class Disassembler {
             compare(Attribute a1, Attribute a2) { return a1.getName().compareTo(a2.getName()); }
         });
 
-        println(prefix + (this.verbose ? "Attributes:" : "Unprocessed attributes:"));
+        this.println(prefix + (this.verbose ? "Attributes:" : "Unprocessed attributes:"));
         PrintAttributeVisitor visitor = new PrintAttributeVisitor(prefix + "  ", context);
         for (Attribute a : tmp) a.accept(visitor);
     }
@@ -795,22 +806,22 @@ class Disassembler {
 
         @Override public void
         visit(AnnotationDefaultAttribute ada) {
-            println(this.prefix + "AnnotationDefault:");
-            println(this.prefix + "  " + ada.defaultValue.toString());
+            Disassembler.this.println(this.prefix + "AnnotationDefault:");
+            Disassembler.this.println(this.prefix + "  " + ada.defaultValue.toString());
         }
 
         @Override public void
         visit(CodeAttribute ca) {
-            println(this.prefix + "Code:");
-            println(this.prefix + "  max_locals = " + ca.maxLocals);
-            println(this.prefix + "  max_stack = " + ca.maxStack);
+            Disassembler.this.println(this.prefix + "Code:");
+            Disassembler.this.println(this.prefix + "  max_locals = " + ca.maxLocals);
+            Disassembler.this.println(this.prefix + "  max_stack = " + ca.maxStack);
 
-            println(this.prefix + "  code = {");
-            print(ca.code);
-            println(this.prefix + "  }");
+            Disassembler.this.println(this.prefix + "  code = {");
+            this.print(ca.code);
+            Disassembler.this.println(this.prefix + "  }");
 
             if (!ca.attributes.isEmpty()) {
-                println(this.prefix + "  attributes = {");
+                Disassembler.this.println(this.prefix + "  attributes = {");
                 PrintAttributeVisitor pav = new PrintAttributeVisitor(this.prefix + "    ", Context.METHOD);
                 List<Attribute>       tmp = ca.attributes;
                 Collections.sort(tmp, new Comparator<Attribute>() {
@@ -821,7 +832,7 @@ class Disassembler {
                 for (Attribute a : tmp) {
                     a.accept(pav);
                 }
-                println(this.prefix + "  }");
+                Disassembler.this.println(this.prefix + "  }");
             }
         }
 
@@ -832,29 +843,29 @@ class Disassembler {
                 for (int j = 0; j < 32; ++j) {
                     int idx = i + j;
                     if (idx >= data.length) break;
-                    printf("%c%02x", j == 16 ? '-' : ' ', 0xff & data[idx]);
+                    Disassembler.this.printf("%c%02x", j == 16 ? '-' : ' ', 0xff & data[idx]);
                 }
-                println();
+                Disassembler.this.println();
             }
         }
 
         @Override public void
         visit(ConstantValueAttribute cva) {
-            println(this.prefix + "ConstantValue:");
-            println(this.prefix + "  constant_value = " + cva.constantValue);
+            Disassembler.this.println(this.prefix + "ConstantValue:");
+            Disassembler.this.println(this.prefix + "  constant_value = " + cva.constantValue);
         }
 
         @Override public void
         visit(DeprecatedAttribute da) {
-            println(this.prefix + "DeprecatedAttribute:");
-            println(this.prefix + "  -");
+            Disassembler.this.println(this.prefix + "DeprecatedAttribute:");
+            Disassembler.this.println(this.prefix + "  -");
         }
 
         @Override public void
         visit(EnclosingMethodAttribute ema) {
-            println(this.prefix + "EnclosingMethod:");
+            Disassembler.this.println(this.prefix + "EnclosingMethod:");
             ConstantNameAndTypeInfo m = ema.method;
-            println(this.prefix + "  class/method = " + (
+            Disassembler.this.println(this.prefix + "  class/method = " + (
                 m == null
                 ? "(none)"
                 : beautify(decodeMethodDescriptor(m.descriptor.bytes).toString(ema.clasS.name, m.name.bytes))
@@ -863,33 +874,33 @@ class Disassembler {
 
         @Override public void
         visit(ExceptionsAttribute ea) {
-            println(this.prefix + "Exceptions:");
+            Disassembler.this.println(this.prefix + "Exceptions:");
             for (ConstantClassInfo en : ea.exceptionNames) {
-                println(this.prefix + "  " + en.name);
+                Disassembler.this.println(this.prefix + "  " + en.name);
             }
         }
 
         @Override public void
         visit(InnerClassesAttribute ica) {
-            println(this.prefix + "InnerClasses:");
+            Disassembler.this.println(this.prefix + "InnerClasses:");
             for (InnerClassesAttribute.ClasS c : ica.classes) {
-                println(this.prefix + "  " + Disassembler.this.toString(c));
+                Disassembler.this.println(this.prefix + "  " + Disassembler.this.toString(c));
             }
         }
 
         @Override public void
         visit(LineNumberTableAttribute lnta) {
-            println(this.prefix + "LineNumberTable:");
+            Disassembler.this.println(this.prefix + "LineNumberTable:");
             for (LineNumberTableEntry e : lnta.entries) {
-                println(this.prefix + "  " + e.startPC + " => Line " + e.lineNumber);
+                Disassembler.this.println(this.prefix + "  " + e.startPc + " => Line " + e.lineNumber);
             }
         }
 
         @Override public void
         visit(LocalVariableTableAttribute lvta) {
-            println(this.prefix + "LocalVariableTable:");
+            Disassembler.this.println(this.prefix + "LocalVariableTable:");
             for (LocalVariableTableAttribute.Entry e : lvta.entries) {
-                println(
+                Disassembler.this.println(
                     this.prefix
                     + "  "
                     + (0xffff & e.startPC)
@@ -907,9 +918,9 @@ class Disassembler {
 
         @Override public void
         visit(LocalVariableTypeTableAttribute lvtta) {
-            println(this.prefix + "LocalVariableTypeTable:");
+            Disassembler.this.println(this.prefix + "LocalVariableTypeTable:");
             for (LocalVariableTypeTableAttribute.Entry e : lvtta.entries) {
-                println(
+                Disassembler.this.println(
                     this.prefix
                     + "  "
                     + e.startPC
@@ -927,74 +938,78 @@ class Disassembler {
 
         @Override public void
         visit(RuntimeInvisibleAnnotationsAttribute riaa) {
-            println(this.prefix + "RuntimeInvisibleAnnotations:");
+            Disassembler.this.println(this.prefix + "RuntimeInvisibleAnnotations:");
             for (Annotation a : riaa.annotations) {
-                println(this.prefix + "  " + a.toString());
+                Disassembler.this.println(this.prefix + "  " + a.toString());
             }
         }
 
         @Override public void
         visit(RuntimeVisibleAnnotationsAttribute rvaa) {
-            println(this.prefix + "RuntimeVisibleAnnotations:");
+            Disassembler.this.println(this.prefix + "RuntimeVisibleAnnotations:");
             for (Annotation a : rvaa.annotations) {
-                println(this.prefix + "  " + a.toString());
+                Disassembler.this.println(this.prefix + "  " + a.toString());
             }
         }
 
         @Override public void
         visit(RuntimeInvisibleParameterAnnotationsAttribute ripaa) {
-            println(this.prefix + "RuntimeInvisibleParameterAnnotations:");
+            Disassembler.this.println(this.prefix + "RuntimeInvisibleParameterAnnotations:");
             for (ParameterAnnotation pa : ripaa.parameterAnnotations) {
                 for (Annotation a : pa.annotations) {
-                    println(this.prefix + "  " + a.toString());
+                    Disassembler.this.println(this.prefix + "  " + a.toString());
                 }
             }
         }
 
         @Override public void
         visit(RuntimeVisibleParameterAnnotationsAttribute rvpaa) {
-            println(this.prefix + "RuntimeVisibleParameterAnnotations:");
+            Disassembler.this.println(this.prefix + "RuntimeVisibleParameterAnnotations:");
             for (ParameterAnnotation pa : rvpaa.parameterAnnotations) {
                 for (Annotation a : pa.annotations) {
-                    println(this.prefix + "  " + a.toString());
+                    Disassembler.this.println(this.prefix + "  " + a.toString());
                 }
             }
         }
 
         @Override public void
         visit(SignatureAttribute sa) {
-            println(this.prefix + "Signature:");
+            Disassembler.this.println(this.prefix + "Signature:");
             switch (this.context) {
             case CLASS:
-                println(this.prefix + "  " + decodeClassSignature(sa.signature).toString("[this-class]"));
+                Disassembler.this.println(this.prefix + "  " + decodeClassSignature(sa.signature).toString("[this-class]"));
                 break;
             case FIELD:
-                println(this.prefix + "  " + decodeFieldTypeSignature(sa.signature).toString());
+                Disassembler.this.println(this.prefix + "  " + decodeFieldTypeSignature(sa.signature).toString());
                 break;
             case METHOD:
-                println(this.prefix + "  " + decodeMethodTypeSignature(sa.signature).toString("[declaring-class]", "[this-method]"));
+                Disassembler.this.println(
+                    this.prefix
+                    + "  "
+                    + decodeMethodTypeSignature(sa.signature).toString("[declaring-class]", "[this-method]")
+                );
                 break;
             }
         }
 
         @Override public void
         visit(SourceFileAttribute sfa) {
-            println(this.prefix + "SourceFile:");
-            println(this.prefix + "  " + sfa.sourceFile);
+            Disassembler.this.println(this.prefix + "SourceFile:");
+            Disassembler.this.println(this.prefix + "  " + sfa.sourceFile);
         }
 
         @Override public void
         visit(SyntheticAttribute sa) {
-            println(this.prefix + "Synthetic:");
-            println(this.prefix + " -");
+            Disassembler.this.println(this.prefix + "Synthetic:");
+            Disassembler.this.println(this.prefix + " -");
         }
 
         @Override public void
         visit(UnknownAttribute ua) {
-            println(this.prefix + ua.name + ":");
-            println(this.prefix + "  data = {");
-            print(ua.info);
-            println(this.prefix + "}");
+            Disassembler.this.println(this.prefix + ua.name + ":");
+            Disassembler.this.println(this.prefix + "  data = {");
+            this.print(ua.info);
+            Disassembler.this.println(this.prefix + "}");
         }
     }
 
@@ -1018,32 +1033,32 @@ class Disassembler {
             : rvpaa.parameterAnnotations
         ).iterator();
 
-        print("(");
+        this.print("(");
         Iterator<TypeSignature> it = parameterTypes.iterator();
         if (it.hasNext()) {
             for (;;) {
                 TypeSignature pts = it.next();
 
                 // Parameter annotations.
-                if (ipas.hasNext()) for (Annotation a : ipas.next().annotations) print(a.toString() + ' ');
-                if (vpas.hasNext()) for (Annotation a : vpas.next().annotations) print(a.toString() + ' ');
+                if (ipas.hasNext()) for (Annotation a : ipas.next().annotations) this.print(a.toString() + ' ');
+                if (vpas.hasNext()) for (Annotation a : vpas.next().annotations) this.print(a.toString() + ' ');
 
                 // Parameter type.
                 if (varargs && !it.hasNext() && pts instanceof ArrayTypeSignature) {
-                    print(beautify(((ArrayTypeSignature) pts).typeSignature.toString()) + "...");
+                    this.print(beautify(((ArrayTypeSignature) pts).typeSignature.toString()) + "...");
                 } else {
-                    print(beautify(pts.toString()));
+                    this.print(beautify(pts.toString()));
                 }
 
                 // Parameter name.
-                print(' ' + getLocalVariable(firstIndex, 0, method).name);
+                this.print(' ' + getLocalVariable(firstIndex, 0, method).name);
 
                 if (!it.hasNext()) break;
                 firstIndex++;
-                print(", ");
+                this.print(", ");
             }
         }
-        print(")");
+        this.print(")");
     }
 
     /**
@@ -1078,25 +1093,25 @@ class Disassembler {
 
                 // Register the entry in "tryStarts".
                 {
-                    Set<Integer> s = tryStarts.get(e.startPC);
+                    Set<Integer> s = tryStarts.get(e.startPc);
                     if (s == null) {
                         s = new HashSet<Integer>();
-                        tryStarts.put(e.startPC, s);
+                        tryStarts.put(e.startPc, s);
                     }
-                    s.add(e.endPC);
+                    s.add(e.endPc);
                 }
 
                 // Register the entry in "tryEnds".
                 {
-                    SortedMap<Integer, List<ExceptionTableEntry>> m = tryEnds.get(e.endPC);
+                    SortedMap<Integer, List<ExceptionTableEntry>> m = tryEnds.get(e.endPc);
                     if (m == null) {
                         m = new TreeMap<Integer, List<ExceptionTableEntry>>(Collections.reverseOrder());
-                        tryEnds.put(e.endPC, m);
+                        tryEnds.put(e.endPc, m);
                     }
-                    List<ExceptionTableEntry> l = m.get(e.startPC);
+                    List<ExceptionTableEntry> l = m.get(e.startPc);
                     if (l == null) {
                         l = new ArrayList<ExceptionTableEntry>();
-                        m.put(e.startPC, l);
+                        m.put(e.startPc, l);
                     }
                     l.add(e);
                 }
@@ -1125,7 +1140,7 @@ class Disassembler {
                     } catch (RuntimeException rte) {
                         for (Iterator<Entry<Integer, String>> it = lines.entrySet().iterator(); it.hasNext();) {
                             Entry<Integer, String> e = it.next();
-                            println("#" + e.getKey() + " " + e.getValue());
+                            this.println("#" + e.getKey() + " " + e.getValue());
                         }
                         throw new RuntimeException("Instruction '" + instruction + "', pc=" + instructionOffset, rte);
                     }
@@ -1139,27 +1154,39 @@ class Disassembler {
                 String text              = e.getValue();
 
                 // Print ends of TRY bodies.
-                for (Iterator<Entry<Integer, SortedMap<Integer, List<ExceptionTableEntry>>>> it = tryEnds.entrySet().iterator(); it.hasNext();) {
+                for (Iterator<Entry<Integer, SortedMap<Integer, List<ExceptionTableEntry>>>> it = (
+                    tryEnds.entrySet().iterator()
+                ); it.hasNext();) {
                     Entry<Integer, SortedMap<Integer, List<ExceptionTableEntry>>> e2    = it.next();
-                    int                                                           endPC = e2.getKey().intValue();
-                    if (endPC > instructionOffset) break;
+                    int                                                           endPc = e2.getKey().intValue();
+                    if (endPc > instructionOffset) break;
 
-                    SortedMap<Integer, List<ExceptionTableEntry>> startPC2ETE = e2.getValue();
-                    for (Entry<Integer, List<ExceptionTableEntry>> e3 : startPC2ETE.entrySet()) {
+                    SortedMap<Integer, List<ExceptionTableEntry>> startPc2Ete = e2.getValue();
+                    for (Entry<Integer, List<ExceptionTableEntry>> e3 : startPc2Ete.entrySet()) {
                         List<ExceptionTableEntry> etes = e3.getValue();
-                        if (endPC < instructionOffset) {
-                            error("Exception table entry ends at invalid code array index " + endPC + " (current instruction offset is " + instructionOffset + ")");
+                        if (endPc < instructionOffset) {
+                            error(
+                                "Exception table entry ends at invalid code array index "
+                                + endPc
+                                + " (current instruction offset is "
+                                + instructionOffset
+                                + ")"
+                            );
                         }
                         indentation = indentation.substring(4);
-                        print(indentation + "} catch (");
+                        this.print(indentation + "} catch (");
                         for (Iterator<ExceptionTableEntry> it2 = etes.iterator();;) {
                             ExceptionTableEntry ete = it2.next();
                             ConstantClassInfo   ct  = ete.catchType;
-                            print((ct == null ? "[all exceptions]" : beautify(ct.name)) + " => " + branchTarget(ete.handlerPC));
+                            this.print(
+                                (ct == null ? "[all exceptions]" : beautify(ct.name))
+                                + " => "
+                                + branchTarget(ete.handlerPc)
+                            );
                             if (!it2.hasNext()) break;
-                            print(", ");
+                            this.print(", ");
                         }
-                        println(")");
+                        this.println(")");
                     }
                     it.remove();
                 }
@@ -1173,14 +1200,20 @@ class Disassembler {
                 // Print beginnings of TRY bodies.
                 for (Iterator<Entry<Integer, Set<Integer>>> it = tryStarts.entrySet().iterator(); it.hasNext();) {
                     Entry<Integer, Set<Integer>> sc      = it.next();
-                    Integer                      startPC = sc.getKey();
-                    if (startPC > instructionOffset) break;
+                    Integer                      startPc = sc.getKey();
+                    if (startPc > instructionOffset) break;
 
                     for (int i = sc.getValue().size(); i > 0; i--) {
-                        if (startPC < instructionOffset) {
-                            error("Exception table entry starts at invalid code array index " + startPC + " (current instruction offset is " + instructionOffset + ")");
+                        if (startPc < instructionOffset) {
+                            error(
+                                "Exception table entry starts at invalid code array index "
+                                + startPc
+                                + " (current instruction offset is "
+                                + instructionOffset
+                                + ")"
+                            );
                         }
-                        println(indentation + "try {");
+                        this.println(indentation + "try {");
                         indentation += "    ";
                     }
                     it.remove();
@@ -1211,7 +1244,7 @@ class Disassembler {
                         }
                         sb.append(sourceLine);
                     }
-                    println(sb.toString());
+                    this.println(sb.toString());
                 }
 
                 this.println(indentation + text);
@@ -1221,7 +1254,7 @@ class Disassembler {
         }
     }
 
-    private @Nullable String
+    @Nullable private String
     branchTarget(int offset) {
         Map<Integer, String> bts = this.branchTargets;
         assert bts != null;
@@ -1239,7 +1272,7 @@ class Disassembler {
     private static int
     findLineNumber(LineNumberTableAttribute lnta, int offset) {
         for (LineNumberTableEntry lnte : lnta.entries) {
-            if (lnte.startPC == offset) return lnte.lineNumber;
+            if (lnte.startPc == offset) return lnte.lineNumber;
         }
         return -1;
     }
@@ -1269,223 +1302,225 @@ class Disassembler {
     }
 
     private static final Instruction[] OPCODE_TO_INSTRUCTION = compileInstructions(
-        "50  aaload\n" +
-        "83  aastore\n" +
-        "1   aconst_null\n" +
-        "25  aload           localvariableindex1\n" +
-        "42  aload_0         implicitlocalvariableindex\n" +
-        "43  aload_1         implicitlocalvariableindex\n" +
-        "44  aload_2         implicitlocalvariableindex\n" +
-        "45  aload_3         implicitlocalvariableindex\n" +
-        "189 anewarray       class2\n" +
-        "176 areturn\n" +
-        "190 arraylength\n" +
-        "58  astore          localvariableindex1\n" +
-        "75  astore_0        implicitlocalvariableindex\n" +
-        "76  astore_1        implicitlocalvariableindex\n" +
-        "77  astore_2        implicitlocalvariableindex\n" +
-        "78  astore_3        implicitlocalvariableindex\n" +
-        "191 athrow\n" +
-        "51  baload\n" +
-        "84  bastore\n" +
-        "16  bipush          signedbyte\n" +
-        "52  caload\n" +
-        "85  castore\n" +
-        "192 checkcast       class2\n" +
-        "144 d2f\n" +
-        "142 d2i\n" +
-        "143 d2l\n" +
-        "99  dadd\n" +
-        "49  daload\n" +
-        "82  dastore\n" +
-        "152 dcmpg\n" +
-        "151 dcmpl\n" +
-        "14  dconst_0\n" +
-        "15  dconst_1\n" +
-        "111 ddiv\n" +
-        "24  dload           localvariableindex1\n" +
-        "38  dload_0         implicitlocalvariableindex\n" +
-        "39  dload_1         implicitlocalvariableindex\n" +
-        "40  dload_2         implicitlocalvariableindex\n" +
-        "41  dload_3         implicitlocalvariableindex\n" +
-        "107 dmul\n" +
-        "119 dneg\n" +
-        "115 drem\n" +
-        "175 dreturn\n" +
-        "57  dstore          localvariableindex1\n" +
-        "71  dstore_0        implicitlocalvariableindex\n" +
-        "72  dstore_1        implicitlocalvariableindex\n" +
-        "73  dstore_2        implicitlocalvariableindex\n" +
-        "74  dstore_3        implicitlocalvariableindex\n" +
-        "103 dsub\n" +
-        "89  dup\n" +
-        "90  dup_x1\n" +
-        "91  dup_x2\n" +
-        "92  dup2\n" +
-        "93  dup2_x1\n" +
-        "94  dup2_x2\n" +
-        "141 f2d\n" +
-        "139 f2i\n" +
-        "140 f2l\n" +
-        "98  fadd\n" +
-        "48  faload\n" +
-        "81  fastore\n" +
-        "150 fcmpg\n" +
-        "149 fcmpl\n" +
-        "11  fconst_0\n" +
-        "12  fconst_1\n" +
-        "13  fconst_2\n" +
-        "110 fdiv\n" +
-        "23  fload           localvariableindex1\n" +
-        "34  fload_0         implicitlocalvariableindex\n" +
-        "35  fload_1         implicitlocalvariableindex\n" +
-        "36  fload_2         implicitlocalvariableindex\n" +
-        "37  fload_3         implicitlocalvariableindex\n" +
-        "106 fmul\n" +
-        "118 fneg\n" +
-        "114 frem\n" +
-        "174 freturn\n" +
-        "56  fstore          localvariableindex1\n" +
-        "67  fstore_0        implicitlocalvariableindex\n" +
-        "68  fstore_1        implicitlocalvariableindex\n" +
-        "69  fstore_2        implicitlocalvariableindex\n" +
-        "70  fstore_3        implicitlocalvariableindex\n" +
-        "102 fsub\n" +
-        "180 getfield        fieldref2\n" +
-        "178 getstatic       fieldref2\n" +
-        "167 goto            branchoffset2\n" +
-        "200 goto_w          branchoffset4\n" +
-        "145 i2b\n" +
-        "146 i2c\n" +
-        "135 i2d\n" +
-        "134 i2f\n" +
-        "133 i2l\n" +
-        "147 i2s\n" +
-        "96  iadd\n" +
-        "46  iaload\n" +
-        "126 iand\n" +
-        "79  iastore\n" +
-        "2   iconst_m1\n" +
-        "3   iconst_0\n" +
-        "4   iconst_1\n" +
-        "5   iconst_2\n" +
-        "6   iconst_3\n" +
-        "7   iconst_4\n" +
-        "8   iconst_5\n" +
-        "108 idiv\n" +
-        "165 if_acmpeq       branchoffset2\n" +
-        "166 if_acmpne       branchoffset2\n" +
-        "159 if_icmpeq       branchoffset2\n" +
-        "160 if_icmpne       branchoffset2\n" +
-        "161 if_icmplt       branchoffset2\n" +
-        "162 if_icmpge       branchoffset2\n" +
-        "163 if_icmpgt       branchoffset2\n" +
-        "164 if_icmple       branchoffset2\n" +
-        "153 ifeq            branchoffset2\n" +
-        "154 ifne            branchoffset2\n" +
-        "155 iflt            branchoffset2\n" +
-        "156 ifge            branchoffset2\n" +
-        "157 ifgt            branchoffset2\n" +
-        "158 ifle            branchoffset2\n" +
-        "199 ifnonnull       branchoffset2\n" +
-        "198 ifnull          branchoffset2\n" +
-        "132 iinc            localvariableindex1 signedbyte\n" +
-        "21  iload           localvariableindex1\n" +
-        "26  iload_0         implicitlocalvariableindex\n" +
-        "27  iload_1         implicitlocalvariableindex\n" +
-        "28  iload_2         implicitlocalvariableindex\n" +
-        "29  iload_3         implicitlocalvariableindex\n" +
-        "104 imul\n" +
-        "116 ineg\n" +
-        "193 instanceof      class2\n" +
-    //      "186 invokedynamic   invokedynamic2\n" + // For Java 7; see http://cr.openjdk.java.net/~jrose/pres/indy-javadoc-mlvm/java/lang/invoke/package-summary.html
-        "185 invokeinterface interfacemethodref2\n" +
-        "183 invokespecial   methodref2\n" +
-        "184 invokestatic    methodref2\n" +
-        "182 invokevirtual   methodref2\n" +
-        "128 ior\n" +
-        "112 irem\n" +
-        "172 ireturn\n" +
-        "120 ishl\n" +
-        "122 ishr\n" +
-        "54  istore          localvariableindex1\n" +
-        "59  istore_0        implicitlocalvariableindex\n" +
-        "60  istore_1        implicitlocalvariableindex\n" +
-        "61  istore_2        implicitlocalvariableindex\n" +
-        "62  istore_3        implicitlocalvariableindex\n" +
-        "100 isub\n" +
-        "124 iushr\n" +
-        "130 ixor\n" +
-        "168 jsr             branchoffset2\n" +
-        "201 jsr_w           branchoffset4\n" +
-        "138 l2d\n" +
-        "137 l2f\n" +
-        "136 l2i\n" +
-        "97  ladd\n" +
-        "47  laload\n" +
-        "127 land\n" +
-        "80  lastore\n" +
-        "148 lcmp\n" +
-        "9   lconst_0\n" +
-        "10  lconst_1\n" +
-        "18  ldc             intfloatclassstring1\n" +
-        "19  ldc_w           intfloatclassstring2\n" +
-        "20  ldc2_w          longdouble2\n" +
-        "109 ldiv\n" +
-        "22  lload           localvariableindex1\n" +
-        "30  lload_0         implicitlocalvariableindex\n" +
-        "31  lload_1         implicitlocalvariableindex\n" +
-        "32  lload_2         implicitlocalvariableindex\n" +
-        "33  lload_3         implicitlocalvariableindex\n" +
-        "105 lmul\n" +
-        "117 lneg\n" +
-        "171 lookupswitch    lookupswitch\n" +
-        "129 lor\n" +
-        "113 lrem\n" +
-        "173 lreturn\n" +
-        "121 lshl\n" +
-        "123 lshr\n" +
-        "55  lstore          localvariableindex1\n" +
-        "63  lstore_0        implicitlocalvariableindex\n" +
-        "64  lstore_1        implicitlocalvariableindex\n" +
-        "65  lstore_2        implicitlocalvariableindex\n" +
-        "66  lstore_3        implicitlocalvariableindex\n" +
-        "101 lsub\n" +
-        "125 lushr\n" +
-        "131 lxor\n" +
-        "194 monitorenter\n" +
-        "195 monitorexit\n" +
-        "197 multianewarray  class2 unsignedbyte\n" +
-        "187 new             class2\n" +
-        "188 newarray        atype\n" +
-        "0   nop\n" +
-        "87  pop\n" +
-        "88  pop2\n" +
-        "181 putfield        fieldref2\n" +
-        "179 putstatic       fieldref2\n" +
-        "169 ret             localvariableindex1\n" +
-        "177 return\n" +
-        "53  saload\n" +
-        "86  sastore\n" +
-        "17  sipush          signedshort\n" +
-        "95  swap\n" +
-        "170 tableswitch     tableswitch\n" +
-        "196 wide            wide\n"
+        "50  aaload\n"
+        + "83  aastore\n"
+        + "1   aconst_null\n"
+        + "25  aload           localvariableindex1\n"
+        + "42  aload_0         implicitlocalvariableindex\n"
+        + "43  aload_1         implicitlocalvariableindex\n"
+        + "44  aload_2         implicitlocalvariableindex\n"
+        + "45  aload_3         implicitlocalvariableindex\n"
+        + "189 anewarray       class2\n"
+        + "176 areturn\n"
+        + "190 arraylength\n"
+        + "58  astore          localvariableindex1\n"
+        + "75  astore_0        implicitlocalvariableindex\n"
+        + "76  astore_1        implicitlocalvariableindex\n"
+        + "77  astore_2        implicitlocalvariableindex\n"
+        + "78  astore_3        implicitlocalvariableindex\n"
+        + "191 athrow\n"
+        + "51  baload\n"
+        + "84  bastore\n"
+        + "16  bipush          signedbyte\n"
+        + "52  caload\n"
+        + "85  castore\n"
+        + "192 checkcast       class2\n"
+        + "144 d2f\n"
+        + "142 d2i\n"
+        + "143 d2l\n"
+        + "99  dadd\n"
+        + "49  daload\n"
+        + "82  dastore\n"
+        + "152 dcmpg\n"
+        + "151 dcmpl\n"
+        + "14  dconst_0\n"
+        + "15  dconst_1\n"
+        + "111 ddiv\n"
+        + "24  dload           localvariableindex1\n"
+        + "38  dload_0         implicitlocalvariableindex\n"
+        + "39  dload_1         implicitlocalvariableindex\n"
+        + "40  dload_2         implicitlocalvariableindex\n"
+        + "41  dload_3         implicitlocalvariableindex\n"
+        + "107 dmul\n"
+        + "119 dneg\n"
+        + "115 drem\n"
+        + "175 dreturn\n"
+        + "57  dstore          localvariableindex1\n"
+        + "71  dstore_0        implicitlocalvariableindex\n"
+        + "72  dstore_1        implicitlocalvariableindex\n"
+        + "73  dstore_2        implicitlocalvariableindex\n"
+        + "74  dstore_3        implicitlocalvariableindex\n"
+        + "103 dsub\n"
+        + "89  dup\n"
+        + "90  dup_x1\n"
+        + "91  dup_x2\n"
+        + "92  dup2\n"
+        + "93  dup2_x1\n"
+        + "94  dup2_x2\n"
+        + "141 f2d\n"
+        + "139 f2i\n"
+        + "140 f2l\n"
+        + "98  fadd\n"
+        + "48  faload\n"
+        + "81  fastore\n"
+        + "150 fcmpg\n"
+        + "149 fcmpl\n"
+        + "11  fconst_0\n"
+        + "12  fconst_1\n"
+        + "13  fconst_2\n"
+        + "110 fdiv\n"
+        + "23  fload           localvariableindex1\n"
+        + "34  fload_0         implicitlocalvariableindex\n"
+        + "35  fload_1         implicitlocalvariableindex\n"
+        + "36  fload_2         implicitlocalvariableindex\n"
+        + "37  fload_3         implicitlocalvariableindex\n"
+        + "106 fmul\n"
+        + "118 fneg\n"
+        + "114 frem\n"
+        + "174 freturn\n"
+        + "56  fstore          localvariableindex1\n"
+        + "67  fstore_0        implicitlocalvariableindex\n"
+        + "68  fstore_1        implicitlocalvariableindex\n"
+        + "69  fstore_2        implicitlocalvariableindex\n"
+        + "70  fstore_3        implicitlocalvariableindex\n"
+        + "102 fsub\n"
+        + "180 getfield        fieldref2\n"
+        + "178 getstatic       fieldref2\n"
+        + "167 goto            branchoffset2\n"
+        + "200 goto_w          branchoffset4\n"
+        + "145 i2b\n"
+        + "146 i2c\n"
+        + "135 i2d\n"
+        + "134 i2f\n"
+        + "133 i2l\n"
+        + "147 i2s\n"
+        + "96  iadd\n"
+        + "46  iaload\n"
+        + "126 iand\n"
+        + "79  iastore\n"
+        + "2   iconst_m1\n"
+        + "3   iconst_0\n"
+        + "4   iconst_1\n"
+        + "5   iconst_2\n"
+        + "6   iconst_3\n"
+        + "7   iconst_4\n"
+        + "8   iconst_5\n"
+        + "108 idiv\n"
+        + "165 if_acmpeq       branchoffset2\n"
+        + "166 if_acmpne       branchoffset2\n"
+        + "159 if_icmpeq       branchoffset2\n"
+        + "160 if_icmpne       branchoffset2\n"
+        + "161 if_icmplt       branchoffset2\n"
+        + "162 if_icmpge       branchoffset2\n"
+        + "163 if_icmpgt       branchoffset2\n"
+        + "164 if_icmple       branchoffset2\n"
+        + "153 ifeq            branchoffset2\n"
+        + "154 ifne            branchoffset2\n"
+        + "155 iflt            branchoffset2\n"
+        + "156 ifge            branchoffset2\n"
+        + "157 ifgt            branchoffset2\n"
+        + "158 ifle            branchoffset2\n"
+        + "199 ifnonnull       branchoffset2\n"
+        + "198 ifnull          branchoffset2\n"
+        + "132 iinc            localvariableindex1 signedbyte\n"
+        + "21  iload           localvariableindex1\n"
+        + "26  iload_0         implicitlocalvariableindex\n"
+        + "27  iload_1         implicitlocalvariableindex\n"
+        + "28  iload_2         implicitlocalvariableindex\n"
+        + "29  iload_3         implicitlocalvariableindex\n"
+        + "104 imul\n"
+        + "116 ineg\n"
+        + "193 instanceof      class2\n"
+        // For Java 7; see
+        // http://cr.openjdk.java.net/~jrose/pres/indy-javadoc-mlvm/java/lang/invoke/package-summary.html
+//        + "186 invokedynamic   invokedynamic2\n"
+        + "185 invokeinterface interfacemethodref2\n"
+        + "183 invokespecial   methodref2\n"
+        + "184 invokestatic    methodref2\n"
+        + "182 invokevirtual   methodref2\n"
+        + "128 ior\n"
+        + "112 irem\n"
+        + "172 ireturn\n"
+        + "120 ishl\n"
+        + "122 ishr\n"
+        + "54  istore          localvariableindex1\n"
+        + "59  istore_0        implicitlocalvariableindex\n"
+        + "60  istore_1        implicitlocalvariableindex\n"
+        + "61  istore_2        implicitlocalvariableindex\n"
+        + "62  istore_3        implicitlocalvariableindex\n"
+        + "100 isub\n"
+        + "124 iushr\n"
+        + "130 ixor\n"
+        + "168 jsr             branchoffset2\n"
+        + "201 jsr_w           branchoffset4\n"
+        + "138 l2d\n"
+        + "137 l2f\n"
+        + "136 l2i\n"
+        + "97  ladd\n"
+        + "47  laload\n"
+        + "127 land\n"
+        + "80  lastore\n"
+        + "148 lcmp\n"
+        + "9   lconst_0\n"
+        + "10  lconst_1\n"
+        + "18  ldc             intfloatclassstring1\n"
+        + "19  ldc_w           intfloatclassstring2\n"
+        + "20  ldc2_w          longdouble2\n"
+        + "109 ldiv\n"
+        + "22  lload           localvariableindex1\n"
+        + "30  lload_0         implicitlocalvariableindex\n"
+        + "31  lload_1         implicitlocalvariableindex\n"
+        + "32  lload_2         implicitlocalvariableindex\n"
+        + "33  lload_3         implicitlocalvariableindex\n"
+        + "105 lmul\n"
+        + "117 lneg\n"
+        + "171 lookupswitch    lookupswitch\n"
+        + "129 lor\n"
+        + "113 lrem\n"
+        + "173 lreturn\n"
+        + "121 lshl\n"
+        + "123 lshr\n"
+        + "55  lstore          localvariableindex1\n"
+        + "63  lstore_0        implicitlocalvariableindex\n"
+        + "64  lstore_1        implicitlocalvariableindex\n"
+        + "65  lstore_2        implicitlocalvariableindex\n"
+        + "66  lstore_3        implicitlocalvariableindex\n"
+        + "101 lsub\n"
+        + "125 lushr\n"
+        + "131 lxor\n"
+        + "194 monitorenter\n"
+        + "195 monitorexit\n"
+        + "197 multianewarray  class2 unsignedbyte\n"
+        + "187 new             class2\n"
+        + "188 newarray        atype\n"
+        + "0   nop\n"
+        + "87  pop\n"
+        + "88  pop2\n"
+        + "181 putfield        fieldref2\n"
+        + "179 putstatic       fieldref2\n"
+        + "169 ret             localvariableindex1\n"
+        + "177 return\n"
+        + "53  saload\n"
+        + "86  sastore\n"
+        + "17  sipush          signedshort\n"
+        + "95  swap\n"
+        + "170 tableswitch     tableswitch\n"
+        + "196 wide            wide\n"
     );
 
     static final Instruction[] OPCODE_TO_WIDE_INSTRUCTION = compileInstructions(
-        "21  iload           localvariableindex2\n" +
-        "23  fload           localvariableindex2\n" +
-        "25  aload           localvariableindex2\n" +
-        "22  lload           localvariableindex2\n" +
-        "24  dload           localvariableindex2\n" +
-        "54  istore          localvariableindex2\n" +
-        "56  fstore          localvariableindex2\n" +
-        "58  astore          localvariableindex2\n" +
-        "55  lstore          localvariableindex2\n" +
-        "57  dstore          localvariableindex2\n" +
-        "169 ret             localvariableindex2\n" +
-        "132 iinc            localvariableindex2 signedshort\n"
+        "21  iload           localvariableindex2\n"
+        + "23  fload           localvariableindex2\n"
+        + "25  aload           localvariableindex2\n"
+        + "22  lload           localvariableindex2\n"
+        + "24  dload           localvariableindex2\n"
+        + "54  istore          localvariableindex2\n"
+        + "56  fstore          localvariableindex2\n"
+        + "58  astore          localvariableindex2\n"
+        + "55  lstore          localvariableindex2\n"
+        + "57  dstore          localvariableindex2\n"
+        + "169 ret             localvariableindex2\n"
+        + "132 iinc            localvariableindex2 signedshort\n"
     );
 
     private static Instruction[]
@@ -1505,7 +1540,7 @@ class Disassembler {
                 while (st2.hasMoreTokens()) {
                     String  s = st2.nextToken();
                     Operand operand;
-                    if (s.equals("intfloatclassstring1")) {
+                    if ("intfloatclassstring1".equals(s)) {
                         operand = new Operand() {
 
                             @Override public String
@@ -1524,7 +1559,7 @@ class Disassembler {
                             }
                         };
                     } else
-                    if (s.equals("intfloatclassstring2")) {
+                    if ("intfloatclassstring2".equals(s)) {
                         operand = new Operand() {
 
                             @Override public String
@@ -1543,7 +1578,7 @@ class Disassembler {
                             }
                         };
                     } else
-                    if (s.equals("longdouble2")) {
+                    if ("longdouble2".equals(s)) {
                         operand = new Operand() {
 
                             @Override public String
@@ -1561,7 +1596,7 @@ class Disassembler {
                             }
                         };
                     } else
-                    if (s.equals("fieldref2")) {
+                    if ("fieldref2".equals(s)) {
                         operand = new Operand() {
 
                             @Override public String
@@ -1586,7 +1621,7 @@ class Disassembler {
                             }
                         };
                     } else
-                    if (s.equals("methodref2")) {
+                    if ("methodref2".equals(s)) {
                         operand = new Operand() {
 
                             @Override public String
@@ -1610,7 +1645,7 @@ class Disassembler {
                             }
                         };
                     } else
-                    if (s.equals("interfacemethodref2")) {
+                    if ("interfacemethodref2".equals(s)) {
                         operand = new Operand() {
 
                             @Override public String
@@ -1622,7 +1657,10 @@ class Disassembler {
                                 Disassembler    d
                             ) throws IOException {
                                 short                          index = dis.readShort();
-                                ConstantInterfaceMethodrefInfo imr   = cp.get(index, ConstantInterfaceMethodrefInfo.class);
+                                ConstantInterfaceMethodrefInfo imr   = cp.get(
+                                    index,
+                                    ConstantInterfaceMethodrefInfo.class
+                                );
                                 dis.readByte();
                                 dis.readByte();
                                 String t = d.beautify(
@@ -1636,7 +1674,7 @@ class Disassembler {
                             }
                         };
                     } else
-                    if (s.equals("class2")) {
+                    if ("class2".equals(s)) {
                         operand = new Operand() {
 
                             @Override public String
@@ -1659,7 +1697,7 @@ class Disassembler {
                             }
                         };
                     } else
-                    if (s.equals("localvariableindex1")) {
+                    if ("localvariableindex1".equals(s)) {
                         operand = new Operand() {
 
                             @Override public String
@@ -1682,7 +1720,7 @@ class Disassembler {
                             }
                         };
                     } else
-                    if (s.equals("localvariableindex2")) {
+                    if ("localvariableindex2".equals(s)) {
                         operand = new Operand() {
 
                             @Override public String
@@ -1701,7 +1739,7 @@ class Disassembler {
                             }
                         };
                     } else
-                    if (s.equals("implicitlocalvariableindex")) {
+                    if ("implicitlocalvariableindex".equals(s)) {
                         // Strip the lv index from the mnemonic
                         final short index = Short.parseShort(mnemonic.substring(mnemonic.length() - 1));
                         mnemonic = mnemonic.substring(0, mnemonic.length() - 2);
@@ -1723,7 +1761,7 @@ class Disassembler {
                             }
                         };
                     } else
-                    if (s.equals("branchoffset2")) {
+                    if ("branchoffset2".equals(s)) {
                         operand = new Operand() {
 
                             @Override public String
@@ -1738,7 +1776,7 @@ class Disassembler {
                             }
                         };
                     } else
-                    if (s.equals("branchoffset4")) {
+                    if ("branchoffset4".equals(s)) {
                         operand = new Operand() {
 
                             @Override public String
@@ -1753,7 +1791,7 @@ class Disassembler {
                             }
                         };
                     } else
-                    if (s.equals("signedbyte")) {
+                    if ("signedbyte".equals(s)) {
                         operand = new Operand() {
 
                             @Override public String
@@ -1768,7 +1806,7 @@ class Disassembler {
                             }
                         };
                     } else
-                    if (s.equals("unsignedbyte")) {
+                    if ("unsignedbyte".equals(s)) {
                         operand = new Operand() {
 
                             @Override public String
@@ -1783,7 +1821,7 @@ class Disassembler {
                             }
                         };
                     } else
-                    if (s.equals("atype")) {
+                    if ("atype".equals(s)) {
                         operand = new Operand() {
 
                             @Override public String
@@ -1809,7 +1847,7 @@ class Disassembler {
                             }
                         };
                     } else
-                    if (s.equals("signedshort")) {
+                    if ("signedshort".equals(s)) {
                         operand = new Operand() {
 
                             @Override public String
@@ -1824,7 +1862,7 @@ class Disassembler {
                             }
                         };
                     } else
-                    if (s.equals("tableswitch")) {
+                    if ("tableswitch".equals(s)) {
                         operand = new Operand() {
 
                             @Override public String
@@ -1848,18 +1886,20 @@ class Disassembler {
                                     }
                                 }
 
-                                StringBuilder sb = new StringBuilder(" default => ").append(d.branchTarget(instructionOffset + dis.readInt()));
+                                StringBuilder sb = new StringBuilder(" default => ");
+                                sb.append(d.branchTarget(instructionOffset + dis.readInt()));
 
                                 int low  = dis.readInt();
                                 int high = dis.readInt();
                                 for (int i = low; i <= high; ++i) {
-                                    sb.append(", ").append(i).append(" => ").append(d.branchTarget(instructionOffset + dis.readInt()));
+                                    sb.append(", ").append(i).append(" => ");
+                                    sb.append(d.branchTarget(instructionOffset + dis.readInt()));
                                 }
                                 return sb.toString();
                             }
                         };
                     } else
-                    if (s.equals("lookupswitch")) {
+                    if ("lookupswitch".equals(s)) {
                         operand = new Operand() {
 
                             @Override public String
@@ -1883,7 +1923,8 @@ class Disassembler {
                                     }
                                 }
 
-                                StringBuilder sb = new StringBuilder(" default => ").append(d.branchTarget(instructionOffset + dis.readInt()));
+                                StringBuilder sb = new StringBuilder(" default => ");
+                                sb.append(d.branchTarget(instructionOffset + dis.readInt()));
 
                                 int npairs = dis.readInt();
                                 for (int i = 0; i < npairs; ++i) {
@@ -1895,7 +1936,7 @@ class Disassembler {
                             }
                         };
                     } else
-                    if (s.equals("wide")) {
+                    if ("wide".equals(s)) {
                         operand = new Operand() {
 
                             @Override public String
@@ -1953,7 +1994,11 @@ class Disassembler {
         List<TypeSignature> parameterTypes;
         {
             SignatureAttribute  sa  = method.signatureAttribute;
-            MethodTypeSignature mts = sa != null ? decodeMethodTypeSignature(sa.signature) : decodeMethodDescriptor(method.descriptor);
+            MethodTypeSignature mts = (
+                sa != null
+                ? decodeMethodTypeSignature(sa.signature)
+                : decodeMethodDescriptor(method.descriptor)
+            );
             parameterTypes = mts.parameterTypes;
         }
 
@@ -2034,7 +2079,12 @@ class Disassembler {
             return SignatureParser.decodeMethodTypeSignature(ms);
         } catch (SignatureException e) {
             error("Decoding method type signature '" + ms + "': " + e.getMessage());
-            return new MethodTypeSignature(NO_FORMAL_TYPE_PARAMETERS, NO_TYPE_SIGNATURES, SignatureParser.VOID, NO_THROWS_SIGNATURES);
+            return new MethodTypeSignature(
+                NO_FORMAL_TYPE_PARAMETERS,
+                NO_TYPE_SIGNATURES,
+                SignatureParser.VOID,
+                NO_THROWS_SIGNATURES
+            );
         }
     }
 
@@ -2054,7 +2104,12 @@ class Disassembler {
             return SignatureParser.decodeMethodDescriptor(md);
         } catch (SignatureException e) {
             error("Decoding method descriptor '" + md + "': " + e.getMessage());
-            return new MethodTypeSignature(NO_FORMAL_TYPE_PARAMETERS, NO_TYPE_SIGNATURES, SignatureParser.VOID, NO_THROWS_SIGNATURES);
+            return new MethodTypeSignature(
+                NO_FORMAL_TYPE_PARAMETERS,
+                NO_TYPE_SIGNATURES,
+                SignatureParser.VOID,
+                NO_THROWS_SIGNATURES
+            );
         }
     }
 
@@ -2062,7 +2117,7 @@ class Disassembler {
      * Representation of a local variable reference in the {@code Code} attribute.
      */
     class LocalVariable {
-        final @Nullable TypeSignature typeSignature;
+        @Nullable final TypeSignature typeSignature;
         final String                  name;
 
         public
