@@ -44,10 +44,24 @@ import de.unkrig.jdisasm.SignatureParser.SignatureException;
  */
 public
 class ClassFile {
-    public short        minorVersion;
-    public short        majorVersion;
+
+    /**
+     * The <a href="http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.1-200-B">minor and major
+     * version numbers of this class file</a>.
+     */
+    public short minorVersion, majorVersion;
+
+    /**
+     * The <a href="http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.1-200-C">number of entries in
+     * the constant pool table plus one</a>.
+     */
     public ConstantPool constantPool;
-    public short        accessFlags;
+
+    /**
+     * A <a href="http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.1-200-E">mask of flags used to
+     * denote access permissions to and properties of this class or interface</a>.
+     */
+    public short accessFlags;
 
     /**
      * The fully qualified (dot-separated) name of this type.
@@ -65,35 +79,93 @@ class ClassFile {
      */
     public final List<String> interfaceNames = new ArrayList<String>();
 
-    public final List<Field>                              fields         = new ArrayList<Field>();
-    public final List<Method>                             methods        = new ArrayList<Method>();
-    @Nullable public DeprecatedAttribute                  deprecatedAttribute;
-    @Nullable public EnclosingMethodAttribute             enclosingMethodAttribute;
-    @Nullable public InnerClassesAttribute                innerClassesAttribute;
-    @Nullable public RuntimeInvisibleAnnotationsAttribute runtimeInvisibleAnnotationsAttribute;
-    @Nullable public RuntimeVisibleAnnotationsAttribute   runtimeVisibleAnnotationsAttribute;
-    @Nullable public SignatureAttribute                   signatureAttribute;
-    @Nullable public SourceFileAttribute                  sourceFileAttribute;
-    @Nullable public SyntheticAttribute                   syntheticAttribute;
-    public final List<Attribute>                          attributes = new ArrayList<Attribute>();
+    /**
+     * The <a href="http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.1-200-K">complete description
+     * of a field in this class or interface</a>. The fields table includes only those fields that are declared by this
+     * class or interface. It does not include items representing fields that are inherited from superclasses or
+     * superinterfaces.
+     */
+    public final List<Field> fields = new ArrayList<Field>();
 
-    public static final short ACC_PUBLIC       = 0x00000001;
-    public static final short ACC_PRIVATE      = 0x00000002;
-    public static final short ACC_PROTECTED    = 0x00000004;
-    public static final short ACC_STATIC       = 0x00000008;
-    public static final short ACC_FINAL        = 0x00000010;
-    public static final short ACC_SYNCHRONIZED = 0x00000020;
-    public static final short ACC_VOLATILE     = 0x00000040;
-    public static final short ACC_BRIDGE       = 0x00000040;
-    public static final short ACC_TRANSIENT    = 0x00000080;
-    public static final short ACC_VARARGS      = 0x00000080;
-    public static final short ACC_NATIVE       = 0x00000100;
-    public static final short ACC_INTERFACE    = 0x00000200;
-    public static final short ACC_ABSTRACT     = 0x00000400;
-    public static final short ACC_STRICT       = 0x00000800;
-    public static final short ACC_SYNTHETIC    = 0x00001000;
-    public static final short ACC_ANNOTATION   = 0x00002000;
-    public static final short ACC_ENUM         = 0x00004000;
+    /**
+     * The <a href="http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.1-200-M">complete description
+     * of a method in this class or interface</a>. If neither of the ACC_NATIVE and ACC_ABSTRACT flags are set in
+     * {@link Method#accessFlags}, the Java Virtual Machine instructions implementing the method are also supplied.
+     * <p>
+     * The {@link Method} structures represent all methods declared by this class or interface type, including instance
+     * methods, class methods, instance initialization methods, and any class or interface initialization method.
+     * The methods table does not include items representing methods that are inherited from superclasses or
+     * superinterfaces. 
+     */
+    public final List<Method> methods = new ArrayList<Method>();
+
+    /**
+     * The optional {@code Deprecated} attribute of this class or interface.
+     */
+    @Nullable public DeprecatedAttribute deprecatedAttribute;
+
+    /**
+     * The optional {@code EnclosingMethod} attribute of this class or interface.
+     */
+    @Nullable public EnclosingMethodAttribute enclosingMethodAttribute;
+
+    /**
+     * The optional {@code InnerClasses} attribute of this class or interface.
+     */
+    @Nullable public InnerClassesAttribute innerClassesAttribute;
+
+    /**
+     * The optional {@code RuntimeInvisibleAnnotations} attribute of this class or interface.
+     */
+    @Nullable public RuntimeInvisibleAnnotationsAttribute runtimeInvisibleAnnotationsAttribute;
+
+    /**
+     * The optional {@code RuntimeVisibleAnnotations} attribute of this class or interface.
+d     * 
+     */
+    @Nullable public RuntimeVisibleAnnotationsAttribute runtimeVisibleAnnotationsAttribute;
+
+    /**
+     * The optional {@code Signature} attribute of this class or interface.
+     */
+    @Nullable public SignatureAttribute signatureAttribute;
+
+    /**
+     * The optional {@code Signature} attribute of this class or interface.
+     */
+    @Nullable public SourceFileAttribute sourceFileAttribute;
+
+    /**
+     * The optional {@code Synthetic} attribute of this class or interface.
+     */
+    @Nullable public SyntheticAttribute syntheticAttribute;
+
+    /**
+     * The other attributes of this class or interface.
+     */
+    public final List<Attribute> attributes = new ArrayList<Attribute>();
+
+    /**
+     * Class, nested class, field and method access and property flags.
+     */
+    public static final short
+    ACC_PUBLIC       = 0x00000001,
+    ACC_PRIVATE      = 0x00000002,
+    ACC_PROTECTED    = 0x00000004,
+    ACC_STATIC       = 0x00000008,
+    ACC_FINAL        = 0x00000010,
+    ACC_SYNCHRONIZED = 0x00000020,
+    ACC_VOLATILE     = 0x00000040,
+    ACC_BRIDGE       = 0x00000040,
+    ACC_TRANSIENT    = 0x00000080,
+    ACC_VARARGS      = 0x00000080,
+    ACC_NATIVE       = 0x00000100,
+    ACC_INTERFACE    = 0x00000200,
+    ACC_ABSTRACT     = 0x00000400,
+    ACC_STRICT       = 0x00000800,
+    ACC_SYNTHETIC    = 0x00001000,
+    ACC_ANNOTATION   = 0x00002000,
+    ACC_ENUM         = 0x00004000;
 
     public
     ClassFile(DataInputStream dis) throws IOException {
@@ -214,15 +286,20 @@ class ClassFile {
             }
 
             @Override public void
-            acceptOther(Attribute a) {
+            visitOther(Attribute a) {
                 ClassFile.this.attributes.add(a);
             }
         });
     }
 
+    /**
+     * @return The major/minor version of this class file translated into a human-readable JDK name.
+     */
     public String
     getJdkName() {
         switch (this.majorVersion) {
+        case 51:
+            return "J2SE 7"; 
         case 50:
             return "J2SE 6.0";
         case 49:
@@ -243,6 +320,8 @@ class ClassFile {
     /** Representation of a field description in a Java&trade; class file. */
     public
     class Field {
+
+        // CHECKSTYLE VariableCheck:OFF
         public short                                          accessFlags;
         public String                                         name;
         public String                                         descriptor;
@@ -253,6 +332,7 @@ class ClassFile {
         @Nullable public SignatureAttribute                   signatureAttribute;
         @Nullable public SyntheticAttribute                   syntheticAttribute;
         public final List<Attribute>                          attributes = new ArrayList<Attribute>();
+        // CHECKSTYLE VariableCheck:ON
 
         public
         Field(DataInputStream dis) throws IOException {
@@ -300,7 +380,7 @@ class ClassFile {
                 }
 
                 @Override public void
-                acceptOther(Attribute ai) {
+                visitOther(Attribute ai) {
                     Field.this.attributes.add(ai);
                 }
             });
@@ -310,6 +390,8 @@ class ClassFile {
     /** Representation of a method in a Java&trade; class file. */
     public
     class Method {
+
+        // CHECKSTYLE VariableCheck:OFF
         public short                                                   accessFlags;
         public String                                                  name;
         public String                                                  descriptor;
@@ -324,6 +406,7 @@ class ClassFile {
         @Nullable public RuntimeVisibleParameterAnnotationsAttribute   runtimeVisibleParameterAnnotationsAttribute;
         @Nullable public SignatureAttribute                            signatureAttribute;
         @Nullable public SyntheticAttribute                            syntheticAttribute;
+        // CHECKSTYLE VariableCheck:ON
 
         public
         Method(DataInputStream dis) throws IOException {
@@ -397,7 +480,7 @@ class ClassFile {
                     }
 
                     @Override public void
-                    acceptOther(Attribute ai) {
+                    visitOther(Attribute ai) {
                         Method.this.attributes.add(ai);
                     }
                 });
@@ -419,10 +502,23 @@ class ClassFile {
     /** Representation of an attribute in a Java&trade; class file. */
     public
     interface Attribute {
-        void   accept(AttributeVisitor visitor);
-        String getName();
+
+        /**
+         * Accepts the {@code visitor}.
+         */
+        void
+        accept(AttributeVisitor visitor);
+
+        /**
+         * @return This attribute's name
+         */
+        String
+        getName();
     }
 
+    /**
+     * Reads a set of attributs and has them accept the {@code visitor}.
+     */
     final void
     readAttributes(DataInputStream dis, AttributeVisitor visitor) throws IOException {
         short n = dis.readShort();
@@ -538,8 +634,8 @@ class ClassFile {
     /** The visitor for {@Attribute}. */
     public
     interface AttributeVisitor {
-        enum Context { CLASS, FIELD, METHOD }
 
+        // CHECKSTYLE MethodCheck:OFF
         void visit(AnnotationDefaultAttribute                    ada);
         void visit(CodeAttribute                                 ca);
         void visit(ConstantValueAttribute                        cva);
@@ -557,7 +653,11 @@ class ClassFile {
         void visit(SignatureAttribute                            sa);
         void visit(SourceFileAttribute                           sfa);
         void visit(SyntheticAttribute                            sa);
+        // CHECKSTYLE MethodCheck:ON
 
+        /**
+         * An unknown attribute accepted this visitor.
+         */
         void visit(UnknownAttribute unknownAttribute);
     }
 
@@ -565,33 +665,45 @@ class ClassFile {
     public abstract static
     class AbstractAttributeVisitor implements AttributeVisitor {
 
-        public abstract void acceptOther(Attribute ai);
+        /**
+         * Called by the default implementations of the {@code visit(...)} methods.
+         */
+        public abstract void visitOther(Attribute ai);
 
-        @Override public void visit(AnnotationDefaultAttribute                    ada)   { this.acceptOther(ada); }
-        @Override public void visit(CodeAttribute                                 ca)    { this.acceptOther(ca); }
-        @Override public void visit(ConstantValueAttribute                        cva)   { this.acceptOther(cva); }
-        @Override public void visit(DeprecatedAttribute                           da)    { this.acceptOther(da); }
-        @Override public void visit(EnclosingMethodAttribute                      ema)   { this.acceptOther(ema); }
-        @Override public void visit(ExceptionsAttribute                           ea)    { this.acceptOther(ea); }
-        @Override public void visit(InnerClassesAttribute                         ica)   { this.acceptOther(ica); }
-        @Override public void visit(LineNumberTableAttribute                      lnta)  { this.acceptOther(lnta); }
-        @Override public void visit(LocalVariableTableAttribute                   lvta)  { this.acceptOther(lvta); }
-        @Override public void visit(LocalVariableTypeTableAttribute               lvtta) { this.acceptOther(lvtta); }
-        @Override public void visit(RuntimeInvisibleAnnotationsAttribute          riaa)  { this.acceptOther(riaa); }
-        @Override public void visit(RuntimeInvisibleParameterAnnotationsAttribute ripaa) { this.acceptOther(ripaa); }
-        @Override public void visit(RuntimeVisibleAnnotationsAttribute            rvaa)  { this.acceptOther(rvaa); }
-        @Override public void visit(RuntimeVisibleParameterAnnotationsAttribute   rvpaa) { this.acceptOther(rvpaa); }
-        @Override public void visit(SignatureAttribute                            sa)    { this.acceptOther(sa); }
-        @Override public void visit(SourceFileAttribute                           sfa)   { this.acceptOther(sfa); }
-        @Override public void visit(SyntheticAttribute                            sa)    { this.acceptOther(sa); }
-        @Override public void visit(UnknownAttribute                              a)     { this.acceptOther(a); }
+        @Override public void visit(AnnotationDefaultAttribute                    ada)   { this.visitOther(ada); }
+        @Override public void visit(CodeAttribute                                 ca)    { this.visitOther(ca); }
+        @Override public void visit(ConstantValueAttribute                        cva)   { this.visitOther(cva); }
+        @Override public void visit(DeprecatedAttribute                           da)    { this.visitOther(da); }
+        @Override public void visit(EnclosingMethodAttribute                      ema)   { this.visitOther(ema); }
+        @Override public void visit(ExceptionsAttribute                           ea)    { this.visitOther(ea); }
+        @Override public void visit(InnerClassesAttribute                         ica)   { this.visitOther(ica); }
+        @Override public void visit(LineNumberTableAttribute                      lnta)  { this.visitOther(lnta); }
+        @Override public void visit(LocalVariableTableAttribute                   lvta)  { this.visitOther(lvta); }
+        @Override public void visit(LocalVariableTypeTableAttribute               lvtta) { this.visitOther(lvtta); }
+        @Override public void visit(RuntimeInvisibleAnnotationsAttribute          riaa)  { this.visitOther(riaa); }
+        @Override public void visit(RuntimeInvisibleParameterAnnotationsAttribute ripaa) { this.visitOther(ripaa); }
+        @Override public void visit(RuntimeVisibleAnnotationsAttribute            rvaa)  { this.visitOther(rvaa); }
+        @Override public void visit(RuntimeVisibleParameterAnnotationsAttribute   rvpaa) { this.visitOther(rvpaa); }
+        @Override public void visit(SignatureAttribute                            sa)    { this.visitOther(sa); }
+        @Override public void visit(SourceFileAttribute                           sfa)   { this.visitOther(sfa); }
+        @Override public void visit(SyntheticAttribute                            sa)    { this.visitOther(sa); }
+        @Override public void visit(UnknownAttribute                              a)     { this.visitOther(a); }
     }
 
     /** Representation of an attribute with an unknown name. */
     public static final
     class UnknownAttribute implements Attribute {
+
+        /**
+         * The <a href="http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.7-120">name of the
+         * attribute</a>.
+         */
         public final String name;
-        public byte[]       info;
+
+        /**
+         * The (unstructured) attribute information.
+         */
+        public byte[] info;
 
         UnknownAttribute(String name, DataInputStream dis, ClassFile cf) throws IOException {
             this.name = name;
@@ -605,17 +717,19 @@ class ClassFile {
     /** Representation of a {@code Synthetic} attribute. */
     public static
     class SyntheticAttribute implements Attribute {
-        public                  SyntheticAttribute(DataInputStream dis, ClassFile cf) {}
-        @Override public void   accept(AttributeVisitor visitor)                      { visitor.visit(this); }
-        @Override public String getName()                                             { return "Synthetic"; }
+        public SyntheticAttribute(DataInputStream dis, ClassFile cf) {}
+
+        @Override public void   accept(AttributeVisitor visitor) { visitor.visit(this); }
+        @Override public String getName()                        { return "Synthetic"; }
     }
 
     /** Representation of a {@code Deprecated} attribute. */
     public static
     class DeprecatedAttribute implements Attribute {
-        public                  DeprecatedAttribute(DataInputStream dis, ClassFile cf) {}
-        @Override public void   accept(AttributeVisitor visitor)                       { visitor.visit(this); }
-        @Override public String getName()                                              { return "Deprecated"; }
+        public DeprecatedAttribute(DataInputStream dis, ClassFile cf) {}
+
+        @Override public void   accept(AttributeVisitor visitor) { visitor.visit(this); }
+        @Override public String getName()                        { return "Deprecated"; }
     }
 
     /** Representation of a {@code InnerClasses} attribute. */
@@ -626,13 +740,31 @@ class ClassFile {
         public static
         class ClasS {
 
-            public final ConstantClassInfo           innerClassInfo;
-            /**  {@code null} == top-level type or anonymous class */
+            /**
+             * The <a href="http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.7.6-300-D.2-1">inner
+             * class</a> that is described by the remaining items.
+             */
+            public final ConstantClassInfo innerClassInfo;
+
+            /**
+             * The class or interface of which the {@link #innerClassInfo inner class} is a member.
+             * <p>
+             * {@code null} == top-level type or anonymous class
+             */
             @Nullable public final ConstantClassInfo outerClassInfo;
-            /**  Original simple name; {@code null} == anonymous */
-            @Nullable public final ConstantUtf8Info  innerName;
-            /** Original access flags */
-            public final short                       innerClassAccessFlags;
+
+            /**
+             * The original simple name of the {@link #innerClassInfo inner class}.
+             * <p>
+             * {@code null} == anonymous
+             */
+            @Nullable public final ConstantUtf8Info innerName;
+
+            /**
+             * A mask of flags used to denote access permissions to and properties of the {@link #innerClassInfo inner
+             * class}.
+             */
+            public final short innerClassAccessFlags;
 
             public
             ClasS(DataInputStream dis, ClassFile cf) throws IOException {
@@ -643,6 +775,9 @@ class ClassFile {
             }
         }
 
+        /**
+         * The inner/outer class relationship relevant for this class.
+         */
         public final List<ClasS> classes = new ArrayList<ClasS>();
 
         InnerClassesAttribute(DataInputStream dis, ClassFile cf) throws IOException {
@@ -655,12 +790,22 @@ class ClassFile {
         @Override public String getName()                        { return "InnerClasses"; }
     }
 
-    /** Representation of the {@code RuntimeVisibleAnnotations} attribute. */
+    /**
+     * Representation of the <a href="http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.7.16">{@code
+     * RuntimeVisibleAnnotations} attribute</a>.
+     * */
     public static
     class RuntimeVisibleAnnotationsAttribute implements Attribute {
 
+        /**
+         * The <a href="http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.7.16-300-D">annotations
+         * table<a>. 
+         */
         public final List<Annotation> annotations = new ArrayList<Annotation>();
 
+        /**
+         * Reads and populates this object from the given {@link DataInputStream}.
+         */
         RuntimeVisibleAnnotationsAttribute(DataInputStream dis, ClassFile cf) throws IOException {
             for (int i = 0xffff & dis.readShort(); i > 0; --i) {
                 this.annotations.add(new Annotation(dis, cf));
@@ -683,10 +828,16 @@ class ClassFile {
         @Override public void accept(AttributeVisitor visitor) { visitor.visit(this); }
     }
 
-    /** Helper class for {@link RuntimeVisibleParameterAnnotationsAttribute}. */
+    /**
+     * Helper class for {@link RuntimeVisibleParameterAnnotationsAttribute}.
+     */
     public static
     class ParameterAnnotation {
 
+        /**
+         * Each value represents a single run-time-visible annotation on the parameter corresponding to the sequence
+         * number of this {@link ParameterAnnotation}. 
+         */
         public final List<Annotation> annotations = new ArrayList<Annotation>();
 
         public
@@ -697,10 +848,18 @@ class ClassFile {
         }
     }
 
-    /** Representation of the {@code RuntimeVisibleParameterAnnotations} attribute. */
+    /**
+     * Representation of the <a href="http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.7.18">{@code
+     * RuntimeVisibleParameterAnnotations} attribute</a>.
+     */
     public static
     class RuntimeVisibleParameterAnnotationsAttribute implements Attribute {
 
+        /**
+         *  All of the <a
+         *  href="http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.7.18-300-D">run-time-visible
+         *  annotations on all parameters</a>.
+         */
         public final List<ParameterAnnotation> parameterAnnotations = new ArrayList<ParameterAnnotation>();
 
         RuntimeVisibleParameterAnnotationsAttribute(DataInputStream dis, ClassFile cf) throws IOException {
@@ -726,10 +885,18 @@ class ClassFile {
         @Override public void accept(AttributeVisitor visitor) { visitor.visit(this); }
     }
 
-    /** Representation of the {@code AnnotationDefault} attribute. */
+    /**
+     * Representation of the <a href="http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.7.20">{@code
+     * AnnotationDefault} attribute</a>.
+     */
     public static
     class AnnotationDefaultAttribute implements Attribute {
 
+        /**
+         * The <a href="http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.7.20-300-C">default value
+         * of the annotation type element</a> whose default value is represented by this {@link
+         * AnnotationDefaultAttribute}.
+         */
         public ElementValue defaultValue;
 
         AnnotationDefaultAttribute(DataInputStream dis, ClassFile cf) throws IOException {
@@ -740,15 +907,39 @@ class ClassFile {
         @Override public String getName()                        { return "AnnotationDefault"; }
     }
 
-    /** Helper class for the {@code Runtime*visible*Annotations} attributes. */
+    /**
+     * Helper class for the {@code Runtime*visible*Annotations} attributes.
+     * <p>
+     * Represents a single <a
+     * href="http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.7.16-300-D">run-time-visible
+     * annotation</a> on a program element. 
+     */
     public static
     class Annotation {
 
-        /** Helper class for the {@code Runtime*visible*Annotations} attributes. */
+        /**
+         * Helper class for the {@code Runtime*visible*Annotations} attributes.
+         * <p>
+         * Represents a single <a
+         * href="http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.7.16-300-D.2-3">element-value
+         * pair</a> in the annotation represented by this {@link Annotation}.
+         */
         public static
         class ElementValuePair {
 
-            public final String       elementName;
+            /**
+             * A valid field descriptor that denotes the <a
+             * href="http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.7.16-300-D.2-3-1">name of the
+             * annotation type element</a> represented by this {@link ElementValuePair}. 
+             */
+            public final String elementName;
+
+            /**
+             * The <a
+             * href="http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.7.16-300-D.2-3-2">value of
+             * the value item represents the value of the element-value pair</a> represented by this {@link
+             * ElementValuePair}.
+             */
             public final ElementValue elementValue;
 
             public
@@ -767,7 +958,15 @@ class ClassFile {
             }
         }
 
-        public String                       typeName;
+        /**
+         * A <a href="http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.7.16-300-D.2-1">field
+         * descriptor representing the annotation type</a> corresponding to this {@link Annotation}.
+         */
+        public String typeName;
+
+        /**
+         * Each value of this list represents a single element-value pair in the {@link Annotation}.
+         */
         public final List<ElementValuePair> elementValuePairs = new ArrayList<ElementValuePair>();
 
         public
@@ -805,6 +1004,9 @@ class ClassFile {
     interface ElementValue {
     }
 
+    /**
+     * Reads one {@link ElementValue} from the given {@link DataInputStream}.
+     */
     static ElementValue
     newElementValue(DataInputStream dis, ClassFile cf) throws IOException {
         final byte tag = dis.readByte();
@@ -871,10 +1073,19 @@ class ClassFile {
         }
     }
 
-    /** Representation of the {@code Signature} attribute. */
+    /**
+     * Representation of the <a href="http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.7.9">{@code
+     * Signature} attribute</a>.
+     */
     public static final
     class SignatureAttribute implements Attribute {
 
+        /**
+         * <a href="http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.7.9-300-C">A class signature
+         * if this {@link SignatureAttribute} is an attribute of a {@link ClassFile}; a method signature if this
+         * {@link SignatureAttribute} attribute is an attribute of a {@link Method}; or a field type signature
+         * otherwise</a>. 
+         */
         public final String signature;
 
         SignatureAttribute(DataInputStream dis, ClassFile cf) throws IOException {
@@ -885,10 +1096,17 @@ class ClassFile {
         @Override public String getName()                        { return "Signature"; }
     }
 
-    /** Representation of the {@code EnclosingMethod} attribute. */
+    /**
+     * Representation of the <a href="http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.7.7">{@code
+     * EnclosingMethod} attribute</a>.
+     */
     public static final
     class EnclosingMethodAttribute implements Attribute {
 
+        /**
+         * The <a href="http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.7.7-300-C">innermost class
+         * that encloses the declaration of the current class</a>.
+         */
         public ConstantClassInfo clasS;
 
         /** null == not enclosed by a constructor or a method, i.e. a field initializer */
@@ -903,9 +1121,18 @@ class ClassFile {
         @Override public String getName()                        { return "EnclosingMethod"; }
     }
 
-    /** Representation of the {@code Exceptions} attribute. */
+    /**
+     * Representation of the <a href="http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.7.5">{@code
+     * Exceptions} attribute</a>.
+     */
     public static final
     class ExceptionsAttribute implements Attribute {
+
+        /**
+         * Each value of the list represents a <a
+         * href="http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.7.5-300-D">class type that this
+         * method is declared to throw</a>. 
+         */
         public final List<ConstantClassInfo> exceptionNames = new ArrayList<ConstantClassInfo>();
 
         ExceptionsAttribute(DataInputStream dis, ClassFile cf) throws IOException {
@@ -918,17 +1145,58 @@ class ClassFile {
         @Override public String getName()                        { return "Exceptions"; }
     }
 
-    /** Representation of the {@code Code} attribute. */
+    /**
+     * Representation of the <a href="http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.7.3">{@code
+     * Code} attribute</a>.
+     */
     public static final
     class CodeAttribute implements Attribute {
-        public final short                               maxStack;
-        public final short                               maxLocals;
-        public final byte[]                              code;
-        public final List<ExceptionTableEntry>           exceptionTable = new ArrayList<ExceptionTableEntry>();
-        @Nullable public LocalVariableTableAttribute     localVariableTableAttribute;
+
+        /**
+         * The <a href="http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.7.3-300-C">maximum depth
+         * of the operand stack of this method at any point during execution of the method</a>. 
+         */
+        public final short maxStack;
+
+        /**
+         * The <a href="http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.7.3-300-D">number of local
+         * variables in the local variable array allocated upon invocation of this method, including the local
+         * variables used to pass parameters to the method on its invocation</a>. 
+         */
+        public final short maxLocals;
+
+        /**
+         * Gives <a href="http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.7.3-300-F">the actual
+         * bytes of Java Virtual Machine code that implement the method</a>.
+         */
+        public final byte[] code;
+
+        /**
+         * Each entry in the list describes <a
+         * href="http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.7.3-300-H">one exception handler
+         * in the code array</a>. The order of the handlers in the exception_table array is significant. 
+         */
+        public final List<ExceptionTableEntry> exceptionTable = new ArrayList<ExceptionTableEntry>();
+
+        /**
+         * The {@code Code} attribute's optional {@code LocalVariableTable} attribute.
+         */
+        @Nullable public LocalVariableTableAttribute localVariableTableAttribute;
+
+        /**
+         * The {@code Code} attribute's optional {@code LocalVariableTypeTable} attribute.
+         */
         @Nullable public LocalVariableTypeTableAttribute localVariableTypeTableAttribute;
-        @Nullable public LineNumberTableAttribute        lineNumberTableAttribute;
-        public final List<Attribute>                     attributes = new ArrayList<Attribute>();
+
+        /**
+         * The {@code Code} attribute's optional {@code LineNumberTable} attribute.
+         */
+        @Nullable public LineNumberTableAttribute lineNumberTableAttribute;
+
+        /**
+         * The attributes of the {@code Code} attribute. 
+         */
+        public final List<Attribute> attributes = new ArrayList<Attribute>();
 
         CodeAttribute(DataInputStream dis, ClassFile cf) throws IOException {
             this.maxStack  = dis.readShort();
@@ -963,7 +1231,7 @@ class ClassFile {
                 }
 
                 @Override public void
-                acceptOther(Attribute ai) {
+                visitOther(Attribute ai) {
                     CodeAttribute.this.attributes.add(ai);
                 }
             });
@@ -973,13 +1241,44 @@ class ClassFile {
         @Override public String getName()                        { return "Code"; }
     }
 
-    /** helper class for {@link CodeAttribute}. */
+    /**
+     * Helper class for {@link CodeAttribute}.
+     * <p>
+     * Describes one exception handler in the code array.
+     */
     public static
     class ExceptionTableEntry {
-        public int                         startPc;
-        public int                         endPc;
-        public int                         handlerPc;
-        @Nullable public ConstantClassInfo catchType; // null == all exceptions, i.e. FINALLY
+
+        /**
+         * The values <a
+         * href="http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.7.3-300-H.1-1">indicate the range
+         * in the code array at which the exception handler is active</a>. The value of {@link #startPc} must be a
+         * valid index into the code array of the opcode of an instruction. The value of {@link #endPc} either must be
+         * a valid index into the code array of the opcode of an instruction or must be equal to {@code code.length},
+         * the length of the code array. The value of {@link #startPc} must be less than the value of {@link #endPc}.
+         * <p>
+         * The {@link #startPc} is inclusive and {@link #endPc} is exclusive; that is, the exception handler must be
+         * active while the program counter is within the interval [{@link #startPc}, {@link #endPc}). 
+         */
+        public int startPc, endPc;
+
+        /**
+         * The value <a
+         * href="http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.7.3-300-H.1-2">indicates the
+         * start of the exception handler</a>. The value of the item must be a valid index into the code array and must
+         * be the index of the opcode of an instruction. 
+         */
+        public int handlerPc;
+
+        /**
+         * A <a href="http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.7.3-300-H.1-3">class of
+         * exceptions that this exception handler is designated to catch</a>. The exception handler will be called only
+         * if the thrown exception is an instance of the given class or one of its subclasses.
+         * <p>
+         * If the value is {@code null}, this exception handler is called for all exceptions. This is used to implement
+         * {@code finally} 
+         */
+        @Nullable public ConstantClassInfo catchType;
 
         ExceptionTableEntry(DataInputStream dis, ClassFile cf) throws IOException {
             this.startPc   = 0xffff & dis.readShort();
@@ -1003,9 +1302,20 @@ class ClassFile {
         }
     }
 
-    /** Representation of the {@code SourceFile} attribute. */
+    /**
+     * Representation of the <a href="http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.7.10">{@code
+     * SourceFile} attribute</a>.
+     */
     public static
     class SourceFileAttribute implements Attribute {
+
+        /**
+         * The <a href="http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.7.10-300-C">name of the
+         * source file from which this class file was compiled</a>. It will not be interpreted as indicating the name
+         * of a directory containing the file or an absolute path name for the file; such platform-specific additional
+         * information must be supplied by the run-time interpreter or development tool at the time the file name is
+         * actually used. 
+         */
         public String sourceFile;
 
         SourceFileAttribute(DataInputStream dis, ClassFile cf) throws IOException {
@@ -1016,10 +1326,17 @@ class ClassFile {
         @Override public String getName()                        { return "SourceFile"; }
     }
 
-    /** Representation of the {@code LineNumberTable} attribute. */
+    /**
+     * Representation of the <a href="http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.7.12">{@code
+     * LineNumberTable} attribute</a>.
+     */
     public
     class LineNumberTableAttribute implements Attribute {
 
+        /**
+         * Each entry in the list indicates that the line number in the original source file changes at a given point
+         * in the code array.
+         */
         public final List<LineNumberTableEntry> entries = new ArrayList<LineNumberTableEntry>();
 
         LineNumberTableAttribute(DataInputStream dis, ClassFile cf) throws IOException {
@@ -1036,7 +1353,15 @@ class ClassFile {
     public static
     class LineNumberTableEntry {
 
+        /**
+         * The value must indicate the index into the code array at which the code for a new line in the original
+         * source file begins. The value must be less than {@link CodeAttribute#code CodeAttribute.code.length}. 
+         */
         public int startPc;
+
+        /**
+         * The value must give the corresponding line number in the original source file. 
+         */
         public int lineNumber;
 
         LineNumberTableEntry(DataInputStream dis) throws IOException {
@@ -1045,17 +1370,51 @@ class ClassFile {
         }
     }
 
-    /** Representation of the {@code LocalVariableTable} attribute. */
+    /**
+     * The <a href="http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.7.13">LocalVariableTable
+     * attribute</a> is an optional variable-length attribute in the attributes table of a {@link CodeAttribute}. It
+     * may be used by debuggers to determine the value of a given local variable during the execution of a method.
+     * <p>
+     * If {@link LocalVariableTableAttribute}s are present in the attributes table of a given {@link CodeAttribute},
+     * then they may appear in any order. There may be no more than one {@link LocalVariableTableAttribute} per local
+     * variable in the {@link CodeAttribute}. 
+     */
     public
     class LocalVariableTableAttribute implements Attribute {
 
         /** Helper class for {@link LocalVariableTableAttribute}. */
         class Entry {
-            public final short  startPC;
-            public final short  length;
+
+            /**
+             * The given local variable must have a value at indices into the code array in the interval [{@link
+             * #startPC}, {@link #startPC} + {@link #length}), that is, between {@link #startPC} inclusive and {@link
+             * #startPC} + {@link #length} exclusive.
+             * <p>
+             * The value of {@link #startPC} must be a valid index into the code array of this {@link CodeAttribute}
+             * and must be the index of the opcode of an instruction.
+             * <p>
+             * The value of {@link #startPC} + {@link #length} must either be a valid index into the code array of this
+             * {@link CodeAttribute} and be the index of the opcode of an instruction, or it must be the first index
+             * beyond the end of that code array. 
+             */
+            public final short startPC, length;
+
+            /**
+             * Represents a valid unqualified name denoting a local variable. 
+             */
             public final String name;
+
+            /**
+             * Representing a field descriptor encoding the type of a local variable in the source program. 
+             */
             public final String descriptor;
-            public final short  index;
+
+            /**
+             * The given local variable must be at {@link #index} in the local variable array of the current frame. If
+             * the local variable at index is of type double or long, it occupies both {@link #index} and {@link
+             * #index} + 1. 
+             */
+            public final short index;
 
             Entry(DataInputStream dis, ClassFile cf) throws IOException {
                 this.startPC    = dis.readShort();
@@ -1066,6 +1425,11 @@ class ClassFile {
             }
         }
 
+        /**
+         * Each entry in the list indicates a range of code array offsets within which a local variable has a value.
+         * It also indicates the index into the local variable array of the current frame at which that local variable
+         * can be found. 
+         */
         public final List<Entry> entries = new ArrayList<Entry>();
 
         LocalVariableTableAttribute(DataInputStream dis, ClassFile cf) throws IOException {
@@ -1078,18 +1442,50 @@ class ClassFile {
         @Override public String getName()                        { return "LocalVariableTable"; }
     }
 
-    /** Representation of the {@code LocalVariableTypeTable} attribute. */
+    /**
+     * Representation of the <a href="http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.7.14">{@code
+     * LocalVariableTypeTable} attribute</a>.
+     */
     public static
     class LocalVariableTypeTableAttribute implements Attribute {
 
-        /** Helper class for {@link LocalVariableTypeTableAttribute}. */
+        /**
+         * Indicates a range of code array offsets within which a local variable has a value. It also indicates the
+         * index into the local variable array of the current frame at which that local variable can be found.
+         */
         public static
         class Entry {
-            public final int    startPC;
-            public final int    length;
+
+            /**
+             * The given local variable must have a value at indices into the code array in the interval [{@link
+             * #startPC}, {@link #startPC} + {@link #length}), that is, between {@link #startPC} inclusive and
+             * {@link #startPC} + {@link #length} exclusive.
+             * <p>
+             * The value of {@link #startPC} must be a valid index into the code array of this {@link CodeAttribute}
+             * and must be the index of the opcode of an instruction.
+             * <p>
+             * The value of {@link #startPC} + {@link #length} must either be a valid index into the code array of this
+             * {@link CodeAttribute} and be the index of the opcode of an instruction, or it must be the first index
+             * beyond the end of that code array. 
+             */
+            public final int startPC, length;
+
+            /**
+             * Represents a valid unqualified name denoting a local variable. 
+             */
             public final String name;
+
+            /**
+             * Representing a field type signature encoding the type of a local variable in the source program. 
+             */
             public final String signature;
-            public final short  index;
+
+            /**
+             * The given local variable must be at {@link #index} in the local variable array of the current frame. If
+             * the local variable at {@link #index} is of type double or long, it occupies both {@link #index} and
+             * {@link #index} + 1. 
+             */
+            public final short index;
 
             Entry(DataInputStream dis, ClassFile cf) throws IOException {
                 this.startPC   = 0xffff & dis.readShort();
@@ -1100,6 +1496,11 @@ class ClassFile {
             }
         }
 
+        /**
+         * Each entry in the list indicates a range of code array offsets within which a local variable has a value.
+         * It also indicates the index into the local variable array of the current frame at which that local variable
+         * can be found.
+         */
         public final List<Entry> entries = new ArrayList<Entry>();
 
         LocalVariableTypeTableAttribute(DataInputStream dis, ClassFile cf) throws IOException {
@@ -1112,9 +1513,18 @@ class ClassFile {
         @Override public String getName()                        { return "LocalVariableTypeTable"; }
     }
 
-    /** Representation of the {@code ConstantValue} attribute. */
+    /**
+     * Representation of the <a
+     * href="http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.7.2-100">{@code ConstantValue}
+     * attribute</a>.
+     */
     public static final
     class ConstantValueAttribute implements Attribute {
+
+        /**
+         * Gives the constant value represented by this attribute. The constant pool entry must be of a type
+         * appropriate to the field.
+         */
         public final String constantValue;
 
         ConstantValueAttribute(DataInputStream dis, ClassFile cf) throws IOException {
@@ -1125,7 +1535,7 @@ class ClassFile {
         @Override public String getName()                        { return "ConstantValue"; }
     }
 
-    static byte[]
+    private static byte[]
     readByteArray(DataInputStream dis, int size) throws IOException {
         byte[] res = new byte[size];
         dis.readFully(res);

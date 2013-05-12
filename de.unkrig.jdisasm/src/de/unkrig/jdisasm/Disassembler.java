@@ -159,6 +159,8 @@ class Disassembler {
     @Nullable private String thisClassPackageName;
 
     @Nullable private Map<Integer /*offset*/, String /*label*/> branchTargets;
+    
+    private static enum AttributeContext { CLASS, FIELD, METHOD }
 
     public static void
     main(String[] args) throws IOException {
@@ -511,7 +513,7 @@ class Disassembler {
             cf.signatureAttribute,
             cf.sourceFileAttribute,
             cf.syntheticAttribute,
-        }, AttributeVisitor.Context.CLASS);
+        }, AttributeContext.CLASS);
     }
 
     /**
@@ -674,7 +676,7 @@ class Disassembler {
                 method.runtimeVisibleParameterAnnotationsAttribute,
                 method.signatureAttribute,
                 method.syntheticAttribute,
-            }, AttributeVisitor.Context.METHOD);
+            }, AttributeContext.METHOD);
         } catch (RuntimeException rte) {
             throw new RuntimeException("Method '" + method.name + "' " + method.descriptor, rte);
         }
@@ -742,7 +744,7 @@ class Disassembler {
                 field.runtimeVisibleAnnotationsAttribute,
                 field.signatureAttribute,
                 field.syntheticAttribute,
-            }, AttributeVisitor.Context.FIELD);
+            }, AttributeContext.FIELD);
         }
     }
 
@@ -765,10 +767,10 @@ class Disassembler {
 
     private void
     printAttributes(
-        List<Attribute>          attributes,
-        String                   prefix,
-        Attribute[]              excludedAttributes,
-        AttributeVisitor.Context context
+        List<Attribute>  attributes,
+        String           prefix,
+        Attribute[]      excludedAttributes,
+        AttributeContext context
     ) {
         List<Attribute> tmp = new ArrayList<Attribute>(attributes);
 
@@ -795,11 +797,11 @@ class Disassembler {
     public
     class PrintAttributeVisitor implements AttributeVisitor {
 
-        private final String  prefix;
-        private final Context context;
+        private final String           prefix;
+        private final AttributeContext context;
 
         public
-        PrintAttributeVisitor(String prefix, Context context) {
+        PrintAttributeVisitor(String prefix, AttributeContext context) {
             this.prefix  = prefix;
             this.context = context;
         }
@@ -822,7 +824,7 @@ class Disassembler {
 
             if (!ca.attributes.isEmpty()) {
                 Disassembler.this.println(this.prefix + "  attributes = {");
-                PrintAttributeVisitor pav = new PrintAttributeVisitor(this.prefix + "    ", Context.METHOD);
+                PrintAttributeVisitor pav = new PrintAttributeVisitor(this.prefix + "    ", AttributeContext.METHOD);
                 List<Attribute>       tmp = ca.attributes;
                 Collections.sort(tmp, new Comparator<Attribute>() {
 
