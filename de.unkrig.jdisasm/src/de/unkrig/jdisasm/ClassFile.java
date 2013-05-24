@@ -148,24 +148,23 @@ d     *
     /**
      * Class, nested class, field and method access and property flags.
      */
-    public static final short
-    ACC_PUBLIC       = 0x00000001,
-    ACC_PRIVATE      = 0x00000002,
-    ACC_PROTECTED    = 0x00000004,
-    ACC_STATIC       = 0x00000008,
-    ACC_FINAL        = 0x00000010,
-    ACC_SYNCHRONIZED = 0x00000020,
-    ACC_VOLATILE     = 0x00000040,
-    ACC_BRIDGE       = 0x00000040,
-    ACC_TRANSIENT    = 0x00000080,
-    ACC_VARARGS      = 0x00000080,
-    ACC_NATIVE       = 0x00000100,
-    ACC_INTERFACE    = 0x00000200,
-    ACC_ABSTRACT     = 0x00000400,
-    ACC_STRICT       = 0x00000800,
-    ACC_SYNTHETIC    = 0x00001000,
-    ACC_ANNOTATION   = 0x00002000,
-    ACC_ENUM         = 0x00004000;
+    public static final short ACC_PUBLIC       = 0x00000001;
+    public static final short ACC_PRIVATE      = 0x00000002;
+    public static final short ACC_PROTECTED    = 0x00000004;
+    public static final short ACC_STATIC       = 0x00000008;
+    public static final short ACC_FINAL        = 0x00000010;
+    public static final short ACC_SYNCHRONIZED = 0x00000020;
+    public static final short ACC_VOLATILE     = 0x00000040;
+    public static final short ACC_BRIDGE       = 0x00000040;
+    public static final short ACC_TRANSIENT    = 0x00000080;
+    public static final short ACC_VARARGS      = 0x00000080;
+    public static final short ACC_NATIVE       = 0x00000100;
+    public static final short ACC_INTERFACE    = 0x00000200;
+    public static final short ACC_ABSTRACT     = 0x00000400;
+    public static final short ACC_STRICT       = 0x00000800;
+    public static final short ACC_SYNTHETIC    = 0x00001000;
+    public static final short ACC_ANNOTATION   = 0x00002000;
+    public static final short ACC_ENUM         = 0x00004000;
 
     public
     ClassFile(DataInputStream dis) throws IOException {
