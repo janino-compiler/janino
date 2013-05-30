@@ -135,7 +135,7 @@
 			srcdir="../janino/src"
 			excludes="org/codehaus/janino/AstGeneratorVisitor.java"
 			destdir="build/bin-janino"
-			classpath="${ant.jar}:build/bin-commons-compiler"
+			classpath="${ant.jar}:build/bin-commons-compiler:../de.unkrig.jdisasm/bin"
 			debug="true"
 			debuglevel="lines,vars,source"
 		/>
@@ -235,5 +235,39 @@
 
 	<target name="clean">
 		<delete dir="build"/>
+	</target>
+
+	<target name="tag" description="Tags all projects as 'janino_${version}'">
+
+		<!-- Compose the tag name from the feature name and the version. -->
+
+		<property name="tag" value="janino_${version}"/>
+		<echo message="Tagging relevant projects as '${tag}'..."/>
+
+		<fail unless="eclipse.running" message="Please select the ECLIPSE external tool configuration option 'Run in the same JRE as the workspace'."/>
+		<condition property="de.unkrig.subclipse.svn.exists"><typefound name="de.unkrig.subclipse.svn"/></condition>
+		<fail unless="de.unkrig.subclipse.svn.exists" message="Please install the 'de.unkrig.subclipse' feature from 'http://subclipse.unkrig.de/update'."/>
+
+		<!--
+			Currently it is only possible to copy the WORKING COPY, and not the BASE version - due to a limitation in
+			svnClientAdapter. See http://subclipse.tigris.org/issues/show_bug.cgi?id=1505
+		-->
+		<property name="d1" value="https://svn.code.sf.net/p/loggifier/code/tags/${tag}"/>
+		<de.unkrig.subclipse.svn>
+			<mkdir                                    url="${d1}"/>
+			<copy srcpath="../commons-compiler"       desturl="${d1}"/>
+			<copy srcpath="../commons-compiler-jdk"   desturl="${d1}"/>
+			<copy srcpath="../commons-compiler-tests" desturl="${d1}"/>
+			<copy srcpath="../de.unkrig.jdisasm"      desturl="${d1}"/>
+			<copy srcpath="../janino"                 desturl="${d1}"/>
+			<copy srcpath="../janino-dist"            desturl="${d1}"/>
+			<copy srcpath="../janino-tests"           desturl="${d1}"/>
+		</de.unkrig.subclipse.svn>
+		<property name="d2" value="https://svn.code.sf.net/p/loggifier/code/tags/${tag}"/>
+		<de.unkrig.subclipse.svn>
+			<mkdir                                                url="${d2}"/>
+			<copy srcpath="../de.unkrig.checkstyle-configuration" desturl="${d2}"/>
+			<copy srcpath="../de.unkrig.commons.nullanalysis"     desturl="${d2}"/>
+		</de.unkrig.subclipse.svn>
 	</target>
 </project>
