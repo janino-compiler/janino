@@ -122,7 +122,7 @@ public interface IExpressionEvaluator extends IScriptEvaluator {
     void setReturnType(Class returnType);
 
     /**
-     * @deprecated Must not be used on an {@link IExpressionEvaluator}; use {@link #setExpressionTypes(Class)} instead.
+     * @deprecated Must not be used on an {@link IExpressionEvaluator}; use {@link #setExpressionTypes(Class[])} instead.
      */
     void setReturnTypes(Class[] returnTypes);
 

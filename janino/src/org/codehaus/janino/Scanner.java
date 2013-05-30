@@ -235,8 +235,7 @@ public class Scanner {
 
     /**
      * Closes the character source (file, {@link InputStream}, {@link Reader}) associated
-     * with this object. The results of future calls to {@link #peek()} and
-     * {@link #read()} are undefined.
+     * with this object. The results of future calls to {@link #produce()} are undefined.
      * <p>
      * <b>This method is deprecated, because the concept described above is confusing. An
      * application should close the underlying {@link InputStream} or {@link Reader} itself.</b>
