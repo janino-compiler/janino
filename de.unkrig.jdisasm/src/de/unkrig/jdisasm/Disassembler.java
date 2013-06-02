@@ -979,7 +979,11 @@ class Disassembler {
             Disassembler.this.println(this.prefix + "Signature:");
             switch (this.context) {
             case CLASS:
-                Disassembler.this.println(this.prefix + "  " + decodeClassSignature(sa.signature).toString("[this-class]"));
+                Disassembler.this.println(
+                    this.prefix
+                    + "  "
+                    + decodeClassSignature(sa.signature).toString("[this-class]")
+                );
                 break;
             case FIELD:
                 Disassembler.this.println(this.prefix + "  " + decodeFieldTypeSignature(sa.signature).toString());

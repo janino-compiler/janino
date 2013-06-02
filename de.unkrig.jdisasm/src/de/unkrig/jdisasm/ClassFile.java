@@ -145,9 +145,9 @@ d     *
      */
     public final List<Attribute> attributes = new ArrayList<Attribute>();
 
-    /**
-     * Class, nested class, field and method access and property flags.
-     */
+    // Class, nested class, field and method access and property flags.
+
+    // CHECKSTYLE JavadocVariable:OFF
     public static final short ACC_PUBLIC       = 0x00000001;
     public static final short ACC_PRIVATE      = 0x00000002;
     public static final short ACC_PROTECTED    = 0x00000004;
@@ -165,6 +165,7 @@ d     *
     public static final short ACC_SYNTHETIC    = 0x00001000;
     public static final short ACC_ANNOTATION   = 0x00002000;
     public static final short ACC_ENUM         = 0x00004000;
+    // CHECKSTYLE JavadocVariable:ON
 
     public
     ClassFile(DataInputStream dis) throws IOException {
