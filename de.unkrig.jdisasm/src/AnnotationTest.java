@@ -1,3 +1,5 @@
+
+// SUPPRESS CHECKSTYLE RegexHeader
 import de.unkrig.commons.nullanalysis.NotNullByDefault;
 
 @SuppressWarnings("unused") @NotNullByDefault public
