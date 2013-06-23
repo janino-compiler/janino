@@ -1,116 +1,24 @@
-<!--
-  Janino - An embedded Java[TM] compiler
+<project>
 
-  Copyright (c) 2001-2010, Arno Unkrig
-  All rights reserved.
-
-  Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
-  following conditions are met:
- 
-     1. Redistributions of source code must retain the above copyright notice, this list of conditions and the
-        following disclaimer.
-     2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the
-        following disclaimer in the documentation and/or other materials provided with the distribution.
-     3. The name of the author may not be used to endorse or promote products derived from this software without
-        specific prior written permission.
- 
-  THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
-  TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
-  THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
-  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-  POSSIBILITY OF SUCH DAMAGE.
-//-->
-
-<project name="Janino" default="dist" basedir=".">
+	<property file="local_build.properties"/>
 	<property file="build.properties"/>
 
-	<target name="publish-all" depends="get-xircles-user">
-		<echo message="rsync to janino.codehaus.org"/>
-		<exec executable="${rsync-executable}">
-			<arg value="--recursive"/>
-			<arg value="--chmod=ugo=rwX"/>
-			<arg value="--rsh=${ssh-executable}"/>
-			<arg value="--verbose"/>
-			<arg value="--exclude=.svn"/>
-			<arg value="favicon.ico"/>
-			<arg value="build/janino-${version}.zip"/>
-			<arg value="build/lib/commons-compiler.jar"/>
-			<arg value="build/lib/janino.jar"/>
-			<arg value="build/lib/commons-compiler-jdk.jar"/>
-			<arg value="new_bsd_license.txt"/>
-			<arg value="changelog.html"/>
-			<arg value="build/pad_file.xml"/>
-			<arg value="build/javadoc"/>
-			<arg value="../janino/src/org/codehaus/janino/samples"/>
-			<arg value="${xircles-user}@janino.codehaus.org:/projects/janino/dist/"/>
-		</exec>
-	</target>
+	<taskdef
+		classpath="lib/de.unkrig.ant-contrib.jar"
+		resource="de/unkrig/antcontrib/ant.properties"
+	/>
 
-	<target name="publish-zip" description="Upload only the ZIP file for beta testers" depends="get-xircles-user">
-		<echo message="rsync to janino.codehaus.org"/>
-		<exec executable="${rsync-executable}">
-			<arg value="--recursive"/>
-			<arg value="--chmod=ugo=rwX"/>
-			<arg value="--rsh=${ssh-executable}"/>
-			<arg value="--verbose"/>
-			<arg value="--exclude=.svn"/>
-			<arg value="build/janino-${version}.zip"/>
-			<arg value="${xircles-user}@janino.codehaus.org:/projects/janino/dist/"/>
-		</exec>
-	</target>
+	<taskdef
+		classpath="lib/ant_issue_54883.jar"
+		resource="ant_issue_54883.properties"
+	/>
 
-	<target name="get-xircles-user">
-		<input
-			addproperty="xircles-user"
-			defaultvalue="aunkrig"
-			message="Your XIRCLES user name (you must have write access to the JANINO space):"
-		/>
-	</target>
+	<target name="build" description="Builds download site in './mirror'">
+		<delete dir="mirror"/>
+		<mkdir dir="mirror/download"/>
 
-	<target name="dist" depends="janino-zip,pad-file,javadoc"/>
-
-	<target name="janino-zip" depends="clean,commons-compiler.jar,janino.jar,commons-compiler-jdk.jar,src-zips">
-		<zip destfile="build/janino-${version}.zip" filesonly="true">
-			<zipfileset file="build/lib/commons-compiler.jar"     prefix="janino-${version}"/>
-			<zipfileset file="build/lib/janino.jar"               prefix="janino-${version}"/>
-			<zipfileset file="build/lib/commons-compiler-jdk.jar" prefix="janino-${version}"/>
-
-			<zipfileset file="build/commons-compiler-src.zip"     prefix="janino-${version}"/>
-			<zipfileset file="build/janino-src.zip"               prefix="janino-${version}"/>
-			<zipfileset file="build/commons-compiler-jdk-src.zip" prefix="janino-${version}"/>
-
-			<zipfileset file="README.txt"                         prefix="janino-${version}"/>
-			<zipfileset file="new_bsd_license.txt"                prefix="janino-${version}"/>
-		</zip>
-	</target>
-
-	<target name="pad-file">
-		<length file="build/janino-${version}.zip" property="janino-zip-size"/>
-		<copy file="pad_file-template.xml" tofile="build/pad_file.xml" encoding="ISO-8859-1">
-			<filterchain>
-				<replacestring from="@VERSION@" to="${version}"/>
-				<replacestring from="@SIZE@"    to="${janino-zip-size}"/>
-			</filterchain>
-		</copy>
-	</target>
-
-	<target name="src-zips">
-		<zip destfile="build/commons-compiler-src.zip" filesonly="true">
-			<zipfileset dir="../commons-compiler/src"/>
-		</zip>
-		<zip destfile="build/janino-src.zip" filesonly="true">
-			<zipfileset dir="../janino/src"/>
-		</zip>
-		<zip destfile="build/commons-compiler-jdk-src.zip" filesonly="true">
-			<zipfileset dir="../commons-compiler-jdk/src"/>
-		</zip>
-	</target>
-
-	<target name="compile-commons-compiler">
+		<!-- Build 'build/commons-compiler.jar'. -->
 		<mkdir dir="build/bin-commons-compiler"/>
-
 		<javac
 			fork="yes"
 			source="1.2"
@@ -119,15 +27,27 @@
 			destdir="build/bin-commons-compiler"
 			debug="true"
 			debuglevel="lines,vars,source"
+			includeantruntime="false"
 		/>
 		<copy todir="build/bin-commons-compiler">
 			<fileset dir="../commons-compiler/src" excludes="**/*.java,**/package.html"/>
 		</copy>
-	</target>
+		<jar jarfile="build/commons-compiler.jar" filesonly="true">
+			<manifest>
+				<attribute name="Specification-Version" value="${version}"/>
+			</manifest>
+			<fileset dir="build/bin-commons-compiler"/>
+		</jar>
+		<signjar
+			keystore="dummy-keystore"
+			storepass="storepass"
+			keypass="keypass"
+			jar="build/commons-compiler.jar"
+			alias="dummy"
+		/>
 
-	<target name="compile-janino">
+		<!-- Build 'build/janino.jar'. -->
 		<mkdir dir="build/bin-janino"/>
-
 		<javac
 			fork="yes"
 			source="1.2"
@@ -138,50 +58,12 @@
 			classpath="${ant.jar}:build/bin-commons-compiler:../de.unkrig.jdisasm/bin"
 			debug="true"
 			debuglevel="lines,vars,source"
+			includeantruntime="false"
 		/>
 		<copy todir="build/bin-janino">
 			<fileset dir="../janino/src" excludes="**/*.java,**/package.html"/>
 		</copy>
-	</target>
-
-	<target name="compile-commons-compiler-jdk">
-		<mkdir dir="build/bin-commons-compiler-jdk"/>
-
-		<javac
-			fork="yes"
-			source="1.6"
-			target="1.6"
-			srcdir="../commons-compiler-jdk/src"
-			destdir="build/bin-commons-compiler-jdk"
-			classpath="build/bin-commons-compiler"
-			debug="true"
-			debuglevel="lines,vars,source"
-		/>
-		<copy todir="build/bin-commons-compiler-jdk">
-			<fileset dir="../commons-compiler-jdk/src" excludes="**/*.java,**/package.html"/>
-		</copy>
-	</target>
-
-	<target name="commons-compiler.jar" depends="compile-commons-compiler">
-		<mkdir dir="build/lib"/>
-		<jar jarfile="build/lib/commons-compiler.jar" filesonly="true">
-			<manifest>
-				<attribute name="Specification-Version" value="${version}"/>
-			</manifest>
-			<fileset dir="build/bin-commons-compiler"/>
-		</jar>
-		<signjar
-			keystore="dummy-keystore"
-			storepass="storepass"
-			keypass="keypass"
-			jar="build/lib/commons-compiler.jar"
-			alias="dummy"
-		/>
-	</target>
-
-	<target name="janino.jar" depends="compile-janino">
-		<mkdir dir="build/lib"/>
-		<jar jarfile="build/lib/janino.jar" filesonly="true">
+		<jar jarfile="build/janino.jar" filesonly="true">
 			<manifest>
 				<attribute name="Implementation-Version" value="${version}"/>
 				<attribute name="Implementation-URL"     value="http://janino.net"/>
@@ -192,14 +74,27 @@
 			keystore="dummy-keystore"
 			storepass="storepass"
 			keypass="keypass"
-			jar="build/lib/janino.jar"
+			jar="build/janino.jar"
 			alias="dummy"
 		/>
-	</target>
 
-	<target name="commons-compiler-jdk.jar" depends="compile-commons-compiler-jdk">
-		<mkdir dir="build/lib"/>
-		<jar jarfile="build/lib/commons-compiler-jdk.jar" filesonly="true">
+		<!-- Build 'build/commons-compiler-jdk.jar'. -->
+		<mkdir dir="build/bin-commons-compiler-jdk"/>
+		<javac
+			fork="yes"
+			source="1.6"
+			target="1.6"
+			srcdir="../commons-compiler-jdk/src"
+			destdir="build/bin-commons-compiler-jdk"
+			classpath="build/bin-commons-compiler"
+			debug="true"
+			debuglevel="lines,vars,source"
+			includeantruntime="false"
+		/>
+		<copy todir="build/bin-commons-compiler-jdk">
+			<fileset dir="../commons-compiler-jdk/src" excludes="**/*.java,**/package.html"/>
+		</copy>
+		<jar jarfile="build/commons-compiler-jdk.jar" filesonly="true">
 			<manifest>
 				<attribute name="Implementation-Version" value="${version}"/>
 				<attribute name="Implementation-URL"     value="http://janino.net"/>
@@ -210,13 +105,46 @@
 			keystore="dummy-keystore"
 			storepass="storepass"
 			keypass="keypass"
-			jar="build/lib/commons-compiler-jdk.jar"
+			jar="build/commons-compiler-jdk.jar"
 			alias="dummy"
 		/>
-	</target>
 
-	<target name="javadoc" description="Build JAVADOC">
-		<mkdir dir="build/javadoc"/>
+		<!-- Build source ZIP files. -->
+		<zip destfile="build/commons-compiler-src.zip" filesonly="true">
+			<zipfileset dir="../commons-compiler/src"/>
+		</zip>
+		<zip destfile="build/janino-src.zip" filesonly="true">
+			<zipfileset dir="../janino/src"/>
+		</zip>
+		<zip destfile="build/commons-compiler-jdk-src.zip" filesonly="true">
+			<zipfileset dir="../commons-compiler-jdk/src"/>
+		</zip>
+
+		<!-- Build 'mirror/download/janino-VERSION.zip' file. -->
+		<zip destfile="mirror/download/janino-${version}.zip" filesonly="true">
+			<zipfileset file="build/commons-compiler.jar"     prefix="janino-${version}"/>
+			<zipfileset file="build/janino.jar"               prefix="janino-${version}"/>
+			<zipfileset file="build/commons-compiler-jdk.jar" prefix="janino-${version}"/>
+
+			<zipfileset file="build/commons-compiler-src.zip"     prefix="janino-${version}"/>
+			<zipfileset file="build/janino-src.zip"               prefix="janino-${version}"/>
+			<zipfileset file="build/commons-compiler-jdk-src.zip" prefix="janino-${version}"/>
+
+			<zipfileset file="README.txt"                         prefix="janino-${version}"/>
+			<zipfileset file="new_bsd_license.txt"                prefix="janino-${version}"/>
+		</zip>
+
+		<!-- Build 'mirror/pad_file.xml'. -->
+		<length file="mirror/download/janino-${version}.zip" property="janino-zip-size"/>
+		<copy file="pad_file-template.xml" tofile="mirror/pad_file.xml" encoding="ISO-8859-1">
+			<filterchain>
+				<replacestring from="@VERSION@" to="${version}"/>
+				<replacestring from="@SIZE@"    to="${janino-zip-size}"/>
+			</filterchain>
+		</copy>
+
+		<!-- Build 'mirror/javadoc/'. -->
+		<mkdir dir="mirror/javadoc"/>
 		<javadoc
 			header="&lt;a href=&quot;http://janino.net/&quot; target=&quot;_top&quot;&gt;janino.net&lt;/a&gt;"
 			splitindex="true"
@@ -225,16 +153,57 @@
 			overview="overview.html"
 			sourcepath="../commons-compiler/src;../janino/src;../commons-compiler-jdk/src"
 			classpath="${ant.jar}"
-			destdir="build/javadoc"
+			destdir="mirror/javadoc"
 			packagenames="${javadoc-packages}"
 		>
 			<link offline="true" href="${javadoc-jdk-href}" packagelistloc="${javadoc-jdk-packagelistloc}"/>
 			<link offline="true" href="${javadoc-ant-href}" packagelistloc="${javadoc-ant-packagelistloc}"/>
 		</javadoc>
+
+		<!-- Copy auxiliary files to 'mirror/'. -->
+		<copy todir="mirror">
+			<fileset file="favicon.ico"/>
+			<fileset file="new_bsd_license.txt"/>
+			<fileset file="changelog.html"/>
+			<fileset file="README.txt"/>
+			<fileset dir="../janino/src/org/codehaus/janino" includes="samples/*.java"/>
+			<fileset dir="../commons-compiler/src/org/codehaus/commons/compiler" includes="samples/*.java"/>
+		</copy>
 	</target>
 
-	<target name="clean">
-		<delete dir="build"/>
+	<target name="publish" description="Uploads './mirror' to 'unkrig.de/janino'">
+
+		<!-- Have the FTP parameters entered/confirmed by the user. -->
+		<de.unkrig.ant-contrib.swing-dialog title="FTP upload of update site">
+			<label text="Server:"                   /><text property="ftp.server"         defaultvalue="${ftp.server}"/>
+			<label text="Port (optional):"          /><text property="ftp.port"           defaultvalue="${ftp.port}"/>
+			<label text="User ID:"                  /><text property="ftp.userid"         defaultvalue="${ftp.userid}"/>
+			<label text="Password:"                 /><text property="ftp.password"       defaultvalue="${ftp.password}" secure="true"/>
+			<label text="Proxy server (optional):"  /><text property="ftp.proxy.server"   defaultvalue="${ftp.proxy.server}"/>
+			<label text="Proxy port (optional):"    /><text property="ftp.proxy.port"     defaultvalue="${ftp.proxy.port}"/>
+			<label text="Proxy user ID (optional):" /><text property="ftp.proxy.userid"   defaultvalue="${ftp.proxy.userid}"/>
+			<label text="Proxy password (optional):"/><text property="ftp.proxy.password" defaultvalue="${ftp.proxy.password}" secure="true"/>
+			<label text="Remote directory:"         /><text property="ftp.remotedir"      defaultvalue="${ftp.remotedir}"/>
+			<checkbox text="Use passive FTP"   property="ftp.passive" defaultvalue="true"/>
+			<checkbox text="Verbose reporting" property="ftp.verbose" defaultvalue="true"/>
+		</de.unkrig.ant-contrib.swing-dialog>
+
+		<ftp2
+			server       ="${ftp.server}"
+			port         ="${ftp.port}"
+			userid       ="${ftp.userid}"
+			password     ="${ftp.password}"
+			proxyServer  ="${ftp.proxy.server}"
+			proxyPort    ="${ftp.proxy.port}"
+			proxyUserid  ="${ftp.proxy.userid}"
+			proxyPassword="${ftp.proxy.password}"
+			remotedir    ="${ftp.remotedir}"
+			passive      ="${ftp.passive}"
+			verbose      ="${ftp.verbose}"
+			action       ="put"
+		>
+			<fileset dir="mirror"/>
+		</ftp2>
 	</target>
 
 	<target name="tag" description="Tags all projects as 'janino_${version}'">
@@ -252,7 +221,7 @@
 			Currently it is only possible to copy the WORKING COPY, and not the BASE version - due to a limitation in
 			svnClientAdapter. See http://subclipse.tigris.org/issues/show_bug.cgi?id=1505
 		-->
-		<property name="d1" value="https://svn.code.sf.net/p/loggifier/code/tags/${tag}"/>
+		<property name="d1" value="https://svn.codehaus.org/janino/tags/${tag}"/>
 		<de.unkrig.subclipse.svn>
 			<mkdir                                    url="${d1}"/>
 			<copy srcpath="../commons-compiler"       desturl="${d1}"/>
