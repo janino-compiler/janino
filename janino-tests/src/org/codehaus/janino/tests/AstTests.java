@@ -154,7 +154,7 @@ public class AstTests {
      * "Clever" method to get a location from a stack trace
      */
     private static Location getLocation() {
-        Exception e = new Exception();
+        Exception         e   = new Exception();
         StackTraceElement ste = e.getStackTrace()[1]; //we only care about our caller
         return new Location(
             ste.getFileName(),
@@ -203,7 +203,7 @@ public class AstTests {
 
         PackageMemberClassDeclaration clazz = createClass(cu);
 
-        Byte exp = Byte.valueOf((byte) 1);
+        Byte                exp  = Byte.valueOf((byte) 1);
         List/*<Statement>*/ body = new ArrayList();
         body.add(
             new ReturnStatement(
@@ -302,17 +302,17 @@ public class AstTests {
         SimpleCompiler compiler = new SimpleCompiler();
         compiler.cook(cu);
 
-        ClassLoader loader = compiler.getClassLoader();
-        Class handMadeClass = loader.loadClass("HandMade");
-        Method calc = handMadeClass.getMethod("calculate", new Class[0]);
+        ClassLoader loader        = compiler.getClassLoader();
+        Class       handMadeClass = loader.loadClass("HandMade");
+        Method      calc          = handMadeClass.getMethod("calculate", new Class[0]);
 
         Object handMade = handMadeClass.newInstance();
-        Object res = calc.invoke(handMade, new Object[0]);
+        Object res      = calc.invoke(handMade, new Object[0]);
         assertEquals(handMadeClass, res);
     }
 
-    @Test
-    public void testPrecedence() throws Exception {
+    @Test public void
+    testPrecedence() throws Exception {
         ExpressionStatement es = new Java.ExpressionStatement(
             new Java.Assignment(
                 getLocation(),
@@ -328,7 +328,7 @@ public class AstTests {
             )
         );
 
-        StringWriter sw = new StringWriter();
+        StringWriter   sw = new StringWriter();
         UnparseVisitor uv = new UnparseVisitor(sw);
         uv.visitExpressionStatement(es);
         uv.close();

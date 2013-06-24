@@ -137,8 +137,8 @@ public class UnparseTests {
 
     private static Java.Rvalue stripUnnecessaryParenExprs(Java.Rvalue rvalue) {
         if (rvalue == null) { return null; }
-        final Java.Rvalue[] res = new Java.Rvalue[1];
-        Visitor.RvalueVisitor rv = new Visitor.RvalueVisitor() {
+        final Java.Rvalue[]   res = new Java.Rvalue[1];
+        Visitor.RvalueVisitor rv  = new Visitor.RvalueVisitor() {
             public void visitArrayLength(ArrayLength al) {
                 res[0] = new Java.ArrayLength(
                     al.getLocation(),
@@ -358,11 +358,11 @@ public class UnparseTests {
             "Foo",
             new Type[0]
         );
-        StringWriter sw = new StringWriter();
+        StringWriter   sw = new StringWriter();
         UnparseVisitor uv = new UnparseVisitor(sw);
         decl.accept(uv);
         uv.close();
-        String s = sw.toString();
+        String s             = sw.toString();
         String correctString = "/**foo */ public interface Foo { }";
         assertEquals(correctString, normalizeWhitespace(s));
     }
@@ -374,10 +374,10 @@ public class UnparseTests {
             { new FloatingPointLiteral(null, "-0.0F"), "-0.0F" },
         };
         for (int i = 0; i < tests.length; ++i) {
-            Atom expr = (Atom) tests[i][0];
+            Atom   expr     = (Atom) tests[i][0];
             String expected = (String) tests[i][1];
 
-            StringWriter sw = new StringWriter();
+            StringWriter   sw = new StringWriter();
             UnparseVisitor uv = new UnparseVisitor(sw);
             expr.accept(uv);
             uv.close();
@@ -439,7 +439,7 @@ public class UnparseTests {
         };
 
         for (int i = 0; i < exprs.length; ++i) {
-            String input = exprs[i][0];
+            String input          = exprs[i][0];
             String expectSimplify = exprs[i][1];
             if (expectSimplify == null) {
                 expectSimplify = input;
@@ -470,7 +470,7 @@ public class UnparseTests {
                     try {
 
                         // Parse the source file once.
-                        InputStream is = new FileInputStream(f);
+                        InputStream     is  = new FileInputStream(f);
                         CompilationUnit cu1 = new Parser(new Scanner(f.toString(), is)).parseCompilationUnit();
                         is.close();
 

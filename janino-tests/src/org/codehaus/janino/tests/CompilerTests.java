@@ -109,7 +109,7 @@ public class CompilerTests {
             + "i.e. only the explicitly given source files should be recompiled"
         );
         MapResourceCreator classFileResources2 = new MapResourceCreator();
-        MapResourceFinder classFileFinder = new MapResourceFinder(classFileMap1);
+        MapResourceFinder  classFileFinder     = new MapResourceFinder(classFileMap1);
         classFileFinder.setLastModified(System.currentTimeMillis());
         {
             Compiler c = new Compiler(
@@ -172,8 +172,8 @@ public class CompilerTests {
                 return object.getClass().getDeclaredMethod(methodName, parameterTypes).invoke(object, arguments);
             }
         }
-        Loader l = new Loader();
-        Map classFileMap3 = new HashMap();
+        Loader l             = new Loader();
+        Map    classFileMap3 = new HashMap();
         {
             Object sf = l.instantiate(MultiResourceFinder.class, new Class[] { Collection.class }, new Object[] {
                 Arrays.asList(new Object[] {
@@ -263,7 +263,7 @@ public class CompilerTests {
         ).getBytes());
         ResourceFinder sourceFinder = new MapResourceFinder(sources);
 
-        Map classes = new HashMap();
+        Map      classes  = new HashMap();
         Compiler compiler = new Compiler(
             sourceFinder,                                                  // sourceFinder
             new ClassLoaderIClassLoader(this.getClass().getClassLoader()), // iClassLoader
