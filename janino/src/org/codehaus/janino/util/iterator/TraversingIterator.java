@@ -38,8 +38,8 @@ import java.util.*;
  */
 public class TraversingIterator implements Iterator {
     private final Stack nest = new Stack(); // Iterator
-    private Object      nextElement = null;
-    private boolean     nextElementRead = false; // Have we read ahead?
+    private Object      nextElement;
+    private boolean     nextElementRead; // Have we read ahead?
 
     public TraversingIterator(Iterator delegate) {
         this.nest.push(delegate);

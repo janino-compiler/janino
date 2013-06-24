@@ -40,7 +40,7 @@ import java.util.*;
  */
 public abstract class AbstractJavaSourceClassLoader extends ClassLoader {
 
-    protected ProtectionDomainFactory  optionalProtectionDomainFactory = null;
+    protected ProtectionDomainFactory optionalProtectionDomainFactory;
 
     public AbstractJavaSourceClassLoader() {
     }
@@ -134,9 +134,9 @@ public abstract class AbstractJavaSourceClassLoader extends ClassLoader {
                 haveDebuggingInfo = true;
             } else
             if (arg.startsWith("-g:")) {
-                debuggingInfoLines  = arg.contains("lines");
-                debuggingInfoVars   = arg.contains("vars");
-                debuggingInfoSource = arg.contains("source");
+                debuggingInfoLines  = arg.indexOf("lines") != -1;
+                debuggingInfoVars   = arg.indexOf("vars") != -1;
+                debuggingInfoSource = arg.indexOf("source") != -1;
                 haveDebuggingInfo = true;
             } else
             if ("-help".equals(arg)) {

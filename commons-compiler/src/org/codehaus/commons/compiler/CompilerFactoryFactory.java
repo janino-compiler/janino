@@ -39,7 +39,7 @@ import java.util.Properties;
 public final class CompilerFactoryFactory {
     private CompilerFactoryFactory() {}
 
-    private static ICompilerFactory defaultCompilerFactory = null;
+    private static ICompilerFactory defaultCompilerFactory;
 
     /**
      * Finds the first implementation of <code>org.codehaus.commons.compiler</code> on the class path, then loads and

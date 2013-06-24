@@ -2612,7 +2612,7 @@ public class Parser {
     }
 
     // Used for elaborate warning handling.
-    private WarningHandler optionalWarningHandler = null;
+    private WarningHandler optionalWarningHandler;
 
     /**
      * Issues a warning with the given message and location and returns. This is done through

@@ -46,8 +46,8 @@ public final class JavaSourceIClassLoader extends IClassLoader {
     private ResourceFinder            sourceFinder;
     private String                    optionalCharacterEncoding;
     private final Set                 unitCompilers; // UnitCompiler
-    private UnitCompiler.ErrorHandler optionalCompileErrorHandler = null;
-    private WarningHandler            optionalWarningHandler = null;
+    private UnitCompiler.ErrorHandler optionalCompileErrorHandler;
+    private WarningHandler            optionalWarningHandler;
 
     /**
      * Notice that the <code>unitCompilers</code> set is both read and written

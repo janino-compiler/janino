@@ -49,9 +49,9 @@ public class SimpleCompiler extends Cookable implements ISimpleCompiler {
     private ClassLoader parentClassLoader = Thread.currentThread().getContextClassLoader();
 
     // Set when "cook()"ing.
-    private ClassLoaderIClassLoader classLoaderIClassLoader = null;
+    private ClassLoaderIClassLoader classLoaderIClassLoader;
 
-    private ClassLoader result = null;
+    private ClassLoader result;
 
     protected boolean debugSource = Boolean.getBoolean(ICookable.SYSTEM_PROPERTY_SOURCE_DEBUGGING_ENABLE);
     protected boolean debugLines = this.debugSource;
@@ -237,7 +237,7 @@ public class SimpleCompiler extends Cookable implements ISimpleCompiler {
         // Type that lazily creates a delegate Type at COMPILE TIME.
         return new Java.Type(location) {
 
-            private Java.SimpleType delegate = null;
+            private Java.SimpleType delegate;
             
             public String toString()                  { return this.getDelegate().toString(); }
             public void   accept(AtomVisitor visitor) { this.getDelegate().accept((TypeVisitor) visitor); }
@@ -315,8 +315,15 @@ public class SimpleCompiler extends Cookable implements ISimpleCompiler {
             byte[] contents = cf.toByteArray();
             if (DEBUG) {
                 try {
-                    new de.unkrig.jdisasm.Disassembler().disasm(new ByteArrayInputStream(contents));
-                } catch (IOException e) {
+                    Class disassemblerClass = Class.forName("de.unkrig.jdisasm.Disassembler");
+                    disassemblerClass.getMethod(
+                        "disasm",
+                        new Class[] { InputStream.class }
+                    ).invoke(
+                        disassemblerClass.newInstance(),
+                        new Object[] { new ByteArrayInputStream(contents) }
+                    );
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }

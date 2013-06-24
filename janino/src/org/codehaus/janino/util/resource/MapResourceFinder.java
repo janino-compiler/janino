@@ -35,7 +35,7 @@ import java.util.*;
  */
 public class MapResourceFinder extends ResourceFinder {
     private final Map map;
-    private long      lastModified = 0L;
+    private long      lastModified;
 
     public MapResourceFinder(Map map) {
         this.map = map;

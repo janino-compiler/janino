@@ -58,12 +58,12 @@ import org.codehaus.commons.io.MultiReader;
  */
 public class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
 
-    private String[]   optionalDefaultImports = null;
+    private String[]   optionalDefaultImports;
     private String     className = IClassBodyEvaluator.DEFAULT_CLASS_NAME;
-    private Class<?>   optionalExtendedType = null;
+    private Class<?>   optionalExtendedType;
     private Class<?>[] implementedTypes = new Class[0];;
 
-    private Class<?> result = null;
+    private Class<?> result;
 
     @Override
     public void setClassName(String className) {

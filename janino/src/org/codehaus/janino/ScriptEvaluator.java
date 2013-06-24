@@ -44,14 +44,14 @@ import org.codehaus.janino.util.Traverser;
  */
 public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
 
-    protected boolean[]  optionalStaticMethod = null;
-    protected Class[]    optionalReturnTypes = null;
-    protected String[]   optionalMethodNames = null;
-    protected String[][] optionalParameterNames = null;
-    protected Class[][]  optionalParameterTypes = null;
-    protected Class[][]  optionalThrownExceptions = null;
+    protected boolean[]  optionalStaticMethod;
+    protected Class[]    optionalReturnTypes;
+    protected String[]   optionalMethodNames;
+    protected String[][] optionalParameterNames;
+    protected Class[][]  optionalParameterTypes;
+    protected Class[][]  optionalThrownExceptions;
 
-    private Method[]     result = null; // null=uncooked
+    private Method[]     result; // null=uncooked
 
     /**
      * Equivalent to<pre>

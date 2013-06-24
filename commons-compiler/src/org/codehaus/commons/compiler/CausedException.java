@@ -33,7 +33,7 @@ import java.lang.reflect.*;
  * For compatibility with pre-1.4 JDKs, this class mimics
  */
 public class CausedException extends Exception {
-    private Throwable optionalCause = null;
+    private Throwable optionalCause;
 
     private static final Method INIT_CAUSE = initCauseMethod(); // Null for pre-1.4 JDKs.
     static Method initCauseMethod() {

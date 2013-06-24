@@ -223,7 +223,7 @@ public class Compiler {
     private final boolean               debugLines;
     private final boolean               debugVars;
     private final WarningHandler        optionalWarningHandler;
-    private UnitCompiler.ErrorHandler   optionalCompileErrorHandler = null;
+    private UnitCompiler.ErrorHandler   optionalCompileErrorHandler;
 
     private final IClassLoader iClassLoader;
     private final ArrayList    parsedCompilationUnits = new ArrayList(); // UnitCompiler

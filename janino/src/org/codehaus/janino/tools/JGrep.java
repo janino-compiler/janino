@@ -79,7 +79,7 @@ import org.codehaus.janino.util.resource.PathResourceFinder;
  */
 public class JGrep {
     private static final boolean DEBUG = false;
-    private final List         parsedCompilationUnits = new ArrayList(); // UnitCompiler
+    private final List           parsedCompilationUnits = new ArrayList(); // UnitCompiler
 
     /**
      * Command line interface.
@@ -324,9 +324,9 @@ public class JGrep {
         }
     }
     private static class MethodInvocationTarget {
-        String   optionalClassNamePattern = null;
-        String   methodNamePattern = null;
-        String[] optionalArgumentTypeNamePatterns = null;
+        String   optionalClassNamePattern;
+        String   methodNamePattern;
+        String[] optionalArgumentTypeNamePatterns;
         List     predicates = new ArrayList(); // MethodInvocationPredicate
         List     actions = new ArrayList(); // MethodInvocationAction
 

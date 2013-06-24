@@ -103,7 +103,7 @@ public final class Java {
      */
     public static final class CompilationUnit implements Scope {
         public final              String optionalFileName;
-        public PackageDeclaration optionalPackageDeclaration    = null;
+        public PackageDeclaration optionalPackageDeclaration;
         public final List         importDeclarations            = new ArrayList(); // ImportDeclaration
         public final List         packageMemberTypeDeclarations = new ArrayList(); // PackageMemberTypeDeclaration
 
@@ -370,9 +370,9 @@ public final class Java {
         private final short    modifiers;
         private final List     declaredMethods              = new ArrayList(); // MethodDeclarator
         private final List     declaredClassesAndInterfaces = new ArrayList(); // MemberTypeDeclaration
-        private Scope          enclosingScope = null;
+        private Scope          enclosingScope;
 
-        IClass resolvedType = null;
+        IClass resolvedType;
 
         public AbstractTypeDeclaration(
             Location location,
@@ -467,8 +467,8 @@ public final class Java {
 
         public abstract String toString();
 
-        public int anonymousClassCount = 0; // For naming anonymous classes.
-        public int localClassCount = 0;     // For naming local classes.
+        public int anonymousClassCount; // For naming anonymous classes.
+        public int localClassCount;     // For naming local classes.
     }
 
     public abstract static class ClassDeclaration extends AbstractTypeDeclaration {
@@ -562,7 +562,7 @@ public final class Java {
             }
             return this.myName;
         }
-        private String myName = null;
+        private String myName;
         public String toString() { return this.getClassName(); }
     }
 
@@ -801,7 +801,7 @@ public final class Java {
         public final List   constantDeclarations = new ArrayList(); // FieldDeclaration
 
         // Set during "compile()".
-        IClass[] interfaces = null;
+        IClass[] interfaces;
 
         // Implement NamedTypeDeclaration.
         public String getName() { return this.name; }
@@ -1048,7 +1048,7 @@ public final class Java {
         }
 
         // Set by "compile()".
-        IClass returnType = null;
+        IClass returnType;
 
         // Implement DocCommentable.
         public String getDocComment() { return this.optionalDocComment; }
@@ -1079,15 +1079,15 @@ public final class Java {
 
             // Compile time members.
 
-            public Java.LocalVariable localVariable = null;
+            public Java.LocalVariable localVariable;
         }
 
         // Compile time members
-        public Map localVariables = null; // String name => Java.LocalVariable
+        public Map localVariables; // String name => Java.LocalVariable
     }
 
     public static final class ConstructorDeclarator extends FunctionDeclarator {
-        IClass.IConstructor                iConstructor = null;
+        IClass.IConstructor                iConstructor;
         public final ConstructorInvocation optionalConstructorInvocation;
 
         public ConstructorDeclarator(
@@ -1287,7 +1287,7 @@ public final class Java {
         // Compile time members.
 
         // Used only if the variable declarator declares a local variable.
-        public LocalVariable localVariable = null;
+        public LocalVariable localVariable;
     }
 
     /**
@@ -1302,7 +1302,7 @@ public final class Java {
     }
 
     public abstract static class Statement extends Located implements BlockStatement {
-        private Scope enclosingScope = null;
+        private Scope enclosingScope;
 
         protected Statement(Location location) {
             super(location);
@@ -1323,7 +1323,7 @@ public final class Java {
         public Scope getEnclosingScope() { return this.enclosingScope; }
 
         // Compile time members
-        public Map localVariables = null; // String name => Java.LocalVariable
+        public Map localVariables; // String name => Java.LocalVariable
         public Java.LocalVariable findLocalVariable(String name) {
             if (this.localVariables == null) { return null; }
             return (LocalVariable) this.localVariables.get(name);
@@ -1403,7 +1403,7 @@ public final class Java {
             super(location);
         }
 
-        CodeContext.Offset whereToBreak = null;
+        CodeContext.Offset whereToBreak;
     }
 
     public abstract static class ContinuableStatement extends BreakableStatement {
@@ -1411,7 +1411,7 @@ public final class Java {
             super(location);
         }
 
-        protected CodeContext.Offset whereToContinue = null;
+        protected CodeContext.Offset whereToContinue;
     }
 
     public static final class ExpressionStatement extends Statement {
@@ -1581,13 +1581,13 @@ public final class Java {
 
         public void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitTryStatement(this); }
 
-        CodeContext.Offset finallyOffset = null;
+        CodeContext.Offset finallyOffset;
     }
 
     public static class CatchClause extends Located implements Scope {
         public final FunctionDeclarator.FormalParameter caughtException;
         public final Block                              body;
-        private TryStatement                            enclosingTryStatement = null;
+        private TryStatement                            enclosingTryStatement;
 
         // Compile time fields.
 
@@ -1917,7 +1917,7 @@ public final class Java {
      * Representation of a Java&trade; type.
      */
     public abstract static class Type extends Atom {
-        private Scope enclosingScope = null;
+        private Scope enclosingScope;
 
         protected Type(Location location) {
             super(location);
@@ -2081,7 +2081,7 @@ public final class Java {
      * right-hand-side of an assignment.
      */
     public abstract static class Rvalue extends Atom implements ArrayInitializerOrRvalue {
-        private Java.BlockStatement enclosingBlockStatement = null;
+        private Java.BlockStatement enclosingBlockStatement;
 
         protected Rvalue(Location location) {
             super(location);
@@ -2191,7 +2191,7 @@ public final class Java {
         }
 
         // Override "Atom.toType()".
-        private Type type = null;
+        private Type type;
         public Type toType() {
             if (this.type == null) {
                 String[] is = new String[this.n];
@@ -2218,7 +2218,7 @@ public final class Java {
             return this;
         }
 
-        Atom reclassified = null;
+        Atom reclassified;
 
         public void accept(Visitor.AtomVisitor visitor)   { visitor.visitAmbiguousName(this); }
         public void accept(Visitor.RvalueVisitor visitor) { visitor.visitAmbiguousName(this); }
@@ -2323,7 +2323,7 @@ public final class Java {
 
         // Compile time members.
 
-        IClass iClass = null;
+        IClass iClass;
 
         // Implement "Atom".
         public String toString() { return "this"; }
@@ -2353,9 +2353,9 @@ public final class Java {
 
         // Compile time members.
 
-        ClassDeclaration    declaringClass               = null;
-        TypeBodyDeclaration declaringTypeBodyDeclaration = null;
-        IClass              targetIClass                 = null;
+        ClassDeclaration    declaringClass;
+        TypeBodyDeclaration declaringTypeBodyDeclaration;
+        IClass              targetIClass;
 
         // Used at compile time.
 //        public QualifiedThisReference(
@@ -2541,7 +2541,7 @@ public final class Java {
         public void accept(Visitor.RvalueVisitor visitor) { visitor.visitFieldAccessExpression(this); }
         public void accept(Visitor.LvalueVisitor visitor) { visitor.visitFieldAccessExpression(this); }
 
-        Rvalue value = null;
+        Rvalue value;
     }
 
     /**
@@ -2576,7 +2576,7 @@ public final class Java {
         public void accept(Visitor.RvalueVisitor visitor) { visitor.visitSuperclassFieldAccessExpression(this); }
         public void accept(Visitor.LvalueVisitor visitor) { visitor.visitSuperclassFieldAccessExpression(this); }
 
-        Rvalue value = null;
+        Rvalue value;
     }
 
     /**
@@ -2724,7 +2724,7 @@ public final class Java {
 
     public abstract static class ConstructorInvocation extends Atom implements BlockStatement {
         public final Rvalue[] arguments;
-        private Scope         enclosingScope = null;
+        private Scope         enclosingScope;
 
         protected ConstructorInvocation(
             Location location,
@@ -2750,7 +2750,7 @@ public final class Java {
         public Scope getEnclosingScope() { return this.enclosingScope; }
 
         // Compile time members
-        public Map localVariables = null; // String name => Java.LocalVariable
+        public Map localVariables; // String name => Java.LocalVariable
         public Java.LocalVariable findLocalVariable(String name) {
             if (this.localVariables == null) { return null; }
             return (LocalVariable) this.localVariables.get(name);
@@ -2877,7 +2877,7 @@ public final class Java {
 
         // Compile time members.
 
-        protected IClass iClass = null;
+        protected IClass iClass;
 
         public NewClassInstance(
             Location location,

@@ -40,8 +40,8 @@ public class AutoIndentWriter extends FilterWriter {
     public static final char UNINDENT         = 0xfffc;
 
     StringBuffer           lineBuffer = new StringBuffer();
-    int                    indentation = 0;
-    List/*<StringBuffer>*/ tabulatorBuffer = null;
+    int                    indentation;
+    List/*<StringBuffer>*/ tabulatorBuffer;
     int                    tabulatorIndentation;
 
     public AutoIndentWriter(Writer out) {

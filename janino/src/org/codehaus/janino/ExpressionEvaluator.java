@@ -75,7 +75,8 @@ import org.codehaus.janino.util.Traverser;
  * the server JVM?)
  */
 public class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluator {
-    private Class[] optionalExpressionTypes = null;
+
+    private Class[] optionalExpressionTypes;
 
     /**
      * Equivalent to<pre>

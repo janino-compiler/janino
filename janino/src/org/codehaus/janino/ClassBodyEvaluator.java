@@ -49,11 +49,11 @@ import org.codehaus.commons.compiler.Location;
 public class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
     protected static final Class[] ZERO_CLASSES = new Class[0];
 
-    private String[]               optionalDefaultImports = null;
+    private String[]               optionalDefaultImports;
     protected String               className = IClassBodyEvaluator.DEFAULT_CLASS_NAME;
-    private Class                  optionalExtendedType = null;
+    private Class                  optionalExtendedType;
     private Class[]                implementedTypes = ClassBodyEvaluator.ZERO_CLASSES;
-    private Class                  result = null; // null=uncooked
+    private Class                  result; // null=uncooked
 
     /**
      * Equivalent to<pre>

@@ -7402,7 +7402,7 @@ public class UnitCompiler {
                 }
                 return res;
             }
-            private IClass[] declaredClasses = null;
+            private IClass[] declaredClasses;
             protected IClass[] getDeclaredIClasses2() {
                 if (this.declaredClasses == null) {
                     Collection/*<MemberTypeDeclaration>*/ mtds = td.getMemberTypeDeclarations();
@@ -9741,14 +9741,14 @@ public class UnitCompiler {
     }
 
     // Used to write byte code while compiling one constructor/method.
-    private CodeContext codeContext = null;
+    private CodeContext codeContext;
 
     // Used for elaborate compile error handling.
-    private ErrorHandler optionalCompileErrorHandler = null;
-    private int          compileErrorCount = 0;
+    private ErrorHandler optionalCompileErrorHandler;
+    private int          compileErrorCount;
 
     // Used for elaborate warning handling.
-    private WarningHandler optionalWarningHandler = null;
+    private WarningHandler optionalWarningHandler;
 
     public final CompilationUnit compilationUnit;
 

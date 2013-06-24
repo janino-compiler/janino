@@ -124,5 +124,5 @@ public class UnicodeUnescapeReader extends FilterReader {
     }
 
     private int     unreadChar = -1; // -1 == none
-    private boolean oddPrecedingBackslashes = false;
+    private boolean oddPrecedingBackslashes;
 }

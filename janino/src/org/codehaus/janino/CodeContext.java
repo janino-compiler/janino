@@ -73,7 +73,7 @@ public class CodeContext {
      */
     private final List scopedVars = new ArrayList();
 
-    private short      nextLocalVariableSlot = 0;
+    private short      nextLocalVariableSlot;
     private final List relocatables = new ArrayList();
 
     /**
@@ -1170,7 +1170,7 @@ public class CodeContext {
      */
     public class Offset {
         int              offset = Offset.UNSET;
-        Offset           prev = null, next = null;
+        Offset           prev, next;
         static final int UNSET = -1;
 
         /**
@@ -1240,7 +1240,7 @@ public class CodeContext {
      * attribute.
      */
     public class Inserter extends Offset {
-        private Inserter nextInserter = null; // null == not in "currentInserter" stack
+        private Inserter nextInserter; // null == not in "currentInserter" stack
     }
 
     public class LineNumberOffset extends Offset {

@@ -268,7 +268,7 @@ public class Scanner {
         private final String optionalFileName;
         private final short  lineNumber;
         private final short  columnNumber;
-        private Location     location = null;
+        private Location     location;
 
         public final int        type;
         public static final int EOF                    = 0;
@@ -308,7 +308,7 @@ public class Scanner {
 
         // Skip whitespace and process comments.
         int          state = 0;
-        StringBuffer dcsb  = null; // For doc comment
+        StringBuffer dcsb = null; // For doc comment
 
         PROCESS_COMMENTS:
         for (;;) {
@@ -877,8 +877,8 @@ public class Scanner {
 
     private final String optionalFileName;
     private final Reader in;
-    private int          nextChar  = -1; // Always valid (one character read-ahead).
-    private boolean      crLfPending = false;
+    private int          nextChar = -1; // Always valid (one character read-ahead).
+    private boolean      crLfPending;
     private short        nextCharLineNumber;
     private short        nextCharColumnNumber;
 
@@ -894,7 +894,7 @@ public class Scanner {
     private short  tokenColumnNumber;
 
     /** The optional JAVADOC comment preceding the {@link #nextToken}. */
-    private String docComment = null;
+    private String docComment;
 
     private static final Map JAVA_KEYWORDS = new HashMap();
     static {
@@ -937,7 +937,7 @@ public class Scanner {
     }
 
     // Used for elaborate warning handling.
-    private WarningHandler optionalWarningHandler = null;
+    private WarningHandler optionalWarningHandler;
 
     /**
      * Issues a warning with the given message and location and returns. This is done through

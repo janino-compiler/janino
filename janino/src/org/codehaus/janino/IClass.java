@@ -100,7 +100,7 @@ public abstract class IClass {
         }
         return this.declaredIConstructors;
     }
-    private IConstructor[] declaredIConstructors = null;
+    private IConstructor[] declaredIConstructors;
     protected abstract IConstructor[] getDeclaredIConstructors2();
 
     /**
@@ -114,7 +114,7 @@ public abstract class IClass {
         }
         return this.declaredIMethods;
     }
-    protected IMethod[] declaredIMethods = null;
+    protected IMethod[] declaredIMethods;
     protected abstract IMethod[] getDeclaredIMethods2();
 
     /**
@@ -164,7 +164,7 @@ public abstract class IClass {
         IMethod[] methods = (IMethod[]) this.declaredIMethodCache.get(methodName);
         return methods == null ? IClass.NO_IMETHODS : methods;
     }
-    Map declaredIMethodCache = null; // String methodName => IMethod[]
+    Map declaredIMethodCache; // String methodName => IMethod[]
 
     /**
      * Returns all methods declared in the class or interface, its superclasses and its
@@ -180,7 +180,7 @@ public abstract class IClass {
         }
         return this.iMethodCache;
     }
-    private IMethod[] iMethodCache = null;
+    private IMethod[] iMethodCache;
     private void getIMethods(List result) throws CompileException {
         IMethod[] ms = this.getDeclaredIMethods();
 
@@ -292,7 +292,7 @@ public abstract class IClass {
         }
         return this.declaredIClasses;
     }
-    private IClass[] declaredIClasses = null;
+    private IClass[] declaredIClasses;
     protected abstract IClass[] getDeclaredIClasses2() throws CompileException;
 
     /**
@@ -306,8 +306,8 @@ public abstract class IClass {
         }
         return this.declaringIClass;
     }
-    private boolean declaringIClassIsCached = false;
-    private IClass declaringIClass = null;
+    private boolean declaringIClassIsCached;
+    private IClass declaringIClass;
     protected abstract IClass getDeclaringIClass2() throws CompileException;
 
     /**
@@ -325,8 +325,8 @@ public abstract class IClass {
         }
         return this.outerIClass;
     }
-    private boolean outerIClassIsCached = false;
-    private IClass outerIClass = null;
+    private boolean outerIClassIsCached;
+    private IClass outerIClass;
     protected abstract IClass getOuterIClass2() throws CompileException;
 
     /**
@@ -347,8 +347,8 @@ public abstract class IClass {
         }
         return this.superclass;
     }
-    private boolean superclassIsCached = false;
-    private IClass superclass = null;
+    private boolean superclassIsCached;
+    private IClass superclass;
     protected abstract IClass getSuperclass2() throws CompileException;
 
     public abstract Access getAccess();
@@ -379,7 +379,7 @@ public abstract class IClass {
         }
         return this.interfaces;
     }
-    private IClass[] interfaces = null;
+    private IClass[] interfaces;
     protected abstract IClass[] getInterfaces2() throws CompileException;
 
     /**
@@ -397,7 +397,7 @@ public abstract class IClass {
         }
         return this.descriptor;
     }
-    private String descriptor = null;
+    private String descriptor;
     protected abstract String getDescriptor2();
 
     /**
@@ -442,8 +442,8 @@ public abstract class IClass {
         }
         return this.componentType;
     }
-    private boolean componentTypeIsCached = false;
-    private IClass componentType = null;
+    private boolean componentTypeIsCached;
+    private IClass componentType;
     protected abstract IClass getComponentType2();
 
     /**
@@ -591,7 +591,7 @@ public abstract class IClass {
         }
         return this.arrayIClass;
     }
-    private IClass arrayIClass = null;
+    private IClass arrayIClass;
 
     private IClass getArrayIClass2(final IClass objectType) {
         final IClass componentType = this;
