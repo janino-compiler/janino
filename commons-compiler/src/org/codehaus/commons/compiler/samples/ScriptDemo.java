@@ -32,8 +32,12 @@ import org.codehaus.commons.compiler.*;
  * A test program that allows you to play around with the
  * {@link org.codehaus.janino.ScriptEvaluator ScriptEvaluator} class.
  */
-public final class ScriptDemo extends DemoBase {
-    public static void main(String[] args) throws Exception {
+public final
+class ScriptDemo extends DemoBase {
+
+    public static void
+    main(String[] args) throws Exception {
+
         Class    returnType             = void.class;
         String[] parameterNames         = {};
         Class[]  parameterTypes         = {};
@@ -44,22 +48,22 @@ public final class ScriptDemo extends DemoBase {
         for (i = 0; i < args.length; ++i) {
             String arg = args[i];
             if (!arg.startsWith("-")) break;
-            if (arg.equals("-rt")) {
+            if ("-rt".equals(arg)) {
                 returnType = DemoBase.stringToType(args[++i]);
             } else
-            if (arg.equals("-pn")) {
+            if ("-pn".equals(arg)) {
                 parameterNames = DemoBase.explode(args[++i]);
             } else
-            if (arg.equals("-pt")) {
+            if ("-pt".equals(arg)) {
                 parameterTypes = DemoBase.stringToTypes(args[++i]);
             } else
-            if (arg.equals("-te")) {
+            if ("-te".equals(arg)) {
                 thrownExceptions = DemoBase.stringToTypes(args[++i]);
             } else
-            if (arg.equals("-di")) {
+            if ("-di".equals(arg)) {
                 optionalDefaultImports = DemoBase.explode(args[++i]);
             } else
-           if (arg.equals("-help")) {
+           if ("-help".equals(arg)) {
                System.err.println("Usage:");
                System.err.println("  ScriptDemo { <option> } <script> { <parameter-value> }");
                System.err.println("Valid options are");

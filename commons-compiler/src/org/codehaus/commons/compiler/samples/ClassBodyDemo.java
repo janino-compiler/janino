@@ -34,9 +34,13 @@ import org.codehaus.commons.compiler.*;
 /**
  * A test program that allows you to play with the {@link ClassBodyEvaluator} API.
  */
-public final class ClassBodyDemo {
-    public static void main(String[] args) throws Exception {
-        if (args.length > 0 && args[0].equals("-help")) {
+public final
+class ClassBodyDemo {
+
+    public static void
+    main(String[] args) throws Exception {
+
+        if (args.length > 0 && "-help".equals(args[0])) {
             System.out.println("Usage:");
             System.out.println("  ClassBodyDemo <class-body> { <argument> }");
             System.out.println("  ClassBodyDemo -help");
@@ -67,7 +71,7 @@ public final class ClassBodyDemo {
         Class c = cbe.getClazz();
 
         // Invoke the "public static main(String[])" method.
-        Method m = c.getMethod("main", new Class[] { String[].class });
+        Method m           = c.getMethod("main", new Class[] { String[].class });
         Object returnValue = m.invoke(null, new Object[] { arguments });
 
         // If non-VOID, print the return value.
@@ -76,11 +80,13 @@ public final class ClassBodyDemo {
 
     private ClassBodyDemo() {}
 
-    private static String readFileToString(String fileName) throws IOException {
+    private static String
+    readFileToString(String fileName) throws IOException {
+
         Reader r = new FileReader(fileName);
         try {
             StringBuffer sb = new StringBuffer();
-            char[] ca = new char[1024];
+            char[]       ca = new char[1024];
             for (;;) {
                 int cnt = r.read(ca, 0, ca.length);
                 if (cnt == -1) break;

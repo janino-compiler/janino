@@ -255,7 +255,7 @@ public class JGrep {
                     cf = CompilerFactoryFactory.getDefaultCompilerFactory();
                 } catch (Exception e) {
                     e.printStackTrace();
-                    throw new RuntimeException(e.getMessage());
+                    throw new RuntimeException(e.getMessage()); // SUPPRESS CHECKSTYLE AvoidHidingCause
                 }
                 return (MethodInvocationAction) cf.newScriptEvaluator().createFastEvaluator(
                     action,                                       // script
@@ -562,7 +562,7 @@ public class JGrep {
                         }
                     }.traverseCompilationUnit(uc.compilationUnit);
                 } catch (UCE uce) {
-                    throw uce.ce;
+                    throw uce.ce; // SUPPRESS CHECKSTYLE AvoidHidingCause
                 } finally {
                     this.benchmark.endReporting();
                 }

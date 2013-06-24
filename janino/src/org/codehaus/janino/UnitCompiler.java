@@ -211,10 +211,10 @@ public class UnitCompiler {
                 throw new JaninoRuntimeException("SNO: Could neither load \"StringBuffer\" nor \"StringBuilder\"");
             }
         } catch (ClassNotFoundException ex) {
-            throw new JaninoRuntimeException(
+            throw new JaninoRuntimeException((
                 "SNO: Error loading \"StringBuffer\" or \"StringBuilder\": "
                 + ex.getMessage()
-            );
+            ), ex);
         }
 
         // Compile non-static import declarations. (Must be done here in the constructor and not
@@ -226,14 +226,16 @@ public class UnitCompiler {
             class UCE extends RuntimeException { final CompileException ce; UCE(CompileException ce) { this.ce = ce; } }
             try {
                 id.accept(new ImportVisitor() {
-                    // CHECKSTYLE(LineLengthCheck):OFF
+                    // CHECKSTYLE LineLengthCheck:OFF
                     public void visitSingleTypeImportDeclaration(SingleTypeImportDeclaration stid)          { try { UnitCompiler.this.import2(stid);  } catch (CompileException e) { throw new UCE(e); } }
                     public void visitTypeImportOnDemandDeclaration(TypeImportOnDemandDeclaration tiodd)     {       UnitCompiler.this.import2(tiodd);                                                    }
                     public void visitSingleStaticImportDeclaration(SingleStaticImportDeclaration ssid)      {}
                     public void visitStaticImportOnDemandDeclaration(StaticImportOnDemandDeclaration siodd) {}
-                    // CHECKSTYLE(LineLengthCheck):ON
+                    // CHECKSTYLE LineLengthCheck:ON
                 });
-            } catch (UCE uce) { throw uce.ce; }
+            } catch (UCE uce) {
+                throw uce.ce; // SUPPRESS CHECKSTYLE AvoidHidingCause
+            }
         }
     }
 
@@ -336,14 +338,16 @@ public class UnitCompiler {
             class UCE extends RuntimeException { final CompileException ce; UCE(CompileException ce) { this.ce = ce; } }
             try {
                 id.accept(new ImportVisitor() {
-                    // CHECKSTYLE(LineLengthCheck):OFF
+                    // CHECKSTYLE LineLengthCheck:OFF
                     public void visitSingleTypeImportDeclaration(SingleTypeImportDeclaration stid)          {}
                     public void visitTypeImportOnDemandDeclaration(TypeImportOnDemandDeclaration tiodd)     {}
                     public void visitSingleStaticImportDeclaration(SingleStaticImportDeclaration ssid)      { try { UnitCompiler.this.import2(ssid);  } catch (CompileException e) { throw new UCE(e); } }
                     public void visitStaticImportOnDemandDeclaration(StaticImportOnDemandDeclaration siodd) { try { UnitCompiler.this.import2(siodd); } catch (CompileException e) { throw new UCE(e); } }
-                    // CHECKSTYLE(LineLengthCheck):ON
+                    // CHECKSTYLE LineLengthCheck:ON
                 });
-            } catch (UCE uce) { throw uce.ce; }
+            } catch (UCE uce) {
+                throw uce.ce; // SUPPRESS CHECKSTYLE AvoidHidingCause
+            }
         }
 
         this.generatedClassFiles  = new ArrayList();
@@ -368,24 +372,27 @@ public class UnitCompiler {
     // ------------ TypeDeclaration.compile() -------------
 
     private void compile(TypeDeclaration td) throws CompileException {
+
         class UCE extends RuntimeException { final CompileException ce; UCE(CompileException ce) { this.ce = ce; } }
+
         TypeDeclarationVisitor tdv = new TypeDeclarationVisitor() {
-            // CHECKSTYLE(LineLengthCheck):OFF
+            // CHECKSTYLE LineLengthCheck:OFF
             public void visitAnonymousClassDeclaration(AnonymousClassDeclaration acd)                  { try { UnitCompiler.this.compile2(acd);                                 } catch (CompileException e) { throw new UCE(e); } }
             public void visitLocalClassDeclaration(LocalClassDeclaration lcd)                          { try { UnitCompiler.this.compile2(lcd);                                 } catch (CompileException e) { throw new UCE(e); } }
             public void visitPackageMemberClassDeclaration(PackageMemberClassDeclaration pmcd)         { try { UnitCompiler.this.compile2((PackageMemberTypeDeclaration) pmcd); } catch (CompileException e) { throw new UCE(e); } }
             public void visitMemberInterfaceDeclaration(MemberInterfaceDeclaration mid)                { try { UnitCompiler.this.compile2(mid);                                 } catch (CompileException e) { throw new UCE(e); } }
             public void visitPackageMemberInterfaceDeclaration(PackageMemberInterfaceDeclaration pmid) { try { UnitCompiler.this.compile2((PackageMemberTypeDeclaration) pmid); } catch (CompileException e) { throw new UCE(e); } }
             public void visitMemberClassDeclaration(MemberClassDeclaration mcd)                        { try { UnitCompiler.this.compile2(mcd);                                 } catch (CompileException e) { throw new UCE(e); } }
-            // CHECKSTYLE(LineLengthCheck):ON
+            // CHECKSTYLE LineLengthCheck:ON
         };
         try {
             td.accept(tdv);
         } catch (UCE uce) {
-            throw uce.ce;
+            throw uce.ce; // SUPPRESS CHECKSTYLE AvoidHidingCause
         }
     }
-    public void compile2(PackageMemberTypeDeclaration pmtd) throws CompileException {
+    public void
+    compile2(PackageMemberTypeDeclaration pmtd) throws CompileException {
         CompilationUnit declaringCompilationUnit = pmtd.getDeclaringCompilationUnit();
 
         // Check for conflict with single-type-import (7.6).
@@ -918,7 +925,7 @@ public class UnitCompiler {
         final boolean[] res = new boolean[1];
         class UCE extends RuntimeException { final CompileException ce; UCE(CompileException ce) { this.ce = ce; } }
         BlockStatementVisitor bsv = new BlockStatementVisitor() {
-            // CHECKSTYLE(LineLengthCheck):OFF
+            // CHECKSTYLE LineLengthCheck:OFF
             public void visitInitializer(Initializer i)                                                { try { res[0] = UnitCompiler.this.compile2(i);    } catch (CompileException e) { throw new UCE(e); } }
             public void visitFieldDeclaration(FieldDeclaration fd)                                     { try { res[0] = UnitCompiler.this.compile2(fd);   } catch (CompileException e) { throw new UCE(e); } }
             public void visitLabeledStatement(LabeledStatement ls)                                     { try { res[0] = UnitCompiler.this.compile2(ls);   } catch (CompileException e) { throw new UCE(e); } }
@@ -940,13 +947,13 @@ public class UnitCompiler {
             public void visitLocalClassDeclarationStatement(LocalClassDeclarationStatement lcds)       { try { res[0] = UnitCompiler.this.compile2(lcds); } catch (CompileException e) { throw new UCE(e); } }
             public void visitAlternateConstructorInvocation(AlternateConstructorInvocation aci)        { try { res[0] = UnitCompiler.this.compile2(aci);  } catch (CompileException e) { throw new UCE(e); } }
             public void visitSuperConstructorInvocation(SuperConstructorInvocation sci)                { try { res[0] = UnitCompiler.this.compile2(sci);  } catch (CompileException e) { throw new UCE(e); } }
-            // CHECKSTYLE(LineLengthCheck):ON
+            // CHECKSTYLE LineLengthCheck:ON
         };
         try {
             bs.accept(bsv);
             return res[0];
         } catch (UCE uce) {
-            throw uce.ce;
+            throw uce.ce; // SUPPRESS CHECKSTYLE AvoidHidingCause
         }
     }
     private boolean compile2(Initializer i) throws CompileException {
@@ -1046,7 +1053,7 @@ public class UnitCompiler {
             // Compile body.
             fs.whereToContinue = null;
             CodeContext.Offset bodyOffset = this.codeContext.newOffset();
-            boolean bodyCCN = this.compile(fs.body);
+            boolean            bodyCCN    = this.compile(fs.body);
             if (fs.whereToContinue != null) fs.whereToContinue.set();
 
             // Compile update.
@@ -1134,7 +1141,7 @@ public class UnitCompiler {
         // Compile body.
         cs.whereToContinue = null;
         CodeContext.Offset bodyOffset = this.codeContext.newOffset();
-        boolean bodyCCN = this.compile(body);
+        boolean            bodyCCN    = this.compile(body);
 
         // Compile the "update".
         if (cs.whereToContinue != null) cs.whereToContinue.set();
@@ -1174,9 +1181,9 @@ public class UnitCompiler {
         );
 
         // Prepare the map of case labels to code offsets.
-        TreeMap              caseLabelMap = new TreeMap(); // Integer => Offset
+        TreeMap              caseLabelMap       = new TreeMap(); // Integer => Offset
         CodeContext.Offset   defaultLabelOffset = null;
-        CodeContext.Offset[] sbsgOffsets = new CodeContext.Offset[ss.sbsgs.size()];
+        CodeContext.Offset[] sbsgOffsets        = new CodeContext.Offset[ss.sbsgs.size()];
         for (int i = 0; i < ss.sbsgs.size(); ++i) {
             SwitchStatement.SwitchBlockStatementGroup sbsg = (
                 (SwitchStatement.SwitchBlockStatementGroup) ss.sbsgs.get(i)
@@ -1244,7 +1251,7 @@ public class UnitCompiler {
             ((Integer) caseLabelMap.firstKey()).intValue() + caseLabelMap.size() >= // Beware of INT overflow!
             ((Integer) caseLabelMap.lastKey()).intValue() - caseLabelMap.size()
         ) {
-            int low = ((Integer) caseLabelMap.firstKey()).intValue();
+            int low  = ((Integer) caseLabelMap.firstKey()).intValue();
             int high = ((Integer) caseLabelMap.lastKey()).intValue();
 
             this.writeOpcode(ss, Opcode.TABLESWITCH);
@@ -1252,11 +1259,11 @@ public class UnitCompiler {
             this.writeOffset(switchOffset, defaultLabelOffset);
             this.writeInt(low);
             this.writeInt(high);
-            Iterator si = caseLabelMap.entrySet().iterator();
-            int cur = low;
+            Iterator si  = caseLabelMap.entrySet().iterator();
+            int      cur = low;
             while (si.hasNext()) {
-                Map.Entry me = (Map.Entry) si.next();
-                int val = ((Integer) me.getKey()).intValue();
+                Map.Entry me  = (Map.Entry) si.next();
+                int       val = ((Integer) me.getKey()).intValue();
                 while (cur < val) {
                     this.writeOffset(switchOffset, defaultLabelOffset);
                     ++cur;
@@ -1438,7 +1445,7 @@ public class UnitCompiler {
             }
             IClass fieldType = this.getType(fd.type);
             if (initializer instanceof Rvalue) {
-                Rvalue rvalue = (Rvalue) initializer;
+                Rvalue rvalue          = (Rvalue) initializer;
                 IClass initializerType = this.compileGetValue(rvalue);
                 fieldType = fieldType.getArrayIClass(vd.brackets, this.iClassLoader.OBJECT);
                 this.assignmentConversion(
@@ -1475,7 +1482,7 @@ public class UnitCompiler {
         return true;
     }
     private boolean compile2(IfStatement is) throws CompileException {
-        Object cv = this.getConstantValue(is.condition);
+        Object         cv = this.getConstantValue(is.condition);
         BlockStatement es = (
             is.optionalElseStatement != null
             ? is.optionalElseStatement
@@ -2195,7 +2202,7 @@ public class UnitCompiler {
         final Map[] resVars = new Map[] { localVars };
         class UCE extends RuntimeException { final CompileException ce; UCE(CompileException ce) { this.ce = ce; } }
         BlockStatementVisitor bsv = new BlockStatementVisitor() {
-            // CHECKSTYLE(LineLengthCheck):OFF
+            // CHECKSTYLE LineLengthCheck:OFF
 
             // basic statements that use the default handlers
             public void visitAlternateConstructorInvocation(AlternateConstructorInvocation aci)  { UnitCompiler.this.buildLocalVariableMap(aci, localVars); }
@@ -2223,19 +2230,23 @@ public class UnitCompiler {
             // more complicated statements with specialized handlers, that can add variables in this scope
             public void visitLabeledStatement(LabeledStatement ls)                                     { try { resVars[0] = UnitCompiler.this.buildLocalVariableMap(ls  , localVars); } catch (CompileException e) { throw new UCE(e); } }
             public void visitLocalVariableDeclarationStatement(LocalVariableDeclarationStatement lvds) { try { resVars[0] = UnitCompiler.this.buildLocalVariableMap(lvds, localVars); } catch (CompileException e) { throw new UCE(e); } }
-            // CHECKSTYLE(LineLengthCheck):ON
+            // CHECKSTYLE LineLengthCheck:ON
         };
-        try { bs.accept(bsv); } catch (UCE uce) { throw uce.ce; }
+        try { bs.accept(bsv); } catch (UCE uce) {
+            throw uce.ce; // SUPPRESS CHECKSTYLE AvoidHidingCause
+        }
         return resVars[0];
     }
     // default handlers
-    private Map buildLocalVariableMap(Statement s, final Map localVars) { return s.localVariables = localVars; }
-    private Map buildLocalVariableMap(ConstructorInvocation ci, final Map localVars) {
-        return ci.localVariables = localVars;
-    }
+    private Map
+    buildLocalVariableMap(Statement s, final Map localVars) { return s.localVariables = localVars; }
+
+    private Map
+    buildLocalVariableMap(ConstructorInvocation ci, final Map localVars) { return ci.localVariables = localVars; }
 
     // specialized handlers
-    private void buildLocalVariableMap(Block block, Map localVars) throws CompileException {
+    private void
+    buildLocalVariableMap(Block block, Map localVars) throws CompileException {
         block.localVariables = localVars;
         for (Iterator it = block.statements.iterator(); it.hasNext();) {
             BlockStatement bs = (BlockStatement) it.next();
@@ -2365,48 +2376,50 @@ public class UnitCompiler {
      * Some {@link Rvalue}s compile more efficiently when their value
      * is not needed, e.g. "i++".
      */
-    private void compile(Rvalue rv) throws CompileException {
+    private void
+    compile(Rvalue rv) throws CompileException {
+
         class UCE extends RuntimeException { final CompileException ce; UCE(CompileException ce) { this.ce = ce; } }
         RvalueVisitor rvv = new RvalueVisitor() {
-            // CHECKSTYLE(LineLengthCheck):OFF
-            public void visitArrayLength(ArrayLength al)                                       { try { UnitCompiler.this.compile2(al);    } catch (CompileException e) { throw new UCE(e); } }
-            public void visitAssignment(Assignment a)                                          { try { UnitCompiler.this.compile2(a);     } catch (CompileException e) { throw new UCE(e); } }
-            public void visitUnaryOperation(UnaryOperation uo)                                 { try { UnitCompiler.this.compile2(uo);    } catch (CompileException e) { throw new UCE(e); } }
-            public void visitBinaryOperation(BinaryOperation bo)                               { try { UnitCompiler.this.compile2(bo);    } catch (CompileException e) { throw new UCE(e); } }
-            public void visitCast(Cast c)                                                      { try { UnitCompiler.this.compile2(c);     } catch (CompileException e) { throw new UCE(e); } }
-            public void visitClassLiteral(ClassLiteral cl)                                     { try { UnitCompiler.this.compile2(cl);    } catch (CompileException e) { throw new UCE(e); } }
-            public void visitConditionalExpression(ConditionalExpression ce)                   { try { UnitCompiler.this.compile2(ce);    } catch (CompileException e) { throw new UCE(e); } }
-            public void visitCrement(Crement c)                                                { try { UnitCompiler.this.compile2(c);     } catch (CompileException e) { throw new UCE(e); } }
-            public void visitInstanceof(Instanceof io)                                         { try { UnitCompiler.this.compile2(io);    } catch (CompileException e) { throw new UCE(e); } }
-            public void visitMethodInvocation(MethodInvocation mi)                             { try { UnitCompiler.this.compile2(mi);    } catch (CompileException e) { throw new UCE(e); } }
-            public void visitSuperclassMethodInvocation(SuperclassMethodInvocation smi)        { try { UnitCompiler.this.compile2(smi);   } catch (CompileException e) { throw new UCE(e); } }
-            public void visitIntegerLiteral(IntegerLiteral il)                                 { try { UnitCompiler.this.compile2(il);    } catch (CompileException e) { throw new UCE(e); } }
-            public void visitFloatingPointLiteral(FloatingPointLiteral fpl)                    { try { UnitCompiler.this.compile2(fpl);   } catch (CompileException e) { throw new UCE(e); } }
-            public void visitBooleanLiteral(BooleanLiteral bl)                                 { try { UnitCompiler.this.compile2(bl);    } catch (CompileException e) { throw new UCE(e); } }
-            public void visitCharacterLiteral(CharacterLiteral cl)                             { try { UnitCompiler.this.compile2(cl);    } catch (CompileException e) { throw new UCE(e); } }
-            public void visitStringLiteral(StringLiteral sl)                                   { try { UnitCompiler.this.compile2(sl);    } catch (CompileException e) { throw new UCE(e); } }
-            public void visitNullLiteral(NullLiteral nl)                                       { try { UnitCompiler.this.compile2(nl);    } catch (CompileException e) { throw new UCE(e); } }
-            public void visitNewAnonymousClassInstance(NewAnonymousClassInstance naci)         { try { UnitCompiler.this.compile2(naci);  } catch (CompileException e) { throw new UCE(e); } }
-            public void visitNewArray(NewArray na)                                             { try { UnitCompiler.this.compile2(na);    } catch (CompileException e) { throw new UCE(e); } }
-            public void visitNewInitializedArray(NewInitializedArray nia)                      { try { UnitCompiler.this.compile2(nia);   } catch (CompileException e) { throw new UCE(e); } }
-            public void visitNewClassInstance(NewClassInstance nci)                            { try { UnitCompiler.this.compile2(nci);   } catch (CompileException e) { throw new UCE(e); } }
-            public void visitParameterAccess(ParameterAccess pa)                               { try { UnitCompiler.this.compile2(pa);    } catch (CompileException e) { throw new UCE(e); } }
-            public void visitQualifiedThisReference(QualifiedThisReference qtr)                { try { UnitCompiler.this.compile2(qtr);   } catch (CompileException e) { throw new UCE(e); } }
-            public void visitThisReference(ThisReference tr)                                   { try { UnitCompiler.this.compile2(tr);    } catch (CompileException e) { throw new UCE(e); } }
-
-            public void visitAmbiguousName(AmbiguousName an)                                   { try { UnitCompiler.this.compile2(an);    } catch (CompileException e) { throw new UCE(e); } }
-            public void visitArrayAccessExpression(ArrayAccessExpression aae)                  { try { UnitCompiler.this.compile2(aae);   } catch (CompileException e) { throw new UCE(e); } };
-            public void visitFieldAccess(FieldAccess fa)                                       { try { UnitCompiler.this.compile2(fa);    } catch (CompileException e) { throw new UCE(e); } }
-            public void visitFieldAccessExpression(FieldAccessExpression fae)                  { try { UnitCompiler.this.compile2(fae);   } catch (CompileException e) { throw new UCE(e); } }
+            // CHECKSTYLE LineLengthCheck:OFF
+            public void visitArrayLength(ArrayLength al)                                            { try { UnitCompiler.this.compile2(al);    } catch (CompileException e) { throw new UCE(e); } }
+            public void visitAssignment(Assignment a)                                               { try { UnitCompiler.this.compile2(a);     } catch (CompileException e) { throw new UCE(e); } }
+            public void visitUnaryOperation(UnaryOperation uo)                                      { try { UnitCompiler.this.compile2(uo);    } catch (CompileException e) { throw new UCE(e); } }
+            public void visitBinaryOperation(BinaryOperation bo)                                    { try { UnitCompiler.this.compile2(bo);    } catch (CompileException e) { throw new UCE(e); } }
+            public void visitCast(Cast c)                                                           { try { UnitCompiler.this.compile2(c);     } catch (CompileException e) { throw new UCE(e); } }
+            public void visitClassLiteral(ClassLiteral cl)                                          { try { UnitCompiler.this.compile2(cl);    } catch (CompileException e) { throw new UCE(e); } }
+            public void visitConditionalExpression(ConditionalExpression ce)                        { try { UnitCompiler.this.compile2(ce);    } catch (CompileException e) { throw new UCE(e); } }
+            public void visitCrement(Crement c)                                                     { try { UnitCompiler.this.compile2(c);     } catch (CompileException e) { throw new UCE(e); } }
+            public void visitInstanceof(Instanceof io)                                              { try { UnitCompiler.this.compile2(io);    } catch (CompileException e) { throw new UCE(e); } }
+            public void visitMethodInvocation(MethodInvocation mi)                                  { try { UnitCompiler.this.compile2(mi);    } catch (CompileException e) { throw new UCE(e); } }
+            public void visitSuperclassMethodInvocation(SuperclassMethodInvocation smi)             { try { UnitCompiler.this.compile2(smi);   } catch (CompileException e) { throw new UCE(e); } }
+            public void visitIntegerLiteral(IntegerLiteral il)                                      { try { UnitCompiler.this.compile2(il);    } catch (CompileException e) { throw new UCE(e); } }
+            public void visitFloatingPointLiteral(FloatingPointLiteral fpl)                         { try { UnitCompiler.this.compile2(fpl);   } catch (CompileException e) { throw new UCE(e); } }
+            public void visitBooleanLiteral(BooleanLiteral bl)                                      { try { UnitCompiler.this.compile2(bl);    } catch (CompileException e) { throw new UCE(e); } }
+            public void visitCharacterLiteral(CharacterLiteral cl)                                  { try { UnitCompiler.this.compile2(cl);    } catch (CompileException e) { throw new UCE(e); } }
+            public void visitStringLiteral(StringLiteral sl)                                        { try { UnitCompiler.this.compile2(sl);    } catch (CompileException e) { throw new UCE(e); } }
+            public void visitNullLiteral(NullLiteral nl)                                            { try { UnitCompiler.this.compile2(nl);    } catch (CompileException e) { throw new UCE(e); } }
+            public void visitNewAnonymousClassInstance(NewAnonymousClassInstance naci)              { try { UnitCompiler.this.compile2(naci);  } catch (CompileException e) { throw new UCE(e); } }
+            public void visitNewArray(NewArray na)                                                  { try { UnitCompiler.this.compile2(na);    } catch (CompileException e) { throw new UCE(e); } }
+            public void visitNewInitializedArray(NewInitializedArray nia)                           { try { UnitCompiler.this.compile2(nia);   } catch (CompileException e) { throw new UCE(e); } }
+            public void visitNewClassInstance(NewClassInstance nci)                                 { try { UnitCompiler.this.compile2(nci);   } catch (CompileException e) { throw new UCE(e); } }
+            public void visitParameterAccess(ParameterAccess pa)                                    { try { UnitCompiler.this.compile2(pa);    } catch (CompileException e) { throw new UCE(e); } }
+            public void visitQualifiedThisReference(QualifiedThisReference qtr)                     { try { UnitCompiler.this.compile2(qtr);   } catch (CompileException e) { throw new UCE(e); } }
+            public void visitThisReference(ThisReference tr)                                        { try { UnitCompiler.this.compile2(tr);    } catch (CompileException e) { throw new UCE(e); } }
+                                                                                                    
+            public void visitAmbiguousName(AmbiguousName an)                                        { try { UnitCompiler.this.compile2(an);    } catch (CompileException e) { throw new UCE(e); } }
+            public void visitArrayAccessExpression(ArrayAccessExpression aae)                       { try { UnitCompiler.this.compile2(aae);   } catch (CompileException e) { throw new UCE(e); } };
+            public void visitFieldAccess(FieldAccess fa)                                            { try { UnitCompiler.this.compile2(fa);    } catch (CompileException e) { throw new UCE(e); } }
+            public void visitFieldAccessExpression(FieldAccessExpression fae)                       { try { UnitCompiler.this.compile2(fae);   } catch (CompileException e) { throw new UCE(e); } }
             public void visitSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae) { try { UnitCompiler.this.compile2(scfae); } catch (CompileException e) { throw new UCE(e); } }
-            public void visitLocalVariableAccess(LocalVariableAccess lva)                      { try { UnitCompiler.this.compile2(lva);   } catch (CompileException e) { throw new UCE(e); } }
-            public void visitParenthesizedExpression(ParenthesizedExpression pe)               { try { UnitCompiler.this.compile2(pe);    } catch (CompileException e) { throw new UCE(e); } }
-            // CHECKSTYLE(LineLengthCheck):ON
+            public void visitLocalVariableAccess(LocalVariableAccess lva)                           { try { UnitCompiler.this.compile2(lva);   } catch (CompileException e) { throw new UCE(e); } }
+            public void visitParenthesizedExpression(ParenthesizedExpression pe)                    { try { UnitCompiler.this.compile2(pe);    } catch (CompileException e) { throw new UCE(e); } }
+            // CHECKSTYLE LineLengthCheck:ON
         };
         try {
             rv.accept(rvv);
         } catch (UCE uce) {
-            throw uce.ce;
+            throw uce.ce; // SUPPRESS CHECKSTYLE AvoidHidingCause
         }
     }
     private void compile2(Rvalue rv) throws CompileException {
@@ -2542,9 +2555,11 @@ public class UnitCompiler {
         final CodeContext.Offset dst,        // Where to jump.
         final boolean            orientation // JUMP_IF_TRUE or JUMP_IF_FALSE.
     ) throws CompileException {
+
         class UCE extends RuntimeException { final CompileException ce; UCE(CompileException ce) { this.ce = ce; } }
+
         RvalueVisitor rvv = new RvalueVisitor() {
-            // CHECKSTYLE(LineLengthCheck):OFF
+            // CHECKSTYLE LineLengthCheck:OFF
             public void visitArrayLength(ArrayLength al)                                { try { UnitCompiler.this.compileBoolean2(al,   dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
             public void visitAssignment(Assignment a)                                   { try { UnitCompiler.this.compileBoolean2(a,    dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
             public void visitUnaryOperation(UnaryOperation uo)                          { try { UnitCompiler.this.compileBoolean2(uo,   dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
@@ -2577,12 +2592,12 @@ public class UnitCompiler {
             public void visitSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae) { try { UnitCompiler.this.compileBoolean2(scfae, dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
             public void visitLocalVariableAccess(LocalVariableAccess lva)                           { try { UnitCompiler.this.compileBoolean2(lva,   dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
             public void visitParenthesizedExpression(ParenthesizedExpression pe)                    { try { UnitCompiler.this.compileBoolean2(pe,    dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
-            // CHECKSTYLE(LineLengthCheck):ON
+            // CHECKSTYLE LineLengthCheck:ON
         };
         try {
             rv.accept(rvv);
         } catch (UCE uce) {
-            throw uce.ce;
+            throw uce.ce; // SUPPRESS CHECKSTYLE AvoidHidingCause
         }
     }
     private void compileBoolean2(
@@ -2834,7 +2849,7 @@ public class UnitCompiler {
         final int[] res = new int[1];
         class UCE extends RuntimeException { final CompileException ce; UCE(CompileException ce) { this.ce = ce; } }
         RvalueVisitor rvv = new RvalueVisitor() {
-            // CHECKSTYLE(LineLengthCheck):OFF
+            // CHECKSTYLE LineLengthCheck:OFF
             public void visitArrayLength(ArrayLength al)                                { try { res[0] = UnitCompiler.this.compileContext2(al); } catch (CompileException e) { throw new UCE(e); } }
             public void visitAssignment(Assignment a)                                   { res[0] = UnitCompiler.this.compileContext2(a); }
             public void visitUnaryOperation(UnaryOperation uo)                          { res[0] = UnitCompiler.this.compileContext2(uo); }
@@ -2867,13 +2882,13 @@ public class UnitCompiler {
             public void visitSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae) { try { res[0] = UnitCompiler.this.compileContext2(scfae); } catch (CompileException e) { throw new UCE(e); } }
             public void visitLocalVariableAccess(LocalVariableAccess lva)                           { res[0] = UnitCompiler.this.compileContext2(lva); }
             public void visitParenthesizedExpression(ParenthesizedExpression pe)                    { try { res[0] = UnitCompiler.this.compileContext2(pe); } catch (CompileException e) { throw new UCE(e); } }
-            // CHECKSTYLE(LineLengthCheck):ON
+            // CHECKSTYLE LineLengthCheck:ON
         };
         try {
             rv.accept(rvv);
             return res[0];
         } catch (UCE uce) {
-            throw uce.ce;
+            throw uce.ce; // SUPPRESS CHECKSTYLE AvoidHidingCause
         }
     }
     private int compileContext2(Rvalue rv) {
@@ -2954,7 +2969,7 @@ public class UnitCompiler {
         final IClass[] res = new IClass[1];
         class UCE extends RuntimeException { final CompileException ce; UCE(CompileException ce) { this.ce = ce; } }
         RvalueVisitor rvv = new RvalueVisitor() {
-            // CHECKSTYLE(LineLengthCheck):OFF
+            // CHECKSTYLE LineLengthCheck:OFF
             public void visitArrayLength(ArrayLength al)                                { res[0] = UnitCompiler.this.compileGet2(al); }
             public void visitAssignment(Assignment a)                                   { try { res[0] = UnitCompiler.this.compileGet2(a);    } catch (CompileException e) { throw new UCE(e); } }
             public void visitUnaryOperation(UnaryOperation uo)                          { try { res[0] = UnitCompiler.this.compileGet2(uo);   } catch (CompileException e) { throw new UCE(e); } }
@@ -2987,13 +3002,13 @@ public class UnitCompiler {
             public void visitSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae) { try { res[0] = UnitCompiler.this.compileGet2(scfae); } catch (CompileException e) { throw new UCE(e); } }
             public void visitLocalVariableAccess(LocalVariableAccess lva)                           { res[0] = UnitCompiler.this.compileGet2(lva); }
             public void visitParenthesizedExpression(ParenthesizedExpression pe)                    { try { res[0] = UnitCompiler.this.compileGet2(pe);    } catch (CompileException e) { throw new UCE(e); } }
-            // CHECKSTYLE(LineLengthCheck):ON
+            // CHECKSTYLE LineLengthCheck:ON
         };
         try {
             rv.accept(rvv);
             return res[0];
         } catch (UCE uce) {
-            throw uce.ce;
+            throw uce.ce; // SUPPRESS CHECKSTYLE AvoidHidingCause
         }
     }
     private IClass compileGet2(BooleanRvalue brv) throws CompileException {
@@ -4036,7 +4051,7 @@ public class UnitCompiler {
         final Object[] res = new Object[1];
         class UCE extends RuntimeException { final CompileException ce; UCE(CompileException ce) { this.ce = ce; } }
         RvalueVisitor rvv = new RvalueVisitor() {
-            // CHECKSTYLE(LineLengthCheck):OFF
+            // CHECKSTYLE LineLengthCheck:OFF
             public void visitArrayLength(ArrayLength al)                                {       res[0] = UnitCompiler.this.getConstantValue2(al);                                                     }
             public void visitAssignment(Assignment a)                                   {       res[0] = UnitCompiler.this.getConstantValue2(a);                                                      }
             public void visitUnaryOperation(UnaryOperation uo)                          { try { res[0] = UnitCompiler.this.getConstantValue2(uo);  } catch (CompileException e) { throw new UCE(e); } }
@@ -4069,14 +4084,14 @@ public class UnitCompiler {
             public void visitSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae) {       res[0] = UnitCompiler.this.getConstantValue2(scfae);                                                 }
             public void visitLocalVariableAccess(LocalVariableAccess lva)                           {       res[0] = UnitCompiler.this.getConstantValue2(lva);                                                   }
             public void visitParenthesizedExpression(ParenthesizedExpression pe)                    { try { res[0] = UnitCompiler.this.getConstantValue2(pe); } catch (CompileException e) { throw new UCE(e); } }
-            // CHECKSTYLE(LineLengthCheck):ON
+            // CHECKSTYLE LineLengthCheck:ON
         };
         try {
             rv.accept(rvv);
             rv.constantValue = res[0];
             return rv.constantValue;
         } catch (UCE uce) {
-            throw uce.ce;
+            throw uce.ce; // SUPPRESS CHECKSTYLE AvoidHidingCause
         }
     }
     private Object getConstantValue2(Rvalue rv) {
@@ -4317,6 +4332,7 @@ public class UnitCompiler {
                 : new Integer(v)
             );
         } catch (NumberFormatException e) {
+            // SUPPRESS CHECKSTYLE AvoidHidingCause
             throw compileException(il, "Value of decimal integer literal '" + v + "' is out of range");
         }
     }
@@ -4411,7 +4427,7 @@ public class UnitCompiler {
         final Object[] res = new Object[1];
         class UCE extends RuntimeException { final CompileException ce; UCE(CompileException ce) { this.ce = ce; } }
         RvalueVisitor rvv = new RvalueVisitor() {
-            // CHECKSTYLE(LineLengthCheck):OFF
+            // CHECKSTYLE LineLengthCheck:OFF
             public void visitArrayLength(ArrayLength al)                                { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(al);   } catch (CompileException e) { throw new UCE(e); } }
             public void visitAssignment(Assignment a)                                   { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(a);    } catch (CompileException e) { throw new UCE(e); } }
             public void visitUnaryOperation(UnaryOperation uo)                          { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(uo);   } catch (CompileException e) { throw new UCE(e); } }
@@ -4444,13 +4460,13 @@ public class UnitCompiler {
             public void visitSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae) { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(scfae); } catch (CompileException e) { throw new UCE(e); } }
             public void visitLocalVariableAccess(LocalVariableAccess lva)                           { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(lva);   } catch (CompileException e) { throw new UCE(e); } }
             public void visitParenthesizedExpression(ParenthesizedExpression pe)                    { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(pe);    } catch (CompileException e) { throw new UCE(e); } }
-            // CHECKSTYLE(LineLengthCheck):ON
+            // CHECKSTYLE LineLengthCheck:ON
         };
         try {
             rv.accept(rvv);
             return res[0];
         } catch (UCE uce) {
-            throw uce.ce;
+            throw uce.ce; // SUPPRESS CHECKSTYLE AvoidHidingCause
         }
     }
     private Object getNegatedConstantValue2(Rvalue rv) throws CompileException {
@@ -4498,7 +4514,7 @@ public class UnitCompiler {
         final boolean[] res = new boolean[1];
         class UCE extends RuntimeException { final CompileException ce; UCE(CompileException ce) { this.ce = ce; } }
         BlockStatementVisitor bsv = new BlockStatementVisitor() {
-            // CHECKSTYLE(LineLengthCheck):OFF
+            // CHECKSTYLE LineLengthCheck:OFF
             public void visitInitializer(Initializer i)                                                { try { res[0] = UnitCompiler.this.generatesCode2(i);  } catch (CompileException e) { throw new UCE(e); } }
             public void visitFieldDeclaration(FieldDeclaration fd)                                     { try { res[0] = UnitCompiler.this.generatesCode2(fd); } catch (CompileException e) { throw new UCE(e); } }
             public void visitLabeledStatement(LabeledStatement ls)                                     {       res[0] = UnitCompiler.this.generatesCode2(ls);                                                    }
@@ -4520,29 +4536,36 @@ public class UnitCompiler {
             public void visitLocalClassDeclarationStatement(LocalClassDeclarationStatement lcds)       {       res[0] = UnitCompiler.this.generatesCode2(lcds);                                                  }
             public void visitAlternateConstructorInvocation(AlternateConstructorInvocation aci)        {       res[0] = UnitCompiler.this.generatesCode2(aci);                                                   }
             public void visitSuperConstructorInvocation(SuperConstructorInvocation sci)                {       res[0] = UnitCompiler.this.generatesCode2(sci);                                                   }
-            // CHECKSTYLE(LineLengthCheck):ON
+            // CHECKSTYLE LineLengthCheck:ON
         };
         try {
             bs.accept(bsv);
             return res[0];
         } catch (UCE uce) {
-            throw uce.ce;
+            throw uce.ce; // SUPPRESS CHECKSTYLE AvoidHidingCause
         }
     }
-    public boolean generatesCode2(BlockStatement bs) { return true; }
-    public boolean generatesCode2(EmptyStatement es) { return false; }
-    public boolean generatesCode2(LocalClassDeclarationStatement lcds) { return false; }
+
+    public boolean generatesCode2(BlockStatement bs)                     { return true; }
+    public boolean generatesCode2(EmptyStatement es)                     { return false; }
+    public boolean generatesCode2(LocalClassDeclarationStatement lcds)   { return false; }
     public boolean generatesCode2(Initializer i) throws CompileException { return this.generatesCode(i.block); }
-    public boolean generatesCode2ListStatements(List/*<BlockStatement>*/ l) throws CompileException {
+
+    public boolean
+    generatesCode2ListStatements(List/*<BlockStatement>*/ l) throws CompileException {
         for (int i = 0; i < l.size(); ++i) {
             if (this.generatesCode(((BlockStatement) l.get(i)))) return true;
         }
         return false;
     }
-    public boolean generatesCode2(Block b) throws CompileException {
+
+    public boolean
+    generatesCode2(Block b) throws CompileException {
         return generatesCode2ListStatements(b.statements);
     }
-    public boolean generatesCode2(FieldDeclaration fd) throws CompileException {
+
+    public boolean
+    generatesCode2(FieldDeclaration fd) throws CompileException {
         // Code is only generated if at least one of the declared variables has a non-constant-final initializer.
         for (int i = 0; i < fd.variableDeclarators.length; ++i) {
             VariableDeclarator vd = fd.variableDeclarators[i];
@@ -4566,7 +4589,7 @@ public class UnitCompiler {
      */
     private void leave(BlockStatement bs, final IClass optionalStackValueType) {
         BlockStatementVisitor bsv = new BlockStatementVisitor() {
-            // CHECKSTYLE(LineLengthCheck):OFF
+            // CHECKSTYLE LineLengthCheck:OFF
             public void visitInitializer(Initializer i)                                                  { UnitCompiler.this.leave2(i,    optionalStackValueType); }
             public void visitFieldDeclaration(FieldDeclaration fd)                                       { UnitCompiler.this.leave2(fd,   optionalStackValueType); }
             public void visitLabeledStatement(LabeledStatement ls)                                       { UnitCompiler.this.leave2(ls,   optionalStackValueType); }
@@ -4588,16 +4611,22 @@ public class UnitCompiler {
             public void visitLocalClassDeclarationStatement(LocalClassDeclarationStatement lcds)         { UnitCompiler.this.leave2(lcds, optionalStackValueType); }
             public void visitAlternateConstructorInvocation(AlternateConstructorInvocation aci)          { UnitCompiler.this.leave2(aci,  optionalStackValueType); }
             public void visitSuperConstructorInvocation(SuperConstructorInvocation sci)                  { UnitCompiler.this.leave2(sci,  optionalStackValueType); }
-            // CHECKSTYLE(LineLengthCheck):ON
+            // CHECKSTYLE LineLengthCheck:ON
         };
         bs.accept(bsv);
     }
-    public void leave2(BlockStatement bs, IClass optionalStackValueType) { ; }
-    public void leave2(SynchronizedStatement ss, IClass optionalStackValueType) {
+
+    public void
+    leave2(BlockStatement bs, IClass optionalStackValueType) {}
+
+    public void
+    leave2(SynchronizedStatement ss, IClass optionalStackValueType) {
         this.load((Locatable) ss, this.iClassLoader.OBJECT, ss.monitorLvIndex);
         this.writeOpcode(ss, Opcode.MONITOREXIT);
     }
-    public void leave2(TryStatement ts, IClass optionalStackValueType) {
+
+    public void
+    leave2(TryStatement ts, IClass optionalStackValueType) {
         if (ts.finallyOffset != null) {
 
             this.codeContext.saveLocalVariables();
@@ -4632,10 +4661,13 @@ public class UnitCompiler {
      * #compileContext}) and a value of the {@link Lvalue}'s type
      * on the operand stack.
      */
-    private void compileSet(Lvalue lv) throws CompileException {
+    private void
+    compileSet(Lvalue lv) throws CompileException {
+
         class UCE extends RuntimeException { final CompileException ce; UCE(CompileException ce) { this.ce = ce; } }
+
         LvalueVisitor lvv = new LvalueVisitor() {
-            // CHECKSTYLE(LineLengthCheck):OFF
+            // CHECKSTYLE LineLengthCheck:OFF
             public void visitAmbiguousName(AmbiguousName an)                                          { try { UnitCompiler.this.compileSet2(an);    } catch (CompileException e) { throw new UCE(e); } }
             public void visitArrayAccessExpression(ArrayAccessExpression aae)                         { try { UnitCompiler.this.compileSet2(aae);   } catch (CompileException e) { throw new UCE(e); } }
             public void visitFieldAccess(FieldAccess fa)                                              { try { UnitCompiler.this.compileSet2(fa);    } catch (CompileException e) { throw new UCE(e); } }
@@ -4643,12 +4675,12 @@ public class UnitCompiler {
             public void visitSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae)   { try { UnitCompiler.this.compileSet2(scfae); } catch (CompileException e) { throw new UCE(e); } }
             public void visitLocalVariableAccess(LocalVariableAccess lva)                             {       UnitCompiler.this.compileSet2(lva);                                                      }
             public void visitParenthesizedExpression(ParenthesizedExpression pe)                      { try { UnitCompiler.this.compileSet2(pe);    } catch (CompileException e) { throw new UCE(e); } }
-            // CHECKSTYLE(LineLengthCheck):ON
+            // CHECKSTYLE LineLengthCheck:ON
         };
         try {
             lv.accept(lvv);
         } catch (UCE uce) {
-            throw uce.ce;
+            throw uce.ce; // SUPPRESS CHECKSTYLE AvoidHidingCause
         }
     }
     private void compileSet2(AmbiguousName an) throws CompileException {
@@ -4695,7 +4727,7 @@ public class UnitCompiler {
         final IClass[] res = new IClass[1];
         class UCE extends RuntimeException { final CompileException ce; UCE(CompileException ce) { this.ce = ce; } }
         AtomVisitor av = new AtomVisitor() {
-            // CHECKSTYLE(LineLengthCheck):OFF
+            // CHECKSTYLE LineLengthCheck:OFF
             // AtomVisitor
             public void visitPackage(Package p) { try { res[0] = UnitCompiler.this.getType2(p); } catch (CompileException e) { throw new UCE(e); } }
             // TypeVisitor
@@ -4737,17 +4769,21 @@ public class UnitCompiler {
             public void visitSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae) { try { res[0] = UnitCompiler.this.getType2(scfae); } catch (CompileException e) { throw new UCE(e); } }
             public void visitLocalVariableAccess(LocalVariableAccess lva)                           {       res[0] = UnitCompiler.this.getType2(lva);                                                      }
             public void visitParenthesizedExpression(ParenthesizedExpression pe)                    { try { res[0] = UnitCompiler.this.getType2(pe);    } catch (CompileException e) { throw new UCE(e); } }
-            // CHECKSTYLE(LineLengthCheck):ON
+            // CHECKSTYLE LineLengthCheck:ON
         };
         try {
             a.accept(av);
             return res[0] != null ? res[0] : this.iClassLoader.OBJECT;
         } catch (UCE uce) {
-            throw uce.ce;
+            throw uce.ce; // SUPPRESS CHECKSTYLE AvoidHidingCause
         }
     }
-    private IClass getType2(SimpleType st) { return st.iClass; }
-    private IClass getType2(BasicType bt) {
+
+    private IClass
+    getType2(SimpleType st) { return st.iClass; }
+
+    private IClass
+    getType2(BasicType bt) {
         switch (bt.index) {
             case BasicType.VOID:    return IClass.VOID;
             case BasicType.BYTE:    return IClass.BYTE;
@@ -5184,7 +5220,7 @@ public class UnitCompiler {
         final boolean[] res = new boolean[1];
         class UCE extends RuntimeException { final CompileException ce; UCE(CompileException ce) { this.ce = ce; } }
         AtomVisitor av = new AtomVisitor() {
-            // CHECKSTYLE(LineLengthCheck):OFF
+            // CHECKSTYLE LineLengthCheck:OFF
             // AtomVisitor
             public void visitPackage(Package p) { res[0] = UnitCompiler.this.isType2(p); }
             // TypeVisitor
@@ -5226,13 +5262,13 @@ public class UnitCompiler {
             public void visitSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae) {       res[0] = UnitCompiler.this.isType2(scfae);                                                 }
             public void visitLocalVariableAccess(LocalVariableAccess lva)                           {       res[0] = UnitCompiler.this.isType2(lva);                                                   }
             public void visitParenthesizedExpression(ParenthesizedExpression pe)                    {       res[0] = UnitCompiler.this.isType2(pe);                                                    }
-            // CHECKSTYLE(LineLengthCheck):ON
+            // CHECKSTYLE LineLengthCheck:ON
         };
         try {
             a.accept(av);
             return res[0];
         } catch (UCE uce) {
-            throw uce.ce;
+            throw uce.ce; // SUPPRESS CHECKSTYLE AvoidHidingCause
         }
     }
     private boolean isType2(Atom a) {
@@ -5474,10 +5510,10 @@ public class UnitCompiler {
         if (result == null) {
             this.compileError("Expression \"" + a.toString() + "\" is not an lvalue", a.getLocation());
             return new Lvalue(a.getLocation()) {
-                public String toString() { return a.toString(); }
-                public void accept(AtomVisitor visitor) {}
-                public void accept(RvalueVisitor visitor) {}
-                public void accept(LvalueVisitor visitor) {}
+                public String toString()                    { return a.toString(); }
+                public void   accept(AtomVisitor visitor)   {}
+                public void   accept(RvalueVisitor visitor) {}
+                public void   accept(LvalueVisitor visitor) {}
             };
         }
         return result;
@@ -6165,15 +6201,23 @@ public class UnitCompiler {
                 }
 
                 // Implement "IField".
-                public boolean isStatic() { return (fd.modifiers & Mod.STATIC) != 0; }
-                public IClass getType() throws CompileException {
+
+                public boolean
+                isStatic() { return (fd.modifiers & Mod.STATIC) != 0; }
+
+                public IClass
+                getType() throws CompileException {
                     return UnitCompiler.this.getType(fd.type).getArrayIClass(
                         vd.brackets,
                         UnitCompiler.this.iClassLoader.OBJECT
                     );
                 }
-                public String getName() { return vd.name; }
-                public Object getConstantValue() throws CompileException {
+
+                public String
+                getName() { return vd.name; }
+
+                public Object
+                getConstantValue() throws CompileException {
                     if (
                         (fd.modifiers & Mod.FINAL) != 0 &&
                         vd.optionalInitializer instanceof Rvalue
@@ -6321,17 +6365,19 @@ public class UnitCompiler {
             location
         );
         return new Atom(location) {
-            public String toString() { return Java.join(identifiers, "."); }
+            public String     toString()                  { return Java.join(identifiers, "."); }
             public final void accept(AtomVisitor visitor) {}
         };
     }
 
-    private IClass findClassByName(Location location, String className) throws CompileException {
+    private IClass
+    findClassByName(Location location, String className) throws CompileException {
         IClass res = this.findClass(className);
         if (res != null) return res;
         try {
             return this.iClassLoader.loadIClass(Descriptor.fromClassName(className));
         } catch (ClassNotFoundException ex) {
+            // SUPPRESS CHECKSTYLE AvoidHidingCause
             if (ex.getException() instanceof CompileException) throw (CompileException) ex.getException();
             throw new CompileException(className, location, ex);
         }
@@ -6676,9 +6722,9 @@ public class UnitCompiler {
                     fae.getLocation()
                 );
                 fae.value = new Rvalue(fae.getLocation()) {
-//                    public IClass compileGet() throws CompileException { return this.iClassLoader.OBJECT; }
-                    public String toString() { return "???"; }
-                    public final void accept(AtomVisitor visitor) {}
+//                    public IClass compileGet()                      { return this.iClassLoader.OBJECT; }
+                    public String     toString()                    { return "???"; }
+                    public final void accept(AtomVisitor visitor)   {}
                     public final void accept(RvalueVisitor visitor) {}
                 };
                 return;
@@ -6715,8 +6761,8 @@ public class UnitCompiler {
         if (iField == null) {
             this.compileError("Class has no field \"" + scfae.fieldName + "\"", scfae.getLocation());
             scfae.value = new Rvalue(scfae.getLocation()) {
-                public String toString() { return "???"; }
-                public final void accept(AtomVisitor visitor) {}
+                public String     toString()                    { return "???"; }
+                public final void accept(AtomVisitor visitor)   {}
                 public final void accept(RvalueVisitor visitor) {}
             };
             return;
@@ -7402,12 +7448,15 @@ public class UnitCompiler {
                 }
                 return res;
             }
+
             private IClass[] declaredClasses;
-            protected IClass[] getDeclaredIClasses2() {
+
+            protected IClass[]
+            getDeclaredIClasses2() {
                 if (this.declaredClasses == null) {
                     Collection/*<MemberTypeDeclaration>*/ mtds = td.getMemberTypeDeclarations();
-                    IClass[] mts = new IClass[mtds.size()];
-                    int i = 0;
+                    IClass[]                              mts  = new IClass[mtds.size()];
+                    int                                   i    = 0;
                     for (Iterator it = mtds.iterator(); it.hasNext();) {
                         mts[i++] = UnitCompiler.this.resolve((AbstractTypeDeclaration) it.next());
                     }
@@ -7415,7 +7464,9 @@ public class UnitCompiler {
                 }
                 return this.declaredClasses;
             }
-            protected IClass getDeclaringIClass2() {
+
+            protected IClass
+            getDeclaringIClass2() {
                 Scope s = atd;
                 for (; !(s instanceof TypeBodyDeclaration); s = s.getEnclosingScope()) {
                     if (s instanceof CompilationUnit) return null;
@@ -7431,13 +7482,20 @@ public class UnitCompiler {
                 return Descriptor.fromClassName(atd.getClassName());
             }
 
-            public boolean   isArray() { return false; }
-            protected IClass getComponentType2() {
-                throw new JaninoRuntimeException("SNO: Non-array type has no component type");
-            }
-            public boolean           isPrimitive() { return false; }
-            public boolean           isPrimitiveNumeric() { return false; }
-            protected IConstructor[] getDeclaredIConstructors2() {
+            public boolean
+            isArray() { return false; }
+
+            protected IClass
+            getComponentType2() { throw new JaninoRuntimeException("SNO: Non-array type has no component type"); }
+
+            public boolean
+            isPrimitive() { return false; }
+
+            public boolean
+            isPrimitiveNumeric() { return false; }
+
+            protected IConstructor[]
+            getDeclaredIConstructors2() {
                 if (atd instanceof ClassDeclaration) {
                     ConstructorDeclarator[] cs = ((ClassDeclaration) atd).getConstructors();
 
@@ -7447,7 +7505,9 @@ public class UnitCompiler {
                 }
                 return new IClass.IConstructor[0];
             }
-            protected IField[] getDeclaredIFields2() {
+
+            protected IField[]
+            getDeclaredIFields2() {
                 if (atd instanceof ClassDeclaration) {
                     ClassDeclaration cd = (ClassDeclaration) atd;
                     List l = new ArrayList(); // IClass.IField
@@ -7483,14 +7543,18 @@ public class UnitCompiler {
                     );
                 }
             }
-            public IField[] getSyntheticIFields() {
+
+            public IField[]
+            getSyntheticIFields() {
                 if (atd instanceof ClassDeclaration) {
                     Collection c = ((ClassDeclaration) atd).syntheticFields.values();
                     return (IField[]) c.toArray(new IField[c.size()]);
                 }
                 return new IField[0];
             }
-            protected IClass getSuperclass2() throws CompileException {
+
+            protected IClass
+            getSuperclass2() throws CompileException {
                 if (atd instanceof AnonymousClassDeclaration) {
                     IClass bt = UnitCompiler.this.getType(((AnonymousClassDeclaration) atd).baseType);
                     return bt.isInterface() ? UnitCompiler.this.iClassLoader.OBJECT : bt;
@@ -7509,16 +7573,22 @@ public class UnitCompiler {
                 }
                 return null;
             }
-            public Access getAccess() { return UnitCompiler.modifiers2Access(atd.getModifiers()); }
-            public boolean isFinal() { return (atd.getModifiers() & Mod.FINAL) != 0;  }
-            protected IClass[] getInterfaces2() throws CompileException {
+
+            public Access
+            getAccess() { return UnitCompiler.modifiers2Access(atd.getModifiers()); }
+
+            public boolean
+            isFinal() { return (atd.getModifiers() & Mod.FINAL) != 0;  }
+
+            protected IClass[]
+            getInterfaces2() throws CompileException {
                 if (atd instanceof AnonymousClassDeclaration) {
                     IClass bt = UnitCompiler.this.getType(((AnonymousClassDeclaration) atd).baseType);
                     return bt.isInterface() ? new IClass[] { bt } : new IClass[0];
                 } else
                 if (atd instanceof NamedClassDeclaration) {
                     NamedClassDeclaration ncd = (NamedClassDeclaration) atd;
-                    IClass[] res = new IClass[ncd.implementedTypes.length];
+                    IClass[]              res = new IClass[ncd.implementedTypes.length];
                     for (int i = 0; i < res.length; ++i) {
                         res[i] = UnitCompiler.this.getType(ncd.implementedTypes[i]);
                         if (!res[i].isInterface()) {
@@ -7842,17 +7912,23 @@ public class UnitCompiler {
             }
 
             // Implement IMethod.
-            public boolean isStatic() { return (md.modifiers & Mod.STATIC) != 0; }
-            public boolean isAbstract() {
+
+            public boolean
+            isStatic() { return (md.modifiers & Mod.STATIC) != 0; }
+
+            public boolean
+            isAbstract() {
                 return (
                     (md.getDeclaringType() instanceof InterfaceDeclaration)
                     || (md.modifiers & Mod.ABSTRACT) != 0
                 );
             }
-            public IClass getReturnType() throws CompileException {
-                return UnitCompiler.this.getReturnType(md);
-            }
-            public String getName() { return md.name; }
+
+            public IClass
+            getReturnType() throws CompileException { return UnitCompiler.this.getReturnType(md); }
+
+            public String
+            getName() { return md.name; }
         };
         return md.iMethod;
     }
@@ -7967,7 +8043,7 @@ public class UnitCompiler {
         try {
             classNotFoundExceptionIClass = this.iClassLoader.loadIClass("Ljava/lang/ClassNotFoundException;");
         } catch (ClassNotFoundException ex) {
-            throw new JaninoRuntimeException("Loading class \"ClassNotFoundException\": " + ex.getMessage());
+            throw new JaninoRuntimeException("Loading class \"ClassNotFoundException\": " + ex.getMessage(), ex);
         }
         if (classNotFoundExceptionIClass == null) {
             throw new JaninoRuntimeException("SNO: Cannot load \"ClassNotFoundException\"");
@@ -7977,7 +8053,7 @@ public class UnitCompiler {
         try {
             noClassDefFoundErrorIClass = this.iClassLoader.loadIClass("Ljava/lang/NoClassDefFoundError;");
         } catch (ClassNotFoundException ex) {
-            throw new JaninoRuntimeException("Loading class \"NoClassDefFoundError\": " + ex.getMessage());
+            throw new JaninoRuntimeException("Loading class \"NoClassDefFoundError\": " + ex.getMessage(), ex);
         }
         if (noClassDefFoundErrorIClass == null) {
             throw new JaninoRuntimeException("SNO: Cannot load \"NoClassFoundError\"");
@@ -9120,6 +9196,7 @@ public class UnitCompiler {
             try {
                 result = this.iClassLoader.loadIClass(sb.toString());
             } catch (ClassNotFoundException ex) {
+                // SUPPRESS CHECKSTYLE AvoidHidingCause
                 if (ex.getException() instanceof CompileException) throw (CompileException) ex.getException();
                 throw new CompileException(sb.toString(), null, ex);
             }

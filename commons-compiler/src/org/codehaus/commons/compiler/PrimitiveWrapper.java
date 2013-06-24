@@ -29,7 +29,9 @@ package org.codehaus.commons.compiler;
 /**
  * A helper class that wraps primitive values in their wrapper classes.
  */
-public final class PrimitiveWrapper {
+public final
+class PrimitiveWrapper {
+
     private PrimitiveWrapper() {}
 
     public static Boolean   wrap(boolean v) { return v ? Boolean.TRUE : Boolean.FALSE; }

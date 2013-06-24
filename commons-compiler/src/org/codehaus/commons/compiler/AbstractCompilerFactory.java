@@ -2,7 +2,7 @@
 /*
  * Janino - An embedded Java[TM] compiler
  *
- * Copyright (c) 2001-2010, Arno Unkrig
+ * Copyright (c) 2010, Arno Unkrig
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
@@ -29,32 +29,39 @@ package org.codehaus.commons.compiler;
 /**
  * Base class for a simple {@link ICompilerFactory}.
  */
-public abstract class AbstractCompilerFactory implements ICompilerFactory {
+public abstract
+class AbstractCompilerFactory implements ICompilerFactory {
 
     public abstract String getId();
     public abstract String getImplementationVersion();
 
-    public IExpressionEvaluator newExpressionEvaluator() {
+    public IExpressionEvaluator
+    newExpressionEvaluator() {
         throw new UnsupportedOperationException(this.getId() + ": newExpressionEvaluator");
     }
 
-    public IScriptEvaluator newScriptEvaluator() {
+    public IScriptEvaluator
+    newScriptEvaluator() {
         throw new UnsupportedOperationException(this.getId() + ": newScriptEvaluator");
     }
 
-    public IClassBodyEvaluator newClassBodyEvaluator() {
+    public IClassBodyEvaluator
+    newClassBodyEvaluator() {
         throw new UnsupportedOperationException(this.getId() + ": newClassBodyEvaluator");
     }
 
-    public ISimpleCompiler newSimpleCompiler() {
+    public ISimpleCompiler
+    newSimpleCompiler() {
         throw new UnsupportedOperationException(this.getId() + ": newSimpleCompiler");
     }
 
-    public AbstractJavaSourceClassLoader newJavaSourceClassLoader() {
+    public AbstractJavaSourceClassLoader
+    newJavaSourceClassLoader() {
         throw new UnsupportedOperationException(this.getId() + ": newJavaSourceClassLoader");
     }
 
-    public AbstractJavaSourceClassLoader newJavaSourceClassLoader(ClassLoader parentClassLoader) {
+    public AbstractJavaSourceClassLoader
+    newJavaSourceClassLoader(ClassLoader parentClassLoader) {
         throw new UnsupportedOperationException(this.getId() + ": newJavaSourceClassLoader(ClassLoader)");
     }
 }

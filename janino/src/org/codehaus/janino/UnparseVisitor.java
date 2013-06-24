@@ -47,7 +47,8 @@ import org.codehaus.janino.util.AutoIndentWriter;
  * A visitor that unparses (un-compiles) an AST to a {@link Writer}. See
  * {@link #main(String[])} for a usage example.
  */
-public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
+public
+class UnparseVisitor implements Visitor.ComprehensiveVisitor {
     protected final AutoIndentWriter aiw;
     protected final PrintWriter      pw;
 
@@ -57,13 +58,15 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
      * Reads compilation units from the files named on the command line
      * and unparses them to {@link System#out}.
      */
-    public static void main(String[] args) throws Exception {
+    public static void
+    main(String[] args) throws Exception {
+
         Writer w = new BufferedWriter(new OutputStreamWriter(System.out));
         for (int i = 0; i < args.length; ++i) {
             String fileName = args[i];
 
             // Parse each compilation unit.
-            FileReader r = new FileReader(fileName);
+            FileReader           r = new FileReader(fileName);
             Java.CompilationUnit cu;
             try {
                 cu = new Parser(new Scanner(fileName, r)).parseCompilationUnit();
@@ -80,25 +83,29 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
     /**
      * Unparse the given {@link Java.CompilationUnit} to the given {@link Writer}.
      */
-    public static void unparse(Java.CompilationUnit cu, Writer w) {
+    public static void
+    unparse(Java.CompilationUnit cu, Writer w) {
         UnparseVisitor uv = new UnparseVisitor(w);
         uv.unparseCompilationUnit(cu);
         uv.close();
     }
 
-    public UnparseVisitor(Writer w) {
+    public
+    UnparseVisitor(Writer w) {
         this.aiw = new AutoIndentWriter(w);
-        this.pw = new PrintWriter(this.aiw, true);
+        this.pw  = new PrintWriter(this.aiw, true);
     }
 
     /**
      * Flushes all generated code.
      */
-    public void close() {
+    public void
+    close() {
         this.pw.flush();
     }
 
-    public void unparseCompilationUnit(Java.CompilationUnit cu) {
+    public void
+    unparseCompilationUnit(Java.CompilationUnit cu) {
         if (cu.optionalPackageDeclaration != null) {
             this.pw.println();
             this.pw.println("package " + cu.optionalPackageDeclaration.packageName + ';');
@@ -116,35 +123,53 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
         }
     }
 
-    public void visitSingleTypeImportDeclaration(Java.CompilationUnit.SingleTypeImportDeclaration stid) {
+    public void
+    visitSingleTypeImportDeclaration(Java.CompilationUnit.SingleTypeImportDeclaration stid) {
         this.pw.println("import " + Java.join(stid.identifiers, ".") + ';');
     }
-    public void visitTypeImportOnDemandDeclaration(Java.CompilationUnit.TypeImportOnDemandDeclaration tiodd) {
+
+    public void
+    visitTypeImportOnDemandDeclaration(Java.CompilationUnit.TypeImportOnDemandDeclaration tiodd) {
         this.pw.println("import " + Java.join(tiodd.identifiers, ".") + ".*;");
     }
-    public void visitSingleStaticImportDeclaration(Java.CompilationUnit.SingleStaticImportDeclaration ssid) {
+
+    public void
+    visitSingleStaticImportDeclaration(Java.CompilationUnit.SingleStaticImportDeclaration ssid) {
         this.pw.println("import static " + Java.join(ssid.identifiers, ".") + ';');
     }
-    public void visitStaticImportOnDemandDeclaration(Java.CompilationUnit.StaticImportOnDemandDeclaration siodd) {
+
+    public void
+    visitStaticImportOnDemandDeclaration(Java.CompilationUnit.StaticImportOnDemandDeclaration siodd) {
         this.pw.println("import static " + Java.join(siodd.identifiers, ".") + ".*;");
     }
 
-    public void visitLocalClassDeclaration(Java.LocalClassDeclaration lcd) {
+    public void
+    visitLocalClassDeclaration(Java.LocalClassDeclaration lcd) {
         this.unparseNamedClassDeclaration(lcd);
     }
-    public void visitMemberClassDeclaration(Java.MemberClassDeclaration mcd) {
+
+    public void
+    visitMemberClassDeclaration(Java.MemberClassDeclaration mcd) {
         this.unparseNamedClassDeclaration(mcd);
     }
-    public void visitMemberInterfaceDeclaration(Java.MemberInterfaceDeclaration mid) {
+
+    public void
+    visitMemberInterfaceDeclaration(Java.MemberInterfaceDeclaration mid) {
         this.unparseInterfaceDeclaration(mid);
     }
-    public void visitPackageMemberClassDeclaration(Java.PackageMemberClassDeclaration pmcd) {
+
+    public void
+    visitPackageMemberClassDeclaration(Java.PackageMemberClassDeclaration pmcd) {
         this.unparseNamedClassDeclaration(pmcd);
     }
-    public void visitPackageMemberInterfaceDeclaration(Java.PackageMemberInterfaceDeclaration pmid) {
+
+    public void
+    visitPackageMemberInterfaceDeclaration(Java.PackageMemberInterfaceDeclaration pmid) {
         this.unparseInterfaceDeclaration(pmid);
     }
-    public void visitConstructorDeclarator(Java.ConstructorDeclarator cd) {
+
+    public void
+    visitConstructorDeclarator(Java.ConstructorDeclarator cd) {
         this.unparseDocComment(cd);
         this.unparseModifiers(cd.modifiers);
         Java.ClassDeclaration declaringClass = cd.getDeclaringClass();
@@ -177,7 +202,9 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
             this.pw.print(AutoIndentWriter.UNINDENT + "}");
         }
     }
-    public void visitMethodDeclarator(Java.MethodDeclarator md) {
+
+    public void
+    visitMethodDeclarator(Java.MethodDeclarator md) {
         this.unparseDocComment(md);
         this.unparseModifiers(md.modifiers);
         this.unparseType(md.type);
@@ -197,7 +224,9 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
             this.pw.print('}');
         }
     }
-    public void visitFieldDeclaration(Java.FieldDeclaration fd) {
+
+    public void
+    visitFieldDeclaration(Java.FieldDeclaration fd) {
         this.unparseDocComment(fd);
         this.unparseModifiers(fd.modifiers);
         this.unparseType(fd.type);
@@ -208,11 +237,15 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
         }
         this.pw.print(';');
     }
-    public void visitInitializer(Java.Initializer i) {
+
+    public void
+    visitInitializer(Java.Initializer i) {
         if (i.statiC) this.pw.print("static ");
         this.unparseBlockStatement(i.block);
     }
-    public void visitBlock(Java.Block b) {
+
+    public void
+    visitBlock(Java.Block b) {
         if (b.statements.isEmpty()) {
             this.pw.print("{}");
             return;
@@ -223,11 +256,13 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
         this.pw.print(AutoIndentWriter.UNINDENT + "}");
     }
 
-    private void unparseStatements(List statements) {
+    private void
+    unparseStatements(List statements) {
+
         int state = -1;
         for (Iterator it = statements.iterator(); it.hasNext();) {
             Java.BlockStatement bs = (Java.BlockStatement) it.next();
-            int x = (
+            int                 x = (
                 bs instanceof Java.Block                             ? 1 :
                 bs instanceof Java.LocalClassDeclarationStatement    ? 2 :
                 bs instanceof Java.LocalVariableDeclarationStatement ? 3 :
@@ -241,31 +276,43 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
             this.pw.println();
         }
     }
-    public void visitBreakStatement(Java.BreakStatement bs) {
+
+    public void
+    visitBreakStatement(Java.BreakStatement bs) {
         this.pw.print("break");
         if (bs.optionalLabel != null) this.pw.print(' ' + bs.optionalLabel);
         this.pw.print(';');
     }
-    public void visitContinueStatement(Java.ContinueStatement cs) {
+
+    public void
+    visitContinueStatement(Java.ContinueStatement cs) {
         this.pw.print("continue");
         if (cs.optionalLabel != null) this.pw.print(' ' + cs.optionalLabel);
         this.pw.print(';');
     }
-    public void visitDoStatement(Java.DoStatement ds) {
+
+    public void
+    visitDoStatement(Java.DoStatement ds) {
         this.pw.print("do ");
         this.unparseBlockStatement(ds.body);
         this.pw.print("while (");
         this.unparse(ds.condition);
         this.pw.print(");");
     }
-    public void visitEmptyStatement(Java.EmptyStatement es) {
+
+    public void
+    visitEmptyStatement(Java.EmptyStatement es) {
         this.pw.print(';');
     }
-    public void visitExpressionStatement(Java.ExpressionStatement es) {
+
+    public void
+    visitExpressionStatement(Java.ExpressionStatement es) {
         this.unparse(es.rvalue);
         this.pw.print(';');
     }
-    public void visitForStatement(Java.ForStatement fs) {
+
+    public void
+    visitForStatement(Java.ForStatement fs) {
         this.pw.print("for (");
         if (fs.optionalInit != null) {
             this.unparseBlockStatement(fs.optionalInit);
@@ -287,7 +334,9 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
         this.pw.print(") ");
         this.unparseBlockStatement(fs.body);
     }
-    public void visitIfStatement(Java.IfStatement is) {
+
+    public void
+    visitIfStatement(Java.IfStatement is) {
         this.pw.print("if (");
         this.unparse(is.condition);
         this.pw.print(") ");
@@ -297,14 +346,20 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
             this.unparseBlockStatement(is.optionalElseStatement);
         }
     }
-    public void visitLabeledStatement(Java.LabeledStatement ls) {
+
+    public void
+    visitLabeledStatement(Java.LabeledStatement ls) {
         this.pw.println(ls.label + ':');
         this.unparseBlockStatement(ls.body);
     }
-    public void visitLocalClassDeclarationStatement(Java.LocalClassDeclarationStatement lcds) {
+
+    public void
+    visitLocalClassDeclarationStatement(Java.LocalClassDeclarationStatement lcds) {
         this.unparseTypeDeclaration(lcds.lcd);
     }
-    public void visitLocalVariableDeclarationStatement(Java.LocalVariableDeclarationStatement lvds) {
+
+    public void
+    visitLocalVariableDeclarationStatement(Java.LocalVariableDeclarationStatement lvds) {
         this.unparseModifiers(lvds.modifiers);
         this.unparseType(lvds.type);
         this.pw.print(' ');
@@ -316,7 +371,9 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
         }
         this.pw.print(';');
     }
-    public void visitReturnStatement(Java.ReturnStatement rs) {
+
+    public void
+    visitReturnStatement(Java.ReturnStatement rs) {
         this.pw.print("return");
         if (rs.optionalReturnValue != null) {
             this.pw.print(' ');
@@ -324,7 +381,9 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
         }
         this.pw.print(';');
     }
-    public void visitSwitchStatement(Java.SwitchStatement ss) {
+
+    public void
+    visitSwitchStatement(Java.SwitchStatement ss) {
         this.pw.print("switch (");
         this.unparse(ss.condition);
         this.pw.println(") {");
@@ -351,18 +410,24 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
         }
         this.pw.print('}');
     }
-    public void visitSynchronizedStatement(Java.SynchronizedStatement ss) {
+
+    public void
+    visitSynchronizedStatement(Java.SynchronizedStatement ss) {
         this.pw.print("synchronized (");
         this.unparse(ss.expression);
         this.pw.print(") ");
         this.unparseBlockStatement(ss.body);
     }
-    public void visitThrowStatement(Java.ThrowStatement ts) {
+
+    public void
+    visitThrowStatement(Java.ThrowStatement ts) {
         this.pw.print("throw ");
         this.unparse(ts.expression);
         this.pw.print(';');
     }
-    public void visitTryStatement(Java.TryStatement ts) {
+
+    public void
+    visitTryStatement(Java.TryStatement ts) {
         this.pw.print("try ");
         this.unparseBlockStatement(ts.body);
         for (Iterator it = ts.catchClauses.iterator(); it.hasNext();) {
@@ -377,13 +442,17 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
             this.unparseBlockStatement(ts.optionalFinally);
         }
     }
-    public void visitWhileStatement(Java.WhileStatement ws) {
+
+    public void
+    visitWhileStatement(Java.WhileStatement ws) {
         this.pw.print("while (");
         this.unparse(ws.condition);
         this.pw.print(") ");
         this.unparseBlockStatement(ws.body);
     }
-    public void unparseVariableDeclarator(Java.VariableDeclarator vd) {
+
+    public void
+    unparseVariableDeclarator(Java.VariableDeclarator vd) {
         this.pw.print(vd.name);
         for (int i = 0; i < vd.brackets; ++i) this.pw.print("[]");
         if (vd.optionalInitializer != null) {
@@ -391,12 +460,16 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
             this.unparseArrayInitializerOrRvalue(vd.optionalInitializer);
         }
     }
-    public void unparseFormalParameter(Java.FunctionDeclarator.FormalParameter fp) {
+
+    public void
+    unparseFormalParameter(Java.FunctionDeclarator.FormalParameter fp) {
         if (fp.finaL) this.pw.print("final ");
         this.unparseType(fp.type);
         this.pw.print(" " + AutoIndentWriter.TABULATOR + fp.name);
     }
-    public void visitMethodInvocation(Java.MethodInvocation mi) {
+
+    public void
+    visitMethodInvocation(Java.MethodInvocation mi) {
         if (mi.optionalTarget != null) {
             this.unparseLhs(mi.optionalTarget, ".");
             this.pw.print('.');
@@ -404,11 +477,15 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
         this.pw.print(mi.methodName);
         this.unparseFunctionInvocationArguments(mi.arguments);
     }
-    public void visitAlternateConstructorInvocation(Java.AlternateConstructorInvocation aci) {
+
+    public void
+    visitAlternateConstructorInvocation(Java.AlternateConstructorInvocation aci) {
         this.pw.print("this");
         this.unparseFunctionInvocationArguments(aci.arguments);
     }
-    public void visitSuperConstructorInvocation(Java.SuperConstructorInvocation sci) {
+
+    public void
+    visitSuperConstructorInvocation(Java.SuperConstructorInvocation sci) {
         if (sci.optionalQualification != null) {
             this.unparseLhs(sci.optionalQualification, ".");
             this.pw.print('.');
@@ -416,7 +493,9 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
         this.pw.print("super");
         this.unparseFunctionInvocationArguments(sci.arguments);
     }
-    public void visitNewClassInstance(Java.NewClassInstance nci) {
+
+    public void
+    visitNewClassInstance(Java.NewClassInstance nci) {
         if (nci.optionalQualification != null) {
             this.unparseLhs(nci.optionalQualification, ".");
             this.pw.print('.');
@@ -424,52 +503,74 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
         this.pw.print("new " + nci.type.toString());
         this.unparseFunctionInvocationArguments(nci.arguments);
     }
-    public void visitAssignment(Java.Assignment a) {
+
+    public void
+    visitAssignment(Java.Assignment a) {
         this.unparseLhs(a.lhs, a.operator);
         this.pw.print(' ' + a.operator + ' ');
         this.unparseRhs(a.rhs, a.operator);
     }
-    public void visitAmbiguousName(Java.AmbiguousName an) { this.pw.print(an.toString()); }
-    public void visitArrayAccessExpression(Java.ArrayAccessExpression aae) {
+
+    public void
+    visitAmbiguousName(Java.AmbiguousName an) { this.pw.print(an.toString()); }
+
+    public void
+    visitArrayAccessExpression(Java.ArrayAccessExpression aae) {
         this.unparseLhs(aae.lhs, "[ ]");
         this.pw.print('[');
         this.unparse(aae.index);
         this.pw.print(']');
     }
-    public void visitArrayLength(Java.ArrayLength al) {
+
+    public void
+    visitArrayLength(Java.ArrayLength al) {
         this.unparseLhs(al.lhs, ".");
         this.pw.print(".length");
     }
-    public void visitArrayType(Java.ArrayType at) {
+
+    public void
+    visitArrayType(Java.ArrayType at) {
         this.unparseType(at.componentType);
         this.pw.print("[]");
     }
-    public void visitBasicType(Java.BasicType bt) {
+
+    public void
+    visitBasicType(Java.BasicType bt) {
         this.pw.print(bt.toString());
     }
-    public void visitBinaryOperation(Java.BinaryOperation bo) {
+
+    public void
+    visitBinaryOperation(Java.BinaryOperation bo) {
         this.unparseLhs(bo.lhs, bo.op);
         this.pw.print(' ' + bo.op + ' ');
         this.unparseRhs(bo.rhs, bo.op);
     }
-    public void visitCast(Java.Cast c) {
+
+    public void
+    visitCast(Java.Cast c) {
         this.pw.print('(');
         this.unparseType(c.targetType);
         this.pw.print(") ");
         this.unparseRhs(c.value, "cast");
     }
-    public void visitClassLiteral(Java.ClassLiteral cl) {
+
+    public void
+    visitClassLiteral(Java.ClassLiteral cl) {
         this.unparseType(cl.type);
         this.pw.print(".class");
     }
-    public void visitConditionalExpression(Java.ConditionalExpression ce) {
+
+    public void
+    visitConditionalExpression(Java.ConditionalExpression ce) {
         this.unparseLhs(ce.lhs, "?:");
         this.pw.print(" ? ");
         this.unparseLhs(ce.mhs, "?:");
         this.pw.print(" : ");
         this.unparseRhs(ce.rhs, "?:");
     }
-    public void visitCrement(Java.Crement c) {
+
+    public void
+    visitCrement(Java.Crement c) {
         if (c.pre) {
             this.pw.print(c.operator);
             this.unparseUnaryOperation(c.operand, c.operator + "x");
@@ -479,15 +580,21 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
             this.pw.print(c.operator);
         }
     }
-    public void visitFieldAccess(Java.FieldAccess fa) {
+
+    public void
+    visitFieldAccess(Java.FieldAccess fa) {
         this.unparseLhs(fa.lhs, ".");
         this.pw.print('.' + fa.field.getName());
     }
-    public void visitFieldAccessExpression(Java.FieldAccessExpression fae) {
+
+    public void
+    visitFieldAccessExpression(Java.FieldAccessExpression fae) {
         this.unparseLhs(fae.lhs, ".");
         this.pw.print('.' + fae.fieldName);
     }
-    public void visitSuperclassFieldAccessExpression(Java.SuperclassFieldAccessExpression scfae) {
+
+    public void
+    visitSuperclassFieldAccessExpression(Java.SuperclassFieldAccessExpression scfae) {
         if (scfae.optionalQualification != null) {
             this.unparseType(scfae.optionalQualification);
             this.pw.print(".super." + scfae.fieldName);
@@ -496,19 +603,24 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
             this.pw.print("super." + scfae.fieldName);
         }
     }
-    public void visitInstanceof(Java.Instanceof io) {
+
+    public void
+    visitInstanceof(Java.Instanceof io) {
         this.unparseLhs(io.lhs, "instanceof");
         this.pw.print(" instanceof ");
         this.unparseType(io.rhs);
     }
+
     public void visitIntegerLiteral(Java.IntegerLiteral il)              { this.pw.print(il.value); }
     public void visitFloatingPointLiteral(Java.FloatingPointLiteral fpl) { this.pw.print(fpl.value); }
     public void visitBooleanLiteral(Java.BooleanLiteral bl)              { this.pw.print(bl.value); }
     public void visitCharacterLiteral(Java.CharacterLiteral cl)          { this.pw.print(cl.value); }
     public void visitStringLiteral(Java.StringLiteral sl)                { this.pw.print(sl.value); }
     public void visitNullLiteral(Java.NullLiteral nl)                    { this.pw.print(nl.value); }
-    public void visitLocalVariableAccess(Java.LocalVariableAccess lva) { this.pw.print(lva.toString()); }
-    public void visitNewArray(Java.NewArray na) {
+    public void visitLocalVariableAccess(Java.LocalVariableAccess lva)   { this.pw.print(lva.toString()); }
+
+    public void
+    visitNewArray(Java.NewArray na) {
         this.pw.print("new ");
         this.unparseType(na.type);
         for (int i = 0; i < na.dimExprs.length; ++i) {
@@ -520,33 +632,53 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
             this.pw.print("[]");
         }
     }
-    public void visitNewInitializedArray(Java.NewInitializedArray nai) {
+
+    public void
+    visitNewInitializedArray(Java.NewInitializedArray nai) {
         this.pw.print("new ");
         this.unparseType(nai.arrayType);
         this.pw.print(" ");
         this.unparseArrayInitializerOrRvalue(nai.arrayInitializer);
     }
-    public void visitPackage(Java.Package p) { this.pw.print(p.toString()); }
-    public void visitParameterAccess(Java.ParameterAccess pa) { this.pw.print(pa.toString()); }
-    public void visitQualifiedThisReference(Java.QualifiedThisReference qtr) {
+
+    public void
+    visitPackage(Java.Package p) { this.pw.print(p.toString()); }
+
+    public void
+    visitParameterAccess(Java.ParameterAccess pa) { this.pw.print(pa.toString()); }
+
+    public void
+    visitQualifiedThisReference(Java.QualifiedThisReference qtr) {
         this.unparseType(qtr.qualification);
         this.pw.print(".this");
     }
-    public void visitReferenceType(Java.ReferenceType rt) { this.pw.print(rt.toString()); }
-    public void visitRvalueMemberType(Java.RvalueMemberType rmt) { this.pw.print(rmt.toString()); }
-    public void visitSimpleType(Java.SimpleType st) { this.pw.print(st.toString()); }
-    public void visitSuperclassMethodInvocation(Java.SuperclassMethodInvocation smi) {
+
+    public void
+    visitReferenceType(Java.ReferenceType rt) { this.pw.print(rt.toString()); }
+
+    public void
+    visitRvalueMemberType(Java.RvalueMemberType rmt) { this.pw.print(rmt.toString()); }
+
+    public void
+    visitSimpleType(Java.SimpleType st) { this.pw.print(st.toString()); }
+
+    public void
+    visitSuperclassMethodInvocation(Java.SuperclassMethodInvocation smi) {
         this.pw.print("super." + smi.methodName);
         this.unparseFunctionInvocationArguments(smi.arguments);
     }
-    public void visitThisReference(Java.ThisReference tr) {
-        this.pw.print("this");
-    }
-    public void visitUnaryOperation(Java.UnaryOperation uo) {
+
+    public void
+    visitThisReference(Java.ThisReference tr) { this.pw.print("this"); }
+
+    public void
+    visitUnaryOperation(Java.UnaryOperation uo) {
         this.pw.print(uo.operator);
         this.unparseUnaryOperation(uo.operand, uo.operator + "x");
     }
-    public void visitParenthesizedExpression(Java.ParenthesizedExpression pe) {
+
+    public void
+    visitParenthesizedExpression(Java.ParenthesizedExpression pe) {
         this.pw.print('(');
         this.unparse(pe.value);
         this.pw.print(')');
@@ -554,21 +686,17 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
 
     // Helpers
 
-    private void unparseBlockStatement(Java.BlockStatement blockStatement) {
-        blockStatement.accept(this);
-    }
+    private void
+    unparseBlockStatement(Java.BlockStatement blockStatement) { blockStatement.accept(this); }
 
-    private void unparseTypeDeclaration(Java.TypeDeclaration typeDeclaration) {
-        typeDeclaration.accept(this);
-    }
+    private void
+    unparseTypeDeclaration(Java.TypeDeclaration typeDeclaration) { typeDeclaration.accept(this); }
 
-    private void unparseType(Java.Type type) {
-        ((Java.Atom) type).accept(this);
-    }
+    private void
+    unparseType(Java.Type type) { ((Java.Atom) type).accept(this); }
 
-    private void unparse(Java.Atom operand) {
-        operand.accept(this);
-    }
+    private void
+    unparse(Java.Atom operand) { operand.accept(this); }
 
     /**
      * Iff the <code>operand</code> is unnatural for the <code>unaryOperator</code>, enclose the
@@ -576,7 +704,8 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
      *
      * @param unaryOperator ++x --x +x -x ~x !x x++ x--
      */
-    private void unparseUnaryOperation(Java.Rvalue operand, String unaryOperator) {
+    private void
+    unparseUnaryOperation(Java.Rvalue operand, String unaryOperator) {
         int cmp = UnparseVisitor.comparePrecedence(unaryOperator, operand);
         this.unparse(operand, cmp < 0);
     }
@@ -587,8 +716,8 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
      *
      * @param binaryOperator = +=... ?: || && | ^ & == != < > <= >= instanceof << >> >>> + - * / % cast
      */
-
-    private void unparseLhs(Java.Atom lhs, String binaryOperator) {
+    private void
+    unparseLhs(Java.Atom lhs, String binaryOperator) {
         int cmp = UnparseVisitor.comparePrecedence(binaryOperator, lhs);
         this.unparse(lhs, cmp < 0 || (cmp == 0 && UnparseVisitor.isLeftAssociate(binaryOperator)));
     }
@@ -598,12 +727,14 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
      * Iff the <code>rhs</code> is unnatural for the <code>binaryOperator</code>, enclose the
      * <code>rhs</code> in parentheses. Example: "a+b" is an unnatural rhs for operator "*".
      */
-    private void unparseRhs(Java.Rvalue rhs, String binaryOperator) {
+    private void
+    unparseRhs(Java.Rvalue rhs, String binaryOperator) {
         int cmp = UnparseVisitor.comparePrecedence(binaryOperator, rhs);
         this.unparse(rhs, cmp < 0 || (cmp == 0 && UnparseVisitor.isRightAssociate(binaryOperator)));
     }
 
-    private void unparse(Java.Atom operand, boolean natural) {
+    private void
+    unparse(Java.Atom operand, boolean natural) {
         if (!natural) this.pw.print("((( ");
         this.unparse(operand);
         if (!natural) this.pw.print(" )))");
@@ -615,9 +746,8 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
      *
      * @return Return true iff operator is right associative
      */
-    private static boolean isRightAssociate(String op) {
-        return UnparseVisitor.RIGHT_ASSOCIATIVE_OPERATORS.contains(op);
-    }
+    private static boolean
+    isRightAssociate(String op) { return UnparseVisitor.RIGHT_ASSOCIATIVE_OPERATORS.contains(op); }
 
     /**
      * Return true iff operator is left associative e.g. <code>a - b - c</code> evaluates as
@@ -625,9 +755,8 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
      *
      * @return Return true iff operator is left associative
      */
-    private static boolean isLeftAssociate(String op) {
-        return UnparseVisitor.LEFT_ASSOCIATIVE_OPERATORS.contains(op);
-    }
+    private static boolean
+    isLeftAssociate(String op) { return UnparseVisitor.LEFT_ASSOCIATIVE_OPERATORS.contains(op); }
 
     /**
      * Returns a value
@@ -637,7 +766,8 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
      *   <li>&gt; 0 iff the <code>operator</code> has higher precedence than the <code>operand</code>
      * </ul>
      */
-    private static int comparePrecedence(String operator, Java.Atom operand) {
+    private static int
+    comparePrecedence(String operator, Java.Atom operand) {
         if (operand instanceof Java.BinaryOperation) {
             return (
                 UnparseVisitor.getOperatorPrecedence(operator)
@@ -677,13 +807,16 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
             return -1;
         }
     }
-    private static int getOperatorPrecedence(String operator) {
+
+    private static int
+    getOperatorPrecedence(String operator) {
         return ((Integer) UnparseVisitor.OPERATOR_PRECEDENCE.get(operator)).intValue();
     }
-    private static final Set LEFT_ASSOCIATIVE_OPERATORS = new HashSet();
+
+    private static final Set LEFT_ASSOCIATIVE_OPERATORS  = new HashSet();
     private static final Set RIGHT_ASSOCIATIVE_OPERATORS = new HashSet();
-    private static final Set UNARY_OPERATORS = new HashSet();
-    private static final Map OPERATOR_PRECEDENCE = new HashMap();
+    private static final Set UNARY_OPERATORS             = new HashSet();
+    private static final Map OPERATOR_PRECEDENCE         = new HashMap();
     static {
         Object[] ops = {
             UnparseVisitor.RIGHT_ASSOCIATIVE_OPERATORS, "=", "*=", "/=", "%=", "+=", "-=", "<<=", ">>=", ">>>=",
@@ -707,7 +840,7 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
         };
         int precedence = 0;
         LOOP1: for (int i = 0;;) {
-            Set s = (Set) ops[i++];
+            Set     s  = (Set) ops[i++];
             Integer pi = new Integer(++precedence);
             for (;;) {
                 if (i == ops.length) break LOOP1;
@@ -719,7 +852,8 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
         }
     }
 
-    private void unparseNamedClassDeclaration(Java.NamedClassDeclaration ncd) {
+    private void
+    unparseNamedClassDeclaration(Java.NamedClassDeclaration ncd) {
         this.unparseDocComment(ncd);
         this.unparseModifiers(ncd.getModifiers());
         this.pw.print("class " + ncd.name);
@@ -733,7 +867,9 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
         this.unparseClassDeclarationBody(ncd);
         this.pw.print(AutoIndentWriter.UNINDENT + "}");
     }
-    private void unparseArrayInitializerOrRvalue(Java.ArrayInitializerOrRvalue aiorv) {
+
+    private void
+    unparseArrayInitializerOrRvalue(Java.ArrayInitializerOrRvalue aiorv) {
         if (aiorv instanceof Java.Rvalue) {
             this.unparse((Java.Rvalue) aiorv);
         } else
@@ -760,14 +896,16 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
         }
     }
 
-    public void visitAnonymousClassDeclaration(Java.AnonymousClassDeclaration acd) {
+    public void
+    visitAnonymousClassDeclaration(Java.AnonymousClassDeclaration acd) {
         this.unparseType(acd.baseType);
         this.pw.println(" {");
         this.pw.print(AutoIndentWriter.INDENT);
         this.unparseClassDeclarationBody(acd);
         this.pw.print(AutoIndentWriter.UNINDENT + "}");
     }
-    public void visitNewAnonymousClassInstance(Java.NewAnonymousClassInstance naci) {
+    public void
+    visitNewAnonymousClassInstance(Java.NewAnonymousClassInstance naci) {
         if (naci.optionalQualification != null) {
             this.unparseLhs(naci.optionalQualification, ".");
             this.pw.print('.');
@@ -783,7 +921,8 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
         this.pw.print(AutoIndentWriter.UNINDENT + "}");
     }
     // Multi-line!
-    private void unparseClassDeclarationBody(Java.ClassDeclaration cd) {
+    private void
+    unparseClassDeclarationBody(Java.ClassDeclaration cd) {
         for (Iterator it = cd.constructors.iterator(); it.hasNext();) {
             this.pw.println();
             ((Java.ConstructorDeclarator) it.next()).accept(this);
@@ -796,7 +935,8 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
             this.pw.println();
         }
     }
-    private void unparseInterfaceDeclaration(Java.InterfaceDeclaration id) {
+    private void
+    unparseInterfaceDeclaration(Java.InterfaceDeclaration id) {
         this.unparseDocComment(id);
         this.unparseModifiers(id.getModifiers());
         //make sure we print "interface", even if it wasn't in the modifiers
@@ -814,8 +954,10 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
         }
         this.pw.print(AutoIndentWriter.UNINDENT + "}");
     }
+
     // Multi-line!
-    private void unparseAbstractTypeDeclarationBody(Java.AbstractTypeDeclaration atd) {
+    private void
+    unparseAbstractTypeDeclarationBody(Java.AbstractTypeDeclaration atd) {
         for (Iterator it = atd.getMethodDeclarations().iterator(); it.hasNext();) {
             this.pw.println();
             ((Java.MethodDeclarator) it.next()).accept(this);
@@ -827,7 +969,8 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
             this.pw.println();
         }
     }
-    private void unparseFunctionDeclaratorRest(Java.FunctionDeclarator fd) {
+    private void
+    unparseFunctionDeclaratorRest(Java.FunctionDeclarator fd) {
         boolean big = fd.formalParameters.length >= 4;
         this.pw.print('(');
         if (big) { this.pw.println(); this.pw.print(AutoIndentWriter.INDENT); }
@@ -846,7 +989,9 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
         this.pw.print(')');
         if (fd.thrownExceptions.length > 0) this.pw.print(" throws " + Java.join(fd.thrownExceptions, ", "));
     }
-    private void unparseDocComment(Java.DocCommentable dc) {
+
+private void
+    unparseDocComment(Java.DocCommentable dc) {
         String optionalDocComment = dc.getDocComment();
         if (optionalDocComment != null) {
             this.pw.print("/**");
@@ -856,7 +1001,7 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
                 try {
                     line = br.readLine();
                 } catch (IOException e) {
-                    throw new JaninoRuntimeException();
+                    throw new JaninoRuntimeException(null, e);
                 }
                 if (line == null) break;
                 this.pw.println(line);
@@ -865,12 +1010,16 @@ public class UnparseVisitor implements Visitor.ComprehensiveVisitor {
             this.pw.println("/");
         }
     }
-    private void unparseModifiers(short modifiers) {
+
+    private void
+    unparseModifiers(short modifiers) {
         if (modifiers != 0) {
             this.pw.print(Mod.shortToString(modifiers) + ' ');
         }
     }
-    private void unparseFunctionInvocationArguments(Java.Rvalue[] arguments) {
+
+    private void
+    unparseFunctionInvocationArguments(Java.Rvalue[] arguments) {
         boolean big = arguments.length >= 5;
         this.pw.print('(');
         if (big) { this.pw.println(); this.pw.print(AutoIndentWriter.INDENT); }

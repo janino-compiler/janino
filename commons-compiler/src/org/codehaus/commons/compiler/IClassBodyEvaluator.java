@@ -89,7 +89,8 @@ import java.io.Reader;
  * System.out.println("1 + 2 = " + f.bar(1, 2));
  * </pre>
  */
-public interface IClassBodyEvaluator extends ICookable {
+public
+interface IClassBodyEvaluator extends ICookable {
 
     String DEFAULT_CLASS_NAME = "SC";
 

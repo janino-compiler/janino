@@ -105,7 +105,8 @@ import java.lang.reflect.*;
  * </ul>
  * Notice that these methods have array parameters in contrast to their one-script brethren.
  */
-public interface IScriptEvaluator extends IClassBodyEvaluator {
+public
+interface IScriptEvaluator extends IClassBodyEvaluator {
 
     /**
      * Define whether the generated method should be STATIC or not. Defaults to <code>true</code>.
@@ -208,10 +209,8 @@ public interface IScriptEvaluator extends IClassBodyEvaluator {
      * @throws IllegalStateException if any of the preceding <code>set...()</code> had an array
      *                               size different from that of <code>scanners</code>
      */
-    void cook(
-        String[] optionalFileNames,
-        Reader[] readers
-    ) throws CompileException, IOException;
+    void
+    cook(String[] optionalFileNames, Reader[] readers) throws CompileException, IOException;
 
     /**
      * Same as {@link #cook(String)}, but for multiple scripts.
@@ -237,7 +236,8 @@ public interface IScriptEvaluator extends IClassBodyEvaluator {
      * @param script Contains the sequence of script tokens
      * @see          #createFastEvaluator(Reader, Class, String[])
      */
-    Object createFastEvaluator(
+    Object
+    createFastEvaluator(
         String   script,
         Class    interfaceToImplement,
         String[] parameterNames
@@ -286,7 +286,8 @@ public interface IScriptEvaluator extends IClassBodyEvaluator {
      * @param parameterNames       The names of the parameters of that method
      * @return                     An object that implements the given interface
      */
-    Object createFastEvaluator(
+    Object
+    createFastEvaluator(
         Reader   reader,
         Class    interfaceToImplement,
         String[] parameterNames

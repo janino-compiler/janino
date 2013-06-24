@@ -83,7 +83,7 @@ public abstract class IClass {
         public boolean           isFinal()                   { return true; }
         public boolean           isInterface()               { return false; }
         public boolean           isPrimitive()               { return true; }
-        public boolean           isPrimitiveNumeric()    { return Descriptor.isPrimitiveNumeric(this.fieldDescriptor); }
+        public boolean           isPrimitiveNumeric()        { return Descriptor.isPrimitiveNumeric(this.fieldDescriptor); } // SUPPRESS CHECKSTYLE LineLength
         public Access            getAccess()                 { return Access.PUBLIC; }
     }
 
@@ -132,8 +132,8 @@ public abstract class IClass {
             IMethod[] dims = this.getDeclaredIMethods();
             for (int i = 0; i < dims.length; i++) {
                 IMethod dim = dims[i];
-                String mn = dim.getName();
-                Object o = m.get(mn);
+                String  mn  = dim.getName();
+                Object  o   = m.get(mn);
                 if (o == null) {
                     m.put(mn, dim);
                 } else
@@ -600,34 +600,35 @@ public abstract class IClass {
 
             // Special trickery #17: Arrays override "Object.clone()", but without "throws
             // CloneNotSupportedException"!
-            public IClass.IMethod[]      getDeclaredIMethods2() {
+            public IClass.IMethod[]
+            getDeclaredIMethods2() {
                 return new IClass.IMethod[] {
                     new IMethod() {
-                        public String   getName() { return "clone"; }
-                        public IClass   getReturnType() { return objectType /*ot*/; }
-                        public boolean  isAbstract() { return false; }
-                        public boolean  isStatic() { return false; }
-                        public Access   getAccess() { return Access.PUBLIC; }
-                        public IClass[] getParameterTypes() { return new IClass[0]; }
+                        public String   getName()             { return "clone"; }
+                        public IClass   getReturnType()       { return objectType /*ot*/; }
+                        public boolean  isAbstract()          { return false; }
+                        public boolean  isStatic()            { return false; }
+                        public Access   getAccess()           { return Access.PUBLIC; }
+                        public IClass[] getParameterTypes()   { return new IClass[0]; }
                         public IClass[] getThrownExceptions() { return new IClass[0]; }
                     }
                 };
             }
-            public IClass.IField[]       getDeclaredIFields2() { return new IClass.IField[0]; }
+            public IClass.IField[]       getDeclaredIFields2()  { return new IClass.IField[0]; }
             public IClass[]              getDeclaredIClasses2() { return new IClass[0]; }
-            public IClass                getDeclaringIClass2() { return null; }
-            public IClass                getOuterIClass2() { return null; }
-            public IClass                getSuperclass2() { return objectType; }
-            public IClass[]              getInterfaces2() { return new IClass[0]; }
-            public String                getDescriptor2() { return '[' + componentType.getDescriptor(); }
-            public Access                getAccess() { return componentType.getAccess(); }
-            public boolean               isFinal() { return true; }
-            public boolean               isInterface() { return false; }
-            public boolean               isAbstract() { return false; }
-            public boolean               isArray() { return true; }
-            public boolean               isPrimitive() { return false; }
-            public boolean               isPrimitiveNumeric() { return false; }
-            public IClass                getComponentType2() { return componentType; }
+            public IClass                getDeclaringIClass2()  { return null; }
+            public IClass                getOuterIClass2()      { return null; }
+            public IClass                getSuperclass2()       { return objectType; }
+            public IClass[]              getInterfaces2()       { return new IClass[0]; }
+            public String                getDescriptor2()       { return '[' + componentType.getDescriptor(); }
+            public Access                getAccess()            { return componentType.getAccess(); }
+            public boolean               isFinal()              { return true; }
+            public boolean               isInterface()          { return false; }
+            public boolean               isAbstract()           { return false; }
+            public boolean               isArray()              { return true; }
+            public boolean               isPrimitive()          { return false; }
+            public boolean               isPrimitiveNumeric()   { return false; }
+            public IClass                getComponentType2()    { return componentType; }
 
             public String toString() { return componentType.toString() + "[]"; }
         };

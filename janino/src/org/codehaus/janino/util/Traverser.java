@@ -46,7 +46,7 @@ import java.util.*;
  */
 public class Traverser {
     private final Visitor.ComprehensiveVisitor cv = new Visitor.ComprehensiveVisitor() {
-        // CHECKSTYLE(LineLengthCheck):OFF
+        // CHECKSTYLE LineLengthCheck:OFF
         public final void visitSingleTypeImportDeclaration(Java.CompilationUnit.SingleTypeImportDeclaration stid)      { Traverser.this.traverseSingleTypeImportDeclaration(stid); } // SUPPRESS CHECKSTYLE
         public final void visitTypeImportOnDemandDeclaration(Java.CompilationUnit.TypeImportOnDemandDeclaration tiodd) { Traverser.this.traverseTypeImportOnDemandDeclaration(tiodd); }
         public final void visitSingleStaticImportDeclaration(SingleStaticImportDeclaration ssid)                       { Traverser.this.traverseSingleStaticImportDeclaration(ssid); }
@@ -117,7 +117,7 @@ public class Traverser {
         public final void visitSuperclassFieldAccessExpression(Java.SuperclassFieldAccessExpression scfae)             { Traverser.this.traverseSuperclassFieldAccessExpression(scfae); }
         public final void visitLocalVariableAccess(Java.LocalVariableAccess lva)                                       { Traverser.this.traverseLocalVariableAccess(lva); }
         public final void visitParenthesizedExpression(Java.ParenthesizedExpression pe)                                { Traverser.this.traverseParenthesizedExpression(pe); }
-        // CHECKSTYLE(LineLengthCheck):ON
+        // CHECKSTYLE LineLengthCheck:ON
     };
 
     public ComprehensiveVisitor comprehensiveVisitor() {

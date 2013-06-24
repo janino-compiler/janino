@@ -36,7 +36,9 @@ import java.util.Properties;
 /**
  * Utility class that finds implementations of {@link ICompilerFactory}s.
  */
-public final class CompilerFactoryFactory {
+public final
+class CompilerFactoryFactory {
+
     private CompilerFactoryFactory() {}
 
     private static ICompilerFactory defaultCompilerFactory;
@@ -48,10 +50,11 @@ public final class CompilerFactoryFactory {
      * @return           The {@link ICompilerFactory} of the first implementation on the class path
      * @throws Exception Many things can go wrong while finding and initializing the default compiler factory
      */
-    public static ICompilerFactory getDefaultCompilerFactory() throws Exception {
+    public static ICompilerFactory
+    getDefaultCompilerFactory() throws Exception {
         if (defaultCompilerFactory == null) {
-            Properties properties = new Properties();
-            InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(
+            Properties  properties = new Properties();
+            InputStream is         = Thread.currentThread().getContextClassLoader().getResourceAsStream(
                 "org.codehaus.commons.compiler.properties"
             );
             if (is == null) {
@@ -77,8 +80,9 @@ public final class CompilerFactoryFactory {
      * @return           The {@link ICompilerFactory}s of all implementations on the class path
      * @throws Exception Many things can go wrong while finding and initializing compiler factories
      */
-    public static ICompilerFactory[] getAllCompilerFactories() throws Exception {
-        ClassLoader cl = Thread.currentThread().getContextClassLoader();
+    public static ICompilerFactory[]
+    getAllCompilerFactories() throws Exception {
+        ClassLoader                cl        = Thread.currentThread().getContextClassLoader();
         List/*<IConpilerFactory>*/ factories = new ArrayList();
         for (Enumeration en = cl.getResources("org.codehaus.commons.compiler.properties"); en.hasMoreElements();) {
             URL url = (URL) en.nextElement();
@@ -111,7 +115,8 @@ public final class CompilerFactoryFactory {
      * @throws Exception               Many things can go wrong while loading and initializing the default compiler
      *                                 factory
      */
-    public static ICompilerFactory getCompilerFactory(String compilerFactoryClassName) throws Exception {
+    public static ICompilerFactory
+    getCompilerFactory(String compilerFactoryClassName) throws Exception {
         return (ICompilerFactory) Thread.currentThread().getContextClassLoader().loadClass(
             compilerFactoryClassName
         ).newInstance();
@@ -120,7 +125,8 @@ public final class CompilerFactoryFactory {
     /**
      * @return The version of the commons-compiler specification, or <code>null</code>
      */
-    public static String getSpecificationVersion() {
+    public static String
+    getSpecificationVersion() {
         return CompilerFactoryFactory.class.getPackage().getSpecificationVersion();
     }
 }

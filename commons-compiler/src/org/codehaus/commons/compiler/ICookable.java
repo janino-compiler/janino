@@ -37,7 +37,8 @@ import java.io.*;
  * The <code>cook*()</code> methods eventually invoke the abstract {@link #cook(String, Reader)}
  * method.
  */
-public interface ICookable {
+public
+interface ICookable {
 
     /**
      * The {@link ClassLoader} that loads this classes on the boot class path, i.e. the JARs in the JRE's "lib" and
@@ -111,19 +112,13 @@ public interface ICookable {
      *
      * @param optionalFileName Used when reporting errors and warnings.
      */
-    void cook(
-        String      optionalFileName,
-        InputStream is
-    ) throws CompileException, IOException;
+    void cook(String optionalFileName, InputStream is) throws CompileException, IOException;
 
     /**
      * Reads, scans, parses and compiles Java tokens from the given {@link InputStream} with the
      * given <code>encoding</code>.
      */
-    void cook(
-        InputStream is,
-        String      optionalEncoding
-    ) throws CompileException, IOException;
+    void cook(InputStream is, String optionalEncoding) throws CompileException, IOException;
 
     /**
      * Reads, scans, parses and compiles Java tokens from the given {@link InputStream} with the
@@ -131,7 +126,8 @@ public interface ICookable {
      *
      * @param optionalFileName Used when reporting errors and warnings.
      */
-    void cook(
+    void
+    cook(
         String      optionalFileName,
         InputStream is,
         String      optionalEncoding
@@ -159,10 +155,8 @@ public interface ICookable {
      * Reads, scans, parses and compiles Java tokens from the given {@link File} with the
      * given <code>encoding</code>.
      */
-    void cookFile(
-        File   file,
-        String optionalEncoding
-    ) throws CompileException, IOException;
+    void
+    cookFile(File file, String optionalEncoding) throws CompileException, IOException;
 
     /**
      * Reads, scans, parses and compiles Java tokens from the named file, encoded in the "platform
@@ -174,8 +168,6 @@ public interface ICookable {
      * Reads, scans, parses and compiles Java tokens from the named file with the given
      * <code>encoding</code>.
      */
-    void cookFile(
-        String fileName,
-        String optionalEncoding
-    ) throws CompileException, IOException;
+    void
+    cookFile(String fileName, String optionalEncoding) throws CompileException, IOException;
 }

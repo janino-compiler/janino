@@ -72,15 +72,13 @@ class ReflectionIClass extends IClass {
         }
         if (methods.length == 0 && this.clazz.isArray()) {
             iMethods.add(new IMethod() {
-                public String   getName() { return "clone"; }
-                public IClass   getReturnType() throws CompileException {
-                    return ReflectionIClass.this.iClassLoader.OBJECT;
-                }
-                public boolean  isAbstract() { return false; }
-                public boolean  isStatic() { return false; }
-                public Access   getAccess() { return Access.PUBLIC; }
-                public IClass[] getParameterTypes() throws CompileException { return new IClass[0]; }
-                public IClass[] getThrownExceptions() throws CompileException { return new IClass[0]; }
+                public String   getName()             { return "clone"; }
+                public IClass   getReturnType()       { return ReflectionIClass.this.iClassLoader.OBJECT; }
+                public boolean  isAbstract()          { return false; }
+                public boolean  isStatic()            { return false; }
+                public Access   getAccess()           { return Access.PUBLIC; }
+                public IClass[] getParameterTypes()   { return new IClass[0]; }
+                public IClass[] getThrownExceptions() { return new IClass[0]; }
             });
         }
         return (IMethod[]) iMethods.toArray(new IMethod[iMethods.size()]);
@@ -123,14 +121,18 @@ class ReflectionIClass extends IClass {
     public boolean isInterface() { return this.clazz.isInterface(); }
     public boolean isAbstract()  { return Modifier.isAbstract(this.clazz.getModifiers()); }
     public boolean isArray()     { return this.clazz.isArray(); }
-    protected IClass getComponentType2() {
+
+    protected IClass
+    getComponentType2() {
         Class componentType = this.clazz.getComponentType();
         return componentType == null ? null : this.classToIClass(componentType);
     }
-    public boolean isPrimitive() {
-        return this.clazz.isPrimitive();
-    }
-    public boolean isPrimitiveNumeric() {
+
+    public boolean
+    isPrimitive() { return this.clazz.isPrimitive(); }
+
+    public boolean
+    isPrimitiveNumeric() {
         return (
             this.clazz == byte.class   ||
             this.clazz == short.class  ||
@@ -142,9 +144,8 @@ class ReflectionIClass extends IClass {
         );
     }
 
-    public Class getClazz() {
-        return this.clazz;
-    }
+    public Class
+    getClazz() { return this.clazz; }
 
     /**
      * @return E.g. "int", "int[][]", "pkg1.pkg2.Outer$Inner[]"
@@ -225,18 +226,23 @@ class ReflectionIClass extends IClass {
         }
 
         // Implement "IMethod".
-        public String getName() { return this.method.getName(); }
-        public IClass[] getParameterTypes() {
-            return ReflectionIClass.this.classesToIClasses(this.method.getParameterTypes());
-        }
-        public boolean isStatic() { return Modifier.isStatic(this.method.getModifiers()); }
-        public boolean isAbstract() { return Modifier.isAbstract(this.method.getModifiers()); }
-        public IClass getReturnType() {
-            return ReflectionIClass.this.classToIClass(this.method.getReturnType());
-        }
-        public IClass[] getThrownExceptions() {
-            return ReflectionIClass.this.classesToIClasses(this.method.getExceptionTypes());
-        }
+        public String
+        getName() { return this.method.getName(); }
+
+        public IClass[]
+        getParameterTypes() { return ReflectionIClass.this.classesToIClasses(this.method.getParameterTypes()); }
+
+        public boolean
+        isStatic() { return Modifier.isStatic(this.method.getModifiers()); }
+
+        public boolean
+        isAbstract() { return Modifier.isAbstract(this.method.getModifiers()); }
+
+        public IClass
+        getReturnType() { return ReflectionIClass.this.classToIClass(this.method.getReturnType()); }
+
+        public IClass[]
+        getThrownExceptions() { return ReflectionIClass.this.classesToIClasses(this.method.getExceptionTypes()); }
 
         final Method method;
     };
@@ -249,20 +255,21 @@ class ReflectionIClass extends IClass {
         }
 
         // Implement "IField".
-        public String getName() { return this.field.getName(); }
-        public boolean isStatic() {
-            return Modifier.isStatic(this.field.getModifiers());
+
+        public String
+        getName() { return this.field.getName(); }
+
+        public boolean
+        isStatic() { return Modifier.isStatic(this.field.getModifiers()); }
+
+        public IClass
+        getType() { return ReflectionIClass.this.classToIClass(this.field.getType()); }
+
+        public String
+        toString() {
+            return Descriptor.toString(this.getDeclaringIClass().getDescriptor()) + "." + this.getName();
         }
-        public IClass getType() {
-            return ReflectionIClass.this.classToIClass(this.field.getType());
-        }
-        public String toString() {
-            return (
-                Descriptor.toString(this.getDeclaringIClass().getDescriptor()) +
-                "." +
-                this.getName()
-            );
-        }
+
         /**
          * This implementation of {@link IClass.IField#getConstantValue()} is
          * not completely correct:
@@ -287,7 +294,7 @@ class ReflectionIClass extends IClass {
                 try {
                     return this.field.get(null);
                 } catch (IllegalAccessException ex) {
-                    throw new CompileException(
+                    throw new CompileException( // SUPPRESS CHECKSTYLE AvoidHidingCause
                         "Field \"" + this.field.getName() + "\" is not accessible",
                         (Location) null
                     );

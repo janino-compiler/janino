@@ -104,18 +104,18 @@ public class AntCompilerAdapter extends DefaultCompilerAdapter {
         boolean debugSource, debugLines, debugVars;
         if (!this.debug) {
             debugSource = false;
-            debugLines = false;
-            debugVars = false;
+            debugLines  = false;
+            debugVars   = false;
         } else {
             String debugLevel = this.attributes.getDebugLevel();
             if (debugLevel == null) {
                 debugSource = true;
-                debugLines = true;
-                debugVars = false;
+                debugLines  = true;
+                debugVars   = false;
             } else {
                 debugSource = false;
-                debugLines = false;
-                debugVars = false;
+                debugLines  = false;
+                debugVars   = false;
                 if (debugLevel.indexOf("source") != -1) debugSource = true;
                 if (debugLevel.indexOf("lines") != -1)  debugLines = true;
                 if (debugLevel.indexOf("vars") != -1)   debugVars = true;

@@ -664,7 +664,7 @@ public class ClassFile {
             this.store(baos);
         } catch (IOException ex) {
             // ByteArrayOutputStream should never throw IOExceptions.
-            throw new JaninoRuntimeException(ex.toString());
+            throw new JaninoRuntimeException(ex.toString(), ex);
         }
         return baos.toByteArray();
     }
@@ -754,15 +754,23 @@ public class ClassFile {
         public ConstantClassInfo(short nameIndex) { this.nameIndex = nameIndex; }
 
         // Implement ConstantPoolInfo.
-        public boolean isWide() { return false; }
-        public void store(DataOutputStream dos) throws IOException {
+
+        public boolean
+        isWide() { return false; }
+
+        public void
+        store(DataOutputStream dos) throws IOException {
             dos.writeByte(7);
             dos.writeShort(this.nameIndex);
         }
-        public boolean equals(Object o) {
+
+        public boolean
+        equals(Object o) {
             return o instanceof ConstantClassInfo && ((ConstantClassInfo) o).nameIndex == this.nameIndex;
         }
-        public int hashCode() { return this.nameIndex; }
+
+        public int
+        hashCode() { return this.nameIndex; }
     }
     public static class ConstantFieldrefInfo extends ConstantPoolInfo {
         private final short classIndex;
@@ -776,20 +784,28 @@ public class ClassFile {
         public short getNameAndTypeIndex() { return this.nameAndTypeIndex; }
 
         // Implement ConstantPoolInfo.
-        public boolean isWide() { return false; }
-        public void store(DataOutputStream dos) throws IOException {
+
+        public boolean
+        isWide() { return false; }
+
+        public void
+        store(DataOutputStream dos) throws IOException {
             dos.writeByte(9);
             dos.writeShort(this.classIndex);
             dos.writeShort(this.nameAndTypeIndex);
         }
-        public boolean equals(Object o) {
+
+        public boolean
+        equals(Object o) {
             return (
                 o instanceof ConstantFieldrefInfo &&
                 ((ConstantFieldrefInfo) o).classIndex       == this.classIndex &&
                 ((ConstantFieldrefInfo) o).nameAndTypeIndex == this.nameAndTypeIndex
             );
         }
-        public int hashCode() { return this.classIndex + (this.nameAndTypeIndex << 16); }
+
+        public int
+        hashCode() { return this.classIndex + (this.nameAndTypeIndex << 16); }
     }
     public static class ConstantMethodrefInfo extends ConstantPoolInfo {
         private final short classIndex;
@@ -803,22 +819,32 @@ public class ClassFile {
         public short getNameAndTypeIndex() { return this.nameAndTypeIndex; }
 
         // Implement ConstantPoolInfo.
-        public boolean isWide() { return false; }
-        public void store(DataOutputStream dos) throws IOException {
+
+        public boolean
+        isWide() { return false; }
+
+        public void
+        store(DataOutputStream dos) throws IOException {
             dos.writeByte(10);
             dos.writeShort(this.classIndex);
             dos.writeShort(this.nameAndTypeIndex);
         }
-        public boolean equals(Object o) {
+
+        public boolean
+        equals(Object o) {
             return (
                 o instanceof ConstantMethodrefInfo &&
                 ((ConstantMethodrefInfo) o).classIndex       == this.classIndex &&
                 ((ConstantMethodrefInfo) o).nameAndTypeIndex == this.nameAndTypeIndex
             );
         }
-        public int hashCode() { return this.classIndex + (this.nameAndTypeIndex << 16); }
+
+        public int
+        hashCode() { return this.classIndex + (this.nameAndTypeIndex << 16); }
     }
-    public static class ConstantInterfaceMethodrefInfo extends ConstantPoolInfo {
+
+    public static
+    class ConstantInterfaceMethodrefInfo extends ConstantPoolInfo {
         private final short classIndex;
         private final short nameAndTypeIndex;
 
@@ -830,20 +856,28 @@ public class ClassFile {
         public short getNameAndTypeIndex() { return this.nameAndTypeIndex; }
 
         // Implement ConstantPoolInfo.
-        public boolean isWide() { return false; }
-        public void store(DataOutputStream dos) throws IOException {
+
+        public boolean
+        isWide() { return false; }
+
+        public void
+        store(DataOutputStream dos) throws IOException {
             dos.writeByte(11);
             dos.writeShort(this.classIndex);
             dos.writeShort(this.nameAndTypeIndex);
         }
-        public boolean equals(Object o) {
+
+        public boolean
+        equals(Object o) {
             return (
                 o instanceof ConstantInterfaceMethodrefInfo &&
                 ((ConstantInterfaceMethodrefInfo) o).classIndex ==       this.classIndex &&
                 ((ConstantInterfaceMethodrefInfo) o).nameAndTypeIndex == this.nameAndTypeIndex
             );
         }
-        public int hashCode() { return this.classIndex + (this.nameAndTypeIndex << 16); }
+
+        public int
+        hashCode() { return this.classIndex + (this.nameAndTypeIndex << 16); }
     }
     static class ConstantStringInfo extends ConstantValuePoolInfo {
         private final short stringIndex;
@@ -858,15 +892,23 @@ public class ClassFile {
         }
 
         // Implement ConstantPoolInfo.
-        public boolean isWide() { return false; }
-        public void store(DataOutputStream dos) throws IOException {
+
+        public boolean
+        isWide() { return false; }
+
+        public void
+        store(DataOutputStream dos) throws IOException {
             dos.writeByte(8);
             dos.writeShort(this.stringIndex);
         }
-        public boolean equals(Object o) {
+
+        public boolean
+        equals(Object o) {
             return o instanceof ConstantStringInfo && ((ConstantStringInfo) o).stringIndex == this.stringIndex;
         }
-        public int hashCode() { return this.stringIndex; }
+
+        public int
+        hashCode() { return this.stringIndex; }
     }
     private static class ConstantIntegerInfo extends ConstantValuePoolInfo {
         private final int value;
@@ -879,17 +921,25 @@ public class ClassFile {
         public Object getValue(ClassFile classFile) { return new Integer(this.value); }
 
         // Implement ConstantPoolInfo.
-        public boolean isWide() { return false; }
-        public void store(DataOutputStream dos) throws IOException {
+
+        public boolean
+        isWide() { return false; }
+
+        public void
+        store(DataOutputStream dos) throws IOException {
             dos.writeByte(3);
             dos.writeInt(this.value);
         }
-        public boolean equals(Object o) {
-            return o instanceof ConstantIntegerInfo && ((ConstantIntegerInfo) o).value == this.value;
-        }
-        public int hashCode() { return this.value; }
+
+        public boolean
+        equals(Object o) { return o instanceof ConstantIntegerInfo && ((ConstantIntegerInfo) o).value == this.value; }
+
+        public int
+        hashCode() { return this.value; }
     }
-    private static class ConstantFloatInfo extends ConstantValuePoolInfo {
+
+    private static
+    class ConstantFloatInfo extends ConstantValuePoolInfo {
         private final float value;
 
         public ConstantFloatInfo(float value) {
@@ -900,15 +950,23 @@ public class ClassFile {
         public Object getValue(ClassFile classFile) { return new Float(this.value); }
 
         // Implement ConstantPoolInfo.
-        public boolean isWide() { return false; }
-        public void store(DataOutputStream dos) throws IOException {
+
+        public boolean
+        isWide() { return false; }
+
+        public void
+        store(DataOutputStream dos) throws IOException {
             dos.writeByte(4);
             dos.writeFloat(this.value);
         }
-        public boolean equals(Object o) {
+
+        public boolean
+        equals(Object o) {
             return o instanceof ConstantFloatInfo && ((ConstantFloatInfo) o).value == this.value;
         }
-        public int hashCode() { return Float.floatToIntBits(this.value); }
+
+        public int
+        hashCode() { return Float.floatToIntBits(this.value); }
     }
     private static class ConstantLongInfo extends ConstantValuePoolInfo {
         private final long value;
@@ -921,17 +979,27 @@ public class ClassFile {
         public Object getValue(ClassFile classFile) { return new Long(this.value); }
 
         // Implement ConstantPoolInfo.
-        public boolean isWide() { return true; }
-        public void store(DataOutputStream dos) throws IOException {
+
+        public boolean
+        isWide() { return true; }
+
+        public void
+        store(DataOutputStream dos) throws IOException {
             dos.writeByte(5);
             dos.writeLong(this.value);
         }
-        public boolean equals(Object o) {
+
+        public boolean
+        equals(Object o) {
             return o instanceof ConstantLongInfo && ((ConstantLongInfo) o).value == this.value;
         }
-        public int hashCode() { return (int) this.value ^ (int) (this.value >> 32); }
+
+        public int
+        hashCode() { return (int) this.value ^ (int) (this.value >> 32); }
     }
-    private static class ConstantDoubleInfo extends ConstantValuePoolInfo {
+
+    private static
+    class ConstantDoubleInfo extends ConstantValuePoolInfo {
         private final double value;
 
         public ConstantDoubleInfo(double value) {
@@ -942,14 +1010,19 @@ public class ClassFile {
         public Object getValue(ClassFile classFile) { return new Double(this.value); }
 
         // Implement ConstantPoolInfo.
-        public boolean isWide() { return true; }
-        public void store(DataOutputStream dos) throws IOException {
+
+        public boolean
+        isWide() { return true; }
+
+        public void
+        store(DataOutputStream dos) throws IOException {
             dos.writeByte(6);
             dos.writeDouble(this.value);
         }
-        public boolean equals(Object o) {
-            return o instanceof ConstantDoubleInfo && ((ConstantDoubleInfo) o).value == this.value;
-        }
+
+        public boolean
+        equals(Object o) { return o instanceof ConstantDoubleInfo && ((ConstantDoubleInfo) o).value == this.value; }
+
         public int hashCode() {
             long bits = Double.doubleToLongBits(this.value);
             return (int) bits ^ (int) (bits >> 32);
@@ -967,22 +1040,32 @@ public class ClassFile {
         public short getDescriptorIndex() { return this.descriptorIndex; }
 
         // Implement ConstantPoolInfo.
-        public boolean isWide() { return false; }
-        public void store(DataOutputStream dos) throws IOException {
+
+        public boolean
+        isWide() { return false; }
+
+        public void
+        store(DataOutputStream dos) throws IOException {
             dos.writeByte(12);
             dos.writeShort(this.nameIndex);
             dos.writeShort(this.descriptorIndex);
         }
-        public boolean equals(Object o) {
+
+        public boolean
+        equals(Object o) {
             return (
                 o instanceof ConstantNameAndTypeInfo &&
                 ((ConstantNameAndTypeInfo) o).nameIndex       == this.nameIndex &&
                 ((ConstantNameAndTypeInfo) o).descriptorIndex == this.descriptorIndex
             );
         }
-        public int hashCode() { return this.nameIndex + (this.descriptorIndex << 16); }
+
+        public int
+        hashCode() { return this.nameIndex + (this.descriptorIndex << 16); }
     }
-    public static class ConstantUtf8Info extends ConstantPoolInfo {
+
+    public static
+    class ConstantUtf8Info extends ConstantPoolInfo {
         private final String s;
 
         public ConstantUtf8Info(String s) {
@@ -993,19 +1076,28 @@ public class ClassFile {
         public String getString() { return this.s; }
 
         // Implement ConstantPoolInfo.
-        public boolean isWide() { return false; }
-        public void store(DataOutputStream dos) throws IOException {
+
+        public boolean
+        isWide() { return false; }
+
+        public void
+        store(DataOutputStream dos) throws IOException {
             dos.writeByte(1);
             try {
                 dos.writeUTF(this.s);
             } catch (UTFDataFormatException e) {
+                // SUPPRESS CHECKSTYLE AvoidHidingCause
                 throw new ClassFormatError("String constant too long to store in class file");
             }
         }
-        public boolean equals(Object o) {
+
+        public boolean
+        equals(Object o) {
             return o instanceof ConstantUtf8Info && ((ConstantUtf8Info) o).s.equals(this.s);
         }
-        public int hashCode() { return this.s.hashCode(); }
+
+        public int
+        hashCode() { return this.s.hashCode(); }
     }
 
     /**

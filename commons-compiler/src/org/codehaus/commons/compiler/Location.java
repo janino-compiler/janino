@@ -32,7 +32,9 @@ import java.io.Serializable;
  * Represents the location of a character in a document, as defined by an optional file name, a
  * line number and a column number.
  */
-public class Location implements Serializable {
+public
+class Location implements Serializable {
+
     public static final Location NOWHERE = new Location("<internally generated location>", (short) -1, (short) -1);
 
     private final String optionalFileName;
@@ -43,7 +45,8 @@ public class Location implements Serializable {
      * @param optionalFileName A human-readable indication where the document related to this
      *                         {@link Location} can be found
      */
-    public Location(String optionalFileName, short lineNumber, short columnNumber) {
+    public
+    Location(String optionalFileName, short lineNumber, short columnNumber) {
         this.optionalFileName = optionalFileName;
         this.lineNumber       = lineNumber;
         this.columnNumber     = columnNumber;
@@ -57,7 +60,9 @@ public class Location implements Serializable {
      * Converts this {@link Location} into an english text, like<pre>
      * File Main.java, Line 23, Column 79</pre>
      */
-    public String toString() {
+    public String
+    toString() {
+
         StringBuffer sb = new StringBuffer();
         if (this.optionalFileName != null) {
             sb.append("File ").append(this.optionalFileName).append(", ");

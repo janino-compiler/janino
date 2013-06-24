@@ -45,7 +45,8 @@ package org.codehaus.commons.compiler;
  *   Call {@link #getClassLoader()} to obtain a {@link ClassLoader} that you can use to access the compiled classes.
  * </ol>
  */
-public interface ISimpleCompiler extends ICookable {
+public
+interface ISimpleCompiler extends ICookable {
 
     /**
      * Returns a {@link ClassLoader} object through which the previously compiled classes can be accessed. This {@link

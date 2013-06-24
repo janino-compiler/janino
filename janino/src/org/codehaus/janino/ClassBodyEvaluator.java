@@ -315,11 +315,11 @@ public class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEval
         try {
             return cl.loadClass(newClassName);
         } catch (ClassNotFoundException ex) {
-            throw new JaninoRuntimeException(
+            throw new JaninoRuntimeException((
                 "SNO: Generated compilation unit does not declare class '"
                 + newClassName
                 + "'"
-            );
+            ), ex);
         }
     }
 
@@ -342,14 +342,14 @@ public class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEval
                 + "or has no zero-parameter constructor"
             ), null);
             ce.initCause(ie);
-            throw ce;
+            throw ce; // SUPPRESS CHECKSTYLE AvoidHidingCause
         } catch (IllegalAccessException iae) {
             CompileException ce = new CompileException(
                 "The class or its zero-parameter constructor is not accessible",
                 null
             );
             ce.initCause(iae);
-            throw ce;
+            throw ce; // SUPPRESS CHECKSTYLE AvoidHidingCause
         }
     }
 
@@ -425,13 +425,13 @@ public class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEval
         try {
             return c.newInstance();
         } catch (InstantiationException e) {
-            throw new CompileException(
-                "Cannot instantiate abstract class -- one or more method implementations are missing",
+            throw new CompileException( // SUPPRESS CHECKSTYLE AvoidHidingCause
+                e.getMessage(),
                 null
             );
         } catch (IllegalAccessException e) {
             // SNO - type and default constructor of generated class are PUBLIC.
-            throw new JaninoRuntimeException(e.toString());
+            throw new JaninoRuntimeException(e.toString(), e);
         }
     }
 }

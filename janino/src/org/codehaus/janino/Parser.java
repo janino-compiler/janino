@@ -565,10 +565,10 @@ public class Parser {
         return interfaceDeclaration;
     }
     public static final class InterfaceDeclarationContext extends Enumerator {
-        // CHECKSTYLE(LineLengthCheck):OFF
+        // CHECKSTYLE LineLengthCheck:OFF
         public static final InterfaceDeclarationContext NAMED_TYPE_DECLARATION = new InterfaceDeclarationContext("named_type_declaration");
         public static final InterfaceDeclarationContext COMPILATION_UNIT       = new InterfaceDeclarationContext("compilation_unit");
-        // CHECKSTYLE(LineLengthCheck):ON
+        // CHECKSTYLE LineLengthCheck:ON
 
         InterfaceDeclarationContext(String name) { super(name); }
     }
@@ -1007,8 +1007,8 @@ public class Parser {
         }
 
         // Expression LocalVariableDeclarators ';'
-        Type variableType = a.toTypeOrPE();
-        LocalVariableDeclarationStatement lvds = new LocalVariableDeclarationStatement(
+        Type                              variableType = a.toTypeOrPE();
+        LocalVariableDeclarationStatement lvds         = new LocalVariableDeclarationStatement(
             a.getLocation(),                     // location
             Mod.NONE,                            // modifiers
             variableType,                        // type
@@ -1072,12 +1072,12 @@ public class Parser {
      * Used by field declarations and local variable declarations.
      */
     public VariableDeclarator parseVariableDeclaratorRest(String name) throws CompileException, IOException  {
-        Location loc = this.location();
-        int brackets = this.parseBracketsOpt();
+        Location                 loc         = this.location();
+        int                      brackets    = this.parseBracketsOpt();
         ArrayInitializerOrRvalue initializer = null;
-        if (this.peekRead("=")) {
-            initializer = this.parseVariableInitializer();
-        }
+
+        if (this.peekRead("=")) initializer = this.parseVariableInitializer();
+
         return new VariableDeclarator(loc, name, brackets, initializer);
     }
 
@@ -1229,8 +1229,8 @@ public class Parser {
         if (this.peek(new String[] {
             "final", "byte", "short", "char", "int", "long", "float", "double", "boolean"
         }) != -1) {
-            short modifiers = this.parseModifiersOpt();
-            Type variableType = this.parseType();
+            short modifiers    = this.parseModifiersOpt();
+            Type  variableType = this.parseType();
             return new LocalVariableDeclarationStatement(
                 this.location(),                     // location
                 modifiers,                           // modifiers
@@ -1382,9 +1382,9 @@ public class Parser {
         this.read("{");
         List sbsgs = new ArrayList();
         while (!this.peekRead("}")) {
-            Location location2 = this.location();
-            boolean hasDefaultLabel = false;
-            List caseLabels = new ArrayList();
+            Location location2       = this.location();
+            boolean  hasDefaultLabel = false;
+            List     caseLabels      = new ArrayList();
             do {
                 if (this.peekRead("case")) {
                     caseLabels.add(this.parseExpression().toRvalueOrPE());

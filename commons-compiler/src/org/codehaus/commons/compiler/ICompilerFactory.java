@@ -26,7 +26,8 @@
 
 package org.codehaus.commons.compiler;
 
-public interface ICompilerFactory {
+public
+interface ICompilerFactory {
 
     /**
      * @return A {@link String} that identifies the concrete implementation of this interface, e.g.

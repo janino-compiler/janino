@@ -71,7 +71,7 @@ public class ClassFileIClass extends IClass {
             try {
                 ii = this.resolveMethod(mi);
             } catch (ClassNotFoundException ex) {
-                throw new JaninoRuntimeException(ex.getMessage());
+                throw new JaninoRuntimeException(ex.getMessage(), ex);
             }
             if (ii instanceof IConstructor) iConstructors.add(ii);
         }
@@ -93,7 +93,7 @@ public class ClassFileIClass extends IClass {
             try {
                 ii = this.resolveMethod(mi);
             } catch (ClassNotFoundException ex) {
-                throw new JaninoRuntimeException(ex.getMessage());
+                throw new JaninoRuntimeException(ex.getMessage(), ex);
             }
             if (ii instanceof IMethod) iMethods.add(ii);
         }
@@ -107,7 +107,7 @@ public class ClassFileIClass extends IClass {
             try {
                 ifs[i] = this.resolveField((ClassFile.FieldInfo) this.classFile.fieldInfos.get(i));
             } catch (ClassNotFoundException ex) {
-                throw new JaninoRuntimeException(ex.getMessage());
+                throw new JaninoRuntimeException(ex.getMessage(), ex);
             }
         }
         return ifs;
@@ -118,14 +118,14 @@ public class ClassFileIClass extends IClass {
         if (ica == null) return new IClass[0];
 
         List ices = ica.getEntries(); // ClassFile.InnerClassAttribute.Entry
-        List res = new ArrayList(); // IClass
+        List res  = new ArrayList(); // IClass
         for (Iterator it = ices.iterator(); it.hasNext();) {
             ClassFile.InnerClassesAttribute.Entry e = (ClassFile.InnerClassesAttribute.Entry) it.next();
             if (e.outerClassInfoIndex == this.classFile.thisClass) {
                 try {
                     res.add(this.resolveClass(e.innerClassInfoIndex));
                 } catch (ClassNotFoundException ex) {
-                    throw new CompileException(ex.getMessage(), null);
+                    throw new CompileException(ex.getMessage(), null); // SUPPRESS CHECKSTYLE AvoidHidingCause
                 }
             }
         }
@@ -145,7 +145,7 @@ public class ClassFileIClass extends IClass {
                 try {
                     return this.resolveClass(e.outerClassInfoIndex);
                 } catch (ClassNotFoundException ex) {
-                    throw new CompileException(ex.getMessage(), null);
+                    throw new CompileException(ex.getMessage(), null); // SUPPRESS CHECKSTYLE AvoidHidingCause
                 }
             }
         }
@@ -172,7 +172,7 @@ public class ClassFileIClass extends IClass {
                     try {
                         return this.resolveClass(e.outerClassInfoIndex);
                     } catch (ClassNotFoundException ex) {
-                        throw new CompileException(ex.getMessage(), null);
+                        throw new CompileException(ex.getMessage(), null); // SUPPRESS CHECKSTYLE AvoidHidingCause
                     }
                 }
             }
@@ -185,7 +185,7 @@ public class ClassFileIClass extends IClass {
         try {
             return this.resolveClass(this.classFile.superclass);
         } catch (ClassNotFoundException e) {
-            throw new CompileException(e.getMessage(), null);
+            throw new CompileException(e.getMessage(), null); // SUPPRESS CHECKSTYLE AvoidHidingCause
         }
     }
 
@@ -298,7 +298,7 @@ public class ClassFileIClass extends IClass {
             try {
                 result[i] = this.resolveClass(ifs[i]);
             } catch (ClassNotFoundException e) {
-                throw new CompileException(e.getMessage(), null);
+                throw new CompileException(e.getMessage(), null); // SUPPRESS CHECKSTYLE AvoidHidingCause
             }
         }
         return result;
@@ -369,17 +369,17 @@ public class ClassFileIClass extends IClass {
                     return parameterTypes;
                 }
                 public IClass[] getThrownExceptions() throws CompileException { return thrownExceptions; }
-                public Access getAccess() { return access; }
+                public Access   getAccess()                                   { return access; }
             };
         } else {
             result = new IClass.IMethod() {
-                public String getName() { return name; }
-                public IClass getReturnType() throws CompileException { return returnType; }
-                public boolean isStatic() { return (methodInfo.getAccessFlags() & Mod.STATIC) != 0; }
-                public boolean isAbstract() { return (methodInfo.getAccessFlags() & Mod.ABSTRACT) != 0; }
-                public IClass[] getParameterTypes() throws CompileException { return parameterTypes; }
-                public IClass[] getThrownExceptions() throws CompileException { return thrownExceptions; }
-                public Access getAccess() { return access; }
+                public String   getName()             { return name; }
+                public IClass   getReturnType()       { return returnType; }
+                public boolean  isStatic()            { return (methodInfo.getAccessFlags() & Mod.STATIC) != 0; }
+                public boolean  isAbstract()          { return (methodInfo.getAccessFlags() & Mod.ABSTRACT) != 0; }
+                public IClass[] getParameterTypes()   { return parameterTypes; }
+                public IClass[] getThrownExceptions() { return thrownExceptions; }
+                public Access   getAccess()           { return access; }
             };
         }
         this.resolvedMethods.put(methodInfo, result);
@@ -433,11 +433,11 @@ public class ClassFileIClass extends IClass {
         final Access access = ClassFileIClass.accessFlags2Access(fieldInfo.getAccessFlags());
 
         result = new IField() {
-            public Object  getConstantValue() throws CompileException { return optionalConstantValue; }
-            public String  getName()                                  { return name; }
-            public IClass  getType() throws CompileException          { return type; }
-            public boolean isStatic()                         { return (fieldInfo.getAccessFlags() & Mod.STATIC) != 0; }
-            public Access  getAccess()                                { return access; }
+            public Object  getConstantValue() { return optionalConstantValue; }
+            public String  getName()          { return name; }
+            public IClass  getType()          { return type; }
+            public boolean isStatic()         { return (fieldInfo.getAccessFlags() & Mod.STATIC) != 0; }
+            public Access  getAccess()        { return access; }
         };
         this.resolvedFields.put(fieldInfo, result);
         return result;

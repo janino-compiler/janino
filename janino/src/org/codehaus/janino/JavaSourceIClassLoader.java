@@ -116,8 +116,8 @@ public final class JavaSourceIClassLoader extends IClassLoader {
 
         // Check the already-parsed compilation units.
         for (Iterator it = this.unitCompilers.iterator(); it.hasNext();) {
-            UnitCompiler uc = (UnitCompiler) it.next();
-            IClass res = uc.findClass(topLevelClassName);
+            UnitCompiler uc  = (UnitCompiler) it.next();
+            IClass       res = uc.findClass(topLevelClassName);
             if (res != null) {
                 if (!className.equals(topLevelClassName)) {
                     res = uc.findClass(className);

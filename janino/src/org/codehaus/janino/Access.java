@@ -41,7 +41,9 @@ public final class Access extends Enumerator {
 
     // These MUST be declared exactly like this:
     private Access(String name) { super(name); }
-    public static Access fromString(String name) throws EnumeratorFormatException {
+
+    public static Access
+    fromString(String name) throws EnumeratorFormatException {
         return (Access) Enumerator.fromString(name, Access.class);
     }
 }

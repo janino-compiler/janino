@@ -104,7 +104,7 @@ public class AutoIndentWriter extends FilterWriter {
 
         for (Iterator/*<StringBuffer>*/ it = this.tabulatorBuffer.iterator(); it.hasNext();) {
             StringBuffer line = (StringBuffer) it.next();
-            int idx = 0;
+            int          idx  = 0;
             if (line.charAt(0) == INDENT) {
                 lineGroups.add(new ArrayList/*<StringBuffer>*/());
                 ++idx;
@@ -199,7 +199,7 @@ public class AutoIndentWriter extends FilterWriter {
                     int tabOffset = i - previousTab;
                     int n = ((Integer) tabulatorOffsets.get(tabCount++)).intValue() - tabOffset;
                     line.replace(i, i + 1, spaces(n));
-                    i += n - 1;
+                    i           += n - 1;
                     previousTab = i;
                 }
             }

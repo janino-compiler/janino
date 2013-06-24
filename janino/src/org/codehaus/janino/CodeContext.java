@@ -1006,7 +1006,7 @@ public class CodeContext {
                 }
                 CodeContext.this.popInserter();
                 this.source.offset = pos;
-                this.expanded = true;
+                this.expanded      = true;
                 return false;
             }
 
@@ -1097,12 +1097,14 @@ public class CodeContext {
             this.source      = source;
             this.destination = destination;
         }
-        public boolean relocate() {
+
+        public boolean
+        relocate() {
             if (this.source.offset == Offset.UNSET || this.destination.offset == Offset.UNSET) {
                 throw new JaninoRuntimeException("Cannot relocate offset branch to unset destination offset");
             }
-            int offset = this.destination.offset - this.source.offset;
-            byte[] ba = new byte[] {
+            int    offset = this.destination.offset - this.source.offset;
+            byte[] ba     = new byte[] {
                 (byte) (offset >> 24),
                 (byte) (offset >> 16),
                 (byte) (offset >> 8),
@@ -1114,7 +1116,9 @@ public class CodeContext {
         private final Offset where, source, destination;
     }
 
-    public Offset newOffset() {
+    public Offset
+    newOffset() {
+
         Offset o = new Offset();
         o.set();
         return o;
@@ -1146,7 +1150,7 @@ public class CodeContext {
      */
     public void pushInserter(Inserter ins) {
         if (ins.nextInserter != null) throw new JaninoRuntimeException("An Inserter can only be pushed once at a time");
-        ins.nextInserter = this.currentInserter;
+        ins.nextInserter     = this.currentInserter;
         this.currentInserter = ins;
     }
 
@@ -1158,7 +1162,7 @@ public class CodeContext {
         Inserter ni = this.currentInserter.nextInserter;
         if (ni == null) throw new JaninoRuntimeException("Code inserter stack underflow");
         this.currentInserter.nextInserter = null; // Mark it as "unpushed".
-        this.currentInserter = ni;
+        this.currentInserter              = ni;
     }
 
     /**
@@ -1181,8 +1185,8 @@ public class CodeContext {
             if (this.offset != Offset.UNSET) throw new JaninoRuntimeException("Cannot \"set()\" Offset more than once");
 
             this.offset = CodeContext.this.currentInserter.offset;
-            this.prev = CodeContext.this.currentInserter.prev;
-            this.next = CodeContext.this.currentInserter;
+            this.prev   = CodeContext.this.currentInserter.prev;
+            this.next   = CodeContext.this.currentInserter;
 
             this.prev.next = this;
             this.next.prev = this;
@@ -1247,7 +1251,7 @@ public class CodeContext {
         private final int lineNumber;
         public LineNumberOffset(int offset, int lineNumber) {
             this.lineNumber = lineNumber;
-            this.offset = offset;
+            this.offset     = offset;
         }
     }
 

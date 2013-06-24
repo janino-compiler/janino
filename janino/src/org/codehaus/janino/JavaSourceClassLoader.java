@@ -129,8 +129,8 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 
     public void setDebuggingInfo(boolean debugSource, boolean debugLines, boolean debugVars) {
         this.debugSource = debugSource;
-        this.debugLines = debugLines;
-        this.debugVars = debugVars;
+        this.debugLines  = debugLines;
+        this.debugVars   = debugVars;
     }
 
     /**

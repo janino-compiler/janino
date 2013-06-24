@@ -509,11 +509,11 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
                         this.optionalParameterTypes == null ? new Class[0] : this.optionalParameterTypes[i]
                     );
                 } catch (NoSuchMethodException ex) {
-                    throw new JaninoRuntimeException(
+                    throw new JaninoRuntimeException((
                         "SNO: Loaded class does not declare method \""
                         + methodNames[i]
                         + "\""
-                    );
+                    ), ex);
                 }
             }
         } else
@@ -606,7 +606,7 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
         try {
             this.cook(optionalFileNames, readers);
         } catch (IOException ex) {
-            throw new JaninoRuntimeException("SNO: IOException despite StringReader");
+            throw new JaninoRuntimeException("SNO: IOException despite StringReader", ex);
         }
     }
 
@@ -648,11 +648,11 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
             try {
                 this.result[i] = c.getMethod(methodNames[i], parameterTypes[i]);
             } catch (NoSuchMethodException ex) {
-                throw new JaninoRuntimeException(
+                throw new JaninoRuntimeException((
                     "SNO: Loaded class does not declare method \""
                     + this.optionalMethodNames[i]
                     + "\""
-                );
+                ), ex);
             }
         }
     }
@@ -820,7 +820,7 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
                 parameterNames
             );
         } catch (IOException ex) {
-            throw new JaninoRuntimeException("IOException despite StringReader");
+            throw new JaninoRuntimeException("IOException despite StringReader", ex);
         }
     }
 
@@ -869,10 +869,10 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
             return c.newInstance();
         } catch (InstantiationException e) {
             // SNO - Declared class is always non-abstract.
-            throw new JaninoRuntimeException(e.toString());
+            throw new JaninoRuntimeException(e.toString(), e);
         } catch (IllegalAccessException e) {
             // SNO - interface methods are always PUBLIC.
-            throw new JaninoRuntimeException(e.toString());
+            throw new JaninoRuntimeException(e.toString(), e);
         }
     }
 
@@ -937,7 +937,7 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
         try {
             return this.result[idx].invoke(null, arguments);
         } catch (IllegalAccessException ex) {
-            throw new JaninoRuntimeException(ex.toString());
+            throw new JaninoRuntimeException(ex.toString(), ex);
         }
     }
 

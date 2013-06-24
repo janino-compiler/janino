@@ -119,8 +119,8 @@ public class Compiler {
             } else
             if (arg.equals("-g")) {
                 debugSource = true;
-                debugLines = true;
-                debugVars = true;
+                debugLines  = true;
+                debugVars   = true;
             } else
             if (arg.startsWith("-g:")) {
                 if (arg.indexOf("none")   != -1) debugSource = (debugLines = (debugVars = false));
@@ -615,17 +615,19 @@ public class Compiler {
         OutputStream os = rc.createResource(classFileResourceName);
         try {
             classFile.store(os);
-        } catch (IOException ex) {
+        } catch (IOException ioe) {
             try { os.close(); } catch (IOException e) { }
             os = null;
             if (!rc.deleteResource(classFileResourceName)) {
-                throw new IOException(
+                IOException ioe2 = new IOException(
                     "Could not delete incompletely written class file \""
                     + classFileResourceName
                     + "\""
                 );
+                ioe2.initCause(ioe);
+                throw ioe2; // SUPPRESS CHECKSTYLE AvoidHidingCause
             }
-            throw ex;
+            throw ioe;
         } finally {
             if (os != null) try { os.close(); } catch (IOException e) { }
         }

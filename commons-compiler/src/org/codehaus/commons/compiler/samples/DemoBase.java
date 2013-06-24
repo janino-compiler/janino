@@ -33,13 +33,14 @@ import java.util.*;
  * Common base class for the "...Demo" classes that demostrate Janino.
  */
 
-public class DemoBase {
+public
+class DemoBase {
+
     protected DemoBase() {}
 
-    public static Object createObject(
-        Class  type,
-        String value
-    ) throws NoSuchMethodException, InstantiationException, InvocationTargetException, IllegalAccessException {
+    public static Object
+    createObject(Class type, String value)
+    throws NoSuchMethodException, InstantiationException, InvocationTargetException, IllegalAccessException {
 
         // Wrap primitive parameters.
         if (type.isPrimitive()) {
@@ -58,21 +59,24 @@ public class DemoBase {
 
         // Construct object, assuming it has a default constructor or a
         // constructor with one single "String" argument.
-        if (value.equals("")) {
+        if ("".equals(value)) {
             return type.getConstructor(new Class[0]).newInstance(new Object[0]);
         } else {
             return type.getConstructor(new Class[] { String.class }).newInstance(new Object[] { value });
         }
     }
 
-    public static String[] explode(String s) {
+    public static String[]
+    explode(String s) {
         StringTokenizer st = new StringTokenizer(s, ",");
-        List l = new ArrayList();
+        List            l  = new ArrayList();
         while (st.hasMoreTokens()) l.add(st.nextToken());
         return (String[]) l.toArray(new String[l.size()]);
     }
 
-    public static Class stringToType(String s) {
+    public static Class
+    stringToType(String s) {
+
         int brackets = 0;
         while (s.endsWith("[]")) {
             ++brackets;
@@ -80,28 +84,31 @@ public class DemoBase {
         }
 
         if (brackets == 0) {
-            // "Class.forName("C")" does not work.
-            if (s.equals("void"))    return void.class;
-            if (s.equals("boolean")) return boolean.class;
-            if (s.equals("char"))    return char.class;
-            if (s.equals("byte"))    return byte.class;
-            if (s.equals("short"))   return short.class;
-            if (s.equals("int"))     return int.class;
-            if (s.equals("long"))    return long.class;
-            if (s.equals("float"))   return float.class;
-            if (s.equals("double"))  return double.class;
+            // CHECKSTYLE WhitespaceBefore:OFF
+            if ("void"   .equals(s)) return void.class;
+            if ("boolean".equals(s)) return boolean.class;
+            if ("char"   .equals(s)) return char.class;
+            if ("byte"   .equals(s)) return byte.class;
+            if ("short"  .equals(s)) return short.class;
+            if ("int"    .equals(s)) return int.class;
+            if ("long"   .equals(s)) return long.class;
+            if ("float"  .equals(s)) return float.class;
+            if ("double" .equals(s)) return double.class;
+            // CHECKSTYLE WhitespaceBefore:ON
         }
 
         // Automagically convert primitive type names.
-        if (s.equals("void"))    { s = "V"; } else
-        if (s.equals("boolean")) { s = "Z"; } else
-        if (s.equals("char"))    { s = "C"; } else
-        if (s.equals("byte"))    { s = "B"; } else
-        if (s.equals("short"))   { s = "S"; } else
-        if (s.equals("int"))     { s = "I"; } else
-        if (s.equals("long"))    { s = "J"; } else
-        if (s.equals("float"))   { s = "F"; } else
-        if (s.equals("double"))  { s = "D"; }
+        // CHECKSTYLE WhitespaceBefore:OFF
+        if ("void"   .equals(s)) { s = "V"; } else
+        if ("boolean".equals(s)) { s = "Z"; } else
+        if ("char"   .equals(s)) { s = "C"; } else
+        if ("byte"   .equals(s)) { s = "B"; } else
+        if ("short"  .equals(s)) { s = "S"; } else
+        if ("int"    .equals(s)) { s = "I"; } else
+        if ("long"   .equals(s)) { s = "J"; } else
+        if ("float"  .equals(s)) { s = "F"; } else
+        if ("double" .equals(s)) { s = "D"; }
+        // CHECKSTYLE WhitespaceBefore:ON
 
         while (--brackets >= 0) s = '[' + s;
         try {
@@ -109,20 +116,24 @@ public class DemoBase {
         } catch (ClassNotFoundException ex) {
             ex.printStackTrace();
             System.exit(1);
-            throw new RuntimeException(); // Never reached.
+            throw new RuntimeException(); // Never reached. // SUPPRESS CHECKSTYLE AvoidHidingCause
         }
     }
 
-    public static Class[] stringToTypes(String s) {
+    public static Class[]
+    stringToTypes(String s) {
+
         StringTokenizer st = new StringTokenizer(s, ",");
-        List l = new ArrayList();
+        List            l  = new ArrayList();
         while (st.hasMoreTokens()) l.add(DemoBase.stringToType(st.nextToken()));
         Class[] res = new Class[l.size()];
         l.toArray(res);
         return res;
     }
 
-    public static String toString(Object o) {
+    public static String
+    toString(Object o) {
+
         if (o == null) return "(null)";
 
         // Pretty-print array.

@@ -29,12 +29,16 @@ package org.codehaus.commons.compiler;
 /**
  * An exception that reflects an error during compilation.
  */
-public class CompileException extends LocatedException {
+public
+class CompileException extends LocatedException {
 
-    public CompileException(String message, Location optionalLocation) {
+    public
+    CompileException(String message, Location optionalLocation) {
         super(message, optionalLocation);
     }
-    public CompileException(String message, Location optionalLocation, Throwable cause) {
+
+    public
+    CompileException(String message, Location optionalLocation, Throwable cause) {
         super(message, optionalLocation, cause);
     }
 }

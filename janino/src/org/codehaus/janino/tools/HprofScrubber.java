@@ -142,7 +142,7 @@ public final class HprofScrubber {
         int totalAllocatedBytes = 0, totalAllocatedObjects = 0;
         for (int i = 0; i < ss.length; ++i) {
             Site site = ss[i];
-            totalAllocatedBytes += site.allocatedBytes;
+            totalAllocatedBytes   += site.allocatedBytes;
             totalAllocatedObjects += site.allocatedObjects;
         }
 

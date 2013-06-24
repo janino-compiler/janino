@@ -66,12 +66,12 @@ public class ResourceFinderClassLoader extends ClassLoader {
         try {
             is = classFileResource.open();
         } catch (IOException ex) {
-            throw new JaninoRuntimeException(
+            throw new JaninoRuntimeException((
                 "Opening class file resource \""
                 + classFileResource.getFileName()
                 + "\": "
                 + ex.getMessage()
-            );
+            ), ex);
         }
 
         // Read bytecode from the resource into a byte array.

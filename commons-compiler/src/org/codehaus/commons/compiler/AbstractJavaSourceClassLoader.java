@@ -38,16 +38,16 @@ import java.util.*;
  * As with any {@link ClassLoader}, it is not possible to "update" classes after they've been loaded. The way to
  * achieve this is to give up on the {@link AbstractJavaSourceClassLoader} and create a new one.
  */
-public abstract class AbstractJavaSourceClassLoader extends ClassLoader {
+public abstract
+class AbstractJavaSourceClassLoader extends ClassLoader {
 
     protected ProtectionDomainFactory optionalProtectionDomainFactory;
 
-    public AbstractJavaSourceClassLoader() {
-    }
+    public
+    AbstractJavaSourceClassLoader() {}
 
-    public AbstractJavaSourceClassLoader(ClassLoader parentClassLoader) {
-        super(parentClassLoader);
-    }
+    public
+    AbstractJavaSourceClassLoader(ClassLoader parentClassLoader) { super(parentClassLoader); }
 
     /**
      * @param sourcePath The sequence of directories to search for Java&trade; source files
@@ -69,14 +69,16 @@ public abstract class AbstractJavaSourceClassLoader extends ClassLoader {
     /**
      * @see ClassLoader#defineClass(String, byte[], int, int, ProtectionDomain)
      */
-    public final void setProtectionDomainFactory(ProtectionDomainFactory optionalProtectionDomainFactory) {
+    public final void
+    setProtectionDomainFactory(ProtectionDomainFactory optionalProtectionDomainFactory) {
         this.optionalProtectionDomainFactory = optionalProtectionDomainFactory;
     }
 
     /**
      * @see AbstractJavaSourceClassLoader#setProtectionDomainFactory
      */
-    public interface ProtectionDomainFactory {
+    public
+    interface ProtectionDomainFactory {
 
         /**
          * @param sourceResourceName E.g. 'pkg1/pkg2/Outer.java'
@@ -90,7 +92,7 @@ public abstract class AbstractJavaSourceClassLoader extends ClassLoader {
      * <p>
      * Usage is as follows:
      * <pre>
-     *   java org.codehaus.commons.compiler.AbstractJavaSourceClassLoader [ <i>option</i> ] ... <i>class-name</i> [ <i>argument</i> ] ...
+     *   java {@link AbstractJavaSourceClassLoader} [ <i>option</i> ] ... <i>class-name</i> [ <i>argument</i> ] ...
      *
      *   <i>option</i>:
      *     -sourcepath <i>colon-separated-list-of-source-directories</i>
@@ -100,7 +102,8 @@ public abstract class AbstractJavaSourceClassLoader extends ClassLoader {
      *     -g:{source,lines,vars}       Generate only some debugging info
      * </pre>
      */
-    public static void main(String[] args) throws Exception {
+    public static void
+    main(String[] args) throws Exception {
         File[]  optionalSourcePath        = null;
         String  optionalCharacterEncoding = null;
 
@@ -121,23 +124,23 @@ public abstract class AbstractJavaSourceClassLoader extends ClassLoader {
             if ("-encoding".equals(arg)) {
                 optionalCharacterEncoding = args[++i];
             } else
-            if (arg.equals("-g")) {
+            if ("-g".equals(arg)) {
                 debuggingInfoLines  = true;
                 debuggingInfoVars   = true;
                 debuggingInfoSource = true;
-                haveDebuggingInfo = true;
+                haveDebuggingInfo   = true;
             } else
-            if (arg.equals("-g:none")) {
+            if ("-g:none".equals(arg)) {
                 debuggingInfoLines  = false;
                 debuggingInfoVars   = false;
                 debuggingInfoSource = false;
-                haveDebuggingInfo = true;
+                haveDebuggingInfo   = true;
             } else
-            if (arg.startsWith("-g:")) {
+            if ("-g:".startsWith(arg)) {
                 debuggingInfoLines  = arg.indexOf("lines") != -1;
                 debuggingInfoVars   = arg.indexOf("vars") != -1;
                 debuggingInfoSource = arg.indexOf("source") != -1;
-                haveDebuggingInfo = true;
+                haveDebuggingInfo   = true;
             } else
             if ("-help".equals(arg)) {
                 System.out.println("Usage:");
@@ -198,7 +201,9 @@ public abstract class AbstractJavaSourceClassLoader extends ClassLoader {
         mainMethod.invoke(null, new Object[] { mainArgs });
     }
 
-    private static File[] splitPath(String string) {
+    private static File[]
+    splitPath(String string) {
+
         List/*<File>*/ l = new ArrayList();
         for (StringTokenizer st = new StringTokenizer(string, File.pathSeparator); st.hasMoreTokens();) {
             l.add(new File(st.nextToken()));

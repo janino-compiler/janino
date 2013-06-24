@@ -29,15 +29,19 @@ package org.codehaus.commons.compiler;
 /**
  * An {@link Exception} that is associated with an optional {@link Location} in a source file.
  */
-public class LocatedException extends CausedException {
+public
+class LocatedException extends CausedException {
+
     private final Location optionalLocation;
 
-    public LocatedException(String message, Location optionalLocation) {
+    public
+    LocatedException(String message, Location optionalLocation) {
         super(message);
         this.optionalLocation = optionalLocation;
     }
 
-    public LocatedException(String message, Location optionalLocation, Throwable optionalCause) {
+    public
+    LocatedException(String message, Location optionalLocation, Throwable optionalCause) {
         super(message, optionalCause);
         this.optionalLocation = optionalLocation;
     }
@@ -46,7 +50,8 @@ public class LocatedException extends CausedException {
      * Returns the message specified at creation time, preceeded with nicely formatted location
      * information (if any).
      */
-    public String getMessage() {
+    public String
+    getMessage() {
         return (
             this.optionalLocation == null
             ? super.getMessage()
@@ -58,7 +63,6 @@ public class LocatedException extends CausedException {
      * Returns the {@link Location} object specified at
      * construction time (may be <code>null</code>).
      */
-    public Location getLocation() {
-        return this.optionalLocation;
-    }
+    public Location
+    getLocation() { return this.optionalLocation; }
 }

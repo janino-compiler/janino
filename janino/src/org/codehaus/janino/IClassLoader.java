@@ -91,7 +91,7 @@ public abstract class IClassLoader {
             this.FLOAT             = this.loadIClass(Descriptor.FLOAT);
             this.DOUBLE            = this.loadIClass(Descriptor.DOUBLE);
         } catch (ClassNotFoundException e) {
-            throw new JaninoRuntimeException("Cannot load simple types");
+            throw new JaninoRuntimeException("Cannot load simple types", e);
         }
     }
 

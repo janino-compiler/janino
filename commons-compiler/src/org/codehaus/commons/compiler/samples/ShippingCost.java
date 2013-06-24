@@ -32,11 +32,14 @@ import org.codehaus.commons.compiler.*;
  * Sample application which demonstrates how to use the
  * {@link org.codehaus.janino.ExpressionEvaluator ExpressionEvaluator} class.
  */
-public final class ShippingCost {
+public final
+class ShippingCost {
 
     private ShippingCost() {}
 
-    public static void main(String[] args) throws Exception {
+    public static void
+    main(String[] args) throws Exception {
+
         if (args.length != 1) {
             System.err.println("Usage: <total>");
             System.err.println("Computes the shipping costs from the double value \"total\".");

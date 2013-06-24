@@ -96,7 +96,8 @@ import java.lang.reflect.InvocationTargetException;
  * {@link java.lang.Object#equals(java.lang.Object)} will return <code>true</code>. E.g. "a+b" and
  * "c + d" are functionally identical if "a" and "c" have the same type, and so do "b" and "d".
  */
-public interface IExpressionEvaluator extends IScriptEvaluator {
+public
+interface IExpressionEvaluator extends IScriptEvaluator {
 
     Class ANY_TYPE = null;
 
@@ -122,7 +123,8 @@ public interface IExpressionEvaluator extends IScriptEvaluator {
     void setReturnType(Class returnType);
 
     /**
-     * @deprecated Must not be used on an {@link IExpressionEvaluator}; use {@link #setExpressionTypes(Class[])} instead.
+     * Must not be used on an {@link IExpressionEvaluator}; use {@link #setExpressionTypes(Class[])} instead.
+     * @deprecated
      */
     void setReturnTypes(Class[] returnTypes);
 
@@ -178,7 +180,8 @@ public interface IExpressionEvaluator extends IScriptEvaluator {
      * <code>public</code>, or with <code>protected</code> or default access in the package of the compiled class (see
      * {@link #setClassName(String)}.
      */
-    Object createFastEvaluator(
+    Object
+    createFastEvaluator(
         String   expression,
         Class    interfaceToImplement,
         String[] parameterNames
@@ -187,7 +190,8 @@ public interface IExpressionEvaluator extends IScriptEvaluator {
      /**
       * @see #createFastEvaluator(String, Class, String[])
       */
-    Object createFastEvaluator(
+    Object
+    createFastEvaluator(
         Reader   reader,
         Class    interfaceToImplement,
         String[] parameterNames
