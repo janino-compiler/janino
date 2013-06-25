@@ -1,5 +1,6 @@
 
 package for_sandbox_tests;
 
-public interface InterfaceOfExternalClass {
+public
+interface InterfaceOfExternalClass {
 }

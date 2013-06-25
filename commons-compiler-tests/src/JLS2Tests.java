@@ -39,19 +39,21 @@ import util.TestUtil;
 /**
  * Tests against the \"Java Language Specification\"; 2nd edition
  */
-@RunWith(Parameterized.class)
-public class JLS2Tests extends JaninoTestSuite {
-    @Parameters
-    public static List<Object[]> compilerFactories() throws Exception {
+@RunWith(Parameterized.class) public
+class JLS2Tests extends JaninoTestSuite {
+
+    @Parameters public static List<Object[]>
+    compilerFactories() throws Exception {
         return TestUtil.getCompilerFactoriesForParameters();
     }
 
-    public JLS2Tests(ICompilerFactory compilerFactory) throws Exception {
+    public
+    JLS2Tests(ICompilerFactory compilerFactory) throws Exception {
         super(compilerFactory);
     }
 
-    @Test
-    public void test_3__LexicalStructure() throws Exception {
+    @Test public void
+    test_3__LexicalStructure() throws Exception {
         // 3.1. Lexical Structure -- Unicode
         exp(TRUE, "'\\u00e4' == '\u00e4'");
 
@@ -94,8 +96,8 @@ public class JLS2Tests extends JaninoTestSuite {
         scr(COMP, "int const;");
     }
 
-    @Test
-    public void test_3_10_1__Literals_Integer() throws Exception {
+    @Test public void
+    test_3_10_1__Literals_Integer() throws Exception {
         exp(TRUE, "17 == 17L");
         exp(TRUE, "255 == 0xFFl");
         exp(TRUE, "17 == 021L");
@@ -115,8 +117,8 @@ public class JLS2Tests extends JaninoTestSuite {
         exp(COMP, "-9223372036854775809L");
     }
 
-    @Test
-    public void test_3_10_2__Literals_FloatingPoint() throws Exception {
+    @Test public void
+    test_3_10_2__Literals_FloatingPoint() throws Exception {
         exp(TRUE, "1e1f == 10f");
         exp(TRUE, "1E1F == 10f");
         exp(TRUE, ".3f == 0.3f");
@@ -132,14 +134,14 @@ public class JLS2Tests extends JaninoTestSuite {
         exp(COMP, "2e-324D");
     }
 
-    @Test
-    public void test_3_10_3__Literals_Boolean() throws Exception {
+    @Test public void
+    test_3_10_3__Literals_Boolean() throws Exception {
         exp(TRUE, "true");
         exp(TRUE, "! false");
     }
 
-    @Test
-    public void test_3_10_4__Literals_Character() throws Exception {
+    @Test public void
+    test_3_10_4__Literals_Character() throws Exception {
         exp(TRUE, "'a' == 97");
         exp(COMP, "'''");
         exp(COMP, "'\\'");
@@ -149,8 +151,8 @@ public class JLS2Tests extends JaninoTestSuite {
         exp(TRUE, "'\"' == 34"); // Unescaped double quote is allowed!
     }
 
-    @Test
-    public void test_3_10_5__Literals_String() throws Exception {
+    @Test public void
+    test_3_10_5__Literals_String() throws Exception {
         exp(TRUE, "\"'\".charAt(0) == 39"); // Unescaped single quote is allowed!
         // Escape sequences already tested above for character literals.
         exp(TRUE, "\"\\b\".charAt(0) == 8");
@@ -160,8 +162,8 @@ public class JLS2Tests extends JaninoTestSuite {
         exp(TRUE, "\"aaa\" != \"bbb\"");
     }
 
-    @Test
-    public void test_3_10_6__Literals_EscapeSequences() throws Exception {
+    @Test public void
+    test_3_10_6__Literals_EscapeSequences() throws Exception {
         exp(COMP, "'\\u000a'"); // 0x000a is LF
         exp(TRUE, "'\\b' == 8");
         exp(TRUE, "'\\t' == 9");
@@ -178,23 +180,23 @@ public class JLS2Tests extends JaninoTestSuite {
         exp(COMP, "'\\1234'");
     }
 
-    @Test
-    public void test_3_10_7__Literals_Null() throws Exception {
+    @Test public void
+    test_3_10_7__Literals_Null() throws Exception {
         exp(EXEC, "null");
     }
 
-    @Test
-    public void test_3_11__Separators() throws Exception {
+    @Test public void
+    test_3_11__Separators() throws Exception {
         scr(EXEC, ";");
     }
 
-    @Test
-    public void test_3_12__Operators() throws Exception {
+    @Test public void
+    test_3_12__Operators() throws Exception {
         scr(TRUE, "int a = -11; a >>>= 2; return a == 1073741821;");
     }
 
-    @Test
-    public void test_5_1_7__Conversion_Boxing() throws Exception {
+    @Test public void
+    test_5_1_7__Conversion_Boxing() throws Exception {
         scr(TRUE, "Boolean   b = true;        return b.booleanValue();");
         scr(TRUE, "Boolean   b = false;       return !b.booleanValue();");
         scr(TRUE, "Byte      b = (byte) 7;    return b.equals(new Byte((byte) 7));");
@@ -206,8 +208,8 @@ public class JLS2Tests extends JaninoTestSuite {
         scr(TRUE, "Double    d = 14.3D;       return d.equals(new Double(14.3D));");
     }
 
-    @Test
-    public void test_5_1_8__Conversion_UnBoxing() throws Exception {
+    @Test public void
+    test_5_1_8__Conversion_UnBoxing() throws Exception {
         exp(TRUE, "Boolean.TRUE");
         exp(TRUE, "!Boolean.FALSE");
         exp(TRUE, "new Byte((byte) 9) == (byte) 9");
@@ -219,8 +221,8 @@ public class JLS2Tests extends JaninoTestSuite {
         exp(TRUE, "new Double(939.939D) == 939.939D");
     }
 
-    @Test
-    public void test_5_2__Conversion_Assignment() throws Exception {
+    @Test public void
+    test_5_2__Conversion_Assignment() throws Exception {
         scr(TRUE, "int i = 7; return i == 7;");
         scr(TRUE, "String s = \"S\"; return s.equals(\"S\");");
         scr(TRUE, "long l = 7; return l == 7L;");
@@ -247,8 +249,8 @@ public class JLS2Tests extends JaninoTestSuite {
         scr(COMP, "Character c = 65536;");
     }
 
-    @Test
-    public void test_5_5__Conversion_Casting() throws Exception {
+    @Test public void
+    test_5_5__Conversion_Casting() throws Exception {
         exp(TRUE, "7 == (int) 7");
         exp(TRUE, "(int) 'a' == 97");
         exp(TRUE, "(int) 10000000000L == 1410065408");
@@ -266,8 +268,8 @@ public class JLS2Tests extends JaninoTestSuite {
         exp(TRUE, "0L != (long) new Integer(8)");
     }
 
-    @Test
-    public void test_5_6__Conversion_NumberPromotions() throws Exception {
+    @Test public void
+    test_5_6__Conversion_NumberPromotions() throws Exception {
         // 5.6.1 Unary Numeric Promotion
         exp(TRUE, "-new Byte((byte) 7) == -7");
         exp(TRUE, "-new Double(10.0D) == -10.0D");
@@ -280,8 +282,8 @@ public class JLS2Tests extends JaninoTestSuite {
         exp(TRUE, "(short) 32767 + (byte) 100 == 32867");
     }
 
-    @Test
-    public void test_7_5__ImportDeclarations() throws Exception {
+    @Test public void
+    test_7_5__ImportDeclarations() throws Exception {
         // Default imports
         exp(
             TRUE,
@@ -349,13 +351,13 @@ public class JLS2Tests extends JaninoTestSuite {
         ));
     }
 
-    @Test
-    public void test_14_3__LocalClassDeclarations() throws Exception {
+    @Test public void
+    test_14_3__LocalClassDeclarations() throws Exception {
         scr(TRUE, "class S2 extends SC { public int foo() { return 37; } }; return new S2().foo() == 37;");
     }
 
-    @Test
-    public void test_14_8__ExpressionStatements() throws Exception {
+    @Test public void
+    test_14_8__ExpressionStatements() throws Exception {
         scr(TRUE, "int a; a = 8; ++a; a++; if (a != 10) return false; --a; a--; return a == 8;");
         scr(EXEC, "System.currentTimeMillis();");
         scr(EXEC, "new Object();");
@@ -363,8 +365,8 @@ public class JLS2Tests extends JaninoTestSuite {
         scr(COMP, "int a; a;");
     }
 
-    @Test
-    public void test_14_10__TheSwitchStatement() throws Exception {
+    @Test public void
+    test_14_10__TheSwitchStatement() throws Exception {
         scr(TRUE, "int x = 37; switch (x) {} return x == 37;");
         scr(TRUE, "int x = 37; switch (x) { default: ++x; break; } return x == 38;");
         scr(TRUE, "int x = 37; switch (x) { case 36: case 37: case 38: x += x; break; } return x == 74;");
@@ -373,8 +375,8 @@ public class JLS2Tests extends JaninoTestSuite {
         scr(TRUE, "int x = 37; switch (x) { case -2000000000: break; case 2000000000: break; } return x == 37;");
     }
 
-    @Test
-    public void test_14_20__UnreachableStatements() throws Exception {
+    @Test public void
+    test_14_20__UnreachableStatements() throws Exception {
         clb(COMP, (
             ""
             + "public void test() throws Exception {}\n"
@@ -390,8 +392,8 @@ public class JLS2Tests extends JaninoTestSuite {
         ));
     }
 
-    @Test
-    public void test_15_9__Expressions__ClassInstanceCreationExpressions() throws Exception {
+    @Test public void
+    test_15_9__Expressions__ClassInstanceCreationExpressions() throws Exception {
         // 15.9.1 Determining the class being Instantiated
         exp(TRUE, "new Object() instanceof Object");
         exp(COMP, "new java.util.List()");
@@ -451,8 +453,8 @@ public class JLS2Tests extends JaninoTestSuite {
         ), "A");
     }
 
-    @Test
-    public void test_15_11__FieldAccessExpressions() throws Exception {
+    @Test public void
+    test_15_11__FieldAccessExpressions() throws Exception {
         // 15.11.2 Accessing Superclass Members using super
         sim(TRUE, (
             ""
@@ -477,8 +479,8 @@ public class JLS2Tests extends JaninoTestSuite {
         ), "T3");
     }
 
-    @Test
-    public void test_15_12__MethodInvocationExpressions() throws Exception {
+    @Test public void
+    test_15_12__MethodInvocationExpressions() throws Exception {
         // 15.12.2.2 Choose the Most Specific Method
         sim(COMP, (
             ""
@@ -504,8 +506,8 @@ public class JLS2Tests extends JaninoTestSuite {
         ), "Main");
     }
 
-    @Test
-    public void test_15_14__PostfixExpressions() throws Exception {
+    @Test public void
+    test_15_14__PostfixExpressions() throws Exception {
         // "15.14.2 Postfix Increment Operator ++
         scr(TRUE, "int i = 7; i++; return i == 8;");
         scr(TRUE, "Integer i = new Integer(7); i++; return i.intValue() == 8;");
@@ -525,8 +527,8 @@ public class JLS2Tests extends JaninoTestSuite {
         ));
     }
 
-    @Test
-    public void test_15_15__UnaryOperators() throws Exception {
+    @Test public void
+    test_15_15__UnaryOperators() throws Exception {
         // 15.15.1 Prefix Increment Operator ++
         scr(TRUE, "int i = 7; ++i; return i == 8;");
         scr(TRUE, "Integer i = new Integer(7); ++i; return i.intValue() == 8;");
@@ -552,13 +554,13 @@ public class JLS2Tests extends JaninoTestSuite {
         exp(TRUE, "new Integer(-new Integer(7)).intValue() == -7");
     }
 
-    @Test
-    public void test_15_17__MultiplicativeOperators() throws Exception {
+    @Test public void
+    test_15_17__MultiplicativeOperators() throws Exception {
         exp(TRUE, "new Integer(new Byte((byte) 2) * new Short((short) 3)).intValue() == 6");
     }
 
-    @Test
-    public void test_15_18__AdditiveOperators() throws Exception {
+    @Test public void
+    test_15_18__AdditiveOperators() throws Exception {
         // 15.18 Additive Operators -- Numeric
         exp(TRUE, "(new Byte((byte) 7) - new Double(1.5D) + \"x\").equals(\"5.5x\")");
 
@@ -577,14 +579,14 @@ public class JLS2Tests extends JaninoTestSuite {
         }
     }
 
-    @Test
-    public void test_15_20__RelationOperators() throws Exception {
+    @Test public void
+    test_15_20__RelationOperators() throws Exception {
         // 15.20.1 Numerical Comparison Operators <, <=, > and >=
         exp(TRUE, "new Integer(7) > new Byte((byte) 5)");
     }
 
-    @Test
-    public void test_15_21__EqualityOperators() throws Exception {
+    @Test public void
+    test_15_21__EqualityOperators() throws Exception {
 
         // 15.21.1 Numerical Equality Operators == and !=
         exp(COMP, "new Integer(7) != new Byte((byte) 5)");
@@ -605,32 +607,32 @@ public class JLS2Tests extends JaninoTestSuite {
         exp(COMP, "new Integer(3) == \"foo\"");
     }
 
-    @Test
-    public void test_15_22__BitwiseAndLogicalOperators() throws Exception {
+    @Test public void
+    test_15_22__BitwiseAndLogicalOperators() throws Exception {
         // 15.22.2 Boolean Logical Operators &, ^, and |
         exp(TRUE, "new Boolean(true) & new Boolean(true)");
         exp(TRUE, "new Boolean(true) ^ false");
         exp(TRUE, "false | new Boolean(true)");
     }
 
-    @Test
-    public void test_15_23__ConditionalAndOperator() throws Exception {
+    @Test public void
+    test_15_23__ConditionalAndOperator() throws Exception {
         // 15.23 Conditional-And Operator &&
         exp(TRUE, "new Boolean(true) && new Boolean(true)");
         exp(TRUE, "new Boolean(true) && true");
         exp(TRUE, "true && new Boolean(true)");
     }
 
-    @Test
-    public void test_15_24__ConditionalOrOperator() throws Exception {
+    @Test public void
+    test_15_24__ConditionalOrOperator() throws Exception {
         // 15.24 Conditional-Or Operator ||
         exp(TRUE, "new Boolean(true) || new Boolean(false)");
         exp(TRUE, "new Boolean(false) || true");
         exp(TRUE, "true || new Boolean(true)");
     }
 
-    @Test
-    public void test_15_26__ConditionalOrOperator() throws Exception {
+    @Test public void
+    test_15_26__ConditionalOrOperator() throws Exception {
         // 15.26.2 Compound Assignment Operators
         scr(TRUE, "int a = 7; a += 3; return a == 10;");
         scr(TRUE, "int a = 7; a %= 3; return a == 1;");

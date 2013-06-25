@@ -4,20 +4,21 @@ package other_package;
 /**
  * Helper class for {@link JLS2Tests} -- used to define accessibility tests.
  */
-public class Foo {
-    public      Foo(int i) {}
-    /*package*/ Foo(String s) {}
+public
+class Foo {
+    public      Foo(int i)     {}
+    /*package*/ Foo(String s)  {}
     protected   Foo(boolean b) {}
-    private     Foo(char c) {}
+    private     Foo(char c)    {}
 
-    private static void   privateStaticMethod() {}
-    private void          privateMethod() {}
-    static void           packageStaticMethod() {}
-    void                  packageMethod() {}
+    private static void   privateStaticMethod()   {}
+    private void          privateMethod()         {}
+    static void           packageStaticMethod()   {}
+    void                  packageMethod()         {}
     protected static void protectedStaticMethod() {}
-    protected void        protectedMethod() {}
-    public static void    publicStaticMethod() {}
-    public void           publicMethod() {}
+    protected void        protectedMethod()       {}
+    public static void    publicStaticMethod()    {}
+    public void           publicMethod()          {}
 
     private static class         PrivateStaticMemberClass { }
     private class                PrivateMemberClass { }
@@ -30,19 +31,20 @@ public class Foo {
     public abstract static class PublicAbstractStaticMemberClass { }
     public abstract class        PublicAbstractMemberClass { }
 
-    private static interface     PrivateStaticMemberInterface { }
+    private static interface     PrivateStaticMemberInterface { } // SUPPRESS CHECKSTYLE RedundantModifier
     private interface            PrivateMemberInterface { }
-    static interface             PackageStaticMemberInterface { }
+    static interface             PackageStaticMemberInterface { } // SUPPRESS CHECKSTYLE RedundantModifier
     interface                    PackageMemberInterface { }
-    protected static interface   ProtectedStaticMemberInterface { }
+    protected static interface   ProtectedStaticMemberInterface { } // SUPPRESS CHECKSTYLE RedundantModifier
     protected interface          ProtectedMemberInterface { }
-    public static interface      PublicStaticMemberInterface { }
+    public static interface      PublicStaticMemberInterface { } // SUPPRESS CHECKSTYLE RedundantModifier
     public interface             PublicMemberInterface { }
 
-    void useMembersToSuppressWarnings() {
+    void
+    useMembersToSuppressWarnings() {
         new Foo('c');
         privateStaticMethod();
-        privateMethod();
+        this.privateMethod();
         new PrivateStaticMemberClass();
         new PrivateMemberClass();
         new PrivateStaticMemberInterface() { };

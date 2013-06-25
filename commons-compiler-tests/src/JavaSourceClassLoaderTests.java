@@ -39,8 +39,8 @@ import org.junit.runners.Parameterized.Parameters;
 
 import util.TestUtil;
 
-@RunWith(Parameterized.class)
-public class JavaSourceClassLoaderTests {
+@RunWith(Parameterized.class) public
+class JavaSourceClassLoaderTests {
 
     private static final File[] SOURCE_PATH = new File[] {
         new File("../janino/src"),
@@ -49,17 +49,18 @@ public class JavaSourceClassLoaderTests {
 
     private final ICompilerFactory compilerFactory;
 
-    @Parameters
-    public static Collection<Object[]> compilerFactories() throws Exception {
+    @Parameters public static Collection<Object[]>
+    compilerFactories() throws Exception {
         return TestUtil.getCompilerFactoriesForParameters();
     }
 
-    public JavaSourceClassLoaderTests(ICompilerFactory compilerFactory) {
+    public
+    JavaSourceClassLoaderTests(ICompilerFactory compilerFactory) {
         this.compilerFactory = compilerFactory;
     }
 
-    @Test
-    public void testJSCL() throws Exception {
+    @Test public void
+    testJSCL() throws Exception {
         ClassLoader systemClassLoader = ClassLoader.getSystemClassLoader();
         systemClassLoader.loadClass(this.getClass().getName());
 
@@ -71,14 +72,14 @@ public class JavaSourceClassLoaderTests {
             // as we had intended
         }
         extensionsClassLoader.loadClass("java.lang.String");
-        AbstractJavaSourceClassLoader jscl = compilerFactory.newJavaSourceClassLoader(extensionsClassLoader);
+        AbstractJavaSourceClassLoader jscl = this.compilerFactory.newJavaSourceClassLoader(extensionsClassLoader);
         jscl.setSourcePath(SOURCE_PATH);
         jscl.loadClass("org.codehaus.janino.Compiler");
     }
 
-    @Test
-    public void testCircularStaticImports() throws Exception {
-        AbstractJavaSourceClassLoader jscl = compilerFactory.newJavaSourceClassLoader(
+    @Test public void
+    testCircularStaticImports() throws Exception {
+        AbstractJavaSourceClassLoader jscl = this.compilerFactory.newJavaSourceClassLoader(
             ClassLoader.getSystemClassLoader().getParent()
         );
         jscl.setSourcePath(new File[] { new File("aux-files/testCircularStaticImports/") });

@@ -40,27 +40,25 @@ import org.junit.runners.Parameterized.Parameters;
 
 import util.TestUtil;
 
-@RunWith(Parameterized.class)
-public class ScopingTests {
+@RunWith(Parameterized.class) public
+class ScopingTests {
     private final ICompilerFactory compilerFactory;
 
-    @Parameters
-    public static Collection<Object[]> compilerFactories() throws Exception {
-        return TestUtil.getCompilerFactoriesForParameters();
-    }
+    @Parameters public static Collection<Object[]>
+    compilerFactories() throws Exception { return TestUtil.getCompilerFactoriesForParameters(); }
 
-    public ScopingTests(ICompilerFactory compilerFactory) {
-        this.compilerFactory = compilerFactory;
-    }
+    public
+    ScopingTests(ICompilerFactory compilerFactory) { this.compilerFactory = compilerFactory; }
 
-    private void setParentClassLoader(ISimpleCompiler sc) {
+    private void
+    setParentClassLoader(ISimpleCompiler sc) {
 //        sc.setParentClassLoader(BOOT_CLASS_LOADER /*, new Class[] { for_sandbox_tests.ProtectedVariable.class }*/);
     }
 
-    @Test
-    public void testProtectedAccessAcrossPackages() throws Exception {
-        ISimpleCompiler sc = compilerFactory.newSimpleCompiler();
-        setParentClassLoader(sc);
+    @Test public void
+    testProtectedAccessAcrossPackages() throws Exception {
+        ISimpleCompiler sc = this.compilerFactory.newSimpleCompiler();
+        this.setParentClassLoader(sc);
         sc.cook(
             ""
             + "package test;\n"
@@ -74,11 +72,10 @@ public class ScopingTests {
         );
     }
 
-    @Test
-    @Ignore("Known failure - JANINO-113")
-    public void testProtectedAccessWithinPackage() throws Exception {
-        ISimpleCompiler sc = compilerFactory.newSimpleCompiler();
-        setParentClassLoader(sc);
+    @Test @Ignore("Known failure - JANINO-113") public void
+    testProtectedAccessWithinPackage() throws Exception {
+        ISimpleCompiler sc = this.compilerFactory.newSimpleCompiler();
+        this.setParentClassLoader(sc);
         sc.cook(
             ""
             + "package for_sandbox_tests;\n"
@@ -103,16 +100,16 @@ public class ScopingTests {
             + "}"
         );
 
-        Class<?> topClass = sc.getClassLoader().loadClass("for_sandbox_tests.Top");
+        Class<?> topClass    = sc.getClassLoader().loadClass("for_sandbox_tests.Top");
         Method   createInner = topClass.getDeclaredMethod("createInner", new Class[0]);
-        Object   t = topClass.newInstance();
-        Object   i = createInner.invoke(t, new Object[0]);
+        Object   t           = topClass.newInstance();
+        Object   i           = createInner.invoke(t, new Object[0]);
 
         Class<?> innerClass = sc.getClassLoader().loadClass("for_sandbox_tests.Top$Inner");
-        Method   get = innerClass.getDeclaredMethod("get", new Class[0]);
-        Method   getS = innerClass.getDeclaredMethod("getS", new Class[0]);
-        Method   set = innerClass.getDeclaredMethod("set", new Class[0]);
-        Method   setS = innerClass.getDeclaredMethod("setS", new Class[0]);
+        Method   get        = innerClass.getDeclaredMethod("get", new Class[0]);
+        Method   getS       = innerClass.getDeclaredMethod("getS", new Class[0]);
+        Method   set        = innerClass.getDeclaredMethod("set", new Class[0]);
+        Method   setS       = innerClass.getDeclaredMethod("setS", new Class[0]);
 
         Object res;
         {   // non-static
@@ -131,11 +128,10 @@ public class ScopingTests {
         }
     }
 
-    @Test
-    @Ignore("Known failure - JANINO-113")
-    public void testComplicatedSyntheticAccess() throws Exception {
-        ISimpleCompiler sc = compilerFactory.newSimpleCompiler();
-        setParentClassLoader(sc);
+    @Test @Ignore("Known failure - JANINO-113") public void
+    testComplicatedSyntheticAccess() throws Exception {
+        ISimpleCompiler sc = this.compilerFactory.newSimpleCompiler();
+        this.setParentClassLoader(sc);
         sc.cook(
             ""
             + "package for_sandbox_tests;\n"
@@ -158,13 +154,13 @@ public class ScopingTests {
             + "}"
         );
 
-        Class<?> topClass = sc.getClassLoader().loadClass("for_sandbox_tests.L0");
+        Class<?> topClass    = sc.getClassLoader().loadClass("for_sandbox_tests.L0");
         Method   createInner = topClass.getDeclaredMethod("createInner", new Class[0]);
-        Object   t = topClass.newInstance();
-        Object   inner = createInner.invoke(t, new Object[0]);
+        Object   t           = topClass.newInstance();
+        Object   inner       = createInner.invoke(t, new Object[0]);
 
         Class<?> innerClass = inner.getClass();
-        Method[] gets = new Method[] {
+        Method[] gets       = new Method[] {
             innerClass.getMethod("getL0", new Class[0]),
             innerClass.getMethod("getL1", new Class[0]),
             innerClass.getMethod("getL2", new Class[0]),
@@ -184,10 +180,9 @@ public class ScopingTests {
         }
     }
 
-    @Test
-    @Ignore("Known failure - JANINO-113")
-    public void testStaticInitAccessProtected() throws Exception {
-        ISimpleCompiler sc = compilerFactory.newSimpleCompiler();
+    @Test @Ignore("Known failure - JANINO-113") public void
+    testStaticInitAccessProtected() throws Exception {
+        ISimpleCompiler sc = this.compilerFactory.newSimpleCompiler();
         sc.cook(
             ""
             + "package test;\n"
@@ -213,9 +208,9 @@ public class ScopingTests {
             + "}"
         );
 
-        Class<?> topClass = sc.getClassLoader().loadClass("test.Outer");
+        Class<?> topClass    = sc.getClassLoader().loadClass("test.Outer");
         Method   createInner = topClass.getDeclaredMethod("createInner", new Class[0]);
-        Object   t = topClass.newInstance();
+        Object   t           = topClass.newInstance();
         assertNotNull(t);
         Object inner = createInner.invoke(t, new Object[0]);
         assertNotNull(inner);

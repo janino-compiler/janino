@@ -1,9 +1,11 @@
 
 package covariant_clone;
 
-public class Middle extends Base {
+public
+class Middle extends Base {
 
-    public Base cloneWithOutArguments() {
+    public Base
+    cloneWithOutArguments() {
         try {
             return clone();
         } catch (CloneNotSupportedException e) {
@@ -11,11 +13,13 @@ public class Middle extends Base {
         }
     }
 
-    public Middle cloneWithArguments() {
+    public Middle
+    cloneWithArguments() {
         return other(1, null);
     }
 
-    public Middle other(long i, Object o) {
+    public Middle
+    other(long i, Object o) {
         throw new RuntimeException("Middle() called");
     }
 }

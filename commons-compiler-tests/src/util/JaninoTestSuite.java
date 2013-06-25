@@ -43,7 +43,8 @@ import org.codehaus.commons.compiler.IScriptEvaluator;
 import org.codehaus.commons.compiler.ISimpleCompiler;
 import org.codehaus.commons.compiler.LocatedException;
 
-public class JaninoTestSuite {
+public
+class JaninoTestSuite {
     /** The test is expected to throw a CompileException */
     public static final CompileAndExecuteTest.Mode COMP = new CompileAndExecuteTest.Mode();
     /** The test is expected to compile successfully, but is not executed */
@@ -55,7 +56,8 @@ public class JaninoTestSuite {
 
     protected final ICompilerFactory compilerFactory;
 
-    public JaninoTestSuite(ICompilerFactory compilerFactory) {
+    public
+    JaninoTestSuite(ICompilerFactory compilerFactory) {
         this.compilerFactory = compilerFactory;
     }
 
@@ -71,38 +73,47 @@ public class JaninoTestSuite {
      *   <tr><td>TRUE</td><td>The test is expected to compile and execute successfully, and return {@code true}</tr>
      * </table>
      */
-    protected void exp(ExpressionTest.Mode mode, String expression) throws Exception {
+    protected void
+    exp(ExpressionTest.Mode mode, String expression) throws Exception {
         ExpressionTest et = new ExpressionTest(mode, expression);
         et.runTest();
     }
 
-    protected void exp(ExpressionTest.Mode mode, String expression, String[] defaultImports) throws Exception {
+    protected void
+    exp(ExpressionTest.Mode mode, String expression, String[] defaultImports) throws Exception {
         ExpressionTest et = new ExpressionTest(mode, expression);
         et.setDefaultImports(defaultImports);
         et.runTest();
     }
 
-    protected class ExpressionTest extends CompileAndExecuteTest {
+    protected
+    class ExpressionTest extends CompileAndExecuteTest {
+
         private final String               expression;
         private final IExpressionEvaluator expressionEvaluator;
 
-        public ExpressionTest(Mode mode, String expression) throws Exception {
+        public
+        ExpressionTest(Mode mode, String expression) throws Exception {
             super(mode);
             this.expression          = expression;
-            this.expressionEvaluator = compilerFactory.newExpressionEvaluator();
+            this.expressionEvaluator = JaninoTestSuite.this.compilerFactory.newExpressionEvaluator();
 
             this.expressionEvaluator.setExpressionType(mode == TRUE ? boolean.class : IExpressionEvaluator.ANY_TYPE);
         }
-        public ExpressionTest setDefaultImports(String[] defaultImports) {
+
+        public ExpressionTest
+        setDefaultImports(String[] defaultImports) {
             this.expressionEvaluator.setDefaultImports(defaultImports);
             return this;
         }
 
-        protected void compile() throws Exception {
+        protected void
+        compile() throws Exception {
             this.expressionEvaluator.cook(this.expression);
         }
 
-        protected Object execute() throws Exception {
+        protected Object
+        execute() throws Exception {
             return this.expressionEvaluator.evaluate(new Object[0]);
         }
     }
@@ -119,38 +130,47 @@ public class JaninoTestSuite {
      *   <tr><td>TRUE</td><td>The test is expected to compile and execute successfully, and return {@code true}</tr>
      * </table>
      */
-    protected void scr(ScriptTest.Mode mode, String script) throws Exception {
+    protected void
+    scr(ScriptTest.Mode mode, String script) throws Exception {
         ScriptTest st = new ScriptTest(mode, script);
         st.runTest();
     }
 
-    protected void scr(ScriptTest.Mode mode, String script, String[] defaultImports) throws Exception {
+    protected void
+    scr(ScriptTest.Mode mode, String script, String[] defaultImports) throws Exception {
         ScriptTest st = new ScriptTest(mode, script);
         st.setDefaultImports(defaultImports);
         st.runTest();
     }
 
-    protected class ScriptTest extends CompileAndExecuteTest {
+    protected
+    class ScriptTest extends CompileAndExecuteTest {
+
         private final String           script;
         private final IScriptEvaluator scriptEvaluator;
 
-        public ScriptTest(Mode mode, String script) throws Exception {
+        public
+        ScriptTest(Mode mode, String script) throws Exception {
             super(mode);
             this.script          = script;
-            this.scriptEvaluator = compilerFactory.newScriptEvaluator();
+            this.scriptEvaluator = JaninoTestSuite.this.compilerFactory.newScriptEvaluator();
 
             this.scriptEvaluator.setReturnType(mode == TRUE ? boolean.class : void.class);
         }
-        public ScriptTest setDefaultImports(String[] defaultImports) {
+
+        public ScriptTest
+        setDefaultImports(String[] defaultImports) {
             this.scriptEvaluator.setDefaultImports(defaultImports);
             return this;
         }
 
-        protected void compile() throws Exception {
+        protected void
+        compile() throws Exception {
             this.scriptEvaluator.cook(this.script);
         }
 
-        protected Object execute() throws Exception {
+        protected Object
+        execute() throws Exception {
             return this.scriptEvaluator.evaluate(new Object[0]);
         }
     }
@@ -167,37 +187,47 @@ public class JaninoTestSuite {
      *   <tr><td>TRUE</td><td>The test is expected to compile and execute successfully, and return {@code true}</tr>
      * </table>
      */
-    protected void clb(ClassBodyTest.Mode mode, String classBody) throws Exception {
+    protected void
+    clb(ClassBodyTest.Mode mode, String classBody) throws Exception {
         ClassBodyTest cbt = new ClassBodyTest(mode, classBody);
         cbt.runTest();
     }
 
-    protected void clb(ClassBodyTest.Mode mode, String classBody, String[] defaultImports) throws Exception {
+    protected void
+    clb(ClassBodyTest.Mode mode, String classBody, String[] defaultImports) throws Exception {
         ClassBodyTest cbt = new ClassBodyTest(mode, classBody);
         cbt.setDefaultImports(defaultImports);
         cbt.runTest();
     }
 
-    protected class ClassBodyTest extends CompileAndExecuteTest {
+    protected
+    class ClassBodyTest extends CompileAndExecuteTest {
         private final String              classBody;
         private final IClassBodyEvaluator classBodyEvaluator;
 
-        public ClassBodyTest(Mode mode, String classBody) throws Exception {
+        public
+        ClassBodyTest(Mode mode, String classBody) throws Exception {
             super(mode);
             this.classBody          = classBody;
-            this.classBodyEvaluator = compilerFactory.newClassBodyEvaluator();
+            this.classBodyEvaluator = JaninoTestSuite.this.compilerFactory.newClassBodyEvaluator();
         }
-        public ClassBodyTest setDefaultImports(String[] defaultImports) {
+        public ClassBodyTest
+        setDefaultImports(String[] defaultImports) {
             this.classBodyEvaluator.setDefaultImports(defaultImports);
             return this;
         }
 
-        protected void compile() throws Exception {
+        protected void
+        compile() throws Exception {
             this.classBodyEvaluator.cook(this.classBody);
         }
 
-        protected Object execute() throws Exception {
-            @SuppressWarnings("unchecked") Method method = this.classBodyEvaluator.getClazz().getMethod("main", new Class[0]);
+        protected Object
+        execute() throws Exception {
+            @SuppressWarnings("unchecked") Method method = this.classBodyEvaluator.getClazz().getMethod(
+                "main",
+                new Class[0]
+            );
             return method.invoke(null, new Object[0]);
         }
     }
@@ -215,32 +245,34 @@ public class JaninoTestSuite {
      * </table>
      * @param className The name of the class with the {@code public static boolean test()} method
      */
-    protected void sim(
-        SimpleCompilerTest.Mode mode,
-        String                  compilationUnit,
-        String                  className
-    ) throws Exception {
+    protected void
+    sim(SimpleCompilerTest.Mode mode, String compilationUnit, String className) throws Exception {
         SimpleCompilerTest sct = new SimpleCompilerTest(mode, compilationUnit, className);
         sct.runTest();
     }
 
-    protected class SimpleCompilerTest extends CompileAndExecuteTest {
+    protected
+    class SimpleCompilerTest extends CompileAndExecuteTest {
+
         private final String          compilationUnit;
         private final String          className;
         private final ISimpleCompiler simpleCompiler;
 
-        public SimpleCompilerTest(Mode mode, String compilationUnit, String className) throws Exception {
+        public
+        SimpleCompilerTest(Mode mode, String compilationUnit, String className) throws Exception {
             super(mode);
             this.compilationUnit = compilationUnit;
             this.className       = className;
-            this.simpleCompiler  = compilerFactory.newSimpleCompiler();
+            this.simpleCompiler  = JaninoTestSuite.this.compilerFactory.newSimpleCompiler();
         }
 
-        protected void compile() throws Exception {
+        protected void
+        compile() throws Exception {
             this.simpleCompiler.cook(this.compilationUnit);
         }
 
-        protected Object execute() throws Exception {
+        protected Object
+        execute() throws Exception {
             return (
                 this.simpleCompiler.getClassLoader()
                 .loadClass(this.className)
@@ -256,8 +288,9 @@ public class JaninoTestSuite {
      *
      * @param className The name of the class to be loaded from the {@link JavaSourceClassLoader}
      */
-    protected void jscl(String testCaseName, final File sourceDirectory, final String className) throws Exception {
-        AbstractJavaSourceClassLoader loader = compilerFactory.newJavaSourceClassLoader();
+    protected void
+    jscl(String testCaseName, final File sourceDirectory, final String className) throws Exception {
+        AbstractJavaSourceClassLoader loader = this.compilerFactory.newJavaSourceClassLoader();
         loader.setSourcePath(new File[] { sourceDirectory });
         loader.loadClass(className);
     }
@@ -266,12 +299,15 @@ public class JaninoTestSuite {
      * A test case that calls its abstract methods {@link #compile()}, then {@link #execute()}, and
      * verifies that they throw exceptions and return results as expected.
      */
-    abstract static class CompileAndExecuteTest {
+    abstract static
+    class CompileAndExecuteTest {
+
         protected final Mode mode;
 
         public static final class Mode { private Mode() {} }
 
-        public CompileAndExecuteTest(Mode mode) {
+        public
+        CompileAndExecuteTest(Mode mode) {
             this.mode = mode;
         }
 
@@ -282,7 +318,8 @@ public class JaninoTestSuite {
          * Invoke {@link #compile()}, then {@link #execute()}, and verify that they throw exceptions and return
          * results as expected.
          */
-        protected void runTest() throws Exception {
+        protected void
+        runTest() throws Exception {
             if (this.mode == COMP) {
                 try {
                     this.compile();

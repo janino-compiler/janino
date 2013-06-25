@@ -24,8 +24,9 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-public class Pred implements IPred {
-    public boolean filter() {
-        return false;
-    }
+public
+class Pred implements IPred {
+
+    public boolean
+    filter() { return false; }
 }

@@ -41,24 +41,27 @@ import org.junit.runners.Parameterized.Parameters;
 import util.TestUtil;
 import for_sandbox_tests.ExternalClass;
 
-@RunWith(Parameterized.class)
-public class SandboxTests {
+@RunWith(Parameterized.class) public
+class SandboxTests {
+
     private final ICompilerFactory compilerFactory;
 
-    @Parameters
-    public static Collection<Object[]> compilerFactories() throws Exception {
+    @Parameters public static Collection<Object[]>
+    compilerFactories() throws Exception {
         return TestUtil.getCompilerFactoriesForParameters();
     }
 
-    public SandboxTests(ICompilerFactory compilerFactory) {
+    public
+    SandboxTests(ICompilerFactory compilerFactory) {
         this.compilerFactory = compilerFactory;
     }
 
-    @Test
-    public void testForbiddenClass() throws Exception {
+    @Test public void
+    testForbiddenClass() throws Exception {
+
         // Invoke method of a class that is on the CLASSPATH of this JVM, but not on the BOOTCLASSPATH.
         try {
-            IExpressionEvaluator ee = compilerFactory.newExpressionEvaluator();
+            IExpressionEvaluator ee = this.compilerFactory.newExpressionEvaluator();
             ee.setParentClassLoader(ICookable.BOOT_CLASS_LOADER);
             ee.cook("for_sandbox_tests.ExternalClass.m1()");
             fail("Should have thrown a CompileException");
@@ -67,20 +70,21 @@ public class SandboxTests {
         }
     }
 
-    @Test
-    public void testAuxiliaryClass() throws Exception {
+    @Test public void
+    testAuxiliaryClass() throws Exception {
+
         // Invoke method of allowed external class.
-        IExpressionEvaluator ee = compilerFactory.newExpressionEvaluator();
+        IExpressionEvaluator ee = this.compilerFactory.newExpressionEvaluator();
 //        ee.setParentClassLoader(null, new Class[] { ExternalClass.class });
         ee.cook("for_sandbox_tests.ExternalClass.m1()");
         assertEquals(7, ((Integer) ee.evaluate(new Object[0])).intValue());
     }
 
-    @Test
-    public void testExternalBaseClass() throws Exception {
+    @Test public void
+    testExternalBaseClass() throws Exception {
 
         // Invoke method of base class.
-        IExpressionEvaluator ee = compilerFactory.newExpressionEvaluator();
+        IExpressionEvaluator ee = this.compilerFactory.newExpressionEvaluator();
 //        ee.setParentClassLoader(SimpleCompiler.BOOT_CLASS_LOADER, new Class[] { OtherExternalClass.class });
         ee.setExtendedClass(ExternalClass.class);
         ee.cook("m1()");

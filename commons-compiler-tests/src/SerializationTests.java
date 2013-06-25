@@ -48,22 +48,24 @@ import org.junit.runners.Parameterized.Parameters;
 
 import util.TestUtil;
 
-@RunWith(Parameterized.class)
-public class SerializationTests {
+@RunWith(Parameterized.class) public
+class SerializationTests {
+
     private final ICompilerFactory compilerFactory;
 
-    @Parameters
-    public static Collection<Object[]> compilerFactories() throws Exception {
+    @Parameters public static Collection<Object[]>
+    compilerFactories() throws Exception {
         return TestUtil.getCompilerFactoriesForParameters();
     }
 
-    public SerializationTests(ICompilerFactory compilerFactory) {
+    public
+    SerializationTests(ICompilerFactory compilerFactory) {
         this.compilerFactory = compilerFactory;
     }
 
-    @Test
-    public void testExceptionSerializable() throws Exception {
-        ISimpleCompiler compiler = compilerFactory.newSimpleCompiler();
+    @Test public void
+    testExceptionSerializable() throws Exception {
+        ISimpleCompiler compiler = this.compilerFactory.newSimpleCompiler();
         try {
             compiler.cook("this is not valid Java");
             fail("Cook should have thrown an exception");

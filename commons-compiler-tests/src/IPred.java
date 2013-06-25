@@ -24,6 +24,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-public interface IPred {
+public
+interface IPred {
     boolean filter() throws Exception;
 }

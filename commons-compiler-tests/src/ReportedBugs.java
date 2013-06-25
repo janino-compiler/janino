@@ -43,19 +43,21 @@ import org.junit.runners.Parameterized.Parameters;
 import util.JaninoTestSuite;
 import util.TestUtil;
 
-@RunWith(Parameterized.class)
-public class ReportedBugs extends JaninoTestSuite {
-    @Parameters
-    public static Collection<Object[]> compilerFactories() throws Exception {
+@RunWith(Parameterized.class) public
+class ReportedBugs extends JaninoTestSuite {
+
+    @Parameters public static Collection<Object[]>
+    compilerFactories() throws Exception {
         return TestUtil.getCompilerFactoriesForParameters();
     }
 
-    public ReportedBugs(ICompilerFactory compilerFactory) throws Exception {
+    public
+    ReportedBugs(ICompilerFactory compilerFactory) throws Exception {
         super(compilerFactory);
     }
 
-    @Test
-    public void testBug48() throws Exception {
+    @Test public void
+    testBug48() throws Exception {
         sim(EXEC, (
             ""
             + "package demo;\n"
@@ -80,8 +82,8 @@ public class ReportedBugs extends JaninoTestSuite {
         ), "demo.Service");
     }
 
-    @Test
-    public void testBug54() throws Exception {
+    @Test public void
+    testBug54() throws Exception {
         scr(TRUE, (
             ""
             + "String s = \"\";\n"
@@ -205,8 +207,8 @@ public class ReportedBugs extends JaninoTestSuite {
         ));
     }
 
-    @Test
-    public void testBug55() throws Exception {
+    @Test public void
+    testBug55() throws Exception {
         sim(COOK, (
             ""
             + "class Junk {" + "\n"
@@ -215,8 +217,8 @@ public class ReportedBugs extends JaninoTestSuite {
         ), null);
     }
 
-    @Test
-    public void testBug56() throws Exception {
+    @Test public void
+    testBug56() throws Exception {
         scr(COOK, (
             ""
             + "int dummy3 = 3;\n"
@@ -240,8 +242,8 @@ public class ReportedBugs extends JaninoTestSuite {
         ));
     }
 
-    @Test
-    public void testBug63() throws Exception {
+    @Test public void
+    testBug63() throws Exception {
         clb(COMP, (
             ""
             + "public static boolean main() {\n"
@@ -258,8 +260,8 @@ public class ReportedBugs extends JaninoTestSuite {
         ));
     }
 
-    @Test
-    public void testBug69() throws Exception {
+    @Test public void
+    testBug69() throws Exception {
         sim(EXEC, (
             ""
             + "public class Test {\n"
@@ -290,8 +292,8 @@ public class ReportedBugs extends JaninoTestSuite {
         ), "Test");
     }
 
-    @Test
-    public void testBug70() throws Exception {
+    @Test public void
+    testBug70() throws Exception {
         clb(COOK, (
             ""
             + "public String result = \"allow\", email = null, anno = null, cnd = null, transactionID = null;\n"
@@ -307,8 +309,8 @@ public class ReportedBugs extends JaninoTestSuite {
         ));
     }
 
-    @Test
-    public void testBug71() throws Exception {
+    @Test public void
+    testBug71() throws Exception {
         sim(TRUE, (
             ""
             + "public class ACI {\n"
@@ -353,14 +355,14 @@ public class ReportedBugs extends JaninoTestSuite {
         ), "SCI");
     }
 
-    @Test
-    public void testBug80() throws Exception {
+    @Test public void
+    testBug80() throws Exception {
         // Expression compilation is said to throw StackOverflowError!?
         exp(COMP, "(10).total >= 100.0 ? 0.0 : 7.95");
     }
 
-    @Test
-    public void testBug81() throws Exception {
+    @Test public void
+    testBug81() throws Exception {
         // IncompatibleClassChangeError when invoking getClass() on interface references
         scr(EXEC, (
             ""
@@ -372,14 +374,14 @@ public class ReportedBugs extends JaninoTestSuite {
         ));
     }
 
-    @Test
-    public void testBug99() throws Exception {
+    @Test public void
+    testBug99() throws Exception {
         // ConcurrentModificationException due to instance variable of Class type initialized using a class literal
         sim(COOK, "class Test{Class c = String.class;}", "Test");
     }
 
-    @Test
-    public void testBug102() throws Exception {
+    @Test public void
+    testBug102() throws Exception {
         // Static initializers are not executed
         sim(TRUE, (
             ""
@@ -406,8 +408,8 @@ public class ReportedBugs extends JaninoTestSuite {
         assertNull(System.getProperty("foo"));
     }
 
-    @Test
-    public void testBug105() throws Exception {
+    @Test public void
+    testBug105() throws Exception {
         // Possible to call a method of an enclosing class as if it was a member of an inner class
         clb(COMP, (
             ""
@@ -433,8 +435,8 @@ public class ReportedBugs extends JaninoTestSuite {
         ));
     }
 
-    @Test
-    public void testBug106() throws Exception {
+    @Test public void
+    testBug106() throws Exception {
         jscl("Bug 106", new File("aux-files/Bug 106"), "b.C3");
         sim(TRUE, (
             "class MyFile extends java.io.File {\n"
@@ -453,8 +455,8 @@ public class ReportedBugs extends JaninoTestSuite {
         ));
     }
 
-    @Test
-    public void testBug147() throws Exception {
+    @Test public void
+    testBug147() throws Exception {
         sim(COOK, (
             "public class Foo {\n"
             + "    public static void main(String[] args) {\n"
@@ -471,54 +473,53 @@ public class ReportedBugs extends JaninoTestSuite {
         ), "Foo");
     }
 
-    @Test
-    public void testBug149() throws Exception {
+    @Test public void
+    testBug149() throws Exception {
 
         // JLS3 3.10.6: "aaa\/bbb" contains an invalid escape sequence: "\/".
         exp(COMP, "\"aaa\\/bbb\"");
     }
     
-    @SuppressWarnings("deprecation")
-    @Test(expected=AssertionError.class)
-    public void testBug157() throws Exception {
+    @SuppressWarnings("deprecation") @Test(expected = AssertionError.class) public void
+    testBug157() throws Exception {
         IExpressionEvaluator evaluator = CompilerFactoryFactory.getDefaultCompilerFactory().newExpressionEvaluator();
         evaluator.setReturnType(Long.class);
     }
 
-    @Test
-    public void testBug153_1() throws Exception {
+    @Test public void
+    testBug153_1() throws Exception {
         scr(EXEC, "Comparable x = 5.0;");
     }
 
-    @Test
-    public void testBug153_2() throws Exception {
+    @Test public void
+    testBug153_2() throws Exception {
 
         // JLS3 says about casting conversion
         // (http://java.sun.com/docs/books/jls/third_edition/html/conversions.html#5.5):
         //
         //    Casting contexts allow the use of:
         // ...
-        //     * a boxing conversion (§5.1.7)
+        //     * a boxing conversion (ï¿½5.1.7)
         //
         // , but obviously (JAVAC) a boxing conversion followed by a widening reference conversion is also
         // permitted (as for assignment conversion).
         scr(EXEC, "Comparable x = (Comparable) 5.0;");
     }
 
-    @Test
-    public void testBug153_3() throws Exception {
+    @Test public void
+    testBug153_3() throws Exception {
         scr(EXEC, "long x = new Integer(8);");
     }
 
-    @Test
-    public void testBug153_4() throws Exception {
+    @Test public void
+    testBug153_4() throws Exception {
 
         // JLS3 says about casting conversion
         // (http://java.sun.com/docs/books/jls/third_edition/html/conversions.html#5.5):
         //
         //    Casting contexts allow the use of:
         // ...
-        //     * an unboxing conversion (§5.1.8)
+        //     * an unboxing conversion (ï¿½5.1.8)
         //
         // , but obviously (JAVAC) an unboxing conversion followed by a widening primitive conversion is also
         // permitted (as for assignment conversion).
