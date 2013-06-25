@@ -38,24 +38,26 @@ import javax.tools.JavaFileObject.Kind;
  * A {@link ForwardingJavaFileManager} that stores {@link JavaFileObject}s in byte arrays, i.e. in
  * memory (as opposed to the {@link StandardJavaFileManager}, which stores them in files).
  */
-public class ByteArrayJavaFileManager<M extends JavaFileManager> extends ForwardingJavaFileManager<M> {
+public
+class ByteArrayJavaFileManager<M extends JavaFileManager> extends ForwardingJavaFileManager<M> {
 
     /** location => kind => className => JavaFileObject */
     Map<Location, Map<Kind, Map<String /*className*/, JavaFileObject>>> javaFiles = (
         new HashMap<Location, Map<Kind, Map<String, JavaFileObject>>>()
     );
 
-    public ByteArrayJavaFileManager(M delegate) {
+    public
+    ByteArrayJavaFileManager(M delegate) {
         super(delegate);
     }
 
-    @Override
-    public FileObject getFileForInput(Location location, String packageName, String relativeName) {
+    @Override public FileObject
+    getFileForInput(Location location, String packageName, String relativeName) {
         throw new UnsupportedOperationException("getFileForInput");
     }
 
-    @Override
-    public FileObject getFileForOutput(
+    @Override public FileObject
+    getFileForOutput(
         Location   location,
         String     packageName,
         String     relativeName,
@@ -64,8 +66,8 @@ public class ByteArrayJavaFileManager<M extends JavaFileManager> extends Forward
         throw new UnsupportedOperationException("getFileForInput");
     }
 
-    @Override
-    public JavaFileObject getJavaFileForInput(Location location, String className, Kind kind) throws IOException {
+    @Override public JavaFileObject
+    getJavaFileForInput(Location location, String className, Kind kind) throws IOException {
         Map<Kind, Map<String, JavaFileObject>> locationJavaFiles = this.javaFiles.get(location);
         if (locationJavaFiles == null) return null;
 
@@ -75,8 +77,8 @@ public class ByteArrayJavaFileManager<M extends JavaFileManager> extends Forward
         return kindJavaFiles.get(className);
     }
 
-    @Override
-    public JavaFileObject getJavaFileForOutput(
+    @Override public JavaFileObject
+    getJavaFileForOutput(
         Location     location,
         final String className,
         Kind         kind,
@@ -94,25 +96,26 @@ public class ByteArrayJavaFileManager<M extends JavaFileManager> extends Forward
         class StringBufferJavaFileObject extends SimpleJavaFileObject {
             final StringWriter buffer = new StringWriter();
 
-            public StringBufferJavaFileObject(Kind kind) {
+            public
+            StringBufferJavaFileObject(Kind kind) {
                 super(
                     URI.create("stringbuffer:///" + className.replace('.', '/') + kind.extension),
                     kind
                 );
             }
 
-            @Override
-            public Writer openWriter() throws IOException {
+            @Override public Writer
+            openWriter() throws IOException {
                 return this.buffer;
             }
 
-            @Override
-            public Reader openReader(boolean ignoreEncodingErrors) throws IOException {
+            @Override public Reader
+            openReader(boolean ignoreEncodingErrors) throws IOException {
                 return new StringReader(this.buffer.toString());
             }
 
-            @Override
-            public CharSequence getCharContent(boolean ignoreEncodingErrors) {
+            @Override public CharSequence
+            getCharContent(boolean ignoreEncodingErrors) {
                 return this.buffer.getBuffer();
             }
         }
@@ -138,8 +141,8 @@ public class ByteArrayJavaFileManager<M extends JavaFileManager> extends Forward
         return fileObject;
     }
 
-    @Override
-    public Iterable<JavaFileObject> list(
+    @Override public Iterable<JavaFileObject>
+    list(
         Location  location,
         String    packageName,
         Set<Kind> kinds,
@@ -148,8 +151,8 @@ public class ByteArrayJavaFileManager<M extends JavaFileManager> extends Forward
         Map<Kind, Map<String, JavaFileObject>> locationFiles = this.javaFiles.get(location);
         if (locationFiles == null) return super.list(location, packageName, kinds, recurse);
 
-        String prefix = packageName.length() == 0 ? "" : packageName + ".";
-        int pl = prefix.length();
+        String               prefix = packageName.length() == 0 ? "" : packageName + ".";
+        int                  pl     = prefix.length();
         List<JavaFileObject> result = new ArrayList<JavaFileObject>();
         for (Kind kind : kinds) {
             Map<String, JavaFileObject> kindFiles = locationFiles.get(kind);
@@ -167,28 +170,25 @@ public class ByteArrayJavaFileManager<M extends JavaFileManager> extends Forward
     /**
      * Byte array-based implementation of {@link JavaFileObject}.
      */
-    public static class ByteArrayJavaFileObject extends SimpleJavaFileObject {
+    public static
+    class ByteArrayJavaFileObject extends SimpleJavaFileObject {
         final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 
-        public ByteArrayJavaFileObject(String className, Kind kind) {
+        public
+        ByteArrayJavaFileObject(String className, Kind kind) {
             super(
                 URI.create("bytearray:///" + className.replace('.', '/') + kind.extension),
                 kind
             );
         }
 
-        @Override
-        public OutputStream openOutputStream() throws IOException {
-            return this.buffer;
-        }
+        @Override public OutputStream
+        openOutputStream() throws IOException { return this.buffer; }
 
-        public byte[] toByteArray() {
-            return this.buffer.toByteArray();
-        }
+        public byte[]
+        toByteArray() { return this.buffer.toByteArray(); }
 
-        @Override
-        public InputStream openInputStream() throws IOException {
-            return new ByteArrayInputStream(this.toByteArray());
-        }
+        @Override public InputStream
+        openInputStream() throws IOException { return new ByteArrayInputStream(this.toByteArray()); }
     }
 }

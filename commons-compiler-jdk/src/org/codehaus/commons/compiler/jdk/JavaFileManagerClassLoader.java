@@ -35,21 +35,22 @@ import javax.tools.JavaFileObject;
 import javax.tools.StandardLocation;
 import javax.tools.JavaFileObject.Kind;
 
-public class JavaFileManagerClassLoader extends ClassLoader {
+public
+class JavaFileManagerClassLoader extends ClassLoader {
 
     private final JavaFileManager javaFileManager;
 
-    public JavaFileManagerClassLoader(JavaFileManager javaFileManager) {
-        this.javaFileManager = javaFileManager;
-    }
+    public
+    JavaFileManagerClassLoader(JavaFileManager javaFileManager) { this.javaFileManager = javaFileManager; }
 
-    public JavaFileManagerClassLoader(JavaFileManager javaFileManager, ClassLoader parentClassLoader) {
+    public
+    JavaFileManagerClassLoader(JavaFileManager javaFileManager, ClassLoader parentClassLoader) {
         super(parentClassLoader);
         this.javaFileManager = javaFileManager;
     }
 
-    @Override
-    protected Class<?> findClass(String className) throws ClassNotFoundException {
+    @Override protected Class<?>
+    findClass(String className) throws ClassNotFoundException {
         byte[] ba;
         try {
             JavaFileObject classFile = this.javaFileManager.getJavaFileForInput(

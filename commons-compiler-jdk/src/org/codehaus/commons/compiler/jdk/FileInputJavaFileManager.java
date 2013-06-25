@@ -39,7 +39,8 @@ import org.codehaus.commons.compiler.Cookable;
  * A {@link ForwardingJavaFileManager} that maps accesses to a particular {@link Location} and {@link Kind} to
  * a path-based search in the file system.
  */
-final class FileInputJavaFileManager extends ForwardingJavaFileManager<JavaFileManager> {
+final
+class FileInputJavaFileManager extends ForwardingJavaFileManager<JavaFileManager> {
     private final Location location;
     private final Kind     kind;
     private final File[]   path;
@@ -63,13 +64,8 @@ final class FileInputJavaFileManager extends ForwardingJavaFileManager<JavaFileM
         this.optionalCharacterEncoding = optionalCharacterEncoding;
     }
 
-    @Override
-    public Iterable<JavaFileObject> list(
-        Location  location,
-        String    packageName,
-        Set<Kind> kinds,
-        boolean   recurse
-    ) throws IOException {
+    @Override public Iterable<JavaFileObject>
+    list(Location location, String packageName, Set<Kind> kinds, boolean recurse) throws IOException {
 
         if (location == this.location && kinds.contains(this.kind)) {
             Collection<JavaFileObject> result = new ArrayList<JavaFileObject>();
@@ -77,7 +73,7 @@ final class FileInputJavaFileManager extends ForwardingJavaFileManager<JavaFileM
             String rel = packageName.replace('.', File.separatorChar);
             for (File directory : this.path) {
                 File packageDirectory = new File(directory, rel);
-                result.addAll(list(
+                result.addAll(this.list(
                     packageDirectory,
                     packageName.isEmpty() ? "" : packageName + ".",
                     this.kind,
@@ -94,12 +90,8 @@ final class FileInputJavaFileManager extends ForwardingJavaFileManager<JavaFileM
      * @param qualification E.g. "", or "pkg1.pkg2."
      * @return              All {@link JavaFileObject}s of the given {@code kind} in the given {@code directory}
      */
-    private Collection<JavaFileObject> list(
-        File    directory,
-        String  qualification,
-        Kind    kind,
-        boolean recurse
-    ) throws IOException {
+    private Collection<JavaFileObject>
+    list(File directory, String qualification, Kind kind, boolean recurse) throws IOException {
         if (!directory.isDirectory()) return Collections.emptyList();
 
         Collection<JavaFileObject> result = new ArrayList<JavaFileObject>();
@@ -111,31 +103,24 @@ final class FileInputJavaFileManager extends ForwardingJavaFileManager<JavaFileM
                     qualification + name.substring(0, name.length() - kind.extension.length())
                 ));
             } else if (recurse && file.isDirectory()) {
-                result.addAll(list(file, qualification + name + ".", kind, true));
+                result.addAll(this.list(file, qualification + name + ".", kind, true));
             }
         }
         return result;
     }
 
-    @Override
-    public String inferBinaryName(Location location, JavaFileObject file) {
-        if (location == this.location) {
-            return ((InputFileJavaFileObject) file).getBinaryName();
-        }
+    @Override public String
+    inferBinaryName(Location location, JavaFileObject file) {
+        if (location == this.location) return ((InputFileJavaFileObject) file).getBinaryName();
+
         return super.inferBinaryName(location, file);
     }
 
-    @Override
-    public boolean hasLocation(Location location) {
-        return location == this.location || super.hasLocation(location);
-    }
+    @Override public boolean
+    hasLocation(Location location) { return location == this.location || super.hasLocation(location); }
 
-    @Override
-    public JavaFileObject getJavaFileForInput(
-        Location location,
-        String   className,
-        Kind     kind
-    ) throws IOException {
+    @Override public JavaFileObject
+    getJavaFileForInput(Location location, String className, Kind kind) throws IOException {
         if (location == this.location && kind == this.kind) {
 
             // Find the source file through the source path.
@@ -162,18 +147,20 @@ final class FileInputJavaFileManager extends ForwardingJavaFileManager<JavaFileM
     /**
      * A {@link JavaFileObject} that reads from a {@link File}.
      */
-    private class InputFileJavaFileObject extends SimpleJavaFileObject {
+    private
+    class InputFileJavaFileObject extends SimpleJavaFileObject {
         private final File   file;
         private final String binaryName;
 
-        public InputFileJavaFileObject(File file, String binaryName) {
+        public
+        InputFileJavaFileObject(File file, String binaryName) {
             super(file.toURI(), FileInputJavaFileManager.this.kind);
             this.file       = file;
             this.binaryName = binaryName;
         }
 
-        @Override
-        public Reader openReader(boolean ignoreEncodingErrors) throws IOException {
+        @Override public Reader
+        openReader(boolean ignoreEncodingErrors) throws IOException {
             return (
                 FileInputJavaFileManager.this.optionalCharacterEncoding == null
                 ? new FileReader(this.file)
@@ -184,8 +171,8 @@ final class FileInputJavaFileManager extends ForwardingJavaFileManager<JavaFileM
             );
         }
 
-        @Override
-        public CharSequence getCharContent(boolean ignoreEncodingErrors) throws IOException {
+        @Override public CharSequence
+        getCharContent(boolean ignoreEncodingErrors) throws IOException {
             Reader r = this.openReader(true);
             try {
                 return Cookable.readString(r);
@@ -194,8 +181,7 @@ final class FileInputJavaFileManager extends ForwardingJavaFileManager<JavaFileM
             }
         }
 
-        String getBinaryName() {
-            return this.binaryName;
-        }
+        String
+        getBinaryName() { return this.binaryName; }
     }
 }

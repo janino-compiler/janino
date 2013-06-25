@@ -35,7 +35,8 @@ import javax.tools.JavaFileObject.Kind;
 import org.codehaus.commons.compiler.*;
 import org.codehaus.commons.compiler.jdk.ByteArrayJavaFileManager.ByteArrayJavaFileObject;
 
-public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
+public
+class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 
     private File[]             sourcePath;
     private String             optionalCharacterEncoding;
@@ -50,20 +51,21 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
     /**
      * @see ICompilerFactory#newJavaSourceClassLoader()
      */
-    public JavaSourceClassLoader() {
-        this.init();
-    }
+    public
+    JavaSourceClassLoader() { this.init(); }
 
     /**
      * @see ICompilerFactory#newJavaSourceClassLoader(ClassLoader)
      */
-    public JavaSourceClassLoader(ClassLoader parentClassLoader) {
+    public
+    JavaSourceClassLoader(ClassLoader parentClassLoader) {
         super(parentClassLoader);
         this.init();
     }
 
 
-    private void init() {
+    private void
+    init() {
         this.compiler = ToolProvider.getSystemJavaCompiler();
         if (this.compiler == null) {
             throw new UnsupportedOperationException(
@@ -76,7 +78,8 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
      * Creates the underlying {@link JavaFileManager} lazily, because {@link #setSourcePath(File[])} and consorts
      * are called <i>after</i> initialization.
      */
-    JavaFileManager getJavaFileManager() {
+    JavaFileManager
+    getJavaFileManager() {
         if (this.fileManager == null) {
 
             // Get the original FM, which reads class files through this JVM's BOOTCLASSPATH and
@@ -101,18 +104,16 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
         return this.fileManager;
     }
 
-    @Override
-    public void setSourcePath(File[] sourcePath) {
-        this.sourcePath = sourcePath;
-    }
+    @Override public void
+    setSourcePath(File[] sourcePath) { this.sourcePath = sourcePath; }
 
-    @Override
-    public void setSourceFileCharacterEncoding(String optionalCharacterEncoding) {
+    @Override public void
+    setSourceFileCharacterEncoding(String optionalCharacterEncoding) {
         this.optionalCharacterEncoding = optionalCharacterEncoding;
     }
 
-    @Override
-    public void setDebuggingInfo(boolean lines, boolean vars, boolean source) {
+    @Override public void
+    setDebuggingInfo(boolean lines, boolean vars, boolean source) {
         this.debuggingInfoLines  = lines;
         this.debuggingInfoVars   = vars;
         this.debuggingInfoSource = source;
@@ -124,16 +125,16 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
      *
      * @param compilerOptions All command line options supported by the JDK JAVAC tool
      */
-    public void setCompilerOptions(String[] compilerOptions) {
-        this.compilerOptions = Arrays.asList(compilerOptions);
-    }
+    public void
+    setCompilerOptions(String[] compilerOptions) { this.compilerOptions = Arrays.asList(compilerOptions); }
 
     /**
      * Implementation of {@link ClassLoader#findClass(String)}.
      *
      * @throws ClassNotFoundException
      */
-    protected Class<?> findClass(String className) throws ClassNotFoundException {
+    protected Class<?>
+    findClass(String className) throws ClassNotFoundException {
 
         byte[] ba;
         int    size;
@@ -179,8 +180,8 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
                     this.getJavaFileManager(),              // fileManager
                     new DiagnosticListener<JavaFileObject>() { // diagnosticListener
 
-                        @Override
-                        public void report(final Diagnostic<? extends JavaFileObject> diagnostic) {
+                        @Override public void
+                        report(final Diagnostic<? extends JavaFileObject> diagnostic) {
                             if (diagnostic.getKind() == Diagnostic.Kind.ERROR) {
                                 throw new DiagnosticException(diagnostic);
                             }
@@ -206,11 +207,11 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 
             if (classFileObject instanceof ByteArrayJavaFileObject) {
                 ByteArrayJavaFileObject bajfo = (ByteArrayJavaFileObject) classFileObject;
-                ba = bajfo.toByteArray();
+                ba   = bajfo.toByteArray();
                 size = ba.length;
             } else
             {
-                ba = new byte[4096];
+                ba   = new byte[4096];
                 size = 0;
                 InputStream is = classFileObject.openInputStream();
                 try {
@@ -249,7 +250,8 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
      * @param className Fully qualified class name, e.g. "pkg1.pkg2.Outer$Inner"
      * @return the name of the resource, e.g. "pkg1/pkg2/Outer.java"
      */
-    private static String getSourceResourceName(String className) {
+    private static String
+    getSourceResourceName(String className) {
 
         // Strip nested type suffixes.
         {
@@ -261,20 +263,18 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
         return className.replace('.', '/') + ".java";
     }
 
-    public static class DiagnosticException extends RuntimeException {
+    public static
+    class DiagnosticException extends RuntimeException {
 
         private static final long serialVersionUID = 5589635876875819926L;
 
-        public DiagnosticException(String message) {
-            super(message);
-        }
+        public
+        DiagnosticException(String message) { super(message); }
 
-        public DiagnosticException(Throwable cause) {
-            super(cause);
-        }
+        public
+        DiagnosticException(Throwable cause) { super(cause); }
 
-        public DiagnosticException(Diagnostic<? extends JavaFileObject> diagnostic) {
-            super(diagnostic.toString());
-        }
+        public
+        DiagnosticException(Diagnostic<? extends JavaFileObject> diagnostic) { super(diagnostic.toString()); }
     }
 }

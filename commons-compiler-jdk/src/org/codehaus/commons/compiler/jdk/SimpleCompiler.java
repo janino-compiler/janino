@@ -37,7 +37,8 @@ import javax.tools.JavaFileObject.Kind;
 
 import org.codehaus.commons.compiler.*;
 
-public class SimpleCompiler extends Cookable implements ISimpleCompiler {
+public
+class SimpleCompiler extends Cookable implements ISimpleCompiler {
 
     private ClassLoader parentClassLoader = Thread.currentThread().getContextClassLoader();
     private ClassLoader result;
@@ -45,17 +46,11 @@ public class SimpleCompiler extends Cookable implements ISimpleCompiler {
     private boolean     debugLines;
     private boolean     debugVars;
 
-    @Override
-    public ClassLoader getClassLoader() {
-        assertCooked();
-        return this.result;
-    }
+    @Override public ClassLoader
+    getClassLoader() { assertCooked(); return this.result; }
 
-    @Override
-    public void cook(
-        String       optionalFileName,
-        final Reader r
-    ) throws CompileException, IOException {
+    @Override public void
+    cook(String optionalFileName, final Reader r) throws CompileException, IOException {
         assertNotCooked();
 
         // Create one Java source file in memory, which will be compiled later.
@@ -69,20 +64,14 @@ public class SimpleCompiler extends Cookable implements ISimpleCompiler {
             }
             compilationUnit = new SimpleJavaFileObject(uri, Kind.SOURCE) {
 
-                @Override
-                public boolean isNameCompatible(String simpleName, Kind kind) {
-                    return true;
-                }
+                @Override public boolean
+                isNameCompatible(String simpleName, Kind kind) { return true; }
 
-                @Override
-                public Reader openReader(boolean ignoreEncodingErrors) throws IOException {
-                    return r;
-                }
+                @Override public Reader
+                openReader(boolean ignoreEncodingErrors) throws IOException { return r; }
 
-                @Override
-                public CharSequence getCharContent(
-                    boolean ignoreEncodingErrors
-                ) throws IOException {
+                @Override public CharSequence
+                getCharContent(boolean ignoreEncodingErrors) throws IOException {
                     return readString(this.openReader(ignoreEncodingErrors));
                 }
             };
@@ -112,8 +101,8 @@ public class SimpleCompiler extends Cookable implements ISimpleCompiler {
                 fileManager,                               // fileManager
                 new DiagnosticListener<JavaFileObject>() { // diagnosticListener
 
-                    @Override
-                    public void report(Diagnostic<? extends JavaFileObject> diagnostic) {
+                    @Override public void
+                    report(Diagnostic<? extends JavaFileObject> diagnostic) {
 //System.err.println("*** " + diagnostic.toString() + " *** " + diagnostic.getCode());
 
                         Location loc = new Location(
@@ -121,7 +110,7 @@ public class SimpleCompiler extends Cookable implements ISimpleCompiler {
                             (short) diagnostic.getLineNumber(),
                             (short) diagnostic.getColumnNumber()
                         );
-                        String code = diagnostic.getCode();
+                        String code    = diagnostic.getCode();
                         String message = diagnostic.getMessage(null) + " (" + code + ")";
 
                         // Wrap the exception in a RuntimeException, because "report()" does not declare checked
@@ -149,23 +138,26 @@ public class SimpleCompiler extends Cookable implements ISimpleCompiler {
             Throwable cause = rte.getCause();
             if (cause != null) {
                 cause = cause.getCause();
-                if (cause instanceof CompileException) throw (CompileException) cause;
-                if (cause instanceof IOException)      throw (IOException)      cause;
+                if (cause instanceof CompileException) {
+                    throw (CompileException) cause; // SUPPRESS CHECKSTYLE AvoidHidingCause
+                }
+                if (cause instanceof IOException) {
+                    throw (IOException) cause; // SUPPRESS CHECKSTYLE AvoidHidingCause
+                }
             }
             throw rte;
         }
 
         // Create a ClassLoader that reads class files from our FM.
         this.result = AccessController.doPrivileged(new PrivilegedAction<JavaFileManagerClassLoader>() {
-            public JavaFileManagerClassLoader run() {
-                return new JavaFileManagerClassLoader(fileManager, SimpleCompiler.this.parentClassLoader);
-            }
+
+            public JavaFileManagerClassLoader
+            run() { return new JavaFileManagerClassLoader(fileManager, SimpleCompiler.this.parentClassLoader); }
         });
     }
 
-    protected void cook(
-        JavaFileObject compilationUnit
-    ) throws CompileException, IOException {
+    protected void
+    cook(JavaFileObject compilationUnit) throws CompileException, IOException {
 
         // Find the JDK Java compiler.
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
@@ -191,8 +183,8 @@ public class SimpleCompiler extends Cookable implements ISimpleCompiler {
                 fileManager,                           // fileManager
                 new DiagnosticListener<JavaFileObject>() { // diagnosticListener
 
-                    @Override
-                    public void report(Diagnostic<? extends JavaFileObject> diagnostic) {
+                    @Override public void
+                    report(Diagnostic<? extends JavaFileObject> diagnostic) {
                         System.err.println("*** " + diagnostic.toString() + " *** " + diagnostic.getCode());
 
                         Location loc = new Location(
@@ -200,7 +192,7 @@ public class SimpleCompiler extends Cookable implements ISimpleCompiler {
                             (short) diagnostic.getLineNumber(),
                             (short) diagnostic.getColumnNumber()
                         );
-                        String code = diagnostic.getCode();
+                        String code    = diagnostic.getCode();
                         String message = diagnostic.getMessage(null) + " (" + code + ")";
 
                         // Wrap the exception in a RuntimeException, because "report()" does not declare checked
@@ -220,29 +212,33 @@ public class SimpleCompiler extends Cookable implements ISimpleCompiler {
             Throwable cause = rte.getCause();
             if (cause != null) {
                 cause = cause.getCause();
-                if (cause instanceof CompileException) throw (CompileException) cause;
-                if (cause instanceof IOException)      throw (IOException)      cause;
+                if (cause instanceof CompileException) {
+                    throw (CompileException) cause; // SUPPRESS CHECKSTYLE AvoidHidingCause
+                }
+                if (cause instanceof IOException) {
+                    throw (IOException) cause; // SUPPRESS CHECKSTYLE AvoidHidingCause
+                }
             }
             throw rte;
         }
 
         // Create a ClassLoader that reads class files from our FM.
         this.result = AccessController.doPrivileged(new PrivilegedAction<JavaFileManagerClassLoader>() {
-            public JavaFileManagerClassLoader run() {
-                return new JavaFileManagerClassLoader(fileManager, SimpleCompiler.this.parentClassLoader);
-            }
+
+            public JavaFileManagerClassLoader
+            run() { return new JavaFileManagerClassLoader(fileManager, SimpleCompiler.this.parentClassLoader); }
         });
     }
 
-    @Override
-    public void setDebuggingInformation(boolean debugSource, boolean debugLines, boolean debugVars) {
+    @Override public void
+    setDebuggingInformation(boolean debugSource, boolean debugLines, boolean debugVars) {
         this.debugSource = debugSource;
-        this.debugLines = debugLines;
-        this.debugVars = debugVars;
+        this.debugLines  = debugLines;
+        this.debugVars   = debugVars;
     }
 
-    @Override
-    public void setParentClassLoader(ClassLoader optionalParentClassLoader) {
+    @Override public void
+    setParentClassLoader(ClassLoader optionalParentClassLoader) {
         assertNotCooked();
         this.parentClassLoader = (
             optionalParentClassLoader != null
@@ -257,22 +253,20 @@ public class SimpleCompiler extends Cookable implements ISimpleCompiler {
      * @param optionalParentClassLoader
      * @param auxiliaryClasses
      */
-    @Deprecated
-    public void setParentClassLoader(ClassLoader optionalParentClassLoader, Class<?>[] auxiliaryClasses) {
+    @Deprecated public void
+    setParentClassLoader(ClassLoader optionalParentClassLoader, Class<?>[] auxiliaryClasses) {
         this.setParentClassLoader(optionalParentClassLoader);
     }
 
     /**
      * Throw an {@link IllegalStateException} if this {@link Cookable} is not yet cooked.
      */
-    protected void assertCooked() {
-        if (this.result == null) throw new IllegalStateException("Not yet cooked");
-    }
+    protected void
+    assertCooked() { if (this.result == null) throw new IllegalStateException("Not yet cooked"); }
 
     /**
      * Throw an {@link IllegalStateException} if this {@link Cookable} is already cooked.
      */
-    protected void assertNotCooked() {
-        if (this.result != null) throw new IllegalStateException("Already cooked");
-    }
+    protected void
+    assertNotCooked() { if (this.result != null) throw new IllegalStateException("Already cooked"); }
 }

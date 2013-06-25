@@ -35,30 +35,31 @@ import java.util.*;
  * <p>
  * This {@link Reader} does not support MARK.
  */
-public class MultiReader extends Reader {
+public
+class MultiReader extends Reader {
     private static final Reader EMPTY_READER = new StringReader("");
 
     private final List<Reader>     delegates;
     private final Iterator<Reader> delegateIterator;
     private Reader                 currentDelegate = EMPTY_READER;
 
-    public MultiReader(List<Reader> delegates) {
-        this.delegates = delegates;
+    public
+    MultiReader(List<Reader> delegates) {
+        this.delegates        = delegates;
         this.delegateIterator = delegates.iterator();
     }
 
-    public MultiReader(Reader[] delegates) {
-        this(Arrays.asList(delegates));
-    }
+    public
+    MultiReader(Reader[] delegates) { this(Arrays.asList(delegates)); }
 
     /**
      * Closes all delegates.
      */
-    public void close() throws IOException {
-        for (Reader delegate : this.delegates) delegate.close();
-    }
+    public void
+    close() throws IOException { for (Reader delegate : this.delegates) delegate.close(); }
 
-    public int read() throws IOException {
+    public int
+    read() throws IOException {
         for (;;) {
             int result = this.currentDelegate.read();
             if (result != -1) return result;
@@ -67,7 +68,8 @@ public class MultiReader extends Reader {
         }
     }
 
-    public long skip(long n) throws IOException {
+    public long
+    skip(long n) throws IOException {
         long skipped = 0L;
         for (;;) {
             long result = this.currentDelegate.skip(n - skipped);
@@ -81,7 +83,8 @@ public class MultiReader extends Reader {
         }
     }
 
-    public int read(final char[] cbuf, final int off, final int len) throws IOException {
+    public int
+    read(final char[] cbuf, final int off, final int len) throws IOException {
         int read = 0;
         for (;;) {
             long result = this.currentDelegate.read(cbuf, off + read, len - read);

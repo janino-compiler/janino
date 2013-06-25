@@ -48,7 +48,8 @@ import org.codehaus.commons.io.MultiReader;
  * <b>Also notice that the parsing of leading IMPORT declarations is heuristic and has certain
  * limitations; see {@link #parseImportDeclarations(Reader)}.</b>
  */
-public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
+public
+class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
 
     protected boolean[]    optionalStaticMethod;
     protected Class<?>[]   optionalReturnTypes;
@@ -68,9 +69,8 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
      * @see #ScriptEvaluator()
      * @see Cookable#cook(String)
      */
-    public ScriptEvaluator(String script) throws CompileException {
-        this.cook(script);
-    }
+    public
+    ScriptEvaluator(String script) throws CompileException { this.cook(script); }
 
     /**
      * Equivalent to<pre>
@@ -82,10 +82,8 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
      * @see #setReturnType(Class)
      * @see Cookable#cook(String)
      */
-    public ScriptEvaluator(
-        String   script,
-        Class<?> returnType
-    ) throws CompileException {
+    public
+    ScriptEvaluator(String script, Class<?> returnType) throws CompileException {
         this.setReturnType(returnType);
         this.cook(script);
     }
@@ -102,12 +100,9 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
      * @see #setParameters(String[], Class[])
      * @see Cookable#cook(String)
      */
-    public ScriptEvaluator(
-        String     script,
-        Class<?>   returnType,
-        String[]   parameterNames,
-        Class<?>[] parameterTypes
-    ) throws CompileException {
+    public
+    ScriptEvaluator(String script, Class<?> returnType, String[] parameterNames, Class<?>[] parameterTypes)
+    throws CompileException {
         this.setReturnType(returnType);
         this.setParameters(parameterNames, parameterTypes);
         this.cook(script);
@@ -127,7 +122,8 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
      * @see #setThrownExceptions(Class[])
      * @see Cookable#cook(String)
      */
-    public ScriptEvaluator(
+    public
+    ScriptEvaluator(
         String     script,
         Class<?>   returnType,
         String[]   parameterNames,
@@ -156,7 +152,8 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
      * @see SimpleCompiler#setParentClassLoader(ClassLoader)
      * @see Cookable#cook(String, InputStream)
      */
-    public ScriptEvaluator(
+    public
+    ScriptEvaluator(
         String      optionalFileName,
         InputStream is,
         Class<?>    returnType,
@@ -188,7 +185,8 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
      * @see SimpleCompiler#setParentClassLoader(ClassLoader)
      * @see Cookable#cook(String, Reader)
      */
-    public ScriptEvaluator(
+    public
+    ScriptEvaluator(
         String      optionalFileName,
         Reader      reader,
         Class<?>    returnType,
@@ -206,82 +204,74 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
 
     public ScriptEvaluator() {}
 
-    public void setStaticMethod(boolean staticMethod) {
-        this.setStaticMethod(new boolean[] { staticMethod });
-    }
+    public void
+    setStaticMethod(final boolean staticMethod) { this.setStaticMethod(new boolean[] { staticMethod }); }
 
-    public void setReturnType(@SuppressWarnings("rawtypes") Class returnType) {
+    public void
+    setReturnType(@SuppressWarnings("rawtypes") Class returnType) {
         this.setReturnTypes(new Class<?>[] { returnType });
     }
 
-    public void setMethodName(String methodName) {
-        this.setMethodNames(new String[] { methodName });
-    }
+    public void
+    setMethodName(String methodName) { this.setMethodNames(new String[] { methodName }); }
 
-    public void setParameters(
-        String[]                              names,
-        @SuppressWarnings("rawtypes") Class[] types
-    ) {
+    public void
+    setParameters(String[] names, @SuppressWarnings("rawtypes") Class[] types) {
         this.setParameters(new String[][] { names }, new Class<?>[][] { types });
     }
 
-    public void setThrownExceptions(@SuppressWarnings("rawtypes") Class[] thrownExceptions) {
+    public void
+    setThrownExceptions(@SuppressWarnings("rawtypes") Class[] thrownExceptions) {
         this.setThrownExceptions(new Class[][] { thrownExceptions });
     }
 
-    @Override
-    public void cook(
-        String optionalFileName,
-        Reader r
-    ) throws CompileException, IOException {
+    @Override public void
+    cook(String optionalFileName, Reader r) throws CompileException, IOException {
         this.cook(new String[] { optionalFileName }, new Reader[] { r });
     }
 
-    public Object evaluate(Object[] arguments) throws InvocationTargetException {
-        return this.evaluate(0, arguments);
-    }
+    public Object
+    evaluate(Object[] arguments) throws InvocationTargetException { return this.evaluate(0, arguments); }
 
-    public Method getMethod() {
-        return this.getMethod(0);
-    }
+    public Method
+    getMethod() { return this.getMethod(0); }
 
-    public void setStaticMethod(boolean[] staticMethod) {
+    public void
+    setStaticMethod(boolean[] staticMethod) {
         assertNotCooked();
         this.optionalStaticMethod = (boolean[]) staticMethod.clone();
     }
 
-    public void setReturnTypes(@SuppressWarnings("rawtypes") Class[] returnTypes) {
+    public void
+    setReturnTypes(@SuppressWarnings("rawtypes") Class[] returnTypes) {
         assertNotCooked();
         this.optionalReturnTypes = (Class<?>[]) returnTypes.clone();
     }
 
-    public void setMethodNames(String[] methodNames) {
+    public void
+    setMethodNames(String[] methodNames) {
         assertNotCooked();
         this.optionalMethodNames = (String[]) methodNames.clone();
     }
 
-    public void setParameters(
-        String[][]                              names,
-        @SuppressWarnings("rawtypes") Class[][] types
-    ) {
+    public void
+    setParameters(String[][] names, @SuppressWarnings("rawtypes") Class[][] types) {
         assertNotCooked();
         this.optionalParameterNames = (String[][]) names.clone();
         this.optionalParameterTypes = (Class<?>[][]) types.clone();
     }
 
-    public void setThrownExceptions(@SuppressWarnings("rawtypes") Class[][] thrownExceptions) {
+    public void
+    setThrownExceptions(@SuppressWarnings("rawtypes") Class[][] thrownExceptions) {
         assertNotCooked();
         this.optionalThrownExceptions = (Class<?>[][]) thrownExceptions.clone();
     }
 
-    public final void cook(Reader[] readers) throws CompileException, IOException {
-        this.cook(null, readers);
-    }
+    public final void
+    cook(Reader[] readers) throws CompileException, IOException { this.cook(null, readers); }
 
-    public void cook(
-        String[] optionalFileNames,
-        Reader[] readers
-    ) throws CompileException, IOException {
+    public void
+    cook(String[] optionalFileNames, Reader[] readers) throws CompileException, IOException {
         String[] imports;
 
         if (readers.length == 1) {
@@ -297,29 +287,25 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
         this.cook(optionalFileNames, readers, imports);
     }
 
-    public final void cook(String[] strings) throws CompileException {
-        this.cook(null, strings);
-    }
+    public final void
+    cook(String[] strings) throws CompileException { this.cook(null, strings); }
 
-    public void cook(String[] optionalFileNames, String[] strings) throws CompileException {
+    public void
+    cook(String[] optionalFileNames, String[] strings) throws CompileException {
         Reader[] readers = new Reader[strings.length];
         for (int i = 0; i < strings.length; ++i) readers[i] = new StringReader(strings[i]);
         try {
             this.cook(optionalFileNames, readers);
         } catch (IOException ioe) {
-            ioe.printStackTrace();
-            throw new RuntimeException("SNO: IOException despite StringReader");
+            throw new RuntimeException("SNO: IOException despite StringReader", ioe);
         }
     }
 
     /**
      * @param readers The scripts to cook
      */
-    protected final void cook(
-        String[] optionalFileNames,
-        Reader[] readers,
-        String[] imports
-    ) throws CompileException, IOException {
+    protected final void
+    cook(String[] optionalFileNames, Reader[] readers, String[] imports) throws CompileException, IOException {
 
         // The "dimension" of this ScriptEvaluator, i.e. how many scripts are cooked at the same
         // time.
@@ -388,7 +374,7 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
 
             {
                 StringWriter sw = new StringWriter();
-                PrintWriter pw = new PrintWriter(sw);
+                PrintWriter  pw = new PrintWriter(sw);
 
                 pw.print("public ");
                 if (staticMethod) pw.print("static ");
@@ -416,7 +402,7 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
 
             {
                 StringWriter sw = new StringWriter();
-                PrintWriter pw = new PrintWriter(sw);
+                PrintWriter  pw = new PrintWriter(sw);
                 pw.println("}");
                 pw.close();
                 classBody.add(new StringReader(sw.toString()));
@@ -437,7 +423,10 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
                         this.optionalParameterTypes == null ? new Class[0] : this.optionalParameterTypes[i]
                     );
                 } catch (NoSuchMethodException ex) {
-                    throw new RuntimeException("SNO: Loaded class does not declare method \"" + methodNames[i] + "\"");
+                    throw new RuntimeException(
+                        "SNO: Loaded class does not declare method \"" + methodNames[i] + "\"",
+                        ex
+                    );
                 }
             }
         } else
@@ -455,7 +444,8 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
                     this.parameterTypes = parameterTypes;
                 }
 
-                public boolean equals(Object o) {
+                public boolean
+                equals(Object o) {
                     if (!(o instanceof MethodWrapper)) return false;
                     MethodWrapper that = (MethodWrapper) o;
                     return (
@@ -464,11 +454,10 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
                     );
                 }
 
-                public int hashCode() {
-                    return this.name.hashCode() ^ Arrays.hashCode(this.parameterTypes);
-                }
+                public int
+                hashCode() { return this.name.hashCode() ^ Arrays.hashCode(this.parameterTypes); }
             }
-            Method[] ma = c.getDeclaredMethods();
+            Method[]                   ma  = c.getDeclaredMethods();
             Map<MethodWrapper, Method> dms = new HashMap<MethodWrapper, Method>(2 * count);
             for (int i = 0; i < ma.length; ++i) {
                 Method m = ma[i];
@@ -487,15 +476,15 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
         }
     }
 
-    protected Class<?> getDefaultReturnType() {
-        return void.class;
-    }
+    protected Class<?>
+    getDefaultReturnType() { return void.class; }
 
     /**
      * @param script Contains the sequence of script tokens
      * @see #createFastEvaluator(String, Class, String[])
      */
-    public Object createFastEvaluator(
+    public Object
+    createFastEvaluator(
         String                              script,
         @SuppressWarnings("rawtypes") Class interfaceToImplement,
         String[]                            parameterNames
@@ -510,12 +499,11 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
     /**
      * Don't use.
      */
-    @Override
-    public final Object createInstance(Reader reader) {
-        throw new UnsupportedOperationException("createInstance");
-    }
+    @Override public final Object
+    createInstance(Reader reader) { throw new UnsupportedOperationException("createInstance"); }
 
-    public Object createFastEvaluator(
+    public Object
+    createFastEvaluator(
         Reader                              r,
         @SuppressWarnings("rawtypes") Class interfaceToImplement,
         String[]                            parameterNames
@@ -543,28 +531,28 @@ public class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvalua
         this.setParameters(parameterNames, methodToImplement.getParameterTypes());
         this.setThrownExceptions(methodToImplement.getExceptionTypes());
         this.cook(r);
-        Class <?>c = this.getMethod().getDeclaringClass();
+        Class<?> c = this.getMethod().getDeclaringClass();
         try {
             return c.newInstance();
         } catch (InstantiationException e) {
-            // SNO - Declared class is always non-abstract.
-            throw new RuntimeException(e.toString());
+            throw new RuntimeException("SNO - Declared class is always non-abstract", e);
         } catch (IllegalAccessException e) {
-            // SNO - interface methods are always PUBLIC.
-            throw new RuntimeException(e.toString());
+            throw new RuntimeException("SNO - interface methods are always PUBLIC", e);
         }
     }
 
-    public Object evaluate(int idx, Object[] arguments) throws InvocationTargetException {
+    public Object
+    evaluate(int idx, Object[] arguments) throws InvocationTargetException {
         if (this.result == null) throw new IllegalStateException("Must only be called after \"cook()\"");
         try {
             return this.result[idx].invoke(null, arguments);
         } catch (IllegalAccessException ex) {
-            throw new RuntimeException(ex.toString());
+            throw new RuntimeException(ex.toString(), ex);
         }
     }
 
-    public Method getMethod(int idx) {
+    public Method
+    getMethod(int idx) {
         if (this.result == null) throw new IllegalStateException("Must only be called after \"cook()\"");
         return this.result[idx];
     }

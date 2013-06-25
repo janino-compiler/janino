@@ -30,45 +30,38 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import org.codehaus.commons.compiler.*;
 
-public class CompilerFactory extends AbstractCompilerFactory {
+public
+class CompilerFactory extends AbstractCompilerFactory {
 
-    public String getId() {
-        return "org.codehaus.commons.compiler.jdk";
-    }
+    public String
+    getId() { return "org.codehaus.commons.compiler.jdk"; }
 
-    public String getImplementationVersion() {
-        return CompilerFactory.class.getPackage().getImplementationVersion();
-    }
+    public String
+    getImplementationVersion() { return CompilerFactory.class.getPackage().getImplementationVersion(); }
 
-    public IExpressionEvaluator newExpressionEvaluator() {
-        return new ExpressionEvaluator();
-    }
+    public IExpressionEvaluator
+    newExpressionEvaluator() { return new ExpressionEvaluator(); }
 
-    public IScriptEvaluator newScriptEvaluator() {
-        return new ScriptEvaluator();
-    }
+    public IScriptEvaluator
+    newScriptEvaluator() { return new ScriptEvaluator(); }
 
-    public IClassBodyEvaluator newClassBodyEvaluator() {
-        return new ClassBodyEvaluator();
-    }
+    public IClassBodyEvaluator
+    newClassBodyEvaluator() { return new ClassBodyEvaluator(); }
 
-    public ISimpleCompiler newSimpleCompiler() {
-        return new SimpleCompiler();
-    }
+    public ISimpleCompiler
+    newSimpleCompiler() { return new SimpleCompiler(); }
 
-    public AbstractJavaSourceClassLoader newJavaSourceClassLoader() {
+    public AbstractJavaSourceClassLoader
+    newJavaSourceClassLoader() {
         return AccessController.doPrivileged(new PrivilegedAction<JavaSourceClassLoader>() {
-            public JavaSourceClassLoader run() {
-                return new JavaSourceClassLoader();
-            }
+            public JavaSourceClassLoader run() { return new JavaSourceClassLoader(); }
         });
     }
 
-    public AbstractJavaSourceClassLoader newJavaSourceClassLoader(final ClassLoader parentClassLoader) {
+    public AbstractJavaSourceClassLoader
+    newJavaSourceClassLoader(final ClassLoader parentClassLoader) {
         return AccessController.doPrivileged(new PrivilegedAction<JavaSourceClassLoader>() {
-            public JavaSourceClassLoader run() {
-                return new JavaSourceClassLoader(parentClassLoader);
-            }
+            public JavaSourceClassLoader run() { return new JavaSourceClassLoader(parentClassLoader); }
         });
     }
 }

@@ -56,55 +56,54 @@ import org.codehaus.commons.io.MultiReader;
  *
  * @see IClassBodyEvaluator
  */
-public class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
+public
+class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
 
     private String[]   optionalDefaultImports;
     private String     className = IClassBodyEvaluator.DEFAULT_CLASS_NAME;
     private Class<?>   optionalExtendedType;
-    private Class<?>[] implementedTypes = new Class[0];;
+    private Class<?>[] implementedTypes = new Class[0];
 
     private Class<?> result;
 
-    @Override
-    public void setClassName(String className) {
+    @Override public void
+    setClassName(String className) {
         assertNotCooked();
         this.className = className;
     }
 
-    @Override
-    public void setDefaultImports(String[] optionalDefaultImports) {
+    @Override public void
+    setDefaultImports(String[] optionalDefaultImports) {
         assertNotCooked();
         this.optionalDefaultImports = optionalDefaultImports;
     }
 
-    @Override
-    public void setExtendedClass(@SuppressWarnings("rawtypes") Class optionalExtendedType) {
+    @Override public void
+    setExtendedClass(@SuppressWarnings("rawtypes") Class optionalExtendedType) {
         assertNotCooked();
         this.optionalExtendedType = optionalExtendedType;
     }
 
     /** @deprecated */
-    @Override
-    public void setExtendedType(@SuppressWarnings("rawtypes") Class optionalExtendedClass) {
+    @Override public void
+    setExtendedType(@SuppressWarnings("rawtypes") Class optionalExtendedClass) {
         this.setExtendedClass(optionalExtendedClass);
     }
 
-    @Override
-    public void setImplementedInterfaces(@SuppressWarnings("rawtypes") Class[] implementedTypes) {
+    @Override public void
+    setImplementedInterfaces(@SuppressWarnings("rawtypes") Class[] implementedTypes) {
         assertNotCooked();
         this.implementedTypes = implementedTypes;
     }
 
     /** @deprecated */
-    @Override
-    public void setImplementedTypes(@SuppressWarnings("rawtypes") Class[] implementedInterfaces) {
+    @Override public void
+    setImplementedTypes(@SuppressWarnings("rawtypes") Class[] implementedInterfaces) {
         this.setImplementedInterfaces(implementedInterfaces);
     }
 
-    public void cook(
-        String optionalFileName,
-        Reader r
-    ) throws CompileException, IOException {
+    public void
+    cook(String optionalFileName, Reader r) throws CompileException, IOException {
         if (!r.markSupported()) r = new BufferedReader(r);
         this.cook(optionalFileName, ClassBodyEvaluator.parseImportDeclarations(r), r);
     }
@@ -113,11 +112,8 @@ public class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEval
      * @param imports E.g. "java.io.*" or "static java.util.Arrays.asList"
      * @param r The class body to cook, without leading IMPORT declarations
      */
-    protected void cook(
-        String   optionalFileName,
-        String[] imports,
-        Reader   r
-    ) throws CompileException, IOException {
+    protected void
+    cook(String optionalFileName, String[] imports, Reader r) throws CompileException, IOException {
 
         // Wrap the class body in a compilation unit.
         {
@@ -131,11 +127,11 @@ public class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEval
                 {
                     int idx = this.className.lastIndexOf('.');
                     if (idx == -1) {
-                        packageName = "";
+                        packageName     = "";
                         simpleClassName = this.className;
                     } else
                     {
-                        packageName = this.className.substring(0, idx);
+                        packageName     = this.className.substring(0, idx);
                         simpleClassName = this.className.substring(idx + 1);
                     }
                 }
@@ -216,9 +212,8 @@ public class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEval
     /**
      * @return The {@link Class} created by the preceding call to {@link #cook(Reader)}
      */
-    public Class<?> getClazz() {
-        return this.result;
-    }
+    public Class<?>
+    getClazz() { return this.result; }
 
     /**
      * Heuristically parse IMPORT declarations at the beginning of the character stream produced
@@ -232,14 +227,15 @@ public class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEval
      * @param r A {@link Reader} that supports MARK, e.g. a {@link BufferedReader}
      * @return  The parsed imports, e.g. {@code { "java.util.*", "static java.util.Map.Entry" }}
      */
-    protected static String[] parseImportDeclarations(Reader r) throws IOException {
+    protected static String[]
+    parseImportDeclarations(Reader r) throws IOException {
         final CharBuffer cb = CharBuffer.allocate(10000);
         r.mark(cb.limit());
         r.read(cb);
         cb.rewind();
 
-        List<String> imports = new ArrayList<String>();
-        int afterLastImport = 0;
+        List<String> imports         = new ArrayList<String>();
+        int          afterLastImport = 0;
         for (Matcher matcher = IMPORT_STATEMENT_PATTERN.matcher(cb); matcher.find();) {
             imports.add(matcher.group(1));
             afterLastImport = matcher.end();
@@ -258,25 +254,18 @@ public class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEval
         + ");"
     );
 
-    @Override
-    public Object createInstance(Reader reader) throws CompileException, IOException {
+    @Override public Object
+    createInstance(Reader reader) throws CompileException, IOException {
         this.cook(reader);
         try {
             return this.getClazz().newInstance();
         } catch (InstantiationException ie) {
-            CompileException ce = new CompileException((
+            throw new CompileException((
                 "Class is abstract, an interface, an array class, a primitive type, or void; "
                 + "or has no zero-parameter constructor"
-            ), null);
-            ce.initCause(ie);
-            throw ce;
+            ), null, ie);
         } catch (IllegalAccessException iae) {
-            CompileException ce = new CompileException(
-                "The class or its zero-parameter constructor is not accessible",
-                null
-            );
-            ce.initCause(iae);
-            throw ce;
+            throw new CompileException("The class or its zero-parameter constructor is not accessible", null, iae);
         }
     }
 }

@@ -75,9 +75,10 @@ import org.codehaus.commons.compiler.IExpressionEvaluator;
  * (How can it be that interface method invocation is slower than reflection for
  * the server JVM?)
  */
-public class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluator {
+public
+class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluator {
 
-	private Class<?>[] optionalExpressionTypes;
+    private Class<?>[] optionalExpressionTypes;
 
     /**
      * Equivalent to<pre>
@@ -91,7 +92,8 @@ public class ExpressionEvaluator extends ScriptEvaluator implements IExpressionE
      * @see ScriptEvaluator#setParameters(String[], Class[])
      * @see Cookable#cook(String)
      */
-    public ExpressionEvaluator(
+    public
+    ExpressionEvaluator(
         String     expression,
         Class<?>   expressionType,
         String[]   parameterNames,
@@ -118,7 +120,8 @@ public class ExpressionEvaluator extends ScriptEvaluator implements IExpressionE
      * @see SimpleCompiler#setParentClassLoader(ClassLoader)
      * @see Cookable#cook(String)
      */
-    public ExpressionEvaluator(
+    public
+    ExpressionEvaluator(
         String      expression,
         Class<?>    expressionType,
         String[]    parameterNames,
@@ -153,7 +156,8 @@ public class ExpressionEvaluator extends ScriptEvaluator implements IExpressionE
      * @see SimpleCompiler#setParentClassLoader(ClassLoader)
      * @see Cookable#cook(String)
      */
-    public ExpressionEvaluator(
+    public
+    ExpressionEvaluator(
         String      expression,
         Class<?>    expressionType,
         String[]    parameterNames,
@@ -174,11 +178,13 @@ public class ExpressionEvaluator extends ScriptEvaluator implements IExpressionE
 
     public ExpressionEvaluator() {}
 
-    public void setExpressionType(@SuppressWarnings("rawtypes") Class expressionType) {
+    public void
+    setExpressionType(@SuppressWarnings("rawtypes") Class expressionType) {
         this.setExpressionTypes(new Class[] { expressionType });
     }
 
-    public void setExpressionTypes(@SuppressWarnings("rawtypes") Class[] expressionTypes) {
+    public void
+    setExpressionTypes(@SuppressWarnings("rawtypes") Class[] expressionTypes) {
         assertNotCooked();
         this.optionalExpressionTypes = expressionTypes;
 
@@ -190,25 +196,21 @@ public class ExpressionEvaluator extends ScriptEvaluator implements IExpressionE
         super.setReturnTypes(returnTypes);
     }
 
-    @Override
-    public final void setReturnType(@SuppressWarnings("rawtypes") Class returnType) {
+    @Override public final void
+    setReturnType(@SuppressWarnings("rawtypes") Class returnType) {
         throw new AssertionError("Must not be used on an ExpressionEvaluator; use 'setExpressionType()' instead");
     }
 
-    @Override
-    public final void setReturnTypes(@SuppressWarnings("rawtypes") Class[] returnTypes) {
+    @Override public final void
+    setReturnTypes(@SuppressWarnings("rawtypes") Class[] returnTypes) {
         throw new AssertionError("Must not be used on an ExpressionEvaluator; use 'setExpressionTypes()' instead");
     }
 
-    protected Class<?> getDefaultReturnType() {
-        return Object.class;
-    }
+    protected Class<?>
+    getDefaultReturnType() { return Object.class; }
 
-    @Override
-    public void cook(
-        String[] optionalFileNames,
-        Reader[] readers
-    ) throws CompileException, IOException {
+    @Override public void
+    cook(String[] optionalFileNames, Reader[] readers) throws CompileException, IOException {
 
         readers = readers.clone(); // Don't modify the argument array.
 
@@ -224,7 +226,7 @@ public class ExpressionEvaluator extends ScriptEvaluator implements IExpressionE
         Class<?>[] returnTypes = new Class[readers.length];
         for (int i = 0; i < readers.length; ++i) {
             StringWriter sw = new StringWriter();
-            PrintWriter pw = new PrintWriter(sw);
+            PrintWriter  pw = new PrintWriter(sw);
 
             if (this.optionalExpressionTypes == null || this.optionalExpressionTypes[i] == ANY_TYPE) {
                 returnTypes[i] = Object.class;
