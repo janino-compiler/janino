@@ -158,7 +158,7 @@ public class AntCompilerAdapter extends DefaultCompilerAdapter {
         if (path == null) return null;
 
         String[] fileNames = path.list();
-        File[] files = new File[fileNames.length];
+        File[]   files     = new File[fileNames.length];
         for (int i = 0; i < fileNames.length; ++i) files[i] = new File(fileNames[i]);
         return files;
     }

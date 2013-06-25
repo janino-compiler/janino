@@ -151,8 +151,8 @@ class ReflectionIClass extends IClass {
      * @return E.g. "int", "int[][]", "pkg1.pkg2.Outer$Inner[]"
      */
     public String toString() {
-        int brackets = 0;
-        Class c = this.clazz;
+        int   brackets = 0;
+        Class c        = this.clazz;
         while (c.isArray()) {
             ++brackets;
             c = c.getComponentType();

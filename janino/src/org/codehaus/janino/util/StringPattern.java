@@ -146,7 +146,7 @@ public class StringPattern {
         }
         return false; // No patterns defined or no pattern matches.
     }
-    public static final StringPattern[] PATTERNS_ALL = new StringPattern[] { new StringPattern("*") };
+    public static final StringPattern[] PATTERNS_ALL  = new StringPattern[] { new StringPattern("*") };
     public static final StringPattern[] PATTERNS_NONE = new StringPattern[0];
 
     public String toString() {

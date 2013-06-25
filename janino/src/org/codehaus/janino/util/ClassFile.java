@@ -173,7 +173,7 @@ public class ClassFile {
 //            );
 //        }
 
-        this.constantPool = new ArrayList();
+        this.constantPool    = new ArrayList();
         this.constantPoolMap = new HashMap();
         this.loadConstantPool(dis);                          // constant_pool_count, constant_pool
 
@@ -1490,8 +1490,8 @@ public class ClassFile {
         }
 
         private static AttributeInfo loadBody(short attributeNameIndex, DataInputStream dis) throws IOException {
-            short localVariableTableLength = dis.readShort();
-            Entry[] lvtes = new Entry[localVariableTableLength];   // local_variable_table_length
+            short   localVariableTableLength = dis.readShort();
+            Entry[] lvtes                    = new Entry[localVariableTableLength];   // local_variable_table_length
             for (short i = 0; i < localVariableTableLength; ++i) { // local_variable_table
                 lvtes[i] = new LocalVariableTableAttribute.Entry(
                     dis.readShort(), // startPC
@@ -1583,9 +1583,9 @@ public class ClassFile {
             ClassFile       classFile,
             DataInputStream dis
         ) throws IOException {
-            short  maxStack = dis.readShort();                                     // max_stack
+            short  maxStack  = dis.readShort();                                    // max_stack
             short  maxLocals = dis.readShort();                                    // max_locals
-            byte[] code = ClassFile.readLengthAndBytes(dis);                       // code_length, code
+            byte[] code      = ClassFile.readLengthAndBytes(dis);                  // code_length, code
 
             ExceptionTableEntry[] etes = new ExceptionTableEntry[dis.readShort()]; // exception_table_length
             for (int i = 0; i < etes.length; ++i) {                                // exception_table

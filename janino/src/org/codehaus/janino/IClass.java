@@ -150,7 +150,7 @@ public abstract class IClass {
             // Convert "IMethod"s and "List"s to "IMethod[]"s.
             for (Iterator it = m.entrySet().iterator(); it.hasNext();) {
                 Map.Entry me = (Map.Entry) it.next();
-                Object v = me.getValue();
+                Object    v  = me.getValue();
                 if (v instanceof IMethod) {
                     me.setValue(new IMethod[] { (IMethod) v });
                 } else {
@@ -186,9 +186,9 @@ public abstract class IClass {
 
         SCAN_DECLARED_METHODS:
         for (int i = 0; i < ms.length; ++i) {
-            IMethod candidate = ms[i];
-            String candidateDescriptor = candidate.getDescriptor();
-            String candidateName = candidate.getName();
+            IMethod candidate           = ms[i];
+            String  candidateDescriptor = candidate.getDescriptor();
+            String  candidateName       = candidate.getName();
 
             // Check if a method with the same name and descriptor has been added before.
             for (int j = 0; j < result.size(); ++j) {

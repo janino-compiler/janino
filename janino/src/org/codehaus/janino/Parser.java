@@ -163,8 +163,8 @@ public class Parser {
      */
     public PackageDeclaration parsePackageDeclaration() throws CompileException, IOException {
         this.read("package");
-        Location loc = this.location();
-        String packageName = Parser.join(this.parseQualifiedIdentifier(), ".");
+        Location loc         = this.location();
+        String   packageName = Parser.join(this.parseQualifiedIdentifier(), ".");
         this.read(";");
         this.verifyStringIsConventionalPackageName(packageName, loc);
         return new PackageDeclaration(loc, packageName);
@@ -985,9 +985,9 @@ public class Parser {
 
         // 'final' Type LocalVariableDeclarators ';'
         if (this.peekRead("final")) {
-            Location location = this.location();
-            Type variableType = this.parseType();
-            LocalVariableDeclarationStatement lvds = new LocalVariableDeclarationStatement(
+            Location                          location     = this.location();
+            Type                              variableType = this.parseType();
+            LocalVariableDeclarationStatement lvds         = new LocalVariableDeclarationStatement(
                 location,                            // location
                 Mod.FINAL,                           // modifiers
                 variableType,                        // type
@@ -1521,7 +1521,7 @@ public class Parser {
      * </pre>
      */
     public Type parseType() throws CompileException, IOException {
-        int idx = this.peekRead(BASIC_TYPE_NAMES);
+        int  idx = this.peekRead(BASIC_TYPE_NAMES);
         Type res = idx != -1 ? (Type) new BasicType(this.location(), BASIC_TYPE_CODES[idx]) : this.parseReferenceType();
         for (int i = this.parseBracketsOpt(); i > 0; --i) res = new ArrayType(res);
         return res;
@@ -1584,10 +1584,10 @@ public class Parser {
         if (this.peek(
             new String[] { "=", "+=", "-=", "*=", "/=", "&=", "|=", "^=", "%=", "<<=", ">>=", ">>>=" }
         ) != -1) {
-            final Lvalue lhs = a.toLvalueOrPE();
-            Location location = this.location();
-            String operator = this.readOperator();
-            final Rvalue rhs = this.parseAssignmentExpression().toRvalueOrPE();
+            final Lvalue lhs      = a.toLvalueOrPE();
+            Location     location = this.location();
+            String       operator = this.readOperator();
+            final Rvalue rhs      = this.parseAssignmentExpression().toRvalueOrPE();
             return new Assignment(location, lhs, operator, rhs);
         }
         return a;

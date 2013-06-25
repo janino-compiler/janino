@@ -97,7 +97,7 @@ public class ByteArrayClassLoader extends ClassLoader {
         if (this.classes.size() != that.classes.size()) return false;
         for (Iterator it = this.classes.entrySet().iterator(); it.hasNext();) {
             Map.Entry me = (Map.Entry) it.next();
-            byte[] ba = (byte[]) that.classes.get(me.getKey());
+            byte[]    ba = (byte[]) that.classes.get(me.getKey());
             if (ba == null) return false; // Key missing in "that".
             if (!Arrays.equals((byte[]) me.getValue(), ba)) return false; // Byte arrays differ.
         }

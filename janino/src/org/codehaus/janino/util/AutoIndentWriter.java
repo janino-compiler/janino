@@ -165,8 +165,8 @@ public class AutoIndentWriter extends FilterWriter {
         // Determine the tabulator offsets for this line group.
         List/*<Integer>*/ tabulatorOffsets = new ArrayList/*<Integer>*/(); // 4, 4
         for (Iterator/*<StringBuffer>*/ it = lineGroup.iterator(); it.hasNext();) {
-            StringBuffer line = (StringBuffer) it.next();
-            int          tabCount = 0;
+            StringBuffer line        = (StringBuffer) it.next();
+            int          tabCount    = 0;
             int          previousTab = 0;
             if (line.charAt(previousTab) == INDENT) ++previousTab;
             if (line.charAt(previousTab) == UNINDENT) ++previousTab;

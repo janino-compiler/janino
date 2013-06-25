@@ -150,12 +150,12 @@ public final class HprofScrubber {
         System.out.println("rank   self  accum      bytes  objects  class name");
         System.out.println("Total:              " + totalAllocatedBytes + "  " + totalAllocatedObjects);
 
-        double accumulatedPercentage = 0.0;
-        MessageFormat mf = new MessageFormat(
+        double        accumulatedPercentage = 0.0;
+        MessageFormat mf                    = new MessageFormat(
             "{0,number,00000} {1,number,00.00}% {2,number,00.00}% {3,number,000000000} {4,number,000000000} {5}"
         );
         for (int i = 0; i < ss.length; ++i) {
-            Site site = ss[i];
+            Site   site           = ss[i];
             double selfPercentage = 100.0 * ((double) site.allocatedBytes / (double) totalAllocatedBytes);
             accumulatedPercentage += selfPercentage;
 //            System.out.println(

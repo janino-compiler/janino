@@ -929,7 +929,7 @@ public class CodeContext {
             lno.prev = this.currentInserter.prev;
             lno.next = this.currentInserter;
             this.currentInserter.prev.next = lno;
-            this.currentInserter.prev = lno;
+            this.currentInserter.prev      = lno;
         }
 
         int ico = this.currentInserter.offset;
