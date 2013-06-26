@@ -3,6 +3,7 @@
 	<name>janino-tests</name>
 	<comment></comment>
 	<projects>
+		<project>de.unkrig.checkstyle-configuration</project>
 		<project>janino</project>
 	</projects>
 	<buildSpec>

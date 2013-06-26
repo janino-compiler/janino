@@ -3,6 +3,7 @@
 	<name>janino</name>
 	<comment></comment>
 	<projects>
+		<project>de.unkrig.checkstyle-configuration</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

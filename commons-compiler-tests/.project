@@ -3,6 +3,7 @@
 	<name>commons-compiler-tests</name>
 	<comment></comment>
 	<projects>
+		<project>de.unkrig.checkstyle-configuration</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
