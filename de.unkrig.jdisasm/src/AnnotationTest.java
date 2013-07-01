@@ -2,6 +2,11 @@
 // SUPPRESS CHECKSTYLE RegexpHeader
 import de.unkrig.commons.nullanalysis.NotNullByDefault;
 
+// CHECKSTYLE JavadocType:OFF
+// CHECKSTYLE JavadocVariable:OFF
+// CHECKSTYLE JavadocMethod:OFF
+// CHECKSTYLE MissingDeprecated:OFF
+
 @SuppressWarnings("unused") @NotNullByDefault public // SUPPRESS CHECKSTYLE HideUtilityClassConstructor
 class AnnotationTest {
 

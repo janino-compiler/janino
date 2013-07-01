@@ -142,8 +142,11 @@ class Disassembler {
 
     // Configuration variables.
 
-    private PrintWriter pw      = new PrintWriter(System.out);
-    boolean             verbose = false;
+    /** Where to print the output. */
+    private PrintWriter pw = new PrintWriter(System.out);
+
+    /** @see #setVerbose */
+    boolean verbose = false;
 
     /**
      * {@code null} means "do not attempt to find the source file".
@@ -162,6 +165,7 @@ class Disassembler {
     
     private static enum AttributeContext { CLASS, FIELD, METHOD }
 
+    /**/
     public static void
     main(String[] args) throws IOException {
         Disassembler d = new Disassembler();
@@ -231,21 +235,33 @@ class Disassembler {
 
     public Disassembler() {}
 
+    /**
+     * @param writer Where to write all output
+     */
     public void
     setOut(Writer writer) {
         this.pw = writer instanceof PrintWriter ? (PrintWriter) writer : new PrintWriter(writer);
     }
 
+    /**
+     * @param stream Where to write all output
+     */
     public void
     setOut(OutputStream stream) {
         this.pw = new PrintWriter(stream);
     }
 
+    /**
+     * @param stream Where to write all output
+     */
     public void
     setOut(OutputStream stream, String charsetName) throws UnsupportedEncodingException {
         this.pw = new PrintWriter(new OutputStreamWriter(stream, charsetName));
     }
 
+    /**
+     * Whether to include a constant pool dump, constant pool indexes, and hex dumps of all attributes in the output.
+     */
     public void
     setVerbose(boolean verbose) {
         this.verbose = verbose;
@@ -260,27 +276,37 @@ class Disassembler {
         this.sourceDirectory = sourceDirectory;
     }
 
+    /**
+     * @param hideLines Whether to not report source code line numbers
+     */
     public void
     setHideLines(boolean hideLines) {
         this.hideLines = hideLines;
     }
+
+    /**
+     * @param hideVars Whether to not report local variable names
+     */
     public void
     setHideVars(boolean hideVars) {
         this.hideVars = hideVars;
     }
 
+    /**
+     * @param symbolicLabels Whether use numeric labels ('#123') or symbolic labels /'L12') in the bytecode disassembly
+     */
     public void
     setSymbolicLabels(boolean symbolicLabels) {
         this.symbolicLabels = symbolicLabels;
     }
 
-    void print(String s)                       { this.pw.print(s); }
-    void println()                             { this.pw.println(); }
-    void println(String s)                     { this.pw.println(s); }
-    void printf(String format, Object... args) { this.pw.printf(format, args); }
+    private void print(String s)                       { this.pw.print(s); }
+    private void println()                             { this.pw.println(); }
+    private void println(String s)                     { this.pw.println(s); }
+    private void printf(String format, Object... args) { this.pw.printf(format, args); }
 
     /**
-     * Disassemble one Java&trade; class file to {@link System#out}.
+     * Reads a class file from the given {@code file} and disassembles it.
      */
     public void
     disasm(File file) throws IOException {
@@ -300,6 +326,9 @@ class Disassembler {
         }
     }
 
+    /**
+     * Reads a class file from the given {@code location} and disassembles it.
+     */
     public void
     disasm(URL location) throws IOException {
         InputStream is = location.openConnection().getInputStream();
@@ -319,12 +348,12 @@ class Disassembler {
     }
 
     /**
-     * @param is A Java&trade; class file
+     * Reads a class file from the given {@code stream} and disassembles it.
      */
     public void
-    disasm(InputStream is) throws IOException {
+    disasm(InputStream stream) throws IOException {
         try {
-            this.disassembleClassFile(new DataInputStream(is));
+            this.disassembleClassFile(new DataInputStream(stream));
         } finally {
             this.pw.flush();
         }
@@ -748,7 +777,7 @@ class Disassembler {
         }
     }
 
-    String
+    private String
     toString(InnerClassesAttribute.ClasS c) {
         ConstantClassInfo oci = c.outerClassInfo;
         ConstantClassInfo ici = c.innerClassInfo;
@@ -1059,7 +1088,7 @@ class Disassembler {
 
                 // Parameter type.
                 if (varargs && !it.hasNext() && pts instanceof ArrayTypeSignature) {
-                    this.print(beautify(((ArrayTypeSignature) pts).typeSignature.toString()) + "...");
+                    this.print(beautify(((ArrayTypeSignature) pts).componentTypeSignature.toString()) + "...");
                 } else {
                     this.print(beautify(pts.toString()));
                 }
@@ -1522,7 +1551,7 @@ class Disassembler {
         + "196 wide            wide\n"
     );
 
-    static final Instruction[] OPCODE_TO_WIDE_INSTRUCTION = compileInstructions(
+    private static final Instruction[] OPCODE_TO_WIDE_INSTRUCTION = compileInstructions(
         "21  iload           localvariableindex2\n"
         + "23  fload           localvariableindex2\n"
         + "25  aload           localvariableindex2\n"
@@ -1996,7 +2025,7 @@ class Disassembler {
         return result;
     }
 
-    LocalVariable
+    private LocalVariable
     getLocalVariable(short localVariableIndex, int  instructionOffset, Method method) {
 
         // Calculate index of first parameter.
@@ -2067,7 +2096,7 @@ class Disassembler {
         }
     }
 
-    ClassSignature
+    private ClassSignature
     decodeClassSignature(String cs) {
         try {
             return SignatureParser.decodeClassSignature(cs);
@@ -2077,7 +2106,7 @@ class Disassembler {
         }
     }
 
-    FieldTypeSignature
+    private FieldTypeSignature
     decodeFieldTypeSignature(String fs) {
         try {
             return SignatureParser.decodeFieldTypeSignature(fs);
@@ -2087,7 +2116,7 @@ class Disassembler {
         }
     }
 
-    MethodTypeSignature
+    private MethodTypeSignature
     decodeMethodTypeSignature(String ms) {
         try {
             return SignatureParser.decodeMethodTypeSignature(ms);
@@ -2102,7 +2131,7 @@ class Disassembler {
         }
     }
 
-    TypeSignature
+    private TypeSignature
     decodeFieldDescriptor(String fd) {
         try {
             return SignatureParser.decodeFieldDescriptor(fd);
@@ -2112,7 +2141,7 @@ class Disassembler {
         }
     }
 
-    MethodTypeSignature
+    private MethodTypeSignature
     decodeMethodDescriptor(String md) {
         try {
             return SignatureParser.decodeMethodDescriptor(md);
@@ -2131,8 +2160,18 @@ class Disassembler {
      * Representation of a local variable reference in the {@code Code} attribute.
      */
     class LocalVariable {
+
+        /**
+         * The descriptor or the type signature of this local variable. A {@code null} value indicates that the
+         * type of this local variable should not be considered and/or reported; this is typically the case for the
+         * magic 'this' local variable.
+         */
         @Nullable final TypeSignature typeSignature;
-        final String                  name;
+
+        /**
+         * The name of this local variable.
+         */
+        final String name;
 
         public
         LocalVariable(@Nullable TypeSignature typeSignature, String name) {
@@ -2147,7 +2186,7 @@ class Disassembler {
         }
     }
 
-    public void
+    private void
     error(String message) {
         this.pw.println("*** Error: " + message);
     }

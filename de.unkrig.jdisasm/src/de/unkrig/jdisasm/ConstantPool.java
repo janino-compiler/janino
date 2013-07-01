@@ -64,7 +64,11 @@ class ConstantPool {
     /** Representation of a CONSTANT_Fieldref_info entry. */
     public static
     class ConstantFieldrefInfo implements ConstantPoolEntry {
-        public final ConstantClassInfo       clasS;
+
+        /** {@code CONSTANT_Fieldref_info.class_index}, see JVMS7 4.4.2 */
+        public final ConstantClassInfo clasS;
+
+        /** {@code CONSTANT_Fieldref_info.name_and_type_index}, see JVMS7 4.4.2 */
         public final ConstantNameAndTypeInfo nameAndType;
 
         public
@@ -92,7 +96,11 @@ class ConstantPool {
     /** Representation of a CONSTANT_Methodref_info entry. */
     public static
     class ConstantMethodrefInfo implements ConstantPoolEntry {
-        public final ConstantClassInfo       clasS;
+
+        /** {@code CONSTANT_Methodref_info.class_index}, see JVMS7 4.4.2 */
+        public final ConstantClassInfo clasS;
+
+        /** {@code CONSTANT_Methodref_info.name_and_type_index}, see JVMS7 4.4.2 */
         public final ConstantNameAndTypeInfo nameAndType;
 
         public
@@ -121,7 +129,11 @@ class ConstantPool {
     /** Representation of a CONSTANT_InterfaceMethodref_info entry. */
     public static
     class ConstantInterfaceMethodrefInfo implements ConstantPoolEntry {
-        public final ConstantClassInfo       clasS;
+
+        /** {@code CONSTANT_InterfaceMethodref_info.class_index}, see JVMS7 4.4.2 */
+        public final ConstantClassInfo clasS;
+
+        /** {@code CONSTANT_InterfaceMethodref_info.name_and_type_index}, see JVMS7 4.4.2 */
         public final ConstantNameAndTypeInfo nameAndType;
 
         public
@@ -150,6 +162,8 @@ class ConstantPool {
     /** Representation of a CONSTANT_String_info entry. */
     public static
     class ConstantStringInfo implements ConstantPoolEntry {
+
+        /** {@code CONSTANT_String_info.string_index}, see JVMS7 4.4.3 */
         public final String string;
 
         public
@@ -162,6 +176,8 @@ class ConstantPool {
     /** Representation of a CONSTANT_Integer_info entry. */
     public static
     class ConstantIntegerInfo implements ConstantPoolEntry {
+
+        /** {@code CONSTANT_Integer_info.bytes}, see JVMS7 4.4.4 */
         public int bytes;
 
         @Override public String
@@ -173,6 +189,8 @@ class ConstantPool {
     /** Representation of a CONSTANT_Float_info entry. */
     public static
     class ConstantFloatInfo implements ConstantPoolEntry {
+
+        /** {@code CONSTANT_Float_info.bytes}, see JVMS7 4.4.4 */
         public float bytes;
 
         @Override public String
@@ -184,6 +202,8 @@ class ConstantPool {
     /** Representation of a CONSTANT_Long_info entry. */
     public static
     class ConstantLongInfo implements ConstantPoolEntry {
+
+        /** {@code CONSTANT_Long_info.bytes}, see JVMS7 4.4.5 */
         public long bytes;
 
         @Override public String
@@ -195,6 +215,8 @@ class ConstantPool {
     /** Representation of a CONSTANT_Double_info entry. */
     public static
     class ConstantDoubleInfo implements ConstantPoolEntry {
+
+        /** {@code CONSTANT_Double_info.bytes}, see JVMS7 4.4.5 */
         public double bytes;
 
         @Override public String
@@ -206,7 +228,11 @@ class ConstantPool {
     /** Representation of a CONSTANT_NameAndType_info entry. */
     public static
     class ConstantNameAndTypeInfo implements ConstantPoolEntry {
+
+        /** {@code CONSTANT_NameAndType_info.name_index}, see JVMS7 4.4.6 */
         public final ConstantUtf8Info name;
+
+        /** {@code CONSTANT_NameAndType_info.descriptor_index}, see JVMS7 4.4.6 */
         public final ConstantUtf8Info descriptor;
 
         public
@@ -225,6 +251,7 @@ class ConstantPool {
     public static
     class ConstantUtf8Info implements ConstantPoolEntry {
 
+        /** {@code CONSTANT_Utf8_info.bytes}, see JVMS7 4.4.7 */
         public final String bytes;
 
         public
@@ -236,6 +263,9 @@ class ConstantPool {
         }
     }
 
+    /**
+     * The entries of this pool, as read from a class file by {@link #ConstantPool}.
+     */
     final ConstantPoolEntry[] entries;
 
     /**
@@ -253,34 +283,34 @@ class ConstantPool {
 
         // Read the entries into a temporary data structure - this is necessary because there may be forward
         // references.
+
         /***/
         abstract
         class RawEntry {
 
+            /** Creates a 'cooked' entry from a 'raw' entry. */
             abstract ConstantPoolEntry
             cook();
 
+            /** Returns the {@link ConstantClassInfo} entry with the given {@code index}. */
             ConstantClassInfo
-            getConstantClassInfo(short index) {
-                return (ConstantClassInfo) get(index);
-            }
+            getConstantClassInfo(short index) { return (ConstantClassInfo) get(index); }
 
+            /** Returns the {@link ConstantNameAndTypeInfo} entry with the given {@code index}. */
             ConstantNameAndTypeInfo
-            getConstantNameAndTypeInfo(short index) {
-                return (ConstantNameAndTypeInfo) get(index);
-            }
+            getConstantNameAndTypeInfo(short index) { return (ConstantNameAndTypeInfo) get(index); }
 
+            /** Returns the {@link ConstantUtf8Info} entry with the given {@code index}. */
             ConstantUtf8Info
-            getConstantUtf8Info(short index) {
-                return (ConstantUtf8Info) get(index);
-            }
+            getConstantUtf8Info(short index) { return (ConstantUtf8Info) get(index); }
 
+            /** Returns the {@link ConstantPoolInfo} entry with the given {@code index}. */
             abstract ConstantPoolEntry
             get(short index);
         }
         final RawEntry[] rawEntries = new RawEntry[count];
 
-        /***/
+        /** Must declare a second 'RawEntry' class, because it references the local variable 'rawEntries'. */
         abstract
         class RawEntry2 extends RawEntry {
 
@@ -484,6 +514,9 @@ class ConstantPool {
         }
     }
 
+    /**
+     * Checks that the indexed constant pool entry has the given {@code clasS}, and returns it.
+     */
     public <T extends ConstantPoolEntry> T
     get(short index, Class<T> clasS) {
         int ii = 0xffff & index;
@@ -587,11 +620,16 @@ class ConstantPool {
         throw new ClassCastException("CP index " + (0xffff & index) + ": " + e);
     }
 
+    /**
+     * @return The number of entries in this {@link >ConstantPool}
+     */
     public int
-    getSize() {
-        return this.entries.length;
-    }
+    getSize() { return this.entries.length; }
 
+    /**
+     * Converts a given string into a Java literal by enclosing it in double quotes and escaping any special
+     * characters.
+     */
     public static String
     stringToJavaLiteral(String s) {
         for (int i = 0; i < s.length();) {
