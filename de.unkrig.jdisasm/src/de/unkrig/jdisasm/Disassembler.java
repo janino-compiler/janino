@@ -292,7 +292,7 @@ class Disassembler {
         } catch (IOException ioe) {
             IOException ioe2 = new IOException("Disassembling '" + file + "': " + ioe.getMessage());
             ioe2.initCause(ioe);
-            throw ioe2; // SUPPRESS CHECKSTYLE AvoidLosing
+            throw ioe2; // SUPPRESS CHECKSTYLE AvoidHidingCause
         } catch (RuntimeException re) {
             throw new RuntimeException("Disassembling '" + file + "': " + re.getMessage(), re);
         } finally {
@@ -310,7 +310,7 @@ class Disassembler {
         } catch (IOException ioe) {
             IOException ioe2 = new IOException("Disassembling '" + location + "': " + ioe.getMessage());
             ioe2.initCause(ioe);
-            throw ioe2; // SUPPRESS CHECKSTYLE AvoidLosing
+            throw ioe2; // SUPPRESS CHECKSTYLE AvoidHidingCause
         } catch (RuntimeException re) {
             throw new RuntimeException("Disassembling '" + location + "': " + re.getMessage(), re);
         } finally {
@@ -783,7 +783,11 @@ class Disassembler {
         Collections.sort(tmp, new Comparator<Attribute>() {
 
             @Override public int
-            compare(Attribute a1, Attribute a2) { return a1.getName().compareTo(a2.getName()); }
+            compare(@Nullable Attribute a1, @Nullable Attribute a2) {
+                assert a1 != null;
+                assert a2 != null;
+                return a1.getName().compareTo(a2.getName());
+            }
         });
 
         this.println(prefix + (this.verbose ? "Attributes:" : "Unprocessed attributes:"));
@@ -829,7 +833,11 @@ class Disassembler {
                 Collections.sort(tmp, new Comparator<Attribute>() {
 
                     @Override public int
-                    compare(Attribute a1, Attribute a2) { return a1.getName().compareTo(a2.getName()); }
+                    compare(@Nullable Attribute a1, @Nullable Attribute a2) {
+                        assert a1 != null;
+                        assert a2 != null;
+                        return a1.getName().compareTo(a2.getName());
+                    }
                 });
                 for (Attribute a : tmp) {
                     a.accept(pav);

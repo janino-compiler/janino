@@ -431,7 +431,7 @@ class SignatureParser {
             this.fieldTypeSignature = fieldTypeSignature;
         }
 
-        @SuppressWarnings("null") @Override public String
+        @Override public String
         toString() {
             switch (this.mode) {
             case EXTENDS:

@@ -489,7 +489,7 @@ d     *
                     "Parsing method '" + this.name + "' [" + this.descriptor + "]: " + ioe.getMessage()
                 );
                 ioe2.initCause(ioe);
-                throw ioe2; // SUPPRESS CHECKSTYLE AvoidLosing
+                throw ioe2; // SUPPRESS CHECKSTYLE AvoidHidingCause
             } catch (RuntimeException re) {
                 throw new RuntimeException(
                     "Parsing method '" + this.name + "' [" + this.descriptor + "]: " + re.getMessage(),
@@ -528,7 +528,7 @@ d     *
             } catch (IOException ioe) {
                 IOException ioe2 = new IOException("Reading attribute #" + i + " of " + n + ": " + ioe.getMessage());
                 ioe2.initCause(ioe);
-                throw ioe2; // SUPPRESS CHECKSTYLE AvoidLosing
+                throw ioe2; // SUPPRESS CHECKSTYLE AvoidHidingCause
             } catch (RuntimeException re) {
                 throw new RuntimeException("Reading attribute #" + i + " of " + n + ": " + re.getMessage(), re);
             }
@@ -563,7 +563,7 @@ d     *
         } catch (IOException ioe) {
             IOException ioe2 = new IOException("Reading attribute '" + attributeName + "': " + ioe.getMessage());
             ioe2.initCause(ioe);
-            throw ioe2; // SUPPRESS CHECKSTYLE AvoidLosing
+            throw ioe2; // SUPPRESS CHECKSTYLE AvoidHidingCause
         } catch (RuntimeException re) {
             throw new RuntimeException("Reading attribute '" + attributeName + "': " + re.getMessage(), re);
         }

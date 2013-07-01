@@ -1,8 +1,8 @@
 
-// SUPPRESS CHECKSTYLE RegexHeader
+// SUPPRESS CHECKSTYLE RegexpHeader
 import de.unkrig.commons.nullanalysis.NotNullByDefault;
 
-@SuppressWarnings("unused") @NotNullByDefault public
+@SuppressWarnings("unused") @NotNullByDefault public // SUPPRESS CHECKSTYLE HideUtilityClassConstructor
 class AnnotationTest {
 
 //    public @interface RequestForEnhancement {
@@ -104,7 +104,7 @@ class AnnotationTest {
                     this.meth(1);
                 } catch (RuntimeException rte) {
                     this.meth(2);
-                } catch (Error rte) {
+                } catch (Error rte) { // SUPPRESS CHECKSTYLE IllegalCatch
                     this.meth(3);
                 }
 
@@ -112,12 +112,12 @@ class AnnotationTest {
                     this.meth(4);
                 } catch (RuntimeException rte) {
                     this.meth(5);
-                } catch (Error rte) {
+                } catch (Error rte) { // SUPPRESS CHECKSTYLE IllegalCatch
                     this.meth(6);
                 }
             } catch (RuntimeException rte) {
                 this.meth(7);
-            } catch (Error rte) {
+            } catch (Error rte) { // SUPPRESS CHECKSTYLE IllegalCatch
                 this.meth(8);
             }
         }
