@@ -74,7 +74,7 @@ class CausedException extends Exception {
         } else
         {
             try {
-                CausedException.INIT_CAUSE.invoke(this, new Object[] { optionalCause});
+                CausedException.INIT_CAUSE.invoke(this, new Object[] { optionalCause });
             } catch (Exception e) {
                 throw new RuntimeException("Calling \"initCause()\""); // SUPPRESS CHECKSTYLE AvoidHidingCause
             }
