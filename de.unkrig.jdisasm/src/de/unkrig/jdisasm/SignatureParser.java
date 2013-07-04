@@ -541,17 +541,29 @@ class SignatureParser {
 
         @Override public String
         toString() {
+
+            FieldTypeSignature fts = this.fieldTypeSignature;
+
             switch (this.mode) {
+
             case EXTENDS:
-                return "extends " + this.fieldTypeSignature.toString();
+                assert fts != null;
+                return "extends " + fts.toString();
+
             case SUPER:
-                return "super " + this.fieldTypeSignature.toString();
+                assert fts != null;
+                return "super " + fts.toString();
+
             case ANY:
                 return "*";
+
             case NONE:
-                return this.fieldTypeSignature.toString();
+                assert fts != null;
+                return fts.toString();
+
+            default:
+                throw new IllegalStateException();
             }
-            throw new IllegalStateException();
         }
     }
 
