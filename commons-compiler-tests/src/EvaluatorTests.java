@@ -68,14 +68,14 @@ class EvaluatorTests {
         String           funct2 = "return a + b;";
         String           funct3 = "return 0;";
         IScriptEvaluator se2    = this.compilerFactory.newScriptEvaluator();
-        se2.setReturnTypes(new Class[] { double.class , double.class });
+        se2.setReturnTypes(new Class[] { double.class, double.class });
         se2.setMethodNames(new String[] { "funct2", "funct3" });
 
-        String[][]   params2     = { {"a", "b"}, {} };
+        String[][]   params2     = { { "a", "b" }, {} };
         Class<?>[][] paramsType2 = { { double.class, double.class }, {} };
         se2.setParameters(params2, paramsType2);
         se2.setStaticMethod(new boolean[] { true, true });
-        se2.cook(new String[] {funct2, funct3});
+        se2.cook(new String[] { funct2, funct3 });
         assertEquals(se2.getMethod(0).invoke(null, new Object[] { new Double(3.0), new Double(4.0) }), new Double(7.0));
         assertEquals(se2.getMethod(1).invoke(null, new Object[0]), new Double(0.0));
     }
@@ -90,7 +90,7 @@ class EvaluatorTests {
         ee.setExtendedClass(Properties.class);
         ee.setImplementedInterfaces(new Class[] { Runnable.class, });
         ee.setMethodNames(new String[] { "a", "b", "run", });
-        ee.setParameters(new String[][] { { "a", "b" }, {}, {} }, new Class[][] { { int.class, int.class}, {}, {} });
+        ee.setParameters(new String[][] { { "a", "b" }, {}, {} }, new Class[][] { { int.class, int.class }, {}, {} });
 //        ee.setParentClassLoader(BOOT_CLASS_LOADER, new Class[] { for_sandbox_tests.ExternalClass.class });
         ee.setStaticMethod(new boolean[] { false, true, false });
         ee.setThrownExceptions(new Class[][] { {}, { IOException.class }, {} });
@@ -515,7 +515,7 @@ class EvaluatorTests {
             + "}"
         );
 
-        int[] tests = new int[] { 1, 10, 8192};
+        int[] tests = new int[] { 1, 10, 8192 };
         for (int i = 0; i < tests.length; ++i) {
             int repititions = tests[i];
 
