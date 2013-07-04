@@ -85,7 +85,7 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
     }
 
     /** @deprecated */
-    @Override public void
+    @Deprecated @Override public void
     setExtendedType(@SuppressWarnings("rawtypes") Class optionalExtendedClass) {
         this.setExtendedClass(optionalExtendedClass);
     }
@@ -97,7 +97,7 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
     }
 
     /** @deprecated */
-    @Override public void
+    @Deprecated @Override public void
     setImplementedTypes(@SuppressWarnings("rawtypes") Class[] implementedInterfaces) {
         this.setImplementedInterfaces(implementedInterfaces);
     }
