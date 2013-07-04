@@ -1012,7 +1012,7 @@ d     *
         final byte tag = dis.readByte();
         if ("BCDFIJSZ".indexOf(tag) != -1) {
             final String s = cf.constantPool.getIntegerFloatLongDouble(dis.readShort());
-            return new ElementValue() { @Override public String toString() { return s; }};
+            return new ElementValue() { @Override public String toString() { return s; } };
         } else
         if (tag == 's') {
             final String s = cf.constantPool.get(dis.readShort(), ConstantUtf8Info.class).bytes;
@@ -1025,7 +1025,7 @@ d     *
             String constName = cf.constantPool.get(dis.readShort(), ConstantUtf8Info.class).bytes;
             try {
                 final String s = SignatureParser.decodeFieldDescriptor(typeName) + "." + constName;
-                return new ElementValue() { @Override public String toString() { return s; }};
+                return new ElementValue() { @Override public String toString() { return s; } };
             } catch (SignatureException se) {
                 throw new ClassFileFormatException("Decoding enum constant element value: " + se.getMessage(), se);
             }
@@ -1034,14 +1034,14 @@ d     *
             final String classInfo = cf.constantPool.get(dis.readShort(), ConstantUtf8Info.class).bytes;
             try {
                 final String s = SignatureParser.decodeReturnType(classInfo) + ".class";
-                return new ElementValue() { @Override public String toString() { return s; }};
+                return new ElementValue() { @Override public String toString() { return s; } };
             } catch (SignatureException se) {
                 throw new ClassFileFormatException("Decoding class element value: " + se.getMessage(), se);
             }
         } else
         if (tag == '@') {
             final Annotation annotation = new Annotation(dis, cf);
-            return new ElementValue() { @Override public String toString() { return annotation.toString(); }};
+            return new ElementValue() { @Override public String toString() { return annotation.toString(); } };
         } else
         if (tag == '[') {
             final List<ElementValue> values = new ArrayList<ElementValue>();
