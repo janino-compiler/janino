@@ -58,14 +58,17 @@ import org.codehaus.janino.util.resource.ResourceCreator;
 import org.codehaus.janino.util.resource.ResourceFinder;
 import org.junit.Test;
 
-public class CompilerTests {
+public
+class CompilerTests {
+
     private static final String JANINO_SRC           = "../janino/src";
     private static final String COMMONS_COMPILER_SRC = "../commons-compiler/src";
 
-    @Test
-    public void testSelfCompile() throws Exception {
+    @Test public void
+    testSelfCompile() throws Exception {
+
         ClassLoader bootstrapClassLoader = SimpleCompiler.BOOT_CLASS_LOADER;
-        File[] sourceFiles = new File[] {
+        File[]      sourceFiles          = new File[] {
             new File(JANINO_SRC + "/org/codehaus/janino/Compiler.java"),
             new File(COMMONS_COMPILER_SRC + "/org/codehaus/commons/compiler/samples/ExpressionDemo.java"),
             new File(JANINO_SRC + "/org/codehaus/janino/ClassLoaderIClassLoader.java"),
@@ -75,7 +78,7 @@ public class CompilerTests {
             new DirectoryResourceFinder(new File(JANINO_SRC)),
             new DirectoryResourceFinder(new File(COMMONS_COMPILER_SRC)),
         }));
-        boolean verbose = false;
+        boolean verbose     = false;
         boolean debugSource = true, debugLines = true, debugVars = false;
 
         Benchmark b = new Benchmark(true);
@@ -95,7 +98,9 @@ public class CompilerTests {
                 (WarningHandler) null                              // optionalWarningHandler
             );
             c.setCompileErrorHandler(new UnitCompiler.ErrorHandler() {
-                public void handleError(String message, Location optionalLocation) throws CompileException {
+
+                public void
+                handleError(String message, Location optionalLocation) throws CompileException {
                     throw new CompileException(message, optionalLocation);
                 }
             });
@@ -125,7 +130,9 @@ public class CompilerTests {
                 (WarningHandler) null                               // optionalWarningHandler
             );
             c.setCompileErrorHandler(new UnitCompiler.ErrorHandler() {
-                public void handleError(String message, Location optionalLocation) throws CompileException {
+
+                public void
+                handleError(String message, Location optionalLocation) throws CompileException {
                     throw new CompileException(message, optionalLocation);
                 }
             });
@@ -147,28 +154,24 @@ public class CompilerTests {
 
         // The helper object "l" accesses the previously JANINO-compiled classes.
         class Loader {
-            Class  loadClass(Class c) throws ClassNotFoundException {
-                return cl.loadClass(c.getName());
-            }
-            Object instantiate(
-                Class    c,
-                Class[]  parameterTypes,
-                Object[] arguments
-            ) throws Exception {
+
+            Class
+            loadClass(Class c) throws ClassNotFoundException { return cl.loadClass(c.getName()); }
+
+            Object
+            instantiate(Class c, Class[]  parameterTypes, Object[] arguments) throws Exception {
                 return this.loadClass(c).getDeclaredConstructor(parameterTypes).newInstance(arguments);
             }
-            Object getStaticField(
-                Class  c,
-                String fieldName
-            ) throws IllegalAccessException, NoSuchFieldException, ClassNotFoundException {
+
+            Object
+            getStaticField(Class c, String fieldName)
+            throws IllegalAccessException, NoSuchFieldException, ClassNotFoundException {
                 return this.loadClass(c).getDeclaredField(fieldName).get(null);
             }
-            Object invoke(
-                Object   object,
-                String   methodName,
-                Class[]  parameterTypes,
-                Object[] arguments
-            ) throws InvocationTargetException, IllegalAccessException, NoSuchMethodException {
+
+            Object
+            invoke(Object object, String methodName, Class[] parameterTypes, Object[] arguments)
+            throws InvocationTargetException, IllegalAccessException, NoSuchMethodException {
                 return object.getClass().getDeclaredMethod(methodName, parameterTypes).invoke(object, arguments);
             }
         }
@@ -229,8 +232,8 @@ public class CompilerTests {
         }
     }
 
-    @Test
-    public void testCompileErrors() throws Exception {
+    @Test public void
+    testCompileErrors() throws Exception {
         Map sources = new HashMap();
         sources.put("pkg/A.java", ( // Class A uses class B, C, D.
             ""
@@ -292,8 +295,8 @@ public class CompilerTests {
      * JANINO (as of now) does not support generics, and should clearly state the fact instead of throwing
      * mysterious {@link CompileException}s like '"{" expected at start of class body'.
      */
-    @Test
-    public void testGenerics() {
+    @Test public void
+    testGenerics() {
         try {
             new SimpleCompiler().cook("class Foo<K, V> {}");
         } catch (CompileException ce) {

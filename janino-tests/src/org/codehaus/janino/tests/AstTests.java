@@ -58,9 +58,11 @@ import org.codehaus.janino.Java.Type;
 import org.codehaus.janino.Java.FunctionDeclarator.FormalParameter;
 import org.junit.Test;
 
-public class AstTests {
+public
+class AstTests {
 
-    private static Object compileAndEval(CompilationUnit cu) throws Exception {
+    private static Object
+    compileAndEval(CompilationUnit cu) throws Exception {
         SimpleCompiler compiler = new SimpleCompiler();
         compiler.cook(cu);
 
@@ -69,50 +71,44 @@ public class AstTests {
         Class handMadeClass = loader.loadClass("HandMade");
 
         Object handMade = handMadeClass.newInstance();
-        Method calc = handMadeClass.getMethod("calculate", new Class[0]);
-        Object res = calc.invoke(handMade, new Object[0]);
+        Method calc     = handMadeClass.getMethod("calculate", new Class[0]);
+        Object res      = calc.invoke(handMade, new Object[0]);
         return res;
     }
 
-    private static ArrayType createByteArrayType() {
-        return new Java.ArrayType(
-            new Java.BasicType(
-                getLocation(),
-                Java.BasicType.BYTE
-            )
-        );
-    };
+    private static ArrayType
+    createByteArrayType() {
+        return new Java.ArrayType(new Java.BasicType(getLocation(), Java.BasicType.BYTE));
+    }
 
-    private static PackageMemberClassDeclaration createClass(CompilationUnit cu) throws CompileException {
+    private static PackageMemberClassDeclaration
+    createClass(CompilationUnit cu) throws CompileException {
         PackageMemberClassDeclaration clazz = new PackageMemberClassDeclaration(
             getLocation(),
             null,
             Mod.PUBLIC,
             "HandMade",
             null,
-            new Type[]{}
+            new Type[0]
         );
         cu.addPackageMemberTypeDeclaration(clazz);
         return clazz;
     }
 
-    private static Type createDoubleType() {
-        return new BasicType(getLocation(), BasicType.DOUBLE);
-    }
+    private static Type
+    createDoubleType() { return new BasicType(getLocation(), BasicType.DOUBLE); }
 
-    private static Java.BinaryOperation createOp(Rvalue l1, String op, Rvalue l2) {
-        return new Java.BinaryOperation(getLocation(), l1, op, l2);
-    }
+    private static Java.BinaryOperation
+    createOp(Rvalue l1, String op, Rvalue l2) { return new Java.BinaryOperation(getLocation(), l1, op, l2); }
 
-    private static IntegerLiteral createIntegerLiteral(String value) {
-        return new IntegerLiteral(getLocation(), value);
-    }
+    private static IntegerLiteral
+    createIntegerLiteral(String value) { return new IntegerLiteral(getLocation(), value); }
 
-    private static FloatingPointLiteral createFloatingPointLiteral(String value) {
-        return new FloatingPointLiteral(getLocation(), value);
-    }
+    private static FloatingPointLiteral
+    createFloatingPointLiteral(String value) { return new FloatingPointLiteral(getLocation(), value); }
 
-    private static void createMethod(PackageMemberClassDeclaration clazz, List statements, Type returnType) {
+    private static void
+    createMethod(PackageMemberClassDeclaration clazz, List statements, Type returnType) {
         MethodDeclarator method = new MethodDeclarator(
             getLocation(),
             null,
@@ -127,7 +123,8 @@ public class AstTests {
     }
 
 
-    private static LocalVariableDeclarationStatement createVarDecl(String name, String fPValue) {
+    private static LocalVariableDeclarationStatement
+    createVarDecl(String name, String fPValue) {
         return new Java.LocalVariableDeclarationStatement(
             getLocation(),
             (short) 0,
@@ -143,17 +140,16 @@ public class AstTests {
         );
     }
 
-    private static AmbiguousName createVariableRef(String name) {
-        return new Java.AmbiguousName(
-            getLocation(),
-            new String[] { name }
-        );
+    private static AmbiguousName
+    createVariableRef(String name) {
+        return new Java.AmbiguousName(getLocation(), new String[] { name });
     }
 
     /**
      * "Clever" method to get a location from a stack trace
      */
-    private static Location getLocation() {
+    private static Location
+    getLocation() {
         Exception         e   = new Exception();
         StackTraceElement ste = e.getStackTrace()[1]; //we only care about our caller
         return new Location(
@@ -163,8 +159,8 @@ public class AstTests {
         );
     }
 
-    @Test
-    public void testBlock() throws Exception {
+    @Test public void
+    testBlock() throws Exception {
         CompilationUnit cu = new CompilationUnit("AstTests.java");
 
         PackageMemberClassDeclaration clazz = createClass(cu);
@@ -197,8 +193,8 @@ public class AstTests {
         }
     }
 
-    @Test
-    public void testByteArrayLiteral() throws Exception {
+    @Test public void
+    testByteArrayLiteral() throws Exception {
         CompilationUnit cu = new CompilationUnit("AstTests.java");
 
         PackageMemberClassDeclaration clazz = createClass(cu);
@@ -227,8 +223,8 @@ public class AstTests {
         assertEquals(exp.byteValue(), ((byte[]) res)[0]);
     }
 
-    @Test
-    public void testLocalVariable() throws Exception {
+    @Test public void
+    testLocalVariable() throws Exception {
         CompilationUnit cu = new CompilationUnit("AstTests.java");
 
         PackageMemberClassDeclaration clazz = createClass(cu);
@@ -254,8 +250,8 @@ public class AstTests {
         assertEquals(Double.valueOf(6.0), res);
     }
 
-    @Test
-    public void testSimpleAst() throws Exception {
+    @Test public void
+    testSimpleAst() throws Exception {
         CompilationUnit cu = new CompilationUnit("AstTests.java");
 
         PackageMemberClassDeclaration clazz = createClass(cu);
@@ -274,8 +270,8 @@ public class AstTests {
         assertEquals(Double.valueOf(3.0), res);
     }
 
-    @Test
-    public void testClassRef() throws Exception {
+    @Test public void
+    testClassRef() throws Exception {
         CompilationUnit cu = new CompilationUnit("AstTests.java");
 
         PackageMemberClassDeclaration clazz = createClass(cu);
@@ -336,8 +332,8 @@ public class AstTests {
     }
 
 
-    @Test
-    public void testFullyQualifiedFieldRef() throws Exception {
+    @Test public void
+    testFullyQualifiedFieldRef() throws Exception {
         CompilationUnit cu = new CompilationUnit("AstTests.java");
 
         PackageMemberClassDeclaration clazz = createClass(cu);

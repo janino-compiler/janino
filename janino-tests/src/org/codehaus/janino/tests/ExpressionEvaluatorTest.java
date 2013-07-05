@@ -40,10 +40,11 @@ import org.codehaus.janino.Scanner;
 import org.codehaus.janino.ScriptEvaluator;
 import org.junit.Test;
 
-public class ExpressionEvaluatorTest {
+public
+class ExpressionEvaluatorTest {
 
-    @Test
-    public void testGuessParameterNames() throws Exception {
+    @Test public void
+    testGuessParameterNames() throws Exception {
         Set parameterNames = new HashSet(
             Arrays.asList(ExpressionEvaluator.guessParameterNames(new Scanner(null, new StringReader(
                 ""
@@ -68,8 +69,8 @@ public class ExpressionEvaluatorTest {
      * JANINO (as of now) does not support generics, and should clearly state the fact instead of throwing
      * mysterious {@link CompileException}s like 'Identifier expected'.
      */
-    @Test
-    public void testGenerics() {
+    @Test public void
+    testGenerics() {
         try {
             new ExpressionEvaluator().cook("new java.util.HashMap<String, String>()");
         } catch (CompileException ce) {
