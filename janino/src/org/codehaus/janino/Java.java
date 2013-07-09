@@ -82,8 +82,8 @@ public final class Java {
         void throwCompileException(String message) throws CompileException;
     }
     public abstract static class Located implements Locatable {
-        public static final Located NOWHERE = new Located(Location.NOWHERE) { };
-        private final Location location;
+        public static final Located NOWHERE = new Located(Location.NOWHERE) {};
+        private final Location      location;
 
         protected Located(Location location) {
             //assert location != null;
@@ -313,7 +313,7 @@ public final class Java {
      * "java.lang.String".
      */
     public interface PackageMemberTypeDeclaration extends NamedTypeDeclaration {
-        void setDeclaringCompilationUnit(CompilationUnit declaringCompilationUnit);
+        void            setDeclaringCompilationUnit(CompilationUnit declaringCompilationUnit);
         CompilationUnit getDeclaringCompilationUnit();
     }
 
@@ -412,7 +412,7 @@ public final class Java {
 
         public void invalidateMethodCaches() {
             if (this.resolvedType != null) {
-                this.resolvedType.declaredIMethods = null;
+                this.resolvedType.declaredIMethods     = null;
                 this.resolvedType.declaredIMethodCache = null;
             }
         }
@@ -485,7 +485,7 @@ public final class Java {
     }
 
     public abstract static class ClassDeclaration extends AbstractTypeDeclaration {
-        public final List constructors = new ArrayList(); // ConstructorDeclarator
+        public final List constructors                       = new ArrayList(); // ConstructorDeclarator
         public final List variableDeclaratorsAndInitializers = new ArrayList(); // TypeBodyDeclaration
 
         public ClassDeclaration(
@@ -1326,10 +1326,10 @@ public final class Java {
      * Base of all statements that can appear in a block.
      */
     public interface BlockStatement extends Locatable, Scope {
-        void setEnclosingScope(Scope enclosingScope);
+        void  setEnclosingScope(Scope enclosingScope);
         Scope getEnclosingScope();
 
-        void accept(Visitor.BlockStatementVisitor visitor);
+        void               accept(Visitor.BlockStatementVisitor visitor);
         Java.LocalVariable findLocalVariable(String name);
     }
 
@@ -1989,7 +1989,7 @@ public final class Java {
 
         public void accept(Visitor.AtomVisitor visitor) { visitor.visitSimpleType(this); }
         public void accept(Visitor.TypeVisitor visitor) { visitor.visitSimpleType(this); }
-    };
+    }
 
     /**
      * Representation of a Java&trade; "basic type" (obviously
@@ -2532,7 +2532,7 @@ public final class Java {
             Rvalue   index
         ) {
             super(location);
-            this.lhs = lhs;
+            this.lhs   = lhs;
             this.index = index;
         }
 
@@ -2681,7 +2681,7 @@ public final class Java {
         ) {
             super(location);
             this.lhs = lhs;
-            this.op = op;
+            this.op  = op;
             this.rhs = rhs;
         }
 
@@ -2696,8 +2696,8 @@ public final class Java {
          * Returns an {@link Iterator} over a left-to-right sequence of {@link Java.Rvalue}s.
          */
         public Iterator unrollLeftAssociation() {
-            List operands = new ArrayList();
-            BinaryOperation x = this;
+            List            operands = new ArrayList();
+            BinaryOperation x        = this;
             for (;;) {
                 operands.add(x.rhs);
                 Rvalue lhs = x.lhs;
@@ -2893,12 +2893,12 @@ public final class Java {
 
     public abstract static class Invocation extends Rvalue {
         public final Rvalue[] arguments;
-        public final String methodName;
+        public final String   methodName;
 
         protected Invocation(Location location, String methodName, Rvalue[] arguments) {
             super(location);
             this.methodName = methodName;
-            this.arguments = arguments;
+            this.arguments  = arguments;
         }
     }
 
@@ -3174,12 +3174,12 @@ public final class Java {
 
         public LocalVariableSlot(
             String name,
-            short slotNumber,
+            short  slotNumber,
             IClass type
         ) {
-            this.name = name;
+            this.name      = name;
             this.slotIndex = slotNumber;
-            this.type = type;
+            this.type      = type;
         }
 
         public String toString() {
@@ -3216,8 +3216,8 @@ public final class Java {
      * Used during resolution.
      */
     public static class LocalVariable {
-        public final boolean finaL;
-        public final IClass  type;
+        public final boolean     finaL;
+        public final IClass      type;
         public LocalVariableSlot slot;
 
         public LocalVariable(

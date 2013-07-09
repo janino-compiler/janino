@@ -24,5 +24,5 @@ class TestUtil {
         return f;
     }
 
-    private TestUtil() { }
+    private TestUtil() {}
 }

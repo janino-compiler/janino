@@ -28,7 +28,7 @@ class AnnotationTest {
     }
 
     public
-    @interface Preliminary { }
+    @interface Preliminary {}
 
     public
     @interface Copyright {
@@ -65,7 +65,7 @@ class AnnotationTest {
     // of this interface, which describes a formatter for Java
     // programming language source code
     public
-    interface Formatter { }
+    interface Formatter {}
 
     // Designates a formatter to pretty-print the annotated class.
     public
@@ -129,16 +129,16 @@ class AnnotationTest {
     }
 
     // Array-valued single-element annotation
-    @Endorsers({"Children", "Unscrupulous dentists" }) public static
-    class Lollipop {  }
+    @Endorsers({ "Children", "Unscrupulous dentists" }) public static
+    class Lollipop {}
 
     // Single-element array-valued single-element annotation
     @Endorsers("Epicurus") public static
-    class Pleasure {  }
+    class Pleasure {}
 
     // Single-element complex annotation
     @Author(@Name(first = "Joe", last = "Hacker")) public static
-    class BitTwiddle {  }
+    class BitTwiddle {}
 
     // Normal annotation with default values
     @RequestForEnhancement(
@@ -152,10 +152,10 @@ class AnnotationTest {
     // Single-element annotation with Class element restricted by bounded wildcard
     // The annotation presumes the existence of this class.
     public static
-    class GorgeousFormatter implements Formatter {  }
+    class GorgeousFormatter implements Formatter {}
 
     @PrettyPrinter(GorgeousFormatter.class) public static
-    class Petunia { }
+    class Petunia {}
     // This annotation is illegal, as String is not a subtype of Formatter!!
 //    @PrettyPrinter(String.class) public static
 //    class Begonia { ... }

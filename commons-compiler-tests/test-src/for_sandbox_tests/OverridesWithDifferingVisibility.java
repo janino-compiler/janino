@@ -8,5 +8,5 @@ class OverridesWithDifferingVisibility {
     private static void test(Object[] arr) {}
 
     // squish a compiler warning
-    static { test(new Object[] { }); }
+    static { test(new Object[] {}); }
 }

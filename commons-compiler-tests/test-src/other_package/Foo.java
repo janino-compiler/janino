@@ -20,25 +20,25 @@ class Foo {
     public static void    publicStaticMethod()    {}
     public void           publicMethod()          {}
 
-    private static class         PrivateStaticMemberClass { }
-    private class                PrivateMemberClass { }
-    static class                 PackageStaticMemberClass { }
-    class                        PackageMemberClass { }
-    protected static class       ProtectedStaticMemberClass { }
-    protected class              ProtectedMemberClass { }
-    public static class          PublicStaticMemberClass { }
-    public class                 PublicMemberClass { }
-    public abstract static class PublicAbstractStaticMemberClass { }
-    public abstract class        PublicAbstractMemberClass { }
+    private static class         PrivateStaticMemberClass {}
+    private class                PrivateMemberClass {}
+    static class                 PackageStaticMemberClass {}
+    class                        PackageMemberClass {}
+    protected static class       ProtectedStaticMemberClass {}
+    protected class              ProtectedMemberClass {}
+    public static class          PublicStaticMemberClass {}
+    public class                 PublicMemberClass {}
+    public abstract static class PublicAbstractStaticMemberClass {}
+    public abstract class        PublicAbstractMemberClass {}
 
-    private static interface     PrivateStaticMemberInterface { } // SUPPRESS CHECKSTYLE RedundantModifier
-    private interface            PrivateMemberInterface { }
-    static interface             PackageStaticMemberInterface { } // SUPPRESS CHECKSTYLE RedundantModifier
-    interface                    PackageMemberInterface { }
-    protected static interface   ProtectedStaticMemberInterface { } // SUPPRESS CHECKSTYLE RedundantModifier
-    protected interface          ProtectedMemberInterface { }
-    public static interface      PublicStaticMemberInterface { } // SUPPRESS CHECKSTYLE RedundantModifier
-    public interface             PublicMemberInterface { }
+    private static interface     PrivateStaticMemberInterface {} // SUPPRESS CHECKSTYLE RedundantModifier
+    private interface            PrivateMemberInterface {}
+    static interface             PackageStaticMemberInterface {} // SUPPRESS CHECKSTYLE RedundantModifier
+    interface                    PackageMemberInterface {}
+    protected static interface   ProtectedStaticMemberInterface {} // SUPPRESS CHECKSTYLE RedundantModifier
+    protected interface          ProtectedMemberInterface {}
+    public static interface      PublicStaticMemberInterface {} // SUPPRESS CHECKSTYLE RedundantModifier
+    public interface             PublicMemberInterface {}
 
     void
     useMembersToSuppressWarnings() {
@@ -47,10 +47,10 @@ class Foo {
         this.privateMethod();
         new PrivateStaticMemberClass();
         new PrivateMemberClass();
-        new PrivateStaticMemberInterface() { };
-        new PrivateMemberInterface() { };
+        new PrivateStaticMemberInterface() {};
+        new PrivateMemberInterface() {};
     }
 }
 
-class     PackageClass { }
-interface PackageInterface { }
+class     PackageClass {}
+interface PackageInterface {}

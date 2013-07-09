@@ -42,23 +42,26 @@ class ReflectionIClass extends IClass {
     /**
      * @param iClassLoader required to load other {@link IClass}es on <code>get...()</code>.
      */
-    public ReflectionIClass(Class clazz, IClassLoader iClassLoader) {
-        this.clazz = clazz;
+    public
+    ReflectionIClass(Class clazz, IClassLoader iClassLoader) {
+        this.clazz        = clazz;
         this.iClassLoader = iClassLoader;
     }
 
-    protected IConstructor[] getDeclaredIConstructors2() {
-        Constructor[] constructors = this.clazz.getDeclaredConstructors();
-        IConstructor[] result = new IConstructor[constructors.length];
+    protected IConstructor[]
+    getDeclaredIConstructors2() {
+        Constructor[]  constructors = this.clazz.getDeclaredConstructors();
+        IConstructor[] result       = new IConstructor[constructors.length];
         for (int i = 0; i < constructors.length; ++i) {
             result[i] = new ReflectionIConstructor(constructors[i]);
         }
         return result;
     }
 
-    protected IMethod[] getDeclaredIMethods2() {
-        Method[] methods = this.clazz.getDeclaredMethods();
-        List iMethods = new ArrayList();
+    protected IMethod[]
+    getDeclaredIMethods2() {
+        Method[] methods  = this.clazz.getDeclaredMethods();
+        List     iMethods = new ArrayList();
         for (int i = 0; i < methods.length; ++i) {
             Method m = methods[i];
 
@@ -84,8 +87,9 @@ class ReflectionIClass extends IClass {
         return (IMethod[]) iMethods.toArray(new IMethod[iMethods.size()]);
     }
 
-    protected IField[] getDeclaredIFields2() {
-        Field[] fields = this.clazz.getDeclaredFields();
+    protected IField[]
+    getDeclaredIFields2() {
+        Field[]  fields = this.clazz.getDeclaredFields();
         IField[] result = new IField[fields.length];
         for (int i = 0; i < fields.length; ++i) {
             result[i] = new ReflectionIField(fields[i]);
@@ -93,29 +97,38 @@ class ReflectionIClass extends IClass {
         return result;
     }
 
-    protected IClass[] getDeclaredIClasses2() {
-        return this.classesToIClasses(this.clazz.getDeclaredClasses());
-    }
+    protected IClass[]
+    getDeclaredIClasses2() { return this.classesToIClasses(this.clazz.getDeclaredClasses()); }
 
-    protected IClass getDeclaringIClass2() {
+    protected IClass
+    getDeclaringIClass2() {
         Class declaringClass = this.clazz.getDeclaringClass();
         if (declaringClass == null) return null;
         return this.classToIClass(declaringClass);
     }
-    protected IClass getOuterIClass2() throws CompileException {
+
+    protected IClass
+    getOuterIClass2() throws CompileException {
         if (Modifier.isStatic(this.clazz.getModifiers())) return null;
         return this.getDeclaringIClass();
     }
-    protected IClass getSuperclass2() {
+
+    protected IClass
+    getSuperclass2() {
         Class superclass = this.clazz.getSuperclass();
         return superclass == null ? null : this.classToIClass(superclass);
     }
-    protected IClass[] getInterfaces2() {
+
+    protected IClass[]
+    getInterfaces2() {
         return this.classesToIClasses(this.clazz.getInterfaces());
     }
-    protected String getDescriptor2() {
+
+    protected String
+    getDescriptor2() {
         return Descriptor.fromClassName(this.clazz.getName());
     }
+
     public Access  getAccess()   { return ReflectionIClass.modifiers2Access(this.clazz.getModifiers()); }
     public boolean isFinal()     { return Modifier.isFinal(this.clazz.getModifiers()); }
     public boolean isInterface() { return this.clazz.isInterface(); }
@@ -134,13 +147,13 @@ class ReflectionIClass extends IClass {
     public boolean
     isPrimitiveNumeric() {
         return (
-            this.clazz == byte.class   ||
-            this.clazz == short.class  ||
-            this.clazz == int.class    ||
-            this.clazz == long.class   ||
-            this.clazz == char.class   ||
-            this.clazz == float.class  ||
-            this.clazz == double.class
+            this.clazz == byte.class
+            || this.clazz == short.class
+            || this.clazz == int.class
+            || this.clazz == long.class
+            || this.clazz == char.class
+            || this.clazz == float.class
+            || this.clazz == double.class
         );
     }
 
@@ -150,7 +163,8 @@ class ReflectionIClass extends IClass {
     /**
      * @return E.g. "int", "int[][]", "pkg1.pkg2.Outer$Inner[]"
      */
-    public String toString() {
+    public String
+    toString() {
         int   brackets = 0;
         Class c        = this.clazz;
         while (c.isArray()) {
@@ -162,17 +176,21 @@ class ReflectionIClass extends IClass {
         return s;
     }
 
-    private class ReflectionIConstructor extends IConstructor {
+    private
+    class ReflectionIConstructor extends IConstructor {
+
         public ReflectionIConstructor(Constructor constructor) { this.constructor = constructor; }
 
         // Implement IMember.
-        public Access getAccess() {
+        public Access
+        getAccess() {
             int mod = this.constructor.getModifiers();
             return ReflectionIClass.modifiers2Access(mod);
         }
 
         // Implement "IConstructor".
-        public IClass[] getParameterTypes() throws CompileException {
+        public IClass[]
+        getParameterTypes() throws CompileException {
             IClass[] parameterTypes = ReflectionIClass.this.classesToIClasses(this.constructor.getParameterTypes());
 
             // The JAVADOC of java.lang.reflect.Constructor does not document it, but
@@ -203,27 +221,32 @@ class ReflectionIClass extends IClass {
 
             return parameterTypes;
         }
-        public String getDescriptor() {
-            Class[] parameterTypes = this.constructor.getParameterTypes();
+
+        public String
+        getDescriptor() {
+            Class[]  parameterTypes       = this.constructor.getParameterTypes();
             String[] parameterDescriptors = new String[parameterTypes.length];
             for (int i = 0; i < parameterDescriptors.length; ++i) {
                 parameterDescriptors[i] = Descriptor.fromClassName(parameterTypes[i].getName());
-                }
+            }
             return new MethodDescriptor(parameterDescriptors, Descriptor.VOID_).toString();
         }
-        public IClass[] getThrownExceptions() {
+
+        public IClass[]
+        getThrownExceptions() {
             return ReflectionIClass.this.classesToIClasses(this.constructor.getExceptionTypes());
         }
 
         final Constructor constructor;
-    };
-    private class ReflectionIMethod extends IMethod {
+    }
+    private
+    class ReflectionIMethod extends IMethod {
+
         public ReflectionIMethod(Method method) { this.method = method; }
 
         // Implement IMember.
-        public Access getAccess() {
-            return ReflectionIClass.modifiers2Access(this.method.getModifiers());
-        }
+        public Access
+        getAccess() { return ReflectionIClass.modifiers2Access(this.method.getModifiers()); }
 
         // Implement "IMethod".
         public String
@@ -245,14 +268,16 @@ class ReflectionIClass extends IClass {
         getThrownExceptions() { return ReflectionIClass.this.classesToIClasses(this.method.getExceptionTypes()); }
 
         final Method method;
-    };
-    private class ReflectionIField extends IField {
+    }
+
+    private
+    class ReflectionIField extends IField {
+
         public ReflectionIField(Field field) { this.field = field; }
 
         // Implement IMember.
-        public Access getAccess() {
-            return ReflectionIClass.modifiers2Access(this.field.getModifiers());
-        }
+        public Access
+        getAccess() { return ReflectionIClass.modifiers2Access(this.field.getModifiers()); }
 
         // Implement "IField".
 
@@ -283,13 +308,14 @@ class ReflectionIClass extends IClass {
          *   {@link java.io.File#separator}.)
          * </ul>
          */
-        public Object getConstantValue() throws CompileException {
-            int mod = this.field.getModifiers();
+        public Object
+        getConstantValue() throws CompileException {
+            int   mod   = this.field.getModifiers();
             Class clazz = this.field.getType();
             if (
-                Modifier.isStatic(mod) &&
-                Modifier.isFinal(mod) &&
-                (clazz.isPrimitive() || clazz == String.class)
+                Modifier.isStatic(mod)
+                && Modifier.isFinal(mod)
+                && (clazz.isPrimitive() || clazz == String.class)
             ) {
                 try {
                     return this.field.get(null);
@@ -310,7 +336,8 @@ class ReflectionIClass extends IClass {
      * Load {@link Class} through {@link IClassLoader} to
      * ensure unique {@link IClass}es.
      */
-    private IClass classToIClass(Class c) {
+    private IClass
+    classToIClass(Class c) {
         IClass iClass;
         try {
             iClass = this.iClassLoader.loadIClass(Descriptor.fromClassName(c.getName()));
@@ -326,13 +353,15 @@ class ReflectionIClass extends IClass {
     /**
      * @see #classToIClass(Class)
      */
-    private IClass[] classesToIClasses(Class[] cs) {
+    private IClass[]
+    classesToIClasses(Class[] cs) {
         IClass[] result = new IClass[cs.length];
         for (int i = 0; i < cs.length; ++i) result[i] = this.classToIClass(cs[i]);
         return result;
     }
 
-    private static Access modifiers2Access(int modifiers) {
+    private static Access
+    modifiers2Access(int modifiers) {
         return (
             Modifier.isPrivate(modifiers)   ? Access.PRIVATE   :
             Modifier.isProtected(modifiers) ? Access.PROTECTED :

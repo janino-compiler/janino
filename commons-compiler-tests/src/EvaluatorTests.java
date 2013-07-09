@@ -623,7 +623,7 @@ class EvaluatorTests {
         ISimpleCompiler sc = this.compilerFactory.newSimpleCompiler();
         sc.cook(test);
         Class<?> c  = sc.getClassLoader().loadClass("test.Test");
-        Method   m0 = c.getDeclaredMethod("run", new Class[] { });
+        Method   m0 = c.getDeclaredMethod("run", new Class[] {});
         assertEquals(false, m0.invoke(null, new Object[0]));
 
         Method mStr = c.getDeclaredMethod("run", new Class[] { String.class });

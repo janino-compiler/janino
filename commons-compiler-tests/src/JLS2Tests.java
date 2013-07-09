@@ -36,6 +36,8 @@ import org.junit.runners.Parameterized.Parameters;
 import util.JaninoTestSuite;
 import util.TestUtil;
 
+// CHECKSTYLE MethodName:OFF
+
 /**
  * Tests against the \"Java Language Specification\"; 2nd edition
  */

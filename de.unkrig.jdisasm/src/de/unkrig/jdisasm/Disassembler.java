@@ -322,7 +322,7 @@ class Disassembler {
         } catch (RuntimeException re) {
             throw new RuntimeException("Disassembling '" + file + "': " + re.getMessage(), re);
         } finally {
-            try { is.close(); } catch (IOException ex) { }
+            try { is.close(); } catch (IOException ex) {}
         }
     }
 
@@ -343,7 +343,7 @@ class Disassembler {
         } catch (RuntimeException re) {
             throw new RuntimeException("Disassembling '" + location + "': " + re.getMessage(), re);
         } finally {
-            try { is.close(); } catch (IOException ex) { }
+            try { is.close(); } catch (IOException ex) {}
         }
     }
 

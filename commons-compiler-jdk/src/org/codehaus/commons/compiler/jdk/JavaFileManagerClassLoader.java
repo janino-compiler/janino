@@ -71,7 +71,7 @@ class JavaFileManagerClassLoader extends ClassLoader {
                         baos.write(buffer, 0, count);
                     }
                 } finally {
-                    try { is.close(); } catch (Exception e) { }
+                    try { is.close(); } catch (Exception e) {}
                 }
             }
             ba = baos.toByteArray();

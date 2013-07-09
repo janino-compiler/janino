@@ -43,6 +43,8 @@ import org.junit.runners.Parameterized.Parameters;
 import util.JaninoTestSuite;
 import util.TestUtil;
 
+// CHECKSTYLE MethodName:OFF
+
 @RunWith(Parameterized.class) public
 class ReportedBugs extends JaninoTestSuite {
 
