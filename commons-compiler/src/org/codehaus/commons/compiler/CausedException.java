@@ -34,9 +34,12 @@ import java.lang.reflect.*;
  */
 public
 class CausedException extends Exception {
+
+    // SUPPRESS CHECKSTYLE MutableException
     private Throwable optionalCause;
 
     private static final Method INIT_CAUSE = initCauseMethod(); // Null for pre-1.4 JDKs.
+
     static Method
     initCauseMethod() {
         try {
