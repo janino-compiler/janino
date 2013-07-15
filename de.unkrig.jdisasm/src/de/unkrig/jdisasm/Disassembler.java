@@ -146,12 +146,12 @@ class Disassembler {
     private PrintWriter pw = new PrintWriter(System.out);
 
     /** @see #setVerbose */
-    boolean verbose = false;
+    boolean verbose;
 
     /**
      * {@code null} means "do not attempt to find the source file".
      */
-    @Nullable private File sourceDirectory = null;
+    @Nullable private File sourceDirectory;
     private boolean        hideLines;
     private boolean        hideVars;
     private boolean        symbolicLabels;
@@ -2262,7 +2262,7 @@ class Disassembler {
 
         public long getCount() { return this.count; }
 
-        private long count = 0L;
+        private long count;
     }
 
     /**
