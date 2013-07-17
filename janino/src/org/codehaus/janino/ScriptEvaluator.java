@@ -700,9 +700,9 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
             );
         }
 
-        Java.FunctionDeclarator.FormalParameter[] fps = new Java.FunctionDeclarator.FormalParameter[
-            parameterNames.length
-        ];
+        Java.FunctionDeclarator.FormalParameter[]
+        fps = new Java.FunctionDeclarator.FormalParameter[parameterNames.length];
+
         for (int i = 0; i < fps.length; ++i) {
             fps[i] = new Java.FunctionDeclarator.FormalParameter(
                 location,                                      // location
