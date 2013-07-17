@@ -229,11 +229,11 @@ class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluato
 
     public ExpressionEvaluator() {}
 
-    public void setExpressionType(Class expressionType) {
-        this.setExpressionTypes(new Class[] { expressionType });
-    }
+    public void
+    setExpressionType(Class expressionType) { this.setExpressionTypes(new Class[] { expressionType }); }
 
-    public void setExpressionTypes(Class[] expressionTypes) {
+    public void
+    setExpressionTypes(Class[] expressionTypes) {
         assertNotCooked();
         this.optionalExpressionTypes = expressionTypes;
 
@@ -245,21 +245,21 @@ class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluato
         super.setReturnTypes(returnTypes);
     }
 
-    public final void setReturnType(Class returnType) {
+    public final void
+    setReturnType(Class returnType) {
         throw new AssertionError("Must not be used on an ExpressionEvaluator; use 'setExpressionType()' instead");
     }
 
-    public final void setReturnTypes(Class[] returnTypes) {
+    public final void
+    setReturnTypes(Class[] returnTypes) {
         throw new AssertionError("Must not be used on an ExpressionEvaluator; use 'setExpressionTypes()' instead");
     }
 
     protected Class
     getDefaultReturnType() { return Object.class; }
 
-    protected List/*<BlockStatement>*/ makeStatements(
-        int    idx,
-        Parser parser
-    ) throws CompileException, IOException {
+    protected List/*<BlockStatement>*/
+    makeStatements(int idx, Parser parser) throws CompileException, IOException {
         List/*<BlockStatement>*/ statements = new ArrayList();
 
         // Parse the expression.
@@ -405,7 +405,9 @@ class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluato
         // Traverse the expression for ambiguous names and guess which of them are parameter names.
         final Set parameterNames = new HashSet();
         rvalue.accept((RvalueVisitor) new Traverser() {
-            public void traverseAmbiguousName(AmbiguousName an) {
+
+            public void
+            traverseAmbiguousName(AmbiguousName an) {
 
                 // If any of the components starts with an upper-case letter, then the ambiguous
                 // name is most probably a type name, e.g. "System.out" or "java.lang.System.out".

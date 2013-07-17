@@ -209,7 +209,8 @@ class ClassFileIClass extends IClass {
     public boolean     isPrimitiveNumeric() { return false; }
     protected IClass   getComponentType2()  { return null; }
 
-    public void resolveHalf() throws ClassNotFoundException {
+    public void
+    resolveHalf() throws ClassNotFoundException {
 
         // Resolve superclass.
         this.resolveClass(this.classFile.superclass);
@@ -230,7 +231,8 @@ class ClassFileIClass extends IClass {
         }
     }
 
-    public void resolveAllClasses() throws ClassNotFoundException {
+    public void
+    resolveAllClasses() throws ClassNotFoundException {
         for (short i = 0; i < this.classFile.constantPool.size(); ++i) {
             ClassFile.ConstantPoolInfo cpi = this.classFile.getConstantPoolInfo(i);
             if (cpi instanceof ClassFile.ConstantClassInfo) {
@@ -253,12 +255,14 @@ class ClassFileIClass extends IClass {
     /**
      * @param index Index of the CONSTANT_Class_info to resolve (JVMS 4.4.1)
      */
-    private IClass resolveClass(short index) throws ClassNotFoundException {
+    private IClass
+    resolveClass(short index) throws ClassNotFoundException {
         if (ClassFileIClass.DEBUG) System.out.println("index=" + index);
         return this.resolveClass(Descriptor.fromInternalForm(this.classFile.getConstantClassName(index)));
     }
 
-    private IClass resolveClass(String descriptor) throws ClassNotFoundException {
+    private IClass
+    resolveClass(String descriptor) throws ClassNotFoundException {
         if (ClassFileIClass.DEBUG) System.out.println("descriptor=" + descriptor);
 
         IClass result = (IClass) this.resolvedClasses.get(descriptor);
@@ -272,7 +276,8 @@ class ClassFileIClass extends IClass {
     }
     private final Map resolvedClasses = new HashMap(); // String descriptor => IClass
 
-    private IClass[] resolveClasses(short[] ifs) throws CompileException {
+    private IClass[]
+    resolveClasses(short[] ifs) throws CompileException {
         IClass[] result = new IClass[ifs.length];
         for (int i = 0; i < result.length; ++i) {
             try {
@@ -291,7 +296,8 @@ class ClassFileIClass extends IClass {
      * @param methodInfo
      * @throws ClassNotFoundException
      */
-    private IInvocable resolveMethod(final ClassFile.MethodInfo methodInfo) throws ClassNotFoundException {
+    private IInvocable
+    resolveMethod(final ClassFile.MethodInfo methodInfo) throws ClassNotFoundException {
         IInvocable result = (IInvocable) this.resolvedMethods.get(methodInfo);
         if (result != null) return result;
 
@@ -323,7 +329,7 @@ class ClassFileIClass extends IClass {
         // Determine access.
         final Access access = ClassFileIClass.accessFlags2Access(methodInfo.getAccessFlags());
 
-        if (name.equals("<init>")) {
+        if ("<init>".equals(name)) {
             result = new IClass.IConstructor() {
                 public IClass[]
                 getParameterTypes() throws CompileException {
@@ -350,8 +356,8 @@ class ClassFileIClass extends IClass {
 
                     return parameterTypes;
                 }
-                public IClass[] getThrownExceptions() throws CompileException { return thrownExceptions; }
-                public Access   getAccess()                                   { return access; }
+                public IClass[] getThrownExceptions() { return thrownExceptions; }
+                public Access   getAccess()           { return access; }
             };
         } else {
             result = new IClass.IMethod() {
@@ -369,7 +375,8 @@ class ClassFileIClass extends IClass {
     }
     private final Map resolvedMethods = new HashMap(); // MethodInfo => IInvocable
 
-    private IField resolveField(final ClassFile.FieldInfo fieldInfo) throws ClassNotFoundException {
+    private IField
+    resolveField(final ClassFile.FieldInfo fieldInfo) throws ClassNotFoundException {
         IField result = (IField) this.resolvedFields.get(fieldInfo);
         if (result != null) return result;
 

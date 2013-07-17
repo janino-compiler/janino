@@ -169,28 +169,33 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
 
     public ClassBodyEvaluator() {}
 
-    public void setDefaultImports(String[] optionalDefaultImports) {
+    public void
+    setDefaultImports(String[] optionalDefaultImports) {
         assertNotCooked();
         this.optionalDefaultImports = optionalDefaultImports;
     }
 
-    public void setClassName(String className) {
+    public void
+    setClassName(String className) {
         if (className == null) throw new NullPointerException();
         assertNotCooked();
         this.className = className;
     }
 
-    public void setExtendedClass(Class optionalExtendedType) {
+    public void
+    setExtendedClass(Class optionalExtendedType) {
         assertNotCooked();
         this.optionalExtendedType = optionalExtendedType;
     }
 
     /** @deprecated */
-    public void setExtendedType(Class optionalExtendedClass) {
+    public void
+    setExtendedType(Class optionalExtendedClass) {
         this.setExtendedClass(optionalExtendedClass);
     }
 
-    public void setImplementedInterfaces(Class[] implementedTypes) {
+    public void
+    setImplementedInterfaces(Class[] implementedTypes) {
         if (implementedTypes == null) {
             throw new NullPointerException(
                 "Zero implemented types must be specified as 'new Class[0]', not 'null'"
@@ -201,7 +206,8 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
     }
 
     /** @deprecated */
-    public void setImplementedTypes(Class[] implementedInterfaces) {
+    public void
+    setImplementedTypes(Class[] implementedInterfaces) {
         this.setImplementedInterfaces(implementedInterfaces);
     }
 
@@ -235,8 +241,8 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
      * If the <code>optionalParser</code> is given, a sequence of IMPORT directives is parsed from it and added to the
      * compilation unit.
      */
-    protected final Java.CompilationUnit makeCompilationUnit(Parser optionalParser)
-    throws CompileException, IOException {
+    protected final Java.CompilationUnit
+    makeCompilationUnit(Parser optionalParser) throws CompileException, IOException {
         Java.CompilationUnit cu = (
             new Java.CompilationUnit(optionalParser == null
             ? null
@@ -362,7 +368,7 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
      * ICompilerFactory#newClassBodyEvaluator() newClassBodyEvaluator}();
      * if (optionalBaseType != null) {
      *     if (optionalBaseType.isInterface()) {
-     *         cbe.{@link #setImplementedInterfaces(Class[]) setImplementedInterfaces}(new Class[] { optionalBaseType });
+     *         cbe.{@link #setImplementedInterfaces setImplementedInterfaces}(new Class[] { optionalBaseType });
      *     } else {
      *         cbe.{@link #setExtendedClass(Class) setExtendedClass}(optionalBaseType);
      *     }

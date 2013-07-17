@@ -44,7 +44,8 @@ class ResourceFinderClassLoader extends ClassLoader {
 
     private final ResourceFinder resourceFinder;
 
-    public ResourceFinderClassLoader(ResourceFinder resourceFinder, ClassLoader parent) {
+    public
+    ResourceFinderClassLoader(ResourceFinder resourceFinder, ClassLoader parent) {
         super(parent);
         this.resourceFinder = resourceFinder;
     }

@@ -62,7 +62,8 @@ class Scanner {
      *
      * @deprecated
      */
-    public Scanner(String fileName) throws CompileException, IOException {
+    public
+    Scanner(String fileName) throws CompileException, IOException {
         this(
             fileName,                     // optionalFileName
             new FileInputStream(fileName) // is
@@ -76,7 +77,8 @@ class Scanner {
      *
      * @deprecated
      */
-    public Scanner(String fileName, String encoding) throws CompileException, IOException {
+    public
+    Scanner(String fileName, String encoding) throws CompileException, IOException {
         this(
             fileName,                      // optionalFileName
             new FileInputStream(fileName), // is
@@ -92,7 +94,8 @@ class Scanner {
      *
      * @deprecated
      */
-    public Scanner(File file) throws CompileException, IOException {
+    public
+    Scanner(File file) throws CompileException, IOException {
         this(
             file.getAbsolutePath(),    // optionalFileName
             new FileInputStream(file), // is
@@ -107,7 +110,8 @@ class Scanner {
      *
      * @deprecated
      */
-    public Scanner(File file, String optionalEncoding) throws CompileException, IOException {
+    public
+    Scanner(File file, String optionalEncoding) throws CompileException, IOException {
         this(
             file.getAbsolutePath(),    // optionalFileName
             new FileInputStream(file), // fis
@@ -124,7 +128,8 @@ class Scanner {
      * The <code>fileName</code> is solely used for reporting in thrown
      * exceptions.
      */
-    public Scanner(String optionalFileName, InputStream is) throws CompileException, IOException {
+    public
+    Scanner(String optionalFileName, InputStream is) throws CompileException, IOException {
         this(
             optionalFileName,
             new InputStreamReader(is), // in
@@ -146,17 +151,14 @@ class Scanner {
      * system's default temp dir is created in order to make the source code
      * available to a debugger.
      */
-    public Scanner(
-        String      optionalFileName,
-        InputStream is,
-        String      optionalEncoding
-    ) throws CompileException, IOException {
+    public
+    Scanner(String optionalFileName, InputStream is, String optionalEncoding) throws CompileException, IOException {
         this(
             optionalFileName,                  // optionalFileName
             (                                  // in
-                optionalEncoding == null ?
-                new InputStreamReader(is) :
-                new InputStreamReader(is, optionalEncoding)
+                optionalEncoding == null
+                ? new InputStreamReader(is)
+                : new InputStreamReader(is, optionalEncoding)
             ),
             (short) 1,                         // initialLineNumber
             (short) 0                          // initialColumnNumber
@@ -177,7 +179,8 @@ class Scanner {
      * system's default temp dir is created in order to make the source code
      * available to a debugger.
      */
-    public Scanner(String optionalFileName, Reader in) throws CompileException, IOException {
+    public
+    Scanner(String optionalFileName, Reader in) throws CompileException, IOException {
         this(
             optionalFileName, // optionalFileName
             in,               // in
@@ -190,7 +193,8 @@ class Scanner {
      * Creates a {@link Scanner} that counts lines and columns from non-default initial
      * values.
      */
-    public Scanner(
+    public
+    Scanner(
         String optionalFileName,
         Reader in,
         short  initialLineNumber,        // "1" is a good idea
@@ -262,7 +266,8 @@ class Scanner {
     /**
      * Returns the {@link Location} of the next character.
      */
-    public Location location() {
+    public Location
+    location() {
         return new Location(this.optionalFileName, this.nextCharLineNumber, this.nextCharColumnNumber);
     }
 
@@ -287,7 +292,8 @@ class Scanner {
 
         public final String value;
 
-        private Token(int type, String value) {
+        private
+        Token(int type, String value) {
             this.optionalFileName = Scanner.this.optionalFileName;
             this.lineNumber       = Scanner.this.tokenLineNumber;
             this.columnNumber     = Scanner.this.tokenColumnNumber;
@@ -304,7 +310,8 @@ class Scanner {
         }
     }
 
-    public Token produce() throws CompileException, IOException {
+    public Token
+    produce() throws CompileException, IOException {
         if (this.docComment != null) {
             this.warning("MDC", "Misplaced doc comment", this.location());
             this.docComment = null;
@@ -517,16 +524,13 @@ class Scanner {
             sb.append((char) this.nextChar);
             for (;;) {
                 this.readNextChar();
-                if (
-                    this.nextChar == -1 ||
-                    !Character.isJavaIdentifierPart((char) this.nextChar)
-                ) break;
+                if (this.nextChar == -1 || !Character.isJavaIdentifierPart((char) this.nextChar)) break;
                 sb.append((char) this.nextChar);
             }
             String s = sb.toString();
-            if (s.equals("true")) return new Token(Token.BOOLEAN_LITERAL, "true");
-            if (s.equals("false")) return new Token(Token.BOOLEAN_LITERAL, "false");
-            if (s.equals("null")) return new Token(Token.NULL_LITERAL, "null");
+            if ("true".equals(s))  return new Token(Token.BOOLEAN_LITERAL, "true");
+            if ("false".equals(s)) return new Token(Token.BOOLEAN_LITERAL, "false");
+            if ("null".equals(s))  return new Token(Token.NULL_LITERAL,    "null");
             {
                 String v = (String) Scanner.JAVA_KEYWORDS.get(s);
                 if (v != null) return new Token(Token.KEYWORD, v);
@@ -599,7 +603,8 @@ class Scanner {
         );
     }
 
-    private Token scanNumericLiteral(boolean hadDecimalPoint) throws CompileException, IOException {
+    private Token
+    scanNumericLiteral(boolean hadDecimalPoint) throws CompileException, IOException {
         StringBuffer sb    = hadDecimalPoint ? new StringBuffer(".") : new StringBuffer();
         int          state = hadDecimalPoint ? 2 : 0;
         for (;;) {
@@ -795,7 +800,8 @@ class Scanner {
     /**
      * Scan the next literal character into a {@link StringBuffer}.
      */
-    private void scanLiteralCharacter(StringBuffer sb) throws CompileException, IOException {
+    private void
+    scanLiteralCharacter(StringBuffer sb) throws CompileException, IOException {
         if (this.nextChar == -1) throw new CompileException("EOF in literal", this.location());
 
         if (this.nextChar == '\r' || this.nextChar == '\n') {
@@ -854,7 +860,8 @@ class Scanner {
     }
 
     // Read one character and store in "nextChar".
-    private void readNextChar() throws IOException, CompileException {
+    private void
+    readNextChar() throws IOException, CompileException {
         try {
             this.nextChar = this.in.read();
         } catch (UnicodeUnescapeException ex) {
@@ -936,7 +943,8 @@ class Scanner {
      *
      * @param optionalWarningHandler <code>null</code> to indicate that no warnings be issued
      */
-    public void setWarningHandler(WarningHandler optionalWarningHandler) {
+    public void
+    setWarningHandler(WarningHandler optionalWarningHandler) {
         this.optionalWarningHandler = optionalWarningHandler;
     }
 
@@ -951,7 +959,8 @@ class Scanner {
      * The <code>handle</code> argument qulifies the warning and is typically used by
      * the {@link WarningHandler} to suppress individual warnings.
      */
-    private void warning(String handle, String message, Location optionalLocation) {
+    private void
+    warning(String handle, String message, Location optionalLocation) {
         if (this.optionalWarningHandler != null) {
             this.optionalWarningHandler.handleWarning(handle, message, optionalLocation);
         }

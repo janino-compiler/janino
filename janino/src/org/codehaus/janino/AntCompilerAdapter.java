@@ -156,7 +156,8 @@ class AntCompilerAdapter extends DefaultCompilerAdapter {
      * @param path
      * @return The converted path, or <code>null</code> if <code>path</code> is <code>null</code>
      */
-    private static File[] pathToFiles(Path path) {
+    private static File[]
+    pathToFiles(Path path) {
         if (path == null) return null;
 
         String[] fileNames = path.list();
@@ -172,7 +173,8 @@ class AntCompilerAdapter extends DefaultCompilerAdapter {
      * @param defaultValue
      * @return The converted path, or, if <code>path</code> is <code>null</code>, the <code>defaultValue</code>
      */
-    private static File[] pathToFiles(Path path, File[] defaultValue) {
+    private static File[]
+    pathToFiles(Path path, File[] defaultValue) {
         if (path == null) return defaultValue;
         return AntCompilerAdapter.pathToFiles(path);
     }

@@ -65,7 +65,8 @@ class Descriptor {
         }
         return d.substring(1);
     }
-    public static short size(String d) {
+    public static short
+    size(String d) {
         if (d.equals(Descriptor.VOID_)) return 0;
         if (Descriptor.hasSize1(d)) return 1;
         if (Descriptor.hasSize2(d)) return 2;
@@ -84,7 +85,8 @@ class Descriptor {
     }
 
     // Pretty-print.
-    public static String toString(String d) {
+    public static String
+    toString(String d) {
         int          idx = 0;
         StringBuffer sb  = new StringBuffer();
         if (d.charAt(0) == '(') {
@@ -101,7 +103,8 @@ class Descriptor {
         Descriptor.toString(d, idx, sb);
         return sb.toString();
     }
-    private static int toString(String d, int idx, StringBuffer sb) {
+    private static int
+    toString(String d, int idx, StringBuffer sb) {
         int dimensions = 0;
         while (idx < d.length() && d.charAt(idx) == '[') {
             ++dimensions;
@@ -178,7 +181,8 @@ class Descriptor {
      * Convert a field descriptor into a class name as defined by {@link
      * Class#getName()}.
      */
-    public static String toClassName(String d) {
+    public static String
+    toClassName(String d) {
         String res = (String) Descriptor.descriptorToClassName.get(d);
         if (res != null) { return res; }
 
@@ -197,7 +201,8 @@ class Descriptor {
     /**
      * Convert a descriptor into the "internal form" as defined by JVMS 4.2.
      */
-    public static String toInternalForm(String d) {
+    public static String
+    toInternalForm(String d) {
         if (d.charAt(0) != 'L') {
             throw new JaninoRuntimeException(
                 "Attempt to convert non-class descriptor \""
@@ -208,13 +213,11 @@ class Descriptor {
         return d.substring(1, d.length() - 1);
     }
 
-    public static boolean isPrimitive(String d) {
-        return d.length() == 1 && "VBCDFIJSZ".indexOf(d.charAt(0)) != -1;
-    }
+    public static boolean
+    isPrimitive(String d) { return d.length() == 1 && "VBCDFIJSZ".indexOf(d.charAt(0)) != -1; }
 
-    public static boolean isPrimitiveNumeric(String d) {
-        return d.length() == 1 && "BDFIJSC".indexOf(d.charAt(0)) != -1;
-    }
+    public static boolean
+    isPrimitiveNumeric(String d) { return d.length() == 1 && "BDFIJSC".indexOf(d.charAt(0)) != -1; }
 
     /**
      * Returns the package name of a class or interface reference descriptor,

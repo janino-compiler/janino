@@ -39,7 +39,9 @@ import org.codehaus.janino.util.*;
  */
 public
 class DeclarationCounter extends Traverser {
-    public static void main(String[] args) throws CompileException, IOException {
+
+    public static void
+    main(String[] args) throws CompileException, IOException {
         DeclarationCounter dc = new DeclarationCounter();
         for (int i = 0; i < args.length; ++i) {
             String fileName = args[i];
@@ -64,28 +66,32 @@ class DeclarationCounter extends Traverser {
     }
 
     // Count class declarations.
-    public void traverseClassDeclaration(Java.ClassDeclaration cd) {
+    public void
+    traverseClassDeclaration(Java.ClassDeclaration cd) {
         ++this.classDeclarationCount;
         super.traverseClassDeclaration(cd);
     }
     private int classDeclarationCount;
 
     // Count interface declarations.
-    public void traverseInterfaceDeclaration(Java.InterfaceDeclaration id) {
+    public void
+    traverseInterfaceDeclaration(Java.InterfaceDeclaration id) {
         ++this.interfaceDeclarationCount;
         super.traverseInterfaceDeclaration(id);
     }
     private int interfaceDeclarationCount;
 
     // Count fields.
-    public void traverseFieldDeclaration(Java.FieldDeclaration fd) {
+    public void
+    traverseFieldDeclaration(Java.FieldDeclaration fd) {
         this.fieldCount += fd.variableDeclarators.length;
         super.traverseFieldDeclaration(fd);
     }
     private int fieldCount;
 
     // Count local variables.
-    public void traverseLocalVariableDeclarationStatement(Java.LocalVariableDeclarationStatement lvds) {
+    public void
+    traverseLocalVariableDeclarationStatement(Java.LocalVariableDeclarationStatement lvds) {
         this.localVariableCount += lvds.variableDeclarators.length;
         super.traverseLocalVariableDeclarationStatement(lvds);
     }

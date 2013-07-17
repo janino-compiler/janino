@@ -101,28 +101,28 @@ class JGrep {
         for (; idx < args.length; ++idx) {
             String arg = args[idx];
             if (arg.charAt(0) != '-') break;
-            if (arg.equals("-dirs")) {
+            if ("-dirs".equals(arg)) {
                 directoryNamePatterns = StringPattern.parseCombinedPattern(args[++idx]);
             } else
-            if (arg.equals("-files")) {
+            if ("-files".equals(arg)) {
                 fileNamePatterns = StringPattern.parseCombinedPattern(args[++idx]);
             } else
-            if (arg.equals("-classpath")) {
+            if ("-classpath".equals(arg)) {
                 classPath = PathResourceFinder.parsePath(args[++idx]);
             } else
-            if (arg.equals("-extdirs")) {
+            if ("-extdirs".equals(arg)) {
                 optionalExtDirs = PathResourceFinder.parsePath(args[++idx]);
             } else
-            if (arg.equals("-bootclasspath")) {
+            if ("-bootclasspath".equals(arg)) {
                 optionalBootClassPath = PathResourceFinder.parsePath(args[++idx]);
             } else
-            if (arg.equals("-encoding")) {
+            if ("-encoding".equals(arg)) {
                 optionalCharacterEncoding = args[++idx];
             } else
-            if (arg.equals("-verbose")) {
+            if ("-verbose".equals(arg)) {
                 verbose = true;
             } else
-            if (arg.equals("-help")) {
+            if ("-help".equals(arg)) {
                 for (int j = 0; j < JGrep.USAGE.length; ++j) System.out.println(JGrep.USAGE[j]);
                 System.exit(1);
             } else
@@ -159,7 +159,7 @@ class JGrep {
         List mits = new ArrayList();
         for (; idx < args.length; ++idx) {
             String arg = args[idx];
-            if (arg.equals("-method-invocation")) {
+            if ("-method-invocation".equals(arg)) {
                 MethodInvocationTarget mit;
                 try {
                     mit = JGrep.parseMethodInvocationPattern(args[++idx]);
@@ -275,9 +275,8 @@ class JGrep {
         }
     }
 
-    private static MethodInvocationTarget parseMethodInvocationPattern(
-        String mip
-    ) throws CompileException, IOException {
+    private static MethodInvocationTarget
+    parseMethodInvocationPattern(String mip) throws CompileException, IOException {
         MethodInvocationTarget mit     = new MethodInvocationTarget();
         Scanner                scanner = new Scanner(null, new StringReader(mip));
         Parser                 parser  = new Parser(scanner);
@@ -312,7 +311,8 @@ class JGrep {
         }
     }
 
-    private static String readIdentifierPattern(Parser p) throws CompileException, IOException {
+    private static String
+    readIdentifierPattern(Parser p) throws CompileException, IOException {
         StringBuffer sb = new StringBuffer();
         if (p.peekRead("*")) {
             sb.append('*');
@@ -387,7 +387,8 @@ class JGrep {
         void execute(UnitCompiler uc, Java.Invocation invocation, IClass.IMethod method) throws Exception;
     }
 
-    static boolean typeMatches(String pattern, String typeName) {
+    static boolean
+    typeMatches(String pattern, String typeName) {
         return new StringPattern(pattern).matches(
             pattern.indexOf('.') == -1
             ? typeName.substring(typeName.lastIndexOf('.') + 1)
@@ -435,7 +436,8 @@ class JGrep {
     private final String       optionalCharacterEncoding;
     private final Benchmark    benchmark;
 
-    public JGrep(
+    public
+    JGrep(
         File[]  classPath,
         File[]  optionalExtDirs,
         File[]  optionalBootClassPath,
@@ -460,17 +462,15 @@ class JGrep {
         this.benchmark.report("Character encoding", optionalCharacterEncoding);
     }
 
-    public JGrep(
-        IClassLoader iClassLoader,
-        final String optionalCharacterEncoding,
-        boolean      verbose
-    ) {
+    public
+    JGrep(IClassLoader iClassLoader, final String optionalCharacterEncoding, boolean verbose) {
         this.iClassLoader              = new JGrepIClassLoader(iClassLoader);
         this.optionalCharacterEncoding = optionalCharacterEncoding;
         this.benchmark                 = new Benchmark(verbose);
     }
 
-    public void jGrep(
+    public void
+    jGrep(
         File[]                rootDirectories,
         final StringPattern[] directoryNamePatterns,
         final StringPattern[] fileNamePatterns,
@@ -493,10 +493,8 @@ class JGrep {
         ), methodInvocationTargets);
     }
 
-    public void jGrep(
-        Iterator   sourceFilesIterator,
-        final List methodInvocationTargets
-    ) throws CompileException, IOException {
+    public void
+    jGrep(Iterator sourceFilesIterator, final List methodInvocationTargets) throws CompileException, IOException {
 
         // Parse the given source files.
         this.benchmark.beginReporting();
@@ -531,7 +529,8 @@ class JGrep {
                     new Traverser() {
 
                         // "method(...)", "x.method(...)"
-                        public void traverseMethodInvocation(Java.MethodInvocation mi) {
+                        public void
+                        traverseMethodInvocation(Java.MethodInvocation mi) {
                             try {
                                 this.match(mi, uc.findIMethod(mi));
                             } catch (CompileException ex) {
@@ -541,7 +540,8 @@ class JGrep {
                         }
 
                         // "super.method(...)"
-                        public void traverseSuperclassMethodInvocation(Java.SuperclassMethodInvocation scmi) {
+                        public void
+                        traverseSuperclassMethodInvocation(Java.SuperclassMethodInvocation scmi) {
                             try {
                                 this.match(scmi, uc.findIMethod(scmi));
                             } catch (CompileException ex) {
@@ -551,24 +551,28 @@ class JGrep {
                         }
 
                         // new Xyz(...)
-                        public void traverseNewClassInstance(Java.NewClassInstance nci) {
+                        public void
+                        traverseNewClassInstance(Java.NewClassInstance nci) {
     //                        System.out.println(nci.getLocation() + ": " + nci);
                             super.traverseNewClassInstance(nci);
                         }
 
                         // new Xyz(...) {}
-                        public void traverseNewAnonymousClassInstance(Java.NewAnonymousClassInstance naci) {
+                        public void
+                        traverseNewAnonymousClassInstance(Java.NewAnonymousClassInstance naci) {
     //                        System.out.println(naci.getLocation() + ": " + naci);
                             super.traverseNewAnonymousClassInstance(naci);
                         }
 
                         // Explicit constructor invocation ("this(...)", "super(...)").
-                        public void traverseConstructorInvocation(Java.ConstructorInvocation ci) {
+                        public void
+                        traverseConstructorInvocation(Java.ConstructorInvocation ci) {
     //                        System.out.println(ci.getLocation() + ": " + ci);
                             super.traverseConstructorInvocation(ci);
                         }
 
-                        private void match(Java.Invocation invocation, IClass.IMethod method) throws CompileException {
+                        private void
+                        match(Java.Invocation invocation, IClass.IMethod method) throws CompileException {
                             for (Iterator it2 = methodInvocationTargets.iterator(); it2.hasNext();) {
                                 MethodInvocationTarget mit = (MethodInvocationTarget) it2.next();
                                 mit.apply(uc, invocation, method);
@@ -592,10 +596,8 @@ class JGrep {
      * The <code>inputStream</code> is closed before the method returns.
      * @return the parsed compilation unit
      */
-    private Java.CompilationUnit parseCompilationUnit(
-        File   sourceFile,
-        String optionalCharacterEncoding
-    ) throws CompileException, IOException {
+    private Java.CompilationUnit
+    parseCompilationUnit(File sourceFile, String optionalCharacterEncoding) throws CompileException, IOException {
         InputStream is = new BufferedInputStream(new FileInputStream(sourceFile));
         try {
             Parser parser = new Parser(new Scanner(sourceFile.getPath(), is, optionalCharacterEncoding));
@@ -658,7 +660,8 @@ class JGrep {
         /**
          * @param optionalParentIClassLoader {@link IClassLoader} through which {@link IClass}es are to be loaded
          */
-        public JGrepIClassLoader(IClassLoader optionalParentIClassLoader) {
+        public
+        JGrepIClassLoader(IClassLoader optionalParentIClassLoader) {
             super(optionalParentIClassLoader);
             super.postConstruct();
         }

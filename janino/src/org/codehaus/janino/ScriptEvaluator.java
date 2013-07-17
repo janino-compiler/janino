@@ -62,9 +62,8 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
      * @see #ScriptEvaluator()
      * @see Cookable#cook(String)
      */
-    public ScriptEvaluator(
-        String   script
-    ) throws CompileException {
+    public
+    ScriptEvaluator(String script) throws CompileException {
         this.cook(script);
     }
 
@@ -78,10 +77,8 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
      * @see #setReturnType(Class)
      * @see Cookable#cook(String)
      */
-    public ScriptEvaluator(
-        String   script,
-        Class    returnType
-    ) throws CompileException {
+    public
+    ScriptEvaluator(String script, Class returnType) throws CompileException {
         this.setReturnType(returnType);
         this.cook(script);
     }
@@ -98,12 +95,9 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
      * @see #setParameters(String[], Class[])
      * @see Cookable#cook(String)
      */
-    public ScriptEvaluator(
-        String   script,
-        Class    returnType,
-        String[] parameterNames,
-        Class[]  parameterTypes
-    ) throws CompileException {
+    public
+    ScriptEvaluator(String script, Class returnType, String[] parameterNames, Class[] parameterTypes)
+    throws CompileException {
         this.setReturnType(returnType);
         this.setParameters(parameterNames, parameterTypes);
         this.cook(script);
@@ -123,7 +117,8 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
      * @see #setThrownExceptions(Class[])
      * @see Cookable#cook(String)
      */
-    public ScriptEvaluator(
+    public
+    ScriptEvaluator(
         String   script,
         Class    returnType,
         String[] parameterNames,
@@ -152,7 +147,8 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
      * @see SimpleCompiler#setParentClassLoader(ClassLoader)
      * @see Cookable#cook(String, InputStream)
      */
-    public ScriptEvaluator(
+    public
+    ScriptEvaluator(
         String      optionalFileName,
         InputStream is,
         Class       returnType,
@@ -184,7 +180,8 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
      * @see SimpleCompiler#setParentClassLoader(ClassLoader)
      * @see Cookable#cook(String, Reader)
      */
-    public ScriptEvaluator(
+    public
+    ScriptEvaluator(
         String      optionalFileName,
         Reader      reader,
         Class       returnType,
@@ -216,7 +213,8 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
      * @see SimpleCompiler#setParentClassLoader(ClassLoader)
      * @see Cookable#cook(Reader)
      */
-    public ScriptEvaluator(
+    public
+    ScriptEvaluator(
         Scanner     scanner,
         Class       returnType,
         String[]    parameterNames,
@@ -251,7 +249,8 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
      * @see SimpleCompiler#setParentClassLoader(ClassLoader)
      * @see Cookable#cook(Reader)
      */
-    public ScriptEvaluator(
+    public
+    ScriptEvaluator(
         Scanner     scanner,
         Class       optionalExtendedType,
         Class[]     implementedTypes,
@@ -296,7 +295,8 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
      * @see SimpleCompiler#setParentClassLoader(ClassLoader)
      * @see Cookable#cook(Reader)
      */
-    public ScriptEvaluator(
+    public
+    ScriptEvaluator(
         Scanner     scanner,
         String      className,
         Class       optionalExtendedType,
@@ -323,23 +323,28 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
 
     public ScriptEvaluator() {}
 
-    public void setStaticMethod(boolean staticMethod) {
+    public void
+    setStaticMethod(boolean staticMethod) {
         this.setStaticMethod(new boolean[] { staticMethod });
     }
 
-    public void setReturnType(Class returnType) {
+    public void
+    setReturnType(Class returnType) {
         this.setReturnTypes(new Class[] { returnType });
     }
 
-    public void setMethodName(String methodName) {
+    public void
+    setMethodName(String methodName) {
         this.setMethodNames(new String[] { methodName });
     }
 
-    public void setParameters(String[] parameterNames, Class[] parameterTypes) {
+    public void
+    setParameters(String[] parameterNames, Class[] parameterTypes) {
         this.setParameters(new String[][] { parameterNames }, new Class[][] { parameterTypes });
     }
 
-    public void setThrownExceptions(Class[] thrownExceptions) {
+    public void
+    setThrownExceptions(Class[] thrownExceptions) {
         this.setThrownExceptions(new Class[][] { thrownExceptions });
     }
 
@@ -356,28 +361,33 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
     public Method
     getMethod() { return this.getMethod(0); }
 
-    public void setStaticMethod(boolean[] staticMethod) {
+    public void
+    setStaticMethod(boolean[] staticMethod) {
         assertNotCooked();
         this.optionalStaticMethod = (boolean[]) staticMethod.clone();
     }
 
-    public void setReturnTypes(Class[] returnTypes) {
+    public void
+    setReturnTypes(Class[] returnTypes) {
         assertNotCooked();
         this.optionalReturnTypes = (Class[]) returnTypes.clone();
     }
 
-    public void setMethodNames(String[] methodNames) {
+    public void
+    setMethodNames(String[] methodNames) {
         assertNotCooked();
         this.optionalMethodNames = (String[]) methodNames.clone();
     }
 
-    public void setParameters(String[][] parameterNames, Class[][] parameterTypes) {
+    public void
+    setParameters(String[][] parameterNames, Class[][] parameterTypes) {
         assertNotCooked();
         this.optionalParameterNames = (String[][]) parameterNames.clone();
         this.optionalParameterTypes = (Class[][]) parameterTypes.clone();
     }
 
-    public void setThrownExceptions(Class[][] thrownExceptions) {
+    public void
+    setThrownExceptions(Class[][] thrownExceptions) {
         assertNotCooked();
         this.optionalThrownExceptions = (Class[][]) thrownExceptions.clone();
     }
@@ -413,7 +423,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
         for (int i = 0; i < scanners.length; ++i) {
             parsers[i] = new Parser(scanners[i]);
         }
-        cook(parsers);
+        this.cook(parsers);
     }
     public final void
     cook(Parser[] parsers) throws CompileException, IOException {
@@ -621,10 +631,8 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
      * Fill the given <code>block</code> by parsing statements until EOF and adding
      * them to the block.
      */
-    protected List/*<BlockStatement>*/ makeStatements(
-        int    idx,
-        Parser parser
-    ) throws CompileException, IOException {
+    protected List/*<BlockStatement>*/
+    makeStatements(int idx, Parser parser) throws CompileException, IOException {
         List/*<BlockStatement>*/ statements = new ArrayList();
         while (!parser.peekEof()) {
             statements.add(parser.parseBlockStatement());
@@ -671,7 +679,8 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
      *
      * @param returnType Return type of the declared method
      */
-    protected Java.MethodDeclarator makeMethodDeclaration(
+    protected Java.MethodDeclarator
+    makeMethodDeclaration(
         Location                 location,
         boolean                  staticMethod,
         Class                    returnType,
@@ -707,9 +716,9 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
             location,                                        // location
             null,                                            // optionalDocComment
             (                                                // modifiers
-                staticMethod ?
-                (short) (Mod.PUBLIC | Mod.STATIC) :
-                (short) Mod.PUBLIC
+                staticMethod
+                ? (short) (Mod.PUBLIC | Mod.STATIC)
+                : (short) Mod.PUBLIC
             ),
             this.classToType(location, returnType),          // type
             methodName,                                      // name
@@ -906,14 +915,17 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
         final Set localVariableNames = new HashSet();
         final Set parameterNames     = new HashSet();
         new Traverser() {
-            public void traverseLocalVariableDeclarationStatement(LocalVariableDeclarationStatement lvds) {
+
+            public void
+            traverseLocalVariableDeclarationStatement(LocalVariableDeclarationStatement lvds) {
                 for (int i = 0; i < lvds.variableDeclarators.length; ++i) {
                     localVariableNames.add(lvds.variableDeclarators[i].name);
                 }
                 super.traverseLocalVariableDeclarationStatement(lvds);
             }
 
-            public void traverseAmbiguousName(AmbiguousName an) {
+            public void
+            traverseAmbiguousName(AmbiguousName an) {
 
                 // If any of the components starts with an upper-case letter, then the ambiguous
                 // name is most probably a type name, e.g. "System.out" or "java.lang.System.out".

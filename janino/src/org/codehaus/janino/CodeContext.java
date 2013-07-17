@@ -118,7 +118,7 @@ class CodeContext {
      * @return The slot index of the allocated variable
      */
     public short
-    allocateLocalVariable(short size) { return allocateLocalVariable(size, null, null).getSlotIndex(); }
+    allocateLocalVariable(short size) { return this.allocateLocalVariable(size, null, null).getSlotIndex(); }
 
     /**
      * Allocate space for a local variable of the given size (1 or 2)

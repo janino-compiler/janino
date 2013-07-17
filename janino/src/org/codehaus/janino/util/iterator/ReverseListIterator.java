@@ -34,10 +34,9 @@ import java.util.*;
  */
 public
 class ReverseListIterator extends FilterListIterator {
-    /** */
-    public ReverseListIterator(ListIterator delegate) {
-        super(delegate);
-    }
+
+    public
+    ReverseListIterator(ListIterator delegate) { super(delegate); }
 
     /** Calls {@link #delegate}.{@link java.util.ListIterator#hasPrevious()} */
     public boolean hasNext()       { return super.hasPrevious(); }

@@ -42,14 +42,14 @@ class TraversingIterator implements Iterator {
     private Object      nextElement;
     private boolean     nextElementRead; // Have we read ahead?
 
-    public TraversingIterator(Iterator delegate) {
-        this.nest.push(delegate);
-    }
+    public
+    TraversingIterator(Iterator delegate) { this.nest.push(delegate); }
 
     public boolean
     hasNext() { return this.nextElementRead || this.readNext(); }
 
-    public Object next() {
+    public Object
+    next() {
         if (!this.nextElementRead && !this.readNext()) throw new NoSuchElementException();
         this.nextElementRead = false;
         return this.nextElement;
@@ -59,7 +59,8 @@ class TraversingIterator implements Iterator {
      * Reads the next element and stores it in {@link #nextElement}.
      * @return <code>false</code> if no more element can be read.
      */
-    private boolean readNext() {
+    private boolean
+    readNext() {
         while (!this.nest.empty()) {
             Iterator it = (Iterator) this.nest.peek();
             if (!it.hasNext()) {
@@ -93,7 +94,6 @@ class TraversingIterator implements Iterator {
      *                                       traversed doesn't support element removal
      * @see Iterator#remove()
      */
-    public void remove() {
-        ((Iterator) this.nest.peek()).remove();
-    }
+    public void
+    remove() { ((Iterator) this.nest.peek()).remove(); }
 }

@@ -130,7 +130,6 @@ class Enumerator {
     /**
      * Returns the <code>name</code> passed to {@link #Enumerator(String)}.
      */
-    public String toString() {
-        return this.name;
-    }
+    public String
+    toString() { return this.name; }
 }

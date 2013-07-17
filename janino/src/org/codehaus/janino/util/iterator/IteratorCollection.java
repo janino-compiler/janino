@@ -42,14 +42,16 @@ class IteratorCollection extends AbstractCollection {
     /** Lazily-filled collection of the elements delivered by the delegate. */
     private final List     elements = new ArrayList();
 
-    public IteratorCollection(Iterator iterator) {
-        this.iterator = iterator;
-    }
+    public
+    IteratorCollection(Iterator iterator) { this.iterator = iterator; }
 
-    public Iterator iterator() {
+    public Iterator
+    iterator() {
         return new Iterator() {
             private Iterator elementsIterator = IteratorCollection.this.elements.iterator();
-            public Object next() {
+
+            public Object
+            next() {
                 if (this.elementsIterator != null) {
                     if (this.elementsIterator.hasNext()) return this.elementsIterator.next();
                     this.elementsIterator = null;
@@ -66,12 +68,13 @@ class IteratorCollection extends AbstractCollection {
                     || IteratorCollection.this.iterator.hasNext()
                 );
             }
-            public void remove() {
-                throw new UnsupportedOperationException();
-            }
+            public void
+            remove() { throw new UnsupportedOperationException(); }
         };
     }
-    public int size() {
+
+    public int
+    size() {
         int size = 0;
         for (Iterator it = this.iterator(); it.hasNext(); it.next()) ++size;
         return size;

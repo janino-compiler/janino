@@ -270,7 +270,7 @@ class IClass {
      * @return <code>null</code> iff this {@link IClass} does not declare an {@link IField} with that name
      */
     public final IField
-    getDeclaredIField(String name) { return (IField) getDeclaredIFieldsCache().get(name); }
+    getDeclaredIField(String name) { return (IField) this.getDeclaredIFieldsCache().get(name); }
 
     protected void
     clearIFieldCaches() { this.declaredIFieldsCache = null; }

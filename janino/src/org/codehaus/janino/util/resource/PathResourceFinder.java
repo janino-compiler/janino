@@ -45,30 +45,27 @@ class PathResourceFinder extends LazyMultiResourceFinder {
     /**
      * @param entries The entries of the "path"
      */
-    public PathResourceFinder(final File[] entries) {
+    public
+    PathResourceFinder(final File[] entries) {
         super(PathResourceFinder.createIterator(Arrays.asList(entries).iterator()));
     }
 
     /**
      * @param entries The entries of the "path" (type must be {@link File})
      */
-    public PathResourceFinder(Iterator entries) {
-        super(entries);
-    }
+    public
+    PathResourceFinder(Iterator entries) { super(entries); }
 
     /**
      * @param path A java-like path, i.e. a "path separator"-separated list of entries.
      */
-    public PathResourceFinder(String path) {
-        this(PathResourceFinder.parsePath(path));
-    }
+    public
+    PathResourceFinder(String path) { this(PathResourceFinder.parsePath(path)); }
 
     private static Iterator
     createIterator(final Iterator entries) {
         return new TransformingIterator(entries) {
-            protected Object transform(Object o) {
-                return PathResourceFinder.createResourceFinder((File) o);
-            }
+            protected Object transform(Object o) { return PathResourceFinder.createResourceFinder((File) o); }
         };
     }
 
@@ -87,7 +84,8 @@ class PathResourceFinder extends LazyMultiResourceFinder {
      *
      * @see File#pathSeparatorChar
      */
-    public static File[] parsePath(String s) {
+    public static File[]
+    parsePath(String s) {
         int  from = 0;
         List l    = new ArrayList(); // File
         for (;;) {
@@ -119,8 +117,8 @@ class PathResourceFinder extends LazyMultiResourceFinder {
 
         // ZIP file or JAR file.
         if (
-            (entry.getName().endsWith(".jar") || entry.getName().endsWith(".zip")) &&
-            entry.isFile()
+            (entry.getName().endsWith(".jar") || entry.getName().endsWith(".zip"))
+            && entry.isFile()
         ) {
             try {
                 return new ZipFileResourceFinder(new ZipFile(entry));

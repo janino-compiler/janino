@@ -45,16 +45,16 @@ class UnicodeUnescapeReader extends FilterReader {
     /**
      * @param in
      */
-    public UnicodeUnescapeReader(Reader in) {
-        super(in);
-    }
+    public
+    UnicodeUnescapeReader(Reader in) { super(in); }
 
     /**
      * Override {@link FilterReader#read()}.
      *
      * @throws UnicodeUnescapeException Invalid escape sequence encountered
      */
-    public int read() throws IOException {
+    public int
+    read() throws IOException {
         int c;
 
         // Read next character.
@@ -100,7 +100,8 @@ class UnicodeUnescapeReader extends FilterReader {
     /**
      * Override {@link FilterReader#read(char[], int, int)}.
      */
-    public int read(char[] cbuf, int off, int len) throws IOException {
+    public int
+    read(char[] cbuf, int off, int len) throws IOException {
         if (len == 0) return 0;
         int res = 0;
         do {
@@ -114,7 +115,8 @@ class UnicodeUnescapeReader extends FilterReader {
     /**
      * Simple unit testing.
      */
-    public static void main(String[] args) throws IOException {
+    public static void
+    main(String[] args) throws IOException {
         Reader r = new UnicodeUnescapeReader(new StringReader(args[0]));
         for (;;) {
             int c = r.read();

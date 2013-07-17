@@ -41,12 +41,15 @@ class JarDirectoriesResourceFinder extends LazyMultiResourceFinder {
     /**
      * @param directories The set of directories to search for JAR files.
      */
-    public JarDirectoriesResourceFinder(final File[] directories) {
+    public
+    JarDirectoriesResourceFinder(final File[] directories) {
         super(new MultiDimensionalIterator(
 
             // Iterate over directories.
             new TransformingIterator(Arrays.asList(directories).iterator()) {
-                protected Object transform(Object o) { // File directory => Iterator ResourceFinder
+
+                protected Object
+                transform(Object o) { // File directory => Iterator ResourceFinder
                     File directory = (File) o;
 
                     if (!directory.exists()) return Collections.EMPTY_LIST.iterator();
@@ -56,7 +59,9 @@ class JarDirectoriesResourceFinder extends LazyMultiResourceFinder {
                         public boolean accept(File dir, String name) { return name.endsWith(".jar"); }
                     });
                     return new TransformingIterator(Arrays.asList(jarFiles).iterator()) {
-                        protected Object transform(Object o) { // File jarFile => ResourceFinder
+
+                        protected Object
+                        transform(Object o) { // File jarFile => ResourceFinder
                             File zipFile = (File) o;
                             try {
                                 return new ZipFileResourceFinder(new ZipFile(zipFile));

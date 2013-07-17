@@ -74,7 +74,8 @@ class IClassLoader {
      * {@link #loadIClass(String)} which will not work until the implementing
      * class is constructed.)
      */
-    protected final void postConstruct() {
+    protected final void
+    postConstruct() {
         try {
             this.OBJECT            = this.loadIClass(Descriptor.OBJECT);
             this.STRING            = this.loadIClass(Descriptor.STRING);
@@ -103,7 +104,8 @@ class IClassLoader {
      * @return <code>null</code> if an {@link IClass} could not be loaded
      * @throws {@link ClassNotFoundException} if an exception was raised while loading the {@link IClass}
      */
-    public final IClass loadIClass(String fieldDescriptor) throws ClassNotFoundException {
+    public final IClass
+    loadIClass(String fieldDescriptor) throws ClassNotFoundException {
         if (IClassLoader.DEBUG) System.out.println(this + ": Load type \"" + fieldDescriptor + "\"");
 
         if (Descriptor.isPrimitive(fieldDescriptor)) {

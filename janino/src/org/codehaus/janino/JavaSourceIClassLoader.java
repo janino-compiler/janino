@@ -57,7 +57,8 @@ class JavaSourceIClassLoader extends IClassLoader {
      * scans and parses compilation units on-the-fly, it adds them to
      * <code>unitCompilers</code>.
      */
-    public JavaSourceIClassLoader(
+    public
+    JavaSourceIClassLoader(
         ResourceFinder sourceFinder,
         String         optionalCharacterEncoding,
         Set            unitCompilers, // UnitCompiler
@@ -71,18 +72,21 @@ class JavaSourceIClassLoader extends IClassLoader {
         super.postConstruct();
     }
 
-    public void setSourceFinder(ResourceFinder pathResourceFinder) {
+    public void
+    setSourceFinder(ResourceFinder pathResourceFinder) {
         this.sourceFinder = pathResourceFinder;
     }
 
-    public void setCharacterEncoding(String optionalCharacterEncoding) {
+    public void
+    setCharacterEncoding(String optionalCharacterEncoding) {
         this.optionalCharacterEncoding = optionalCharacterEncoding;
     }
 
     /**
      * @see UnitCompiler#setCompileErrorHandler(ErrorHandler)
      */
-    public void setCompileErrorHandler(UnitCompiler.ErrorHandler optionalCompileErrorHandler) {
+    public void
+    setCompileErrorHandler(UnitCompiler.ErrorHandler optionalCompileErrorHandler) {
         this.optionalCompileErrorHandler = optionalCompileErrorHandler;
     }
 
@@ -90,7 +94,8 @@ class JavaSourceIClassLoader extends IClassLoader {
      * @see Parser#setWarningHandler(WarningHandler)
      * @see UnitCompiler#setCompileErrorHandler(ErrorHandler)
      */
-    public void setWarningHandler(WarningHandler optionalWarningHandler) {
+    public void
+    setWarningHandler(WarningHandler optionalWarningHandler) {
         this.optionalWarningHandler = optionalWarningHandler;
     }
 

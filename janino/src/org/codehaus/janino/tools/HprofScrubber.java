@@ -45,7 +45,9 @@ class HprofScrubber {
         public final int    allocatedObjects;
         public final int    traceNumber;
         public final String className;
-        public Site(int allocatedBytes, int allocatedObjects, int traceNumber, String className) {
+
+        public
+        Site(int allocatedBytes, int allocatedObjects, int traceNumber, String className) {
             this.allocatedBytes   = allocatedBytes;
             this.allocatedObjects = allocatedObjects;
             this.traceNumber      = traceNumber;
@@ -57,13 +59,16 @@ class HprofScrubber {
     class Sample {
         public final int count;
         public final int traceNumber;
-        public Sample(int count, int traceNumber) {
+
+        public
+        Sample(int count, int traceNumber) {
             this.count       = count;
             this.traceNumber = traceNumber;
         }
     }
 
-    public static void main(String[] args) throws Exception {
+    public static void
+    main(String[] args) throws Exception {
         String fileName = args.length == 0 ? "java.hprof.txt" : args[0];
 
         BufferedReader br = new BufferedReader(new FileReader(fileName));

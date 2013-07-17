@@ -53,17 +53,20 @@ class StringPattern {
     /**
      * @param mode {@link #INCLUDE} or {@link #EXCLUDE}
      */
-    public StringPattern(int mode, String pattern) {
+    public
+    StringPattern(int mode, String pattern) {
         this.mode    = mode;
         this.pattern = pattern;
     }
 
-    public StringPattern(String pattern) {
+    public
+    StringPattern(String pattern) {
         this.mode    = StringPattern.INCLUDE;
         this.pattern = pattern;
     }
 
-    public int getMode() { return this.mode; }
+    public int
+    getMode() { return this.mode; }
 
     /**
      * Match the given <code>text</code> against the pattern represented by the current instance,
@@ -81,9 +84,8 @@ class StringPattern {
      * </ul>
      * Notice: The <code>mode</code> flag of the current instance does not take any effect here.
      */
-    public boolean matches(String text) {
-        return StringPattern.wildmatch(this.pattern, text);
-    }
+    public boolean
+    matches(String text) { return StringPattern.wildmatch(this.pattern, text); }
 
     /**
      * Parse a "combined pattern" into an array of {@link StringPattern}s. A combined pattern
@@ -96,7 +98,8 @@ class StringPattern {
      * If a pattern is preceeded with a '-', then the {@link StringPattern} is created with mode
      * {@link #EXCLUDE}, otherwise with mode {@link #INCLUDE}.
      */
-    public static StringPattern[] parseCombinedPattern(String combinedPattern) {
+    public static StringPattern[]
+    parseCombinedPattern(String combinedPattern) {
         ArrayList al = new ArrayList();
         for (int k = 0, l; k < combinedPattern.length(); k = l) {
             int  patternMode;
@@ -137,7 +140,8 @@ class StringPattern {
      * For backwards compatibility, <code>null</code> patterns are treated like
      * {@link #PATTERNS_NONE}.
      */
-    public static boolean matches(StringPattern[] patterns, String text) {
+    public static boolean
+    matches(StringPattern[] patterns, String text) {
         if (patterns == null) return false; // Backwards compatibility -- previously, "null" was officially documented.
 
         for (int i = patterns.length - 1; i >= 0; --i) {
@@ -150,7 +154,8 @@ class StringPattern {
     public static final StringPattern[] PATTERNS_ALL  = new StringPattern[] { new StringPattern("*") };
     public static final StringPattern[] PATTERNS_NONE = new StringPattern[0];
 
-    public String toString() {
+    public String
+    toString() {
         return (
             this.mode == StringPattern.INCLUDE ? '+' :
             this.mode == StringPattern.EXCLUDE ? '-' :
@@ -158,7 +163,8 @@ class StringPattern {
         ) + this.pattern;
     }
 
-    private static boolean wildmatch(String pattern, String text) {
+    private static boolean
+    wildmatch(String pattern, String text) {
         int i;
         for (i = 0; i < pattern.length(); ++i) {
             char c = pattern.charAt(i);

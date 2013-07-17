@@ -39,18 +39,17 @@ class MapResourceCreator implements ResourceCreator {
     /**
      * Auto-create the delegate {@link Map}.
      */
-    public MapResourceCreator() {
-        this.map = new HashMap();
-    }
-    public MapResourceCreator(Map map) {
-        this.map = map;
-    }
+    public
+    MapResourceCreator() { this.map = new HashMap(); }
+
+    public
+    MapResourceCreator(Map map) { this.map = map; }
 
     public final Map
     getMap() { return this.map; }
 
     public final OutputStream
-    createResource(final String resourceName) throws IOException {
+    createResource(final String resourceName) {
         return new ByteArrayOutputStream() {
 
             public void

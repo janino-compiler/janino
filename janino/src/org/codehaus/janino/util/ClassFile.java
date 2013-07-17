@@ -1630,7 +1630,8 @@ class ClassFile {
 
         // Implement "AttributeInfo".
         protected void
-        storeBody(DataOutputStream dos) throws IOException {
+        storeBody(DataOutputStream dos) {
+            ;
         }
     }
 

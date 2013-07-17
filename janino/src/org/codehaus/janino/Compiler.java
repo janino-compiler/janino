@@ -78,7 +78,8 @@ class Compiler {
     /**
      * Command line interface.
      */
-    public static void main(String[] args) {
+    public static void
+    main(String[] args) {
         File            destinationDirectory      = Compiler.NO_DESTINATION_DIRECTORY;
         File[]          optionalSourcePath        = null;
         File[]          classPath                 = { new File(".") };
@@ -97,28 +98,28 @@ class Compiler {
         for (i = 0; i < args.length; ++i) {
             String arg = args[i];
             if (arg.charAt(0) != '-') break;
-            if (arg.equals("-d")) {
+            if ("-d".equals(arg)) {
                 destinationDirectory = new File(args[++i]);
             } else
-            if (arg.equals("-sourcepath")) {
+            if ("-sourcepath".equals(arg)) {
                 optionalSourcePath = PathResourceFinder.parsePath(args[++i]);
             } else
-            if (arg.equals("-classpath")) {
+            if ("-classpath".equals(arg)) {
                 classPath = PathResourceFinder.parsePath(args[++i]);
             } else
-            if (arg.equals("-extdirs")) {
+            if ("-extdirs".equals(arg)) {
                 optionalExtDirs = PathResourceFinder.parsePath(args[++i]);
             } else
-            if (arg.equals("-bootclasspath")) {
+            if ("-bootclasspath".equals(arg)) {
                 optionalBootClassPath = PathResourceFinder.parsePath(args[++i]);
             } else
-            if (arg.equals("-encoding")) {
+            if ("-encoding".equals(arg)) {
                 optionalCharacterEncoding = args[++i];
             } else
-            if (arg.equals("-verbose")) {
+            if ("-verbose".equals(arg)) {
                 verbose = true;
             } else
-            if (arg.equals("-g")) {
+            if ("-g".equals(arg)) {
                 debugSource = true;
                 debugLines  = true;
                 debugVars   = true;
@@ -132,10 +133,10 @@ class Compiler {
             if (arg.startsWith("-warn:")) {
                 warningHandlePatterns = StringPattern.parseCombinedPattern(arg.substring(6));
             } else
-            if (arg.equals("-rebuild")) {
+            if ("-rebuild".equals(arg)) {
                 rebuild = true;
             } else
-            if (arg.equals("-help")) {
+            if ("-help".equals(arg)) {
                 for (int j = 0; j < Compiler.USAGE.length; ++j) System.out.println(Compiler.USAGE[j]);
                 System.exit(1);
             } else {
@@ -413,7 +414,8 @@ class Compiler {
      * error, the {@link ErrorHandler} is called; all other error conditions cause a
      * {@link CompileException} to be thrown.
      */
-    public void setCompileErrorHandler(UnitCompiler.ErrorHandler optionalCompileErrorHandler) {
+    public void
+    setCompileErrorHandler(UnitCompiler.ErrorHandler optionalCompileErrorHandler) {
         this.optionalCompileErrorHandler = optionalCompileErrorHandler;
     }
 
@@ -473,7 +475,7 @@ class Compiler {
             ? this.optionalCompileErrorHandler
             : new UnitCompiler.ErrorHandler() {
 
-                int compileErrorCount = 0;
+                int compileErrorCount;
 
                 public void
                 handleError(String message, Location optionalLocation) throws CompileException {
@@ -548,7 +550,8 @@ class Compiler {
      * The <code>inputStream</code> is closed before the method returns.
      * @return the parsed compilation unit
      */
-    private Java.CompilationUnit parseCompilationUnit(
+    private Java.CompilationUnit
+    parseCompilationUnit(
         String      fileName,
         InputStream inputStream,
         String      optionalCharacterEncoding
@@ -605,7 +608,8 @@ class Compiler {
      * @param classFile
      * @param sourceFile Required to compute class file path if no destination directory given
      */
-    public void storeClassFile(ClassFile classFile, final File sourceFile) throws IOException {
+    public void
+    storeClassFile(ClassFile classFile, final File sourceFile) throws IOException {
         String classFileResourceName = ClassFile.getClassFileResourceName(classFile.getThisClassName());
 
         // Determine where to create the class file.

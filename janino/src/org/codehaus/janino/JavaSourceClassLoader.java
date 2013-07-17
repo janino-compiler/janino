@@ -54,11 +54,11 @@ import org.codehaus.janino.util.resource.ResourceFinder;
 public
 class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 
-    public JavaSourceClassLoader() {
-        this(ClassLoader.getSystemClassLoader());
-    }
+    public
+    JavaSourceClassLoader() { this(ClassLoader.getSystemClassLoader()); }
 
-    public JavaSourceClassLoader(ClassLoader parentClassLoader) {
+    public
+    JavaSourceClassLoader(ClassLoader parentClassLoader) {
         this(
             parentClassLoader,
             (File[]) null,     // optionalSourcePath
@@ -76,7 +76,8 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
      * @param optionalCharacterEncoding The encoding of the Java&trade; source files (<code>null</code> for platform
      *                                  default encoding)
      */
-    public JavaSourceClassLoader(
+    public
+    JavaSourceClassLoader(
         ClassLoader parentClassLoader,
         File[]      optionalSourcePath,
         String      optionalCharacterEncoding
@@ -84,9 +85,9 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
         this(
             parentClassLoader,        // parentClassLoader
             (                         // sourceFinder
-                optionalSourcePath == null ?
-                (ResourceFinder) new DirectoryResourceFinder(new File(".")) :
-                (ResourceFinder) new PathResourceFinder(optionalSourcePath)
+                optionalSourcePath == null
+                ? (ResourceFinder) new DirectoryResourceFinder(new File("."))
+                : (ResourceFinder) new PathResourceFinder(optionalSourcePath)
             ),
             optionalCharacterEncoding // optionalCharacterEncoding
         );
@@ -105,7 +106,8 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
      * @param optionalCharacterEncoding The encoding of the Java&trade; source files (<code>null</code> for platform
      *                                  default encoding)
      */
-    public JavaSourceClassLoader(
+    public
+    JavaSourceClassLoader(
         ClassLoader    parentClassLoader,
         ResourceFinder sourceFinder,
         String         optionalCharacterEncoding
@@ -120,15 +122,18 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
         );
     }
 
-    public void setSourcePath(File[] sourcePath) {
+    public void
+    setSourcePath(File[] sourcePath) {
         this.iClassLoader.setSourceFinder(new PathResourceFinder(sourcePath));
     }
 
-    public void setSourceFileCharacterEncoding(String optionalCharacterEncoding) {
+    public void
+    setSourceFileCharacterEncoding(String optionalCharacterEncoding) {
         this.iClassLoader.setCharacterEncoding(optionalCharacterEncoding);
     }
 
-    public void setDebuggingInfo(boolean debugSource, boolean debugLines, boolean debugVars) {
+    public void
+    setDebuggingInfo(boolean debugSource, boolean debugLines, boolean debugVars) {
         this.debugSource = debugSource;
         this.debugLines  = debugLines;
         this.debugVars   = debugVars;
@@ -137,7 +142,8 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
     /**
      * @see UnitCompiler#setCompileErrorHandler
      */
-    public void setCompileErrorHandler(UnitCompiler.ErrorHandler optionalCompileErrorHandler) {
+    public void
+    setCompileErrorHandler(UnitCompiler.ErrorHandler optionalCompileErrorHandler) {
         this.iClassLoader.setCompileErrorHandler(optionalCompileErrorHandler);
     }
 
@@ -145,7 +151,8 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
      * @see Parser#setWarningHandler(WarningHandler)
      * @see UnitCompiler#setCompileErrorHandler
      */
-    public void setWarningHandler(WarningHandler optionalWarningHandler) {
+    public void
+    setWarningHandler(WarningHandler optionalWarningHandler) {
         this.iClassLoader.setWarningHandler(optionalWarningHandler);
     }
 

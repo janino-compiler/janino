@@ -61,7 +61,9 @@ class DirectoryIterator extends ProducerIterator {
     ) {
         super(new Producer() {
             private final List stateStack = DirectoryIterator.newArrayList(new State(rootDirectory));
-            public Object produce() {
+
+            public Object
+            produce() {
                 while (!this.stateStack.isEmpty()) {
                     State state = (State) this.stateStack.get(this.stateStack.size() - 1);
                     if (state.directories.hasNext()) {
@@ -109,7 +111,8 @@ class DirectoryIterator extends ProducerIterator {
      *
      * @see #DirectoryIterator(File, FilenameFilter, FilenameFilter)
      */
-    public static Iterator traverseDirectories(
+    public static Iterator
+    traverseDirectories(
         File[]         rootDirectories,
         FilenameFilter directoryNameFilter,
         FilenameFilter fileNameFilter
@@ -121,7 +124,8 @@ class DirectoryIterator extends ProducerIterator {
         return new MultiDimensionalIterator(result.iterator(), 2);
     }
 
-    private static ArrayList newArrayList(Object initialElement) {
+    private static ArrayList
+    newArrayList(Object initialElement) {
         ArrayList result = new ArrayList();
         result.add(initialElement);
         return result;

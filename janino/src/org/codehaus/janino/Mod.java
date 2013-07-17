@@ -68,7 +68,8 @@ class Mod {
     public static final short ANNOTATION   = 0x2000;
     public static final short ENUM         = 0x4000;
 
-    public static String shortToString(short sh) {
+    public static String
+    shortToString(short sh) {
         if (sh == 0) return "";
         StringBuffer res = new StringBuffer();
         for (int i = 0; i < Mod.mappings.length; i += 2) {

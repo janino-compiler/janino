@@ -51,49 +51,44 @@ class MultiIterator implements Iterator {
     /**
      * @param iterators An array of {@link Iterator}s
      */
-    public MultiIterator(Iterator[] iterators) {
-        this.outer = Arrays.asList(iterators).iterator();
-    }
+    public
+    MultiIterator(Iterator[] iterators) { this.outer = Arrays.asList(iterators).iterator(); }
 
     /**
      * @param collections An array of {@link Collection}s
      */
-    public MultiIterator(Collection[] collections) {
-        this.outer = Arrays.asList(collections).iterator();
-    }
+    public
+    MultiIterator(Collection[] collections) { this.outer = Arrays.asList(collections).iterator(); }
 
     /**
      * @param arrays An array of arrays
      */
-    public MultiIterator(Object[][] arrays) {
-        this.outer = Arrays.asList(arrays).iterator();
-    }
+    public
+    MultiIterator(Object[][] arrays) { this.outer = Arrays.asList(arrays).iterator(); }
 
     /**
      * @param collection A {@link Collection} of {@link Collection}s, {@link Iterator}s and/or arrays
      */
-    public MultiIterator(Collection collection) {
-        this.outer = collection.iterator();
-    }
+    public
+    MultiIterator(Collection collection) { this.outer = collection.iterator(); }
 
     /**
      * @param iterator An iterator over {@link Collection}s, {@link Iterator}s and/or arrays
      */
-    public MultiIterator(Iterator iterator) {
-        this.outer = iterator;
-    }
+    public
+    MultiIterator(Iterator iterator) { this.outer = iterator; }
 
     /**
      * @param array An array of {@link Collection}s, {@link Iterator}s and/or arrays
      */
-    public MultiIterator(Object[] array) {
-        this.outer = Arrays.asList(array).iterator();
-    }
+    public
+    MultiIterator(Object[] array) { this.outer = Arrays.asList(array).iterator(); }
 
     /**
      * Iterates over the given {@link Collection}, prepended with the given {@link Object}.
      */
-    public MultiIterator(Object object, Collection collection) {
+    public
+    MultiIterator(Object object, Collection collection) {
         this.outer = Arrays.asList(new Object[] {
             new Object[] { object },
             collection
@@ -103,7 +98,8 @@ class MultiIterator implements Iterator {
     /**
      * Iterates over the given {@link Collection}, appended with the given {@link Object}.
      */
-    public MultiIterator(Collection collection, Object object) {
+    public
+    MultiIterator(Collection collection, Object object) {
         this.outer = Arrays.asList(new Object[] {
             collection,
             new Object[] { object }
@@ -113,7 +109,8 @@ class MultiIterator implements Iterator {
     /**
      * Iterates over the given {@link Iterator}, prepended with the given <code>prefix</code>.
      */
-    public MultiIterator(Object prefix, Iterator iterator) {
+    public
+    MultiIterator(Object prefix, Iterator iterator) {
         this.outer = Arrays.asList(new Object[] {
             new Object[] { prefix },
             iterator
@@ -123,7 +120,8 @@ class MultiIterator implements Iterator {
     /**
      * Iterates over the given {@link Iterator}, appended with the given <code>suffix</code>.
      */
-    public MultiIterator(Iterator iterator, Object suffix) {
+    public
+    MultiIterator(Iterator iterator, Object suffix) {
         this.outer = Arrays.asList(new Object[] {
             iterator,
             new Object[] { suffix }
@@ -151,12 +149,14 @@ class MultiIterator implements Iterator {
         }
     }
 
-    public Object next() {
+    public Object
+    next() {
         if (this.hasNext()) return this.inner.next();
         throw new NoSuchElementException();
     }
 
-    public void remove() {
+    public void
+    remove() {
         this.inner.remove();
     }
 }

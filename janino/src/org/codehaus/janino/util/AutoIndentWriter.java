@@ -48,15 +48,18 @@ class AutoIndentWriter extends FilterWriter {
     public
     AutoIndentWriter(Writer out) { super(out); }
 
-    public void write(char[] cbuf, int off, int len) throws IOException {
+    public void
+    write(char[] cbuf, int off, int len) throws IOException {
         for (; len > 0; --len) this.write(cbuf[off++]);
     }
 
-    public void write(String str, int off, int len) throws IOException {
+    public void
+    write(String str, int off, int len) throws IOException {
         for (; len > 0; --len) this.write(str.charAt(off++));
     }
 
-    public void write(int c) throws IOException {
+    public void
+    write(int c) throws IOException {
         if (c == '\n') {
             this.lineBuffer.append('\n');
             this.line(this.lineBuffer.toString());
@@ -72,7 +75,8 @@ class AutoIndentWriter extends FilterWriter {
         this.lineBuffer.append((char) c);
     }
 
-    private void line(String line) throws IOException {
+    private void
+    line(String line) throws IOException {
         if (this.tabulatorBuffer != null) {
             this.tabulatorBuffer.add(new StringBuffer(line.length()).append(line));
             if (line.charAt(0) == INDENT) { ++this.indentation; line = line.substring(1); }
@@ -162,7 +166,8 @@ class AutoIndentWriter extends FilterWriter {
      *   aa  bb  cc\r\n
      *   aaa bbb ccc\r\n</pre>
      */
-    private void resolveTabs(List/*<StringBuffer>*/ lineGroup) {
+    private void
+    resolveTabs(List/*<StringBuffer>*/ lineGroup) {
 
         // Determine the tabulator offsets for this line group.
         List/*<Integer>*/ tabulatorOffsets = new ArrayList/*<Integer>*/(); // 4, 4
@@ -211,7 +216,8 @@ class AutoIndentWriter extends FilterWriter {
     /**
      * @return a {@link String} of <code>n</code> spaces
      */
-    private String spaces(int n) {
+    private String
+    spaces(int n) {
         if (n < 30) return "                              ".substring(0, n);
         char[] data = new char[n];
         Arrays.fill(data, ' ');

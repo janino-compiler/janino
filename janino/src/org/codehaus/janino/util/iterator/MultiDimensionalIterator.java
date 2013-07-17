@@ -48,7 +48,8 @@ class MultiDimensionalIterator implements Iterator {
         public void    remove()  { throw new UnsupportedOperationException("remove"); }
     };
 
-    public MultiDimensionalIterator(Iterator delegate, int dimensionCount) {
+    public
+    MultiDimensionalIterator(Iterator delegate, int dimensionCount) {
         this.nest    = new Iterator[dimensionCount];
         this.nest[0] = delegate;
         for (int i = 1; i < dimensionCount; ++i) this.nest[i] = MultiDimensionalIterator.EMPTY_ITERATOR;
@@ -92,7 +93,8 @@ class MultiDimensionalIterator implements Iterator {
         }
     }
 
-    public Object next() {
+    public Object
+    next() {
         if (!this.hasNext()) throw new NoSuchElementException();
         return this.nest[this.nest.length - 1].next();
     }

@@ -45,9 +45,8 @@ class ProducerIterator implements Iterator {
     private static final Object AT_END      = null;
     private Object              nextElement = UNKNOWN;
 
-    public ProducerIterator(Producer producer) {
-        this.producer = producer;
-    }
+    public
+    ProducerIterator(Producer producer) { this.producer = producer; }
 
     public boolean
     hasNext() {
@@ -55,7 +54,8 @@ class ProducerIterator implements Iterator {
         return this.nextElement != AT_END;
     }
 
-    public Object next() {
+    public Object
+    next() {
         if (this.nextElement == UNKNOWN) this.nextElement = this.producer.produce();
         if (this.nextElement == AT_END) throw new NoSuchElementException();
         Object result = this.nextElement;
@@ -63,7 +63,6 @@ class ProducerIterator implements Iterator {
         return result;
     }
 
-    public void remove() {
-        throw new UnsupportedOperationException("remove");
-    }
+    public void
+    remove() { throw new UnsupportedOperationException("remove"); }
 }

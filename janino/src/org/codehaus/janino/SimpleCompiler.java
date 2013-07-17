@@ -58,8 +58,9 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
     protected boolean debugLines  = this.debugSource;
     protected boolean debugVars   = this.debugSource;
 
-    public static void main(String[] args) throws Exception {
-        if (args.length >= 1 && args[0].equals("-help")) {
+    public static void
+    main(String[] args) throws Exception {
+        if (args.length >= 1 && "-help".equals(args[0])) {
             System.out.println("Usage:");
             System.out.println("    org.codehaus.janino.SimpleCompiler <source-file> <class-name> { <argument> }");
             System.out.println("Reads a compilation unit from the given <source-file> and invokes method");
@@ -102,10 +103,8 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
      * @see #SimpleCompiler()
      * @see Cookable#cook(String, Reader)
      */
-    public SimpleCompiler(
-        String optionalFileName,
-        Reader in
-    ) throws IOException, CompileException {
+    public
+    SimpleCompiler(String optionalFileName, Reader in) throws IOException, CompileException {
         this.cook(optionalFileName, in);
     }
 
@@ -117,10 +116,8 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
      * @see #SimpleCompiler()
      * @see Cookable#cook(String, InputStream)
      */
-    public SimpleCompiler(
-        String      optionalFileName,
-        InputStream is
-    ) throws IOException, CompileException {
+    public
+    SimpleCompiler(String optionalFileName, InputStream is) throws IOException, CompileException {
         this.cook(optionalFileName, is);
     }
 
@@ -132,9 +129,8 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
      * @see #SimpleCompiler()
      * @see Cookable#cookFile(String)
      */
-    public SimpleCompiler(
-        String fileName
-    ) throws IOException, CompileException {
+    public
+    SimpleCompiler(String fileName) throws IOException, CompileException {
         this.cookFile(fileName);
     }
 
@@ -148,17 +144,16 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
      * @see #setParentClassLoader(ClassLoader)
      * @see Cookable#cook(Reader)
      */
-    public SimpleCompiler(
-        Scanner     scanner,
-        ClassLoader optionalParentClassLoader
-    ) throws IOException, CompileException {
+    public
+    SimpleCompiler(Scanner scanner, ClassLoader optionalParentClassLoader) throws IOException, CompileException {
         this.setParentClassLoader(optionalParentClassLoader);
         this.cook(scanner);
     }
 
     public SimpleCompiler() {}
 
-    public void setParentClassLoader(ClassLoader optionalParentClassLoader) {
+    public void
+    setParentClassLoader(ClassLoader optionalParentClassLoader) {
         assertNotCooked();
         this.parentClassLoader = (
             optionalParentClassLoader != null
@@ -167,7 +162,8 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
         );
     }
 
-    public void setDebuggingInformation(boolean debugSource, boolean debugLines, boolean debugVars) {
+    public void
+    setDebuggingInformation(boolean debugSource, boolean debugLines, boolean debugVars) {
         this.debugSource = debugSource;
         this.debugLines  = debugLines;
         this.debugVars   = debugVars;
@@ -254,7 +250,9 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
                 if (this.delegate == null) {
                     IClass iClass;
                     try {
-                        iClass = SimpleCompiler.this.classLoaderIClassLoader.loadIClass(Descriptor.fromClassName(clazz.getName()));
+                        iClass = SimpleCompiler.this.classLoaderIClassLoader.loadIClass(
+                            Descriptor.fromClassName(clazz.getName())
+                        );
                     } catch (ClassNotFoundException ex) {
                         throw new JaninoRuntimeException("Loading IClass \"" + clazz.getName() + "\": " + ex);
                     }
@@ -338,7 +336,9 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
 
         // Create a ClassLoader that loads the generated classes.
         this.result = (ClassLoader) AccessController.doPrivileged(new PrivilegedAction() {
-            public Object run() {
+
+            public Object
+            run() {
                 return new ByteArrayClassLoader(
                     classes,                              // classes
                     SimpleCompiler.this.parentClassLoader // parent

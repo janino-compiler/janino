@@ -33,13 +33,12 @@ import java.util.*;
  */
 public abstract
 class TransformingIterator extends FilterIterator {
-    public TransformingIterator(Iterator delegate) {
-        super(delegate);
-    }
 
-    public final Object next() {
-        return this.transform(this.delegate.next());
-    }
+    public
+    TransformingIterator(Iterator delegate) { super(delegate); }
+
+    public final Object
+    next() { return this.transform(this.delegate.next()); }
 
     /**
      * Derived classes must implement this method such that it does the

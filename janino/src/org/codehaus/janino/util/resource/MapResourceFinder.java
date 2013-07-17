@@ -38,12 +38,11 @@ class MapResourceFinder extends ResourceFinder {
     private final Map map;
     private long      lastModified;
 
-    public MapResourceFinder(Map map) {
-        this.map = map;
-    }
-    public final void setLastModified(long lastModified) {
-        this.lastModified = lastModified;
-    }
+    public
+    MapResourceFinder(Map map) { this.map = map; }
+
+    public final void
+    setLastModified(long lastModified) { this.lastModified = lastModified; }
 
     public final Resource
     findResource(final String resourceName) {
