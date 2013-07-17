@@ -50,7 +50,8 @@ import org.codehaus.janino.util.TeeReader;
  * constructors should point
  */
 
-public class Scanner {
+public
+class Scanner {
 
     // Public Scanners that read from a file.
 
@@ -127,7 +128,8 @@ public class Scanner {
         this(
             optionalFileName,
             new InputStreamReader(is), // in
-            (short) 1, (short) 0       // initialLineNumber, initialColumnNumber
+            (short) 1,                 // initialLineNumber
+            (short) 0                  // initialColumnNumber
         );
     }
 
@@ -156,7 +158,8 @@ public class Scanner {
                 new InputStreamReader(is) :
                 new InputStreamReader(is, optionalEncoding)
             ),
-            (short) 1, (short) 0               // initialLineNumber, initialColumnNumber
+            (short) 1,                         // initialLineNumber
+            (short) 0                          // initialColumnNumber
         );
     }
 
@@ -206,9 +209,9 @@ public class Scanner {
         // I/O, so writing this file is only recommended for source code level
         // debugging purposes.
         if (optionalFileName == null && Boolean.getBoolean(ICookable.SYSTEM_PROPERTY_SOURCE_DEBUGGING_ENABLE)) {
-            String dirName = System.getProperty(ICookable.SYSTEM_PROPERTY_SOURCE_DEBUGGING_DIR);
-            File dir = dirName == null ? null : new File(dirName);
-            File temporaryFile = File.createTempFile("janino", ".java", dir);
+            String dirName       = System.getProperty(ICookable.SYSTEM_PROPERTY_SOURCE_DEBUGGING_DIR);
+            File   dir           = dirName == null ? null : new File(dirName);
+            File   temporaryFile = File.createTempFile("janino", ".java", dir);
             temporaryFile.deleteOnExit();
             in = new TeeReader(
                 in,                            // in
@@ -229,9 +232,8 @@ public class Scanner {
     /**
      * Return the file name optionally passed to the constructor.
      */
-    public String getFileName() {
-        return this.optionalFileName;
-    }
+    public String
+    getFileName() { return this.optionalFileName; }
 
     /**
      * Closes the character source (file, {@link InputStream}, {@link Reader}) associated
@@ -242,16 +244,16 @@ public class Scanner {
      *
      * @deprecated
      */
-    public void close() throws IOException {
-        this.in.close();
-    }
+    public void
+    close() throws IOException { this.in.close(); }
 
     /**
      * Get the text of the doc comment (a.k.a. "JAVADOC comment") preceeding
      * the next token.
      * @return <code>null</code> if the next token is not preceeded by a doc comment
      */
-    public String doc() {
+    public String
+    doc() {
         String s = this.docComment;
         this.docComment = null;
         return s;
@@ -264,7 +266,8 @@ public class Scanner {
         return new Location(this.optionalFileName, this.nextCharLineNumber, this.nextCharColumnNumber);
     }
 
-    public final class Token {
+    public final
+    class Token {
         private final String optionalFileName;
         private final short  lineNumber;
         private final short  columnNumber;
@@ -292,7 +295,8 @@ public class Scanner {
             this.value            = value;
         }
 
-        public Location getLocation() {
+        public Location
+        getLocation() {
             if (this.location == null) {
                 this.location = new Location(this.optionalFileName, this.lineNumber, this.columnNumber);
             }
@@ -308,7 +312,7 @@ public class Scanner {
 
         // Skip whitespace and process comments.
         int          state = 0;
-        StringBuffer dcsb = null; // For doc comment
+        StringBuffer dcsb  = null; // For doc comment
 
         PROCESS_COMMENTS:
         for (;;) {
@@ -441,7 +445,7 @@ public class Scanner {
                 } else
                 if (this.nextChar == '/') {
                     this.docComment = dcsb.toString();
-                    state = 0;
+                    state           = 0;
                 } else
                 {
                     dcsb.append((char) this.nextChar);
@@ -455,7 +459,7 @@ public class Scanner {
                 } else
                 if (this.nextChar == '/') {
                     this.docComment = dcsb.toString();
-                    state = 0;
+                    state           = 0;
                 } else
                 if (this.nextChar == '*') {
                     dcsb.append('*');
@@ -596,8 +600,8 @@ public class Scanner {
     }
 
     private Token scanNumericLiteral(boolean hadDecimalPoint) throws CompileException, IOException {
-        StringBuffer sb = hadDecimalPoint ? new StringBuffer(".") : new StringBuffer();
-        int state = hadDecimalPoint ? 2 : 0;
+        StringBuffer sb    = hadDecimalPoint ? new StringBuffer(".") : new StringBuffer();
+        int          state = hadDecimalPoint ? 2 : 0;
         for (;;) {
             switch (state) {
 
@@ -859,7 +863,7 @@ public class Scanner {
         if (this.nextChar == '\r') {
             ++this.nextCharLineNumber;
             this.nextCharColumnNumber = 0;
-            this.crLfPending = true;
+            this.crLfPending          = true;
         } else
         if (this.nextChar == '\n') {
             if (this.crLfPending) {

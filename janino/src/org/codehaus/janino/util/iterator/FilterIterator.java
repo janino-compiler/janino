@@ -33,7 +33,8 @@ import java.util.*;
  * {@link java.util.Iterator}. The default implementation simply passes
  * all method invocations to the delegate.
  */
-public abstract class FilterIterator implements Iterator {
+public abstract
+class FilterIterator implements Iterator {
     protected final Iterator delegate;
 
     public FilterIterator(Iterator delegate) { this.delegate = delegate; }

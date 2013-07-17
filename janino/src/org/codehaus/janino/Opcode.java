@@ -295,6 +295,7 @@ class Opcode {
     public static final short NO_FALLTHROUGH = (short) 32768;
 
     public static final short[] OPCODE_PROPERTIES = {
+        // CHECKSTYLE WrapAndIndent:OFF
 /*  0*/ /*NOP*/             Opcode.SD_P0,
         /*ACONST_NULL*/     Opcode.SD_P1,
         /*ICONST_M1*/       Opcode.SD_P1,
@@ -513,6 +514,7 @@ class Opcode {
         Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE,
 /*250*/ Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE,
         Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE,
+        // CHECKSTYLE WrapAndIndent:ON
     };
 
     public static final short[] WIDE_OPCODE_PROPERTIES = new short[256];

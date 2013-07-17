@@ -59,10 +59,12 @@ import java.util.*;
  * Reporting is only enabled if the Benchmark object was created through {@link #Benchmark(boolean)}
  * with a <code>true</code> argument.
  */
-public class Benchmark {
+public
+class Benchmark {
     private final Stack beginTimes = new Stack(); // Long
 
-    public Benchmark() {
+    public
+    Benchmark() {
         this.reportingEnabled = false;
         this.reporter         = null;
     }
@@ -70,16 +72,14 @@ public class Benchmark {
     /**
      * @see Benchmark
      */
-    public void begin() {
-        this.beginTimes.push(new Long(System.currentTimeMillis()));
-    }
+    public void
+    begin() { this.beginTimes.push(new Long(System.currentTimeMillis())); }
 
     /**
      * @see Benchmark
      */
-    public long end() {
-        return System.currentTimeMillis() - ((Long) this.beginTimes.pop()).longValue();
-    }
+    public long
+    end() { return System.currentTimeMillis() - ((Long) this.beginTimes.pop()).longValue(); }
 
     // Reporting-related methods and fields.
 
@@ -87,7 +87,8 @@ public class Benchmark {
      * Set up a {@link Benchmark} with a default {@link Reporter} that reports to
      * <code>System.out</code>.
      */
-    public Benchmark(boolean reportingEnabled) {
+    public
+    Benchmark(boolean reportingEnabled) {
         this.reportingEnabled = reportingEnabled;
         this.reporter         = new Reporter() {
             public void report(String message) { System.out.println(message); }
@@ -97,10 +98,8 @@ public class Benchmark {
     /**
      * Set up a {@link Benchmark} with a custom {@link Reporter}.
      */
-    public Benchmark(
-        boolean reportingEnabled,
-        Reporter reporter
-    ) {
+    public
+    Benchmark(boolean reportingEnabled, Reporter reporter) {
         this.reportingEnabled = reportingEnabled;
         this.reporter         = reporter;
     }
@@ -111,14 +110,16 @@ public class Benchmark {
     /**
      * Interface used to report messages.
      */
-    public interface Reporter {
+    public
+    interface Reporter {
         void report(String message);
     }
 
     /**
      * Begin a benchmark (see {@link #begin()}) and report the fact.
      */
-    public void beginReporting() {
+    public void
+    beginReporting() {
         if (!this.reportingEnabled) return;
 
         this.reportIndented("Beginning...");
@@ -128,7 +129,8 @@ public class Benchmark {
     /**
      * Begin a benchmark (see {@link #begin()}) and report the fact.
      */
-    public void beginReporting(String message) {
+    public void
+    beginReporting(String message) {
         if (!this.reportingEnabled) return;
         this.reportIndented(message + "...");
         this.begin();
@@ -137,7 +139,8 @@ public class Benchmark {
     /**
      * End a benchmark (see {@link #end()}) and report the fact.
      */
-    public void endReporting() {
+    public void
+    endReporting() {
         if (!this.reportingEnabled) return;
         this.reportIndented("... took " + this.end() + " ms");
     }
@@ -145,7 +148,8 @@ public class Benchmark {
     /**
      * End a benchmark (see {@link #begin()}) and report the fact.
      */
-    public void endReporting(String message) {
+    public void
+    endReporting(String message) {
         if (!this.reportingEnabled) return;
         this.reportIndented("... took " + this.end() + " ms: " + message);
     }
@@ -153,7 +157,8 @@ public class Benchmark {
     /**
      * Report the given message.
      */
-    public void report(String message) {
+    public void
+    report(String message) {
         if (!this.reportingEnabled) return;
         this.reportIndented(message);
     }
@@ -164,7 +169,8 @@ public class Benchmark {
      * @param optionalTitle
      * @param o
      */
-    public void report(String optionalTitle, Object o) {
+    public void
+    report(String optionalTitle, Object o) {
         if (!this.reportingEnabled) return;
 
         String prefix = optionalTitle == null ? "" : (
@@ -203,7 +209,8 @@ public class Benchmark {
      * Report a message through {@link #reporter}, indent by N spaces where N is the current
      * benchmark stack depth.
      */
-    private void reportIndented(String message) {
+    private void
+    reportIndented(String message) {
         StringBuffer sb = new StringBuffer();
         for (int i = this.beginTimes.size(); i > 0; --i) sb.append("  ");
         sb.append(message);

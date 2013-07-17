@@ -37,14 +37,15 @@ import org.codehaus.janino.util.*;
  * Reads, scans and parses the files named on the command line and counts
  * several kinds of declarations.
  */
-public class DeclarationCounter extends Traverser {
+public
+class DeclarationCounter extends Traverser {
     public static void main(String[] args) throws CompileException, IOException {
         DeclarationCounter dc = new DeclarationCounter();
         for (int i = 0; i < args.length; ++i) {
             String fileName = args[i];
 
             // Parse each compilation unit.
-            FileReader r = new FileReader(fileName);
+            FileReader           r = new FileReader(fileName);
             Java.CompilationUnit cu;
             try {
                 cu = new Parser(new Scanner(fileName, r)).parseCompilationUnit();

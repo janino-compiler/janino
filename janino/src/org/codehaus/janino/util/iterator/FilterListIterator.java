@@ -33,12 +33,12 @@ import java.util.*;
  * {@link java.util.ListIterator}. The default implementation simply passes
  * all method invocations to the delegate.
  */
-public abstract class FilterListIterator implements ListIterator {
-    /** */
+public abstract
+class FilterListIterator implements ListIterator {
     protected final ListIterator delegate;
 
-    /** */
-    public FilterListIterator(ListIterator delegate) {
+    public
+    FilterListIterator(ListIterator delegate) {
         this.delegate = delegate;
     }
 

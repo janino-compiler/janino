@@ -59,7 +59,8 @@ import org.codehaus.janino.util.resource.ResourceFinder;
  * compile {@code .java} files into {@code .class} files, then don't use <i>this</i> class but {@link Compiler}
  * instead!
  */
-public class CachingJavaSourceClassLoader extends JavaSourceClassLoader {
+public
+class CachingJavaSourceClassLoader extends JavaSourceClassLoader {
     private final ResourceFinder  classFileCacheResourceFinder;
     private final ResourceCreator classFileCacheResourceCreator;
     private final ResourceFinder  sourceFinder;
@@ -70,7 +71,8 @@ public class CachingJavaSourceClassLoader extends JavaSourceClassLoader {
      * @param optionalSourcePath Directories to scan for source files
      * @param cacheDirectory Directory to use for caching generated class files (see class description)
      */
-    public CachingJavaSourceClassLoader(
+    public
+    CachingJavaSourceClassLoader(
         ClassLoader   parentClassLoader,
         File[]        optionalSourcePath,
         String        optionalCharacterEncoding,
@@ -108,7 +110,8 @@ public class CachingJavaSourceClassLoader extends JavaSourceClassLoader {
      * @param classFileCacheResourceCreator Stores compiled class {@code pkg.Cls} in resource {@code pkg/Cls.class} (see
      *                                      class description)
      */
-    public CachingJavaSourceClassLoader(
+    public
+    CachingJavaSourceClassLoader(
         ClassLoader     parentClassLoader,
         ResourceFinder  sourceFinder,
         String          optionalCharacterEncoding,
@@ -127,7 +130,8 @@ public class CachingJavaSourceClassLoader extends JavaSourceClassLoader {
      * @return                        String name => byte[] bytecode, or {@code null} if no source code could be found
      * @throws ClassNotFoundException Compilation problems or class file cache I/O problems
      */
-    protected Map generateBytecodes(String className) throws ClassNotFoundException {
+    protected Map
+    generateBytecodes(String className) throws ClassNotFoundException {
         // Check whether a class file resource exists in the cache.
         {
             Resource classFileResource = this.classFileCacheResourceFinder.findResource(
@@ -198,7 +202,7 @@ public class CachingJavaSourceClassLoader extends JavaSourceClassLoader {
                 baos.write(buffer, 0, cnt);
             }
         } finally {
-            try { is.close(); } catch (IOException ex) { }
+            try { is.close(); } catch (IOException ex) {}
         }
 
         return baos.toByteArray();
@@ -216,7 +220,7 @@ public class CachingJavaSourceClassLoader extends JavaSourceClassLoader {
         try {
             os.write(data);
         } finally {
-            try { os.close(); } catch (IOException ex) { }
+            try { os.close(); } catch (IOException ex) {}
         }
     }
 }

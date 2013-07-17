@@ -43,7 +43,8 @@ import org.codehaus.janino.util.*;
  * Alternatively, a number of "convenience constructors" exist that execute the described steps
  * instantly.
  */
-public class SimpleCompiler extends Cookable implements ISimpleCompiler {
+public
+class SimpleCompiler extends Cookable implements ISimpleCompiler {
     private static final boolean DEBUG = false;
 
     private ClassLoader parentClassLoader = Thread.currentThread().getContextClassLoader();
@@ -54,8 +55,8 @@ public class SimpleCompiler extends Cookable implements ISimpleCompiler {
     private ClassLoader result;
 
     protected boolean debugSource = Boolean.getBoolean(ICookable.SYSTEM_PROPERTY_SOURCE_DEBUGGING_ENABLE);
-    protected boolean debugLines = this.debugSource;
-    protected boolean debugVars = this.debugSource;
+    protected boolean debugLines  = this.debugSource;
+    protected boolean debugVars   = this.debugSource;
 
     public static void main(String[] args) throws Exception {
         if (args.length >= 1 && args[0].equals("-help")) {
@@ -176,7 +177,8 @@ public class SimpleCompiler extends Cookable implements ISimpleCompiler {
      * Scans, parses and compiles a given compilation unit from the given {@link Reader}. After completion, {@link
      * #getClassLoader()} returns a {@link ClassLoader} that allows for access to the compiled classes.
      */
-    public final void cook(String optionalFileName, Reader r) throws CompileException, IOException {
+    public final void
+    cook(String optionalFileName, Reader r) throws CompileException, IOException {
         this.cook(new Scanner(optionalFileName, r));
     }
 
@@ -184,7 +186,8 @@ public class SimpleCompiler extends Cookable implements ISimpleCompiler {
      * Scans, parses and ompiles a given compilation unit from the given scanner. After completion, {@link
      * #getClassLoader()} returns a {@link ClassLoader} that allows for access to the compiled classes.
      */
-    public void cook(Scanner scanner) throws CompileException, IOException {
+    public void
+    cook(Scanner scanner) throws CompileException, IOException {
         this.compileToClassLoader(new Parser(scanner).parseCompilationUnit());
     }
 
@@ -192,13 +195,15 @@ public class SimpleCompiler extends Cookable implements ISimpleCompiler {
      * Cook this compilation unit directly.
      *  See {@link Cookable#cook}
      */
-    public void cook(Java.CompilationUnit compilationUnit) throws CompileException {
+    public void
+    cook(Java.CompilationUnit compilationUnit) throws CompileException {
 
         // Compile the classes and load them.
         this.compileToClassLoader(compilationUnit);
     }
 
-    public ClassLoader getClassLoader() {
+    public ClassLoader
+    getClassLoader() {
         if (this.getClass() != SimpleCompiler.class) {
             throw new IllegalStateException("Must not be called on derived instances");
         }
@@ -213,7 +218,8 @@ public class SimpleCompiler extends Cookable implements ISimpleCompiler {
      *   <li>Both generated functionally equal classes as seen by {@link ByteArrayClassLoader#equals(Object)}
      * </ul>
      */
-    public boolean equals(Object o) {
+    public boolean
+    equals(Object o) {
         if (!(o instanceof SimpleCompiler)) return false;
         SimpleCompiler that = (SimpleCompiler) o;
         if (this.getClass() != that.getClass()) return false;
@@ -223,14 +229,14 @@ public class SimpleCompiler extends Cookable implements ISimpleCompiler {
         return this.result.equals(that.result);
     }
 
-    public int hashCode() {
-        return this.parentClassLoader.hashCode();
-    }
+    public int
+    hashCode() { return this.parentClassLoader.hashCode(); }
 
     /**
      * Wrap a reflection {@link Class} in a {@link Java.Type} object.
      */
-    protected Java.Type classToType(final Location location, final Class clazz) {
+    protected Java.Type
+    classToType(final Location location, final Class clazz) {
         if (clazz == null) return null;
 
         // Can't use a SimpleType here because the classLoaderIClassLoader is not yet set up. Instead, create a
@@ -243,7 +249,8 @@ public class SimpleCompiler extends Cookable implements ISimpleCompiler {
             public void   accept(AtomVisitor visitor) { this.getDelegate().accept((TypeVisitor) visitor); }
             public void   accept(TypeVisitor visitor) { this.getDelegate().accept(visitor); }
 
-            private Type getDelegate() {
+            private Type
+            getDelegate() {
                 if (this.delegate == null) {
                     IClass iClass;
                     try {
@@ -276,10 +283,8 @@ public class SimpleCompiler extends Cookable implements ISimpleCompiler {
     /**
      * Convert an array of {@link Class}es into an array of{@link Java.Type}s.
      */
-    protected Java.Type[] classesToTypes(
-        Location location,
-        Class[]  classes
-    ) {
+    protected Java.Type[]
+    classesToTypes(Location location, Class[] classes) {
         Java.Type[] types = new Java.Type[classes.length];
         for (int i = 0; i < classes.length; ++i) {
             types[i] = this.classToType(location, classes[i]);
@@ -295,7 +300,8 @@ public class SimpleCompiler extends Cookable implements ISimpleCompiler {
      * @return                  The {@link ClassLoader} into which the compiled classes were defined
      * @throws CompileException
      */
-    protected final ClassLoader compileToClassLoader(Java.CompilationUnit compilationUnit) throws CompileException {
+    protected final ClassLoader
+    compileToClassLoader(Java.CompilationUnit compilationUnit) throws CompileException {
         if (SimpleCompiler.DEBUG) {
             UnparseVisitor.unparse(compilationUnit, new OutputStreamWriter(System.out));
         }
@@ -311,8 +317,8 @@ public class SimpleCompiler extends Cookable implements ISimpleCompiler {
         // Convert the class files to bytes and store them in a Map.
         final Map classes = new HashMap(); // String className => byte[] data
         for (int i = 0; i < classFiles.length; ++i) {
-            ClassFile cf = classFiles[i];
-            byte[] contents = cf.toByteArray();
+            ClassFile cf       = classFiles[i];
+            byte[]    contents = cf.toByteArray();
             if (DEBUG) {
                 try {
                     Class disassemblerClass = Class.forName("de.unkrig.jdisasm.Disassembler");
@@ -345,7 +351,8 @@ public class SimpleCompiler extends Cookable implements ISimpleCompiler {
     /**
      * Throw an {@link IllegalStateException} if this {@link Cookable} is already cooked.
      */
-    protected void assertNotCooked() {
+    protected void
+    assertNotCooked() {
         if (this.classLoaderIClassLoader != null) throw new IllegalStateException("Already cooked");
     }
 }

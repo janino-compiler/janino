@@ -44,7 +44,8 @@ import java.util.*;
  *         }
  *     }.comprehensiveVisitor());</pre>
  */
-public class Traverser {
+public
+class Traverser {
     private final Visitor.ComprehensiveVisitor cv = new Visitor.ComprehensiveVisitor() {
         // CHECKSTYLE LineLengthCheck:OFF
         public final void visitSingleTypeImportDeclaration(Java.CompilationUnit.SingleTypeImportDeclaration stid)      { Traverser.this.traverseSingleTypeImportDeclaration(stid); } // SUPPRESS CHECKSTYLE
@@ -120,9 +121,8 @@ public class Traverser {
         // CHECKSTYLE LineLengthCheck:ON
     };
 
-    public ComprehensiveVisitor comprehensiveVisitor() {
-        return this.cv;
-    }
+    public ComprehensiveVisitor
+    comprehensiveVisitor() { return this.cv; }
 
     // These may be overridden by derived classes.
 

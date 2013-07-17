@@ -33,7 +33,8 @@ import java.util.*;
  * A {@link java.io.FilterWriter} that automatically indents lines by looking at
  * trailing opening braces ('{') and leading closing braces ('}').
  */
-public class AutoIndentWriter extends FilterWriter {
+public
+class AutoIndentWriter extends FilterWriter {
     public static final char TABULATOR        = 0xffff;
     public static final char CLEAR_TABULATORS = 0xfffe;
     public static final char INDENT           = 0xfffd;
@@ -44,9 +45,8 @@ public class AutoIndentWriter extends FilterWriter {
     List/*<StringBuffer>*/ tabulatorBuffer;
     int                    tabulatorIndentation;
 
-    public AutoIndentWriter(Writer out) {
-        super(out);
-    }
+    public
+    AutoIndentWriter(Writer out) { super(out); }
 
     public void write(char[] cbuf, int off, int len) throws IOException {
         for (; len > 0; --len) this.write(cbuf[off++]);
@@ -83,6 +83,7 @@ public class AutoIndentWriter extends FilterWriter {
         if (line.indexOf(TABULATOR) != -1) {
             if (line.charAt(0) == INDENT)   { ++this.indentation; line = line.substring(1); }
             if (line.charAt(0) == UNINDENT) { --this.indentation; line = line.substring(1); }
+
             this.tabulatorBuffer = new ArrayList/*<StringBuffer>*/();
             this.tabulatorBuffer.add(new StringBuffer(line.length()).append(line));
             this.tabulatorIndentation = this.indentation;
@@ -98,7 +99,8 @@ public class AutoIndentWriter extends FilterWriter {
         }
     }
 
-    private void flushTabulatorBuffer() throws IOException {
+    private void
+    flushTabulatorBuffer() throws IOException {
         List/*<List<StringBuffer>>*/ lineGroups = new ArrayList();
         lineGroups.add(new ArrayList/*<StringBuffer>*/());
 
@@ -189,15 +191,15 @@ public class AutoIndentWriter extends FilterWriter {
 
         // Replace tabulators with spaces.
         for (Iterator/*<StringBuffer>*/ it = lineGroup.iterator(); it.hasNext();) {
-            StringBuffer line = (StringBuffer) it.next();
-            int tabCount = 0;
-            int previousTab = 0;
+            StringBuffer line        = (StringBuffer) it.next();
+            int          tabCount    = 0;
+            int          previousTab = 0;
             if (line.charAt(previousTab) == INDENT) ++previousTab;
             if (line.charAt(previousTab) == UNINDENT) ++previousTab;
             for (int i = previousTab; i < line.length(); ++i) {
                 if (line.charAt(i) == TABULATOR) {
                     int tabOffset = i - previousTab;
-                    int n = ((Integer) tabulatorOffsets.get(tabCount++)).intValue() - tabOffset;
+                    int n         = ((Integer) tabulatorOffsets.get(tabCount++)).intValue() - tabOffset;
                     line.replace(i, i + 1, spaces(n));
                     i           += n - 1;
                     previousTab = i;
@@ -216,13 +218,15 @@ public class AutoIndentWriter extends FilterWriter {
         return String.valueOf(data);
     }
 
-    public void close() throws IOException {
+    public void
+    close() throws IOException {
         if (this.tabulatorBuffer != null) this.flushTabulatorBuffer();
         if (this.lineBuffer.length() > 0) this.line(this.lineBuffer.toString());
         this.out.close();
     }
 
-    public void flush() throws IOException {
+    public void
+    flush() throws IOException {
         if (this.tabulatorBuffer != null) this.flushTabulatorBuffer();
         if (this.lineBuffer.length() > 0) {
             this.line(this.lineBuffer.toString());

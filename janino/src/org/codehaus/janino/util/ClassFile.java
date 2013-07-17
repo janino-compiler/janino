@@ -56,21 +56,18 @@ import org.codehaus.janino.JaninoRuntimeException;
  * which is suitable for being processed by a Java&trade; virtual
  * machine.
  */
-public class ClassFile {
+public
+class ClassFile {
 
     /**
      * Construct from parsed components.
      * @param accessFlags as defined by {@link org.codehaus.janino.Mod}
-     * @param thisClassFD the field descriptor for this class
-     * @param superclassFD the field descriptor for the extended class (e.g. "Ljava/lang/Object;")
-     * @param interfaceFDs the field descriptors for the implemented interfaces
+     * @param thisClassFd the field descriptor for this class
+     * @param superclassFd the field descriptor for the extended class (e.g. "Ljava/lang/Object;")
+     * @param interfaceFds the field descriptors for the implemented interfaces
      */
-    public ClassFile(
-        short    accessFlags,
-        String   thisClassFD,
-        String   superclassFD,
-        String[] interfaceFDs
-    ) {
+    public
+    ClassFile(short accessFlags, String thisClassFd, String superclassFd, String[] interfaceFds) {
         this.majorVersion  = ClassFile.MAJOR_VERSION_JDK_1_1;
         this.minorVersion  = ClassFile.MINOR_VERSION_JDK_1_1;
 
@@ -79,11 +76,11 @@ public class ClassFile {
         this.constantPoolMap = new HashMap();
 
         this.accessFlags   = accessFlags;
-        this.thisClass     = this.addConstantClassInfo(thisClassFD);
-        this.superclass    = this.addConstantClassInfo(superclassFD);
-        this.interfaces    = new short[interfaceFDs.length];
-        for (int i = 0; i < interfaceFDs.length; ++i) {
-            this.interfaces[i] = this.addConstantClassInfo(interfaceFDs[i]);
+        this.thisClass     = this.addConstantClassInfo(thisClassFd);
+        this.superclass    = this.addConstantClassInfo(superclassFd);
+        this.interfaces    = new short[interfaceFds.length];
+        for (int i = 0; i < interfaceFds.length; ++i) {
+            this.interfaces[i] = this.addConstantClassInfo(interfaceFds[i]);
         }
 
         this.fieldInfos    = new ArrayList();
@@ -95,14 +92,16 @@ public class ClassFile {
      * Adds a "SourceFile" attribute to this class file. (Does not check whether one exists already.)
      * @param sourceFileName
      */
-    public void addSourceFileAttribute(String sourceFileName) {
+    public void
+    addSourceFileAttribute(String sourceFileName) {
         this.attributes.add(new SourceFileAttribute(
             this.addConstantUtf8Info("SourceFile"),  // attributeNameIndex
             this.addConstantUtf8Info(sourceFileName) // sourceFileIndex
         ));
     }
 
-    public void addDeprecatedAttribute() {
+    public void
+    addDeprecatedAttribute() {
         this.attributes.add(new DeprecatedAttribute(this.addConstantUtf8Info("Deprecated")));
     }
 
@@ -110,7 +109,8 @@ public class ClassFile {
      * Find the "InnerClasses" attribute of this class file
      * @return <code>null</code> if this class has no "InnerClasses" attribute
      */
-    public InnerClassesAttribute getInnerClassesAttribute() {
+    public InnerClassesAttribute
+    getInnerClassesAttribute() {
         Short ni = (Short) this.constantPoolMap.get(new ConstantUtf8Info("InnerClasses"));
         if (ni == null) return null;
 
@@ -128,7 +128,8 @@ public class ClassFile {
      * to the "InnerClasses" attribute.
      * @param e
      */
-    public void addInnerClassesAttributeEntry(InnerClassesAttribute.Entry e) {
+    public void
+    addInnerClassesAttributeEntry(InnerClassesAttribute.Entry e) {
         InnerClassesAttribute ica = this.getInnerClassesAttribute();
         if (ica == null) {
             ica = new InnerClassesAttribute(this.addConstantUtf8Info("InnerClasses"));
@@ -149,7 +150,8 @@ public class ClassFile {
      * @throws IOException
      * @throws ClassFormatError
      */
-    public ClassFile(InputStream inputStream) throws IOException {
+    public
+    ClassFile(InputStream inputStream) throws IOException {
         DataInputStream dis = (
             inputStream instanceof DataInputStream
             ? (DataInputStream) inputStream :
@@ -190,9 +192,8 @@ public class ClassFile {
     /**
      * @return The fully qualified name of this class, e.g. "pkg1.pkg2.Outer$Inner"
      */
-    public String getThisClassName() {
-        return this.getConstantClassName(this.thisClass).replace('/', '.');
-    }
+    public String
+    getThisClassName() { return this.getConstantClassName(this.thisClass).replace('/', '.'); }
 
     /**
      * Sets the major and minor class file version numbers (JVMS 4.1). The class file version
@@ -200,7 +201,8 @@ public class ClassFile {
      * @param majorVersion
      * @param minorVersion
      */
-    public void setVersion(short majorVersion, short minorVersion) {
+    public void
+    setVersion(short majorVersion, short minorVersion) {
         this.majorVersion = majorVersion;
         this.minorVersion = minorVersion;
     }
@@ -208,16 +210,14 @@ public class ClassFile {
     /**
      * Returns the current major class file version number.
      */
-    public short getMajorVersion() {
-        return this.majorVersion;
-    }
+    public short
+    getMajorVersion() { return this.majorVersion; }
 
     /**
      * Returns the current minor class file version number.
      */
-    public short getMinorVersion() {
-        return this.minorVersion;
-    }
+    public short
+    getMinorVersion() { return this.minorVersion; }
 
     /**
      * Return the constant index number for a "CONSTANT_Class_info" structure to the class file. If the
@@ -227,16 +227,17 @@ public class ClassFile {
      * @see <a href="http://java.sun.com/docs/books/vmspec/2nd-edition/html/ClassFile.doc.html#1221">JVM specification,
      *      section 4.4.1</a>
      */
-    public short addConstantClassInfo(String typeFD) {
+    public short
+    addConstantClassInfo(String typeFd) {
         String s;
-        if (Descriptor.isClassOrInterfaceReference(typeFD)) {
-            s = Descriptor.toInternalForm(typeFD);
+        if (Descriptor.isClassOrInterfaceReference(typeFd)) {
+            s = Descriptor.toInternalForm(typeFd);
         } else
-        if (Descriptor.isArrayReference(typeFD)) {
-            s = typeFD;
+        if (Descriptor.isArrayReference(typeFd)) {
+            s = typeFd;
         } else
         {
-            throw new JaninoRuntimeException("\"" + Descriptor.toString(typeFD) + "\" is neither a class nor an array");
+            throw new JaninoRuntimeException("\"" + Descriptor.toString(typeFd) + "\" is neither a class nor an array");
         }
 
         return this.addToConstantPool(new ConstantClassInfo(this.addConstantUtf8Info(s)));
@@ -248,14 +249,11 @@ public class ClassFile {
      * @see <a href="http://java.sun.com/docs/books/vmspec/2nd-edition/html/ClassFile.doc.html#42041">JVM specification,
      *      section 4.4.2</a>
      */
-    public short addConstantFieldrefInfo(
-        String classFD,
-        String fieldName,
-        String fieldFD
-    ) {
+    public short
+    addConstantFieldrefInfo(String classFd, String fieldName, String fieldFd) {
         return this.addToConstantPool(new ConstantFieldrefInfo(
-            this.addConstantClassInfo(classFD),
-            this.addConstantNameAndTypeInfo(fieldName, fieldFD)
+            this.addConstantClassInfo(classFd),
+            this.addConstantNameAndTypeInfo(fieldName, fieldFd)
         ));
     }
 
@@ -265,14 +263,11 @@ public class ClassFile {
      * @see <a href="http://java.sun.com/docs/books/vmspec/2nd-edition/html/ClassFile.doc.html#42041">JVM specification,
      *      section 4.4.2</a>
      */
-    public short addConstantMethodrefInfo(
-        String classFD,
-        String methodName,
-        String methodMD
-    ) {
+    public short
+    addConstantMethodrefInfo(String classFd, String methodName, String methodMd) {
         return this.addToConstantPool(new ConstantMethodrefInfo(
-            this.addConstantClassInfo(classFD),
-            this.addConstantNameAndTypeInfo(methodName, methodMD)
+            this.addConstantClassInfo(classFd),
+            this.addConstantNameAndTypeInfo(methodName, methodMd)
         ));
     }
 
@@ -282,14 +277,11 @@ public class ClassFile {
      * @see <a href="http://java.sun.com/docs/books/vmspec/2nd-edition/html/ClassFile.doc.html#42041">JVM specification,
      *      section 4.4.2</a>
      */
-    public short addConstantInterfaceMethodrefInfo(
-        String classFD,
-        String methodName,
-        String methodMD
-    ) {
+    public short
+    addConstantInterfaceMethodrefInfo(String classFd, String methodName, String methodMd) {
         return this.addToConstantPool(new ConstantInterfaceMethodrefInfo(
-            this.addConstantClassInfo(classFD),
-            this.addConstantNameAndTypeInfo(methodName, methodMD)
+            this.addConstantClassInfo(classFd),
+            this.addConstantNameAndTypeInfo(methodName, methodMd)
         ));
     }
 
@@ -299,7 +291,8 @@ public class ClassFile {
      * @see <a href="http://java.sun.com/docs/books/vmspec/2nd-edition/html/ClassFile.doc.html#29297">JVM specification,
      *      section 4.4.3</a>
      */
-    public short addConstantStringInfo(String string) {
+    public short
+    addConstantStringInfo(String string) {
         return this.addToConstantPool(new ConstantStringInfo(this.addConstantUtf8Info(string)));
     }
 
@@ -309,7 +302,8 @@ public class ClassFile {
      * @see <a href="http://java.sun.com/docs/books/vmspec/2nd-edition/html/ClassFile.doc.html#21942">JVM specification,
      *      section 4.4.4</a>
      */
-    public short addConstantIntegerInfo(final int value) {
+    public short
+    addConstantIntegerInfo(final int value) {
         return this.addToConstantPool(new ConstantIntegerInfo(value));
     }
 
@@ -319,7 +313,8 @@ public class ClassFile {
      * @see <a href="http://java.sun.com/docs/books/vmspec/2nd-edition/html/ClassFile.doc.html#21942">JVM specification,
      *      section 4.4.4</a>
      */
-    public short addConstantFloatInfo(final float value) {
+    public short
+    addConstantFloatInfo(final float value) {
         return this.addToConstantPool(new ConstantFloatInfo(value));
     }
 
@@ -329,7 +324,8 @@ public class ClassFile {
      * @see <a href="http://java.sun.com/docs/books/vmspec/2nd-edition/html/ClassFile.doc.html#1348">JVM specification,
      *      section 4.4.5</a>
      */
-    public short addConstantLongInfo(final long value) {
+    public short
+    addConstantLongInfo(final long value) {
         return this.addToConstantPool(new ConstantLongInfo(value));
     }
 
@@ -339,7 +335,8 @@ public class ClassFile {
      * @see <a href="http://java.sun.com/docs/books/vmspec/2nd-edition/html/ClassFile.doc.html#1348">JVM specification,
      *      section 4.4.5</a>
      */
-    public short addConstantDoubleInfo(final double value) {
+    public short
+    addConstantDoubleInfo(final double value) {
         return this.addToConstantPool(new ConstantDoubleInfo(value));
     }
 
@@ -349,7 +346,8 @@ public class ClassFile {
      * @see <a href="http://java.sun.com/docs/books/vmspec/2nd-edition/html/ClassFile.doc.html#1327">JVM specification,
      *      section 4.4.6</a>
      */
-    private short addConstantNameAndTypeInfo(String name, String descriptor) {
+    private short
+    addConstantNameAndTypeInfo(String name, String descriptor) {
         return this.addToConstantPool(new ConstantNameAndTypeInfo(
             this.addConstantUtf8Info(name),
             this.addConstantUtf8Info(descriptor)
@@ -362,22 +360,20 @@ public class ClassFile {
      * @see <a href="http://java.sun.com/docs/books/vmspec/2nd-edition/html/ClassFile.doc.html#7963">JVM specification,
      *      section 4.4.7</a>
      */
-    public short addConstantUtf8Info(final String s) {
+    public short
+    addConstantUtf8Info(final String s) {
         return this.addToConstantPool(new ConstantUtf8Info(s));
     }
 
     /**
      * Convenience method that adds a String, Integer, Float, Long or Double ConstantInfo.
      */
-    private short addConstantSIFLDInfo(Object cv) {
+    private short
+    addConstantSIFLDInfo(Object cv) { // SUPPRESS CHECKSTYLE AbbreviationAsWord
         if (cv instanceof String) {
             return this.addConstantStringInfo((String) cv);
         } else
-        if (
-            cv instanceof Byte    ||
-            cv instanceof Short   ||
-            cv instanceof Integer
-        ) {
+        if (cv instanceof Byte || cv instanceof Short || cv instanceof Integer) {
             return this.addConstantIntegerInfo(((Number) cv).intValue());
         } else
         if (cv instanceof Boolean) {
@@ -400,7 +396,8 @@ public class ClassFile {
         }
     }
 
-    private short addToConstantPool(ConstantPoolInfo cpi) {
+    private short
+    addToConstantPool(ConstantPoolInfo cpi) {
         Short index = (Short) this.constantPoolMap.get(cpi);
         if (index != null) return index.shortValue();
 
@@ -415,12 +412,8 @@ public class ClassFile {
         return (short) res;
     }
 
-    public FieldInfo addFieldInfo(
-        short  accessFlags,
-        String fieldName,
-        String fieldTypeFD,
-        Object optionalConstantValue
-    ) {
+    public FieldInfo
+    addFieldInfo(short accessFlags, String fieldName, String fieldTypeFd, Object optionalConstantValue) {
         List attributes = new ArrayList();
         if (optionalConstantValue != null) {
             attributes.add(new ConstantValueAttribute(
@@ -431,37 +424,34 @@ public class ClassFile {
         FieldInfo fi = new FieldInfo(
             accessFlags,                           // accessFlags
             this.addConstantUtf8Info(fieldName),   // nameIndex
-            this.addConstantUtf8Info(fieldTypeFD), // descriptorIndex
+            this.addConstantUtf8Info(fieldTypeFd), // descriptorIndex
             attributes                             // attributes
         );
         this.fieldInfos.add(fi);
         return fi;
     }
 
-    public MethodInfo addMethodInfo(
-        short  accessFlags,
-        String methodName,
-        String methodMD
-    ) {
+    public MethodInfo
+    addMethodInfo(short accessFlags, String methodName, String methodMd) {
         MethodInfo mi = new MethodInfo(
             accessFlags,                          // accessFlags
             this.addConstantUtf8Info(methodName), // nameIndex
-            this.addConstantUtf8Info(methodMD),   // desriptorIndex
+            this.addConstantUtf8Info(methodMd),   // desriptorIndex
             new ArrayList()                       // attributes
         );
         this.methodInfos.add(mi);
         return mi;
     }
 
-    public ConstantPoolInfo getConstantPoolInfo(short index) {
-        return (ConstantPoolInfo) this.constantPool.get(0xffff & index);
-    }
+    public ConstantPoolInfo
+    getConstantPoolInfo(short index) { return (ConstantPoolInfo) this.constantPool.get(0xffff & index); }
 
     /**
      * @param index Index to a <code>CONSTANT_Class_info</code> in the constant pool
      * @return The name of the denoted class in "internal form" (see JVMS 4.2)
      */
-    public String getConstantClassName(short index) {
+    public String
+    getConstantClassName(short index) {
         ConstantClassInfo cci = (ConstantClassInfo) this.getConstantPoolInfo(index);
         ConstantUtf8Info  cui = (ConstantUtf8Info) this.getConstantPoolInfo(cci.nameIndex);
         return cui.s;
@@ -471,7 +461,8 @@ public class ClassFile {
      * @param index Index to a <code>CONSTANT_Utf8_info</code> in the constant pool
      * @return The string represented by the structure
      */
-    public String getConstantUtf8(short index) {
+    public String
+    getConstantUtf8(short index) {
         ConstantUtf8Info cui = (ConstantUtf8Info) this.getConstantPoolInfo(index);
         return cui.s;
     }
@@ -479,7 +470,8 @@ public class ClassFile {
     /**
      * u4 length, u1[length]
      */
-    private static byte[] readLengthAndBytes(DataInputStream dis) throws IOException {
+    private static byte[]
+    readLengthAndBytes(DataInputStream dis) throws IOException {
         byte[] ba = new byte[dis.readInt()];
         dis.readFully(ba);
         return ba;
@@ -488,8 +480,9 @@ public class ClassFile {
     /**
      * u2 length, u2[length]
      */
-    private static short[] readShortArray(DataInputStream dis) throws IOException {
-        short count = dis.readShort();
+    private static short[]
+    readShortArray(DataInputStream dis) throws IOException {
+        short   count  = dis.readShort();
         short[] result = new short[count];
         for (int i = 0; i < count; ++i) result[i] = dis.readShort();
         return result;
@@ -498,7 +491,8 @@ public class ClassFile {
     /**
      * u2 constant_pool_count, constant_pool[constant_pool_count]
      */
-    private void loadConstantPool(DataInputStream dis) throws IOException {
+    private void
+    loadConstantPool(DataInputStream dis) throws IOException {
         this.constantPool.clear();
         this.constantPoolMap.clear();
 
@@ -518,9 +512,10 @@ public class ClassFile {
     /**
      * u2 fields_count, fields[fields_count]
      */
-    private List loadFields(DataInputStream dis) throws IOException {
+    private List
+    loadFields(DataInputStream dis) throws IOException {
         short fieldsCount = dis.readShort();
-        List fields = new ArrayList(fieldsCount);
+        List  fields      = new ArrayList(fieldsCount);
         for (int i = 0; i < fieldsCount; ++i) {
             fields.add(new FieldInfo(
                 dis.readShort(),         // accessFlags
@@ -535,9 +530,10 @@ public class ClassFile {
     /**
      * u2 methods_count, methods[methods_count]
      */
-    private List loadMethods(DataInputStream dis) throws IOException {
+    private List
+    loadMethods(DataInputStream dis) throws IOException {
         short methodsCount = dis.readShort();
-        List methods = new ArrayList(methodsCount);
+        List  methods      = new ArrayList(methodsCount);
         for (int i = 0; i < methodsCount; ++i) methods.add(this.loadMethodInfo(dis));
         return methods;
     }
@@ -545,9 +541,10 @@ public class ClassFile {
     /**
      * u2 attributes_count, attributes[attributes_count]
      */
-    private List loadAttributes(DataInputStream dis) throws IOException {
+    private List
+    loadAttributes(DataInputStream dis) throws IOException {
         short attributesCount = dis.readShort();
-        List attributes = new ArrayList(attributesCount);
+        List  attributes      = new ArrayList(attributesCount);
         for (int i = 0; i < attributesCount; ++i) attributes.add(this.loadAttribute(dis));
         return attributes;
     }
@@ -562,7 +559,8 @@ public class ClassFile {
      * @param os
      * @throws IOException
      */
-    public void store(OutputStream os) throws IOException {
+    public void
+    store(OutputStream os) throws IOException {
         DataOutputStream dos = os instanceof DataOutputStream ? (DataOutputStream) os : new DataOutputStream(os);
 
         dos.writeInt(ClassFile.CLASS_FILE_MAGIC);            // magic
@@ -581,7 +579,8 @@ public class ClassFile {
     /**
      * u2 constant_pool_count, constant_pool[constant_pool_count - 1]
      */
-    private static void storeConstantPool(DataOutputStream dos, List constantPool) throws IOException {
+    private static void
+    storeConstantPool(DataOutputStream dos, List constantPool) throws IOException {
         dos.writeShort(constantPool.size());
         for (int i = 1; i < constantPool.size(); ++i) {
             ConstantPoolInfo cpi = (ConstantPoolInfo) constantPool.get(i);
@@ -593,7 +592,8 @@ public class ClassFile {
     /**
      * u2 count, u2[count]
      */
-    private static void storeShortArray(DataOutputStream dos, short[] sa) throws IOException {
+    private static void
+    storeShortArray(DataOutputStream dos, short[] sa) throws IOException {
         dos.writeShort(sa.length);
         for (int i = 0; i < sa.length; ++i) dos.writeShort(sa[i]);
     }
@@ -601,7 +601,8 @@ public class ClassFile {
     /**
      * u2 fields_count, fields[fields_count]
      */
-    private static void storeFields(DataOutputStream dos, List fieldInfos) throws IOException {
+    private static void
+    storeFields(DataOutputStream dos, List fieldInfos) throws IOException {
         dos.writeShort(fieldInfos.size());
         for (int i = 0; i < fieldInfos.size(); ++i) ((FieldInfo) fieldInfos.get(i)).store(dos);
     }
@@ -609,7 +610,8 @@ public class ClassFile {
     /**
      * u2 methods_count, methods[methods_count]
      */
-    private static void storeMethods(DataOutputStream dos, List methodInfos) throws IOException {
+    private static void
+    storeMethods(DataOutputStream dos, List methodInfos) throws IOException {
         dos.writeShort(methodInfos.size());
         for (int i = 0; i < methodInfos.size(); ++i) ((MethodInfo) methodInfos.get(i)).store(dos);
     }
@@ -617,7 +619,8 @@ public class ClassFile {
     /**
      * u2 attributes_count, attributes[attributes_count]
      */
-    private static void storeAttributes(DataOutputStream dos, List attributeInfos) throws IOException {
+    private static void
+    storeAttributes(DataOutputStream dos, List attributeInfos) throws IOException {
         dos.writeShort(attributeInfos.size());
         for (int i = 0; i < attributeInfos.size(); ++i) ((AttributeInfo) attributeInfos.get(i)).store(dos);
     }
@@ -632,7 +635,8 @@ public class ClassFile {
      * @param className Fully qualified class name, e.g. "pkg1.pkg2.Outer$Inner"
      * @return the name of the resource, e.g. "pkg1/pkg2/Outer.java"
      */
-    public static String getSourceResourceName(String className) {
+    public static String
+    getSourceResourceName(String className) {
 
         // Strip nested type suffixes.
         {
@@ -651,14 +655,14 @@ public class ClassFile {
      * @param className Fully qualified class name, e.g. "pkg1.pkg2.Outer$Inner"
      * @return the name of the resource, e.g. "pkg1/pkg2/Outer$Inner.class"
      */
-    public static String getClassFileResourceName(String className) {
-        return className.replace('.', '/') + ".class";
-    }
+    public static String
+    getClassFileResourceName(String className) { return className.replace('.', '/') + ".class"; }
 
     /**
      * Return the byte code of this {@link ClassFile} as a byte array.
      */
-    public byte[] toByteArray() {
+    public byte[]
+    toByteArray() {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try {
             this.store(baos);
@@ -671,6 +675,7 @@ public class ClassFile {
 
     private static final int CLASS_FILE_MAGIC = 0xcafebabe;
 
+    // CHECKSTYLE JavadocVariable:OFF
     public static final short MAJOR_VERSION_JDK_1_1 = 45;
     public static final short MINOR_VERSION_JDK_1_1 = 3;
     public static final short MAJOR_VERSION_JDK_1_2 = 46;
@@ -681,6 +686,7 @@ public class ClassFile {
     public static final short MINOR_VERSION_JDK_1_4 = 0;
     public static final short MAJOR_VERSION_JDK_1_5 = 49;
     public static final short MINOR_VERSION_JDK_1_5 = 0;
+    // CHECKSTYLE JavadocVariable:ON
 
     private short        majorVersion;
     private short        minorVersion;
@@ -696,11 +702,15 @@ public class ClassFile {
     // Convenience.
     private final Map constantPoolMap; // ConstantPoolInfo => Short
 
-    public abstract static class ConstantPoolInfo {
-        public abstract void store(DataOutputStream dos) throws IOException;
+    public abstract static
+    class ConstantPoolInfo {
+
+        public abstract void    store(DataOutputStream dos) throws IOException;
         public abstract boolean isWide();
 
-        private static ConstantPoolInfo loadConstantPoolInfo(DataInputStream dis) throws IOException {
+        private static ConstantPoolInfo
+        loadConstantPoolInfo(DataInputStream dis) throws IOException {
+
             byte tag = dis.readByte();
 //System.out.println("tag=" + tag);
             switch (tag) {
@@ -744,11 +754,13 @@ public class ClassFile {
         }
     }
 
-    public abstract static class ConstantValuePoolInfo extends ConstantPoolInfo {
+    public abstract static
+    class ConstantValuePoolInfo extends ConstantPoolInfo {
         public abstract Object getValue(ClassFile classFile);
     }
 
-    public static class ConstantClassInfo extends ConstantPoolInfo {
+    public static
+    class ConstantClassInfo extends ConstantPoolInfo {
         private final short nameIndex;
 
         public ConstantClassInfo(short nameIndex) { this.nameIndex = nameIndex; }
@@ -772,16 +784,20 @@ public class ClassFile {
         public int
         hashCode() { return this.nameIndex; }
     }
-    public static class ConstantFieldrefInfo extends ConstantPoolInfo {
+    public static
+    class ConstantFieldrefInfo extends ConstantPoolInfo {
+
         private final short classIndex;
         private final short nameAndTypeIndex;
 
-        public ConstantFieldrefInfo(short classIndex, short nameAndTypeIndex) {
-            this.classIndex = classIndex;
+        public
+        ConstantFieldrefInfo(short classIndex, short nameAndTypeIndex) {
+            this.classIndex       = classIndex;
             this.nameAndTypeIndex = nameAndTypeIndex;
         }
 
-        public short getNameAndTypeIndex() { return this.nameAndTypeIndex; }
+        public short
+        getNameAndTypeIndex() { return this.nameAndTypeIndex; }
 
         // Implement ConstantPoolInfo.
 
@@ -798,25 +814,29 @@ public class ClassFile {
         public boolean
         equals(Object o) {
             return (
-                o instanceof ConstantFieldrefInfo &&
-                ((ConstantFieldrefInfo) o).classIndex       == this.classIndex &&
-                ((ConstantFieldrefInfo) o).nameAndTypeIndex == this.nameAndTypeIndex
+                o instanceof ConstantFieldrefInfo
+                && ((ConstantFieldrefInfo) o).classIndex       == this.classIndex
+                && ((ConstantFieldrefInfo) o).nameAndTypeIndex == this.nameAndTypeIndex
             );
         }
 
         public int
         hashCode() { return this.classIndex + (this.nameAndTypeIndex << 16); }
     }
-    public static class ConstantMethodrefInfo extends ConstantPoolInfo {
+    public static
+    class ConstantMethodrefInfo extends ConstantPoolInfo {
+
         private final short classIndex;
         private final short nameAndTypeIndex;
 
-        public ConstantMethodrefInfo(short classIndex, short nameAndTypeIndex) {
-            this.classIndex = classIndex;
+        public
+        ConstantMethodrefInfo(short classIndex, short nameAndTypeIndex) {
+            this.classIndex       = classIndex;
             this.nameAndTypeIndex = nameAndTypeIndex;
         }
 
-        public short getNameAndTypeIndex() { return this.nameAndTypeIndex; }
+        public short
+        getNameAndTypeIndex() { return this.nameAndTypeIndex; }
 
         // Implement ConstantPoolInfo.
 
@@ -833,9 +853,9 @@ public class ClassFile {
         public boolean
         equals(Object o) {
             return (
-                o instanceof ConstantMethodrefInfo &&
-                ((ConstantMethodrefInfo) o).classIndex       == this.classIndex &&
-                ((ConstantMethodrefInfo) o).nameAndTypeIndex == this.nameAndTypeIndex
+                o instanceof ConstantMethodrefInfo
+                && ((ConstantMethodrefInfo) o).classIndex       == this.classIndex
+                && ((ConstantMethodrefInfo) o).nameAndTypeIndex == this.nameAndTypeIndex
             );
         }
 
@@ -848,12 +868,14 @@ public class ClassFile {
         private final short classIndex;
         private final short nameAndTypeIndex;
 
-        public ConstantInterfaceMethodrefInfo(short classIndex, short nameAndTypeIndex) {
-            this.classIndex = classIndex;
+        public
+        ConstantInterfaceMethodrefInfo(short classIndex, short nameAndTypeIndex) {
+            this.classIndex       = classIndex;
             this.nameAndTypeIndex = nameAndTypeIndex;
         }
 
-        public short getNameAndTypeIndex() { return this.nameAndTypeIndex; }
+        public short
+        getNameAndTypeIndex() { return this.nameAndTypeIndex; }
 
         // Implement ConstantPoolInfo.
 
@@ -870,26 +892,26 @@ public class ClassFile {
         public boolean
         equals(Object o) {
             return (
-                o instanceof ConstantInterfaceMethodrefInfo &&
-                ((ConstantInterfaceMethodrefInfo) o).classIndex ==       this.classIndex &&
-                ((ConstantInterfaceMethodrefInfo) o).nameAndTypeIndex == this.nameAndTypeIndex
+                o instanceof ConstantInterfaceMethodrefInfo
+                && ((ConstantInterfaceMethodrefInfo) o).classIndex ==       this.classIndex
+                && ((ConstantInterfaceMethodrefInfo) o).nameAndTypeIndex == this.nameAndTypeIndex
             );
         }
 
         public int
         hashCode() { return this.classIndex + (this.nameAndTypeIndex << 16); }
     }
-    static class ConstantStringInfo extends ConstantValuePoolInfo {
+
+    static
+    class ConstantStringInfo extends ConstantValuePoolInfo {
         private final short stringIndex;
 
-        public ConstantStringInfo(short stringIndex) {
-            this.stringIndex = stringIndex;
-        }
+        public
+        ConstantStringInfo(short stringIndex) { this.stringIndex = stringIndex; }
 
         // Implement ConstantValuePoolInfo.
-        public Object getValue(ClassFile classFile) {
-            return classFile.getConstantUtf8(this.stringIndex);
-        }
+        public Object
+        getValue(ClassFile classFile) { return classFile.getConstantUtf8(this.stringIndex); }
 
         // Implement ConstantPoolInfo.
 
@@ -910,12 +932,13 @@ public class ClassFile {
         public int
         hashCode() { return this.stringIndex; }
     }
-    private static class ConstantIntegerInfo extends ConstantValuePoolInfo {
+
+    private static
+    class ConstantIntegerInfo extends ConstantValuePoolInfo {
         private final int value;
 
-        public ConstantIntegerInfo(int value) {
-            this.value = value;
-        }
+        public
+        ConstantIntegerInfo(int value) { this.value = value; }
 
         // Implement ConstantValuePoolInfo.
         public Object getValue(ClassFile classFile) { return new Integer(this.value); }
@@ -940,11 +963,11 @@ public class ClassFile {
 
     private static
     class ConstantFloatInfo extends ConstantValuePoolInfo {
+
         private final float value;
 
-        public ConstantFloatInfo(float value) {
-            this.value = value;
-        }
+        public
+        ConstantFloatInfo(float value) { this.value = value; }
 
         // Implement ConstantValuePoolInfo.
         public Object getValue(ClassFile classFile) { return new Float(this.value); }
@@ -968,12 +991,14 @@ public class ClassFile {
         public int
         hashCode() { return Float.floatToIntBits(this.value); }
     }
-    private static class ConstantLongInfo extends ConstantValuePoolInfo {
+
+    private static
+    class ConstantLongInfo extends ConstantValuePoolInfo {
+
         private final long value;
 
-        public ConstantLongInfo(long value) {
-            this.value = value;
-        }
+        public
+        ConstantLongInfo(long value) { this.value = value; }
 
         // Implement ConstantValuePoolInfo.
         public Object getValue(ClassFile classFile) { return new Long(this.value); }
@@ -1002,9 +1027,8 @@ public class ClassFile {
     class ConstantDoubleInfo extends ConstantValuePoolInfo {
         private final double value;
 
-        public ConstantDoubleInfo(double value) {
-            this.value = value;
-        }
+        public
+        ConstantDoubleInfo(double value) { this.value = value; }
 
         // Implement ConstantValuePoolInfo.
         public Object getValue(ClassFile classFile) { return new Double(this.value); }
@@ -1023,21 +1047,27 @@ public class ClassFile {
         public boolean
         equals(Object o) { return o instanceof ConstantDoubleInfo && ((ConstantDoubleInfo) o).value == this.value; }
 
-        public int hashCode() {
+        public int
+        hashCode() {
             long bits = Double.doubleToLongBits(this.value);
             return (int) bits ^ (int) (bits >> 32);
         }
     }
-    public static class ConstantNameAndTypeInfo extends ConstantPoolInfo {
+
+    public static
+    class ConstantNameAndTypeInfo extends ConstantPoolInfo {
+
         private final short nameIndex;
         private final short descriptorIndex;
 
-        public ConstantNameAndTypeInfo(short nameIndex, short descriptorIndex) {
+        public
+        ConstantNameAndTypeInfo(short nameIndex, short descriptorIndex) {
             this.nameIndex       = nameIndex;
             this.descriptorIndex = descriptorIndex;
         }
 
-        public short getDescriptorIndex() { return this.descriptorIndex; }
+        public short
+        getDescriptorIndex() { return this.descriptorIndex; }
 
         // Implement ConstantPoolInfo.
 
@@ -1054,9 +1084,9 @@ public class ClassFile {
         public boolean
         equals(Object o) {
             return (
-                o instanceof ConstantNameAndTypeInfo &&
-                ((ConstantNameAndTypeInfo) o).nameIndex       == this.nameIndex &&
-                ((ConstantNameAndTypeInfo) o).descriptorIndex == this.descriptorIndex
+                o instanceof ConstantNameAndTypeInfo
+                && ((ConstantNameAndTypeInfo) o).nameIndex       == this.nameIndex
+                && ((ConstantNameAndTypeInfo) o).descriptorIndex == this.descriptorIndex
             );
         }
 
@@ -1068,12 +1098,14 @@ public class ClassFile {
     class ConstantUtf8Info extends ConstantPoolInfo {
         private final String s;
 
-        public ConstantUtf8Info(String s) {
+        public
+        ConstantUtf8Info(String s) {
             if (s == null) throw new JaninoRuntimeException();
             this.s = s;
         }
 
-        public String getString() { return this.s; }
+        public String
+        getString() { return this.s; }
 
         // Implement ConstantPoolInfo.
 
@@ -1104,7 +1136,9 @@ public class ClassFile {
      * This class represents a "method_info" structure, as defined by the
      * JVM specification.
      */
-    public class MethodInfo {
+    public
+    class MethodInfo {
+
         private final short accessFlags;
         private final short nameIndex;
         private final short descriptorIndex;
@@ -1113,36 +1147,35 @@ public class ClassFile {
         /**
          * Initialize the "method_info" structure.
          */
-        public MethodInfo(
-            short accessFlags,
-            short nameIndex,
-            short descriptorIndex,
-            List  attributes
-        ) {
+        public
+        MethodInfo(short accessFlags, short nameIndex, short descriptorIndex, List attributes) {
             this.accessFlags     = accessFlags;
             this.nameIndex       = nameIndex;
             this.descriptorIndex = descriptorIndex;
             this.attributes      = attributes;
         }
 
-        public ClassFile getClassFile() { return ClassFile.this; }
+        public ClassFile
+        getClassFile() { return ClassFile.this; }
 
-        public short           getAccessFlags()     { return this.accessFlags; }
-        public short           getNameIndex()       { return this.nameIndex; }
-        public short           getDescriptorIndex() { return this.descriptorIndex; }
-        public AttributeInfo[] getAttributes()      {
+        public short getAccessFlags()     { return this.accessFlags; }
+        public short getNameIndex()       { return this.nameIndex; }
+        public short getDescriptorIndex() { return this.descriptorIndex; }
+
+        public AttributeInfo[]
+        getAttributes() {
             return (AttributeInfo[]) this.attributes.toArray(new AttributeInfo[this.attributes.size()]);
         }
 
-        public void addAttribute(AttributeInfo attribute) {
-            this.attributes.add(attribute);
-        }
+        public void
+        addAttribute(AttributeInfo attribute) { this.attributes.add(attribute); }
 
         /**
          * Write this object to a {@link DataOutputStream}, in the format
          * defined by the JVM specification.
          */
-        public void store(DataOutputStream dos) throws IOException {
+        public void
+        store(DataOutputStream dos) throws IOException {
             dos.writeShort(this.accessFlags);                // access_flags
             dos.writeShort(this.nameIndex);                  // name_index
             dos.writeShort(this.descriptorIndex);            // descriptor_index
@@ -1150,7 +1183,8 @@ public class ClassFile {
         }
     }
 
-    private MethodInfo loadMethodInfo(DataInputStream dis) throws IOException {
+    private MethodInfo
+    loadMethodInfo(DataInputStream dis) throws IOException {
         return new MethodInfo(
             dis.readShort(),         // accessFlags
             dis.readShort(),         // nameIndex
@@ -1159,31 +1193,31 @@ public class ClassFile {
         );
     }
 
-    public static class FieldInfo {
-        public FieldInfo(
-            short accessFlags,
-            short nameIndex,
-            short descriptorIndex,
-            List  attributes
-        ) {
+    public static
+    class FieldInfo {
+
+        public
+        FieldInfo(short accessFlags, short nameIndex, short descriptorIndex, List attributes) {
             this.accessFlags     = accessFlags;
             this.nameIndex       = nameIndex;
             this.descriptorIndex = descriptorIndex;
             this.attributes      = attributes;
         }
 
-        public short           getAccessFlags()     { return this.accessFlags; }
-        public short           getNameIndex()       { return this.nameIndex; }
-        public short           getDescriptorIndex() { return this.descriptorIndex; }
-        public AttributeInfo[] getAttributes()      {
+        public short getAccessFlags()     { return this.accessFlags; }
+        public short getNameIndex()       { return this.nameIndex; }
+        public short getDescriptorIndex() { return this.descriptorIndex; }
+
+        public AttributeInfo[]
+        getAttributes() {
             return (AttributeInfo[]) this.attributes.toArray(new AttributeInfo[this.attributes.size()]);
         }
 
-        public void addAttribute(AttributeInfo attribute) {
-            this.attributes.add(attribute);
-        }
+        public void
+        addAttribute(AttributeInfo attribute) { this.attributes.add(attribute); }
 
-        public void store(DataOutputStream dos) throws IOException {
+        public void
+        store(DataOutputStream dos) throws IOException {
             dos.writeShort(this.accessFlags);                // access_flags
             dos.writeShort(this.nameIndex);                  // name_index
             dos.writeShort(this.descriptorIndex);            // descriptor_index
@@ -1199,11 +1233,15 @@ public class ClassFile {
     /**
      * Representation of a class file attribute (see JVMS 4.7).
      */
-    public abstract static class AttributeInfo {
-        public AttributeInfo(short nameIndex) {
-            this.nameIndex = nameIndex;
-        }
-        public void store(DataOutputStream dos) throws IOException {
+    public abstract static
+    class AttributeInfo {
+
+        public
+        AttributeInfo(short nameIndex) { this.nameIndex = nameIndex; }
+
+        public void
+        store(DataOutputStream dos) throws IOException {
+
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             this.storeBody(new DataOutputStream(baos));
 
@@ -1211,7 +1249,9 @@ public class ClassFile {
             dos.writeInt(baos.size());      // attribute_length
             baos.writeTo(dos);              // info
         }
-        protected abstract void storeBody(DataOutputStream dos) throws IOException;
+
+        protected abstract void
+        storeBody(DataOutputStream dos) throws IOException;
 
         private final short nameIndex;
     }
@@ -1222,7 +1262,9 @@ public class ClassFile {
      * name of the attribute is "SourceFile", then the returned object will be of type
      * {@link SourceFileAttribute}.
      */
-    private AttributeInfo loadAttribute(DataInputStream dis) throws IOException {
+    private AttributeInfo
+    loadAttribute(DataInputStream dis) throws IOException {
+
         short attributeNameIndex = dis.readShort(); // attribute_name_index
         int   attributeLength    = dis.readInt();   // attribute_length
 
@@ -1231,7 +1273,7 @@ public class ClassFile {
         ByteArrayInputStream bais = new ByteArrayInputStream(ba);
         DataInputStream      bdis = new DataInputStream(bais);
 
-        String attributeName = this.getConstantUtf8(attributeNameIndex);
+        String        attributeName = this.getConstantUtf8(attributeNameIndex);
         AttributeInfo result;
         if ("ConstantValue".equals(attributeName)) {
             result = ConstantValueAttribute.loadBody(attributeNameIndex, bdis);
@@ -1281,7 +1323,9 @@ public class ClassFile {
     /**
      * Representation of a "ConstantValue" attribute (see JVMS 4.7.2).
      */
-    public static class ConstantValueAttribute extends AttributeInfo {
+    public static
+    class ConstantValueAttribute extends AttributeInfo {
+
         private final short constantValueIndex;
 
         ConstantValueAttribute(short attributeNameIndex, short constantValueIndex) {
@@ -1289,9 +1333,11 @@ public class ClassFile {
             this.constantValueIndex = constantValueIndex;
         }
 
-        public short getConstantValueIndex() { return this.constantValueIndex; }
+        public short
+        getConstantValueIndex() { return this.constantValueIndex; }
 
-        private static AttributeInfo loadBody(short attributeNameIndex, DataInputStream dis) throws IOException {
+        private static AttributeInfo
+        loadBody(short attributeNameIndex, DataInputStream dis) throws IOException {
             return new ConstantValueAttribute(
                 attributeNameIndex, // attributeNameIndex
                 dis.readShort()     // constantValueIndex
@@ -1299,7 +1345,8 @@ public class ClassFile {
         }
 
         // Implement "AttributeInfo".
-        protected void storeBody(DataOutputStream dos) throws IOException {
+        protected void
+        storeBody(DataOutputStream dos) throws IOException {
             dos.writeShort(this.constantValueIndex);
         }
     }
@@ -1307,21 +1354,26 @@ public class ClassFile {
     /**
      * Representation of an "Exceptions" attribute (see JVMS 4.7.4).
      */
-    public static class ExceptionsAttribute extends AttributeInfo {
+    public static
+    class ExceptionsAttribute extends AttributeInfo {
+
         private final short[] exceptionIndexes;
 
-        public ExceptionsAttribute(short attributeNameIndex, short[] exceptionIndexes) {
+        public
+        ExceptionsAttribute(short attributeNameIndex, short[] exceptionIndexes) {
             super(attributeNameIndex);
             this.exceptionIndexes = exceptionIndexes;
         }
 
-        public short[] getExceptionIndexes() {
+        public short[]
+        getExceptionIndexes() {
             short[] eis = new short[this.exceptionIndexes.length];
             System.arraycopy(this.exceptionIndexes, 0, eis, 0, eis.length);
             return eis;
         }
 
-        private static AttributeInfo loadBody(short attributeNameIndex, DataInputStream dis) throws IOException {
+        private static AttributeInfo
+        loadBody(short attributeNameIndex, DataInputStream dis) throws IOException {
             return new ExceptionsAttribute(
                 attributeNameIndex,           // attributeNameIndex
                 ClassFile.readShortArray(dis) // exceptionIndexes
@@ -1329,7 +1381,8 @@ public class ClassFile {
         }
 
         // Implement "AttributeInfo".
-        protected void storeBody(DataOutputStream dos) throws IOException {
+        protected void
+        storeBody(DataOutputStream dos) throws IOException {
             ClassFile.storeShortArray(dos, this.exceptionIndexes);
         }
     }
@@ -1337,7 +1390,9 @@ public class ClassFile {
     /**
      * Representation of an "InnerClasses" attribute (see JVMS 4.7.5).
      */
-    public static class InnerClassesAttribute extends AttributeInfo {
+    public static
+    class InnerClassesAttribute extends AttributeInfo {
+
         private final List entries; // InnerClassesAttribute.Entry
 
         InnerClassesAttribute(short attributeNameIndex) {
@@ -1349,11 +1404,12 @@ public class ClassFile {
             this.entries = new ArrayList(Arrays.asList(entries));
         }
 
-        public List getEntries() {
-            return this.entries;
-        }
+        public List
+        getEntries() { return this.entries; }
 
-        private static AttributeInfo loadBody(short attributeNameIndex, DataInputStream dis) throws IOException {
+        private static AttributeInfo
+        loadBody(short attributeNameIndex, DataInputStream dis) throws IOException {
+
             Entry[] ics = new Entry[dis.readShort()]; // number_of_classes
             for (short i = 0; i < ics.length; ++i) {  // classes
                 ics[i] = new InnerClassesAttribute.Entry(
@@ -1367,7 +1423,9 @@ public class ClassFile {
         }
 
         // Implement "AttributeInfo".
-        protected void storeBody(DataOutputStream dos) throws IOException {
+        protected void
+        storeBody(DataOutputStream dos) throws IOException {
+
             dos.writeShort(this.entries.size());
             for (Iterator it = this.entries.iterator(); it.hasNext();) {
                 Entry e = (Entry) it.next();
@@ -1378,10 +1436,13 @@ public class ClassFile {
             }
         }
 
-        public static class Entry {
+        public static
+        class Entry {
+
             public final short innerClassInfoIndex, outerClassInfoIndex, innerNameIndex, innerClassAccessFlags;
 
-            public Entry(
+            public
+            Entry(
                 short innerClassInfoIndex,
                 short outerClassInfoIndex,
                 short innerNameIndex,
@@ -1398,34 +1459,41 @@ public class ClassFile {
     /**
      * Representation of a "Synthetic" attribute (see JVMS 4.7.6).
      */
-    public static class SyntheticAttribute extends AttributeInfo {
+    public static
+    class SyntheticAttribute extends AttributeInfo {
+
         SyntheticAttribute(short attributeNameIndex) {
             super(attributeNameIndex);
         }
 
-        private static AttributeInfo loadBody(short attributeNameIndex, DataInputStream dis) {
-            return new SyntheticAttribute(
-                attributeNameIndex // attributeNameIndex
-            );
+        private static AttributeInfo
+        loadBody(short attributeNameIndex, DataInputStream dis) {
+            return new SyntheticAttribute(attributeNameIndex);
         }
 
         // Implement "AttributeInfo".
-        protected void storeBody(DataOutputStream dos) throws IOException {
+        protected void
+        storeBody(DataOutputStream dos) {
+            ;
         }
     }
 
     /**
      * Representation of a "SourceFile" attribute (see JVMS 4.7.7).
      */
-    public static class SourceFileAttribute extends AttributeInfo {
+    public static
+    class SourceFileAttribute extends AttributeInfo {
+
         private final short sourceFileIndex;
 
-        public SourceFileAttribute(short attributeNameIndex, short sourceFileIndex) {
+        public
+        SourceFileAttribute(short attributeNameIndex, short sourceFileIndex) {
             super(attributeNameIndex);
             this.sourceFileIndex = sourceFileIndex;
         }
 
-        private static AttributeInfo loadBody(short attributeNameIndex, DataInputStream dis) throws IOException {
+        private static AttributeInfo
+        loadBody(short attributeNameIndex, DataInputStream dis) throws IOException {
             return new SourceFileAttribute(
                 attributeNameIndex, // attributeNameIndex
                 dis.readShort()     // sourceFileNameIndex
@@ -1433,23 +1501,27 @@ public class ClassFile {
         }
 
         // Implement "AttributeInfo".
-        protected void storeBody(DataOutputStream dos) throws IOException {
-            dos.writeShort(this.sourceFileIndex);
-        }
+        protected void
+        storeBody(DataOutputStream dos) throws IOException { dos.writeShort(this.sourceFileIndex); }
     }
 
     /**
      * Representation of a "LineNumberTable" attribute (see JVMS 4.7.8).
      */
-    public static class LineNumberTableAttribute extends AttributeInfo {
+    public static
+    class LineNumberTableAttribute extends AttributeInfo {
+
         private final Entry[] entries;
 
-        public LineNumberTableAttribute(short attributeNameIndex, Entry[] entries) {
+        public
+        LineNumberTableAttribute(short attributeNameIndex, Entry[] entries) {
             super(attributeNameIndex);
             this.entries = entries;
         }
 
-        private static AttributeInfo loadBody(short attributeNameIndex, DataInputStream dis) throws IOException {
+        private static AttributeInfo
+        loadBody(short attributeNameIndex, DataInputStream dis) throws IOException {
+
             Entry[] lntes = new Entry[dis.readShort()]; // line_number_table_length
             for (short i = 0; i < lntes.length; ++i) {  // line_number_table
                 lntes[i] = new LineNumberTableAttribute.Entry(
@@ -1461,7 +1533,8 @@ public class ClassFile {
         }
 
         // Implement "AttributeInfo".
-        protected void storeBody(DataOutputStream dos) throws IOException {
+        protected void
+        storeBody(DataOutputStream dos) throws IOException {
             dos.writeShort(this.entries.length);            // line_number_table_length
             for (int i = 0; i < this.entries.length; ++i) {
                 dos.writeShort(this.entries[i].startPC);
@@ -1469,10 +1542,14 @@ public class ClassFile {
             }
         }
 
-        public static class Entry {
+        public static
+        class Entry {
+
             public final int startPC, lineNumber;
-            public Entry(int startPC, int lineNumber) {
-                this.startPC    = startPC;
+
+            public
+            Entry(int startPc, int lineNumber) {
+                this.startPC    = startPc;
                 this.lineNumber = lineNumber;
             }
         }
@@ -1481,15 +1558,19 @@ public class ClassFile {
     /**
      * Representation of a "LocalVariableTable" attribute (see JVMS 4.7.9).
      */
-    public static class LocalVariableTableAttribute extends AttributeInfo {
+    public static
+    class LocalVariableTableAttribute extends AttributeInfo {
+
         private final Entry[] entries;
 
-        public LocalVariableTableAttribute(short attributeNameIndex, Entry[] entries) {
+        public
+        LocalVariableTableAttribute(short attributeNameIndex, Entry[] entries) {
             super(attributeNameIndex);
             this.entries = entries;
         }
 
-        private static AttributeInfo loadBody(short attributeNameIndex, DataInputStream dis) throws IOException {
+        private static AttributeInfo
+        loadBody(short attributeNameIndex, DataInputStream dis) throws IOException {
             short   localVariableTableLength = dis.readShort();
             Entry[] lvtes                    = new Entry[localVariableTableLength];   // local_variable_table_length
             for (short i = 0; i < localVariableTableLength; ++i) { // local_variable_table
@@ -1504,7 +1585,8 @@ public class ClassFile {
             return new LocalVariableTableAttribute(attributeNameIndex, lvtes);
         }
         // Implement "AttributeInfo".
-        protected void storeBody(DataOutputStream dos) throws IOException {
+        protected void
+        storeBody(DataOutputStream dos) throws IOException {
             dos.writeShort(this.entries.length);            // local_variable_table_length
             for (int i = 0; i < this.entries.length; ++i) { // local_variable_table
                 Entry lnte = this.entries[i];
@@ -1516,17 +1598,14 @@ public class ClassFile {
             }
         }
 
-        public static class Entry {
+        public static
+        class Entry {
+
             public final short startPC, length, nameIndex, descriptorIndex, index;
 
-            public Entry(
-                short startPC,
-                short length,
-                short nameIndex,
-                short descriptorIndex,
-                short index
-            ) {
-                this.startPC         = startPC;
+            public
+            Entry(short startPc, short length, short nameIndex, short descriptorIndex, short index) {
+                this.startPC         = startPc;
                 this.length          = length;
                 this.nameIndex       = nameIndex;
                 this.descriptorIndex = descriptorIndex;
@@ -1538,24 +1617,29 @@ public class ClassFile {
     /**
      * Representation of a "Deprecated" attribute (see JVMS 4.7.10).
      */
-    public static class DeprecatedAttribute extends AttributeInfo {
-        public DeprecatedAttribute(short attributeNameIndex) {
-            super(attributeNameIndex);
-        }
+    public static
+    class DeprecatedAttribute extends AttributeInfo {
 
-        private static AttributeInfo loadBody(short attributeNameIndex, DataInputStream dis) {
+        public
+        DeprecatedAttribute(short attributeNameIndex) { super(attributeNameIndex); }
+
+        private static AttributeInfo
+        loadBody(short attributeNameIndex, DataInputStream dis) {
             return new DeprecatedAttribute(attributeNameIndex);
         }
 
         // Implement "AttributeInfo".
-        protected void storeBody(DataOutputStream dos) throws IOException {
+        protected void
+        storeBody(DataOutputStream dos) throws IOException {
         }
     }
 
     /**
      * Representation of an unmodifiable "Code" attribute, as read from a class file.
      */
-    private static class CodeAttribute extends AttributeInfo {
+    private static
+    class CodeAttribute extends AttributeInfo {
+
         private final short                 maxStack;
         private final short                 maxLocals;
         private final byte[]                code;
@@ -1578,11 +1662,8 @@ public class ClassFile {
             this.attributes            = attributes;
         }
 
-        public static AttributeInfo loadBody(
-            short           attributeNameIndex,
-            ClassFile       classFile,
-            DataInputStream dis
-        ) throws IOException {
+        public static AttributeInfo
+        loadBody(short attributeNameIndex, ClassFile classFile, DataInputStream dis) throws IOException {
             short  maxStack  = dis.readShort();                                    // max_stack
             short  maxLocals = dis.readShort();                                    // max_locals
             byte[] code      = ClassFile.readLengthAndBytes(dis);                  // code_length, code
@@ -1612,7 +1693,8 @@ public class ClassFile {
             );
         }
 
-        protected void storeBody(DataOutputStream dos) throws IOException {
+        protected void
+        storeBody(DataOutputStream dos) throws IOException {
             dos.writeShort(this.maxStack);                                // max_stack
             dos.writeShort(this.maxLocals);                               // max_locals
             dos.writeInt(this.code.length);                               // code_length
@@ -1635,18 +1717,16 @@ public class ClassFile {
          * Representation of an entry in the "exception_table" of a "Code" attribute (see JVMS
          * 4.7.3).
          */
-        private static class ExceptionTableEntry {
+        private static
+        class ExceptionTableEntry {
+
             final short startPC, endPC, handlerPC, catchType;
 
-            public ExceptionTableEntry(
-                short startPC,
-                short endPC,
-                short handlerPC,
-                short catchType
-            ) {
-                this.startPC   = startPC;
-                this.endPC     = endPC;
-                this.handlerPC = handlerPC;
+            public
+            ExceptionTableEntry(short startPc, short endPc, short handlerPc, short catchType) {
+                this.startPC   = startPc;
+                this.endPC     = endPc;
+                this.handlerPC = handlerPc;
                 this.catchType = catchType;
             }
         }

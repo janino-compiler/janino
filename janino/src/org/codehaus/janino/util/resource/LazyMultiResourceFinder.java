@@ -38,7 +38,8 @@ import org.codehaus.janino.util.iterator.IteratorCollection;
  *
  * @see org.codehaus.janino.util.iterator.IteratorCollection
  */
-public class LazyMultiResourceFinder extends MultiResourceFinder {
+public
+class LazyMultiResourceFinder extends MultiResourceFinder {
 
     /**
      * @param resourceFinders delegate {@link ResourceFinder}s

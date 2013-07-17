@@ -37,7 +37,8 @@ import org.codehaus.janino.JaninoRuntimeException;
  * An {@link java.util.Iterator} that traverses a {@link java.util.Collection} of
  * {@link java.util.Iterator}s.
  */
-public class MultiIterator implements Iterator {
+public
+class MultiIterator implements Iterator {
     private static final Iterator AT_END = new Iterator() {
         public boolean hasNext() { return false; }
         public Object  next()    { throw new NoSuchElementException(); }
@@ -129,7 +130,8 @@ public class MultiIterator implements Iterator {
         }).iterator();
     }
 
-    public boolean hasNext() {
+    public boolean
+    hasNext() {
         for (;;) {
             if (this.inner.hasNext()) return true;
             if (!this.outer.hasNext()) return false;

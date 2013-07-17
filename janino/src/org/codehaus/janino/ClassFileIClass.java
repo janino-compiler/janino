@@ -36,7 +36,8 @@ import org.codehaus.janino.util.ClassFile;
  * A wrapper object that turns a {@link ClassFile} object into a
  * {@link IClass}.
  */
-public class ClassFileIClass extends IClass {
+public
+class ClassFileIClass extends IClass {
     private static final boolean DEBUG = false;
 
     private final ClassFile    classFile;
@@ -49,10 +50,8 @@ public class ClassFileIClass extends IClass {
      * @param classFile Source of data
      * @param iClassLoader {@link IClassLoader} through which to load other classes
      */
-    public ClassFileIClass(
-        ClassFile    classFile,
-        IClassLoader iClassLoader
-    ) {
+    public
+    ClassFileIClass(ClassFile classFile, IClassLoader iClassLoader) {
         this.classFile    = classFile;
         this.iClassLoader = iClassLoader;
 
@@ -62,12 +61,13 @@ public class ClassFileIClass extends IClass {
 
     // Implement IClass.
 
-    protected IConstructor[] getDeclaredIConstructors2() {
+    protected IConstructor[]
+    getDeclaredIConstructors2() {
         List iConstructors = new ArrayList();
 
         for (Iterator it = this.classFile.methodInfos.iterator(); it.hasNext();) {
             ClassFile.MethodInfo mi = (ClassFile.MethodInfo) it.next();
-            IInvocable ii;
+            IInvocable           ii;
             try {
                 ii = this.resolveMethod(mi);
             } catch (ClassNotFoundException ex) {
@@ -79,7 +79,8 @@ public class ClassFileIClass extends IClass {
         return (IConstructor[]) iConstructors.toArray(new IConstructor[iConstructors.size()]);
     }
 
-    protected IMethod[] getDeclaredIMethods2() {
+    protected IMethod[]
+    getDeclaredIMethods2() {
         List iMethods = new ArrayList();
 
         for (Iterator it = this.classFile.methodInfos.iterator(); it.hasNext();) {
@@ -101,7 +102,8 @@ public class ClassFileIClass extends IClass {
         return (IMethod[]) iMethods.toArray(new IMethod[iMethods.size()]);
     }
 
-    protected IField[] getDeclaredIFields2() {
+    protected IField[]
+    getDeclaredIFields2() {
         IField[] ifs = new IClass.IField[this.classFile.fieldInfos.size()];
         for (int i = 0; i < this.classFile.fieldInfos.size(); ++i) {
             try {
@@ -113,7 +115,8 @@ public class ClassFileIClass extends IClass {
         return ifs;
     }
 
-    protected IClass[] getDeclaredIClasses2() throws CompileException {
+    protected IClass[]
+    getDeclaredIClasses2() throws CompileException {
         ClassFile.InnerClassesAttribute ica = this.classFile.getInnerClassesAttribute();
         if (ica == null) return new IClass[0];
 
@@ -132,7 +135,8 @@ public class ClassFileIClass extends IClass {
         return (IClass[]) res.toArray(new IClass[res.size()]);
     }
 
-    protected IClass getDeclaringIClass2() throws CompileException {
+    protected IClass
+    getDeclaringIClass2() throws CompileException {
         ClassFile.InnerClassesAttribute ica = this.classFile.getInnerClassesAttribute();
         if (ica == null) return null;
 
@@ -152,7 +156,8 @@ public class ClassFileIClass extends IClass {
         return null;
     }
 
-    protected IClass getOuterIClass2() throws CompileException {
+    protected IClass
+    getOuterIClass2() throws CompileException {
         ClassFile.InnerClassesAttribute ica = this.classFile.getInnerClassesAttribute();
         if (ica == null) return null;
 
@@ -180,7 +185,8 @@ public class ClassFileIClass extends IClass {
         return null;
     }
 
-    protected IClass getSuperclass2() throws CompileException {
+    protected IClass
+    getSuperclass2() throws CompileException {
         if (this.classFile.superclass == 0) return null;
         try {
             return this.resolveClass(this.classFile.superclass);
@@ -189,45 +195,19 @@ public class ClassFileIClass extends IClass {
         }
     }
 
-    public Access getAccess() {
-        return ClassFileIClass.accessFlags2Access(this.accessFlags);
-    }
+    public Access  getAccess() { return ClassFileIClass.accessFlags2Access(this.accessFlags); }
+    public boolean isFinal()   { return (this.accessFlags & Mod.FINAL) != 0; }
 
-    public boolean isFinal() {
-        return (this.accessFlags & Mod.FINAL) != 0;
-    }
+    protected IClass[]
+    getInterfaces2() throws CompileException { return this.resolveClasses(this.classFile.interfaces); }
 
-    protected IClass[] getInterfaces2() throws CompileException {
-        return this.resolveClasses(this.classFile.interfaces);
-    }
-
-    public boolean isAbstract() {
-        return (this.accessFlags & Mod.ABSTRACT) != 0;
-    }
-
-    protected String getDescriptor2() {
-        return Descriptor.fromClassName(this.classFile.getThisClassName());
-    }
-
-    public boolean isInterface() {
-        return (this.accessFlags & Mod.INTERFACE) != 0;
-    }
-
-    public boolean isArray() {
-        return false;
-    }
-
-    public boolean isPrimitive() {
-        return false;
-    }
-
-    public boolean isPrimitiveNumeric() {
-        return false;
-    }
-
-    protected IClass getComponentType2() {
-        return null;
-    }
+    public boolean     isAbstract()         { return (this.accessFlags & Mod.ABSTRACT) != 0; }
+    protected String   getDescriptor2()     { return Descriptor.fromClassName(this.classFile.getThisClassName()); }
+    public boolean     isInterface()        { return (this.accessFlags & Mod.INTERFACE) != 0; }
+    public boolean     isArray()            { return false; }
+    public boolean     isPrimitive()        { return false; }
+    public boolean     isPrimitiveNumeric() { return false; }
+    protected IClass   getComponentType2()  { return null; }
 
     public void resolveHalf() throws ClassNotFoundException {
 
@@ -257,8 +237,8 @@ public class ClassFileIClass extends IClass {
                 this.resolveClass(i);
             } else
             if (cpi instanceof ClassFile.ConstantNameAndTypeInfo) {
-                short descriptorIndex = ((ClassFile.ConstantNameAndTypeInfo) cpi).getDescriptorIndex();
-                String descriptor = this.classFile.getConstantUtf8(descriptorIndex);
+                short  descriptorIndex = ((ClassFile.ConstantNameAndTypeInfo) cpi).getDescriptorIndex();
+                String descriptor      = this.classFile.getConstantUtf8(descriptorIndex);
                 if (descriptor.charAt(0) == '(') {
                     MethodDescriptor md = new MethodDescriptor(descriptor);
                     this.resolveClass(md.returnFD);
@@ -320,6 +300,7 @@ public class ClassFileIClass extends IClass {
 
         // Determine return type.
         MethodDescriptor md = new MethodDescriptor(this.classFile.getConstantUtf8(methodInfo.getDescriptorIndex()));
+
         final IClass returnType = this.resolveClass(md.returnFD);
 
         // Determine parameter types.
@@ -327,7 +308,7 @@ public class ClassFileIClass extends IClass {
         for (int i = 0; i < parameterTypes.length; ++i) parameterTypes[i] = this.resolveClass(md.parameterFDs[i]);
 
         // Determine thrown exceptions.
-        IClass[] tes = null;
+        IClass[]                  tes = null;
         ClassFile.AttributeInfo[] ais = methodInfo.getAttributes();
         for (int i = 0; i < ais.length; ++i) {
             ClassFile.AttributeInfo ai = ais[i];
@@ -344,7 +325,8 @@ public class ClassFileIClass extends IClass {
 
         if (name.equals("<init>")) {
             result = new IClass.IConstructor() {
-                public IClass[] getParameterTypes() throws CompileException {
+                public IClass[]
+                getParameterTypes() throws CompileException {
 
                     // Process magic first parameter of inner class constructor.
                     IClass outerIClass = ClassFileIClass.this.getOuterIClass();
@@ -396,7 +378,7 @@ public class ClassFileIClass extends IClass {
 
         // Determine field type.
         final String descriptor = this.classFile.getConstantUtf8(fieldInfo.getDescriptorIndex());
-        final IClass type = this.resolveClass(descriptor);
+        final IClass type       = this.resolveClass(descriptor);
 
         // Determine optional "constant value" of the field (JLS2 15.28, bullet
         // 12). If a field has a "ConstantValue" attribute, we assume that it
@@ -406,7 +388,7 @@ public class ClassFileIClass extends IClass {
         // "int RED = 0", because "0" is the default value for an integer
         // field.
         ClassFile.ConstantValueAttribute cva = null;
-        ClassFile.AttributeInfo[] ais = fieldInfo.getAttributes();
+        ClassFile.AttributeInfo[]        ais = fieldInfo.getAttributes();
         for (int i = 0; i < ais.length; ++i) {
             ClassFile.AttributeInfo ai = ais[i];
             if (ai instanceof ClassFile.ConstantValueAttribute) {
@@ -443,7 +425,8 @@ public class ClassFileIClass extends IClass {
         return result;
     }
 
-    private static Access accessFlags2Access(short accessFlags) {
+    private static Access
+    accessFlags2Access(short accessFlags) {
         return (
             (accessFlags & Mod.PUBLIC)    != 0 ? Access.PUBLIC
             : (accessFlags & Mod.PROTECTED) != 0 ? Access.PROTECTED

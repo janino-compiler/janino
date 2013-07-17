@@ -29,6 +29,7 @@ package org.codehaus.janino;
 /**
  * @author Eugene Kuleshov
  */
-public interface AstCompilationUnitGenerator {
+public
+interface AstCompilationUnitGenerator {
     Java.CompilationUnit generate() throws Exception;
 }

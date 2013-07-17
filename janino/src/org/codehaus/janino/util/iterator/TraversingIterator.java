@@ -36,7 +36,8 @@ import java.util.*;
  * <p>
  * Be aware that {@link #hasNext()} must read ahead one element.
  */
-public class TraversingIterator implements Iterator {
+public
+class TraversingIterator implements Iterator {
     private final Stack nest = new Stack(); // Iterator
     private Object      nextElement;
     private boolean     nextElementRead; // Have we read ahead?
@@ -45,9 +46,8 @@ public class TraversingIterator implements Iterator {
         this.nest.push(delegate);
     }
 
-    public boolean hasNext() {
-        return this.nextElementRead || this.readNext();
-    }
+    public boolean
+    hasNext() { return this.nextElementRead || this.readNext(); }
 
     public Object next() {
         if (!this.nextElementRead && !this.readNext()) throw new NoSuchElementException();
@@ -80,7 +80,7 @@ public class TraversingIterator implements Iterator {
                 this.nest.push(new EnumerationIterator((Enumeration) o));
             } else
             {
-                this.nextElement = o;
+                this.nextElement     = o;
                 this.nextElementRead = true;
                 return true;
             }

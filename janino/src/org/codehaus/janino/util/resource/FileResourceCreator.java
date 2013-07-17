@@ -31,9 +31,11 @@ import java.io.*;
 /**
  * Stores a stream of bytes in a named resource.
  */
-public abstract class FileResourceCreator implements ResourceCreator {
+public abstract
+class FileResourceCreator implements ResourceCreator {
 
-    public final OutputStream createResource(String resourceName) throws IOException {
+    public final OutputStream
+    createResource(String resourceName) throws IOException {
         File file = this.getFile(resourceName);
 
         // Create directory for class file if it does not exist.
@@ -46,9 +48,8 @@ public abstract class FileResourceCreator implements ResourceCreator {
         return new FileOutputStream(file);
     }
 
-    public final boolean deleteResource(String resourceName) {
-        return this.getFile(resourceName).delete();
-    }
+    public final boolean
+    deleteResource(String resourceName) { return this.getFile(resourceName).delete(); }
 
     protected abstract File getFile(String resourceName);
 }

@@ -39,7 +39,8 @@ import org.codehaus.janino.util.resource.ResourceFinder;
 /**
  * Loads an {@link IClass} by type name.
  */
-public abstract class IClassLoader {
+public abstract
+class IClassLoader {
     private static final boolean DEBUG = false;
 
     // The following are constants, but cannot be declared FINAL, because they are only initialized by the
@@ -62,7 +63,8 @@ public abstract class IClassLoader {
     public IClass FLOAT;
     public IClass DOUBLE;
 
-    public IClassLoader(IClassLoader optionalParentIClassLoader) {
+    public
+    IClassLoader(IClassLoader optionalParentIClassLoader) {
         this.optionalParentIClassLoader = optionalParentIClassLoader;
     }
 
@@ -217,7 +219,8 @@ public abstract class IClassLoader {
      *
      * @throws RuntimeException A different {@link IClass} object is already defined for this type
      */
-    protected final void defineIClass(IClass iClass) {
+    protected final void
+    defineIClass(IClass iClass) {
         String descriptor = iClass.getDescriptor();
 
         // Already defined?
@@ -242,7 +245,8 @@ public abstract class IClassLoader {
      * <code>optionalExtensionDirs</code> is the path defined in the "java.ext.dirs"
      * system property.
      */
-    public static IClassLoader createJavacLikePathIClassLoader(
+    public static IClassLoader
+    createJavacLikePathIClassLoader(
         final File[] optionalBootClassPath,
         final File[] optionalExtDirs,
         final File[] classPath
@@ -280,7 +284,7 @@ public abstract class IClassLoader {
         return icl;
     }
 
-    private final IClassLoader optionalParentIClassLoader;
-    private final Map          loadedIClasses = new HashMap(); // String descriptor => IClass
-    private final Set          unloadableIClasses = new HashSet(); // String descriptor
+    private final IClassLoader                         optionalParentIClassLoader;
+    private final Map/*<String descriptor => IClass>*/ loadedIClasses     = new HashMap();
+    private final Set/*<String descriptor>*/           unloadableIClasses = new HashSet();
 }

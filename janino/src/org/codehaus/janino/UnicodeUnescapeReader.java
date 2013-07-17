@@ -39,7 +39,8 @@ import java.io.*;
  * throwing a {@link java.lang.RuntimeException}-derived
  * {@link org.codehaus.janino.UnicodeUnescapeException}.
  */
-public class UnicodeUnescapeReader extends FilterReader {
+public
+class UnicodeUnescapeReader extends FilterReader {
 
     /**
      * @param in
@@ -60,7 +61,7 @@ public class UnicodeUnescapeReader extends FilterReader {
         if (this.unreadChar == -1) {
             c = this.in.read();
         } else {
-            c = this.unreadChar;
+            c               = this.unreadChar;
             this.unreadChar = -1;
         }
 
@@ -74,7 +75,7 @@ public class UnicodeUnescapeReader extends FilterReader {
         // Read one character ahead and check if it is a "u".
         c = this.in.read();
         if (c != 'u') {
-            this.unreadChar = c;
+            this.unreadChar              = c;
             this.oddPrecedingBackslashes = true;
             return '\\';
         }

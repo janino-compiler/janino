@@ -37,7 +37,8 @@ import org.codehaus.janino.util.resource.*;
  * a {@link org.codehaus.janino.util.resource.ResourceFinder} that designates
  * {@link org.codehaus.janino.util.ClassFile}s.
  */
-public class ResourceFinderIClassLoader extends IClassLoader {
+public
+class ResourceFinderIClassLoader extends IClassLoader {
     private final ResourceFinder resourceFinder;
 
     public ResourceFinderIClassLoader(
@@ -49,7 +50,8 @@ public class ResourceFinderIClassLoader extends IClassLoader {
         this.postConstruct();
     }
 
-    protected IClass findIClass(String descriptor) throws ClassNotFoundException {
+    protected IClass
+    findIClass(String descriptor) throws ClassNotFoundException {
         String className = Descriptor.toClassName(descriptor);
 
         // Find the class file resource.
@@ -71,7 +73,7 @@ public class ResourceFinderIClassLoader extends IClassLoader {
         } catch (IOException e) {
             throw new ClassNotFoundException("Reading resource \"" + classFileResource.getFileName() + "\"", e);
         } finally {
-            try { is.close(); } catch (IOException e) { }
+            try { is.close(); } catch (IOException e) {}
         }
         IClass iClass = new ClassFileIClass(cf, this);
         this.defineIClass(iClass);

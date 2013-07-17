@@ -39,8 +39,9 @@ import java.util.*;
  * "2" produces an {@link Iterator} that behaves as explained above, and so
  * forth.
  */
-public class MultiDimensionalIterator implements Iterator {
-    private final Iterator[] nest;
+public
+class MultiDimensionalIterator implements Iterator {
+    private final Iterator[]      nest;
     private static final Iterator EMPTY_ITERATOR = new Iterator() {
         public boolean hasNext() { return false; }
         public Object  next()    { throw new NoSuchElementException(); }
@@ -48,7 +49,7 @@ public class MultiDimensionalIterator implements Iterator {
     };
 
     public MultiDimensionalIterator(Iterator delegate, int dimensionCount) {
-        this.nest = new Iterator[dimensionCount];
+        this.nest    = new Iterator[dimensionCount];
         this.nest[0] = delegate;
         for (int i = 1; i < dimensionCount; ++i) this.nest[i] = MultiDimensionalIterator.EMPTY_ITERATOR;
     }
@@ -56,7 +57,8 @@ public class MultiDimensionalIterator implements Iterator {
     /**
      * @throws UniterableElementException
      */
-    public boolean hasNext() {
+    public boolean
+    hasNext() {
 
         // Unroll this check because it is so performance critical:
         if (this.nest[this.nest.length - 1].hasNext()) return true;

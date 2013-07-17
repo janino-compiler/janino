@@ -31,7 +31,8 @@ import java.util.*;
 /**
  * Representation of a "method descriptor" (JVMS 4.3.3).
  */
-public class MethodDescriptor {
+public
+class MethodDescriptor {
 
     /** The field descriptors of the method parameters. */
     public final String[] parameterFDs;
@@ -40,18 +41,20 @@ public class MethodDescriptor {
     public final String   returnFD;
 
     /** */
-    public MethodDescriptor(String[] parameterFDs, String returnFD) {
-        this.parameterFDs = parameterFDs;
-        this.returnFD     = returnFD;
+    public
+    MethodDescriptor(String[] parameterFds, String returnFd) {
+        this.parameterFDs = parameterFds;
+        this.returnFD     = returnFd;
     }
 
     /**
      * Parse a method descriptor into parameter FDs and return FDs.
      */
-    public MethodDescriptor(String s) {
+    public
+    MethodDescriptor(String s) {
         if (s.charAt(0) != '(') throw new JaninoRuntimeException();
 
-        int from = 1;
+        int  from         = 1;
         List parameterFDs = new ArrayList(); // String
         while (s.charAt(from) != ')') {
             int to = from;
@@ -69,13 +72,14 @@ public class MethodDescriptor {
             from = to;
         }
         this.parameterFDs = (String[]) parameterFDs.toArray(new String[parameterFDs.size()]);
-        this.returnFD = s.substring(++from);
+        this.returnFD     = s.substring(++from);
     }
 
     /**
      * Returns the "method descriptor" (JVMS 4.3.3).
      */
-    public String toString() {
+    public String
+    toString() {
         StringBuffer sb = new StringBuffer("(");
         for (int i = 0; i < this.parameterFDs.length; ++i) sb.append(this.parameterFDs[i]);
         return sb.append(')').append(this.returnFD).toString();
@@ -84,7 +88,6 @@ public class MethodDescriptor {
     /**
      * Patch an additional parameter into a given method descriptor.
      */
-    public static String prependParameter(String md, String parameterFD) {
-        return '(' + parameterFD + md.substring(1);
-    }
+    public static String
+    prependParameter(String md, String parameterFd) { return '(' + parameterFd + md.substring(1); }
 }

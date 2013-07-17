@@ -35,24 +35,25 @@ import java.util.*;
  * with the resource name such that slashes in the resource name map to file
  * separators.
  */
-public class DirectoryResourceFinder extends FileResourceFinder {
+public
+class DirectoryResourceFinder extends FileResourceFinder {
     private final File directory;
     private final Map  subdirectoryNameToFiles = new HashMap(); // String directoryName => Set => File
 
     /**
      * @param directory the directory to use as the search base
      */
-    public DirectoryResourceFinder(File directory) {
-        this.directory = directory;
-    }
+    public
+    DirectoryResourceFinder(File directory) { this.directory = directory; }
 
     public final String toString() { return "dir:" + this.directory; }
 
     // Implement FileResourceFinder.
-    protected final File findResourceAsFile(String resourceName) {
+    protected final File
+    findResourceAsFile(String resourceName) {
 
         // Determine the subdirectory name (null for no subdirectory).
-        int idx = resourceName.lastIndexOf('/');
+        int    idx              = resourceName.lastIndexOf('/');
         String subdirectoryName = (
             idx == -1 ? null :
             resourceName.substring(0, idx).replace('/', File.separatorChar)

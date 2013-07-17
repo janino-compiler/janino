@@ -31,6 +31,7 @@ import org.codehaus.commons.compiler.Location;
 /**
  * Interface type for {@link UnitCompiler#setWarningHandler(WarningHandler)}.
  */
-public interface WarningHandler {
+public
+interface WarningHandler {
     void handleWarning(String handle, String message, Location optionalLocation);
 }

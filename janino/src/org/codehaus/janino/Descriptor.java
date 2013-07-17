@@ -41,19 +41,21 @@ import java.util.Map;
  *   <li><code>Lpkg1/pkg2/Outer$Inner;</code> Member class
  * </ul>
  */
-public final class Descriptor {
+public final
+class Descriptor {
     private Descriptor() {}
 
-    public static boolean isReference(String d) {
-        return d.length() > 1;
-    }
-    public static boolean isClassOrInterfaceReference(String d) {
-        return d.charAt(0) == 'L';
-    }
-    public static boolean isArrayReference(String d) {
-        return d.charAt(0) == '[';
-    }
-    public static String getComponentDescriptor(String d) {
+    public static boolean
+    isReference(String d) { return d.length() > 1; }
+
+    public static boolean
+    isClassOrInterfaceReference(String d) { return d.charAt(0) == 'L'; }
+
+    public static boolean
+    isArrayReference(String d) { return d.charAt(0) == '['; }
+
+    public static String
+    getComponentDescriptor(String d) {
         if (d.charAt(0) != '[') {
             throw new JaninoRuntimeException(
                 "Cannot determine component descriptor from non-array descriptor \""
@@ -69,18 +71,22 @@ public final class Descriptor {
         if (Descriptor.hasSize2(d)) return 2;
         throw new JaninoRuntimeException("No size defined for type \"" + Descriptor.toString(d) + "\"");
     }
-    public static boolean hasSize1(String d) {
+
+    public static boolean
+    hasSize1(String d) {
         if (d.length() == 1) return "BCFISZ".indexOf(d) != -1;
         return Descriptor.isReference(d);
     }
-    public static boolean hasSize2(String d) {
+
+    public static boolean
+    hasSize2(String d) {
         return d.equals(Descriptor.LONG_) || d.equals(Descriptor.DOUBLE_);
     }
 
     // Pretty-print.
     public static String toString(String d) {
-        int idx = 0;
-        StringBuffer sb = new StringBuffer();
+        int          idx = 0;
+        StringBuffer sb  = new StringBuffer();
         if (d.charAt(0) == '(') {
             ++idx;
             sb.append("(");
@@ -149,7 +155,8 @@ public final class Descriptor {
      * Convert a class name as defined by "Class.getName()" into a
      * descriptor.
      */
-    public static String fromClassName(String className) {
+    public static String
+    fromClassName(String className) {
         String res = (String) Descriptor.classNameToDescriptor.get(className);
         if (res != null) { return res; }
         if (className.startsWith("[")) return className.replace('.', '/');
@@ -161,7 +168,8 @@ public final class Descriptor {
      * <p>
      * Also implement the encoding of array types as described in JVMS 4.4.1.
      */
-    public static String fromInternalForm(String internalForm) {
+    public static String
+    fromInternalForm(String internalForm) {
         if (internalForm.charAt(0) == '[') return internalForm;
         return 'L' + internalForm + ';';
     }
@@ -213,7 +221,8 @@ public final class Descriptor {
      * or <code>null</code> if the class or interface is declared in the
      * default package.
      */
-    public static String getPackageName(String d) {
+    public static String
+    getPackageName(String d) {
         if (d.charAt(0) != 'L') {
             throw new JaninoRuntimeException("Attempt to get package name of non-class descriptor \"" + d + "\"");
         }
@@ -224,7 +233,8 @@ public final class Descriptor {
     /**
      * Check whether two reference types are declared in the same package.
      */
-    public static boolean areInSamePackage(String d1, String d2) {
+    public static boolean
+    areInSamePackage(String d1, String d2) {
         String packageName1 = Descriptor.getPackageName(d1);
         String packageName2 = Descriptor.getPackageName(d2);
         return packageName1 == null ? packageName2 == null : packageName1.equals(packageName2);
@@ -239,6 +249,7 @@ public final class Descriptor {
     public static final String LONG_    = "J";
     public static final String SHORT_   = "S";
     public static final String BOOLEAN_ = "Z";
+
     public static final String OBJECT            = "Ljava/lang/Object;";
     public static final String STRING            = "Ljava/lang/String;";
     public static final String STRING_BUFFER     = "Ljava/lang/StringBuffer;";
@@ -249,6 +260,7 @@ public final class Descriptor {
     public static final String ERROR             = "Ljava/lang/Error;";
     public static final String CLONEABLE         = "Ljava/lang/Cloneable;";
     public static final String SERIALIZABLE      = "Ljava/io/Serializable;";
+
     public static final String BOOLEAN   = "Ljava/lang/Boolean;";
     public static final String BYTE      = "Ljava/lang/Byte;";
     public static final String CHARACTER = "Ljava/lang/Character;";

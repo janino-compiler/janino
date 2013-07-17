@@ -30,13 +30,15 @@ package org.codehaus.janino;
  * An {@link IClassLoader} that loads {@link IClass}es through a reflection
  * {@link ClassLoader}.
  */
-public class ClassLoaderIClassLoader extends IClassLoader {
+public
+class ClassLoaderIClassLoader extends IClassLoader {
     private static final boolean DEBUG = false;
 
     /**
      * @param classLoader The delegate that loads the classes.
      */
-    public ClassLoaderIClassLoader(ClassLoader classLoader) {
+    public
+    ClassLoaderIClassLoader(ClassLoader classLoader) {
         super(
             null   // optionalParentIClassLoader
         );
@@ -53,15 +55,14 @@ public class ClassLoaderIClassLoader extends IClassLoader {
      *   ClassLoaderIClassLoader(Thread.currentThread().getContextClassLoader())
      * </pre>
      */
-    public ClassLoaderIClassLoader() {
-        this(Thread.currentThread().getContextClassLoader());
-    }
+    public
+    ClassLoaderIClassLoader() { this(Thread.currentThread().getContextClassLoader()); }
 
-    public ClassLoader getClassLoader() {
-        return this.classLoader;
-    }
+    public ClassLoader
+    getClassLoader() { return this.classLoader; }
 
-    protected IClass findIClass(String descriptor) throws ClassNotFoundException {
+    protected IClass
+    findIClass(String descriptor) throws ClassNotFoundException {
 
         Class clazz;
         try {

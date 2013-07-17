@@ -41,7 +41,8 @@ import org.codehaus.commons.compiler.CompileException;
 /**
  * A simplified equivalent to "java.lang.reflect".
  */
-public abstract class IClass {
+public abstract
+class IClass {
     private static final boolean DEBUG = false;
 
     /**
@@ -62,12 +63,13 @@ public abstract class IClass {
     public static final IClass SHORT   = new PrimitiveIClass(Descriptor.SHORT_);
     public static final IClass BOOLEAN = new PrimitiveIClass(Descriptor.BOOLEAN_);
 
-    private static class PrimitiveIClass extends IClass {
+    private static
+    class PrimitiveIClass extends IClass {
         private final String fieldDescriptor;
 
-        public PrimitiveIClass(String fieldDescriptor) {
-            this.fieldDescriptor = fieldDescriptor;
-        }
+        public
+        PrimitiveIClass(String fieldDescriptor) { this.fieldDescriptor = fieldDescriptor; }
+
         protected IClass         getComponentType2()         { return null; }
         protected IClass[]       getDeclaredIClasses2()      { return new IClass[0]; }
         protected IConstructor[] getDeclaredIConstructors2() { return new IConstructor[0]; }
@@ -94,7 +96,8 @@ public abstract class IClass {
      * Returns an array with zero elements for an interface, array, primitive type or
      * "void".
      */
-    public final IConstructor[] getDeclaredIConstructors() {
+    public final IConstructor[]
+    getDeclaredIConstructors() {
         if (this.declaredIConstructors == null) {
             this.declaredIConstructors = this.getDeclaredIConstructors2();
         }
@@ -108,7 +111,8 @@ public abstract class IClass {
      * methods).<br>
      * Returns an empty array for an array, primitive type or "void".
      */
-    public final IMethod[] getDeclaredIMethods() {
+    public final IMethod[]
+    getDeclaredIMethods() {
         if (this.declaredIMethods == null) {
             this.declaredIMethods = this.getDeclaredIMethods2();
         }
@@ -124,7 +128,8 @@ public abstract class IClass {
      *
      * @return an array of {@link IMethod}s that must not be modified
      */
-    public final IMethod[] getDeclaredIMethods(String methodName) {
+    public final IMethod[]
+    getDeclaredIMethods(String methodName) {
         if (this.declaredIMethodCache == null) {
             Map m = new HashMap();
 
@@ -172,7 +177,8 @@ public abstract class IClass {
      *
      * @return an array of {@link IMethod}s that must not be modified
      */
-    public final IMethod[] getIMethods() throws CompileException {
+    public final IMethod[]
+    getIMethods() throws CompileException {
         if (this.iMethodCache == null) {
             List iMethods = new ArrayList();
             this.getIMethods(iMethods);
@@ -181,7 +187,8 @@ public abstract class IClass {
         return this.iMethodCache;
     }
     private IMethod[] iMethodCache;
-    private void getIMethods(List result) throws CompileException {
+    private void
+    getIMethods(List result) throws CompileException {
         IMethod[] ms = this.getDeclaredIMethods();
 
         SCAN_DECLARED_METHODS:
@@ -212,14 +219,16 @@ public abstract class IClass {
     /**
      * @return Whether this {@link IClass} does declare an {@link IMethod} with the given name and parameter types
      */
-    public final boolean hasIMethod(String methodName, IClass[] parameterTypes) throws CompileException {
+    public final boolean
+    hasIMethod(String methodName, IClass[] parameterTypes) throws CompileException {
         return findIMethod(methodName, parameterTypes) != null;
     }
 
     /**
      * @return The {@link IMethod} declared in this {@link IClass} with the given name and parameter types
      */
-    public final IMethod findIMethod(String methodName, IClass[] parameterTypes) throws CompileException {
+    public final IMethod
+    findIMethod(String methodName, IClass[] parameterTypes) throws CompileException {
         IMethod[] ims = this.getDeclaredIMethods(methodName);
         for (int i = 0; i < ims.length; ++i) {
             IClass[] pts = ims[i].getParameterTypes();
@@ -233,17 +242,19 @@ public abstract class IClass {
      *
      * @return An empty array for an array, primitive type or "void"
      */
-    public final IField[] getDeclaredIFields() {
+    public final IField[]
+    getDeclaredIFields() {
         Collection/*<IField>*/ allFields = getDeclaredIFieldsCache().values();
 
         return (IField[]) allFields.toArray(new IField[allFields.size()]);
     }
 
     /** @return String field-name => IField */
-    private Map getDeclaredIFieldsCache() {
+    private Map
+    getDeclaredIFieldsCache() {
         if (this.declaredIFieldsCache == null) {
             IField[] fields = getDeclaredIFields2();
-            Map      m = new HashMap();
+            Map      m      = new HashMap();
 
             for (int i = 0; i < fields.length; ++i) {
                 m.put(fields[i].getName(), fields[i]);
@@ -258,15 +269,13 @@ public abstract class IClass {
      *
      * @return <code>null</code> iff this {@link IClass} does not declare an {@link IField} with that name
      */
-    public final IField getDeclaredIField(String name) {
-        return (IField) getDeclaredIFieldsCache().get(name);
-    }
+    public final IField
+    getDeclaredIField(String name) { return (IField) getDeclaredIFieldsCache().get(name); }
 
-    protected void clearIFieldCaches() {
-        this.declaredIFieldsCache = null;
-    }
+    protected void
+    clearIFieldCaches() { this.declaredIFieldsCache = null; }
 
-    private Map declaredIFieldsCache = null; // String field-name => IField
+    private Map/*<String field-name => IField>*/ declaredIFieldsCache;
 
     /**
      * Uncached version of {@link #getDeclaredIFields()}.
@@ -277,16 +286,16 @@ public abstract class IClass {
      * Returns the synthetic fields of an anonymous or local class, in
      * the order in which they are passed to all constructors.
      */
-    public IField[] getSyntheticIFields() {
-        return new IField[0];
-    }
+    public IField[]
+    getSyntheticIFields() { return new IField[0]; }
 
     /**
      * Returns the classes and interfaces declared as members of the class
      * (but not inherited classes and interfaces).<br>
      * Returns an empty array for an array, primitive type or "void".
      */
-    public final IClass[] getDeclaredIClasses() throws CompileException {
+    public final IClass[]
+    getDeclaredIClasses() throws CompileException {
         if (this.declaredIClasses == null) {
             this.declaredIClasses = this.getDeclaredIClasses2();
         }
@@ -299,15 +308,16 @@ public abstract class IClass {
      * If this class is a member class, return the declaring class, otherwise return
      * <code>null</code>.
      */
-    public final IClass getDeclaringIClass() throws CompileException {
+    public final IClass
+    getDeclaringIClass() throws CompileException {
         if (!this.declaringIClassIsCached) {
-            this.declaringIClass = this.getDeclaringIClass2();
+            this.declaringIClass         = this.getDeclaringIClass2();
             this.declaringIClassIsCached = true;
         }
         return this.declaringIClass;
     }
     private boolean declaringIClassIsCached;
-    private IClass declaringIClass;
+    private IClass  declaringIClass;
     protected abstract IClass getDeclaringIClass2() throws CompileException;
 
     /**
@@ -318,15 +328,16 @@ public abstract class IClass {
      *   <li>Non-static member classes
      * </ul>
      */
-    public final IClass getOuterIClass() throws CompileException {
+    public final IClass
+    getOuterIClass() throws CompileException {
         if (!this.outerIClassIsCached) {
-            this.outerIClass = this.getOuterIClass2();
+            this.outerIClass         = this.getOuterIClass2();
             this.outerIClassIsCached = true;
         }
         return this.outerIClass;
     }
     private boolean outerIClassIsCached;
-    private IClass outerIClass;
+    private IClass  outerIClass;
     protected abstract IClass getOuterIClass2() throws CompileException;
 
     /**
@@ -334,9 +345,10 @@ public abstract class IClass {
      * Returns "null" for class "Object", interfaces, arrays, primitive types
      * and "void".
      */
-    public final IClass getSuperclass() throws CompileException {
+    public final IClass
+    getSuperclass() throws CompileException {
         if (!this.superclassIsCached) {
-            this.superclass = this.getSuperclass2();
+            this.superclass         = this.getSuperclass2();
             this.superclassIsCached = true;
             if (this.superclass != null && this.superclass.isSubclassOf(this)) {
                 throw new CompileException(
@@ -348,7 +360,7 @@ public abstract class IClass {
         return this.superclass;
     }
     private boolean superclassIsCached;
-    private IClass superclass;
+    private IClass  superclass;
     protected abstract IClass getSuperclass2() throws CompileException;
 
     public abstract Access getAccess();
@@ -365,7 +377,8 @@ public abstract class IClass {
      * Returns "Cloneable" and "Serializable" for arrays.<br>
      * Returns an empty array for primitive types and "void".
      */
-    public final IClass[] getInterfaces() throws CompileException {
+    public final IClass[]
+    getInterfaces() throws CompileException {
         if (this.interfaces == null) {
             this.interfaces = this.getInterfaces2();
             for (int i = 0; i < this.interfaces.length; ++i) {
@@ -391,7 +404,8 @@ public abstract class IClass {
     /**
      * Returns the field descriptor for the type as defined by JVMS 4.3.2.
      */
-    public final String getDescriptor() {
+    public final String
+    getDescriptor() {
         if (this.descriptor == null) {
             this.descriptor = this.getDescriptor2();
         }
@@ -404,7 +418,8 @@ public abstract class IClass {
      * Convenience method that determines the field descriptors of an array of {@link IClass}es.
      * @see #getDescriptor()
      */
-    public static String[] getDescriptors(IClass[] iClasses) {
+    public static String[]
+    getDescriptors(IClass[] iClasses) {
         String[] descriptors = new String[iClasses.length];
         for (int i = 0; i < iClasses.length; ++i) descriptors[i] = iClasses[i].getDescriptor();
         return descriptors;
@@ -435,15 +450,16 @@ public abstract class IClass {
      * Returns the component type of the array.<br>
      * Returns "null" for classes, interfaces, primitive types and "void".
      */
-    public final IClass getComponentType() {
+    public final IClass
+    getComponentType() {
         if (!this.componentTypeIsCached) {
-            this.componentType = this.getComponentType2();
+            this.componentType         = this.getComponentType2();
             this.componentTypeIsCached = true;
         }
         return this.componentType;
     }
     private boolean componentTypeIsCached;
-    private IClass componentType;
+    private IClass  componentType;
     protected abstract IClass getComponentType2();
 
     /**
@@ -457,7 +473,8 @@ public abstract class IClass {
      * widening-primitive-convertible to "this" (JLS2 5.1.2), or if "that" is
      * widening-reference-convertible to "this" (JLS2 5.1.4).
      */
-    public boolean isAssignableFrom(IClass that) throws CompileException {
+    public boolean
+    isAssignableFrom(IClass that) throws CompileException {
 
         // Identity conversion, JLS2 5.1.1
         if (this == that) return true;
@@ -497,9 +514,9 @@ public abstract class IClass {
 
                 // JLS 5.1.4.9: From SC[] to TC[] while SC if widening reference convertible to TC.
                 if (this.isArray()) {
-                    IClass thisCT = this.getComponentType();
-                    IClass thatCT = that.getComponentType();
-                    if (!thisCT.isPrimitive() && thisCT.isAssignableFrom(thatCT)) return true;
+                    IClass thisCt = this.getComponentType();
+                    IClass thatCt = that.getComponentType();
+                    if (!thisCt.isPrimitive() && thisCt.isAssignableFrom(thatCt)) return true;
                 }
             }
         }
@@ -543,7 +560,8 @@ public abstract class IClass {
      * Returns <code>true</code> if this class is an immediate or non-immediate
      * subclass of <code>that</code> class.
      */
-    public boolean isSubclassOf(IClass that) throws CompileException {
+    public boolean
+    isSubclassOf(IClass that) throws CompileException {
         for (IClass sc = this.getSuperclass(); sc != null; sc = sc.getSuperclass()) {
             if (sc == that) return true;
         }
@@ -557,7 +575,8 @@ public abstract class IClass {
      * If <code>this</code> represents an interface: Return <code>true</code> if this
      * interface directly or indirectly extends <code>that</code> interface.
      */
-    public boolean implementsInterface(IClass that) throws CompileException {
+    public boolean
+    implementsInterface(IClass that) throws CompileException {
         for (IClass c = this; c != null; c = c.getSuperclass()) {
             IClass[] tis = c.getInterfaces();
             for (int i = 0; i < tis.length; ++i) {
@@ -574,7 +593,8 @@ public abstract class IClass {
      * @param n dimension count
      * @param objectType Required because the superclass of an array class is {@link Object} by definition
      */
-    public IClass getArrayIClass(int n, IClass objectType) {
+    public IClass
+    getArrayIClass(int n, IClass objectType) {
         IClass result = this;
         for (int i = 0; i < n; ++i) result = result.getArrayIClass(objectType);
         return result;
@@ -585,7 +605,8 @@ public abstract class IClass {
      *
      * @param objectType Required because the superclass of an array class is {@link Object} by definition
      */
-    public synchronized IClass getArrayIClass(IClass objectType) {
+    public synchronized IClass
+    getArrayIClass(IClass objectType) {
         if (this.arrayIClass == null) {
             this.arrayIClass = this.getArrayIClass2(objectType);
         }
@@ -593,7 +614,8 @@ public abstract class IClass {
     }
     private IClass arrayIClass;
 
-    private IClass getArrayIClass2(final IClass objectType) {
+    private IClass
+    getArrayIClass2(final IClass objectType) {
         final IClass componentType = this;
         return new IClass() {
             public IClass.IConstructor[] getDeclaredIConstructors2() { return new IClass.IConstructor[0]; }
@@ -646,7 +668,8 @@ public abstract class IClass {
      * Examines superclasses, interfaces and enclosing type declarations.
      * @return an array of {@link IClass}es in unspecified order, possibly of length zero
      */
-    IClass[] findMemberType(String optionalName) throws CompileException {
+    IClass[]
+    findMemberType(String optionalName) throws CompileException {
         IClass[] res = (IClass[]) this.memberTypeCache.get(optionalName);
         if (res == null) {
 
@@ -661,9 +684,10 @@ public abstract class IClass {
 
         return res;
     }
-    private final Map memberTypeCache = new HashMap(); // String name => IClass[]
-    private static final IClass[] ZERO_ICLASSES = new IClass[0];
-    private void findMemberType(String optionalName, Collection result) throws CompileException {
+    private final Map             memberTypeCache = new HashMap(); // String name => IClass[]
+    private static final IClass[] ZERO_ICLASSES   = new IClass[0];
+    private void
+    findMemberType(String optionalName, Collection result) throws CompileException {
 
         // Search for a type with the given name in the current class.
         IClass[] memberTypes = this.getDeclaredIClasses();
@@ -699,7 +723,7 @@ public abstract class IClass {
         // Examine enclosing type declarations.
         {
             IClass declaringIClass = this.getDeclaringIClass();
-            IClass outerIClass = this.getOuterIClass();
+            IClass outerIClass     = this.getOuterIClass();
             if (declaringIClass != null) {
                 declaringIClass.findMemberType(optionalName, result);
             }
@@ -709,7 +733,8 @@ public abstract class IClass {
         }
     }
 
-    public interface IMember {
+    public
+    interface IMember {
 
         /**
          * @return One of {@link Access#PRIVATE}, {@link Access#PROTECTED},
@@ -723,7 +748,8 @@ public abstract class IClass {
         IClass getDeclaringIClass();
     }
 
-    public abstract class IInvocable implements IMember {
+    public abstract
+    class IInvocable implements IMember {
 
         // Implement IMember.
         public abstract Access   getAccess();
@@ -732,7 +758,8 @@ public abstract class IClass {
         public abstract String   getDescriptor() throws CompileException;
         public abstract IClass[] getThrownExceptions() throws CompileException;
 
-        public boolean isMoreSpecificThan(IInvocable that) throws CompileException {
+        public boolean
+        isMoreSpecificThan(IInvocable that) throws CompileException {
             if (IClass.DEBUG) System.out.print("\"" + this + "\".isMoreSpecificThan(\"" + that + "\") => ");
 
             // The following case is tricky: JLS2 says that the invocation is AMBIGUOUS, but only
@@ -751,8 +778,7 @@ public abstract class IClass {
 
             IClass[] thisParameterTypes = this.getParameterTypes();
             IClass[] thatParameterTypes = that.getParameterTypes();
-            int i;
-            for (i = 0; i < thisParameterTypes.length; ++i) {
+            for (int i = 0; i < thisParameterTypes.length; ++i) {
                 if (!thatParameterTypes[i].isAssignableFrom(thisParameterTypes[i])) {
                     if (IClass.DEBUG) System.out.println("false");
                     return false;
@@ -761,12 +787,15 @@ public abstract class IClass {
             if (IClass.DEBUG) System.out.println("true");
             return !Arrays.equals(thisParameterTypes, thatParameterTypes);
         }
-        public boolean isLessSpecificThan(IInvocable that) throws CompileException {
-            return that.isMoreSpecificThan(this);
-        }
+
+        public boolean
+        isLessSpecificThan(IInvocable that) throws CompileException { return that.isMoreSpecificThan(this); }
+
         public abstract String toString();
     }
-    public abstract class IConstructor extends IInvocable {
+
+    public abstract
+    class IConstructor extends IInvocable {
 
         /**
          * Opposed to {@link java.lang.reflect.Constructor#getParameterTypes()}, the
@@ -779,7 +808,8 @@ public abstract class IClass {
          * Opposed to {@link #getParameterTypes()}, the method descriptor returned by this
          * method does include the optionally leading synthetic parameters.
          */
-        public String getDescriptor() throws CompileException {
+        public String
+        getDescriptor() throws CompileException {
             IClass[] parameterTypes = this.getParameterTypes();
 
             IClass outerIClass = IClass.this.getOuterIClass();
@@ -792,7 +822,8 @@ public abstract class IClass {
 
             return new MethodDescriptor(IClass.getDescriptors(parameterTypes), Descriptor.VOID_).toString();
         }
-        public String toString() {
+        public String
+        toString() {
             StringBuffer sb = new StringBuffer(this.getDeclaringIClass().toString());
             sb.append('(');
             try {
@@ -808,18 +839,22 @@ public abstract class IClass {
             return sb.toString();
         }
     }
-    public abstract class IMethod extends IInvocable {
+    public abstract
+    class IMethod extends IInvocable {
         public abstract boolean isStatic();
         public abstract boolean isAbstract();
         public abstract IClass  getReturnType() throws CompileException;
         public abstract String  getName();
-        public String getDescriptor() throws CompileException {
+
+        public String
+        getDescriptor() throws CompileException {
             return new MethodDescriptor(
                 IClass.getDescriptors(this.getParameterTypes()),
                 this.getReturnType().getDescriptor()
             ).toString();
         }
-        public String toString() {
+        public String
+        toString() {
             StringBuffer sb = new StringBuffer();
             sb.append(this.getAccess().toString()).append(' ');
             if (this.isStatic()) sb.append("static ");
@@ -856,7 +891,8 @@ public abstract class IClass {
             return sb.toString();
         }
     }
-    public abstract class IField implements IMember {
+    public abstract
+    class IField implements IMember {
 
         // Implement IMember.
         public abstract Access  getAccess();

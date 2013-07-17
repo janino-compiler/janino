@@ -32,7 +32,8 @@ import java.util.*;
  * An {@link java.util.Iterator} that iterates over the elements of an
  * {@link java.util.Enumeration}.
  */
-public class EnumerationIterator implements Iterator {
+public
+class EnumerationIterator implements Iterator {
     private final Enumeration e;
 
     public EnumerationIterator(Enumeration e) { this.e = e; }

@@ -37,7 +37,8 @@ import java.io.*;
  *
  * @see org.codehaus.janino.util.resource.ResourceCreator
  */
-public abstract class ResourceFinder {
+public abstract
+class ResourceFinder {
 
     /**
      * Find a resource by name and open it for reading.
@@ -47,7 +48,8 @@ public abstract class ResourceFinder {
      * @return             <code>null</code> if the resource could not be found
      * @throws IOException The resource was found, but there are problems opening it
      */
-    public final InputStream findResourceAsStream(String resourceName) throws IOException {
+    public final InputStream
+    findResourceAsStream(String resourceName) throws IOException {
         Resource resource = this.findResource(resourceName);
         if (resource == null) return null;
         return resource.open();

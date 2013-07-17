@@ -41,7 +41,8 @@ import java.io.*;
  * @see org.codehaus.janino.util.resource.ResourceFinder
  * @see org.codehaus.janino.util.resource.ResourceCreator
  */
-public interface Resource {
+public
+interface Resource {
 
     /**
      * Opens the resource. The caller is responsible for closing the

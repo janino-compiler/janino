@@ -40,7 +40,8 @@ import org.codehaus.janino.util.resource.*;
  * <p>
  * Notice that it does not compile them!
  */
-public final class JavaSourceIClassLoader extends IClassLoader {
+public final
+class JavaSourceIClassLoader extends IClassLoader {
     private static final boolean DEBUG = false;
 
     private ResourceFinder            sourceFinder;
@@ -97,7 +98,8 @@ public final class JavaSourceIClassLoader extends IClassLoader {
      * @param type field descriptor of the {@link IClass} to load, e.g. "Lpkg1/pkg2/Outer$Inner;"
      * @throws ClassNotFoundException if an exception was raised while loading the {@link IClass}
      */
-    public IClass findIClass(final String type) throws ClassNotFoundException {
+    public IClass
+    findIClass(final String type) throws ClassNotFoundException {
         if (JavaSourceIClassLoader.DEBUG) System.out.println("type = " + type);
 
         // Class type.
@@ -136,7 +138,7 @@ public final class JavaSourceIClassLoader extends IClassLoader {
         try {
 
             // Scan and parse the source file.
-            InputStream inputStream = sourceResource.open();
+            InputStream          inputStream = sourceResource.open();
             Java.CompilationUnit cu;
             try {
                 Scanner scanner = new Scanner(
@@ -149,7 +151,7 @@ public final class JavaSourceIClassLoader extends IClassLoader {
                 parser.setWarningHandler(this.optionalWarningHandler);
                 cu = parser.parseCompilationUnit();
             } finally {
-                try { inputStream.close(); } catch (IOException ex) { }
+                try { inputStream.close(); } catch (IOException ex) {}
             }
             UnitCompiler uc = new UnitCompiler(cu, this);
             uc.setCompileErrorHandler(this.optionalCompileErrorHandler);

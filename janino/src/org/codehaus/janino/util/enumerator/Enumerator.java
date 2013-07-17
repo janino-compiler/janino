@@ -57,8 +57,9 @@ import java.util.*;
  *
  * @see <a href="http://java.sun.com/developer/Books/effectivejava/Chapter5.pdf">Effective Java, Item 21</a>
  */
-public abstract class Enumerator {
-    /*package*/ final String name;
+public abstract
+class Enumerator {
+    final String name;
 
     /**
      * Class enumeratorClass => Map: String name => Enumerator
@@ -68,7 +69,8 @@ public abstract class Enumerator {
     /**
      * Initialize the enumerator to the given value.
      */
-    protected Enumerator(String name) {
+    protected
+    Enumerator(String name) {
         if (name == null) throw new NullPointerException();
         this.name = name;
 
@@ -78,21 +80,20 @@ public abstract class Enumerator {
     /**
      * Equality is reference identity.
      */
-    public final boolean equals(Object that) {
-        return this == that;
-    }
+    public final boolean
+    equals(Object that) { return this == that; }
 
     /**
      * Enforce {@link Object}'s notion of {@link Object#hashCode()}.
      */
-    public final int hashCode() {
-        return super.hashCode();
-    }
+    public final int
+    hashCode() { return super.hashCode(); }
 
     /**
      * Returns a mapping of name to Enumerator for the given enumeratorClass.
      */
-    /*package*/ static Map getInstances(Class enumeratorClass) {
+    static Map
+    getInstances(Class enumeratorClass) {
         Map m = (Map) Enumerator.instances.get(enumeratorClass);
         if (m != null) return m;
 
@@ -119,7 +120,8 @@ public abstract class Enumerator {
      *
      * @throws EnumeratorFormatException if the string cannot be identified
      */
-    protected static final Enumerator fromString(String name, Class enumeratorClass) throws EnumeratorFormatException {
+    protected static final Enumerator
+    fromString(String name, Class enumeratorClass) throws EnumeratorFormatException {
         Enumerator value = (Enumerator) Enumerator.getInstances(enumeratorClass).get(name);
         if (value == null) throw new EnumeratorFormatException(name);
         return value;

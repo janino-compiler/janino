@@ -37,7 +37,8 @@ import org.codehaus.commons.compiler.CompileException;
  * that silently ignores most of the configuration parameters and attempts to compile all given
  * source files into class files.
  */
-public class AntCompilerAdapter extends DefaultCompilerAdapter {
+public
+class AntCompilerAdapter extends DefaultCompilerAdapter {
 
     /**
      * Compile all source files in <code>DefaultCompilerAdapter.compileList</code> individually and
@@ -70,7 +71,8 @@ public class AntCompilerAdapter extends DefaultCompilerAdapter {
      *
      * @return "true" on success
      */
-    public boolean execute() {
+    public boolean
+    execute() {
 
         // Convert source files into source file names.
         File[] sourceFiles = this.compileList;

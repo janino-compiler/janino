@@ -33,7 +33,8 @@ import org.codehaus.janino.util.enumerator.EnumeratorFormatException;
  * Return value for {@link IClass.IMember#getAccess}.
  * JLS2 6.6
  */
-public final class Access extends Enumerator {
+public final
+class Access extends Enumerator {
     public static final Access PRIVATE   = new Access("private");
     public static final Access PROTECTED = new Access("protected");
     public static final Access DEFAULT   = new Access("/*default*/");

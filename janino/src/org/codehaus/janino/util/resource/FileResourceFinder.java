@@ -35,8 +35,11 @@ import java.io.*;
  * It finds {@link FileResource}s instead of simple
  * {@link Resource}s.
  */
-public abstract class FileResourceFinder extends ResourceFinder {
-    public final Resource findResource(String resourceName) {
+public abstract
+class FileResourceFinder extends ResourceFinder {
+
+    public final Resource
+    findResource(String resourceName) {
         File file = this.findResourceAsFile(resourceName);
         if (file == null) return null;
         return new FileResource(file);

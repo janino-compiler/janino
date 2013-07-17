@@ -32,7 +32,8 @@ package org.codehaus.janino;
  * Notice: This class should be named <code>IClass.IModifier</code>, but changing the name would break existing client
  * code. Thus it won't be renamed until there's a really good reason to do it (maybe with a major design change).
  */
-public final class Mod {
+public final
+class Mod {
     private Mod() {} // Don't instantiate me!
 
     public static final short NONE         = 0x0000;

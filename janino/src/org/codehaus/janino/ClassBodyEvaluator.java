@@ -46,7 +46,8 @@ import org.codehaus.commons.compiler.Location;
  * </ul>
  * A number of "convenience constructors" exist that execute the setup steps instantly.
  */
-public class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
+public
+class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
     protected static final Class[] ZERO_CLASSES = new Class[0];
 
     private String[]               optionalDefaultImports;
@@ -63,9 +64,8 @@ public class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEval
      * @see #ClassBodyEvaluator()
      * @see Cookable#cook(String)
      */
-    public ClassBodyEvaluator(String classBody) throws CompileException {
-        this.cook(classBody);
-    }
+    public
+    ClassBodyEvaluator(String classBody) throws CompileException { this.cook(classBody); }
 
     /**
      * Equivalent to<pre>
@@ -75,7 +75,8 @@ public class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEval
      * @see #ClassBodyEvaluator()
      * @see Cookable#cook(String, InputStream)
      */
-    public ClassBodyEvaluator(String optionalFileName, InputStream is) throws CompileException, IOException {
+    public
+    ClassBodyEvaluator(String optionalFileName, InputStream is) throws CompileException, IOException {
         this.cook(optionalFileName, is);
     }
 
@@ -87,7 +88,8 @@ public class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEval
      * @see #ClassBodyEvaluator()
      * @see Cookable#cook(String, Reader)
      */
-    public ClassBodyEvaluator(String optionalFileName, Reader reader) throws CompileException, IOException {
+    public
+    ClassBodyEvaluator(String optionalFileName, Reader reader) throws CompileException, IOException {
         this.cook(optionalFileName, reader);
     }
 
@@ -101,10 +103,8 @@ public class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEval
      * @see SimpleCompiler#setParentClassLoader(ClassLoader)
      * @see Cookable#cook(Reader)
      */
-    public ClassBodyEvaluator(
-        Scanner     scanner,
-        ClassLoader optionalParentClassLoader
-    ) throws CompileException, IOException {
+    public
+    ClassBodyEvaluator(Scanner scanner, ClassLoader optionalParentClassLoader) throws CompileException, IOException {
         this.setParentClassLoader(optionalParentClassLoader);
         this.cook(scanner);
     }
@@ -123,7 +123,8 @@ public class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEval
      * @see SimpleCompiler#setParentClassLoader(ClassLoader)
      * @see Cookable#cook(Reader)
      */
-    public ClassBodyEvaluator(
+    public
+    ClassBodyEvaluator(
         Scanner     scanner,
         Class       optionalExtendedType,
         Class[]     implementedTypes,
@@ -151,7 +152,8 @@ public class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEval
      * @see SimpleCompiler#setParentClassLoader(ClassLoader)
      * @see Cookable#cook(Reader)
      */
-    public ClassBodyEvaluator(
+    public
+    ClassBodyEvaluator(
         Scanner     scanner,
         String      className,
         Class       optionalExtendedType,
@@ -203,9 +205,10 @@ public class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEval
         this.setImplementedInterfaces(implementedInterfaces);
     }
 
-    public void cook(Scanner scanner) throws CompileException, IOException {
+    public void
+    cook(Scanner scanner) throws CompileException, IOException {
 
-        Parser parser = new Parser(scanner);
+        Parser               parser          = new Parser(scanner);
         Java.CompilationUnit compilationUnit = this.makeCompilationUnit(parser);
 
         // Add class declaration.
@@ -215,7 +218,7 @@ public class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEval
         );
 
         // Parse class body declarations (member declarations) until EOF.
-        while (!parser.peekEOF()) {
+        while (!parser.peekEof()) {
             parser.parseClassBodyDeclaration(cd);
         }
 
@@ -243,10 +246,10 @@ public class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEval
         // Set default imports.
         if (this.optionalDefaultImports != null) {
             for (int i = 0; i < this.optionalDefaultImports.length; ++i) {
-                Scanner s = new Scanner(null, new StringReader(this.optionalDefaultImports[i]));
-                Parser parser2 = new Parser(s);
+                Scanner s       = new Scanner(null, new StringReader(this.optionalDefaultImports[i]));
+                Parser  parser2 = new Parser(s);
                 cu.addImportDeclaration(parser2.parseImportDeclarationBody());
-                if (!parser2.peekEOF()) {
+                if (!parser2.peekEof()) {
                     throw new CompileException(
                         "Unexpected token '" + parser2.peek() + "' in default import",
                         s.location()
@@ -274,12 +277,10 @@ public class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEval
      *
      * @return The created {@link Java.ClassDeclaration} object
      */
-    protected Java.PackageMemberClassDeclaration addPackageMemberClassDeclaration(
-        Location             location,
-        Java.CompilationUnit compilationUnit
-    ) throws CompileException {
-        String cn = this.className;
-        int idx = cn.lastIndexOf('.');
+    protected Java.PackageMemberClassDeclaration
+    addPackageMemberClassDeclaration(Location location, Java.CompilationUnit compilationUnit) throws CompileException {
+        String cn  = this.className;
+        int    idx = cn.lastIndexOf('.');
         if (idx != -1) {
             compilationUnit.setPackageDeclaration(new Java.PackageDeclaration(location, cn.substring(0, idx)));
             cn = cn.substring(idx + 1);
@@ -303,10 +304,8 @@ public class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEval
      * @param newClassName The fully qualified class name
      * @return The loaded class
      */
-    protected final Class compileToClass(
-        Java.CompilationUnit compilationUnit,
-        String               newClassName
-    ) throws CompileException {
+    protected final Class
+    compileToClass(Java.CompilationUnit compilationUnit, String newClassName) throws CompileException {
 
         // Compile and load the compilation unit.
         ClassLoader cl = this.compileToClassLoader(compilationUnit);
@@ -323,7 +322,8 @@ public class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEval
         }
     }
 
-    public Class getClazz() {
+    public Class
+    getClazz() {
         if (this.getClass() != ClassBodyEvaluator.class) {
             throw new IllegalStateException("Must not be called on derived instances");
         }
@@ -331,7 +331,8 @@ public class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEval
         return this.result;
     }
 
-    public Object createInstance(Reader reader) throws CompileException, IOException {
+    public Object
+    createInstance(Reader reader) throws CompileException, IOException {
         this.cook(reader);
 
         try {
@@ -372,7 +373,8 @@ public class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEval
      *
      * @see #createInstance(Reader)
      */
-    public static Object createFastClassBodyEvaluator(
+    public static Object
+    createFastClassBodyEvaluator(
         Scanner     scanner,
         Class       optionalBaseType,
         ClassLoader optionalParentClassLoader
@@ -408,7 +410,8 @@ public class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEval
      *
      * @see #createInstance(Reader)
      */
-    public static Object createFastClassBodyEvaluator(
+    public static Object
+    createFastClassBodyEvaluator(
         Scanner     scanner,
         String      className,
         Class       optionalExtendedClass,

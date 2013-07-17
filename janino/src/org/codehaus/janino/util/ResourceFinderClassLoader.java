@@ -39,7 +39,8 @@ import org.codehaus.janino.util.resource.ResourceFinder;
  * A {@link ClassLoader} that uses a {@link org.codehaus.janino.util.resource.ResourceFinder}
  * to find ".class" files.
  */
-public class ResourceFinderClassLoader extends ClassLoader {
+public
+class ResourceFinderClassLoader extends ClassLoader {
 
     private final ResourceFinder resourceFinder;
 
@@ -48,14 +49,14 @@ public class ResourceFinderClassLoader extends ClassLoader {
         this.resourceFinder = resourceFinder;
     }
 
-    public ResourceFinder getResourceFinder() {
-        return this.resourceFinder;
-    }
+    public ResourceFinder
+    getResourceFinder() { return this.resourceFinder; }
 
     /**
      * @throws ClassNotFoundException
      */
-    protected Class findClass(String className) throws ClassNotFoundException {
+    protected Class
+    findClass(String className) throws ClassNotFoundException {
 
         // Find the resource containing the class bytecode.
         Resource classFileResource = this.resourceFinder.findResource(ClassFile.getClassFileResourceName(className));
@@ -86,7 +87,7 @@ public class ResourceFinderClassLoader extends ClassLoader {
         } catch (IOException ex) {
             throw new ClassNotFoundException("Reading class file from \"" + classFileResource + "\"", ex);
         } finally {
-            try { is.close(); } catch (IOException ex) { }
+            try { is.close(); } catch (IOException ex) {}
         }
         byte[] ba = baos.toByteArray();
 

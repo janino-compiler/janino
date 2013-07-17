@@ -35,13 +35,15 @@ import java.util.*;
  *
  *     java -Xrunhprof:heap=sites,monitor=n,cutoff=0,depth=4 MyClass
  */
-public final class HprofScrubber {
+public final
+class HprofScrubber {
     private HprofScrubber() {}
 
-    private static class Site {
-        public final int allocatedBytes;
-        public final int allocatedObjects;
-        public final int traceNumber;
+    private static
+    class Site {
+        public final int    allocatedBytes;
+        public final int    allocatedObjects;
+        public final int    traceNumber;
         public final String className;
         public Site(int allocatedBytes, int allocatedObjects, int traceNumber, String className) {
             this.allocatedBytes   = allocatedBytes;
@@ -51,7 +53,8 @@ public final class HprofScrubber {
         }
     }
 
-    private static class Sample {
+    private static
+    class Sample {
         public final int count;
         public final int traceNumber;
         public Sample(int count, int traceNumber) {
@@ -65,8 +68,8 @@ public final class HprofScrubber {
 
         BufferedReader br = new BufferedReader(new FileReader(fileName));
         try {
-            Map traces = new HashMap(); // Integer number => String[] stackFrames
-            List sites = new ArrayList(); // Site
+            Map  traces  = new HashMap(); // Integer number => String[] stackFrames
+            List sites   = new ArrayList(); // Site
             List samples = new ArrayList(); // Sample
 
             String s = br.readLine();
@@ -92,8 +95,8 @@ public final class HprofScrubber {
                     }
                 } else
                 if (s.startsWith("TRACE ") && s.endsWith(":")) {
-                    int traceNumber = Integer.parseInt(s.substring(6, s.length() - 1));
-                    List l = new ArrayList();
+                    int  traceNumber = Integer.parseInt(s.substring(6, s.length() - 1));
+                    List l           = new ArrayList();
                     for (;;) {
                         s = br.readLine();
                         if (!s.startsWith("\t")) break;
@@ -128,15 +131,16 @@ public final class HprofScrubber {
             HprofScrubber.dumpSamples((Sample[]) samples.toArray(new Sample[samples.size()]), traces);
 
         } finally {
-            try { br.close(); } catch (IOException e) { }
+            try { br.close(); } catch (IOException e) {}
         }
     }
 
-    private static void dumpSites(Site[] ss, Map traces) {
+    private static void
+    dumpSites(Site[] ss, Map traces) {
         Arrays.sort(ss, new Comparator() {
-            public int compare(Object o1, Object o2) {
-                return ((Site) o2).allocatedBytes - ((Site) o1).allocatedBytes;
-            }
+
+            public int
+            compare(Object o1, Object o2) { return ((Site) o2).allocatedBytes - ((Site) o1).allocatedBytes; }
         });
 
         int totalAllocatedBytes = 0, totalAllocatedObjects = 0;
@@ -192,7 +196,8 @@ public final class HprofScrubber {
         }
     }
 
-    private static void dumpSamples(Sample[] ss, Map traces) {
+    private static void
+    dumpSamples(Sample[] ss, Map traces) {
         int totalCount = 0;
         for (int i = 0; i < ss.length; ++i) totalCount += ss[i].count;
 
@@ -201,11 +206,12 @@ public final class HprofScrubber {
         System.out.println("Total:              " + totalCount);
 
         double accumulatedPercentage = 0.0;
+
         MessageFormat mf = new MessageFormat(
             "{0,number,00000} {1,number,00.00}% {2,number,00.00}% {3,number,000000000}"
         );
         for (int i = 0; i < ss.length; ++i) {
-            Sample sample = ss[i];
+            Sample sample         = ss[i];
             double selfPercentage = 100.0 * ((double) sample.count / (double) totalCount);
             accumulatedPercentage += selfPercentage;
 //            System.out.println(

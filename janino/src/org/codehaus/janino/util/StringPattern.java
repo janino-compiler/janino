@@ -34,7 +34,8 @@ import java.util.*;
  * Additionally, the concept of the "combined pattern" is supported (see
  * {@link #matches(StringPattern[], String)}.
  */
-public class StringPattern {
+public
+class StringPattern {
 
     /**
      * @see #matches(StringPattern[], String)
@@ -98,7 +99,7 @@ public class StringPattern {
     public static StringPattern[] parseCombinedPattern(String combinedPattern) {
         ArrayList al = new ArrayList();
         for (int k = 0, l; k < combinedPattern.length(); k = l) {
-            int patternMode;
+            int  patternMode;
             char c = combinedPattern.charAt(k);
             if (c == '+') {
                 patternMode = StringPattern.INCLUDE;

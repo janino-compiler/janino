@@ -71,7 +71,8 @@ import org.codehaus.janino.util.resource.ResourceFinder;
  * java org.codehaus.janino.Compiler -help
  * </pre>
  */
-public class Compiler {
+public
+class Compiler {
     private static final boolean DEBUG = false;
 
     /**
@@ -271,7 +272,8 @@ public class Compiler {
      *
      * @see #DEFAULT_WARNING_HANDLE_PATTERNS
      */
-    public Compiler(
+    public
+    Compiler(
         final File[]    optionalSourcePath,
         final File[]    classPath,
         final File[]    optionalExtDirs,
@@ -335,8 +337,12 @@ public class Compiler {
     }
     /** Backwards compatibility -- previously, "null" was officially documented. */
     public static final File NO_DESTINATION_DIRECTORY = null;
-    public static class SimpleWarningHandler implements WarningHandler {
-        public void handleWarning(String handle, String message, Location optionalLocation) {
+
+    public static
+    class SimpleWarningHandler implements WarningHandler {
+
+        public void
+        handleWarning(String handle, String message, Location optionalLocation) {
             StringBuffer sb = new StringBuffer();
             if (optionalLocation != null) sb.append(optionalLocation).append(": ");
             sb.append("Warning ").append(handle).append(": ").append(message);
@@ -362,7 +368,8 @@ public class Compiler {
      * @param classFileCreator       Used to store generated class files (a.k.a. "-d")
      * @param optionalWarningHandler Used to issue warnings
      */
-    public Compiler(
+    public
+    Compiler(
         ResourceFinder  sourceFinder,
         IClassLoader    iClassLoader,
         ResourceFinder  classFileFinder,
@@ -441,7 +448,8 @@ public class Compiler {
      *                          error handler
      * @throws IOException      Occurred when reading from the <code>sourceFiles</code>
      */
-    public boolean compile(File[] sourceFiles) throws CompileException, IOException {
+    public boolean
+    compile(File[] sourceFiles) throws CompileException, IOException {
         this.benchmark.report("Source files", sourceFiles);
 
         Resource[] sourceFileResources = new Resource[sourceFiles.length];
@@ -456,15 +464,19 @@ public class Compiler {
      * @param sourceResources Contain the compilation units to compile
      * @return <code>true</code> for backwards compatibility (return value can safely be ignored)
      */
-    public boolean compile(Resource[] sourceResources) throws CompileException, IOException {
+    public boolean
+    compile(Resource[] sourceResources) throws CompileException, IOException {
 
         // Set up the compile error handler as described at "setCompileErrorHandler()".
         UnitCompiler.ErrorHandler ceh = (
             this.optionalCompileErrorHandler != null
             ? this.optionalCompileErrorHandler
             : new UnitCompiler.ErrorHandler() {
+
                 int compileErrorCount = 0;
-                public void handleError(String message, Location optionalLocation) throws CompileException {
+
+                public void
+                handleError(String message, Location optionalLocation) throws CompileException {
                     CompileException ex = new CompileException(message, optionalLocation);
                     if (++this.compileErrorCount >= 20) throw ex;
                     System.err.println(ex.getMessage());
@@ -490,8 +502,8 @@ public class Compiler {
             // grow while they are being compiled, but eventually all CUs will
             // be compiled.
             for (int i = 0; i < this.parsedCompilationUnits.size(); ++i) {
-                UnitCompiler unitCompiler = (UnitCompiler) this.parsedCompilationUnits.get(i);
-                Java.CompilationUnit cu = unitCompiler.compilationUnit;
+                UnitCompiler         unitCompiler = (UnitCompiler) this.parsedCompilationUnits.get(i);
+                Java.CompilationUnit cu           = unitCompiler.compilationUnit;
                 if (cu.optionalFileName == null) throw new JaninoRuntimeException();
                 File sourceFile = new File(cu.optionalFileName);
 
@@ -574,7 +586,8 @@ public class Compiler {
      * @param sourceFile E.g. "srcdir/Outer.java"
      * @param optionalDestinationDirectory E.g. "destdir"
      */
-    public static File getClassFile(String className, File sourceFile, File optionalDestinationDirectory) {
+    public static File
+    getClassFile(String className, File sourceFile, File optionalDestinationDirectory) {
         if (optionalDestinationDirectory != null) {
             return new File(optionalDestinationDirectory, ClassFile.getClassFileResourceName(className));
         } else {
@@ -604,7 +617,9 @@ public class Compiler {
             // If the JAVAC option "-d" is given, place the class file next
             // to the source file, irrespective of the package name.
             rc = new FileResourceCreator() {
-                protected File getFile(String resourceName) {
+
+                protected File
+                getFile(String resourceName) {
                     return new File(
                         sourceFile.getParentFile(),
                         resourceName.substring(resourceName.lastIndexOf('/') + 1)
@@ -616,7 +631,7 @@ public class Compiler {
         try {
             classFile.store(os);
         } catch (IOException ioe) {
-            try { os.close(); } catch (IOException e) { }
+            try { os.close(); } catch (IOException e) {}
             os = null;
             if (!rc.deleteResource(classFileResourceName)) {
                 IOException ioe2 = new IOException(
@@ -629,7 +644,7 @@ public class Compiler {
             }
             throw ioe;
         } finally {
-            if (os != null) try { os.close(); } catch (IOException e) { }
+            if (os != null) try { os.close(); } catch (IOException e) {}
         }
     }
 
@@ -645,17 +660,16 @@ public class Compiler {
      * Notice that the {@link CompilerIClassLoader} is an inner class of {@link Compiler} and
      * heavily uses {@link Compiler}'s members.
      */
-    private class CompilerIClassLoader extends IClassLoader {
+    private
+    class CompilerIClassLoader extends IClassLoader {
         private final ResourceFinder sourceFinder;
 
         /**
          * @param sourceFinder Where to look for source files
          * @param optionalParentIClassLoader {@link IClassLoader} through which {@link IClass}es are to be loaded
          */
-        public CompilerIClassLoader(
-            ResourceFinder sourceFinder,
-            IClassLoader   optionalParentIClassLoader
-        ) {
+        public
+        CompilerIClassLoader(ResourceFinder sourceFinder, IClassLoader optionalParentIClassLoader) {
             super(optionalParentIClassLoader);
             this.sourceFinder = sourceFinder;
             super.postConstruct();
@@ -666,7 +680,8 @@ public class Compiler {
          * @return <code>null</code> if a the type could not be found
          * @throws ClassNotFoundException if an exception was raised while loading the {@link IClass}
          */
-        protected IClass findIClass(final String type) throws ClassNotFoundException {
+        protected IClass
+        findIClass(final String type) throws ClassNotFoundException {
             if (Compiler.DEBUG) System.out.println("type = " + type);
 
             // Determine the class name.
@@ -685,8 +700,8 @@ public class Compiler {
 
             // Check the already-parsed compilation units.
             for (int i = 0; i < Compiler.this.parsedCompilationUnits.size(); ++i) {
-                UnitCompiler uc = (UnitCompiler) Compiler.this.parsedCompilationUnits.get(i);
-                IClass res = uc.findClass(topLevelClassName);
+                UnitCompiler uc  = (UnitCompiler) Compiler.this.parsedCompilationUnits.get(i);
+                IClass       res = uc.findClass(topLevelClassName);
                 if (res != null) {
                     if (!className.equals(topLevelClassName)) {
                         res = uc.findClass(className);
@@ -736,10 +751,8 @@ public class Compiler {
          * <p>
          * Notice that the CU is not compiled here!
          */
-        private IClass defineIClassFromSourceResource(
-            Resource sourceResource,
-            String   className
-        ) throws ClassNotFoundException {
+        private IClass
+        defineIClassFromSourceResource(Resource sourceResource, String className) throws ClassNotFoundException {
 
             // Parse the source file.
             UnitCompiler uc;
@@ -778,18 +791,19 @@ public class Compiler {
          * Open the given <code>classFileResource</code>, read its contents, define it in the
          * {@link IClassLoader}, and resolve it (this step may involve loading more classes).
          */
-        private IClass defineIClassFromClassFileResource(Resource classFileResource) throws ClassNotFoundException {
+        private IClass
+        defineIClassFromClassFileResource(Resource classFileResource) throws ClassNotFoundException {
             Compiler.this.benchmark.beginReporting("Loading class file \"" + classFileResource.getFileName() + "\"");
             try {
                 InputStream is = null;
-                ClassFile cf;
+                ClassFile   cf;
                 try {
                     is = classFileResource.open();
                     cf = new ClassFile(new BufferedInputStream(is));
                 } catch (IOException ex) {
                     throw new ClassNotFoundException("Opening class file resource \"" + classFileResource + "\"", ex);
                 } finally {
-                    if (is != null) try { is.close(); } catch (IOException e) { }
+                    if (is != null) try { is.close(); } catch (IOException e) {}
                 }
                 ClassFileIClass result = new ClassFileIClass(
                     cf,                       // classFile

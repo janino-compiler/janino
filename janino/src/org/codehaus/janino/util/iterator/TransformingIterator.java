@@ -31,7 +31,8 @@ import java.util.*;
 /**
  * An {@link java.util.Iterator} that transforms its elements on-the-fly.
  */
-public abstract class TransformingIterator extends FilterIterator {
+public abstract
+class TransformingIterator extends FilterIterator {
     public TransformingIterator(Iterator delegate) {
         super(delegate);
     }

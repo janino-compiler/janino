@@ -32,21 +32,22 @@ import java.util.*;
  * This {@link ClassLoader} allows for the loading of a set of Java&trade; classes
  * provided in class file format.
  */
-public class ByteArrayClassLoader extends ClassLoader {
+public
+class ByteArrayClassLoader extends ClassLoader {
 
     /**
      * The given {@link Map} of classes must not be modified afterwards.
      *
      * @param classes String className => byte[] data
      */
-    public ByteArrayClassLoader(Map classes) {
-        this.classes = classes;
-    }
+    public
+    ByteArrayClassLoader(Map classes) { this.classes = classes; }
 
     /**
      * @see #ByteArrayClassLoader(Map)
      */
-    public ByteArrayClassLoader(Map classes, ClassLoader parent) {
+    public
+    ByteArrayClassLoader(Map classes, ClassLoader parent) {
         super(parent);
         this.classes = classes;
     }
@@ -58,7 +59,8 @@ public class ByteArrayClassLoader extends ClassLoader {
      * method, because {@link ClassLoader#loadClass(java.lang.String)} is
      * <code>synchronized</code>.
      */
-    protected Class findClass(String name) throws ClassNotFoundException {
+    protected Class
+    findClass(String name) throws ClassNotFoundException {
         byte[] data = (byte[]) this.classes.get(name);
         if (data == null) throw new ClassNotFoundException(name);
 
@@ -83,7 +85,8 @@ public class ByteArrayClassLoader extends ClassLoader {
      * Roughly speaking, equal {@link ByteArrayClassLoader}s will return functionally identical
      * {@link Class}es on {@link ClassLoader#loadClass(java.lang.String)}.
      */
-    public boolean equals(Object o) {
+    public boolean
+    equals(Object o) {
         if (!(o instanceof ByteArrayClassLoader)) return false;
         if (this == o) return true;
         ByteArrayClassLoader that = (ByteArrayClassLoader) o;
@@ -103,7 +106,9 @@ public class ByteArrayClassLoader extends ClassLoader {
         }
         return true;
     }
-    public int hashCode() {
+
+    public int
+    hashCode() {
         int hc = this.getParent().hashCode();
 
         for (Iterator it = this.classes.entrySet().iterator(); it.hasNext();) {

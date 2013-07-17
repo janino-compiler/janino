@@ -36,7 +36,8 @@ import java.io.*;
  *
  * @see org.codehaus.janino.util.resource.ResourceFinder
  */
-public interface ResourceCreator {
+public
+interface ResourceCreator {
 
     /**
      * Create the designated resource.

@@ -37,18 +37,20 @@ import org.codehaus.janino.util.Producer;
  *
  * @see org.codehaus.janino.util.Producer
  */
-public class ProducerIterator implements Iterator {
+public
+class ProducerIterator implements Iterator {
     private final Producer producer;
 
-    private static final Object UNKNOWN = new Object();
-    private static final Object AT_END = null;
+    private static final Object UNKNOWN     = new Object();
+    private static final Object AT_END      = null;
     private Object              nextElement = UNKNOWN;
 
     public ProducerIterator(Producer producer) {
         this.producer = producer;
     }
 
-    public boolean hasNext() {
+    public boolean
+    hasNext() {
         if (this.nextElement == UNKNOWN) this.nextElement = this.producer.produce();
         return this.nextElement != AT_END;
     }

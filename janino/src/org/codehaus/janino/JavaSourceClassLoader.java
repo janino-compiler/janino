@@ -51,7 +51,8 @@ import org.codehaus.janino.util.resource.ResourceFinder;
  * loaded. The way to achieve this is to give up on the {@link JavaSourceClassLoader} and create
  * a new one.
  */
-public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
+public
+class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 
     public JavaSourceClassLoader() {
         this(ClassLoader.getSystemClassLoader());
@@ -196,11 +197,12 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
      * @return String name => byte[] bytecode, or <code>null</code> if no source code could be found
      * @throws ClassNotFoundException on compilation problems
      */
-    protected Map generateBytecodes(String name) throws ClassNotFoundException {
+    protected Map
+    generateBytecodes(String name) throws ClassNotFoundException {
         if (this.iClassLoader.loadIClass(Descriptor.fromClassName(name)) == null) return null;
 
-        Map bytecodes = new HashMap(); // String name => byte[] bytecode
-        Set compiledUnitCompilers = new HashSet();
+        Map/*<String name, byte[] bytecode>*/ bytecodes             = new HashMap();
+        Set                                   compiledUnitCompilers = new HashSet();
         COMPILE_UNITS:
         for (;;) {
             for (Iterator it = this.unitCompilers.iterator(); it.hasNext();) {
@@ -232,7 +234,8 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
      *
      * @throws ClassFormatError
      */
-    private Class defineBytecode(String className, byte[] ba) {
+    private Class
+    defineBytecode(String className, byte[] ba) {
 
         return this.defineClass(className, ba, 0, ba.length, (
             this.optionalProtectionDomainFactory == null
@@ -244,8 +247,8 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
     private final JavaSourceIClassLoader iClassLoader;
 
     private boolean debugSource = Boolean.getBoolean(ICookable.SYSTEM_PROPERTY_SOURCE_DEBUGGING_ENABLE);
-    private boolean debugLines = this.debugSource;
-    private boolean debugVars = this.debugSource;
+    private boolean debugLines  = this.debugSource;
+    private boolean debugVars   = this.debugSource;
 
     /**
      * Collection of parsed, but uncompiled compilation units.

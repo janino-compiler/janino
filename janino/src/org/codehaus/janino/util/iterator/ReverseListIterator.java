@@ -32,7 +32,8 @@ import java.util.*;
  * A {@link java.util.ListIterator} that reverses the direction of all operations
  * of a delegate {@link java.util.ListIterator}.
  */
-public class ReverseListIterator extends FilterListIterator {
+public
+class ReverseListIterator extends FilterListIterator {
     /** */
     public ReverseListIterator(ListIterator delegate) {
         super(delegate);

@@ -262,7 +262,7 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor {
         int state = -1;
         for (Iterator it = statements.iterator(); it.hasNext();) {
             Java.BlockStatement bs = (Java.BlockStatement) it.next();
-            int                 x = (
+            int                 x  = (
                 bs instanceof Java.Block                             ? 1 :
                 bs instanceof Java.LocalClassDeclarationStatement    ? 2 :
                 bs instanceof Java.LocalVariableDeclarationStatement ? 3 :
@@ -820,7 +820,7 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor {
     static {
         Object[] ops = {
             UnparseVisitor.RIGHT_ASSOCIATIVE_OPERATORS, "=", "*=", "/=", "%=", "+=", "-=", "<<=", ">>=", ">>>=",
-                                                        "&=", "^=", "|=",
+                                                        "&=", "^=", "|=", // SUPPRESS CHECKSTYLE WrapAndIndent
             UnparseVisitor.RIGHT_ASSOCIATIVE_OPERATORS, "?:",
             UnparseVisitor.LEFT_ASSOCIATIVE_OPERATORS,  "||",
             UnparseVisitor.LEFT_ASSOCIATIVE_OPERATORS,  "&&",
@@ -990,7 +990,7 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor {
         if (fd.thrownExceptions.length > 0) this.pw.print(" throws " + Java.join(fd.thrownExceptions, ", "));
     }
 
-private void
+    private void
     unparseDocComment(Java.DocCommentable dc) {
         String optionalDocComment = dc.getDocComment();
         if (optionalDocComment != null) {

@@ -51,8 +51,10 @@ import org.codehaus.janino.util.Producer;
  *   </li>
  * </ul>
  */
-public class DirectoryIterator extends ProducerIterator {
-    public DirectoryIterator(
+public
+class DirectoryIterator extends ProducerIterator {
+    public
+    DirectoryIterator(
         final File           rootDirectory,
         final FilenameFilter directoryNameFilter,
         final FilenameFilter fileNameFilter

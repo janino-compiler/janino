@@ -74,7 +74,8 @@ import org.codehaus.janino.util.Traverser;
  * (How can it be that interface method invocation is slower than reflection for
  * the server JVM?)
  */
-public class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluator {
+public
+class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluator {
 
     private Class[] optionalExpressionTypes;
 
@@ -90,7 +91,8 @@ public class ExpressionEvaluator extends ScriptEvaluator implements IExpressionE
      * @see ScriptEvaluator#setParameters(String[], Class[])
      * @see Cookable#cook(String)
      */
-    public ExpressionEvaluator(
+    public
+    ExpressionEvaluator(
         String   expression,
         Class    expressionType,
         String[] parameterNames,
@@ -117,7 +119,8 @@ public class ExpressionEvaluator extends ScriptEvaluator implements IExpressionE
      * @see SimpleCompiler#setParentClassLoader(ClassLoader)
      * @see Cookable#cook(String)
      */
-    public ExpressionEvaluator(
+    public
+    ExpressionEvaluator(
         String      expression,
         Class       expressionType,
         String[]    parameterNames,
@@ -152,7 +155,8 @@ public class ExpressionEvaluator extends ScriptEvaluator implements IExpressionE
      * @see SimpleCompiler#setParentClassLoader(ClassLoader)
      * @see Cookable#cook(String)
      */
-    public ExpressionEvaluator(
+    public
+    ExpressionEvaluator(
         String      expression,
         Class       expressionType,
         String[]    parameterNames,
@@ -197,7 +201,8 @@ public class ExpressionEvaluator extends ScriptEvaluator implements IExpressionE
      * @see ISimpleCompiler#setParentClassLoader(ClassLoader)
      * @see ICookable#cook(Reader)
      */
-    public ExpressionEvaluator(
+    public
+    ExpressionEvaluator(
         Scanner     scanner,
         String      className,
         Class       optionalExtendedType,
@@ -248,9 +253,8 @@ public class ExpressionEvaluator extends ScriptEvaluator implements IExpressionE
         throw new AssertionError("Must not be used on an ExpressionEvaluator; use 'setExpressionTypes()' instead");
     }
 
-    protected Class getDefaultReturnType() {
-        return Object.class;
-    }
+    protected Class
+    getDefaultReturnType() { return Object.class; }
 
     protected List/*<BlockStatement>*/ makeStatements(
         int    idx,
@@ -259,7 +263,7 @@ public class ExpressionEvaluator extends ScriptEvaluator implements IExpressionE
         List/*<BlockStatement>*/ statements = new ArrayList();
 
         // Parse the expression.
-        Rvalue value = parser.parseExpression().toRvalueOrPE();
+        Rvalue value = parser.parseExpression().toRvalueOrCompileException();
 
         Class et = this.optionalExpressionTypes == null ? ANY_TYPE : this.optionalExpressionTypes[idx];
         if (et == void.class) {
@@ -291,7 +295,7 @@ public class ExpressionEvaluator extends ScriptEvaluator implements IExpressionE
             // Add a return statement.
             statements.add(new Java.ReturnStatement(parser.location(), value));
         }
-        if (!parser.peekEOF()) {
+        if (!parser.peekEof()) {
             throw new CompileException("Unexpected token \"" + parser.peek() + "\"", parser.location());
         }
 
@@ -311,7 +315,8 @@ public class ExpressionEvaluator extends ScriptEvaluator implements IExpressionE
      * @deprecated
      * @see #createFastEvaluator(String, Class, String[])
      */
-    public static Object createFastExpressionEvaluator(
+    public static Object
+    createFastExpressionEvaluator(
         String      expression,
         Class       interfaceToImplement,
         String[]    parameterNames,
@@ -330,7 +335,8 @@ public class ExpressionEvaluator extends ScriptEvaluator implements IExpressionE
      * @deprecated
      * @see #createFastEvaluator(Reader, Class, String[])
      */
-    public static Object createFastExpressionEvaluator(
+    public static Object
+    createFastExpressionEvaluator(
         Scanner     scanner,
         String      className,
         Class       optionalExtendedType,
@@ -353,7 +359,8 @@ public class ExpressionEvaluator extends ScriptEvaluator implements IExpressionE
      * @deprecated
      * @see #createFastEvaluator(Reader, Class, String[])
      */
-    public static Object createFastExpressionEvaluator(
+    public static Object
+    createFastExpressionEvaluator(
         Scanner     scanner,
         String[]    optionalDefaultImports,
         String      className,
@@ -382,15 +389,16 @@ public class ExpressionEvaluator extends ScriptEvaluator implements IExpressionE
      *
      * @see Scanner#Scanner(String, Reader)
      */
-    public static String[] guessParameterNames(Scanner scanner) throws CompileException, IOException {
+    public static String[]
+    guessParameterNames(Scanner scanner) throws CompileException, IOException {
         Parser parser = new Parser(scanner);
 
         // Eat optional leading import declarations.
         while (parser.peek("import")) parser.parseImportDeclaration();
 
         // Parse the expression.
-        Rvalue rvalue = parser.parseExpression().toRvalueOrPE();
-        if (!parser.peekEOF()) {
+        Rvalue rvalue = parser.parseExpression().toRvalueOrCompileException();
+        if (!parser.peekEof()) {
             throw new CompileException("Unexpected token \"" + parser.peek() + "\"", scanner.location());
         }
 

@@ -35,7 +35,8 @@ import java.util.*;
  * In other words, you can call {@link #iterator()} as often as you want, but the
  * {@link IteratorCollection} will iterate over its delegate only once.
  */
-public class IteratorCollection extends AbstractCollection {
+public
+class IteratorCollection extends AbstractCollection {
     /** The delegate. */
     private final Iterator iterator;
     /** Lazily-filled collection of the elements delivered by the delegate. */
@@ -57,7 +58,9 @@ public class IteratorCollection extends AbstractCollection {
                 IteratorCollection.this.elements.add(o);
                 return o;
             }
-            public boolean hasNext() {
+
+            public boolean
+            hasNext() {
                 return (
                     (this.elementsIterator != null && this.elementsIterator.hasNext())
                     || IteratorCollection.this.iterator.hasNext()

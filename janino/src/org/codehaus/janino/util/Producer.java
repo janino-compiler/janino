@@ -38,7 +38,8 @@ package org.codehaus.janino.util;
  * @see org.codehaus.janino.util.iterator.DirectoryIterator
  * @see org.codehaus.janino.util.iterator.ProducerIterator
  */
-public interface Producer {
+public
+interface Producer {
 
     /**
      * Produce the next object.

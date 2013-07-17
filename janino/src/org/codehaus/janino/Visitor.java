@@ -30,19 +30,23 @@ package org.codehaus.janino;
  * Basis for the "visitor" pattern as described in "Gamma, Helm, Johnson,
  * Vlissides: Design Patterns".
  */
-public class Visitor {
-    public interface ComprehensiveVisitor
+public
+class Visitor {
+    public
+    interface ComprehensiveVisitor
     extends ImportVisitor, TypeDeclarationVisitor, TypeBodyDeclarationVisitor, BlockStatementVisitor, AtomVisitor {
     }
 
-    public interface ImportVisitor {
+    public
+    interface ImportVisitor {
         void visitSingleTypeImportDeclaration(Java.CompilationUnit.SingleTypeImportDeclaration stid);
         void visitTypeImportOnDemandDeclaration(Java.CompilationUnit.TypeImportOnDemandDeclaration tiodd);
         void visitSingleStaticImportDeclaration(Java.CompilationUnit.SingleStaticImportDeclaration ssid);
         void visitStaticImportOnDemandDeclaration(Java.CompilationUnit.StaticImportOnDemandDeclaration siodd);
     }
 
-    public interface TypeDeclarationVisitor {
+    public
+    interface TypeDeclarationVisitor {
         void visitAnonymousClassDeclaration(Java.AnonymousClassDeclaration acd);
         void visitLocalClassDeclaration(Java.LocalClassDeclaration lcd);
         void visitPackageMemberClassDeclaration(Java.PackageMemberClassDeclaration pmcd);
@@ -51,7 +55,8 @@ public class Visitor {
         void visitMemberClassDeclaration(Java.MemberClassDeclaration mcd);
     }
 
-    public interface TypeBodyDeclarationVisitor {
+    public
+    interface TypeBodyDeclarationVisitor {
         void visitMemberInterfaceDeclaration(Java.MemberInterfaceDeclaration mid);
         void visitMemberClassDeclaration(Java.MemberClassDeclaration mcd);
         void visitConstructorDeclarator(Java.ConstructorDeclarator cd);
@@ -60,7 +65,8 @@ public class Visitor {
         void visitFieldDeclaration(Java.FieldDeclaration fd);
     }
 
-    public interface BlockStatementVisitor {
+    public
+    interface BlockStatementVisitor {
         void visitInitializer(Java.Initializer i);
         void visitFieldDeclaration(Java.FieldDeclaration fd);
         void visitLabeledStatement(Java.LabeledStatement ls);
@@ -84,11 +90,13 @@ public class Visitor {
         void visitSuperConstructorInvocation(Java.SuperConstructorInvocation sci);
     }
 
-    public interface AtomVisitor extends RvalueVisitor, TypeVisitor {
+    public
+    interface AtomVisitor extends RvalueVisitor, TypeVisitor {
         void visitPackage(Java.Package p);
     }
 
-    public interface TypeVisitor {
+    public
+    interface TypeVisitor {
         void visitArrayType(Java.ArrayType at);
         void visitBasicType(Java.BasicType bt);
         void visitReferenceType(Java.ReferenceType rt);
@@ -96,7 +104,8 @@ public class Visitor {
         void visitSimpleType(Java.SimpleType st);
     }
 
-    public interface RvalueVisitor extends LvalueVisitor {
+    public
+    interface RvalueVisitor extends LvalueVisitor {
         void visitArrayLength(Java.ArrayLength al);
         void visitAssignment(Java.Assignment a);
         void visitUnaryOperation(Java.UnaryOperation uo);
@@ -123,7 +132,8 @@ public class Visitor {
         void visitThisReference(Java.ThisReference tr);
     }
 
-    public interface LvalueVisitor {
+    public
+    interface LvalueVisitor {
         void visitAmbiguousName(Java.AmbiguousName an);
         void visitArrayAccessExpression(Java.ArrayAccessExpression aae);
         void visitFieldAccess(Java.FieldAccess fa);
