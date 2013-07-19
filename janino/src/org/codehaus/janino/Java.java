@@ -1733,6 +1733,7 @@ class Java {
     }
     static
     class Padder extends CodeContext.Inserter implements CodeContext.FixUp {
+
         public
         Padder(CodeContext codeContext) { codeContext.super(); }
 
@@ -1947,12 +1948,14 @@ class Java {
             if (result == null) this.throwCompileException("Expression \"" + this.toString() + "\" is not a type");
             return result;
         }
-        public final Rvalue toRvalueOrCompileException() throws CompileException {
+        public final Rvalue
+        toRvalueOrCompileException() throws CompileException {
             Rvalue result = this.toRvalue();
             if (result == null) this.throwCompileException("Expression \"" + this.toString() + "\" is not an rvalue");
             return result;
         }
-        public final Lvalue toLvalueOrCompileException() throws CompileException {
+        public final Lvalue
+        toLvalueOrCompileException() throws CompileException {
             Lvalue result = this.toLvalue();
             if (result == null) this.throwCompileException("Expression \"" + this.toString() + "\" is not an lvalue");
             return result;

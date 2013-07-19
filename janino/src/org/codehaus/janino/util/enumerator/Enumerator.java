@@ -64,7 +64,7 @@ class Enumerator {
     /**
      * Class enumeratorClass => Map: String name => Enumerator
      */
-    private static final Map instances = Collections.synchronizedMap(new HashMap());
+    private static final Map INSTANCES = Collections.synchronizedMap(new HashMap());
 
     /**
      * Initialize the enumerator to the given value.
@@ -94,13 +94,13 @@ class Enumerator {
      */
     static Map
     getInstances(Class enumeratorClass) {
-        Map m = (Map) Enumerator.instances.get(enumeratorClass);
+        Map m = (Map) Enumerator.INSTANCES.get(enumeratorClass);
         if (m != null) return m;
 
         // The map need not be synchronized because it is modified only during initialization
         // of the Enumerator.
         m = new HashMap();
-        Enumerator.instances.put(enumeratorClass, m);
+        Enumerator.INSTANCES.put(enumeratorClass, m);
         return m;
     }
 

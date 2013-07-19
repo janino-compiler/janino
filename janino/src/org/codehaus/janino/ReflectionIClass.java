@@ -229,7 +229,7 @@ class ReflectionIClass extends IClass {
             for (int i = 0; i < parameterDescriptors.length; ++i) {
                 parameterDescriptors[i] = Descriptor.fromClassName(parameterTypes[i].getName());
             }
-            return new MethodDescriptor(parameterDescriptors, Descriptor.VOID_).toString();
+            return new MethodDescriptor(parameterDescriptors, Descriptor.VOID).toString();
         }
 
         public IClass[]

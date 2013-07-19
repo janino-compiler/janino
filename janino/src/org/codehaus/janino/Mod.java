@@ -72,15 +72,15 @@ class Mod {
     shortToString(short sh) {
         if (sh == 0) return "";
         StringBuffer res = new StringBuffer();
-        for (int i = 0; i < Mod.mappings.length; i += 2) {
-            if ((sh & ((Short) Mod.mappings[i + 1]).shortValue()) == 0) continue;
+        for (int i = 0; i < Mod.MAPPINGS.length; i += 2) {
+            if ((sh & ((Short) Mod.MAPPINGS[i + 1]).shortValue()) == 0) continue;
             if (res.length() > 0) res.append(' ');
-            res.append((String) Mod.mappings[i]);
+            res.append((String) Mod.MAPPINGS[i]);
         }
         return res.toString();
     }
 
-    private static final Object[] mappings = {
+    private static final Object[] MAPPINGS = {
         "public",       new Short(Mod.PUBLIC),
         "private",      new Short(Mod.PRIVATE),
         "protected",    new Short(Mod.PROTECTED),

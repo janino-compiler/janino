@@ -53,15 +53,15 @@ class IClass {
         public String toString() { return "NOT_CONSTANT"; }
     };
 
-    public static final IClass VOID    = new PrimitiveIClass(Descriptor.VOID_);
-    public static final IClass BYTE    = new PrimitiveIClass(Descriptor.BYTE_);
-    public static final IClass CHAR    = new PrimitiveIClass(Descriptor.CHAR_);
-    public static final IClass DOUBLE  = new PrimitiveIClass(Descriptor.DOUBLE_);
-    public static final IClass FLOAT   = new PrimitiveIClass(Descriptor.FLOAT_);
-    public static final IClass INT     = new PrimitiveIClass(Descriptor.INT_);
-    public static final IClass LONG    = new PrimitiveIClass(Descriptor.LONG_);
-    public static final IClass SHORT   = new PrimitiveIClass(Descriptor.SHORT_);
-    public static final IClass BOOLEAN = new PrimitiveIClass(Descriptor.BOOLEAN_);
+    public static final IClass VOID    = new PrimitiveIClass(Descriptor.VOID);
+    public static final IClass BYTE    = new PrimitiveIClass(Descriptor.BYTE);
+    public static final IClass CHAR    = new PrimitiveIClass(Descriptor.CHAR);
+    public static final IClass DOUBLE  = new PrimitiveIClass(Descriptor.DOUBLE);
+    public static final IClass FLOAT   = new PrimitiveIClass(Descriptor.FLOAT);
+    public static final IClass INT     = new PrimitiveIClass(Descriptor.INT);
+    public static final IClass LONG    = new PrimitiveIClass(Descriptor.LONG);
+    public static final IClass SHORT   = new PrimitiveIClass(Descriptor.SHORT);
+    public static final IClass BOOLEAN = new PrimitiveIClass(Descriptor.BOOLEAN);
 
     private static
     class PrimitiveIClass extends IClass {
@@ -499,18 +499,18 @@ class IClass {
             if (that == IClass.VOID && !this.isPrimitive()) return true;
 
             // JLS 5.1.4.5: From any interface to type "Object".
-            if (that.isInterface() && this.getDescriptor().equals(Descriptor.OBJECT)) return true;
+            if (that.isInterface() && this.getDescriptor().equals(Descriptor.JAVA_LANG_OBJECT)) return true;
 
             if (that.isArray()) {
 
                 // JLS 5.1.4.6: From any array type to type "Object".
-                if (this.getDescriptor().equals(Descriptor.OBJECT)) return true;
+                if (this.getDescriptor().equals(Descriptor.JAVA_LANG_OBJECT)) return true;
 
                 // JLS 5.1.4.7: From any array type to type "Cloneable".
-                if (this.getDescriptor().equals(Descriptor.CLONEABLE)) return true;
+                if (this.getDescriptor().equals(Descriptor.JAVA_LANG_CLONEABLE)) return true;
 
                 // JLS 5.1.4.8: From any array type to type "java.io.Serializable".
-                if (this.getDescriptor().equals(Descriptor.SERIALIZABLE)) return true;
+                if (this.getDescriptor().equals(Descriptor.JAVA_IO_SERIALIZABLE)) return true;
 
                 // JLS 5.1.4.9: From SC[] to TC[] while SC if widening reference convertible to TC.
                 if (this.isArray()) {
@@ -526,32 +526,32 @@ class IClass {
     private static final Set PRIMITIVE_WIDENING_CONVERSIONS = new HashSet();
     static {
         String[] pwcs = new String[] {
-            Descriptor.BYTE_  + Descriptor.SHORT_,
+            Descriptor.BYTE  + Descriptor.SHORT,
 
-            Descriptor.BYTE_  + Descriptor.INT_,
-            Descriptor.SHORT_ + Descriptor.INT_,
-            Descriptor.CHAR_  + Descriptor.INT_,
+            Descriptor.BYTE  + Descriptor.INT,
+            Descriptor.SHORT + Descriptor.INT,
+            Descriptor.CHAR  + Descriptor.INT,
 
-            Descriptor.BYTE_  + Descriptor.LONG_,
-            Descriptor.SHORT_ + Descriptor.LONG_,
-            Descriptor.CHAR_  + Descriptor.LONG_,
-            Descriptor.INT_   + Descriptor.LONG_,
+            Descriptor.BYTE  + Descriptor.LONG,
+            Descriptor.SHORT + Descriptor.LONG,
+            Descriptor.CHAR  + Descriptor.LONG,
+            Descriptor.INT   + Descriptor.LONG,
 
-            Descriptor.BYTE_  + Descriptor.FLOAT_,
-            Descriptor.SHORT_ + Descriptor.FLOAT_,
-            Descriptor.CHAR_  + Descriptor.FLOAT_,
-            Descriptor.INT_   + Descriptor.FLOAT_,
+            Descriptor.BYTE  + Descriptor.FLOAT,
+            Descriptor.SHORT + Descriptor.FLOAT,
+            Descriptor.CHAR  + Descriptor.FLOAT,
+            Descriptor.INT   + Descriptor.FLOAT,
 
-            Descriptor.LONG_  + Descriptor.FLOAT_,
+            Descriptor.LONG  + Descriptor.FLOAT,
 
-            Descriptor.BYTE_  + Descriptor.DOUBLE_,
-            Descriptor.SHORT_ + Descriptor.DOUBLE_,
-            Descriptor.CHAR_  + Descriptor.DOUBLE_,
-            Descriptor.INT_   + Descriptor.DOUBLE_,
+            Descriptor.BYTE  + Descriptor.DOUBLE,
+            Descriptor.SHORT + Descriptor.DOUBLE,
+            Descriptor.CHAR  + Descriptor.DOUBLE,
+            Descriptor.INT   + Descriptor.DOUBLE,
 
-            Descriptor.LONG_  + Descriptor.DOUBLE_,
+            Descriptor.LONG  + Descriptor.DOUBLE,
 
-            Descriptor.FLOAT_ + Descriptor.DOUBLE_,
+            Descriptor.FLOAT + Descriptor.DOUBLE,
         };
         for (int i = 0; i < pwcs.length; ++i) IClass.PRIMITIVE_WIDENING_CONVERSIONS.add(pwcs[i]);
     }
@@ -820,7 +820,7 @@ class IClass {
                 parameterTypes = tmp;
             }
 
-            return new MethodDescriptor(IClass.getDescriptors(parameterTypes), Descriptor.VOID_).toString();
+            return new MethodDescriptor(IClass.getDescriptors(parameterTypes), Descriptor.VOID).toString();
         }
         public String
         toString() {

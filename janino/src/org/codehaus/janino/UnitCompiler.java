@@ -200,10 +200,10 @@ class UnitCompiler {
                 allowStringBuilder = false;
             }
 
-            if ((iClassLoader.loadIClass(Descriptor.STRING_BUILDER) != null) && allowStringBuilder) {
+            if ((iClassLoader.loadIClass(Descriptor.JAVA_LANG_STRINGBUILDER) != null) && allowStringBuilder) {
                 this.isStringBuilderAvailable = true;
             } else
-            if (iClassLoader.loadIClass(Descriptor.STRING_BUFFER) != null) {
+            if (iClassLoader.loadIClass(Descriptor.JAVA_LANG_STRINGBUFFER) != null) {
                 this.isStringBuilderAvailable = false;
             } else
             {
@@ -733,7 +733,7 @@ class UnitCompiler {
                 | Mod.ABSTRACT
             ),
             iClass.getDescriptor(), // thisClassFD
-            Descriptor.OBJECT,      // superclassFD
+            Descriptor.JAVA_LANG_OBJECT,      // superclassFD
             interfaceDescriptors    // interfaceFDs
         );
 
@@ -1269,8 +1269,8 @@ class UnitCompiler {
             ;
         } else
         if (
-            ((Integer) caseLabelMap.firstKey()).intValue() + caseLabelMap.size() >= // Beware of INT overflow!
-            ((Integer) caseLabelMap.lastKey()).intValue() - caseLabelMap.size()
+            ((Integer) caseLabelMap.firstKey()).intValue() + caseLabelMap.size() // Beware of INT overflow!
+            >= ((Integer) caseLabelMap.lastKey()).intValue() - caseLabelMap.size()
         ) {
             int low  = ((Integer) caseLabelMap.firstKey()).intValue();
             int high = ((Integer) caseLabelMap.lastKey()).intValue();
@@ -4293,6 +4293,7 @@ class UnitCompiler {
 
         // "|", "^", "&", "*", "/", "%", "+", "-", "==", "!=".
         if (
+            // CHECKSTYLE StringLiteralEquality:OFF
             bo.op == "|"
             || bo.op == "^"
             || bo.op == "&"
@@ -4303,6 +4304,7 @@ class UnitCompiler {
             || bo.op == "-"
             || bo.op == "=="
             || bo.op == "!="
+            // CHECKSTYLE StringLiteralEquality:ON
         ) {
 
             // Unroll the constant operands.
@@ -4322,6 +4324,7 @@ class UnitCompiler {
                 Object rhs = it.next();
 
                 // String concatenation?
+                // SUPPRESS CHECKSTYLE StringLiteralEquality
                 if (bo.op == "+" && (lhs instanceof String || rhs instanceof String)) {
                     StringBuffer sb = new StringBuffer(lhs.toString()).append(rhs);
                     while (it.hasNext()) sb.append(it.next().toString());
@@ -4334,6 +4337,7 @@ class UnitCompiler {
                             double lhsD = ((Number) lhs).doubleValue();
                             double rhsD = ((Number) rhs).doubleValue();
                             lhs = (
+                                // CHECKSTYLE StringLiteralEquality:OFF
                                 bo.op == "*" ? new Double(lhsD * rhsD) :
                                 bo.op == "/" ? new Double(lhsD / rhsD) :
                                 bo.op == "%" ? new Double(lhsD % rhsD) :
@@ -4342,6 +4346,7 @@ class UnitCompiler {
                                 bo.op == "==" ? Boolean.valueOf(lhsD == rhsD) :
                                 bo.op == "!=" ? Boolean.valueOf(lhsD != rhsD) :
                                 NOT_CONSTANT
+                                // CHECKSTYLE StringLiteralEquality:ON
                             );
                             continue;
                         }
@@ -4349,6 +4354,7 @@ class UnitCompiler {
                             float lhsF = ((Number) lhs).floatValue();
                             float rhsF = ((Number) rhs).floatValue();
                             lhs = (
+                                // CHECKSTYLE StringLiteralEquality:OFF
                                 bo.op == "*" ? new Float(lhsF * rhsF) :
                                 bo.op == "/" ? new Float(lhsF / rhsF) :
                                 bo.op == "%" ? new Float(lhsF % rhsF) :
@@ -4357,6 +4363,7 @@ class UnitCompiler {
                                 bo.op == "==" ? Boolean.valueOf(lhsF == rhsF) :
                                 bo.op == "!=" ? Boolean.valueOf(lhsF != rhsF) :
                                 NOT_CONSTANT
+                                // CHECKSTYLE StringLiteralEquality:ON
                             );
                             continue;
                         }
@@ -4364,6 +4371,7 @@ class UnitCompiler {
                             long lhsL = ((Number) lhs).longValue();
                             long rhsL = ((Number) rhs).longValue();
                             lhs = (
+                                // CHECKSTYLE StringLiteralEquality:OFF
                                 bo.op == "|" ? new Long(lhsL | rhsL) :
                                 bo.op == "^" ? new Long(lhsL ^ rhsL) :
                                 bo.op == "&" ? new Long(lhsL & rhsL) :
@@ -4375,6 +4383,7 @@ class UnitCompiler {
                                 bo.op == "==" ? Boolean.valueOf(lhsL == rhsL) :
                                 bo.op == "!=" ? Boolean.valueOf(lhsL != rhsL) :
                                 NOT_CONSTANT
+                                // CHECKSTYLE StringLiteralEquality:ON
                             );
                             continue;
                         }
@@ -4385,6 +4394,7 @@ class UnitCompiler {
                             int lhsI = ((Number) lhs).intValue();
                             int rhsI = ((Number) rhs).intValue();
                             lhs = (
+                                // CHECKSTYLE StringLiteralEquality:OFF
                                 bo.op == "|" ? new Integer(lhsI | rhsI) :
                                 bo.op == "^" ? new Integer(lhsI ^ rhsI) :
                                 bo.op == "&" ? new Integer(lhsI & rhsI) :
@@ -4396,6 +4406,7 @@ class UnitCompiler {
                                 bo.op == "==" ? Boolean.valueOf(lhsI == rhsI) :
                                 bo.op == "!=" ? Boolean.valueOf(lhsI != rhsI) :
                                 NOT_CONSTANT
+                                // CHECKSTYLE StringLiteralEquality:ON
                             );
                             continue;
                         }
@@ -4411,8 +4422,8 @@ class UnitCompiler {
                     char lhsC = ((Character) lhs).charValue();
                     char rhsC = ((Character) rhs).charValue();
                     lhs = (
-                        bo.op == "==" ? Boolean.valueOf(lhsC == rhsC) :
-                        bo.op == "!=" ? Boolean.valueOf(lhsC != rhsC) :
+                        bo.op == "==" ? Boolean.valueOf(lhsC == rhsC) : // SUPPRESS CHECKSTYLE StringLiteralEquality
+                        bo.op == "!=" ? Boolean.valueOf(lhsC != rhsC) : // SUPPRESS CHECKSTYLE StringLiteralEquality
                         NOT_CONSTANT
                     );
                     continue;
@@ -4420,8 +4431,8 @@ class UnitCompiler {
 
                 if (lhs == null || rhs == null) {
                     lhs = (
-                        bo.op == "==" ? Boolean.valueOf(lhs == rhs) :
-                        bo.op == "!=" ? Boolean.valueOf(lhs != rhs) :
+                        bo.op == "==" ? Boolean.valueOf(lhs == rhs) : // SUPPRESS CHECKSTYLE StringLiteralEquality
+                        bo.op == "!=" ? Boolean.valueOf(lhs != rhs) : // SUPPRESS CHECKSTYLE StringLiteralEquality
                         NOT_CONSTANT
                     );
                     continue;
@@ -4433,12 +4444,12 @@ class UnitCompiler {
         }
 
         // "&&" and "||" with constant LHS operand.
-        if (bo.op == "&&" || bo.op == "||") {
+        if (bo.op == "&&" || bo.op == "||") { // SUPPRESS CHECKSTYLE StringLiteralEquality
             Object lhsValue = this.getConstantValue(bo.lhs);
             if (lhsValue instanceof Boolean) {
                 boolean lhsBv = ((Boolean) lhsValue).booleanValue();
                 return (
-                    bo.op == "&&"
+                    bo.op == "&&" // SUPPRESS CHECKSTYLE StringLiteralEquality
                     ? (lhsBv ? this.getConstantValue(bo.rhs) : Boolean.FALSE)
                     : (lhsBv ? Boolean.TRUE : this.getConstantValue(bo.rhs))
                 );
@@ -4560,8 +4571,8 @@ class UnitCompiler {
     }
     private Object
     getConstantValue2(BooleanLiteral bl) {
-        if (bl.value == "true") return Boolean.TRUE;
-        if (bl.value == "false") return Boolean.FALSE;
+        if (bl.value == "true")  return Boolean.TRUE;  // SUPPRESS CHECKSTYLE StringLiteralEquality
+        if (bl.value == "false") return Boolean.FALSE; // SUPPRESS CHECKSTYLE StringLiteralEquality
         throw new JaninoRuntimeException(bl.value);
     }
     private Object
@@ -5267,8 +5278,9 @@ class UnitCompiler {
     }
     private IClass
     getType2(UnaryOperation uo) throws CompileException {
-        if (uo.operator == "!") return IClass.BOOLEAN;
+        if (uo.operator == "!") return IClass.BOOLEAN; // SUPPRESS CHECKSTYLE StringLiteralEquality
 
+         // SUPPRESS CHECKSTYLE StringLiteralEquality
         if (uo.operator == "+" || uo.operator == "-" || uo.operator == "~") {
             return this.unaryNumericPromotionType((Locatable) uo, this.getUnboxedType(this.getType(uo.operand)));
         }
@@ -5281,6 +5293,7 @@ class UnitCompiler {
     private IClass
     getType2(BinaryOperation bo) throws CompileException {
         if (
+            // CHECKSTYLE StringLiteralEquality:OFF
             bo.op == "||"
             || bo.op == "&&"
             || bo.op == "=="
@@ -5289,9 +5302,10 @@ class UnitCompiler {
             || bo.op == ">" 
             || bo.op == "<="
             || bo.op == ">="
+            // CHECKSTYLE StringLiteralEquality:ON
         ) return IClass.BOOLEAN;
 
-        if (bo.op == "|" || bo.op == "^" || bo.op == "&") {
+        if (bo.op == "|" || bo.op == "^" || bo.op == "&") { // SUPPRESS CHECKSTYLE StringLiteralEquality
             IClass lhsType = this.getType(bo.lhs);
             return (
                 lhsType == IClass.BOOLEAN || lhsType == this.iClassLoader.BOOLEAN
@@ -5300,6 +5314,7 @@ class UnitCompiler {
             );
         }
 
+        // SUPPRESS CHECKSTYLE StringLiteralEquality
         if (bo.op == "*" || bo.op == "/" || bo.op == "%" || bo.op == "+" || bo.op == "-") {
             IClassLoader icl = this.iClassLoader;
 
@@ -5308,18 +5323,20 @@ class UnitCompiler {
 
             // Check the far left operand type.
             IClass lhsType = this.getUnboxedType(this.getType(((Rvalue) ops.next())));
-            if (bo.op == "+" && lhsType == icl.STRING) return icl.STRING;
+            if (bo.op == "+" && lhsType == icl.STRING) return icl.STRING; // SUPPRESS CHECKSTYLE StringLiteralEquality
 
             // Determine the expression type.
             do {
                 IClass rhsType = this.getUnboxedType(this.getType(((Rvalue) ops.next())));
-                if (bo.op == "+" && rhsType == icl.STRING) return icl.STRING;
+                if (bo.op == "+" && rhsType == icl.STRING) { // SUPPRESS CHECKSTYLE StringLiteralEquality
+                    return icl.STRING; 
+                }
                 lhsType = this.binaryNumericPromotionType((Locatable) bo, lhsType, rhsType);
             } while (ops.hasNext());
             return lhsType;
         }
 
-        if (bo.op == "<<"  || bo.op == ">>"  || bo.op == ">>>") {
+        if (bo.op == "<<"  || bo.op == ">>"  || bo.op == ">>>") { // SUPPRESS CHECKSTYLE StringLiteralEquality
             IClass lhsType = this.getType(bo.lhs);
             return this.unaryNumericPromotionType((Locatable) bo, lhsType);
         }
@@ -5806,11 +5823,14 @@ class UnitCompiler {
         Iterator        operands,
         String          operator
     ) throws CompileException {
-        if (operator == "|" || operator == "^" || operator == "&") {
+        if (operator == "|" || operator == "^" || operator == "&") { // SUPPRESS CHECKSTYLE StringLiteralEquality
             final int iopcode = (
+                // CHECKSTYLE StringLiteralEquality:OFF
                 operator == "&" ? Opcode.IAND :
                 operator == "|" ? Opcode.IOR  :
-                operator == "^" ? Opcode.IXOR : Integer.MAX_VALUE
+                operator == "^" ? Opcode.IXOR :
+                // CHECKSTYLE StringLiteralEquality:OFF
+                Integer.MAX_VALUE
             );
 
             do {
@@ -5879,6 +5899,7 @@ class UnitCompiler {
             return type;
         }
 
+        // SUPPRESS CHECKSTYLE StringLiteralEquality
         if (operator == "*" || operator == "/" || operator == "%" || operator == "+" || operator == "-") {
             final int iopcode = (
                 operator == "*"   ? Opcode.IMUL  :
@@ -5895,6 +5916,7 @@ class UnitCompiler {
                 IClassLoader icl         = this.iClassLoader;
 
                 // String concatenation?
+                // SUPPRESS CHECKSTYLE StringLiteralEquality
                 if (operator == "+" && (type == icl.STRING || operandType == icl.STRING)) {
                     return this.compileStringConcatenation(l, type, operand, operands);
                 }
@@ -5930,7 +5952,7 @@ class UnitCompiler {
             return type;
         }
 
-        if (operator == "<<"  || operator == ">>"  || operator == ">>>") {
+        if (operator == "<<"  || operator == ">>"  || operator == ">>>") { // SUPPRESS CHECKSTYLE StringLiteralEquality
             final int iopcode = (
                 operator == "<<"  ? Opcode.ISHL  :
                 operator == ">>"  ? Opcode.ISHR  :
@@ -6066,9 +6088,9 @@ class UnitCompiler {
                 if (operandOnStack) {
                     this.writeOpcode(l, Opcode.INVOKEVIRTUAL);
                     this.writeConstantMethodrefInfo(
-                        Descriptor.STRING,                                // classFD
+                        Descriptor.JAVA_LANG_STRING,                                // classFD
                         "concat",                                         // methodName
-                        "(" + Descriptor.STRING + ")" + Descriptor.STRING // methodMD
+                        "(" + Descriptor.JAVA_LANG_STRING + ")" + Descriptor.JAVA_LANG_STRING // methodMD
                     );
                 } else
                 {
@@ -6081,7 +6103,12 @@ class UnitCompiler {
         // String concatenation through "new StringBuffer(a).append(b).append(c).append(d).toString()".
         Iterator it = tmp.iterator();
 
-        String stringBuilferFd = this.isStringBuilderAvailable ? Descriptor.STRING_BUILDER : Descriptor.STRING_BUFFER;
+        String stringBuilferFd = (
+            this.isStringBuilderAvailable
+            ? Descriptor.JAVA_LANG_STRINGBUILDER
+            : Descriptor.JAVA_LANG_STRINGBUFFER
+        );
+
         // "new StringBuffer(a)":
         if (operandOnStack) {
             this.writeOpcode(l, Opcode.NEW);
@@ -6099,7 +6126,7 @@ class UnitCompiler {
         this.writeConstantMethodrefInfo(
             stringBuilferFd,                                 // classFD
             "<init>",                                        // methodName
-            "(" + Descriptor.STRING + ")" + Descriptor.VOID_ // methodMD
+            "(" + Descriptor.JAVA_LANG_STRING + ")" + Descriptor.VOID // methodMD
         );
         while (it.hasNext()) {
             ((Compilable) it.next()).compile();
@@ -6109,7 +6136,7 @@ class UnitCompiler {
             this.writeConstantMethodrefInfo(
                 stringBuilferFd,                                // classFD
                 "append",                                       // methodName
-                "(" + Descriptor.STRING + ")" + stringBuilferFd // methodMD
+                "(" + Descriptor.JAVA_LANG_STRING + ")" + stringBuilferFd // methodMD
             );
         }
 
@@ -6118,7 +6145,7 @@ class UnitCompiler {
         this.writeConstantMethodrefInfo(
             stringBuilferFd,         // classFD
             "toString",              // methodName
-            "()" + Descriptor.STRING // methodMD
+            "()" + Descriptor.JAVA_LANG_STRING // methodMD
         );
         return this.iClassLoader.STRING;
     }
@@ -6131,7 +6158,7 @@ class UnitCompiler {
     stringConversion(Locatable l, IClass sourceType) {
         this.writeOpcode(l, Opcode.INVOKESTATIC);
         this.writeConstantMethodrefInfo(
-            Descriptor.STRING, // classFD
+            Descriptor.JAVA_LANG_STRING, // classFD
             "valueOf",         // methodName
             "(" + ((           // methodMD
                 sourceType == IClass.BOOLEAN
@@ -6143,7 +6170,7 @@ class UnitCompiler {
                 sourceType == IClass.BYTE
                 || sourceType == IClass.SHORT
                 || sourceType == IClass.INT
-            ) ? Descriptor.INT_ : Descriptor.OBJECT) + ")" + Descriptor.STRING
+            ) ? Descriptor.INT : Descriptor.JAVA_LANG_OBJECT) + ")" + Descriptor.JAVA_LANG_STRING
         );
     }
 
@@ -8003,7 +8030,7 @@ class UnitCompiler {
                     l.add(UnitCompiler.this.getType(fps[i].type).getDescriptor());
                 }
                 String[] apd = (String[]) l.toArray(new String[l.size()]);
-                return new MethodDescriptor(apd, Descriptor.VOID_).toString();
+                return new MethodDescriptor(apd, Descriptor.VOID).toString();
             }
 
             public IClass[]
@@ -8389,9 +8416,9 @@ class UnitCompiler {
                 this.writeLdc(l, this.addConstantStringInfo(ss[i]));
                 this.writeOpcode(l, Opcode.INVOKEVIRTUAL);
                 this.writeConstantMethodrefInfo(
-                    Descriptor.STRING,                                // classFD
+                    Descriptor.JAVA_LANG_STRING,                                // classFD
                     "concat",                                         // methodName
-                    "(" + Descriptor.STRING + ")" + Descriptor.STRING // methodMD
+                    "(" + Descriptor.JAVA_LANG_STRING + ")" + Descriptor.JAVA_LANG_STRING // methodMD
                 );
             }
             return this.iClassLoader.STRING;
@@ -8918,38 +8945,38 @@ class UnitCompiler {
     private static final HashMap PRIMITIVE_WIDENING_CONVERSIONS = new HashMap();
     static { UnitCompiler.fillConversionMap(new Object[] {
         new byte[0],
-        Descriptor.BYTE_  + Descriptor.SHORT_,
+        Descriptor.BYTE  + Descriptor.SHORT,
 
-        Descriptor.BYTE_  + Descriptor.INT_,
-        Descriptor.SHORT_ + Descriptor.INT_,
-        Descriptor.CHAR_  + Descriptor.INT_,
+        Descriptor.BYTE  + Descriptor.INT,
+        Descriptor.SHORT + Descriptor.INT,
+        Descriptor.CHAR  + Descriptor.INT,
 
         new byte[] { Opcode.I2L },
-        Descriptor.BYTE_  + Descriptor.LONG_,
-        Descriptor.SHORT_ + Descriptor.LONG_,
-        Descriptor.CHAR_  + Descriptor.LONG_,
-        Descriptor.INT_   + Descriptor.LONG_,
+        Descriptor.BYTE  + Descriptor.LONG,
+        Descriptor.SHORT + Descriptor.LONG,
+        Descriptor.CHAR  + Descriptor.LONG,
+        Descriptor.INT   + Descriptor.LONG,
 
         new byte[] { Opcode.I2F },
-        Descriptor.BYTE_  + Descriptor.FLOAT_,
-        Descriptor.SHORT_ + Descriptor.FLOAT_,
-        Descriptor.CHAR_  + Descriptor.FLOAT_,
-        Descriptor.INT_   + Descriptor.FLOAT_,
+        Descriptor.BYTE  + Descriptor.FLOAT,
+        Descriptor.SHORT + Descriptor.FLOAT,
+        Descriptor.CHAR  + Descriptor.FLOAT,
+        Descriptor.INT   + Descriptor.FLOAT,
 
         new byte[] { Opcode.L2F },
-        Descriptor.LONG_  + Descriptor.FLOAT_,
+        Descriptor.LONG  + Descriptor.FLOAT,
 
         new byte[] { Opcode.I2D },
-        Descriptor.BYTE_  + Descriptor.DOUBLE_,
-        Descriptor.SHORT_ + Descriptor.DOUBLE_,
-        Descriptor.CHAR_  + Descriptor.DOUBLE_,
-        Descriptor.INT_   + Descriptor.DOUBLE_,
+        Descriptor.BYTE  + Descriptor.DOUBLE,
+        Descriptor.SHORT + Descriptor.DOUBLE,
+        Descriptor.CHAR  + Descriptor.DOUBLE,
+        Descriptor.INT   + Descriptor.DOUBLE,
 
         new byte[] { Opcode.L2D },
-        Descriptor.LONG_  + Descriptor.DOUBLE_,
+        Descriptor.LONG  + Descriptor.DOUBLE,
 
         new byte[] { Opcode.F2D },
-        Descriptor.FLOAT_ + Descriptor.DOUBLE_,
+        Descriptor.FLOAT + Descriptor.DOUBLE,
     }, UnitCompiler.PRIMITIVE_WIDENING_CONVERSIONS); }
     private static void
     fillConversionMap(Object[] array, HashMap map) {
@@ -9018,57 +9045,57 @@ class UnitCompiler {
     private static final HashMap PRIMITIVE_NARROWING_CONVERSIONS = new HashMap();
     static { UnitCompiler.fillConversionMap(new Object[] {
         new byte[0],
-        Descriptor.BYTE_ + Descriptor.CHAR_,
-        Descriptor.SHORT_ + Descriptor.CHAR_,
-        Descriptor.CHAR_ + Descriptor.SHORT_,
+        Descriptor.BYTE + Descriptor.CHAR,
+        Descriptor.SHORT + Descriptor.CHAR,
+        Descriptor.CHAR + Descriptor.SHORT,
 
         new byte[] { Opcode.I2B },
-        Descriptor.SHORT_ + Descriptor.BYTE_,
-        Descriptor.CHAR_ + Descriptor.BYTE_,
-        Descriptor.INT_ + Descriptor.BYTE_,
+        Descriptor.SHORT + Descriptor.BYTE,
+        Descriptor.CHAR + Descriptor.BYTE,
+        Descriptor.INT + Descriptor.BYTE,
 
         new byte[] { Opcode.I2S },
-        Descriptor.INT_ + Descriptor.SHORT_,
-        Descriptor.INT_ + Descriptor.CHAR_,
+        Descriptor.INT + Descriptor.SHORT,
+        Descriptor.INT + Descriptor.CHAR,
 
         new byte[] { Opcode.L2I, Opcode.I2B },
-        Descriptor.LONG_ + Descriptor.BYTE_,
+        Descriptor.LONG + Descriptor.BYTE,
 
         new byte[] { Opcode.L2I, Opcode.I2S },
-        Descriptor.LONG_ + Descriptor.SHORT_,
-        Descriptor.LONG_ + Descriptor.CHAR_,
+        Descriptor.LONG + Descriptor.SHORT,
+        Descriptor.LONG + Descriptor.CHAR,
 
         new byte[] { Opcode.L2I },
-        Descriptor.LONG_ + Descriptor.INT_,
+        Descriptor.LONG + Descriptor.INT,
 
         new byte[] { Opcode.F2I, Opcode.I2B },
-        Descriptor.FLOAT_ + Descriptor.BYTE_,
+        Descriptor.FLOAT + Descriptor.BYTE,
 
         new byte[] { Opcode.F2I, Opcode.I2S },
-        Descriptor.FLOAT_ + Descriptor.SHORT_,
-        Descriptor.FLOAT_ + Descriptor.CHAR_,
+        Descriptor.FLOAT + Descriptor.SHORT,
+        Descriptor.FLOAT + Descriptor.CHAR,
 
         new byte[] { Opcode.F2I },
-        Descriptor.FLOAT_ + Descriptor.INT_,
+        Descriptor.FLOAT + Descriptor.INT,
 
         new byte[] { Opcode.F2L },
-        Descriptor.FLOAT_ + Descriptor.LONG_,
+        Descriptor.FLOAT + Descriptor.LONG,
 
         new byte[] { Opcode.D2I, Opcode.I2B },
-        Descriptor.DOUBLE_ + Descriptor.BYTE_,
+        Descriptor.DOUBLE + Descriptor.BYTE,
 
         new byte[] { Opcode.D2I, Opcode.I2S },
-        Descriptor.DOUBLE_ + Descriptor.SHORT_,
-        Descriptor.DOUBLE_ + Descriptor.CHAR_,
+        Descriptor.DOUBLE + Descriptor.SHORT,
+        Descriptor.DOUBLE + Descriptor.CHAR,
 
         new byte[] { Opcode.D2I },
-        Descriptor.DOUBLE_ + Descriptor.INT_,
+        Descriptor.DOUBLE + Descriptor.INT,
 
         new byte[] { Opcode.D2L },
-        Descriptor.DOUBLE_ + Descriptor.LONG_,
+        Descriptor.DOUBLE + Descriptor.LONG,
 
         new byte[] { Opcode.D2F },
-        Descriptor.DOUBLE_ + Descriptor.FLOAT_,
+        Descriptor.DOUBLE + Descriptor.FLOAT,
     }, UnitCompiler.PRIMITIVE_NARROWING_CONVERSIONS); }
 
     /**
@@ -9184,9 +9211,9 @@ class UnitCompiler {
     private boolean
     isCastReferenceConvertible(IClass sourceType, IClass targetType) throws CompileException {
         return (
-            this.isIdentityConvertible(sourceType, targetType) ||
-            this.isWideningReferenceConvertible(sourceType, targetType) ||
-            this.isNarrowingReferenceConvertible(sourceType, targetType)
+            this.isIdentityConvertible(sourceType, targetType)
+            || this.isWideningReferenceConvertible(sourceType, targetType)
+            || this.isNarrowingReferenceConvertible(sourceType, targetType)
         );
     }
 
@@ -9249,7 +9276,7 @@ class UnitCompiler {
         this.writeConstantMethodrefInfo(
             targetType.getDescriptor(),                               // classFD
             "<init>",                                                 // methodName
-            '(' + sourceType.getDescriptor() + ')' + Descriptor.VOID_ // methodMD
+            '(' + sourceType.getDescriptor() + ')' + Descriptor.VOID // methodMD
         );
     }
 

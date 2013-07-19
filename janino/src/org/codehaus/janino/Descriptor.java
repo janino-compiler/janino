@@ -26,6 +26,7 @@
 
 package org.codehaus.janino;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -67,7 +68,7 @@ class Descriptor {
     }
     public static short
     size(String d) {
-        if (d.equals(Descriptor.VOID_)) return 0;
+        if (d.equals(Descriptor.VOID)) return 0;
         if (Descriptor.hasSize1(d)) return 1;
         if (Descriptor.hasSize2(d)) return 2;
         throw new JaninoRuntimeException("No size defined for type \"" + Descriptor.toString(d) + "\"");
@@ -81,7 +82,7 @@ class Descriptor {
 
     public static boolean
     hasSize2(String d) {
-        return d.equals(Descriptor.LONG_) || d.equals(Descriptor.DOUBLE_);
+        return d.equals(Descriptor.LONG) || d.equals(Descriptor.DOUBLE);
     }
 
     // Pretty-print.
@@ -160,7 +161,7 @@ class Descriptor {
      */
     public static String
     fromClassName(String className) {
-        String res = (String) Descriptor.classNameToDescriptor.get(className);
+        String res = (String) Descriptor.CLASS_NAME_TO_DESCRIPTOR.get(className);
         if (res != null) { return res; }
         if (className.startsWith("[")) return className.replace('.', '/');
         return 'L' + className.replace('.', '/') + ';';
@@ -183,7 +184,7 @@ class Descriptor {
      */
     public static String
     toClassName(String d) {
-        String res = (String) Descriptor.descriptorToClassName.get(d);
+        String res = (String) Descriptor.DESCRIPTOR_TO_CLASSNAME.get(d);
         if (res != null) { return res; }
 
         char firstChar = d.charAt(0);
@@ -243,70 +244,76 @@ class Descriptor {
         return packageName1 == null ? packageName2 == null : packageName1.equals(packageName2);
     }
 
-    public static final String VOID_    = "V";
-    public static final String BYTE_    = "B";
-    public static final String CHAR_    = "C";
-    public static final String DOUBLE_  = "D";
-    public static final String FLOAT_   = "F";
-    public static final String INT_     = "I";
-    public static final String LONG_    = "J";
-    public static final String SHORT_   = "S";
-    public static final String BOOLEAN_ = "Z";
+    public static final String VOID    = "V";
+    public static final String BYTE    = "B";
+    public static final String CHAR    = "C";
+    public static final String DOUBLE  = "D";
+    public static final String FLOAT   = "F";
+    public static final String INT     = "I";
+    public static final String LONG    = "J";
+    public static final String SHORT   = "S";
+    public static final String BOOLEAN = "Z";
 
-    public static final String OBJECT            = "Ljava/lang/Object;";
-    public static final String STRING            = "Ljava/lang/String;";
-    public static final String STRING_BUFFER     = "Ljava/lang/StringBuffer;";
-    public static final String STRING_BUILDER    = "Ljava/lang/StringBuilder;"; // Since 1.5!
-    public static final String CLASS             = "Ljava/lang/Class;";
-    public static final String THROWABLE         = "Ljava/lang/Throwable;";
-    public static final String RUNTIME_EXCEPTION = "Ljava/lang/RuntimeException;";
-    public static final String ERROR             = "Ljava/lang/Error;";
-    public static final String CLONEABLE         = "Ljava/lang/Cloneable;";
-    public static final String SERIALIZABLE      = "Ljava/io/Serializable;";
+    public static final String JAVA_LANG_OBJECT           = "Ljava/lang/Object;";
+    public static final String JAVA_LANG_STRING           = "Ljava/lang/String;";
+    public static final String JAVA_LANG_STRINGBUFFER     = "Ljava/lang/StringBuffer;";
+    public static final String JAVA_LANG_STRINGBUILDER    = "Ljava/lang/StringBuilder;"; // Since 1.5!
+    public static final String JAVA_LANG_CLASS            = "Ljava/lang/Class;";
+    public static final String JAVA_LANG_THROWABLE        = "Ljava/lang/Throwable;";
+    public static final String JAVA_LANG_RUNTIMEEXCEPTION = "Ljava/lang/RuntimeException;";
+    public static final String JAVA_LANG_ERROR            = "Ljava/lang/Error;";
+    public static final String JAVA_LANG_CLONEABLE        = "Ljava/lang/Cloneable;";
+    public static final String JAVA_IO_SERIALIZABLE       = "Ljava/io/Serializable;";
 
-    public static final String BOOLEAN   = "Ljava/lang/Boolean;";
-    public static final String BYTE      = "Ljava/lang/Byte;";
-    public static final String CHARACTER = "Ljava/lang/Character;";
-    public static final String SHORT     = "Ljava/lang/Short;";
-    public static final String INTEGER   = "Ljava/lang/Integer;";
-    public static final String LONG      = "Ljava/lang/Long;";
-    public static final String FLOAT     = "Ljava/lang/Float;";
-    public static final String DOUBLE    = "Ljava/lang/Double;";
+    public static final String JAVA_LANG_BOOLEAN   = "Ljava/lang/Boolean;";
+    public static final String JAVA_LANG_BYTE      = "Ljava/lang/Byte;";
+    public static final String JAVA_LANG_CHARACTER = "Ljava/lang/Character;";
+    public static final String JAVA_LANG_SHORT     = "Ljava/lang/Short;";
+    public static final String JAVA_LANG_INTEGER   = "Ljava/lang/Integer;";
+    public static final String JAVA_LANG_LONG      = "Ljava/lang/Long;";
+    public static final String JAVA_LANG_FLOAT     = "Ljava/lang/Float;";
+    public static final String JAVA_LANG_DOUBLE    = "Ljava/lang/Double;";
 
-    private static final Map classNameToDescriptor = new HashMap();
-    private static final Map descriptorToClassName = new HashMap();
+    private static final Map DESCRIPTOR_TO_CLASSNAME;
     static {
-        descriptorToClassName.put(Descriptor.VOID_,             "void");
-        descriptorToClassName.put(Descriptor.BYTE_,             "byte");
-        descriptorToClassName.put(Descriptor.CHAR_,             "char");
-        descriptorToClassName.put(Descriptor.DOUBLE_,           "double");
-        descriptorToClassName.put(Descriptor.FLOAT_,            "float");
-        descriptorToClassName.put(Descriptor.INT_,              "int");
-        descriptorToClassName.put(Descriptor.LONG_,             "long");
-        descriptorToClassName.put(Descriptor.SHORT_,            "short");
-        descriptorToClassName.put(Descriptor.BOOLEAN_,          "boolean");
-        descriptorToClassName.put(Descriptor.OBJECT,            "java.lang.Object");
-        descriptorToClassName.put(Descriptor.STRING,            "java.lang.String");
-        descriptorToClassName.put(Descriptor.STRING_BUFFER,     "java.lang.StringBuffer");
-        descriptorToClassName.put(Descriptor.STRING_BUILDER,    "java.lang.StringBuilder");
-        descriptorToClassName.put(Descriptor.CLASS,             "java.lang.Class");
-        descriptorToClassName.put(Descriptor.THROWABLE,         "java.lang.Throwable");
-        descriptorToClassName.put(Descriptor.RUNTIME_EXCEPTION, "java.lang.RuntimeException");
-        descriptorToClassName.put(Descriptor.ERROR,             "java.lang.Error");
-        descriptorToClassName.put(Descriptor.CLONEABLE,         "java.lang.Cloneable");
-        descriptorToClassName.put(Descriptor.SERIALIZABLE,      "java.io.Serializable");
-        descriptorToClassName.put(Descriptor.BOOLEAN,           "java.lang.Boolean");
-        descriptorToClassName.put(Descriptor.BYTE,              "java.lang.Byte");
-        descriptorToClassName.put(Descriptor.CHARACTER,         "java.lang.Character");
-        descriptorToClassName.put(Descriptor.SHORT,             "java.lang.Short");
-        descriptorToClassName.put(Descriptor.INTEGER,           "java.lang.Integer");
-        descriptorToClassName.put(Descriptor.LONG,              "java.lang.Long");
-        descriptorToClassName.put(Descriptor.FLOAT,             "java.lang.Float");
-        descriptorToClassName.put(Descriptor.DOUBLE,            "java.lang.Double");
+        Map m = new HashMap();
+        m.put(Descriptor.VOID,                       "void");
+        m.put(Descriptor.BYTE,                       "byte");
+        m.put(Descriptor.CHAR,                       "char");
+        m.put(Descriptor.DOUBLE,                     "double");
+        m.put(Descriptor.FLOAT,                      "float");
+        m.put(Descriptor.INT,                        "int");
+        m.put(Descriptor.LONG,                       "long");
+        m.put(Descriptor.SHORT,                      "short");
+        m.put(Descriptor.BOOLEAN,                    "boolean");
+        m.put(Descriptor.JAVA_LANG_OBJECT,           "java.lang.Object");
+        m.put(Descriptor.JAVA_LANG_STRING,           "java.lang.String");
+        m.put(Descriptor.JAVA_LANG_STRINGBUFFER,     "java.lang.StringBuffer");
+        m.put(Descriptor.JAVA_LANG_STRINGBUILDER,    "java.lang.StringBuilder");
+        m.put(Descriptor.JAVA_LANG_CLASS,            "java.lang.Class");
+        m.put(Descriptor.JAVA_LANG_THROWABLE,        "java.lang.Throwable");
+        m.put(Descriptor.JAVA_LANG_RUNTIMEEXCEPTION, "java.lang.RuntimeException");
+        m.put(Descriptor.JAVA_LANG_ERROR,            "java.lang.Error");
+        m.put(Descriptor.JAVA_LANG_CLONEABLE,        "java.lang.Cloneable");
+        m.put(Descriptor.JAVA_IO_SERIALIZABLE,       "java.io.Serializable");
+        m.put(Descriptor.JAVA_LANG_BOOLEAN,          "java.lang.Boolean");
+        m.put(Descriptor.JAVA_LANG_BYTE,             "java.lang.Byte");
+        m.put(Descriptor.JAVA_LANG_CHARACTER,        "java.lang.Character");
+        m.put(Descriptor.JAVA_LANG_SHORT,            "java.lang.Short");
+        m.put(Descriptor.JAVA_LANG_INTEGER,          "java.lang.Integer");
+        m.put(Descriptor.JAVA_LANG_LONG,             "java.lang.Long");
+        m.put(Descriptor.JAVA_LANG_FLOAT,            "java.lang.Float");
+        m.put(Descriptor.JAVA_LANG_DOUBLE,           "java.lang.Double");
+        DESCRIPTOR_TO_CLASSNAME = Collections.unmodifiableMap(m);
+    }
 
-        for (Iterator it = descriptorToClassName.entrySet().iterator(); it.hasNext();) {
+    private static final Map CLASS_NAME_TO_DESCRIPTOR;
+    static {
+        Map m = new HashMap();
+        for (Iterator it = DESCRIPTOR_TO_CLASSNAME.entrySet().iterator(); it.hasNext();) {
             Map.Entry e = (Map.Entry) it.next();
-            classNameToDescriptor.put(e.getValue(), e.getKey());
+            m.put(e.getValue(), e.getKey());
         }
+        CLASS_NAME_TO_DESCRIPTOR = Collections.unmodifiableMap(m);
     }
 }

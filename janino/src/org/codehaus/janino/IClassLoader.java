@@ -46,6 +46,8 @@ class IClassLoader {
     // The following are constants, but cannot be declared FINAL, because they are only initialized by the
     // "postConstruct()".
 
+    // CHECKSTYLE MemberName:OFF
+    // CHECKSTYLE AbbreviationAsWordInName:OFF
     public IClass OBJECT;
     public IClass STRING;
     public IClass CLASS;
@@ -62,6 +64,8 @@ class IClassLoader {
     public IClass LONG;
     public IClass FLOAT;
     public IClass DOUBLE;
+    // CHECKSTYLE AbbreviationAsWordInName:ON
+    // CHECKSTYLE MemberName:ON
 
     public
     IClassLoader(IClassLoader optionalParentIClassLoader) {
@@ -77,22 +81,22 @@ class IClassLoader {
     protected final void
     postConstruct() {
         try {
-            this.OBJECT            = this.loadIClass(Descriptor.OBJECT);
-            this.STRING            = this.loadIClass(Descriptor.STRING);
-            this.CLASS             = this.loadIClass(Descriptor.CLASS);
-            this.THROWABLE         = this.loadIClass(Descriptor.THROWABLE);
-            this.RUNTIME_EXCEPTION = this.loadIClass(Descriptor.RUNTIME_EXCEPTION);
-            this.ERROR             = this.loadIClass(Descriptor.ERROR);
-            this.CLONEABLE         = this.loadIClass(Descriptor.CLONEABLE);
-            this.SERIALIZABLE      = this.loadIClass(Descriptor.SERIALIZABLE);
-            this.BOOLEAN           = this.loadIClass(Descriptor.BOOLEAN);
-            this.BYTE              = this.loadIClass(Descriptor.BYTE);
-            this.CHARACTER         = this.loadIClass(Descriptor.CHARACTER);
-            this.SHORT             = this.loadIClass(Descriptor.SHORT);
-            this.INTEGER           = this.loadIClass(Descriptor.INTEGER);
-            this.LONG              = this.loadIClass(Descriptor.LONG);
-            this.FLOAT             = this.loadIClass(Descriptor.FLOAT);
-            this.DOUBLE            = this.loadIClass(Descriptor.DOUBLE);
+            this.OBJECT            = this.loadIClass(Descriptor.JAVA_LANG_OBJECT);
+            this.STRING            = this.loadIClass(Descriptor.JAVA_LANG_STRING);
+            this.CLASS             = this.loadIClass(Descriptor.JAVA_LANG_CLASS);
+            this.THROWABLE         = this.loadIClass(Descriptor.JAVA_LANG_THROWABLE);
+            this.RUNTIME_EXCEPTION = this.loadIClass(Descriptor.JAVA_LANG_RUNTIMEEXCEPTION);
+            this.ERROR             = this.loadIClass(Descriptor.JAVA_LANG_ERROR);
+            this.CLONEABLE         = this.loadIClass(Descriptor.JAVA_LANG_CLONEABLE);
+            this.SERIALIZABLE      = this.loadIClass(Descriptor.JAVA_IO_SERIALIZABLE);
+            this.BOOLEAN           = this.loadIClass(Descriptor.JAVA_LANG_BOOLEAN);
+            this.BYTE              = this.loadIClass(Descriptor.JAVA_LANG_BYTE);
+            this.CHARACTER         = this.loadIClass(Descriptor.JAVA_LANG_CHARACTER);
+            this.SHORT             = this.loadIClass(Descriptor.JAVA_LANG_SHORT);
+            this.INTEGER           = this.loadIClass(Descriptor.JAVA_LANG_INTEGER);
+            this.LONG              = this.loadIClass(Descriptor.JAVA_LANG_LONG);
+            this.FLOAT             = this.loadIClass(Descriptor.JAVA_LANG_FLOAT);
+            this.DOUBLE            = this.loadIClass(Descriptor.JAVA_LANG_DOUBLE);
         } catch (ClassNotFoundException e) {
             throw new JaninoRuntimeException("Cannot load simple types", e);
         }
@@ -110,15 +114,15 @@ class IClassLoader {
 
         if (Descriptor.isPrimitive(fieldDescriptor)) {
             return (
-                fieldDescriptor.equals(Descriptor.VOID_) ? IClass.VOID
-                : fieldDescriptor.equals(Descriptor.BYTE_) ? IClass.BYTE
-                : fieldDescriptor.equals(Descriptor.CHAR_) ? IClass.CHAR
-                : fieldDescriptor.equals(Descriptor.DOUBLE_) ? IClass.DOUBLE
-                : fieldDescriptor.equals(Descriptor.FLOAT_) ? IClass.FLOAT
-                : fieldDescriptor.equals(Descriptor.INT_) ? IClass.INT
-                : fieldDescriptor.equals(Descriptor.LONG_) ? IClass.LONG
-                : fieldDescriptor.equals(Descriptor.SHORT_) ? IClass.SHORT
-                : fieldDescriptor.equals(Descriptor.BOOLEAN_) ? IClass.BOOLEAN
+                fieldDescriptor.equals(Descriptor.VOID) ? IClass.VOID
+                : fieldDescriptor.equals(Descriptor.BYTE) ? IClass.BYTE
+                : fieldDescriptor.equals(Descriptor.CHAR) ? IClass.CHAR
+                : fieldDescriptor.equals(Descriptor.DOUBLE) ? IClass.DOUBLE
+                : fieldDescriptor.equals(Descriptor.FLOAT) ? IClass.FLOAT
+                : fieldDescriptor.equals(Descriptor.INT) ? IClass.INT
+                : fieldDescriptor.equals(Descriptor.LONG) ? IClass.LONG
+                : fieldDescriptor.equals(Descriptor.SHORT) ? IClass.SHORT
+                : fieldDescriptor.equals(Descriptor.BOOLEAN) ? IClass.BOOLEAN
                 : null
             );
         }
