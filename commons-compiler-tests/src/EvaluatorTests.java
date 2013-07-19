@@ -352,7 +352,7 @@ class EvaluatorTests {
 
     @Test public void
     testHandlingNaN() throws Exception {
-        String prog =
+        String prog = (
             ""
             + "package test;\n"
             + "public class Test {\n"
@@ -374,7 +374,8 @@ class EvaluatorTests {
             + "        if (comp == \">=\") { return lhs <= rhs; }"
             + "        throw new RuntimeException(\"Unsupported comparison\");"
             + "    }"
-            + "}";
+            + "}"
+        );
         ISimpleCompiler sc = this.compilerFactory.newSimpleCompiler();
         sc.cook(prog);
 
