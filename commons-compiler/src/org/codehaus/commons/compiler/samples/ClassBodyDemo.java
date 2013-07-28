@@ -37,6 +37,7 @@ import org.codehaus.commons.compiler.*;
 public final
 class ClassBodyDemo {
 
+    /**/
     public static void
     main(String[] args) throws Exception {
 

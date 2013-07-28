@@ -29,6 +29,9 @@ package org.codehaus.janino;
 import org.codehaus.commons.compiler.Location;
 import org.codehaus.janino.util.StringPattern;
 
+/**
+ * Invokes a delegate iff the handle of the warning matches one or more of a set of {@link StringPattern}s.
+ */
 public
 class FilterWarningHandler implements WarningHandler {
     private final StringPattern[] handlePatterns;
@@ -44,6 +47,7 @@ class FilterWarningHandler implements WarningHandler {
         this.delegate       = delegate;
     }
 
+    /** @{inheritDoc} */
     public void
     handleWarning(String handle, String message, Location optionalLocation) {
         if (StringPattern.matches(this.handlePatterns, handle)) {

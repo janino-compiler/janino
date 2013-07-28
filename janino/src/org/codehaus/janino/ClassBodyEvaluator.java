@@ -35,6 +35,8 @@ import org.codehaus.commons.compiler.IClassBodyEvaluator;
 import org.codehaus.commons.compiler.ICompilerFactory;
 import org.codehaus.commons.compiler.Location;
 
+// CHECKSTYLE MissingDeprecated:OFF
+
 /**
  * The <code>optionalClassLoader</code> serves two purposes:
  * <ul>
@@ -169,6 +171,7 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
 
     public ClassBodyEvaluator() {}
 
+    /** @{inheritDoc} */
     public void
     setDefaultImports(String[] optionalDefaultImports) {
         assertNotCooked();
@@ -415,6 +418,7 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
      * </pre>
      *
      * @see #createInstance(Reader)
+     * @deprecated
      */
     public static Object
     createFastClassBodyEvaluator(

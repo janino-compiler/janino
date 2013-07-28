@@ -35,6 +35,7 @@ import org.codehaus.commons.compiler.*;
 public final
 class ExpressionDemo extends DemoBase {
 
+    /**/
     public static void
     main(String[] args) throws Exception {
 

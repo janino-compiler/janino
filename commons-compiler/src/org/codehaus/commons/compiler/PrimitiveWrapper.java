@@ -34,6 +34,7 @@ class PrimitiveWrapper {
 
     private PrimitiveWrapper() {}
 
+    // CHECKSTYLE JavadocMethod:OFF
     public static Boolean   wrap(boolean v) { return v ? Boolean.TRUE : Boolean.FALSE; }
     public static Byte      wrap(byte    v) { return new Byte(v);      }
     public static Short     wrap(short   v) { return new Short(v);     }
@@ -43,4 +44,5 @@ class PrimitiveWrapper {
     public static Float     wrap(float   v) { return new Float(v);     }
     public static Double    wrap(double  v) { return new Double(v);    }
     public static Object    wrap(Object  v) { return v;                }
+    // CHECKSTYLE JavadocMethod:ON
 }

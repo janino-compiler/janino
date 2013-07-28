@@ -41,6 +41,7 @@ import java.util.*;
 public abstract
 class AbstractJavaSourceClassLoader extends ClassLoader {
 
+    /** @see ClassLoader#defineClass(String, byte[], int, int, ProtectionDomain) */
     protected ProtectionDomainFactory optionalProtectionDomainFactory;
 
     public
@@ -66,9 +67,7 @@ class AbstractJavaSourceClassLoader extends ClassLoader {
      */
     public abstract void setDebuggingInfo(boolean lines, boolean vars, boolean source);
 
-    /**
-     * @see ClassLoader#defineClass(String, byte[], int, int, ProtectionDomain)
-     */
+    /** @see ClassLoader#defineClass(String, byte[], int, int, ProtectionDomain) */
     public final void
     setProtectionDomainFactory(ProtectionDomainFactory optionalProtectionDomainFactory) {
         this.optionalProtectionDomainFactory = optionalProtectionDomainFactory;

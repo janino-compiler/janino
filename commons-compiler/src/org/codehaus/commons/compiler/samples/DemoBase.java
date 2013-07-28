@@ -38,6 +38,10 @@ class DemoBase {
 
     protected DemoBase() {}
 
+    /**
+     * Creates an instance of the given {@code type}, by calling the single-string-parameter constructor, or, if
+     * the {@code value} equals "", the zero-parameter constructor.
+     */
     public static Object
     createObject(Class type, String value)
     throws NoSuchMethodException, InstantiationException, InvocationTargetException, IllegalAccessException {
@@ -66,6 +70,7 @@ class DemoBase {
         }
     }
 
+    /** @return {@code s}, split at the commas */
     public static String[]
     explode(String s) {
         StringTokenizer st = new StringTokenizer(s, ",");
@@ -74,6 +79,7 @@ class DemoBase {
         return (String[]) l.toArray(new String[l.size()]);
     }
 
+    /** @return {@code s}, converted to a Java type */
     public static Class
     stringToType(String s) {
 

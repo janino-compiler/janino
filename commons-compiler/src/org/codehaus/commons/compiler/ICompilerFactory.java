@@ -26,6 +26,9 @@
 
 package org.codehaus.commons.compiler;
 
+/**
+ * Implementations of this interface are, e.g. 'org.codehaus.janino' or 'org.codehaus.commons.compiler.jdk'.
+ */
 public
 interface ICompilerFactory {
 

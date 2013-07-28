@@ -37,6 +37,7 @@ class ShippingCost {
 
     private ShippingCost() {}
 
+    /**/
     public static void
     main(String[] args) throws Exception {
 

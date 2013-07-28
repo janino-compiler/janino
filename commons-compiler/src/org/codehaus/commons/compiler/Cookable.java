@@ -34,45 +34,46 @@ import java.io.*;
 public abstract
 class Cookable implements ICookable {
 
+    /** @see ICookable#cook(String, Reader) */
     public abstract void
     cook(String optionalFileName, Reader r) throws CompileException, IOException;
 
+    /** @see ICookable#cook(Reader) */
     public final void
     cook(Reader r) throws CompileException, IOException { this.cook(null, r); }
 
+    /** @see ICookable#cook(InputStream) */
     public final void
     cook(InputStream is) throws CompileException, IOException { this.cook(null, is); }
 
+    /** @see ICookable#cook(String, InputStream) */
     public final void
     cook(String optionalFileName, InputStream is) throws CompileException, IOException {
         this.cook(optionalFileName, is, null);
     }
 
+    /** @see ICookable#cook(InputStream, String) */
     public final void
-    cook(
-        InputStream is,
-        String      optionalEncoding
-    ) throws CompileException, IOException {
+    cook(InputStream is, String optionalEncoding) throws CompileException, IOException {
         this.cook(optionalEncoding == null ? new InputStreamReader(is) : new InputStreamReader(is, optionalEncoding));
     }
 
+    /** @see ICookable#cook(String, InputStream, String) */
     public final void
-    cook(
-        String      optionalFileName,
-        InputStream is,
-        String      optionalEncoding
-    ) throws CompileException, IOException {
+    cook(String optionalFileName, InputStream is, String optionalEncoding) throws CompileException, IOException {
         this.cook(
             optionalFileName,
             optionalEncoding == null ? new InputStreamReader(is) : new InputStreamReader(is, optionalEncoding)
         );
     }
 
+    /** @see ICookable#cook(String) */
     public void
     cook(String s) throws CompileException {
         this.cook((String) null, s);
     }
 
+    /** @see ICookable#cook(String, String) */
     public void
     cook(String optionalFileName, String s) throws CompileException {
         try {
@@ -84,11 +85,13 @@ class Cookable implements ICookable {
         }
     }
 
+    /** @see ICookable#cookFile(File) */
     public final void
     cookFile(File file) throws CompileException, IOException {
         this.cookFile(file, null);
     }
 
+    /** @see ICookable#cookFile(File, String) */
     public final void
     cookFile(File file, String optionalEncoding) throws CompileException, IOException {
         InputStream is = new FileInputStream(file);
@@ -104,11 +107,13 @@ class Cookable implements ICookable {
         }
     }
 
+    /** @see ICookable#cookFile(String) */
     public final void
     cookFile(String fileName) throws CompileException, IOException {
         this.cookFile(fileName, null);
     }
 
+    /** @see ICookable#cookFile(String, String) */
     public final void
     cookFile(String fileName, String optionalEncoding) throws CompileException, IOException {
         this.cookFile(new File(fileName), optionalEncoding);

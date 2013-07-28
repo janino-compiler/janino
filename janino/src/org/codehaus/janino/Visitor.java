@@ -32,39 +32,89 @@ package org.codehaus.janino;
  */
 public
 class Visitor {
+
+    /**
+     * The union of {@link ImportVisitor}, {@link TypeDeclarationVisitor}, {@link TypeBodyDeclarationVisitor} and
+     * {@link AtomVisitor}.
+     */
     public
     interface ComprehensiveVisitor
     extends ImportVisitor, TypeDeclarationVisitor, TypeBodyDeclarationVisitor, BlockStatementVisitor, AtomVisitor {
     }
 
+    /**
+     * The visitor for all kinds of IMPORT declarations.
+     */
     public
     interface ImportVisitor {
+
+        /** E.g. '{@code import pkg.Type}'. */
         void visitSingleTypeImportDeclaration(Java.CompilationUnit.SingleTypeImportDeclaration stid);
+
+        /** E.g. '{@code import pkg.*}'. */
         void visitTypeImportOnDemandDeclaration(Java.CompilationUnit.TypeImportOnDemandDeclaration tiodd);
+
+        /** E.g. '{@code import static pkg.Type.member}'. */
         void visitSingleStaticImportDeclaration(Java.CompilationUnit.SingleStaticImportDeclaration ssid);
+
+        /** E.g. '{@code import static pkg.Type.*}'. */
         void visitStaticImportOnDemandDeclaration(Java.CompilationUnit.StaticImportOnDemandDeclaration siodd);
     }
 
+    /**
+     * The visitor for all kinds of type declarations.
+     */
     public
     interface TypeDeclarationVisitor {
+
+        /** E.g. '<tt>new Superclass() { ... }</tt>'. */
         void visitAnonymousClassDeclaration(Java.AnonymousClassDeclaration acd);
+
+        /** E.g. '<tt>class LocalClass { ... }</tt>'. */
         void visitLocalClassDeclaration(Java.LocalClassDeclaration lcd);
+
+        /** E.g. '<tt>public class TopLevelClass { ... }</tt>'. */
         void visitPackageMemberClassDeclaration(Java.PackageMemberClassDeclaration pmcd);
+
+        /** E.g. '<tt>public class TopLevelClass { public interface MemberInterface { ... } }</tt>'. */
         void visitMemberInterfaceDeclaration(Java.MemberInterfaceDeclaration mid);
+
+        /** E.g. '<tt>public TopLevelInterface { ... }</tt>'. */
         void visitPackageMemberInterfaceDeclaration(Java.PackageMemberInterfaceDeclaration pmid);
+
+        /** E.g. '<tt>public class TopLevelClass { public class MemberClass { ... } }</tt>'. */
         void visitMemberClassDeclaration(Java.MemberClassDeclaration mcd);
     }
 
+    /**
+     * The visitor for all kinds of type body declarations (declarations that may appear in the body of a type
+     * declaration).
+     */
     public
     interface TypeBodyDeclarationVisitor {
+
+        /** E.g. '<tt>public class TopLevelClass { public interface MemberInterface { ... } }</tt>'. */
         void visitMemberInterfaceDeclaration(Java.MemberInterfaceDeclaration mid);
+
+        /** E.g. '<tt>public class TopLevelClass { public class MemberClass { ... } }</tt>'. */
         void visitMemberClassDeclaration(Java.MemberClassDeclaration mcd);
+
+        /** E.g. '<tt>public MyClass(...) { ... }</tt>'. */
         void visitConstructorDeclarator(Java.ConstructorDeclarator cd);
+
+        /** E.g. '<tt>public class MyClass { static { ... } }</tt>'. */
         void visitInitializer(Java.Initializer i);
+
+        /** E.g. '<tt>public void meth(...) { ... }</tt>'. */
         void visitMethodDeclarator(Java.MethodDeclarator md);
+
+        /** E.g. '<tt>public int field;</tt>'. */
         void visitFieldDeclaration(Java.FieldDeclaration fd);
     }
 
+    /**
+     * The visitor for all kinds of block statements (statements that may appear with a block).
+     */
     public
     interface BlockStatementVisitor {
         void visitInitializer(Java.Initializer i);

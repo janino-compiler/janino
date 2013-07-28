@@ -38,9 +38,10 @@ class CausedException extends Exception {
     // SUPPRESS CHECKSTYLE MutableException
     private Throwable optionalCause;
 
-    private static final Method INIT_CAUSE = initCauseMethod(); // Null for pre-1.4 JDKs.
+    /** The pointer to '{@code Throwable.initCause(Throwable)}'' , or {@code null} for pre-1.4 JDKs. */
+    private static final Method INIT_CAUSE = initCauseMethod();
 
-    static Method
+    private static Method
     initCauseMethod() {
         try {
             return Exception.class.getDeclaredMethod(
@@ -70,6 +71,10 @@ class CausedException extends Exception {
         this.initCause(optionalCause);
     }
 
+    /**
+     * Substitutes the '{@code initCause()}' method missing in pre-1.4 JREs, or calls '{@code initCause()}' in
+     * 1.4+ JREs.
+     */
     public Throwable
     initCause(Throwable optionalCause) {
         if (CausedException.INIT_CAUSE == null) {
@@ -85,6 +90,15 @@ class CausedException extends Exception {
         return this;
     }
 
+    /**
+     * Returns the cause of this throwable or {@code null} if the cause is nonexistent or unknown. (The cause is the
+     * throwable that caused this throwable to get thrown.)
+     * <p>
+     * This implementation returns the cause that was supplied via one of the constructors requiring a {@code
+     * Throwable}, or that was set after creation with the {@link #initCause(Throwable)} method.
+     *
+     * @return The cause of this throwable or <code>null</code> if the cause is nonexistent or unknown.
+     */
     public Throwable
     getCause() { return this.optionalCause; }
 

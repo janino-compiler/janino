@@ -35,6 +35,9 @@ import java.io.Serializable;
 public
 class Location implements Serializable {
 
+    /**
+     * Representation of an unspecified location.b
+     */
     public static final Location NOWHERE = new Location("<internally generated location>", (short) -1, (short) -1);
 
     private final String optionalFileName;
@@ -52,9 +55,14 @@ class Location implements Serializable {
         this.columnNumber     = columnNumber;
     }
 
-    public String getFileName()     { return this.optionalFileName; }
-    public short  getLineNumber()   { return this.lineNumber; }
-    public short  getColumnNumber() { return this.columnNumber; }
+    /** @return The "file name" associated with this location, or {@code null} */
+    public String getFileName() { return this.optionalFileName; }
+
+    /** @return The line number associated with this location, or -1 */
+    public short getLineNumber() { return this.lineNumber; }
+
+    /** @return The column number associated with this location, or -1 */
+    public short getColumnNumber() { return this.columnNumber; }
 
     /**
      * Converts this {@link Location} into an english text, like<pre>
