@@ -1025,8 +1025,6 @@ class Java {
 
     /**
      * Representation of an instance (JLS2 8.6) or static initializer (JLS2 8.7).
-     *
-     * TODO: Why does it implement {@link BlockStatement}?
      */
     public static final
     class Initializer extends AbstractTypeBodyDeclaration implements BlockStatement {
@@ -1348,7 +1346,8 @@ class Java {
     }
 
     /**
-     * Base of all statements that can appear in a block.
+     * Everything that can be compiled to code, e.g. the statements occurring in the body of a method or in a block,
+     * explicit constructor invocations and instance/static initializers.
      */
     public
     interface BlockStatement extends Locatable, Scope {
@@ -1359,6 +1358,12 @@ class Java {
         Java.LocalVariable findLocalVariable(String name);
     }
 
+    /**
+     * Everything that can occur in the body of a method or in a block. E.g. explicit constructor invocations and
+     * initializers cannot occur there.
+     * <p>
+     * This class is mis-named; according to the JLS, its name should be 'BlockStatement'.
+     */
     public abstract static
     class Statement extends Located implements BlockStatement {
         private Scope enclosingScope;

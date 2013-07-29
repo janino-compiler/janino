@@ -79,6 +79,7 @@ import org.codehaus.janino.util.resource.PathResourceFinder;
  */
 public
 class JGrep {
+
     private static final boolean DEBUG = false;
 
     private final List parsedCompilationUnits = new ArrayList(); // UnitCompiler
@@ -332,8 +333,10 @@ class JGrep {
             }
         }
     }
+
     private static
     class MethodInvocationTarget {
+
         String   optionalClassNamePattern;
         String   methodNamePattern;
         String[] optionalArgumentTypeNamePatterns;
@@ -342,22 +345,29 @@ class JGrep {
 
         void
         apply(UnitCompiler uc, Java.Invocation invocation, IClass.IMethod method) throws CompileException {
+
+            // Verify that the class declaring the invoked method matches.
             if (this.optionalClassNamePattern != null) {
                 if (!typeMatches(
                     this.optionalClassNamePattern,
                     Descriptor.toClassName(method.getDeclaringIClass().getDescriptor())
                 )) return;
             }
+
+            // Verify that the name of the invoked method matches.
             if (!new StringPattern(this.methodNamePattern).matches(method.getName())) return;
+
+            // Verify that the parameter count and types of the invoked method match.
             IClass[] fpts = method.getParameterTypes();
             if (this.optionalArgumentTypeNamePatterns != null) {
                 String[] atnps = this.optionalArgumentTypeNamePatterns;
                 if (atnps.length != fpts.length) return;
                 for (int i = 0; i < atnps.length; ++i) {
-                    // TODO WHAT IS THIS!?!?!?!?
-                    if (!new StringPattern(atnps[i]).matches(Descriptor.toClassName(fpts[i].getDescriptor()))) ;
+                    if (!new StringPattern(atnps[i]).matches(Descriptor.toClassName(fpts[i].getDescriptor()))) return;
                 }
             }
+
+            // Verify that all predicates (JANINO expressions) return TRUE.
             for (Iterator it = this.predicates.iterator(); it.hasNext();) {
                 MethodInvocationPredicate mip = (MethodInvocationPredicate) it.next();
                 try {
@@ -366,6 +376,8 @@ class JGrep {
                     return; // Treat exception as a "false" predicate.
                 }
             }
+
+            // Now that all checks were successful, execute all method invocation actions.
             for (Iterator it = this.actions.iterator(); it.hasNext();) {
                 MethodInvocationAction mia = (MethodInvocationAction) it.next();
                 try {
@@ -377,16 +389,28 @@ class JGrep {
         }
     }
 
-    public
+    /**
+     * A predicate that examines a method invocation.
+     */
     interface MethodInvocationPredicate {
+
+        /** @return Whether the method incovation met some criterion */
         boolean evaluate(UnitCompiler uc, Java.Invocation invocation, IClass.IMethod method) throws Exception;
     }
 
-    public
+    /**
+     * An entity that does something with a method invocation, e.g. report where it occurred.
+     */
     interface MethodInvocationAction {
+
+        /** Executes some action for a method invocation. */
         void execute(UnitCompiler uc, Java.Invocation invocation, IClass.IMethod method) throws Exception;
     }
 
+    /**
+     * @return Whether the fully qualified {@code typeName} matches the {@code pattern}, or, iff the pattern does not
+     *         contain a period, the simple type name of {@code typeName} matches the {@code pattern}
+     */
     static boolean
     typeMatches(String pattern, String typeName) {
         return new StringPattern(pattern).matches(
@@ -395,6 +419,7 @@ class JGrep {
             : typeName
         );
     }
+
     private static final String[] USAGE = {
         "Usage:",
         "",
@@ -469,12 +494,12 @@ class JGrep {
         this.benchmark                 = new Benchmark(verbose);
     }
 
-    public void
+    private void
     jGrep(
-        File[]                rootDirectories,
-        final StringPattern[] directoryNamePatterns,
-        final StringPattern[] fileNamePatterns,
-        List                  methodInvocationTargets // MethodInvocationTarget
+        File[]                           rootDirectories,
+        final StringPattern[]            directoryNamePatterns,
+        final StringPattern[]            fileNamePatterns,
+        List/*<MethodInvocationTarget>*/ methodInvocationTargets
     ) throws CompileException, IOException {
         this.benchmark.report("Root dirs",               rootDirectories);
         this.benchmark.report("Directory name patterns", directoryNamePatterns);
@@ -493,8 +518,9 @@ class JGrep {
         ), methodInvocationTargets);
     }
 
-    public void
-    jGrep(Iterator sourceFilesIterator, final List methodInvocationTargets) throws CompileException, IOException {
+    private  void
+    jGrep(Iterator/*<File>*/ sourceFilesIterator, final List/*<MethodInvocationTarget>*/ methodInvocationTargets)
+    throws CompileException, IOException {
 
         // Parse the given source files.
         this.benchmark.beginReporting();
