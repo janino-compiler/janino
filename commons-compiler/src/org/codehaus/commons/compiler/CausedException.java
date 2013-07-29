@@ -30,7 +30,7 @@ import java.io.*;
 import java.lang.reflect.*;
 
 /**
- * For compatibility with pre-1.4 JDKs, this class mimics
+ * For compatibility with pre-1.4 JDKs, this class mimics the 'cause' mechanism.
  */
 public
 class CausedException extends Exception {
@@ -82,7 +82,7 @@ class CausedException extends Exception {
         } else
         {
             try {
-                CausedException.INIT_CAUSE.invoke(this, new Object[] { optionalCause });
+                CausedException.INIT_CAUSE.invoke(this, new Object[] { optionalCause});
             } catch (Exception e) {
                 throw new RuntimeException("Calling \"initCause()\""); // SUPPRESS CHECKSTYLE AvoidHidingCause
             }
