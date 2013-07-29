@@ -27,6 +27,9 @@
 package org.codehaus.commons.compiler;
 
 /**
+ * An entity that produces implementations of {@link IExpressionEvaluator}, {@link IScriptEvaluator}, {@link
+ * IClassBodyEvaluator}, {@link ISimpleCompiler} or {@link AbstractJavaSourceClassLoader}.
+ * <p>
  * Implementations of this interface are, e.g. 'org.codehaus.janino' or 'org.codehaus.commons.compiler.jdk'.
  */
 public
