@@ -1025,6 +1025,8 @@ class Java {
 
     /**
      * Representation of an instance (JLS2 8.6) or static initializer (JLS2 8.7).
+     *
+     * TODO: Why does it implement {@link BlockStatement}?
      */
     public static final
     class Initializer extends AbstractTypeBodyDeclaration implements BlockStatement {

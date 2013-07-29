@@ -171,7 +171,7 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
 
     public ClassBodyEvaluator() {}
 
-    /** @{inheritDoc} */
+    /** {@inheritDoc} */
     public void
     setDefaultImports(String[] optionalDefaultImports) {
         assertNotCooked();

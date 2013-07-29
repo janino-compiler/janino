@@ -2,7 +2,7 @@
 /*
  * Janino - An embedded Java[TM] compiler
  *
- * Copyright (c) 2001-2010, Arno Unkrig
+ * Copyright (c) 2013, Arno Unkrig
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
@@ -24,34 +24,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.codehaus.janino;
-
-import org.codehaus.commons.compiler.Location;
-import org.codehaus.janino.util.StringPattern;
-
 /**
- * Invokes a delegate iff the handle of the warning matches one or more of a set of {@link StringPattern}s.
+ * Classes related to loading "resources" ({@link org.codehaus.janino.util.resource.ResourceFinder}) and creating
+ * resources ({@link org.codehaus.janino.util.resource.ResourceCreator}).
  */
-public
-class FilterWarningHandler implements WarningHandler {
-    private final StringPattern[] handlePatterns;
-    private final WarningHandler  delegate;
-
-    /**
-     * Popular values for the <code>handlePatterns</code> parameter are
-     * {@link StringPattern#PATTERNS_ALL} and {@link StringPattern#PATTERNS_NONE}.
-     */
-    public
-    FilterWarningHandler(StringPattern[] handlePatterns, WarningHandler delegate) {
-        this.handlePatterns = handlePatterns;
-        this.delegate       = delegate;
-    }
-
-    /** {@inheritDoc} */
-    public void
-    handleWarning(String handle, String message, Location optionalLocation) {
-        if (StringPattern.matches(this.handlePatterns, handle)) {
-            this.delegate.handleWarning(handle, message, optionalLocation);
-        }
-    }
-}
+package org.codehaus.janino.util.resource;
