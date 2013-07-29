@@ -79,6 +79,17 @@
 		/>
 
 		<!-- Build 'build/commons-compiler-jdk.jar'. -->
+		<mkdir dir="build/bin-de.unkrig.commons.nullanalysis"/>
+		<javac
+			fork="yes"
+			source="1.6"
+			target="1.6"
+			srcdir="../de.unkrig.commons.nullanalysis/src"
+			destdir="build/bin-de.unkrig.commons.nullanalysis"
+			debug="true"
+			debuglevel="lines,vars,source"
+			includeantruntime="false"
+		/>
 		<mkdir dir="build/bin-commons-compiler-jdk"/>
 		<javac
 			fork="yes"
@@ -86,7 +97,7 @@
 			target="1.6"
 			srcdir="../commons-compiler-jdk/src"
 			destdir="build/bin-commons-compiler-jdk"
-			classpath="build/bin-commons-compiler"
+			classpath="build/bin-commons-compiler:build/bin-de.unkrig.commons.nullanalysis"
 			debug="true"
 			debuglevel="lines,vars,source"
 			includeantruntime="false"
@@ -100,6 +111,7 @@
 				<attribute name="Implementation-URL"     value="http://janino.net"/>
 			</manifest>
 			<fileset dir="build/bin-commons-compiler-jdk"/>
+			<fileset dir="build/bin-de.unkrig.commons.nullanalysis"/>
 		</jar>
 		<signjar
 			keystore="dummy-keystore"
@@ -151,7 +163,7 @@
 			doctitle="Janino ${version}"
 			windowtitle="Janino ${version}"
 			overview="overview.html"
-			sourcepath="../commons-compiler/src;../janino/src;../commons-compiler-jdk/src"
+			sourcepath="../commons-compiler/src;../janino/src;../commons-compiler-jdk/src;../de.unkrig.commons.nullanalysis/src"
 			classpath="${ant.jar}"
 			destdir="mirror/javadoc"
 			packagenames="${javadoc-packages}"
