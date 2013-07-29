@@ -171,13 +171,14 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
 
     public ClassBodyEvaluator() {}
 
-    /** {@inheritDoc} */
+    /** @{inheritDoc} */
     public void
     setDefaultImports(String[] optionalDefaultImports) {
         assertNotCooked();
         this.optionalDefaultImports = optionalDefaultImports;
     }
 
+    /** @{inheritDoc} */
     public void
     setClassName(String className) {
         if (className == null) throw new NullPointerException();
@@ -185,6 +186,7 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
         this.className = className;
     }
 
+    /** @{inheritDoc} */
     public void
     setExtendedClass(Class optionalExtendedType) {
         assertNotCooked();
@@ -197,6 +199,7 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
         this.setExtendedClass(optionalExtendedClass);
     }
 
+    /** @{inheritDoc} */
     public void
     setImplementedInterfaces(Class[] implementedTypes) {
         if (implementedTypes == null) {
@@ -214,6 +217,7 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
         this.setImplementedInterfaces(implementedInterfaces);
     }
 
+    /** @{inheritDoc} */
     public void
     cook(Scanner scanner) throws CompileException, IOException {
 
@@ -331,6 +335,7 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
         }
     }
 
+    /** @{inheritDoc} */
     public Class
     getClazz() {
         if (this.getClass() != ClassBodyEvaluator.class) {
@@ -340,6 +345,7 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
         return this.result;
     }
 
+    /** @{inheritDoc} */
     public Object
     createInstance(Reader reader) throws CompileException, IOException {
         this.cook(reader);

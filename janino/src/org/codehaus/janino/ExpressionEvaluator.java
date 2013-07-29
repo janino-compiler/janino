@@ -229,9 +229,11 @@ class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluato
 
     public ExpressionEvaluator() {}
 
+    /** @{inheritDoc} */
     public void
     setExpressionType(Class expressionType) { this.setExpressionTypes(new Class[] { expressionType }); }
 
+    /** @{inheritDoc} */
     public void
     setExpressionTypes(Class[] expressionTypes) {
         assertNotCooked();
@@ -245,19 +247,23 @@ class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluato
         super.setReturnTypes(returnTypes);
     }
 
+    /** @{inheritDoc} */
     public final void
     setReturnType(Class returnType) {
         throw new AssertionError("Must not be used on an ExpressionEvaluator; use 'setExpressionType()' instead");
     }
 
+    /** @{inheritDoc} */
     public final void
     setReturnTypes(Class[] returnTypes) {
         throw new AssertionError("Must not be used on an ExpressionEvaluator; use 'setExpressionTypes()' instead");
     }
 
+    /** @{inheritDoc} */
     protected Class
     getDefaultReturnType() { return Object.class; }
 
+    /** @{inheritDoc} */
     protected List/*<BlockStatement>*/
     makeStatements(int idx, Parser parser) throws CompileException, IOException {
         List/*<BlockStatement>*/ statements = new ArrayList();

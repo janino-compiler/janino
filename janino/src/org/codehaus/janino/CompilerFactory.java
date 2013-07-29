@@ -36,31 +36,31 @@ import org.codehaus.commons.compiler.*;
 public
 class CompilerFactory extends AbstractCompilerFactory {
 
-    /** {@inheritDoc} */
+    /** @{inheritDoc} */
     public String
     getId() { return "org.codehaus.janino"; }
 
-    /** {@inheritDoc} */
+    /** @{inheritDoc} */
     public String
     getImplementationVersion() { return CompilerFactory.class.getPackage().getImplementationVersion(); }
 
-    /** {@inheritDoc} */
+    /** @{inheritDoc} */
     public IExpressionEvaluator
     newExpressionEvaluator() { return new ExpressionEvaluator(); }
 
-    /** {@inheritDoc} */
+    /** @{inheritDoc} */
     public IScriptEvaluator
     newScriptEvaluator() { return new ScriptEvaluator(); }
 
-    /** {@inheritDoc} */
+    /** @{inheritDoc} */
     public IClassBodyEvaluator
     newClassBodyEvaluator() { return new ClassBodyEvaluator(); }
 
-    /** {@inheritDoc} */
+    /** @{inheritDoc} */
     public ISimpleCompiler
     newSimpleCompiler() { return new SimpleCompiler(); }
 
-    /** {@inheritDoc} */
+    /** @{inheritDoc} */
     public AbstractJavaSourceClassLoader
     newJavaSourceClassLoader() {
         return (AbstractJavaSourceClassLoader) AccessController.doPrivileged(new PrivilegedAction() {
@@ -68,7 +68,7 @@ class CompilerFactory extends AbstractCompilerFactory {
         });
     }
 
-    /** {@inheritDoc} */
+    /** @{inheritDoc} */
     public AbstractJavaSourceClassLoader
     newJavaSourceClassLoader(final ClassLoader parentClassLoader) {
         return (AbstractJavaSourceClassLoader) AccessController.doPrivileged(new PrivilegedAction() {

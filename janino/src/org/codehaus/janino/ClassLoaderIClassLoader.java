@@ -58,9 +58,11 @@ class ClassLoaderIClassLoader extends IClassLoader {
     public
     ClassLoaderIClassLoader() { this(Thread.currentThread().getContextClassLoader()); }
 
+    /** @return The delegate {@link ClassLoader} */
     public ClassLoader
     getClassLoader() { return this.classLoader; }
 
+    /** @{inheritDoc} */
     protected IClass
     findIClass(String descriptor) throws ClassNotFoundException {
 

@@ -97,9 +97,11 @@ class Java {
 
         // Implement "Locatable".
 
+        /** @{inheritDoc} */
         public Location
         getLocation() { return this.location; }
 
+        /** @{inheritDoc} */
         public void
         throwCompileException(String message) throws CompileException {
             throw new CompileException(message, this.location);
@@ -120,6 +122,8 @@ class Java {
         CompilationUnit(String optionalFileName) { this.optionalFileName = optionalFileName; }
 
         // Implement "Scope".
+
+        /** @{inheritDoc} */
         public Scope
         getEnclosingScope() { throw new JaninoRuntimeException("A compilation unit has no enclosing scope"); }
 
@@ -183,9 +187,11 @@ class Java {
                 this.identifiers = identifiers;
             }
 
+            /** @{inheritDoc} */
             public final void
             accept(Visitor.ImportVisitor visitor) { visitor.visitSingleTypeImportDeclaration(this); }
 
+            /** @{inheritDoc} */
             public String
             toString() { return "import " + Java.join(this.identifiers, ".") + ';'; }
         }
@@ -203,14 +209,16 @@ class Java {
                 super(location);
                 this.identifiers = identifiers;
             }
+
+            /** @{inheritDoc} */
             public final void
             accept(Visitor.ImportVisitor visitor) {
                 visitor.visitTypeImportOnDemandDeclaration(this);
             }
+
+            /** @{inheritDoc} */
             public String
-            toString() {
-                return "import " + Java.join(this.identifiers, ".") + ".*;";
-            }
+            toString() { return "import " + Java.join(this.identifiers, ".") + ".*;"; }
         }
 
         /**
@@ -226,6 +234,8 @@ class Java {
                 super(location);
                 this.identifiers = identifiers;
             }
+
+            /** @{inheritDoc} */
             public final void
             accept(Visitor.ImportVisitor visitor) {
                 visitor.visitSingleStaticImportDeclaration(this);
@@ -245,6 +255,8 @@ class Java {
                 super(location);
                 this.identifiers = identifiers;
             }
+
+            /** @{inheritDoc} */
             public final void
             accept(Visitor.ImportVisitor visitor) {
                 visitor.visitStaticImportOnDemandDeclaration(this);
@@ -415,6 +427,7 @@ class Java {
             this.modifiers = modifiers;
         }
 
+        /** @{inheritDoc} */
         public short
         getModifiers() { return this.modifiers; }
 
@@ -430,6 +443,8 @@ class Java {
             }
             this.enclosingScope = enclosingScope;
         }
+
+        /** @{inheritDoc} */
         public Scope
         getEnclosingScope() { return this.enclosingScope; }
 
@@ -447,10 +462,14 @@ class Java {
             this.declaredClassesAndInterfaces.add(mcoid);
             mcoid.setDeclaringType(this);
         }
+
+        /** @{inheritDoc} */
         public Collection/*<MemberTypeDeclaration>*/
         getMemberTypeDeclarations() {
             return this.declaredClassesAndInterfaces;
         }
+
+        /** @{inheritDoc} */
         public MemberTypeDeclaration
         getMemberTypeDeclaration(String name) {
             for (Iterator it = this.declaredClassesAndInterfaces.iterator(); it.hasNext();) {
@@ -466,6 +485,7 @@ class Java {
             method.setDeclaringType(this);
         }
 
+        /** @{inheritDoc} */
         public MethodDeclarator
         getMethodDeclaration(String name) {
             for (Iterator it = this.declaredMethods.iterator(); it.hasNext();) {
@@ -475,11 +495,13 @@ class Java {
             return null;
         }
 
+        /** @{inheritDoc} */
         public List
         getMethodDeclarations() {
             return this.declaredMethods;
         }
 
+        /** @{inheritDoc} */
         public String
         createLocalTypeName(String localTypeName) {
             return (
@@ -490,6 +512,8 @@ class Java {
                 + localTypeName
             );
         }
+
+        /** @{inheritDoc} */
         public String
         createAnonymousClassName() {
             return (
@@ -501,14 +525,17 @@ class Java {
 
         // Implement "Locatable".
 
+        /** @{inheritDoc} */
         public Location
         getLocation() { return this.location; }
 
+        /** @{inheritDoc} */
         public void
         throwCompileException(String message) throws CompileException {
             throw new CompileException(message, this.location);
         }
 
+        /** @{inheritDoc} */
         public abstract String
         toString();
 
@@ -594,10 +621,13 @@ class Java {
             (this.baseType = baseType).setEnclosingScope(new EnclosingScopeOfTypeDeclaration(this));
         }
 
+        /** @{inheritDoc} */
         public void
         accept(Visitor.TypeDeclarationVisitor visitor) { visitor.visitAnonymousClassDeclaration(this); }
 
         // Implement TypeDeclaration.
+
+        /** @{inheritDoc} */
         public String
         getClassName() {
             if (this.myName == null) {
@@ -608,7 +638,10 @@ class Java {
             return this.myName;
         }
         private String myName;
-        public String toString() { return this.getClassName(); }
+
+        /** @{inheritDoc} */
+        public String
+        toString() { return this.getClassName(); }
     }
 
     public abstract static
@@ -640,17 +673,23 @@ class Java {
             }
         }
 
-        public String toString() { return this.name; }
+        /** @{inheritDoc} */
+        public String
+        toString() { return this.name; }
 
         // Implement NamedTypeDeclaration.
 
-        public String getName() { return this.name; }
+        /** @{inheritDoc} */
+        public String
+        getName() { return this.name; }
 
         // Implement DocCommentable.
 
+        /** @{inheritDoc} */
         public String
         getDocComment() { return this.optionalDocComment; }
 
+        /** @{inheritDoc} */
         public boolean
         hasDeprecatedDocTag() {
             return this.optionalDocComment != null && this.optionalDocComment.indexOf("@deprecated") != -1;
@@ -669,7 +708,9 @@ class Java {
         public
         EnclosingScopeOfTypeDeclaration(TypeDeclaration typeDeclaration) { this.typeDeclaration = typeDeclaration; }
 
-        public Scope getEnclosingScope() { return this.typeDeclaration.getEnclosingScope(); }
+        /** @{inheritDoc} */
+        public Scope
+        getEnclosingScope() { return this.typeDeclaration.getEnclosingScope(); }
     }
 
     public static final
@@ -694,18 +735,32 @@ class Java {
         }
 
         // Implement TypeBodyDeclaration.
+
+        /** @{inheritDoc} */
         public void
         setDeclaringType(TypeDeclaration declaringType) { this.setEnclosingScope(declaringType); }
+
+        /** @{inheritDoc} */
         public TypeDeclaration
         getDeclaringType() { return (TypeDeclaration) this.getEnclosingScope(); }
+
+        /** @{inheritDoc} */
         public boolean
         isStatic() { return (this.getModifiers() & Mod.STATIC) != 0; }
 
         // Implement TypeDeclaration.
-        public String getClassName() { return this.getDeclaringType().getClassName() + '$' + this.getName(); }
 
-        public void accept(Visitor.TypeDeclarationVisitor visitor)     { visitor.visitMemberClassDeclaration(this); }
-        public void accept(Visitor.TypeBodyDeclarationVisitor visitor) { visitor.visitMemberClassDeclaration(this); }
+        /** @{inheritDoc} */
+        public String
+        getClassName() { return this.getDeclaringType().getClassName() + '$' + this.getName(); }
+
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.TypeDeclarationVisitor visitor)     { visitor.visitMemberClassDeclaration(this); }
+
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.TypeBodyDeclarationVisitor visitor) { visitor.visitMemberClassDeclaration(this); }
     }
 
     public static final
@@ -744,6 +799,8 @@ class Java {
         }
 
         // Implement TypeDeclaration.
+
+        /** @{inheritDoc} */
         public String
         getClassName() {
             for (Scope s = this.getEnclosingScope();; s = s.getEnclosingScope()) {
@@ -753,7 +810,9 @@ class Java {
             }
         }
 
-        public void accept(Visitor.TypeDeclarationVisitor visitor) { visitor.visitLocalClassDeclaration(this); }
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.TypeDeclarationVisitor visitor) { visitor.visitLocalClassDeclaration(this); }
     }
 
     public static final
@@ -787,18 +846,20 @@ class Java {
         }
 
         // Implement PackageMemberTypeDeclaration.
+
+        /** @{inheritDoc} */
         public void
         setDeclaringCompilationUnit(CompilationUnit declaringCompilationUnit) {
             this.setEnclosingScope(declaringCompilationUnit);
         }
+
+        /** @{inheritDoc} */
         public CompilationUnit
         getDeclaringCompilationUnit() { return (CompilationUnit) this.getEnclosingScope(); }
 
-        // Implement ClassDeclaration.
-        protected IClass
-        getOuterIClass2() { return null; }
-
         // Implement TypeDeclaration.
+
+        /** @{inheritDoc} */
         public String
         getClassName() {
             String className = this.getName();
@@ -811,7 +872,9 @@ class Java {
             return className;
         }
 
-        public void accept(Visitor.TypeDeclarationVisitor visitor) { visitor.visitPackageMemberClassDeclaration(this); }
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.TypeDeclarationVisitor visitor) { visitor.visitPackageMemberClassDeclaration(this); }
     }
 
     public abstract static
@@ -836,7 +899,9 @@ class Java {
             }
         }
 
-        public String toString() { return this.name; }
+        /** @{inheritDoc} */
+        public String
+        toString() { return this.name; }
 
         public void
         addConstantDeclaration(FieldDeclaration fd) {
@@ -854,13 +919,18 @@ class Java {
         IClass[] interfaces;
 
         // Implement NamedTypeDeclaration.
-        public String getName() { return this.name; }
+
+        /** @{inheritDoc} */
+        public String
+        getName() { return this.name; }
 
         // Implement DocCommentable.
 
+        /** @{inheritDoc} */
         public String
         getDocComment() { return this.optionalDocComment; }
 
+        /** @{inheritDoc} */
         public boolean
         hasDeprecatedDocTag() {
             return this.optionalDocComment != null && this.optionalDocComment.indexOf("@deprecated") != -1;
@@ -888,6 +958,8 @@ class Java {
         }
 
         // Implement TypeDeclaration.
+
+        /** @{inheritDoc} */
         public String
         getClassName() {
             NamedTypeDeclaration declaringType = (NamedTypeDeclaration) this.getEnclosingScope();
@@ -900,18 +972,23 @@ class Java {
 
         // Implement TypeBodyDeclaration.
 
+        /** @{inheritDoc} */
         public void
         setDeclaringType(TypeDeclaration declaringType) { this.setEnclosingScope(declaringType); }
 
+        /** @{inheritDoc} */
         public TypeDeclaration
         getDeclaringType() { return (TypeDeclaration) this.getEnclosingScope(); }
 
+        /** @{inheritDoc} */
         public boolean
         isStatic() { return (this.getModifiers() & Mod.STATIC) != 0; }
 
+        /** @{inheritDoc} */
         public void
         accept(Visitor.TypeDeclarationVisitor visitor) { visitor.visitMemberInterfaceDeclaration(this); }
 
+        /** @{inheritDoc} */
         public void
         accept(Visitor.TypeBodyDeclarationVisitor visitor) { visitor.visitMemberInterfaceDeclaration(this); }
     }
@@ -945,15 +1022,20 @@ class Java {
         }
 
         // Implement PackageMemberTypeDeclaration.
+
+        /** @{inheritDoc} */
         public void
         setDeclaringCompilationUnit(CompilationUnit declaringCompilationUnit) {
             this.setEnclosingScope(declaringCompilationUnit);
         }
 
+        /** @{inheritDoc} */
         public CompilationUnit
         getDeclaringCompilationUnit() { return (CompilationUnit) this.getEnclosingScope(); }
 
         // Implement TypeDeclaration.
+
+        /** @{inheritDoc} */
         public String
         getClassName() {
             String className = this.getName();
@@ -966,6 +1048,7 @@ class Java {
             return className;
         }
 
+        /** @{inheritDoc} */
         public void
         accept(Visitor.TypeDeclarationVisitor visitor) { visitor.visitPackageMemberInterfaceDeclaration(this); }
     }
@@ -999,6 +1082,8 @@ class Java {
         }
 
         // Implement TypeBodyDeclaration.
+
+        /** @{inheritDoc} */
         public void
         setDeclaringType(TypeDeclaration declaringType) {
             if (this.declaringType != null && declaringType != null) {
@@ -1012,15 +1097,24 @@ class Java {
             }
             this.declaringType = declaringType;
         }
+
+        /** @{inheritDoc} */
         public TypeDeclaration
         getDeclaringType() { return this.declaringType; }
 
+        /** @{inheritDoc} */
         public boolean
         isStatic() { return this.statiC; }
 
         // Implement BlockStatement.
-        public void  setEnclosingScope(Scope enclosingScope) { this.declaringType = (TypeDeclaration) enclosingScope; }
-        public Scope getEnclosingScope()                     { return this.declaringType; }
+
+        /** @{inheritDoc} */
+        public void
+        setEnclosingScope(Scope enclosingScope) { this.declaringType = (TypeDeclaration) enclosingScope; }
+
+        /** @{inheritDoc} */
+        public Scope
+        getEnclosingScope()                     { return this.declaringType; }
     }
 
     /**
@@ -1035,14 +1129,22 @@ class Java {
             super(location, statiC);
             (this.block = block).setEnclosingScope(this);
         }
+
+        /** @{inheritDoc} */
         public String
         toString() { return this.statiC ? "static " + this.block : this.block.toString(); }
 
         // Implement BlockStatement.
 
-        public void accept(Visitor.TypeBodyDeclarationVisitor visitor) { visitor.visitInitializer(this); }
-        public void accept(Visitor.BlockStatementVisitor visitor)      { visitor.visitInitializer(this); }
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.TypeBodyDeclarationVisitor visitor) { visitor.visitInitializer(this); }
 
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.BlockStatementVisitor visitor)      { visitor.visitInitializer(this); }
+
+        /** @{inheritDoc} */
         public Java.LocalVariable
         findLocalVariable(String name) { return this.block.findLocalVariable(name); }
     }
@@ -1096,6 +1198,8 @@ class Java {
         }
 
         // Implement "Scope".
+
+        /** @{inheritDoc} */
         public Scope
         getEnclosingScope() { return this.getDeclaringType(); }
 
@@ -1104,9 +1208,11 @@ class Java {
 
         // Implement DocCommentable.
 
+        /** @{inheritDoc} */
         public String
         getDocComment() { return this.optionalDocComment; }
 
+        /** @{inheritDoc} */
         public boolean
         hasDeprecatedDocTag() {
             return this.optionalDocComment != null && this.optionalDocComment.indexOf("@deprecated") != -1;
@@ -1126,6 +1232,7 @@ class Java {
                 this.name  = name;
             }
 
+            /** @{inheritDoc} */
             public String
             toString() { return this.type.toString() + ' ' + this.name; }
 
@@ -1176,6 +1283,7 @@ class Java {
 
         // Implement "FunctionDeclarator":
 
+        /** @{inheritDoc} */
         public String
         toString() {
             StringBuffer sb = new StringBuffer(this.getDeclaringClass().getClassName());
@@ -1189,6 +1297,7 @@ class Java {
             return sb.toString();
         }
 
+        /** @{inheritDoc} */
         public void
         accept(Visitor.TypeBodyDeclarationVisitor visitor) { visitor.visitConstructorDeclarator(this); }
     }
@@ -1218,6 +1327,7 @@ class Java {
             );
         }
 
+        /** @{inheritDoc} */
         public String
         toString() {
             StringBuffer sb = new StringBuffer(this.name);
@@ -1231,7 +1341,9 @@ class Java {
             return sb.toString();
         }
 
-        public void accept(Visitor.TypeBodyDeclarationVisitor visitor) { visitor.visitMethodDeclarator(this); }
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.TypeBodyDeclarationVisitor visitor) { visitor.visitMethodDeclarator(this); }
 
         IClass.IMethod iMethod;
     }
@@ -1268,13 +1380,20 @@ class Java {
         }
 
         // Implement TypeBodyDeclaration.
+
+        /** @{inheritDoc} */
         public void
         setDeclaringType(TypeDeclaration declaringType) { this.setEnclosingScope(declaringType); }
+
+        /** @{inheritDoc} */
         public TypeDeclaration
         getDeclaringType() { return (TypeDeclaration) this.getEnclosingScope(); }
+
+        /** @{inheritDoc} */
         public boolean
         isStatic() { return (this.modifiers & Mod.STATIC) != 0; }
 
+        /** @{inheritDoc} */
         public String
         toString() {
             StringBuffer sb = new StringBuffer();
@@ -1286,13 +1405,21 @@ class Java {
             return sb.toString();
         }
 
-        public void accept(Visitor.TypeBodyDeclarationVisitor visitor) { visitor.visitFieldDeclaration(this); }
-        public void accept(Visitor.BlockStatementVisitor visitor)      { visitor.visitFieldDeclaration(this); }
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.TypeBodyDeclarationVisitor visitor) { visitor.visitFieldDeclaration(this); }
+
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.BlockStatementVisitor visitor) { visitor.visitFieldDeclaration(this); }
 
         // Implement DocCommentable.
+
+        /** @{inheritDoc} */
         public String
         getDocComment() { return this.optionalDocComment; }
 
+        /** @{inheritDoc} */
         public boolean
         hasDeprecatedDocTag() {
             return this.optionalDocComment != null && this.optionalDocComment.indexOf("@deprecated") != -1;
@@ -1330,6 +1457,7 @@ class Java {
             // conventions checking (JLS2 6.8) cannot be done here.
         }
 
+        /** @{inheritDoc} */
         public String
         toString() {
             StringBuffer sb = new StringBuffer();
@@ -1372,6 +1500,8 @@ class Java {
         Statement(Location location) { super(location); }
 
         // Implement "BlockStatement".
+
+        /** @{inheritDoc} */
         public void
         setEnclosingScope(Scope enclosingScope) {
             if (this.enclosingScope != null && enclosingScope != this.enclosingScope) {
@@ -1384,10 +1514,15 @@ class Java {
             }
             this.enclosingScope = enclosingScope;
         }
-        public Scope getEnclosingScope() { return this.enclosingScope; }
+
+        /** @{inheritDoc} */
+        public Scope
+        getEnclosingScope() { return this.enclosingScope; }
 
         // Compile time members
         public Map localVariables; // String name => Java.LocalVariable
+
+        /** @{inheritDoc} */
         public Java.LocalVariable
         findLocalVariable(String name) {
             if (this.localVariables == null) { return null; }
@@ -1406,12 +1541,16 @@ class Java {
             this.label = label;
             (this.body  = body).setEnclosingScope(this);
         }
+
+        /** @{inheritDoc} */
         public String
         toString() { return this.label + ": " + this.body; }
 
         // Compile time members:
 
-        public void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitLabeledStatement(this); }
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.BlockStatementVisitor visitor) { visitor.visitLabeledStatement(this); }
     }
 
     /**
@@ -1446,9 +1585,13 @@ class Java {
         }
 
         // Compile time members.
-        public void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitBlock(this); }
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.BlockStatementVisitor visitor) { visitor.visitBlock(this); }
 
-        public String toString() { return "{ ... }"; }
+        /** @{inheritDoc} */
+        public String
+        toString() { return "{ ... }"; }
     }
 
     /**
@@ -1502,12 +1645,15 @@ class Java {
             (this.rvalue = rvalue).setEnclosingBlockStatement(this);
         }
 
+        /** @{inheritDoc} */
         public String
         toString() { return this.rvalue.toString() + ';'; }
 
         // Compile time members:
 
-        public void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitExpressionStatement(this); }
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.BlockStatementVisitor visitor) { visitor.visitExpressionStatement(this); }
     }
 
     public static final
@@ -1519,9 +1665,12 @@ class Java {
             super(lcd.getLocation());
             (this.lcd = lcd).setEnclosingScope(this);
         }
+
+        /** @{inheritDoc} */
         public String
         toString() { return this.lcd.toString(); }
 
+        /** @{inheritDoc} */
         public void
         accept(Visitor.BlockStatementVisitor visitor) { visitor.visitLocalClassDeclarationStatement(this); }
     }
@@ -1550,12 +1699,15 @@ class Java {
             if (optionalElseStatement != null) optionalElseStatement.setEnclosingScope(this);
         }
 
+        /** @{inheritDoc} */
         public String
         toString() { return this.optionalElseStatement == null ? "if" : "if ... else"; }
 
         // Compile time members:
 
-        public void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitIfStatement(this); }
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.BlockStatementVisitor visitor) { visitor.visitIfStatement(this); }
     }
 
     public static final
@@ -1584,12 +1736,16 @@ class Java {
             }
             (this.body = body).setEnclosingScope(this);
         }
+
+        /** @{inheritDoc} */
         public String
         toString() { return "for (...; ...; ...) ..."; }
 
         // Compile time members:
 
-        public void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitForStatement(this); }
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.BlockStatementVisitor visitor) { visitor.visitForStatement(this); }
     }
 
     public static final
@@ -1603,12 +1759,16 @@ class Java {
             (this.condition = condition).setEnclosingBlockStatement(this);
             (this.body = body).setEnclosingScope(this);
         }
+
+        /** @{inheritDoc} */
         public String
         toString() { return "while (" + this.condition + ") " + this.body + ';'; }
 
         // Compile time members:
 
-        public void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitWhileStatement(this); }
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.BlockStatementVisitor visitor) { visitor.visitWhileStatement(this); }
     }
 
     public static final
@@ -1633,6 +1793,8 @@ class Java {
             this.optionalFinally = optionalFinally;
             if (optionalFinally != null) optionalFinally.setEnclosingScope(this);
         }
+
+        /** @{inheritDoc} */
         public String
         toString() {
             return (
@@ -1644,7 +1806,9 @@ class Java {
 
         // Compile time members:
 
-        public void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitTryStatement(this); }
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.BlockStatementVisitor visitor) { visitor.visitTryStatement(this); }
 
         CodeContext.Offset finallyOffset;
     }
@@ -1678,7 +1842,10 @@ class Java {
             }
             this.enclosingTryStatement = enclosingTryStatement;
         }
-        public Scope getEnclosingScope() { return this.enclosingTryStatement; }
+
+        /** @{inheritDoc} */
+        public Scope
+        getEnclosingScope() { return this.enclosingTryStatement; }
     }
 
     /**
@@ -1704,6 +1871,8 @@ class Java {
                 }
             }
         }
+
+        /** @{inheritDoc} */
         public String
         toString() { return "switch (" + this.condition + ") { (" + this.sbsgs.size() + " statement groups) }"; }
 
@@ -1725,6 +1894,8 @@ class Java {
                 this.hasDefaultLabel = hasDefaultLabel;
                 this.blockStatements = blockStatements;
             }
+
+            /** @{inheritDoc} */
             public String
             toString() {
                 return (
@@ -1736,7 +1907,9 @@ class Java {
 
         // Compile time members:
 
-        public void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitSwitchStatement(this); }
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.BlockStatementVisitor visitor) { visitor.visitSwitchStatement(this); }
     }
     static
     class Padder extends CodeContext.Inserter implements CodeContext.FixUp {
@@ -1744,6 +1917,7 @@ class Java {
         public
         Padder(CodeContext codeContext) { codeContext.super(); }
 
+        /** @{inheritDoc} */
         public void
         fixUp() {
             int x = this.offset % 4;
@@ -1769,12 +1943,16 @@ class Java {
             (this.expression = expression).setEnclosingBlockStatement(this);
             (this.body       = body).setEnclosingScope(this);
         }
+
+        /** @{inheritDoc} */
         public String
         toString() { return "synchronized(" + this.expression + ") " + this.body; }
 
         // Compile time members:
 
-        public void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitSynchronizedStatement(this); }
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.BlockStatementVisitor visitor) { visitor.visitSynchronizedStatement(this); }
 
         short monitorLvIndex = -1;
     }
@@ -1790,12 +1968,16 @@ class Java {
             (this.body      = body).setEnclosingScope(this);
             (this.condition = condition).setEnclosingBlockStatement(this);
         }
+
+        /** @{inheritDoc} */
         public String
         toString() { return "do " + this.body + " while(" + this.condition + ");"; }
 
         // Compile time members:
 
-        public void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitDoStatement(this); }
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.BlockStatementVisitor visitor) { visitor.visitDoStatement(this); }
     }
 
     public static final
@@ -1826,9 +2008,11 @@ class Java {
 
         // Compile time members:
 
+        /** @{inheritDoc} */
         public void
         accept(Visitor.BlockStatementVisitor visitor) { visitor.visitLocalVariableDeclarationStatement(this); }
 
+        /** @{inheritDoc} */
         public String
         toString() {
             StringBuffer sb = new StringBuffer();
@@ -1852,12 +2036,15 @@ class Java {
             if (optionalReturnValue != null) optionalReturnValue.setEnclosingBlockStatement(this);
         }
 
+        /** @{inheritDoc} */
         public String
         toString() { return this.optionalReturnValue == null ? "return;" : "return " + this.optionalReturnValue + ';'; }
 
         // Compile time members:
 
-        public void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitReturnStatement(this); }
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.BlockStatementVisitor visitor) { visitor.visitReturnStatement(this); }
     }
 
     public static final
@@ -1869,12 +2056,16 @@ class Java {
             super(location);
             (this.expression = expression).setEnclosingBlockStatement(this);
         }
+
+        /** @{inheritDoc} */
         public String
         toString() { return "throw " + this.expression + ';'; }
 
         // Compile time members:
 
-        public void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitThrowStatement(this); }
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.BlockStatementVisitor visitor) { visitor.visitThrowStatement(this); }
     }
 
     /**
@@ -1889,12 +2080,16 @@ class Java {
             super(location);
             this.optionalLabel = optionalLabel;
         }
+
+        /** @{inheritDoc} */
         public String
         toString() { return this.optionalLabel == null ? "break;" : "break " + this.optionalLabel + ';'; }
 
         // Compile time members:
 
-        public void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitBreakStatement(this); }
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.BlockStatementVisitor visitor) { visitor.visitBreakStatement(this); }
     }
 
     /**
@@ -1910,12 +2105,16 @@ class Java {
             super(location);
             this.optionalLabel = optionalLabel;
         }
+
+        /** @{inheritDoc} */
         public String
         toString() { return this.optionalLabel == null ? "continue;" : "continue " + this.optionalLabel + ';'; }
 
         // Compile time members:
 
-        public void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitContinueStatement(this); }
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.BlockStatementVisitor visitor) { visitor.visitContinueStatement(this); }
     }
 
     /**
@@ -1923,12 +2122,17 @@ class Java {
      */
     public static final
     class EmptyStatement extends Statement {
+
         public
         EmptyStatement(Location location) { super(location); }
+
+        /** @{inheritDoc} */
         public String
         toString() { return ";"; }
 
-        public void accept(Visitor.BlockStatementVisitor visitor) { visitor.visitEmptyStatement(this); }
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.BlockStatementVisitor visitor) { visitor.visitEmptyStatement(this); }
     }
 
     /**
@@ -1945,7 +2149,9 @@ class Java {
         public Rvalue toRvalue() { return null; }
         public Lvalue toLvalue() { return null; }
 
-        public abstract String toString();
+        /** @{inheritDoc} */
+        public abstract String
+        toString();
 
         // Parse time members:
 
@@ -1968,7 +2174,8 @@ class Java {
             return result;
         }
 
-        public abstract void accept(Visitor.AtomVisitor visitor);
+        public abstract void
+        accept(Visitor.AtomVisitor visitor);
     }
 
     /**
@@ -1997,10 +2204,16 @@ class Java {
             }
             this.enclosingScope = enclosingScope;
         }
-        public Scope getEnclosingScope() { return this.enclosingScope; }
-        public Type  toType()            { return this; }
 
-        public abstract void accept(Visitor.TypeVisitor visitor);
+        public Scope
+        getEnclosingScope() { return this.enclosingScope; }
+
+        /** @{inheritDoc} */
+        public Type
+        toType() { return this; }
+
+        public abstract void
+        accept(Visitor.TypeVisitor visitor);
     }
 
     public static final
@@ -2012,10 +2225,18 @@ class Java {
             super(location);
             this.iClass = iClass;
         }
-        public String toString() { return this.iClass.toString(); }
 
-        public void accept(Visitor.AtomVisitor visitor) { visitor.visitSimpleType(this); }
-        public void accept(Visitor.TypeVisitor visitor) { visitor.visitSimpleType(this); }
+        /** @{inheritDoc} */
+        public String
+        toString() { return this.iClass.toString(); }
+
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.AtomVisitor visitor) { visitor.visitSimpleType(this); }
+
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.TypeVisitor visitor) { visitor.visitSimpleType(this); }
     }
 
     /**
@@ -2032,6 +2253,7 @@ class Java {
             this.index = index;
         }
 
+        /** @{inheritDoc} */
         public String
         toString() {
             switch (this.index) {
@@ -2058,8 +2280,13 @@ class Java {
             }
         }
 
-        public void accept(Visitor.TypeVisitor visitor) { visitor.visitBasicType(this); }
-        public void accept(Visitor.AtomVisitor visitor) { visitor.visitBasicType(this); }
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.TypeVisitor visitor) { visitor.visitBasicType(this); }
+
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.AtomVisitor visitor) { visitor.visitBasicType(this); }
 
         public static final int VOID    = 0;
         public static final int BYTE    = 1;
@@ -2082,10 +2309,17 @@ class Java {
             this.identifiers = identifiers;
         }
 
-        public String toString() { return Java.join(this.identifiers, "."); }
+        /** @{inheritDoc} */
+        public String
+        toString() { return Java.join(this.identifiers, "."); }
 
-        public void accept(Visitor.AtomVisitor visitor) { visitor.visitReferenceType(this); }
-        public void accept(Visitor.TypeVisitor visitor) { visitor.visitReferenceType(this); }
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.AtomVisitor visitor) { visitor.visitReferenceType(this); }
+
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.TypeVisitor visitor) { visitor.visitReferenceType(this); }
     }
 
     // Helper class for JLS 15.9.1
@@ -2104,12 +2338,18 @@ class Java {
             this.identifier = identifier;
         }
 
-        public String toString() { return this.identifier; }
+        /** @{inheritDoc} */
+        public String
+        toString() { return this.identifier; }
 
-        public void accept(Visitor.AtomVisitor visitor) { visitor.visitRvalueMemberType(this); }
-        public void accept(Visitor.TypeVisitor visitor) { visitor.visitRvalueMemberType(this); }
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.AtomVisitor visitor) { visitor.visitRvalueMemberType(this); }
+
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.TypeVisitor visitor) { visitor.visitRvalueMemberType(this); }
     }
-
 
     /**
      * Representation of a Java&trade; array type (JLS 10.1).
@@ -2124,16 +2364,24 @@ class Java {
             this.componentType = componentType;
         }
 
+        /** @{inheritDoc} */
         public void
         setEnclosingScope(final Scope enclosingScope) {
             super.setEnclosingScope(enclosingScope);
             this.componentType.setEnclosingScope(enclosingScope);
         }
+
+        /** @{inheritDoc} */
         public String
         toString() { return this.componentType.toString() + "[]"; }
 
-        public void accept(Visitor.AtomVisitor visitor) { visitor.visitArrayType(this); }
-        public void accept(Visitor.TypeVisitor visitor) { visitor.visitArrayType(this); }
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.AtomVisitor visitor) { visitor.visitArrayType(this); }
+
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.TypeVisitor visitor) { visitor.visitArrayType(this); }
     }
 
     /**
@@ -2191,11 +2439,19 @@ class Java {
                 }
             }.comprehensiveVisitor());
         }
-        public Java.BlockStatement getEnclosingBlockStatement() { return this.enclosingBlockStatement; }
-        public Rvalue              toRvalue()                   { return this; }
+
+        public Java.BlockStatement
+        getEnclosingBlockStatement() { return this.enclosingBlockStatement; }
+
+        /** @{inheritDoc} */
+        public Rvalue
+        toRvalue() { return this; }
 
         static final Object CONSTANT_VALUE_UNKNOWN = new Object() {
-            public String toString() { return "CONSTANT_VALUE_UNKNOWN"; }
+
+            /** @{inheritDoc} */
+            public String
+            toString() { return "CONSTANT_VALUE_UNKNOWN"; }
         };
         Object constantValue = Java.Rvalue.CONSTANT_VALUE_UNKNOWN;
 
@@ -2223,9 +2479,12 @@ class Java {
     class Lvalue extends Rvalue {
         protected Lvalue(Location location) { super(location); }
 
-        public Lvalue toLvalue() { return this; }
+        /** @{inheritDoc} */
+        public Lvalue
+        toLvalue() { return this; }
 
-        public abstract void accept(Visitor.LvalueVisitor lvv);
+        public abstract void
+        accept(Visitor.LvalueVisitor lvv);
     }
 
     /**
@@ -2250,6 +2509,8 @@ class Java {
 
         // Override "Atom.toType()".
         private Type type;
+
+        /** @{inheritDoc} */
         public Type
         toType() {
             if (this.type == null) {
@@ -2263,15 +2524,18 @@ class Java {
 
         // Compile time members.
 
+        /** @{inheritDoc} */
         public String
         toString() { return Java.join(this.identifiers, ".", 0, this.n); }
 
+        /** @{inheritDoc} */
         public Lvalue
         toLvalue() {
             if (this.reclassified != null) { return this.reclassified.toLvalue(); }
             return this;
         }
 
+        /** @{inheritDoc} */
         public Rvalue
         toRvalue() {
             if (this.reclassified != null) { return this.reclassified.toRvalue(); }
@@ -2280,9 +2544,17 @@ class Java {
 
         Atom reclassified;
 
-        public void accept(Visitor.AtomVisitor visitor)   { visitor.visitAmbiguousName(this); }
-        public void accept(Visitor.RvalueVisitor visitor) { visitor.visitAmbiguousName(this); }
-        public void accept(Visitor.LvalueVisitor visitor) { visitor.visitAmbiguousName(this); }
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.AtomVisitor visitor) { visitor.visitAmbiguousName(this); }
+
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.RvalueVisitor visitor) { visitor.visitAmbiguousName(this); }
+
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.LvalueVisitor visitor) { visitor.visitAmbiguousName(this); }
     }
 
     // Helper class for 6.5.2.1.7, 6.5.2.2.1
@@ -2295,9 +2567,14 @@ class Java {
             super(location);
             this.name = name;
         }
-        public String toString() { return this.name; }
 
-        public void accept(Visitor.AtomVisitor visitor) { visitor.visitPackage(this); }
+        /** @{inheritDoc} */
+        public String
+        toString() { return this.name; }
+
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.AtomVisitor visitor) { visitor.visitPackage(this); }
     }
 
     /**
@@ -2315,11 +2592,21 @@ class Java {
 
         // Compile time members.
 
-        public String toString() { return this.localVariable.toString(); }
+        /** @{inheritDoc} */
+        public String
+        toString() { return this.localVariable.toString(); }
 
-        public void accept(Visitor.LvalueVisitor visitor) { visitor.visitLocalVariableAccess(this); }
-        public void accept(Visitor.RvalueVisitor visitor) { visitor.visitLocalVariableAccess(this); }
-        public void accept(Visitor.AtomVisitor visitor)   { visitor.visitLocalVariableAccess(this); }
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.LvalueVisitor visitor) { visitor.visitLocalVariableAccess(this); }
+
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.RvalueVisitor visitor) { visitor.visitLocalVariableAccess(this); }
+
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.AtomVisitor visitor)   { visitor.visitLocalVariableAccess(this); }
     }
 
     /**
@@ -2341,11 +2628,22 @@ class Java {
         // Compile time members.
 
         // Implement "Atom".
-        public String toString() { return this.lhs.toString() + '.' + this.field.getName(); }
 
-        public void accept(Visitor.AtomVisitor visitor)   { visitor.visitFieldAccess(this); }
-        public void accept(Visitor.RvalueVisitor visitor) { visitor.visitFieldAccess(this); }
-        public void accept(Visitor.LvalueVisitor visitor) { visitor.visitFieldAccess(this); }
+        /** @{inheritDoc} */
+        public String
+        toString() { return this.lhs.toString() + '.' + this.field.getName(); }
+
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.AtomVisitor visitor)   { visitor.visitFieldAccess(this); }
+
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.RvalueVisitor visitor) { visitor.visitFieldAccess(this); }
+
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.LvalueVisitor visitor) { visitor.visitFieldAccess(this); }
     }
 
     public static final
@@ -2361,10 +2659,18 @@ class Java {
         // Compile time members.
 
         // Implement "Atom".
-        public String toString() { return this.lhs.toString() + ".length"; }
 
-        public void accept(Visitor.AtomVisitor visitor)   { visitor.visitArrayLength(this); }
-        public void accept(Visitor.RvalueVisitor visitor) { visitor.visitArrayLength(this); }
+        /** @{inheritDoc} */
+        public String
+        toString() { return this.lhs.toString() + ".length"; }
+
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.AtomVisitor visitor)   { visitor.visitArrayLength(this); }
+
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.RvalueVisitor visitor) { visitor.visitArrayLength(this); }
     }
 
     /**
@@ -2384,10 +2690,18 @@ class Java {
         IClass iClass;
 
         // Implement "Atom".
-        public String toString() { return "this"; }
 
-        public void accept(Visitor.AtomVisitor visitor)   { visitor.visitThisReference(this); }
-        public void accept(Visitor.RvalueVisitor visitor) { visitor.visitThisReference(this); }
+        /** @{inheritDoc} */
+        public String
+        toString() { return "this"; }
+
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.AtomVisitor visitor)   { visitor.visitThisReference(this); }
+
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.RvalueVisitor visitor) { visitor.visitThisReference(this); }
     }
 
     /**
@@ -2433,10 +2747,18 @@ class Java {
 //        }
 
         // Implement "Atom".
-        public String toString() { return this.qualification.toString() + ".this"; }
 
-        public void accept(Visitor.AtomVisitor visitor)   { visitor.visitQualifiedThisReference(this); }
-        public void accept(Visitor.RvalueVisitor visitor) { visitor.visitQualifiedThisReference(this); }
+        /** @{inheritDoc} */
+        public String
+        toString() { return this.qualification.toString() + ".this"; }
+
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.AtomVisitor visitor)   { visitor.visitQualifiedThisReference(this); }
+
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.RvalueVisitor visitor) { visitor.visitQualifiedThisReference(this); }
     }
 
     public static final
@@ -2452,10 +2774,18 @@ class Java {
         // Compile time members.
 
         //Implement "Atom".
-        public String toString() { return this.type.toString() + ".class"; }
 
-        public void accept(Visitor.AtomVisitor visitor)   { visitor.visitClassLiteral(this); }
-        public void accept(Visitor.RvalueVisitor visitor) { visitor.visitClassLiteral(this); }
+        /** @{inheritDoc} */
+        public String
+        toString() { return this.type.toString() + ".class"; }
+
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.AtomVisitor visitor)   { visitor.visitClassLiteral(this); }
+
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.RvalueVisitor visitor) { visitor.visitClassLiteral(this); }
     }
 
     public static final
@@ -2475,10 +2805,18 @@ class Java {
         // Compile time members.
 
         // Implement "Atom".
-        public String toString() { return this.lhs.toString() + ' ' + this.operator + ' ' + this.rhs.toString(); }
 
-        public void accept(Visitor.AtomVisitor visitor)   { visitor.visitAssignment(this); }
-        public void accept(Visitor.RvalueVisitor visitor) { visitor.visitAssignment(this); }
+        /** @{inheritDoc} */
+        public String
+        toString() { return this.lhs.toString() + ' ' + this.operator + ' ' + this.rhs.toString(); }
+
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.AtomVisitor visitor)   { visitor.visitAssignment(this); }
+
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.RvalueVisitor visitor) { visitor.visitAssignment(this); }
     }
 
     public static final
@@ -2494,11 +2832,18 @@ class Java {
         }
 
         // Implement "Atom".
+
+        /** @{inheritDoc} */
         public String
         toString() { return this.lhs.toString() + " ? " + this.mhs.toString() + " : " + this.rhs.toString(); }
 
-        public void accept(Visitor.AtomVisitor visitor)   { visitor.visitConditionalExpression(this); }
-        public void accept(Visitor.RvalueVisitor visitor) { visitor.visitConditionalExpression(this); }
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.AtomVisitor visitor)   { visitor.visitConditionalExpression(this); }
+
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.RvalueVisitor visitor) { visitor.visitConditionalExpression(this); }
     }
 
     /**
@@ -2529,10 +2874,18 @@ class Java {
         // Compile time members.
 
         // Implement "Atom".
-        public String toString() { return this.pre ? this.operator + this.operand : this.operand + this.operator; }
 
-        public void accept(Visitor.AtomVisitor visitor)   { visitor.visitCrement(this); }
-        public void accept(Visitor.RvalueVisitor visitor) { visitor.visitCrement(this); }
+        /** @{inheritDoc} */
+        public String
+        toString() { return this.pre ? this.operator + this.operand : this.operand + this.operator; }
+
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.AtomVisitor visitor)   { visitor.visitCrement(this); }
+
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.RvalueVisitor visitor) { visitor.visitCrement(this); }
     }
 
     /**
@@ -2553,11 +2906,22 @@ class Java {
         // Compile time members:
 
         // Implement "Atom".
-        public String toString() { return this.lhs.toString() + '[' + this.index + ']'; }
 
-        public void accept(Visitor.AtomVisitor visitor)   { visitor.visitArrayAccessExpression(this); }
-        public void accept(Visitor.RvalueVisitor visitor) { visitor.visitArrayAccessExpression(this); }
-        public void accept(Visitor.LvalueVisitor visitor) { visitor.visitArrayAccessExpression(this); }
+        /** @{inheritDoc} */
+        public String
+        toString() { return this.lhs.toString() + '[' + this.index + ']'; }
+
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.AtomVisitor visitor) { visitor.visitArrayAccessExpression(this); }
+
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.RvalueVisitor visitor) { visitor.visitArrayAccessExpression(this); }
+
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.LvalueVisitor visitor) { visitor.visitArrayAccessExpression(this); }
     }
 
     /**
@@ -2579,10 +2943,22 @@ class Java {
         // Compile time members:
 
         // Implement "Atom".
-        public String toString()                            { return this.lhs.toString() + '.' + this.fieldName; }
-        public void   accept(Visitor.AtomVisitor visitor)   { visitor.visitFieldAccessExpression(this); }
-        public void   accept(Visitor.RvalueVisitor visitor) { visitor.visitFieldAccessExpression(this); }
-        public void   accept(Visitor.LvalueVisitor visitor) { visitor.visitFieldAccessExpression(this); }
+
+        /** @{inheritDoc} */
+        public String
+        toString() { return this.lhs.toString() + '.' + this.fieldName; }
+
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.AtomVisitor visitor) { visitor.visitFieldAccessExpression(this); }
+
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.RvalueVisitor visitor) { visitor.visitFieldAccessExpression(this); }
+
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.LvalueVisitor visitor) { visitor.visitFieldAccessExpression(this); }
 
         Rvalue value;
     }
@@ -2605,6 +2981,8 @@ class Java {
         // Compile time members.
 
         // Implement "Atom".
+
+        /** @{inheritDoc} */
         public String
         toString() {
             return (
@@ -2614,9 +2992,17 @@ class Java {
             ) + this.fieldName;
         }
 
-        public void accept(Visitor.AtomVisitor visitor)   { visitor.visitSuperclassFieldAccessExpression(this); }
-        public void accept(Visitor.RvalueVisitor visitor) { visitor.visitSuperclassFieldAccessExpression(this); }
-        public void accept(Visitor.LvalueVisitor visitor) { visitor.visitSuperclassFieldAccessExpression(this); }
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.AtomVisitor visitor) { visitor.visitSuperclassFieldAccessExpression(this); }
+
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.RvalueVisitor visitor) { visitor.visitSuperclassFieldAccessExpression(this); }
+
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.LvalueVisitor visitor) { visitor.visitSuperclassFieldAccessExpression(this); }
 
         Rvalue value;
     }
@@ -2637,9 +3023,18 @@ class Java {
         }
 
         // Implement "Atom".
-        public String toString()                            { return this.operator + this.operand.toString(); }
-        public void   accept(Visitor.AtomVisitor visitor)   { visitor.visitUnaryOperation(this); }
-        public void   accept(Visitor.RvalueVisitor visitor) { visitor.visitUnaryOperation(this); }
+
+        /** @{inheritDoc} */
+        public String
+        toString() { return this.operator + this.operand.toString(); }
+
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.AtomVisitor visitor) { visitor.visitUnaryOperation(this); }
+
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.RvalueVisitor visitor) { visitor.visitUnaryOperation(this); }
     }
 
     public static final
@@ -2657,10 +3052,18 @@ class Java {
         // Compile time members.
 
         // Implement "Atom".
-        public String toString() { return this.lhs.toString() + " instanceof " + this.rhs.toString(); }
 
-        public void accept(Visitor.AtomVisitor visitor)   { visitor.visitInstanceof(this); }
-        public void accept(Visitor.RvalueVisitor visitor) { visitor.visitInstanceof(this); }
+        /** @{inheritDoc} */
+        public String
+        toString() { return this.lhs.toString() + " instanceof " + this.rhs.toString(); }
+
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.AtomVisitor visitor) { visitor.visitInstanceof(this); }
+
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.RvalueVisitor visitor) { visitor.visitInstanceof(this); }
     }
 
     /**
@@ -2690,7 +3093,10 @@ class Java {
         // Compile time members.
 
         // Implement "Atom".
-        public String toString() { return this.lhs.toString() + ' ' + this.op + ' ' + this.rhs.toString(); }
+
+        /** @{inheritDoc} */
+        public String
+        toString() { return this.lhs.toString() + ' ' + this.op + ' ' + this.rhs.toString(); }
 
         /**
          * Returns an {@link Iterator} over a left-to-right sequence of {@link Java.Rvalue}s.
@@ -2712,8 +3118,13 @@ class Java {
             return new ReverseListIterator(operands.listIterator(operands.size()));
         }
 
-        public void accept(Visitor.AtomVisitor visitor)   { visitor.visitBinaryOperation(this); }
-        public void accept(Visitor.RvalueVisitor visitor) { visitor.visitBinaryOperation(this); }
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.AtomVisitor visitor) { visitor.visitBinaryOperation(this); }
+
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.RvalueVisitor visitor) { visitor.visitBinaryOperation(this); }
     }
 
     public static final
@@ -2731,10 +3142,18 @@ class Java {
         // Compile time members.
 
         // Implement "Atom".
-        public String toString() { return '(' + this.targetType.toString() + ") " + this.value.toString(); }
 
-        public void accept(Visitor.AtomVisitor visitor)   { visitor.visitCast(this); }
-        public void accept(Visitor.RvalueVisitor visitor) { visitor.visitCast(this); }
+        /** @{inheritDoc} */
+        public String
+        toString() { return '(' + this.targetType.toString() + ") " + this.value.toString(); }
+
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.AtomVisitor visitor) { visitor.visitCast(this); }
+
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.RvalueVisitor visitor) { visitor.visitCast(this); }
     }
 
     public static final
@@ -2748,10 +3167,22 @@ class Java {
         }
 
         // Implement 'Atom'.
-        public String toString()                            { return '(' + this.value.toString() + ')'; }
-        public void   accept(Visitor.AtomVisitor visitor)   { visitor.visitParenthesizedExpression(this); }
-        public void   accept(Visitor.RvalueVisitor visitor) { visitor.visitParenthesizedExpression(this); }
-        public void   accept(Visitor.LvalueVisitor visitor) { visitor.visitParenthesizedExpression(this); }
+
+        /** @{inheritDoc} */
+        public String
+        toString() { return '(' + this.value.toString() + ')'; }
+
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.AtomVisitor visitor) { visitor.visitParenthesizedExpression(this); }
+
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.RvalueVisitor visitor) { visitor.visitParenthesizedExpression(this); }
+
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.LvalueVisitor visitor) { visitor.visitParenthesizedExpression(this); }
     }
 
     public abstract static
@@ -2767,6 +3198,8 @@ class Java {
         }
 
         // Implement BlockStatement
+
+        /** @{inheritDoc} */
         public void
         setEnclosingScope(Scope enclosingScope) {
             if (this.enclosingScope != null && enclosingScope != null) {
@@ -2779,10 +3212,15 @@ class Java {
             }
             this.enclosingScope = enclosingScope;
         }
-        public Scope getEnclosingScope() { return this.enclosingScope; }
+
+        /** @{inheritDoc} */
+        public Scope
+        getEnclosingScope() { return this.enclosingScope; }
 
         // Compile time members
         public Map localVariables; // String name => Java.LocalVariable
+
+        /** @{inheritDoc} */
         public Java.LocalVariable
         findLocalVariable(String name) {
             if (this.localVariables == null) { return null; }
@@ -2798,9 +3236,11 @@ class Java {
 
         // Implement Atom.
 
+        /** @{inheritDoc} */
         public String
         toString() { return "this()"; }
 
+        /** @{inheritDoc} */
         public void
         accept(Visitor.AtomVisitor visitor) {
             ((Visitor.BlockStatementVisitor) visitor).visitAlternateConstructorInvocation(this);
@@ -2808,6 +3248,7 @@ class Java {
 
         // Implement BlockStatement.
 
+        /** @{inheritDoc} */
         public void
         accept(Visitor.BlockStatementVisitor visitor) { visitor.visitAlternateConstructorInvocation(this); }
     }
@@ -2825,9 +3266,11 @@ class Java {
 
         // Implement Atom.
 
+        /** @{inheritDoc} */
         public String
         toString() { return "super()"; }
 
+        /** @{inheritDoc} */
         public void
         accept(Visitor.AtomVisitor visitor) {
             ((Visitor.BlockStatementVisitor) visitor).visitSuperConstructorInvocation(this);
@@ -2835,6 +3278,7 @@ class Java {
 
         // Implement BlockStatement.
 
+        /** @{inheritDoc} */
         public void
         accept(Visitor.BlockStatementVisitor visitor) { visitor.visitSuperConstructorInvocation(this); }
     }
@@ -2853,6 +3297,8 @@ class Java {
 
         // Implement "Atom".
         IClass.IMethod iMethod;
+
+        /** @{inheritDoc} */
         public String
         toString() {
             StringBuffer sb = new StringBuffer();
@@ -2866,8 +3312,13 @@ class Java {
             return sb.toString();
         }
 
-        public void accept(Visitor.AtomVisitor visitor)   { visitor.visitMethodInvocation(this); }
-        public void accept(Visitor.RvalueVisitor visitor) { visitor.visitMethodInvocation(this); }
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.AtomVisitor visitor) { visitor.visitMethodInvocation(this); }
+
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.RvalueVisitor visitor) { visitor.visitMethodInvocation(this); }
     }
 
     public static final
@@ -2879,9 +3330,18 @@ class Java {
         }
 
         // Implement "Atom".
-        public String toString()                            { return "super." + this.methodName + "()"; }
-        public void   accept(Visitor.AtomVisitor visitor)   { visitor.visitSuperclassMethodInvocation(this); }
-        public void   accept(Visitor.RvalueVisitor visitor) { visitor.visitSuperclassMethodInvocation(this); }
+
+        /** @{inheritDoc} */
+        public String
+        toString() { return "super." + this.methodName + "()"; }
+
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.AtomVisitor visitor) { visitor.visitSuperclassMethodInvocation(this); }
+
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.RvalueVisitor visitor) { visitor.visitSuperclassMethodInvocation(this); }
     }
 
     public abstract static
@@ -2925,6 +3385,8 @@ class Java {
         }
 
         // Implement "Atom".
+
+        /** @{inheritDoc} */
         public String
         toString() {
             StringBuffer sb = new StringBuffer();
@@ -2947,8 +3409,13 @@ class Java {
             return sb.toString();
         }
 
-        public void accept(Visitor.AtomVisitor visitor)   { visitor.visitNewClassInstance(this); }
-        public void accept(Visitor.RvalueVisitor visitor) { visitor.visitNewClassInstance(this); }
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.AtomVisitor visitor) { visitor.visitNewClassInstance(this); }
+
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.RvalueVisitor visitor) { visitor.visitNewClassInstance(this); }
     }
 
     public static final
@@ -2971,6 +3438,8 @@ class Java {
         }
 
         // Implement "Atom".
+
+        /** @{inheritDoc} */
         public String
         toString() {
             StringBuffer sb = new StringBuffer();
@@ -2979,8 +3448,13 @@ class Java {
             return sb.toString();
         }
 
-        public void accept(Visitor.AtomVisitor visitor)   { visitor.visitNewAnonymousClassInstance(this); }
-        public void accept(Visitor.RvalueVisitor visitor) { visitor.visitNewAnonymousClassInstance(this); }
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.AtomVisitor visitor) { visitor.visitNewAnonymousClassInstance(this); }
+
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.RvalueVisitor visitor) { visitor.visitNewAnonymousClassInstance(this); }
     }
 
     // Used during compile-time.
@@ -2995,10 +3469,18 @@ class Java {
         }
 
         // Implement Atom
-        public String toString() { return this.formalParameter.name; }
 
-        public void accept(Visitor.AtomVisitor visitor)   { visitor.visitParameterAccess(this); }
-        public void accept(Visitor.RvalueVisitor visitor) { visitor.visitParameterAccess(this); }
+        /** @{inheritDoc} */
+        public String
+        toString() { return this.formalParameter.name; }
+
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.AtomVisitor visitor) { visitor.visitParameterAccess(this); }
+
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.RvalueVisitor visitor) { visitor.visitParameterAccess(this); }
     }
 
     public static final
@@ -3033,11 +3515,20 @@ class Java {
         }
 
         // Implement "Atom".
-        public String toString()                          { return "new " + this.type.toString() + "[]..."; }
-        public void   accept(Visitor.AtomVisitor visitor) { visitor.visitNewArray(this); }
+
+        /** @{inheritDoc} */
+        public String
+        toString()  { return "new " + this.type.toString() + "[]..."; }
+
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.AtomVisitor visitor) { visitor.visitNewArray(this); }
 
         // Implement "Rvalue".
-        public void accept(Visitor.RvalueVisitor visitor) { visitor.visitNewArray(this); }
+
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.RvalueVisitor visitor) { visitor.visitNewArray(this); }
     }
 
     public static final
@@ -3053,11 +3544,20 @@ class Java {
         }
 
         // Implement "Atom".
-        public String toString()                          { return "new " + this.arrayType.toString() + " { ... }"; }
-        public void   accept(Visitor.AtomVisitor visitor) { visitor.visitNewInitializedArray(this); }
+
+        /** @{inheritDoc} */
+        public String
+        toString() { return "new " + this.arrayType.toString() + " { ... }"; }
+
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.AtomVisitor visitor) { visitor.visitNewInitializedArray(this); }
 
         // Implement "Rvalue".
-        public void accept(Visitor.RvalueVisitor visitor) { visitor.visitNewInitializedArray(this); }
+
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.RvalueVisitor visitor) { visitor.visitNewInitializedArray(this); }
     }
 
     /**
@@ -3075,6 +3575,8 @@ class Java {
             super(location);
             this.values = values;
         }
+
+        /** @{inheritDoc} */
         public String
         toString() { return " { (" + this.values.length + " values) }"; }
     }
@@ -3093,55 +3595,88 @@ class Java {
         public Literal(Location location, String value) { super(location); this.value = value; }
 
         // Implement "Atom".
-        public String toString() { return this.value; }
+
+        /** @{inheritDoc} */
+        public String
+        toString() { return this.value; }
     }
 
     public static final
     class IntegerLiteral extends Literal {
         public IntegerLiteral(Location location, String value) { super(location, value); }
 
-        public void accept(Visitor.AtomVisitor visitor)   { visitor.visitIntegerLiteral(this); }
-        public void accept(Visitor.RvalueVisitor visitor) { visitor.visitIntegerLiteral(this); }
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.AtomVisitor visitor) { visitor.visitIntegerLiteral(this); }
+
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.RvalueVisitor visitor) { visitor.visitIntegerLiteral(this); }
     }
 
     public static final
     class FloatingPointLiteral extends Literal {
         public FloatingPointLiteral(Location location, String value) { super(location, value); }
 
-        public void accept(Visitor.AtomVisitor visitor)   { visitor.visitFloatingPointLiteral(this); }
-        public void accept(Visitor.RvalueVisitor visitor) { visitor.visitFloatingPointLiteral(this); }
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.AtomVisitor visitor) { visitor.visitFloatingPointLiteral(this); }
+
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.RvalueVisitor visitor) { visitor.visitFloatingPointLiteral(this); }
     }
 
     public static final
     class BooleanLiteral extends Literal {
         public BooleanLiteral(Location location, String value) { super(location, value); }
 
-        public void accept(Visitor.AtomVisitor visitor)   { visitor.visitBooleanLiteral(this); }
-        public void accept(Visitor.RvalueVisitor visitor) { visitor.visitBooleanLiteral(this); }
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.AtomVisitor visitor) { visitor.visitBooleanLiteral(this); }
+
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.RvalueVisitor visitor) { visitor.visitBooleanLiteral(this); }
     }
 
     public static final
     class CharacterLiteral extends Literal {
         public CharacterLiteral(Location location, String value) { super(location, value); }
 
-        public void accept(Visitor.AtomVisitor visitor)   { visitor.visitCharacterLiteral(this); }
-        public void accept(Visitor.RvalueVisitor visitor) { visitor.visitCharacterLiteral(this); }
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.AtomVisitor visitor) { visitor.visitCharacterLiteral(this); }
+
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.RvalueVisitor visitor) { visitor.visitCharacterLiteral(this); }
     }
 
     public static final
     class StringLiteral extends Literal {
         public StringLiteral(Location location, String value) { super(location, value); }
 
-        public void accept(Visitor.AtomVisitor visitor)   { visitor.visitStringLiteral(this); }
-        public void accept(Visitor.RvalueVisitor visitor) { visitor.visitStringLiteral(this); }
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.AtomVisitor visitor) { visitor.visitStringLiteral(this); }
+
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.RvalueVisitor visitor) { visitor.visitStringLiteral(this); }
     }
 
     public static final
     class NullLiteral extends Literal {
         public NullLiteral(Location location, String value) { super(location, value); }
 
-        public void accept(Visitor.AtomVisitor visitor)   { visitor.visitNullLiteral(this); }
-        public void accept(Visitor.RvalueVisitor visitor) { visitor.visitNullLiteral(this); }
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.AtomVisitor visitor) { visitor.visitNullLiteral(this); }
+
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.RvalueVisitor visitor) { visitor.visitNullLiteral(this); }
     }
 
     /**
@@ -3164,6 +3699,7 @@ class Java {
             this.type      = type;
         }
 
+        /** @{inheritDoc} */
         public String
         toString() {
             StringBuffer buf = new StringBuffer("local var(");
@@ -3210,6 +3746,7 @@ class Java {
             this.type  = type;
         }
 
+        /** @{inheritDoc} */
         public String
         toString() {
             StringBuffer sb = new StringBuffer();
@@ -3220,7 +3757,8 @@ class Java {
             return sb.toString();
         }
 
-        public void setSlot(LocalVariableSlot slot) { this.slot = slot; }
+        public void
+        setSlot(LocalVariableSlot slot) { this.slot = slot; }
 
         public short
         getSlotIndex() {

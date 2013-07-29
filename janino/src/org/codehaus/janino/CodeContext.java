@@ -99,6 +99,7 @@ class CodeContext {
         this.end.prev         = this.beginning;
     }
 
+    /** The {@link ClassFile} this context is related to. */
     public ClassFile
     getClassFile() { return this.classFile; }
 

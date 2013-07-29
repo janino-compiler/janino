@@ -35,14 +35,23 @@ import org.codehaus.janino.util.enumerator.EnumeratorFormatException;
  */
 public final
 class Access extends Enumerator {
-    public static final Access PRIVATE   = new Access("private");
+
+    /** Representaion of PRIVATE accessibility. */
+    public static final Access PRIVATE = new Access("private");
+    
+    /** Representaion of PROTECTED accessibility. */
     public static final Access PROTECTED = new Access("protected");
-    public static final Access DEFAULT   = new Access("/*default*/");
-    public static final Access PUBLIC    = new Access("public");
+    
+    /** Representaion of DEFAULT accessibility. */
+    public static final Access DEFAULT = new Access("/*default*/");
+    
+    /** Representaion of PUBLIC accessibility. */
+    public static final Access PUBLIC = new Access("public");
 
     // These MUST be declared exactly like this:
     private Access(String name) { super(name); }
 
+    /** @return The {@code name} converted to {@link Access} */
     public static Access
     fromString(String name) throws EnumeratorFormatException {
         return (Access) Enumerator.fromString(name, Access.class);

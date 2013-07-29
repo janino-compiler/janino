@@ -462,9 +462,7 @@ class IClass {
     private IClass  componentType;
     protected abstract IClass getComponentType2();
 
-    /**
-     * Returns a string representation for this object.
-     */
+    /** @{inheritDoc} */
     public String toString() { return Descriptor.toClassName(this.getDescriptor()); }
 
     /**
@@ -822,6 +820,8 @@ class IClass {
 
             return new MethodDescriptor(IClass.getDescriptors(parameterTypes), Descriptor.VOID).toString();
         }
+
+        /** @{inheritDoc} */
         public String
         toString() {
             StringBuffer sb = new StringBuffer(this.getDeclaringIClass().toString());
@@ -846,6 +846,7 @@ class IClass {
         public abstract IClass  getReturnType() throws CompileException;
         public abstract String  getName();
 
+        /** @{inheritDoc} */
         public String
         getDescriptor() throws CompileException {
             return new MethodDescriptor(
@@ -853,6 +854,8 @@ class IClass {
                 this.getReturnType().getDescriptor()
             ).toString();
         }
+
+        /** @{inheritDoc} */
         public String
         toString() {
             StringBuffer sb = new StringBuffer();
@@ -909,6 +912,9 @@ class IClass {
          * expression (JLS2 15.28, bullet 12).
          */
         public abstract Object  getConstantValue() throws CompileException;
-        public String           toString() { return this.getDeclaringIClass().toString() + "." + this.getName(); }
+
+        /** @{inheritDoc} */
+        public String
+        toString() { return this.getDeclaringIClass().toString() + "." + this.getName(); }
     }
 }

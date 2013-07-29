@@ -112,6 +112,8 @@ class Benchmark {
      */
     public
     interface Reporter {
+
+        /** Reports the given {@code message}. */
         void report(String message);
     }
 

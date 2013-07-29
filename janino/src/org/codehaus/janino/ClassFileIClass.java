@@ -61,6 +61,7 @@ class ClassFileIClass extends IClass {
 
     // Implement IClass.
 
+    /** @{inheritDoc} */
     protected IConstructor[]
     getDeclaredIConstructors2() {
         List iConstructors = new ArrayList();
@@ -79,6 +80,7 @@ class ClassFileIClass extends IClass {
         return (IConstructor[]) iConstructors.toArray(new IConstructor[iConstructors.size()]);
     }
 
+    /** @{inheritDoc} */
     protected IMethod[]
     getDeclaredIMethods2() {
         List iMethods = new ArrayList();
@@ -102,6 +104,7 @@ class ClassFileIClass extends IClass {
         return (IMethod[]) iMethods.toArray(new IMethod[iMethods.size()]);
     }
 
+    /** @{inheritDoc} */
     protected IField[]
     getDeclaredIFields2() {
         IField[] ifs = new IClass.IField[this.classFile.fieldInfos.size()];
@@ -115,6 +118,7 @@ class ClassFileIClass extends IClass {
         return ifs;
     }
 
+    /** @{inheritDoc} */
     protected IClass[]
     getDeclaredIClasses2() throws CompileException {
         ClassFile.InnerClassesAttribute ica = this.classFile.getInnerClassesAttribute();
@@ -135,6 +139,7 @@ class ClassFileIClass extends IClass {
         return (IClass[]) res.toArray(new IClass[res.size()]);
     }
 
+    /** @{inheritDoc} */
     protected IClass
     getDeclaringIClass2() throws CompileException {
         ClassFile.InnerClassesAttribute ica = this.classFile.getInnerClassesAttribute();
@@ -156,6 +161,7 @@ class ClassFileIClass extends IClass {
         return null;
     }
 
+    /** @{inheritDoc} */
     protected IClass
     getOuterIClass2() throws CompileException {
         ClassFile.InnerClassesAttribute ica = this.classFile.getInnerClassesAttribute();
@@ -185,6 +191,7 @@ class ClassFileIClass extends IClass {
         return null;
     }
 
+    /** @{inheritDoc} */
     protected IClass
     getSuperclass2() throws CompileException {
         if (this.classFile.superclass == 0) return null;
@@ -195,20 +202,47 @@ class ClassFileIClass extends IClass {
         }
     }
 
-    public Access  getAccess() { return ClassFileIClass.accessFlags2Access(this.accessFlags); }
-    public boolean isFinal()   { return (this.accessFlags & Mod.FINAL) != 0; }
+    /** @{inheritDoc} */
+    public Access
+    getAccess() { return ClassFileIClass.accessFlags2Access(this.accessFlags); }
 
+    /** @{inheritDoc} */
+    public boolean
+    isFinal() { return (this.accessFlags & Mod.FINAL) != 0; }
+
+    /** @{inheritDoc} */
     protected IClass[]
     getInterfaces2() throws CompileException { return this.resolveClasses(this.classFile.interfaces); }
 
-    public boolean     isAbstract()         { return (this.accessFlags & Mod.ABSTRACT) != 0; }
-    protected String   getDescriptor2()     { return Descriptor.fromClassName(this.classFile.getThisClassName()); }
-    public boolean     isInterface()        { return (this.accessFlags & Mod.INTERFACE) != 0; }
-    public boolean     isArray()            { return false; }
-    public boolean     isPrimitive()        { return false; }
-    public boolean     isPrimitiveNumeric() { return false; }
-    protected IClass   getComponentType2()  { return null; }
+    /** @{inheritDoc} */
+    public boolean
+    isAbstract() { return (this.accessFlags & Mod.ABSTRACT) != 0; }
 
+    /** @{inheritDoc} */
+    protected String
+    getDescriptor2() { return Descriptor.fromClassName(this.classFile.getThisClassName()); }
+
+    /** @{inheritDoc} */
+    public boolean
+    isInterface() { return (this.accessFlags & Mod.INTERFACE) != 0; }
+
+    /** @{inheritDoc} */
+    public boolean
+    isArray() { return false; }
+
+    /** @{inheritDoc} */
+    public boolean
+    isPrimitive() { return false; }
+
+    /** @{inheritDoc} */
+    public boolean
+    isPrimitiveNumeric() { return false; }
+
+    /** @{inheritDoc} */
+    protected IClass
+    getComponentType2()  { return null; }
+
+    /** @{inheritDoc} */
     public void
     resolveHalf() throws ClassNotFoundException {
 
@@ -231,6 +265,9 @@ class ClassFileIClass extends IClass {
         }
     }
 
+    /**
+     * Resolves all classes referenced by this class file.
+     */
     public void
     resolveAllClasses() throws ClassNotFoundException {
         for (short i = 0; i < this.classFile.constantPool.size(); ++i) {

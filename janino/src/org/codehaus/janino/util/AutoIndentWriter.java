@@ -48,16 +48,19 @@ class AutoIndentWriter extends FilterWriter {
     public
     AutoIndentWriter(Writer out) { super(out); }
 
+    /** @{inheritDoc} */
     public void
     write(char[] cbuf, int off, int len) throws IOException {
         for (; len > 0; --len) this.write(cbuf[off++]);
     }
 
+    /** @{inheritDoc} */
     public void
     write(String str, int off, int len) throws IOException {
         for (; len > 0; --len) this.write(str.charAt(off++));
     }
 
+    /** @{inheritDoc} */
     public void
     write(int c) throws IOException {
         if (c == '\n') {
@@ -224,6 +227,7 @@ class AutoIndentWriter extends FilterWriter {
         return String.valueOf(data);
     }
 
+    /** @{inheritDoc} */
     public void
     close() throws IOException {
         if (this.tabulatorBuffer != null) this.flushTabulatorBuffer();
@@ -231,6 +235,7 @@ class AutoIndentWriter extends FilterWriter {
         this.out.close();
     }
 
+    /** @{inheritDoc} */
     public void
     flush() throws IOException {
         if (this.tabulatorBuffer != null) this.flushTabulatorBuffer();

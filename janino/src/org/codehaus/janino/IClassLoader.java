@@ -105,8 +105,8 @@ class IClassLoader {
     /**
      * Get an {@link IClass} by field descriptor.
      *
-     * @return <code>null</code> if an {@link IClass} could not be loaded
-     * @throws {@link ClassNotFoundException} if an exception was raised while loading the {@link IClass}
+     * @return                        {@code null} if an {@link IClass} could not be loaded
+     * @throws ClassNotFoundException An exception was raised while loading the {@link IClass}
      */
     public final IClass
     loadIClass(String fieldDescriptor) throws ClassNotFoundException {

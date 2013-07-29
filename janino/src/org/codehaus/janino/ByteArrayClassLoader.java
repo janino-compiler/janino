@@ -107,6 +107,7 @@ class ByteArrayClassLoader extends ClassLoader {
         return true;
     }
 
+    /** @{inheritDoc} */
     public int
     hashCode() {
         int hc = this.getParent().hashCode();

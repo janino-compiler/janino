@@ -342,6 +342,7 @@ class Compiler {
     public static
     class SimpleWarningHandler implements WarningHandler {
 
+        /** @{inheritDoc} */
         public void
         handleWarning(String handle, String message, Location optionalLocation) {
             StringBuffer sb = new StringBuffer();
