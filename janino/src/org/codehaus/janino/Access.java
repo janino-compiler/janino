@@ -36,16 +36,16 @@ import org.codehaus.janino.util.enumerator.EnumeratorFormatException;
 public final
 class Access extends Enumerator {
 
-    /** Representaion of PRIVATE accessibility. */
+    /** Representation of PRIVATE accessibility. */
     public static final Access PRIVATE = new Access("private");
     
-    /** Representaion of PROTECTED accessibility. */
+    /** Representation of PROTECTED accessibility. */
     public static final Access PROTECTED = new Access("protected");
     
-    /** Representaion of DEFAULT accessibility. */
+    /** Representation of DEFAULT accessibility. */
     public static final Access DEFAULT = new Access("/*default*/");
     
-    /** Representaion of PUBLIC accessibility. */
+    /** Representation of PUBLIC accessibility. */
     public static final Access PUBLIC = new Access("public");
 
     // These MUST be declared exactly like this:
