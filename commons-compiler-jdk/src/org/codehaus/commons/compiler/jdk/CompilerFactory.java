@@ -33,35 +33,35 @@ import org.codehaus.commons.compiler.*;
 public
 class CompilerFactory extends AbstractCompilerFactory {
 
-    public String
+    @Override public String
     getId() { return "org.codehaus.commons.compiler.jdk"; }
 
-    public String
+    @Override public String
     getImplementationVersion() { return CompilerFactory.class.getPackage().getImplementationVersion(); }
 
-    public IExpressionEvaluator
+    @Override public IExpressionEvaluator
     newExpressionEvaluator() { return new ExpressionEvaluator(); }
 
-    public IScriptEvaluator
+    @Override public IScriptEvaluator
     newScriptEvaluator() { return new ScriptEvaluator(); }
 
-    public IClassBodyEvaluator
+    @Override public IClassBodyEvaluator
     newClassBodyEvaluator() { return new ClassBodyEvaluator(); }
 
-    public ISimpleCompiler
+    @Override public ISimpleCompiler
     newSimpleCompiler() { return new SimpleCompiler(); }
 
-    public AbstractJavaSourceClassLoader
+    @Override public AbstractJavaSourceClassLoader
     newJavaSourceClassLoader() {
         return AccessController.doPrivileged(new PrivilegedAction<JavaSourceClassLoader>() {
-            public JavaSourceClassLoader run() { return new JavaSourceClassLoader(); }
+            @Override public JavaSourceClassLoader run() { return new JavaSourceClassLoader(); }
         });
     }
 
-    public AbstractJavaSourceClassLoader
+    @Override public AbstractJavaSourceClassLoader
     newJavaSourceClassLoader(final ClassLoader parentClassLoader) {
         return AccessController.doPrivileged(new PrivilegedAction<JavaSourceClassLoader>() {
-            public JavaSourceClassLoader run() { return new JavaSourceClassLoader(parentClassLoader); }
+            @Override public JavaSourceClassLoader run() { return new JavaSourceClassLoader(parentClassLoader); }
         });
     }
 }

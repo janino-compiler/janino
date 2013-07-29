@@ -204,23 +204,23 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
 
     public ScriptEvaluator() {}
 
-    public void
+    @Override public void
     setStaticMethod(final boolean staticMethod) { this.setStaticMethod(new boolean[] { staticMethod }); }
 
-    public void
+    @Override public void
     setReturnType(@SuppressWarnings("rawtypes") Class returnType) {
         this.setReturnTypes(new Class<?>[] { returnType });
     }
 
-    public void
+    @Override public void
     setMethodName(String methodName) { this.setMethodNames(new String[] { methodName }); }
 
-    public void
+    @Override public void
     setParameters(String[] names, @SuppressWarnings("rawtypes") Class[] types) {
         this.setParameters(new String[][] { names }, new Class<?>[][] { types });
     }
 
-    public void
+    @Override public void
     setThrownExceptions(@SuppressWarnings("rawtypes") Class[] thrownExceptions) {
         this.setThrownExceptions(new Class[][] { thrownExceptions });
     }
@@ -230,47 +230,47 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
         this.cook(new String[] { optionalFileName }, new Reader[] { r });
     }
 
-    public Object
+    @Override public Object
     evaluate(Object[] arguments) throws InvocationTargetException { return this.evaluate(0, arguments); }
 
-    public Method
+    @Override public Method
     getMethod() { return this.getMethod(0); }
 
-    public void
+    @Override public void
     setStaticMethod(boolean[] staticMethod) {
         assertNotCooked();
-        this.optionalStaticMethod = (boolean[]) staticMethod.clone();
+        this.optionalStaticMethod = staticMethod.clone();
     }
 
-    public void
+    @Override public void
     setReturnTypes(@SuppressWarnings("rawtypes") Class[] returnTypes) {
         assertNotCooked();
-        this.optionalReturnTypes = (Class<?>[]) returnTypes.clone();
+        this.optionalReturnTypes = returnTypes.clone();
     }
 
-    public void
+    @Override public void
     setMethodNames(String[] methodNames) {
         assertNotCooked();
-        this.optionalMethodNames = (String[]) methodNames.clone();
+        this.optionalMethodNames = methodNames.clone();
     }
 
-    public void
+    @Override public void
     setParameters(String[][] names, @SuppressWarnings("rawtypes") Class[][] types) {
         assertNotCooked();
-        this.optionalParameterNames = (String[][]) names.clone();
-        this.optionalParameterTypes = (Class<?>[][]) types.clone();
+        this.optionalParameterNames = names.clone();
+        this.optionalParameterTypes = types.clone();
     }
 
-    public void
+    @Override public void
     setThrownExceptions(@SuppressWarnings("rawtypes") Class[][] thrownExceptions) {
         assertNotCooked();
-        this.optionalThrownExceptions = (Class<?>[][]) thrownExceptions.clone();
+        this.optionalThrownExceptions = thrownExceptions.clone();
     }
 
-    public final void
+    @Override public final void
     cook(Reader[] readers) throws CompileException, IOException { this.cook(null, readers); }
 
-    public void
+    @Override public void
     cook(String[] optionalFileNames, Reader[] readers) throws CompileException, IOException {
         String[] imports;
 
@@ -287,10 +287,10 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
         this.cook(optionalFileNames, readers, imports);
     }
 
-    public final void
+    @Override public final void
     cook(String[] strings) throws CompileException { this.cook(null, strings); }
 
-    public void
+    @Override public void
     cook(String[] optionalFileNames, String[] strings) throws CompileException {
         Reader[] readers = new Reader[strings.length];
         for (int i = 0; i < strings.length; ++i) readers[i] = new StringReader(strings[i]);
@@ -444,7 +444,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
                     this.parameterTypes = parameterTypes;
                 }
 
-                public boolean
+                @Override public boolean
                 equals(Object o) {
                     if (!(o instanceof MethodWrapper)) return false;
                     MethodWrapper that = (MethodWrapper) o;
@@ -454,7 +454,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
                     );
                 }
 
-                public int
+                @Override public int
                 hashCode() { return this.name.hashCode() ^ Arrays.hashCode(this.parameterTypes); }
             }
             Method[]                   ma  = c.getDeclaredMethods();
@@ -464,7 +464,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
                 dms.put(new MethodWrapper(m.getName(), m.getParameterTypes()), m);
             }
             for (int i = 0; i < count; ++i) {
-                Method m = (Method) dms.get(new MethodWrapper(
+                Method m = dms.get(new MethodWrapper(
                     methodNames[i],
                     this.optionalParameterTypes == null ? new Class[0] : this.optionalParameterTypes[i]
                 ));
@@ -483,7 +483,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
      * @param script Contains the sequence of script tokens
      * @see #createFastEvaluator(String, Class, String[])
      */
-    public Object
+    @Override public Object
     createFastEvaluator(
         String                              script,
         @SuppressWarnings("rawtypes") Class interfaceToImplement,
@@ -502,7 +502,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
     @Override public final Object
     createInstance(Reader reader) { throw new UnsupportedOperationException("createInstance"); }
 
-    public Object
+    @Override public Object
     createFastEvaluator(
         Reader                              r,
         @SuppressWarnings("rawtypes") Class interfaceToImplement,
@@ -541,7 +541,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
         }
     }
 
-    public Object
+    @Override public Object
     evaluate(int idx, Object[] arguments) throws InvocationTargetException {
         if (this.result == null) throw new IllegalStateException("Must only be called after \"cook()\"");
         try {
@@ -551,7 +551,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
         }
     }
 
-    public Method
+    @Override public Method
     getMethod(int idx) {
         if (this.result == null) throw new IllegalStateException("Must only be called after \"cook()\"");
         return this.result[idx];

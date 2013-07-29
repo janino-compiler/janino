@@ -159,7 +159,7 @@ class FileInputJavaFileManager extends ForwardingJavaFileManager<JavaFileManager
             this.binaryName = binaryName;
         }
 
-        @Override public Reader
+        @SuppressWarnings("resource") @Override public Reader
         openReader(boolean ignoreEncodingErrors) throws IOException {
             return (
                 FileInputJavaFileManager.this.optionalCharacterEncoding == null

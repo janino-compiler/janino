@@ -133,7 +133,7 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
      *
      * @throws ClassNotFoundException
      */
-    protected Class<?>
+    @Override protected Class<?>
     findClass(String className) throws ClassNotFoundException {
 
         byte[] ba;

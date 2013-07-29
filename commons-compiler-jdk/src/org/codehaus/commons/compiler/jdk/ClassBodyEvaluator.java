@@ -102,7 +102,7 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
         this.setImplementedInterfaces(implementedInterfaces);
     }
 
-    public void
+    @Override public void
     cook(String optionalFileName, Reader r) throws CompileException, IOException {
         if (!r.markSupported()) r = new BufferedReader(r);
         this.cook(optionalFileName, ClassBodyEvaluator.parseImportDeclarations(r), r);
@@ -212,7 +212,7 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
     /**
      * @return The {@link Class} created by the preceding call to {@link #cook(Reader)}
      */
-    public Class<?>
+    @Override public Class<?>
     getClazz() { return this.result; }
 
     /**

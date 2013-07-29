@@ -178,12 +178,12 @@ class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluato
 
     public ExpressionEvaluator() {}
 
-    public void
+    @Override public void
     setExpressionType(@SuppressWarnings("rawtypes") Class expressionType) {
         this.setExpressionTypes(new Class[] { expressionType });
     }
 
-    public void
+    @Override public void
     setExpressionTypes(@SuppressWarnings("rawtypes") Class[] expressionTypes) {
         assertNotCooked();
         this.optionalExpressionTypes = expressionTypes;
@@ -206,7 +206,7 @@ class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluato
         throw new AssertionError("Must not be used on an ExpressionEvaluator; use 'setExpressionTypes()' instead");
     }
 
-    protected Class<?>
+    @Override protected Class<?>
     getDefaultReturnType() { return Object.class; }
 
     @Override public void

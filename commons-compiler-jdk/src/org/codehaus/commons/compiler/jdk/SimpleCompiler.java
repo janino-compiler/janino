@@ -151,7 +151,7 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
         // Create a ClassLoader that reads class files from our FM.
         this.result = AccessController.doPrivileged(new PrivilegedAction<JavaFileManagerClassLoader>() {
 
-            public JavaFileManagerClassLoader
+            @Override public JavaFileManagerClassLoader
             run() { return new JavaFileManagerClassLoader(fileManager, SimpleCompiler.this.parentClassLoader); }
         });
     }
@@ -225,7 +225,7 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
         // Create a ClassLoader that reads class files from our FM.
         this.result = AccessController.doPrivileged(new PrivilegedAction<JavaFileManagerClassLoader>() {
 
-            public JavaFileManagerClassLoader
+            @Override public JavaFileManagerClassLoader
             run() { return new JavaFileManagerClassLoader(fileManager, SimpleCompiler.this.parentClassLoader); }
         });
     }
@@ -252,6 +252,7 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
      *
      * @param optionalParentClassLoader
      * @param auxiliaryClasses
+     * @deprecated
      */
     @Deprecated public void
     setParentClassLoader(ClassLoader optionalParentClassLoader, Class<?>[] auxiliaryClasses) {
