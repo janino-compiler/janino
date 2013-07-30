@@ -53,20 +53,19 @@ class CodeContext {
     private static final byte    INVALID_OFFSET = -2;
     private static final int     MAX_STACK_SIZE = 254;
 
-    private final ClassFile classFile;
-    private short           maxStack;
-    private short           maxLocals;
-    private byte[]          code;
-    private final Offset    beginning;
-    private final Inserter  end;
-    private Inserter        currentInserter;
-    private final List      exceptionTableEntries; // ExceptionTableEntry
+    private final ClassFile                     classFile;
+    private short                               maxStack;
+    private short                               maxLocals;
+    private byte[]                              code;
+    private final Offset                        beginning;
+    private final Inserter                      end;
+    private Inserter                            currentInserter;
+    private final List/*<ExceptionTableEntry>*/ exceptionTableEntries;
 
     /**
-     * List of Java.LocalVariableSlot objects that contain all the local variables that
-     * are allocated in any block in this CodeContext.
+     * All the local variables that are allocated in any block in this {@link CodeContext}.
      */
-    private final List allLocalVars = new ArrayList();
+    private final List/*<Java.LocalVariableSlot>*/ allLocalVars = new ArrayList();
 
     /**
      * List of List of Java.LocalVariableSlot objects. Each List of Java.LocalVariableSlot is
@@ -239,6 +238,7 @@ class CodeContext {
             ));
         }
 
+        // Add "LocalVariableTable" attribute.
         if (localVariableTableAttributeNameIndex != 0) {
             ClassFile.AttributeInfo ai = storeLocalVariableTable(dos, localVariableTableAttributeNameIndex);
 
@@ -252,13 +252,15 @@ class CodeContext {
         }
     }
 
+    /**
+     * @return A {@link LocalVariableTableAttribute} for this {@link CodeContext}
+     */
     protected ClassFile.AttributeInfo
     storeLocalVariableTable(DataOutputStream dos, short localVariableTableAttributeNameIndex) {
         ClassFile       cf        = this.getClassFile();
-        Iterator        iter      = getAllLocalVars().iterator();
         final List      entryList = new ArrayList();
 
-        while (iter.hasNext()) {
+        for (Iterator/*<Java.LocalVariableSlot>*/ iter = getAllLocalVars().iterator(); iter.hasNext();) {
             Java.LocalVariableSlot slot = (Java.LocalVariableSlot) iter.next();
 
             if (slot.getName() != null) {
@@ -1108,6 +1110,9 @@ class CodeContext {
         return Collections.unmodifiableMap(m);
     }
 
+    /**
+     * Writes a four-byte offset (as it is used in TABLESWITCH and LOOKUPSWITCH) into this code context.
+     */
     public void
     writeOffset(short lineNumber, Offset src, final Offset dst) {
         this.relocatables.add(new OffsetBranch(this.newOffset(), src, dst));
@@ -1142,6 +1147,10 @@ class CodeContext {
         private final Offset where, source, destination;
     }
 
+    /**
+     * Creates and inserts an {@link Offset} at the current inserter's current position.
+     * @return
+     */
     public Offset
     newOffset() {
         Offset o = new Offset();
@@ -1162,6 +1171,9 @@ class CodeContext {
     public Inserter
     newInserter() { Inserter i = new Inserter(); i.set(); return i; }
 
+    /**
+     * @return The current inserter
+     */
     public Inserter
     currentInserter() { return this.currentInserter; }
 
@@ -1197,27 +1209,37 @@ class CodeContext {
      */
     public
     class Offset {
-        int              offset = Offset.UNSET;
-        Offset           prev, next;
+
+        /** The offset in the code attribute that this object represents. */
+        int offset = Offset.UNSET;
+
+        /** Links to preceding and succeding offsets. */
+        Offset prev, next;
+
+        /**
+         * Special value for {@link #offset} which indicates that this {@link Offset} has not yet been {@link #set()}
+         */
         static final int UNSET = -1;
 
         /**
-         * Set this "Offset" to the offset of the current inserter; insert
-         * this "Offset" before the current inserter.
+         * Sets this "Offset" to the offset of the current inserter; inserts this "Offset" before the current inserter.
          */
         public void
         set() {
             if (this.offset != Offset.UNSET) throw new JaninoRuntimeException("Cannot \"set()\" Offset more than once");
 
             this.offset = CodeContext.this.currentInserter.offset;
-            this.prev   = CodeContext.this.currentInserter.prev;
-            this.next   = CodeContext.this.currentInserter;
 
+            this.prev      = CodeContext.this.currentInserter.prev;
+            this.next      = CodeContext.this.currentInserter;
             this.prev.next = this;
             this.next.prev = this;
         }
+
+        /** @return The {@link CodeContext} that this {@link Offset} belongs to */
         public final CodeContext getCodeContext() { return CodeContext.this; }
 
+        /** @{inheritDoc} */
         public String
         toString() { return CodeContext.this.classFile.getThisClassName() + ": " + this.offset; }
     }
@@ -1262,6 +1284,9 @@ class CodeContext {
         private Inserter nextInserter; // null == not in "currentInserter" stack
     }
 
+    /**
+     * An {@link Offset} who#s sole purpose is to later create a 'LneNumberTable' attribute.
+     */
     public
     class LineNumberOffset extends Offset {
         private final int lineNumber;
@@ -1295,9 +1320,14 @@ class CodeContext {
      */
     public
     interface FixUp {
+
+        /** @see FixUp */
         void fixUp();
     }
 
-    public List
+    /**
+     * @return All the local variables that are allocated in any block in this {@link CodeContext}
+     */
+    public List/*<Java.LocalVariableSlot>*/
     getAllLocalVars() { return this.allLocalVars; }
 }

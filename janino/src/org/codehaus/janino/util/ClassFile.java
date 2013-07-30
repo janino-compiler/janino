@@ -355,10 +355,11 @@ class ClassFile {
     }
 
     /**
-     * Add a "CONSTANT_Utf8_info" structure to the class file.
+     * Adds a "CONSTANT_Utf8_info" structure to the class file if no equal entry exists.
      *
-     * @see <a href="http://java.sun.com/docs/books/vmspec/2nd-edition/html/ClassFile.doc.html#7963">JVM specification,
-     *      section 4.4.7</a>
+     * @return The index of the already existing or newly created entry
+     * @see    <a href="http://java.sun.com/docs/books/vmspec/2nd-edition/html/ClassFile.doc.html#7963">JVM
+     *         specification, section 4.4.7</a>
      */
     public short
     addConstantUtf8Info(final String s) {
@@ -396,6 +397,10 @@ class ClassFile {
         }
     }
 
+    /**
+     * Adds an entry to the constant pool and returns its index, or, if an equal entry already exists in the constant
+     * pool, returns the index of that entry.
+     */
     private short
     addToConstantPool(ConstantPoolInfo cpi) {
         Short index = (Short) this.constantPoolMap.get(cpi);

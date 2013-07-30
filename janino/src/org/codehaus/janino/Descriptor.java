@@ -46,15 +46,24 @@ public final
 class Descriptor {
     private Descriptor() {}
 
+    /** @return Whether this {@link Descriptor} describes a reference (i.e. non-primitive) type */
     public static boolean
     isReference(String d) { return d.length() > 1; }
 
+    /**
+     * @return Whether this {@link Descriptor} describes a class or an interface (and not an array or a primitive type)
+     */
     public static boolean
     isClassOrInterfaceReference(String d) { return d.charAt(0) == 'L'; }
 
+    /** @return Whether this {@link Descriptor} describes an array type */
     public static boolean
     isArrayReference(String d) { return d.charAt(0) == '['; }
 
+    /**
+     * @return                        The descriptor of the component of the array type {@code d}
+     * @throws JaninoRuntimeException {@code d} does not describe an array type
+     */
     public static String
     getComponentDescriptor(String d) {
         if (d.charAt(0) != '[') {
@@ -66,6 +75,11 @@ class Descriptor {
         }
         return d.substring(1);
     }
+
+    /**
+     * @return The number of slots (1 or two) that a value of the type described by {@code d} occupies on the operand
+     *         stack or in the local variable array, or 0 iff {@code d} describes the type VOID
+     */
     public static short
     size(String d) {
         if (d.equals(Descriptor.VOID)) return 0;
@@ -74,22 +88,28 @@ class Descriptor {
         throw new JaninoRuntimeException("No size defined for type \"" + Descriptor.toString(d) + "\"");
     }
 
+    /** @return {@code true} iff {@code d} describes a primitive type except LONG and DOUBLE, or a reference type */
     public static boolean
     hasSize1(String d) {
         if (d.length() == 1) return "BCFISZ".indexOf(d) != -1;
         return Descriptor.isReference(d);
     }
 
+    /** @return {@code true} iff {@code d} LONG or DOUBLE */
     public static boolean
     hasSize2(String d) {
         return d.equals(Descriptor.LONG) || d.equals(Descriptor.DOUBLE);
     }
 
-    // Pretty-print.
+    /**
+     * Pretty-prints the given descriptor.
+     *
+     * @param d A valid field or method descriptor
+     */
     public static String
     toString(String d) {
-        int          idx = 0;
-        StringBuffer sb  = new StringBuffer();
+        int           idx = 0;
+        StringBuilder sb  = new StringBuilder();
         if (d.charAt(0) == '(') {
             ++idx;
             sb.append("(");
@@ -105,7 +125,7 @@ class Descriptor {
         return sb.toString();
     }
     private static int
-    toString(String d, int idx, StringBuffer sb) {
+    toString(String d, int idx, StringBuilder sb) {
         int dimensions = 0;
         while (idx < d.length() && d.charAt(idx) == '[') {
             ++dimensions;
@@ -214,9 +234,11 @@ class Descriptor {
         return d.substring(1, d.length() - 1);
     }
 
+    /** @return Whether {@code d} describes a primitive type or VOID */
     public static boolean
     isPrimitive(String d) { return d.length() == 1 && "VBCDFIJSZ".indexOf(d.charAt(0)) != -1; }
 
+    /** @return Whether {@code d} describes a primitive type except BOOLEAN and VOID */
     public static boolean
     isPrimitiveNumeric(String d) { return d.length() == 1 && "BDFIJSC".indexOf(d.charAt(0)) != -1; }
 
@@ -244,35 +266,63 @@ class Descriptor {
         return packageName1 == null ? packageName2 == null : packageName1.equals(packageName2);
     }
 
-    public static final String VOID    = "V";
-    public static final String BYTE    = "B";
-    public static final String CHAR    = "C";
-    public static final String DOUBLE  = "D";
-    public static final String FLOAT   = "F";
-    public static final String INT     = "I";
-    public static final String LONG    = "J";
-    public static final String SHORT   = "S";
+    /** The field descriptor for the type VOID. */
+    public static final String VOID = "V";
+    
+    /** The field descriptor for the primitive type BYTE. */
+    public static final String BYTE = "B";
+    /** The field descriptor for the primitive type CHAR. */
+    public static final String CHAR = "C";
+    /** The field descriptor for the primitive type DOUBLE. */
+    public static final String DOUBLE = "D";
+    /** The field descriptor for the primitive type FLOAT. */
+    public static final String FLOAT = "F";
+    /** The field descriptor for the primitive type INT. */
+    public static final String INT = "I";
+    /** The field descriptor for the primitive type LONG. */
+    public static final String LONG = "J";
+    /** The field descriptor for the primitive type SHORT. */
+    public static final String SHORT = "S";
+    /** The field descriptor for the primitive type BOOLEAN. */
     public static final String BOOLEAN = "Z";
 
-    public static final String JAVA_LANG_OBJECT           = "Ljava/lang/Object;";
-    public static final String JAVA_LANG_STRING           = "Ljava/lang/String;";
-    public static final String JAVA_LANG_STRINGBUFFER     = "Ljava/lang/StringBuffer;";
-    public static final String JAVA_LANG_STRINGBUILDER    = "Ljava/lang/StringBuilder;"; // Since 1.5!
-    public static final String JAVA_LANG_CLASS            = "Ljava/lang/Class;";
-    public static final String JAVA_LANG_THROWABLE        = "Ljava/lang/Throwable;";
+    /** The field descriptor for the class {@link Object}. */
+    public static final String JAVA_LANG_OBJECT = "Ljava/lang/Object;";
+    /** The field descriptor for the class {@link String}. */
+    public static final String JAVA_LANG_STRING = "Ljava/lang/String;";
+    /** The field descriptor for the class {@link StringBuffer}. */
+    public static final String JAVA_LANG_STRINGBUFFER = "Ljava/lang/StringBuffer;";
+    /** The field descriptor for the class {@link StringBuilder}. */
+    public static final String JAVA_LANG_STRINGBUILDER = "Ljava/lang/StringBuilder;"; // Since 1.5!
+    /** The field descriptor for the class {@link Class}. */
+    public static final String JAVA_LANG_CLASS = "Ljava/lang/Class;";
+    /** The field descriptor for the class {@link Throwable}. */
+    public static final String JAVA_LANG_THROWABLE = "Ljava/lang/Throwable;";
+    /** The field descriptor for the class {@link RuntimeException}. */
     public static final String JAVA_LANG_RUNTIMEEXCEPTION = "Ljava/lang/RuntimeException;";
-    public static final String JAVA_LANG_ERROR            = "Ljava/lang/Error;";
-    public static final String JAVA_LANG_CLONEABLE        = "Ljava/lang/Cloneable;";
-    public static final String JAVA_IO_SERIALIZABLE       = "Ljava/io/Serializable;";
+    /** The field descriptor for the class {@link Error}. */
+    public static final String JAVA_LANG_ERROR = "Ljava/lang/Error;";
+    /** The field descriptor for the interface {@link Cloneable}. */
+    public static final String JAVA_LANG_CLONEABLE = "Ljava/lang/Cloneable;";
+    /** The field descriptor for the interface {@link java.io.Serializable}. */
+    public static final String JAVA_IO_SERIALIZABLE = "Ljava/io/Serializable;";
 
-    public static final String JAVA_LANG_BOOLEAN   = "Ljava/lang/Boolean;";
-    public static final String JAVA_LANG_BYTE      = "Ljava/lang/Byte;";
+    /** The field descriptor for the wrapper class {@link Boolean}. */
+    public static final String JAVA_LANG_BOOLEAN = "Ljava/lang/Boolean;";
+    /** The field descriptor for the wrapper class {@link Byte}. */
+    public static final String JAVA_LANG_BYTE = "Ljava/lang/Byte;";
+    /** The field descriptor for the wrapper class {@link Character}. */
     public static final String JAVA_LANG_CHARACTER = "Ljava/lang/Character;";
-    public static final String JAVA_LANG_SHORT     = "Ljava/lang/Short;";
-    public static final String JAVA_LANG_INTEGER   = "Ljava/lang/Integer;";
-    public static final String JAVA_LANG_LONG      = "Ljava/lang/Long;";
-    public static final String JAVA_LANG_FLOAT     = "Ljava/lang/Float;";
-    public static final String JAVA_LANG_DOUBLE    = "Ljava/lang/Double;";
+    /** The field descriptor for the wrapper class {@link Short}. */
+    public static final String JAVA_LANG_SHORT = "Ljava/lang/Short;";
+    /** The field descriptor for the wrapper class {@link Integer}. */
+    public static final String JAVA_LANG_INTEGER = "Ljava/lang/Integer;";
+    /** The field descriptor for the wrapper class {@link Long}. */
+    public static final String JAVA_LANG_LONG = "Ljava/lang/Long;";
+    /** The field descriptor for the wrapper class {@link Float}. */
+    public static final String JAVA_LANG_FLOAT = "Ljava/lang/Float;";
+    /** The field descriptor for the wrapper class {@link Double}. */
+    public static final String JAVA_LANG_DOUBLE = "Ljava/lang/Double;";
 
     private static final Map DESCRIPTOR_TO_CLASSNAME;
     static {

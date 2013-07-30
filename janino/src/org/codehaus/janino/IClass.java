@@ -53,14 +53,23 @@ class IClass {
         public String toString() { return "NOT_CONSTANT"; }
     };
 
+    /** The {@link IClass} object for the type VOID. */
     public static final IClass VOID    = new PrimitiveIClass(Descriptor.VOID);
+    /** The {@link IClass} object for the primitive type BYTE. */
     public static final IClass BYTE    = new PrimitiveIClass(Descriptor.BYTE);
+    /** The {@link IClass} object for the primitive type CHAR. */
     public static final IClass CHAR    = new PrimitiveIClass(Descriptor.CHAR);
+    /** The {@link IClass} object for the primitive type DOUBLE. */
     public static final IClass DOUBLE  = new PrimitiveIClass(Descriptor.DOUBLE);
+    /** The {@link IClass} object for the primitive type FLOAT. */
     public static final IClass FLOAT   = new PrimitiveIClass(Descriptor.FLOAT);
+    /** The {@link IClass} object for the primitive type INT. */
     public static final IClass INT     = new PrimitiveIClass(Descriptor.INT);
+    /** The {@link IClass} object for the primitive type LONG. */
     public static final IClass LONG    = new PrimitiveIClass(Descriptor.LONG);
+    /** The {@link IClass} object for the primitive type SHORT. */
     public static final IClass SHORT   = new PrimitiveIClass(Descriptor.SHORT);
+    /** The {@link IClass} object for the primitive type BOOLEAN. */
     public static final IClass BOOLEAN = new PrimitiveIClass(Descriptor.BOOLEAN);
 
     private static
@@ -104,6 +113,8 @@ class IClass {
         return this.declaredIConstructors;
     }
     private IConstructor[] declaredIConstructors;
+
+    /** The uncached version of {@link #getDeclaredIConstructors()} which must be implemented by derived classes. */
     protected abstract IConstructor[] getDeclaredIConstructors2();
 
     /**
@@ -118,7 +129,9 @@ class IClass {
         }
         return this.declaredIMethods;
     }
-    protected IMethod[] declaredIMethods;
+    private IMethod[] declaredIMethods;
+
+    /** The uncached version of {@link #getDeclaredIMethods()} which must be implemented by derived classes. */
     protected abstract IMethod[] getDeclaredIMethods2();
 
     /**
@@ -169,7 +182,7 @@ class IClass {
         IMethod[] methods = (IMethod[]) this.declaredIMethodCache.get(methodName);
         return methods == null ? IClass.NO_IMETHODS : methods;
     }
-    Map declaredIMethodCache; // String methodName => IMethod[]
+    private Map/*<String methodName, IMethod[]>*/ declaredIMethodCache;
 
     /**
      * Returns all methods declared in the class or interface, its superclasses and its
@@ -214,7 +227,7 @@ class IClass {
         for (int i = 0; i < iis.length; ++i) iis[i].getIMethods(result);
     }
 
-    public static final IMethod[] NO_IMETHODS = new IMethod[0];
+    private static final IMethod[] NO_IMETHODS = new IMethod[0];
 
     /**
      * @return Whether this {@link IClass} does declare an {@link IMethod} with the given name and parameter types
@@ -916,5 +929,10 @@ class IClass {
         /** @{inheritDoc} */
         public String
         toString() { return this.getDeclaringIClass().toString() + "." + this.getName(); }
+    }
+
+    public void invalidateMethodCaches() {
+        this.declaredIMethods     = null;
+        this.declaredIMethodCache = null;
     }
 }

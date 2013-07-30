@@ -451,8 +451,7 @@ class Java {
         public void
         invalidateMethodCaches() {
             if (this.resolvedType != null) {
-                this.resolvedType.declaredIMethods     = null;
-                this.resolvedType.declaredIMethodCache = null;
+                this.resolvedType.invalidateMethodCaches();
             }
         }
 
@@ -1924,9 +1923,7 @@ class Java {
             if (x != 0) {
                 CodeContext ca = this.getCodeContext();
                 ca.pushInserter(this);
-                {
-                    ca.makeSpace((short) -1, 4 - x);
-                }
+                ca.makeSpace((short) -1, 4 - x);
                 ca.popInserter();
             }
         }
