@@ -274,7 +274,7 @@ class Parser {
      * <pre>
      *   ModifiersOpt := { 'public' | 'protected' | 'private' | 'static' |
      *           'abstract' | 'final' | 'native' | 'synchronized' |
-     *           'transient' | 'volatile' | 'strictfp'
+     *           'transient' | 'volatile' | 'strictfp' }
      * </pre>
      */
     public short
