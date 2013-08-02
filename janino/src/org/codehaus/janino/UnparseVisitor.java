@@ -41,6 +41,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.codehaus.janino.Java.AssertStatement;
 import org.codehaus.janino.util.AutoIndentWriter;
 
 /**
@@ -171,7 +172,8 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor {
     public void
     visitConstructorDeclarator(Java.ConstructorDeclarator cd) {
         this.unparseDocComment(cd);
-        this.unparseModifiers(cd.modifiers);
+        assert cd.modifiersAndAnnotations.annotations.length == 0 : "NYI";
+        this.unparseModifiers(cd.modifiersAndAnnotations.modifiers);
         Java.ClassDeclaration declaringClass = cd.getDeclaringClass();
         this.pw.print(
             declaringClass instanceof Java.NamedClassDeclaration
@@ -206,7 +208,8 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor {
     public void
     visitMethodDeclarator(Java.MethodDeclarator md) {
         this.unparseDocComment(md);
-        this.unparseModifiers(md.modifiers);
+        assert md.modifiersAndAnnotations.annotations.length == 0 : "NYI";
+        this.unparseModifiers(md.modifiersAndAnnotations.modifiers);
         this.unparseType(md.type);
         this.pw.print(' ' + md.name);
         this.unparseFunctionDeclaratorRest(md);
@@ -228,7 +231,8 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor {
     public void
     visitFieldDeclaration(Java.FieldDeclaration fd) {
         this.unparseDocComment(fd);
-        this.unparseModifiers(fd.modifiers);
+        assert fd.modifiersAndAnnotations.annotations.length == 0 : "NYI";
+        this.unparseModifiers(fd.modifiersAndAnnotations.modifiers);
         this.unparseType(fd.type);
         this.pw.print(' ');
         for (int i = 0; i < fd.variableDeclarators.length; ++i) {
@@ -288,6 +292,16 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor {
     visitContinueStatement(Java.ContinueStatement cs) {
         this.pw.print("continue");
         if (cs.optionalLabel != null) this.pw.print(' ' + cs.optionalLabel);
+        this.pw.print(';');
+    }
+
+    public void visitAssertStatement(AssertStatement as) {
+        this.pw.print("assert ");
+        this.unparse(as.expression1);
+        if (as.optionalExpression2 != null) {
+            this.pw.print(" : ");
+            this.unparse(as.optionalExpression2);
+        }
         this.pw.print(';');
     }
 
@@ -360,7 +374,8 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor {
 
     public void
     visitLocalVariableDeclarationStatement(Java.LocalVariableDeclarationStatement lvds) {
-        this.unparseModifiers(lvds.modifiers);
+        assert lvds.modifiersAndAnnotations.annotations.length == 0 : "NYI";
+        this.unparseModifiers(lvds.modifiersAndAnnotations.modifiers);
         this.unparseType(lvds.type);
         this.pw.print(' ');
         this.pw.print(AutoIndentWriter.TABULATOR);
@@ -855,7 +870,8 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor {
     private void
     unparseNamedClassDeclaration(Java.NamedClassDeclaration ncd) {
         this.unparseDocComment(ncd);
-        this.unparseModifiers(ncd.getModifiers());
+        assert ncd.getModifiersAndAnnotations().annotations.length == 0 : "NYI";
+        this.unparseModifiers(ncd.getModifiersAndAnnotations().modifiers);
         this.pw.print("class " + ncd.name);
         if (ncd.optionalExtendedType != null) {
             this.pw.print(" extends ");
@@ -938,9 +954,10 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor {
     private void
     unparseInterfaceDeclaration(Java.InterfaceDeclaration id) {
         this.unparseDocComment(id);
-        this.unparseModifiers(id.getModifiers());
+        assert id.getModifiersAndAnnotations().annotations.length == 0 : "NYI";
+        this.unparseModifiers(id.getModifiersAndAnnotations().modifiers);
         //make sure we print "interface", even if it wasn't in the modifiers
-        if ((id.getModifiers() & Mod.INTERFACE) == 0) {
+        if ((id.getModifiersAndAnnotations().modifiers & Mod.INTERFACE) == 0) {
             this.pw.print("interface ");
         }
         this.pw.print(id.name);
@@ -1037,5 +1054,4 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor {
         if (big) { this.pw.println(); this.pw.print(AutoIndentWriter.UNINDENT); }
         this.pw.print(')');
     }
-
 }

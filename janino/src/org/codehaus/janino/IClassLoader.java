@@ -55,6 +55,7 @@ class IClassLoader {
     public IClass RUNTIME_EXCEPTION;
     public IClass ERROR;
     public IClass CLONEABLE;
+    public IClass ASSERTION_ERROR;
     public IClass SERIALIZABLE;
     public IClass BOOLEAN;
     public IClass BYTE;
@@ -88,6 +89,7 @@ class IClassLoader {
             this.RUNTIME_EXCEPTION = this.loadIClass(Descriptor.JAVA_LANG_RUNTIMEEXCEPTION);
             this.ERROR             = this.loadIClass(Descriptor.JAVA_LANG_ERROR);
             this.CLONEABLE         = this.loadIClass(Descriptor.JAVA_LANG_CLONEABLE);
+            this.ASSERTION_ERROR   = this.loadIClass(Descriptor.JAVA_LANG_ASSERTION_ERROR);
             this.SERIALIZABLE      = this.loadIClass(Descriptor.JAVA_IO_SERIALIZABLE);
             this.BOOLEAN           = this.loadIClass(Descriptor.JAVA_LANG_BOOLEAN);
             this.BYTE              = this.loadIClass(Descriptor.JAVA_LANG_BYTE);

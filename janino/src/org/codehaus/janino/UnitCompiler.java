@@ -56,6 +56,7 @@ import org.codehaus.janino.Java.ArrayInitializer;
 import org.codehaus.janino.Java.ArrayInitializerOrRvalue;
 import org.codehaus.janino.Java.ArrayLength;
 import org.codehaus.janino.Java.ArrayType;
+import org.codehaus.janino.Java.AssertStatement;
 import org.codehaus.janino.Java.Assignment;
 import org.codehaus.janino.Java.Atom;
 import org.codehaus.janino.Java.BasicType;
@@ -155,6 +156,7 @@ import org.codehaus.janino.Java.VariableDeclarator;
 import org.codehaus.janino.Java.WhileStatement;
 import org.codehaus.janino.Visitor.AtomVisitor;
 import org.codehaus.janino.Visitor.BlockStatementVisitor;
+import org.codehaus.janino.Visitor.ElementValueVisitor;
 import org.codehaus.janino.Visitor.ImportVisitor;
 import org.codehaus.janino.Visitor.LvalueVisitor;
 import org.codehaus.janino.Visitor.RvalueVisitor;
@@ -444,7 +446,7 @@ class UnitCompiler {
         IClass iClass = this.resolve(cd);
 
         // Check that all methods are implemented.
-        if ((cd.getModifiers() & Mod.ABSTRACT) == 0) {
+        if ((cd.getModifiersAndAnnotations().modifiers & Mod.ABSTRACT) == 0) {
             IMethod[] ms = iClass.getIMethods();
             for (int i = 0; i < ms.length; ++i) {
                 IMethod base = ms[i];
@@ -466,11 +468,12 @@ class UnitCompiler {
         }
 
         // Create "ClassFile" object.
+        assert cd.getModifiersAndAnnotations().annotations.length == 0 : "NYI";
         ClassFile cf = new ClassFile(
-            (short) (cd.getModifiers() | Mod.SUPER),      // accessFlags
-            iClass.getDescriptor(),                       // thisClassFD
-            iClass.getSuperclass().getDescriptor(),       // superclassFD
-            IClass.getDescriptors(iClass.getInterfaces()) // interfaceFDs
+            (short) (cd.getModifiersAndAnnotations().modifiers | Mod.SUPER), // accessFlags
+            iClass.getDescriptor(),                                          // thisClassFD
+            iClass.getSuperclass().getDescriptor(),                          // superclassFD
+            IClass.getDescriptors(iClass.getInterfaces())                    // interfaceFDs
         );
 
         // Add InnerClasses attribute entry for this class declaration.
@@ -484,11 +487,12 @@ class UnitCompiler {
                 ? cf.addConstantUtf8Info(((NamedTypeDeclaration) this).getName())
                 : (short) 0
             );
+            assert cd.getModifiersAndAnnotations().annotations.length == 0 : "NYI";
             cf.addInnerClassesAttributeEntry(new ClassFile.InnerClassesAttribute.Entry(
-                innerClassInfoIndex, // innerClassInfoIndex
-                (short) 0,           // outerClassInfoIndex
-                innerNameIndex,      // innerNameIndex
-                cd.getModifiers()    // innerClassAccessFlags
+                innerClassInfoIndex,                      // innerClassInfoIndex
+                (short) 0,                                // outerClassInfoIndex
+                innerNameIndex,                           // innerNameIndex
+                cd.getModifiersAndAnnotations().modifiers // innerClassAccessFlags
             ));
         } else
         if (cd.getEnclosingScope() instanceof TypeDeclaration) {
@@ -497,11 +501,12 @@ class UnitCompiler {
                 this.resolve(((TypeDeclaration) cd.getEnclosingScope())).getDescriptor()
             );
             short innerNameIndex = cf.addConstantUtf8Info(((MemberTypeDeclaration) cd).getName());
+            assert cd.getModifiersAndAnnotations().annotations.length == 0 : "NYI";
             cf.addInnerClassesAttributeEntry(new ClassFile.InnerClassesAttribute.Entry(
-                innerClassInfoIndex, // innerClassInfoIndex
-                outerClassInfoIndex, // outerClassInfoIndex
-                innerNameIndex,      // innerNameIndex
-                cd.getModifiers()    // innerClassAccessFlags
+                innerClassInfoIndex,                      // innerClassInfoIndex
+                outerClassInfoIndex,                      // outerClassInfoIndex
+                innerNameIndex,                           // innerNameIndex
+                cd.getModifiersAndAnnotations().modifiers // innerClassAccessFlags
             ));
         }
 
@@ -626,31 +631,33 @@ class UnitCompiler {
 
             Object ocv = NOT_CONSTANT;
             if (
-                (fd.modifiers & Mod.FINAL) != 0
+                (fd.modifiersAndAnnotations.modifiers & Mod.FINAL) != 0
                 && vd.optionalInitializer instanceof Rvalue
             ) {
                 ocv = this.getConstantValue((Rvalue) vd.optionalInitializer);
             }
 
             ClassFile.FieldInfo fi;
-            if (Mod.isPrivateAccess(fd.modifiers)) {
+            if (Mod.isPrivateAccess(fd.modifiersAndAnnotations.modifiers)) {
 
                 // To make the private field accessible for enclosing types, enclosed types and types
                 // enclosed by the same type, it is modified as follows:
                 //  + Access is changed from PRIVATE to PACKAGE
+                assert fd.modifiersAndAnnotations.annotations.length == 0 : "NYI";
                 fi = cf.addFieldInfo(
-                    Mod.changeAccess(fd.modifiers, Mod.PACKAGE), // accessFlags
-                    vd.name,                                     // fieldName
-                    this.getType(type).getDescriptor(),          // fieldTypeFD
-                    ocv == NOT_CONSTANT ? null : ocv             // optionalConstantValue
+                    Mod.changeAccess(fd.modifiersAndAnnotations.modifiers, Mod.PACKAGE), // accessFlags
+                    vd.name,                                                             // fieldName
+                    this.getType(type).getDescriptor(),                                  // fieldTypeFD
+                    ocv == NOT_CONSTANT ? null : ocv                                     // optionalConstantValue
                 );
             } else
             {
+                assert fd.modifiersAndAnnotations.annotations.length == 0 : "NYI";
                 fi = cf.addFieldInfo(
-                    fd.modifiers,                       // accessFlags
-                    vd.name,                            // fieldName
-                    this.getType(type).getDescriptor(), // fieldTypeFD
-                    ocv == NOT_CONSTANT ? null : ocv    // optionalConstantValue
+                    fd.modifiersAndAnnotations.modifiers, // accessFlags
+                    vd.name,                              // fieldName
+                    this.getType(type).getDescriptor(),   // fieldTypeFD
+                    ocv == NOT_CONSTANT ? null : ocv      // optionalConstantValue
                 );
             }
 
@@ -725,15 +732,16 @@ class UnitCompiler {
         }
 
         // Create "ClassFile" object.
+        assert id.getModifiersAndAnnotations().annotations.length == 0;
         ClassFile cf = new ClassFile(
             (short) (               // accessFlags
-                id.getModifiers()
+                id.getModifiersAndAnnotations().modifiers
                 | Mod.SUPER
                 | Mod.INTERFACE
                 | Mod.ABSTRACT
             ),
             iClass.getDescriptor(), // thisClassFD
-            Descriptor.JAVA_LANG_OBJECT,      // superclassFD
+            Descriptor.JAVA_LANG_OBJECT, // superclassFD
             interfaceDescriptors    // interfaceFDs
         );
 
@@ -793,17 +801,17 @@ class UnitCompiler {
         // Create interface initialization method iff there is any initialization code.
         if (this.generatesCode2ListStatements(statements)) {
             MethodDeclarator md = new MethodDeclarator(
-                decl.getLocation(),                        // location
-                null,                                      // optionalDocComment
-                (short) (Mod.STATIC | Mod.PUBLIC),         // modifiers
-                new BasicType(                             // type
+                decl.getLocation(),                                                  // location
+                null,                                                                // optionalDocComment
+                new Java.ModifiersAndAnnotations((short) (Mod.STATIC | Mod.PUBLIC)), // modifiers
+                new BasicType(                                                       // type
                     decl.getLocation(),
                     BasicType.VOID
                 ),
-                "<clinit>",                                // name
-                new FunctionDeclarator.FormalParameter[0], // formalParameters
-                new ReferenceType[0],                      // thrownExceptions
-                statements                                 // optionalStatements
+                "<clinit>",                                                          // name
+                new FunctionDeclarator.FormalParameter[0],                           // formalParameters
+                new ReferenceType[0],                                                // thrownExceptions
+                statements                                                           // optionalStatements
             );
             md.setDeclaringType(decl);
             this.compile(md, cf);
@@ -827,11 +835,12 @@ class UnitCompiler {
             short innerClassInfoIndex = cf.addConstantClassInfo(this.resolve(td).getDescriptor());
             short outerClassInfoIndex = cf.addConstantClassInfo(this.resolve(decl).getDescriptor());
             short innerNameIndex      = cf.addConstantUtf8Info(((MemberTypeDeclaration) td).getName());
+            assert td.getModifiersAndAnnotations().annotations.length == 0;
             cf.addInnerClassesAttributeEntry(new ClassFile.InnerClassesAttribute.Entry(
-                innerClassInfoIndex, // innerClassInfoIndex
-                outerClassInfoIndex, // outerClassInfoIndex
-                innerNameIndex,      // innerNameIndex
-                td.getModifiers()    // innerClassAccessFlags
+                innerClassInfoIndex,                      // innerClassInfoIndex
+                outerClassInfoIndex,                      // outerClassInfoIndex
+                innerNameIndex,                           // innerNameIndex
+                td.getModifiersAndAnnotations().modifiers // innerClassAccessFlags
             ));
         }
     }
@@ -953,6 +962,7 @@ class UnitCompiler {
             public void visitThrowStatement(ThrowStatement ts)                                         { try { res[0] = UnitCompiler.this.compile2(ts);   } catch (CompileException e) { throw new UCE(e); } }
             public void visitBreakStatement(BreakStatement bs)                                         { try { res[0] = UnitCompiler.this.compile2(bs);   } catch (CompileException e) { throw new UCE(e); } }
             public void visitContinueStatement(ContinueStatement cs)                                   { try { res[0] = UnitCompiler.this.compile2(cs);   } catch (CompileException e) { throw new UCE(e); } }
+            public void visitAssertStatement(AssertStatement as)                                       { try { res[0] = UnitCompiler.this.compile2(as);   } catch (CompileException e) { throw new UCE(e); } }
             public void visitEmptyStatement(EmptyStatement es)                                         {       res[0] = UnitCompiler.this.compile2(es);                                                      }
             public void visitLocalClassDeclarationStatement(LocalClassDeclarationStatement lcds)       { try { res[0] = UnitCompiler.this.compile2(lcds); } catch (CompileException e) { throw new UCE(e); } }
             public void visitAlternateConstructorInvocation(AlternateConstructorInvocation aci)        { try { res[0] = UnitCompiler.this.compile2(aci);  } catch (CompileException e) { throw new UCE(e); } }
@@ -1453,6 +1463,33 @@ class UnitCompiler {
     }
 
     private boolean
+    compile2(AssertStatement as) throws CompileException {
+
+        CodeContext.Offset end = this.codeContext.new Offset();
+        boolean ccn;
+        {
+            this.compileBoolean(as.expression1, end, Rvalue.JUMP_IF_TRUE);
+
+            Java.Rvalue[] arguments = (
+                as.optionalExpression2 == null
+                ? new Java.Rvalue[0]
+                : new Java.Rvalue[] { as.optionalExpression2 }
+            );
+            ccn = this.compile2(new Java.ThrowStatement(
+                as.getLocation(),
+                new Java.NewClassInstance(
+                    as.getLocation(),                  // location
+                    null,                              // optionalQualification
+                    this.iClassLoader.ASSERTION_ERROR, // iClass
+                    arguments                          // arguments
+                )
+            ));
+        }
+        end.set();
+        return ccn;
+    }
+
+    private boolean
     compile2(EmptyStatement es) { return true; }
 
     private boolean
@@ -1469,7 +1506,8 @@ class UnitCompiler {
             ArrayInitializerOrRvalue initializer = this.getNonConstantFinalInitializer(fd, vd);
             if (initializer == null) continue;
 
-            if ((fd.modifiers & Mod.STATIC) == 0) {
+            assert fd.modifiersAndAnnotations.annotations.length == 0;
+            if ((fd.modifiersAndAnnotations.modifiers & Mod.STATIC) == 0) {
                 this.writeOpcode(fd, Opcode.ALOAD_0);
             }
             IClass fieldType = this.getType(fd.type);
@@ -1497,7 +1535,8 @@ class UnitCompiler {
             // No need to check accessibility here.
             ;
 
-            if ((fd.modifiers & Mod.STATIC) != 0) {
+            assert fd.modifiersAndAnnotations.annotations.length == 0;
+            if ((fd.modifiersAndAnnotations.modifiers & Mod.STATIC) != 0) {
                 this.writeOpcode(fd, Opcode.PUTSTATIC);
             } else {
                 this.writeOpcode(fd, Opcode.PUTFIELD);
@@ -1664,7 +1703,8 @@ class UnitCompiler {
 
     private boolean
     compile2(LocalVariableDeclarationStatement lvds) throws CompileException {
-        if ((lvds.modifiers & ~Mod.FINAL) != 0) {
+        assert lvds.modifiersAndAnnotations.annotations.length == 0;
+        if ((lvds.modifiersAndAnnotations.modifiers & ~Mod.FINAL) != 0) {
             this.compileError(
                 "The only allowed modifier in local variable declarations is \"final\"",
                 lvds.getLocation()
@@ -1716,7 +1756,11 @@ class UnitCompiler {
             Type variableType = lvds.type;
             for (int k = 0; k < vd.brackets; ++k) variableType = new ArrayType(variableType);
 
-            vd.localVariable = new LocalVariable((lvds.modifiers & Mod.FINAL) != 0, this.getType(variableType));
+            assert lvds.modifiersAndAnnotations.annotations.length == 0;
+            vd.localVariable = new LocalVariable(
+                (lvds.modifiersAndAnnotations.modifiers & Mod.FINAL) != 0, // finaL
+                this.getType(variableType)                                 // type
+            );
         }
         return vd.localVariable;
     }
@@ -1998,7 +2042,9 @@ class UnitCompiler {
     compile(FunctionDeclarator fd, final ClassFile classFile) throws CompileException {
         ClassFile.MethodInfo mi;
 
-        if (Mod.isPrivateAccess(fd.modifiers)) {
+        assert fd.modifiersAndAnnotations.annotations.length == 0;
+        assert fd.modifiersAndAnnotations.annotations.length == 0;
+        if (Mod.isPrivateAccess(fd.modifiersAndAnnotations.modifiers)) {
             if (fd instanceof MethodDeclarator && !fd.isStatic()) {
 
                 // To make the non-static private method invocable for enclosing types, enclosed types
@@ -2007,10 +2053,16 @@ class UnitCompiler {
                 //  + The name is appended with "$"
                 //  + It is made static
                 //  + A parameter of type "declaring class" is prepended to the signature
+                fd.modifiersAndAnnotations.modifiers = Mod.changeAccess(
+                    fd.modifiersAndAnnotations.modifiers, // modifiers
+                    Mod.PACKAGE                           // newAccess
+                );
+                fd.modifiersAndAnnotations.modifiers |= Mod.STATIC;
+
                 mi = classFile.addMethodInfo(
-                    (short) (Mod.changeAccess(fd.modifiers, Mod.PACKAGE) | Mod.STATIC), // accessFlags
-                    fd.name + '$',                                                      // methodName
-                    MethodDescriptor.prependParameter(                                  // methodMD
+                    fd.modifiersAndAnnotations.modifiers, // accessFlags
+                    fd.name + '$',                        // methodName
+                    MethodDescriptor.prependParameter(    // methodMD
                         this.toIMethod((MethodDeclarator) fd).getDescriptor(), // md
                         this.resolve(fd.getDeclaringType()).getDescriptor()    // parameterFD
                     )
@@ -2021,16 +2073,22 @@ class UnitCompiler {
                 // To make the static private method or private constructor invocable for enclosing types, enclosed
                 // types and types enclosed by the same type, it is modified as follows:
                 //  + Access is changed from PRIVATE to PACKAGE
+                assert fd.modifiersAndAnnotations.annotations.length == 0 : "NYI";
+                fd.modifiersAndAnnotations.modifiers = Mod.changeAccess(
+                    fd.modifiersAndAnnotations.modifiers, // modifiers
+                    Mod.PACKAGE                           // new Access
+                );
                 mi = classFile.addMethodInfo(
-                    Mod.changeAccess(fd.modifiers, Mod.PACKAGE), // accessFlags
-                    fd.name,                                     // methodName
-                    this.toIInvocable(fd).getDescriptor()        // methodMD
+                    fd.modifiersAndAnnotations.modifiers, // accessFlags
+                    fd.name,                              // methodName
+                    this.toIInvocable(fd).getDescriptor() // methodMD
                 );
             }
         } else
         {
+            assert fd.modifiersAndAnnotations.annotations.length == 0 : "NYI";
             mi = classFile.addMethodInfo(
-                fd.modifiers,                         // accessFlags
+                fd.modifiersAndAnnotations.modifiers, // accessFlags
                 fd.name,                              // methodName
                 this.toIInvocable(fd).getDescriptor() // methodMD
             );
@@ -2053,7 +2111,7 @@ class UnitCompiler {
             mi.addAttribute(new ClassFile.DeprecatedAttribute(classFile.addConstantUtf8Info("Deprecated")));
         }
 
-        if ((fd.modifiers & (Mod.ABSTRACT | Mod.NATIVE)) != 0) return;
+        if ((fd.modifiersAndAnnotations.modifiers & (Mod.ABSTRACT | Mod.NATIVE)) != 0) return;
 
         // Create CodeContext.
         final CodeContext codeContext = new CodeContext(mi.getClassFile());
@@ -2063,7 +2121,7 @@ class UnitCompiler {
             this.codeContext.saveLocalVariables();
 
             // Define special parameter "this".
-            if ((fd.modifiers & Mod.STATIC) == 0) {
+            if ((fd.modifiersAndAnnotations.modifiers & Mod.STATIC) == 0) {
                 this.codeContext.allocateLocalVariable((short) 1, "this", this.resolve(fd.getDeclaringType()));
             }
 
@@ -2253,6 +2311,7 @@ class UnitCompiler {
             public void visitAlternateConstructorInvocation(AlternateConstructorInvocation aci)  { UnitCompiler.this.buildLocalVariableMap(aci, localVars); }
             public void visitBreakStatement(BreakStatement bs)                                   { UnitCompiler.this.buildLocalVariableMap(bs, localVars); }
             public void visitContinueStatement(ContinueStatement cs)                             { UnitCompiler.this.buildLocalVariableMap(cs, localVars); }
+            public void visitAssertStatement(AssertStatement as)                                 { UnitCompiler.this.buildLocalVariableMap(as, localVars); }
             public void visitEmptyStatement(EmptyStatement es)                                   { UnitCompiler.this.buildLocalVariableMap(es, localVars); }
             public void visitExpressionStatement(ExpressionStatement es)                         { UnitCompiler.this.buildLocalVariableMap(es, localVars); }
             public void visitFieldDeclaration(FieldDeclaration fd)                               { UnitCompiler.this.buildLocalVariableMap(fd, localVars); }
@@ -3277,11 +3336,11 @@ class UnitCompiler {
             if (!hasClassDollarField) {
                 Type             classType = new SimpleType(loc, icl.CLASS);
                 FieldDeclaration fd        = new FieldDeclaration(
-                    loc,                       // location
-                    null,                      // optionalDocComment
-                    Mod.STATIC,                // modifiers
-                    classType,                 // type
-                    new VariableDeclarator[] { // variableDeclarators
+                    loc,                                          // location
+                    null,                                         // optionalDocComment
+                    new Java.ModifiersAndAnnotations(Mod.STATIC), // modifiers
+                    classType,                                    // type
+                    new VariableDeclarator[] {                    // variableDeclarators
                         new VariableDeclarator(
                             loc,                  // location
                             classDollarFieldName, // name
@@ -3851,7 +3910,7 @@ class UnitCompiler {
             this.compileError("Cannot invoke superclass method in non-method scope", scmi.getLocation());
             return IClass.INT;
         }
-        if ((fd.modifiers & Mod.STATIC) != 0) {
+        if ((fd.modifiersAndAnnotations.modifiers & Mod.STATIC) != 0) {
             this.compileError("Cannot invoke superclass method in static context", scmi.getLocation());
         }
         this.load((Locatable) scmi, this.resolve(fd.getDeclaringType()), 0);
@@ -4028,17 +4087,17 @@ class UnitCompiler {
 
         // Generate the anonymous constructor for the anonymous class (JLS 15.9.5.1).
         ConstructorDeclarator anonymousConstructor = new ConstructorDeclarator(
-            loc,                            // location
-            null,                           // optionalDocComment
-            Mod.PACKAGE,                    // modifiers
-            fps,                            // formalParameters
-            tets,                           // thrownExceptions
-            new SuperConstructorInvocation( // optionalConstructorInvocation
+            loc,                                           // location
+            null,                                          // optionalDocComment
+            new Java.ModifiersAndAnnotations(Mod.PACKAGE), // modifiersAndAnnotations
+            fps,                                           // formalParameters
+            tets,                                          // thrownExceptions
+            new SuperConstructorInvocation(                // optionalConstructorInvocation
                 loc,                         // location
                 optionalQualificationAccess, // optionalQualification
                 parameterAccesses            // arguments
             ),
-            Collections.EMPTY_LIST          // optionalStatements
+            Collections.EMPTY_LIST                         // optionalStatements
         );
 
         // Compile the anonymous class.
@@ -4712,6 +4771,7 @@ class UnitCompiler {
             public void visitThrowStatement(ThrowStatement ts)                                         {       res[0] = UnitCompiler.this.generatesCode2(ts);                                                    }
             public void visitBreakStatement(BreakStatement bs)                                         {       res[0] = UnitCompiler.this.generatesCode2(bs);                                                    }
             public void visitContinueStatement(ContinueStatement cs)                                   {       res[0] = UnitCompiler.this.generatesCode2(cs);                                                    }
+            public void visitAssertStatement(AssertStatement as)                                       {       res[0] = UnitCompiler.this.generatesCode2(as);                                                    }
             public void visitEmptyStatement(EmptyStatement es)                                         {       res[0] = UnitCompiler.this.generatesCode2(es);                                                    }
             public void visitLocalClassDeclarationStatement(LocalClassDeclarationStatement lcds)       {       res[0] = UnitCompiler.this.generatesCode2(lcds);                                                  }
             public void visitAlternateConstructorInvocation(AlternateConstructorInvocation aci)        {       res[0] = UnitCompiler.this.generatesCode2(aci);                                                   }
@@ -4727,6 +4787,7 @@ class UnitCompiler {
     }
 
     public boolean generatesCode2(BlockStatement bs)                     { return true; }
+    public boolean generatesCode2(AssertStatement as)                    { return true; }
     public boolean generatesCode2(EmptyStatement es)                     { return false; }
     public boolean generatesCode2(LocalClassDeclarationStatement lcds)   { return false; }
     public boolean generatesCode2(Initializer i) throws CompileException { return this.generatesCode(i.block); }
@@ -4788,6 +4849,7 @@ class UnitCompiler {
             public void visitThrowStatement(ThrowStatement ts)                                           { UnitCompiler.this.leave2(ts,   optionalStackValueType); }
             public void visitBreakStatement(BreakStatement bs)                                           { UnitCompiler.this.leave2(bs,   optionalStackValueType); }
             public void visitContinueStatement(ContinueStatement cs)                                     { UnitCompiler.this.leave2(cs,   optionalStackValueType); }
+            public void visitAssertStatement(AssertStatement as)                                         { UnitCompiler.this.leave2(as,   optionalStackValueType); }
             public void visitEmptyStatement(EmptyStatement es)                                           { UnitCompiler.this.leave2(es,   optionalStackValueType); }
             public void visitLocalClassDeclarationStatement(LocalClassDeclarationStatement lcds)         { UnitCompiler.this.leave2(lcds, optionalStackValueType); }
             public void visitAlternateConstructorInvocation(AlternateConstructorInvocation aci)          { UnitCompiler.this.leave2(aci,  optionalStackValueType); }
@@ -5709,10 +5771,11 @@ class UnitCompiler {
         if (result == null) {
             this.compileError("Expression \"" + a.toString() + "\" is not an lvalue", a.getLocation());
             return new Lvalue(a.getLocation()) {
-                public String toString()                    { return a.toString(); }
-                public void   accept(AtomVisitor visitor)   {}
-                public void   accept(RvalueVisitor visitor) {}
-                public void   accept(LvalueVisitor visitor) {}
+                public String toString()                          { return a.toString(); }
+                public void   accept(AtomVisitor visitor)         {}
+                public void   accept(RvalueVisitor visitor)       {}
+                public void   accept(LvalueVisitor visitor)       {}
+                public void   accept(ElementValueVisitor visitor) {}
             };
         }
         return result;
@@ -6379,7 +6442,7 @@ class UnitCompiler {
                 // Implement IMember.
                 public Access
                 getAccess() {
-                    switch (fd.modifiers & Mod.PPP) {
+                    switch (fd.modifiersAndAnnotations.modifiers & Mod.PPP) {
                     case Mod.PRIVATE:
                         return Access.PRIVATE;
                     case Mod.PROTECTED:
@@ -6396,7 +6459,7 @@ class UnitCompiler {
                 // Implement "IField".
 
                 public boolean
-                isStatic() { return (fd.modifiers & Mod.STATIC) != 0; }
+                isStatic() { return (fd.modifiersAndAnnotations.modifiers & Mod.STATIC) != 0; }
 
                 public IClass
                 getType() throws CompileException {
@@ -6411,7 +6474,10 @@ class UnitCompiler {
 
                 public Object
                 getConstantValue() throws CompileException {
-                    if ((fd.modifiers & Mod.FINAL) != 0 && vd.optionalInitializer instanceof Rvalue) {
+                    if (
+                        (fd.modifiersAndAnnotations.modifiers & Mod.FINAL) != 0
+                        && vd.optionalInitializer instanceof Rvalue
+                    ) {
                         Object constantInitializerValue = UnitCompiler.this.getConstantValue(
                             (Rvalue) vd.optionalInitializer
                         );
@@ -6442,8 +6508,8 @@ class UnitCompiler {
 
         // Check if initializer is constant-final.
         if (
-            (fd.modifiers & Mod.STATIC) != 0
-            && (fd.modifiers & Mod.FINAL) != 0
+            (fd.modifiersAndAnnotations.modifiers & Mod.STATIC) != 0
+            && (fd.modifiersAndAnnotations.modifiers & Mod.FINAL) != 0
             && vd.optionalInitializer instanceof Rvalue
             && this.getConstantValue((Rvalue) vd.optionalInitializer) != NOT_CONSTANT
         ) return null;
@@ -6905,10 +6971,10 @@ class UnitCompiler {
                     fae.getLocation()
                 );
                 fae.value = new Rvalue(fae.getLocation()) {
-//                    public IClass compileGet()                      { return this.iClassLoader.OBJECT; }
-                    public String     toString()                    { return "???"; }
-                    public final void accept(AtomVisitor visitor)   {}
-                    public final void accept(RvalueVisitor visitor) {}
+                    public String toString()                          { return "???"; }
+                    public void   accept(AtomVisitor visitor)         {}
+                    public void   accept(RvalueVisitor visitor)       {}
+                    public void   accept(ElementValueVisitor visitor) {}
                 };
                 return;
             }
@@ -6945,9 +7011,10 @@ class UnitCompiler {
         if (iField == null) {
             this.compileError("Class has no field \"" + scfae.fieldName + "\"", scfae.getLocation());
             scfae.value = new Rvalue(scfae.getLocation()) {
-                public String     toString()                    { return "???"; }
-                public final void accept(AtomVisitor visitor)   {}
-                public final void accept(RvalueVisitor visitor) {}
+                public String toString()                          { return "???"; }
+                public void   accept(AtomVisitor visitor)         {}
+                public void   accept(RvalueVisitor visitor)       {}
+                public void   accept(ElementValueVisitor visitor) {}
             };
             return;
         }
@@ -7151,7 +7218,7 @@ class UnitCompiler {
         for (Scope s = scmi.getEnclosingBlockStatement();; s = s.getEnclosingScope()) {
             if (s instanceof FunctionDeclarator) {
                 FunctionDeclarator fd = (FunctionDeclarator) s;
-                if ((fd.modifiers & Mod.STATIC) != 0) {
+                if ((fd.modifiersAndAnnotations.modifiers & Mod.STATIC) != 0) {
                     this.compileError("Superclass method cannot be invoked in static context", scmi.getLocation());
                 }
             }
@@ -7762,10 +7829,10 @@ class UnitCompiler {
             }
 
             public Access
-            getAccess() { return UnitCompiler.modifiers2Access(atd.getModifiers()); }
+            getAccess() { return UnitCompiler.modifiers2Access(atd.getModifiersAndAnnotations().modifiers); }
 
             public boolean
-            isFinal() { return (atd.getModifiers() & Mod.FINAL) != 0;  }
+            isFinal() { return (atd.getModifiersAndAnnotations().modifiers & Mod.FINAL) != 0;  }
 
             protected IClass[]
             getInterfaces2() throws CompileException {
@@ -7810,7 +7877,12 @@ class UnitCompiler {
             }
 
             public boolean
-            isAbstract() { return (atd instanceof InterfaceDeclaration) || (atd.getModifiers() & Mod.ABSTRACT) != 0; }
+            isAbstract() {
+                return (
+                    atd instanceof InterfaceDeclaration
+                    || (atd.getModifiersAndAnnotations().modifiers & Mod.ABSTRACT) != 0
+                );
+            }
 
             public boolean
             isInterface() { return atd instanceof InterfaceDeclaration; }
@@ -7922,7 +7994,7 @@ class UnitCompiler {
             for (; !(s instanceof FunctionDeclarator); s = s.getEnclosingScope());
             if (
                 (s instanceof MethodDeclarator)
-                && (((FunctionDeclarator) s).modifiers & Mod.STATIC) != 0
+                && (((FunctionDeclarator) s).modifiersAndAnnotations.modifiers & Mod.STATIC) != 0
             ) return null;
             for (; !(s instanceof TypeDeclaration); s = s.getEnclosingScope());
             TypeDeclaration immediatelyEnclosingTypeDeclaration = (TypeDeclaration) s;
@@ -7934,7 +8006,7 @@ class UnitCompiler {
         // Member class declaration.
         if (
             atd instanceof MemberClassDeclaration
-            && (((MemberClassDeclaration) atd).getModifiers() & Mod.STATIC) != 0
+            && (((MemberClassDeclaration) atd).getModifiersAndAnnotations().modifiers & Mod.STATIC) != 0
         ) return null;
 
         // Anonymous class declaration, interface declaration
@@ -7961,7 +8033,7 @@ class UnitCompiler {
             );
             if (s instanceof FunctionDeclarator) {
                 FunctionDeclarator function = (FunctionDeclarator) s;
-                if ((function.modifiers & Mod.STATIC) != 0) {
+                if ((function.modifiersAndAnnotations.modifiers & Mod.STATIC) != 0) {
                     this.compileError("No current instance available in static method", tr.getLocation());
                 }
             }
@@ -7995,7 +8067,7 @@ class UnitCompiler {
             // Implement IMember.
             public Access
             getAccess() {
-                switch (cd.modifiers & Mod.PPP) {
+                switch (cd.modifiersAndAnnotations.modifiers & Mod.PPP) {
                 case Mod.PRIVATE:
                     return Access.PRIVATE;
                 case Mod.PROTECTED:
@@ -8079,7 +8151,7 @@ class UnitCompiler {
             // Implement IMember.
             public Access
             getAccess() {
-                switch (md.modifiers & Mod.PPP) {
+                switch (md.modifiersAndAnnotations.modifiers & Mod.PPP) {
                 case Mod.PRIVATE:
                     return Access.PRIVATE;
                 case Mod.PROTECTED:
@@ -8115,13 +8187,13 @@ class UnitCompiler {
             // Implement IMethod.
 
             public boolean
-            isStatic() { return (md.modifiers & Mod.STATIC) != 0; }
+            isStatic() { return (md.modifiersAndAnnotations.modifiers & Mod.STATIC) != 0; }
 
             public boolean
             isAbstract() {
                 return (
                     (md.getDeclaringType() instanceof InterfaceDeclaration)
-                    || (md.modifiers & Mod.ABSTRACT) != 0
+                    || (md.modifiersAndAnnotations.modifiers & Mod.ABSTRACT) != 0
                 );
             }
 
@@ -8311,7 +8383,7 @@ class UnitCompiler {
         MethodDeclarator cdmd = new MethodDeclarator(
             loc,                                             // location
             null,                                            // optionalDocComment
-            Mod.STATIC,                                      // modifiers
+            new Java.ModifiersAndAnnotations(Mod.STATIC),    // modifiers
             new SimpleType(loc, this.iClassLoader.CLASS),    // type
             "class$",                                        // name
             new FunctionDeclarator.FormalParameter[] { fp }, // formalParameters

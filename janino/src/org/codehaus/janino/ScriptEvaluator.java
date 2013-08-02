@@ -715,7 +715,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
         return new Java.MethodDeclarator(
             location,                                        // location
             null,                                            // optionalDocComment
-            (                                                // modifiers
+            new Java.ModifiersAndAnnotations(                // modifiers
                 staticMethod
                 ? (short) (Mod.PUBLIC | Mod.STATIC)
                 : (short) Mod.PUBLIC

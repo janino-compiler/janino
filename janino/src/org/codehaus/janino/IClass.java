@@ -931,7 +931,8 @@ class IClass {
         toString() { return this.getDeclaringIClass().toString() + "." + this.getName(); }
     }
 
-    public void invalidateMethodCaches() {
+    public void
+    invalidateMethodCaches() {
         this.declaredIMethods     = null;
         this.declaredIMethodCache = null;
     }

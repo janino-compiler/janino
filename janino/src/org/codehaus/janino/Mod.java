@@ -50,7 +50,7 @@ class Mod {
     public static boolean isPackageAccess(short sh)   { return (sh & Mod.PPP) == Mod.PACKAGE; }
 
     public static short
-    changeAccess(short sh, short newAccess) { return (short) ((sh & ~Mod.PPP) | newAccess); }
+    changeAccess(short modifiers, short newAccess) { return (short) ((modifiers & ~Mod.PPP) | newAccess); }
 
     public static final short STATIC       = 0x0008;
     public static final short FINAL        = 0x0010;

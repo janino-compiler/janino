@@ -34,6 +34,7 @@ import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.Location;
 import org.codehaus.janino.Java.AlternateConstructorInvocation;
 import org.codehaus.janino.Java.AmbiguousName;
+import org.codehaus.janino.Java.Annotation;
 import org.codehaus.janino.Java.AnonymousClassDeclaration;
 import org.codehaus.janino.Java.ArrayAccessExpression;
 import org.codehaus.janino.Java.ArrayInitializer;
@@ -60,6 +61,8 @@ import org.codehaus.janino.Java.ConstructorInvocation;
 import org.codehaus.janino.Java.ContinueStatement;
 import org.codehaus.janino.Java.Crement;
 import org.codehaus.janino.Java.DoStatement;
+import org.codehaus.janino.Java.ElementValue;
+import org.codehaus.janino.Java.ElementValuePair;
 import org.codehaus.janino.Java.EmptyStatement;
 import org.codehaus.janino.Java.ExpressionStatement;
 import org.codehaus.janino.Java.FieldAccessExpression;
@@ -82,6 +85,7 @@ import org.codehaus.janino.Java.MemberInterfaceDeclaration;
 import org.codehaus.janino.Java.MemberTypeDeclaration;
 import org.codehaus.janino.Java.MethodDeclarator;
 import org.codehaus.janino.Java.MethodInvocation;
+import org.codehaus.janino.Java.ModifiersAndAnnotations;
 import org.codehaus.janino.Java.NamedClassDeclaration;
 import org.codehaus.janino.Java.NewAnonymousClassInstance;
 import org.codehaus.janino.Java.NewArray;
@@ -165,7 +169,7 @@ class Parser {
     parsePackageDeclaration() throws CompileException, IOException {
         this.read("package");
         Location loc         = this.location();
-        String   packageName = Parser.join(this.parseQualifiedIdentifier(), ".");
+        String   packageName = Parser.join(this.parseTypeName(), ".");
         this.read(";");
         this.verifyStringIsConventionalPackageName(packageName, loc);
         return new PackageDeclaration(loc, packageName);
@@ -227,7 +231,7 @@ class Parser {
      * QualifiedIdentifier := Identifier { '.' Identifier }
      */
     public String[]
-    parseQualifiedIdentifier() throws CompileException, IOException {
+    parseTypeName() throws CompileException, IOException {
         List l = new ArrayList();
         l.add(this.readIdentifier());
         while (this.peek(".") && this.peekNextButOne().type == Token.IDENTIFIER) {
@@ -248,21 +252,21 @@ class Parser {
     parsePackageMemberTypeDeclaration() throws CompileException, IOException {
         String optionalDocComment = this.scanner.doc();
 
-        short modifiers = this.parseModifiersOpt();
+        ModifiersAndAnnotations maas = this.parseModifiersAndAnnotations();
 
         switch (this.read(new String[] { "class", "interface" })) {
         case 0:
             if (optionalDocComment == null) this.warning("CDCM", "Class doc comment missing", this.location());
             return (PackageMemberClassDeclaration) this.parseClassDeclarationRest(
                 optionalDocComment,                      // optionalDocComment
-                modifiers,                               // modifiers
+                maas,                                    // modifiersAndAnnotations
                 ClassDeclarationContext.COMPILATION_UNIT // context
             );
         case 1:
             if (optionalDocComment == null) this.warning("IDCM", "Interface doc comment missing", this.location());
             return (PackageMemberInterfaceDeclaration) this.parseInterfaceDeclarationRest(
                 optionalDocComment,                          // optionalDocComment
-                modifiers,                                   // modifiers
+                maas,                                   // modifiers
                 InterfaceDeclarationContext.COMPILATION_UNIT // context
             );
         default:
@@ -272,15 +276,20 @@ class Parser {
 
     /**
      * <pre>
-     *   ModifiersOpt := { 'public' | 'protected' | 'private' | 'static' |
-     *           'abstract' | 'final' | 'native' | 'synchronized' |
-     *           'transient' | 'volatile' | 'strictfp' }
+     *   ModifiersAndAnnotations := { 'public' | 'protected' | 'private' | 'static' | 'abstract' | 'final' | 'native'
+     *           | 'synchronized' | 'transient' | 'volatile' | 'strictfp' | Annotation }
      * </pre>
      */
-    public short
-    parseModifiersOpt() throws CompileException, IOException {
-        short mod = 0;
+    public Java.ModifiersAndAnnotations
+    parseModifiersAndAnnotations() throws CompileException, IOException {
+        short                     mod = 0;
+        List/*<Java.Annotation>*/ as  = new ArrayList();
         for (;;) {
+            if (this.peek("@")) {
+                as.add(this.parseAnnotation());
+                continue;
+            }
+
             int idx = this.peekRead(MODIFIER_NAMES);
             if (idx == -1) break;
             String kw = MODIFIER_NAMES[idx];
@@ -295,7 +304,8 @@ class Parser {
             }
             mod |= x;
         }
-        return mod;
+
+        return new ModifiersAndAnnotations(mod, (Annotation[]) as.toArray(new Java.Annotation[as.size()]));
     }
     private static final String[] MODIFIER_NAMES = {
         "public", "protected", "private", "static", "abstract", "final", "native", "synchronized",
@@ -312,6 +322,89 @@ class Parser {
 
     /**
      * <pre>
+     *   Annotation :=
+     *           MarkerAnnotation             // JLS7 9.7.2
+     *           | SingleElementAnnotation    // JLS7 9.7.3
+     *           | NormalAnnotation           // JLS7 9.7.1
+     *
+     *   MarkerAnnotation        := '@' Identifier
+     *
+     *   SingleElementAnnotation := '@' Identifier '(' ElementValue ')'
+     *
+     *   NormalAnnotation        := '@' TypeName '(' ElementValuePairsOpt ')'
+     *
+     *   ElementValuePairsOpt    := [ ElementValuePair { ',' ElementValuePair } ]
+     * </pre>
+     */
+    private Java.Annotation
+    parseAnnotation() throws CompileException, IOException {
+        this.read("@");
+        String[] identifiers = this.parseTypeName();
+
+        if (identifiers.length == 1 && !this.peek("(")) return new Java.MarkerAnnotation(identifiers[0]);
+
+        this.read("(");
+
+        if (identifiers.length == 1 && (this.peek().type != Token.IDENTIFIER || !this.peekNextButOne("="))) {
+            Java.ElementValue elementValue = parseElementValue();
+            this.read(")");
+            return new Java.SingleElementAnnotation(identifiers[0], elementValue);
+        }
+
+        List/*<Java.ElementValuePair>*/ evps = new ArrayList();
+        while (!this.peekRead(")")) evps.add(this.parseElementValuePair());
+
+        return new Java.NormalAnnotation(
+            identifiers,
+            (ElementValuePair[]) evps.toArray(new Java.ElementValuePair[evps.size()])
+        );
+    }
+
+    /**
+     * <pre>
+     *   ElementValuePair := Identifier '=' ElementValue
+     * </pre>
+     */
+    private Java.ElementValuePair
+    parseElementValuePair() throws CompileException, IOException {
+        String identifier = this.readIdentifier();
+        this.read("=");
+        return new Java.ElementValuePair(identifier, this.parseElementValue());
+    }
+
+    /**
+     * <pre>
+     *   ElementValue :=
+     *           ConditionalExpression
+     *           | Annotation
+     *           | ElementValueArrayInitializer
+     * </pre>
+     */
+    private Java.ElementValue
+    parseElementValue() throws CompileException, IOException {
+        if (this.peek("@")) return this.parseAnnotation();
+        if (this.peek("{")) return this.parseElementValueArrayInitializer();
+        return this.parseConditionalAndExpression().toRvalueOrCompileException();
+    }
+
+    /**
+     * <pre>
+     *   ElementValueArrayInitializer := '{' { ElementValue | ',' } '}'
+     * </pre>
+     */
+    private ElementValue
+    parseElementValueArrayInitializer() throws CompileException, IOException {
+        this.read("{");
+        List/*<Java.ElementValue>*/ evs = new ArrayList();
+        while (!this.peekRead("}")) {
+            if (this.peekRead(",")) continue;
+            evs.add(this.parseElementValue());
+        }
+        return new Java.ElementValueArrayInitializer((ElementValue[]) evs.toArray(new Java.ElementValue[evs.size()]));
+    }
+
+    /**
+     * <pre>
      *   ClassDeclarationRest :=
      *        Identifier
      *        [ 'extends' ReferenceType ]
@@ -322,7 +415,7 @@ class Parser {
     public NamedClassDeclaration
     parseClassDeclarationRest(
         String                  optionalDocComment,
-        short                   modifiers,
+        ModifiersAndAnnotations modifiersAndAnnotations,
         ClassDeclarationContext context
     ) throws CompileException, IOException {
         Location location  = this.location();
@@ -346,7 +439,7 @@ class Parser {
             namedClassDeclaration = new PackageMemberClassDeclaration(
                 location,                              // location
                 optionalDocComment,                    // optionalDocComment
-                modifiers,                             // modifiers
+                modifiersAndAnnotations,               // modifiersAndAnnotations
                 className,                             // name
                 optionalExtendedType,                  // optinalExtendedType
                 implementedTypes                       // implementedTypes
@@ -354,22 +447,22 @@ class Parser {
         } else
         if (context == ClassDeclarationContext.TYPE_DECLARATION) {
             namedClassDeclaration = new MemberClassDeclaration(
-                location,             // location
-                optionalDocComment,   // optionalDocComment
-                modifiers,            // modifiers
-                className,            // name
-                optionalExtendedType, // optionalExtendedType
-                implementedTypes      // implementedTypes
+                location,                // location
+                optionalDocComment,      // optionalDocComment
+                modifiersAndAnnotations, // modifiersAndAnnotations
+                className,               // name
+                optionalExtendedType,    // optionalExtendedType
+                implementedTypes         // implementedTypes
             );
         } else
         if (context == ClassDeclarationContext.BLOCK) {
             namedClassDeclaration = new LocalClassDeclaration(
-                location,             // location
-                optionalDocComment,   // optionalDocComment
-                modifiers,            // modifiers
-                className,            // name
-                optionalExtendedType, // optionalExtendedType
-                implementedTypes      // implementedTypes
+                location,                // location
+                optionalDocComment,      // optionalDocComment
+                modifiersAndAnnotations, // modifiersAndAnnotations
+                className,               // name
+                optionalExtendedType,    // optionalExtendedType
+                implementedTypes         // implementedTypes
             );
         } else
         {
@@ -425,19 +518,19 @@ class Parser {
     parseClassBodyDeclaration(ClassDeclaration classDeclaration) throws CompileException, IOException {
         if (this.peekRead(";")) return;
 
-        String optionalDocComment = this.scanner.doc();
-        short  modifiers          = this.parseModifiersOpt();
+        String                  optionalDocComment      = this.scanner.doc();
+        ModifiersAndAnnotations modifiersAndAnnotations = this.parseModifiersAndAnnotations();
 
         // Initializer?
         if (this.peek("{")) {
-            if ((modifiers & ~Mod.STATIC) != 0) {
+            if ((modifiersAndAnnotations.modifiers & ~Mod.STATIC) != 0) {
                 throw this.compileException("Only modifier \"static\" allowed on initializer");
             }
 
             Initializer initializer = new Initializer(
-                this.location(),               // location
-                (modifiers & Mod.STATIC) != 0, // statiC
-                this.parseBlock()              // block
+                this.location(),                                       // location
+                (modifiersAndAnnotations.modifiers & Mod.STATIC) != 0, // statiC
+                this.parseBlock()                                      // block
             );
 
             classDeclaration.addVariableDeclaratorOrInitializer(initializer);
@@ -450,9 +543,9 @@ class Parser {
             if (optionalDocComment == null) this.warning("MDCM", "Method doc comment missing", location);
             String name = this.readIdentifier();
             classDeclaration.addDeclaredMethod(this.parseMethodDeclarationRest(
-                optionalDocComment,                      // declaringType
-                modifiers,                               // optionalDocComment
-                new BasicType(location, BasicType.VOID), // modifiers
+                optionalDocComment,                      // optionalDocComment
+                modifiersAndAnnotations,                 // modifiersAndAnnotations
+                new BasicType(location, BasicType.VOID), // type
                 name                                     // name
             ));
             return;
@@ -463,7 +556,7 @@ class Parser {
             if (optionalDocComment == null) this.warning("MCDCM", "Member class doc comment missing", this.location());
             classDeclaration.addMemberTypeDeclaration((MemberTypeDeclaration) this.parseClassDeclarationRest(
                 optionalDocComment,                      // optionalDocComment
-                modifiers,                               // modifiers
+                modifiersAndAnnotations,                 // modifiersAndAnnotations
                 ClassDeclarationContext.TYPE_DECLARATION // context
             ));
             return;
@@ -474,9 +567,10 @@ class Parser {
             if (optionalDocComment == null) {
                 this.warning("MIDCM", "Member interface doc comment missing", this.location());
             }
+            modifiersAndAnnotations.modifiers |= Mod.STATIC;
             classDeclaration.addMemberTypeDeclaration((MemberTypeDeclaration) this.parseInterfaceDeclarationRest(
                 optionalDocComment,                                // optionalDocComment
-                (short) (modifiers | Mod.STATIC),                  // modifiers
+                modifiersAndAnnotations,                           // modifiersAndAnnotations
                 InterfaceDeclarationContext.NAMED_TYPE_DECLARATION // context
             ));
             return;
@@ -490,8 +584,8 @@ class Parser {
         ) {
             if (optionalDocComment == null) this.warning("CDCM", "Constructor doc comment missing", this.location());
             classDeclaration.addConstructor(this.parseConstructorDeclarator(
-                optionalDocComment, // declaringClass
-                modifiers           // modifiers
+                optionalDocComment,     // declaringClass
+                modifiersAndAnnotations // modifiersAndAnnotations
             ));
             return;
         }
@@ -505,10 +599,10 @@ class Parser {
         if (this.peek("(")) {
             if (optionalDocComment == null) this.warning("MDCM", "Method doc comment missing", this.location());
             classDeclaration.addDeclaredMethod(this.parseMethodDeclarationRest(
-                optionalDocComment,   // declaringType
-                modifiers, // optionalDocComment
-                memberType,          // modifiers
-                memberName          // name
+                optionalDocComment,      // optionalDocComment
+                modifiersAndAnnotations, // modifiersAndAnnotations
+                memberType,              // type
+                memberName               // name
             ));
             return;
         }
@@ -518,7 +612,7 @@ class Parser {
         FieldDeclaration fd = new FieldDeclaration(
             location,                                  // location
             optionalDocComment,                        // optionalDocComment
-            modifiers,                                 // modifiers
+            modifiersAndAnnotations,                   // modifiersAndAnnotations
             memberType,                                // type
             this.parseFieldDeclarationRest(memberName) // variableDeclarators
         );
@@ -537,7 +631,7 @@ class Parser {
     public InterfaceDeclaration
     parseInterfaceDeclarationRest(
         String                      optionalDocComment,
-        short                       modifiers,
+        ModifiersAndAnnotations     modifiersAndAnnotations,
         InterfaceDeclarationContext context
     ) throws CompileException, IOException {
         Location location      = this.location();
@@ -554,7 +648,7 @@ class Parser {
             interfaceDeclaration = new PackageMemberInterfaceDeclaration(
                 location,                              // location
                 optionalDocComment,                    // optionalDocComment
-                modifiers,                             // modifiers
+                modifiersAndAnnotations,                             // modifiers
                 interfaceName,                         // name
                 extendedTypes                          // extendedTypes
             );
@@ -563,7 +657,7 @@ class Parser {
             interfaceDeclaration = new MemberInterfaceDeclaration(
                 location,                                   // location
                 optionalDocComment,                         // optionalDocComment
-                modifiers,                                  // modifiers
+                modifiersAndAnnotations,                                  // modifiers
                 interfaceName,                              // name
                 extendedTypes                               // extendedTypes
             );
@@ -609,19 +703,20 @@ class Parser {
 
             if (this.peekRead(";")) continue;
 
-            String optionalDocComment = this.scanner.doc();
-            short  modifiers          = this.parseModifiersOpt();
+            String                  optionalDocComment = this.scanner.doc();
+            ModifiersAndAnnotations maas               = this.parseModifiersAndAnnotations();
 
             // "void" method declaration.
             if (this.peekRead("void")) {
                 if (optionalDocComment == null) this.warning("MDCM", "Method doc comment missing", this.location());
                 Location location = this.location();
                 String   name     = this.readIdentifier();
+                maas.modifiers |= Mod.ABSTRACT | Mod.PUBLIC;
                 interfaceDeclaration.addDeclaredMethod(this.parseMethodDeclarationRest(
-                    optionalDocComment,                              // declaringType
-                    (short) (modifiers | Mod.ABSTRACT | Mod.PUBLIC), // optionalDocComment
-                    new BasicType(location, BasicType.VOID),         // modifiers
-                    name                                             // name
+                    optionalDocComment,                      // optionalDocComment
+                    maas,                                    // modifiersAndAnnotations
+                    new BasicType(location, BasicType.VOID), // type
+                    name                                     // name
                 ));
             } else
 
@@ -630,11 +725,12 @@ class Parser {
                 if (optionalDocComment == null) {
                     this.warning("MCDCM", "Member class doc comment missing", this.location());
                 }
+                maas.modifiers |= Mod.STATIC | Mod.PUBLIC;
                 interfaceDeclaration.addMemberTypeDeclaration(
                     (MemberTypeDeclaration) this.parseClassDeclarationRest(
-                        optionalDocComment,                            // optionalDocComment
-                        (short) (modifiers | Mod.STATIC | Mod.PUBLIC), // modifiers
-                        ClassDeclarationContext.TYPE_DECLARATION       // context
+                        optionalDocComment,                      // optionalDocComment
+                        maas,                                    // ModifiersAndAnnotations
+                        ClassDeclarationContext.TYPE_DECLARATION // context
                     )
                 );
             } else
@@ -644,10 +740,11 @@ class Parser {
                 if (optionalDocComment == null) {
                     this.warning("MIDCM", "Member interface doc comment missing", this.location());
                 }
+                maas.modifiers |= Mod.STATIC | Mod.PUBLIC;
                 interfaceDeclaration.addMemberTypeDeclaration(
                     (MemberTypeDeclaration) this.parseInterfaceDeclarationRest(
                         optionalDocComment,                                // optionalDocComment
-                        (short) (modifiers | Mod.STATIC | Mod.PUBLIC),     // modifiers
+                        maas,                                              // ModifiersAndAnnotations
                         InterfaceDeclarationContext.NAMED_TYPE_DECLARATION // context
                     )
                 );
@@ -662,24 +759,23 @@ class Parser {
                 // Method declarator.
                 if (this.peek("(")) {
                     if (optionalDocComment == null) this.warning("MDCM", "Method doc comment missing", this.location());
+                    maas.modifiers |= Mod.ABSTRACT | Mod.PUBLIC;
                     interfaceDeclaration.addDeclaredMethod(this.parseMethodDeclarationRest(
-                        optionalDocComment,                              // declaringType
-                        (short) (modifiers | Mod.ABSTRACT | Mod.PUBLIC), // optionalDocComment
-                        memberType,                                      // modifiers
-                        memberName                                       // name
+                        optionalDocComment, // declaringType
+                        maas,               // optionalDocComment
+                        memberType,         // modifiers
+                        memberName          // name
                     ));
                 } else
 
                 // Field declarator.
                 {
                     if (optionalDocComment == null) this.warning("FDCM", "Field doc comment missing", this.location());
+                    maas.modifiers |= Mod.PUBLIC | Mod.STATIC | Mod.FINAL;
                     FieldDeclaration fd = new FieldDeclaration(
                         location,                                  // location
                         optionalDocComment,                        // optionalDocComment
-                        (short) (                                  // modifiers
-                            modifiers
-                            | Mod.PUBLIC | Mod.STATIC | Mod.FINAL
-                        ),
+                        maas,                                      // modifiers
                         memberType,                                // type
                         this.parseFieldDeclarationRest(memberName) // variableDeclarators
                     );
@@ -702,7 +798,8 @@ class Parser {
      * </pre>
      */
     public ConstructorDeclarator
-    parseConstructorDeclarator(String optionalDocComment, short modifiers) throws CompileException, IOException {
+    parseConstructorDeclarator(String optionalDocComment, ModifiersAndAnnotations modifiersAndAnnotations)
+    throws CompileException, IOException {
         Location location = this.location();
         this.readIdentifier();  // Class name
 
@@ -743,10 +840,10 @@ class Parser {
                 if (this.peekIdentifier() != null) {
                     Type variableType = a.toTypeOrCompileException();
                     s = new LocalVariableDeclarationStatement(
-                        a.getLocation(),                     // location
-                        (short) 0,                           // modifiers
-                        variableType,                        // type
-                        this.parseLocalVariableDeclarators() // variableDeclarators
+                        a.getLocation(),                            // location
+                        new Java.ModifiersAndAnnotations(Mod.NONE), // modifiers
+                        variableType,                               // type
+                        this.parseLocalVariableDeclarators()        // variableDeclarators
                     );
                     this.read(";");
                 } else {
@@ -763,7 +860,7 @@ class Parser {
         return new ConstructorDeclarator(
             location,                      // location
             optionalDocComment,            // optionalDocComment
-            modifiers,                     // modifiers
+            modifiersAndAnnotations,       // modifiersAndAnnotations
             formalParameters,              // formalParameters
             thrownExceptions,              // thrownExceptions
             optionalConstructorInvocation, // optionalConstructorInvocationStatement
@@ -781,8 +878,12 @@ class Parser {
      * </pre>
      */
     public MethodDeclarator
-    parseMethodDeclarationRest(String optionalDocComment, short modifiers, Type type, String name)
-    throws CompileException, IOException {
+    parseMethodDeclarationRest(
+        String                  optionalDocComment,
+        ModifiersAndAnnotations modifiersAndAnnotations,
+        Type                    type,
+        String                  name
+    ) throws CompileException, IOException {
         Location location = this.location();
 
         this.verifyIdentifierIsConventionalMethodName(name, location);
@@ -800,12 +901,12 @@ class Parser {
 
         List/*<BlockStatement>*/ optionalStatements;
         if (this.peekRead(";")) {
-            if ((modifiers & (Mod.ABSTRACT | Mod.NATIVE)) == 0) {
+            if ((modifiersAndAnnotations.modifiers & (Mod.ABSTRACT | Mod.NATIVE)) == 0) {
                 throw this.compileException("Non-abstract, non-native method must have a body");
             }
             optionalStatements = null;
         } else {
-            if ((modifiers & (Mod.ABSTRACT | Mod.NATIVE)) != 0) {
+            if ((modifiersAndAnnotations.modifiers & (Mod.ABSTRACT | Mod.NATIVE)) != 0) {
                 throw this.compileException("Abstract or native method must not have a body");
             }
             this.read("{");
@@ -813,14 +914,14 @@ class Parser {
             this.read("}");
         }
         return new MethodDeclarator(
-            location,           // location
-            optionalDocComment, // optionalDocComment
-            modifiers,          // modifiers
-            type,               // type
-            name,               // name
-            formalParameters,   // formalParameters
-            thrownExceptions,   // thrownExceptions
-            optionalStatements  // optionalStatements
+            location,                // location
+            optionalDocComment,      // optionalDocComment
+            modifiersAndAnnotations, // modifiersAndAnnotations
+            type,                    // type
+            name,                    // name
+            formalParameters,        // formalParameters
+            thrownExceptions,        // thrownExceptions
+            optionalStatements       // optionalStatements
         );
     }
 
@@ -974,7 +1075,7 @@ class Parser {
             )
             || this.peek(new String[] {
                 "if", "for", "while", "do", "try", "switch", "synchronized",
-                "return", "throw", "break", "continue"
+                "return", "throw", "break", "continue", "assert"
             }) != -1
             || this.peek(new String[] { "{", ";" }) != -1
         ) return this.parseStatement();
@@ -987,9 +1088,9 @@ class Parser {
             if (optionalDocComment == null) this.warning("LCDCM", "Local class doc comment missing", this.location());
 
             final LocalClassDeclaration lcd = (LocalClassDeclaration) this.parseClassDeclarationRest(
-                optionalDocComment,           // optionalDocComment
-                Mod.NONE,                     // modifiers
-                ClassDeclarationContext.BLOCK // context
+                optionalDocComment,            // optionalDocComment
+                new ModifiersAndAnnotations(), // modifiersAndAnnotations
+                ClassDeclarationContext.BLOCK  // context
             );
             return new LocalClassDeclarationStatement(lcd);
         }
@@ -999,10 +1100,10 @@ class Parser {
             Location                          location     = this.location();
             Type                              variableType = this.parseType();
             LocalVariableDeclarationStatement lvds         = new LocalVariableDeclarationStatement(
-                location,                            // location
-                Mod.FINAL,                           // modifiers
-                variableType,                        // type
-                this.parseLocalVariableDeclarators() // variableDeclarators
+                location,                                    // location
+                new Java.ModifiersAndAnnotations(Mod.FINAL), // modifiersAndAnnotations
+                variableType,                                // type
+                this.parseLocalVariableDeclarators()         // variableDeclarators
             );
             this.read(";");
             return lvds;
@@ -1020,10 +1121,10 @@ class Parser {
         // Expression LocalVariableDeclarators ';'
         Type                              variableType = a.toTypeOrCompileException();
         LocalVariableDeclarationStatement lvds         = new LocalVariableDeclarationStatement(
-            a.getLocation(),                     // location
-            Mod.NONE,                            // modifiers
-            variableType,                        // type
-            this.parseLocalVariableDeclarators() // variableDeclarators
+            a.getLocation(),                            // location
+            new Java.ModifiersAndAnnotations(Mod.NONE), // modifiersAndAnnotations
+            variableType,                               // type
+            this.parseLocalVariableDeclarators()        // variableDeclarators
         );
         this.read(";");
         return lvds;
@@ -1135,6 +1236,7 @@ class Parser {
             this.peek("throw")        ? this.parseThrowStatement() :
             this.peek("break")        ? this.parseBreakStatement() :
             this.peek("continue")     ? this.parseContinueStatement() :
+            this.peek("assert")       ? this.parseAssertStatement() :
             this.peek(";")            ? this.parseEmptyStatement() :
             this.parseExpressionStatement()
         );
@@ -1249,11 +1351,11 @@ class Parser {
         if (this.peek(new String[] {
             "final", "byte", "short", "char", "int", "long", "float", "double", "boolean"
         }) != -1) {
-            short modifiers    = this.parseModifiersOpt();
-            Type  variableType = this.parseType();
+            ModifiersAndAnnotations modifiersAndAnnotations = this.parseModifiersAndAnnotations();
+            Type                    variableType            = this.parseType();
             return new LocalVariableDeclarationStatement(
                 this.location(),                     // location
-                modifiers,                           // modifiers
+                modifiersAndAnnotations,             // modifiers
                 variableType,                        // type
                 this.parseLocalVariableDeclarators() // variableDeclarators
             );
@@ -1265,10 +1367,10 @@ class Parser {
         if (this.peekIdentifier() != null) {
             Type variableType = a.toTypeOrCompileException();
             return new LocalVariableDeclarationStatement(
-                a.getLocation(),                     // location
-                Mod.NONE,                            // modifiers
-                variableType,                        // type
-                this.parseLocalVariableDeclarators() // variableDeclarators
+                a.getLocation(),                            // location
+                new Java.ModifiersAndAnnotations(Mod.NONE), // modifiersAndAnnotations
+                variableType,                               // type
+                this.parseLocalVariableDeclarators()        // variableDeclarators
             );
         }
 
@@ -1518,6 +1620,24 @@ class Parser {
 
     /**
      * <pre>
+     *   AssertStatement := 'assert' Expression [ ':' Expression ] ';'
+     * </pre>
+     */
+    public Statement
+    parseAssertStatement() throws CompileException, IOException {
+        this.read("assert");
+
+        Java.AssertStatement assertStatement = new Java.AssertStatement(
+            this.location(),                                                                // location
+            this.parseExpression().toRvalueOrCompileException(),                            // expression1
+            this.peekRead(":") ? this.parseExpression().toRvalueOrCompileException() : null // optionalExpression2
+        );
+        this.read(";");
+        return assertStatement;
+    }
+
+    /**
+     * <pre>
      *   EmptyStatement := ';'
      * </pre>
      */
@@ -1574,7 +1694,7 @@ class Parser {
      */
     public ReferenceType
     parseReferenceType() throws CompileException, IOException {
-        String[] identifiers = this.parseQualifiedIdentifier();
+        String[] identifiers = this.parseTypeName();
         if (this.peek("<")) throw this.compileException("JANINO does not support generics");
         return new ReferenceType(this.location(), identifiers);
     }
@@ -1999,7 +2119,7 @@ class Parser {
 
         if (this.peekIdentifier() != null) {
             Location location = this.location();
-            String[] qi       = this.parseQualifiedIdentifier();
+            String[] qi       = this.parseTypeName();
             if (this.peek("(")) {
                 // Name Arguments
                 return new MethodInvocation(

@@ -134,6 +134,7 @@ class Visitor {
         void visitThrowStatement(Java.ThrowStatement ts);
         void visitBreakStatement(Java.BreakStatement bs);
         void visitContinueStatement(Java.ContinueStatement cs);
+        void visitAssertStatement(Java.AssertStatement as);
         void visitEmptyStatement(Java.EmptyStatement es);
         void visitLocalClassDeclarationStatement(Java.LocalClassDeclarationStatement lcds);
         void visitAlternateConstructorInvocation(Java.AlternateConstructorInvocation aci);
@@ -191,5 +192,21 @@ class Visitor {
         void visitSuperclassFieldAccessExpression(Java.SuperclassFieldAccessExpression scfae);
         void visitLocalVariableAccess(Java.LocalVariableAccess lva);
         void visitParenthesizedExpression(Java.ParenthesizedExpression pe);
+    }
+
+    public
+    interface AnnotationVisitor {
+        void visitMarkerAnnotation(Java.MarkerAnnotation ma);
+        void visitNormalAnnotation(Java.NormalAnnotation na);
+        void visitSingleElementAnnotation(Java.SingleElementAnnotation sea);
+    }
+    
+    public
+    interface ElementValueArrayInitializerVisitor {
+        void visitElementValueArrayInitializer(Java.ElementValueArrayInitializer evai);
+    }
+    
+    public
+    interface ElementValueVisitor extends RvalueVisitor, AnnotationVisitor, ElementValueArrayInitializerVisitor {
     }
 }

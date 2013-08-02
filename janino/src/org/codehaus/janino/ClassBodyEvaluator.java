@@ -301,7 +301,7 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
         Java.PackageMemberClassDeclaration tlcd = new Java.PackageMemberClassDeclaration(
             location,                                              // location
             null,                                                  // optionalDocComment
-            Mod.PUBLIC,                                            // modifiers
+            new Java.ModifiersAndAnnotations(Mod.PUBLIC),          // modifiers
             cn,                                                    // name
             this.classToType(location, this.optionalExtendedType), // optionalExtendedType
             this.classesToTypes(location, this.implementedTypes)   // implementedTypes

@@ -306,6 +306,8 @@ class Descriptor {
     public static final String JAVA_LANG_CLONEABLE = "Ljava/lang/Cloneable;";
     /** The field descriptor for the interface {@link java.io.Serializable}. */
     public static final String JAVA_IO_SERIALIZABLE = "Ljava/io/Serializable;";
+    /** The field descriptor for the wrapper class {@link AssertionError}. */
+    public static final String JAVA_LANG_ASSERTION_ERROR = "Ljava/lang/AssertionError;";
 
     /** The field descriptor for the wrapper class {@link Boolean}. */
     public static final String JAVA_LANG_BOOLEAN = "Ljava/lang/Boolean;";
@@ -358,6 +360,7 @@ class Descriptor {
     }
 
     private static final Map CLASS_NAME_TO_DESCRIPTOR;
+
     static {
         Map m = new HashMap();
         for (Iterator it = DESCRIPTOR_TO_CLASSNAME.entrySet().iterator(); it.hasNext();) {

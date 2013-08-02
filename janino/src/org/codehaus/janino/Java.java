@@ -39,6 +39,10 @@ import java.util.TreeMap;
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.Location;
 import org.codehaus.janino.CodeContext.Offset;
+import org.codehaus.janino.Java.Atom;
+import org.codehaus.janino.Java.Rvalue;
+import org.codehaus.janino.Visitor.BlockStatementVisitor;
+import org.codehaus.janino.Visitor.ElementValueVisitor;
 import org.codehaus.janino.util.Traverser;
 import org.codehaus.janino.util.iterator.ReverseListIterator;
 
@@ -61,6 +65,7 @@ import org.codehaus.janino.util.iterator.ReverseListIterator;
 
 public final
 class Java {
+
     private Java() {} // Don't instantiate me.
 
     public
@@ -273,6 +278,120 @@ class Java {
         }
     }
 
+    public
+    interface Annotation extends ElementValue {
+    }
+
+    public static final
+    class MarkerAnnotation implements Annotation {
+
+        public final String identifier;
+
+        public
+        MarkerAnnotation(String identifier) { this.identifier = identifier; }
+
+        public void
+        accept(Visitor.AnnotationVisitor visitor) { visitor.visitMarkerAnnotation(this); }
+
+        public void
+        accept(Visitor.ElementValueVisitor visitor) { visitor.visitMarkerAnnotation(this); }
+    }
+
+    public static final
+    class SingleElementAnnotation implements Annotation {
+
+        public final String       identifier;
+        public final ElementValue elementValue;
+
+        public
+        SingleElementAnnotation(String identifier, ElementValue elementValue) {
+            this.identifier   = identifier;
+            this.elementValue = elementValue;
+        }
+
+        public void
+        accept(Visitor.AnnotationVisitor visitor) { visitor.visitSingleElementAnnotation(this); }
+
+        public void
+        accept(Visitor.ElementValueVisitor visitor) { visitor.visitSingleElementAnnotation(this); }
+    }
+
+    public static final
+    class NormalAnnotation implements Annotation {
+
+        public final String[]           typeName;
+        public final ElementValuePair[] elementValuePairs;
+
+        public
+        NormalAnnotation(String[] typeName, ElementValuePair[] elementValuePairs) {
+            this.typeName          = typeName;
+            this.elementValuePairs = elementValuePairs;
+        }
+
+        public void
+        accept(Visitor.AnnotationVisitor visitor) { visitor.visitNormalAnnotation(this); }
+
+        public void
+        accept(Visitor.ElementValueVisitor visitor) { visitor.visitNormalAnnotation(this); }
+    }
+
+    public static
+    class ModifiersAndAnnotations {
+
+        public short              modifiers;
+        public final Annotation[] annotations;
+        
+        public
+        ModifiersAndAnnotations() {
+            this.modifiers   = Mod.NONE;
+            this.annotations = new Annotation[0];
+        }
+
+        public
+        ModifiersAndAnnotations(short modifiers) {
+            this.modifiers   = modifiers;
+            this.annotations = new Annotation[0];
+        }
+
+        public
+        ModifiersAndAnnotations(short modifiers, Annotation[] annotations) {
+            this.modifiers   = modifiers;
+            this.annotations = annotations;
+        }
+    }
+
+    public static
+    class ElementValuePair {
+
+        public final String       identifier;
+        public final ElementValue elementValue;
+
+        public
+        ElementValuePair(String identifier, ElementValue elementValue) {
+            this.identifier   = identifier;
+            this.elementValue = elementValue;
+        }
+    }
+
+    public
+    interface ElementValue {
+        void accept(Visitor.ElementValueVisitor visitor);
+    }
+
+    public static
+    class ElementValueArrayInitializer implements ElementValue {
+
+        public final ElementValue[] elementValues;
+
+        public
+        ElementValueArrayInitializer(ElementValue[] elementValues) {
+            this.elementValues = elementValues;
+        }
+
+        public void
+        accept(Visitor.ElementValueVisitor visitor) { visitor.visitElementValueArrayInitializer(this); }
+    }
+
     /**
      * Represents a package declaration like<pre>
      *     package com.acme.tools;</pre>
@@ -291,7 +410,7 @@ class Java {
     public
     interface TypeDeclaration extends Locatable, Scope {
 
-        short getModifiers();
+        ModifiersAndAnnotations getModifiersAndAnnotations();
 
         /**
          * Return the member type with the given name.
@@ -413,23 +532,23 @@ class Java {
 
     public abstract static
     class AbstractTypeDeclaration implements TypeDeclaration {
-        private final Location location;
-        private final short    modifiers;
-        private final List     declaredMethods              = new ArrayList(); // MethodDeclarator
-        private final List     declaredClassesAndInterfaces = new ArrayList(); // MemberTypeDeclaration
-        private Scope          enclosingScope;
+        private final Location                        location;
+        private final ModifiersAndAnnotations         modifiersAndAnnotations;
+        private final List/*<MethodDeclarator>*/      declaredMethods              = new ArrayList();
+        private final List/*<MemberTypeDeclaration>*/ declaredClassesAndInterfaces = new ArrayList();
+        private Scope                                 enclosingScope;
 
         IClass resolvedType;
 
         public
-        AbstractTypeDeclaration(Location location, short  modifiers) {
-            this.location  = location;
-            this.modifiers = modifiers;
+        AbstractTypeDeclaration(Location location, ModifiersAndAnnotations modifiersAndAnnotations) {
+            this.location                = location;
+            this.modifiersAndAnnotations = modifiersAndAnnotations;
         }
 
         /** @{inheritDoc} */
-        public short
-        getModifiers() { return this.modifiers; }
+        public ModifiersAndAnnotations
+        getModifiersAndAnnotations() { return this.modifiersAndAnnotations; }
 
         public void
         setEnclosingScope(Scope enclosingScope) {
@@ -548,7 +667,9 @@ class Java {
         public final List variableDeclaratorsAndInitializers = new ArrayList(); // TypeBodyDeclaration
 
         public
-        ClassDeclaration(Location location, short modifiers) { super(location, modifiers); }
+        ClassDeclaration(Location location, ModifiersAndAnnotations modifiersAndAnnotations) {
+            super(location, modifiersAndAnnotations);
+        }
 
         public void
         addConstructor(ConstructorDeclarator cd) {
@@ -586,13 +707,13 @@ class Java {
         getConstructors() {
             if (this.constructors.isEmpty()) {
                 ConstructorDeclarator defaultConstructor = new ConstructorDeclarator(
-                    this.getLocation(),                        // location
-                    null,                                      // optionalDocComment
-                    Mod.PUBLIC,                                // modifiers
-                    new FunctionDeclarator.FormalParameter[0], // formalParameters
-                    new Type[0],                               // thrownExceptions
-                    null,                                      // optionalExplicitConstructorInvocation
-                    Collections.EMPTY_LIST                     // optionalStatements
+                    this.getLocation(),                           // location
+                    null,                                         // optionalDocComment
+                    new Java.ModifiersAndAnnotations(Mod.PUBLIC), // modifiersAndAnnotations
+                    new FunctionDeclarator.FormalParameter[0],    // formalParameters
+                    new Type[0],                                  // thrownExceptions
+                    null,                                         // optionalExplicitConstructorInvocation
+                    Collections.EMPTY_LIST                        // optionalStatements
                 );
                 defaultConstructor.setDeclaringType(this);
                 return new ConstructorDeclarator[] { defaultConstructor };
@@ -614,8 +735,8 @@ class Java {
         public
         AnonymousClassDeclaration(Location location, Type baseType) {
             super(
-                location,                         // location
-                (short) (Mod.PRIVATE | Mod.FINAL) // modifiers
+                location,                                                      // location
+                new ModifiersAndAnnotations((short) (Mod.PRIVATE | Mod.FINAL)) // modifiersAndAnnotations
             );
             (this.baseType = baseType).setEnclosingScope(new EnclosingScopeOfTypeDeclaration(this));
         }
@@ -652,14 +773,14 @@ class Java {
 
         public
         NamedClassDeclaration(
-            Location location,
-            String   optionalDocComment,
-            short    modifiers,
-            String   name,
-            Type     optionalExtendedType,
-            Type[]   implementedTypes
+            Location                location,
+            String                  optionalDocComment,
+            ModifiersAndAnnotations modifiersAndAnnotations,
+            String                  name,
+            Type                    optionalExtendedType,
+            Type[]                  implementedTypes
         ) {
-            super(location, modifiers);
+            super(location, modifiersAndAnnotations);
             this.optionalDocComment   = optionalDocComment;
             this.name                 = name;
             this.optionalExtendedType = optionalExtendedType;
@@ -716,20 +837,20 @@ class Java {
     class MemberClassDeclaration extends NamedClassDeclaration implements MemberTypeDeclaration, InnerClassDeclaration {
         public
         MemberClassDeclaration(
-            Location location,
-            String   optionalDocComment,
-            short    modifiers,
-            String   name,
-            Type     optionalExtendedType,
-            Type[]   implementedTypes
+            Location                location,
+            String                  optionalDocComment,
+            ModifiersAndAnnotations modifiersAndAnnotations,
+            String                  name,
+            Type                    optionalExtendedType,
+            Type[]                  implementedTypes
         ) {
             super(
-                location,              // location
-                optionalDocComment,    // optionalDocComment
-                modifiers,             // modifiers
-                name,                  // name
-                optionalExtendedType,  // optionalExtendedType
-                implementedTypes       // implementedTypes
+                location,                // location
+                optionalDocComment,      // optionalDocComment
+                modifiersAndAnnotations, // modifiersAndAnnotations
+                name,                    // name
+                optionalExtendedType,    // optionalExtendedType
+                implementedTypes         // implementedTypes
             );
         }
 
@@ -745,7 +866,7 @@ class Java {
 
         /** @{inheritDoc} */
         public boolean
-        isStatic() { return (this.getModifiers() & Mod.STATIC) != 0; }
+        isStatic() { return (this.getModifiersAndAnnotations().modifiers & Mod.STATIC) != 0; }
 
         // Implement TypeDeclaration.
 
@@ -767,20 +888,20 @@ class Java {
 
         public
         LocalClassDeclaration(
-            Location location,
-            String   optionalDocComment,
-            short    modifiers,
-            String   name,
-            Type     optionalExtendedType,
-            Type[]   implementedTypes
+            Location                location,
+            String                  optionalDocComment,
+            ModifiersAndAnnotations modifiersAndAnnotations,
+            String                  name,
+            Type                    optionalExtendedType,
+            Type[]                  implementedTypes
         ) {
             super(
-                location,               // location
-                optionalDocComment,     // optionalDocComment
-                modifiers,              // modifiers
-                name,                   // name
-                optionalExtendedType,   // optionalExtendedType
-                implementedTypes        // implementedTypes
+                location,                // location
+                optionalDocComment,      // optionalDocComment
+                modifiersAndAnnotations, // modifiersAndAnnotations
+                name,                    // name
+                optionalExtendedType,    // optionalExtendedType
+                implementedTypes         // implementedTypes
             );
         }
 
@@ -791,7 +912,7 @@ class Java {
             for (; !(s instanceof FunctionDeclarator); s = s.getEnclosingScope());
             if (
                 s instanceof MethodDeclarator
-                && (((MethodDeclarator) s).modifiers & Mod.STATIC) != 0
+                && (((MethodDeclarator) s).modifiersAndAnnotations.modifiers & Mod.STATIC) != 0
             ) return null;
             for (; !(s instanceof TypeDeclaration); s = s.getEnclosingScope());
             return ((AbstractTypeDeclaration) s).resolvedType;
@@ -819,24 +940,24 @@ class Java {
 
         public
         PackageMemberClassDeclaration(
-            Location location,
-            String   optionalDocComment,
-            short    modifiers,
-            String   name,
-            Type     optionalExtendedType,
-            Type[]   implementedTypes
+            Location                location,
+            String                  optionalDocComment,
+            ModifiersAndAnnotations modifiersAndAnnotations,
+            String                  name,
+            Type                    optionalExtendedType,
+            Type[]                  implementedTypes
         ) throws CompileException {
             super(
                 location,                         // location
                 optionalDocComment,               // optionalDocComment
-                modifiers,                        // modifiers
+                modifiersAndAnnotations,          // modifiersAndAnnotations
                 name,                             // name
                 optionalExtendedType,             // optionalExtendedType
                 implementedTypes                  // implementedTypes
             );
 
             // Check for forbidden modifiers (JLS 7.6).
-            if ((modifiers & (Mod.PROTECTED | Mod.PRIVATE | Mod.STATIC)) != 0) {
+            if ((modifiersAndAnnotations.modifiers & (Mod.PROTECTED | Mod.PRIVATE | Mod.STATIC)) != 0) {
                 this.throwCompileException(
                     "Modifiers \"protected\", \"private\" and \"static\" not allowed in package member class "
                     + "declaration"
@@ -883,13 +1004,13 @@ class Java {
 
         protected
         InterfaceDeclaration(
-            Location location,
-            String   optionalDocComment,
-            short    modifiers,
-            String   name,
-            Type[]   extendedTypes
+            Location                location,
+            String                  optionalDocComment,
+            ModifiersAndAnnotations modifiersAndAnnotations,
+            String                  name,
+            Type[]                  extendedTypes
         ) {
-            super(location, modifiers);
+            super(location, modifiersAndAnnotations);
             this.optionalDocComment = optionalDocComment;
             this.name               = name;
             this.extendedTypes      = extendedTypes;
@@ -941,18 +1062,18 @@ class Java {
 
         public
         MemberInterfaceDeclaration(
-            Location             location,
-            String               optionalDocComment,
-            short                modifiers,
-            String               name,
-            Type[]               extendedTypes
+            Location                location,
+            String                  optionalDocComment,
+            ModifiersAndAnnotations modifiersAndAnnotations,
+            String                  name,
+            Type[]                  extendedTypes
         ) {
             super(
-                location,              // location
-                optionalDocComment,    // optionalDocComment
-                modifiers,             // modifiers
-                name,                  // name
-                extendedTypes          // extendedTypes
+                location,                // location
+                optionalDocComment,      // optionalDocComment
+                modifiersAndAnnotations, // modifiersAndAnnotations
+                name,                    // name
+                extendedTypes            // extendedTypes
             );
         }
 
@@ -981,7 +1102,7 @@ class Java {
 
         /** @{inheritDoc} */
         public boolean
-        isStatic() { return (this.getModifiers() & Mod.STATIC) != 0; }
+        isStatic() { return (this.getModifiersAndAnnotations().modifiers & Mod.STATIC) != 0; }
 
         /** @{inheritDoc} */
         public void
@@ -997,22 +1118,22 @@ class Java {
 
         public
         PackageMemberInterfaceDeclaration(
-            Location        location,
-            String          optionalDocComment,
-            short           modifiers,
-            String          name,
-            Type[]          extendedTypes
+            Location                location,
+            String                  optionalDocComment,
+            ModifiersAndAnnotations modifiersAndAnnotations,
+            String                  name,
+            Type[]                  extendedTypes
         ) throws CompileException {
             super(
-                location,                         // location
-                optionalDocComment,               // optionalDocComment
-                modifiers,                        // modifiers
-                name,                             // name
-                extendedTypes                     // extendedTypes
+                location,                // location
+                optionalDocComment,      // optionalDocComment
+                modifiersAndAnnotations, // modifiersAndAnnotations
+                name,                    // name
+                extendedTypes            // extendedTypes
             );
 
             // Check for forbidden modifiers (JLS 7.6).
-            if ((modifiers & (Mod.PROTECTED | Mod.PRIVATE | Mod.STATIC)) != 0) {
+            if ((modifiersAndAnnotations.modifiers & (Mod.PROTECTED | Mod.PRIVATE | Mod.STATIC)) != 0) {
                 this.throwCompileException(
                     "Modifiers \"protected\", \"private\" and \"static\" not allowed in package member interface "
                     + "declaration"
@@ -1155,7 +1276,7 @@ class Java {
     public abstract static
     class FunctionDeclarator extends AbstractTypeBodyDeclaration implements DocCommentable {
         private final String                  optionalDocComment;
-        public final short                    modifiers;
+        public final ModifiersAndAnnotations  modifiersAndAnnotations;
         public final Type                     type;
         public final String                   name;
         public final FormalParameter[]        formalParameters;
@@ -1166,23 +1287,25 @@ class Java {
         FunctionDeclarator(
             Location                 location,
             String                   optionalDocComment,
-            short                    modifiers,
+            ModifiersAndAnnotations  modifiersAndAnnotations,
             Type                     type,
             String                   name,
             FormalParameter[]        formalParameters,
             Type[]                   thrownExceptions,
             List/*<BlockStatement>*/ optionalStatements
         ) {
-            super(location, (modifiers & Mod.STATIC) != 0);
-            this.optionalDocComment = optionalDocComment;
-            this.modifiers          = modifiers;
-            (this.type               = type).setEnclosingScope(this);
-            this.name               = name;
-            this.formalParameters   = formalParameters;
+            super(location, (modifiersAndAnnotations.modifiers & Mod.STATIC) != 0);
+            this.optionalDocComment      = optionalDocComment;
+            this.modifiersAndAnnotations = modifiersAndAnnotations;
+            this.type                    = type;
+            this.name                    = name;
+            this.formalParameters        = formalParameters;
+            this.thrownExceptions        = thrownExceptions;
+            this.optionalStatements      = optionalStatements;
+
+            this.type.setEnclosingScope(this);
             for (int i = 0; i < formalParameters.length; ++i) formalParameters[i].type.setEnclosingScope(this);
-            this.thrownExceptions   = thrownExceptions;
             for (int i = 0; i < thrownExceptions.length; ++i) thrownExceptions[i].setEnclosingScope(this);
-            this.optionalStatements = optionalStatements;
             if (optionalStatements != null) {
                 for (Iterator it = optionalStatements.iterator(); it.hasNext();) {
                     Java.BlockStatement bs = (Java.BlockStatement) it.next();
@@ -1253,7 +1376,7 @@ class Java {
         ConstructorDeclarator(
             Location                             location,
             String                               optionalDocComment,
-            short                                modifiers,
+            ModifiersAndAnnotations              modifiersAndAnnotations,
             FunctionDeclarator.FormalParameter[] formalParameters,
             Type[]                               thrownExceptions,
             ConstructorInvocation                optionalConstructorInvocation,
@@ -1262,7 +1385,7 @@ class Java {
             super(
                 location,                                // location
                 optionalDocComment,                      // optionalDocComment
-                modifiers,                               // modifiers
+                modifiersAndAnnotations,                 // modifiersAndAnnotations
                 new BasicType(location, BasicType.VOID), // type
                 "<init>",                                // name
                 formalParameters,                        // formalParameters
@@ -1307,7 +1430,7 @@ class Java {
         MethodDeclarator(
             Location                             location,
             String                               optionalDocComment,
-            short                                modifiers,
+            Java.ModifiersAndAnnotations         modifiersAndAnnotations,
             Type                                 type,
             String                               name,
             FunctionDeclarator.FormalParameter[] formalParameters,
@@ -1315,14 +1438,14 @@ class Java {
             List                                 optionalStatements
         ) {
             super(
-                location,           // location
-                optionalDocComment, // optionalDocComment
-                modifiers,          // modifiers
-                type,               // type
-                name,               // name
-                formalParameters,   // formalParameters
-                thrownExceptions,   // thrownExceptions
-                optionalStatements  // optionalStatements
+                location,                // location
+                optionalDocComment,      // optionalDocComment
+                modifiersAndAnnotations, // modifiersAndAnnotations
+                type,                    // type
+                name,                    // name
+                formalParameters,        // formalParameters
+                thrownExceptions,        // thrownExceptions
+                optionalStatements       // optionalStatements
             );
         }
 
@@ -1354,24 +1477,26 @@ class Java {
      */
     public static final
     class FieldDeclaration extends Statement implements TypeBodyDeclaration, DocCommentable {
-        private final String              optionalDocComment;
-        public final short                modifiers;
-        public final Type                 type;
-        public final VariableDeclarator[] variableDeclarators;
+        private final String                 optionalDocComment;
+        public final ModifiersAndAnnotations modifiersAndAnnotations;
+        public final Type                    type;
+        public final VariableDeclarator[]    variableDeclarators;
 
         public
         FieldDeclaration(
-            Location             location,
-            String               optionalDocComment,
-            short                modifiers,
-            Type                 type,
-            VariableDeclarator[] variableDeclarators
+            Location                location,
+            String                  optionalDocComment,
+            ModifiersAndAnnotations modifiersAndAnnotations,
+            Type                    type,
+            VariableDeclarator[]    variableDeclarators
         ) {
             super(location);
-            this.optionalDocComment  = optionalDocComment;
-            this.modifiers           = modifiers;
-            (this.type                = type).setEnclosingScope(this);
-            this.variableDeclarators = variableDeclarators;
+            this.optionalDocComment      = optionalDocComment;
+            this.modifiersAndAnnotations = modifiersAndAnnotations;
+            this.type                    = type;
+            this.variableDeclarators     = variableDeclarators;
+
+            this.type.setEnclosingScope(this);
             for (int i = 0; i < variableDeclarators.length; ++i) {
                 VariableDeclarator vd = variableDeclarators[i];
                 if (vd.optionalInitializer != null) Java.setEnclosingBlockStatement(vd.optionalInitializer, this);
@@ -1390,14 +1515,14 @@ class Java {
 
         /** @{inheritDoc} */
         public boolean
-        isStatic() { return (this.modifiers & Mod.STATIC) != 0; }
+        isStatic() { return (this.modifiersAndAnnotations.modifiers & Mod.STATIC) != 0; }
 
         /** @{inheritDoc} */
         public String
         toString() {
             StringBuffer sb = new StringBuffer();
-            sb.append(Mod.shortToString(this.modifiers)).append(' ').append(this.type).append(' ');
-            sb.append(this.variableDeclarators[0]);
+            sb.append(Mod.shortToString(this.modifiersAndAnnotations.modifiers)).append(' ').append(this.type);
+            sb.append(' ').append(this.variableDeclarators[0]);
             for (int i = 1; i < this.variableDeclarators.length; ++i) {
                 sb.append(", ").append(this.variableDeclarators[i]);
             }
@@ -1979,24 +2104,26 @@ class Java {
 
     public static final
     class LocalVariableDeclarationStatement extends Statement {
-        public final short                modifiers;
-        public final Type                 type;
-        public final VariableDeclarator[] variableDeclarators;
+        public final ModifiersAndAnnotations modifiersAndAnnotations;
+        public final Type                    type;
+        public final VariableDeclarator[]    variableDeclarators;
 
         /**
-         * @param modifiers Only "final" allowed.
+         * @param modifiersAndAnnotations Only "final" allowed.
          */
         public
         LocalVariableDeclarationStatement(
-            Location             location,
-            short                modifiers,
-            Type                 type,
-            VariableDeclarator[] variableDeclarators
+            Location                location,
+            ModifiersAndAnnotations modifiersAndAnnotations,
+            Type                    type,
+            VariableDeclarator[]    variableDeclarators
         ) {
             super(location);
-            this.modifiers           = modifiers;
-            (this.type                = type).setEnclosingScope(this);
-            this.variableDeclarators = variableDeclarators;
+            this.modifiersAndAnnotations = modifiersAndAnnotations;
+            this.type                    = type;
+            this.variableDeclarators     = variableDeclarators;
+
+            this.type.setEnclosingScope(this);
             for (int i = 0; i < variableDeclarators.length; ++i) {
                 VariableDeclarator vd = variableDeclarators[i];
                 if (vd.optionalInitializer != null) Java.setEnclosingBlockStatement(vd.optionalInitializer, this);
@@ -2013,7 +2140,9 @@ class Java {
         public String
         toString() {
             StringBuffer sb = new StringBuffer();
-            if (this.modifiers != 0) sb.append(Mod.shortToString(this.modifiers)).append(' ');
+            if (this.modifiersAndAnnotations.modifiers != Mod.NONE) {
+                sb.append(Mod.shortToString(this.modifiersAndAnnotations.modifiers)).append(' ');
+            }
             sb.append(this.type).append(' ').append(this.variableDeclarators[0].toString());
             for (int i = 1; i < this.variableDeclarators.length; ++i) {
                 sb.append(", ").append(this.variableDeclarators[i].toString());
@@ -2112,6 +2241,32 @@ class Java {
         /** @{inheritDoc} */
         public void
         accept(Visitor.BlockStatementVisitor visitor) { visitor.visitContinueStatement(this); }
+    }
+
+    public static final class
+    AssertStatement extends Statement {
+
+        public final Rvalue expression1;
+        public final Rvalue optionalExpression2;
+
+        public
+        AssertStatement(Location location, Rvalue expression1, Rvalue optionalExpression2) {
+            super(location);
+            this.expression1         = expression1;
+            this.optionalExpression2 = optionalExpression2;
+        }
+
+        /** @{inheritDoc} */
+        public String
+        toString() {
+            return (
+                this.optionalExpression2 == null
+                ? "assert " + this.expression1 + ';'
+                : "assert " + this.expression1 + " : " + this.optionalExpression2 + ';'
+            );
+        }
+
+        public void accept(BlockStatementVisitor visitor) { visitor.visitAssertStatement(this); }
     }
 
     /**
@@ -2387,7 +2542,7 @@ class Java {
      * right-hand-side of an assignment.
      */
     public abstract static
-    class Rvalue extends Atom implements ArrayInitializerOrRvalue {
+    class Rvalue extends Atom implements ArrayInitializerOrRvalue, ElementValue {
         private Java.BlockStatement enclosingBlockStatement;
 
         protected
@@ -2552,6 +2707,10 @@ class Java {
         /** @{inheritDoc} */
         public void
         accept(Visitor.LvalueVisitor visitor) { visitor.visitAmbiguousName(this); }
+
+        /** @{inheritDoc} */
+        public void
+        accept(Visitor.ElementValueVisitor visitor) { visitor.visitAmbiguousName(this); }
     }
 
     // Helper class for 6.5.2.1.7, 6.5.2.2.1
@@ -2603,7 +2762,11 @@ class Java {
 
         /** @{inheritDoc} */
         public void
-        accept(Visitor.AtomVisitor visitor)   { visitor.visitLocalVariableAccess(this); }
+        accept(Visitor.AtomVisitor visitor) { visitor.visitLocalVariableAccess(this); }
+
+        /** @{inheritDoc} */
+        public void
+        accept(ElementValueVisitor visitor) { visitor.visitLocalVariableAccess(this); }
     }
 
     /**
@@ -2632,7 +2795,7 @@ class Java {
 
         /** @{inheritDoc} */
         public void
-        accept(Visitor.AtomVisitor visitor)   { visitor.visitFieldAccess(this); }
+        accept(Visitor.AtomVisitor visitor) { visitor.visitFieldAccess(this); }
 
         /** @{inheritDoc} */
         public void
@@ -2641,6 +2804,10 @@ class Java {
         /** @{inheritDoc} */
         public void
         accept(Visitor.LvalueVisitor visitor) { visitor.visitFieldAccess(this); }
+
+        /** @{inheritDoc} */
+        public void
+        accept(ElementValueVisitor visitor) { visitor.visitFieldAccess(this); }
     }
 
     public static final
@@ -2663,11 +2830,15 @@ class Java {
 
         /** @{inheritDoc} */
         public void
-        accept(Visitor.AtomVisitor visitor)   { visitor.visitArrayLength(this); }
+        accept(Visitor.AtomVisitor visitor) { visitor.visitArrayLength(this); }
 
         /** @{inheritDoc} */
         public void
         accept(Visitor.RvalueVisitor visitor) { visitor.visitArrayLength(this); }
+
+        /** @{inheritDoc} */
+        public void
+        accept(ElementValueVisitor visitor) { visitor.visitArrayLength(this); }
     }
 
     /**
@@ -2699,6 +2870,10 @@ class Java {
         /** @{inheritDoc} */
         public void
         accept(Visitor.RvalueVisitor visitor) { visitor.visitThisReference(this); }
+
+        /** @{inheritDoc} */
+        public void
+        accept(ElementValueVisitor visitor) { visitor.visitThisReference(this); }
     }
 
     /**
@@ -2725,24 +2900,6 @@ class Java {
         TypeBodyDeclaration declaringTypeBodyDeclaration;
         IClass              targetIClass;
 
-        // Used at compile time.
-//        public QualifiedThisReference(
-//            Location            location,
-//            ClassDeclaration    declaringClass,
-//            TypeBodyDeclaration declaringTypeBodyDeclaration,
-//            IClass              targetIClass
-//        ) {
-//            super(location);
-//            if (declaringClass               == null) throw new NullPointerException();
-//            if (declaringTypeBodyDeclaration == null) throw new NullPointerException();
-//            if (targetIClass                 == null) throw new NullPointerException();
-//
-//            this.qualification                = null;
-//            this.declaringClass               = declaringClass;
-//            this.declaringTypeBodyDeclaration = declaringTypeBodyDeclaration;
-//            this.targetIClass                 = targetIClass;
-//        }
-
         // Implement "Atom".
 
         /** @{inheritDoc} */
@@ -2756,6 +2913,10 @@ class Java {
         /** @{inheritDoc} */
         public void
         accept(Visitor.RvalueVisitor visitor) { visitor.visitQualifiedThisReference(this); }
+
+        /** @{inheritDoc} */
+        public void 
+        accept(ElementValueVisitor visitor) { visitor.visitQualifiedThisReference(this); }
     }
 
     public static final
@@ -2778,11 +2939,15 @@ class Java {
 
         /** @{inheritDoc} */
         public void
-        accept(Visitor.AtomVisitor visitor)   { visitor.visitClassLiteral(this); }
+        accept(Visitor.AtomVisitor visitor) { visitor.visitClassLiteral(this); }
 
         /** @{inheritDoc} */
         public void
         accept(Visitor.RvalueVisitor visitor) { visitor.visitClassLiteral(this); }
+
+        /** @{inheritDoc} */
+        public void
+        accept(ElementValueVisitor visitor) { visitor.visitClassLiteral(this); }
     }
 
     public static final
@@ -2814,6 +2979,10 @@ class Java {
         /** @{inheritDoc} */
         public void
         accept(Visitor.RvalueVisitor visitor) { visitor.visitAssignment(this); }
+
+        /** @{inheritDoc} */
+        public void
+        accept(ElementValueVisitor visitor) { visitor.visitAssignment(this); }
     }
 
     public static final
@@ -2841,6 +3010,10 @@ class Java {
         /** @{inheritDoc} */
         public void
         accept(Visitor.RvalueVisitor visitor) { visitor.visitConditionalExpression(this); }
+
+        /** @{inheritDoc} */
+        public void
+        accept(ElementValueVisitor visitor) { visitor.visitConditionalExpression(this); }
     }
 
     /**
@@ -2883,6 +3056,10 @@ class Java {
         /** @{inheritDoc} */
         public void
         accept(Visitor.RvalueVisitor visitor) { visitor.visitCrement(this); }
+
+        /** @{inheritDoc} */
+        public void
+        accept(ElementValueVisitor visitor) { visitor.visitCrement(this); }
     }
 
     /**
@@ -2919,6 +3096,10 @@ class Java {
         /** @{inheritDoc} */
         public void
         accept(Visitor.LvalueVisitor visitor) { visitor.visitArrayAccessExpression(this); }
+
+        /** @{inheritDoc} */
+        public void
+        accept(ElementValueVisitor visitor) { visitor.visitArrayAccessExpression(this); }
     }
 
     /**
@@ -2956,6 +3137,10 @@ class Java {
         /** @{inheritDoc} */
         public void
         accept(Visitor.LvalueVisitor visitor) { visitor.visitFieldAccessExpression(this); }
+
+        /** @{inheritDoc} */
+        public void
+        accept(ElementValueVisitor visitor) { visitor.visitFieldAccessExpression(this); }
 
         Rvalue value;
     }
@@ -3001,6 +3186,10 @@ class Java {
         public void
         accept(Visitor.LvalueVisitor visitor) { visitor.visitSuperclassFieldAccessExpression(this); }
 
+        /** @{inheritDoc} */
+        public void
+        accept(ElementValueVisitor visitor) { visitor.visitSuperclassFieldAccessExpression(this); }
+
         Rvalue value;
     }
 
@@ -3032,6 +3221,10 @@ class Java {
         /** @{inheritDoc} */
         public void
         accept(Visitor.RvalueVisitor visitor) { visitor.visitUnaryOperation(this); }
+
+        /** @{inheritDoc} */
+        public void
+        accept(ElementValueVisitor visitor) { visitor.visitUnaryOperation(this); }
     }
 
     public static final
@@ -3061,6 +3254,10 @@ class Java {
         /** @{inheritDoc} */
         public void
         accept(Visitor.RvalueVisitor visitor) { visitor.visitInstanceof(this); }
+
+        /** @{inheritDoc} */
+        public void
+        accept(ElementValueVisitor visitor) { visitor.visitInstanceof(this); }
     }
 
     /**
@@ -3122,6 +3319,10 @@ class Java {
         /** @{inheritDoc} */
         public void
         accept(Visitor.RvalueVisitor visitor) { visitor.visitBinaryOperation(this); }
+
+        /** @{inheritDoc} */
+        public void
+        accept(ElementValueVisitor visitor) { visitor.visitBinaryOperation(this); }
     }
 
     public static final
@@ -3151,6 +3352,10 @@ class Java {
         /** @{inheritDoc} */
         public void
         accept(Visitor.RvalueVisitor visitor) { visitor.visitCast(this); }
+
+        /** @{inheritDoc} */
+        public void
+        accept(ElementValueVisitor visitor) { visitor.visitCast(this); }
     }
 
     public static final
@@ -3180,6 +3385,10 @@ class Java {
         /** @{inheritDoc} */
         public void
         accept(Visitor.LvalueVisitor visitor) { visitor.visitParenthesizedExpression(this); }
+
+        /** @{inheritDoc} */
+        public void
+        accept(ElementValueVisitor visitor) { visitor.visitParenthesizedExpression(this); }
     }
 
     public abstract static
@@ -3316,6 +3525,10 @@ class Java {
         /** @{inheritDoc} */
         public void
         accept(Visitor.RvalueVisitor visitor) { visitor.visitMethodInvocation(this); }
+
+        /** @{inheritDoc} */
+        public void
+        accept(ElementValueVisitor visitor) { visitor.visitMethodInvocation(this); }
     }
 
     public static final
@@ -3339,6 +3552,10 @@ class Java {
         /** @{inheritDoc} */
         public void
         accept(Visitor.RvalueVisitor visitor) { visitor.visitSuperclassMethodInvocation(this); }
+
+        /** @{inheritDoc} */
+        public void
+        accept(ElementValueVisitor visitor) { visitor.visitSuperclassMethodInvocation(this); }
     }
 
     public abstract static
@@ -3413,6 +3630,10 @@ class Java {
         /** @{inheritDoc} */
         public void
         accept(Visitor.RvalueVisitor visitor) { visitor.visitNewClassInstance(this); }
+
+        /** @{inheritDoc} */
+        public void
+        accept(ElementValueVisitor visitor) { visitor.visitNewClassInstance(this); }
     }
 
     public static final
@@ -3452,6 +3673,10 @@ class Java {
         /** @{inheritDoc} */
         public void
         accept(Visitor.RvalueVisitor visitor) { visitor.visitNewAnonymousClassInstance(this); }
+
+        /** @{inheritDoc} */
+        public void
+        accept(ElementValueVisitor visitor) { visitor.visitNewAnonymousClassInstance(this); }
     }
 
     // Used during compile-time.
@@ -3478,6 +3703,10 @@ class Java {
         /** @{inheritDoc} */
         public void
         accept(Visitor.RvalueVisitor visitor) { visitor.visitParameterAccess(this); }
+
+        /** @{inheritDoc} */
+        public void
+        accept(ElementValueVisitor visitor) { visitor.visitParameterAccess(this); }
     }
 
     public static final
@@ -3526,6 +3755,10 @@ class Java {
         /** @{inheritDoc} */
         public void
         accept(Visitor.RvalueVisitor visitor) { visitor.visitNewArray(this); }
+
+        /** @{inheritDoc} */
+        public void
+        accept(ElementValueVisitor visitor) { visitor.visitNewArray(this); }
     }
 
     public static final
@@ -3555,6 +3788,10 @@ class Java {
         /** @{inheritDoc} */
         public void
         accept(Visitor.RvalueVisitor visitor) { visitor.visitNewInitializedArray(this); }
+
+        /** @{inheritDoc} */
+        public void
+        accept(ElementValueVisitor visitor) { visitor.visitNewInitializedArray(this); }
     }
 
     /**
@@ -3609,6 +3846,10 @@ class Java {
         /** @{inheritDoc} */
         public void
         accept(Visitor.RvalueVisitor visitor) { visitor.visitIntegerLiteral(this); }
+
+        /** @{inheritDoc} */
+        public void
+        accept(ElementValueVisitor visitor) { visitor.visitIntegerLiteral(this); }
     }
 
     public static final
@@ -3622,6 +3863,10 @@ class Java {
         /** @{inheritDoc} */
         public void
         accept(Visitor.RvalueVisitor visitor) { visitor.visitFloatingPointLiteral(this); }
+
+        /** @{inheritDoc} */
+        public void
+        accept(ElementValueVisitor visitor) { visitor.visitFloatingPointLiteral(this); }
     }
 
     public static final
@@ -3635,6 +3880,10 @@ class Java {
         /** @{inheritDoc} */
         public void
         accept(Visitor.RvalueVisitor visitor) { visitor.visitBooleanLiteral(this); }
+
+        /** @{inheritDoc} */
+        public void
+        accept(ElementValueVisitor visitor) { visitor.visitBooleanLiteral(this); }
     }
 
     public static final
@@ -3648,6 +3897,10 @@ class Java {
         /** @{inheritDoc} */
         public void
         accept(Visitor.RvalueVisitor visitor) { visitor.visitCharacterLiteral(this); }
+
+        /** @{inheritDoc} */
+        public void
+        accept(ElementValueVisitor visitor) { visitor.visitCharacterLiteral(this); }
     }
 
     public static final
@@ -3661,6 +3914,10 @@ class Java {
         /** @{inheritDoc} */
         public void
         accept(Visitor.RvalueVisitor visitor) { visitor.visitStringLiteral(this); }
+
+        /** @{inheritDoc} */
+        public void
+        accept(ElementValueVisitor visitor) { visitor.visitStringLiteral(this); }
     }
 
     public static final
@@ -3674,6 +3931,10 @@ class Java {
         /** @{inheritDoc} */
         public void
         accept(Visitor.RvalueVisitor visitor) { visitor.visitNullLiteral(this); }
+
+        /** @{inheritDoc} */
+        public void
+        accept(ElementValueVisitor visitor) { visitor.visitNullLiteral(this); }
     }
 
     /**

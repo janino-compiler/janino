@@ -86,7 +86,7 @@ class AstTests {
         PackageMemberClassDeclaration clazz = new PackageMemberClassDeclaration(
             getLocation(),
             null,
-            Mod.PUBLIC,
+            new Java.ModifiersAndAnnotations(Mod.PUBLIC),
             "HandMade",
             null,
             new Type[0]
@@ -112,7 +112,7 @@ class AstTests {
         MethodDeclarator method = new MethodDeclarator(
             getLocation(),
             null,
-            (short) (Mod.PUBLIC),
+            new Java.ModifiersAndAnnotations(Mod.PUBLIC),
             returnType,
             "calculate",
             new FormalParameter[0],
@@ -127,7 +127,7 @@ class AstTests {
     createVarDecl(String name, String fPValue) {
         return new Java.LocalVariableDeclarationStatement(
             getLocation(),
-            (short) 0,
+            new Java.ModifiersAndAnnotations(Mod.NONE),
             createDoubleType(),
             new Java.VariableDeclarator[] {
                 new Java.VariableDeclarator(
