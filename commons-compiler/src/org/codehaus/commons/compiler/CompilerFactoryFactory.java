@@ -36,7 +36,7 @@ import java.util.Properties;
 /**
  * Utility class that finds implementations of {@link ICompilerFactory}s.
  */
-public final
+@SuppressWarnings({ "rawtypes", "unchecked" }) public final
 class CompilerFactoryFactory {
 
     private CompilerFactoryFactory() {}

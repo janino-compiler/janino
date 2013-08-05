@@ -105,8 +105,14 @@ import java.lang.reflect.*;
  * </ul>
  * Notice that these methods have array parameters in contrast to their one-script brethren.
  */
-public
+@SuppressWarnings("rawtypes") public
 interface IScriptEvaluator extends IClassBodyEvaluator {
+
+    /**
+     * Defines whether the generated method overrides a methods declared in a supertype.
+     */
+    void
+    setOverrideMethod(boolean overrideMethod);
 
     /**
      * Define whether the generated method should be STATIC or not. Defaults to <code>true</code>.
@@ -114,7 +120,7 @@ interface IScriptEvaluator extends IClassBodyEvaluator {
     void setStaticMethod(boolean staticMethod);
 
     /**
-     * Define the return type of the generated method. Defaults to <code>void.class</code>.
+     * Defines the return type of the generated method. The meaning of a {@code null} value is implementation-dependent.
      */
     void setReturnType(Class returnType);
 
@@ -162,12 +168,19 @@ interface IScriptEvaluator extends IClassBodyEvaluator {
     Method getMethod();
 
     /**
+     * Same as {@link #setOverrideMethod(boolean)}, but for multiple scripts.
+     */
+    void
+    setOverrideMethod(boolean[] overrideMethod);
+
+    /**
      * Same as {@link #setStaticMethod(boolean)}, but for multiple scripts.
      */
     void setStaticMethod(boolean[] staticMethod);
 
     /**
-     * Same as {@link #setReturnType(Class)}, but for multiple scripts.
+     * Defines the return types of the generated methods. The meaning of {@code null} values is
+     * implementation-dependent.
      */
     void setReturnTypes(Class[] returnTypes);
 

@@ -96,7 +96,7 @@ import java.lang.reflect.InvocationTargetException;
  * {@link java.lang.Object#equals(java.lang.Object)} will return <code>true</code>. E.g. "a+b" and
  * "c + d" are functionally identical if "a" and "c" have the same type, and so do "b" and "d".
  */
-public
+@SuppressWarnings("rawtypes") public
 interface IExpressionEvaluator extends IScriptEvaluator {
 
     Class ANY_TYPE = null;
@@ -120,13 +120,13 @@ interface IExpressionEvaluator extends IScriptEvaluator {
     /**
      * @deprecated Must not be used on an {@link IExpressionEvaluator}; use {@link #setExpressionType(Class)} instead.
      */
-    void setReturnType(Class returnType);
+    @Override @Deprecated void setReturnType(Class returnType);
 
     /**
-     * Must not be used on an {@link IExpressionEvaluator}; use {@link #setExpressionTypes(Class[])} instead.
-     * @deprecated
+     * @deprecated Must not be used on an {@link IExpressionEvaluator}; use {@link #setExpressionTypes(Class[])}
+     *             instead.
      */
-    void setReturnTypes(Class[] returnTypes);
+    @Override @Deprecated void setReturnTypes(Class[] returnTypes);
 
     /**
      * Evaluates the expression with concrete parameter values.
@@ -142,7 +142,7 @@ interface IExpressionEvaluator extends IScriptEvaluator {
      *
      * @param arguments The actual parameter values.
      */
-    Object evaluate(Object[] arguments) throws InvocationTargetException;
+    @Override Object evaluate(Object[] arguments) throws InvocationTargetException;
 
     /**
      * If the parameter and return types of the expression are known at compile time, then a "fast" expression evaluator
@@ -180,7 +180,7 @@ interface IExpressionEvaluator extends IScriptEvaluator {
      * <code>public</code>, or with <code>protected</code> or default access in the package of the compiled class (see
      * {@link #setClassName(String)}.
      */
-    Object
+    @Override Object
     createFastEvaluator(
         String   expression,
         Class    interfaceToImplement,
@@ -190,7 +190,7 @@ interface IExpressionEvaluator extends IScriptEvaluator {
      /**
       * @see #createFastEvaluator(String, Class, String[])
       */
-    Object
+    @Override Object
     createFastEvaluator(
         Reader   reader,
         Class    interfaceToImplement,

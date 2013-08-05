@@ -32,8 +32,7 @@ import java.util.*;
 /**
  * Common base class for the "...Demo" classes that demostrate Janino.
  */
-
-public
+@SuppressWarnings({ "rawtypes", "unchecked" }) public
 class DemoBase {
 
     protected DemoBase() {}

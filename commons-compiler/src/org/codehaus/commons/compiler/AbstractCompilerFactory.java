@@ -32,44 +32,36 @@ package org.codehaus.commons.compiler;
 public abstract
 class AbstractCompilerFactory implements ICompilerFactory {
 
-    /** {@inheritDoc} */
-    public abstract String getId();
+    @Override public abstract String getId();
 
-    /** {@inheritDoc} */
-    public abstract String getImplementationVersion();
+    @Override public abstract String getImplementationVersion();
 
-    /** {@inheritDoc} */
-    public IExpressionEvaluator
+    @Override public IExpressionEvaluator
     newExpressionEvaluator() {
         throw new UnsupportedOperationException(this.getId() + ": newExpressionEvaluator");
     }
 
-    /** {@inheritDoc} */
-    public IScriptEvaluator
+    @Override public IScriptEvaluator
     newScriptEvaluator() {
         throw new UnsupportedOperationException(this.getId() + ": newScriptEvaluator");
     }
 
-    /** {@inheritDoc} */
-    public IClassBodyEvaluator
+    @Override public IClassBodyEvaluator
     newClassBodyEvaluator() {
         throw new UnsupportedOperationException(this.getId() + ": newClassBodyEvaluator");
     }
 
-    /** {@inheritDoc} */
-    public ISimpleCompiler
+    @Override public ISimpleCompiler
     newSimpleCompiler() {
         throw new UnsupportedOperationException(this.getId() + ": newSimpleCompiler");
     }
 
-    /** {@inheritDoc} */
-    public AbstractJavaSourceClassLoader
+    @Override public AbstractJavaSourceClassLoader
     newJavaSourceClassLoader() {
         throw new UnsupportedOperationException(this.getId() + ": newJavaSourceClassLoader");
     }
 
-    /** {@inheritDoc} */
-    public AbstractJavaSourceClassLoader
+    @Override public AbstractJavaSourceClassLoader
     newJavaSourceClassLoader(ClassLoader parentClassLoader) {
         throw new UnsupportedOperationException(this.getId() + ": newJavaSourceClassLoader(ClassLoader)");
     }

@@ -50,7 +50,7 @@ class LocatedException extends CausedException {
      * Returns the message specified at creation time, preceeded with nicely formatted location
      * information (if any).
      */
-    public String
+    @Override public String
     getMessage() {
         return (
             this.optionalLocation == null

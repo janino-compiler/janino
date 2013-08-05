@@ -32,7 +32,7 @@ import org.codehaus.commons.compiler.*;
  * A test program that allows you to play around with the
  * {@link org.codehaus.janino.ExpressionEvaluator ExpressionEvaluator} class.
  */
-public final
+@SuppressWarnings("rawtypes") public final
 class ExpressionDemo extends DemoBase {
 
     /**/

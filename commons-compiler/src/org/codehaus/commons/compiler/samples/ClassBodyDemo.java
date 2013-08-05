@@ -34,7 +34,7 @@ import org.codehaus.commons.compiler.*;
 /**
  * A test program that allows you to play with the {@link ClassBodyEvaluator} API.
  */
-public final
+@SuppressWarnings({ "rawtypes", "unchecked" }) public final
 class ClassBodyDemo {
 
     /**/

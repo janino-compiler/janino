@@ -38,7 +38,7 @@ import java.util.*;
  * As with any {@link ClassLoader}, it is not possible to "update" classes after they've been loaded. The way to
  * achieve this is to give up on the {@link AbstractJavaSourceClassLoader} and create a new one.
  */
-public abstract
+@SuppressWarnings({ "rawtypes", "unchecked" }) public abstract
 class AbstractJavaSourceClassLoader extends ClassLoader {
 
     /** @see ClassLoader#defineClass(String, byte[], int, int, ProtectionDomain) */

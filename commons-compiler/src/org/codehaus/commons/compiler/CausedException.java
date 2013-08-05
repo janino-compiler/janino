@@ -75,14 +75,14 @@ class CausedException extends Exception {
      * Substitutes the '{@code initCause()}' method missing in pre-1.4 JREs, or calls '{@code initCause()}' in
      * 1.4+ JREs.
      */
-    public Throwable
+    @Override public Throwable
     initCause(Throwable optionalCause) {
         if (CausedException.INIT_CAUSE == null) {
             this.optionalCause = optionalCause;
         } else
         {
             try {
-                CausedException.INIT_CAUSE.invoke(this, new Object[] { optionalCause});
+                CausedException.INIT_CAUSE.invoke(this, new Object[] { optionalCause });
             } catch (Exception e) {
                 throw new RuntimeException("Calling \"initCause()\""); // SUPPRESS CHECKSTYLE AvoidHidingCause
             }
@@ -99,10 +99,10 @@ class CausedException extends Exception {
      *
      * @return The cause of this throwable or <code>null</code> if the cause is nonexistent or unknown.
      */
-    public Throwable
+    @Override public Throwable
     getCause() { return this.optionalCause; }
 
-    public void
+    @Override public void
     printStackTrace(PrintStream ps) {
         super.printStackTrace(ps);
         if (this.optionalCause == null) return;
@@ -111,7 +111,7 @@ class CausedException extends Exception {
         this.optionalCause.printStackTrace(ps);
     }
 
-    public void
+    @Override public void
     printStackTrace(PrintWriter pw) {
         super.printStackTrace(pw);
         if (this.optionalCause == null) return;

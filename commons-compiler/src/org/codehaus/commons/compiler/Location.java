@@ -68,7 +68,7 @@ class Location implements Serializable {
      * Converts this {@link Location} into an english text, like<pre>
      * File Main.java, Line 23, Column 79</pre>
      */
-    public String
+    @Override public String
     toString() {
 
         StringBuffer sb = new StringBuffer();

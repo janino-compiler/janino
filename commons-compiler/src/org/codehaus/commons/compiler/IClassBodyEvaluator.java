@@ -89,7 +89,7 @@ import java.io.Reader;
  * System.out.println("1 + 2 = " + f.bar(1, 2));
  * </pre>
  */
-public
+@SuppressWarnings("rawtypes") public
 interface IClassBodyEvaluator extends ICookable {
 
     String DEFAULT_CLASS_NAME = "SC";
@@ -131,11 +131,9 @@ interface IClassBodyEvaluator extends ICookable {
     void setExtendedClass(Class optionalExtendedClass);
 
     /**
-     * Use {@link #setExtendedClass(Class)} instead.
-     *
-     * @deprecated
+     * @deprecated Use {@link #setExtendedClass(Class)} instead.
      */
-    void setExtendedType(Class optionalExtendedClass);
+    @Deprecated void setExtendedType(Class optionalExtendedClass);
 
     /**
      * Set a particular set of interfaces that the generated class will implement.
@@ -143,11 +141,9 @@ interface IClassBodyEvaluator extends ICookable {
     void setImplementedInterfaces(Class[] implementedInterfaces);
 
     /**
-     * Use {@link #setImplementedInterfaces(Class[])} instead.
-     *
-     * @deprecated
+     * @deprecated Use {@link #setImplementedInterfaces(Class[])} instead.
      */
-    void setImplementedTypes(Class[] implementedInterfaces);
+    @Deprecated void setImplementedTypes(Class[] implementedInterfaces);
 
     /**
      * Returns the loaded {@link Class}.
