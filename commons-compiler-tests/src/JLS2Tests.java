@@ -352,6 +352,17 @@ class JLS2Tests extends JaninoTestSuite {
             + "asList(new String[] { \"HELLO\", \"WORLD\" }).size() == 2"
         ));
     }
+    
+    @Test public void
+    test_9_7__Annotations() throws Exception {
+        clb(COOK, "class C { @Override public String toString() { return \"foo!\"; } }");
+        clb(COMP, "class C {           public String toString() { return \"foo!\"; } }");
+        clb(COMP, "class C { @Override public String meth1()    { return \"foo!\"; } }");
+        clb(COOK, "class C {           public String meth1()    { return \"foo!\"; } }");
+
+        clb(COOK, "interface I extends Runnable { @Override void run(); }");
+        clb(COOK, "interface I extends Runnable {           void run(); }");
+    }
 
     @Test public void
     test_14_3__LocalClassDeclarations() throws Exception {
@@ -365,6 +376,17 @@ class JLS2Tests extends JaninoTestSuite {
         scr(EXEC, "new Object();");
         scr(COMP, "new Object[3];");
         scr(COMP, "int a; a;");
+    }
+    
+    @Test public void
+    test_14_10a__TheAssertStatement() throws Exception {
+        // CHECKSTYLE LineLength:OFF
+        scr(EXEC, "assert true;");
+        scr(TRUE, "try { assert false;                  } catch (AssertionError ae) { return ae.getMessage() == null;       } return false;");
+        scr(TRUE, "try { assert false : \"x\";          } catch (AssertionError ae) { return \"x\".equals(ae.getMessage()); } return false;");
+        scr(TRUE, "try { assert false : 3;              } catch (AssertionError ae) { return \"3\".equals(ae.getMessage()); } return false;");
+        scr(TRUE, "try { assert false : new Integer(8); } catch (AssertionError ae) { return \"8\".equals(ae.getMessage()); } return false;");
+        // CHECKSTYLE LineLength:ON
     }
 
     @Test public void
