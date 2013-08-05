@@ -51,6 +51,7 @@ import org.codehaus.commons.io.MultiReader;
 public
 class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
 
+    protected boolean[]    optionalOverrideMethod;
     protected boolean[]    optionalStaticMethod;
     protected Class<?>[]   optionalReturnTypes;
     protected String[]     optionalMethodNames;
@@ -205,6 +206,9 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
     public ScriptEvaluator() {}
 
     @Override public void
+    setOverrideMethod(boolean overrideMethod) { this.setOverrideMethod(new boolean[] { overrideMethod }); }
+
+    @Override public void
     setStaticMethod(final boolean staticMethod) { this.setStaticMethod(new boolean[] { staticMethod }); }
 
     @Override public void
@@ -235,6 +239,12 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
 
     @Override public Method
     getMethod() { return this.getMethod(0); }
+
+    @Override public void
+    setOverrideMethod(boolean[] overrideMethod) {
+        assertNotCooked();
+        this.optionalOverrideMethod = overrideMethod.clone();
+    }
 
     @Override public void
     setStaticMethod(boolean[] staticMethod) {
@@ -324,6 +334,9 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
         if (this.optionalReturnTypes != null && this.optionalReturnTypes.length != count) {
             throw new IllegalStateException("returnTypes");
         }
+        if (this.optionalOverrideMethod != null && this.optionalOverrideMethod.length != count) {
+            throw new IllegalStateException("overrideMethod");
+        }
         if (this.optionalStaticMethod != null && this.optionalStaticMethod.length != count) {
             throw new IllegalStateException("staticMethod");
         }
@@ -346,6 +359,11 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
 
         // Create methods with one block each.
         for (int i = 0; i < count; ++i) {
+            boolean overrideMethod = (
+                this.optionalOverrideMethod == null
+                ? true
+                : this.optionalOverrideMethod[i]
+            );
             boolean staticMethod = (
                 this.optionalStaticMethod == null
                 ? true
@@ -376,6 +394,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
                 StringWriter sw = new StringWriter();
                 PrintWriter  pw = new PrintWriter(sw);
 
+                if (overrideMethod) pw.print("@Override ");
                 pw.print("public ");
                 if (staticMethod) pw.print("static ");
                 pw.print(returnType.getName());
