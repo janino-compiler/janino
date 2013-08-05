@@ -65,19 +65,16 @@ class EvaluatorTests {
 
     @Test public void
     testMultiScriptEvaluator() throws Exception {
-        String           funct2 = "return a + b;";
-        String           funct3 = "return 0;";
-        IScriptEvaluator se2    = this.compilerFactory.newScriptEvaluator();
-        se2.setReturnTypes(new Class[] { double.class, double.class });
-        se2.setMethodNames(new String[] { "funct2", "funct3" });
+        IScriptEvaluator se    = this.compilerFactory.newScriptEvaluator();
+        se.setOverrideMethod(new boolean[] { false, false });
+        se.setReturnTypes(new Class[] { double.class, double.class });
+        se.setMethodNames(new String[] { "funct2", "funct3" });
 
-        String[][]   params2     = { { "a", "b" }, {} };
-        Class<?>[][] paramsType2 = { { double.class, double.class }, {} };
-        se2.setParameters(params2, paramsType2);
-        se2.setStaticMethod(new boolean[] { true, true });
-        se2.cook(new String[] { funct2, funct3 });
-        assertEquals(se2.getMethod(0).invoke(null, new Object[] { new Double(3.0), new Double(4.0) }), new Double(7.0));
-        assertEquals(se2.getMethod(1).invoke(null, new Object[0]), new Double(0.0));
+        se.setParameters(new String[][] { { "a", "b" }, {} }, new Class<?>[][] { { double.class, double.class }, {} });
+        se.setStaticMethod(new boolean[] { true, true });
+        se.cook(new String[] { "return a + b;", "return 0;" });
+        assertEquals(se.getMethod(0).invoke(null, new Object[] { new Double(3.0), new Double(4.0) }), new Double(7.0));
+        assertEquals(se.getMethod(1).invoke(null, new Object[0]), new Double(0.0));
     }
 
     @Test public void
@@ -86,14 +83,43 @@ class EvaluatorTests {
 
         ee.setClassName("Foo");
         ee.setDefaultImports(new String[] { "java.io.*", "for_sandbox_tests.*", });
-        ee.setExpressionTypes(new Class[] { IExpressionEvaluator.ANY_TYPE, InputStream.class, void.class, });
+        ee.setOverrideMethod(new boolean[] {
+            false,
+            false,
+            true,
+        });
+        ee.setStaticMethod(new boolean[] {
+            false,
+            true,
+            false,
+        });
+        ee.setExpressionTypes(new Class[] {
+            IExpressionEvaluator.ANY_TYPE,
+            InputStream.class,
+            void.class,
+        });
         ee.setExtendedClass(Properties.class);
         ee.setImplementedInterfaces(new Class[] { Runnable.class, });
-        ee.setMethodNames(new String[] { "a", "b", "run", });
-        ee.setParameters(new String[][] { { "a", "b" }, {}, {} }, new Class[][] { { int.class, int.class }, {}, {} });
+        ee.setMethodNames(new String[] {
+            "a",
+            "b",
+            "run",
+        });
+        ee.setParameters(new String[][] {
+            { "a", "b" },
+            {},
+            {},
+        }, new Class[][] {
+            { int.class, int.class },
+            {},
+            {},
+        });
 //        ee.setParentClassLoader(BOOT_CLASS_LOADER, new Class[] { for_sandbox_tests.ExternalClass.class });
-        ee.setStaticMethod(new boolean[] { false, true, false });
-        ee.setThrownExceptions(new Class[][] { {}, { IOException.class }, {} });
+        ee.setThrownExceptions(new Class[][] {
+            {},
+            { IOException.class },
+            {},
+        });
 
         ee.cook(new String[] {
             "a + b",
@@ -130,7 +156,7 @@ class EvaluatorTests {
         cbe.cook(
             ""
             + "import java.util.*;\n"
-            + "public void run() {\n"
+            + "@Override public void run() {\n"
             + "    new ArrayList();\n"
             + "    new other_package.Foo(7);\n"
             + "}\n"
@@ -661,7 +687,7 @@ class EvaluatorTests {
             ""
             + "package test;\n"
             + "public class Test extends for_sandbox_tests.CovariantReturns {\n"
-            + "    public Test overrideMe() { return this; }\n"
+            + "    @Override public Test overrideMe() { return this; }\n"
             + "}"
         ));
         assertCompiles(false, (
@@ -690,7 +716,7 @@ class EvaluatorTests {
             + "        final String cow = \"cow\";\n"
             + "        final String moo = \"moo\";\n"
             + "        return new Runnable() {\n"
-            + "            public void run() {\n"
+            + "            @Override public void run() {\n"
             + "               if (bar == null) {\n"
             + "                   throw new RuntimeException();\n"
             + "               }\n"
@@ -721,7 +747,7 @@ class EvaluatorTests {
             + "        final String cow = \"cow\";\n"
             + "        final String moo = \"moo\";\n"
             + "        class R implements Runnable {\n"
-            + "            public void run() {\n"
+            + "            @Override public void run() {\n"
             + "                if (bar == null) {\n"
             + "                    throw new RuntimeException();\n"
             + "                }\n"
@@ -783,10 +809,10 @@ class EvaluatorTests {
             ""
             + "package covariant_clone;\n"
             + "public class Child extends Middle implements java.lang.Cloneable {\n"
-            + "    public Child clone() throws java.lang.CloneNotSupportedException {\n"
+            + "    @Override public Child clone() throws java.lang.CloneNotSupportedException {\n"
             + "        return new Child();\n"
             + "    }\n"
-            + "    public Child other(long i, Object o) {\n"
+            + "    @Override public Child other(long i, Object o) {\n"
             + "        return this;\n"
             + "    }\n"
             + "}\n"
@@ -846,10 +872,7 @@ class EvaluatorTests {
             assertTrue("Compilation should have failed for:\n" + prog, shouldCompile);
             return sc;
         } catch (CompileException ce) {
-            if (shouldCompile) {
-                ce.printStackTrace();
-            }
-            assertFalse("Compilation should have succeeded for:\n" + prog, shouldCompile);
+            if (shouldCompile) throw ce;
         }
         return null;
     }
