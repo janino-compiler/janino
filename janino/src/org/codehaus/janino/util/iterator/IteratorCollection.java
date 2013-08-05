@@ -35,7 +35,7 @@ import java.util.*;
  * In other words, you can call {@link #iterator()} as often as you want, but the
  * {@link IteratorCollection} will iterate over its delegate only once.
  */
-public
+@SuppressWarnings({ "rawtypes", "unchecked" }) public
 class IteratorCollection extends AbstractCollection {
     /** The delegate. */
     private final Iterator iterator;
@@ -45,12 +45,12 @@ class IteratorCollection extends AbstractCollection {
     public
     IteratorCollection(Iterator iterator) { this.iterator = iterator; }
 
-    public Iterator
+    @Override public Iterator
     iterator() {
         return new Iterator() {
             private Iterator elementsIterator = IteratorCollection.this.elements.iterator();
 
-            public Object
+            @Override public Object
             next() {
                 if (this.elementsIterator != null) {
                     if (this.elementsIterator.hasNext()) return this.elementsIterator.next();
@@ -61,19 +61,20 @@ class IteratorCollection extends AbstractCollection {
                 return o;
             }
 
-            public boolean
+            @Override public boolean
             hasNext() {
                 return (
                     (this.elementsIterator != null && this.elementsIterator.hasNext())
                     || IteratorCollection.this.iterator.hasNext()
                 );
             }
-            public void
+
+            @Override public void
             remove() { throw new UnsupportedOperationException(); }
         };
     }
 
-    public int
+    @Override public int
     size() {
         int size = 0;
         for (Iterator it = this.iterator(); it.hasNext(); it.next()) ++size;

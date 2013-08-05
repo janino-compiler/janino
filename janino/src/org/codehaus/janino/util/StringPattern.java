@@ -34,7 +34,7 @@ import java.util.*;
  * Additionally, the concept of the "combined pattern" is supported (see
  * {@link #matches(StringPattern[], String)}.
  */
-public
+@SuppressWarnings({ "rawtypes", "unchecked" }) public
 class StringPattern {
 
     /**
@@ -154,7 +154,7 @@ class StringPattern {
     public static final StringPattern[] PATTERNS_ALL  = new StringPattern[] { new StringPattern("*") };
     public static final StringPattern[] PATTERNS_NONE = new StringPattern[0];
 
-    public String
+    @Override public String
     toString() {
         return (
             this.mode == StringPattern.INCLUDE ? '+' :

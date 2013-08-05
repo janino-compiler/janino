@@ -49,8 +49,7 @@ import org.codehaus.janino.util.TeeReader;
  * The <code>optionalFileName</code> parameter passed to many
  * constructors should point
  */
-
-public
+@SuppressWarnings({ "rawtypes", "unchecked" }) public
 class Scanner {
 
     // Public Scanners that read from a file.
@@ -62,7 +61,7 @@ class Scanner {
      *
      * @deprecated
      */
-    public
+    @Deprecated public
     Scanner(String fileName) throws CompileException, IOException {
         this(
             fileName,                     // optionalFileName
@@ -77,7 +76,7 @@ class Scanner {
      *
      * @deprecated
      */
-    public
+    @Deprecated public
     Scanner(String fileName, String encoding) throws CompileException, IOException {
         this(
             fileName,                      // optionalFileName
@@ -94,7 +93,7 @@ class Scanner {
      *
      * @deprecated
      */
-    public
+    @Deprecated public
     Scanner(File file) throws CompileException, IOException {
         this(
             file.getAbsolutePath(),    // optionalFileName
@@ -110,7 +109,7 @@ class Scanner {
      *
      * @deprecated
      */
-    public
+    @Deprecated public
     Scanner(File file, String optionalEncoding) throws CompileException, IOException {
         this(
             file.getAbsolutePath(),    // optionalFileName
@@ -240,15 +239,13 @@ class Scanner {
     getFileName() { return this.optionalFileName; }
 
     /**
-     * Closes the character source (file, {@link InputStream}, {@link Reader}) associated
-     * with this object. The results of future calls to {@link #produce()} are undefined.
-     * <p>
-     * <b>This method is deprecated, because the concept described above is confusing. An
-     * application should close the underlying {@link InputStream} or {@link Reader} itself.</b>
+     * Closes the character source (file, {@link InputStream}, {@link Reader}) associated with this object. The results
+     * of future calls to {@link #produce()} are undefined.
      *
-     * @deprecated
+     * @deprecated This method is deprecated, because the concept described above is confusing. An application should
+     *             close the underlying {@link InputStream} or {@link Reader} itself.</b>
      */
-    public void
+    @Deprecated public void
     close() throws IOException { this.in.close(); }
 
     /**
@@ -584,9 +581,7 @@ class Scanner {
 
         // Scan separator / operator.
         {
-            String v = (String) Scanner.JAVA_OPERATORS.get(
-                new String(new char[] { (char) this.nextChar })
-            );
+            String v = (String) Scanner.JAVA_OPERATORS.get(new String(new char[] { (char) this.nextChar }));
             if (v != null) {
                 for (;;) {
                     this.readNextChar();
@@ -922,7 +917,7 @@ class Scanner {
     static {
         String[] ops = {
             // Separators:
-            "(", ")", "{", "}", "[", "]", ";", ",", ".",
+            "(", ")", "{", "}", "[", "]", ";", ",", ".", "@",
             // Operators:
             "=",  ">",  "<",  "!",  "~",  "?",  ":",
             "==", "<=", ">=", "!=", "&&", "||", "++", "--",

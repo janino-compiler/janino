@@ -38,7 +38,7 @@ import java.io.*;
 public abstract
 class FileResourceFinder extends ResourceFinder {
 
-    public final Resource
+    @Override public final Resource
     findResource(String resourceName) {
         File file = this.findResourceAsFile(resourceName);
         if (file == null) return null;

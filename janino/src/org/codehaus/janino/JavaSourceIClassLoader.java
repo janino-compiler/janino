@@ -40,7 +40,7 @@ import org.codehaus.janino.util.resource.*;
  * <p>
  * Notice that it does not compile them!
  */
-public final
+@SuppressWarnings({ "rawtypes", "unchecked" }) public final
 class JavaSourceIClassLoader extends IClassLoader {
     private static final boolean DEBUG = false;
 
@@ -103,7 +103,7 @@ class JavaSourceIClassLoader extends IClassLoader {
      * @param type field descriptor of the {@link IClass} to load, e.g. "Lpkg1/pkg2/Outer$Inner;"
      * @throws ClassNotFoundException if an exception was raised while loading the {@link IClass}
      */
-    public IClass
+    @Override public IClass
     findIClass(final String type) throws ClassNotFoundException {
         if (JavaSourceIClassLoader.DEBUG) System.out.println("type = " + type);
 

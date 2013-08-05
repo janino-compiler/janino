@@ -51,7 +51,7 @@ import org.codehaus.janino.util.resource.ResourceFinder;
  * loaded. The way to achieve this is to give up on the {@link JavaSourceClassLoader} and create
  * a new one.
  */
-public
+@SuppressWarnings({ "rawtypes", "unchecked" }) public
 class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 
     public
@@ -122,17 +122,17 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
         );
     }
 
-    public void
+    @Override public void
     setSourcePath(File[] sourcePath) {
         this.iClassLoader.setSourceFinder(new PathResourceFinder(sourcePath));
     }
 
-    public void
+    @Override public void
     setSourceFileCharacterEncoding(String optionalCharacterEncoding) {
         this.iClassLoader.setCharacterEncoding(optionalCharacterEncoding);
     }
 
-    public void
+    @Override public void
     setDebuggingInfo(boolean debugSource, boolean debugLines, boolean debugVars) {
         this.debugSource = debugSource;
         this.debugLines  = debugLines;
@@ -161,7 +161,7 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
      *
      * @throws ClassNotFoundException
      */
-    protected /*synchronized <- No need to synchronize, because 'loadClass()' is synchronized */ Class
+    @Override protected /*synchronized <- No need to synchronize, because 'loadClass()' is synchronized */ Class
     findClass(String name) throws ClassNotFoundException {
 
         // Check if the bytecode for that class was generated already.
@@ -219,10 +219,7 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
                     try {
                         cfs = uc.compileUnit(this.debugSource, this.debugLines, this.debugVars);
                     } catch (CompileException ex) {
-                        throw new ClassNotFoundException(
-                            "Compiling unit \"" + uc.compilationUnit.optionalFileName + "\"",
-                            ex
-                        );
+                        throw new ClassNotFoundException(ex.getMessage(), ex);
                     }
                     for (int i = 0; i < cfs.length; ++i) {
                         ClassFile cf = cfs[i];

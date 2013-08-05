@@ -43,12 +43,14 @@ class TeeReader extends FilterReader {
         this.out              = out;
         this.closeWriterOnEOF = closeWriterOnEof;
     }
-    public void
+
+    @Override public void
     close() throws IOException {
         this.in.close();
         this.out.close();
     }
-    public int
+
+    @Override public int
     read() throws IOException {
         int c = this.in.read();
         if (c == -1) {
@@ -62,7 +64,8 @@ class TeeReader extends FilterReader {
         }
         return c;
     }
-    public int
+
+    @Override public int
     read(char[] cbuf, int off, int len) throws IOException {
         int bytesRead = this.in.read(cbuf, off, len);
         if (bytesRead == -1) {

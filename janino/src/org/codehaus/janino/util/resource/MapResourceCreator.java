@@ -32,7 +32,7 @@ import java.util.*;
 /**
  * Creates resources as byte arrays in a delegate {@link java.util.Map}.
  */
-public
+@SuppressWarnings({ "rawtypes", "unchecked" }) public
 class MapResourceCreator implements ResourceCreator {
     private final Map map;
 
@@ -48,11 +48,11 @@ class MapResourceCreator implements ResourceCreator {
     public final Map
     getMap() { return this.map; }
 
-    public final OutputStream
+    @Override public final OutputStream
     createResource(final String resourceName) {
         return new ByteArrayOutputStream() {
 
-            public void
+            @Override public void
             close() throws IOException {
                 super.close();
                 MapResourceCreator.this.map.put(resourceName, this.toByteArray());
@@ -60,6 +60,6 @@ class MapResourceCreator implements ResourceCreator {
         };
     }
 
-    public final boolean
+    @Override public final boolean
     deleteResource(String resourceName) { return this.map.remove(resourceName) != null; }
 }

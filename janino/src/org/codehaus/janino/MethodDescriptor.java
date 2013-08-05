@@ -31,7 +31,7 @@ import java.util.*;
 /**
  * Representation of a "method descriptor" (JVMS 4.3.3).
  */
-public
+@SuppressWarnings({ "rawtypes", "unchecked" }) public
 class MethodDescriptor {
 
     /** The field descriptors of the method parameters. */
@@ -78,7 +78,7 @@ class MethodDescriptor {
     /**
      * Returns the "method descriptor" (JVMS 4.3.3).
      */
-    public String
+    @Override public String
     toString() {
         StringBuffer sb = new StringBuffer("(");
         for (int i = 0; i < this.parameterFDs.length; ++i) sb.append(this.parameterFDs[i]);

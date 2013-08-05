@@ -56,7 +56,7 @@ import org.codehaus.janino.JaninoRuntimeException;
  * which is suitable for being processed by a Java&trade; virtual
  * machine.
  */
-public
+@SuppressWarnings({ "rawtypes", "unchecked" }) public
 class ClassFile {
 
     /**
@@ -772,21 +772,21 @@ class ClassFile {
 
         // Implement ConstantPoolInfo.
 
-        public boolean
+        @Override public boolean
         isWide() { return false; }
 
-        public void
+        @Override public void
         store(DataOutputStream dos) throws IOException {
             dos.writeByte(7);
             dos.writeShort(this.nameIndex);
         }
 
-        public boolean
+        @Override public boolean
         equals(Object o) {
             return o instanceof ConstantClassInfo && ((ConstantClassInfo) o).nameIndex == this.nameIndex;
         }
 
-        public int
+        @Override public int
         hashCode() { return this.nameIndex; }
     }
     public static
@@ -806,17 +806,17 @@ class ClassFile {
 
         // Implement ConstantPoolInfo.
 
-        public boolean
+        @Override public boolean
         isWide() { return false; }
 
-        public void
+        @Override public void
         store(DataOutputStream dos) throws IOException {
             dos.writeByte(9);
             dos.writeShort(this.classIndex);
             dos.writeShort(this.nameAndTypeIndex);
         }
 
-        public boolean
+        @Override public boolean
         equals(Object o) {
             return (
                 o instanceof ConstantFieldrefInfo
@@ -825,7 +825,7 @@ class ClassFile {
             );
         }
 
-        public int
+        @Override public int
         hashCode() { return this.classIndex + (this.nameAndTypeIndex << 16); }
     }
     public static
@@ -845,17 +845,17 @@ class ClassFile {
 
         // Implement ConstantPoolInfo.
 
-        public boolean
+        @Override public boolean
         isWide() { return false; }
 
-        public void
+        @Override public void
         store(DataOutputStream dos) throws IOException {
             dos.writeByte(10);
             dos.writeShort(this.classIndex);
             dos.writeShort(this.nameAndTypeIndex);
         }
 
-        public boolean
+        @Override public boolean
         equals(Object o) {
             return (
                 o instanceof ConstantMethodrefInfo
@@ -864,7 +864,7 @@ class ClassFile {
             );
         }
 
-        public int
+        @Override public int
         hashCode() { return this.classIndex + (this.nameAndTypeIndex << 16); }
     }
 
@@ -884,17 +884,17 @@ class ClassFile {
 
         // Implement ConstantPoolInfo.
 
-        public boolean
+        @Override public boolean
         isWide() { return false; }
 
-        public void
+        @Override public void
         store(DataOutputStream dos) throws IOException {
             dos.writeByte(11);
             dos.writeShort(this.classIndex);
             dos.writeShort(this.nameAndTypeIndex);
         }
 
-        public boolean
+        @Override public boolean
         equals(Object o) {
             return (
                 o instanceof ConstantInterfaceMethodrefInfo
@@ -903,7 +903,7 @@ class ClassFile {
             );
         }
 
-        public int
+        @Override public int
         hashCode() { return this.classIndex + (this.nameAndTypeIndex << 16); }
     }
 
@@ -915,26 +915,26 @@ class ClassFile {
         ConstantStringInfo(short stringIndex) { this.stringIndex = stringIndex; }
 
         // Implement ConstantValuePoolInfo.
-        public Object
+        @Override public Object
         getValue(ClassFile classFile) { return classFile.getConstantUtf8(this.stringIndex); }
 
         // Implement ConstantPoolInfo.
 
-        public boolean
+        @Override public boolean
         isWide() { return false; }
 
-        public void
+        @Override public void
         store(DataOutputStream dos) throws IOException {
             dos.writeByte(8);
             dos.writeShort(this.stringIndex);
         }
 
-        public boolean
+        @Override public boolean
         equals(Object o) {
             return o instanceof ConstantStringInfo && ((ConstantStringInfo) o).stringIndex == this.stringIndex;
         }
 
-        public int
+        @Override public int
         hashCode() { return this.stringIndex; }
     }
 
@@ -946,23 +946,24 @@ class ClassFile {
         ConstantIntegerInfo(int value) { this.value = value; }
 
         // Implement ConstantValuePoolInfo.
-        public Object getValue(ClassFile classFile) { return new Integer(this.value); }
+        @Override public Object
+        getValue(ClassFile classFile) { return new Integer(this.value); }
 
         // Implement ConstantPoolInfo.
 
-        public boolean
+        @Override public boolean
         isWide() { return false; }
 
-        public void
+        @Override public void
         store(DataOutputStream dos) throws IOException {
             dos.writeByte(3);
             dos.writeInt(this.value);
         }
 
-        public boolean
+        @Override public boolean
         equals(Object o) { return o instanceof ConstantIntegerInfo && ((ConstantIntegerInfo) o).value == this.value; }
 
-        public int
+        @Override public int
         hashCode() { return this.value; }
     }
 
@@ -975,25 +976,25 @@ class ClassFile {
         ConstantFloatInfo(float value) { this.value = value; }
 
         // Implement ConstantValuePoolInfo.
-        public Object getValue(ClassFile classFile) { return new Float(this.value); }
+        @Override public Object getValue(ClassFile classFile) { return new Float(this.value); }
 
         // Implement ConstantPoolInfo.
 
-        public boolean
+        @Override public boolean
         isWide() { return false; }
 
-        public void
+        @Override public void
         store(DataOutputStream dos) throws IOException {
             dos.writeByte(4);
             dos.writeFloat(this.value);
         }
 
-        public boolean
+        @Override public boolean
         equals(Object o) {
             return o instanceof ConstantFloatInfo && ((ConstantFloatInfo) o).value == this.value;
         }
 
-        public int
+        @Override public int
         hashCode() { return Float.floatToIntBits(this.value); }
     }
 
@@ -1006,25 +1007,25 @@ class ClassFile {
         ConstantLongInfo(long value) { this.value = value; }
 
         // Implement ConstantValuePoolInfo.
-        public Object getValue(ClassFile classFile) { return new Long(this.value); }
+        @Override public Object getValue(ClassFile classFile) { return new Long(this.value); }
 
         // Implement ConstantPoolInfo.
 
-        public boolean
+        @Override public boolean
         isWide() { return true; }
 
-        public void
+        @Override public void
         store(DataOutputStream dos) throws IOException {
             dos.writeByte(5);
             dos.writeLong(this.value);
         }
 
-        public boolean
+        @Override public boolean
         equals(Object o) {
             return o instanceof ConstantLongInfo && ((ConstantLongInfo) o).value == this.value;
         }
 
-        public int
+        @Override public int
         hashCode() { return (int) this.value ^ (int) (this.value >> 32); }
     }
 
@@ -1036,23 +1037,23 @@ class ClassFile {
         ConstantDoubleInfo(double value) { this.value = value; }
 
         // Implement ConstantValuePoolInfo.
-        public Object getValue(ClassFile classFile) { return new Double(this.value); }
+        @Override public Object getValue(ClassFile classFile) { return new Double(this.value); }
 
         // Implement ConstantPoolInfo.
 
-        public boolean
+        @Override public boolean
         isWide() { return true; }
 
-        public void
+        @Override public void
         store(DataOutputStream dos) throws IOException {
             dos.writeByte(6);
             dos.writeDouble(this.value);
         }
 
-        public boolean
+        @Override public boolean
         equals(Object o) { return o instanceof ConstantDoubleInfo && ((ConstantDoubleInfo) o).value == this.value; }
 
-        public int
+        @Override public int
         hashCode() {
             long bits = Double.doubleToLongBits(this.value);
             return (int) bits ^ (int) (bits >> 32);
@@ -1076,17 +1077,17 @@ class ClassFile {
 
         // Implement ConstantPoolInfo.
 
-        public boolean
+        @Override public boolean
         isWide() { return false; }
 
-        public void
+        @Override public void
         store(DataOutputStream dos) throws IOException {
             dos.writeByte(12);
             dos.writeShort(this.nameIndex);
             dos.writeShort(this.descriptorIndex);
         }
 
-        public boolean
+        @Override public boolean
         equals(Object o) {
             return (
                 o instanceof ConstantNameAndTypeInfo
@@ -1095,7 +1096,7 @@ class ClassFile {
             );
         }
 
-        public int
+        @Override public int
         hashCode() { return this.nameIndex + (this.descriptorIndex << 16); }
     }
 
@@ -1114,10 +1115,10 @@ class ClassFile {
 
         // Implement ConstantPoolInfo.
 
-        public boolean
+        @Override public boolean
         isWide() { return false; }
 
-        public void
+        @Override public void
         store(DataOutputStream dos) throws IOException {
             dos.writeByte(1);
             try {
@@ -1128,12 +1129,12 @@ class ClassFile {
             }
         }
 
-        public boolean
+        @Override public boolean
         equals(Object o) {
             return o instanceof ConstantUtf8Info && ((ConstantUtf8Info) o).s.equals(this.s);
         }
 
-        public int
+        @Override public int
         hashCode() { return this.s.hashCode(); }
     }
 
@@ -1309,7 +1310,7 @@ class ClassFile {
         } else
         {
             return new AttributeInfo(attributeNameIndex) {
-                protected void storeBody(DataOutputStream dos) throws IOException { dos.write(ba); }
+                @Override protected void storeBody(DataOutputStream dos) throws IOException { dos.write(ba); }
             };
         }
 
@@ -1350,7 +1351,7 @@ class ClassFile {
         }
 
         // Implement "AttributeInfo".
-        protected void
+        @Override protected void
         storeBody(DataOutputStream dos) throws IOException {
             dos.writeShort(this.constantValueIndex);
         }
@@ -1386,7 +1387,7 @@ class ClassFile {
         }
 
         // Implement "AttributeInfo".
-        protected void
+        @Override protected void
         storeBody(DataOutputStream dos) throws IOException {
             ClassFile.storeShortArray(dos, this.exceptionIndexes);
         }
@@ -1428,7 +1429,7 @@ class ClassFile {
         }
 
         // Implement "AttributeInfo".
-        protected void
+        @Override protected void
         storeBody(DataOutputStream dos) throws IOException {
 
             dos.writeShort(this.entries.size());
@@ -1477,7 +1478,7 @@ class ClassFile {
         }
 
         // Implement "AttributeInfo".
-        protected void
+        @Override protected void
         storeBody(DataOutputStream dos) {
             ;
         }
@@ -1506,7 +1507,7 @@ class ClassFile {
         }
 
         // Implement "AttributeInfo".
-        protected void
+        @Override protected void
         storeBody(DataOutputStream dos) throws IOException { dos.writeShort(this.sourceFileIndex); }
     }
 
@@ -1538,7 +1539,7 @@ class ClassFile {
         }
 
         // Implement "AttributeInfo".
-        protected void
+        @Override protected void
         storeBody(DataOutputStream dos) throws IOException {
             dos.writeShort(this.entries.length);            // line_number_table_length
             for (int i = 0; i < this.entries.length; ++i) {
@@ -1589,8 +1590,10 @@ class ClassFile {
             }
             return new LocalVariableTableAttribute(attributeNameIndex, lvtes);
         }
+
         // Implement "AttributeInfo".
-        protected void
+
+        @Override protected void
         storeBody(DataOutputStream dos) throws IOException {
             dos.writeShort(this.entries.length);            // local_variable_table_length
             for (int i = 0; i < this.entries.length; ++i) { // local_variable_table
@@ -1634,7 +1637,7 @@ class ClassFile {
         }
 
         // Implement "AttributeInfo".
-        protected void
+        @Override protected void
         storeBody(DataOutputStream dos) {
             ;
         }
@@ -1699,7 +1702,7 @@ class ClassFile {
             );
         }
 
-        protected void
+        @Override protected void
         storeBody(DataOutputStream dos) throws IOException {
             dos.writeShort(this.maxStack);                                // max_stack
             dos.writeShort(this.maxLocals);                               // max_locals
@@ -1708,9 +1711,9 @@ class ClassFile {
             dos.writeShort(this.exceptionTableEntries.length);            // exception_table_length
             for (int i = 0; i < this.exceptionTableEntries.length; ++i) { // exception_table
                 ExceptionTableEntry ete = this.exceptionTableEntries[i];
-                dos.writeShort(ete.startPC);   // start_pc
-                dos.writeShort(ete.endPC);     // end_pc
-                dos.writeShort(ete.handlerPC); // handler_pc
+                dos.writeShort(ete.startPc);   // start_pc
+                dos.writeShort(ete.endPc);     // end_pc
+                dos.writeShort(ete.handlerPc); // handler_pc
                 dos.writeShort(ete.catchType); // catch_type
             }
             dos.writeShort(this.attributes.length);                       // attributes_count
@@ -1726,13 +1729,13 @@ class ClassFile {
         private static
         class ExceptionTableEntry {
 
-            final short startPC, endPC, handlerPC, catchType;
+            final short startPc, endPc, handlerPc, catchType;
 
             public
             ExceptionTableEntry(short startPc, short endPc, short handlerPc, short catchType) {
-                this.startPC   = startPc;
-                this.endPC     = endPc;
-                this.handlerPC = handlerPc;
+                this.startPc   = startPc;
+                this.endPc     = endPc;
+                this.handlerPc = handlerPc;
                 this.catchType = catchType;
             }
         }

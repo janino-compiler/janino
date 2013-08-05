@@ -31,13 +31,13 @@ import java.util.*;
 /**
  * An {@link java.util.Iterator} that transforms its elements on-the-fly.
  */
-public abstract
+@SuppressWarnings("rawtypes") public abstract
 class TransformingIterator extends FilterIterator {
 
     public
     TransformingIterator(Iterator delegate) { super(delegate); }
 
-    public final Object
+    @Override public final Object
     next() { return this.transform(this.delegate.next()); }
 
     /**

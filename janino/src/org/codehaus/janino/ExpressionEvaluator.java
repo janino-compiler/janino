@@ -74,7 +74,7 @@ import org.codehaus.janino.util.Traverser;
  * (How can it be that interface method invocation is slower than reflection for
  * the server JVM?)
  */
-public
+@SuppressWarnings({ "rawtypes", "unchecked" }) public
 class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluator {
 
     private Class[] optionalExpressionTypes;
@@ -229,12 +229,10 @@ class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluato
 
     public ExpressionEvaluator() {}
 
-    /** @{inheritDoc} */
-    public void
+    @Override public void
     setExpressionType(Class expressionType) { this.setExpressionTypes(new Class[] { expressionType }); }
 
-    /** @{inheritDoc} */
-    public void
+    @Override public void
     setExpressionTypes(Class[] expressionTypes) {
         assertNotCooked();
         this.optionalExpressionTypes = expressionTypes;
@@ -247,24 +245,20 @@ class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluato
         super.setReturnTypes(returnTypes);
     }
 
-    /** @{inheritDoc} */
-    public final void
+    @Override public final void
     setReturnType(Class returnType) {
         throw new AssertionError("Must not be used on an ExpressionEvaluator; use 'setExpressionType()' instead");
     }
 
-    /** @{inheritDoc} */
-    public final void
+    @Override public final void
     setReturnTypes(Class[] returnTypes) {
         throw new AssertionError("Must not be used on an ExpressionEvaluator; use 'setExpressionTypes()' instead");
     }
 
-    /** @{inheritDoc} */
-    protected Class
+    @Override protected Class
     getDefaultReturnType() { return Object.class; }
 
-    /** @{inheritDoc} */
-    protected List/*<BlockStatement>*/
+    @Override protected List/*<BlockStatement>*/
     makeStatements(int idx, Parser parser) throws CompileException, IOException {
         List/*<BlockStatement>*/ statements = new ArrayList();
 
@@ -309,7 +303,6 @@ class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluato
     }
 
     /**
-     * Use {@link #createFastEvaluator(String, Class, String[])} instead:
      * <pre>
      * {@link IExpressionEvaluator} ee = {@link CompilerFactoryFactory}.{@link
      * CompilerFactoryFactory#getDefaultCompilerFactory() getDefaultCompilerFactory}().{@link
@@ -318,10 +311,9 @@ class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluato
      * return ee.{@link #createFastEvaluator createFastEvaluator}(expression, interfaceToImplement, parameterNames);
      * </pre>
      *
-     * @deprecated
-     * @see #createFastEvaluator(String, Class, String[])
+     * @deprecated Use {@link #createFastEvaluator(String, Class, String[])} instead:
      */
-    public static Object
+    @Deprecated public static Object
     createFastExpressionEvaluator(
         String      expression,
         Class       interfaceToImplement,
@@ -338,10 +330,9 @@ class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluato
      * implementation of <code>org.codehaus.commons.compiler</code>. To be independent from this particular
      * implementation, try to switch to {@link #createFastEvaluator(Reader, Class, String[])}.
      *
-     * @deprecated
-     * @see #createFastEvaluator(Reader, Class, String[])
+     * @deprecated Use {@link #createFastEvaluator(Reader, Class, String[])} instead
      */
-    public static Object
+    @Deprecated public static Object
     createFastExpressionEvaluator(
         Scanner     scanner,
         String      className,
@@ -362,10 +353,9 @@ class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluato
      * implementation of <code>org.codehaus.commons.compiler</code>. To be independent from this particular
      * implementation, try to switch to {@link #createFastEvaluator(Reader, Class, String[])}.
      *
-     * @deprecated
-     * @see #createFastEvaluator(Reader, Class, String[])
+     * @deprecated Use {@link #createFastEvaluator(Reader, Class, String[])} instead
      */
-    public static Object
+    @Deprecated public static Object
     createFastExpressionEvaluator(
         Scanner     scanner,
         String[]    optionalDefaultImports,
@@ -412,7 +402,7 @@ class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluato
         final Set parameterNames = new HashSet();
         rvalue.accept((RvalueVisitor) new Traverser() {
 
-            public void
+            @Override public void
             traverseAmbiguousName(AmbiguousName an) {
 
                 // If any of the components starts with an upper-case letter, then the ambiguous

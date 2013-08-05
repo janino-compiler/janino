@@ -40,30 +40,32 @@ class ZipFileResourceFinder extends ResourceFinder {
     ZipFileResourceFinder(ZipFile zipFile) {
         this.zipFile = zipFile;
     }
-    public final String toString() { return "zip:" + this.zipFile.getName(); }
+
+    @Override public final String toString() { return "zip:" + this.zipFile.getName(); }
 
     // Implement ResourceFinder.
 
-    public final Resource
+    @Override public final Resource
     findResource(final String resourceName) {
         final ZipEntry ze = this.zipFile.getEntry(resourceName);
         if (ze == null) return null;
         return new Resource() {
 
-            public InputStream
+            @Override public InputStream
             open() throws IOException {
                 return ZipFileResourceFinder.this.zipFile.getInputStream(ze);
             }
 
-            public String
+            @Override public String
             getFileName() {
                 return ZipFileResourceFinder.this.zipFile.getName() + ':' + resourceName;
             }
 
-            public long
+            @Override public long
             lastModified() { long l = ze.getTime(); return l == -1L ? 0L : l; }
 
-            public String toString() { return this.getFileName(); }
+            @Override public String
+            toString() { return this.getFileName(); }
         };
     }
 }

@@ -48,7 +48,7 @@ class JarDirectoriesResourceFinder extends LazyMultiResourceFinder {
             // Iterate over directories.
             new TransformingIterator(Arrays.asList(directories).iterator()) {
 
-                protected Object
+                @Override protected Object
                 transform(Object o) { // File directory => Iterator ResourceFinder
                     File directory = (File) o;
 
@@ -56,11 +56,11 @@ class JarDirectoriesResourceFinder extends LazyMultiResourceFinder {
 
                     // Iterate over the JAR files in the given directory.
                     File[] jarFiles = directory.listFiles(new FilenameFilter() {
-                        public boolean accept(File dir, String name) { return name.endsWith(".jar"); }
+                        @Override public boolean accept(File dir, String name) { return name.endsWith(".jar"); }
                     });
                     return new TransformingIterator(Arrays.asList(jarFiles).iterator()) {
 
-                        protected Object
+                        @Override protected Object
                         transform(Object o) { // File jarFile => ResourceFinder
                             File zipFile = (File) o;
                             try {

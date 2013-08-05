@@ -32,14 +32,15 @@ import java.util.*;
  * An {@link java.util.Iterator} that iterates over the elements of an
  * {@link java.util.Enumeration}.
  */
-public
+@SuppressWarnings("rawtypes") public
 class EnumerationIterator implements Iterator {
+
     private final Enumeration e;
 
     public EnumerationIterator(Enumeration e) { this.e = e; }
 
-    public boolean hasNext() { return this.e.hasMoreElements(); }
-    public Object  next()    { return this.e.nextElement(); }
+    @Override public boolean hasNext() { return this.e.hasMoreElements(); }
+    @Override public Object  next()    { return this.e.nextElement(); }
 
     /**
      * Since {@link Enumeration}s don't support element removal, this method always throws
@@ -47,5 +48,5 @@ class EnumerationIterator implements Iterator {
      *
      * @see Iterator#remove()
      */
-    public void    remove()  { throw new UnsupportedOperationException("remove"); }
+    @Override public void remove() { throw new UnsupportedOperationException("remove"); }
 }

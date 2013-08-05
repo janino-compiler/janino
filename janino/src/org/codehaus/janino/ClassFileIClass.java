@@ -31,12 +31,11 @@ import java.util.*;
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.janino.util.ClassFile;
 
-
 /**
  * A wrapper object that turns a {@link ClassFile} object into a
  * {@link IClass}.
  */
-public
+@SuppressWarnings({ "rawtypes", "unchecked" }) public
 class ClassFileIClass extends IClass {
     private static final boolean DEBUG = false;
 
@@ -61,8 +60,7 @@ class ClassFileIClass extends IClass {
 
     // Implement IClass.
 
-    /** @{inheritDoc} */
-    protected IConstructor[]
+    @Override protected IConstructor[]
     getDeclaredIConstructors2() {
         List iConstructors = new ArrayList();
 
@@ -80,8 +78,7 @@ class ClassFileIClass extends IClass {
         return (IConstructor[]) iConstructors.toArray(new IConstructor[iConstructors.size()]);
     }
 
-    /** @{inheritDoc} */
-    protected IMethod[]
+    @Override protected IMethod[]
     getDeclaredIMethods2() {
         List iMethods = new ArrayList();
 
@@ -104,8 +101,7 @@ class ClassFileIClass extends IClass {
         return (IMethod[]) iMethods.toArray(new IMethod[iMethods.size()]);
     }
 
-    /** @{inheritDoc} */
-    protected IField[]
+    @Override protected IField[]
     getDeclaredIFields2() {
         IField[] ifs = new IClass.IField[this.classFile.fieldInfos.size()];
         for (int i = 0; i < this.classFile.fieldInfos.size(); ++i) {
@@ -118,8 +114,7 @@ class ClassFileIClass extends IClass {
         return ifs;
     }
 
-    /** @{inheritDoc} */
-    protected IClass[]
+    @Override protected IClass[]
     getDeclaredIClasses2() throws CompileException {
         ClassFile.InnerClassesAttribute ica = this.classFile.getInnerClassesAttribute();
         if (ica == null) return new IClass[0];
@@ -139,8 +134,7 @@ class ClassFileIClass extends IClass {
         return (IClass[]) res.toArray(new IClass[res.size()]);
     }
 
-    /** @{inheritDoc} */
-    protected IClass
+    @Override protected IClass
     getDeclaringIClass2() throws CompileException {
         ClassFile.InnerClassesAttribute ica = this.classFile.getInnerClassesAttribute();
         if (ica == null) return null;
@@ -161,8 +155,7 @@ class ClassFileIClass extends IClass {
         return null;
     }
 
-    /** @{inheritDoc} */
-    protected IClass
+    @Override protected IClass
     getOuterIClass2() throws CompileException {
         ClassFile.InnerClassesAttribute ica = this.classFile.getInnerClassesAttribute();
         if (ica == null) return null;
@@ -191,8 +184,7 @@ class ClassFileIClass extends IClass {
         return null;
     }
 
-    /** @{inheritDoc} */
-    protected IClass
+    @Override protected IClass
     getSuperclass2() throws CompileException {
         if (this.classFile.superclass == 0) return null;
         try {
@@ -202,47 +194,36 @@ class ClassFileIClass extends IClass {
         }
     }
 
-    /** @{inheritDoc} */
-    public Access
+    @Override public Access
     getAccess() { return ClassFileIClass.accessFlags2Access(this.accessFlags); }
 
-    /** @{inheritDoc} */
-    public boolean
+    @Override public boolean
     isFinal() { return (this.accessFlags & Mod.FINAL) != 0; }
 
-    /** @{inheritDoc} */
-    protected IClass[]
+    @Override protected IClass[]
     getInterfaces2() throws CompileException { return this.resolveClasses(this.classFile.interfaces); }
 
-    /** @{inheritDoc} */
-    public boolean
+    @Override public boolean
     isAbstract() { return (this.accessFlags & Mod.ABSTRACT) != 0; }
 
-    /** @{inheritDoc} */
-    protected String
+    @Override protected String
     getDescriptor2() { return Descriptor.fromClassName(this.classFile.getThisClassName()); }
 
-    /** @{inheritDoc} */
-    public boolean
+    @Override public boolean
     isInterface() { return (this.accessFlags & Mod.INTERFACE) != 0; }
 
-    /** @{inheritDoc} */
-    public boolean
+    @Override public boolean
     isArray() { return false; }
 
-    /** @{inheritDoc} */
-    public boolean
+    @Override public boolean
     isPrimitive() { return false; }
 
-    /** @{inheritDoc} */
-    public boolean
+    @Override public boolean
     isPrimitiveNumeric() { return false; }
 
-    /** @{inheritDoc} */
-    protected IClass
+    @Override protected IClass
     getComponentType2()  { return null; }
 
-    /** @{inheritDoc} */
     public void
     resolveHalf() throws ClassNotFoundException {
 
@@ -368,7 +349,8 @@ class ClassFileIClass extends IClass {
 
         if ("<init>".equals(name)) {
             result = new IClass.IConstructor() {
-                public IClass[]
+
+                @Override public IClass[]
                 getParameterTypes() throws CompileException {
 
                     // Process magic first parameter of inner class constructor.
@@ -393,18 +375,33 @@ class ClassFileIClass extends IClass {
 
                     return parameterTypes;
                 }
-                public IClass[] getThrownExceptions() { return thrownExceptions; }
-                public Access   getAccess()           { return access; }
+
+                @Override public IClass[] getThrownExceptions() { return thrownExceptions; }
+                @Override public Access   getAccess()           { return access; }
             };
         } else {
             result = new IClass.IMethod() {
-                public String   getName()             { return name; }
-                public IClass   getReturnType()       { return returnType; }
-                public boolean  isStatic()            { return (methodInfo.getAccessFlags() & Mod.STATIC) != 0; }
-                public boolean  isAbstract()          { return (methodInfo.getAccessFlags() & Mod.ABSTRACT) != 0; }
-                public IClass[] getParameterTypes()   { return parameterTypes; }
-                public IClass[] getThrownExceptions() { return thrownExceptions; }
-                public Access   getAccess()           { return access; }
+
+                @Override public String
+                getName() { return name; }
+
+                @Override public IClass
+                getReturnType() { return returnType; }
+
+                @Override public boolean
+                isStatic() { return (methodInfo.getAccessFlags() & Mod.STATIC) != 0; }
+
+                @Override public boolean
+                isAbstract() { return (methodInfo.getAccessFlags() & Mod.ABSTRACT) != 0; }
+
+                @Override public IClass[]
+                getParameterTypes() { return parameterTypes; }
+
+                @Override public IClass[]
+                getThrownExceptions() { return thrownExceptions; }
+
+                @Override public Access
+                getAccess() { return access; }
             };
         }
         this.resolvedMethods.put(methodInfo, result);
@@ -459,11 +456,11 @@ class ClassFileIClass extends IClass {
         final Access access = ClassFileIClass.accessFlags2Access(fieldInfo.getAccessFlags());
 
         result = new IField() {
-            public Object  getConstantValue() { return optionalConstantValue; }
-            public String  getName()          { return name; }
-            public IClass  getType()          { return type; }
-            public boolean isStatic()         { return (fieldInfo.getAccessFlags() & Mod.STATIC) != 0; }
-            public Access  getAccess()        { return access; }
+            @Override public Object  getConstantValue() { return optionalConstantValue; }
+            @Override public String  getName()          { return name; }
+            @Override public IClass  getType()          { return type; }
+            @Override public boolean isStatic()         { return (fieldInfo.getAccessFlags() & Mod.STATIC) != 0; }
+            @Override public Access  getAccess()        { return access; }
         };
         this.resolvedFields.put(fieldInfo, result);
         return result;

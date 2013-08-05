@@ -33,7 +33,7 @@ import java.util.*;
  * A {@link org.codehaus.janino.util.resource.ResourceFinder} that provides access
  * to resource stored as byte arrays in a {@link java.util.Map}.
  */
-public
+@SuppressWarnings("rawtypes") public
 class MapResourceFinder extends ResourceFinder {
     private final Map map;
     private long      lastModified;
@@ -44,15 +44,15 @@ class MapResourceFinder extends ResourceFinder {
     public final void
     setLastModified(long lastModified) { this.lastModified = lastModified; }
 
-    public final Resource
+    @Override public final Resource
     findResource(final String resourceName) {
         final byte[] ba = (byte[]) this.map.get(resourceName);
         if (ba == null) return null;
 
         return new Resource() {
-            public InputStream open()         { return new ByteArrayInputStream(ba); }
-            public String      getFileName()  { return resourceName; }
-            public long        lastModified() { return MapResourceFinder.this.lastModified; }
+            @Override public InputStream open()         { return new ByteArrayInputStream(ba); }
+            @Override public String      getFileName()  { return resourceName; }
+            @Override public long        lastModified() { return MapResourceFinder.this.lastModified; }
         };
     }
 }

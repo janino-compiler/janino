@@ -71,7 +71,7 @@ import org.codehaus.janino.util.resource.ResourceFinder;
  * java org.codehaus.janino.Compiler -help
  * </pre>
  */
-public
+@SuppressWarnings({ "rawtypes", "unchecked" }) public
 class Compiler {
     private static final boolean DEBUG = false;
 
@@ -342,8 +342,7 @@ class Compiler {
     public static
     class SimpleWarningHandler implements WarningHandler {
 
-        /** @{inheritDoc} */
-        public void
+        @Override public void
         handleWarning(String handle, String message, Location optionalLocation) {
             StringBuffer sb = new StringBuffer();
             if (optionalLocation != null) sb.append(optionalLocation).append(": ");
@@ -478,7 +477,7 @@ class Compiler {
 
                 int compileErrorCount;
 
-                public void
+                @Override public void
                 handleError(String message, Location optionalLocation) throws CompileException {
                     CompileException ex = new CompileException(message, optionalLocation);
                     if (++this.compileErrorCount >= 20) throw ex;
@@ -623,7 +622,7 @@ class Compiler {
             // to the source file, irrespective of the package name.
             rc = new FileResourceCreator() {
 
-                protected File
+                @Override protected File
                 getFile(String resourceName) {
                     return new File(
                         sourceFile.getParentFile(),
@@ -685,7 +684,7 @@ class Compiler {
          * @return <code>null</code> if a the type could not be found
          * @throws ClassNotFoundException if an exception was raised while loading the {@link IClass}
          */
-        protected IClass
+        @Override protected IClass
         findIClass(final String type) throws ClassNotFoundException {
             if (Compiler.DEBUG) System.out.println("type = " + type);
 
@@ -829,5 +828,3 @@ class Compiler {
         }
     }
 }
-
-

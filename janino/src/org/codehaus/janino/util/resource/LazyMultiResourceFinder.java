@@ -38,7 +38,7 @@ import org.codehaus.janino.util.iterator.IteratorCollection;
  *
  * @see org.codehaus.janino.util.iterator.IteratorCollection
  */
-public
+@SuppressWarnings("rawtypes") public
 class LazyMultiResourceFinder extends MultiResourceFinder {
 
     /**

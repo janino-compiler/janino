@@ -37,7 +37,7 @@ import org.codehaus.janino.util.Producer;
  *
  * @see org.codehaus.janino.util.Producer
  */
-public
+@SuppressWarnings("rawtypes") public
 class ProducerIterator implements Iterator {
     private final Producer producer;
 
@@ -48,13 +48,13 @@ class ProducerIterator implements Iterator {
     public
     ProducerIterator(Producer producer) { this.producer = producer; }
 
-    public boolean
+    @Override public boolean
     hasNext() {
         if (this.nextElement == UNKNOWN) this.nextElement = this.producer.produce();
         return this.nextElement != AT_END;
     }
 
-    public Object
+    @Override public Object
     next() {
         if (this.nextElement == UNKNOWN) this.nextElement = this.producer.produce();
         if (this.nextElement == AT_END) throw new NoSuchElementException();
@@ -63,6 +63,6 @@ class ProducerIterator implements Iterator {
         return result;
     }
 
-    public void
+    @Override public void
     remove() { throw new UnsupportedOperationException("remove"); }
 }

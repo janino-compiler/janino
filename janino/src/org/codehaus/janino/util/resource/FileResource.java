@@ -36,13 +36,13 @@ class FileResource implements Resource {
     public FileResource(File file) { this.file = file; }
 
     // Implement "Resource".
-    public final String      getFileName()             { return this.file.toString(); }
-    public final InputStream open() throws IOException { return new FileInputStream(this.file); }
-    public final long        lastModified()            { return this.file.lastModified(); }
+    @Override public final String      getFileName()             { return this.file.toString(); }
+    @Override public final InputStream open() throws IOException { return new FileInputStream(this.file); }
+    @Override public final long        lastModified()            { return this.file.lastModified(); }
 
     public final File getFile() { return this.file; }
 
-    public final String toString() { return this.getFileName(); }
+    @Override public final String toString() { return this.getFileName(); }
 
     private final File file;
 }

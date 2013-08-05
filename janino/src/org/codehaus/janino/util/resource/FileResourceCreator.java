@@ -34,7 +34,7 @@ import java.io.*;
 public abstract
 class FileResourceCreator implements ResourceCreator {
 
-    public final OutputStream
+    @Override public final OutputStream
     createResource(String resourceName) throws IOException {
         File file = this.getFile(resourceName);
 
@@ -48,7 +48,7 @@ class FileResourceCreator implements ResourceCreator {
         return new FileOutputStream(file);
     }
 
-    public final boolean
+    @Override public final boolean
     deleteResource(String resourceName) { return this.getFile(resourceName).delete(); }
 
     protected abstract File getFile(String resourceName);

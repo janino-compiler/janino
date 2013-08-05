@@ -41,7 +41,7 @@ import org.codehaus.commons.compiler.CompileException;
 /**
  * A simplified equivalent to "java.lang.reflect".
  */
-public abstract
+@SuppressWarnings({ "rawtypes", "unchecked" }) public abstract
 class IClass {
     private static final boolean DEBUG = false;
 
@@ -50,7 +50,7 @@ class IClass {
      * constant value.
      */
     public static final Object NOT_CONSTANT = new Object() {
-        public String toString() { return "NOT_CONSTANT"; }
+        @Override public String toString() { return "NOT_CONSTANT"; }
     };
 
     /** The {@link IClass} object for the type VOID. */
@@ -79,23 +79,23 @@ class IClass {
         public
         PrimitiveIClass(String fieldDescriptor) { this.fieldDescriptor = fieldDescriptor; }
 
-        protected IClass         getComponentType2()         { return null; }
-        protected IClass[]       getDeclaredIClasses2()      { return new IClass[0]; }
-        protected IConstructor[] getDeclaredIConstructors2() { return new IConstructor[0]; }
-        protected IField[]       getDeclaredIFields2()       { return new IField[0]; }
-        protected IMethod[]      getDeclaredIMethods2()      { return new IMethod[0]; }
-        protected IClass         getDeclaringIClass2()       { return null; }
-        protected String         getDescriptor2()            { return this.fieldDescriptor; }
-        protected IClass[]       getInterfaces2()            { return new IClass[0]; }
-        protected IClass         getOuterIClass2()           { return null; }
-        protected IClass         getSuperclass2()            { return null; }
-        public boolean           isAbstract()                { return false; }
-        public boolean           isArray()                   { return false; }
-        public boolean           isFinal()                   { return true; }
-        public boolean           isInterface()               { return false; }
-        public boolean           isPrimitive()               { return true; }
-        public boolean           isPrimitiveNumeric()        { return Descriptor.isPrimitiveNumeric(this.fieldDescriptor); } // SUPPRESS CHECKSTYLE LineLength
-        public Access            getAccess()                 { return Access.PUBLIC; }
+        @Override protected IClass         getComponentType2()         { return null; }
+        @Override protected IClass[]       getDeclaredIClasses2()      { return new IClass[0]; }
+        @Override protected IConstructor[] getDeclaredIConstructors2() { return new IConstructor[0]; }
+        @Override protected IField[]       getDeclaredIFields2()       { return new IField[0]; }
+        @Override protected IMethod[]      getDeclaredIMethods2()      { return new IMethod[0]; }
+        @Override protected IClass         getDeclaringIClass2()       { return null; }
+        @Override protected String         getDescriptor2()            { return this.fieldDescriptor; }
+        @Override protected IClass[]       getInterfaces2()            { return new IClass[0]; }
+        @Override protected IClass         getOuterIClass2()           { return null; }
+        @Override protected IClass         getSuperclass2()            { return null; }
+        @Override public boolean           isAbstract()                { return false; }
+        @Override public boolean           isArray()                   { return false; }
+        @Override public boolean           isFinal()                   { return true; }
+        @Override public boolean           isInterface()               { return false; }
+        @Override public boolean           isPrimitive()               { return true; }
+        @Override public boolean           isPrimitiveNumeric()        { return Descriptor.isPrimitiveNumeric(this.fieldDescriptor); } // SUPPRESS CHECKSTYLE LineLength
+        @Override public Access            getAccess()                 { return Access.PUBLIC; }
     }
 
     /**
@@ -475,8 +475,7 @@ class IClass {
     private IClass  componentType;
     protected abstract IClass getComponentType2();
 
-    /** @{inheritDoc} */
-    public String toString() { return Descriptor.toClassName(this.getDescriptor()); }
+    @Override public String toString() { return Descriptor.toClassName(this.getDescriptor()); }
 
     /**
      * Determine if "this" is assignable from "that". This is true if "this"
@@ -629,41 +628,45 @@ class IClass {
     getArrayIClass2(final IClass objectType) {
         final IClass componentType = this;
         return new IClass() {
-            public IClass.IConstructor[] getDeclaredIConstructors2() { return new IClass.IConstructor[0]; }
+
+            @Override public IClass.IConstructor[] getDeclaredIConstructors2() { return new IClass.IConstructor[0]; }
 
             // Special trickery #17: Arrays override "Object.clone()", but without "throws
             // CloneNotSupportedException"!
-            public IClass.IMethod[]
+            @Override public IClass.IMethod[]
             getDeclaredIMethods2() {
                 return new IClass.IMethod[] {
                     new IMethod() {
-                        public String   getName()             { return "clone"; }
-                        public IClass   getReturnType()       { return objectType /*ot*/; }
-                        public boolean  isAbstract()          { return false; }
-                        public boolean  isStatic()            { return false; }
-                        public Access   getAccess()           { return Access.PUBLIC; }
-                        public IClass[] getParameterTypes()   { return new IClass[0]; }
-                        public IClass[] getThrownExceptions() { return new IClass[0]; }
+                        @Override public String   getName()             { return "clone"; }
+                        @Override public IClass   getReturnType()       { return objectType /*ot*/; }
+                        @Override public boolean  isAbstract()          { return false; }
+                        @Override public boolean  isStatic()            { return false; }
+                        @Override public Access   getAccess()           { return Access.PUBLIC; }
+                        @Override public IClass[] getParameterTypes()   { return new IClass[0]; }
+                        @Override public IClass[] getThrownExceptions() { return new IClass[0]; }
                     }
                 };
             }
-            public IClass.IField[]       getDeclaredIFields2()  { return new IClass.IField[0]; }
-            public IClass[]              getDeclaredIClasses2() { return new IClass[0]; }
-            public IClass                getDeclaringIClass2()  { return null; }
-            public IClass                getOuterIClass2()      { return null; }
-            public IClass                getSuperclass2()       { return objectType; }
-            public IClass[]              getInterfaces2()       { return new IClass[0]; }
-            public String                getDescriptor2()       { return '[' + componentType.getDescriptor(); }
-            public Access                getAccess()            { return componentType.getAccess(); }
-            public boolean               isFinal()              { return true; }
-            public boolean               isInterface()          { return false; }
-            public boolean               isAbstract()           { return false; }
-            public boolean               isArray()              { return true; }
-            public boolean               isPrimitive()          { return false; }
-            public boolean               isPrimitiveNumeric()   { return false; }
-            public IClass                getComponentType2()    { return componentType; }
 
-            public String toString() { return componentType.toString() + "[]"; }
+            // CHECKSTYLE LineLength:OFF
+            @Override public IClass.IField[]       getDeclaredIFields2()  { return new IClass.IField[0]; }
+            @Override public IClass[]              getDeclaredIClasses2() { return new IClass[0]; }
+            @Override public IClass                getDeclaringIClass2()  { return null; }
+            @Override public IClass                getOuterIClass2()      { return null; }
+            @Override public IClass                getSuperclass2()       { return objectType; }
+            @Override public IClass[]              getInterfaces2()       { return new IClass[0]; }
+            @Override public String                getDescriptor2()       { return '[' + componentType.getDescriptor(); }
+            @Override public Access                getAccess()            { return componentType.getAccess(); }
+            @Override public boolean               isFinal()              { return true; }
+            @Override public boolean               isInterface()          { return false; }
+            @Override public boolean               isAbstract()           { return false; }
+            @Override public boolean               isArray()              { return true; }
+            @Override public boolean               isPrimitive()          { return false; }
+            @Override public boolean               isPrimitiveNumeric()   { return false; }
+            @Override public IClass                getComponentType2()    { return componentType; }
+            // CHECKSTYLE LineLength:ON
+
+            @Override public String toString() { return componentType.toString() + "[]"; }
         };
     }
 
@@ -759,16 +762,38 @@ class IClass {
         IClass getDeclaringIClass();
     }
 
+    /**
+     * Base class for {@link IConstructor} and {@link IMethod}
+     */
     public abstract
     class IInvocable implements IMember {
 
         // Implement IMember.
-        public abstract Access   getAccess();
-        public IClass            getDeclaringIClass() { return IClass.this; }
-        public abstract IClass[] getParameterTypes() throws CompileException;
-        public abstract String   getDescriptor() throws CompileException;
-        public abstract IClass[] getThrownExceptions() throws CompileException;
 
+        @Override public abstract Access getAccess();
+        @Override public IClass          getDeclaringIClass() { return IClass.this; }
+
+        /**
+         * @return The types of the parameters of this constructor or method
+         */
+        public abstract IClass[]
+        getParameterTypes() throws CompileException;
+
+        /**
+         * @return The method descriptor of this constructor or method
+         */
+        public abstract String
+        getDescriptor() throws CompileException;
+
+        /**
+         * @return The types thrown by this constructor or method
+         */
+        public abstract IClass[]
+        getThrownExceptions() throws CompileException;
+
+        /**
+         * @return Whether this {@link IInvocable} is more specific then {@code that} (in the sense of JLS3 15.12.2.5)
+         */
         public boolean
         isMoreSpecificThan(IInvocable that) throws CompileException {
             if (IClass.DEBUG) System.out.print("\"" + this + "\".isMoreSpecificThan(\"" + that + "\") => ");
@@ -802,7 +827,8 @@ class IClass {
         public boolean
         isLessSpecificThan(IInvocable that) throws CompileException { return that.isMoreSpecificThan(this); }
 
-        public abstract String toString();
+        @Override public abstract String
+        toString();
     }
 
     public abstract
@@ -813,13 +839,13 @@ class IClass {
          * return value of this method does not include the optionally leading "synthetic
          * parameters".
          */
-        public abstract IClass[] getParameterTypes() throws CompileException;
+        @Override public abstract IClass[] getParameterTypes() throws CompileException;
 
         /**
          * Opposed to {@link #getParameterTypes()}, the method descriptor returned by this
          * method does include the optionally leading synthetic parameters.
          */
-        public String
+        @Override public String
         getDescriptor() throws CompileException {
             IClass[] parameterTypes = this.getParameterTypes();
 
@@ -834,8 +860,7 @@ class IClass {
             return new MethodDescriptor(IClass.getDescriptors(parameterTypes), Descriptor.VOID).toString();
         }
 
-        /** @{inheritDoc} */
-        public String
+        @Override public String
         toString() {
             StringBuffer sb = new StringBuffer(this.getDeclaringIClass().toString());
             sb.append('(');
@@ -852,6 +877,7 @@ class IClass {
             return sb.toString();
         }
     }
+
     public abstract
     class IMethod extends IInvocable {
         public abstract boolean isStatic();
@@ -859,8 +885,7 @@ class IClass {
         public abstract IClass  getReturnType() throws CompileException;
         public abstract String  getName();
 
-        /** @{inheritDoc} */
-        public String
+        @Override  public String
         getDescriptor() throws CompileException {
             return new MethodDescriptor(
                 IClass.getDescriptors(this.getParameterTypes()),
@@ -868,8 +893,7 @@ class IClass {
             ).toString();
         }
 
-        /** @{inheritDoc} */
-        public String
+        @Override public String
         toString() {
             StringBuffer sb = new StringBuffer();
             sb.append(this.getAccess().toString()).append(' ');
@@ -907,12 +931,13 @@ class IClass {
             return sb.toString();
         }
     }
+
     public abstract
     class IField implements IMember {
 
         // Implement IMember.
-        public abstract Access  getAccess();
-        public IClass           getDeclaringIClass() { return IClass.this; }
+        @Override public abstract Access getAccess();
+        @Override public IClass          getDeclaringIClass() { return IClass.this; }
 
         public abstract boolean isStatic();
         public abstract IClass  getType() throws CompileException;
@@ -926,8 +951,7 @@ class IClass {
          */
         public abstract Object  getConstantValue() throws CompileException;
 
-        /** @{inheritDoc} */
-        public String
+        @Override public String
         toString() { return this.getDeclaringIClass().toString() + "." + this.getName(); }
     }
 

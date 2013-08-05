@@ -48,7 +48,7 @@ import org.codehaus.commons.compiler.Location;
  * </ul>
  * A number of "convenience constructors" exist that execute the setup steps instantly.
  */
-public
+@SuppressWarnings("rawtypes") public
 class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
     protected static final Class[] ZERO_CLASSES = new Class[0];
 
@@ -171,36 +171,32 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
 
     public ClassBodyEvaluator() {}
 
-    /** @{inheritDoc} */
-    public void
+    @Override public void
     setDefaultImports(String[] optionalDefaultImports) {
         assertNotCooked();
         this.optionalDefaultImports = optionalDefaultImports;
     }
 
-    /** @{inheritDoc} */
-    public void
+    @Override public void
     setClassName(String className) {
         if (className == null) throw new NullPointerException();
         assertNotCooked();
         this.className = className;
     }
 
-    /** @{inheritDoc} */
-    public void
+    @Override public void
     setExtendedClass(Class optionalExtendedType) {
         assertNotCooked();
         this.optionalExtendedType = optionalExtendedType;
     }
 
     /** @deprecated */
-    public void
+    @Deprecated @Override public void
     setExtendedType(Class optionalExtendedClass) {
         this.setExtendedClass(optionalExtendedClass);
     }
 
-    /** @{inheritDoc} */
-    public void
+    @Override public void
     setImplementedInterfaces(Class[] implementedTypes) {
         if (implementedTypes == null) {
             throw new NullPointerException(
@@ -212,13 +208,12 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
     }
 
     /** @deprecated */
-    public void
+    @Deprecated @Override public void
     setImplementedTypes(Class[] implementedInterfaces) {
         this.setImplementedInterfaces(implementedInterfaces);
     }
 
-    /** @{inheritDoc} */
-    public void
+    @Override public void
     cook(Scanner scanner) throws CompileException, IOException {
 
         Parser               parser          = new Parser(scanner);
@@ -335,8 +330,7 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
         }
     }
 
-    /** @{inheritDoc} */
-    public Class
+    @Override public Class
     getClazz() {
         if (this.getClass() != ClassBodyEvaluator.class) {
             throw new IllegalStateException("Must not be called on derived instances");
@@ -345,8 +339,7 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
         return this.result;
     }
 
-    /** @{inheritDoc} */
-    public Object
+    @Override public Object
     createInstance(Reader reader) throws CompileException, IOException {
         this.cook(reader);
 
@@ -426,7 +419,7 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
      * @see #createInstance(Reader)
      * @deprecated
      */
-    public static Object
+    @Deprecated public static Object
     createFastClassBodyEvaluator(
         Scanner     scanner,
         String      className,

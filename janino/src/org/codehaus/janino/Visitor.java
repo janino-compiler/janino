@@ -39,7 +39,8 @@ class Visitor {
      */
     public
     interface ComprehensiveVisitor
-    extends ImportVisitor, TypeDeclarationVisitor, TypeBodyDeclarationVisitor, BlockStatementVisitor, AtomVisitor {
+    extends ImportVisitor, TypeDeclarationVisitor, TypeBodyDeclarationVisitor, BlockStatementVisitor, AtomVisitor,
+    ElementValueVisitor { // SUPPRESS CHECKSTYLE WrapAndIndent
     }
 
     /**

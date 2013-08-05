@@ -35,7 +35,7 @@ import java.util.*;
  *
  *     java -Xrunhprof:heap=sites,monitor=n,cutoff=0,depth=4 MyClass
  */
-public final
+@SuppressWarnings({ "rawtypes", "unchecked" }) public final
 class HprofScrubber {
     private HprofScrubber() {}
 
@@ -144,7 +144,7 @@ class HprofScrubber {
     dumpSites(Site[] ss, Map traces) {
         Arrays.sort(ss, new Comparator() {
 
-            public int
+            @Override public int
             compare(Object o1, Object o2) { return ((Site) o2).allocatedBytes - ((Site) o1).allocatedBytes; }
         });
 

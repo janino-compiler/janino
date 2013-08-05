@@ -43,7 +43,7 @@ import org.codehaus.janino.util.*;
  * Alternatively, a number of "convenience constructors" exist that execute the described steps
  * instantly.
  */
-public
+@SuppressWarnings({ "rawtypes", "unchecked" }) public
 class SimpleCompiler extends Cookable implements ISimpleCompiler {
     private static final boolean DEBUG = false;
 
@@ -152,7 +152,7 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
 
     public SimpleCompiler() {}
 
-    public void
+    @Override public void
     setParentClassLoader(ClassLoader optionalParentClassLoader) {
         assertNotCooked();
         this.parentClassLoader = (
@@ -162,7 +162,7 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
         );
     }
 
-    public void
+    @Override public void
     setDebuggingInformation(boolean debugSource, boolean debugLines, boolean debugVars) {
         this.debugSource = debugSource;
         this.debugLines  = debugLines;
@@ -173,7 +173,7 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
      * Scans, parses and compiles a given compilation unit from the given {@link Reader}. After completion, {@link
      * #getClassLoader()} returns a {@link ClassLoader} that allows for access to the compiled classes.
      */
-    public final void
+    @Override public final void
     cook(String optionalFileName, Reader r) throws CompileException, IOException {
         this.cook(new Scanner(optionalFileName, r));
     }
@@ -198,7 +198,7 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
         this.compileToClassLoader(compilationUnit);
     }
 
-    public ClassLoader
+    @Override public ClassLoader
     getClassLoader() {
         if (this.getClass() != SimpleCompiler.class) {
             throw new IllegalStateException("Must not be called on derived instances");
@@ -214,7 +214,7 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
      *   <li>Both generated functionally equal classes as seen by {@link ByteArrayClassLoader#equals(Object)}
      * </ul>
      */
-    public boolean
+    @Override public boolean
     equals(Object o) {
         if (!(o instanceof SimpleCompiler)) return false;
         SimpleCompiler that = (SimpleCompiler) o;
@@ -225,7 +225,7 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
         return this.result.equals(that.result);
     }
 
-    public int
+    @Override public int
     hashCode() { return this.parentClassLoader.hashCode(); }
 
     /**
@@ -241,9 +241,9 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
 
             private Java.SimpleType delegate;
             
-            public String toString()                  { return this.getDelegate().toString(); }
-            public void   accept(AtomVisitor visitor) { this.getDelegate().accept((TypeVisitor) visitor); }
-            public void   accept(TypeVisitor visitor) { this.getDelegate().accept(visitor); }
+            @Override public String toString()                  { return this.getDelegate().toString(); }
+            @Override public void   accept(AtomVisitor visitor) { this.getDelegate().accept((TypeVisitor) visitor); }
+            @Override public void   accept(TypeVisitor visitor) { this.getDelegate().accept(visitor); }
 
             private Type
             getDelegate() {
@@ -337,7 +337,7 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
         // Create a ClassLoader that loads the generated classes.
         this.result = (ClassLoader) AccessController.doPrivileged(new PrivilegedAction() {
 
-            public Object
+            @Override public Object
             run() {
                 return new ByteArrayClassLoader(
                     classes,                              // classes

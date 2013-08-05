@@ -47,8 +47,7 @@ class FilterWarningHandler implements WarningHandler {
         this.delegate       = delegate;
     }
 
-    /** @{inheritDoc} */
-    public void
+    @Override public void
     handleWarning(String handle, String message, Location optionalLocation) {
         if (StringPattern.matches(this.handlePatterns, handle)) {
             this.delegate.handleWarning(handle, message, optionalLocation);

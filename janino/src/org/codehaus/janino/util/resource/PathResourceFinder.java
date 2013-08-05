@@ -39,7 +39,7 @@ import org.codehaus.janino.util.iterator.*;
  * @see org.codehaus.janino.util.resource.ZipFileResourceFinder
  * @see org.codehaus.janino.util.resource.DirectoryResourceFinder
  */
-public
+@SuppressWarnings({ "rawtypes", "unchecked" }) public
 class PathResourceFinder extends LazyMultiResourceFinder {
 
     /**
@@ -65,7 +65,7 @@ class PathResourceFinder extends LazyMultiResourceFinder {
     private static Iterator
     createIterator(final Iterator entries) {
         return new TransformingIterator(entries) {
-            protected Object transform(Object o) { return PathResourceFinder.createResourceFinder((File) o); }
+            @Override protected Object transform(Object o) { return PathResourceFinder.createResourceFinder((File) o); }
         };
     }
 

@@ -39,7 +39,7 @@ import org.codehaus.janino.util.resource.ResourceFinder;
 /**
  * Loads an {@link IClass} by type name.
  */
-public abstract
+@SuppressWarnings({ "rawtypes", "unchecked" }) public abstract
 class IClassLoader {
     private static final boolean DEBUG = false;
 
@@ -48,23 +48,27 @@ class IClassLoader {
 
     // CHECKSTYLE MemberName:OFF
     // CHECKSTYLE AbbreviationAsWordInName:OFF
-    public IClass OBJECT;
-    public IClass STRING;
-    public IClass CLASS;
-    public IClass THROWABLE;
-    public IClass RUNTIME_EXCEPTION;
-    public IClass ERROR;
-    public IClass CLONEABLE;
-    public IClass ASSERTION_ERROR;
-    public IClass SERIALIZABLE;
-    public IClass BOOLEAN;
-    public IClass BYTE;
-    public IClass CHARACTER;
-    public IClass SHORT;
-    public IClass INTEGER;
-    public IClass LONG;
-    public IClass FLOAT;
-    public IClass DOUBLE;
+    // CHECKSTYLE JavadocVariable:OFF
+    public IClass JAVA_LANG_OBJECT;
+    public IClass JAVA_LANG_STRING;
+    public IClass JAVA_LANG_CLASS;
+    public IClass JAVA_LANG_THROWABLE;
+    public IClass JAVA_LANG_RUNTIMEEXCEPTION;
+    public IClass JAVA_LANG_ERROR;
+    public IClass JAVA_LANG_CLONEABLE;
+    public IClass JAVA_LANG_ASSERTIONERROR;
+    public IClass JAVA_LANG_OVERRIDE;
+    public IClass JAVA_IO_SERIALIZABLE;
+
+    public IClass JAVA_LANG_BOOLEAN;
+    public IClass JAVA_LANG_BYTE;
+    public IClass JAVA_LANG_CHARACTER;
+    public IClass JAVA_LANG_SHORT;
+    public IClass JAVA_LANG_INTEGER;
+    public IClass JAVA_LANG_LONG;
+    public IClass JAVA_LANG_FLOAT;
+    public IClass JAVA_LANG_DOUBLE;
+    // CHECKSTYLE JavadocVariable:ON
     // CHECKSTYLE AbbreviationAsWordInName:ON
     // CHECKSTYLE MemberName:ON
 
@@ -82,23 +86,25 @@ class IClassLoader {
     protected final void
     postConstruct() {
         try {
-            this.OBJECT            = this.loadIClass(Descriptor.JAVA_LANG_OBJECT);
-            this.STRING            = this.loadIClass(Descriptor.JAVA_LANG_STRING);
-            this.CLASS             = this.loadIClass(Descriptor.JAVA_LANG_CLASS);
-            this.THROWABLE         = this.loadIClass(Descriptor.JAVA_LANG_THROWABLE);
-            this.RUNTIME_EXCEPTION = this.loadIClass(Descriptor.JAVA_LANG_RUNTIMEEXCEPTION);
-            this.ERROR             = this.loadIClass(Descriptor.JAVA_LANG_ERROR);
-            this.CLONEABLE         = this.loadIClass(Descriptor.JAVA_LANG_CLONEABLE);
-            this.ASSERTION_ERROR   = this.loadIClass(Descriptor.JAVA_LANG_ASSERTION_ERROR);
-            this.SERIALIZABLE      = this.loadIClass(Descriptor.JAVA_IO_SERIALIZABLE);
-            this.BOOLEAN           = this.loadIClass(Descriptor.JAVA_LANG_BOOLEAN);
-            this.BYTE              = this.loadIClass(Descriptor.JAVA_LANG_BYTE);
-            this.CHARACTER         = this.loadIClass(Descriptor.JAVA_LANG_CHARACTER);
-            this.SHORT             = this.loadIClass(Descriptor.JAVA_LANG_SHORT);
-            this.INTEGER           = this.loadIClass(Descriptor.JAVA_LANG_INTEGER);
-            this.LONG              = this.loadIClass(Descriptor.JAVA_LANG_LONG);
-            this.FLOAT             = this.loadIClass(Descriptor.JAVA_LANG_FLOAT);
-            this.DOUBLE            = this.loadIClass(Descriptor.JAVA_LANG_DOUBLE);
+            this.JAVA_LANG_OBJECT           = this.loadIClass(Descriptor.JAVA_LANG_OBJECT);
+            this.JAVA_LANG_STRING           = this.loadIClass(Descriptor.JAVA_LANG_STRING);
+            this.JAVA_LANG_CLASS            = this.loadIClass(Descriptor.JAVA_LANG_CLASS);
+            this.JAVA_LANG_THROWABLE        = this.loadIClass(Descriptor.JAVA_LANG_THROWABLE);
+            this.JAVA_LANG_RUNTIMEEXCEPTION = this.loadIClass(Descriptor.JAVA_LANG_RUNTIMEEXCEPTION);
+            this.JAVA_LANG_ERROR            = this.loadIClass(Descriptor.JAVA_LANG_ERROR);
+            this.JAVA_LANG_CLONEABLE        = this.loadIClass(Descriptor.JAVA_LANG_CLONEABLE);
+            this.JAVA_LANG_ASSERTIONERROR   = this.loadIClass(Descriptor.JAVA_LANG_ASSERTIONERROR);
+            this.JAVA_LANG_OVERRIDE         = this.loadIClass(Descriptor.JAVA_LANG_OVERRIDE);
+            this.JAVA_IO_SERIALIZABLE       = this.loadIClass(Descriptor.JAVA_IO_SERIALIZABLE);
+
+            this.JAVA_LANG_BOOLEAN   = this.loadIClass(Descriptor.JAVA_LANG_BOOLEAN);
+            this.JAVA_LANG_BYTE      = this.loadIClass(Descriptor.JAVA_LANG_BYTE);
+            this.JAVA_LANG_CHARACTER = this.loadIClass(Descriptor.JAVA_LANG_CHARACTER);
+            this.JAVA_LANG_SHORT     = this.loadIClass(Descriptor.JAVA_LANG_SHORT);
+            this.JAVA_LANG_INTEGER   = this.loadIClass(Descriptor.JAVA_LANG_INTEGER);
+            this.JAVA_LANG_LONG      = this.loadIClass(Descriptor.JAVA_LANG_LONG);
+            this.JAVA_LANG_FLOAT     = this.loadIClass(Descriptor.JAVA_LANG_FLOAT);
+            this.JAVA_LANG_DOUBLE    = this.loadIClass(Descriptor.JAVA_LANG_DOUBLE);
         } catch (ClassNotFoundException e) {
             throw new JaninoRuntimeException("Cannot load simple types", e);
         }
@@ -157,7 +163,7 @@ class IClassLoader {
                 if (componentIClass == null) return null;
 
                 // Now get and define the array type.
-                IClass arrayIClass = componentIClass.getArrayIClass(this.OBJECT);
+                IClass arrayIClass = componentIClass.getArrayIClass(this.JAVA_LANG_OBJECT);
                 this.loadedIClasses.put(fieldDescriptor, arrayIClass);
                 return arrayIClass;
             }

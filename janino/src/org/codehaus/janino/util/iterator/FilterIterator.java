@@ -33,13 +33,13 @@ import java.util.*;
  * {@link java.util.Iterator}. The default implementation simply passes
  * all method invocations to the delegate.
  */
-public abstract
+@SuppressWarnings("rawtypes") public abstract
 class FilterIterator implements Iterator {
     protected final Iterator delegate;
 
     public FilterIterator(Iterator delegate) { this.delegate = delegate; }
 
-    public boolean hasNext() { return this.delegate.hasNext(); }
-    public Object  next()    { return this.delegate.next(); }
-    public void    remove()  { this.delegate.remove(); }
+    @Override public boolean hasNext() { return this.delegate.hasNext(); }
+    @Override public Object  next()    { return this.delegate.next(); }
+    @Override public void    remove()  { this.delegate.remove(); }
 }

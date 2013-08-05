@@ -26,9 +26,18 @@
 
 package org.codehaus.janino;
 
-import java.io.*;
-import java.lang.reflect.*;
-import java.util.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
+import java.io.StringReader;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.Cookable;
@@ -42,11 +51,18 @@ import org.codehaus.janino.util.Traverser;
 /**
  * A number of "convenience constructors" exist that execute the setup steps instantly. Their use is discouraged.
  */
-public
+@SuppressWarnings({ "rawtypes", "unchecked" }) public
 class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
 
-    protected boolean[]  optionalStaticMethod;
-    protected Class[]    optionalReturnTypes;
+    /** Whether methods override a method declared by a supertype; {@code null} means "none". */
+    protected boolean[] optionalOverrideMethod;
+
+    /** Whether methods are static; {@code null} means "all". */
+    protected boolean[] optionalStaticMethod;
+    
+    /** The methods' return types; {@code null} means "none". */
+    protected Class[] optionalReturnTypes;
+
     protected String[]   optionalMethodNames;
     protected String[][] optionalParameterNames;
     protected Class[][]  optionalParameterTypes;
@@ -323,73 +339,93 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
 
     public ScriptEvaluator() {}
 
-    public void
+    @Override public void
+    setOverrideMethod(boolean overrideMethod) {
+        this.setOverrideMethod(new boolean[] { overrideMethod });
+    }
+
+    @Override public void
     setStaticMethod(boolean staticMethod) {
         this.setStaticMethod(new boolean[] { staticMethod });
     }
 
-    public void
+    @Override public void
     setReturnType(Class returnType) {
         this.setReturnTypes(new Class[] { returnType });
     }
 
-    public void
+    @Override public void
     setMethodName(String methodName) {
         this.setMethodNames(new String[] { methodName });
     }
 
-    public void
+    @Override public void
     setParameters(String[] parameterNames, Class[] parameterTypes) {
         this.setParameters(new String[][] { parameterNames }, new Class[][] { parameterTypes });
     }
 
-    public void
+    @Override public void
     setThrownExceptions(Class[] thrownExceptions) {
         this.setThrownExceptions(new Class[][] { thrownExceptions });
     }
 
-    public final void
+    @Override public final void
     cook(Scanner scanner) throws CompileException, IOException {
         this.cook(new Scanner[] { scanner });
     }
 
-    public Object
+    @Override public Object
     evaluate(Object[] arguments) throws InvocationTargetException {
         return this.evaluate(0, arguments);
     }
 
-    public Method
+    @Override public Method
     getMethod() { return this.getMethod(0); }
 
-    public void
+    @Override public void
+    setOverrideMethod(boolean[] overrideMethod) {
+        assertNotCooked();
+        this.optionalOverrideMethod = overrideMethod.clone();
+    }
+
+    @Override public void
     setStaticMethod(boolean[] staticMethod) {
         assertNotCooked();
-        this.optionalStaticMethod = (boolean[]) staticMethod.clone();
+        this.optionalStaticMethod = staticMethod.clone();
     }
 
-    public void
+    /**
+     * Defines the return types of the generated methods.
+     *
+     * @param returnTypes The methods' return types; {@code null} values mean the "default return type", which is the
+     *                    type returned by {@link #getDefaultReturnType()} ({@code void.class} for {@link
+     *                    ScriptEvaluator} and {@code Object.class} for {@link ExpressionEvaluator})
+     * @see               ScriptEvaluator#getDefaultReturnType()
+     * @see               ExpressionEvaluator#getDefaultReturnType()
+     */
+    @Override public void
     setReturnTypes(Class[] returnTypes) {
         assertNotCooked();
-        this.optionalReturnTypes = (Class[]) returnTypes.clone();
+        this.optionalReturnTypes = returnTypes.clone();
     }
 
-    public void
+    @Override public void
     setMethodNames(String[] methodNames) {
         assertNotCooked();
-        this.optionalMethodNames = (String[]) methodNames.clone();
+        this.optionalMethodNames = methodNames.clone();
     }
 
-    public void
+    @Override public void
     setParameters(String[][] parameterNames, Class[][] parameterTypes) {
         assertNotCooked();
-        this.optionalParameterNames = (String[][]) parameterNames.clone();
-        this.optionalParameterTypes = (Class[][]) parameterTypes.clone();
+        this.optionalParameterNames = parameterNames.clone();
+        this.optionalParameterTypes = parameterTypes.clone();
     }
 
-    public void
+    @Override public void
     setThrownExceptions(Class[][] thrownExceptions) {
         assertNotCooked();
-        this.optionalThrownExceptions = (Class[][]) thrownExceptions.clone();
+        this.optionalThrownExceptions = thrownExceptions.clone();
     }
 
     /**
@@ -425,6 +461,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
         }
         this.cook(parsers);
     }
+
     public final void
     cook(Parser[] parsers) throws CompileException, IOException {
 
@@ -441,6 +478,9 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
         }
         if (this.optionalParameterTypes != null && this.optionalParameterTypes.length != count) {
             throw new IllegalStateException("parameterTypes count");
+        }
+        if (this.optionalOverrideMethod != null && this.optionalOverrideMethod.length != count) {
+            throw new IllegalStateException("overrideMethod count");
         }
         if (this.optionalReturnTypes != null && this.optionalReturnTypes.length != count) {
             throw new IllegalStateException("returnTypes count");
@@ -476,7 +516,8 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
 
             // Determine the following script properties AFTER the call to "makeBlock()",
             // because "makeBlock()" may modify these script properties on-the-fly.
-            boolean  staticMethod = this.optionalStaticMethod == null || this.optionalStaticMethod[i];
+            boolean staticMethod   = this.optionalStaticMethod   == null || this.optionalStaticMethod[i];
+            boolean overrideMethod = this.optionalOverrideMethod != null && this.optionalOverrideMethod[i];
 
             Class returnType = (
                 this.optionalReturnTypes == null
@@ -499,15 +540,22 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
                 : this.optionalThrownExceptions[i]
             );
 
+            // If the method is non-static, assume that it overrides a method in a supertype.
+            Location loc = parser.location();
             cd.addDeclaredMethod(this.makeMethodDeclaration(
-                parser.location(), // location
-                staticMethod,       // staticMethod
-                returnType,         // returnType
-                methodNames[i],     // methodName
-                parameterTypes,     // parameterTypes
-                parameterNames,     // parameterNames
-                thrownExceptions,   // thrownExceptions
-                statements          // statements
+                loc,              // location
+                (                 // annotations
+                    overrideMethod
+                    ? new Java.Annotation[] { new Java.MarkerAnnotation(this.classToType(loc, Override.class)) }
+                    : new Java.Annotation[0]
+                ),
+                staticMethod,     // staticMethod
+                returnType,       // returnType
+                methodNames[i],   // methodName
+                parameterTypes,   // parameterTypes
+                parameterNames,   // parameterNames
+                thrownExceptions, // thrownExceptions
+                statements        // statements
             ));
         }
 
@@ -534,13 +582,16 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
         } else
         {
             class MethodWrapper {
+
                 private final String  name;
                 private final Class[] parameterTypes;
+
                 MethodWrapper(String name, Class[] parameterTypes) {
                     this.name           = name;
                     this.parameterTypes = parameterTypes;
                 }
-                public boolean
+
+                @Override public boolean
                 equals(Object o) {
                     if (!(o instanceof MethodWrapper)) return false;
                     MethodWrapper that = (MethodWrapper) o;
@@ -553,7 +604,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
                     return true;
                 }
 
-                public int
+                @Override public int
                 hashCode() {
                     int hc = this.name.hashCode();
                     for (int i = 0; i < this.parameterTypes.length; ++i) {
@@ -585,7 +636,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
         }
     }
 
-    public final void
+    @Override public final void
     cook(Reader[] readers) throws CompileException, IOException {
         this.cook(new String[readers.length], readers);
     }
@@ -601,7 +652,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
      * of the constant pool. Since every method with a distinct name requires one entry there,
      * you can define at best 32K (very simple) scripts.
      */
-    public final void
+    @Override public final void
     cook(String[] optionalFileNames, Reader[] readers) throws CompileException, IOException {
         Scanner[] scanners = new Scanner[readers.length];
         for (int i = 0; i < readers.length; ++i) {
@@ -610,10 +661,10 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
         this.cook(scanners);
     }
 
-    public final void
+    @Override public final void
     cook(String[] strings) throws CompileException { this.cook(null, strings); }
 
-    public final void
+    @Override public final void
     cook(String[] optionalFileNames, String[] strings) throws CompileException {
         Reader[] readers = new Reader[strings.length];
         for (int i = 0; i < strings.length; ++i) readers[i] = new StringReader(strings[i]);
@@ -624,6 +675,10 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
         }
     }
 
+    /**
+     * @return {@code void.class}
+     * @see    #setReturnTypes(Class[])
+     */
     protected Class
     getDefaultReturnType() { return void.class; }
 
@@ -676,12 +731,13 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
      *       names and values and thrown exceptions
      *   <li>A block
      * </ul>
-     *
+     * @param annotations TODO
      * @param returnType Return type of the declared method
      */
     protected Java.MethodDeclarator
     makeMethodDeclaration(
         Location                 location,
+        Java.Annotation[]        annotations,
         boolean                  staticMethod,
         Class                    returnType,
         String                   methodName,
@@ -715,11 +771,11 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
         return new Java.MethodDeclarator(
             location,                                        // location
             null,                                            // optionalDocComment
-            new Java.ModifiersAndAnnotations(                // modifiers
+            new Java.ModifiersAndAnnotations((                // modifiers
                 staticMethod
                 ? (short) (Mod.PUBLIC | Mod.STATIC)
                 : (short) Mod.PUBLIC
-            ),
+            ), annotations),
             this.classToType(location, returnType),          // type
             methodName,                                      // name
             fps,                                             // formalParameters
@@ -729,10 +785,10 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
     }
 
     /**
-     * @deprecated
-     * @see #createFastScriptEvaluator(Scanner, String[], String, Class, Class, String[], ClassLoader)
+     * @deprecated Use {@link #createFastScriptEvaluator(Scanner, String[], String, Class, Class, String[],
+     *             ClassLoader)} instead
      */
-    public static Object
+    @Deprecated public static Object
     createFastScriptEvaluator(String script, Class interfaceToImplement, String[] parameterNames)
     throws CompileException {
         ScriptEvaluator se = new ScriptEvaluator();
@@ -740,10 +796,10 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
     }
 
     /**
-     * @deprecated
-     * @see #createFastScriptEvaluator(Scanner, String[], String, Class, Class, String[], ClassLoader)
+     * @deprecated Use {@link #createFastScriptEvaluator(Scanner, String[], String, Class, Class, String[],
+     *             ClassLoader)} instead
      */
-    public static Object
+    @Deprecated public static Object
     createFastScriptEvaluator(
         Scanner     scanner,
         Class       interfaceToImplement,
@@ -756,10 +812,10 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
     }
 
     /**
-     * @deprecated
-     * @see #createFastScriptEvaluator(Scanner, String[], String, Class, Class, String[], ClassLoader)
+     * @deprecated Use {@link #createFastScriptEvaluator(Scanner, String[], String, Class, Class, String[],
+     *             ClassLoader)} instead
      */
-    public static Object
+    @Deprecated public static Object
     createFastScriptEvaluator(
         Scanner     scanner,
         String      className,
@@ -776,7 +832,6 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
     }
 
     /**
-     * Use {@link #createFastEvaluator(Scanner,Class,String[])} instead:
      * <pre>
      * {@link ScriptEvaluator} se = new {@link ScriptEvaluator#ScriptEvaluator() ScriptEvaluator}();
      * se.{@link #setDefaultImports(String[]) setDefaultImports}.(optionalDefaultImports);
@@ -787,9 +842,9 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
      * interfaceToImplement, parameterNames);
      * </pre>
      *
-     * @deprecated
+     * @deprecated Use {@link #createFastEvaluator(Scanner,Class,String[])} instead:
      */
-    public static Object
+    @Deprecated public static Object
     createFastScriptEvaluator(
         Scanner     scanner,
         String[]    optionalDefaultImports,
@@ -810,18 +865,18 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
     /**
      * Don't use.
      */
-    public final Object
+    @Override public final Object
     createInstance(Reader reader) {
         throw new UnsupportedOperationException("createInstance");
     }
 
-    public Object
+    @Override public Object
     createFastEvaluator(Reader reader, Class interfaceToImplement, String[] parameterNames)
     throws CompileException, IOException {
         return this.createFastEvaluator(new Scanner(null, reader), interfaceToImplement, parameterNames);
     }
 
-    public Object
+    @Override public Object
     createFastEvaluator(String script, Class interfaceToImplement, String[] parameterNames) throws CompileException {
         try {
             return this.createFastEvaluator(
@@ -860,6 +915,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
         Method methodToImplement = methods[0];
 
         this.setImplementedInterfaces(new Class[] { interfaceToImplement });
+        this.setOverrideMethod(true);
         this.setStaticMethod(false);
         if (this instanceof IExpressionEvaluator) {
 
@@ -916,7 +972,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
         final Set parameterNames     = new HashSet();
         new Traverser() {
 
-            public void
+            @Override public void
             traverseLocalVariableDeclarationStatement(LocalVariableDeclarationStatement lvds) {
                 for (int i = 0; i < lvds.variableDeclarators.length; ++i) {
                     localVariableNames.add(lvds.variableDeclarators[i].name);
@@ -924,7 +980,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
                 super.traverseLocalVariableDeclarationStatement(lvds);
             }
 
-            public void
+            @Override public void
             traverseAmbiguousName(AmbiguousName an) {
 
                 // If any of the components starts with an upper-case letter, then the ambiguous
@@ -944,7 +1000,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
         return (String[]) parameterNames.toArray(new String[parameterNames.size()]);
     }
 
-    public Object
+    @Override public Object
     evaluate(int idx, Object[] arguments) throws InvocationTargetException {
         if (this.result == null) throw new IllegalStateException("Must only be called after \"cook()\"");
         try {
@@ -954,7 +1010,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
         }
     }
 
-    public Method
+    @Override public Method
     getMethod(int idx) {
         if (this.result == null) throw new IllegalStateException("Must only be called after \"cook()\"");
         return this.result[idx];

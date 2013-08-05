@@ -48,7 +48,7 @@ class ResourceFinderIClassLoader extends IClassLoader {
         this.postConstruct();
     }
 
-    protected IClass
+    @Override protected IClass
     findIClass(String descriptor) throws ClassNotFoundException {
         String className = Descriptor.toClassName(descriptor);
 
@@ -77,5 +77,4 @@ class ResourceFinderIClassLoader extends IClassLoader {
         this.defineIClass(iClass);
         return iClass;
     }
-
 }

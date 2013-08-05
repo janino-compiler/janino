@@ -66,7 +66,7 @@ class DeclarationCounter extends Traverser {
     }
 
     // Count class declarations.
-    public void
+    @Override public void
     traverseClassDeclaration(Java.ClassDeclaration cd) {
         ++this.classDeclarationCount;
         super.traverseClassDeclaration(cd);
@@ -74,7 +74,7 @@ class DeclarationCounter extends Traverser {
     private int classDeclarationCount;
 
     // Count interface declarations.
-    public void
+    @Override public void
     traverseInterfaceDeclaration(Java.InterfaceDeclaration id) {
         ++this.interfaceDeclarationCount;
         super.traverseInterfaceDeclaration(id);
@@ -82,7 +82,7 @@ class DeclarationCounter extends Traverser {
     private int interfaceDeclarationCount;
 
     // Count fields.
-    public void
+    @Override public void
     traverseFieldDeclaration(Java.FieldDeclaration fd) {
         this.fieldCount += fd.variableDeclarators.length;
         super.traverseFieldDeclaration(fd);
@@ -90,7 +90,7 @@ class DeclarationCounter extends Traverser {
     private int fieldCount;
 
     // Count local variables.
-    public void
+    @Override public void
     traverseLocalVariableDeclarationStatement(Java.LocalVariableDeclarationStatement lvds) {
         this.localVariableCount += lvds.variableDeclarators.length;
         super.traverseLocalVariableDeclarationStatement(lvds);

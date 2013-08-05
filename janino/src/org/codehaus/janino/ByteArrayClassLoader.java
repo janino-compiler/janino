@@ -32,7 +32,7 @@ import java.util.*;
  * This {@link ClassLoader} allows for the loading of a set of Java&trade; classes
  * provided in class file format.
  */
-public
+@SuppressWarnings({ "rawtypes", "unchecked" }) public
 class ByteArrayClassLoader extends ClassLoader {
 
     /**
@@ -59,7 +59,7 @@ class ByteArrayClassLoader extends ClassLoader {
      * method, because {@link ClassLoader#loadClass(java.lang.String)} is
      * <code>synchronized</code>.
      */
-    protected Class
+    @Override protected Class
     findClass(String name) throws ClassNotFoundException {
         byte[] data = (byte[]) this.classes.get(name);
         if (data == null) throw new ClassNotFoundException(name);
@@ -85,7 +85,7 @@ class ByteArrayClassLoader extends ClassLoader {
      * Roughly speaking, equal {@link ByteArrayClassLoader}s will return functionally identical
      * {@link Class}es on {@link ClassLoader#loadClass(java.lang.String)}.
      */
-    public boolean
+    @Override public boolean
     equals(Object o) {
         if (!(o instanceof ByteArrayClassLoader)) return false;
         if (this == o) return true;
@@ -107,8 +107,7 @@ class ByteArrayClassLoader extends ClassLoader {
         return true;
     }
 
-    /** @{inheritDoc} */
-    public int
+    @Override public int
     hashCode() {
         int hc = this.getParent().hashCode();
 

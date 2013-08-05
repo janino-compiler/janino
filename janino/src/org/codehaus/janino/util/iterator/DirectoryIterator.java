@@ -51,7 +51,7 @@ import org.codehaus.janino.util.Producer;
  *   </li>
  * </ul>
  */
-public
+@SuppressWarnings({ "rawtypes", "unchecked" }) public
 class DirectoryIterator extends ProducerIterator {
     public
     DirectoryIterator(
@@ -62,7 +62,7 @@ class DirectoryIterator extends ProducerIterator {
         super(new Producer() {
             private final List stateStack = DirectoryIterator.newArrayList(new State(rootDirectory));
 
-            public Object
+            @Override public Object
             produce() {
                 while (!this.stateStack.isEmpty()) {
                     State state = (State) this.stateStack.get(this.stateStack.size() - 1);
@@ -70,7 +70,8 @@ class DirectoryIterator extends ProducerIterator {
                         this.stateStack.add(new State((File) state.directories.next()));
                     } else
                     if (state.files.hasNext()) {
-                        return (File) state.files.next();
+                        File file = (File) state.files.next();
+                        return file;
                     } else
                     {
                         this.stateStack.remove(this.stateStack.size() - 1);

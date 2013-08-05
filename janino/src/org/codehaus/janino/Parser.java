@@ -122,7 +122,7 @@ import org.codehaus.janino.util.enumerator.Enumerator;
 /**
  * A parser for the Java&trade; programming language.
  */
-public
+@SuppressWarnings({ "rawtypes", "unchecked" }) public
 class Parser {
     private final Scanner scanner;
 
@@ -169,7 +169,7 @@ class Parser {
     parsePackageDeclaration() throws CompileException, IOException {
         this.read("package");
         Location loc         = this.location();
-        String   packageName = Parser.join(this.parseTypeName(), ".");
+        String   packageName = Parser.join(this.parseQualifiedIdentifier(), ".");
         this.read(";");
         this.verifyStringIsConventionalPackageName(packageName, loc);
         return new PackageDeclaration(loc, packageName);
@@ -231,7 +231,7 @@ class Parser {
      * QualifiedIdentifier := Identifier { '.' Identifier }
      */
     public String[]
-    parseTypeName() throws CompileException, IOException {
+    parseQualifiedIdentifier() throws CompileException, IOException {
         List l = new ArrayList();
         l.add(this.readIdentifier());
         while (this.peek(".") && this.peekNextButOne().type == Token.IDENTIFIER) {
@@ -266,7 +266,7 @@ class Parser {
             if (optionalDocComment == null) this.warning("IDCM", "Interface doc comment missing", this.location());
             return (PackageMemberInterfaceDeclaration) this.parseInterfaceDeclarationRest(
                 optionalDocComment,                          // optionalDocComment
-                maas,                                   // modifiers
+                maas,                                        // modifiersAndAnnotations
                 InterfaceDeclarationContext.COMPILATION_UNIT // context
             );
         default:
@@ -339,23 +339,21 @@ class Parser {
     private Java.Annotation
     parseAnnotation() throws CompileException, IOException {
         this.read("@");
-        String[] identifiers = this.parseTypeName();
+        ReferenceType type = this.parseReferenceType();
 
-        if (identifiers.length == 1 && !this.peek("(")) return new Java.MarkerAnnotation(identifiers[0]);
+        if (!this.peekRead("(")) return new Java.MarkerAnnotation(type);
 
-        this.read("(");
-
-        if (identifiers.length == 1 && (this.peek().type != Token.IDENTIFIER || !this.peekNextButOne("="))) {
+        if (this.peekIdentifier() == null || !this.peekNextButOne("=")) {
             Java.ElementValue elementValue = parseElementValue();
             this.read(")");
-            return new Java.SingleElementAnnotation(identifiers[0], elementValue);
+            return new Java.SingleElementAnnotation(type, elementValue);
         }
 
         List/*<Java.ElementValuePair>*/ evps = new ArrayList();
         while (!this.peekRead(")")) evps.add(this.parseElementValuePair());
 
         return new Java.NormalAnnotation(
-            identifiers,
+            type,
             (ElementValuePair[]) evps.toArray(new Java.ElementValuePair[evps.size()])
         );
     }
@@ -567,10 +565,9 @@ class Parser {
             if (optionalDocComment == null) {
                 this.warning("MIDCM", "Member interface doc comment missing", this.location());
             }
-            modifiersAndAnnotations.modifiers |= Mod.STATIC;
             classDeclaration.addMemberTypeDeclaration((MemberTypeDeclaration) this.parseInterfaceDeclarationRest(
                 optionalDocComment,                                // optionalDocComment
-                modifiersAndAnnotations,                           // modifiersAndAnnotations
+                modifiersAndAnnotations.add(Mod.STATIC),           // modifiersAndAnnotations
                 InterfaceDeclarationContext.NAMED_TYPE_DECLARATION // context
             ));
             return;
@@ -711,10 +708,9 @@ class Parser {
                 if (optionalDocComment == null) this.warning("MDCM", "Method doc comment missing", this.location());
                 Location location = this.location();
                 String   name     = this.readIdentifier();
-                maas.modifiers |= Mod.ABSTRACT | Mod.PUBLIC;
                 interfaceDeclaration.addDeclaredMethod(this.parseMethodDeclarationRest(
                     optionalDocComment,                      // optionalDocComment
-                    maas,                                    // modifiersAndAnnotations
+                    maas.add(Mod.ABSTRACT | Mod.PUBLIC),     // modifiersAndAnnotations
                     new BasicType(location, BasicType.VOID), // type
                     name                                     // name
                 ));
@@ -725,11 +721,10 @@ class Parser {
                 if (optionalDocComment == null) {
                     this.warning("MCDCM", "Member class doc comment missing", this.location());
                 }
-                maas.modifiers |= Mod.STATIC | Mod.PUBLIC;
                 interfaceDeclaration.addMemberTypeDeclaration(
                     (MemberTypeDeclaration) this.parseClassDeclarationRest(
                         optionalDocComment,                      // optionalDocComment
-                        maas,                                    // ModifiersAndAnnotations
+                        maas.add(Mod.STATIC | Mod.PUBLIC),       // ModifiersAndAnnotations
                         ClassDeclarationContext.TYPE_DECLARATION // context
                     )
                 );
@@ -740,11 +735,10 @@ class Parser {
                 if (optionalDocComment == null) {
                     this.warning("MIDCM", "Member interface doc comment missing", this.location());
                 }
-                maas.modifiers |= Mod.STATIC | Mod.PUBLIC;
                 interfaceDeclaration.addMemberTypeDeclaration(
                     (MemberTypeDeclaration) this.parseInterfaceDeclarationRest(
                         optionalDocComment,                                // optionalDocComment
-                        maas,                                              // ModifiersAndAnnotations
+                        maas.add(Mod.STATIC | Mod.PUBLIC),                 // ModifiersAndAnnotations
                         InterfaceDeclarationContext.NAMED_TYPE_DECLARATION // context
                     )
                 );
@@ -759,25 +753,23 @@ class Parser {
                 // Method declarator.
                 if (this.peek("(")) {
                     if (optionalDocComment == null) this.warning("MDCM", "Method doc comment missing", this.location());
-                    maas.modifiers |= Mod.ABSTRACT | Mod.PUBLIC;
                     interfaceDeclaration.addDeclaredMethod(this.parseMethodDeclarationRest(
-                        optionalDocComment, // declaringType
-                        maas,               // optionalDocComment
-                        memberType,         // modifiers
-                        memberName          // name
+                        optionalDocComment,                  // optionalDocComment
+                        maas.add(Mod.ABSTRACT | Mod.PUBLIC), // modifiersAndAnnotations
+                        memberType,                          // type
+                        memberName                           // name
                     ));
                 } else
 
                 // Field declarator.
                 {
                     if (optionalDocComment == null) this.warning("FDCM", "Field doc comment missing", this.location());
-                    maas.modifiers |= Mod.PUBLIC | Mod.STATIC | Mod.FINAL;
                     FieldDeclaration fd = new FieldDeclaration(
-                        location,                                  // location
-                        optionalDocComment,                        // optionalDocComment
-                        maas,                                      // modifiers
-                        memberType,                                // type
-                        this.parseFieldDeclarationRest(memberName) // variableDeclarators
+                        location,                                      // location
+                        optionalDocComment,                            // optionalDocComment
+                        maas.add(Mod.PUBLIC | Mod.STATIC | Mod.FINAL), // modifiersAndAnnotations
+                        memberType,                                    // type
+                        this.parseFieldDeclarationRest(memberName)     // variableDeclarators
                     );
                     interfaceDeclaration.addConstantDeclaration(fd);
                 }
@@ -1626,14 +1618,13 @@ class Parser {
     public Statement
     parseAssertStatement() throws CompileException, IOException {
         this.read("assert");
+        Location loc = this.location();
 
-        Java.AssertStatement assertStatement = new Java.AssertStatement(
-            this.location(),                                                                // location
-            this.parseExpression().toRvalueOrCompileException(),                            // expression1
-            this.peekRead(":") ? this.parseExpression().toRvalueOrCompileException() : null // optionalExpression2
-        );
+        Rvalue expression1         = this.parseExpression().toRvalueOrCompileException();
+        Rvalue optionalExpression2 = this.peekRead(":") ? this.parseExpression().toRvalueOrCompileException() : null;
         this.read(";");
-        return assertStatement;
+
+        return new Java.AssertStatement(loc, expression1, optionalExpression2);
     }
 
     /**
@@ -1694,7 +1685,7 @@ class Parser {
      */
     public ReferenceType
     parseReferenceType() throws CompileException, IOException {
-        String[] identifiers = this.parseTypeName();
+        String[] identifiers = this.parseQualifiedIdentifier();
         if (this.peek("<")) throw this.compileException("JANINO does not support generics");
         return new ReferenceType(this.location(), identifiers);
     }
@@ -2119,7 +2110,7 @@ class Parser {
 
         if (this.peekIdentifier() != null) {
             Location location = this.location();
-            String[] qi       = this.parseTypeName();
+            String[] qi       = this.parseQualifiedIdentifier();
             if (this.peek("(")) {
                 // Name Arguments
                 return new MethodInvocation(

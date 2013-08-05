@@ -59,7 +59,7 @@ import java.util.*;
  * Reporting is only enabled if the Benchmark object was created through {@link #Benchmark(boolean)}
  * with a <code>true</code> argument.
  */
-public
+@SuppressWarnings({ "rawtypes", "unchecked" }) public
 class Benchmark {
     private final Stack beginTimes = new Stack(); // Long
 
@@ -91,7 +91,7 @@ class Benchmark {
     Benchmark(boolean reportingEnabled) {
         this.reportingEnabled = reportingEnabled;
         this.reporter         = new Reporter() {
-            public void report(String message) { System.out.println(message); }
+            @Override public void report(String message) { System.out.println(message); }
         };
     }
 

@@ -30,7 +30,7 @@ package org.codehaus.janino;
  * An {@link IClassLoader} that loads {@link IClass}es through a reflection
  * {@link ClassLoader}.
  */
-public
+@SuppressWarnings("rawtypes") public
 class ClassLoaderIClassLoader extends IClassLoader {
     private static final boolean DEBUG = false;
 
@@ -62,8 +62,7 @@ class ClassLoaderIClassLoader extends IClassLoader {
     public ClassLoader
     getClassLoader() { return this.classLoader; }
 
-    /** @{inheritDoc} */
-    protected IClass
+    @Override protected IClass
     findIClass(String descriptor) throws ClassNotFoundException {
 
         Class clazz;

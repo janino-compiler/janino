@@ -37,12 +37,12 @@ import org.codehaus.janino.JaninoRuntimeException;
  * An {@link java.util.Iterator} that traverses a {@link java.util.Collection} of
  * {@link java.util.Iterator}s.
  */
-public
+@SuppressWarnings("rawtypes") public
 class MultiIterator implements Iterator {
     private static final Iterator AT_END = new Iterator() {
-        public boolean hasNext() { return false; }
-        public Object  next()    { throw new NoSuchElementException(); }
-        public void    remove()  { throw new UnsupportedOperationException(); }
+        @Override public boolean hasNext() { return false; }
+        @Override public Object  next()    { throw new NoSuchElementException(); }
+        @Override public void    remove()  { throw new UnsupportedOperationException(); }
     };
 
     private final Iterator outer; // Over Iterators, Collections or arrays
@@ -128,7 +128,7 @@ class MultiIterator implements Iterator {
         }).iterator();
     }
 
-    public boolean
+    @Override public boolean
     hasNext() {
         for (;;) {
             if (this.inner.hasNext()) return true;
@@ -149,13 +149,13 @@ class MultiIterator implements Iterator {
         }
     }
 
-    public Object
+    @Override public Object
     next() {
         if (this.hasNext()) return this.inner.next();
         throw new NoSuchElementException();
     }
 
-    public void
+    @Override public void
     remove() {
         this.inner.remove();
     }

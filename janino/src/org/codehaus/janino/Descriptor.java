@@ -42,7 +42,7 @@ import java.util.Map;
  *   <li><code>Lpkg1/pkg2/Outer$Inner;</code> Member class
  * </ul>
  */
-public final
+@SuppressWarnings({ "rawtypes", "unchecked" }) public final
 class Descriptor {
     private Descriptor() {}
 
@@ -304,10 +304,12 @@ class Descriptor {
     public static final String JAVA_LANG_ERROR = "Ljava/lang/Error;";
     /** The field descriptor for the interface {@link Cloneable}. */
     public static final String JAVA_LANG_CLONEABLE = "Ljava/lang/Cloneable;";
+    /** The field descriptor for the annotation {@link Override}. */
+    public static final String JAVA_LANG_OVERRIDE = "Ljava/lang/Override;";
     /** The field descriptor for the interface {@link java.io.Serializable}. */
     public static final String JAVA_IO_SERIALIZABLE = "Ljava/io/Serializable;";
     /** The field descriptor for the wrapper class {@link AssertionError}. */
-    public static final String JAVA_LANG_ASSERTION_ERROR = "Ljava/lang/AssertionError;";
+    public static final String JAVA_LANG_ASSERTIONERROR = "Ljava/lang/AssertionError;";
 
     /** The field descriptor for the wrapper class {@link Boolean}. */
     public static final String JAVA_LANG_BOOLEAN = "Ljava/lang/Boolean;";
@@ -347,6 +349,8 @@ class Descriptor {
         m.put(Descriptor.JAVA_LANG_RUNTIMEEXCEPTION, "java.lang.RuntimeException");
         m.put(Descriptor.JAVA_LANG_ERROR,            "java.lang.Error");
         m.put(Descriptor.JAVA_LANG_CLONEABLE,        "java.lang.Cloneable");
+        m.put(Descriptor.JAVA_LANG_ASSERTIONERROR,   "java.lang.AssertionError");
+        m.put(Descriptor.JAVA_LANG_OVERRIDE,         "java.lang.Override");
         m.put(Descriptor.JAVA_IO_SERIALIZABLE,       "java.io.Serializable");
         m.put(Descriptor.JAVA_LANG_BOOLEAN,          "java.lang.Boolean");
         m.put(Descriptor.JAVA_LANG_BYTE,             "java.lang.Byte");

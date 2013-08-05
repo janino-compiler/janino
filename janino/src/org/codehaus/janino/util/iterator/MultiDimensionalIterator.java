@@ -39,13 +39,13 @@ import java.util.*;
  * "2" produces an {@link Iterator} that behaves as explained above, and so
  * forth.
  */
-public
+@SuppressWarnings("rawtypes") public
 class MultiDimensionalIterator implements Iterator {
     private final Iterator[]      nest;
     private static final Iterator EMPTY_ITERATOR = new Iterator() {
-        public boolean hasNext() { return false; }
-        public Object  next()    { throw new NoSuchElementException(); }
-        public void    remove()  { throw new UnsupportedOperationException("remove"); }
+        @Override public boolean hasNext() { return false; }
+        @Override public Object  next()    { throw new NoSuchElementException(); }
+        @Override public void    remove()  { throw new UnsupportedOperationException("remove"); }
     };
 
     public
@@ -58,7 +58,7 @@ class MultiDimensionalIterator implements Iterator {
     /**
      * @throws UniterableElementException
      */
-    public boolean
+    @Override public boolean
     hasNext() {
 
         // Unroll this check because it is so performance critical:
@@ -93,11 +93,11 @@ class MultiDimensionalIterator implements Iterator {
         }
     }
 
-    public Object
+    @Override public Object
     next() {
         if (!this.hasNext()) throw new NoSuchElementException();
         return this.nest[this.nest.length - 1].next();
     }
 
-    public void remove() { throw new UnsupportedOperationException("remove"); }
+    @Override public void remove() { throw new UnsupportedOperationException("remove"); }
 }

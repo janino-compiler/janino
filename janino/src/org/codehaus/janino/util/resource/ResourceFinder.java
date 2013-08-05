@@ -69,7 +69,7 @@ class ResourceFinder {
      * for some reason.
      */
     public static final ResourceFinder EMPTY_RESOURCE_FINDER = new ResourceFinder() {
-        public Resource findResource(String resourceName) { return null; }
-        public String   toString()                        { return "invalid entry"; }
+        @Override public Resource findResource(String resourceName) { return null; }
+        @Override public String   toString()                        { return "invalid entry"; }
     };
 }

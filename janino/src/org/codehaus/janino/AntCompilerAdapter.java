@@ -71,7 +71,7 @@ class AntCompilerAdapter extends DefaultCompilerAdapter {
      *
      * @return "true" on success
      */
-    public boolean
+    @Override public boolean
     execute() {
 
         // Convert source files into source file names.

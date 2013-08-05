@@ -77,7 +77,7 @@ import org.codehaus.janino.util.resource.PathResourceFinder;
  * <i>file-name-patterns</i> work as described in
  * {@link org.codehaus.janino.util.StringPattern#parseCombinedPattern(String)}.
  */
-public
+@SuppressWarnings({ "rawtypes", "unchecked" }) public
 class JGrep {
 
     private static final boolean DEBUG = false;
@@ -176,7 +176,7 @@ class JGrep {
                         try {
                             IExpressionEvaluator ee = new ExpressionEvaluator();
                             ee.setClassName(JGrep.class.getName() + "PE");
-                            mit.predicates.add((MethodInvocationPredicate) ee.createFastEvaluator(
+                            mit.predicates.add(ee.createFastEvaluator(
                                 predicateExpression,
                                 MethodInvocationPredicate.class,
                                 new String[] { "uc", "invocation", "method" }
@@ -244,7 +244,7 @@ class JGrep {
             if ("print-location-and-match".equals(action)) {
                 return new MethodInvocationAction() {
 
-                    public void
+                    @Override public void
                     execute(UnitCompiler uc, Java.Invocation invocation, IClass.IMethod method) {
                         System.out.println(invocation.getLocation() + ": " + method);
                     }
@@ -253,7 +253,7 @@ class JGrep {
             if ("print-location".equals(action)) {
                 return new MethodInvocationAction() {
 
-                    public void
+                    @Override public void
                     execute(UnitCompiler uc, Java.Invocation invocation, IClass.IMethod method) {
                         System.out.println(invocation.getLocation());
                     }
@@ -508,11 +508,11 @@ class JGrep {
         this.jGrep(DirectoryIterator.traverseDirectories(
             rootDirectories,              // rootDirectories
             new FilenameFilter() {        // directoryNameFilter
-                public boolean
+                @Override public boolean
                 accept(File dir, String name) { return StringPattern.matches(directoryNamePatterns, name); }
             },
             new FilenameFilter() {        // fileNameFilter
-                public boolean
+                @Override public boolean
                 accept(File dir, String name) { return StringPattern.matches(fileNamePatterns, name); }
             }
         ), methodInvocationTargets);
@@ -555,7 +555,7 @@ class JGrep {
                     new Traverser() {
 
                         // "method(...)", "x.method(...)"
-                        public void
+                        @Override public void
                         traverseMethodInvocation(Java.MethodInvocation mi) {
                             try {
                                 this.match(mi, uc.findIMethod(mi));
@@ -566,7 +566,7 @@ class JGrep {
                         }
 
                         // "super.method(...)"
-                        public void
+                        @Override public void
                         traverseSuperclassMethodInvocation(Java.SuperclassMethodInvocation scmi) {
                             try {
                                 this.match(scmi, uc.findIMethod(scmi));
@@ -577,21 +577,21 @@ class JGrep {
                         }
 
                         // new Xyz(...)
-                        public void
+                        @Override public void
                         traverseNewClassInstance(Java.NewClassInstance nci) {
     //                        System.out.println(nci.getLocation() + ": " + nci);
                             super.traverseNewClassInstance(nci);
                         }
 
                         // new Xyz(...) {}
-                        public void
+                        @Override public void
                         traverseNewAnonymousClassInstance(Java.NewAnonymousClassInstance naci) {
     //                        System.out.println(naci.getLocation() + ": " + naci);
                             super.traverseNewAnonymousClassInstance(naci);
                         }
 
                         // Explicit constructor invocation ("this(...)", "super(...)").
-                        public void
+                        @Override public void
                         traverseConstructorInvocation(Java.ConstructorInvocation ci) {
     //                        System.out.println(ci.getLocation() + ": " + ci);
                             super.traverseConstructorInvocation(ci);
@@ -695,7 +695,7 @@ class JGrep {
         /**
          * @param type field descriptor of the {@IClass} to load, e.g. "Lpkg1/pkg2/Outer$Inner;"
          */
-        protected IClass
+        @Override protected IClass
         findIClass(final String type) {
             if (JGrep.DEBUG) System.out.println("type = " + type);
 

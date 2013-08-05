@@ -57,7 +57,7 @@ import java.util.*;
  *
  * @see <a href="http://java.sun.com/developer/Books/effectivejava/Chapter5.pdf">Effective Java, Item 21</a>
  */
-public abstract
+@SuppressWarnings({ "rawtypes", "unchecked" }) public abstract
 class Enumerator {
     final String name;
 
@@ -80,13 +80,13 @@ class Enumerator {
     /**
      * Equality is reference identity.
      */
-    public final boolean
+    @Override public final boolean
     equals(Object that) { return this == that; }
 
     /**
      * Enforce {@link Object}'s notion of {@link Object#hashCode()}.
      */
-    public final int
+    @Override public final int
     hashCode() { return super.hashCode(); }
 
     /**
@@ -130,6 +130,6 @@ class Enumerator {
     /**
      * Returns the <code>name</code> passed to {@link #Enumerator(String)}.
      */
-    public String
+    @Override public String
     toString() { return this.name; }
 }

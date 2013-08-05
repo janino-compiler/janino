@@ -53,7 +53,7 @@ class UnicodeUnescapeReader extends FilterReader {
      *
      * @throws UnicodeUnescapeException Invalid escape sequence encountered
      */
-    public int
+    @Override public int
     read() throws IOException {
         int c;
 
@@ -100,7 +100,7 @@ class UnicodeUnescapeReader extends FilterReader {
     /**
      * Override {@link FilterReader#read(char[], int, int)}.
      */
-    public int
+    @Override public int
     read(char[] cbuf, int off, int len) throws IOException {
         if (len == 0) return 0;
         int res = 0;

@@ -35,7 +35,7 @@ import java.util.*;
  * with the resource name such that slashes in the resource name map to file
  * separators.
  */
-public
+@SuppressWarnings({ "rawtypes", "unchecked" }) public
 class DirectoryResourceFinder extends FileResourceFinder {
     private final File directory;
     private final Map  subdirectoryNameToFiles = new HashMap(); // String directoryName => Set => File
@@ -46,10 +46,10 @@ class DirectoryResourceFinder extends FileResourceFinder {
     public
     DirectoryResourceFinder(File directory) { this.directory = directory; }
 
-    public final String toString() { return "dir:" + this.directory; }
+    @Override public final String toString() { return "dir:" + this.directory; }
 
     // Implement FileResourceFinder.
-    protected final File
+    @Override protected final File
     findResourceAsFile(String resourceName) {
 
         // Determine the subdirectory name (null for no subdirectory).

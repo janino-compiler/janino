@@ -39,7 +39,7 @@ import org.codehaus.janino.util.resource.ResourceFinder;
  * A {@link ClassLoader} that uses a {@link org.codehaus.janino.util.resource.ResourceFinder}
  * to find ".class" files.
  */
-public
+@SuppressWarnings({ "rawtypes", "unchecked" }) public
 class ResourceFinderClassLoader extends ClassLoader {
 
     private final ResourceFinder resourceFinder;
@@ -56,7 +56,7 @@ class ResourceFinderClassLoader extends ClassLoader {
     /**
      * @throws ClassNotFoundException
      */
-    protected Class
+    @Override protected Class
     findClass(String className) throws ClassNotFoundException {
 
         // Find the resource containing the class bytecode.

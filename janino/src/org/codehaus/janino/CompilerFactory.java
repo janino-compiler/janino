@@ -28,51 +28,44 @@ package org.codehaus.janino;
 
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+
 import org.codehaus.commons.compiler.*;
 
 /**
  * The JANINO implementation of {@link ICompilerFactory}.
  */
-public
+@SuppressWarnings({ "rawtypes", "unchecked" }) public
 class CompilerFactory extends AbstractCompilerFactory {
 
-    /** @{inheritDoc} */
-    public String
+    @Override public String
     getId() { return "org.codehaus.janino"; }
 
-    /** @{inheritDoc} */
-    public String
+    @Override public String
     getImplementationVersion() { return CompilerFactory.class.getPackage().getImplementationVersion(); }
 
-    /** @{inheritDoc} */
-    public IExpressionEvaluator
+    @Override public IExpressionEvaluator
     newExpressionEvaluator() { return new ExpressionEvaluator(); }
 
-    /** @{inheritDoc} */
-    public IScriptEvaluator
+    @Override public IScriptEvaluator
     newScriptEvaluator() { return new ScriptEvaluator(); }
 
-    /** @{inheritDoc} */
-    public IClassBodyEvaluator
+    @Override public IClassBodyEvaluator
     newClassBodyEvaluator() { return new ClassBodyEvaluator(); }
 
-    /** @{inheritDoc} */
-    public ISimpleCompiler
+    @Override public ISimpleCompiler
     newSimpleCompiler() { return new SimpleCompiler(); }
 
-    /** @{inheritDoc} */
-    public AbstractJavaSourceClassLoader
+    @Override public AbstractJavaSourceClassLoader
     newJavaSourceClassLoader() {
         return (AbstractJavaSourceClassLoader) AccessController.doPrivileged(new PrivilegedAction() {
-            public Object run() { return new JavaSourceClassLoader(); }
+            @Override public Object run() { return new JavaSourceClassLoader(); }
         });
     }
 
-    /** @{inheritDoc} */
-    public AbstractJavaSourceClassLoader
+    @Override public AbstractJavaSourceClassLoader
     newJavaSourceClassLoader(final ClassLoader parentClassLoader) {
         return (AbstractJavaSourceClassLoader) AccessController.doPrivileged(new PrivilegedAction() {
-            public Object run() { return new JavaSourceClassLoader(parentClassLoader); }
+            @Override public Object run() { return new JavaSourceClassLoader(parentClassLoader); }
         });
     }
 }

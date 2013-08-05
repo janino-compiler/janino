@@ -44,7 +44,7 @@ import org.codehaus.janino.util.ClassFile;
  * byte code, the exception table, generation of line number tables, allocation of local variables,
  * determining of stack size and local variable table size and flow analysis.
  */
-public
+@SuppressWarnings({ "rawtypes", "unchecked" }) public
 class CodeContext {
     private static final boolean DEBUG = false;
 
@@ -1006,7 +1006,7 @@ class CodeContext {
             }
         }
 
-        public boolean
+        @Override public boolean
         relocate() {
             if (this.destination.offset == Offset.UNSET) {
                 throw new JaninoRuntimeException("Cannot relocate branch to unset destination offset");
@@ -1058,9 +1058,9 @@ class CodeContext {
                     //  [GOTO_W offset]
                     ba = new byte[] {
                         CodeContext.invertBranchOpcode((byte) this.opcode),
-                        (byte) 0,
-                        (byte) 8, //jump from this instruction past the GOTO_W
-                        (byte) Opcode.GOTO_W,
+                        0,
+                        8, // Jump from this instruction past the GOTO_W
+                        Opcode.GOTO_W,
                         (byte) (offset >> 24),
                         (byte) (offset >> 16),
                         (byte) (offset >> 8),
@@ -1129,7 +1129,7 @@ class CodeContext {
             this.destination = destination;
         }
 
-        public boolean
+        @Override public boolean
         relocate() {
             if (this.source.offset == Offset.UNSET || this.destination.offset == Offset.UNSET) {
                 throw new JaninoRuntimeException("Cannot relocate offset branch to unset destination offset");
@@ -1239,8 +1239,7 @@ class CodeContext {
         /** @return The {@link CodeContext} that this {@link Offset} belongs to */
         public final CodeContext getCodeContext() { return CodeContext.this; }
 
-        /** @{inheritDoc} */
-        public String
+        @Override public String
         toString() { return CodeContext.this.classFile.getThisClassName() + ": " + this.offset; }
     }
 

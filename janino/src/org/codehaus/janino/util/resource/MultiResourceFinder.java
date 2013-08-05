@@ -32,7 +32,7 @@ import java.util.*;
  * A {@link org.codehaus.janino.util.resource.ResourceFinder} that finds its resources through a collection of
  * other {@link org.codehaus.janino.util.resource.ResourceFinder}s.
  */
-public
+@SuppressWarnings("rawtypes") public
 class MultiResourceFinder extends ResourceFinder {
     private final Collection resourceFinders; // One for each entry
 
@@ -44,7 +44,7 @@ class MultiResourceFinder extends ResourceFinder {
 
     // Implement ResourceFinder.
 
-    public final Resource
+    @Override public final Resource
     findResource(String resourceName) {
         for (Iterator it = this.resourceFinders.iterator(); it.hasNext();) {
             ResourceFinder rf       = (ResourceFinder) it.next();
