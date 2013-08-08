@@ -30,7 +30,7 @@ package org.codehaus.commons.compiler;
  * An {@link Exception} that is associated with an optional {@link Location} in a source file.
  */
 public
-class LocatedException extends CausedException {
+class LocatedException extends Exception {
 
     private final Location optionalLocation;
 

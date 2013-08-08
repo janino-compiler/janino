@@ -315,8 +315,8 @@ class Scanner {
         }
 
         // Skip whitespace and process comments.
-        int          state = 0;
-        StringBuffer dcsb  = null; // For doc comment
+        int           state = 0;
+        StringBuilder dcsb  = null; // For doc comment
 
         PROCESS_COMMENTS:
         for (;;) {
@@ -395,8 +395,7 @@ class Scanner {
                             new Location(this.optionalFileName, this.nextCharLineNumber, this.nextCharColumnNumber)
                         );
                     }
-                    dcsb = new StringBuffer();
-                    dcsb.append((char) this.nextChar);
+                    dcsb = new StringBuilder().append((char) this.nextChar);
                     state = (
                         (this.nextChar == '\r' || this.nextChar == '\n') ? 6
                         : this.nextChar == '*' ? 8
@@ -517,7 +516,7 @@ class Scanner {
 
         // Scan identifier.
         if (Character.isJavaIdentifierStart((char) this.nextChar)) {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             sb.append((char) this.nextChar);
             for (;;) {
                 this.readNextChar();
@@ -553,7 +552,7 @@ class Scanner {
 
         // Scan string literal.
         if (this.nextChar == '"') {
-            StringBuffer sb = new StringBuffer("\"");
+            StringBuilder sb = new StringBuilder("\"");
             this.readNextChar();
             while (this.nextChar != '"') {
                 this.scanLiteralCharacter(sb);
@@ -564,7 +563,7 @@ class Scanner {
 
         // Scan character literal.
         if (this.nextChar == '\'') {
-            StringBuffer sb = new StringBuffer("'");
+            StringBuilder sb = new StringBuilder("'");
             this.readNextChar();
             if (this.nextChar == '\'') {
                 throw new CompileException(
@@ -600,8 +599,8 @@ class Scanner {
 
     private Token
     scanNumericLiteral(boolean hadDecimalPoint) throws CompileException, IOException {
-        StringBuffer sb    = hadDecimalPoint ? new StringBuffer(".") : new StringBuffer();
-        int          state = hadDecimalPoint ? 2 : 0;
+        StringBuilder sb    = hadDecimalPoint ? new StringBuilder(".") : new StringBuilder();
+        int           state = hadDecimalPoint ? 2 : 0;
         for (;;) {
             switch (state) {
 
@@ -793,10 +792,10 @@ class Scanner {
     }
 
     /**
-     * Scan the next literal character into a {@link StringBuffer}.
+     * Scan the next literal character into a {@link StringBuilder}.
      */
     private void
-    scanLiteralCharacter(StringBuffer sb) throws CompileException, IOException {
+    scanLiteralCharacter(StringBuilder sb) throws CompileException, IOException {
         if (this.nextChar == -1) throw new CompileException("EOF in literal", this.location());
 
         if (this.nextChar == '\r' || this.nextChar == '\n') {

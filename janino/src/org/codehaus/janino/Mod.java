@@ -71,7 +71,7 @@ class Mod {
     public static String
     shortToString(short sh) {
         if (sh == 0) return "";
-        StringBuffer res = new StringBuffer();
+        StringBuilder res = new StringBuilder();
         for (int i = 0; i < Mod.MAPPINGS.length; i += 2) {
             if ((sh & ((Short) Mod.MAPPINGS[i + 1]).shortValue()) == 0) continue;
             if (res.length() > 0) res.append(' ');

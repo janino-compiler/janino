@@ -314,7 +314,7 @@ class JGrep {
 
     private static String
     readIdentifierPattern(Parser p) throws CompileException, IOException {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         if (p.peekRead("*")) {
             sb.append('*');
         } else

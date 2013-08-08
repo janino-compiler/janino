@@ -86,8 +86,8 @@ class ClassBodyDemo {
 
         Reader r = new FileReader(fileName);
         try {
-            StringBuffer sb = new StringBuffer();
-            char[]       ca = new char[1024];
+            StringBuilder sb = new StringBuilder();
+            char[]        ca = new char[1024];
             for (;;) {
                 int cnt = r.read(ca, 0, ca.length);
                 if (cnt == -1) break;

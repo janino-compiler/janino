@@ -166,8 +166,8 @@ import org.codehaus.janino.Visitor.TypeDeclarationVisitor;
 import org.codehaus.janino.util.ClassFile;
 
 /**
- * This class actually implements the Java&trade; compiler. It is
- * associated with exactly one compilation unit which it compiles.
+ * This class actually implements the Java&trade; compiler. It is associated with exactly one compilation unit which it
+ * compiles.
  */
 @SuppressWarnings({ "rawtypes", "unchecked" }) public
 class UnitCompiler {
@@ -175,20 +175,17 @@ class UnitCompiler {
 
     /**
      * This constant determines the number of operands up to which the
-     *
+     * <pre>
      *      a.concat(b).concat(c)
-     *
+     * </pre>
      * strategy is used to implement string concatenation. For more operands, the
-     *
-     *      new StringBuffer(a).append(b).append(c).append(d).toString()
-     *
+     * <pre>
+     *      new StringBuilder(a).append(b).append(c).append(d).toString()
+     * </pre>
      * strategy is chosen.
-     *
-     * A very good article from Tom Gibara
-     *
-     *    http://www.tomgibara.com/janino-evaluation/string-concatenation-benchmark
-     *
-     * analyzes the impact of this decision and recommends a value of three.
+     * <p>
+     * <a href="http://www.tomgibara.com/janino-evaluation/string-concatenation-benchmark">A very good article from Tom
+     * Gibara</a> analyzes the impact of this decision and recommends a value of three.
      */
     private static final int STRING_CONCAT_LIMIT = 3;
 
@@ -196,29 +193,6 @@ class UnitCompiler {
     UnitCompiler(CompilationUnit compilationUnit, IClassLoader iClassLoader) throws CompileException {
         this.compilationUnit = compilationUnit;
         this.iClassLoader    = iClassLoader;
-
-        try {
-            boolean allowStringBuilder = true;
-            String  targetVersion      = System.getProperty("Janino.TargetVersion");
-            if (targetVersion != null && Double.parseDouble(targetVersion) <= 1.4d) {
-                allowStringBuilder = false;
-            }
-
-            if ((iClassLoader.loadIClass(Descriptor.JAVA_LANG_STRINGBUILDER) != null) && allowStringBuilder) {
-                this.isStringBuilderAvailable = true;
-            } else
-            if (iClassLoader.loadIClass(Descriptor.JAVA_LANG_STRINGBUFFER) != null) {
-                this.isStringBuilderAvailable = false;
-            } else
-            {
-                throw new JaninoRuntimeException("SNO: Could neither load \"StringBuffer\" nor \"StringBuilder\"");
-            }
-        } catch (ClassNotFoundException ex) {
-            throw new JaninoRuntimeException((
-                "SNO: Error loading \"StringBuffer\" or \"StringBuilder\": "
-                + ex.getMessage()
-            ), ex);
-        }
 
         // Compile non-static import declarations. (Must be done here in the constructor and not
         // down in "compileUnit()" because otherwise "resolve()" cannot resolve type names.)
@@ -256,11 +230,22 @@ class UnitCompiler {
                 + "\"" + Java.join(prev, ".") + "\", now as \"" + Java.join(ids, ".") + "\""
             ), stid.getLocation());
         }
-        IClass iClass = this.loadFullyQualifiedClass(ids);
-        if (iClass == null) {
-            this.compileError("Imported class \"" + Java.join(ids, ".") + "\" could not be loaded", stid.getLocation());
+
+        String className = Java.join(ids, ".");
+        for (;;) {
+            if (this.findClassByName(stid.getLocation(), className) != null) return;
+
+            int idx = className.lastIndexOf('.');
+            if (idx == -1) break;
+            className = className.substring(0, idx) + '$' + className.substring(idx + 1);
         }
+        this.compileError("A class '" + Java.join(ids, ".") + "' could not be found", stid.getLocation());
+
+//        if (this.loadFullyQualifiedClass(ids) == null) {
+//            this.compileError("Imported class \"" + Java.join(ids, ".") + "\" could not be loaded", stid.getLocation());
+//        }
     }
+
     private void
     import2(TypeImportOnDemandDeclaration tiodd) {
 
@@ -331,8 +316,8 @@ class UnitCompiler {
     }
 
     /**
-     * Generates an array of {@link ClassFile} objects which represent the classes and
-     * interfaces declared in the compilation unit.
+     * Generates an array of {@link ClassFile} objects which represent the classes and interfaces declared in the
+     * compilation unit.
      */
     public ClassFile[]
     compileUnit(boolean debugSource, boolean debugLines, boolean debugVars) throws CompileException {
@@ -471,13 +456,19 @@ class UnitCompiler {
         }
 
         // Create "ClassFile" object.
-        assert cd.getModifiersAndAnnotations().annotations.length == 0 : "NYI";
         ClassFile cf = new ClassFile(
             (short) (cd.getModifiersAndAnnotations().modifiers | Mod.SUPER), // accessFlags
             iClass.getDescriptor(),                                          // thisClassFD
             iClass.getSuperclass().getDescriptor(),                          // superclassFD
             IClass.getDescriptors(iClass.getInterfaces())                    // interfaceFDs
         );
+
+        // Add annotations with retention != SOURCE.
+        for (int i = 0; i < cd.getModifiersAndAnnotations().annotations.length; i++) {
+            Annotation a = cd.getModifiersAndAnnotations().annotations[i];
+
+//            assert false : "Class '" + iClass + "' has annotation '" + a + "'";
+        }
 
         // Add InnerClasses attribute entry for this class declaration.
         if (cd.getEnclosingScope() instanceof CompilationUnit) {
@@ -620,10 +611,8 @@ class UnitCompiler {
         this.generatedClassFiles.add(cf);
     }
 
-
     /**
-     * Create {@link ClassFile.FieldInfo}s for all fields declared by the
-     * given {@link FieldDeclaration}.
+     * Create {@link ClassFile.FieldInfo}s for all fields declared by the given {@link FieldDeclaration}.
      */
     private void
     addFields(FieldDeclaration fd, ClassFile cf) throws CompileException {
@@ -735,7 +724,6 @@ class UnitCompiler {
         }
 
         // Create "ClassFile" object.
-        assert id.getModifiersAndAnnotations().annotations.length == 0;
         ClassFile cf = new ClassFile(
             (short) (               // accessFlags
                 id.getModifiersAndAnnotations().modifiers
@@ -747,6 +735,13 @@ class UnitCompiler {
             Descriptor.JAVA_LANG_OBJECT, // superclassFD
             interfaceDescriptors    // interfaceFDs
         );
+
+        // Add annotations with retention != SOURCE.
+        for (int i = 0; i < id.getModifiersAndAnnotations().annotations.length; i++) {
+            Annotation a = id.getModifiersAndAnnotations().annotations[i];
+
+//            assert false : "Interface '" + iClass + "' has annotation '" + a + "'";
+        }
 
         // Set "SourceFile" attribute.
         if (this.debugSource) {
@@ -790,9 +785,10 @@ class UnitCompiler {
 
     /**
      * Create class initialization method iff there is any initialization code.
-     * @param decl  The type declaration
-     * @param cf    The class file into which to put the method
-     * @param b     The block for the method (possibly empty)
+     *
+     * @param decl              The type declaration
+     * @param cf                The class file into which to put the method
+     * @param b                 The block for the method (possibly empty)
      * @throws CompileException
      */
     private void
@@ -825,8 +821,6 @@ class UnitCompiler {
      * Compile all of the types for this declaration
      * <p>
      * NB: as a side effect this will fill in the synthetic field map
-     *
-     * @throws CompileException
      */
     private void
     compileDeclaredMemberTypes(TypeDeclaration decl, ClassFile cf) throws CompileException {
@@ -852,6 +846,7 @@ class UnitCompiler {
      * Compile all of the methods for this declaration
      * <p>
      * NB: as a side effect this will fill in the synthetic field map
+     *
      * @throws CompileException
      */
     private void
@@ -995,8 +990,7 @@ class UnitCompiler {
     }
 
     /**
-     * @return <tt>false</tt> if this statement cannot complete normally (JLS2
-     * 14.20)
+     * @return <tt>false</tt> if this statement cannot complete normally (JLS2 14.20)
      */
     private boolean
     compile(BlockStatement bs) throws CompileException {
@@ -2303,7 +2297,9 @@ class UnitCompiler {
         });
     }
 
-    /** Make the variable name and class name Constant Pool names used by local variables. */
+    /**
+     * Make the variable name and class name Constant Pool names used by local variables.
+     */
     private static void
     makeLocalVariableNames(final CodeContext cc, final ClassFile.MethodInfo mi) {
         ClassFile       cf   = mi.getClassFile();
@@ -2557,8 +2553,7 @@ class UnitCompiler {
     }
 
     /**
-     * Some {@link Rvalue}s compile more efficiently when their value
-     * is not needed, e.g. "i++".
+     * Some {@link Rvalue}s compile more efficiently when their value is not needed, e.g. "i++".
      */
     private void
     compile(Rvalue rv) throws CompileException {
@@ -2742,7 +2737,7 @@ class UnitCompiler {
     /**
      * Some {@link Rvalue}s compile more efficiently when their value is the condition for a branch.
      * <p>
-     * Notice that if "this" is a constant, then either <code>dst</code> is never branched to, or it is unconditionally
+     * Notice that if "this" is a constant, then either {@code dst} is never branched to, or it is unconditionally
      * branched to. "Unexamined code" errors may result during bytecode validation.
      */
     private void
@@ -3038,11 +3033,9 @@ class UnitCompiler {
     }
 
     /**
-     * Generates code that determines the context of the {@link
-     * Rvalue} and puts it on the operand stack. Most expressions
-     * do not have a "context", but some do. E.g. for "x[y]", the context
-     * is "x, y". The bottom line is that for statements like "x[y] += 3"
-     * the context is only evaluated once.
+     * Generates code that determines the context of the {@link Rvalue} and puts it on the operand stack. Most
+     * expressions do not have a "context", but some do. E.g. for "x[y]", the context is "x, y". The bottom line is
+     * that for statements like "x[y] += 3" the context is only evaluated once.
      *
      * @return The size of the context on the operand stack
      */
@@ -3170,10 +3163,9 @@ class UnitCompiler {
     }
 
     /**
-     * Generates code that determines the value of the {@link Rvalue}
-     * and puts it on the operand stack. This method relies on that the
-     * "context" of the {@link Rvalue} is on top of the operand stack
-     * (see {@link #compileContext(Rvalue)}).
+     * Generates code that determines the value of the {@link Rvalue} and puts it on the operand stack. This method
+     * relies on that the "context" of the {@link Rvalue} is on top of the operand stack (see {@link
+     * #compileContext(Rvalue)}).
      *
      * @return The type of the {@link Rvalue}
      */
@@ -4262,8 +4254,7 @@ class UnitCompiler {
     }
 
     /**
-     * Convenience function that calls {@link #compileContext(Rvalue)}
-     * and {@link #compileGet(Rvalue)}.
+     * Convenience function that calls {@link #compileContext(Rvalue)} and {@link #compileGet(Rvalue)}.
      *
      * @return The type of the Rvalue
      */
@@ -4423,7 +4414,7 @@ class UnitCompiler {
                 // String concatenation?
                 // SUPPRESS CHECKSTYLE StringLiteralEquality
                 if (bo.op == "+" && (lhs instanceof String || rhs instanceof String)) {
-                    StringBuffer sb = new StringBuffer(lhs.toString()).append(rhs);
+                    StringBuilder sb = new StringBuilder(lhs.toString()).append(rhs);
                     while (it.hasNext()) sb.append(it.next().toString());
                     return sb.toString();
                 }
@@ -4694,13 +4685,12 @@ class UnitCompiler {
     getConstantValue2(NullLiteral nl) { return null; }
 
     /**
-     * Attempts to evaluate the negated value of a constant {@link Rvalue}.
-     * This is particularly relevant for the smallest value of an integer or
-     * long literal.
+     * Attempts to evaluate the negated value of a constant {@link Rvalue}. This is particularly relevant for the
+     * smallest value of an integer or long literal.
      *
      * @return {@link #NOT_CONSTANT} iff value is not constant; otherwise a {@link String}, {@link Byte}, {@link
      *         Short}, {@link Integer}, {@link Boolean}, {@link Character}, {@link Float}, {@link Long}, {@link Double}
-     *         or <code>null</code>
+     *         or {@code null}
      */
     private Object
     getNegatedConstantValue(Rvalue rv) throws CompileException {
@@ -4791,8 +4781,7 @@ class UnitCompiler {
     // ------------ BlockStatement.generatesCode() -------------
 
     /**
-     * Check whether invocation of {@link #compile(BlockStatement)} would
-     * generate more than zero code bytes.
+     * Check whether invocation of {@link #compile(BlockStatement)} would generate more than zero code bytes.
      */
     private boolean
     generatesCode(BlockStatement bs) throws CompileException {
@@ -4869,7 +4858,7 @@ class UnitCompiler {
      * <p>
      * Statements like "return", "break", "continue" must call this method for all the statements they terminate.
      * <p>
-     * Notice: If <code>optionalStackValueType</code> is <code>null</code>, then the operand stack is empty; otherwise
+     * Notice: If {@code optionalStackValueType} is {@code null}, then the operand stack is empty; otherwise
      * exactly one operand with that type is on the stack. This information is vital to implementations of {@link
      * #leave(BlockStatement, IClass)} that require a specific operand stack state (e.g. an empty operand stack for
      * JSR).
@@ -4945,10 +4934,8 @@ class UnitCompiler {
     // ---------------- Lvalue.compileSet() -----------------
 
     /**
-     * Generates code that stores a value in the {@link Lvalue}.
-     * Expects the {@link Lvalue}'s context (see {@link
-     * #compileContext}) and a value of the {@link Lvalue}'s type
-     * on the operand stack.
+     * Generates code that stores a value in the {@link Lvalue}. Expects the {@link Lvalue}'s context (see {@link
+     * #compileContext}) and a value of the {@link Lvalue}'s type on the operand stack.
      */
     private void
     compileSet(Lvalue lv) throws CompileException {
@@ -5628,8 +5615,8 @@ class UnitCompiler {
     isType2(AmbiguousName an) throws CompileException { return this.isType(this.reclassify(an)); }
 
     /**
-     * Determine whether the given {@link IClass.IMember} is accessible in the given context,
-     * according to JLS 6.6.1.4. Issues a {@link #compileError(String)} if not.
+     * Determine whether the given {@link IClass.IMember} is accessible in the given context, according to JLS 6.6.1.4.
+     * Issues a {@link #compileError(String)} if not.
      */
     private boolean
     isAccessible(IClass.IMember member, Scope contextScope) throws CompileException {
@@ -5642,8 +5629,8 @@ class UnitCompiler {
     }
 
     /**
-     * Check whether the given {@link IClass.IMember} is accessible in the given context,
-     * according to JLS 6.6.1.4. Issue a {@link #compileError(String)} if not.
+     * Check whether the given {@link IClass.IMember} is accessible in the given context, according to JLS 6.6.1.4.
+     * Issue a {@link #compileError(String)} if not.
      */
     private void
     checkAccessible(IClass.IMember member, BlockStatement contextBlockStatement) throws CompileException {
@@ -5655,9 +5642,8 @@ class UnitCompiler {
     }
 
     /**
-     * Determine whether a member (class, interface, field or method) declared in a
-     * given class is accessible from a given block statement context, according
-     * to JLS2 6.6.1.4.
+     * Determine whether a member (class, interface, field or method) declared in a given class is accessible from a
+     * given block statement context, according to JLS2 6.6.1.4.
      */
     private boolean
     isAccessible(IClass iClassDeclaringMember, Access memberAccess, Scope contextScope) throws CompileException {
@@ -5665,9 +5651,8 @@ class UnitCompiler {
     }
 
     /**
-     * Verify that a member (class, interface, field or method) declared in a
-     * given class is accessible from a given block statement context, according
-     * to JLS2 6.6.1.4. Issue a {@link #compileError(String)} if not.
+     * Verify that a member (class, interface, field or method) declared in a given class is accessible from a given
+     * block statement context, according to JLS2 6.6.1.4. Issue a {@link #compileError(String)} if not.
      */
     private void
     checkAccessible(
@@ -5768,8 +5753,8 @@ class UnitCompiler {
     }
 
     /**
-     * Determine whether the given {@link IClass} is accessible in the given context,
-     * according to JLS2 6.6.1.2 and 6.6.1.4.
+     * Determine whether the given {@link IClass} is accessible in the given context, according to JLS2 6.6.1.2 and
+     * 6.6.1.4.
      */
     private boolean
     isAccessible(IClass type, Scope contextScope) throws CompileException {
@@ -5777,8 +5762,8 @@ class UnitCompiler {
     }
 
     /**
-     * Check whether the given {@link IClass} is accessible in the given context,
-     * according to JLS2 6.6.1.2 and 6.6.1.4. Issues a {@link #compileError(String)} if not.
+     * Check whether the given {@link IClass} is accessible in the given context, according to JLS2 6.6.1.2 and
+     * 6.6.1.4. Issues a {@link #compileError(String)} if not.
      */
     private void
     checkAccessible(IClass type, BlockStatement contextBlockStatement) throws CompileException {
@@ -5865,8 +5850,8 @@ class UnitCompiler {
     }
 
     /**
-     * Copies the values of the synthetic parameters of this constructor ("this$..." and
-     * "val$...") to the synthetic fields of the object ("this$..." and "val$...").
+     * Copies the values of the synthetic parameters of this constructor ("this$..." and "val$...") to the synthetic
+     * fields of the object ("this$..." and "val$...").
      */
     void
     assignSyntheticParametersToSyntheticFields(ConstructorDeclarator cd) throws CompileException {
@@ -5899,8 +5884,7 @@ class UnitCompiler {
     }
 
     /**
-     * Compiles the instance variable initializers and the instance initializers in their
-     * lexical order.
+     * Compiles the instance variable initializers and the instance initializers in their lexical order.
      */
     void
     initializeInstanceVariablesAndInvokeInstanceInitializers(ConstructorDeclarator cd) throws CompileException {
@@ -5921,9 +5905,8 @@ class UnitCompiler {
     }
 
     /**
-     * Statements that jump out of blocks ("return", "break", "continue")
-     * must call this method to make sure that the "finally" clauses of all
-     * "try...catch" statements are executed.
+     * Statements that jump out of blocks ("return", "break", "continue") must call this method to make sure that the
+     * "finally" clauses of all "try...catch" statements are executed.
      */
     private void
     leaveStatements(Scope from, Scope to, IClass optionalStackValueType) {
@@ -5935,10 +5918,9 @@ class UnitCompiler {
     }
 
     /**
-     * The LHS operand of type <code>lhsType</code> is expected on the stack.
+     * The LHS operand of type {@code lhsType} is expected on the stack.
      * <p>
-     * The following operators are supported:
-     * <code>&nbsp;&nbsp;| ^ & * / % + - &lt;&lt; &gt;&gt; &gt;&gt;&gt;</code>
+     * The following operators are supported: {@code &nbsp;&nbsp;| ^ & * / % + - &lt;&lt; &gt;&gt; &gt;&gt;&gt;}
      */
     private IClass
     compileArithmeticBinaryOperation(
@@ -5956,11 +5938,10 @@ class UnitCompiler {
     }
 
     /**
-     * Execute an arithmetic operation on a sequence of <code>operands</code>. If
-     * <code>type</code> is non-null, the first operand with that type is already on the stack.
+     * Execute an arithmetic operation on a sequence of {@code operands}. If {@code type} is non-null, the first
+     * operand with that type is already on the stack.
      * <p>
-     * The following operators are supported:
-     * <code>&nbsp;&nbsp;| ^ &amp; * / % + - &lt;&lt; &gt;&gt; &gt;&gt;&gt;</code>
+     * The following operators are supported: {@code &nbsp;&nbsp;| ^ &amp; * / % + - &lt;&lt; &gt;&gt; &gt;&gt;&gt;}
      */
     private IClass
     compileArithmeticOperation(
@@ -6149,8 +6130,8 @@ class UnitCompiler {
     }
 
     /**
-     * @param type If non-null, the first operand with that type is already on the stack
-     * @param operand The next operand
+     * @param type     If non-null, the first operand with that type is already on the stack
+     * @param operand  The next operand
      * @param operands All following operands ({@link Iterator} over {@link Rvalue}s)
      */
     private IClass
@@ -6192,7 +6173,7 @@ class UnitCompiler {
                     operand = (Rvalue) operands.next();
                     Object cv2 = this.getConstantValue(operand);
                     if (cv2 != NOT_CONSTANT) {
-                        StringBuffer sb = new StringBuffer(cv.toString()).append(cv2);
+                        StringBuilder sb = new StringBuilder(cv.toString()).append(cv2);
                         for (;;) {
                             if (!operands.hasNext()) {
                                 operand = null;
@@ -6246,50 +6227,44 @@ class UnitCompiler {
             return this.iClassLoader.JAVA_LANG_STRING;
         }
 
-        // String concatenation through "new StringBuffer(a).append(b).append(c).append(d).toString()".
+        // String concatenation through "new StringBuilder(a).append(b).append(c).append(d).toString()".
         Iterator it = tmp.iterator();
 
-        String stringBuilferFd = (
-            this.isStringBuilderAvailable
-            ? Descriptor.JAVA_LANG_STRINGBUILDER
-            : Descriptor.JAVA_LANG_STRINGBUFFER
-        );
-
-        // "new StringBuffer(a)":
+        // "new StringBuilder(a)":
         if (operandOnStack) {
             this.writeOpcode(locatable, Opcode.NEW);
-            this.writeConstantClassInfo(stringBuilferFd);
+            this.writeConstantClassInfo(Descriptor.JAVA_LANG_STRINGBUILDER);
             this.writeOpcode(locatable, Opcode.DUP_X1);
             this.writeOpcode(locatable, Opcode.SWAP);
         } else
         {
             this.writeOpcode(locatable, Opcode.NEW);
-            this.writeConstantClassInfo(stringBuilferFd);
+            this.writeConstantClassInfo(Descriptor.JAVA_LANG_STRINGBUILDER);
             this.writeOpcode(locatable, Opcode.DUP);
             ((Compilable) it.next()).compile();
         }
         this.writeOpcode(locatable, Opcode.INVOKESPECIAL);
         this.writeConstantMethodrefInfo(
-            stringBuilferFd,                                 // classFD
+            Descriptor.JAVA_LANG_STRINGBUILDER,                                 // classFD
             "<init>",                                        // methodName
             "(" + Descriptor.JAVA_LANG_STRING + ")" + Descriptor.VOID // methodMD
         );
         while (it.hasNext()) {
             ((Compilable) it.next()).compile();
 
-            // "StringBuffer.append(b)":
+            // "StringBuilder.append(b)":
             this.writeOpcode(locatable, Opcode.INVOKEVIRTUAL);
             this.writeConstantMethodrefInfo(
-                stringBuilferFd,                                // classFD
+                Descriptor.JAVA_LANG_STRINGBUILDER,                                // classFD
                 "append",                                       // methodName
-                "(" + Descriptor.JAVA_LANG_STRING + ")" + stringBuilferFd // methodMD
+                "(" + Descriptor.JAVA_LANG_STRING + ")" + Descriptor.JAVA_LANG_STRINGBUILDER
             );
         }
 
-        // "StringBuffer.toString()":
+        // "StringBuilder.toString()":
         this.writeOpcode(locatable, Opcode.INVOKEVIRTUAL);
         this.writeConstantMethodrefInfo(
-            stringBuilferFd,         // classFD
+            Descriptor.JAVA_LANG_STRINGBUILDER,         // classFD
             "toString",              // methodName
             "()" + Descriptor.JAVA_LANG_STRING // methodMD
         );
@@ -6324,8 +6299,8 @@ class UnitCompiler {
     /**
      * Expects the object to initialize on the stack.
      * <p>
-     * Notice: This method is used both for explicit constructor invocation (first statement of
-     * a constructor body) and implicit constructor invocation (right after NEW).
+     * Notice: This method is used both for explicit constructor invocation (first statement of a constructor body) and
+     * implicit constructor invocation (right after NEW).
      *
      * @param optionalEnclosingInstance Used if the target class is an inner class
      */
@@ -6581,7 +6556,7 @@ class UnitCompiler {
     /**
      * Determine the non-constant-final initializer of the given {@link VariableDeclarator}.
      *
-     * @return <code>null</code> if the variable is declared without an initializer or if the initializer is
+     * @return {@code null} if the variable is declared without an initializer or if the initializer is
      *         constant-final
      */
     ArrayInitializerOrRvalue
@@ -6616,7 +6591,7 @@ class UnitCompiler {
     /**
      * JLS 6.5.2.2
      * <p>
-     * Reclassify the ambiguous name consisting of the first <code>n</code> of the <code>identifiers</code>.
+     * Reclassify the ambiguous name consisting of the first {@code n} of the {@code identifiers}.
      *
      * @param location
      * @param scope
@@ -6705,10 +6680,17 @@ class UnitCompiler {
         };
     }
 
+    /**
+     * @param className         Fully qualified class name, e.g. "pkg1.pkg2.Outer$Inner".
+     * @return                  {@code null} iff an {@code IClass} with that name could not be loaded
+     * @throws CompileException An exception was raised while loading the {@link IClass}
+     */
     private IClass
     findClassByName(Location location, String className) throws CompileException {
+
         IClass res = this.findClass(className);
         if (res != null) return res;
+
         try {
             return this.iClassLoader.loadIClass(Descriptor.fromClassName(className));
         } catch (ClassNotFoundException ex) {
@@ -6720,6 +6702,7 @@ class UnitCompiler {
 
     /**
      * JLS 6.5.2.1
+     *
      * @param location
      * @param scope
      * @param identifier
@@ -7072,7 +7055,9 @@ class UnitCompiler {
         fae.value.setEnclosingBlockStatement(fae.getEnclosingBlockStatement());
     }
 
-    /** "super.fld", "Type.super.fld" */
+    /**
+     * "super.fld", "Type.super.fld"
+     */
     private void
     determineValue(SuperclassFieldAccessExpression scfae) throws CompileException {
         if (scfae.value != null) return;
@@ -7111,12 +7096,12 @@ class UnitCompiler {
     }
 
     /**
-     * Find named methods of "targetType", examine the argument types and choose the
-     * most specific method. Check that only the allowed exceptions are thrown.
+     * Find named methods of "targetType", examine the argument types and choose the most specific method. Check that
+     * only the allowed exceptions are thrown.
      * <p>
      * Notice that the returned {@link IClass.IMethod} may be declared in an enclosing type.
      *
-     * @return The selected {@link IClass.IMethod} or <code>null</code>
+     * @return The selected {@link IClass.IMethod} or {@code null}
      */
     public IClass.IMethod
     findIMethod(MethodInvocation mi) throws CompileException {
@@ -7221,11 +7206,11 @@ class UnitCompiler {
     }
 
     /**
-     * Find a {@link IClass.IMethod} in the given <code>targetType</code>, its superclasses or
-     * superinterfaces with the given <code>name</code> and for the given <code>arguments</code>.
-     * If more than one such method exists, choose the most specific one (JLS 15.11.2).
+     * Find a {@link IClass.IMethod} in the given {@code targetType}, its superclasses or superinterfaces with the
+     * given {@code name} and for the given {@code arguments}. If more than one such method exists, choose the most
+     * specific one (JLS 15.11.2).
      *
-     * @return <code>null</code> if no appropriate method could be found
+     * @return {@code null} if no appropriate method could be found
      */
     private IClass.IMethod
     findIMethod(IClass targetType, Invocation invocation) throws CompileException {
@@ -7270,13 +7255,8 @@ class UnitCompiler {
     }
 
     /**
-     * Add all methods with the given <code>methodName</code> that are declared
-     * by the <code>type</code>, its superclasses and all their superinterfaces
-     * to the result list <code>v</code>.
-     * @param type
-     * @param methodName
-     * @param v
-     * @throws CompileException
+     * Add all methods with the given {@code methodName} that are declared by the {@code type}, its superclasses and
+     * all their superinterfaces to the result list {@code v}.
      */
     public void
     getIMethods(IClass type, String methodName, List/*<IMethod>*/ v) throws CompileException {
@@ -7332,7 +7312,6 @@ class UnitCompiler {
      *
      * @param iInvocables       Length must be greater than zero
      * @return                  The selected {@link IClass.IInvocable}
-     * @throws CompileException
      */
     private IClass.IInvocable
     findMostSpecificIInvocable(
@@ -7357,7 +7336,7 @@ class UnitCompiler {
         if (ii != null) return ii;
 
         // Report a nice compile error.
-        StringBuffer sb = new StringBuffer("No applicable constructor/method found for ");
+        StringBuilder sb = new StringBuilder("No applicable constructor/method found for ");
         if (argumentTypes.length == 0) {
             sb.append("zero actual parameters");
         } else {
@@ -7400,7 +7379,7 @@ class UnitCompiler {
     /**
      * Determine the applicable invocables and choose the most specific invocable.
      *
-     * @return                  The maximally specific {@link IClass.IInvocable} or <code>null</code> if no {@link
+     * @return                  The maximally specific {@link IClass.IInvocable} or {@code null} if no {@link
      *                          IClass.IInvocable} is applicable
      * @throws CompileException
      */
@@ -7585,7 +7564,7 @@ class UnitCompiler {
 
         // JLS 15.12.2.2.BL2.B2
         {
-            StringBuffer sb = new StringBuffer("Invocation of constructor/method with actual parameter type(s) \"");
+            StringBuilder sb = new StringBuilder("Invocation of constructor/method with actual parameter type(s) \"");
             for (int i = 0; i < argumentTypes.length; ++i) {
                 if (i > 0) sb.append(", ");
                 sb.append(Descriptor.toString(argumentTypes[i].getDescriptor()));
@@ -8059,7 +8038,8 @@ class UnitCompiler {
     }
 
     /**
-     * Return a list consisting of the given <code>inner</code> class and all its outer classes.
+     * Return a list consisting of the given {@code inner} class and all its outer classes.
+     *
      * @return {@link List} of {@link TypeDeclaration}
      */
     private static List
@@ -8213,9 +8193,7 @@ class UnitCompiler {
 
             @Override public String
             toString() {
-                StringBuffer sb = new StringBuffer();
-                sb.append(cd.getDeclaringType().getClassName());
-                sb.append('(');
+                StringBuilder sb = new StringBuilder().append(cd.getDeclaringType().getClassName()).append('(');
                 FunctionDeclarator.FormalParameter[] fps = cd.formalParameters;
                 for (int i = 0; i < fps.length; ++i) {
                     if (i != 0) sb.append(", ");
@@ -8331,7 +8309,7 @@ class UnitCompiler {
      * Check if the given name was imported through a "single type import", e.g.<pre>
      *     import java.util.Map</pre>
      *
-     * @return the fully qualified name or <code>null</code>
+     * @return the fully qualified name or {@code null}
      */
     public String[]
     getSingleTypeImport(String name) { return (String[]) this.singleTypeImports.get(name); }
@@ -8340,7 +8318,7 @@ class UnitCompiler {
      * 6.5.2.BL1.B1.B5, 6.5.2.BL1.B1.B6 Type-import-on-demand.<br>
      * 6.5.5.1.6 Type-import-on-demand declaration.
      *
-     * @return <code>null</code> if the given <code>simpleTypeName</code> cannot be resolved through any of the
+     * @return {@code null} if the given {@code simpleTypeName} cannot be resolved through any of the
      *         import-on-demand directives
      */
     public IClass
@@ -8940,10 +8918,8 @@ class UnitCompiler {
     }
 
     /**
-     * If the given type is a primitive type, return that type.
-     * If the given type is a primitive wrapper class, unbox the operand on top of the operand
-     * stack and return the primitive type.
-     * Otherwise, issue a compile error.
+     * If the given type is a primitive type, return that type. If the given type is a primitive wrapper class, unbox
+     * the operand on top of the operand stack and return the primitive type. Otherwise, issue a compile error.
      */
     private IClass
     convertToPrimitiveNumericType(Locatable locatable, IClass type) throws CompileException {
@@ -9009,6 +8985,7 @@ class UnitCompiler {
             this.codeContext.currentInserter()
         );
     }
+
     /**
      * Implements "binary numeric promotion" (5.6.2)
      *
@@ -9268,6 +9245,7 @@ class UnitCompiler {
 
     /**
      * Check if "constant assignment conversion" (JLS 5.2, paragraph 1) is possible.
+     *
      * @param constantValue The constant value that is to be converted
      * @param targetType The type to convert to
      */
@@ -9387,7 +9365,7 @@ class UnitCompiler {
     }
 
     /**
-     * @return the boxed type or <code>null</code>
+     * @return the boxed type or {@code null}
      */
     private IClass
     isBoxingConvertible(IClass sourceType) {
@@ -9450,8 +9428,7 @@ class UnitCompiler {
     }
 
     /**
-     * 
-     * @return the unboxed type or <code>null</code>
+     * @return the unboxed type or {@code null}
      */
     private IClass
     isUnboxingConvertible(IClass sourceType) {
@@ -9493,16 +9470,17 @@ class UnitCompiler {
     }
 
     /**
-     * Attempt to load an {@link IClass} by fully-qualified name
+     * Attempts to load an {@link IClass} by fully-qualified name.
+     *
      * @param identifiers
-     * @return <code>null</code> if a class with the given name could not be loaded
+     * @return            {@code null} if a class with the given name could not be loaded
      */
     private IClass
     loadFullyQualifiedClass(String[] identifiers) throws CompileException {
 
         // Compose the descriptor (like "La/b/c;") and remember the positions of the slashes (2 and 4).
-        int[]        slashes = new int[identifiers.length - 1];
-        StringBuffer sb      = new StringBuffer("L");
+        int[]         slashes = new int[identifiers.length - 1];
+        StringBuilder sb      = new StringBuilder("L");
         for (int i = 0;; ++i) {
             sb.append(identifiers[i]);
             if (i == identifiers.length - 1) break;
@@ -9552,10 +9530,9 @@ class UnitCompiler {
     }
 
     /**
-     * Assign stack top value to the given local variable. (Assignment conversion takes effect.)
-     * If <code>optionalConstantValue</code> is not <code>null</code>, then the top stack value
-     * is a constant value with that type and value, and a narrowing primitive conversion as
-     * described in JLS 5.2 is applied.
+     * Assign stack top value to the given local variable. (Assignment conversion takes effect.) If {@code
+     * optionalConstantValue} is not {@code null}, then the top stack value is a constant value with that type and
+     * value, and a narrowing primitive conversion as described in JLS 5.2 is applied.
      */
     private void
     store(Locatable locatable, IClass valueType, LocalVariable localVariable) {
@@ -9655,9 +9632,9 @@ class UnitCompiler {
     }
 
     /**
-     * Find a named field in the given {@link IClass}.
-     * Honor superclasses and interfaces. See JLS 8.3.
-     * @return <code>null</code> if no field is found
+     * Finds a named field in the given {@link IClass}. Honors superclasses and interfaces. See JLS 8.3.
+     *
+     * @return {@code null} if no field is found
      */
     private IClass.IField
     findIField(IClass iClass, String name, Location location) throws CompileException {
@@ -9695,9 +9672,9 @@ class UnitCompiler {
     }
 
     /**
-     * Find a named type in the given {@link IClass}.
-     * Honor superclasses, interfaces and enclosing type declarations.
-     * @return <code>null</code> if no type with the given name is found
+     * Finds a named type in the given {@link IClass}. Honors superclasses, interfaces and enclosing type declarations.
+     *
+     * @return {@code null} if no type with the given name is found
      */
     private IClass
     findMemberType(IClass iClass, String name, Location location) throws CompileException {
@@ -9705,7 +9682,7 @@ class UnitCompiler {
         if (types.length == 0) return null;
         if (types.length == 1) return types[0];
 
-        StringBuffer sb = new StringBuffer("Type \"" + name + "\" is ambiguous: " + types[0].toString());
+        StringBuilder sb = new StringBuilder("Type \"").append(name).append("\" is ambiguous: ").append(types[0]);
         for (int i = 1; i < types.length; ++i) sb.append(" vs. ").append(types[i].toString());
         this.compileError(sb.toString(), location);
         return types[0];
@@ -9715,7 +9692,7 @@ class UnitCompiler {
      * Find one class or interface declared in this compilation unit by name.
      *
      * @param className Fully qualified class name, e.g. "pkg1.pkg2.Outer$Inner".
-     * @return <code>null</code> if a class with that name is not declared in this compilation unit
+     * @return {@code null} if a class with that name is not declared in this compilation unit
      */
     public IClass
     findClass(String className) {
@@ -9741,19 +9718,16 @@ class UnitCompiler {
     }
 
     /**
-     * Equivalent to {@link #compileError(String, Location)} with a
-     * <code>null</code> location argument.
+     * Equivalent to {@link #compileError(String, Location)} with a {@code null} location argument.
      */
     private void
     compileError(String message) throws CompileException { this.compileError(message, null); }
 
     /**
-     * Issue a compile error with the given message. This is done through the
-     * {@link ErrorHandler} that was installed through
-     * {@link #setCompileErrorHandler(ErrorHandler)}. Such a handler typically throws
-     * a {@link CompileException}, but it may as well decide to return normally. Consequently,
-     * the calling code must be prepared that {@link #compileError(String, Location)}
-     * returns normally, and must attempt to continue compiling.
+     * Issue a compile error with the given message. This is done through the {@link ErrorHandler} that was installed
+     * through {@link #setCompileErrorHandler(ErrorHandler)}. Such a handler typically throws a {@link
+     * CompileException}, but it may as well decide to return normally. Consequently, the calling code must be prepared
+     * that {@link #compileError(String, Location)} returns normally, and must attempt to continue compiling.
      *
      * @param message The message to report
      * @param optionalLocation The location to report
@@ -9772,7 +9746,7 @@ class UnitCompiler {
      * Issues a warning with the given message an location an returns. This is done through a {@link WarningHandler}
      * that was installed through {@link #setWarningHandler(WarningHandler)}.
      * <p>
-     * The <code>handle</code> argument qualifies the warning and is typically used by the {@link WarningHandler} to
+     * The {@code handle} argument qualifies the warning and is typically used by the {@link WarningHandler} to
      * suppress individual warnings.
      */
     private void
@@ -9803,7 +9777,7 @@ class UnitCompiler {
      * #compileUnit(boolean, boolean, boolean)} will definitely throw a {@link CompileException} if one or more compile
      * errors have occurred.
      *
-     * @param optionalCompileErrorHandler <code>null</code> to restore the default behavior (throwing a {@link
+     * @param optionalCompileErrorHandler {@code null} to restore the default behavior (throwing a {@link
      *                                    CompileException}
      */
     public void
@@ -9812,10 +9786,9 @@ class UnitCompiler {
     }
 
     /**
-     * By default, warnings are discarded, but an application my install a custom
-     * {@link WarningHandler}.
+     * By default, warnings are discarded, but an application my install a custom {@link WarningHandler}.
      *
-     * @param optionalWarningHandler <code>null</code> to indicate that no warnings be issued
+     * @param optionalWarningHandler {@code null} to indicate that no warnings be issued
      */
     public void
     setWarningHandler(WarningHandler optionalWarningHandler) {
@@ -9980,9 +9953,8 @@ class UnitCompiler {
     referenceThis(Locatable locatable) { this.writeOpcode(locatable, Opcode.ALOAD_0); }
 
     /**
-     * Expects "dimExprCount" values of type "integer" on the operand stack.
-     * Creates an array of "dimExprCount" + "dims" dimensions of
-     * "componentType".
+     * Expects {@code dimExprCount} values of type {@code int} on the operand stack. Creates an array of {@code
+     * dimExprCount + dims} dimensions of {@code componentType}.
      *
      * @return The type of the created array
      */
@@ -10027,8 +9999,8 @@ class UnitCompiler {
     }
 
     /**
-     * Short-hand implementation of {@link IClass.IField} that implements a
-     * non-constant, non-static, package-accessible field.
+     * Short-hand implementation of {@link IClass.IField} that implements a non-constant, non-static,
+     * package-accessible field.
      */
     public static
     class SimpleIField extends IClass.IField {
@@ -10087,7 +10059,7 @@ class UnitCompiler {
 
     private static String
     unescape(String s) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         for (int i = 0; i < s.length();) {
             char c = s.charAt(i++);
             if (c != '\\') {
@@ -10141,18 +10113,17 @@ class UnitCompiler {
     public final CompilationUnit compilationUnit;
 
     private final IClassLoader iClassLoader;
-    private final boolean      isStringBuilderAvailable;
     private List               generatedClassFiles;
 
     private boolean debugSource;
     private boolean debugLines;
     private boolean debugVars;
 
-    /** String simpleTypeName => String[] fullyQualifiedTypeName */
-    private final Map        singleTypeImports     = new HashMap();
-    /** String[] package */
-    private final Collection typeImportsOnDemand;
-    /** String staticMemberName => List of(IField, IMethod and IClass) */
-    private final Map        singleStaticImports   = new HashMap();
+    private final Map/*<String simpleTypeName, String[] fullyQualifiedTypeName>*/ singleTypeImports = new HashMap();
+
+    private final Collection/*<String[] package>*/ typeImportsOnDemand;
+
+    private final Map/*<String staticMemberName, List <IField, IMethod, IClass>>*/ singleStaticImports = new HashMap();
+
     private final Collection staticImportsOnDemand = new ArrayList(); // IClass
 }

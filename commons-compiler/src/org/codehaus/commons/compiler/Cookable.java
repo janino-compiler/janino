@@ -125,8 +125,8 @@ class Cookable implements ICookable {
     public static String
     readString(Reader r) throws IOException {
 
-        StringBuffer sb = new StringBuffer();
-        char[]       ca = new char[4096];
+        StringBuilder sb = new StringBuilder();
+        char[]        ca = new char[4096];
         for (;;) {
             int count = r.read(ca);
             if (count == -1) break;

@@ -290,8 +290,6 @@ class Descriptor {
     public static final String JAVA_LANG_OBJECT = "Ljava/lang/Object;";
     /** The field descriptor for the class {@link String}. */
     public static final String JAVA_LANG_STRING = "Ljava/lang/String;";
-    /** The field descriptor for the class {@link StringBuffer}. */
-    public static final String JAVA_LANG_STRINGBUFFER = "Ljava/lang/StringBuffer;";
     /** The field descriptor for the class {@link StringBuilder}. */
     public static final String JAVA_LANG_STRINGBUILDER = "Ljava/lang/StringBuilder;"; // Since 1.5!
     /** The field descriptor for the class {@link Class}. */
@@ -342,7 +340,6 @@ class Descriptor {
         m.put(Descriptor.BOOLEAN,                    "boolean");
         m.put(Descriptor.JAVA_LANG_OBJECT,           "java.lang.Object");
         m.put(Descriptor.JAVA_LANG_STRING,           "java.lang.String");
-        m.put(Descriptor.JAVA_LANG_STRINGBUFFER,     "java.lang.StringBuffer");
         m.put(Descriptor.JAVA_LANG_STRINGBUILDER,    "java.lang.StringBuilder");
         m.put(Descriptor.JAVA_LANG_CLASS,            "java.lang.Class");
         m.put(Descriptor.JAVA_LANG_THROWABLE,        "java.lang.Throwable");

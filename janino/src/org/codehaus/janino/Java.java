@@ -287,6 +287,8 @@ class Java {
 
         @Override public void
         setEnclosingScope(Scope enclosingScope) { this.type.setEnclosingScope(enclosingScope); }
+        
+        @Override public String toString() { return "@" + this.type; }
 
         @Override public Type
         getType() { return this.type; }
@@ -313,6 +315,8 @@ class Java {
         @Override public void
         setEnclosingScope(Scope enclosingScope) { this.type.setEnclosingScope(enclosingScope); }
 
+        @Override public String toString() { return "@" + this.type + '(' + this.elementValue + ')'; }
+
         @Override public Type
         getType() { return this.type; }
 
@@ -337,6 +341,15 @@ class Java {
 
         @Override public Type
         getType() { return this.type; }
+
+        @Override public String
+        toString() {
+            switch (this.elementValuePairs.length) {
+            case 0:  return "@" + this.type + "()";
+            case 1:  return "@" + this.type + "(" + this.elementValuePairs[0] + ")";
+            default: return "@" + this.type + "(" + this.elementValuePairs[0] + ", ...)";
+            }
+        }
 
         @Override public void
         setEnclosingScope(Scope enclosingScope) { this.setEnclosingScope(enclosingScope); }
@@ -399,6 +412,9 @@ class Java {
             this.identifier   = identifier;
             this.elementValue = elementValue;
         }
+
+        @Override public String
+        toString() { return this.identifier + " = " + this.elementValue; }
     }
 
     public
@@ -414,6 +430,15 @@ class Java {
         public
         ElementValueArrayInitializer(ElementValue[] elementValues) {
             this.elementValues = elementValues;
+        }
+
+        @Override public String
+        toString() {
+            switch (this.elementValues.length) {
+            case 0:  return "{}";
+            case 1:  return "{ " + this.elementValues[0] + " }";
+            default: return "{ " + this.elementValues[0] + ", ... }";
+            }
         }
 
         @Override public void
@@ -1385,8 +1410,7 @@ class Java {
 
         @Override public String
         toString() {
-            StringBuffer sb = new StringBuffer(this.getDeclaringClass().getClassName());
-            sb.append('(');
+            StringBuilder sb = new StringBuilder(this.getDeclaringClass().getClassName()).append('(');
             FunctionDeclarator.FormalParameter[] fps = this.formalParameters;
             for (int i = 0; i < fps.length; ++i) {
                 if (i > 0) sb.append(", ");
@@ -1427,8 +1451,7 @@ class Java {
 
         @Override public String
         toString() {
-            StringBuffer sb = new StringBuffer(this.name);
-            sb.append('(');
+            StringBuilder sb = new StringBuilder(this.name).append('(');
             FunctionDeclarator.FormalParameter[] fps = this.formalParameters;
             for (int i = 0; i < fps.length; ++i) {
                 if (i > 0) sb.append(", ");
@@ -1490,7 +1513,7 @@ class Java {
 
         @Override public String
         toString() {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             sb.append(Mod.shortToString(this.modifiersAndAnnotations.modifiers)).append(' ').append(this.type);
             sb.append(' ').append(this.variableDeclarators[0]);
             for (int i = 1; i < this.variableDeclarators.length; ++i) {
@@ -1549,8 +1572,7 @@ class Java {
 
         @Override public String
         toString() {
-            StringBuffer sb = new StringBuffer();
-            sb.append(this.name);
+            StringBuilder sb = new StringBuilder(this.name);
             for (int i = 0; i < this.brackets; ++i) sb.append("[]");
             if (this.optionalInitializer != null) sb.append(" = ").append(this.optionalInitializer);
             return sb.toString();
@@ -2074,7 +2096,7 @@ class Java {
 
         @Override public String
         toString() {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             if (this.modifiersAndAnnotations.modifiers != Mod.NONE) {
                 sb.append(Mod.shortToString(this.modifiersAndAnnotations.modifiers)).append(' ');
             }
@@ -3319,7 +3341,7 @@ class Java {
 
         @Override public String
         toString() {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             if (this.optionalTarget != null) sb.append(this.optionalTarget.toString()).append('.');
             sb.append(this.methodName).append('(');
             for (int i = 0; i < this.arguments.length; ++i) {
@@ -3407,7 +3429,7 @@ class Java {
 
         @Override public String
         toString() {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             if (this.optionalQualification != null) sb.append(this.optionalQualification.toString()).append('.');
             sb.append("new ");
             if (this.type != null) {
@@ -3460,7 +3482,7 @@ class Java {
 
         @Override public String
         toString() {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             if (this.optionalQualification != null) sb.append(this.optionalQualification.toString()).append('.');
             sb.append("new ").append(this.anonymousClassDeclaration.baseType.toString()).append("() { ... }");
             return sb.toString();
@@ -3724,10 +3746,7 @@ class Java {
 
         @Override public String
         toString() {
-            StringBuffer buf = new StringBuffer("local var(");
-
-            buf.append(this.name);
-            buf.append(", ").append(this.slotIndex);
+            StringBuilder buf = new StringBuilder("local var(").append(this.name).append(", ").append(this.slotIndex);
             if (this.name != null) {
                 buf.append(", ").append(this.type);
                 buf.append(", ").append(this.start.offset);
@@ -3770,7 +3789,7 @@ class Java {
 
         @Override public String
         toString() {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
 
             if (this.finaL) sb.append("final ");
             sb.append(this.type).append(" ");
@@ -3797,7 +3816,7 @@ class Java {
     join(Object[] a, String separator, int off, int len) {
         if (a == null) return ("(null)");
         if (off >= len) return "";
-        StringBuffer sb = new StringBuffer(a[off].toString());
+        StringBuilder sb = new StringBuilder(a[off].toString());
         for (++off; off < len; ++off) {
             sb.append(separator);
             sb.append(a[off]);

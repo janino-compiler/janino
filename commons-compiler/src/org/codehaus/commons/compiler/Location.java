@@ -71,7 +71,7 @@ class Location implements Serializable {
     @Override public String
     toString() {
 
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         if (this.optionalFileName != null) {
             sb.append("File ").append(this.optionalFileName).append(", ");
         }

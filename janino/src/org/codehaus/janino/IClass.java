@@ -862,7 +862,7 @@ class IClass {
 
         @Override public String
         toString() {
-            StringBuffer sb = new StringBuffer(this.getDeclaringIClass().toString());
+            StringBuilder sb = new StringBuilder(this.getDeclaringIClass().toString());
             sb.append('(');
             try {
                 IClass[] parameterTypes = this.getParameterTypes();
@@ -895,7 +895,7 @@ class IClass {
 
         @Override public String
         toString() {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             sb.append(this.getAccess().toString()).append(' ');
             if (this.isStatic()) sb.append("static ");
             if (this.isAbstract()) sb.append("abstract ");

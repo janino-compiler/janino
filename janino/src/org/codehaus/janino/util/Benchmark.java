@@ -213,7 +213,7 @@ class Benchmark {
      */
     private void
     reportIndented(String message) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         for (int i = this.beginTimes.size(); i > 0; --i) sb.append("  ");
         sb.append(message);
         this.reporter.report(sb.toString());

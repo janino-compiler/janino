@@ -472,7 +472,7 @@ class EvaluatorTests {
         for (int i = 0; i < tests.length; ++i) {
             int repititions = tests[i];
 
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             sb.append(preamble);
             for (int j = 0; j < repititions; ++j) {
                 sb.append(middle);
@@ -505,7 +505,7 @@ class EvaluatorTests {
         for (int i = 0; i < tests.length; ++i) {
             int repititions = tests[i];
 
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             sb.append(preamble);
             for (int j = 0; j < repititions; ++j) {
                 sb.append("boolean _v").append(Integer.toString(j)).append(" = false;\n");

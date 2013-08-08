@@ -2831,7 +2831,7 @@ class Parser {
     join(String[] sa, String separator) {
         if (sa == null) return ("(null)");
         if (sa.length == 0) return ("(zero length array)");
-        StringBuffer sb = new StringBuffer(sa[0]);
+        StringBuilder sb = new StringBuilder(sa[0]);
         for (int i = 1; i < sa.length; ++i) {
             sb.append(separator).append(sa[i]);
         }

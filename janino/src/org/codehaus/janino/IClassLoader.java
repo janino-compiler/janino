@@ -170,6 +170,12 @@ class IClassLoader {
 
             // Load the class through the {@link #findIClass(String)} method implemented by the
             // derived class.
+            if (fieldDescriptor.contains("ElementValueArrayInitializer")) {
+                System.currentTimeMillis();
+            }
+            if (fieldDescriptor.contains("Traverser")) {
+                System.currentTimeMillis();
+            }
             if (IClassLoader.DEBUG) System.out.println("call IClassLoader.findIClass(\"" + fieldDescriptor + "\")");
             result = this.findIClass(fieldDescriptor);
             if (result == null) {

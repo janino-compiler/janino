@@ -144,7 +144,7 @@ class DemoBase {
         // Pretty-print array.
         Class clazz = o.getClass();
         if (clazz.isArray()) {
-            StringBuffer sb = new StringBuffer(clazz.getComponentType().toString()).append("[] { ");
+            StringBuilder sb = new StringBuilder(clazz.getComponentType().toString()).append("[] { ");
             for (int i = 0; i < Array.getLength(o); ++i) {
                 if (i > 0) sb.append(", ");
                 sb.append(DemoBase.toString(Array.get(o, i)));
