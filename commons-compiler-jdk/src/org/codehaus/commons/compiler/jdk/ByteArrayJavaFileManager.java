@@ -86,18 +86,18 @@ class ByteArrayJavaFileManager<M extends JavaFileManager> extends ForwardingJava
     ) throws IOException {
 
         /**
-         * {@link StringBuffer}-based implementation of {@link JavaFileObject}.
+         * {@link StringWriter}-based implementation of {@link JavaFileObject}.
          * <p>
          * Notice that {@link #getCharContent(boolean)} is much more efficient than {@link
          * ByteArrayJavaFileObject#getCharContent(boolean)}. However, memory consumption is
          * roughly double, and {@link #openInputStream()} and {@link #openOutputStream()} are
          * not available.
          */
-        class StringBufferJavaFileObject extends SimpleJavaFileObject {
+        class StringWriterJavaFileObject extends SimpleJavaFileObject {
             final StringWriter buffer = new StringWriter();
 
             public
-            StringBufferJavaFileObject(Kind kind) {
+            StringWriterJavaFileObject(Kind kind) {
                 super(
                     URI.create("stringbuffer:///" + className.replace('.', '/') + kind.extension),
                     kind
@@ -122,7 +122,7 @@ class ByteArrayJavaFileManager<M extends JavaFileManager> extends ForwardingJava
 
         JavaFileObject fileObject = (
             kind == Kind.SOURCE
-            ? new StringBufferJavaFileObject(kind)
+            ? new StringWriterJavaFileObject(kind)
             : new ByteArrayJavaFileObject(className, kind)
         );
 
