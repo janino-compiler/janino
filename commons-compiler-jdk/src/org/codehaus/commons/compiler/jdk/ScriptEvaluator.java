@@ -51,8 +51,12 @@ import org.codehaus.commons.io.MultiReader;
 public
 class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
 
-    protected boolean[]    optionalOverrideMethod;
-    protected boolean[]    optionalStaticMethod;
+    /** Whether methods override a method declared by a supertype; {@code null} means "none". */
+    protected boolean[] optionalOverrideMethod;
+
+    /** Whether methods are static; {@code null} means "all". */
+    protected boolean[] optionalStaticMethod;
+
     protected Class<?>[]   optionalReturnTypes;
     protected String[]     optionalMethodNames;
     protected String[][]   optionalParameterNames;
@@ -359,16 +363,9 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
 
         // Create methods with one block each.
         for (int i = 0; i < count; ++i) {
-            boolean overrideMethod = (
-                this.optionalOverrideMethod == null
-                ? true
-                : this.optionalOverrideMethod[i]
-            );
-            boolean staticMethod = (
-                this.optionalStaticMethod == null
-                ? true
-                : this.optionalStaticMethod[i]
-            );
+            boolean overrideMethod = this.optionalOverrideMethod != null && this.optionalOverrideMethod[i];
+            boolean staticMethod   = this.optionalStaticMethod   == null || this.optionalStaticMethod[i];
+
             Class<?> returnType = (
                 this.optionalReturnTypes == null
                 ? this.getDefaultReturnType()
