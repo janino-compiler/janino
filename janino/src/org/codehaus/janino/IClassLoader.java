@@ -113,6 +113,7 @@ class IClassLoader {
     /**
      * Get an {@link IClass} by field descriptor.
      *
+     * @param fieldDescriptor         E.g. 'Lpkg1/pkg2/Outer$Inner;'
      * @return                        {@code null} if an {@link IClass} could not be loaded
      * @throws ClassNotFoundException An exception was raised while loading the {@link IClass}
      */
@@ -168,15 +169,10 @@ class IClassLoader {
                 return arrayIClass;
             }
 
+            if (IClassLoader.DEBUG) System.out.println("call IClassLoader.findIClass(\"" + fieldDescriptor + "\")");
+
             // Load the class through the {@link #findIClass(String)} method implemented by the
             // derived class.
-            if (fieldDescriptor.contains("ElementValueArrayInitializer")) {
-                System.currentTimeMillis();
-            }
-            if (fieldDescriptor.contains("Traverser")) {
-                System.currentTimeMillis();
-            }
-            if (IClassLoader.DEBUG) System.out.println("call IClassLoader.findIClass(\"" + fieldDescriptor + "\")");
             result = this.findIClass(fieldDescriptor);
             if (result == null) {
                 this.unloadableIClasses.add(fieldDescriptor);
