@@ -190,67 +190,9 @@ class UnitCompiler {
     private static final int STRING_CONCAT_LIMIT = 3;
 
     public
-    UnitCompiler(CompilationUnit compilationUnit, IClassLoader iClassLoader) throws CompileException {
+    UnitCompiler(CompilationUnit compilationUnit, IClassLoader iClassLoader) {
         this.compilationUnit = compilationUnit;
         this.iClassLoader    = iClassLoader;
-
-        // Compile non-static import declarations. (Must be done here in the constructor and not
-        // down in "compileUnit()" because otherwise "resolve()" cannot resolve type names.)
-        this.typeImportsOnDemand = new ArrayList();
-        this.typeImportsOnDemand.add(new String[] { "java", "lang" });
-        for (Iterator it = this.compilationUnit.importDeclarations.iterator(); it.hasNext();) {
-            ImportDeclaration id = (ImportDeclaration) it.next();
-            class UCE extends RuntimeException { final CompileException ce; UCE(CompileException ce) { this.ce = ce; } }
-            try {
-                id.accept(new ImportVisitor() {
-                    // CHECKSTYLE LineLengthCheck:OFF
-                    @Override public void visitSingleTypeImportDeclaration(SingleTypeImportDeclaration stid)          { try { UnitCompiler.this.import2(stid);  } catch (CompileException e) { throw new UCE(e); } }
-                    @Override public void visitTypeImportOnDemandDeclaration(TypeImportOnDemandDeclaration tiodd)     {       UnitCompiler.this.import2(tiodd);                                                    }
-                    @Override public void visitSingleStaticImportDeclaration(SingleStaticImportDeclaration ssid)      {}
-                    @Override public void visitStaticImportOnDemandDeclaration(StaticImportOnDemandDeclaration siodd) {}
-                    // CHECKSTYLE LineLengthCheck:ON
-                });
-            } catch (UCE uce) {
-                throw uce.ce; // SUPPRESS CHECKSTYLE AvoidHidingCause
-            }
-        }
-    }
-
-    private void
-    import2(SingleTypeImportDeclaration stid) throws CompileException {
-        String[] ids  = stid.identifiers;
-        String   name = last(ids);
-
-        String[] prev = (String[]) UnitCompiler.this.singleTypeImports.put(name, ids);
-
-        // Check for re-import of same name.
-        if (prev != null && !Arrays.equals(prev, ids)) {
-            this.compileError((
-                "Class \"" + name + "\" was previously imported as "
-                + "\"" + Java.join(prev, ".") + "\", now as \"" + Java.join(ids, ".") + "\""
-            ), stid.getLocation());
-        }
-
-        String className = Java.join(ids, ".");
-        for (;;) {
-            if (this.findClassByName(stid.getLocation(), className) != null) return;
-
-            int idx = className.lastIndexOf('.');
-            if (idx == -1) break;
-            className = className.substring(0, idx) + '$' + className.substring(idx + 1);
-        }
-        this.compileError("A class '" + Java.join(ids, ".") + "' could not be found", stid.getLocation());
-
-//        if (this.loadFullyQualifiedClass(ids) == null) {
-//            this.compileError("Imported class \"" + Java.join(ids, ".") + "\" could not be loaded", stid.getLocation());
-//        }
-    }
-
-    private void
-    import2(TypeImportOnDemandDeclaration tiodd) {
-
-        // Duplicate type-imports-on-demand are not an error, so no checks here.
-        UnitCompiler.this.typeImportsOnDemand.add(tiodd.identifiers);
     }
 
     private void
@@ -265,7 +207,7 @@ class UnitCompiler {
 
         // Type?
         {
-            IClass iClass = this.loadFullyQualifiedClass(ssid.identifiers);
+            IClass iClass = this.findTypeByFullyQualifiedName(ssid.getLocation(), ssid.identifiers);
             if (iClass != null) {
                 importedObjects.add(iClass);
                 return;
@@ -273,7 +215,7 @@ class UnitCompiler {
         }
 
         String[] typeName = allButLast(ssid.identifiers);
-        IClass   iClass   = this.loadFullyQualifiedClass(typeName);
+        IClass   iClass   = this.findTypeByFullyQualifiedName(ssid.getLocation(), typeName);
         if (iClass == null) {
             this.compileError("Could not load \"" + Java.join(typeName, ".") + "\"", ssid.getLocation());
             return;
@@ -307,12 +249,12 @@ class UnitCompiler {
     }
     private void
     import2(StaticImportOnDemandDeclaration siodd) throws CompileException {
-        IClass iClass = this.loadFullyQualifiedClass(siodd.identifiers);
+        IClass iClass = this.findTypeByFullyQualifiedName(siodd.getLocation(), siodd.identifiers);
         if (iClass == null) {
             this.compileError("Could not load \"" + Java.join(siodd.identifiers, ".") + "\"", siodd.getLocation());
             return;
         }
-        UnitCompiler.this.staticImportsOnDemand.add(iClass);
+        this.staticImportsOnDemand.add(iClass);
     }
 
     /**
@@ -326,6 +268,8 @@ class UnitCompiler {
         this.debugVars   = debugVars;
 
         // Compile static import declarations.
+        // Notice: The single-type and on-demand imports are needed BEFORE the unit is compiled, thus they are
+        // processed in 'getSingleTypeImport()' and 'importOnDemand()'.
         for (Iterator it = this.compilationUnit.importDeclarations.iterator(); it.hasNext();) {
             ImportDeclaration id = (ImportDeclaration) it.next();
             class UCE extends RuntimeException { final CompileException ce; UCE(CompileException ce) { this.ce = ce; } }
@@ -346,7 +290,7 @@ class UnitCompiler {
         this.generatedClassFiles  = new ArrayList();
 
         for (Iterator it = this.compilationUnit.packageMemberTypeDeclarations.iterator(); it.hasNext();) {
-            UnitCompiler.this.compile((PackageMemberTypeDeclaration) it.next());
+            this.compile((PackageMemberTypeDeclaration) it.next());
         }
 
         if (this.compileErrorCount > 0) {
@@ -391,7 +335,7 @@ class UnitCompiler {
 
         // Check for conflict with single-type-import (7.6).
         {
-            String[] ss = this.getSingleTypeImport(pmtd.getName());
+            String[] ss = this.getSingleTypeImport(pmtd.getName(), pmtd.getLocation());
             if (ss != null) {
                 this.compileError((
                     "Package member type declaration \""
@@ -463,12 +407,11 @@ class UnitCompiler {
             IClass.getDescriptors(iClass.getInterfaces())                    // interfaceFDs
         );
 
-        // Add annotations with retention != SOURCE.
-        for (int i = 0; i < cd.getModifiersAndAnnotations().annotations.length; i++) {
-            Annotation a = cd.getModifiersAndAnnotations().annotations[i];
-
+        // TODO: Add annotations with retention != SOURCE.
+//        for (int i = 0; i < cd.getModifiersAndAnnotations().annotations.length; i++) {
+//            Annotation a = cd.getModifiersAndAnnotations().annotations[i];
 //            assert false : "Class '" + iClass + "' has annotation '" + a + "'";
-        }
+//        }
 
         // Add InnerClasses attribute entry for this class declaration.
         if (cd.getEnclosingScope() instanceof CompilationUnit) {
@@ -736,12 +679,11 @@ class UnitCompiler {
             interfaceDescriptors    // interfaceFDs
         );
 
-        // Add annotations with retention != SOURCE.
-        for (int i = 0; i < id.getModifiersAndAnnotations().annotations.length; i++) {
-            Annotation a = id.getModifiersAndAnnotations().annotations[i];
-
+        // TODO: Add annotations with retention != SOURCE.
+//        for (int i = 0; i < id.getModifiersAndAnnotations().annotations.length; i++) {
+//            Annotation a = id.getModifiersAndAnnotations().annotations[i];
 //            assert false : "Interface '" + iClass + "' has annotation '" + a + "'";
-        }
+//        }
 
         // Set "SourceFile" attribute.
         if (this.debugSource) {
@@ -2000,7 +1942,7 @@ class UnitCompiler {
                             short evi = exceptionVarSlot.getSlotIndex();
                             // Kludge: Treat the exception variable like a local
                             // variable of the catch clause body.
-                            UnitCompiler.this.getLocalVariable(cc.caughtException).setSlot(exceptionVarSlot);
+                            this.getLocalVariable(cc.caughtException).setSlot(exceptionVarSlot);
 
                             this.codeContext.addExceptionTableEntry(
                                 beginningOfBody,                    // startPC
@@ -2342,7 +2284,7 @@ class UnitCompiler {
         if (fd instanceof ConstructorDeclarator) {
             ConstructorDeclarator cd = (ConstructorDeclarator) fd;
             if (cd.optionalConstructorInvocation != null) {
-                buildLocalVariableMap(cd.optionalConstructorInvocation, localVars);
+                UnitCompiler.buildLocalVariableMap(cd.optionalConstructorInvocation, localVars);
             }
         }
         if (fd.optionalStatements != null) {
@@ -2493,7 +2435,7 @@ class UnitCompiler {
         newVars.putAll(localVars);
         for (int i = 0; i < lvds.variableDeclarators.length; ++i) {
             VariableDeclarator vd = lvds.variableDeclarators[i];
-            LocalVariable      lv = UnitCompiler.this.getLocalVariable(lvds, vd);
+            LocalVariable      lv = this.getLocalVariable(lvds, vd);
             if (newVars.put(vd.name, lv) != null) {
                 this.compileError("Redefinition of local variable \"" + vd.name + "\" ", vd.getLocation());
             }
@@ -5146,7 +5088,7 @@ class UnitCompiler {
                     scopeCompilationUnit.optionalPackageDeclaration.packageName
                 );
                 String className = pkg == null ? simpleTypeName : pkg + "." + simpleTypeName;
-                IClass result    = findClassByName(rt.getLocation(), className);
+                IClass result    = findTypeByName(rt.getLocation(), className);
                 if (result != null) return result;
             }
 
@@ -5165,9 +5107,9 @@ class UnitCompiler {
                         Object o = it.next();
                         if (o instanceof IClass) {
                             IClass mt = (IClass) o;
-                            if (!UnitCompiler.this.isAccessible(mt, scopeBlockStatement)) continue;
+                            if (!this.isAccessible(mt, scopeBlockStatement)) continue;
                             if (importedMemberType != null && importedMemberType != mt) {
-                                UnitCompiler.this.compileError(
+                                this.compileError(
                                     "Ambiguous static imports: \""
                                     + importedMemberType.toString()
                                     + "\" vs. \""
@@ -5190,10 +5132,10 @@ class UnitCompiler {
                     IClass[] memberTypes = ic.getDeclaredIClasses();
                     for (int i = 0; i < memberTypes.length; ++i) {
                         IClass mt = memberTypes[i];
-                        if (!UnitCompiler.this.isAccessible(mt, scopeBlockStatement)) continue;
+                        if (!this.isAccessible(mt, scopeBlockStatement)) continue;
                         if (mt.getDescriptor().endsWith('$' + simpleTypeName + ';')) {
                             if (importedMemberType != null) {
-                                UnitCompiler.this.compileError(
+                                this.compileError(
                                     "Ambiguous static imports: \""
                                     + importedMemberType.toString()
                                     + "\" vs. \""
@@ -5224,7 +5166,7 @@ class UnitCompiler {
             // 6.5.5.2.1 PACKAGE.CLASS
             if (q instanceof Package) {
                 String className = Java.join(rt.identifiers, ".");
-                IClass result    = findClassByName(rt.getLocation(), className);
+                IClass result    = findTypeByName(rt.getLocation(), className);
                 if (result != null) return result;
 
                 this.compileError("Class \"" + className + "\" not found", rt.getLocation());
@@ -6620,7 +6562,7 @@ class UnitCompiler {
         if (UnitCompiler.DEBUG) System.out.println("lhs = " + lhs);
         if (lhs instanceof Package) {
             String className = ((Package) lhs).name + '.' + rhs;
-            IClass result    = findClassByName(location, className);
+            IClass result    = findTypeByName(location, className);
             if (result != null) return new SimpleType(location, result);
 
             return new Package(location, className);
@@ -6681,13 +6623,16 @@ class UnitCompiler {
     }
 
     /**
+     * Find the named {@link IClass} in this compilation unit, or through the {@link #iClassLoader}.
+     *
      * @param className         Fully qualified class name, e.g. "pkg1.pkg2.Outer$Inner".
      * @return                  {@code null} iff an {@code IClass} with that name could not be loaded
      * @throws CompileException An exception was raised while loading the {@link IClass}
      */
     private IClass
-    findClassByName(Location location, String className) throws CompileException {
+    findTypeByName(Location location, String className) throws CompileException {
 
+        // Is the type defined in the same compilation unit?
         IClass res = this.findClass(className);
         if (res != null) return res;
 
@@ -6806,7 +6751,7 @@ class UnitCompiler {
             }
             if (s instanceof TypeDeclaration) {
                 final AbstractTypeDeclaration enclosingTypeDecl = (AbstractTypeDeclaration) s;
-                final IClass                  etd               = UnitCompiler.this.resolve(enclosingTypeDecl);
+                final IClass                  etd               = this.resolve(enclosingTypeDecl);
                 final IClass.IField           f                 = this.findIField(etd, identifier, location);
                 if (f != null) {
                     if (f.isStatic()) {
@@ -6898,10 +6843,10 @@ class UnitCompiler {
                 IField f      = iClass.getDeclaredIField(identifier);
                 if (f != null) {
                     // JLS3 7.5.4 Static-Import-on-Demand Declaration
-                    if (!UnitCompiler.this.isAccessible(f, enclosingBlockStatement)) continue;
+                    if (!this.isAccessible(f, enclosingBlockStatement)) continue;
 
                     if (importedField != null) {
-                        UnitCompiler.this.compileError(
+                        this.compileError(
                             "Ambiguous static field import: \""
                             + importedField.toString()
                             + "\" vs. \""
@@ -6913,7 +6858,7 @@ class UnitCompiler {
                 }
             }
             if (importedField != null) {
-                if (!importedField.isStatic()) UnitCompiler.this.compileError("Cannot static-import non-static field");
+                if (!importedField.isStatic()) this.compileError("Cannot static-import non-static field");
                 FieldAccess fieldAccess = new FieldAccess(
                     location,
                     new SimpleType(location, importedField.getDeclaringIClass()),
@@ -6936,7 +6881,7 @@ class UnitCompiler {
         // 6.5.2.BL1.B1.B2.2 (JLS3: 6.5.2.BL1.B1.B3.3) Member type.
         if (scopeTypeDeclaration != null) {
             IClass memberType = this.findMemberType(
-                UnitCompiler.this.resolve(scopeTypeDeclaration),
+                this.resolve(scopeTypeDeclaration),
                 identifier,
                 location
             );
@@ -6966,7 +6911,7 @@ class UnitCompiler {
                 ? identifier
                 : scopeCompilationUnit.optionalPackageDeclaration.packageName + '.' + identifier
             );
-            IClass result = this.findClassByName(location, className);
+            IClass result = this.findTypeByName(location, className);
             if (result != null) return new SimpleType(location, result);
         }
 
@@ -6997,10 +6942,10 @@ class UnitCompiler {
                 IClass[] memberTypes = ic.getDeclaredIClasses();
                 for (int i = 0; i < memberTypes.length; ++i) {
                     IClass mt = memberTypes[i];
-                    if (!UnitCompiler.this.isAccessible(mt, scopeBlockStatement)) continue;
+                    if (!this.isAccessible(mt, scopeBlockStatement)) continue;
                     if (mt.getDescriptor().endsWith('$' + identifier + ';')) {
                         if (importedType != null) {
-                            UnitCompiler.this.compileError(
+                            this.compileError(
                                 "Ambiguous static type import: \""
                                 + importedType.toString()
                                 + "\" vs. \""
@@ -7068,7 +7013,7 @@ class UnitCompiler {
             tr.setEnclosingBlockStatement(scfae.getEnclosingBlockStatement());
             IClass type;
             if (scfae.optionalQualification != null) {
-                type = UnitCompiler.this.getType(scfae.optionalQualification);
+                type = this.getType(scfae.optionalQualification);
             } else
             {
                 type = this.getType(tr);
@@ -7154,7 +7099,7 @@ class UnitCompiler {
                             );
                             if (im != null) {
                                 if (iMethod != null && iMethod != im) {
-                                    UnitCompiler.this.compileError(
+                                    this.compileError(
                                         "Ambiguous static method import: \""
                                         + iMethod.toString()
                                         + "\" vs. \""
@@ -7180,7 +7125,7 @@ class UnitCompiler {
                 );
                 if (im != null) {
                     if (iMethod != null) {
-                        UnitCompiler.this.compileError(
+                        this.compileError(
                             "Ambiguous static method import: \""
                             + iMethod.toString()
                             + "\" vs. \""
@@ -8194,6 +8139,7 @@ class UnitCompiler {
             @Override public String
             toString() {
                 StringBuilder sb = new StringBuilder().append(cd.getDeclaringType().getClassName()).append('(');
+
                 FunctionDeclarator.FormalParameter[] fps = cd.formalParameters;
                 for (int i = 0; i < fps.length; ++i) {
                     if (i != 0) sb.append(", ");
@@ -8294,10 +8240,10 @@ class UnitCompiler {
      */
     private IClass
     importSingleType(String simpleTypeName, Location location) throws CompileException {
-        String[] ss = this.getSingleTypeImport(simpleTypeName);
+        String[] ss = this.getSingleTypeImport(simpleTypeName, location);
         if (ss == null) return null;
 
-        IClass iClass = this.loadFullyQualifiedClass(ss);
+        IClass iClass = this.findTypeByFullyQualifiedName(location, ss);
         if (iClass == null) {
             this.compileError("Imported class \"" + Java.join(ss, ".") + "\" could not be loaded", location);
             return this.iClassLoader.JAVA_LANG_OBJECT;
@@ -8306,13 +8252,62 @@ class UnitCompiler {
     }
 
     /**
-     * Check if the given name was imported through a "single type import", e.g.<pre>
-     *     import java.util.Map</pre>
+     * Check if the given simple name was imported through a single type import.
      *
-     * @return the fully qualified name or {@code null}
+     * @param name The simple type name, e.g. {@code Inner}
+     * @return     The fully qualified name, e.g. <code>{ "pkg", "Outer", "Inner" }</code>, or {@code null}
      */
     public String[]
-    getSingleTypeImport(String name) { return (String[]) this.singleTypeImports.get(name); }
+    getSingleTypeImport(String name, Location location) throws CompileException {
+
+        // Resolve all single type imports (if not already done).
+        if (this.singleTypeImports == null) {
+
+            // Collect all single type import declarations.
+            final List/*<SingleTypeImportDeclaration>*/ stids = new ArrayList();
+            for (Iterator it = this.compilationUnit.importDeclarations.iterator(); it.hasNext();) {
+                ImportDeclaration id = (ImportDeclaration) it.next();
+                id.accept(new ImportVisitor() {
+
+                    @Override public void
+                    visitSingleTypeImportDeclaration(SingleTypeImportDeclaration stid) { stids.add(stid); }
+
+                    @Override public void visitTypeImportOnDemandDeclaration(TypeImportOnDemandDeclaration tiodd)     {}
+                    @Override public void visitSingleStaticImportDeclaration(SingleStaticImportDeclaration ssid)      {}
+                    @Override public void visitStaticImportOnDemandDeclaration(StaticImportOnDemandDeclaration siodd) {}
+                });
+            }
+
+            // Resolve all single type imports.
+            this.singleTypeImports = new HashMap();
+            for (Iterator/*<SingleTypeImportDeclaration>*/ it = stids.iterator(); it.hasNext();) {
+                SingleTypeImportDeclaration stid = (SingleTypeImportDeclaration) it.next();
+
+                String[] ids        = stid.identifiers;
+                String   simpleName = last(ids);
+
+                // Check for re-import of same simple name.
+                String[] prev = (String[]) this.singleTypeImports.put(simpleName, ids);
+                if (prev != null && !Arrays.equals(prev, ids)) {
+                    UnitCompiler.this.compileError((
+                        "Class \"" + simpleName + "\" was previously imported as "
+                        + "\"" + Java.join(prev, ".") + "\", now as \"" + Java.join(ids, ".") + "\""
+                    ), stid.getLocation());
+                }
+
+                if (this.findTypeByFullyQualifiedName(location, ids) == null) {
+                    UnitCompiler.this.compileError(
+                        "A class '" + Java.join(ids, ".") + "' could not be found",
+                        stid.getLocation()
+                    );
+                }
+            }
+        }
+
+        return (String[]) this.singleTypeImports.get(name);
+    }
+    /** To be used only by {@link #getSingleTypeImport(String, Location)}; {@code null} means "not yet initialized" */
+    private Map/*<String simpleTypeName, String[] fullyQualifiedTypeName>*/ singleTypeImports;
 
     /**
      * 6.5.2.BL1.B1.B5, 6.5.2.BL1.B1.B6 Type-import-on-demand.<br>
@@ -8325,14 +8320,37 @@ class UnitCompiler {
     importTypeOnDemand(String simpleTypeName, Location location) throws CompileException {
 
         // Check cache. (A cache for unimportable types is not required, because the class is importable 99.9%.)
-        IClass importedClass = (IClass) this.onDemandImportableTypes.get(simpleTypeName);
-        if (importedClass != null) return importedClass;
-
+        {
+            IClass importedClass = (IClass) this.onDemandImportableTypes.get(simpleTypeName);
+            if (importedClass != null) return importedClass;
+        }
         // Cache miss...
+
+        // Compile all import-on-demand declarations (done here as late as possible).
+        if (this.typeImportsOnDemand == null) {
+            this.typeImportsOnDemand = new ArrayList();
+            this.typeImportsOnDemand.add(new String[] { "java", "lang" });
+            for (Iterator it = this.compilationUnit.importDeclarations.iterator(); it.hasNext();) {
+                ImportDeclaration id = (ImportDeclaration) it.next();
+                id.accept(new ImportVisitor() {
+                    @Override public void visitSingleTypeImportDeclaration(SingleTypeImportDeclaration stid) {}
+
+                    @Override public void
+                    visitTypeImportOnDemandDeclaration(TypeImportOnDemandDeclaration tiodd) {
+                        UnitCompiler.this.typeImportsOnDemand.add(tiodd.identifiers);
+                    }
+
+                    @Override public void visitSingleStaticImportDeclaration(SingleStaticImportDeclaration ssid)      {}
+                    @Override public void visitStaticImportOnDemandDeclaration(StaticImportOnDemandDeclaration siodd) {}
+                });
+            }
+        }
+
+        IClass importedClass = null;
         for (Iterator i = this.typeImportsOnDemand.iterator(); i.hasNext();) {
             String[] ss     = (String[]) i.next();
             String[] ss2    = concat(ss, simpleTypeName);
-            IClass   iClass = this.loadFullyQualifiedClass(ss2);
+            IClass   iClass = this.findTypeByFullyQualifiedName(location, ss2);
             if (iClass != null) {
                 if (importedClass != null && importedClass != iClass) {
                     this.compileError(
@@ -8349,7 +8367,11 @@ class UnitCompiler {
         this.onDemandImportableTypes.put(simpleTypeName, importedClass);
         return importedClass;
     }
-    private final Map onDemandImportableTypes = new HashMap();   // String simpleTypeName => IClass
+    /** To be used only by {@link #importTypeOnDemand(String, Location)}; {@code null} means "not yet initialized. */
+    private Collection/*<String[] package>*/ typeImportsOnDemand;
+    /** To be used only by {@link #importTypeOnDemand(String, Location)}; cache for on-demand-imported types. */
+    private final Map/*<String simpleTypeName, IClass>*/ onDemandImportableTypes = new HashMap();
+
     private void
     declareClassDollarMethod(ClassLiteral cl) {
 
@@ -9470,42 +9492,58 @@ class UnitCompiler {
     }
 
     /**
-     * Attempts to load an {@link IClass} by fully-qualified name.
+     * Attempts to load an {@link IClass} by fully-qualified name through {@link #iClassLoader}.
+     * @param location TODO
+     * @param identifiers       The fully qualified type name, e.g. '<code>{ "pkg", "Outer", "Inner" }</code>'
      *
-     * @param identifiers
-     * @return            {@code null} if a class with the given name could not be loaded
+     * @return                  {@code null} if a class with the given name could not be loaded
+     * @throws CompileException The type exists, but a problem occurred when it was loaded
      */
     private IClass
-    loadFullyQualifiedClass(String[] identifiers) throws CompileException {
+    findTypeByFullyQualifiedName(Location location, String[] identifiers) throws CompileException {
 
-        // Compose the descriptor (like "La/b/c;") and remember the positions of the slashes (2 and 4).
-        int[]         slashes = new int[identifiers.length - 1];
-        StringBuilder sb      = new StringBuilder("L");
-        for (int i = 0;; ++i) {
-            sb.append(identifiers[i]);
-            if (i == identifiers.length - 1) break;
-            slashes[i] = sb.length();
-            sb.append('/');
-        }
-        sb.append(';');
+        // Try all 'flavors', i.e. 'a.b.c', 'a.b$c', 'a$b$c'.
+        String className = Java.join(identifiers, ".");
+        for (;;) {
+            IClass iClass = UnitCompiler.this.findTypeByName(location, className);
+            if (iClass != null) return iClass;
 
-        // Attempt to load the IClass and replace dots with dollar signs, i.e.:
-        // La/b/c; La/b$c; La$b$c;
-        for (int j = slashes.length - 1;; --j) {
-            IClass result;
-            try {
-                result = this.iClassLoader.loadIClass(sb.toString());
-            } catch (ClassNotFoundException ex) {
-                // SUPPRESS CHECKSTYLE AvoidHidingCause
-                if (ex.getException() instanceof CompileException) throw (CompileException) ex.getException();
-                throw new CompileException(sb.toString(), null, ex);
-            }
-            if (result != null) return result;
-            if (j < 0) break;
-            sb.setCharAt(slashes[j], '$');
+            int idx = className.lastIndexOf('.');
+            if (idx == -1) break;
+            className = className.substring(0, idx) + '$' + className.substring(idx + 1);
         }
+
         return null;
     }
+
+//        // Compose the descriptor (like "La/b/c;") and remember the positions of the slashes (2 and 4).
+//        int[]         slashes = new int[identifiers.length - 1];
+//        StringBuilder sb      = new StringBuilder("L");
+//        for (int i = 0;; ++i) {
+//            sb.append(identifiers[i]);
+//            if (i == identifiers.length - 1) break;
+//            slashes[i] = sb.length();
+//            sb.append('/');
+//        }
+//        sb.append(';');
+//
+//        // Attempt to load the IClass and replace dots with dollar signs, i.e.:
+//        // La/b/c; La/b$c; La$b$c;
+//        for (int j = slashes.length - 1;; --j) {
+//            IClass result;
+//            try {
+//                result = this.iClassLoader.loadIClass(sb.toString());
+//            } catch (ClassNotFoundException ex) {
+//                // SUPPRESS CHECKSTYLE AvoidHidingCause
+//                if (ex.getException() instanceof CompileException) throw (CompileException) ex.getException();
+//                throw new CompileException(sb.toString(), null, ex);
+//            }
+//            if (result != null) return result;
+//            if (j < 0) break;
+//            sb.setCharAt(slashes[j], '$');
+//        }
+//        return null;
+//    }
 
     // Load the value of a local variable onto the stack and return its type.
     private IClass
@@ -9692,7 +9730,7 @@ class UnitCompiler {
      * Find one class or interface declared in this compilation unit by name.
      *
      * @param className Fully qualified class name, e.g. "pkg1.pkg2.Outer$Inner".
-     * @return {@code null} if a class with that name is not declared in this compilation unit
+     * @return {@code null} if a class or an interface with that name is not declared in this compilation unit
      */
     public IClass
     findClass(String className) {
@@ -10118,10 +10156,6 @@ class UnitCompiler {
     private boolean debugSource;
     private boolean debugLines;
     private boolean debugVars;
-
-    private final Map/*<String simpleTypeName, String[] fullyQualifiedTypeName>*/ singleTypeImports = new HashMap();
-
-    private final Collection/*<String[] package>*/ typeImportsOnDemand;
 
     private final Map/*<String staticMemberName, List <IField, IMethod, IClass>>*/ singleStaticImports = new HashMap();
 
