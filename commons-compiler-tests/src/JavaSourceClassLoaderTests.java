@@ -76,6 +76,15 @@ class JavaSourceClassLoaderTests {
         jscl.setSourcePath(SOURCE_PATH);
         jscl.loadClass("org.codehaus.janino.Compiler");
     }
+    
+    @Test public void
+    testCircularSingleTypeImports() throws Exception {
+        AbstractJavaSourceClassLoader jscl = this.compilerFactory.newJavaSourceClassLoader(
+            ClassLoader.getSystemClassLoader().getParent()
+        );
+        jscl.setSourcePath(new File[] { new File("aux-files/testCircularSingleTypeImports/") });
+        jscl.loadClass("test.Func1");
+    }
 
     @Test public void
     testCircularStaticImports() throws Exception {
