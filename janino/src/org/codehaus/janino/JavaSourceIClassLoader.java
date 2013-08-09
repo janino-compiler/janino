@@ -100,15 +100,15 @@ class JavaSourceIClassLoader extends IClassLoader {
     }
 
     /**
-     * @param type field descriptor of the {@link IClass} to load, e.g. "Lpkg1/pkg2/Outer$Inner;"
-     * @throws ClassNotFoundException if an exception was raised while loading the {@link IClass}
+     * @param fieldDescriptor         Field descriptor of the {@link IClass} to load, e.g. "Lpkg1/pkg2/Outer$Inner;"
+     * @throws ClassNotFoundException An exception was raised while loading the {@link IClass}
      */
     @Override public IClass
-    findIClass(final String type) throws ClassNotFoundException {
-        if (JavaSourceIClassLoader.DEBUG) System.out.println("type = " + type);
+    findIClass(final String fieldDescriptor) throws ClassNotFoundException {
+        if (JavaSourceIClassLoader.DEBUG) System.out.println("type = " + fieldDescriptor);
 
         // Class type.
-        String className = Descriptor.toClassName(type); // E.g. "pkg1.pkg2.Outer$Inner"
+        String className = Descriptor.toClassName(fieldDescriptor); // E.g. "pkg1.pkg2.Outer$Inner"
         if (JavaSourceIClassLoader.DEBUG) System.out.println("2 className = \"" + className + "\"");
 
         // Do not attempt to load classes from package "java".
@@ -138,7 +138,7 @@ class JavaSourceIClassLoader extends IClassLoader {
         // Find source file.
         Resource sourceResource = this.sourceFinder.findResource(ClassFile.getSourceResourceName(className));
         if (sourceResource == null) return null;
-        if (JavaSourceIClassLoader.DEBUG) System.out.println("sourceURL=" + sourceResource);
+        if (JavaSourceIClassLoader.DEBUG) System.out.println("sourceResource=" + sourceResource);
 
         try {
 
