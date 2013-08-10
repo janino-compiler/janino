@@ -18,17 +18,21 @@
 		<mkdir dir="mirror/download"/>
 
 		<!-- Build 'build/commons-compiler.jar'. -->
+		<delete dir="build/bin-commons-compiler"/>
 		<mkdir dir="build/bin-commons-compiler"/>
 		<javac
 			fork="yes"
-			source="1.2"
-			target="1.1"
+			source="1.6"
+			target="1.6"
 			srcdir="../commons-compiler/src"
 			destdir="build/bin-commons-compiler"
 			debug="true"
 			debuglevel="lines,vars,source"
 			includeantruntime="false"
-		/>
+		>
+			<compilerarg value="-Xlint:none"/>
+			<compilerarg value="-Xlint:deprecation"/>
+		</javac>
 		<copy todir="build/bin-commons-compiler">
 			<fileset dir="../commons-compiler/src" excludes="**/*.java,**/package.html"/>
 		</copy>
@@ -47,19 +51,22 @@
 		/>
 
 		<!-- Build 'build/janino.jar'. -->
+		<delete dir="build/bin-janino"/>
 		<mkdir dir="build/bin-janino"/>
 		<javac
 			fork="yes"
-			source="1.2"
-			target="1.1"
+			source="1.6"
+			target="1.6"
 			srcdir="../janino/src"
-			excludes="org/codehaus/janino/AstGeneratorVisitor.java"
 			destdir="build/bin-janino"
 			classpath="${ant.jar}:build/bin-commons-compiler:../de.unkrig.jdisasm/bin"
 			debug="true"
 			debuglevel="lines,vars,source"
 			includeantruntime="false"
-		/>
+		>
+			<compilerarg value="-Xlint:none"/>
+			<compilerarg value="-Xlint:deprecation"/>
+		</javac>
 		<copy todir="build/bin-janino">
 			<fileset dir="../janino/src" excludes="**/*.java,**/package.html"/>
 		</copy>
@@ -79,6 +86,7 @@
 		/>
 
 		<!-- Build 'build/commons-compiler-jdk.jar'. -->
+		<delete dir="build/bin-de.unkrig.commons.nullanalysis"/>
 		<mkdir dir="build/bin-de.unkrig.commons.nullanalysis"/>
 		<javac
 			fork="yes"
@@ -89,7 +97,11 @@
 			debug="true"
 			debuglevel="lines,vars,source"
 			includeantruntime="false"
-		/>
+		>
+			<compilerarg value="-Xlint:none"/>
+			<compilerarg value="-Xlint:deprecation"/>
+		</javac>
+		<delete dir="build/bin-commons-compiler-jdk"/>
 		<mkdir dir="build/bin-commons-compiler-jdk"/>
 		<javac
 			fork="yes"
@@ -101,7 +113,10 @@
 			debug="true"
 			debuglevel="lines,vars,source"
 			includeantruntime="false"
-		/>
+		>
+			<compilerarg value="-Xlint:none"/>
+			<compilerarg value="-Xlint:deprecation"/>
+		</javac>
 		<copy todir="build/bin-commons-compiler-jdk">
 			<fileset dir="../commons-compiler-jdk/src" excludes="**/*.java,**/package.html"/>
 		</copy>
@@ -156,6 +171,7 @@
 		</copy>
 
 		<!-- Build 'mirror/javadoc/'. -->
+		<delete dir="mirror/javadoc"/>
 		<mkdir dir="mirror/javadoc"/>
 		<javadoc
 			header="&lt;a href=&quot;http://janino.net/&quot; target=&quot;_top&quot;&gt;janino.net&lt;/a&gt;"
