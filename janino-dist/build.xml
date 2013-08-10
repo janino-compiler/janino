@@ -218,19 +218,28 @@
 			<checkbox text="Verbose reporting" property="ftp.verbose" defaultvalue="true"/>
 		</de.unkrig.ant-contrib.swing-dialog>
 
+		<!--
+			If there are problems with the FTP upload, add argument '-debug' to the ANT external tool configuration.
+
+			An attribute 'depends="yes"' could speed up the upload, because it uploads only the files that have
+			changed since the last successful upload.
+
+			An attribute 'retriesAllowed="x"', however, is a bad idea, because it does not RECONNECT to the FTP server,
+			but simply retries the FTP command, which is 99.9% prone to fail (how braindead is that?).
+		-->
 		<ftp2
-			server       ="${ftp.server}"
-			port         ="${ftp.port}"
-			userid       ="${ftp.userid}"
-			password     ="${ftp.password}"
-			proxyServer  ="${ftp.proxy.server}"
-			proxyPort    ="${ftp.proxy.port}"
-			proxyUserid  ="${ftp.proxy.userid}"
-			proxyPassword="${ftp.proxy.password}"
-			remotedir    ="${ftp.remotedir}"
-			passive      ="${ftp.passive}"
-			verbose      ="${ftp.verbose}"
-			action       ="put"
+			server        ="${ftp.server}"
+			port          ="${ftp.port}"
+			userid        ="${ftp.userid}"
+			password      ="${ftp.password}"
+			proxyServer   ="${ftp.proxy.server}"
+			proxyPort     ="${ftp.proxy.port}"
+			proxyUserid   ="${ftp.proxy.userid}"
+			proxyPassword ="${ftp.proxy.password}"
+			remotedir     ="${ftp.remotedir}"
+			passive       ="${ftp.passive}"
+			verbose       ="${ftp.verbose}"
+			action        ="put"
 		>
 			<fileset dir="mirror"/>
 		</ftp2>
