@@ -38,7 +38,6 @@ import java.util.Map;
 
 import org.codehaus.janino.util.ClassFile;
 
-
 /**
  * The context of the compilation of a function (constructor or method). Manages generation of
  * byte code, the exception table, generation of line number tables, allocation of local variables,
@@ -253,7 +252,7 @@ class CodeContext {
     }
 
     /**
-     * @return A {@link LocalVariableTableAttribute} for this {@link CodeContext}
+     * @return A {@link org.codehaus.janino.util.ClassFile.LocalVariableTableAttribute} for this {@link CodeContext}
      */
     protected ClassFile.AttributeInfo
     storeLocalVariableTable(DataOutputStream dos, short localVariableTableAttributeNameIndex) {
@@ -1148,8 +1147,7 @@ class CodeContext {
     }
 
     /**
-     * Creates and inserts an {@link Offset} at the current inserter's current position.
-     * @return
+     * Creates and inserts an {@link CodeContext.Offset} at the current inserter's current position.
      */
     public Offset
     newOffset() {

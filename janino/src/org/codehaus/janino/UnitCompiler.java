@@ -4216,7 +4216,7 @@ class UnitCompiler {
     // -------------------- Rvalue.getConstantValue() -----------------
 
     /**
-     * Special return value for the {@link #getConstantValue(Rvalue)} method family indicating that the given
+     * Special return value for the {@link #getConstantValue(Java.Rvalue)} method family indicating that the given
      * {@link Rvalue} does not evaluate to a constant value.
      */
     public static final Object NOT_CONSTANT = IClass.NOT_CONSTANT;

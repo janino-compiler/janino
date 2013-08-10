@@ -31,6 +31,7 @@ package org.codehaus.janino.util.enumerator;
  */
 public
 class EnumeratorFormatException extends Exception {
+
     public EnumeratorFormatException()               {}
     public EnumeratorFormatException(String message) { super(message); }
 }
