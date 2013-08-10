@@ -3,11 +3,13 @@
 	<property file="local_build.properties"/>
 	<property file="build.properties"/>
 
+	<!-- Task 'de.unkrig.ant-contrib.swing-dialog'. -->
 	<taskdef
 		classpath="lib/de.unkrig.ant-contrib.jar"
 		resource="de/unkrig/antcontrib/ant.properties"
 	/>
 
+	<!-- Task 'ftp2' which adds supprt for FTP proxies. -->
 	<taskdef
 		classpath="lib/ant_issue_54883.jar"
 		resource="ant_issue_54883.properties"
