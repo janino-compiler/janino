@@ -26,7 +26,7 @@
 
 package other_package;
 
-public
+public // SUPPRESS CHECKSTYLE HideUtilityClassConstructor
 class ScopingRules {
 
     protected

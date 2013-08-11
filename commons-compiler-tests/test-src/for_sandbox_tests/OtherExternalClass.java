@@ -26,7 +26,7 @@
 
 package for_sandbox_tests;
 
-public
+public // SUPPRESS CHECKSTYLE HideUtilityClassConstructor
 class OtherExternalClass {
     public static int m1() { return 7; }
 }
