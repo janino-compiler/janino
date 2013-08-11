@@ -24,7 +24,9 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package covariant_clone;
+// CHECKSTYLE Javadoc:OFF
+
+package covariant_clone; // SUPPRESS CHECKSTYLE PackageName
 
 public abstract
 class Base implements Cloneable, CloneableData {

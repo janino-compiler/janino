@@ -24,7 +24,9 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package other_package;
+// CHECKSTYLE Javadoc:OFF
+
+package other_package; // SUPPRESS CHECKSTYLE PackageName
 
 /**
  * Helper class for {@link JLS2Tests} -- used to define accessibility tests.

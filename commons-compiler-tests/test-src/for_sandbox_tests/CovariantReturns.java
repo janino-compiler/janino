@@ -24,7 +24,9 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package for_sandbox_tests;
+// CHECKSTYLE Javadoc:OFF
+
+package for_sandbox_tests; // SUPPRESS CHECKSTYLE PackageName
 
 public abstract
 class CovariantReturns {

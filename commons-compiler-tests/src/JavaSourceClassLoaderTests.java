@@ -60,7 +60,7 @@ class JavaSourceClassLoaderTests {
     }
 
     @Test public void
-    testJSCL() throws Exception {
+    testJavaSourceClassLoader() throws Exception {
         ClassLoader systemClassLoader = ClassLoader.getSystemClassLoader();
         systemClassLoader.loadClass(this.getClass().getName());
 

@@ -24,6 +24,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+// CHECKSTYLE Javadoc:OFF
+
 public
 class Pred implements IPred {
 
