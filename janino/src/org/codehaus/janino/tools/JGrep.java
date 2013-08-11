@@ -77,7 +77,7 @@ import org.codehaus.janino.util.resource.PathResourceFinder;
  * <i>file-name-patterns</i> work as described in
  * {@link org.codehaus.janino.util.StringPattern#parseCombinedPattern(String)}.
  */
-@SuppressWarnings({ "rawtypes", "unchecked" }) public
+@SuppressWarnings({ "rawtypes", "unchecked" }) public // SUPPRESS CHECKSTYLE HideUtilityClassConstructor
 class JGrep {
 
     private static final boolean DEBUG = false;

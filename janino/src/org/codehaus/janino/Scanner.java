@@ -395,7 +395,7 @@ class Scanner {
                             new Location(this.optionalFileName, this.nextCharLineNumber, this.nextCharColumnNumber)
                         );
                     }
-                    dcsb = new StringBuilder().append((char) this.nextChar);
+                    dcsb  = new StringBuilder().append((char) this.nextChar);
                     state = (
                         (this.nextChar == '\r' || this.nextChar == '\n') ? 6
                         : this.nextChar == '*' ? 8

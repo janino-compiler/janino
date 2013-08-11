@@ -1411,6 +1411,7 @@ class Java {
         @Override public String
         toString() {
             StringBuilder sb = new StringBuilder(this.getDeclaringClass().getClassName()).append('(');
+
             FunctionDeclarator.FormalParameter[] fps = this.formalParameters;
             for (int i = 0; i < fps.length; ++i) {
                 if (i > 0) sb.append(", ");
@@ -1451,7 +1452,7 @@ class Java {
 
         @Override public String
         toString() {
-            StringBuilder sb = new StringBuilder(this.name).append('(');
+            StringBuilder                        sb  = new StringBuilder(this.name).append('(');
             FunctionDeclarator.FormalParameter[] fps = this.formalParameters;
             for (int i = 0; i < fps.length; ++i) {
                 if (i > 0) sb.append(", ");
