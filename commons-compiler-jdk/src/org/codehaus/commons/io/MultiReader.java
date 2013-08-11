@@ -55,10 +55,10 @@ class MultiReader extends Reader {
     /**
      * Closes all delegates.
      */
-    public void
+    @Override public void
     close() throws IOException { for (Reader delegate : this.delegates) delegate.close(); }
 
-    public int
+    @Override public int
     read() throws IOException {
         for (;;) {
             int result = this.currentDelegate.read();
@@ -68,7 +68,7 @@ class MultiReader extends Reader {
         }
     }
 
-    public long
+    @Override public long
     skip(long n) throws IOException {
         long skipped = 0L;
         for (;;) {
@@ -83,7 +83,7 @@ class MultiReader extends Reader {
         }
     }
 
-    public int
+    @Override public int
     read(final char[] cbuf, final int off, final int len) throws IOException {
         int read = 0;
         for (;;) {
