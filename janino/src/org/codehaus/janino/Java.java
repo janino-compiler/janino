@@ -41,6 +41,7 @@ import org.codehaus.commons.compiler.Location;
 import org.codehaus.janino.CodeContext.Offset;
 import org.codehaus.janino.Visitor.BlockStatementVisitor;
 import org.codehaus.janino.Visitor.ElementValueVisitor;
+import org.codehaus.janino.Visitor.TypeArgumentVisitor;
 import org.codehaus.janino.util.Traverser;
 import org.codehaus.janino.util.iterator.ReverseListIterator;
 
@@ -2394,23 +2395,39 @@ class Java {
     }
 
     public static final
-    class ReferenceType extends Type {
-        public final String[] identifiers;
+    class ReferenceType extends Type implements TypeArgument {
+
+        public final String[]       identifiers;
+        public final TypeArgument[] optionalTypeArguments;
 
         public
-        ReferenceType(Location location, String[] identifiers) {
+        ReferenceType(Location location, String[] identifiers, TypeArgument[] optionalTypeArguments) {
             super(location);
-            this.identifiers = identifiers;
+            assert identifiers != null;
+            this.identifiers           = identifiers;
+            this.optionalTypeArguments = optionalTypeArguments;
         }
 
         @Override public String
-        toString() { return Java.join(this.identifiers, "."); }
+        toString() {
+            String s = join(this.identifiers, ".");
+            if (this.optionalTypeArguments != null) s += '<' + join(this.optionalTypeArguments, ", ") + '>';
+            return s;
+        }
 
         @Override public void
         accept(Visitor.AtomVisitor visitor) { visitor.visitReferenceType(this); }
 
         @Override public void
         accept(Visitor.TypeVisitor visitor) { visitor.visitReferenceType(this); }
+
+        @Override public void
+        accept(TypeArgumentVisitor visitor) { visitor.visitReferenceType(this); }
+    }
+
+    public
+    interface TypeArgument {
+        void accept(Visitor.TypeArgumentVisitor visitor);
     }
 
     // Helper class for JLS2 15.9.1
@@ -2596,7 +2613,7 @@ class Java {
             if (this.type == null) {
                 String[] is = new String[this.n];
                 System.arraycopy(this.identifiers, 0, is, 0, this.n);
-                this.type = new ReferenceType(this.getLocation(), is);
+                this.type = new ReferenceType(this.getLocation(), is, null);
                 this.type.setEnclosingScope(this.getEnclosingBlockStatement());
             }
             return this.type;
@@ -3806,6 +3823,34 @@ class Java {
             if (this.slot == null) return -1;
             return this.slot.getSlotIndex();
         }
+    }
+
+    public static
+    class Wildcard implements TypeArgument {
+
+        public static final int BOUNDS_NONE    = 0;
+        public static final int BOUNDS_EXTENDS = 1;
+        public static final int BOUNDS_SUPER   = 2;
+
+        public final int           bounds;
+        public final ReferenceType referenceType;
+        
+        public
+        Wildcard() {
+            this.bounds        = BOUNDS_NONE;
+            this.referenceType = null;
+        }
+
+        public
+        Wildcard(int bounds, ReferenceType referenceType) {
+            assert bounds == BOUNDS_EXTENDS || bounds == BOUNDS_SUPER;
+            this.bounds = bounds;
+            assert referenceType != null;
+            this.referenceType = referenceType;
+        }
+
+        @Override public void
+        accept(TypeArgumentVisitor visitor) { visitor.visitWildcard(this); }
     }
 
     public static String

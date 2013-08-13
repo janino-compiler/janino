@@ -560,7 +560,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
         }
 
         // Compile and load the compilation unit.
-        Class c = this.compileToClass(compilationUnit, this.className);
+        Class c = this.compileToClass(compilationUnit);
 
         // Find the script methods by name.
         this.result = new Method[count];
@@ -704,10 +704,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
     ) throws CompileException {
 
         // Compile and load the compilation unit.
-        Class c = this.compileToClass(
-            compilationUnit,                                    // compilationUnit
-            this.className
-        );
+        Class c = this.compileToClass(compilationUnit);
 
         // Find the script method by name.
         this.result = new Method[methodNames.length];

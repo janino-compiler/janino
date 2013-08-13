@@ -245,11 +245,17 @@ class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluato
         super.setReturnTypes(returnTypes);
     }
 
+    /**
+     * @deprecated {@link #setExpressionType(Class)} should be called instead
+     */
     @Override @Deprecated public final void
     setReturnType(Class returnType) {
         throw new AssertionError("Must not be used on an ExpressionEvaluator; use 'setExpressionType()' instead");
     }
 
+    /**
+     * @deprecated {@link #setExpressionTypes(Class[])} should be called instead
+     */
     @Override @Deprecated public final void
     setReturnTypes(Class[] returnTypes) {
         throw new AssertionError("Must not be used on an ExpressionEvaluator; use 'setExpressionTypes()' instead");
@@ -276,10 +282,13 @@ class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluato
             // wrapping of primitive types.
             if (et == ANY_TYPE) {
                 value = new Java.MethodInvocation(
-                    parser.location(),         // location
+                    parser.location(),          // location
                     new Java.ReferenceType(     // optionalTarget
-                        parser.location(),                                                           // location
-                        new String[] { "org", "codehaus", "commons", "compiler", "PrimitiveWrapper" } // identifiers
+                        parser.location(), // location
+                        new String[] {     // identifiers
+                            "org", "codehaus", "commons", "compiler", "PrimitiveWrapper"
+                        },
+                        null               // optionalTypeArguments
                     ),
                     "wrap",                     // methodName
                     new Java.Rvalue[] { value } // arguments

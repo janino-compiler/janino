@@ -77,6 +77,5 @@ class ExpressionEvaluatorTest {
             if (ce.getMessage().contains("does not support generics")) return;
             fail("Unexpected CompileException message '" + ce.getMessage() + "'");
         }
-        fail("Usage of generics should cause a CompileException");
     }
 }

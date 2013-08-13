@@ -30,6 +30,7 @@ import java.util.*;
 
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.janino.util.ClassFile;
+import org.codehaus.janino.util.ClassFile.ConstantClassInfo;
 
 /**
  * A wrapper object that turns a {@link ClassFile} object into a
@@ -224,41 +225,18 @@ class ClassFileIClass extends IClass {
     @Override protected IClass
     getComponentType2()  { return null; }
 
-    public void
-    resolveHalf() throws ClassNotFoundException {
-
-        // Resolve superclass.
-        this.resolveClass(this.classFile.superclass);
-
-        // Resolve interfaces.
-        for (int i = 0; i < this.classFile.interfaces.length; ++i) {
-            this.resolveClass(this.classFile.interfaces[i]);
-        }
-
-        // Resolve constructors and methods.
-        for (int i = 0; i < this.classFile.methodInfos.size(); ++i) {
-            this.resolveMethod((ClassFile.MethodInfo) this.classFile.methodInfos.get(i));
-        }
-
-        // Process fields.
-        for (int i = 0; i < this.classFile.fieldInfos.size(); ++i) {
-            this.resolveField((ClassFile.FieldInfo) this.classFile.fieldInfos.get(i));
-        }
-    }
-
     /**
      * Resolves all classes referenced by this class file.
      */
     public void
     resolveAllClasses() throws ClassNotFoundException {
-        for (short i = 0; i < this.classFile.constantPool.size(); ++i) {
+        for (short i = 0; i < this.classFile.getConstantPoolSize(); ++i) {
             ClassFile.ConstantPoolInfo cpi = this.classFile.getConstantPoolInfo(i);
             if (cpi instanceof ClassFile.ConstantClassInfo) {
                 this.resolveClass(i);
             } else
             if (cpi instanceof ClassFile.ConstantNameAndTypeInfo) {
-                short  descriptorIndex = ((ClassFile.ConstantNameAndTypeInfo) cpi).getDescriptorIndex();
-                String descriptor      = this.classFile.getConstantUtf8(descriptorIndex);
+                String descriptor = ((ClassFile.ConstantNameAndTypeInfo) cpi).getDescriptor(this.classFile);
                 if (descriptor.charAt(0) == '(') {
                     MethodDescriptor md = new MethodDescriptor(descriptor);
                     this.resolveClass(md.returnFD);
@@ -276,7 +254,8 @@ class ClassFileIClass extends IClass {
     private IClass
     resolveClass(short index) throws ClassNotFoundException {
         if (ClassFileIClass.DEBUG) System.out.println("index=" + index);
-        return this.resolveClass(Descriptor.fromInternalForm(this.classFile.getConstantClassName(index)));
+        ConstantClassInfo cci = (ConstantClassInfo) this.classFile.getConstantPoolInfo(index);
+        return this.resolveClass(Descriptor.fromInternalForm(cci.getName(this.classFile)));
     }
 
     private IClass
@@ -320,10 +299,10 @@ class ClassFileIClass extends IClass {
         if (result != null) return result;
 
         // Determine method name.
-        final String name = this.classFile.getConstantUtf8(methodInfo.getNameIndex());
+        final String name = methodInfo.getName();
 
         // Determine return type.
-        MethodDescriptor md = new MethodDescriptor(this.classFile.getConstantUtf8(methodInfo.getDescriptorIndex()));
+        MethodDescriptor md = new MethodDescriptor(methodInfo.getDescriptor());
 
         final IClass returnType = this.resolveClass(md.returnFD);
 
@@ -337,9 +316,11 @@ class ClassFileIClass extends IClass {
         for (int i = 0; i < ais.length; ++i) {
             ClassFile.AttributeInfo ai = ais[i];
             if (ai instanceof ClassFile.ExceptionsAttribute) {
-                short[] teis = ((ClassFile.ExceptionsAttribute) ai).getExceptionIndexes();
-                tes = new IClass[teis.length];
-                for (int j = 0; j < teis.length; ++j) tes[j] = this.resolveClass(teis[j]);
+                ConstantClassInfo[] ccis = ((ClassFile.ExceptionsAttribute) ai).getExceptions(this.classFile);
+                tes = new IClass[ccis.length];
+                for (int j = 0; j < tes.length; ++j) {
+                    tes[j] = this.resolveClass(Descriptor.fromInternalForm(ccis[j].getName(this.classFile)));
+                }
             }
         }
         final IClass[] thrownExceptions = tes == null ? new IClass[0] : tes;
@@ -415,10 +396,10 @@ class ClassFileIClass extends IClass {
         if (result != null) return result;
 
         // Determine field name.
-        final String name = this.classFile.getConstantUtf8(fieldInfo.getNameIndex());
+        final String name = fieldInfo.getName(this.classFile);
 
         // Determine field type.
-        final String descriptor = this.classFile.getConstantUtf8(fieldInfo.getDescriptorIndex());
+        final String descriptor = fieldInfo.getDescriptor(this.classFile);
         final IClass type       = this.resolveClass(descriptor);
 
         // Determine optional "constant value" of the field (JLS2 15.28, bullet
@@ -438,22 +419,8 @@ class ClassFileIClass extends IClass {
             }
         }
 
-        Object ocv = IClass.NOT_CONSTANT;
-        if (cva != null) {
-            ClassFile.ConstantPoolInfo cpi = this.classFile.getConstantPoolInfo(cva.getConstantValueIndex());
-            if (cpi instanceof ClassFile.ConstantValuePoolInfo) {
-                ocv = ((ClassFile.ConstantValuePoolInfo) cpi).getValue(this.classFile);
-            } else
-            {
-                throw new JaninoRuntimeException(
-                    "Unexpected constant pool info type \"" + cpi.getClass().getName() + "\""
-                );
-            }
-        }
-        final Object optionalConstantValue = ocv;
-
-        // Determine access.
-        final Access access = ClassFileIClass.accessFlags2Access(fieldInfo.getAccessFlags());
+        final Object optionalConstantValue = cva == null ? IClass.NOT_CONSTANT : cva.getConstantValue(this.classFile);
+        final Access access                = ClassFileIClass.accessFlags2Access(fieldInfo.getAccessFlags());
 
         result = new IField() {
             @Override public Object  getConstantValue() { return optionalConstantValue; }

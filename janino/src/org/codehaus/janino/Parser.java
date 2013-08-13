@@ -113,6 +113,7 @@ import org.codehaus.janino.Java.ThisReference;
 import org.codehaus.janino.Java.ThrowStatement;
 import org.codehaus.janino.Java.TryStatement;
 import org.codehaus.janino.Java.Type;
+import org.codehaus.janino.Java.TypeArgument;
 import org.codehaus.janino.Java.UnaryOperation;
 import org.codehaus.janino.Java.VariableDeclarator;
 import org.codehaus.janino.Java.WhileStatement;
@@ -1680,14 +1681,49 @@ class Parser {
 
     /**
      * <pre>
-     *   ReferenceType := QualifiedIdentifier
+     *   ReferenceType := QualifiedIdentifier [ TypeArguments ]
      * </pre>
      */
     public ReferenceType
     parseReferenceType() throws CompileException, IOException {
-        String[] identifiers = this.parseQualifiedIdentifier();
-        if (this.peek("<")) throw this.compileException("JANINO does not support generics");
-        return new ReferenceType(this.location(), identifiers);
+        return new ReferenceType(this.location(), this.parseQualifiedIdentifier(), this.parseTypeArgumentsOpt());
+    }
+
+    /**
+     * <pre>
+     *   TypeArguments := '<' TypeArgument { ',' TypeArgument } '>'
+     * </pre>
+     */
+    private Java.TypeArgument[]
+    parseTypeArgumentsOpt() throws CompileException, IOException {
+        if (!this.peekRead("<")) return null;
+        List typeArguments = new ArrayList();
+        typeArguments.add(this.parseTypeArgument());
+        while (!this.peekRead(">")) {
+            this.read(",");
+            typeArguments.add(this.parseTypeArgument());
+        }
+        return (TypeArgument[]) typeArguments.toArray(new Java.TypeArgument[typeArguments.size()]);
+    }
+
+    /**
+     * <pre>
+     *   TypeArgument :=
+     *     ReferenceType
+     *     | '?' extends ReferenceType
+     *     | '?' super ReferenceType
+     * </pre>
+     */
+    private Java.TypeArgument
+    parseTypeArgument() throws CompileException, IOException {
+        if (this.peekRead("?")) {
+            return (
+                this.peekRead("extends") ? new Java.Wildcard(Java.Wildcard.BOUNDS_EXTENDS, this.parseReferenceType()) :
+                this.peekRead("super") ? new Java.Wildcard(Java.Wildcard.BOUNDS_SUPER, this.parseReferenceType()) :
+                new Java.Wildcard()
+            );
+        }
+        return this.parseReferenceType();
     }
 
     /**
@@ -2129,7 +2165,8 @@ class Parser {
                 // Name '[]' { '[]' } '.' 'class'
                 Type res = new ReferenceType(
                     location, // location
-                    qi        // identifiers
+                    qi,       // identifiers
+                    null      // optionalTypeArguments
                 );
                 int brackets = this.parseBracketsOpt();
                 for (int i = 0; i < brackets; ++i) res = new ArrayType(res);

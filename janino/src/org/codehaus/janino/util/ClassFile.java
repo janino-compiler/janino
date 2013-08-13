@@ -44,6 +44,7 @@ import java.util.Map;
 
 import org.codehaus.janino.Descriptor;
 import org.codehaus.janino.JaninoRuntimeException;
+import org.codehaus.janino.Mod;
 
 
 /**
@@ -100,6 +101,9 @@ class ClassFile {
         ));
     }
 
+    /**
+     * Adds the "Deprecated" attribute to this class.
+     */
     public void
     addDeprecatedAttribute() {
         this.attributes.add(new DeprecatedAttribute(this.addConstantUtf8Info("Deprecated")));
@@ -140,15 +144,10 @@ class ClassFile {
     }
 
     /**
-     * Read "class file" data from a {@link InputStream} and construct a
-     * {@link ClassFile} object from it.
+     * Read "class file" data from a {@link InputStream} and construct a {@link ClassFile} object from it.
      * <p>
-     * If the {@link ClassFile} is created with this constructor, then most modifying operations
-     * lead to a {@link UnsupportedOperationException}; only fields, methods and
-     * attributes can be added.
-     * @param inputStream
-     * @throws IOException
-     * @throws ClassFormatError
+     * If the {@link ClassFile} is created with this constructor, then most modifying operations lead to a {@link
+     * UnsupportedOperationException}; only fields, methods and attributes can be added.
      */
     public
     ClassFile(InputStream inputStream) throws IOException {
@@ -193,7 +192,10 @@ class ClassFile {
      * @return The fully qualified name of this class, e.g. "pkg1.pkg2.Outer$Inner"
      */
     public String
-    getThisClassName() { return this.getConstantClassName(this.thisClass).replace('/', '.'); }
+    getThisClassName() {
+        ConstantClassInfo cci = (ConstantClassInfo) this.getConstantPoolInfo(this.thisClass);
+        return cci.getName(this).replace('/', '.');
+    }
 
     /**
      * Sets the major and minor class file version numbers (JVMS 4.1). The class file version
@@ -417,6 +419,10 @@ class ClassFile {
         return (short) res;
     }
 
+    /**
+     * Creates a {@link FieldInfo} and adds it to this class. The return value can be used e.g. to add attributes
+     * ({@code Deprecated}, ...) to the field.
+     */
     public FieldInfo
     addFieldInfo(short accessFlags, String fieldName, String fieldTypeFd, Object optionalConstantValue) {
         List attributes = new ArrayList();
@@ -436,6 +442,10 @@ class ClassFile {
         return fi;
     }
 
+    /**
+     * Creates a {@link MethodInfo} and adds it to this class. The return value can be used e.g. to add attributes
+     * ({@code Code}, {@code Depreecated}, {@code Exceptions}, ...) to the method.
+     */
     public MethodInfo
     addMethodInfo(short accessFlags, String methodName, String methodMd) {
         MethodInfo mi = new MethodInfo(
@@ -448,19 +458,17 @@ class ClassFile {
         return mi;
     }
 
+    /**
+     * @return The (read-only) constant pool entry indexed by {@code index}
+     */
     public ConstantPoolInfo
     getConstantPoolInfo(short index) { return (ConstantPoolInfo) this.constantPool.get(0xffff & index); }
-
+    
     /**
-     * @param index Index to a <code>CONSTANT_Class_info</code> in the constant pool
-     * @return The name of the denoted class in "internal form" (see JVMS 4.2)
+     * @return The size of the constant pool
      */
-    public String
-    getConstantClassName(short index) {
-        ConstantClassInfo cci = (ConstantClassInfo) this.getConstantPoolInfo(index);
-        ConstantUtf8Info  cui = (ConstantUtf8Info) this.getConstantPoolInfo(cci.nameIndex);
-        return cui.s;
-    }
+    public int
+    getConstantPoolSize() { return this.constantPool.size(); }
 
     /**
      * @param index Index to a <code>CONSTANT_Utf8_info</code> in the constant pool
@@ -693,25 +701,69 @@ class ClassFile {
     public static final short MINOR_VERSION_JDK_1_5 = 0;
     // CHECKSTYLE JavadocVariable:ON
 
-    private short        majorVersion;
-    private short        minorVersion;
-    public final List    constantPool; // ConstantPoolInfo
-    public final short   accessFlags;
-    public final short   thisClass;
-    public final short   superclass;
+    private short                            majorVersion;
+    private short                            minorVersion;
+    private final List/*<ConstantPoolInfo>*/ constantPool;
+
+    /**
+     * The access flags of the class.
+     *
+     * @see Mod#PUBLIC and consorts
+     */
+    public final short accessFlags;
+
+    /**
+     * The constant pool index of the {@link ConstantClassInfo} that describes THIS class.
+     */
+    public final short thisClass;
+    
+    /**
+     * The constant pool index of the {@link ConstantClassInfo} that describes the superclass of THIS class. Zero
+     * for class {@link Object}, {@link Object} for interfaces.
+     */
+    public final short superclass;
+
+    /**
+     * The constant pool indexes of {@link ConstantClassInfo} which describes the interfaces that this class
+     * implements, resp. that this interface extends.
+     */
     public final short[] interfaces;
-    public final List    fieldInfos;   // FieldInfo
-    public final List    methodInfos;  // MethodInfo
-    private final List   attributes;   // AttributeInfo
+
+    /**
+     * The {@link FieldInfo}s of the field members of this class or interface.
+     */
+    public final List/*<FieldInfo>*/ fieldInfos;
+
+    /**
+     * The {@link MethodInfo}s of the methods of this class or interface.
+     */
+    public final List/*<MethodInfo>*/ methodInfos;
+    
+    /**
+     * The {@link AttributeInfo}s of the attributes of this class or interface.
+     */
+    private final List/*<AttributeInfo>*/ attributes;
 
     // Convenience.
     private final Map constantPoolMap; // ConstantPoolInfo => Short
 
+    /**
+     * Base for various the constant pool table entry types.
+     */
     public abstract static
     class ConstantPoolInfo {
 
-        public abstract void    store(DataOutputStream dos) throws IOException;
-        public abstract boolean isWide();
+        /**
+         * Stores this CP entry into the given {@link DataOutputStream}.
+         * <p>
+         * See JVMS7 4.4.1 and following
+         */
+        protected abstract void store(DataOutputStream dos) throws IOException;
+        
+        /**
+         * @return Whether this CP entry is "wide" in the sense of JVMS7 4.4.5
+         */
+        protected abstract boolean isWide();
 
         private static ConstantPoolInfo
         loadConstantPoolInfo(DataInputStream dis) throws IOException {
@@ -759,16 +811,32 @@ class ClassFile {
         }
     }
 
+    /**
+     * Intermediate base class for constant pool table entry types that have 'value' semantics: Double, Float,
+     * Integer, Long, String
+     */
     public abstract static
     class ConstantValuePoolInfo extends ConstantPoolInfo {
+
+        /**
+         * @return The value that this constant pool table entry represents; the actual type is {@link Double}, {@link
+         *         Float}, {@link Integer}, {@link Long} or {@link String}
+         */
         public abstract Object getValue(ClassFile classFile);
     }
 
+    /** See JVMS7 4.4.1. */
     public static
     class ConstantClassInfo extends ConstantPoolInfo {
         private final short nameIndex;
 
         public ConstantClassInfo(short nameIndex) { this.nameIndex = nameIndex; }
+
+        /**
+         * @return The class's or interface's name in "internal form" (JVMS7 4.2.1)
+         */
+        public String
+        getName(ClassFile classFile) { return classFile.getConstantUtf8(this.nameIndex); }
 
         // Implement ConstantPoolInfo.
 
@@ -789,6 +857,8 @@ class ClassFile {
         @Override public int
         hashCode() { return this.nameIndex; }
     }
+
+    /** See JVMS7 4.4.2. */
     public static
     class ConstantFieldrefInfo extends ConstantPoolInfo {
 
@@ -801,8 +871,13 @@ class ClassFile {
             this.nameAndTypeIndex = nameAndTypeIndex;
         }
 
-        public short
-        getNameAndTypeIndex() { return this.nameAndTypeIndex; }
+        /**
+         * @return The {@link ConstantNameAndTypeInfo} of this {@link ConstantFieldrefInfo}
+         */
+        public ConstantNameAndTypeInfo
+        getNameAndType(ClassFile classFile) {
+            return (ClassFile.ConstantNameAndTypeInfo) classFile.getConstantPoolInfo(this.nameAndTypeIndex);
+        }
 
         // Implement ConstantPoolInfo.
 
@@ -828,6 +903,8 @@ class ClassFile {
         @Override public int
         hashCode() { return this.classIndex + (this.nameAndTypeIndex << 16); }
     }
+
+    /** See JVMS7 4.4.2. */
     public static
     class ConstantMethodrefInfo extends ConstantPoolInfo {
 
@@ -840,8 +917,13 @@ class ClassFile {
             this.nameAndTypeIndex = nameAndTypeIndex;
         }
 
-        public short
-        getNameAndTypeIndex() { return this.nameAndTypeIndex; }
+        /**
+         * @return The {@link ConstantNameAndTypeInfo} of this {@link ConstantMethodrefInfo}
+         */
+        public ConstantNameAndTypeInfo
+        getNameAndType(ClassFile classFile) {
+            return (ClassFile.ConstantNameAndTypeInfo) classFile.getConstantPoolInfo(this.nameAndTypeIndex);
+        }
 
         // Implement ConstantPoolInfo.
 
@@ -868,6 +950,7 @@ class ClassFile {
         hashCode() { return this.classIndex + (this.nameAndTypeIndex << 16); }
     }
 
+    /** See JVMS7 4.4.2. */
     public static
     class ConstantInterfaceMethodrefInfo extends ConstantPoolInfo {
         private final short classIndex;
@@ -879,8 +962,13 @@ class ClassFile {
             this.nameAndTypeIndex = nameAndTypeIndex;
         }
 
-        public short
-        getNameAndTypeIndex() { return this.nameAndTypeIndex; }
+        /**
+         * @return The {@link ConstantNameAndTypeInfo} of this {@link ConstantInterfaceMethodrefInfo}
+         */
+        public ConstantNameAndTypeInfo
+        getNameAndType(ClassFile classFile) {
+            return (ClassFile.ConstantNameAndTypeInfo) classFile.getConstantPoolInfo(this.nameAndTypeIndex);
+        }
 
         // Implement ConstantPoolInfo.
 
@@ -907,6 +995,7 @@ class ClassFile {
         hashCode() { return this.classIndex + (this.nameAndTypeIndex << 16); }
     }
 
+    /** See JVMS7 4.4.3. */
     static
     class ConstantStringInfo extends ConstantValuePoolInfo {
         private final short stringIndex;
@@ -938,6 +1027,7 @@ class ClassFile {
         hashCode() { return this.stringIndex; }
     }
 
+    /** See JVMS7 4.4.4. */
     private static
     class ConstantIntegerInfo extends ConstantValuePoolInfo {
         private final int value;
@@ -967,6 +1057,7 @@ class ClassFile {
         hashCode() { return this.value; }
     }
 
+    /** See JVMS7 4.4.4. */
     private static
     class ConstantFloatInfo extends ConstantValuePoolInfo {
 
@@ -998,6 +1089,7 @@ class ClassFile {
         hashCode() { return Float.floatToIntBits(this.value); }
     }
 
+    /** See JVMS7 4.4.5. */
     private static
     class ConstantLongInfo extends ConstantValuePoolInfo {
 
@@ -1007,7 +1099,7 @@ class ClassFile {
         ConstantLongInfo(long value) { this.value = value; }
 
         // Implement ConstantValuePoolInfo.
-        @Override public Object getValue(ClassFile classFile) { return new Long(this.value); }
+        @Override public Object getValue(ClassFile classFile) { return this.value; }
 
         // Implement ConstantPoolInfo.
 
@@ -1029,6 +1121,7 @@ class ClassFile {
         hashCode() { return (int) this.value ^ (int) (this.value >> 32); }
     }
 
+    /** See JVMS7 4.4.5. */
     private static
     class ConstantDoubleInfo extends ConstantValuePoolInfo {
         private final double value;
@@ -1060,6 +1153,7 @@ class ClassFile {
         }
     }
 
+    /** See JVMS7 4.4.6. */
     public static
     class ConstantNameAndTypeInfo extends ConstantPoolInfo {
 
@@ -1072,8 +1166,13 @@ class ClassFile {
             this.descriptorIndex = descriptorIndex;
         }
 
-        public short
-        getDescriptorIndex() { return this.descriptorIndex; }
+        /**
+         * @return The (field or method) descriptor related to the name
+         */
+        public String
+        getDescriptor(ClassFile classFile) {
+            return classFile.getConstantUtf8(this.descriptorIndex);
+        }
 
         // Implement ConstantPoolInfo.
 
@@ -1100,6 +1199,7 @@ class ClassFile {
         hashCode() { return this.nameIndex + (this.descriptorIndex << 16); }
     }
 
+    /** See JVMS7 4.4.7. */
     public static
     class ConstantUtf8Info extends ConstantPoolInfo {
         private final String s;
@@ -1110,6 +1210,9 @@ class ClassFile {
             this.s = s;
         }
 
+        /**
+         * @return The string contained in this {@link ConstantUtf8Info}
+         */
         public String
         getString() { return this.s; }
 
@@ -1139,8 +1242,7 @@ class ClassFile {
     }
 
     /**
-     * This class represents a "method_info" structure, as defined by the
-     * JVM specification.
+     * This class represents a "method_info" structure, as defined by JVMS7 4.6.
      */
     public
     class MethodInfo {
@@ -1161,24 +1263,45 @@ class ClassFile {
             this.attributes      = attributes;
         }
 
+        /**
+         * @return The {@link ClassFile} that contains this {@link MethodInfo} object
+         */
         public ClassFile
         getClassFile() { return ClassFile.this; }
 
-        public short getAccessFlags()     { return this.accessFlags; }
-        public short getNameIndex()       { return this.nameIndex; }
-        public short getDescriptorIndex() { return this.descriptorIndex; }
+        /**
+         * @return The access flags of the method; or'ed values are {@link Mod#PUBLIC} and consorts
+         */
+        public short getAccessFlags() { return this.accessFlags; }
 
+        /**
+         * @return The method's name
+         */
+        public String
+        getName() { return ClassFile.this.getConstantUtf8(this.nameIndex); }
+
+        /**
+         * @return The method descriptor describing this method
+         */
+        public String
+        getDescriptor() { return ClassFile.this.getConstantUtf8(this.descriptorIndex); }
+
+        /**
+         * @return The attributes of this method
+         */
         public AttributeInfo[]
         getAttributes() {
             return (AttributeInfo[]) this.attributes.toArray(new AttributeInfo[this.attributes.size()]);
         }
 
+        /**
+         * Adds the given {@code attribute} to this method.
+         */
         public void
         addAttribute(AttributeInfo attribute) { this.attributes.add(attribute); }
 
         /**
-         * Write this object to a {@link DataOutputStream}, in the format
-         * defined by the JVM specification.
+         * Write this object to a {@link DataOutputStream}, in the format described inJVMS7 4.6.
          */
         public void
         store(DataOutputStream dos) throws IOException {
@@ -1199,6 +1322,9 @@ class ClassFile {
         );
     }
 
+    /**
+     * This class represents a "method_info" structure, as defined by JVMS7 4.5.
+     */
     public static
     class FieldInfo {
 
@@ -1210,18 +1336,40 @@ class ClassFile {
             this.attributes      = attributes;
         }
 
-        public short getAccessFlags()     { return this.accessFlags; }
-        public short getNameIndex()       { return this.nameIndex; }
-        public short getDescriptorIndex() { return this.descriptorIndex; }
+        /**
+         * @return The access flags of the field; or'ed values are {@link Mod#PUBLIC} and consorts
+         */
+        public short getAccessFlags() { return this.accessFlags; }
 
+        /**
+         * @return The field's name
+         */
+        public String
+        getName(ClassFile classFile) { return classFile.getConstantUtf8(this.nameIndex); }
+
+        /**
+         * @return The field descriptor describing this field
+         */
+        public String
+        getDescriptor(ClassFile classFile) { return classFile.getConstantUtf8(this.descriptorIndex); }
+
+        /**
+         * @return The attributes of this field
+         */
         public AttributeInfo[]
         getAttributes() {
             return (AttributeInfo[]) this.attributes.toArray(new AttributeInfo[this.attributes.size()]);
         }
 
+        /**
+         * Adds the given {@code attribute} to this field.
+         */
         public void
         addAttribute(AttributeInfo attribute) { this.attributes.add(attribute); }
 
+        /**
+         * Write this object to a {@link DataOutputStream}, in the format described inJVMS7 4.5.
+         */
         public void
         store(DataOutputStream dos) throws IOException {
             dos.writeShort(this.accessFlags);                // access_flags
@@ -1237,7 +1385,7 @@ class ClassFile {
     }
 
     /**
-     * Representation of a class file attribute (see JVMS 4.7).
+     * Representation of a class file attribute (see JVMS7 4.7).
      */
     public abstract static
     class AttributeInfo {
@@ -1245,6 +1393,9 @@ class ClassFile {
         public
         AttributeInfo(short nameIndex) { this.nameIndex = nameIndex; }
 
+        /**
+         * Write this attribute to a {@link DataOutputStream}, in the format described in JVMS7 4.7.
+         */
         public void
         store(DataOutputStream dos) throws IOException {
 
@@ -1256,6 +1407,9 @@ class ClassFile {
             baos.writeTo(dos);              // info
         }
 
+        /**
+         * Writes the body of this attribute in an attribute-type dependent way; see JVMS7 4.7.2 and following.
+         */
         protected abstract void
         storeBody(DataOutputStream dos) throws IOException;
 
@@ -1339,8 +1493,13 @@ class ClassFile {
             this.constantValueIndex = constantValueIndex;
         }
 
-        public short
-        getConstantValueIndex() { return this.constantValueIndex; }
+        /**
+         * @return The constant value contained in this attribute
+         */
+        public ConstantValuePoolInfo
+        getConstantValue(ClassFile classFile) {
+            return (ConstantValuePoolInfo) classFile.getConstantPoolInfo(this.constantValueIndex);
+        }
 
         private static AttributeInfo
         loadBody(short attributeNameIndex, DataInputStream dis) throws IOException {
@@ -1371,11 +1530,17 @@ class ClassFile {
             this.exceptionIndexes = exceptionIndexes;
         }
 
-        public short[]
-        getExceptionIndexes() {
-            short[] eis = new short[this.exceptionIndexes.length];
-            System.arraycopy(this.exceptionIndexes, 0, eis, 0, eis.length);
-            return eis;
+        /**
+         * @return The exception types contained in this {@link ExceptionsAttribute}
+         */
+        public ConstantClassInfo[]
+        getExceptions(ClassFile classFile) {
+            ConstantClassInfo[] es = new ConstantClassInfo[this.exceptionIndexes.length];
+            for (int i = 0; i < es.length; i++) {
+                es[i] = (ConstantClassInfo) classFile.getConstantPoolInfo(this.exceptionIndexes[i]);
+
+            }
+            return es;
         }
 
         private static AttributeInfo
@@ -1399,7 +1564,7 @@ class ClassFile {
     public static
     class InnerClassesAttribute extends AttributeInfo {
 
-        private final List entries; // InnerClassesAttribute.Entry
+        private final List/*<InnerClassesAttribute.Entry>*/ entries;
 
         InnerClassesAttribute(short attributeNameIndex) {
             super(attributeNameIndex);
@@ -1410,7 +1575,11 @@ class ClassFile {
             this.entries = new ArrayList(Arrays.asList(entries));
         }
 
-        public List
+        /**
+         * @return A {@code List<InnerClassesAttribute.Entry>}: The {@link Entry}s contained in this {@link
+         *         InnerClassesAttribute}, see JVMS7 4.7.6
+         */
+        public List/*<InnerClassesAttribute.Entry>*/
         getEntries() { return this.entries; }
 
         private static AttributeInfo
@@ -1442,9 +1611,13 @@ class ClassFile {
             }
         }
 
+        /**
+         * The structure of the {@code classes} array as described in JVMS7 4.7.6.
+         */
         public static
         class Entry {
 
+            /** The fields of the {@code classes} array as described in JVMS7 4.7.6. */
             public final short innerClassInfoIndex, outerClassInfoIndex, innerNameIndex, innerClassAccessFlags;
 
             public
@@ -1548,9 +1721,11 @@ class ClassFile {
             }
         }
 
+        /** The structure of the entries in the {@code line_number_table}, as described in JVMS7 4.7.12. */
         public static
         class Entry {
 
+            /** The fields of the entries in the {@code line_number_table}, as described in JVMS7 4.7.12. */
             public final int startPC, lineNumber;
 
             public
@@ -1606,9 +1781,11 @@ class ClassFile {
             }
         }
 
+        /** The structure of the entries in the {@code local_variable_table}, as described in JVMS7 4.7.13. */
         public static
         class Entry {
 
+            /** The fields of the entries in the {@code local_variable_table}, as described in JVMS7 4.7.13. */
             public final short startPC, length, nameIndex, descriptorIndex, index;
 
             public

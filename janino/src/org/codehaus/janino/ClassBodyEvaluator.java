@@ -50,13 +50,14 @@ import org.codehaus.commons.compiler.Location;
  */
 @SuppressWarnings("rawtypes") public
 class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
-    protected static final Class[] ZERO_CLASSES = new Class[0];
 
-    private String[]               optionalDefaultImports;
-    protected String               className = IClassBodyEvaluator.DEFAULT_CLASS_NAME;
-    private Class                  optionalExtendedType;
-    private Class[]                implementedTypes = ClassBodyEvaluator.ZERO_CLASSES;
-    private Class                  result; // null=uncooked
+    private static final Class[] ZERO_CLASSES = new Class[0];
+
+    private String[] optionalDefaultImports;
+    private String   className = IClassBodyEvaluator.DEFAULT_CLASS_NAME;
+    private Class    optionalExtendedType;
+    private Class[]  implementedTypes = ClassBodyEvaluator.ZERO_CLASSES;
+    private Class    result; // null=uncooked
 
     /**
      * Equivalent to<pre>
@@ -231,10 +232,7 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
         }
 
         // Compile and load it.
-        this.result = this.compileToClass(
-            compilationUnit,              // compilationUnit
-            this.className
-        );
+        this.result = this.compileToClass(compilationUnit);
     }
 
     /**
@@ -309,22 +307,21 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
      * Compile the given compilation unit, load all generated classes, and return the class with the given name.
      *
      * @param compilationUnit
-     * @param newClassName The fully qualified class name
      * @return The loaded class
      */
     protected final Class
-    compileToClass(Java.CompilationUnit compilationUnit, String newClassName) throws CompileException {
+    compileToClass(Java.CompilationUnit compilationUnit) throws CompileException {
 
         // Compile and load the compilation unit.
         ClassLoader cl = this.compileToClassLoader(compilationUnit);
 
         // Find the generated class by name.
         try {
-            return cl.loadClass(newClassName);
+            return cl.loadClass(this.className);
         } catch (ClassNotFoundException ex) {
             throw new JaninoRuntimeException((
                 "SNO: Generated compilation unit does not declare class '"
-                + newClassName
+                + this.className
                 + "'"
             ), ex);
         }

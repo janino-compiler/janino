@@ -337,6 +337,9 @@ class Compiler {
     /** Backwards compatibility -- previously, "null" was officially documented. */
     public static final File NO_DESTINATION_DIRECTORY = null;
 
+    /**
+     * Prints warnings to STDERR.
+     */
     public static
     class SimpleWarningHandler implements WarningHandler {
 
@@ -348,6 +351,11 @@ class Compiler {
             System.err.println(sb.toString());
         }
     }
+
+    /**
+     * The default value for the {@code warningHandlerPatterns} parameter of {@link Compiler#Compiler(File[], File[],
+     * File[], File[], File, String, boolean, boolean, boolean, boolean, StringPattern[], boolean).
+     */
     public static final StringPattern[] DEFAULT_WARNING_HANDLE_PATTERNS = StringPattern.PATTERNS_NONE;
 
     /**

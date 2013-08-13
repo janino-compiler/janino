@@ -196,6 +196,17 @@ class JLS2Tests extends JaninoTestSuite {
     test_3_12__Operators() throws Exception {
         scr(TRUE, "int a = -11; a >>>= 2; return a == 1073741821;");
     }
+    
+    @Test public void
+    test_4_5_1__Type_Arguments_and_Wildcards() throws Exception {
+        scr(TRUE, (
+            ""
+            + "final List<String> l = new ArrayList();\n"
+            + "l.add(\"x\");\n" 
+            + "final Iterator<Integer> it = l.iterator();\n"
+            + "return it.hasNext();"
+        ), new String[] { "java.util.*"});
+    }
 
     @Test public void
     test_5_1_7__Conversion_Boxing() throws Exception {

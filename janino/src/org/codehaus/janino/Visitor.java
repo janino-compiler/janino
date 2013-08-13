@@ -210,4 +210,10 @@ class Visitor {
     public
     interface ElementValueVisitor extends RvalueVisitor, AnnotationVisitor, ElementValueArrayInitializerVisitor {
     }
+
+    public
+    interface TypeArgumentVisitor {
+        void visitWildcard(Java.Wildcard w);
+        void visitReferenceType(Java.ReferenceType rt);
+    }
 }

@@ -287,13 +287,18 @@ class AstTests {
                         getLocation(),
                         new String[] {
                             "HandMade"
-                        }
+                        },
+                        null // optionalTypeArguments
                     )
                 )
             )
         );
 
-        createMethod(clazz, body, new Java.ReferenceType(getLocation(), new String[] { "java", "lang", "Class" }));
+        createMethod(clazz, body, new Java.ReferenceType(
+            getLocation(),
+            new String[] { "java", "lang", "Class" },
+            null // optionalTypeArguments
+        ));
 
         SimpleCompiler compiler = new SimpleCompiler();
         compiler.cook(cu);

@@ -486,16 +486,16 @@ class IClass {
     public boolean
     isAssignableFrom(IClass that) throws CompileException {
 
-        // Identity conversion, JLS2 5.1.1
+        // Identity conversion, JLS7 5.1.1
         if (this == that) return true;
 
-        // Widening primitive conversion, JLS2 5.1.2
+        // Widening primitive conversion, JLS7 5.1.2
         {
             String ds = that.getDescriptor() + this.getDescriptor();
             if (ds.length() == 2 && IClass.PRIMITIVE_WIDENING_CONVERSIONS.contains(ds)) return true;
         }
 
-        // Widening reference conversion, JLS2 5.1.4
+        // Widening reference conversion, JLS7 5.1.5
         {
 
             // JLS 5.1.4.1: Target type is superclass of source class type.

@@ -122,12 +122,11 @@ class JaninoTestSuite {
      * Add a test case that scans, parses, compiles and executes a Janino script, and verifies
      * that it returns {@code true}.
      *
-     * <table>
-     *   <tr><th>{@code mode}</th><th>Meaning</th></tr>
-     *   <tr><td>COMP</td><td>The test is expected to throw a CompileException</tr>
-     *   <tr><td>COOK</td><td>The test is expected to compile successfully, but is not executed</tr>
-     *   <tr><td>EXEC</td><td>The test is expected to compile and execute successfully</tr>
-     *   <tr><td>TRUE</td><td>The test is expected to compile and execute successfully, and return {@code true}</tr>
+     * @param mode <table>
+     *   <tr><td>{@link #COMP}</td><td>The test is expected to throw a CompileException</tr>
+     *   <tr><td>{@link #COOK}</td><td>The test is expected to compile successfully, but is not executed</tr>
+     *   <tr><td>{@link #EXEC}</td><td>The test is expected to compile and execute successfully</tr>
+     *   <tr><td>{@link #TRUE}</td><td>The test is expected to compile and execute successfully, and return {@code true}</tr>
      * </table>
      */
     protected void
@@ -136,6 +135,18 @@ class JaninoTestSuite {
         st.runTest();
     }
 
+    /**
+     * Add a test case that scans, parses, compiles and executes a Janino script, and verifies
+     * that it returns {@code true}.
+     *
+     * @param mode <table>
+     *   <tr><td>{@link #COMP}</td><td>The test is expected to throw a CompileException</tr>
+     *   <tr><td>{@link #COOK}</td><td>The test is expected to compile successfully, but is not executed</tr>
+     *   <tr><td>{@link #EXEC}</td><td>The test is expected to compile and execute successfully</tr>
+     *   <tr><td>{@link #TRUE}</td><td>The test is expected to compile and execute successfully, and return {@code true}</tr>
+     * </table>
+     * @param defaultImports E.g. '<code> new String[] { "java.util.List" }</code>'
+     */
     protected void
     scr(ScriptTest.Mode mode, String script, String[] defaultImports) throws Exception {
         ScriptTest st = new ScriptTest(mode, script);

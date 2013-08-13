@@ -768,13 +768,7 @@ class CodeContext {
         ClassFile.ConstantFieldrefInfo cfi = (
             (ClassFile.ConstantFieldrefInfo) this.classFile.getConstantPoolInfo(idx)
         );
-        ClassFile.ConstantNameAndTypeInfo cnati = (
-            (ClassFile.ConstantNameAndTypeInfo) this.classFile.getConstantPoolInfo(cfi.getNameAndTypeIndex())
-        );
-        ClassFile.ConstantUtf8Info cui = (
-            (ClassFile.ConstantUtf8Info) this.classFile.getConstantPoolInfo(cnati.getDescriptorIndex())
-        );
-        return Descriptor.size(cui.getString());
+        return Descriptor.size(cfi.getNameAndType(this.classFile).getDescriptor(this.classFile));
     }
 
     /**
@@ -784,15 +778,12 @@ class CodeContext {
     private int
     determineArgumentsSize(short idx) {
         ClassFile.ConstantPoolInfo        cpi = this.classFile.getConstantPoolInfo(idx);
-        ClassFile.ConstantNameAndTypeInfo nat = (ClassFile.ConstantNameAndTypeInfo) this.classFile.getConstantPoolInfo(
+        ClassFile.ConstantNameAndTypeInfo nat = (
             cpi instanceof ClassFile.ConstantInterfaceMethodrefInfo
-            ? ((ClassFile.ConstantInterfaceMethodrefInfo) cpi).getNameAndTypeIndex()
-            : ((ClassFile.ConstantMethodrefInfo) cpi).getNameAndTypeIndex()
+            ? ((ClassFile.ConstantInterfaceMethodrefInfo) cpi).getNameAndType(this.classFile)
+            : ((ClassFile.ConstantMethodrefInfo)          cpi).getNameAndType(this.classFile)
         );
-        ClassFile.ConstantUtf8Info cui = (
-            (ClassFile.ConstantUtf8Info) this.classFile.getConstantPoolInfo(nat.getDescriptorIndex())
-        );
-        String desc = cui.getString();
+        String desc = nat.getDescriptor(this.classFile);
 
         if (desc.charAt(0) != '(') throw new JaninoRuntimeException("Method descriptor does not start with \"(\"");
         int i   = 1;
