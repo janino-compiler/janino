@@ -425,6 +425,27 @@ class JLS2Tests extends JaninoTestSuite {
             + "    }\n"
             + "}\n"
         ));
+
+        clb(COOK, (
+            ""
+            + "public void test2() {\n"
+            + "    try {\n"
+            + "        throw new java.io.IOException();\n"
+            + "    } catch (java.io.IOException e) {\n"
+            + "        ;\n"
+            + "    } catch (NullPointerException e) {\n"
+            + "        ;\n"
+            + "    } catch (RuntimeException e) {\n"
+            + "        ;\n"
+            + "    } catch (Exception e) {\n"
+            + "        ;\n"
+            + "    } catch (NoClassDefFoundError e) {\n"
+            + "        ;\n"
+            + "    } catch (Throwable e) {\n"
+            + "        ;\n"
+            + "    }\n"
+            + "}\n"
+        ));
     }
 
     @Test public void
