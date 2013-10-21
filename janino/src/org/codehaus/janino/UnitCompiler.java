@@ -816,7 +816,7 @@ class UnitCompiler {
             boolean overrides             = overridesMethodFromSupertype(m, this.resolve(md.getDeclaringType()));
             boolean hasOverrideAnnotation = hasAnnotation(md, this.iClassLoader.JAVA_LANG_OVERRIDE);
             if (overrides && !hasOverrideAnnotation && !(typeDeclaration instanceof InterfaceDeclaration)) {
-                compileError("Missing @Override", md.getLocation());
+                warning("MO", "Missing @Override", md.getLocation());
             } else
             if (!overrides && hasOverrideAnnotation) {
                 compileError("Method does not override a method declared in a supertype", md.getLocation());
@@ -4541,10 +4541,34 @@ class UnitCompiler {
         }
     }
 
+    /**
+     * Cache special floating point values.
+     */
+    private static final Map<String, Number> REP_TO_OBJECT;
+    static {
+        Map<String, Number> map = new HashMap<String, Number>();
+
+        map.put("Double.NaN",               Double.NaN);
+        map.put("Double.NEGATIVE_INFINITY", Double.NEGATIVE_INFINITY);
+        map.put("Double.POSITIVE_INFINITY", Double.POSITIVE_INFINITY);
+        map.put("Float.NaN",                Float.NaN);
+        map.put("Float.POSITIVE_INFINITY",  Float.POSITIVE_INFINITY);
+        map.put("Float.NEGATIVE_INFINITY",  Float.NEGATIVE_INFINITY);
+
+        REP_TO_OBJECT = Collections.unmodifiableMap(map);
+    }
+
     @SuppressWarnings("static-method") private Object
     getConstantValue2(FloatingPointLiteral fpl) throws CompileException {
-        String v        = fpl.value;
-        char   lastChar = v.charAt(v.length() - 1);
+
+        String v = fpl.value;
+
+        {
+            Number ret = REP_TO_OBJECT.get(v);
+            if (ret != null) return ret;
+        }
+
+        char lastChar = v.charAt(v.length() - 1);
         if (lastChar == 'f' || lastChar == 'F') {
             v = v.substring(0, v.length() - 1);
 
@@ -4619,6 +4643,9 @@ class UnitCompiler {
 
     @SuppressWarnings("static-method") private Object
     getConstantValue2(StringLiteral sl) {
+        if (sl == null || sl.value == null) {
+            return "";
+        }
         String v = sl.value;
         return unescape(v.substring(1, v.length() - 1));
     }
