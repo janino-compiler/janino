@@ -1939,6 +1939,9 @@ class Java {
 
         @Override public Scope
         getEnclosingScope() { return this.enclosingTryStatement; }
+
+        @Override public String
+        toString() { return "catch (" + this.caughtException + ") " + this.body; }
     }
 
     /**

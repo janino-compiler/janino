@@ -306,8 +306,8 @@ class Scanner {
             return this.location;
         }
 
-        @Override
-        public String toString() { return this.value; }
+        @Override public String
+        toString() { return this.value; }
     }
 
     public Token

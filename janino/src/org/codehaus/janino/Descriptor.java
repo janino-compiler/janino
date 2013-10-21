@@ -298,6 +298,8 @@ class Descriptor {
     public static final String JAVA_LANG_THROWABLE = "Ljava/lang/Throwable;";
     /** The field descriptor for the class {@link RuntimeException}. */
     public static final String JAVA_LANG_RUNTIMEEXCEPTION = "Ljava/lang/RuntimeException;";
+    /** The field descriptor for the class {@link Exception}. */
+    public static final String JAVA_LANG_EXCEPTION = "Ljava/lang/Exception;";
     /** The field descriptor for the class {@link Error}. */
     public static final String JAVA_LANG_ERROR = "Ljava/lang/Error;";
     /** The field descriptor for the interface {@link Cloneable}. */

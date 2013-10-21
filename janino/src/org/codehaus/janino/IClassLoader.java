@@ -54,6 +54,7 @@ class IClassLoader {
     public IClass JAVA_LANG_CLASS;
     public IClass JAVA_LANG_THROWABLE;
     public IClass JAVA_LANG_RUNTIMEEXCEPTION;
+    public IClass JAVA_LANG_EXCEPTION;
     public IClass JAVA_LANG_ERROR;
     public IClass JAVA_LANG_CLONEABLE;
     public IClass JAVA_LANG_ASSERTIONERROR;
@@ -91,6 +92,7 @@ class IClassLoader {
             this.JAVA_LANG_CLASS            = this.loadIClass(Descriptor.JAVA_LANG_CLASS);
             this.JAVA_LANG_THROWABLE        = this.loadIClass(Descriptor.JAVA_LANG_THROWABLE);
             this.JAVA_LANG_RUNTIMEEXCEPTION = this.loadIClass(Descriptor.JAVA_LANG_RUNTIMEEXCEPTION);
+            this.JAVA_LANG_EXCEPTION        = this.loadIClass(Descriptor.JAVA_LANG_EXCEPTION);
             this.JAVA_LANG_ERROR            = this.loadIClass(Descriptor.JAVA_LANG_ERROR);
             this.JAVA_LANG_CLONEABLE        = this.loadIClass(Descriptor.JAVA_LANG_CLONEABLE);
             this.JAVA_LANG_ASSERTIONERROR   = this.loadIClass(Descriptor.JAVA_LANG_ASSERTIONERROR);
