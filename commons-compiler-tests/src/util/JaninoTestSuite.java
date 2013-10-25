@@ -41,17 +41,17 @@ import org.codehaus.commons.compiler.ICompilerFactory;
 import org.codehaus.commons.compiler.IExpressionEvaluator;
 import org.codehaus.commons.compiler.IScriptEvaluator;
 import org.codehaus.commons.compiler.ISimpleCompiler;
-import org.codehaus.commons.compiler.LocatedException;
+import org.codehaus.janino.JavaSourceClassLoader;
 
 public
 class JaninoTestSuite {
-    /** The test is expected to throw a CompileException */
+    /** The test is expected to throw a CompileException. */
     public static final CompileAndExecuteTest.Mode COMP = new CompileAndExecuteTest.Mode();
-    /** The test is expected to compile successfully, but is not executed */
+    /** The test is expected to compile successfully, but is not executed. */
     public static final CompileAndExecuteTest.Mode COOK = new CompileAndExecuteTest.Mode();
-    /** The test is expected to compile and execute successfully */
+    /** The test is expected to compile and execute successfully. */
     public static final CompileAndExecuteTest.Mode EXEC = new CompileAndExecuteTest.Mode();
-    /** The test is expected to compile and execute successfully, and return {@code true} */
+    /** The test is expected to compile and execute successfully, and return {@code true}. */
     public static final CompileAndExecuteTest.Mode TRUE = new CompileAndExecuteTest.Mode();
 
     protected final ICompilerFactory compilerFactory;
@@ -322,7 +322,7 @@ class JaninoTestSuite {
             this.mode = mode;
         }
 
-        protected abstract void   compile() throws Exception;
+        protected abstract void compile() throws Exception;
         protected abstract Object execute() throws Exception;
 
         /**
@@ -336,22 +336,24 @@ class JaninoTestSuite {
                     this.compile();
                 } catch (CompileException ex) {
                     return;
-                } catch (LocatedException le) {
-                    assertEquals("CompileException", le);
                 }
-                fail("Should have thrown CompileException, but compiled successfully");
-            } else if (this.mode == COOK) {
+                fail("Should have issued an error, but compiled successfully");
+            } else
+            if (this.mode == COOK) {
                 this.compile();
-            } else if (this.mode == EXEC) {
+            } else
+            if (this.mode == EXEC) {
                 this.compile();
                 this.execute();
-            } else if (this.mode == TRUE) {
+            } else
+            if (this.mode == TRUE) {
                 this.compile();
                 Object result = this.execute();
-                assertNotNull("Test result", result);
-                assertSame("Test return type", Boolean.class, result.getClass());
-                assertEquals("Test result", true, ((Boolean) result).booleanValue());
-            } else {
+                assertNotNull("Test result not NULL", result);
+                assertSame("Test return type is BOOLEAN", Boolean.class, result.getClass());
+                assertEquals("Test result is TRUE", true, ((Boolean) result).booleanValue());
+            } else
+            {
                 fail("Invalid mode \"" + this.mode + "\"");
             }
         }
