@@ -2320,6 +2320,9 @@ class Java {
         accept(Visitor.TypeVisitor visitor);
     }
 
+    /**
+     * This class is not used when code is parsed; it is intended for "programmatic" types.
+     */
     public static final
     class SimpleType extends Type {
         public final IClass iClass;
@@ -3661,6 +3664,7 @@ class Java {
         toString() { return this.value; }
     }
 
+    /** Representation of an "integer literal" (JLS2 3.10.1) (types {@code int} and {@code long}). */
     public static final
     class IntegerLiteral extends Literal {
         public IntegerLiteral(Location location, String value) { super(location, value); }
@@ -3675,6 +3679,7 @@ class Java {
         accept(ElementValueVisitor visitor) { visitor.visitIntegerLiteral(this); }
     }
 
+    /** Representation of a "floating-point literal" (JLS2 3.10.2) (types {@code float} and {@code double}). */
     public static final
     class FloatingPointLiteral extends Literal {
         public FloatingPointLiteral(Location location, String value) { super(location, value); }
@@ -3689,6 +3694,7 @@ class Java {
         accept(ElementValueVisitor visitor) { visitor.visitFloatingPointLiteral(this); }
     }
 
+    /** Representation of a "boolean literal" (JLS2 3.10.3) (type {@code boolean}). */
     public static final
     class BooleanLiteral extends Literal {
         public BooleanLiteral(Location location, String value) { super(location, value); }
@@ -3703,6 +3709,7 @@ class Java {
         accept(ElementValueVisitor visitor) { visitor.visitBooleanLiteral(this); }
     }
 
+    /** Representation of a "character literal" (JLS2 3.10.4) (type {@code char}). */
     public static final
     class CharacterLiteral extends Literal {
         public CharacterLiteral(Location location, String value) { super(location, value); }
@@ -3717,6 +3724,7 @@ class Java {
         accept(ElementValueVisitor visitor) { visitor.visitCharacterLiteral(this); }
     }
 
+    /** Representation of a "string literal" (JLS2 3.10.5) (type {@link String}). */
     public static final
     class StringLiteral extends Literal {
         public StringLiteral(Location location, String value) { super(location, value); }
@@ -3731,6 +3739,7 @@ class Java {
         accept(ElementValueVisitor visitor) { visitor.visitStringLiteral(this); }
     }
 
+    /** Representation of a "null literal" (JLS2 3.10.7). */
     public static final
     class NullLiteral extends Literal {
         public NullLiteral(Location location, String value) { super(location, value); }
@@ -3743,6 +3752,76 @@ class Java {
 
         @Override public void
         accept(ElementValueVisitor visitor) { visitor.visitNullLiteral(this); }
+    }
+
+    /**
+     * This class is not used when code is parsed; it is intended for "programmatic" literals.
+     */
+    public static final
+    class SimpleConstant extends Rvalue {
+
+        final Object value;
+
+        /**
+         * Equivalent of the {@code null} literal.
+         * <p>
+         * An alternative way to get an equivalent of the {@link NullLiteral} is {@link
+         * SimpleConstant#SimpleLiteral(Location, String)} with {@code null} as the second argument.
+         */
+        public SimpleConstant(Location location) { super(location); this.value = null; }
+        
+        /** Equivalent of an literal, casted to {@code byte}. */
+        public SimpleConstant(Location location, byte value) { super(location); this.value = value; }
+        
+        /** Equivalent of an literal, casted to {@code short}. */
+        public SimpleConstant(Location location, short value) { super(location); this.value = value; }
+
+        /** Equivalent of an {@link IntegerLiteral} with type {@code int}. */
+        public SimpleConstant(Location location, int value) { super(location); this.value = value; }
+        
+        /** Equivalent of an {@link IntegerLiteral} with type {@code long}. */
+        public SimpleConstant(Location location, long value) { super(location); this.value = value; }
+        
+        /**
+         * Equivalent of a {@link FloatingPointLiteral} with type {@code float}.
+         * Notice that this class supports the special values {@link Float#NaN}, {@link Float#NEGATIVE_INFINITY} and
+         * {@link Float#POSITIVE_INFINITY}, which can not be represented with a {@link FloatingPointLiteral}.
+         */
+        public SimpleConstant(Location location, float value) { super(location); this.value = value; }
+        
+        /**
+         * Equivalent of a {@link FloatingPointLiteral} with type {@code double}.
+         * Notice that this class supports the special values {@link Double#NaN}, {@link Double#NEGATIVE_INFINITY} and
+         * {@link Double#POSITIVE_INFINITY}, which can not be represented with a {@link FloatingPointLiteral}.
+         */
+        public SimpleConstant(Location location, double value) { super(location); this.value = value; }
+        
+        /** Equivalent of a {@link CharacterLiteral}. */
+        public SimpleConstant(Location location, char value) { super(location); this.value = value; }
+        
+        /** Equivalent of a {@link BooleanLiteral}. */
+        public SimpleConstant(Location location, boolean value) { super(location); this.value = value; }
+        
+        /**
+         * Equivalent of a {@link StringLiteral}, or, if {@code value} is null, the equivalent of a {@link
+         * NullLiteral}.
+         * <p>
+         * An alternative way to get an equivalent of the {@link NullLiteral} is {@link
+         * SimpleConstant#SimpleLiteral(Location)}.
+         */
+        public SimpleConstant(Location location, String value) { super(location); this.value = value; }
+        
+        @Override public void
+        accept(Visitor.AtomVisitor visitor) { visitor.visitSimpleLiteral(this); }
+        
+        @Override public void
+        accept(Visitor.RvalueVisitor visitor) { visitor.visitSimpleLiteral(this); }
+        
+        @Override public void
+        accept(ElementValueVisitor visitor) { visitor.visitSimpleLiteral(this); }
+
+        @Override public String
+        toString() { return "[" + this.value + ']'; }
     }
 
     /**

@@ -41,6 +41,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.codehaus.janino.Java.SimpleConstant;
 import org.codehaus.janino.util.AutoIndentWriter;
 
 /**
@@ -633,6 +634,7 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor {
     @Override public void visitCharacterLiteral(Java.CharacterLiteral cl)          { this.pw.print(cl.value); }
     @Override public void visitStringLiteral(Java.StringLiteral sl)                { this.pw.print(sl.value); }
     @Override public void visitNullLiteral(Java.NullLiteral nl)                    { this.pw.print(nl.value); }
+    @Override public void visitSimpleLiteral(SimpleConstant sl)                     { this.pw.print("[" + sl.value + ']'); } // SUPPRESS CHECKSTYLE LineLength
     @Override public void visitLocalVariableAccess(Java.LocalVariableAccess lva)   { this.pw.print(lva.toString()); }
 
     @Override public void

@@ -30,7 +30,9 @@ import java.io.*;
 import java.util.*;
 
 import org.codehaus.commons.compiler.CompileException;
+import org.codehaus.commons.compiler.ErrorHandler;
 import org.codehaus.commons.compiler.Location;
+import org.codehaus.commons.compiler.WarningHandler;
 import org.codehaus.janino.util.*;
 import org.codehaus.janino.util.resource.*;
 
@@ -44,11 +46,11 @@ import org.codehaus.janino.util.resource.*;
 class JavaSourceIClassLoader extends IClassLoader {
     private static final boolean DEBUG = false;
 
-    private ResourceFinder            sourceFinder;
-    private String                    optionalCharacterEncoding;
-    private final Set                 unitCompilers; // UnitCompiler
-    private UnitCompiler.ErrorHandler optionalCompileErrorHandler;
-    private WarningHandler            optionalWarningHandler;
+    private ResourceFinder              sourceFinder;
+    private String                      optionalCharacterEncoding;
+    private final Set/*<UnitCompiler>*/ unitCompilers;
+    private ErrorHandler                optionalCompileErrorHandler;
+    private WarningHandler              optionalWarningHandler;
 
     /**
      * Notice that the <code>unitCompilers</code> set is both read and written
@@ -86,7 +88,7 @@ class JavaSourceIClassLoader extends IClassLoader {
      * @see UnitCompiler#setCompileErrorHandler(ErrorHandler)
      */
     public void
-    setCompileErrorHandler(UnitCompiler.ErrorHandler optionalCompileErrorHandler) {
+    setCompileErrorHandler(ErrorHandler optionalCompileErrorHandler) {
         this.optionalCompileErrorHandler = optionalCompileErrorHandler;
     }
 

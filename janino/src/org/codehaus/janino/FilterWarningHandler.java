@@ -26,7 +26,9 @@
 
 package org.codehaus.janino;
 
+import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.Location;
+import org.codehaus.commons.compiler.WarningHandler;
 import org.codehaus.janino.util.StringPattern;
 
 /**
@@ -48,7 +50,7 @@ class FilterWarningHandler implements WarningHandler {
     }
 
     @Override public void
-    handleWarning(String handle, String message, Location optionalLocation) {
+    handleWarning(String handle, String message, Location optionalLocation) throws CompileException {
         if (StringPattern.matches(this.handlePatterns, handle)) {
             this.delegate.handleWarning(handle, message, optionalLocation);
         }

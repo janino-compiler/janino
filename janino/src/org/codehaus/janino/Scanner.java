@@ -39,6 +39,7 @@ import java.util.Map;
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.ICookable;
 import org.codehaus.commons.compiler.Location;
+import org.codehaus.commons.compiler.WarningHandler;
 import org.codehaus.janino.util.TeeReader;
 
 
@@ -955,9 +956,10 @@ class Scanner {
      * <p>
      * The <code>handle</code> argument qulifies the warning and is typically used by
      * the {@link WarningHandler} to suppress individual warnings.
+     * @throws CompileException 
      */
     private void
-    warning(String handle, String message, Location optionalLocation) {
+    warning(String handle, String message, Location optionalLocation) throws CompileException {
         if (this.optionalWarningHandler != null) {
             this.optionalWarningHandler.handleWarning(handle, message, optionalLocation);
         }

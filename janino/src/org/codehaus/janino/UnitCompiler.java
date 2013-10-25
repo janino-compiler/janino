@@ -43,7 +43,9 @@ import java.util.StringTokenizer;
 import java.util.TreeMap;
 
 import org.codehaus.commons.compiler.CompileException;
+import org.codehaus.commons.compiler.ErrorHandler;
 import org.codehaus.commons.compiler.Location;
+import org.codehaus.commons.compiler.WarningHandler;
 import org.codehaus.janino.IClass.IField;
 import org.codehaus.janino.IClass.IInvocable;
 import org.codehaus.janino.IClass.IMethod;
@@ -138,6 +140,7 @@ import org.codehaus.janino.Java.ReturnStatement;
 import org.codehaus.janino.Java.Rvalue;
 import org.codehaus.janino.Java.RvalueMemberType;
 import org.codehaus.janino.Java.Scope;
+import org.codehaus.janino.Java.SimpleConstant;
 import org.codehaus.janino.Java.SimpleType;
 import org.codehaus.janino.Java.Statement;
 import org.codehaus.janino.Java.StringLiteral;
@@ -155,7 +158,6 @@ import org.codehaus.janino.Java.TypeDeclaration;
 import org.codehaus.janino.Java.UnaryOperation;
 import org.codehaus.janino.Java.VariableDeclarator;
 import org.codehaus.janino.Java.WhileStatement;
-import org.codehaus.janino.Scanner.Token;
 import org.codehaus.janino.Visitor.AtomVisitor;
 import org.codehaus.janino.Visitor.BlockStatementVisitor;
 import org.codehaus.janino.Visitor.ElementValueVisitor;
@@ -2520,6 +2522,7 @@ class UnitCompiler {
             @Override public void visitCharacterLiteral(CharacterLiteral cl)                                  { try { UnitCompiler.this.compile2(cl);    } catch (CompileException e) { throw new UCE(e); } }
             @Override public void visitStringLiteral(StringLiteral sl)                                        { try { UnitCompiler.this.compile2(sl);    } catch (CompileException e) { throw new UCE(e); } }
             @Override public void visitNullLiteral(NullLiteral nl)                                            { try { UnitCompiler.this.compile2(nl);    } catch (CompileException e) { throw new UCE(e); } }
+            @Override public void visitSimpleLiteral(SimpleConstant sl)                                        { try { UnitCompiler.this.compile2(sl);    } catch (CompileException e) { throw new UCE(e); } }
             @Override public void visitNewAnonymousClassInstance(NewAnonymousClassInstance naci)              { try { UnitCompiler.this.compile2(naci);  } catch (CompileException e) { throw new UCE(e); } }
             @Override public void visitNewArray(NewArray na)                                                  { try { UnitCompiler.this.compile2(na);    } catch (CompileException e) { throw new UCE(e); } }
             @Override public void visitNewInitializedArray(NewInitializedArray nia)                           { try { UnitCompiler.this.compile2(nia);   } catch (CompileException e) { throw new UCE(e); } }
@@ -2710,6 +2713,7 @@ class UnitCompiler {
             @Override public void visitCharacterLiteral(CharacterLiteral cl)                      { try { UnitCompiler.this.compileBoolean2(cl,   dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
             @Override public void visitStringLiteral(StringLiteral sl)                            { try { UnitCompiler.this.compileBoolean2(sl,   dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
             @Override public void visitNullLiteral(NullLiteral nl)                                { try { UnitCompiler.this.compileBoolean2(nl,   dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
+            @Override public void visitSimpleLiteral(SimpleConstant sl)                            { try { UnitCompiler.this.compileBoolean2(sl,   dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
             @Override public void visitNewAnonymousClassInstance(NewAnonymousClassInstance naci)  { try { UnitCompiler.this.compileBoolean2(naci, dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
             @Override public void visitNewArray(NewArray na)                                      { try { UnitCompiler.this.compileBoolean2(na,   dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
             @Override public void visitNewInitializedArray(NewInitializedArray nia)               { try { UnitCompiler.this.compileBoolean2(nia,  dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
@@ -2861,15 +2865,32 @@ class UnitCompiler {
                         );
                     }
 
-                    // check types for x == null, null == x, but NOT null == null
-                    if (!lhsIsNull || !rhsIsNull) {
-                        IClass ohsType = this.compileGetValue(lhsIsNull ? bo.rhs : bo.lhs);
-                        if (ohsType.isPrimitive()) {
+                    if (!lhsIsNull) {
+
+                        // x == null
+                        IClass lhsType = this.compileGetValue(bo.lhs);
+                        if (lhsType.isPrimitive()) {
                             this.compileError(
-                                "Cannot compare \"null\" with primitive type \"" + ohsType.toString() + "\"",
+                                "Cannot compare primitive type \"" + lhsType.toString() + "\" with \"null\"",
                                 bo.getLocation()
                             );
                         }
+                    } else
+                    if (!rhsIsNull) {
+
+                        // null == x
+                        IClass rhsType = this.compileGetValue(bo.rhs);
+                        if (rhsType.isPrimitive()) {
+                            this.compileError(
+                                "Cannot compare \"null\" with primitive type \"" + rhsType.toString() + "\"",
+                                bo.getLocation()
+                            );
+                        }
+                    } else
+                    {
+
+                        // null == null
+                        this.pushConstant(bo, null);
                     }
                     this.writeBranch(bo, Opcode.IFNULL + opIdx, dst);
                     return;
@@ -3004,6 +3025,7 @@ class UnitCompiler {
             @Override public void visitCharacterLiteral(CharacterLiteral cl)                      {       res[0] = UnitCompiler.this.compileContext2(cl);   }
             @Override public void visitStringLiteral(StringLiteral sl)                            {       res[0] = UnitCompiler.this.compileContext2(sl);   }
             @Override public void visitNullLiteral(NullLiteral nl)                                {       res[0] = UnitCompiler.this.compileContext2(nl);   }
+            @Override public void visitSimpleLiteral(SimpleConstant sl)                            {       res[0] = UnitCompiler.this.compileContext2(sl);   }
             @Override public void visitNewAnonymousClassInstance(NewAnonymousClassInstance naci)  {       res[0] = UnitCompiler.this.compileContext2(naci); }
             @Override public void visitNewArray(NewArray na)                                      {       res[0] = UnitCompiler.this.compileContext2(na);   }
             @Override public void visitNewInitializedArray(NewInitializedArray nia)               {       res[0] = UnitCompiler.this.compileContext2(nia);  }
@@ -3134,6 +3156,7 @@ class UnitCompiler {
             @Override public void visitCharacterLiteral(CharacterLiteral cl)                      { try { res[0] = UnitCompiler.this.compileGet2(cl);   } catch (CompileException e) { throw new UCE(e); } }
             @Override public void visitStringLiteral(StringLiteral sl)                            { try { res[0] = UnitCompiler.this.compileGet2(sl);   } catch (CompileException e) { throw new UCE(e); } }
             @Override public void visitNullLiteral(NullLiteral nl)                                { try { res[0] = UnitCompiler.this.compileGet2(nl);   } catch (CompileException e) { throw new UCE(e); } }
+            @Override public void visitSimpleLiteral(SimpleConstant sl)                            {       res[0] = UnitCompiler.this.compileGet2(sl);                                                      }
             @Override public void visitNewAnonymousClassInstance(NewAnonymousClassInstance naci)  { try { res[0] = UnitCompiler.this.compileGet2(naci); } catch (CompileException e) { throw new UCE(e); } }
             @Override public void visitNewArray(NewArray na)                                      { try { res[0] = UnitCompiler.this.compileGet2(na);   } catch (CompileException e) { throw new UCE(e); } }
             @Override public void visitNewInitializedArray(NewInitializedArray nia)               { try { res[0] = UnitCompiler.this.compileGet2(nia);  } catch (CompileException e) { throw new UCE(e); } }
@@ -4194,6 +4217,10 @@ class UnitCompiler {
     compileGet2(Literal l) throws CompileException {
         return this.pushConstant(l, this.getConstantValue(l));
     }
+    private IClass
+    compileGet2(SimpleConstant sl) {
+        return this.pushConstant(sl, sl.value);
+    }
 
     /**
      * Convenience function that calls {@link #compileContext(Rvalue)} and {@link #compileGet(Rvalue)}.
@@ -4251,6 +4278,7 @@ class UnitCompiler {
             @Override public void visitCharacterLiteral(CharacterLiteral cl)                      {       res[0] = UnitCompiler.this.getConstantValue2(cl);                                                     }
             @Override public void visitStringLiteral(StringLiteral sl)                            {       res[0] = UnitCompiler.this.getConstantValue2(sl);                                                     }
             @Override public void visitNullLiteral(NullLiteral nl)                                {       res[0] = UnitCompiler.this.getConstantValue2(nl);                                                     }
+            @Override public void visitSimpleLiteral(SimpleConstant sl)                            {       res[0] = UnitCompiler.this.getConstantValue2(sl);                                                     }
             @Override public void visitNewAnonymousClassInstance(NewAnonymousClassInstance naci)  {       res[0] = UnitCompiler.this.getConstantValue2(naci);                                                   }
             @Override public void visitNewArray(NewArray na)                                      {       res[0] = UnitCompiler.this.getConstantValue2(na);                                                     }
             @Override public void visitNewInitializedArray(NewInitializedArray nia)               {       res[0] = UnitCompiler.this.getConstantValue2(nia);                                                    }
@@ -4541,32 +4569,10 @@ class UnitCompiler {
         }
     }
 
-    /**
-     * Cache special floating point values.
-     */
-    private static final Map<String, Number> REP_TO_OBJECT;
-    static {
-        Map<String, Number> map = new HashMap<String, Number>();
-
-        map.put("Double.NaN",               Double.NaN);
-        map.put("Double.NEGATIVE_INFINITY", Double.NEGATIVE_INFINITY);
-        map.put("Double.POSITIVE_INFINITY", Double.POSITIVE_INFINITY);
-        map.put("Float.NaN",                Float.NaN);
-        map.put("Float.POSITIVE_INFINITY",  Float.POSITIVE_INFINITY);
-        map.put("Float.NEGATIVE_INFINITY",  Float.NEGATIVE_INFINITY);
-
-        REP_TO_OBJECT = Collections.unmodifiableMap(map);
-    }
-
     @SuppressWarnings("static-method") private Object
     getConstantValue2(FloatingPointLiteral fpl) throws CompileException {
 
         String v = fpl.value;
-
-        {
-            Number ret = REP_TO_OBJECT.get(v);
-            if (ret != null) return ret;
-        }
 
         char lastChar = v.charAt(v.length() - 1);
         if (lastChar == 'f' || lastChar == 'F') {
@@ -4652,6 +4658,9 @@ class UnitCompiler {
 
     @SuppressWarnings("static-method") private Object
     getConstantValue2(NullLiteral nl) { return null; }
+    
+    @SuppressWarnings("static-method") private Object
+    getConstantValue2(SimpleConstant sl) { return sl.value; }
 
     /**
      * Attempts to evaluate the negated value of a constant {@link Rvalue}. This is particularly relevant for the
@@ -4684,6 +4693,7 @@ class UnitCompiler {
             @Override public void visitCharacterLiteral(CharacterLiteral cl)                      { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(cl);   } catch (CompileException e) { throw new UCE(e); } }
             @Override public void visitStringLiteral(StringLiteral sl)                            { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(sl);   } catch (CompileException e) { throw new UCE(e); } }
             @Override public void visitNullLiteral(NullLiteral nl)                                { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(nl);   } catch (CompileException e) { throw new UCE(e); } }
+            @Override public void visitSimpleLiteral(SimpleConstant sl)                            { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(sl);   } catch (CompileException e) { throw new UCE(e); } }
             @Override public void visitNewAnonymousClassInstance(NewAnonymousClassInstance naci)  { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(naci); } catch (CompileException e) { throw new UCE(e); } }
             @Override public void visitNewArray(NewArray na)                                      { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(na);   } catch (CompileException e) { throw new UCE(e); } }
             @Override public void visitNewInitializedArray(NewInitializedArray nia)               { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(nia);  } catch (CompileException e) { throw new UCE(e); } }
@@ -5001,6 +5011,7 @@ class UnitCompiler {
             @Override public void visitCharacterLiteral(CharacterLiteral cl)                      {       res[0] = UnitCompiler.this.getType2(cl);                                                   }
             @Override public void visitStringLiteral(StringLiteral sl)                            {       res[0] = UnitCompiler.this.getType2(sl);                                                   }
             @Override public void visitNullLiteral(NullLiteral nl)                                {       res[0] = UnitCompiler.this.getType2(nl);                                                   }
+            @Override public void visitSimpleLiteral(SimpleConstant sl)                            {       res[0] = UnitCompiler.this.getType2(sl);                                                   }
             @Override public void visitNewAnonymousClassInstance(NewAnonymousClassInstance naci)  {       res[0] = UnitCompiler.this.getType2(naci);                                                   }
             @Override public void visitNewArray(NewArray na)                                      { try { res[0] = UnitCompiler.this.getType2(na);  } catch (CompileException e) { throw new UCE(e); } }
             @Override public void visitNewInitializedArray(NewInitializedArray nia)               { try { res[0] = UnitCompiler.this.getType2(nia); } catch (CompileException e) { throw new UCE(e); } }
@@ -5517,6 +5528,22 @@ class UnitCompiler {
     getType2(NullLiteral nl) {
         return IClass.VOID;
     }
+    
+    private IClass
+    getType2(SimpleConstant sl) {
+        Object v = sl.value;
+        if (v instanceof Byte)      return IClass.BYTE;
+        if (v instanceof Short)     return IClass.SHORT;
+        if (v instanceof Integer)   return IClass.INT;
+        if (v instanceof Long)      return IClass.LONG;
+        if (v instanceof Float)     return IClass.FLOAT;
+        if (v instanceof Double)    return IClass.DOUBLE;
+        if (v instanceof Boolean)   return IClass.BOOLEAN;
+        if (v instanceof Character) return IClass.CHAR;
+        if (v instanceof String)    return this.iClassLoader.JAVA_LANG_STRING;
+        if (v == null)              return IClass.VOID;
+        throw new JaninoRuntimeException("Invalid SimpleLiteral value type '" + v.getClass() + "'");
+    }
 
     // ---------------- Atom.isType() ---------------
 
@@ -5552,6 +5579,7 @@ class UnitCompiler {
             @Override public void visitCharacterLiteral(CharacterLiteral cl)                      { res[0] = UnitCompiler.this.isType2(cl);   }
             @Override public void visitStringLiteral(StringLiteral sl)                            { res[0] = UnitCompiler.this.isType2(sl);   }
             @Override public void visitNullLiteral(NullLiteral nl)                                { res[0] = UnitCompiler.this.isType2(nl);   }
+            @Override public void visitSimpleLiteral(SimpleConstant sl)                            { res[0] = UnitCompiler.this.isType2(sl);   }
             @Override public void visitNewAnonymousClassInstance(NewAnonymousClassInstance naci)  { res[0] = UnitCompiler.this.isType2(naci); }
             @Override public void visitNewArray(NewArray na)                                      { res[0] = UnitCompiler.this.isType2(na);   }
             @Override public void visitNewInitializedArray(NewInitializedArray nia)               { res[0] = UnitCompiler.this.isType2(nia);  }
@@ -8513,7 +8541,8 @@ class UnitCompiler {
     }
 
     /**
-     * @param value See {@link Token#value}, numerics optionally with a '-' prefix
+     * @param value A {@link Character}, {@link Byte}, {@link Short}, {@link Integer}, {@link Long}, {@link Float},
+     *              {@link Double}, {@link String}, {@link Boolean} or {@code null}
      */
     private IClass
     pushConstant(Locatable locatable, Object value) {
@@ -9815,18 +9844,10 @@ class UnitCompiler {
      * suppress individual warnings.
      */
     private void
-    warning(String handle, String message, Location optionalLocation) {
+    warning(String handle, String message, Location optionalLocation) throws CompileException {
         if (this.optionalWarningHandler != null) {
             this.optionalWarningHandler.handleWarning(handle, message, optionalLocation);
         }
-    }
-
-    /**
-     * Interface type for {@link UnitCompiler#setCompileErrorHandler}.
-     */
-    public
-    interface ErrorHandler {
-        void handleError(String message, Location optionalLocation) throws CompileException;
     }
 
     /**

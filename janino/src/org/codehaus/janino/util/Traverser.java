@@ -30,6 +30,7 @@ import org.codehaus.janino.*;
 import org.codehaus.janino.Java.ElementValueArrayInitializer;
 import org.codehaus.janino.Java.MarkerAnnotation;
 import org.codehaus.janino.Java.NormalAnnotation;
+import org.codehaus.janino.Java.SimpleConstant;
 import org.codehaus.janino.Java.SingleElementAnnotation;
 import org.codehaus.janino.Visitor.ComprehensiveVisitor;
 
@@ -101,6 +102,7 @@ class Traverser {
         @Override public void visitCharacterLiteral(Java.CharacterLiteral cl)                                                  { Traverser.this.traverseCharacterLiteral(cl); }
         @Override public void visitStringLiteral(Java.StringLiteral sl)                                                        { Traverser.this.traverseStringLiteral(sl); }
         @Override public void visitNullLiteral(Java.NullLiteral nl)                                                            { Traverser.this.traverseNullLiteral(nl); }
+        @Override public void visitSimpleLiteral(SimpleConstant sl)                                                             { Traverser.this.traverseSimpleLiteral(sl); }
         @Override public void visitNewAnonymousClassInstance(Java.NewAnonymousClassInstance naci)                              { Traverser.this.traverseNewAnonymousClassInstance(naci); }
         @Override public void visitNewArray(Java.NewArray na)                                                                  { Traverser.this.traverseNewArray(na); }
         @Override public void visitNewInitializedArray(Java.NewInitializedArray nia)                                           { Traverser.this.traverseNewInitializedArray(nia); }
@@ -460,6 +462,7 @@ class Traverser {
     public void traverseCharacterLiteral(Java.CharacterLiteral cl)          { this.traverseLiteral(cl); }
     public void traverseStringLiteral(Java.StringLiteral sl)                { this.traverseLiteral(sl); }
     public void traverseNullLiteral(Java.NullLiteral nl)                    { this.traverseLiteral(nl); }
+    public void traverseSimpleLiteral(Java.SimpleConstant sl)                { this.traverseRvalue(sl); }
 
     public void
     traverseNewAnonymousClassInstance(Java.NewAnonymousClassInstance naci) {

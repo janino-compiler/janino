@@ -52,7 +52,9 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
     // Set when "cook()"ing.
     private ClassLoaderIClassLoader classLoaderIClassLoader;
 
-    private ClassLoader result;
+    private ClassLoader    result;
+    private ErrorHandler   optionalCompileErrorHandler;
+    private WarningHandler optionalWarningHandler;
 
     protected boolean debugSource = Boolean.getBoolean(ICookable.SYSTEM_PROPERTY_SOURCE_DEBUGGING_ENABLE);
     protected boolean debugLines  = this.debugSource;
@@ -228,6 +230,16 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
     @Override public int
     hashCode() { return this.parentClassLoader.hashCode(); }
 
+    @Override public void
+    setCompileErrorHandler(ErrorHandler optionalCompileErrorHandler) {
+        this.optionalCompileErrorHandler = optionalCompileErrorHandler;
+    }
+
+    @Override public void
+    setWarningHandler(WarningHandler optionalWarningHandler) {
+        this.optionalWarningHandler = optionalWarningHandler;
+    }
+
     /**
      * Wrap a reflection {@link Class} in a {@link Java.Type} object.
      */
@@ -307,10 +319,10 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
         this.classLoaderIClassLoader = new ClassLoaderIClassLoader(this.parentClassLoader);
 
         // Compile compilation unit to class files.
-        ClassFile[] classFiles = new UnitCompiler(
-            compilationUnit,
-            this.classLoaderIClassLoader
-        ).compileUnit(this.debugSource, this.debugLines, this.debugVars);
+        UnitCompiler unitCompiler = new UnitCompiler(compilationUnit, this.classLoaderIClassLoader);
+        unitCompiler.setCompileErrorHandler(this.optionalCompileErrorHandler);
+        unitCompiler.setWarningHandler(this.optionalWarningHandler);
+        ClassFile[] classFiles = unitCompiler.compileUnit(this.debugSource, this.debugLines, this.debugVars);
 
         // Convert the class files to bytes and store them in a Map.
         final Map classes = new HashMap(); // String className => byte[] data

@@ -32,6 +32,7 @@ import java.util.List;
 
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.Location;
+import org.codehaus.commons.compiler.WarningHandler;
 import org.codehaus.janino.Java.AlternateConstructorInvocation;
 import org.codehaus.janino.Java.AmbiguousName;
 import org.codehaus.janino.Java.Annotation;
@@ -2676,7 +2677,7 @@ class Parser {
      * (JLS2 6.8.1).
      */
     private void
-    verifyStringIsConventionalPackageName(String s, Location loc) {
+    verifyStringIsConventionalPackageName(String s, Location loc) throws CompileException {
         if (!Character.isLowerCase(s.charAt(0))) {
             this.warning(
                 "UPN",
@@ -2700,7 +2701,7 @@ class Parser {
      * naming conventions (JLS2 6.8.2).
      */
     private void
-    verifyIdentifierIsConventionalClassOrInterfaceName(String id, Location loc) {
+    verifyIdentifierIsConventionalClassOrInterfaceName(String id, Location loc) throws CompileException {
         if (!Character.isUpperCase(id.charAt(0))) {
             this.warning(
                 "UCOIN1",
@@ -2729,7 +2730,7 @@ class Parser {
      * (JLS2 6.8.3).
      */
     private void
-    verifyIdentifierIsConventionalMethodName(String id, Location loc) {
+    verifyIdentifierIsConventionalMethodName(String id, Location loc) throws CompileException {
         if (!Character.isLowerCase(id.charAt(0))) {
             this.warning(
                 "UMN1",
@@ -2756,7 +2757,7 @@ class Parser {
      * (JLS2 6.8.4) and constant naming conventions (JLS2 6.8.5).
      */
     private void
-    verifyIdentifierIsConventionalFieldName(String id, Location loc) {
+    verifyIdentifierIsConventionalFieldName(String id, Location loc) throws CompileException {
 
         // In practice, a field is not always a constant iff it is static-final. So let's
         // always tolerate both field and constant names.
@@ -2800,7 +2801,7 @@ class Parser {
      * parameter naming conventions (JLS2 6.8.6).
      */
     private void
-    verifyIdentifierIsConventionalLocalVariableOrParameterName(String id, Location loc) {
+    verifyIdentifierIsConventionalLocalVariableOrParameterName(String id, Location loc) throws CompileException {
         if (!Character.isLowerCase(id.charAt(0))) {
             this.warning(
                 "ULVN1",
@@ -2848,9 +2849,12 @@ class Parser {
      * <p>
      * The <code>handle</code> argument qulifies the warning and is typically used by
      * the {@link WarningHandler} to suppress individual warnings.
+     *
+     * @throws CompileException The optionally installed {@link WarningHandler} decided to throw a {@link
+     *                          CompileException} 
      */
     private void
-    warning(String handle, String message, Location optionalLocation) {
+    warning(String handle, String message, Location optionalLocation) throws CompileException {
         if (this.optionalWarningHandler != null) {
             this.optionalWarningHandler.handleWarning(handle, message, optionalLocation);
         }

@@ -36,8 +36,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.codehaus.commons.compiler.CompileException;
+import org.codehaus.commons.compiler.ErrorHandler;
 import org.codehaus.commons.compiler.Location;
-import org.codehaus.janino.UnitCompiler.ErrorHandler;
+import org.codehaus.commons.compiler.WarningHandler;
 import org.codehaus.janino.util.Benchmark;
 import org.codehaus.janino.util.ClassFile;
 import org.codehaus.janino.util.StringPattern;
@@ -222,8 +223,8 @@ class Compiler {
     private final boolean               debugSource;
     private final boolean               debugLines;
     private final boolean               debugVars;
-    private final WarningHandler        optionalWarningHandler;
-    private UnitCompiler.ErrorHandler   optionalCompileErrorHandler;
+    private WarningHandler              optionalWarningHandler;
+    private ErrorHandler                optionalCompileErrorHandler;
 
     private final IClassLoader           iClassLoader;
     private final List/*<UnitCompiler>*/ parsedCompilationUnits = new ArrayList();
@@ -405,24 +406,26 @@ class Compiler {
     }
 
     /**
-     * Install a custom {@link UnitCompiler.ErrorHandler}. The default
-     * {@link UnitCompiler.ErrorHandler} prints the first 20 compile errors to
+     * Install a custom {@link ErrorHandler}. The default {@link ErrorHandler} prints the first 20 compile errors to
      * {@link System#err} and then throws a {@link CompileException}.
      * <p>
-     * Passing {@code null} restores the default {@link UnitCompiler.ErrorHandler}.
+     * Passing {@code null} restores the default {@link ErrorHandler}.
      * <p>
-     * Notice that scan and parse errors are <i>not</i> redirected to this {@link ErrorHandler},
-     * instead, they cause a {@link CompileException} to be thrown.
-     * Also, the {@link Compiler} may choose to throw {@link CompileException}s in certain,
-     * fatal compile error situations, even if an {@link ErrorHandler} is installed.
+     * Notice that scan and parse errors are <i>not</i> redirected to this {@link ErrorHandler}, instead, they cause a
+     * {@link CompileException} to be thrown. Also, the {@link Compiler} may choose to throw {@link CompileException}s
+     * in certain, fatal compile error situations, even if an {@link ErrorHandler} is installed.
      * <p>
-     * In other words: In situations where compilation can reasonably continue after a compile
-     * error, the {@link ErrorHandler} is called; all other error conditions cause a
-     * {@link CompileException} to be thrown.
+     * In other words: In situations where compilation can reasonably continue after a compile error, the {@link
+     * ErrorHandler} is called; all other error conditions cause a {@link CompileException} to be thrown.
      */
     public void
-    setCompileErrorHandler(UnitCompiler.ErrorHandler optionalCompileErrorHandler) {
+    setCompileErrorHandler(ErrorHandler optionalCompileErrorHandler) {
         this.optionalCompileErrorHandler = optionalCompileErrorHandler;
+    }
+
+    public void
+    setWarningHandler(WarningHandler optionalWarningHandler) {
+        this.optionalWarningHandler = optionalWarningHandler;
     }
 
     /**
@@ -476,10 +479,10 @@ class Compiler {
     compile(Resource[] sourceResources) throws CompileException, IOException {
 
         // Set up the compile error handler as described at "setCompileErrorHandler()".
-        UnitCompiler.ErrorHandler ceh = (
+        ErrorHandler ceh = (
             this.optionalCompileErrorHandler != null
             ? this.optionalCompileErrorHandler
-            : new UnitCompiler.ErrorHandler() {
+            : new ErrorHandler() {
 
                 int compileErrorCount;
 

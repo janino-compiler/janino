@@ -36,7 +36,9 @@ import java.util.Set;
 
 import org.codehaus.commons.compiler.AbstractJavaSourceClassLoader;
 import org.codehaus.commons.compiler.CompileException;
+import org.codehaus.commons.compiler.ErrorHandler;
 import org.codehaus.commons.compiler.ICookable;
+import org.codehaus.commons.compiler.WarningHandler;
 import org.codehaus.janino.util.ClassFile;
 import org.codehaus.janino.util.resource.DirectoryResourceFinder;
 import org.codehaus.janino.util.resource.PathResourceFinder;
@@ -143,7 +145,7 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
      * @see UnitCompiler#setCompileErrorHandler
      */
     public void
-    setCompileErrorHandler(UnitCompiler.ErrorHandler optionalCompileErrorHandler) {
+    setCompileErrorHandler(ErrorHandler optionalCompileErrorHandler) {
         this.iClassLoader.setCompileErrorHandler(optionalCompileErrorHandler);
     }
 

@@ -175,6 +175,7 @@ class Visitor {
         void visitCharacterLiteral(Java.CharacterLiteral cl);
         void visitStringLiteral(Java.StringLiteral sl);
         void visitNullLiteral(Java.NullLiteral nl);
+        void visitSimpleLiteral(Java.SimpleConstant sl);
         void visitNewAnonymousClassInstance(Java.NewAnonymousClassInstance naci);
         void visitNewArray(Java.NewArray na);
         void visitNewInitializedArray(Java.NewInitializedArray nia);
