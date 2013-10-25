@@ -367,7 +367,7 @@ class JLS2Tests extends JaninoTestSuite {
     @Test public void
     test_9_7__Annotations() throws Exception {
         clb(COOK, "class C { @Override public String toString() { return \"foo!\"; } }");
-        clb(COMP, "class C {           public String toString() { return \"foo!\"; } }");
+        clb(COOK, "class C {           public String toString() { return \"foo!\"; } }");
         clb(COMP, "class C { @Override public String meth1()    { return \"foo!\"; } }");
         clb(COOK, "class C {           public String meth1()    { return \"foo!\"; } }");
 
@@ -387,6 +387,164 @@ class JLS2Tests extends JaninoTestSuite {
         scr(EXEC, "new Object();");
         scr(COMP, "new Object[3];");
         scr(COMP, "int a; a;");
+    }
+    
+    @Test public void
+    test_14_9_1__ExecutionOfTryCatch__1() throws Exception {
+        clb(TRUE, (
+            ""
+            + "static void meth() throws Throwable {\n"
+            + "}\n"
+            + "\n"
+            + "public static boolean main() { \n"
+            + "    try {\n"
+            + "        meth();\n"
+            + "    } catch (java.io.FileNotFoundException fnfe) {\n"
+            + "        return false;\n"
+            + "    } catch (java.io.IOException ioe) {\n"
+            + "        return false;\n"
+            + "    } catch (Exception e) {\n"
+            + "        return false;\n"
+            + "    } catch (Throwable t) {\n"
+            + "        return false;\n"
+            + "    }\n"
+            + "    return true;\n"
+            + "}\n"
+        ));
+    }
+    
+    @Test public void
+    test_14_9_1__ExecutionOfTryCatch__2() throws Exception {
+        clb(COMP, (
+            ""
+            + "static void meth() throws Throwable {\n"
+            + "}\n"
+            + "\n"
+            + "public static boolean main() { \n"
+            + "    try {\n"
+            + "        meth();\n"
+            + "    } catch (java.io.FileNotFoundException fnfe) {\n"
+            + "        return false;\n"
+            + "    } catch (Exception e) {\n"
+            + "        return false;\n"
+            + "    } catch (java.io.IOException ioe) {\n"  // <= Hidden by preceding "catch (Exception)"
+            + "        return false;\n"
+            + "    } catch (Throwable t) {\n"
+            + "        return false;\n"
+            + "    }\n"
+            + "    return true;\n"
+            + "}\n"
+        ));
+    }
+    
+    @Test public void
+    test_14_9_1__ExecutionOfTryCatch__3() throws Exception {
+        clb(TRUE, (
+            ""
+            + "static void meth() throws java.io.IOException {\n"
+            + "}\n"
+            + "\n"
+            + "public static boolean main() { \n"
+            + "    try {\n"
+            + "        meth();\n"
+            + "    } catch (java.io.FileNotFoundException fnfe) {\n"
+            + "        return false;\n"
+            + "    } catch (java.io.IOException ioe) {\n"
+            + "        return false;\n"
+            + "    } catch (Exception e) {\n"
+            + "        return false;\n"
+            + "    } catch (Throwable t) {\n"
+            + "        return false;\n"
+            + "    }\n"
+            + "    return true;\n"
+            + "}\n"
+        ));
+    }
+    
+    @Test public void
+    test_14_9_1__ExecutionOfTryCatch__4() throws Exception {
+        clb(COMP, (
+            ""
+            + "static void meth() throws java.io.FileNotFoundException {\n"
+            + "}\n"
+            + "\n"
+            + "public static boolean main() { \n"
+            + "    try {\n"
+            + "        meth();\n"
+            + "    } catch (java.io.FileNotFoundException fnfe) {\n"
+            + "        return false;\n"
+            + "    } catch (java.io.IOException ioe) {\n" // <= Not thrown by 'meth()', but JDK 6 doesn't detect that
+            + "        return false;\n"
+            + "    } catch (Exception e) {\n"
+            + "        return false;\n"
+            + "    } catch (Throwable t) {\n"
+            + "        return false;\n"
+            + "    }\n"
+            + "    return true;\n"
+            + "}\n"
+        ));
+    }
+
+    @Test public void
+    test_14_9_1__ExecutionOfTryCatch__5() throws Exception {
+        clb(TRUE, (
+            ""
+            + "public static boolean main() { \n"
+            + "    try {\n"
+            + "        if (true) throw new java.io.IOException();\n"
+            + "    } catch (java.io.FileNotFoundException fnfe) {\n" // <= Not thrown by TRY block, but neither JDK 6
+            + "        return false;\n"                              //    nor JANINO detect that
+            + "    } catch (java.io.IOException ioe) {\n"
+            + "        return true;\n"
+            + "    } catch (Exception e) {\n"
+            + "        return false;\n"
+            + "    } catch (Throwable t) {\n"
+            + "        return false;\n"
+            + "    }\n"
+            + "    return false;\n"
+            + "}\n"
+        ));
+    }
+    
+    @Test public void
+    test_14_9_1__ExecutionOfTryCatch__6() throws Exception {
+        sim(COOK, (
+            ""
+            + "public class TestIt {\n"
+            + "    public static class MyException extends Exception implements Runnable {\n"
+            + "        public MyException(String st) {\n"
+            + "            super(st);\n"
+            + "        }\n"
+            + "\n"
+            + "        public void run() {\n"
+            + "        }\n"
+            + "    }\n"
+            + "\n"
+            + "    public void foo() throws MyException {\n"
+            + "        if (true) {\n"
+            + "            try {\n"
+            + "                if (false != false) {\n"
+            + "                    throw new MyException(\"my exc\");\n"
+            + "                }\n"
+            + "                System.out.println(\"abc\");\n"
+            + "                System.out.println(\"xyz\");\n"
+            + "\n"
+            + "            } catch (MyException e) {\n"
+            + "                throw new java.lang.RuntimeException(e);\n"
+            + "            }\n"
+            + "        }\n"
+            + "    }\n"
+            + "\n"
+            + "    public static boolean main() {\n"
+            + "        try {\n"
+            + "            new TestIt().foo();\n"
+            + "        } catch (MyException e) {\n"
+            + "            System.out.println(\"caught\");\n"
+            + "        }\n"
+            + "        return true;\n"
+            + "    }\n"
+            + "}\n"
+        ), "TestIt");
     }
     
     @Test public void
