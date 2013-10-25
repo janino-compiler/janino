@@ -3812,13 +3812,13 @@ class Java {
         public SimpleConstant(Location location, String value) { super(location); this.value = value; }
         
         @Override public void
-        accept(Visitor.AtomVisitor visitor) { visitor.visitSimpleLiteral(this); }
+        accept(Visitor.AtomVisitor visitor) { visitor.visitSimpleConstant(this); }
         
         @Override public void
-        accept(Visitor.RvalueVisitor visitor) { visitor.visitSimpleLiteral(this); }
+        accept(Visitor.RvalueVisitor visitor) { visitor.visitSimpleConstant(this); }
         
         @Override public void
-        accept(ElementValueVisitor visitor) { visitor.visitSimpleLiteral(this); }
+        accept(ElementValueVisitor visitor) { visitor.visitSimpleConstant(this); }
 
         @Override public String
         toString() { return "[" + this.value + ']'; }

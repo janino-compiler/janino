@@ -40,13 +40,13 @@ import java.util.Iterator;
 import java.util.Map;
 
 import org.codehaus.commons.compiler.CompileException;
+import org.codehaus.commons.compiler.ErrorHandler;
 import org.codehaus.commons.compiler.Location;
+import org.codehaus.commons.compiler.WarningHandler;
 import org.codehaus.janino.ClassLoaderIClassLoader;
 import org.codehaus.janino.Compiler;
 import org.codehaus.janino.IClassLoader;
 import org.codehaus.janino.SimpleCompiler;
-import org.codehaus.janino.UnitCompiler;
-import org.codehaus.janino.WarningHandler;
 import org.codehaus.janino.util.Benchmark;
 import org.codehaus.janino.util.ResourceFinderClassLoader;
 import org.codehaus.janino.util.resource.DirectoryResourceFinder;
@@ -97,7 +97,7 @@ class CompilerTests {
                 debugVars,                                         // debugVars
                 (WarningHandler) null                              // optionalWarningHandler
             );
-            c.setCompileErrorHandler(new UnitCompiler.ErrorHandler() {
+            c.setCompileErrorHandler(new ErrorHandler() {
 
                 public void
                 handleError(String message, Location optionalLocation) throws CompileException {
@@ -129,7 +129,7 @@ class CompilerTests {
                 false,                                              // debugVars
                 (WarningHandler) null                               // optionalWarningHandler
             );
-            c.setCompileErrorHandler(new UnitCompiler.ErrorHandler() {
+            c.setCompileErrorHandler(new ErrorHandler() {
 
                 public void
                 handleError(String message, Location optionalLocation) throws CompileException {

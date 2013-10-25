@@ -45,6 +45,7 @@ import org.codehaus.janino.Java.CharacterLiteral;
 import org.codehaus.janino.Java.FloatingPointLiteral;
 import org.codehaus.janino.Java.IntegerLiteral;
 import org.codehaus.janino.Java.NullLiteral;
+import org.codehaus.janino.Java.SimpleConstant;
 import org.codehaus.janino.Java.StringLiteral;
 import org.codehaus.janino.Mod;
 import org.codehaus.janino.Parser;
@@ -231,6 +232,8 @@ class UnparseTests {
             public void visitCharacterLiteral(CharacterLiteral cl)          { res[0] = cl; }
             public void visitStringLiteral(StringLiteral sl)                { res[0] = sl; }
             public void visitNullLiteral(NullLiteral nl)                    { res[0] = nl; }
+
+            public void visitSimpleConstant(SimpleConstant sl) { res[0] = sl; }
 
             public void
             visitMethodInvocation(MethodInvocation mi) {
