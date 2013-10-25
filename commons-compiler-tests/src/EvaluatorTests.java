@@ -717,7 +717,7 @@ class EvaluatorTests {
             + "        return new Runnable() {\n"
             + "            @Override public void run() {\n"
             + "               if (bar == null) {\n"
-            + "                   throw new RuntimeException();\n"
+            + "                   throw new RuntimeException(\"bar is NULL\");\n"
             + "               }\n"
             + "            }\n"
             + "            private String bar = foo;\n"
