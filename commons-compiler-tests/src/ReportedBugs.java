@@ -527,4 +527,16 @@ class ReportedBugs extends JaninoTestSuite {
         // permitted (as for assignment conversion).
         scr(EXEC, "long x = (long) new Integer(8);");
     }
+
+    @Test public void
+    testBug161() throws Exception {
+        this.sim(COOK, (
+            ""
+            + "public class Test {\n"
+            + "    public static void test2(boolean x, boolean y) {\n"
+            + "        boolean v4 = x || null == null;\n"
+            + "    }\n"
+            + "}\n"
+        ), "Test");
+    }
 }
