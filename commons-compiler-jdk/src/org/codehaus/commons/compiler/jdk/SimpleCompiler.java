@@ -40,11 +40,13 @@ import org.codehaus.commons.compiler.*;
 public
 class SimpleCompiler extends Cookable implements ISimpleCompiler {
 
-    private ClassLoader parentClassLoader = Thread.currentThread().getContextClassLoader();
-    private ClassLoader result;
-    private boolean     debugSource;
-    private boolean     debugLines;
-    private boolean     debugVars;
+    private ClassLoader    parentClassLoader = Thread.currentThread().getContextClassLoader();
+    private ClassLoader    result;
+    private boolean        debugSource;
+    private boolean        debugLines;
+    private boolean        debugVars;
+    private ErrorHandler   optionalCompileErrorHandler;
+    private WarningHandler optionalWarningHandler;
 
     @Override public ClassLoader
     getClassLoader() { assertCooked(); return this.result; }
@@ -113,9 +115,35 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
                         String code    = diagnostic.getCode();
                         String message = diagnostic.getMessage(null) + " (" + code + ")";
 
-                        // Wrap the exception in a RuntimeException, because "report()" does not declare checked
-                        // exceptions.
-                        throw new RuntimeException(new CompileException(message, loc));
+                        try {
+                            switch (diagnostic.getKind()) {
+                            case ERROR:
+                                if (SimpleCompiler.this.optionalCompileErrorHandler == null) {
+                                    throw new RuntimeException(new CompileException(message, loc));
+                                } else {
+                                    SimpleCompiler.this.optionalCompileErrorHandler.handleError(message, loc);
+                                }
+                                break;
+                            case MANDATORY_WARNING:
+                            case WARNING:
+                                if (SimpleCompiler.this.optionalWarningHandler == null) {
+                                    ;
+                                } else {
+                                    SimpleCompiler.this.optionalWarningHandler.handleWarning(null, message, loc);
+                                }
+                                break;
+                            case NOTE:
+                            case OTHER:
+                            default:
+                                break;
+                            
+                            }
+                        } catch (CompileException ce) {
+
+                            // Wrap the exception in a RuntimeException, because "report()" does not declare checked
+                            // exceptions.
+                            throw new RuntimeException(ce);
+                        }
                     }
                 },
                 Collections.singletonList(                 // options
@@ -135,14 +163,12 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
         } catch (RuntimeException rte) {
 
             // Unwrap the compilation exception and throw it.
-            Throwable cause = rte.getCause();
-            if (cause != null) {
-                cause = cause.getCause();
-                if (cause instanceof CompileException) {
-                    throw (CompileException) cause; // SUPPRESS CHECKSTYLE AvoidHidingCause
+            for (Throwable t = rte.getCause(); t != null; t = t.getCause()) {
+                if (t instanceof CompileException) {
+                    throw (CompileException) t; // SUPPRESS CHECKSTYLE AvoidHidingCause
                 }
-                if (cause instanceof IOException) {
-                    throw (IOException) cause; // SUPPRESS CHECKSTYLE AvoidHidingCause
+                if (t instanceof IOException) {
+                    throw (IOException) t; // SUPPRESS CHECKSTYLE AvoidHidingCause
                 }
             }
             throw rte;
@@ -257,6 +283,16 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
     @Deprecated public void
     setParentClassLoader(ClassLoader optionalParentClassLoader, Class<?>[] auxiliaryClasses) {
         this.setParentClassLoader(optionalParentClassLoader);
+    }
+
+    @Override public void
+    setCompileErrorHandler(ErrorHandler optionalCompileErrorHandler) {
+        this.optionalCompileErrorHandler = optionalCompileErrorHandler;
+    }
+
+    @Override public void
+    setWarningHandler(WarningHandler optionalWarningHandler) {
+        this.optionalWarningHandler = optionalWarningHandler;
     }
 
     /**
