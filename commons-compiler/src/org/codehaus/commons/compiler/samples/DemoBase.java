@@ -125,6 +125,7 @@ class DemoBase {
         }
     }
 
+    /** Converts the given comma-separated list of class names to an array of {@link Class}es. */
     public static Class[]
     stringToTypes(String s) {
 
@@ -136,6 +137,7 @@ class DemoBase {
         return res;
     }
 
+    /** A version of {@link Object#toString()} that pretty-prints arrays. */
     public static String
     toString(Object o) {
 

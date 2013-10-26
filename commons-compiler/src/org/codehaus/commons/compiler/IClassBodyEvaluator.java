@@ -92,6 +92,7 @@ import java.io.Reader;
 @SuppressWarnings("rawtypes") public
 interface IClassBodyEvaluator extends ICookable {
 
+    /** Default name for the generated class. */
     String DEFAULT_CLASS_NAME = "SC";
 
     /**

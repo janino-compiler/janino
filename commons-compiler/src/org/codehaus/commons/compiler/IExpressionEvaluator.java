@@ -99,6 +99,7 @@ import java.lang.reflect.InvocationTargetException;
 @SuppressWarnings("rawtypes") public
 interface IExpressionEvaluator extends IScriptEvaluator {
 
+    /** Special value for {@link #setExpressionType(Class)} that indicates that the expression may have any type. */
     Class ANY_TYPE = null;
 
     /**
