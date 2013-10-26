@@ -423,6 +423,11 @@ class Compiler {
         this.optionalCompileErrorHandler = optionalCompileErrorHandler;
     }
 
+    /**
+     * By default, warnings are discarded, but an application my install a custom {@link WarningHandler}.
+     *
+     * @param optionalWarningHandler {@code null} to indicate that no warnings be issued
+     */
     public void
     setWarningHandler(WarningHandler optionalWarningHandler) {
         this.optionalWarningHandler = optionalWarningHandler;
