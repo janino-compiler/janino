@@ -37,6 +37,8 @@ import javax.tools.JavaFileObject.Kind;
 /**
  * A {@link ForwardingJavaFileManager} that stores {@link JavaFileObject}s in byte arrays, i.e. in
  * memory (as opposed to the {@link StandardJavaFileManager}, which stores them in files).
+ *
+ * @param <M>
  */
 public
 class ByteArrayJavaFileManager<M extends JavaFileManager> extends ForwardingJavaFileManager<M> {
@@ -172,7 +174,8 @@ class ByteArrayJavaFileManager<M extends JavaFileManager> extends ForwardingJava
      */
     public static
     class ByteArrayJavaFileObject extends SimpleJavaFileObject {
-        final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+
+        private final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 
         public
         ByteArrayJavaFileObject(String className, Kind kind) {
@@ -185,6 +188,7 @@ class ByteArrayJavaFileManager<M extends JavaFileManager> extends ForwardingJava
         @Override public OutputStream
         openOutputStream() throws IOException { return this.buffer; }
 
+        /** @return The bytes that were previously written to this {@link JavaFileObject}. */
         public byte[]
         toByteArray() { return this.buffer.toByteArray(); }
 
