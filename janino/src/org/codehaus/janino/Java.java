@@ -61,14 +61,16 @@ import org.codehaus.janino.util.iterator.ReverseListIterator;
  *   </li>
  * </ul>
  */
-
 @SuppressWarnings({ "rawtypes", "unchecked" }) public final
 class Java {
 
     private Java() {} // Don't instantiate me.
 
+    /** Representation of a Java&trade; 'scope', e.g. a compilation unit, type, method or block. */
     public
     interface Scope {
+
+        /** @return The scope that encloses this scope, or {@code null} */
         Scope getEnclosingScope();
     }
 
@@ -78,6 +80,8 @@ class Java {
      */
     public
     interface Locatable {
+
+        /** @return The location of this object */
         Location getLocation();
 
         /**
@@ -88,10 +92,15 @@ class Java {
          */
         void throwCompileException(String message) throws CompileException;
     }
+
+    /** Abstract implementation of {@link Locatable}. */
     public abstract static
     class Located implements Locatable {
+
+        /** Indication of 'no' or 'unknown' location. */
         public static final Located NOWHERE = new Located(Location.NOWHERE) {};
-        private final Location      location;
+
+        private final Location location;
 
         protected
         Located(Location location) {
@@ -115,10 +124,18 @@ class Java {
      */
     public static final
     class CompilationUnit implements Scope {
-        public final String       optionalFileName;
+
+        /** A string that explains the 'file' (or similar resource) where this CU was loaded from. */
+        public final String optionalFileName;
+
+        /** The package declaration at the very top of this CU (if any). */
         public PackageDeclaration optionalPackageDeclaration;
-        public final List         importDeclarations            = new ArrayList(); // ImportDeclaration
-        public final List         packageMemberTypeDeclarations = new ArrayList(); // PackageMemberTypeDeclaration
+
+        /** The IMPORT declarations in this CU. */
+        public final List/*<ImportDeclaration>*/ importDeclarations = new ArrayList();
+
+        /** The top-level declarations in this CU. */
+        public final List/*<PackageMemberTypeDeclaration>*/ packageMemberTypeDeclarations = new ArrayList();
 
         public
         CompilationUnit(String optionalFileName) { this.optionalFileName = optionalFileName; }
@@ -128,14 +145,13 @@ class Java {
         @Override public Scope
         getEnclosingScope() { throw new JaninoRuntimeException("A compilation unit has no enclosing scope"); }
 
+        /** Sets the package declaration of this CU. */
         public void
         setPackageDeclaration(PackageDeclaration packageDeclaration) {
-            if (this.optionalPackageDeclaration != null) {
-                throw new JaninoRuntimeException("Re-setting package declaration");
-            }
             this.optionalPackageDeclaration = packageDeclaration;
         }
 
+        /** Adds one IMPORT declaration to this CU. */
         public void
         addImportDeclaration(CompilationUnit.ImportDeclaration id) {
 
@@ -143,6 +159,7 @@ class Java {
             this.importDeclarations.add(id);
         }
 
+        /** Adds one top-level type declaration to this CU. */
         public void
         addPackageMemberTypeDeclaration(PackageMemberTypeDeclaration pmtd) {
             this.packageMemberTypeDeclarations.add(pmtd);
@@ -173,13 +190,11 @@ class Java {
             return null;
         }
 
-        /**
-         * Represents a single type import declaration like<pre>
-         *     import java.util.Map;</pre>
-         */
+        /** Represents a 'single-type import declaration' like '{@code import java.util.Map;}'. */
         public static
         class SingleTypeImportDeclaration extends ImportDeclaration {
 
+            /** The identifiers that constitute the type to be imported, e.g. 'java', 'util', 'Map'. */
             public final String[] identifiers;
 
             public
@@ -201,6 +216,8 @@ class Java {
          */
         public static
         class TypeImportOnDemandDeclaration extends ImportDeclaration {
+
+            /** The identifiers that constitute the package or type to import from, e.g. 'java', 'util'. */
             public final String[] identifiers;
 
             public
@@ -224,6 +241,11 @@ class Java {
          */
         public static
         class SingleStaticImportDeclaration extends ImportDeclaration {
+
+            /**
+             * The identifiers that constitute the member to be imported, e.g. 'java', 'util', 'Collections',
+             * 'EMPTY_MAP'.
+             */
             public final String[] identifiers;
 
             public
@@ -244,6 +266,8 @@ class Java {
          */
         public static
         class StaticImportOnDemandDeclaration extends ImportDeclaration {
+
+            /** The identifiers that constitute the type to import from, e.g. 'java', 'util', 'Collections'. */
             public final String[] identifiers;
 
             public
@@ -258,29 +282,43 @@ class Java {
             }
         }
 
+        /** Base class for the various IMPORT declarations. */
         public abstract static
         class ImportDeclaration extends Java.Located {
 
             public
             ImportDeclaration(Location location) { super(location); }
 
+            /**
+             * Invokes the '{@code visit...()}' method of {@link Visitor.ImportVisitor} for the concrete {@link
+             * ImportDeclaration} type.
+             */
             public abstract void accept(Visitor.ImportVisitor visitor);
         }
     }
 
+    /** Representation of a Java &trade; annotation. */
     public
     interface Annotation extends ElementValue {
 
+        /**
+         * Invokes the '{@code visit...()}' method of {@link Visitor.AnnotationVisitor} for the concrete {@link
+         * Annotation} type.
+         */
         void accept(Visitor.AnnotationVisitor visitor);
 
+        /** Sets the enclosing scope for this annotation. */
         void setEnclosingScope(Scope enclosingScope);
 
+        /** @return The type of this annotation */
         Type getType();
     }
 
+    /** Repreentation of a 'marker annotation', i.e. an annotation without any elements in parentheses. */
     public static final
     class MarkerAnnotation implements Annotation {
 
+        /** The type of this marker annotation. */
         public final Type type;
 
         public
@@ -301,10 +339,16 @@ class Java {
         accept(Visitor.ElementValueVisitor visitor) { visitor.visitMarkerAnnotation(this); }
     }
 
+    /**
+     * Representation of a 'single-element annotation', i.e. an annotation followed by a single element in parentheses.
+     */
     public static final
     class SingleElementAnnotation implements Annotation {
 
-        public final Type         type;
+        /** The type of this single-element annotation. */
+        public final Type type;
+
+        /** The element value associated with this single-element annotation. */
         public final ElementValue elementValue;
 
         public
@@ -328,10 +372,14 @@ class Java {
         accept(Visitor.ElementValueVisitor visitor) { visitor.visitSingleElementAnnotation(this); }
     }
 
+    /** A 'normal annotation', i.e. an annotation with multiple elements in parentheses and curly braces. */
     public static final
     class NormalAnnotation implements Annotation {
 
-        public final Type               type;
+        /** The type of this normal annotation. */
+        public final Type type;
+
+        /** The element-value-pairs associated with this annotation. */
         public final ElementValuePair[] elementValuePairs;
 
         public
@@ -362,10 +410,14 @@ class Java {
         accept(Visitor.ElementValueVisitor visitor) { visitor.visitNormalAnnotation(this); }
     }
 
+    /** Representation of the modifiers and annotations that are associated with a declaration. */
     public static
     class ModifiersAndAnnotations {
 
-        public final short        modifiers;
+        /** The or'ed constants declared in {@link Mod}. */
+        public final short modifiers;
+
+        /** The annotations. */
         public final Annotation[] annotations;
         
         public
@@ -386,26 +438,36 @@ class Java {
             this.annotations = annotations;
         }
 
+        /** @return This object, with the given {@code modifiersToAdd} added. */
         public ModifiersAndAnnotations
         add(int modifiersToAdd) {
             return new ModifiersAndAnnotations((short) (this.modifiers | modifiersToAdd), this.annotations);
         }
 
+        /** @return This object, with the given {@code modifiersToRemove} removed. */
         public ModifiersAndAnnotations
         remove(int modifiersToRemove) {
             return new ModifiersAndAnnotations((short) (this.modifiers & ~modifiersToRemove), this.annotations);
         }
 
+        /**
+         * @param newAccess One of {@link Mod#PUBLIC}, {@link Mod#PRIVATE}, {@link Mod#PROTECTED}, {@link Mod#PACKAGE}
+         * @return This object, with the access changed to {@code newAccess}
+         */
         public ModifiersAndAnnotations
         changeAccess(int newAccess) {
             return new ModifiersAndAnnotations((short) (this.modifiers & ~Mod.PPP | newAccess), this.annotations);
         }
     }
 
+    /** Representation of a 'name = value' element in a {@link NormalAnnotation}. */
     public static
     class ElementValuePair {
 
-        public final String       identifier;
+        /** The element name. */
+        public final String identifier;
+
+        /** The element value. */
         public final ElementValue elementValue;
 
         public
@@ -418,14 +480,25 @@ class Java {
         toString() { return this.identifier + " = " + this.elementValue; }
     }
 
+    /** Base of the possible element values in a {@link NormalAnnotation}. */
     public
     interface ElementValue {
+
+        /**
+         * Invokes the '{@code visit...()}' method of {@link Visitor.ElementValueVisitor} for the concrete {@link
+         * ElementValue} type.
+         */
         void accept(Visitor.ElementValueVisitor visitor);
     }
 
+    /**
+     * An element value in the form of an array initializer, e.g. '<code>SuppressWarnings({ "null", "unchecked"
+     * })</code>'.
+     */
     public static
     class ElementValueArrayInitializer implements ElementValue {
 
+        /** The element values in the body of the array initializer. */
         public final ElementValue[] elementValues;
 
         public
@@ -447,11 +520,13 @@ class Java {
     }
 
     /**
-     * Represents a package declaration like<pre>
-     *     package com.acme.tools;</pre>
+     * Represents a package declaration like
+     * <pre>package com.acme.tools;</pre>
      */
     public static
     class PackageDeclaration extends Located {
+
+        /** The package name, e.g. '{@code com.acme.tools}'. */
         public final String packageName;
 
         public
@@ -461,9 +536,11 @@ class Java {
         }
     }
 
+    /** Base for the various kinds of type declarations, e.g. top-level class, member interface, local class. */
     public
     interface TypeDeclaration extends Locatable, Scope {
 
+        /** @return The {@link ModifiersAndAnnotations} of this {@link TypeDeclaration} */
         ModifiersAndAnnotations getModifiersAndAnnotations();
 
         /**
@@ -472,35 +549,42 @@ class Java {
          */
         MemberTypeDeclaration getMemberTypeDeclaration(String name);
 
+        /** @return The (possibly empty) set of member types declared inside this {@link TypeDeclaration} */
         Collection/*<MemberTypeDeclaration>*/ getMemberTypeDeclarations();
 
         /**
-         * Return the first method declared with the given name. (Does not honor inherited
-         * methods.)
+         * Return the first method declared with the given name. (Does not honor inherited methods.)
+         *
          * @return <code>null</code> if a method with this name is not declared
          */
         MethodDeclarator getMethodDeclaration(String name);
 
+        /**
+         * @return The list of methods declared in this {@link TypeDeclaration}, not including methods declared in
+         *         supertypes
+         */
         List/*<MethodDeclaration>*/ getMethodDeclarations();
 
-        /**
-         * Determine the effective class name, e.g. "pkg.Outer$Inner".
-         */
+        /** Determines the effective class name, e.g. "pkg.Outer$Inner". */
         String getClassName();
 
-        /**
-         * Creates a unique name for a local class or interface.
-         */
+        /** Creates a unique name for a local class or interface. */
         String createLocalTypeName(String localTypeName);
 
-        /**
-         * Creates a unique name for an anonymous class.
-         */
+        /** Creates a unique name for an anonymous class. */
         String createAnonymousClassName();
 
+        /**
+         * Invokes the '{@code visit...()}' method of {@link Visitor.TypeDeclarationVisitor} for the concrete {@link
+         * TypeDeclaration} type.
+         */
         void accept(Visitor.TypeDeclarationVisitor visitor);
     }
 
+    /**
+     * Representation of a Java&trade; element that can be annotated with a DOC comment ('<code>&#47;** ...
+     * *&#47;</code>').
+     */
     public
     interface DocCommentable {
 
@@ -518,13 +602,16 @@ class Java {
     }
 
     /**
-     * Represents a class or interface declaration on compilation unit level. These are called
-     * "package member types" because they are immediate members of a package, e.g.
-     * "java.lang.String".
+     * Represents a class or interface declaration on compilation unit level. These are called "package member types"
+     * because they are immediate members of a package.
      */
     public
     interface PackageMemberTypeDeclaration extends NamedTypeDeclaration {
-        void            setDeclaringCompilationUnit(CompilationUnit declaringCompilationUnit);
+
+        /** Sets the {@link CompilationUnit} in which this top-level type is declared. */
+        void setDeclaringCompilationUnit(CompilationUnit declaringCompilationUnit);
+
+        /** @return The {@link CompilationUnit} in which this top-level type is declared. */
         CompilationUnit getDeclaringCompilationUnit();
     }
 
@@ -584,6 +671,7 @@ class Java {
         void defineSyntheticField(IClass.IField iField) throws CompileException;
     }
 
+    /** Abstract implementation of {@link TypeDeclaration}. */
     public abstract static
     class AbstractTypeDeclaration implements TypeDeclaration {
         private final Location                        location;
@@ -592,6 +680,7 @@ class Java {
         private final List/*<MemberTypeDeclaration>*/ declaredClassesAndInterfaces = new ArrayList();
         private Scope                                 enclosingScope;
 
+        /** Holds the resolved type during compilation. */
         IClass resolvedType;
 
         public
@@ -603,6 +692,7 @@ class Java {
         @Override public ModifiersAndAnnotations
         getModifiersAndAnnotations() { return this.modifiersAndAnnotations; }
 
+        /** Sets the enclosing scope of this {@link TypeDeclaration}. */
         public void
         setEnclosingScope(Scope enclosingScope) {
             if (this.enclosingScope != null && enclosingScope != this.enclosingScope) {
@@ -619,6 +709,10 @@ class Java {
         @Override public Scope
         getEnclosingScope() { return this.enclosingScope; }
 
+        /**
+         * Invalidates the method cache of the {@link #resolvedType}. This is necessary when methods are added
+         * <i>during</i> compilation
+         */
         public void
         invalidateMethodCaches() {
             if (this.resolvedType != null) {
@@ -626,17 +720,24 @@ class Java {
             }
         }
 
-        // Implement TypeDeclaration.
+        /** Adds one {@link MemberTypeDeclaration} to this type. */
         public void
         addMemberTypeDeclaration(MemberTypeDeclaration mcoid) {
             this.declaredClassesAndInterfaces.add(mcoid);
             mcoid.setDeclaringType(this);
         }
 
-        @Override public Collection/*<MemberTypeDeclaration>*/
-        getMemberTypeDeclarations() {
-            return this.declaredClassesAndInterfaces;
+        /** Adds one {@link MethodDeclarator} to this type. */
+        public void
+        addDeclaredMethod(MethodDeclarator method) {
+            this.declaredMethods.add(method);
+            method.setDeclaringType(this);
         }
+
+        // Implement TypeDeclaration.
+
+        @Override public Collection/*<MemberTypeDeclaration>*/
+        getMemberTypeDeclarations() { return this.declaredClassesAndInterfaces; }
 
         @Override public MemberTypeDeclaration
         getMemberTypeDeclaration(String name) {
@@ -645,12 +746,6 @@ class Java {
                 if (mtd.getName().equals(name)) return mtd;
             }
             return null;
-        }
-
-        public void
-        addDeclaredMethod(MethodDeclarator method) {
-            this.declaredMethods.add(method);
-            method.setDeclaringType(this);
         }
 
         @Override public MethodDeclarator
@@ -698,25 +793,36 @@ class Java {
         @Override public abstract String
         toString();
 
-        public int anonymousClassCount; // For naming anonymous classes.
-        public int localClassCount;     // For naming local classes.
+        /** For naming anonymous classes. */
+        public int anonymousClassCount;
+
+        /** For naming local classes. */
+        public int localClassCount;
     }
 
+    /** Base for the various class declaration kinds. */
     public abstract static
     class ClassDeclaration extends AbstractTypeDeclaration {
-        public final List constructors                       = new ArrayList(); // ConstructorDeclarator
-        public final List variableDeclaratorsAndInitializers = new ArrayList(); // TypeBodyDeclaration
+
+        /** List of {@link ConstructorDeclarator}s of this class. */
+        public final List/*<ConstructorDeclarator>*/ constructors = new ArrayList();
+
+        /** List of {@link TypeBodyDeclaration}s of this class. */
+        public final List/*<TypeBodyDeclaration>*/ variableDeclaratorsAndInitializers = new ArrayList();
 
         public
         ClassDeclaration(Location location, ModifiersAndAnnotations modifiersAndAnnotations) {
             super(location, modifiersAndAnnotations);
         }
 
+        /** Adds one {@link ConstructorDeclarator} to this class. */
         public void
         addConstructor(ConstructorDeclarator cd) {
             this.constructors.add(cd);
             cd.setDeclaringType(this);
         }
+
+        /** Adds one {@link VariableDeclarator} or {@link Initializer} to this class. */
         public void
         addVariableDeclaratorOrInitializer(TypeBodyDeclaration tbd) {
             this.variableDeclaratorsAndInitializers.add(tbd);
@@ -728,7 +834,9 @@ class Java {
 
         // Compile time members.
 
-        // Implement InnerClassDeclaration.
+        // Forward-implement InnerClassDeclaration.
+
+        /** @see InnerClassDeclaration#defineSyntheticField(org.codehaus.janino.IClass.IField) */
         public void
         defineSyntheticField(IClass.IField iField) throws CompileException {
             if (!(this instanceof InnerClassDeclaration)) throw new JaninoRuntimeException();
@@ -765,13 +873,16 @@ class Java {
             );
         }
 
-        // All field names start with "this$" or "val$".
-        final SortedMap syntheticFields = new TreeMap(); // String name => IClass.IField
+        /** All field names start with "this$" or "val$". */
+        final SortedMap/*<String, IClass.IField>*/ syntheticFields = new TreeMap();
     }
 
+    /** Representation of an anonymous class declaration. */
     public static final
     class AnonymousClassDeclaration extends ClassDeclaration implements InnerClassDeclaration {
-        public final Type baseType;  // Base class or interface
+
+        /** Base class or interface. */
+        public final Type baseType;
 
         public
         AnonymousClassDeclaration(Location location, Type baseType) {
@@ -802,12 +913,20 @@ class Java {
         toString() { return this.getClassName(); }
     }
 
+    /** Base for the various named class declarations. */
     public abstract static
     class NamedClassDeclaration extends ClassDeclaration implements NamedTypeDeclaration, DocCommentable {
+
         private final String optionalDocComment;
+
+        /** The simple name of this class. */
         public final String  name;
-        public final Type    optionalExtendedType;
-        public final Type[]  implementedTypes;
+
+        /** The type of the extended class. */
+        public final Type optionalExtendedType;
+        
+        /** The types of the implemented interfaces. */
+        public final Type[] implementedTypes;
 
         public
         NamedClassDeclaration(
@@ -850,13 +969,11 @@ class Java {
         }
     }
 
-    /**
-     * Lazily determines and returns the enclosing
-     * {@link org.codehaus.janino.Java.Scope} of the given
-     * {@link org.codehaus.janino.Java.TypeDeclaration}.
-     */
+    /** Lazily determines and returns the enclosing {@link Java.Scope} of the given {@link Java.TypeDeclaration}. */
     public static final
     class EnclosingScopeOfTypeDeclaration implements Scope {
+
+        /** The specific type declaration. */
         public final TypeDeclaration typeDeclaration;
 
         public
@@ -866,6 +983,10 @@ class Java {
         getEnclosingScope() { return this.typeDeclaration.getEnclosingScope(); }
     }
 
+    /**
+     * Representation of a 'member class declaration', i.e. a class declaration that appears inside another class
+     * declaration.
+     */
     public static final
     class MemberClassDeclaration extends NamedClassDeclaration implements MemberTypeDeclaration, InnerClassDeclaration {
         public
@@ -910,6 +1031,7 @@ class Java {
         accept(Visitor.TypeBodyDeclarationVisitor visitor) { visitor.visitMemberClassDeclaration(this); }
     }
 
+    /** Representation of a 'local class declaration' i.e. a class declaration that appears inside a method body. */
     public static final
     class LocalClassDeclaration extends NamedClassDeclaration implements InnerClassDeclaration {
 
@@ -932,19 +1054,6 @@ class Java {
             );
         }
 
-        // Implement ClassDeclaration.
-        protected IClass
-        getOuterIClass2() {
-            Scope s = this.getEnclosingScope();
-            for (; !(s instanceof FunctionDeclarator); s = s.getEnclosingScope());
-            if (
-                s instanceof MethodDeclarator
-                && (((MethodDeclarator) s).modifiersAndAnnotations.modifiers & Mod.STATIC) != 0
-            ) return null;
-            for (; !(s instanceof TypeDeclaration); s = s.getEnclosingScope());
-            return ((AbstractTypeDeclaration) s).resolvedType;
-        }
-
         // Implement TypeDeclaration.
 
         @Override public String
@@ -960,6 +1069,7 @@ class Java {
         accept(Visitor.TypeDeclarationVisitor visitor) { visitor.visitLocalClassDeclaration(this); }
     }
 
+    /** Implementation of a 'package member class declaration', a.k.a. 'top-level class declaration'. */
     public static final
     class PackageMemberClassDeclaration extends NamedClassDeclaration implements PackageMemberTypeDeclaration {
 
@@ -1018,10 +1128,14 @@ class Java {
         accept(Visitor.TypeDeclarationVisitor visitor) { visitor.visitPackageMemberClassDeclaration(this); }
     }
 
+    /** Base for the various interface declaration kinds. */
     public abstract static
     class InterfaceDeclaration extends AbstractTypeDeclaration implements NamedTypeDeclaration, DocCommentable {
+
         private final String optionalDocComment;
-        public final String  name;
+
+        /** The simple name of the interface. */
+        public final String name;
 
         protected
         InterfaceDeclaration(
@@ -1043,6 +1157,7 @@ class Java {
         @Override public String
         toString() { return this.name; }
 
+        /** Adds one constant declaration to this interface declaration. */
         public void
         addConstantDeclaration(FieldDeclaration fd) {
             this.constantDeclarations.add(fd);
@@ -1052,10 +1167,13 @@ class Java {
             if (this.resolvedType != null) this.resolvedType.clearIFieldCaches();
         }
 
+        /** The types of the interfaces that this interface extends. */
         public final Type[] extendedTypes;
-        public final List   constantDeclarations = new ArrayList(); // FieldDeclaration
 
-        // Set during "compile()".
+        /** The constants that this interface declares. */
+        public final List/*<FieldDeclaration>*/ constantDeclarations = new ArrayList();
+
+        /** Set during "compile()". */
         IClass[] interfaces;
 
         // Implement NamedTypeDeclaration.
@@ -1074,6 +1192,10 @@ class Java {
         }
     }
 
+    /**
+     * Representation of a 'member interface declaration', i.e. an interface declaration that appears inside another
+     * class or interface declaration.
+     */
     public static final
     class MemberInterfaceDeclaration extends InterfaceDeclaration implements MemberTypeDeclaration {
 
@@ -1124,6 +1246,7 @@ class Java {
         accept(Visitor.TypeBodyDeclarationVisitor visitor) { visitor.visitMemberInterfaceDeclaration(this); }
     }
 
+    /** Representation of a 'package member interface declaration', a.k.a. 'top-level interface declaration'. */
     public static final
     class PackageMemberInterfaceDeclaration extends InterfaceDeclaration implements PackageMemberTypeDeclaration {
 
@@ -1191,16 +1314,31 @@ class Java {
      */
     public
     interface TypeBodyDeclaration extends Locatable, Scope {
-        void            setDeclaringType(TypeDeclaration declaringType);
+
+        /** Sets the type declaration that this declaration belongs to. */
+        void setDeclaringType(TypeDeclaration declaringType);
+
+        /** @return The type declaration that this declaration belongs to. */
         TypeDeclaration getDeclaringType();
-        boolean         isStatic();
-        void            accept(Visitor.TypeBodyDeclarationVisitor visitor);
+
+        /** @return Whether this declaration has the STATIC modifier */
+        boolean isStatic();
+
+        /**
+         * Invokes the '{@code visit...()}' method of {@link Visitor.TypeBodyDeclarationVisitor} for the concrete
+         * {@link TypeBodyDeclaration} type.
+         */
+        void accept(Visitor.TypeBodyDeclarationVisitor visitor);
     }
 
+    /** Abstract implementation of {@link TypeBodyDeclaration}. */
     public abstract static
     class AbstractTypeBodyDeclaration extends Located implements TypeBodyDeclaration {
+
         private TypeDeclaration declaringType;
-        public final boolean    statiC;
+
+        /** Whether this declaration has the STATIC modifier */
+        public final boolean statiC;
 
         protected
         AbstractTypeBodyDeclaration(Location location, boolean statiC) {
@@ -1230,10 +1368,11 @@ class Java {
         @Override public boolean
         isStatic() { return this.statiC; }
 
-        // Implement BlockStatement.
-
+        /** Forward-implements {@link BlockStatement#setEnclosingScope(Scope)}. */
         public void
         setEnclosingScope(Scope enclosingScope) { this.declaringType = (TypeDeclaration) enclosingScope; }
+
+        // Implement 'Scope'.
 
         @Override public Scope
         getEnclosingScope()                     { return this.declaringType; }
@@ -1244,6 +1383,8 @@ class Java {
      */
     public static final
     class Initializer extends AbstractTypeBodyDeclaration implements BlockStatement {
+
+        /** The block that poses the initializer. */
         public final Block block;
 
         public
@@ -1261,24 +1402,34 @@ class Java {
         accept(Visitor.TypeBodyDeclarationVisitor visitor) { visitor.visitInitializer(this); }
 
         @Override public void
-        accept(Visitor.BlockStatementVisitor visitor)      { visitor.visitInitializer(this); }
+        accept(Visitor.BlockStatementVisitor visitor) { visitor.visitInitializer(this); }
 
         @Override public Java.LocalVariable
         findLocalVariable(String name) { return this.block.findLocalVariable(name); }
     }
 
-    /**
-     * Abstract base class for {@link Java.ConstructorDeclarator} and
-     * {@link Java.MethodDeclarator}.
-     */
+    /** Abstract base class for {@link Java.ConstructorDeclarator} and {@link Java.MethodDeclarator}. */
     public abstract static
     class FunctionDeclarator extends AbstractTypeBodyDeclaration implements DocCommentable {
-        private final String                  optionalDocComment;
+        
+        private final String optionalDocComment;
+
+        /** The {@link ModifiersAndAnnotations} of this declarator. */
         public final ModifiersAndAnnotations  modifiersAndAnnotations;
-        public final Type                     type;
-        public final String                   name;
-        public final FormalParameter[]        formalParameters;
-        public final Type[]                   thrownExceptions;
+
+        /** The return type of the function (VOID for constructors). */
+        public final Type type;
+
+        /** The name of the function ("<init>" for constructors. */
+        public final String name;
+
+        /** The parameters of the function. */
+        public final FormalParameter[] formalParameters;
+
+        /** The types of the declared exceptions. */
+        public final Type[] thrownExceptions;
+
+        /** The statements that comprise the function; {@code null} for abstract method declarations. */
         public final List/*<BlockStatement>*/ optionalStatements;
 
         public
@@ -1332,7 +1483,7 @@ class Java {
         @Override public Scope
         getEnclosingScope() { return this.getDeclaringType(); }
 
-        // Set by "compile()".
+        /** Set by "compile()". */
         IClass returnType;
 
         // Implement DocCommentable.
@@ -1345,10 +1496,17 @@ class Java {
             return this.optionalDocComment != null && this.optionalDocComment.indexOf("@deprecated") != -1;
         }
 
+        /** Representation of a (formal) function parameter. */
         public static final
         class FormalParameter extends Java.Located {
+
+            /** Whether the parameter is declared FINAL. */
             public final boolean finaL;
-            public final Type    type;
+
+            /** The type of the parameter. */
+            public final Type type;
+
+            /** The name of the parameter. */
             public final String  name;
 
             public
@@ -1364,16 +1522,24 @@ class Java {
 
             // Compile time members.
 
+            /** The local variable associated with this parameter. */
             public Java.LocalVariable localVariable;
         }
 
         // Compile time members
-        public Map localVariables; // String name => Java.LocalVariable
+
+        /** Mapping of variable names to {@link LocalVariable}s. */
+        public Map/*<String, Java.LocalVariable>*/ localVariables;
     }
 
+    /** Representation of a constructor declarator. */
     public static final
     class ConstructorDeclarator extends FunctionDeclarator {
-        IClass.IConstructor                iConstructor;
+
+        /** The resolved {@link IClass.IConstructor}. */
+        IClass.IConstructor iConstructor;
+
+        /** The {@link AlternateConstructorInvocation} or {@link SuperConstructorInvocation}, if any. */
         public final ConstructorInvocation optionalConstructorInvocation;
 
         public
@@ -1400,12 +1566,14 @@ class Java {
             if (optionalConstructorInvocation != null) optionalConstructorInvocation.setEnclosingScope(this);
         }
 
+        /** @return The {@link ClassDeclaration} where this {@link ConstructorDeclarator} appears */
         public ClassDeclaration
         getDeclaringClass() { return (ClassDeclaration) this.getEnclosingScope(); }
 
         // Compile time members.
 
-        final Map syntheticParameters = new HashMap(); // String name => LocalVariable
+        /** Synthetic parameter name to {@link Java.LocalVariable} mapping. */
+        final Map/*<String, LocalVariable>*/ syntheticParameters = new HashMap();
 
         // Implement "FunctionDeclarator":
 
@@ -1426,6 +1594,7 @@ class Java {
         accept(Visitor.TypeBodyDeclarationVisitor visitor) { visitor.visitConstructorDeclarator(this); }
     }
 
+    /** Representation of a method declarator. */
     public static final
     class MethodDeclarator extends FunctionDeclarator {
         public
@@ -1466,6 +1635,7 @@ class Java {
         @Override public void
         accept(Visitor.TypeBodyDeclarationVisitor visitor) { visitor.visitMethodDeclarator(this); }
 
+        /** The resolved {@link IMethod}. */
         IClass.IMethod iMethod;
     }
 
@@ -1476,10 +1646,17 @@ class Java {
      */
     public static final
     class FieldDeclaration extends Statement implements TypeBodyDeclaration, DocCommentable {
-        private final String                 optionalDocComment;
+
+        private final String optionalDocComment;
+
+        /** The modifiers and annotations of this field declaration. */
         public final ModifiersAndAnnotations modifiersAndAnnotations;
-        public final Type                    type;
-        public final VariableDeclarator[]    variableDeclarators;
+
+        /** The type of this field. */
+        public final Type type;
+
+        /** The declarators of this field declaration, e.g. 'int a, b;'. */
+        public final VariableDeclarator[] variableDeclarators;
 
         public
         FieldDeclaration(
@@ -1557,8 +1734,14 @@ class Java {
     /** Used by FieldDeclaration and LocalVariableDeclarationStatement. */
     public static final
     class VariableDeclarator extends Located {
-        public final String                   name;
-        public final int                      brackets;
+
+        /** The name of this field or local variable. */
+        public final String name;
+
+        /** The number of '[]'s after the name. */
+        public final int brackets;
+
+        /** The initializer for the variable, if any. */
         public final ArrayInitializerOrRvalue optionalInitializer;
 
         public
@@ -1582,7 +1765,7 @@ class Java {
 
         // Compile time members.
 
-        // Used only if the variable declarator declares a local variable.
+        /** Used only if the variable declarator declares a local variable. */
         public LocalVariable localVariable;
     }
 
@@ -1592,10 +1775,21 @@ class Java {
      */
     public
     interface BlockStatement extends Locatable, Scope {
-        void            setEnclosingScope(Scope enclosingScope);
+
+        /** Sets the enclosing scope of this {@link BlockStatement}. */
+        void setEnclosingScope(Scope enclosingScope);
+
+        // Implement Scope.
+
         @Override Scope getEnclosingScope();
 
-        void               accept(Visitor.BlockStatementVisitor visitor);
+        /**
+         * Invokes the '{@code visit...()}' method of {@link Visitor.BlockStatementVisitor} for the concrete
+         * {@link BlockStatement} type.
+         */
+        void accept(Visitor.BlockStatementVisitor visitor);
+
+        /** @return The local variable with the given {@code name} */
         Java.LocalVariable findLocalVariable(String name);
     }
 
@@ -2279,6 +2473,9 @@ class Java {
             return result;
         }
 
+        /**
+         * Invokes the '{@code visit...()}' method of {@link Visitor.AtomVisitor} for the concrete {@link Atom} type.
+         */
         public abstract void
         accept(Visitor.AtomVisitor visitor);
     }
@@ -2316,6 +2513,9 @@ class Java {
         @Override public Type
         toType() { return this; }
 
+        /**
+         * Invokes the '{@code visit...()}' method of {@link Visitor.TypeVisitor} for the concrete {@link Type} type.
+         */
         public abstract void
         accept(Visitor.TypeVisitor visitor);
     }
@@ -2433,6 +2633,11 @@ class Java {
 
     public
     interface TypeArgument {
+
+        /**
+         * Invokes the '{@code visit...()}' method of {@link Visitor.TypeArgumentVisitor} for the concrete {@link
+         * TypeArgument} type.
+         */
         void accept(Visitor.TypeArgumentVisitor visitor);
     }
 
@@ -2560,6 +2765,10 @@ class Java {
         };
         Object constantValue = Java.Rvalue.CONSTANT_VALUE_UNKNOWN;
 
+        /**
+         * Invokes the '{@code visit...()}' method of {@link Visitor.RvalueVisitor} for the concrete {@link Rvalue}
+         * type.
+         */
         public abstract void accept(Visitor.RvalueVisitor rvv);
 
         public static final boolean JUMP_IF_TRUE  = true;
@@ -2587,6 +2796,10 @@ class Java {
         @Override public Lvalue
         toLvalue() { return this; }
 
+        /**
+         * Invokes the '{@code visit...()}' method of {@link Visitor.LvalueVisitor} for the concrete {@link Lvalue}
+         * type.
+         */
         public abstract void
         accept(Visitor.LvalueVisitor lvv);
     }
