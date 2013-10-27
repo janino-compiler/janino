@@ -1124,11 +1124,9 @@ class Disassembler {
 
             // Analyze TRY bodies.
 
-            // startPC => { endPC }
-            SortedMap<Integer, Set<Integer>> tryStarts = new TreeMap<Integer, Set<Integer>>();
+            SortedMap<Integer /*startPC*/, Set<Integer /*endPC*/>> tryStarts = new TreeMap<Integer, Set<Integer>>();
 
-            // endPC => startPC => [ ExceptionTableEntry ]
-            SortedMap<Integer, SortedMap<Integer, List<ExceptionTableEntry>>> tryEnds = (
+            SortedMap<Integer /*endPC*/, SortedMap<Integer /*startPC*/, List<ExceptionTableEntry>>> tryEnds = (
                 new TreeMap<Integer, SortedMap<Integer, List<ExceptionTableEntry>>>()
             );
 
