@@ -32,17 +32,17 @@ import java.util.*;
  * An {@link java.util.Iterator} that transforms its elements on-the-fly.
  */
 @SuppressWarnings("rawtypes") public abstract
-class TransformingIterator extends FilterIterator {
+class TransformingIterator/*<T1, T2>*/ extends FilterIterator/*<T>*/ {
 
     public
-    TransformingIterator(Iterator delegate) { super(delegate); }
+    TransformingIterator(Iterator/*<T1>*/ delegate) { super(delegate); }
 
-    @Override public final Object
+    @Override public final Object/*T2*/
     next() { return this.transform(this.delegate.next()); }
 
     /**
      * Derived classes must implement this method such that it does the
      * desired transformation.
      */
-    protected abstract Object transform(Object o);
+    protected abstract Object/*T2*/ transform(Object/*T1*/ o);
 }

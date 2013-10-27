@@ -325,7 +325,7 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
         ClassFile[] classFiles = unitCompiler.compileUnit(this.debugSource, this.debugLines, this.debugVars);
 
         // Convert the class files to bytes and store them in a Map.
-        final Map classes = new HashMap(); // String className => byte[] data
+        final Map/*<String className, byte[] data>*/ classes = new HashMap();
         for (int i = 0; i < classFiles.length; ++i) {
             ClassFile cf       = classFiles[i];
             byte[]    contents = cf.toByteArray();

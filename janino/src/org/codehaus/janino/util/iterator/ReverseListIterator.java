@@ -33,21 +33,32 @@ import java.util.*;
  * of a delegate {@link java.util.ListIterator}.
  */
 @SuppressWarnings("rawtypes") public
-class ReverseListIterator extends FilterListIterator {
+class ReverseListIterator/*<T>*/ extends FilterListIterator/*<T>*/ {
 
     public
-    ReverseListIterator(ListIterator delegate) { super(delegate); }
+    ReverseListIterator(ListIterator/*<T>*/ delegate) { super(delegate); }
 
     /** Calls {@link #delegate}.{@link java.util.ListIterator#hasPrevious()} */
-    @Override public boolean hasNext()       { return super.hasPrevious(); }
+    @Override public boolean
+    hasNext() { return super.hasPrevious(); }
+
     /** Calls {@link #delegate}.{@link java.util.ListIterator#hasNext()} */
-    @Override public boolean hasPrevious()   { return super.hasNext(); }
+    @Override public boolean
+    hasPrevious() { return super.hasNext(); }
+
     /** Calls {@link #delegate}.{@link java.util.ListIterator#previous()} */
-    @Override public Object  next()          { return super.previous(); }
+    @Override public Object/*T*/
+    next() { return super.previous(); }
+
     /** Calls {@link #delegate}.{@link java.util.ListIterator#next()} */
-    @Override public Object  previous()      { return super.next(); }
+    @Override public Object/*T*/
+    previous() { return super.next(); }
+
     /** Throws an {@link UnsupportedOperationException}. */
-    @Override public int     nextIndex()     { throw new UnsupportedOperationException(); }
+    @Override public int
+    nextIndex() { throw new UnsupportedOperationException(); }
+
     /** Throws an {@link UnsupportedOperationException}. */
-    @Override public int     previousIndex() { throw new UnsupportedOperationException(); }
+    @Override public int
+    previousIndex() { throw new UnsupportedOperationException(); }
 }

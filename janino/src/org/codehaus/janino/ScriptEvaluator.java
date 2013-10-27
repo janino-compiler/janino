@@ -512,7 +512,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
         for (int i = 0; i < count; ++i) {
             Parser parser = parsers[i];
 
-            List statements = this.makeStatements(i, parser);
+            List/*<BlockStatement>*/ statements = this.makeStatements(i, parser);
 
             // Determine the following script properties AFTER the call to "makeBlock()",
             // because "makeBlock()" may modify these script properties on-the-fly.
@@ -613,8 +613,8 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
                     return hc;
                 }
             }
-            Method[] ma  = c.getDeclaredMethods();
-            Map      dms = new HashMap(2 * count);
+            Method[]                       ma  = c.getDeclaredMethods();
+            Map/*<MethodWrapper, Method>*/ dms = new HashMap(2 * count);
             for (int i = 0; i < ma.length; ++i) {
                 Method m = ma[i];
                 dms.put(new MethodWrapper(m.getName(), m.getParameterTypes()), m);
@@ -965,8 +965,8 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
         while (!parser.peekEof()) block.addStatement(parser.parseBlockStatement());
 
         // Traverse the block for ambiguous names and guess which of them are parameter names.
-        final Set localVariableNames = new HashSet();
-        final Set parameterNames     = new HashSet();
+        final Set/*<String>*/ localVariableNames = new HashSet();
+        final Set/*<String>*/ parameterNames     = new HashSet();
         new Traverser() {
 
             @Override public void

@@ -54,7 +54,7 @@ class PathResourceFinder extends LazyMultiResourceFinder {
      * @param entries The entries of the "path" (type must be {@link File})
      */
     public
-    PathResourceFinder(Iterator entries) { super(entries); }
+    PathResourceFinder(Iterator/*<ResourceFinder>*/ entries) { super(entries); }
 
     /**
      * @param path A java-like path, i.e. a "path separator"-separated list of entries.
@@ -62,9 +62,9 @@ class PathResourceFinder extends LazyMultiResourceFinder {
     public
     PathResourceFinder(String path) { this(PathResourceFinder.parsePath(path)); }
 
-    private static Iterator
-    createIterator(final Iterator entries) {
-        return new TransformingIterator(entries) {
+    private static Iterator/*<ResourceFinder>*/
+    createIterator(final Iterator/*<File>*/ entries) {
+        return new TransformingIterator/*<File, ResourceFinder>*/(entries) {
             @Override protected Object transform(Object o) { return PathResourceFinder.createResourceFinder((File) o); }
         };
     }
@@ -86,8 +86,8 @@ class PathResourceFinder extends LazyMultiResourceFinder {
      */
     public static File[]
     parsePath(String s) {
-        int  from = 0;
-        List l    = new ArrayList(); // File
+        int            from = 0;
+        List/*<File>*/ l    = new ArrayList();
         for (;;) {
             int to = s.indexOf(File.pathSeparatorChar, from);
             if (to == -1) {

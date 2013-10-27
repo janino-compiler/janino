@@ -34,7 +34,7 @@ import java.util.*;
  */
 @SuppressWarnings({ "rawtypes", "unchecked" }) public
 class MapResourceCreator implements ResourceCreator {
-    private final Map map;
+    private final Map/*<String, byte[]>*/ map;
 
     /**
      * Auto-create the delegate {@link Map}.
@@ -43,9 +43,9 @@ class MapResourceCreator implements ResourceCreator {
     MapResourceCreator() { this.map = new HashMap(); }
 
     public
-    MapResourceCreator(Map map) { this.map = map; }
+    MapResourceCreator(Map/*<String, byte[]>*/ map) { this.map = map; }
 
-    public final Map
+    public final Map/*<String, byte[]>*/
     getMap() { return this.map; }
 
     @Override public final OutputStream

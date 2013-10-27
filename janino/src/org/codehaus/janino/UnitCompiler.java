@@ -201,7 +201,7 @@ class UnitCompiler {
     import2(SingleStaticImportDeclaration ssid) throws CompileException {
         String name = last(ssid.identifiers);
 
-        List importedObjects = (List) this.singleStaticImports.get(name);
+        List/*<IField+IMethod+IClass>*/ importedObjects = (List) this.singleStaticImports.get(name);
         if (importedObjects == null) {
             importedObjects = new ArrayList();
             this.singleStaticImports.put(name, importedObjects);
@@ -272,7 +272,7 @@ class UnitCompiler {
         // Compile static import declarations.
         // Notice: The single-type and on-demand imports are needed BEFORE the unit is compiled, thus they are
         // processed in 'getSingleTypeImport()' and 'importOnDemand()'.
-        for (Iterator it = this.compilationUnit.importDeclarations.iterator(); it.hasNext();) {
+        for (Iterator/*<ImportDeclaration>*/ it = this.compilationUnit.importDeclarations.iterator(); it.hasNext();) {
             ImportDeclaration id = (ImportDeclaration) it.next();
             class UCE extends RuntimeException { final CompileException ce; UCE(CompileException ce) { this.ce = ce; } }
             try {
@@ -291,7 +291,9 @@ class UnitCompiler {
 
         this.generatedClassFiles  = new ArrayList();
 
-        for (Iterator it = this.compilationUnit.packageMemberTypeDeclarations.iterator(); it.hasNext();) {
+        for (Iterator/*<PackageMemberTypeDeclaration>*/ it = (
+            this.compilationUnit.packageMemberTypeDeclarations.iterator()
+        ); it.hasNext();) {
             this.compile((PackageMemberTypeDeclaration) it.next());
         }
 
@@ -304,7 +306,7 @@ class UnitCompiler {
             ), null);
         }
 
-        List l = this.generatedClassFiles;
+        List/*<ClassFile>*/ l = this.generatedClassFiles;
         return (ClassFile[]) l.toArray(new ClassFile[l.size()]);
     }
 
@@ -473,7 +475,10 @@ class UnitCompiler {
         // Optional: Generate and compile class initialization method.
         {
             List/*<BlockStatement>*/ statements = new ArrayList();
-            for (Iterator it = cd.variableDeclaratorsAndInitializers.iterator(); it.hasNext();) {
+            for (
+                Iterator/*<TypeBodyDeclaration>*/ it = cd.variableDeclaratorsAndInitializers.iterator();
+                it.hasNext();
+            ) {
                 TypeBodyDeclaration tbd = (TypeBodyDeclaration) it.next();
                 if (tbd.isStatic()) statements.add(tbd);
             }
@@ -534,14 +539,14 @@ class UnitCompiler {
         }
 
         // Class and instance variables.
-        for (Iterator it = cd.variableDeclaratorsAndInitializers.iterator(); it.hasNext();) {
+        for (Iterator/*<TypeBodyDeclaration>*/ it = cd.variableDeclaratorsAndInitializers.iterator(); it.hasNext();) {
             TypeBodyDeclaration tbd = (TypeBodyDeclaration) it.next();
             if (!(tbd instanceof FieldDeclaration)) continue;
             this.addFields((FieldDeclaration) tbd, cf);
         }
 
         // Synthetic fields.
-        for (Iterator it = cd.syntheticFields.values().iterator(); it.hasNext();) {
+        for (Iterator/*<IClass.IField>*/ it = cd.syntheticFields.values().iterator(); it.hasNext();) {
             IClass.IField f = (IClass.IField) it.next();
             cf.addFieldInfo(
                 Mod.PACKAGE,                 // accessFlags
@@ -620,8 +625,8 @@ class UnitCompiler {
 
         // Define a synthetic "this$..." field if there is an enclosing instance.
         {
-            List      ocs     = UnitCompiler.getOuterClasses(icd);
-            final int nesting = ocs.size();
+            List/*<TypeDeclaration>*/ ocs     = UnitCompiler.getOuterClasses(icd);
+            final int                 nesting = ocs.size();
             if (nesting >= 2) {
                 icd.defineSyntheticField(new SimpleIField(
                     this.resolve(icd),
@@ -706,7 +711,7 @@ class UnitCompiler {
 
         // Interface initialization method.
         if (!id.constantDeclarations.isEmpty()) {
-            List statements = new ArrayList(); // BlockStatements
+            List/*<BlockStatements>*/ statements = new ArrayList();
             statements.addAll(id.constantDeclarations);
 
             maybeCreateInitMethod(id, cf, statements);
@@ -768,7 +773,7 @@ class UnitCompiler {
      */
     private void
     compileDeclaredMemberTypes(TypeDeclaration decl, ClassFile cf) throws CompileException {
-        for (Iterator it = decl.getMemberTypeDeclarations().iterator(); it.hasNext();) {
+        for (Iterator/*<MemberTypeDeclaration>*/ it = decl.getMemberTypeDeclarations().iterator(); it.hasNext();) {
             TypeDeclaration td = ((MemberTypeDeclaration) it.next());
             this.compile(td);
 
@@ -990,7 +995,7 @@ class UnitCompiler {
     }
 
     private boolean
-    compileStatements(List statements) throws CompileException {
+    compileStatements(List/*<BlockStatement>*/ statements) throws CompileException {
         boolean previousStatementCanCompleteNormally = true;
         for (int i = 0; i < statements.size(); ++i) {
             BlockStatement bs = (BlockStatement) statements.get(i);
@@ -1209,9 +1214,9 @@ class UnitCompiler {
         );
 
         // Prepare the map of case labels to code offsets.
-        TreeMap              caseLabelMap       = new TreeMap(); // Integer => Offset
-        CodeContext.Offset   defaultLabelOffset = null;
-        CodeContext.Offset[] sbsgOffsets        = new CodeContext.Offset[ss.sbsgs.size()];
+        TreeMap/*<Integer, Offset>*/ caseLabelMap       = new TreeMap();
+        CodeContext.Offset           defaultLabelOffset = null;
+        CodeContext.Offset[]         sbsgOffsets        = new CodeContext.Offset[ss.sbsgs.size()];
         for (int i = 0; i < ss.sbsgs.size(); ++i) {
             SwitchStatement.SwitchBlockStatementGroup sbsg = (
                 (SwitchStatement.SwitchBlockStatementGroup) ss.sbsgs.get(i)
@@ -1287,11 +1292,11 @@ class UnitCompiler {
             this.writeOffset(switchOffset, defaultLabelOffset);
             this.writeInt(low);
             this.writeInt(high);
-            Iterator si  = caseLabelMap.entrySet().iterator();
-            int      cur = low;
+            Iterator/*<Entry<Integer, Offset>>*/ si  = caseLabelMap.entrySet().iterator();
+            int                                  cur = low;
             while (si.hasNext()) {
-                Map.Entry me  = (Map.Entry) si.next();
-                int       val = ((Integer) me.getKey()).intValue();
+                Map.Entry/*<<Integer, Offset>>*/ me  = (Map.Entry) si.next();
+                int                              val = ((Integer) me.getKey()).intValue();
                 while (cur < val) {
                     this.writeOffset(switchOffset, defaultLabelOffset);
                     ++cur;
@@ -1304,9 +1309,9 @@ class UnitCompiler {
             new Padder(this.codeContext).set();
             this.writeOffset(switchOffset, defaultLabelOffset);
             this.writeInt(caseLabelMap.size());
-            Iterator si = caseLabelMap.entrySet().iterator();
+            Iterator/*<Entry<Integer, Offset>>*/ si = caseLabelMap.entrySet().iterator();
             while (si.hasNext()) {
-                Map.Entry me = (Map.Entry) si.next();
+                Map.Entry/*<Integer, Offset>*/ me = (Map.Entry) si.next();
                 this.writeInt(((Integer) me.getKey()).intValue());
                 this.writeOffset(switchOffset, (CodeContext.Offset) me.getValue());
             }
@@ -1685,13 +1690,13 @@ class UnitCompiler {
                 s instanceof BlockStatement
                 && (es instanceof Block || es instanceof FunctionDeclarator)
             ) {
-                BlockStatement bs         = (BlockStatement) s;
-                List           statements = (
+                BlockStatement           bs         = (BlockStatement) s;
+                List/*<BlockStatement>*/ statements = (
                     es instanceof BlockStatement
                     ? ((Block) es).statements
                     : ((FunctionDeclarator) es).optionalStatements
                 );
-                for (Iterator it = statements.iterator(); it.hasNext();) {
+                for (Iterator/*BlockStatement*/ it = statements.iterator(); it.hasNext();) {
                     BlockStatement bs2 = (BlockStatement) it.next();
                     if (bs2 instanceof LocalClassDeclarationStatement) {
                         LocalClassDeclarationStatement lcds = ((LocalClassDeclarationStatement) bs2);
@@ -2124,10 +2129,9 @@ class UnitCompiler {
                 ConstructorDeclarator constructorDeclarator = (ConstructorDeclarator) fd;
 
                 // Reserve space for synthetic parameters ("this$...", "val$...").
-                for (
-                    Iterator it = constructorDeclarator.getDeclaringClass().syntheticFields.values().iterator();
-                    it.hasNext();
-                ) {
+                for (Iterator/*<IClass.IField>*/ it = (
+                    constructorDeclarator.getDeclaringClass().syntheticFields.values().iterator()
+                ); it.hasNext();) {
                     IClass.IField sf = (IClass.IField) it.next();
                     LocalVariable lv = new LocalVariable(true, sf.getType());
 
@@ -2246,8 +2250,8 @@ class UnitCompiler {
      */
     private static void
     makeLocalVariableNames(final CodeContext cc, final ClassFile.MethodInfo mi) {
-        ClassFile       cf   = mi.getClassFile();
-        Iterator        iter = cc.getAllLocalVars().iterator();
+        ClassFile                            cf   = mi.getClassFile();
+        Iterator/*<Java.LocalVariableSlot>*/ iter = cc.getAllLocalVars().iterator();
 
         cf.addConstantUtf8Info("LocalVariableTable");
 
@@ -2265,7 +2269,7 @@ class UnitCompiler {
 
     private void
     buildLocalVariableMap(FunctionDeclarator fd) throws CompileException {
-        Map localVars = new HashMap();
+        Map/*<String, Java.LocalVariable>*/ localVars = new HashMap();
 
         // Add function parameters.
         for (int i = 0; i < fd.formalParameters.length; ++i) {
@@ -2290,16 +2294,16 @@ class UnitCompiler {
             }
         }
         if (fd.optionalStatements != null) {
-            for (Iterator it = fd.optionalStatements.iterator(); it.hasNext();) {
+            for (Iterator/*<BlockStatement>*/ it = fd.optionalStatements.iterator(); it.hasNext();) {
                 BlockStatement bs = (BlockStatement) it.next();
                 localVars = this.buildLocalVariableMap(bs, localVars);
             }
         }
     }
 
-    private Map
-    buildLocalVariableMap(BlockStatement bs, final Map localVars) throws CompileException {
-        final Map[] resVars = new Map[] { localVars };
+    private Map/*<String, Java.LocalVariable>*/
+    buildLocalVariableMap(BlockStatement bs, final Map/*<String, Java.LocalVariable>*/ localVars) throws CompileException {
+        final Map/*<String, Java.LocalVariable>*/[] resVars = new Map[] { localVars };
         class UCE extends RuntimeException { final CompileException ce; UCE(CompileException ce) { this.ce = ce; } }
         BlockStatementVisitor bsv = new BlockStatementVisitor() {
             // CHECKSTYLE LineLengthCheck:OFF
@@ -2341,31 +2345,36 @@ class UnitCompiler {
 
     // default handlers
 
-    private static Map
-    buildLocalVariableMap(Statement s, final Map localVars) { return (s.localVariables = localVars); }
+    private static Map/*<String, Java.LocalVariable>*/
+    buildLocalVariableMap(Statement s, final Map/*<String, Java.LocalVariable>*/ localVars) {
+        return (s.localVariables = localVars);
+    }
 
-    private static Map
-    buildLocalVariableMap(ConstructorInvocation ci, final Map localVars) { return (ci.localVariables = localVars); }
+    private static Map/*<String, Java.LocalVariable>*/
+    buildLocalVariableMap(ConstructorInvocation ci, final Map/*<String, Java.LocalVariable>*/ localVars) {
+        return (ci.localVariables = localVars);
+    }
 
     // specialized handlers
     private void
-    buildLocalVariableMap(Block block, Map localVars) throws CompileException {
+    buildLocalVariableMap(Block block, Map/*<String, Java.LocalVariable>*/ localVars) throws CompileException {
         block.localVariables = localVars;
-        for (Iterator it = block.statements.iterator(); it.hasNext();) {
+        for (Iterator/*<BlockStatement>*/ it = block.statements.iterator(); it.hasNext();) {
             BlockStatement bs = (BlockStatement) it.next();
             localVars = this.buildLocalVariableMap(bs, localVars);
         }
     }
 
     private void
-    buildLocalVariableMap(DoStatement ds, final Map localVars) throws CompileException {
+    buildLocalVariableMap(DoStatement ds, final Map/*<String, Java.LocalVariable>*/ localVars) throws CompileException {
         ds.localVariables = localVars;
         this.buildLocalVariableMap(ds.body, localVars);
     }
 
     private void
-    buildLocalVariableMap(ForStatement fs, final Map localVars) throws CompileException {
-        Map inner = localVars;
+    buildLocalVariableMap(ForStatement fs, final Map/*<String, Java.LocalVariable>*/ localVars)
+    throws CompileException {
+        Map/*<String, Java.LocalVariable>*/ inner = localVars;
         if (fs.optionalInit != null) {
             inner = this.buildLocalVariableMap(fs.optionalInit, localVars);
         }
@@ -2374,7 +2383,7 @@ class UnitCompiler {
     }
 
     private void
-    buildLocalVariableMap(IfStatement is, final Map localVars) throws CompileException {
+    buildLocalVariableMap(IfStatement is, final Map/*<String, Java.LocalVariable>*/ localVars) throws CompileException {
         is.localVariables = localVars;
         this.buildLocalVariableMap(is.thenStatement, localVars);
         if (is.optionalElseStatement != null) {
@@ -2383,17 +2392,18 @@ class UnitCompiler {
     }
 
     private void
-    buildLocalVariableMap(Initializer i, final Map localVars) throws CompileException {
+    buildLocalVariableMap(Initializer i, final Map/*<String, Java.LocalVariable>*/ localVars) throws CompileException {
         this.buildLocalVariableMap(i.block, localVars);
     }
 
     private void
-    buildLocalVariableMap(SwitchStatement ss, final Map localVars) throws CompileException {
+    buildLocalVariableMap(SwitchStatement ss, final Map/*<String, Java.LocalVariable>*/ localVars)
+    throws CompileException {
         ss.localVariables = localVars;
-        Map vars = localVars;
-        for (Iterator cases = ss.sbsgs.iterator(); cases.hasNext();) {
+        Map/*<String, Java.LocalVariable>*/ vars = localVars;
+        for (Iterator/*<SwitchStatement.SwitchBlockStatementGroup>*/ cases = ss.sbsgs.iterator(); cases.hasNext();) {
             SwitchStatement.SwitchBlockStatementGroup sbsg = (SwitchStatement.SwitchBlockStatementGroup) cases.next();
-            for (Iterator stmts = sbsg.blockStatements.iterator(); stmts.hasNext();) {
+            for (Iterator/*<BlockStatement>*/ stmts = sbsg.blockStatements.iterator(); stmts.hasNext();) {
                 BlockStatement bs = (BlockStatement) stmts.next();
                 vars = this.buildLocalVariableMap(bs, vars);
             }
@@ -2401,16 +2411,17 @@ class UnitCompiler {
     }
 
     private void
-    buildLocalVariableMap(SynchronizedStatement ss, final Map localVars) throws CompileException {
+    buildLocalVariableMap(SynchronizedStatement ss, final Map/*<String, Java.LocalVariable>*/ localVars)
+    throws CompileException {
         ss.localVariables = localVars;
         this.buildLocalVariableMap(ss.body, localVars);
     }
 
     private void
-    buildLocalVariableMap(TryStatement ts, final Map localVars) throws CompileException {
+    buildLocalVariableMap(TryStatement ts, final Map/*<String, Java.LocalVariable>*/ localVars) throws CompileException {
         ts.localVariables = localVars;
         this.buildLocalVariableMap(ts.body, localVars);
-        for (Iterator it = ts.catchClauses.iterator(); it.hasNext();) {
+        for (Iterator/*<Java.CatchClause>*/ it = ts.catchClauses.iterator(); it.hasNext();) {
             CatchClause cc = (CatchClause) it.next();
             this.buildLocalVariableMap(cc, localVars);
         }
@@ -2420,20 +2431,23 @@ class UnitCompiler {
     }
 
     private void
-    buildLocalVariableMap(WhileStatement ws, final Map localVars) throws CompileException {
+    buildLocalVariableMap(WhileStatement ws, final Map/*<String, Java.LocalVariable>*/ localVars)
+    throws CompileException {
         ws.localVariables = localVars;
         this.buildLocalVariableMap(ws.body, localVars);
     }
 
-    private Map
-    buildLocalVariableMap(LabeledStatement ls, final Map localVars) throws CompileException {
+    private Map/*<String, Java.LocalVariable>*/
+    buildLocalVariableMap(LabeledStatement ls, final Map/*<String, Java.LocalVariable>*/ localVars)
+    throws CompileException {
         ls.localVariables = localVars;
         return this.buildLocalVariableMap((BlockStatement) ls.body, localVars);
     }
 
-    private Map
-    buildLocalVariableMap(LocalVariableDeclarationStatement lvds, final Map localVars) throws CompileException {
-        Map newVars = new HashMap();
+    private Map/*<String, Java.LocalVariable>*/
+    buildLocalVariableMap(LocalVariableDeclarationStatement lvds, final Map/*<String, Java.LocalVariable>*/ localVars)
+    throws CompileException {
+        Map/*<String, Java.LocalVariable>*/ newVars = new HashMap();
         newVars.putAll(localVars);
         for (int i = 0; i < lvds.variableDeclarators.length; ++i) {
             VariableDeclarator vd = lvds.variableDeclarators[i];
@@ -2447,8 +2461,8 @@ class UnitCompiler {
     }
 
     protected void
-    buildLocalVariableMap(CatchClause cc, Map localVars) throws CompileException {
-        Map vars = new HashMap();
+    buildLocalVariableMap(CatchClause cc, Map/*<String, Java.LocalVariable>*/ localVars) throws CompileException {
+        Map/*<String, Java.LocalVariable>*/ vars = new HashMap();
         vars.putAll(localVars);
         LocalVariable lv = this.getLocalVariable(cc.caughtException);
         vars.put(cc.caughtException.name, lv);
@@ -3291,7 +3305,7 @@ class UnitCompiler {
         if (declaringType.getMethodDeclaration("class$") == null) this.declareClassDollarMethod(cl);
 
         // Determine the statics of the declaring class (this is where static fields declarations are found).
-        List statics; // TypeBodyDeclaration
+        List/*<TypeBodyDeclaration>*/ statics;
         if (declaringType instanceof ClassDeclaration) {
             statics = ((ClassDeclaration) declaringType).variableDeclaratorsAndInitializers;
         } else
@@ -3329,7 +3343,7 @@ class UnitCompiler {
         // Declare the static "class dollar field" if not already done.
         {
             boolean hasClassDollarField = false;
-            BLOCK_STATEMENTS: for (Iterator it = statics.iterator(); it.hasNext();) {
+            BLOCK_STATEMENTS: for (Iterator/*<TypeBodyDeclaration>*/ it = statics.iterator(); it.hasNext();) {
                 TypeBodyDeclaration tbd = (TypeBodyDeclaration) it.next();
                 if (!tbd.isStatic()) continue;
                 if (tbd instanceof FieldDeclaration) {
@@ -4039,7 +4053,7 @@ class UnitCompiler {
         FunctionDeclarator.FormalParameter[] fps;
         Location                             loc = naci.getLocation();
         {
-            List l = new ArrayList(); // FormalParameter
+            List/*<FunctionDeclarator.FormalParameter>*/ l = new ArrayList();
 
             // Pass the enclosing instance of the base class as parameter #1.
             if (naci.optionalQualification != null) l.add(new FunctionDeclarator.FormalParameter(
@@ -4366,16 +4380,16 @@ class UnitCompiler {
         ) {
 
             // Unroll the constant operands.
-            List cvs = new ArrayList();
-            for (Iterator it = bo.unrollLeftAssociation(); it.hasNext();) {
+            List/*<Object>*/ cvs = new ArrayList();
+            for (Iterator/*<Ralue>*/ it = bo.unrollLeftAssociation(); it.hasNext();) {
                 Object cv = this.getConstantValue(((Rvalue) it.next()));
                 if (cv == NOT_CONSTANT) return NOT_CONSTANT;
                 cvs.add(cv);
             }
 
             // Compute the constant value of the unrolled binary operation.
-            Iterator it  = cvs.iterator();
-            Object   lhs = it.next();
+            Iterator/*<Object>*/ it  = cvs.iterator();
+            Object               lhs = it.next();
             while (it.hasNext()) {
                 if (lhs == NOT_CONSTANT) return NOT_CONSTANT;
 
@@ -5138,10 +5152,10 @@ class UnitCompiler {
 
             // JLS3 ???:  Type imported through single static import.
             {
-                List l = (List) this.singleStaticImports.get(simpleTypeName);
+                List/*<IField+IMethod+IClass>*/ l = (List) this.singleStaticImports.get(simpleTypeName);
                 if (l != null) {
                     IClass importedMemberType = null;
-                    for (Iterator it = l.iterator(); it.hasNext();) {
+                    for (Iterator/*<IField+IMethod+IClass>*/ it = l.iterator(); it.hasNext();) {
                         Object o = it.next();
                         if (o instanceof IClass) {
                             IClass mt = (IClass) o;
@@ -5165,7 +5179,7 @@ class UnitCompiler {
             // JLS3 ???: Type imported through static-import-on-demand.
             {
                 IClass importedMemberType = null;
-                for (Iterator it = this.staticImportsOnDemand.iterator(); it.hasNext();) {
+                for (Iterator/*<IClass>*/ it = this.staticImportsOnDemand.iterator(); it.hasNext();) {
                     IClass   ic          = (IClass) it.next();
                     IClass[] memberTypes = ic.getDeclaredIClasses();
                     for (int i = 0; i < memberTypes.length; ++i) {
@@ -5411,7 +5425,7 @@ class UnitCompiler {
             IClassLoader icl = this.iClassLoader;
 
             // Unroll the operands of this binary operation.
-            Iterator ops = bo.unrollLeftAssociation();
+            Iterator/*<Ralue>*/ ops = bo.unrollLeftAssociation();
 
             // Check the far left operand type.
             IClass lhsType = this.getUnboxedType(this.getType(((Rvalue) ops.next())));
@@ -5852,7 +5866,7 @@ class UnitCompiler {
      */
     void
     assignSyntheticParametersToSyntheticFields(ConstructorDeclarator cd) throws CompileException {
-        for (Iterator it = cd.getDeclaringClass().syntheticFields.values().iterator(); it.hasNext();) {
+        for (Iterator/*<IClass.IField>*/ it = cd.getDeclaringClass().syntheticFields.values().iterator(); it.hasNext();) {
             IClass.IField sf                 = (IClass.IField) it.next();
             LocalVariable syntheticParameter = (LocalVariable) cd.syntheticParameters.get(sf.getName());
             if (syntheticParameter == null) {
@@ -5942,10 +5956,10 @@ class UnitCompiler {
      */
     private IClass
     compileArithmeticOperation(
-        final Locatable locatable,
-        IClass          type,
-        Iterator        operands,
-        String          operator
+        final Locatable      locatable,
+        IClass               type,
+        Iterator/*<Rvalue>*/ operands,
+        String               operator
     ) throws CompileException {
         if (operator == "|" || operator == "^" || operator == "&") { // SUPPRESS CHECKSTYLE StringLiteralEquality
             final int iopcode = (
@@ -6133,10 +6147,10 @@ class UnitCompiler {
      */
     private IClass
     compileStringConcatenation(
-        final Locatable locatable,
-        IClass          type,
-        Rvalue          operand,
-        Iterator        operands
+        final Locatable      locatable,
+        IClass               type,
+        Rvalue               operand,
+        Iterator/*<Rvalue>*/ operands
     ) throws CompileException {
         boolean operandOnStack;
         if (type != null) {
@@ -6148,7 +6162,7 @@ class UnitCompiler {
         }
 
         // Compute list of operands and merge consecutive constant operands.
-        List tmp = new ArrayList(); // Compilable
+        List/*<Compilable>*/ tmp = new ArrayList();
         do {
             Object cv = this.getConstantValue(operand);
             if (cv == NOT_CONSTANT) {
@@ -6204,7 +6218,7 @@ class UnitCompiler {
         if (tmp.size() <= (operandOnStack ? STRING_CONCAT_LIMIT - 1 : STRING_CONCAT_LIMIT)) {
 
             // String concatenation through "a.concat(b).concat(c)".
-            for (Iterator it = tmp.iterator(); it.hasNext();) {
+            for (Iterator/*<Compilable>*/ it = tmp.iterator(); it.hasNext();) {
                 Compilable c = (Compilable) it.next();
                 c.compile();
 
@@ -6225,7 +6239,7 @@ class UnitCompiler {
         }
 
         // String concatenation through "new StringBuilder(a).append(b).append(c).append(d).toString()".
-        Iterator it = tmp.iterator();
+        Iterator/*<Compilable>*/ it = tmp.iterator();
 
         // "new StringBuilder(a)":
         if (operandOnStack) {
@@ -6414,9 +6428,9 @@ class UnitCompiler {
 
                             // Does one of the enclosing blocks declare a local variable with that name?
                             for (s = scope; s instanceof BlockStatement; s = s.getEnclosingScope()) {
-                                BlockStatement bs = (BlockStatement) s;
-                                Scope          es = bs.getEnclosingScope();
-                                List           statements;
+                                BlockStatement           bs = (BlockStatement) s;
+                                Scope                    es = bs.getEnclosingScope();
+                                List/*<BlockStatement>*/ statements;
                                 if (es instanceof Block) {
                                     statements = ((Block) es).statements;
                                 } else
@@ -6427,7 +6441,7 @@ class UnitCompiler {
                                     continue;
                                 }
 
-                                for (Iterator it = statements.iterator();;) {
+                                for (Iterator/*<BlockStatement>*/ it = statements.iterator();;) {
                                     BlockStatement bs2 = (BlockStatement) it.next();
                                     if (bs2 == bs) break;
                                     if (bs2 instanceof LocalVariableDeclarationStatement) {
@@ -6873,9 +6887,9 @@ class UnitCompiler {
 
         // JLS3 6.5.2.BL1.B1.B2.1 Static field imported through single static import.
         {
-            List l = (List) this.singleStaticImports.get(identifier);
+            List/*<IField+IMethod+IClass>*/ l = (List) this.singleStaticImports.get(identifier);
             if (l != null) {
-                for (Iterator it = l.iterator(); it.hasNext();) {
+                for (Iterator/*<IField+IMethod+IClass>*/ it = l.iterator(); it.hasNext();) {
                     Object o = it.next();
                     if (o instanceof IField) {
                         FieldAccess fieldAccess = new FieldAccess(
@@ -6893,7 +6907,7 @@ class UnitCompiler {
         // JLS3 6.5.2.BL1.B1.B2.2 Static field imported through static-import-on-demand.
         {
             IField importedField = null;
-            for (Iterator it = this.staticImportsOnDemand.iterator(); it.hasNext();) {
+            for (Iterator/*<IClass>*/ it = this.staticImportsOnDemand.iterator(); it.hasNext();) {
                 IClass iClass = (IClass) it.next();
                 IField f      = iClass.getDeclaredIField(identifier);
                 if (f != null) {
@@ -6980,9 +6994,9 @@ class UnitCompiler {
 
         // JLS3 6.5.2.BL1.B1.B4.3 Type imported through single static import.
         {
-            List l = (List) this.singleStaticImports.get(identifier);
+            List/*<IField+IMethod+IClass>*/ l = (List) this.singleStaticImports.get(identifier);
             if (l != null) {
-                for (Iterator it = l.iterator(); it.hasNext();) {
+                for (Iterator/*<IField+IMethod+IClass>*/ it = l.iterator(); it.hasNext();) {
                     Object o = it.next();
                     if (o instanceof IClass) return new SimpleType(null, (IClass) o);
                 }
@@ -6992,7 +7006,7 @@ class UnitCompiler {
         // JLS3 6.5.2.BL1.B1.B4.4 Type imported through static-import-on-demand.
         {
             IClass importedType = null;
-            for (Iterator it = this.staticImportsOnDemand.iterator(); it.hasNext();) {
+            for (Iterator/*<IClass>*/ it = this.staticImportsOnDemand.iterator(); it.hasNext();) {
                 IClass   ic          = (IClass) it.next();
                 IClass[] memberTypes = ic.getDeclaredIClasses();
                 for (int i = 0; i < memberTypes.length; ++i) {
@@ -7141,10 +7155,10 @@ class UnitCompiler {
 
             // Static method declared through single static import?
             {
-                List l = (List) this.singleStaticImports.get(mi.methodName);
+                List/*<IField+IMethod+IClass>*/ l = (List) this.singleStaticImports.get(mi.methodName);
                 if (l != null) {
                     iMethod = null;
-                    for (Iterator it = l.iterator(); it.hasNext();) {
+                    for (Iterator/*<IField+IMethod+IClass>*/ it = l.iterator(); it.hasNext();) {
                         Object o = it.next();
                         if (o instanceof IMethod) {
                             IClass  declaringIClass = ((IMethod) o).getDeclaringIClass();
@@ -7172,7 +7186,7 @@ class UnitCompiler {
 
             // Static method declared through static-import-on-demand?
             iMethod = null;
-            for (Iterator it = this.staticImportsOnDemand.iterator(); it.hasNext();) {
+            for (Iterator/*<IClass>*/ it = this.staticImportsOnDemand.iterator(); it.hasNext();) {
                 IClass  iClass = (IClass) it.next();
                 IMethod im     = this.findIMethod(
                     iClass, // targetType
@@ -7216,7 +7230,7 @@ class UnitCompiler {
     findIMethod(IClass targetType, Invocation invocation) throws CompileException {
 
         // Get all methods.
-        List ms = new ArrayList();
+        List/*<IClass.IMethod>*/ ms = new ArrayList();
         this.getIMethods(targetType, invocation.methodName, ms);
 
         // JLS2 6.4.3
@@ -7399,7 +7413,7 @@ class UnitCompiler {
         }
 
         // Select applicable methods (15.12.2.1).
-        List applicableIInvocables = new ArrayList();
+        List/*<IClass.IInvocable>*/ applicableIInvocables = new ArrayList();
         NEXT_METHOD:
         for (int i = 0; i < iInvocables.length; ++i) {
             IClass.IInvocable ii = iInvocables[i];
@@ -7431,7 +7445,7 @@ class UnitCompiler {
         }
 
         // Determine the "maximally specific invocables".
-        List maximallySpecificIInvocables = new ArrayList();
+        List/*<IClass.IInvocable>*/ maximallySpecificIInvocables = new ArrayList();
         for (int i = 0; i < applicableIInvocables.size(); ++i) {
             IClass.IInvocable applicableIInvocable = (IClass.IInvocable) applicableIInvocables.get(i);
             int               moreSpecific         = 0, lessSpecific = 0;
@@ -7466,9 +7480,9 @@ class UnitCompiler {
             // exactly one of the methods is non-abstract (JLS 15.12.2.2.BL2.B1).
             IClass.IMethod theNonAbstractMethod = null;
             {
-                Iterator       it                          = maximallySpecificIInvocables.iterator();
-                IClass.IMethod m                           = (IClass.IMethod) it.next();
-                IClass[]       parameterTypesOfFirstMethod = m.getParameterTypes();
+                Iterator/*<IClass.IInvocable>*/ it                          = maximallySpecificIInvocables.iterator();
+                IClass.IMethod                  m                           = (IClass.IMethod) it.next();
+                IClass[]                        parameterTypesOfFirstMethod = m.getParameterTypes();
                 for (;;) {
                     if (!m.isAbstract()) {
                         if (theNonAbstractMethod == null) {
@@ -7523,10 +7537,10 @@ class UnitCompiler {
 
             // JLS 15.12.2.2.BL2.B1.B2
             // Check "that exception [te1] is declared in the THROWS clause of each of the maximally specific methods".
-            Set s = new HashSet();
+            Set/*<IClass>*/ s = new HashSet();
             {
-                IClass[][] tes = new IClass[maximallySpecificIInvocables.size()][];
-                Iterator   it  = maximallySpecificIInvocables.iterator();
+                IClass[][]                      tes = new IClass[maximallySpecificIInvocables.size()][];
+                Iterator/*<IClass.IInvocable>*/ it  = maximallySpecificIInvocables.iterator();
                 for (int i = 0; i < tes.length; ++i) {
                     tes[i] = ((IClass.IMethod) it.next()).getThrownExceptions();
                 }
@@ -7761,7 +7775,7 @@ class UnitCompiler {
             getDeclaredIMethods2() {
                 IClass.IMethod[] res = new IClass.IMethod[atd.getMethodDeclarations().size()];
                 int              i   = 0;
-                for (Iterator it = atd.getMethodDeclarations().iterator(); it.hasNext();) {
+                for (Iterator/*<MethodDeclaration>*/ it = atd.getMethodDeclarations().iterator(); it.hasNext();) {
                     res[i++] = UnitCompiler.this.toIMethod((MethodDeclarator) it.next());
                 }
                 return res;
@@ -7775,8 +7789,8 @@ class UnitCompiler {
                     Collection/*<MemberTypeDeclaration>*/ mtds = td.getMemberTypeDeclarations();
                     IClass[]                              mts  = new IClass[mtds.size()];
                     int                                   i    = 0;
-                    for (Iterator it = mtds.iterator(); it.hasNext();) {
-                        mts[i++] = UnitCompiler.this.resolve((AbstractTypeDeclaration) it.next());
+                    for (Iterator/*<MemberTypeDeclaration>*/ it = mtds.iterator(); it.hasNext();) {
+                        mts[i++] = UnitCompiler.this.resolve((MemberTypeDeclaration) it.next());
                     }
                     this.declaredClasses = mts;
                 }
@@ -7829,8 +7843,8 @@ class UnitCompiler {
             @Override protected IField[]
             getDeclaredIFields2() {
                 if (atd instanceof ClassDeclaration) {
-                    ClassDeclaration cd = (ClassDeclaration) atd;
-                    List             l  = new ArrayList(); // IClass.IField
+                    ClassDeclaration        cd = (ClassDeclaration) atd;
+                    List/*<IClass.IField>*/ l  = new ArrayList();
 
                     // Determine variable declarators of type declaration.
                     for (int i = 0; i < cd.variableDeclaratorsAndInitializers.size(); ++i) {
@@ -7844,8 +7858,8 @@ class UnitCompiler {
                     return (IClass.IField[]) l.toArray(new IClass.IField[l.size()]);
                 } else
                 if (atd instanceof InterfaceDeclaration) {
-                    InterfaceDeclaration id = (InterfaceDeclaration) atd;
-                    List                 l  = new ArrayList();
+                    InterfaceDeclaration    id = (InterfaceDeclaration) atd;
+                    List/*<IClass.IField>*/ l  = new ArrayList();
 
                     // Determine static fields.
                     for (int i = 0; i < id.constantDeclarations.size(); ++i) {
@@ -7867,7 +7881,7 @@ class UnitCompiler {
             @Override public IField[]
             getSyntheticIFields() {
                 if (atd instanceof ClassDeclaration) {
-                    Collection c = ((ClassDeclaration) atd).syntheticFields.values();
+                    Collection/*<IClass.IField>*/ c = ((ClassDeclaration) atd).syntheticFields.values();
                     return (IField[]) c.toArray(new IField[c.size()]);
                 }
                 return new IField[0];
@@ -7964,7 +7978,7 @@ class UnitCompiler {
         TypeBodyDeclaration declaringTypeBodyDeclaration,
         IClass              targetIClass
     ) throws CompileException {
-        List path = UnitCompiler.getOuterClasses(declaringClass);
+        List/*<TypeDeclaration>*/ path = UnitCompiler.getOuterClasses(declaringClass);
 
         if (declaringTypeBodyDeclaration.isStatic()) {
             this.compileError("No current instance available in static context", locatable.getLocation());
@@ -7984,7 +7998,7 @@ class UnitCompiler {
                 //
                 // However, this strategy bears the risk of ambiguities, because "O" may be assignable from more than
                 // one enclosing class.
-                if (targetIClass.isAssignableFrom(this.resolve((AbstractTypeDeclaration) path.get(j)))) {
+                if (targetIClass.isAssignableFrom(this.resolve((TypeDeclaration) path.get(j)))) {
                     break TARGET_FOUND;
                 }
             }
@@ -8042,9 +8056,9 @@ class UnitCompiler {
      *
      * @return {@link List} of {@link TypeDeclaration}
      */
-    private static List
+    private static List/*<TypeDeclaration>*/
     getOuterClasses(TypeDeclaration inner) {
-        List path = new ArrayList();
+        List/*<TypeDeclaration>*/ path = new ArrayList();
         for (TypeDeclaration ic = inner; ic != null; ic = UnitCompiler.getOuterClass(ic)) path.add(ic);
         return path;
     }
@@ -8153,14 +8167,17 @@ class UnitCompiler {
             getDescriptor() throws CompileException {
                 if (!(cd.getDeclaringClass() instanceof InnerClassDeclaration)) return super.getDescriptor();
 
-                List l = new ArrayList();
+                List/*<String>*/ l = new ArrayList();
 
                 // Convert enclosing instance reference into prepended constructor parameters.
                 IClass outerClass = UnitCompiler.this.resolve(cd.getDeclaringClass()).getOuterIClass();
                 if (outerClass != null) l.add(outerClass.getDescriptor());
 
                 // Convert synthetic fields into prepended constructor parameters.
-                for (Iterator it = cd.getDeclaringClass().syntheticFields.values().iterator(); it.hasNext();) {
+                for (
+                    Iterator/*<IClass.IField>*/ it = cd.getDeclaringClass().syntheticFields.values().iterator();
+                    it.hasNext();
+                ) {
                     IClass.IField sf = (IClass.IField) it.next();
                     if (sf.getName().startsWith("val$")) l.add(sf.getType().getDescriptor());
                 }
@@ -8320,7 +8337,10 @@ class UnitCompiler {
 
             // Collect all single type import declarations.
             final List/*<SingleTypeImportDeclaration>*/ stids = new ArrayList();
-            for (Iterator it = this.compilationUnit.importDeclarations.iterator(); it.hasNext();) {
+            for (
+                Iterator/*<ImportDeclaration>*/ it = this.compilationUnit.importDeclarations.iterator();
+                it.hasNext();
+            ) {
                 ImportDeclaration id = (ImportDeclaration) it.next();
                 id.accept(new ImportVisitor() {
 
@@ -8385,7 +8405,10 @@ class UnitCompiler {
         if (this.typeImportsOnDemand == null) {
             this.typeImportsOnDemand = new ArrayList();
             this.typeImportsOnDemand.add(new String[] { "java", "lang" });
-            for (Iterator it = this.compilationUnit.importDeclarations.iterator(); it.hasNext();) {
+            for (
+                Iterator/*<ImportDeclaration>*/ it = this.compilationUnit.importDeclarations.iterator();
+                it.hasNext();
+            ) {
                 ImportDeclaration id = (ImportDeclaration) it.next();
                 id.accept(new ImportVisitor() {
                     @Override public void visitSingleTypeImportDeclaration(SingleTypeImportDeclaration stid) {}
@@ -8402,7 +8425,7 @@ class UnitCompiler {
         }
 
         IClass importedClass = null;
-        for (Iterator i = this.typeImportsOnDemand.iterator(); i.hasNext();) {
+        for (Iterator/*<String[] package>*/ i = this.typeImportsOnDemand.iterator(); i.hasNext();) {
             String[] ss     = (String[]) i.next();
             String[] ss2    = concat(ss, simpleTypeName);
             IClass   iClass = this.findTypeByFullyQualifiedName(location, ss2);
@@ -8497,7 +8520,7 @@ class UnitCompiler {
             }
         )));
 
-        List l = new ArrayList();
+        List/*<Java.CatchClause>*/ l = new ArrayList();
         l.add(new CatchClause(
             loc,                                    // location
             new FunctionDeclarator.FormalParameter( // caughtException
@@ -8515,7 +8538,7 @@ class UnitCompiler {
             null                          // optionalFinally
         );
 
-        List statements = new ArrayList(); // BlockStatement
+        List/*<BlockStatement>*/ statements = new ArrayList();
         statements.add(ts);
 
         // Class class$(String className)
@@ -8724,9 +8747,9 @@ class UnitCompiler {
     makeUtf8Able(String s) {
         if (s.length() < (65536 / 3)) return new String[] { s };
 
-        int  sLength = s.length(), utfLength = 0;
-        int  from    = 0;
-        List l       = new ArrayList();
+        int              sLength = s.length(), utfLength = 0;
+        int              from    = 0;
+        List/*<String>*/ l       = new ArrayList();
         for (int i = 0;; i++) {
             if (i == sLength) {
                 l.add(s.substring(from));
@@ -9165,7 +9188,7 @@ class UnitCompiler {
         }
         return false;
     }
-    private static final HashMap PRIMITIVE_WIDENING_CONVERSIONS = new HashMap();
+    private static final Map/*<String descriptor, byte[] opcodes>*/ PRIMITIVE_WIDENING_CONVERSIONS = new HashMap();
     static { UnitCompiler.fillConversionMap(new Object[] {
         new byte[0],
         Descriptor.BYTE  + Descriptor.SHORT,
@@ -9202,7 +9225,7 @@ class UnitCompiler {
         Descriptor.FLOAT + Descriptor.DOUBLE,
     }, UnitCompiler.PRIMITIVE_WIDENING_CONVERSIONS); }
     private static void
-    fillConversionMap(Object[] array, HashMap map) {
+    fillConversionMap(Object[] array, Map/*<String descriptor, byte[] opcodes>*/ map) {
         byte[] opcodes = null;
         for (int i = 0; i < array.length; ++i) {
             Object o = array[i];
@@ -9265,7 +9288,7 @@ class UnitCompiler {
         return false;
     }
 
-    private static final HashMap PRIMITIVE_NARROWING_CONVERSIONS = new HashMap();
+    private static final Map/*<String descriptor, byte[] opcodes>*/ PRIMITIVE_NARROWING_CONVERSIONS = new HashMap();
     static { UnitCompiler.fillConversionMap(new Object[] {
         new byte[0],
         Descriptor.BYTE + Descriptor.CHAR,
@@ -10198,14 +10221,14 @@ class UnitCompiler {
 
     public final CompilationUnit compilationUnit;
 
-    private final IClassLoader iClassLoader;
-    private List               generatedClassFiles;
+    private final IClassLoader  iClassLoader;
+    private List/*<ClassFile>*/ generatedClassFiles;
 
     private boolean debugSource;
     private boolean debugLines;
     private boolean debugVars;
 
-    private final Map/*<String staticMemberName, List <IField, IMethod, IClass>>*/ singleStaticImports = new HashMap();
+    private final Map/*<String staticMemberName, List <IField+IMethod+IClass>>*/ singleStaticImports = new HashMap();
 
-    private final Collection staticImportsOnDemand = new ArrayList(); // IClass
+    private final Collection/*<IClass>*/ staticImportsOnDemand = new ArrayList();
 }

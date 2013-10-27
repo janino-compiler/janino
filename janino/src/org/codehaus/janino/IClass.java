@@ -107,12 +107,12 @@ class IClass {
      */
     public final IConstructor[]
     getDeclaredIConstructors() {
-        if (this.declaredIConstructors == null) {
-            this.declaredIConstructors = this.getDeclaredIConstructors2();
+        if (this.declaredIConstructorsCache == null) {
+            this.declaredIConstructorsCache = this.getDeclaredIConstructors2();
         }
-        return this.declaredIConstructors;
+        return this.declaredIConstructorsCache;
     }
-    private IConstructor[] declaredIConstructors;
+    private IConstructor[] declaredIConstructorsCache;
 
     /** The uncached version of {@link #getDeclaredIConstructors()} which must be implemented by derived classes. */
     protected abstract IConstructor[] getDeclaredIConstructors2();
@@ -124,12 +124,12 @@ class IClass {
      */
     public final IMethod[]
     getDeclaredIMethods() {
-        if (this.declaredIMethods == null) {
-            this.declaredIMethods = this.getDeclaredIMethods2();
+        if (this.declaredIMethodsCache == null) {
+            this.declaredIMethodsCache = this.getDeclaredIMethods2();
         }
-        return this.declaredIMethods;
+        return this.declaredIMethodsCache;
     }
-    private IMethod[] declaredIMethods;
+    private IMethod[] declaredIMethodsCache;
 
     /** The uncached version of {@link #getDeclaredIMethods()} which must be implemented by derived classes. */
     protected abstract IMethod[] getDeclaredIMethods2();
@@ -144,7 +144,7 @@ class IClass {
     public final IMethod[]
     getDeclaredIMethods(String methodName) {
         if (this.declaredIMethodCache == null) {
-            Map m = new HashMap();
+            Map/*<String, IMethod-or-List<IMethod>>*/ m = new HashMap();
 
             // Fill the map with "IMethod"s and "List"s.
             IMethod[] dims = this.getDeclaredIMethods();
@@ -166,13 +166,13 @@ class IClass {
             }
 
             // Convert "IMethod"s and "List"s to "IMethod[]"s.
-            for (Iterator it = m.entrySet().iterator(); it.hasNext();) {
-                Map.Entry me = (Map.Entry) it.next();
-                Object    v  = me.getValue();
+            for (Iterator/*<String, IMethod-or-List<IMethod>>*/ it = m.entrySet().iterator(); it.hasNext();) {
+                Map.Entry/*<String, IMethod-or-List<IMethod>>*/ me = (Map.Entry) it.next();
+                Object                         v  = me.getValue();
                 if (v instanceof IMethod) {
                     me.setValue(new IMethod[] { (IMethod) v });
                 } else {
-                    List l = (List) v;
+                    List/*<IMethod>*/ l = (List) v;
                     me.setValue(l.toArray(new IMethod[l.size()]));
                 }
             }
@@ -193,7 +193,7 @@ class IClass {
     public final IMethod[]
     getIMethods() throws CompileException {
         if (this.iMethodCache == null) {
-            List iMethods = new ArrayList();
+            List/*<IMethod>*/ iMethods = new ArrayList();
             this.getIMethods(iMethods);
             this.iMethodCache = (IMethod[]) iMethods.toArray(new IMethod[iMethods.size()]);
         }
@@ -201,7 +201,7 @@ class IClass {
     }
     private IMethod[] iMethodCache;
     private void
-    getIMethods(List result) throws CompileException {
+    getIMethods(List/*<IMethod>*/ result) throws CompileException {
         IMethod[] ms = this.getDeclaredIMethods();
 
         SCAN_DECLARED_METHODS:
@@ -262,16 +262,15 @@ class IClass {
         return (IField[]) allFields.toArray(new IField[allFields.size()]);
     }
 
-    /** @return String field-name => IField */
-    private Map
+    /** @return String fieldName => IField */
+    private Map/*<String fieldName, IField>*/
     getDeclaredIFieldsCache() {
         if (this.declaredIFieldsCache == null) {
-            IField[] fields = getDeclaredIFields2();
-            Map      m      = new HashMap();
 
-            for (int i = 0; i < fields.length; ++i) {
-                m.put(fields[i].getName(), fields[i]);
-            }
+            IField[] fields = getDeclaredIFields2();
+
+            Map/*<String fieldName, IField>*/ m = new HashMap();
+            for (int i = 0; i < fields.length; ++i) m.put(fields[i].getName(), fields[i]);
             this.declaredIFieldsCache = m;
         }
         return this.declaredIFieldsCache;
@@ -285,10 +284,13 @@ class IClass {
     public final IField
     getDeclaredIField(String name) { return (IField) this.getDeclaredIFieldsCache().get(name); }
 
+    /**
+     * This class caches the declared fields in order to minimize the invocations of {@link #getDeclaredIFields2()}.
+     */
     protected void
     clearIFieldCaches() { this.declaredIFieldsCache = null; }
 
-    private Map/*<String field-name => IField>*/ declaredIFieldsCache;
+    private Map/*<String fieldName, IField>*/ declaredIFieldsCache;
 
     /**
      * Uncached version of {@link #getDeclaredIFields()}.
@@ -309,28 +311,29 @@ class IClass {
      */
     public final IClass[]
     getDeclaredIClasses() throws CompileException {
-        if (this.declaredIClasses == null) {
-            this.declaredIClasses = this.getDeclaredIClasses2();
+        if (this.declaredIClassesCache == null) {
+            this.declaredIClassesCache = this.getDeclaredIClasses2();
         }
-        return this.declaredIClasses;
+        return this.declaredIClassesCache;
     }
-    private IClass[] declaredIClasses;
+    private IClass[] declaredIClassesCache;
+
+    /** @return The member types of this type */
     protected abstract IClass[] getDeclaredIClasses2() throws CompileException;
 
-    /**
-     * If this class is a member class, return the declaring class, otherwise return
-     * <code>null</code>.
-     */
+    /** @return If this class is a member class, the declaring class, otherwise {@code null} */
     public final IClass
     getDeclaringIClass() throws CompileException {
         if (!this.declaringIClassIsCached) {
-            this.declaringIClass         = this.getDeclaringIClass2();
+            this.declaringIClassCache    = this.getDeclaringIClass2();
             this.declaringIClassIsCached = true;
         }
-        return this.declaringIClass;
+        return this.declaringIClassCache;
     }
     private boolean declaringIClassIsCached;
-    private IClass  declaringIClass;
+    private IClass  declaringIClassCache;
+
+    /** @return If this class is a member class, the declaring class, otherwise {@code null} */
     protected abstract IClass getDeclaringIClass2() throws CompileException;
 
     /**
@@ -340,17 +343,21 @@ class IClass {
      *   <li>Local classes declared in a non-static method of a class
      *   <li>Non-static member classes
      * </ul>
+     *
+     * @return The outer class of this type, or {@code null}
      */
     public final IClass
     getOuterIClass() throws CompileException {
         if (!this.outerIClassIsCached) {
-            this.outerIClass         = this.getOuterIClass2();
+            this.outerIClassCache    = this.getOuterIClass2();
             this.outerIClassIsCached = true;
         }
-        return this.outerIClass;
+        return this.outerIClassCache;
     }
     private boolean outerIClassIsCached;
-    private IClass  outerIClass;
+    private IClass  outerIClassCache;
+
+    /** @see #getOuterIClass() */
     protected abstract IClass getOuterIClass2() throws CompileException;
 
     /**
@@ -361,21 +368,24 @@ class IClass {
     public final IClass
     getSuperclass() throws CompileException {
         if (!this.superclassIsCached) {
-            this.superclass         = this.getSuperclass2();
+            this.superclassCache    = this.getSuperclass2();
             this.superclassIsCached = true;
-            if (this.superclass != null && this.superclass.isSubclassOf(this)) {
+            if (this.superclassCache != null && this.superclassCache.isSubclassOf(this)) {
                 throw new CompileException(
                     "Class circularity detected for \"" + Descriptor.toClassName(this.getDescriptor()) + "\"",
                     null
                 );
             }
         }
-        return this.superclass;
+        return this.superclassCache;
     }
     private boolean superclassIsCached;
-    private IClass  superclass;
+    private IClass  superclassCache;
+
+    /** @see #getSuperclass() */
     protected abstract IClass getSuperclass2() throws CompileException;
 
+    /** @return The accessibility of this type */
     public abstract Access getAccess();
 
     /**
@@ -392,10 +402,10 @@ class IClass {
      */
     public final IClass[]
     getInterfaces() throws CompileException {
-        if (this.interfaces == null) {
-            this.interfaces = this.getInterfaces2();
-            for (int i = 0; i < this.interfaces.length; ++i) {
-                if (this.interfaces[i].implementsInterface(this)) {
+        if (this.interfacesCache == null) {
+            this.interfacesCache = this.getInterfaces2();
+            for (int i = 0; i < this.interfacesCache.length; ++i) {
+                if (this.interfacesCache[i].implementsInterface(this)) {
                     throw new CompileException(
                         "Interface circularity detected for \"" + Descriptor.toClassName(this.getDescriptor()) + "\"",
                         null
@@ -403,9 +413,11 @@ class IClass {
                 }
             }
         }
-        return this.interfaces;
+        return this.interfacesCache;
     }
-    private IClass[] interfaces;
+    private IClass[] interfacesCache;
+
+    /** @see #getInterfaces() */
     protected abstract IClass[] getInterfaces2() throws CompileException;
 
     /**
@@ -414,17 +426,17 @@ class IClass {
      */
     public abstract boolean isAbstract();
 
-    /**
-     * Returns the field descriptor for the type as defined by JVMS 4.3.2.
-     */
+    /** @return The field descriptor for the type as defined by JVMS 4.3.2. */
     public final String
     getDescriptor() {
-        if (this.descriptor == null) {
-            this.descriptor = this.getDescriptor2();
+        if (this.descriptorCache == null) {
+            this.descriptorCache = this.getDescriptor2();
         }
-        return this.descriptor;
+        return this.descriptorCache;
     }
-    private String descriptor;
+    private String descriptorCache;
+
+    /** @return The field descriptor for the type as defined by JVMS 4.3.2. */
     protected abstract String getDescriptor2();
 
     /**
@@ -460,19 +472,21 @@ class IClass {
     public abstract boolean isPrimitiveNumeric();
 
     /**
-     * Returns the component type of the array.<br>
-     * Returns "null" for classes, interfaces, primitive types and "void".
+     * @return The component type of the array, or {@code null} for classes, interfaces, primitive types and {@code
+     *         void}
      */
     public final IClass
     getComponentType() {
         if (!this.componentTypeIsCached) {
-            this.componentType         = this.getComponentType2();
+            this.componentTypeCache    = this.getComponentType2();
             this.componentTypeIsCached = true;
         }
-        return this.componentType;
+        return this.componentTypeCache;
     }
     private boolean componentTypeIsCached;
-    private IClass  componentType;
+    private IClass  componentTypeCache;
+
+    /** @see #getComponentType() */
     protected abstract IClass getComponentType2();
 
     @Override public String toString() { return Descriptor.toClassName(this.getDescriptor()); }
@@ -533,7 +547,7 @@ class IClass {
         return false;
     }
 
-    private static final Set PRIMITIVE_WIDENING_CONVERSIONS = new HashSet();
+    private static final Set/*<String>*/ PRIMITIVE_WIDENING_CONVERSIONS = new HashSet();
     static {
         String[] pwcs = new String[] {
             Descriptor.BYTE  + Descriptor.SHORT,
@@ -689,7 +703,7 @@ class IClass {
 
             // Notice: A type may be added multiply to the result set because we are in its scope
             // multiply. E.g. the type is a member of a superclass AND a member of an enclosing type.
-            Set s = new HashSet(); // IClass
+            Set/*<IClass>*/ s = new HashSet();
             this.findMemberType(optionalName, s);
             res = s.isEmpty() ? IClass.ZERO_ICLASSES : (IClass[]) s.toArray(new IClass[s.size()]);
 
@@ -698,10 +712,10 @@ class IClass {
 
         return res;
     }
-    private final Map             memberTypeCache = new HashMap(); // String name => IClass[]
-    private static final IClass[] ZERO_ICLASSES   = new IClass[0];
+    private final Map/*<String name, IClass[]>*/ memberTypeCache = new HashMap();
+    private static final IClass[]                ZERO_ICLASSES   = new IClass[0];
     private void
-    findMemberType(String optionalName, Collection result) throws CompileException {
+    findMemberType(String optionalName, Collection/*<IClass>*/ result) throws CompileException {
 
         // Search for a type with the given name in the current class.
         IClass[] memberTypes = this.getDeclaredIClasses();
@@ -747,6 +761,7 @@ class IClass {
         }
     }
 
+    /** Base for the members of an {@link IClass}. */
     public
     interface IMember {
 
@@ -824,6 +839,9 @@ class IClass {
             return !Arrays.equals(thisParameterTypes, thatParameterTypes);
         }
 
+        /**
+         * @return Whether this {@link IInvocable} is less specific then {@code that} (in the sense of JLS3 15.12.2.5)
+         */
         public boolean
         isLessSpecificThan(IInvocable that) throws CompileException { return that.isMoreSpecificThan(this); }
 
@@ -831,6 +849,7 @@ class IClass {
         toString();
     }
 
+    /** Representation of a constructor of an {@link IClass}. */
     public abstract
     class IConstructor extends IInvocable {
 
@@ -878,11 +897,20 @@ class IClass {
         }
     }
 
+    /** Representation of a method in an {@link IClass}. */
     public abstract
     class IMethod extends IInvocable {
+
+        /** @return Whether this method is STATIC */
         public abstract boolean isStatic();
+        
+        /** @return Whether this method is ABSTRACT */
         public abstract boolean isAbstract();
-        public abstract IClass  getReturnType() throws CompileException;
+        
+        /** @return The return type of this method */
+        public abstract IClass getReturnType() throws CompileException;
+        
+        /** @return The name of this method */
         public abstract String  getName();
 
         @Override  public String
@@ -932,6 +960,7 @@ class IClass {
         }
     }
 
+    /** Representation of a field of this {@link IClass}. */
     public abstract
     class IField implements IMember {
 
@@ -939,10 +968,17 @@ class IClass {
         @Override public abstract Access getAccess();
         @Override public IClass          getDeclaringIClass() { return IClass.this; }
 
+        /** @return Whether this field is STATIC */
         public abstract boolean isStatic();
-        public abstract IClass  getType() throws CompileException;
-        public abstract String  getName();
-        public String           getDescriptor() throws CompileException { return this.getType().getDescriptor(); }
+        
+        /** @return The type of this field */
+        public abstract IClass getType() throws CompileException;
+        
+        /** @return The name this field */
+        public abstract String getName();
+        
+        /** @return The descriptor of this field */
+        public String getDescriptor() throws CompileException { return this.getType().getDescriptor(); }
 
         /**
          * Returns the value of the field if it is a compile-time constant
@@ -955,9 +991,12 @@ class IClass {
         toString() { return this.getDeclaringIClass().toString() + "." + this.getName(); }
     }
 
+    /**
+     * This class caches the declared methods in order to minimize the invocations of {@link #getDeclaredIMethods2()}.
+     */
     public void
     invalidateMethodCaches() {
-        this.declaredIMethods     = null;
-        this.declaredIMethodCache = null;
+        this.declaredIMethodsCache = null;
+        this.declaredIMethodCache  = null;
     }
 }

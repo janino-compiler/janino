@@ -59,12 +59,11 @@ import java.util.*;
  */
 @SuppressWarnings({ "rawtypes", "unchecked" }) public abstract
 class Enumerator {
-    final String name;
 
-    /**
-     * Class enumeratorClass => Map: String name => Enumerator
-     */
-    private static final Map INSTANCES = Collections.synchronizedMap(new HashMap());
+    private final String name;
+
+    private static final Map/*<Class enumeratorClass, Map<String name, Enumerator>>*/
+    INSTANCES = Collections.synchronizedMap(new HashMap());
 
     /**
      * Initialize the enumerator to the given value.
@@ -92,9 +91,9 @@ class Enumerator {
     /**
      * Returns a mapping of name to Enumerator for the given enumeratorClass.
      */
-    static Map
+    static Map/*<Map<String name, Enumerator>>*/
     getInstances(Class enumeratorClass) {
-        Map m = (Map) Enumerator.INSTANCES.get(enumeratorClass);
+        Map/*<Map<String name, Enumerator>>*/ m = (Map) Enumerator.INSTANCES.get(enumeratorClass);
         if (m != null) return m;
 
         // The map need not be synchronized because it is modified only during initialization

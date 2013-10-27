@@ -35,11 +35,11 @@ import java.util.*;
  */
 @SuppressWarnings("rawtypes") public
 class MapResourceFinder extends ResourceFinder {
-    private final Map map;
-    private long      lastModified;
+    private final Map/*<String, byte[]>*/ map;
+    private long                          lastModified;
 
     public
-    MapResourceFinder(Map map) { this.map = map; }
+    MapResourceFinder(Map/*<String, byte[]>*/ map) { this.map = map; }
 
     public final void
     setLastModified(long lastModified) { this.lastModified = lastModified; }

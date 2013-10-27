@@ -36,19 +36,21 @@ import java.util.*;
  * {@link IteratorCollection} will iterate over its delegate only once.
  */
 @SuppressWarnings({ "rawtypes", "unchecked" }) public
-class IteratorCollection extends AbstractCollection {
+class IteratorCollection/*<T>*/ extends AbstractCollection/*<T>*/ {
+
     /** The delegate. */
-    private final Iterator iterator;
+    private final Iterator/*<T>*/ iterator;
+
     /** Lazily-filled collection of the elements delivered by the delegate. */
-    private final List     elements = new ArrayList();
+    private final List/*<T>*/ elements = new ArrayList();
 
     public
     IteratorCollection(Iterator iterator) { this.iterator = iterator; }
 
-    @Override public Iterator
+    @Override public Iterator/*<T>*/
     iterator() {
-        return new Iterator() {
-            private Iterator elementsIterator = IteratorCollection.this.elements.iterator();
+        return new Iterator/*<T>*/() {
+            private Iterator/*<T>*/ elementsIterator = IteratorCollection.this.elements.iterator();
 
             @Override public Object
             next() {
@@ -56,7 +58,7 @@ class IteratorCollection extends AbstractCollection {
                     if (this.elementsIterator.hasNext()) return this.elementsIterator.next();
                     this.elementsIterator = null;
                 }
-                Object o = IteratorCollection.this.iterator.next();
+                Object/*T*/ o = IteratorCollection.this.iterator.next();
                 IteratorCollection.this.elements.add(o);
                 return o;
             }
@@ -77,7 +79,7 @@ class IteratorCollection extends AbstractCollection {
     @Override public int
     size() {
         int size = 0;
-        for (Iterator it = this.iterator(); it.hasNext(); it.next()) ++size;
+        for (Iterator/*<T>*/ it = this.iterator(); it.hasNext(); it.next()) ++size;
         return size;
     }
 }

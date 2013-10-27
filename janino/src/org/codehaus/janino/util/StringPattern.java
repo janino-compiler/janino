@@ -100,7 +100,7 @@ class StringPattern {
      */
     public static StringPattern[]
     parseCombinedPattern(String combinedPattern) {
-        ArrayList al = new ArrayList();
+        List/*<StringPattern>*/ al = new ArrayList();
         for (int k = 0, l; k < combinedPattern.length(); k = l) {
             int  patternMode;
             char c = combinedPattern.charAt(k);

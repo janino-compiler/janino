@@ -32,21 +32,22 @@ import java.util.NoSuchElementException;
 import org.codehaus.janino.util.Producer;
 
 /**
- * An {@link java.util.Iterator} that iterates over all the objects produced by a delegate
- * {@link org.codehaus.janino.util.Producer}.
+ * An {@link java.util.Iterator} that iterates over all the objects produced by a delegate {@link
+ * org.codehaus.janino.util.Producer}.
  *
  * @see org.codehaus.janino.util.Producer
  */
 @SuppressWarnings("rawtypes") public
-class ProducerIterator implements Iterator {
-    private final Producer producer;
+class ProducerIterator/*<T>*/ implements Iterator/*<T>*/ {
+
+    private final Producer/*<T>*/ producer;
 
     private static final Object UNKNOWN     = new Object();
     private static final Object AT_END      = null;
-    private Object              nextElement = UNKNOWN;
+    private Object/*<T>*/       nextElement = UNKNOWN;
 
     public
-    ProducerIterator(Producer producer) { this.producer = producer; }
+    ProducerIterator(Producer/*<T>*/ producer) { this.producer = producer; }
 
     @Override public boolean
     hasNext() {

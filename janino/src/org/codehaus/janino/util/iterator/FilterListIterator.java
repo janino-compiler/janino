@@ -34,30 +34,48 @@ import java.util.*;
  * all method invocations to the delegate.
  */
 @SuppressWarnings({ "rawtypes", "unchecked" }) public abstract
-class FilterListIterator implements ListIterator {
-    protected final ListIterator delegate;
+class FilterListIterator/*<T>*/ implements ListIterator/*<T>*/ {
+
+    protected final ListIterator/*<T>*/ delegate;
 
     public
-    FilterListIterator(ListIterator delegate) {
+    FilterListIterator(ListIterator/*<T>*/ delegate) {
         this.delegate = delegate;
     }
 
     /** Calls {@link #delegate}.{@link java.util.ListIterator#hasNext()} */
-    @Override public boolean hasNext() { return this.delegate.hasNext(); }
+    @Override public boolean
+    hasNext() { return this.delegate.hasNext(); }
+
     /** Calls {@link #delegate}.{@link java.util.ListIterator#next()} */
-    @Override public Object  next() { return this.delegate.next(); }
+    @Override public Object/*<T>*/
+    next() { return this.delegate.next(); }
+
     /** Calls {@link #delegate}.{@link java.util.ListIterator#hasPrevious()} */
-    @Override public boolean hasPrevious() { return this.delegate.hasPrevious(); }
+    @Override public boolean
+    hasPrevious() { return this.delegate.hasPrevious(); }
+
     /** Calls {@link #delegate}.{@link java.util.ListIterator#previous()} */
-    @Override public Object  previous() { return this.delegate.previous(); }
+    @Override public Object/*<T>*/
+    previous() { return this.delegate.previous(); }
+
     /** Calls {@link #delegate}.{@link java.util.ListIterator#nextIndex()} */
-    @Override public int nextIndex() { return this.delegate.nextIndex(); }
+    @Override public int
+    nextIndex() { return this.delegate.nextIndex(); }
+
     /** Calls {@link #delegate}.{@link java.util.ListIterator#previousIndex()} */
-    @Override public int previousIndex() { return this.delegate.previousIndex(); }
+    @Override public int
+    previousIndex() { return this.delegate.previousIndex(); }
+
     /** Calls {@link #delegate}.{@link java.util.ListIterator#remove()} */
-    @Override public void remove() { this.delegate.remove(); }
+    @Override public void
+    remove() { this.delegate.remove(); }
+
     /** Calls {@link #delegate}.{@link java.util.ListIterator#set(java.lang.Object)} */
-    @Override public void set(Object o) { this.delegate.set(o); }
+    @Override public void
+    set(Object o) { this.delegate.set(o); }
+
     /** Calls {@link #delegate}.{@link java.util.ListIterator#add(java.lang.Object)} */
-    @Override public void add(Object o) { this.delegate.add(o); }
+    @Override public void
+    add(Object o) { this.delegate.add(o); }
 }

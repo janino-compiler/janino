@@ -71,10 +71,10 @@ class CodeContext {
      * the local variables allocated for a block. They are pushed and poped onto the list together
      * to make allocation of the next local variable slot easy.
      */
-    private final List scopedVars = new ArrayList();
+    private final List/*<List<Java.LocalVariableSlot>>*/ scopedVars = new ArrayList();
 
-    private short      nextLocalVariableSlot;
-    private final List relocatables = new ArrayList();
+    private short                       nextLocalVariableSlot;
+    private final List/*<Relocatable>*/ relocatables = new ArrayList();
 
     /**
      * Create an empty "Code" attribute.
@@ -135,12 +135,12 @@ class CodeContext {
      */
     public Java.LocalVariableSlot
     allocateLocalVariable(short size, String name, IClass type) {
-        List currentVars = null;
+        List/*<Java.LocalVariableSlot>*/ currentVars = null;
 
         if (this.scopedVars.size() == 0) {
             throw new Error("saveLocalVariables must be called first");
         } else {
-            currentVars = (List) this.scopedVars.get(this.scopedVars.size() - 1);
+            currentVars = (List/*<Java.LocalVariableSlot>*/) this.scopedVars.get(this.scopedVars.size() - 1);
         }
 
         Java.LocalVariableSlot slot = new Java.LocalVariableSlot(name, this.nextLocalVariableSlot, type);
@@ -163,11 +163,11 @@ class CodeContext {
     /**
      * Remember the current size of the local variables array.
      */
-    public List
+    public List/*<Java.LocalVariableSlot>*/
     saveLocalVariables() {
 
         // Push empty list on the stack to hold a new block's local vars.
-        List l = new ArrayList();
+        List/*<Java.LocalVariableSlot>*/ l = new ArrayList();
         this.scopedVars.add(l);
 
         return l;
@@ -182,7 +182,9 @@ class CodeContext {
     restoreLocalVariables() {
 
         // Pop the list containing the current block's local vars.
-        Iterator iter = ((List) this.scopedVars.remove(this.scopedVars.size() - 1)).iterator();
+        Iterator/*<Java.LocalVariableSlot>*/ iter = (
+            (List/*<Java.LocalVariableSlot>*/) this.scopedVars.remove(this.scopedVars.size() - 1)
+        ).iterator();
 
         while (iter.hasNext()) {
             Java.LocalVariableSlot slot = (Java.LocalVariableSlot) iter.next();
@@ -218,11 +220,11 @@ class CodeContext {
             dos.writeShort(exceptionTableEntry.catchType);
         }
 
-        List attributes = new ArrayList(); // ClassFile.AttributeInfo
+        List/*<ClassFile.AttributeInfo>*/ attributes = new ArrayList();
 
         // Add "LineNumberTable" attribute.
         if (lineNumberTableAttributeNameIndex != 0) {
-            List lnt = new ArrayList();
+            List/*<ClassFile.LineNumberTableAttribute.Entry>*/ lnt = new ArrayList();
             for (Offset o = this.beginning; o != null; o = o.next) {
                 if (o instanceof LineNumberOffset) {
                     lnt.add(new ClassFile.LineNumberTableAttribute.Entry(o.offset, ((LineNumberOffset) o).lineNumber));
@@ -244,8 +246,8 @@ class CodeContext {
             if (ai != null) attributes.add(ai);
         }
 
-        dos.writeShort(attributes.size());                         // attributes_count
-        for (Iterator it = attributes.iterator(); it.hasNext();) { // attributes;
+        dos.writeShort(attributes.size());                                                      // attributes_count
+        for (Iterator/*<ClassFile.AttributeInfo>*/ it = attributes.iterator(); it.hasNext();) { // attributes;
             ClassFile.AttributeInfo attribute = (ClassFile.AttributeInfo) it.next();
             attribute.store(dos);
         }
@@ -256,8 +258,8 @@ class CodeContext {
      */
     protected ClassFile.AttributeInfo
     storeLocalVariableTable(DataOutputStream dos, short localVariableTableAttributeNameIndex) {
-        ClassFile       cf        = this.getClassFile();
-        final List      entryList = new ArrayList();
+        ClassFile       cf                                                         = this.getClassFile();
+        final List      entryList/*<ClassFile.LocalVariableTableAttribute.Entry>*/ = new ArrayList();
 
         for (Iterator/*<Java.LocalVariableSlot>*/ iter = getAllLocalVars().iterator(); iter.hasNext();) {
             Java.LocalVariableSlot slot = (Java.LocalVariableSlot) iter.next();
@@ -1076,11 +1078,11 @@ class CodeContext {
         return ((Byte) CodeContext.BRANCH_OPCODE_INVERSION.get(new Byte(branchOpcode))).byteValue();
     }
 
-    /** Byte branch-opcode => Byte inverted-branch-opcode */
-    private static final Map BRANCH_OPCODE_INVERSION = CodeContext.createBranchOpcodeInversion();
-    private static Map
+    private static final Map/*<Byte branch-opcode, Byte inverted-branch-opcode>*/
+    BRANCH_OPCODE_INVERSION = CodeContext.createBranchOpcodeInversion();
+    private static Map/*<Byte, Byte>*/
     createBranchOpcodeInversion() {
-        Map m = new HashMap();
+        Map/*<Byte, Byte>*/ m = new HashMap();
         m.put(new Byte(Opcode.IF_ACMPEQ), new Byte(Opcode.IF_ACMPNE));
         m.put(new Byte(Opcode.IF_ACMPNE), new Byte(Opcode.IF_ACMPEQ));
         m.put(new Byte(Opcode.IF_ICMPEQ), new Byte(Opcode.IF_ICMPNE));

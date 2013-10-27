@@ -82,7 +82,7 @@ class JGrep {
 
     private static final boolean DEBUG = false;
 
-    private final List parsedCompilationUnits = new ArrayList(); // UnitCompiler
+    private final List/*<UnitCompiler>*/ parsedCompilationUnits = new ArrayList();
 
     /**
      * Command line interface.
@@ -157,7 +157,7 @@ class JGrep {
             verbose
         );
 
-        List mits = new ArrayList();
+        List/*<MethodInvocationTarget>*/ mits = new ArrayList();
         for (; idx < args.length; ++idx) {
             String arg = args[idx];
             if ("-method-invocation".equals(arg)) {
@@ -286,7 +286,7 @@ class JGrep {
             String s = JGrep.readIdentifierPattern(parser);
             if (parser.peekRead("(")) {
                 mit.methodNamePattern = s;
-                List l = new ArrayList();
+                List/*<String>*/ l = new ArrayList();
                 if (!parser.peekRead(")")) {
                     for (;;) {
                         l.add(JGrep.readIdentifierPattern(parser));
@@ -337,11 +337,11 @@ class JGrep {
     private static
     class MethodInvocationTarget {
 
-        String   optionalClassNamePattern;
-        String   methodNamePattern;
-        String[] optionalArgumentTypeNamePatterns;
-        List     predicates = new ArrayList(); // MethodInvocationPredicate
-        List     actions    = new ArrayList(); // MethodInvocationAction
+        String                              optionalClassNamePattern;
+        String                              methodNamePattern;
+        String[]                            optionalArgumentTypeNamePatterns;
+        List/*<MethodInvocationPredicate>*/ predicates = new ArrayList();
+        List/*<MethodInvocationAction>*/    actions    = new ArrayList();
 
         void
         apply(UnitCompiler uc, Java.Invocation invocation, IClass.IMethod method) throws CompileException {
@@ -368,7 +368,7 @@ class JGrep {
             }
 
             // Verify that all predicates (JANINO expressions) return TRUE.
-            for (Iterator it = this.predicates.iterator(); it.hasNext();) {
+            for (Iterator/*<MethodInvocationPredicate>*/ it = this.predicates.iterator(); it.hasNext();) {
                 MethodInvocationPredicate mip = (MethodInvocationPredicate) it.next();
                 try {
                     if (!mip.evaluate(uc, invocation, method)) return;
@@ -378,7 +378,7 @@ class JGrep {
             }
 
             // Now that all checks were successful, execute all method invocation actions.
-            for (Iterator it = this.actions.iterator(); it.hasNext();) {
+            for (Iterator/*<MethodInvocationAction>*/ it = this.actions.iterator(); it.hasNext();) {
                 MethodInvocationAction mia = (MethodInvocationAction) it.next();
                 try {
                     mia.execute(uc, invocation, method);
@@ -544,7 +544,7 @@ class JGrep {
         // Traverse the parsed compilation units.
         this.benchmark.beginReporting();
         try {
-            for (Iterator it = this.parsedCompilationUnits.iterator(); it.hasNext();) {
+            for (Iterator/*<UnitCompiler>*/ it = this.parsedCompilationUnits.iterator(); it.hasNext();) {
                 final UnitCompiler uc = (UnitCompiler) it.next();
                 this.benchmark.beginReporting("Grepping \"" + uc.compilationUnit.optionalFileName + "\"");
                 class UCE extends RuntimeException {
@@ -599,7 +599,10 @@ class JGrep {
 
                         private void
                         match(Java.Invocation invocation, IClass.IMethod method) throws CompileException {
-                            for (Iterator it2 = methodInvocationTargets.iterator(); it2.hasNext();) {
+                            for (
+                                Iterator/*<MethodInvocationTarget>*/ it2 = methodInvocationTargets.iterator();
+                                it2.hasNext();
+                            ) {
                                 MethodInvocationTarget mit = (MethodInvocationTarget) it2.next();
                                 mit.apply(uc, invocation, method);
                             }

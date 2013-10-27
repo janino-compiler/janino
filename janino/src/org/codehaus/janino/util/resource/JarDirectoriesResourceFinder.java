@@ -48,8 +48,8 @@ class JarDirectoriesResourceFinder extends LazyMultiResourceFinder {
             // Iterate over directories.
             new TransformingIterator(Arrays.asList(directories).iterator()) {
 
-                @Override protected Object
-                transform(Object o) { // File directory => Iterator ResourceFinder
+                @Override protected Object/*Iterator<ResourceFinder>*/
+                transform(Object/*File*/ o) {
                     File directory = (File) o;
 
                     if (!directory.exists()) return Collections.EMPTY_LIST.iterator();
@@ -60,11 +60,11 @@ class JarDirectoriesResourceFinder extends LazyMultiResourceFinder {
                     });
                     return new TransformingIterator(Arrays.asList(jarFiles).iterator()) {
 
-                        @Override protected Object
-                        transform(Object o) { // File jarFile => ResourceFinder
-                            File zipFile = (File) o;
+                        @Override protected Object/*ResourceFinder*/
+                        transform(Object/*File*/ o) {
+                            File jarFile = (File) o;
                             try {
-                                return new ZipFileResourceFinder(new ZipFile(zipFile));
+                                return new ZipFileResourceFinder(new ZipFile(jarFile));
                             } catch (IOException e) {
                                 return ResourceFinder.EMPTY_RESOURCE_FINDER;
                             }

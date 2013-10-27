@@ -84,8 +84,7 @@ class Benchmark {
     // Reporting-related methods and fields.
 
     /**
-     * Set up a {@link Benchmark} with a default {@link Reporter} that reports to
-     * <code>System.out</code>.
+     * Set up a {@link Benchmark} with a default {@link Reporter} that reports to {@code System.out}.
      */
     public
     Benchmark(boolean reportingEnabled) {

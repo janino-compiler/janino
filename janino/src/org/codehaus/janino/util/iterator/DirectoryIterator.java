@@ -52,7 +52,7 @@ import org.codehaus.janino.util.Producer;
  * </ul>
  */
 @SuppressWarnings({ "rawtypes", "unchecked" }) public
-class DirectoryIterator extends ProducerIterator {
+class DirectoryIterator extends ProducerIterator/*<File>*/ {
     public
     DirectoryIterator(
         final File           rootDirectory,
@@ -60,7 +60,7 @@ class DirectoryIterator extends ProducerIterator {
         final FilenameFilter fileNameFilter
     ) {
         super(new Producer() {
-            private final List stateStack = DirectoryIterator.newArrayList(new State(rootDirectory));
+            private final List/*<State>*/ stateStack = DirectoryIterator.newArrayList(new State(rootDirectory));
 
             @Override public Object
             produce() {
@@ -86,8 +86,8 @@ class DirectoryIterator extends ProducerIterator {
                     if (entries == null) {
                         throw new JaninoRuntimeException("Directory \"" + dir + "\" could not be read");
                     }
-                    List directoryList = new ArrayList();
-                    List fileList      = new ArrayList();
+                    List/*<File>*/ directoryList = new ArrayList();
+                    List/*<File>*/ fileList      = new ArrayList();
                     for (int i = 0; i < entries.length; ++i) {
                         File entry = entries[i];
                         if (entry.isDirectory()) {
@@ -100,25 +100,25 @@ class DirectoryIterator extends ProducerIterator {
                     this.directories = directoryList.iterator();
                     this.files       = fileList.iterator();
                 }
-                final Iterator directories; // File
-                final Iterator files;       // File
+                final Iterator/*<File>*/ directories;
+                final Iterator/*<File>*/ files;
             }
         });
     }
 
     /**
-     * Create an {@link Iterator} that returns all matching
-     * {@link File}s locatable in a <i>set</i> of root directories.
+     * Create an {@link Iterator} that returns all matching {@link File}s locatable in a <i>set</i> of root
+     * directories.
      *
      * @see #DirectoryIterator(File, FilenameFilter, FilenameFilter)
      */
-    public static Iterator
+    public static Iterator/*<File>*/
     traverseDirectories(
         File[]         rootDirectories,
         FilenameFilter directoryNameFilter,
         FilenameFilter fileNameFilter
     ) {
-        List result = new ArrayList();
+        List/*<Iterator<File>>*/ result = new ArrayList();
         for (int i = 0; i < rootDirectories.length; ++i) {
             result.add(new DirectoryIterator(rootDirectories[i], directoryNameFilter, fileNameFilter));
         }

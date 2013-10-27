@@ -328,9 +328,9 @@ class Descriptor {
     /** The field descriptor for the wrapper class {@link Double}. */
     public static final String JAVA_LANG_DOUBLE = "Ljava/lang/Double;";
 
-    private static final Map DESCRIPTOR_TO_CLASSNAME;
+    private static final Map/*<String, String>*/ DESCRIPTOR_TO_CLASSNAME;
     static {
-        Map m = new HashMap();
+        Map/*<String, String>*/ m = new HashMap();
         m.put(Descriptor.VOID,                       "void");
         m.put(Descriptor.BYTE,                       "byte");
         m.put(Descriptor.CHAR,                       "char");
@@ -362,10 +362,10 @@ class Descriptor {
         DESCRIPTOR_TO_CLASSNAME = Collections.unmodifiableMap(m);
     }
 
-    private static final Map CLASS_NAME_TO_DESCRIPTOR;
+    private static final Map/*<String, String>*/ CLASS_NAME_TO_DESCRIPTOR;
 
     static {
-        Map m = new HashMap();
+        Map/*<String, String>*/ m = new HashMap();
         for (Iterator it = DESCRIPTOR_TO_CLASSNAME.entrySet().iterator(); it.hasNext();) {
             Map.Entry e = (Map.Entry) it.next();
             m.put(e.getValue(), e.getKey());

@@ -302,7 +302,7 @@ class IClassLoader {
         return icl;
     }
 
-    private final IClassLoader                         optionalParentIClassLoader;
-    private final Map/*<String descriptor => IClass>*/ loadedIClasses     = new HashMap();
-    private final Set/*<String descriptor>*/           unloadableIClasses = new HashSet();
+    private final IClassLoader                       optionalParentIClassLoader;
+    private final Map/*<String descriptor, IClass>*/ loadedIClasses     = new HashMap();
+    private final Set/*<String descriptor>*/         unloadableIClasses = new HashSet();
 }

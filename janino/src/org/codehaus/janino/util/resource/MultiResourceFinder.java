@@ -34,19 +34,20 @@ import java.util.*;
  */
 @SuppressWarnings("rawtypes") public
 class MultiResourceFinder extends ResourceFinder {
-    private final Collection resourceFinders; // One for each entry
+
+    private final Collection/*<ResourceFinder>*/ resourceFinders; // One for each entry
 
     /**
      * @param resourceFinders The entries of the "path"
      */
     public
-    MultiResourceFinder(Collection resourceFinders) { this.resourceFinders = resourceFinders; }
+    MultiResourceFinder(Collection/*<ResourceFinder>*/ resourceFinders) { this.resourceFinders = resourceFinders; }
 
     // Implement ResourceFinder.
 
     @Override public final Resource
     findResource(String resourceName) {
-        for (Iterator it = this.resourceFinders.iterator(); it.hasNext();) {
+        for (Iterator/*<ResourceFinder>*/ it = this.resourceFinders.iterator(); it.hasNext();) {
             ResourceFinder rf       = (ResourceFinder) it.next();
             Resource       resource = rf.findResource(resourceName);
 //System.err.println("*** " + resourceName + " in " + rf + "? => " + url);

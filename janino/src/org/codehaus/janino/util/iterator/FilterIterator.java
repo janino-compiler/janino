@@ -34,12 +34,12 @@ import java.util.*;
  * all method invocations to the delegate.
  */
 @SuppressWarnings("rawtypes") public abstract
-class FilterIterator implements Iterator {
+class FilterIterator/*<T>*/ implements Iterator/*<T>*/ {
     protected final Iterator delegate;
 
-    public FilterIterator(Iterator delegate) { this.delegate = delegate; }
+    public FilterIterator(Iterator/*<T>*/ delegate) { this.delegate = delegate; }
 
-    @Override public boolean hasNext() { return this.delegate.hasNext(); }
-    @Override public Object  next()    { return this.delegate.next(); }
-    @Override public void    remove()  { this.delegate.remove(); }
+    @Override public boolean       hasNext() { return this.delegate.hasNext(); }
+    @Override public Object/*<T>*/ next()    { return this.delegate.next(); }
+    @Override public void          remove()  { this.delegate.remove(); }
 }

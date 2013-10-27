@@ -408,7 +408,7 @@ class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluato
         }
 
         // Traverse the expression for ambiguous names and guess which of them are parameter names.
-        final Set parameterNames = new HashSet();
+        final Set/*<String>*/ parameterNames = new HashSet();
         rvalue.accept((RvalueVisitor) new Traverser() {
 
             @Override public void

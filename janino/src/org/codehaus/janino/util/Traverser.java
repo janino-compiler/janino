@@ -142,10 +142,13 @@ class Traverser {
         // The optionalPackageDeclaration is considered an integral part of
         // the compilation unit and is thus not traversed.
 
-        for (Iterator it = cu.importDeclarations.iterator(); it.hasNext();) {
+        for (Iterator/*<ImportDeclaration>*/ it = cu.importDeclarations.iterator(); it.hasNext();) {
             ((Java.CompilationUnit.ImportDeclaration) it.next()).accept(this.cv);
         }
-        for (Iterator it = cu.packageMemberTypeDeclarations.iterator(); it.hasNext();) {
+        for (
+            Iterator/*<PackageMemberTypeDeclaration>*/ it = cu.packageMemberTypeDeclarations.iterator();
+            it.hasNext();
+        ) {
             ((Java.PackageMemberTypeDeclaration) it.next()).accept(this.cv);
         }
     }
@@ -243,7 +246,7 @@ class Traverser {
 
     public void
     traverseBlock(Java.Block b) {
-        for (Iterator it = b.statements.iterator(); it.hasNext();) {
+        for (Iterator/*<BlockStatement>*/ it = b.statements.iterator(); it.hasNext();) {
             ((Java.Statement) it.next()).accept(this.cv);
         }
         this.traverseStatement(b);
@@ -286,7 +289,7 @@ class Traverser {
     public void
     traverseTryStatement(Java.TryStatement ts) {
         ts.body.accept(this.cv);
-        for (Iterator it = ts.catchClauses.iterator(); it.hasNext();) {
+        for (Iterator/*<CatchClause>*/ it = ts.catchClauses.iterator(); it.hasNext();) {
             ((Java.CatchClause) it.next()).body.accept(this.cv);
         }
         if (ts.optionalFinally != null) ts.optionalFinally.accept(this.cv);
@@ -296,14 +299,14 @@ class Traverser {
     public void
     traverseSwitchStatement(Java.SwitchStatement ss) {
         ss.condition.accept((Visitor.RvalueVisitor) this.cv);
-        for (Iterator it = ss.sbsgs.iterator(); it.hasNext();) {
+        for (Iterator/*<SwitchBlockStatementGroup>*/ it = ss.sbsgs.iterator(); it.hasNext();) {
             Java.SwitchStatement.SwitchBlockStatementGroup sbsg = (
                 (Java.SwitchStatement.SwitchBlockStatementGroup) it.next()
             );
-            for (Iterator it2 = sbsg.caseLabels.iterator(); it2.hasNext();) {
+            for (Iterator/*<Rvalue>*/ it2 = sbsg.caseLabels.iterator(); it2.hasNext();) {
                 ((Java.Rvalue) it2.next()).accept((Visitor.RvalueVisitor) this.cv);
             }
-            for (Iterator it2 = sbsg.blockStatements.iterator(); it2.hasNext();) {
+            for (Iterator/*<Rvalue>*/ it2 = sbsg.blockStatements.iterator(); it2.hasNext();) {
                 ((Java.BlockStatement) it2.next()).accept(this.cv);
             }
             this.traverseLocated(sbsg);
@@ -632,10 +635,10 @@ class Traverser {
 
     public void
     traverseClassDeclaration(Java.ClassDeclaration cd) {
-        for (Iterator it = cd.constructors.iterator(); it.hasNext();) {
+        for (Iterator/*<ConstructorDeclarator>*/ it = cd.constructors.iterator(); it.hasNext();) {
             ((Java.ConstructorDeclarator) it.next()).accept(this.cv);
         }
-        for (Iterator it = cd.variableDeclaratorsAndInitializers.iterator(); it.hasNext();) {
+        for (Iterator/*<TypeBodyDeclaration>*/ it = cd.variableDeclaratorsAndInitializers.iterator(); it.hasNext();) {
             ((Java.TypeBodyDeclaration) it.next()).accept(this.cv);
         }
         this.traverseAbstractTypeDeclaration(cd);
@@ -643,10 +646,10 @@ class Traverser {
 
     public void
     traverseAbstractTypeDeclaration(Java.AbstractTypeDeclaration atd) {
-        for (Iterator it = atd.getMemberTypeDeclarations().iterator(); it.hasNext();) {
+        for (Iterator/*<NamedTypeDeclaration>*/ it = atd.getMemberTypeDeclarations().iterator(); it.hasNext();) {
             ((Java.NamedTypeDeclaration) it.next()).accept(this.cv);
         }
-        for (Iterator it = atd.getMethodDeclarations().iterator(); it.hasNext();) {
+        for (Iterator/*<MethodDeclarator>*/ it = atd.getMethodDeclarations().iterator(); it.hasNext();) {
             this.traverseMethodDeclarator((Java.MethodDeclarator) it.next());
         }
     }
@@ -662,7 +665,7 @@ class Traverser {
 
     public void
     traverseInterfaceDeclaration(Java.InterfaceDeclaration id) {
-        for (Iterator it = id.constantDeclarations.iterator(); it.hasNext();) {
+        for (Iterator/*<TypeBodyDeclaration>*/ it = id.constantDeclarations.iterator(); it.hasNext();) {
             ((Java.TypeBodyDeclaration) it.next()).accept(this.cv);
         }
         for (int i = 0; i < id.extendedTypes.length; ++i) {
@@ -677,7 +680,7 @@ class Traverser {
             fd.formalParameters[i].type.accept((Visitor.TypeVisitor) this.cv);
         }
         if (fd.optionalStatements != null) {
-            for (Iterator it = fd.optionalStatements.iterator(); it.hasNext();) {
+            for (Iterator/*<Java.BlockStatement>*/ it = fd.optionalStatements.iterator(); it.hasNext();) {
                 Java.BlockStatement bs = (Java.BlockStatement) it.next();
                 bs.accept(this.cv);
             }

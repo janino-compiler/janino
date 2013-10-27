@@ -114,11 +114,14 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor {
         }
         if (!cu.importDeclarations.isEmpty()) {
             this.pw.println();
-            for (Iterator it = cu.importDeclarations.iterator(); it.hasNext();) {
+            for (Iterator/*<ImportDeclaration>*/ it = cu.importDeclarations.iterator(); it.hasNext();) {
                 ((Java.CompilationUnit.ImportDeclaration) it.next()).accept(this);
             }
         }
-        for (Iterator it = cu.packageMemberTypeDeclarations.iterator(); it.hasNext();) {
+        for (
+            Iterator/*<PackageMemberTypeDeclaration>*/ it = cu.packageMemberTypeDeclarations.iterator();
+            it.hasNext();
+        ) {
             this.pw.println();
             this.unparseTypeDeclaration((Java.PackageMemberTypeDeclaration) it.next());
             this.pw.println();
@@ -262,10 +265,10 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor {
     }
 
     private void
-    unparseStatements(List statements) {
+    unparseStatements(List/*<Java.BlockStatement>*/ statements) {
 
         int state = -1;
-        for (Iterator it = statements.iterator(); it.hasNext();) {
+        for (Iterator/*<Java.BlockStatement>*/ it = statements.iterator(); it.hasNext();) {
             Java.BlockStatement bs = (Java.BlockStatement) it.next();
             int                 x  = (
                 bs instanceof Java.Block                             ? 1 :
@@ -404,13 +407,13 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor {
         this.pw.print("switch (");
         this.unparse(ss.condition);
         this.pw.println(") {");
-        for (Iterator it = ss.sbsgs.iterator(); it.hasNext();) {
+        for (Iterator/*<SwitchBlockStatementGroup>*/ it = ss.sbsgs.iterator(); it.hasNext();) {
             Java.SwitchStatement.SwitchBlockStatementGroup sbgs = (
                 (Java.SwitchStatement.SwitchBlockStatementGroup) it.next()
             );
             this.pw.print(AutoIndentWriter.UNINDENT);
             try {
-                for (Iterator it2 = sbgs.caseLabels.iterator(); it2.hasNext();) {
+                for (Iterator/*<Java.Rvalue>*/ it2 = sbgs.caseLabels.iterator(); it2.hasNext();) {
                     Java.Rvalue rv = (Java.Rvalue) it2.next();
                     this.pw.print("case ");
                     this.unparse(rv);
@@ -420,7 +423,7 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor {
             } finally {
                 this.pw.print(AutoIndentWriter.INDENT);
             }
-            for (Iterator it2 = sbgs.blockStatements.iterator(); it2.hasNext();) {
+            for (Iterator/*<Java.BlockStatement>*/ it2 = sbgs.blockStatements.iterator(); it2.hasNext();) {
                 this.unparseBlockStatement((Java.BlockStatement) it2.next());
                 this.pw.println();
             }
@@ -447,7 +450,7 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor {
     visitTryStatement(Java.TryStatement ts) {
         this.pw.print("try ");
         this.unparseBlockStatement(ts.body);
-        for (Iterator it = ts.catchClauses.iterator(); it.hasNext();) {
+        for (Iterator/*<Java.CatchClause>*/ it = ts.catchClauses.iterator(); it.hasNext();) {
             Java.CatchClause cc = (Java.CatchClause) it.next();
             this.pw.print(" catch (");
             this.unparseFormalParameter(cc.caughtException);
@@ -831,10 +834,10 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor {
         return ((Integer) UnparseVisitor.OPERATOR_PRECEDENCE.get(operator)).intValue();
     }
 
-    private static final Set LEFT_ASSOCIATIVE_OPERATORS  = new HashSet();
-    private static final Set RIGHT_ASSOCIATIVE_OPERATORS = new HashSet();
-    private static final Set UNARY_OPERATORS             = new HashSet();
-    private static final Map OPERATOR_PRECEDENCE         = new HashMap();
+    private static final Set/*<String>*/          LEFT_ASSOCIATIVE_OPERATORS  = new HashSet();
+    private static final Set/*<String>*/          RIGHT_ASSOCIATIVE_OPERATORS = new HashSet();
+    private static final Set/*<String>*/          UNARY_OPERATORS             = new HashSet();
+    private static final Map/*<String, Integer>*/ OPERATOR_PRECEDENCE         = new HashMap();
     static {
         Object[] ops = {
             UnparseVisitor.RIGHT_ASSOCIATIVE_OPERATORS, "=", "*=", "/=", "%=", "+=", "-=", "<<=", ">>=", ">>>=",
@@ -858,8 +861,8 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor {
         };
         int precedence = 0;
         LOOP1: for (int i = 0;;) {
-            Set     s  = (Set) ops[i++];
-            Integer pi = new Integer(++precedence);
+            Set/*<String>*/ s  = (Set) ops[i++];
+            Integer         pi = new Integer(++precedence);
             for (;;) {
                 if (i == ops.length) break LOOP1;
                 if (!(ops[i] instanceof String)) break;
@@ -942,13 +945,13 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor {
     // Multi-line!
     private void
     unparseClassDeclarationBody(Java.ClassDeclaration cd) {
-        for (Iterator it = cd.constructors.iterator(); it.hasNext();) {
+        for (Iterator/*<ConstructorDeclarator>*/ it = cd.constructors.iterator(); it.hasNext();) {
             this.pw.println();
             ((Java.ConstructorDeclarator) it.next()).accept(this);
             this.pw.println();
         }
         this.unparseAbstractTypeDeclarationBody(cd);
-        for (Iterator it = cd.variableDeclaratorsAndInitializers.iterator(); it.hasNext();) {
+        for (Iterator/*<TypeBodyDeclaration>*/ it = cd.variableDeclaratorsAndInitializers.iterator(); it.hasNext();) {
             this.pw.println();
             ((Java.TypeBodyDeclaration) it.next()).accept(this);
             this.pw.println();
@@ -968,7 +971,7 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor {
         this.pw.println(" {");
         this.pw.print(AutoIndentWriter.INDENT);
         this.unparseAbstractTypeDeclarationBody(id);
-        for (Iterator it = id.constantDeclarations.iterator(); it.hasNext();) {
+        for (Iterator/*<FieldDeclaration>*/ it = id.constantDeclarations.iterator(); it.hasNext();) {
             ((Java.TypeBodyDeclaration) it.next()).accept(this);
             this.pw.println();
         }
@@ -978,12 +981,12 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor {
     // Multi-line!
     private void
     unparseAbstractTypeDeclarationBody(Java.AbstractTypeDeclaration atd) {
-        for (Iterator it = atd.getMethodDeclarations().iterator(); it.hasNext();) {
+        for (Iterator/*<MethodDeclaration>*/ it = atd.getMethodDeclarations().iterator(); it.hasNext();) {
             this.pw.println();
             ((Java.MethodDeclarator) it.next()).accept(this);
             this.pw.println();
         }
-        for (Iterator it = atd.getMemberTypeDeclarations().iterator(); it.hasNext();) {
+        for (Iterator/*<MemberTypeDeclaration>*/ it = atd.getMemberTypeDeclarations().iterator(); it.hasNext();) {
             this.pw.println();
             ((Java.TypeBodyDeclaration) it.next()).accept(this);
             this.pw.println();

@@ -399,10 +399,7 @@ class Compiler {
         this.optionalWarningHandler    = optionalWarningHandler;
 
         // Set up the IClassLoader.
-        this.iClassLoader = new CompilerIClassLoader(
-            sourceFinder,
-            iClassLoader
-        );
+        this.iClassLoader = new CompilerIClassLoader(sourceFinder, iClassLoader);
     }
 
     /**

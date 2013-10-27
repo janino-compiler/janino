@@ -33,14 +33,14 @@ import java.util.*;
  * {@link java.util.Enumeration}.
  */
 @SuppressWarnings("rawtypes") public
-class EnumerationIterator implements Iterator {
+class EnumerationIterator/*<T>*/ implements Iterator/*<T>*/ {
 
-    private final Enumeration e;
+    private final Enumeration/*<T>*/ e;
 
-    public EnumerationIterator(Enumeration e) { this.e = e; }
+    public EnumerationIterator(Enumeration/*<T>*/ e) { this.e = e; }
 
-    @Override public boolean hasNext() { return this.e.hasMoreElements(); }
-    @Override public Object  next()    { return this.e.nextElement(); }
+    @Override public boolean       hasNext() { return this.e.hasMoreElements(); }
+    @Override public Object/*<T>*/ next()    { return this.e.nextElement(); }
 
     /**
      * Since {@link Enumeration}s don't support element removal, this method always throws

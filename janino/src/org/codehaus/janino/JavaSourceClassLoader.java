@@ -69,8 +69,8 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
     }
 
     /**
-     * Set up a {@link JavaSourceClassLoader} that finds Java&trade; source code in a file
-     * that resides in either of the directories specified by the given source path.
+     * Set up a {@link JavaSourceClassLoader} that finds Java&trade; source code in a file that resides in either of
+     * the directories specified by the given source path.
      *
      * @param parentClassLoader         See {@link ClassLoader}
      * @param optionalSourcePath        A collection of directories that are searched for Java&trade; source files in
@@ -96,8 +96,7 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
     }
 
     /**
-     * Set up a {@link JavaSourceClassLoader} that finds Java&trade; source code through
-     * a given {@link ResourceFinder}.
+     * Set up a {@link JavaSourceClassLoader} that finds Java&trade; source code through a given {@link ResourceFinder}.
      * <p>
      * You can specify to include certain debugging information in the generated class files, which
      * is useful if you want to debug through the generated classes (see
@@ -172,7 +171,7 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 
             // Read, scan, parse and compile the right compilation unit.
             {
-                Map bytecodes = this.generateBytecodes(name);
+                Map/*<String name, byte[] bytecode>*/ bytecodes = this.generateBytecodes(name);
                 if (bytecodes == null) throw new ClassNotFoundException(name);
                 this.precompiledClasses.putAll(bytecodes);
             }
@@ -196,7 +195,7 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
      * yet defined i.e. which were not yet passed to
      * {@link ClassLoader#defineClass(java.lang.String, byte[], int, int)}.
      */
-    private Map precompiledClasses = new HashMap(); // String name => byte[] bytecode
+    private Map/*<String name, byte[] bytecode>*/ precompiledClasses = new HashMap();
 
     /**
      * Find, scan, parse the right compilation unit. Compile the parsed compilation unit to
@@ -206,15 +205,15 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
      * @return String name => byte[] bytecode, or <code>null</code> if no source code could be found
      * @throws ClassNotFoundException on compilation problems
      */
-    protected Map
+    protected Map/*<String name, byte[] bytecode>*/
     generateBytecodes(String name) throws ClassNotFoundException {
         if (this.iClassLoader.loadIClass(Descriptor.fromClassName(name)) == null) return null;
 
         Map/*<String name, byte[] bytecode>*/ bytecodes             = new HashMap();
-        Set                                   compiledUnitCompilers = new HashSet();
+        Set/*<UnitCompiler>*/                 compiledUnitCompilers = new HashSet();
         COMPILE_UNITS:
         for (;;) {
-            for (Iterator it = this.unitCompilers.iterator(); it.hasNext();) {
+            for (Iterator/*<UnitCompiler>*/ it = this.unitCompilers.iterator(); it.hasNext();) {
                 UnitCompiler uc = (UnitCompiler) it.next();
                 if (!compiledUnitCompilers.contains(uc)) {
                     ClassFile[] cfs;
@@ -259,5 +258,5 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
     /**
      * Collection of parsed, but uncompiled compilation units.
      */
-    private final Set unitCompilers = new HashSet(); // UnitCompiler
+    private final Set/*<UnitCompiler>*/ unitCompilers = new HashSet();
 }

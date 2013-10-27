@@ -183,7 +183,10 @@ class Java {
          */
         public PackageMemberTypeDeclaration
         getPackageMemberTypeDeclaration(String name) {
-            for (Iterator it = this.packageMemberTypeDeclarations.iterator(); it.hasNext();) {
+            for (
+                Iterator/*<PackageMemberTypeDeclaration>*/ it = this.packageMemberTypeDeclarations.iterator();
+                it.hasNext();
+            ) {
                 PackageMemberTypeDeclaration pmtd = (PackageMemberTypeDeclaration) it.next();
                 if (pmtd.getName().equals(name)) return pmtd;
             }
@@ -741,7 +744,7 @@ class Java {
 
         @Override public MemberTypeDeclaration
         getMemberTypeDeclaration(String name) {
-            for (Iterator it = this.declaredClassesAndInterfaces.iterator(); it.hasNext();) {
+            for (Iterator/*<MemberTypeDeclaration>*/ it = this.declaredClassesAndInterfaces.iterator(); it.hasNext();) {
                 MemberTypeDeclaration mtd = (MemberTypeDeclaration) it.next();
                 if (mtd.getName().equals(name)) return mtd;
             }
@@ -750,7 +753,7 @@ class Java {
 
         @Override public MethodDeclarator
         getMethodDeclaration(String name) {
-            for (Iterator it = this.declaredMethods.iterator(); it.hasNext();) {
+            for (Iterator/*<MethodDeclarator>*/ it = this.declaredMethods.iterator(); it.hasNext();) {
                 MethodDeclarator md = (MethodDeclarator) it.next();
                 if (md.name.equals(name)) return md;
             }
@@ -1456,7 +1459,7 @@ class Java {
             for (int i = 0; i < formalParameters.length; ++i) formalParameters[i].type.setEnclosingScope(this);
             for (int i = 0; i < thrownExceptions.length; ++i) thrownExceptions[i].setEnclosingScope(this);
             if (optionalStatements != null) {
-                for (Iterator it = optionalStatements.iterator(); it.hasNext();) {
+                for (Iterator/*<BlockStatement>*/ it = optionalStatements.iterator(); it.hasNext();) {
                     Java.BlockStatement bs = (Java.BlockStatement) it.next();
 
                     // Catch 22: In the initializers, some statement have their enclosing already
@@ -1550,7 +1553,7 @@ class Java {
             FunctionDeclarator.FormalParameter[] formalParameters,
             Type[]                               thrownExceptions,
             ConstructorInvocation                optionalConstructorInvocation,
-            List                                 statements // BlockStatement
+            List/*<BlockStatement>*/             statements
         ) {
             super(
                 location,                                // location
@@ -1606,7 +1609,7 @@ class Java {
             String                               name,
             FunctionDeclarator.FormalParameter[] formalParameters,
             Type[]                               thrownExceptions,
-            List                                 optionalStatements
+            List/*<BlockStatement>*/             optionalStatements
         ) {
             super(
                 location,                // location
@@ -1825,7 +1828,7 @@ class Java {
         getEnclosingScope() { return this.enclosingScope; }
 
         // Compile time members
-        public Map localVariables; // String name => Java.LocalVariable
+        public Map/*<String name, Java.LocalVariable>*/ localVariables;
 
         @Override public Java.LocalVariable
         findLocalVariable(String name) {
@@ -1862,7 +1865,7 @@ class Java {
      */
     public static final
     class Block extends Statement {
-        public final List statements = new ArrayList(); // BlockStatement
+        public final List/*<BlockStatement>*/ statements = new ArrayList();
 
         public
         Block(Location location) { super(location); }
@@ -1874,9 +1877,9 @@ class Java {
         }
 
         public void
-        addStatements(List statements) {
+        addStatements(List/*<BlockStatement>*/ statements) {
             this.statements.addAll(statements);
-            for (Iterator it = statements.iterator(); it.hasNext();) {
+            for (Iterator/*<BlockStatement>*/ it = statements.iterator(); it.hasNext();) {
                 ((BlockStatement) it.next()).setEnclosingScope(this);
             }
         }
@@ -2063,9 +2066,9 @@ class Java {
 
     public static final
     class TryStatement extends Statement {
-        public final BlockStatement body;
-        public final List           catchClauses; // CatchClause
-        public final Block          optionalFinally;
+        public final BlockStatement             body;
+        public final List/*<Java.CatchClause>*/ catchClauses;
+        public final Block                      optionalFinally;
 
         public
         TryStatement(
@@ -2077,7 +2080,7 @@ class Java {
             super(location);
             (this.body            = body).setEnclosingScope(this);
             this.catchClauses    = catchClauses;
-            for (Iterator it = catchClauses.iterator(); it.hasNext();) {
+            for (Iterator/*<CatchClause>*/ it = catchClauses.iterator(); it.hasNext();) {
                 ((CatchClause) it.next()).setEnclosingTryStatement(this);
             }
             this.optionalFinally = optionalFinally;
@@ -2143,20 +2146,21 @@ class Java {
      */
     public static final
     class SwitchStatement extends BreakableStatement {
-        public final Rvalue condition;
-        public final List   sbsgs; // SwitchBlockStatementGroup
+
+        public final Rvalue                              condition;
+        public final List/*<SwitchBlockStatementGroup>*/ sbsgs;
 
         public
-        SwitchStatement(Location location, Rvalue condition, List sbsgs) {
+        SwitchStatement(Location location, Rvalue condition, List/*<SwitchBlockStatementGroup>*/ sbsgs) {
             super(location);
             (this.condition = condition).setEnclosingBlockStatement(this);
             this.sbsgs     = sbsgs;
-            for (Iterator it = sbsgs.iterator(); it.hasNext();) {
+            for (Iterator/*<SwitchBlockStatementGroup>*/ it = sbsgs.iterator(); it.hasNext();) {
                 SwitchBlockStatementGroup sbsg = ((SwitchBlockStatementGroup) it.next());
-                for (Iterator it2 = sbsg.caseLabels.iterator(); it2.hasNext();) {
+                for (Iterator/*<Rvalue>*/ it2 = sbsg.caseLabels.iterator(); it2.hasNext();) {
                     ((Rvalue) (it2.next())).setEnclosingBlockStatement(this);
                 }
-                for (Iterator it2 = sbsg.blockStatements.iterator(); it2.hasNext();) {
+                for (Iterator it2/*<BlockStatement>*/ = sbsg.blockStatements.iterator(); it2.hasNext();) {
                     ((BlockStatement) (it2.next())).setEnclosingScope(this);
                 }
             }
@@ -2167,9 +2171,9 @@ class Java {
 
         public static
         class SwitchBlockStatementGroup extends Java.Located {
-            public final List    caseLabels; // Rvalue
-            public final boolean hasDefaultLabel;
-            public final List    blockStatements; // BlockStatement
+            public final List/*<Rvalue>*/         caseLabels;
+            public final boolean                  hasDefaultLabel;
+            public final List/*<BlockStatement>*/ blockStatements;
 
             public
             SwitchBlockStatementGroup(
@@ -2491,8 +2495,7 @@ class Java {
         Type(Location location) { super(location); }
 
         /**
-         * Sets the enclosing scope for this object and all subordinate
-         * {@link org.codehaus.janino.Java.Type} objects.
+         * Sets the enclosing scope for this object and all subordinate {@link org.codehaus.janino.Java.Type} objects.
          */
         public void
         setEnclosingScope(final Scope enclosingScope) {
@@ -2709,8 +2712,7 @@ class Java {
         Rvalue(Location location) { super(location); }
 
         /**
-         * Sets enclosing block statement for this object and all subordinate
-         * {@link org.codehaus.janino.Java.Rvalue} objects.
+         * Sets enclosing block statement for this object and all subordinate {@link Java.Rvalue} objects.
          */
         public final void
         setEnclosingBlockStatement(final Java.BlockStatement enclosingBlockStatement) {
@@ -3385,12 +3387,10 @@ class Java {
         @Override public String
         toString() { return this.lhs.toString() + ' ' + this.op + ' ' + this.rhs.toString(); }
 
-        /**
-         * Returns an {@link Iterator} over a left-to-right sequence of {@link Java.Rvalue}s.
-         */
-        public Iterator
+        /** Returns an {@link Iterator} over a left-to-right sequence of {@link Java.Rvalue}s. */
+        public Iterator/*<Ralue>*/
         unrollLeftAssociation() {
-            List            operands = new ArrayList();
+            List/*<Ralue>*/ operands = new ArrayList();
             BinaryOperation x        = this;
             for (;;) {
                 operands.add(x.rhs);
@@ -3503,7 +3503,7 @@ class Java {
         getEnclosingScope() { return this.enclosingScope; }
 
         // Compile time members
-        public Map localVariables; // String name => Java.LocalVariable
+        public Map/*<String name, Java.LocalVariable>*/ localVariables;
 
         @Override public Java.LocalVariable
         findLocalVariable(String name) {

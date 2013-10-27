@@ -54,8 +54,8 @@ class MethodDescriptor {
     MethodDescriptor(String s) {
         if (s.charAt(0) != '(') throw new JaninoRuntimeException();
 
-        int  from         = 1;
-        List parameterFDs = new ArrayList(); // String
+        int              from         = 1;
+        List/*<String>*/ parameterFDs = new ArrayList();
         while (s.charAt(from) != ')') {
             int to = from;
             while (s.charAt(to) == '[') ++to;

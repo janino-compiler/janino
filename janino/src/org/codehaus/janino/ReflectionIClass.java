@@ -61,8 +61,8 @@ class ReflectionIClass extends IClass {
 
     @Override protected IMethod[]
     getDeclaredIMethods2() {
-        Method[] methods  = this.clazz.getDeclaredMethods();
-        List     iMethods = new ArrayList();
+        Method[]          methods  = this.clazz.getDeclaredMethods();
+        List/*<IMethod>*/ iMethods = new ArrayList();
         for (int i = 0; i < methods.length; ++i) {
             Method m = methods[i];
 
