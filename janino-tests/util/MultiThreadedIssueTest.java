@@ -37,7 +37,7 @@ public final class MultiThreadedIssueTest {
             }
         };
 
-        List threads = new ArrayList();
+        List/*<Thread>*/ threads = new ArrayList();
 
         for (int i = 0; i < 100; i++) {
             final Thread thread = new Thread(runnable, "Thread_" + 1);

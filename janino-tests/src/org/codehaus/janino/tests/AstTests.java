@@ -108,7 +108,7 @@ class AstTests {
     createFloatingPointLiteral(String value) { return new FloatingPointLiteral(getLocation(), value); }
 
     private static void
-    createMethod(PackageMemberClassDeclaration clazz, List statements, Type returnType) {
+    createMethod(PackageMemberClassDeclaration clazz, List/*<BlockStatement>*/ statements, Type returnType) {
         MethodDeclarator method = new MethodDeclarator(
             getLocation(),
             null,

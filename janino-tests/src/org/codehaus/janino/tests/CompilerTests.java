@@ -106,7 +106,7 @@ class CompilerTests {
             });
             c.compile(sourceFiles);
         }
-        Map classFileMap1 = classFileResources1.getMap();
+        Map/*<String, byte[]>*/ classFileMap1 = classFileResources1.getMap();
         b.endReporting("Generated " + classFileMap1.size() + " class files.");
 
         b.beginReporting(
@@ -175,8 +175,8 @@ class CompilerTests {
                 return object.getClass().getDeclaredMethod(methodName, parameterTypes).invoke(object, arguments);
             }
         }
-        Loader l             = new Loader();
-        Map    classFileMap3 = new HashMap();
+        Loader                  l             = new Loader();
+        Map/*<String, byte[]>*/ classFileMap3 = new HashMap();
         {
             Object sf = l.instantiate(MultiResourceFinder.class, new Class[] { Collection.class }, new Object[] {
                 Arrays.asList(new Object[] {
@@ -192,9 +192,11 @@ class CompilerTests {
                 bootstrapClassLoader,
             });
             Object cfrf = l.getStaticField(ResourceFinder.class, "EMPTY_RESOURCE_FINDER");
-            Object cfrc = l.instantiate(MapResourceCreator.class, new Class[] { Map.class }, new Object[] {
-                classFileMap3,
-            });
+            Object cfrc = l.instantiate(
+                MapResourceCreator.class,
+                new Class[] { Map.class },
+                new Object[] { classFileMap3 }
+            );
 
             Object compiler = l.instantiate(Compiler.class, new Class[] {
                 l.loadClass(ResourceFinder.class),  // sourceFinder
@@ -226,15 +228,15 @@ class CompilerTests {
         // Compare "classFileMap1" and "classFileMap3". We cannot use "Map.equals()" because we
         // want to check byte-by-byte identity rather than reference identity.
         assertEquals(classFileMap1.size(), classFileMap3.size());
-        for (Iterator it = classFileMap1.entrySet().iterator(); it.hasNext();) {
-            Map.Entry me = (Map.Entry) it.next();
+        for (Iterator/*<Entry<String, byte[]>>*/ it = classFileMap1.entrySet().iterator(); it.hasNext();) {
+            Map.Entry/*<String, byte[]>*/ me = (Map.Entry) it.next();
             assertTrue(Arrays.equals((byte[]) me.getValue(), (byte[]) classFileMap3.get(me.getKey())));
         }
     }
 
     @Test public void
     testCompileErrors() throws Exception {
-        Map sources = new HashMap();
+        Map/*<String, String>*/ sources = new HashMap();
         sources.put("pkg/A.java", ( // Class A uses class B, C, D.
             ""
             + "package pkg;\n"
@@ -266,8 +268,8 @@ class CompilerTests {
         ).getBytes());
         ResourceFinder sourceFinder = new MapResourceFinder(sources);
 
-        Map      classes  = new HashMap();
-        Compiler compiler = new Compiler(
+        Map/*<String, byte[]>*/ classes  = new HashMap();
+        Compiler                compiler = new Compiler(
             sourceFinder,                                                  // sourceFinder
             new ClassLoaderIClassLoader(this.getClass().getClassLoader()), // iClassLoader
             ResourceFinder.EMPTY_RESOURCE_FINDER,                          // classFileFinder

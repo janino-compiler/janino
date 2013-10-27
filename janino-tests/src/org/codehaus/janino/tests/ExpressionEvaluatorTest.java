@@ -45,7 +45,7 @@ class ExpressionEvaluatorTest {
 
     @Test public void
     testGuessParameterNames() throws Exception {
-        Set parameterNames = new HashSet(
+        Set/*<String>*/ parameterNames = new HashSet(
             Arrays.asList(ExpressionEvaluator.guessParameterNames(new Scanner(null, new StringReader(
                 ""
                 + "import o.p;\n"
