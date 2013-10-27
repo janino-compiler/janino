@@ -176,8 +176,8 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 
                 // Run the compiler.
                 if (!this.compiler.getTask(
-                    null,                                   // out
-                    this.getJavaFileManager(),              // fileManager
+                    null,                                      // out
+                    this.getJavaFileManager(),                 // fileManager
                     new DiagnosticListener<JavaFileObject>() { // diagnosticListener
 
                         @Override public void
@@ -187,9 +187,9 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
                             }
                         }
                     },
-                    options,                                // options
-                    null,                                   // classes
-                    Collections.singleton(sourceFileObject) // compilationUnits
+                    options,                                   // options
+                    null,                                      // classes
+                    Collections.singleton(sourceFileObject)    // compilationUnits
                 ).call()) {
                     throw new ClassNotFoundException(className + ": Compilation failed");
                 }

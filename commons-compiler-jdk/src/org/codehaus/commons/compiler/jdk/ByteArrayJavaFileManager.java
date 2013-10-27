@@ -43,8 +43,7 @@ import javax.tools.JavaFileObject.Kind;
 public
 class ByteArrayJavaFileManager<M extends JavaFileManager> extends ForwardingJavaFileManager<M> {
 
-    /** location => kind => className => JavaFileObject */
-    Map<Location, Map<Kind, Map<String /*className*/, JavaFileObject>>> javaFiles = (
+    private final Map<Location, Map<Kind, Map<String /*className*/, JavaFileObject>>> javaFiles = (
         new HashMap<Location, Map<Kind, Map<String, JavaFileObject>>>()
     );
 
