@@ -539,4 +539,24 @@ class ReportedBugs extends JaninoTestSuite {
             + "}\n"
         ), "Test");
     }
+
+    @Test public void
+    testBug163() throws Exception {
+        this.clb(COOK, (
+            ""
+            + "public void foo() throws IOException {\n"
+            + "    if (true) {\n"
+            + "        try {\n"
+            + "            if (false) {\n"
+            + "                throw new IOException(\"my exc\");\n"
+            + "            }\n"
+            + "            System.out.println(\"xyz\");\n" // <= At least one stmt.
+            + "\n"
+            + "        } catch (IOException e) {\n"  // <= "Catch clause is unreachable"
+            + "            throw new java.lang.RuntimeException(e);\n"
+            + "        }\n"
+            + "    }\n"
+            + "}"
+        ), new String[] { "java.io.*" });
+    }
 }
