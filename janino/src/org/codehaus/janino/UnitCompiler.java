@@ -979,6 +979,19 @@ class UnitCompiler {
         }
     }
 
+    /**
+     * Call to check whether the given {@link Rvalue} compiles or not.
+     */
+    private boolean
+    fakeCompile(BlockStatement bs) throws CompileException {
+        CodeContext savedCodeContext = this.replaceCodeContext(this.createDummyCodeContext());
+        try {
+            return this.compile(bs);
+        } finally {
+            this.replaceCodeContext(savedCodeContext);
+        }
+    }
+
     private boolean
     compile2(Initializer i) throws CompileException {
         return this.compile(i.block);
@@ -1583,35 +1596,28 @@ class UnitCompiler {
             // Compile the seeing statement.
             CodeContext.Inserter ins   = this.codeContext.newInserter();
             boolean              ssccn = this.compile(seeingStatement);
+            boolean              bsccn = this.fakeCompile(blindStatement);
             if (ssccn) return true;
+            if (!bsccn) return false;
 
-            // Hm... the "seeing statement" cannot complete normally. Things are getting
+            // Hm... the "seeing statement" cannot complete normally, but the "blind statement" can. Things are getting
             // complicated here! The robust solution is to compile the constant-condition-IF
             // statement as a non-constant-condition-IF statement. As an optimization, iff the
             // IF-statement is enclosed ONLY by blocks, then the remaining bytecode can be
             // written to a "fake" code context, i.e. be thrown away.
 
-            // Constant-condition-IF statement only enclosed by blocks?
-            Scope s = is.getEnclosingScope();
-            while (s instanceof Block) s = s.getEnclosingScope();
-            if (s instanceof FunctionDeclarator) {
+            // Compile constant-condition-IF statement as non-constant-condition-IF statement.
+            CodeContext.Offset off = this.codeContext.newOffset();
 
-                // Yes, compile rest of method to /dev/null.
-                throw UnitCompiler.STOP_COMPILING_CODE;
-            } else
-            {
-
-                // Compile constant-condition-IF statement as non-constant-condition-IF statement.
-                CodeContext.Offset off = this.codeContext.newOffset();
-                this.codeContext.pushInserter(ins);
-                try {
-                    this.pushConstant(is, Boolean.FALSE);
-                    this.writeBranch(is, Opcode.IFNE, off);
-                } finally {
-                    this.codeContext.popInserter();
-                }
+            this.codeContext.pushInserter(ins);
+            try {
+                this.pushConstant(is, Boolean.FALSE);
+                this.writeBranch(is, Opcode.IFNE, off);
+            } finally {
+                this.codeContext.popInserter();
             }
-            return this.compile(blindStatement);
+
+            return true;
         }
 
         // Non-constant condition.
@@ -1656,9 +1662,6 @@ class UnitCompiler {
             }
         }
     }
-    private static final RuntimeException STOP_COMPILING_CODE = new RuntimeException(
-        "SNO: This exception should have been caught and processed"
-    );
 
     private boolean
     compile2(LocalClassDeclarationStatement lcds) throws CompileException {
@@ -2179,23 +2182,15 @@ class UnitCompiler {
             }
 
             // Compile the function body.
-            try {
-                if (fd.optionalStatements == null) {
-                    this.compileError("Method must have a body", fd.getLocation());
-                    return;
+            if (fd.optionalStatements == null) {
+                this.compileError("Method must have a body", fd.getLocation());
+                return;
+            }
+            if (this.compileStatements(fd.optionalStatements)) {
+                if (this.getReturnType(fd) != IClass.VOID) {
+                    this.compileError("Method must return a value", fd.getLocation());
                 }
-                if (this.compileStatements(fd.optionalStatements)) {
-                    if (this.getReturnType(fd) != IClass.VOID) {
-                        this.compileError("Method must return a value", fd.getLocation());
-                    }
-                    this.writeOpcode(fd, Opcode.RETURN);
-                }
-            } catch (RuntimeException ex) {
-                if (ex != UnitCompiler.STOP_COMPILING_CODE) throw ex;
-
-                // In very special circumstances (e.g. "if (true) return;"), code generation is
-                // terminated abruptly by throwing STOP_COMPILING_CODE.
-                ;
+                this.writeOpcode(fd, Opcode.RETURN);
             }
         } finally {
             this.codeContext.restoreLocalVariables();
