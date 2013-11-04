@@ -88,7 +88,7 @@ class ClassFileIClass extends IClass {
 
             // Skip JDK 1.5 synthetic methods (e.g. those generated for
             // covariant return values).
-            if ((mi.getAccessFlags() & Mod.SYNTHETIC) != 0) continue;
+            if ((mi.getModifierFlags() & Mod.SYNTHETIC) != 0) continue;
 
             IInvocable ii;
             try {
@@ -326,10 +326,13 @@ class ClassFileIClass extends IClass {
         final IClass[] thrownExceptions = tes == null ? new IClass[0] : tes;
 
         // Determine access.
-        final Access access = ClassFileIClass.accessFlags2Access(methodInfo.getAccessFlags());
+        final Access access = ClassFileIClass.accessFlags2Access(methodInfo.getModifierFlags());
 
         if ("<init>".equals(name)) {
             result = new IClass.IConstructor() {
+
+                @Override public boolean
+                isVarargs() { return (methodInfo.getModifierFlags() & Mod.VARARGS) != 0; }
 
                 @Override public IClass[]
                 getParameterTypes() throws CompileException {
@@ -357,8 +360,9 @@ class ClassFileIClass extends IClass {
                     return parameterTypes;
                 }
 
-                @Override public IClass[] getThrownExceptions() { return thrownExceptions; }
-                @Override public Access   getAccess()           { return access; }
+                @Override public IClass[]          getThrownExceptions() { return thrownExceptions; }
+                @Override public Access            getAccess()           { return access; }
+                @Override public Java.Annotation[] getAnnotations()      { return methodInfo.getAnnotations(); } 
             };
         } else {
             result = new IClass.IMethod() {
@@ -370,10 +374,13 @@ class ClassFileIClass extends IClass {
                 getReturnType() { return returnType; }
 
                 @Override public boolean
-                isStatic() { return (methodInfo.getAccessFlags() & Mod.STATIC) != 0; }
+                isStatic() { return (methodInfo.getModifierFlags() & Mod.STATIC) != 0; }
 
                 @Override public boolean
-                isAbstract() { return (methodInfo.getAccessFlags() & Mod.ABSTRACT) != 0; }
+                isAbstract() { return (methodInfo.getModifierFlags() & Mod.ABSTRACT) != 0; }
+
+                @Override public boolean
+                isVarargs() { return (methodInfo.getModifierFlags() & Mod.VARARGS) != 0; }
 
                 @Override public IClass[]
                 getParameterTypes() { return parameterTypes; }
@@ -383,6 +390,9 @@ class ClassFileIClass extends IClass {
 
                 @Override public Access
                 getAccess() { return access; }
+
+                @Override public Java.Annotation[]
+                getAnnotations() { return methodInfo.getAnnotations(); }
             };
         }
         this.resolvedMethods.put(methodInfo, result);
@@ -420,14 +430,15 @@ class ClassFileIClass extends IClass {
         }
 
         final Object optionalConstantValue = cva == null ? IClass.NOT_CONSTANT : cva.getConstantValue(this.classFile);
-        final Access access                = ClassFileIClass.accessFlags2Access(fieldInfo.getAccessFlags());
+        final Access access                = ClassFileIClass.accessFlags2Access(fieldInfo.getModifierFlags());
 
         result = new IField() {
-            @Override public Object  getConstantValue() { return optionalConstantValue; }
-            @Override public String  getName()          { return name; }
-            @Override public IClass  getType()          { return type; }
-            @Override public boolean isStatic()         { return (fieldInfo.getAccessFlags() & Mod.STATIC) != 0; }
-            @Override public Access  getAccess()        { return access; }
+            @Override public Object            getConstantValue() { return optionalConstantValue; }
+            @Override public String            getName()          { return name; }
+            @Override public IClass            getType()          { return type; }
+            @Override public boolean           isStatic()         { return (fieldInfo.getModifierFlags() & Mod.STATIC) != 0; }
+            @Override public Access            getAccess()        { return access; }
+            @Override public Java.Annotation[] getAnnotations()   { return fieldInfo.getAnnotations(); }
         };
         this.resolvedFields.put(fieldInfo, result);
         return result;

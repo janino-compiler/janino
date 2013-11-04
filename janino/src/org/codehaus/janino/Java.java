@@ -413,53 +413,54 @@ class Java {
         accept(Visitor.ElementValueVisitor visitor) { visitor.visitNormalAnnotation(this); }
     }
 
-    /** Representation of the modifiers and annotations that are associated with a declaration. */
+    /** Representation of the modifier flags and annotations that are associated with a declaration. */
     public static
-    class ModifiersAndAnnotations {
+    class Modifiers {
 
         /** The or'ed constants declared in {@link Mod}. */
-        public final short modifiers;
+        public final short flags;
 
         /** The annotations. */
         public final Annotation[] annotations;
-        
+
+        /** A 'blank' {@link Modifiers} object: No flags, no annotations. */
         public
-        ModifiersAndAnnotations() {
-            this.modifiers   = Mod.NONE;
+        Modifiers() {
+            this.flags       = Mod.NONE;
             this.annotations = new Annotation[0];
         }
 
         public
-        ModifiersAndAnnotations(short modifiers) {
-            this.modifiers   = modifiers;
+        Modifiers(short modifiers) {
+            this.flags       = modifiers;
             this.annotations = new Annotation[0];
         }
 
         public
-        ModifiersAndAnnotations(short modifiers, Annotation[] annotations) {
-            this.modifiers   = modifiers;
+        Modifiers(short modifiers, Annotation[] annotations) {
+            this.flags       = modifiers;
             this.annotations = annotations;
         }
 
         /** @return This object, with the given {@code modifiersToAdd} added. */
-        public ModifiersAndAnnotations
+        public Modifiers
         add(int modifiersToAdd) {
-            return new ModifiersAndAnnotations((short) (this.modifiers | modifiersToAdd), this.annotations);
+            return new Modifiers((short) (this.flags | modifiersToAdd), this.annotations);
         }
 
         /** @return This object, with the given {@code modifiersToRemove} removed. */
-        public ModifiersAndAnnotations
+        public Modifiers
         remove(int modifiersToRemove) {
-            return new ModifiersAndAnnotations((short) (this.modifiers & ~modifiersToRemove), this.annotations);
+            return new Modifiers((short) (this.flags & ~modifiersToRemove), this.annotations);
         }
 
         /**
          * @param newAccess One of {@link Mod#PUBLIC}, {@link Mod#PRIVATE}, {@link Mod#PROTECTED}, {@link Mod#PACKAGE}
          * @return This object, with the access changed to {@code newAccess}
          */
-        public ModifiersAndAnnotations
+        public Modifiers
         changeAccess(int newAccess) {
-            return new ModifiersAndAnnotations((short) (this.modifiers & ~Mod.PPP | newAccess), this.annotations);
+            return new Modifiers((short) (this.flags & ~Mod.PPP | newAccess), this.annotations);
         }
     }
 
@@ -543,8 +544,10 @@ class Java {
     public
     interface TypeDeclaration extends Locatable, Scope {
 
-        /** @return The {@link ModifiersAndAnnotations} of this {@link TypeDeclaration} */
-        ModifiersAndAnnotations getModifiersAndAnnotations();
+        short getModifierFlags();
+
+        /** @return The annotations of this {@link TypeDeclaration} */
+        Annotation[] getAnnotations();
 
         /**
          * Return the member type with the given name.
@@ -678,7 +681,7 @@ class Java {
     public abstract static
     class AbstractTypeDeclaration implements TypeDeclaration {
         private final Location                        location;
-        private final ModifiersAndAnnotations         modifiersAndAnnotations;
+        private final Modifiers                       modifiers;
         private final List/*<MethodDeclarator>*/      declaredMethods              = new ArrayList();
         private final List/*<MemberTypeDeclaration>*/ declaredClassesAndInterfaces = new ArrayList();
         private Scope                                 enclosingScope;
@@ -687,13 +690,16 @@ class Java {
         IClass resolvedType;
 
         public
-        AbstractTypeDeclaration(Location location, ModifiersAndAnnotations modifiersAndAnnotations) {
-            this.location                = location;
-            this.modifiersAndAnnotations = modifiersAndAnnotations;
+        AbstractTypeDeclaration(Location location, Modifiers modifiers) {
+            this.location  = location;
+            this.modifiers = modifiers;
         }
 
-        @Override public ModifiersAndAnnotations
-        getModifiersAndAnnotations() { return this.modifiersAndAnnotations; }
+        @Override public short
+        getModifierFlags() { return this.modifiers.flags; }
+
+        @Override public Annotation[]
+        getAnnotations() { return this.modifiers.annotations; }
 
         /** Sets the enclosing scope of this {@link TypeDeclaration}. */
         public void
@@ -814,8 +820,8 @@ class Java {
         public final List/*<TypeBodyDeclaration>*/ variableDeclaratorsAndInitializers = new ArrayList();
 
         public
-        ClassDeclaration(Location location, ModifiersAndAnnotations modifiersAndAnnotations) {
-            super(location, modifiersAndAnnotations);
+        ClassDeclaration(Location location, Modifiers modifiers) {
+            super(location, modifiers);
         }
 
         /** Adds one {@link ConstructorDeclarator} to this class. */
@@ -859,13 +865,13 @@ class Java {
         getConstructors() {
             if (this.constructors.isEmpty()) {
                 ConstructorDeclarator defaultConstructor = new ConstructorDeclarator(
-                    this.getLocation(),                           // location
-                    null,                                         // optionalDocComment
-                    new Java.ModifiersAndAnnotations(Mod.PUBLIC), // modifiersAndAnnotations
-                    new FunctionDeclarator.FormalParameter[0],    // formalParameters
-                    new Type[0],                                  // thrownExceptions
-                    null,                                         // optionalExplicitConstructorInvocation
-                    Collections.EMPTY_LIST                        // optionalStatements
+                    this.getLocation(),                        // location
+                    null,                                      // optionalDocComment
+                    new Java.Modifiers(Mod.PUBLIC),            // modifiers
+                    new FunctionDeclarator.FormalParameters(), // formalParameters
+                    new Type[0],                               // thrownExceptions
+                    null,                                      // optionalExplicitConstructorInvocation
+                    Collections.EMPTY_LIST                     // optionalStatements
                 );
                 defaultConstructor.setDeclaringType(this);
                 return new ConstructorDeclarator[] { defaultConstructor };
@@ -890,8 +896,8 @@ class Java {
         public
         AnonymousClassDeclaration(Location location, Type baseType) {
             super(
-                location,                                                      // location
-                new ModifiersAndAnnotations((short) (Mod.PRIVATE | Mod.FINAL)) // modifiersAndAnnotations
+                location,                                        // location
+                new Modifiers((short) (Mod.PRIVATE | Mod.FINAL)) // modifiers
             );
             (this.baseType = baseType).setEnclosingScope(new EnclosingScopeOfTypeDeclaration(this));
         }
@@ -933,14 +939,14 @@ class Java {
 
         public
         NamedClassDeclaration(
-            Location                location,
-            String                  optionalDocComment,
-            ModifiersAndAnnotations modifiersAndAnnotations,
-            String                  name,
-            Type                    optionalExtendedType,
-            Type[]                  implementedTypes
+            Location  location,
+            String    optionalDocComment,
+            Modifiers modifiers,
+            String    name,
+            Type      optionalExtendedType,
+            Type[]    implementedTypes
         ) {
-            super(location, modifiersAndAnnotations);
+            super(location, modifiers);
             this.optionalDocComment   = optionalDocComment;
             this.name                 = name;
             this.optionalExtendedType = optionalExtendedType;
@@ -994,20 +1000,20 @@ class Java {
     class MemberClassDeclaration extends NamedClassDeclaration implements MemberTypeDeclaration, InnerClassDeclaration {
         public
         MemberClassDeclaration(
-            Location                location,
-            String                  optionalDocComment,
-            ModifiersAndAnnotations modifiersAndAnnotations,
-            String                  name,
-            Type                    optionalExtendedType,
-            Type[]                  implementedTypes
+            Location  location,
+            String    optionalDocComment,
+            Modifiers modifiers,
+            String    name,
+            Type      optionalExtendedType,
+            Type[]    implementedTypes
         ) {
             super(
-                location,                // location
-                optionalDocComment,      // optionalDocComment
-                modifiersAndAnnotations, // modifiersAndAnnotations
-                name,                    // name
-                optionalExtendedType,    // optionalExtendedType
-                implementedTypes         // implementedTypes
+                location,             // location
+                optionalDocComment,   // optionalDocComment
+                modifiers,            // modifiers
+                name,                 // name
+                optionalExtendedType, // optionalExtendedType
+                implementedTypes      // implementedTypes
             );
         }
 
@@ -1020,7 +1026,7 @@ class Java {
         getDeclaringType() { return (TypeDeclaration) this.getEnclosingScope(); }
 
         @Override public boolean
-        isStatic() { return (this.getModifiersAndAnnotations().modifiers & Mod.STATIC) != 0; }
+        isStatic() { return (this.getModifierFlags() & Mod.STATIC) != 0; }
 
         // Implement TypeDeclaration.
 
@@ -1040,20 +1046,20 @@ class Java {
 
         public
         LocalClassDeclaration(
-            Location                location,
-            String                  optionalDocComment,
-            ModifiersAndAnnotations modifiersAndAnnotations,
-            String                  name,
-            Type                    optionalExtendedType,
-            Type[]                  implementedTypes
+            Location  location,
+            String    optionalDocComment,
+            Modifiers modifiers,
+            String    name,
+            Type      optionalExtendedType,
+            Type[]    implementedTypes
         ) {
             super(
-                location,                // location
-                optionalDocComment,      // optionalDocComment
-                modifiersAndAnnotations, // modifiersAndAnnotations
-                name,                    // name
-                optionalExtendedType,    // optionalExtendedType
-                implementedTypes         // implementedTypes
+                location,             // location
+                optionalDocComment,   // optionalDocComment
+                modifiers,            // modifiers
+                name,                 // name
+                optionalExtendedType, // optionalExtendedType
+                implementedTypes      // implementedTypes
             );
         }
 
@@ -1078,24 +1084,24 @@ class Java {
 
         public
         PackageMemberClassDeclaration(
-            Location                location,
-            String                  optionalDocComment,
-            ModifiersAndAnnotations modifiersAndAnnotations,
-            String                  name,
-            Type                    optionalExtendedType,
-            Type[]                  implementedTypes
+            Location  location,
+            String    optionalDocComment,
+            Modifiers modifiers,
+            String    name,
+            Type      optionalExtendedType,
+            Type[]    implementedTypes
         ) throws CompileException {
             super(
-                location,                         // location
-                optionalDocComment,               // optionalDocComment
-                modifiersAndAnnotations,          // modifiersAndAnnotations
-                name,                             // name
-                optionalExtendedType,             // optionalExtendedType
-                implementedTypes                  // implementedTypes
+                location,             // location
+                optionalDocComment,   // optionalDocComment
+                modifiers,            // modifiers
+                name,                 // name
+                optionalExtendedType, // optionalExtendedType
+                implementedTypes      // implementedTypes
             );
 
             // Check for forbidden modifiers (JLS 7.6).
-            if ((modifiersAndAnnotations.modifiers & (Mod.PROTECTED | Mod.PRIVATE | Mod.STATIC)) != 0) {
+            if ((modifiers.flags & (Mod.PROTECTED | Mod.PRIVATE | Mod.STATIC)) != 0) {
                 this.throwCompileException(
                     "Modifiers \"protected\", \"private\" and \"static\" not allowed in package member class "
                     + "declaration"
@@ -1142,13 +1148,13 @@ class Java {
 
         protected
         InterfaceDeclaration(
-            Location                location,
-            String                  optionalDocComment,
-            ModifiersAndAnnotations modifiersAndAnnotations,
-            String                  name,
-            Type[]                  extendedTypes
+            Location  location,
+            String    optionalDocComment,
+            Modifiers modifiers,
+            String    name,
+            Type[]    extendedTypes
         ) {
-            super(location, modifiersAndAnnotations);
+            super(location, modifiers);
             this.optionalDocComment = optionalDocComment;
             this.name               = name;
             this.extendedTypes      = extendedTypes;
@@ -1204,18 +1210,18 @@ class Java {
 
         public
         MemberInterfaceDeclaration(
-            Location                location,
-            String                  optionalDocComment,
-            ModifiersAndAnnotations modifiersAndAnnotations,
-            String                  name,
-            Type[]                  extendedTypes
+            Location  location,
+            String    optionalDocComment,
+            Modifiers modifiers,
+            String    name,
+            Type[]    extendedTypes
         ) {
             super(
-                location,                // location
-                optionalDocComment,      // optionalDocComment
-                modifiersAndAnnotations, // modifiersAndAnnotations
-                name,                    // name
-                extendedTypes            // extendedTypes
+                location,           // location
+                optionalDocComment, // optionalDocComment
+                modifiers,          // modifiers
+                name,               // name
+                extendedTypes       // extendedTypes
             );
         }
 
@@ -1240,7 +1246,7 @@ class Java {
         getDeclaringType() { return (TypeDeclaration) this.getEnclosingScope(); }
 
         @Override public boolean
-        isStatic() { return (this.getModifiersAndAnnotations().modifiers & Mod.STATIC) != 0; }
+        isStatic() { return (this.getModifierFlags() & Mod.STATIC) != 0; }
 
         @Override public void
         accept(Visitor.TypeDeclarationVisitor visitor) { visitor.visitMemberInterfaceDeclaration(this); }
@@ -1255,22 +1261,22 @@ class Java {
 
         public
         PackageMemberInterfaceDeclaration(
-            Location                location,
-            String                  optionalDocComment,
-            ModifiersAndAnnotations modifiersAndAnnotations,
-            String                  name,
-            Type[]                  extendedTypes
+            Location  location,
+            String    optionalDocComment,
+            Modifiers modifiers,
+            String    name,
+            Type[]    extendedTypes
         ) throws CompileException {
             super(
-                location,                // location
-                optionalDocComment,      // optionalDocComment
-                modifiersAndAnnotations, // modifiersAndAnnotations
-                name,                    // name
-                extendedTypes            // extendedTypes
+                location,           // location
+                optionalDocComment, // optionalDocComment
+                modifiers,          // modifiers
+                name,               // name
+                extendedTypes       // extendedTypes
             );
 
             // Check for forbidden modifiers (JLS 7.6).
-            if ((modifiersAndAnnotations.modifiers & (Mod.PROTECTED | Mod.PRIVATE | Mod.STATIC)) != 0) {
+            if ((modifiers.flags & (Mod.PROTECTED | Mod.PRIVATE | Mod.STATIC)) != 0) {
                 this.throwCompileException(
                     "Modifiers \"protected\", \"private\" and \"static\" not allowed in package member interface "
                     + "declaration"
@@ -1417,8 +1423,8 @@ class Java {
         
         private final String optionalDocComment;
 
-        /** The {@link ModifiersAndAnnotations} of this declarator. */
-        public final ModifiersAndAnnotations  modifiersAndAnnotations;
+        /** The {@link Modifiers} of this declarator. */
+        public final Modifiers modifiers;
 
         /** The return type of the function (VOID for constructors). */
         public final Type type;
@@ -1427,7 +1433,7 @@ class Java {
         public final String name;
 
         /** The parameters of the function. */
-        public final FormalParameter[] formalParameters;
+        public final FormalParameters formalParameters;
 
         /** The types of the declared exceptions. */
         public final Type[] thrownExceptions;
@@ -1439,24 +1445,26 @@ class Java {
         FunctionDeclarator(
             Location                 location,
             String                   optionalDocComment,
-            ModifiersAndAnnotations  modifiersAndAnnotations,
+            Modifiers                modifiers,
             Type                     type,
             String                   name,
-            FormalParameter[]        formalParameters,
+            FormalParameters         formalParameters,
             Type[]                   thrownExceptions,
             List/*<BlockStatement>*/ optionalStatements
         ) {
-            super(location, (modifiersAndAnnotations.modifiers & Mod.STATIC) != 0);
-            this.optionalDocComment      = optionalDocComment;
-            this.modifiersAndAnnotations = modifiersAndAnnotations;
-            this.type                    = type;
-            this.name                    = name;
-            this.formalParameters        = formalParameters;
-            this.thrownExceptions        = thrownExceptions;
-            this.optionalStatements      = optionalStatements;
+            super(location, (modifiers.flags & Mod.STATIC) != 0);
+            this.optionalDocComment = optionalDocComment;
+            this.modifiers          = formalParameters.variableArity ? modifiers.add(Mod.VARARGS) : modifiers;
+            this.type               = type;
+            this.name               = name;
+            this.formalParameters   = formalParameters;
+            this.thrownExceptions   = thrownExceptions;
+            this.optionalStatements = optionalStatements;
 
             this.type.setEnclosingScope(this);
-            for (int i = 0; i < formalParameters.length; ++i) formalParameters[i].type.setEnclosingScope(this);
+            for (int i = 0; i < formalParameters.parameters.length; ++i) {
+                formalParameters.parameters[i].type.setEnclosingScope(this);
+            }
             for (int i = 0; i < thrownExceptions.length; ++i) thrownExceptions[i].setEnclosingScope(this);
             if (optionalStatements != null) {
                 for (Iterator/*<BlockStatement>*/ it = optionalStatements.iterator(); it.hasNext();) {
@@ -1471,13 +1479,16 @@ class Java {
             }
         }
 
-        // Override "FunctionDeclaratoe"
+        public Annotation[]
+        getAnnotations() { return this.modifiers.annotations; }
+
+        // Override "AbstractTypeBodyDeclaration"
 
         @Override public void
         setDeclaringType(TypeDeclaration declaringType) {
             super.setDeclaringType(declaringType);
-            for (int i = 0; i < this.modifiersAndAnnotations.annotations.length; i++) {
-                this.modifiersAndAnnotations.annotations[i].setEnclosingScope(declaringType);
+            for (int i = 0; i < this.modifiers.annotations.length; i++) {
+                this.modifiers.annotations[i].setEnclosingScope(declaringType);
             }
         }
 
@@ -1499,9 +1510,38 @@ class Java {
             return this.optionalDocComment != null && this.optionalDocComment.indexOf("@deprecated") != -1;
         }
 
+        /** Representation of the (formal) function parameters. */
+        public static final
+        class FormalParameters extends Located {
+
+            public final FormalParameter[] parameters;
+            public final boolean           variableArity;
+
+            public
+            FormalParameters() { this(null, new FormalParameter[0], false); }
+
+            public
+            FormalParameters(Location location, FormalParameter[] parameters, boolean variableArity) {
+                super(location);
+                this.parameters    = parameters;
+                this.variableArity = variableArity;
+            }
+
+            @Override public String
+            toString() {
+                if (this.parameters.length == 0) return "()";
+                StringBuilder sb = new StringBuilder("(");
+                for (int i = 0; i < this.parameters.length; i++) {
+                    if (i > 0) sb.append(", ");
+                    sb.append(this.parameters[i].toString(i == this.parameters.length - 1 && this.variableArity));
+                }
+                return sb.append(')').toString();
+            }
+        }
+
         /** Representation of a (formal) function parameter. */
         public static final
-        class FormalParameter extends Java.Located {
+        class FormalParameter extends Located {
 
             /** Whether the parameter is declared FINAL. */
             public final boolean finaL;
@@ -1520,8 +1560,8 @@ class Java {
                 this.name  = name;
             }
 
-            @Override public String
-            toString() { return this.type.toString() + ' ' + this.name; }
+            public String
+            toString(boolean hasEllipsis) { return this.type.toString() + (hasEllipsis ? "... " : " ") + this.name; }
 
             // Compile time members.
 
@@ -1547,18 +1587,18 @@ class Java {
 
         public
         ConstructorDeclarator(
-            Location                             location,
-            String                               optionalDocComment,
-            ModifiersAndAnnotations              modifiersAndAnnotations,
-            FunctionDeclarator.FormalParameter[] formalParameters,
-            Type[]                               thrownExceptions,
-            ConstructorInvocation                optionalConstructorInvocation,
-            List/*<BlockStatement>*/             statements
+            Location                            location,
+            String                              optionalDocComment,
+            Modifiers                           modifiers,
+            FunctionDeclarator.FormalParameters formalParameters,
+            Type[]                              thrownExceptions,
+            ConstructorInvocation               optionalConstructorInvocation,
+            List/*<BlockStatement>*/            statements
         ) {
             super(
                 location,                                // location
                 optionalDocComment,                      // optionalDocComment
-                modifiersAndAnnotations,                 // modifiersAndAnnotations
+                modifiers,                               // modifiers
                 new BasicType(location, BasicType.VOID), // type
                 "<init>",                                // name
                 formalParameters,                        // formalParameters
@@ -1584,10 +1624,10 @@ class Java {
         toString() {
             StringBuilder sb = new StringBuilder(this.getDeclaringClass().getClassName()).append('(');
 
-            FunctionDeclarator.FormalParameter[] fps = this.formalParameters;
+            FunctionDeclarator.FormalParameter[] fps = this.formalParameters.parameters;
             for (int i = 0; i < fps.length; ++i) {
                 if (i > 0) sb.append(", ");
-                sb.append(fps[i].toString());
+                sb.append(fps[i].toString(i == fps.length - 1 && this.formalParameters.variableArity));
             }
             sb.append(')');
             return sb.toString();
@@ -1602,34 +1642,34 @@ class Java {
     class MethodDeclarator extends FunctionDeclarator {
         public
         MethodDeclarator(
-            Location                             location,
-            String                               optionalDocComment,
-            Java.ModifiersAndAnnotations         modifiersAndAnnotations,
-            Type                                 type,
-            String                               name,
-            FunctionDeclarator.FormalParameter[] formalParameters,
-            Type[]                               thrownExceptions,
-            List/*<BlockStatement>*/             optionalStatements
+            Location                            location,
+            String                              optionalDocComment,
+            Java.Modifiers                      modifiers,
+            Type                                type,
+            String                              name,
+            FunctionDeclarator.FormalParameters formalParameters,
+            Type[]                              thrownExceptions,
+            List/*<BlockStatement>*/            optionalStatements
         ) {
             super(
-                location,                // location
-                optionalDocComment,      // optionalDocComment
-                modifiersAndAnnotations, // modifiersAndAnnotations
-                type,                    // type
-                name,                    // name
-                formalParameters,        // formalParameters
-                thrownExceptions,        // thrownExceptions
-                optionalStatements       // optionalStatements
+                location,           // location
+                optionalDocComment, // optionalDocComment
+                modifiers,          // modifiers
+                type,               // type
+                name,               // name
+                formalParameters,   // formalParameters
+                thrownExceptions,   // thrownExceptions
+                optionalStatements  // optionalStatements
             );
         }
 
         @Override public String
         toString() {
             StringBuilder                        sb  = new StringBuilder(this.name).append('(');
-            FunctionDeclarator.FormalParameter[] fps = this.formalParameters;
+            FunctionDeclarator.FormalParameter[] fps = this.formalParameters.parameters;
             for (int i = 0; i < fps.length; ++i) {
                 if (i > 0) sb.append(", ");
-                sb.append(fps[i].toString());
+                sb.append(fps[i].toString(i == fps.length - 1 && this.formalParameters.variableArity));
             }
             sb.append(')');
             return sb.toString();
@@ -1652,8 +1692,8 @@ class Java {
 
         private final String optionalDocComment;
 
-        /** The modifiers and annotations of this field declaration. */
-        public final ModifiersAndAnnotations modifiersAndAnnotations;
+        /** The modifiers of this field declaration. */
+        public final Modifiers modifiers;
 
         /** The type of this field. */
         public final Type type;
@@ -1663,17 +1703,17 @@ class Java {
 
         public
         FieldDeclaration(
-            Location                location,
-            String                  optionalDocComment,
-            ModifiersAndAnnotations modifiersAndAnnotations,
-            Type                    type,
-            VariableDeclarator[]    variableDeclarators
+            Location             location,
+            String               optionalDocComment,
+            Modifiers            modifiers,
+            Type                 type,
+            VariableDeclarator[] variableDeclarators
         ) {
             super(location);
-            this.optionalDocComment      = optionalDocComment;
-            this.modifiersAndAnnotations = modifiersAndAnnotations;
-            this.type                    = type;
-            this.variableDeclarators     = variableDeclarators;
+            this.optionalDocComment  = optionalDocComment;
+            this.modifiers           = modifiers;
+            this.type                = type;
+            this.variableDeclarators = variableDeclarators;
 
             this.type.setEnclosingScope(this);
             for (int i = 0; i < variableDeclarators.length; ++i) {
@@ -1681,6 +1721,9 @@ class Java {
                 if (vd.optionalInitializer != null) Java.setEnclosingBlockStatement(vd.optionalInitializer, this);
             }
         }
+
+        public Annotation[]
+        getAnnotations() { return this.modifiers.annotations; }
 
         // Implement TypeBodyDeclaration.
 
@@ -1691,12 +1734,12 @@ class Java {
         getDeclaringType() { return (TypeDeclaration) this.getEnclosingScope(); }
 
         @Override public boolean
-        isStatic() { return (this.modifiersAndAnnotations.modifiers & Mod.STATIC) != 0; }
+        isStatic() { return (this.modifiers.flags & Mod.STATIC) != 0; }
 
         @Override public String
         toString() {
             StringBuilder sb = new StringBuilder();
-            sb.append(Mod.shortToString(this.modifiersAndAnnotations.modifiers)).append(' ').append(this.type);
+            sb.append(Mod.shortToString(this.modifiers.flags)).append(' ').append(this.type);
             sb.append(' ').append(this.variableDeclarators[0]);
             for (int i = 1; i < this.variableDeclarators.length; ++i) {
                 sb.append(", ").append(this.variableDeclarators[i]);
@@ -2266,24 +2309,24 @@ class Java {
 
     public static final
     class LocalVariableDeclarationStatement extends Statement {
-        public final ModifiersAndAnnotations modifiersAndAnnotations;
-        public final Type                    type;
-        public final VariableDeclarator[]    variableDeclarators;
+        public final Modifiers            modifiers;
+        public final Type                 type;
+        public final VariableDeclarator[] variableDeclarators;
 
         /**
-         * @param modifiersAndAnnotations Only "final" allowed.
+         * @param modifiers Only "final" allowed.
          */
         public
         LocalVariableDeclarationStatement(
-            Location                location,
-            ModifiersAndAnnotations modifiersAndAnnotations,
-            Type                    type,
-            VariableDeclarator[]    variableDeclarators
+            Location             location,
+            Modifiers            modifiers,
+            Type                 type,
+            VariableDeclarator[] variableDeclarators
         ) {
             super(location);
-            this.modifiersAndAnnotations = modifiersAndAnnotations;
-            this.type                    = type;
-            this.variableDeclarators     = variableDeclarators;
+            this.modifiers           = modifiers;
+            this.type                = type;
+            this.variableDeclarators = variableDeclarators;
 
             this.type.setEnclosingScope(this);
             for (int i = 0; i < variableDeclarators.length; ++i) {
@@ -2300,8 +2343,8 @@ class Java {
         @Override public String
         toString() {
             StringBuilder sb = new StringBuilder();
-            if (this.modifiersAndAnnotations.modifiers != Mod.NONE) {
-                sb.append(Mod.shortToString(this.modifiersAndAnnotations.modifiers)).append(' ');
+            if (this.modifiers.flags != Mod.NONE) {
+                sb.append(Mod.shortToString(this.modifiers.flags)).append(' ');
             }
             sb.append(this.type).append(' ').append(this.variableDeclarators[0].toString());
             for (int i = 1; i < this.variableDeclarators.length; ++i) {
@@ -3813,14 +3856,22 @@ class Java {
     class NewInitializedArray extends Rvalue {
         public final ArrayType        arrayType;
         public final ArrayInitializer arrayInitializer;
-
+        public final IClass           arrayIClass;
         public
         NewInitializedArray(Location location, ArrayType arrayType, ArrayInitializer arrayInitializer) {
             super(location);
             this.arrayType        = arrayType;
             this.arrayInitializer = arrayInitializer;
+            this.arrayIClass      = null;
         }
 
+        NewInitializedArray(Location location, IClass arrayIClass, ArrayInitializer arrayInitializer) {
+            super(location);
+            this.arrayType        = null;
+            this.arrayInitializer = arrayInitializer;
+            this.arrayIClass      = arrayIClass;
+        }
+        
         // Implement "Atom".
 
         @Override public String

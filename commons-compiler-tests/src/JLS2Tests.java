@@ -205,7 +205,7 @@ class JLS2Tests extends JaninoTestSuite {
             + "l.add(\"x\");\n" 
             + "final Iterator<Integer> it = l.iterator();\n"
             + "return it.hasNext();"
-        ), new String[] { "java.util.*"});
+        ), new String[] { "java.util.*" });
     }
 
     @Test public void
@@ -718,6 +718,31 @@ class JLS2Tests extends JaninoTestSuite {
             + "public class A           { public boolean meth(String s) { return true; } }\n"
             + "public class B extends A { public boolean meth(Object o) { return false; } }\n"
         ), "Main");
+    }
+    
+    @Test public void
+    test_15_12_2_4__IdentifyApplicableVariableArityMethods() throws Exception {
+        exp(TRUE, "\"two one\".equals(String.format(\"%2$s %1$s\", \"one\", \"two\"))");
+
+        clb(TRUE, (
+            ""
+            + "public static boolean\n"
+            + "main() {\n"
+            + "    return (\n"
+            + "        meth(6,  1, 2, 3)\n"
+            + "        && meth(10, 1, 2, 3, 4)\n"
+            + "        && meth(15, 1, 2, 3, 4, 5)\n"
+            + "        && meth(21, 1, 2, 3, 4, 5, 6)\n"
+            + "    );\n"
+            + "}\n"
+            + "\n"
+            + "static boolean\n"
+            + "meth(int expected, int... operands) {\n"
+            + "    int sum = 0;\n"
+            + "    for (int i = 0; i < operands.length; i++) sum += operands[i];\n"
+            + "    return sum == expected;\n"
+            + "}\n"
+        ));
     }
 
     @Test public void

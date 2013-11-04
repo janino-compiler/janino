@@ -44,8 +44,8 @@ import java.util.Map;
 
 import org.codehaus.janino.Descriptor;
 import org.codehaus.janino.JaninoRuntimeException;
+import org.codehaus.janino.Java;
 import org.codehaus.janino.Mod;
-
 
 /**
  * An object that represents the Java&trade; "class file" format.
@@ -422,7 +422,12 @@ class ClassFile {
      * ({@code Deprecated}, ...) to the field.
      */
     public FieldInfo
-    addFieldInfo(short accessFlags, String fieldName, String fieldTypeFd, Object optionalConstantValue) {
+    addFieldInfo(
+        Java.Modifiers modifiers,
+        String         fieldName,
+        String         fieldTypeFd,
+        Object         optionalConstantValue
+    ) {
         List/*<AttributeInfo>*/ attributes = new ArrayList();
         if (optionalConstantValue != null) {
             attributes.add(new ConstantValueAttribute(
@@ -431,7 +436,7 @@ class ClassFile {
             ));
         }
         FieldInfo fi = new FieldInfo(
-            accessFlags,                           // accessFlags
+            modifiers,                           // modifierAndAnnotations
             this.addConstantUtf8Info(fieldName),   // nameIndex
             this.addConstantUtf8Info(fieldTypeFd), // descriptorIndex
             attributes                             // attributes
@@ -445,9 +450,9 @@ class ClassFile {
      * ({@code Code}, {@code Depreecated}, {@code Exceptions}, ...) to the method.
      */
     public MethodInfo
-    addMethodInfo(short accessFlags, String methodName, String methodMd) {
+    addMethodInfo(Java.Modifiers modifiers, String methodName, String methodMd) {
         MethodInfo mi = new MethodInfo(
-            accessFlags,                          // accessFlags
+            modifiers,                            // modifiers
             this.addConstantUtf8Info(methodName), // nameIndex
             this.addConstantUtf8Info(methodMd),   // desriptorIndex
             new ArrayList()                       // attributes
@@ -528,16 +533,32 @@ class ClassFile {
         short               fieldsCount = dis.readShort();
         List/*<FieldInfo>*/ fields      = new ArrayList(fieldsCount);
         for (int i = 0; i < fieldsCount; ++i) {
+            short                   mods      = dis.readShort();
+            short                   nameIndex = dis.readShort();
+            short                   descIndex = dis.readShort();
+            List/*<AttributeInfo>*/ atts      = this.loadAttributes(dis);
             fields.add(new FieldInfo(
-                dis.readShort(),         // accessFlags
-                dis.readShort(),         // nameIndex
-                dis.readShort(),         // descriptorIndex
-                this.loadAttributes(dis) // attributes
+                buildModsAndAnns(mods, atts),
+                nameIndex,
+                descIndex,
+                atts
             ));
         }
         return fields;
     }
 
+    /**
+     * Extract annotations from list of attributes
+     * and build a ModifiersAndAnnotations object
+     * @param mods
+     * @param attributes
+     */
+    private static Java.Modifiers
+    buildModsAndAnns(short mods, List attributes) {
+        //TODO: extract the annotations
+        return new Java.Modifiers(mods);
+    }
+    
     /**
      * u2 methods_count, methods[methods_count]
      */
@@ -584,7 +605,8 @@ class ClassFile {
         ClassFile.storeShortArray(dos, this.interfaces);     // interfaces_count, interfaces
         ClassFile.storeFields(dos, this.fieldInfos);         // fields_count, fields
         ClassFile.storeMethods(dos, this.methodInfos);       // methods_count, methods
-        ClassFile.storeAttributes(dos, this.attributes);     // attributes_count, attributes
+        //TODO: need annotation(s) for classes?
+        ClassFile.storeAttributes(dos, this.attributes, null); // attributes_count, attributes
     }
 
     /**
@@ -631,7 +653,9 @@ class ClassFile {
      * u2 attributes_count, attributes[attributes_count]
      */
     private static void
-    storeAttributes(DataOutputStream dos, List/*<AttributeInfo>*/ attributeInfos) throws IOException {
+    storeAttributes(DataOutputStream dos, List/*<AttributeInfo>*/ attributeInfos, Java.Annotation[] annotations)
+    throws IOException {
+        //TODO: write annotation attributes
         dos.writeShort(attributeInfos.size());
         for (int i = 0; i < attributeInfos.size(); ++i) ((AttributeInfo) attributeInfos.get(i)).store(dos);
     }
@@ -1245,7 +1269,7 @@ class ClassFile {
     public
     class MethodInfo {
 
-        private final short                   accessFlags;
+        private final Java.Modifiers          modifiers;
         private final short                   nameIndex;
         private final short                   descriptorIndex;
         private final List/*<AttributeInfo>*/ attributes;
@@ -1254,8 +1278,13 @@ class ClassFile {
          * Initialize the "method_info" structure.
          */
         public
-        MethodInfo(short accessFlags, short nameIndex, short descriptorIndex, List/*<AttributeInfo>*/ attributes) {
-            this.accessFlags     = accessFlags;
+        MethodInfo(
+            Java.Modifiers          modifiers,
+            short                   nameIndex,
+            short                   descriptorIndex,
+            List/*<AttributeInfo>*/ attributes
+        ) {
+            this.modifiers       = modifiers;
             this.nameIndex       = nameIndex;
             this.descriptorIndex = descriptorIndex;
             this.attributes      = attributes;
@@ -1268,9 +1297,11 @@ class ClassFile {
         getClassFile() { return ClassFile.this; }
 
         /**
-         * @return The access flags of the method; or'ed values are {@link Mod#PUBLIC} and consorts
+         * @return The modifier flags of the method; or'ed values are the constants declared in {@link Mod}.
          */
-        public short getAccessFlags() { return this.accessFlags; }
+        public short getModifierFlags() { return this.modifiers.flags; }
+
+        public Java.Annotation[] getAnnotations() { return this.modifiers.annotations; }
 
         /**
          * @return The method's name
@@ -1303,20 +1334,28 @@ class ClassFile {
          */
         public void
         store(DataOutputStream dos) throws IOException {
-            dos.writeShort(this.accessFlags);                // access_flags
-            dos.writeShort(this.nameIndex);                  // name_index
-            dos.writeShort(this.descriptorIndex);            // descriptor_index
-            ClassFile.storeAttributes(dos, this.attributes); // attributes_count, attributes
+            dos.writeShort(this.modifiers.flags); // access_flags
+            dos.writeShort(this.nameIndex);       // name_index
+            dos.writeShort(this.descriptorIndex); // descriptor_index
+            ClassFile.storeAttributes(            // attributes_count, attributes
+                dos,
+                this.attributes,
+                this.modifiers.annotations
+            );
         }
     }
 
     private MethodInfo
     loadMethodInfo(DataInputStream dis) throws IOException {
+        short                   mods       = dis.readShort();
+        short                   nameIndex  = dis.readShort();
+        short                   descIndex  = dis.readShort();
+        List/*<AttributeInfo>*/ attributes = this.loadAttributes(dis);
         return new MethodInfo(
-            dis.readShort(),         // accessFlags
-            dis.readShort(),         // nameIndex
-            dis.readShort(),         // descriptorIndex
-            this.loadAttributes(dis) // attributes
+            ClassFile.buildModsAndAnns(mods, attributes),
+            nameIndex,
+            descIndex,
+            attributes
         );
     }
 
@@ -1327,17 +1366,24 @@ class ClassFile {
     class FieldInfo {
 
         public
-        FieldInfo(short accessFlags, short nameIndex, short descriptorIndex, List/*<AttributeInfo>*/ attributes) {
-            this.accessFlags     = accessFlags;
+        FieldInfo(
+            Java.Modifiers          modifiers,
+            short                   nameIndex,
+            short                   descriptorIndex,
+            List/*<AttributeInfo>*/ attributes
+        ) {
+            this.modifiers       = modifiers;
             this.nameIndex       = nameIndex;
             this.descriptorIndex = descriptorIndex;
             this.attributes      = attributes;
         }
 
         /**
-         * @return The access flags of the field; or'ed values are {@link Mod#PUBLIC} and consorts
+         * @return The modifier flags of the field; or'ed values are the constants declared in {@link Mod}.
          */
-        public short getAccessFlags() { return this.accessFlags; }
+        public short getModifierFlags() { return this.modifiers.flags; }
+
+        public Java.Annotation[] getAnnotations() { return this.modifiers.annotations; }
 
         /**
          * @return The field's name
@@ -1370,13 +1416,17 @@ class ClassFile {
          */
         public void
         store(DataOutputStream dos) throws IOException {
-            dos.writeShort(this.accessFlags);                // access_flags
-            dos.writeShort(this.nameIndex);                  // name_index
-            dos.writeShort(this.descriptorIndex);            // descriptor_index
-            ClassFile.storeAttributes(dos, this.attributes); // attibutes_count, attributes
+            dos.writeShort(this.modifiers.flags); // access_flags
+            dos.writeShort(this.nameIndex);       // name_index
+            dos.writeShort(this.descriptorIndex); // descriptor_index
+            ClassFile.storeAttributes(            // attibutes_count, attributes
+                dos,
+                this.attributes,
+                this.modifiers.annotations
+            );
         }
 
-        private final short                   accessFlags;
+        private final Java.Modifiers          modifiers;
         private final short                   nameIndex;
         private final short                   descriptorIndex;
         private final List/*<AttributeInfo>*/ attributes;

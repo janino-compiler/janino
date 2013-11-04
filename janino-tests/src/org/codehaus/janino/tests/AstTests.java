@@ -38,24 +38,24 @@ import java.util.List;
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.Location;
 import org.codehaus.janino.Java;
-import org.codehaus.janino.Java.FloatingPointLiteral;
-import org.codehaus.janino.Java.IntegerLiteral;
-import org.codehaus.janino.Mod;
-import org.codehaus.janino.SimpleCompiler;
-import org.codehaus.janino.UnparseVisitor;
 import org.codehaus.janino.Java.AmbiguousName;
 import org.codehaus.janino.Java.ArrayType;
 import org.codehaus.janino.Java.BasicType;
 import org.codehaus.janino.Java.Block;
 import org.codehaus.janino.Java.CompilationUnit;
 import org.codehaus.janino.Java.ExpressionStatement;
+import org.codehaus.janino.Java.FloatingPointLiteral;
+import org.codehaus.janino.Java.FunctionDeclarator.FormalParameters;
+import org.codehaus.janino.Java.IntegerLiteral;
 import org.codehaus.janino.Java.LocalVariableDeclarationStatement;
 import org.codehaus.janino.Java.MethodDeclarator;
 import org.codehaus.janino.Java.PackageMemberClassDeclaration;
 import org.codehaus.janino.Java.ReturnStatement;
 import org.codehaus.janino.Java.Rvalue;
 import org.codehaus.janino.Java.Type;
-import org.codehaus.janino.Java.FunctionDeclarator.FormalParameter;
+import org.codehaus.janino.Mod;
+import org.codehaus.janino.SimpleCompiler;
+import org.codehaus.janino.UnparseVisitor;
 import org.junit.Test;
 
 public
@@ -86,7 +86,7 @@ class AstTests {
         PackageMemberClassDeclaration clazz = new PackageMemberClassDeclaration(
             getLocation(),
             null,
-            new Java.ModifiersAndAnnotations(Mod.PUBLIC),
+            new Java.Modifiers(Mod.PUBLIC),
             "HandMade",
             null,
             new Type[0]
@@ -112,10 +112,10 @@ class AstTests {
         MethodDeclarator method = new MethodDeclarator(
             getLocation(),
             null,
-            new Java.ModifiersAndAnnotations(Mod.PUBLIC),
+            new Java.Modifiers(Mod.PUBLIC),
             returnType,
             "calculate",
-            new FormalParameter[0],
+            new FormalParameters(),
             new Type[0],
             statements
         );
@@ -127,7 +127,7 @@ class AstTests {
     createVarDecl(String name, String fPValue) {
         return new Java.LocalVariableDeclarationStatement(
             getLocation(),
-            new Java.ModifiersAndAnnotations(Mod.NONE),
+            new Java.Modifiers(Mod.NONE),
             createDoubleType(),
             new Java.VariableDeclarator[] {
                 new Java.VariableDeclarator(

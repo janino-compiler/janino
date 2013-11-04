@@ -120,6 +120,7 @@ import org.codehaus.janino.Java.MemberInterfaceDeclaration;
 import org.codehaus.janino.Java.MemberTypeDeclaration;
 import org.codehaus.janino.Java.MethodDeclarator;
 import org.codehaus.janino.Java.MethodInvocation;
+import org.codehaus.janino.Java.Modifiers;
 import org.codehaus.janino.Java.NamedClassDeclaration;
 import org.codehaus.janino.Java.NamedTypeDeclaration;
 import org.codehaus.janino.Java.NewAnonymousClassInstance;
@@ -382,7 +383,7 @@ class UnitCompiler {
         IClass iClass = this.resolve(cd);
 
         // Check that all methods are implemented.
-        if ((cd.getModifiersAndAnnotations().modifiers & Mod.ABSTRACT) == 0) {
+        if ((cd.getModifierFlags() & Mod.ABSTRACT) == 0) {
             IMethod[] ms = iClass.getIMethods();
             for (int i = 0; i < ms.length; ++i) {
                 IMethod base = ms[i];
@@ -405,7 +406,7 @@ class UnitCompiler {
 
         // Create "ClassFile" object.
         ClassFile cf = new ClassFile(
-            (short) (cd.getModifiersAndAnnotations().modifiers | Mod.SUPER), // accessFlags
+            (short) (cd.getModifierFlags() | Mod.SUPER), // accessFlags
             iClass.getDescriptor(),                                          // thisClassFD
             iClass.getSuperclass().getDescriptor(),                          // superclassFD
             IClass.getDescriptors(iClass.getInterfaces())                    // interfaceFDs
@@ -428,12 +429,12 @@ class UnitCompiler {
                 ? cf.addConstantUtf8Info(((NamedTypeDeclaration) this).getName())
                 : (short) 0
             );
-            assert cd.getModifiersAndAnnotations().annotations.length == 0 : "NYI";
+            assert cd.getAnnotations().length == 0 : "NYI";
             cf.addInnerClassesAttributeEntry(new ClassFile.InnerClassesAttribute.Entry(
                 innerClassInfoIndex,                      // innerClassInfoIndex
                 (short) 0,                                // outerClassInfoIndex
                 innerNameIndex,                           // innerNameIndex
-                cd.getModifiersAndAnnotations().modifiers // innerClassAccessFlags
+                cd.getModifierFlags() // innerClassAccessFlags
             ));
         } else
         if (cd.getEnclosingScope() instanceof TypeDeclaration) {
@@ -442,12 +443,12 @@ class UnitCompiler {
                 this.resolve(((TypeDeclaration) cd.getEnclosingScope())).getDescriptor()
             );
             short innerNameIndex = cf.addConstantUtf8Info(((MemberTypeDeclaration) cd).getName());
-            assert cd.getModifiersAndAnnotations().annotations.length == 0 : "NYI";
+            assert cd.getAnnotations().length == 0 : "NYI";
             cf.addInnerClassesAttributeEntry(new ClassFile.InnerClassesAttribute.Entry(
                 innerClassInfoIndex,                      // innerClassInfoIndex
                 outerClassInfoIndex,                      // outerClassInfoIndex
                 innerNameIndex,                           // innerNameIndex
-                cd.getModifiersAndAnnotations().modifiers // innerClassAccessFlags
+                cd.getModifierFlags() // innerClassAccessFlags
             ));
         }
 
@@ -549,7 +550,7 @@ class UnitCompiler {
         for (Iterator/*<IClass.IField>*/ it = cd.syntheticFields.values().iterator(); it.hasNext();) {
             IClass.IField f = (IClass.IField) it.next();
             cf.addFieldInfo(
-                Mod.PACKAGE,                 // accessFlags
+                new Modifiers(Mod.PACKAGE),  // modifiers
                 f.getName(),                 // fieldName
                 f.getType().getDescriptor(), // fieldTypeFD
                 null                         // optionalConstantValue
@@ -573,33 +574,33 @@ class UnitCompiler {
 
             Object ocv = NOT_CONSTANT;
             if (
-                (fd.modifiersAndAnnotations.modifiers & Mod.FINAL) != 0
+                (fd.modifiers.flags & Mod.FINAL) != 0
                 && vd.optionalInitializer instanceof Rvalue
             ) {
                 ocv = this.getConstantValue((Rvalue) vd.optionalInitializer);
             }
 
             ClassFile.FieldInfo fi;
-            if (Mod.isPrivateAccess(fd.modifiersAndAnnotations.modifiers)) {
+            if (Mod.isPrivateAccess(fd.modifiers.flags)) {
 
                 // To make the private field accessible for enclosing types, enclosed types and types
                 // enclosed by the same type, it is modified as follows:
                 //  + Access is changed from PRIVATE to PACKAGE
-                assert fd.modifiersAndAnnotations.annotations.length == 0 : "NYI";
+                assert fd.modifiers.annotations.length == 0 : "NYI";
                 fi = cf.addFieldInfo(
-                    Mod.changeAccess(fd.modifiersAndAnnotations.modifiers, Mod.PACKAGE), // accessFlags
-                    vd.name,                                                             // fieldName
-                    this.getType(type).getDescriptor(),                                  // fieldTypeFD
-                    ocv == NOT_CONSTANT ? null : ocv                                     // optionalConstantValue
+                    fd.modifiers.changeAccess(Mod.PACKAGE), // modifiers
+                    vd.name,                                // fieldName
+                    this.getType(type).getDescriptor(),     // fieldTypeFD
+                    ocv == NOT_CONSTANT ? null : ocv        // optionalConstantValue
                 );
             } else
             {
-                assert fd.modifiersAndAnnotations.annotations.length == 0 : "NYI";
+                assert fd.modifiers.annotations.length == 0 : "NYI";
                 fi = cf.addFieldInfo(
-                    fd.modifiersAndAnnotations.modifiers, // accessFlags
-                    vd.name,                              // fieldName
-                    this.getType(type).getDescriptor(),   // fieldTypeFD
-                    ocv == NOT_CONSTANT ? null : ocv      // optionalConstantValue
+                    fd.modifiers,                       // modifiers
+                    vd.name,                            // fieldName
+                    this.getType(type).getDescriptor(), // fieldTypeFD
+                    ocv == NOT_CONSTANT ? null : ocv    // optionalConstantValue
                 );
             }
 
@@ -676,7 +677,7 @@ class UnitCompiler {
         // Create "ClassFile" object.
         ClassFile cf = new ClassFile(
             (short) (               // accessFlags
-                id.getModifiersAndAnnotations().modifiers
+                id.getModifierFlags()
                 | Mod.SUPER
                 | Mod.INTERFACE
                 | Mod.ABSTRACT
@@ -749,17 +750,17 @@ class UnitCompiler {
         // Create interface initialization method iff there is any initialization code.
         if (this.generatesCode2ListStatements(statements)) {
             MethodDeclarator md = new MethodDeclarator(
-                decl.getLocation(),                                                  // location
-                null,                                                                // optionalDocComment
-                new Java.ModifiersAndAnnotations((short) (Mod.STATIC | Mod.PUBLIC)), // modifiers
-                new BasicType(                                                       // type
+                decl.getLocation(),                               // location
+                null,                                             // optionalDocComment
+                new Modifiers((short) (Mod.STATIC | Mod.PUBLIC)), // modifiers
+                new BasicType(                                    // type
                     decl.getLocation(),
                     BasicType.VOID
                 ),
-                "<clinit>",                                                          // name
-                new FunctionDeclarator.FormalParameter[0],                           // formalParameters
-                new ReferenceType[0],                                                // thrownExceptions
-                statements                                                           // optionalStatements
+                "<clinit>",                                       // name
+                new FunctionDeclarator.FormalParameters(),        // formalParameters
+                new ReferenceType[0],                             // thrownExceptions
+                statements                                        // optionalStatements
             );
             md.setDeclaringType(decl);
             this.compile(md, cf);
@@ -781,12 +782,12 @@ class UnitCompiler {
             short innerClassInfoIndex = cf.addConstantClassInfo(this.resolve(td).getDescriptor());
             short outerClassInfoIndex = cf.addConstantClassInfo(this.resolve(decl).getDescriptor());
             short innerNameIndex      = cf.addConstantUtf8Info(((MemberTypeDeclaration) td).getName());
-            assert td.getModifiersAndAnnotations().annotations.length == 0;
+            assert td.getAnnotations().length == 0;
             cf.addInnerClassesAttributeEntry(new ClassFile.InnerClassesAttribute.Entry(
                 innerClassInfoIndex,                      // innerClassInfoIndex
                 outerClassInfoIndex,                      // outerClassInfoIndex
                 innerNameIndex,                           // innerNameIndex
-                td.getModifiersAndAnnotations().modifiers // innerClassAccessFlags
+                td.getModifierFlags() // innerClassAccessFlags
             ));
         }
     }
@@ -835,7 +836,7 @@ class UnitCompiler {
     
     private boolean
     hasAnnotation(FunctionDeclarator fd, IClass methodAnnotation) throws CompileException {
-        Annotation[] methodAnnotations = fd.modifiersAndAnnotations.annotations;
+        Annotation[] methodAnnotations = fd.modifiers.annotations;
         for (int i = 0; i < methodAnnotations.length; i++) {
             if (this.getType(methodAnnotations[i].getType()) == methodAnnotation) return true;
         }
@@ -882,7 +883,7 @@ class UnitCompiler {
     private void
     compileBridgeMethod(ClassFile cf, IMethod base, IMethod override) throws CompileException {
         ClassFile.MethodInfo mi = cf.addMethodInfo(
-            (short) (Mod.PUBLIC | Mod.SYNTHETIC),
+            new Modifiers((short) (Mod.PUBLIC | Mod.SYNTHETIC)),
             base.getName(),
             base.getDescriptor()
         );
@@ -1492,10 +1493,10 @@ class UnitCompiler {
             this.writeConstantClassInfo(Descriptor.JAVA_LANG_ASSERTIONERROR);
             this.writeOpcode(as, Opcode.DUP);
 
-            Java.Rvalue[] arguments = (
+            Rvalue[] arguments = (
                 as.optionalExpression2 == null
-                ? new Java.Rvalue[0]
-                : new Java.Rvalue[] { as.optionalExpression2 }
+                ? new Rvalue[0]
+                : new Rvalue[] { as.optionalExpression2 }
             );
             this.invokeConstructor(
                 as,                                         // locatable
@@ -1528,8 +1529,8 @@ class UnitCompiler {
             ArrayInitializerOrRvalue initializer = this.getNonConstantFinalInitializer(fd, vd);
             if (initializer == null) continue;
 
-            assert fd.modifiersAndAnnotations.annotations.length == 0;
-            if ((fd.modifiersAndAnnotations.modifiers & Mod.STATIC) == 0) {
+            assert fd.modifiers.annotations.length == 0;
+            if ((fd.modifiers.flags & Mod.STATIC) == 0) {
                 this.writeOpcode(fd, Opcode.ALOAD_0);
             }
             IClass fieldType = this.getType(fd.type);
@@ -1557,8 +1558,8 @@ class UnitCompiler {
             // No need to check accessibility here.
             ;
 
-            assert fd.modifiersAndAnnotations.annotations.length == 0;
-            if ((fd.modifiersAndAnnotations.modifiers & Mod.STATIC) != 0) {
+            assert fd.modifiers.annotations.length == 0;
+            if ((fd.modifiers.flags & Mod.STATIC) != 0) {
                 this.writeOpcode(fd, Opcode.PUTSTATIC);
             } else {
                 this.writeOpcode(fd, Opcode.PUTFIELD);
@@ -1715,8 +1716,8 @@ class UnitCompiler {
 
     private boolean
     compile2(LocalVariableDeclarationStatement lvds) throws CompileException {
-        assert lvds.modifiersAndAnnotations.annotations.length == 0;
-        if ((lvds.modifiersAndAnnotations.modifiers & ~Mod.FINAL) != 0) {
+        assert lvds.modifiers.annotations.length == 0;
+        if ((lvds.modifiers.flags & ~Mod.FINAL) != 0) {
             this.compileError(
                 "The only allowed modifier in local variable declarations is \"final\"",
                 lvds.getLocation()
@@ -1764,9 +1765,9 @@ class UnitCompiler {
             Type variableType = lvds.type;
             for (int k = 0; k < vd.brackets; ++k) variableType = new ArrayType(variableType);
 
-            assert lvds.modifiersAndAnnotations.annotations.length == 0;
+            assert lvds.modifiers.annotations.length == 0;
             vd.localVariable = new LocalVariable(
-                (lvds.modifiersAndAnnotations.modifiers & Mod.FINAL) != 0, // finaL
+                (lvds.modifiers.flags & Mod.FINAL) != 0, // finaL
                 this.getType(variableType)                                 // type
             );
         }
@@ -2049,8 +2050,7 @@ class UnitCompiler {
     private void
     compile(FunctionDeclarator fd, final ClassFile classFile) throws CompileException {
         ClassFile.MethodInfo mi;
-
-        if (Mod.isPrivateAccess(fd.modifiersAndAnnotations.modifiers)) {
+        if (Mod.isPrivateAccess(fd.modifiers.flags)) {
             if (fd instanceof MethodDeclarator && !fd.isStatic()) {
 
                 // To make the non-static private method invocable for enclosing types, enclosed types
@@ -2060,15 +2060,15 @@ class UnitCompiler {
                 //  + It is made static
                 //  + A parameter of type "declaring class" is prepended to the signature
                 short modifiers = Mod.changeAccess(
-                    fd.modifiersAndAnnotations.modifiers, // modifiers
+                    fd.modifiers.flags, // modifiers
                     Mod.PACKAGE                           // newAccess
                 );
                 modifiers |= Mod.STATIC;
 
                 mi = classFile.addMethodInfo(
-                    modifiers,                         // accessFlags
-                    fd.name + '$',                     // methodName
-                    MethodDescriptor.prependParameter( // methodMD
+                    new Modifiers(modifiers, fd.modifiers.annotations), // modifiersAnd
+                    fd.name + '$',                                      // methodName
+                    MethodDescriptor.prependParameter(                  // methodMD
                         this.toIMethod((MethodDeclarator) fd).getDescriptor(), // md
                         this.resolve(fd.getDeclaringType()).getDescriptor()    // parameterFD
                     )
@@ -2079,19 +2079,18 @@ class UnitCompiler {
                 // To make the static private method or private constructor invocable for enclosing types, enclosed
                 // types and types enclosed by the same type, it is modified as follows:
                 //  + Access is changed from PRIVATE to PACKAGE
-                assert fd.modifiersAndAnnotations.annotations.length == 0 : "NYI";
-                short modifiers = Mod.changeAccess(fd.modifiersAndAnnotations.modifiers, Mod.PACKAGE);
+                assert fd.modifiers.annotations.length == 0 : "NYI";
+                short modifiers = Mod.changeAccess(fd.modifiers.flags, Mod.PACKAGE);
                 mi = classFile.addMethodInfo(
-                    modifiers,                            // accessFlags
-                    fd.name,                              // methodName
-                    this.toIInvocable(fd).getDescriptor() // methodMD
+                    new Modifiers(modifiers, fd.modifiers.annotations), // modifiers
+                    fd.name,                                            // methodName
+                    this.toIInvocable(fd).getDescriptor()               // methodMD
                 );
             }
-        } else
-        {
+        } else {
             
             mi = classFile.addMethodInfo(
-                fd.modifiersAndAnnotations.modifiers, // accessFlags
+                fd.modifiers,                         // modifiers
                 fd.name,                              // methodName
                 this.toIInvocable(fd).getDescriptor() // methodMD
             );
@@ -2114,7 +2113,7 @@ class UnitCompiler {
             mi.addAttribute(new ClassFile.DeprecatedAttribute(classFile.addConstantUtf8Info("Deprecated")));
         }
 
-        if ((fd.modifiersAndAnnotations.modifiers & (Mod.ABSTRACT | Mod.NATIVE)) != 0) return;
+        if ((fd.modifiers.flags & (Mod.ABSTRACT | Mod.NATIVE)) != 0) return;
 
         // Create CodeContext.
         final CodeContext codeContext = new CodeContext(mi.getClassFile());
@@ -2124,7 +2123,7 @@ class UnitCompiler {
             this.codeContext.saveLocalVariables();
 
             // Define special parameter "this".
-            if ((fd.modifiersAndAnnotations.modifiers & Mod.STATIC) == 0) {
+            if ((fd.modifiers.flags & Mod.STATIC) == 0) {
                 this.codeContext.allocateLocalVariable((short) 1, "this", this.resolve(fd.getDeclaringType()));
             }
 
@@ -2245,8 +2244,8 @@ class UnitCompiler {
      */
     private static void
     makeLocalVariableNames(final CodeContext cc, final ClassFile.MethodInfo mi) {
-        ClassFile                            cf   = mi.getClassFile();
-        Iterator/*<Java.LocalVariableSlot>*/ iter = cc.getAllLocalVars().iterator();
+        ClassFile                       cf   = mi.getClassFile();
+        Iterator/*<LocalVariableSlot>*/ iter = cc.getAllLocalVars().iterator();
 
         cf.addConstantUtf8Info("LocalVariableTable");
 
@@ -2264,16 +2263,17 @@ class UnitCompiler {
 
     private void
     buildLocalVariableMap(FunctionDeclarator fd) throws CompileException {
-        Map/*<String, Java.LocalVariable>*/ localVars = new HashMap();
+        Map/*<String, LocalVariable>*/ localVars = new HashMap();
 
         // Add function parameters.
-        for (int i = 0; i < fd.formalParameters.length; ++i) {
-            FunctionDeclarator.FormalParameter fp = fd.formalParameters[i];
-            LocalVariable                      lv = this.getLocalVariable(fp);
+        for (int i = 0; i < fd.formalParameters.parameters.length; ++i) {
+            FunctionDeclarator.FormalParameter fp                    = fd.formalParameters.parameters[i];
+            LocalVariable                      lv                    = this.getLocalVariable(fp, i == fd.formalParameters.parameters.length - 1 && fd.formalParameters.variableArity);
+            IClass                             formalParameterIClass = this.getType(fp.type);
             lv.setSlot(this.codeContext.allocateLocalVariable(
                 Descriptor.size(lv.type.getDescriptor()),
                 fp.name,
-                this.getType(fp.type)
+                formalParameterIClass
             ));
 
             if (localVars.put(fp.name, lv) != null) {
@@ -2296,9 +2296,10 @@ class UnitCompiler {
         }
     }
 
-    private Map/*<String, Java.LocalVariable>*/
-    buildLocalVariableMap(BlockStatement bs, final Map/*<String, Java.LocalVariable>*/ localVars) throws CompileException {
-        final Map/*<String, Java.LocalVariable>*/[] resVars = new Map[] { localVars };
+    private Map/*<String, LocalVariable>*/
+    buildLocalVariableMap(BlockStatement bs, final Map/*<String, LocalVariable>*/ localVars)
+    throws CompileException {
+        final Map/*<String, LocalVariable>*/[] resVars = new Map[] { localVars };
         class UCE extends RuntimeException { final CompileException ce; UCE(CompileException ce) { this.ce = ce; } }
         BlockStatementVisitor bsv = new BlockStatementVisitor() {
             // CHECKSTYLE LineLengthCheck:OFF
@@ -2340,19 +2341,19 @@ class UnitCompiler {
 
     // default handlers
 
-    private static Map/*<String, Java.LocalVariable>*/
-    buildLocalVariableMap(Statement s, final Map/*<String, Java.LocalVariable>*/ localVars) {
+    private static Map/*<String, LocalVariable>*/
+    buildLocalVariableMap(Statement s, final Map/*<String, LocalVariable>*/ localVars) {
         return (s.localVariables = localVars);
     }
 
-    private static Map/*<String, Java.LocalVariable>*/
-    buildLocalVariableMap(ConstructorInvocation ci, final Map/*<String, Java.LocalVariable>*/ localVars) {
+    private static Map/*<String, LocalVariable>*/
+    buildLocalVariableMap(ConstructorInvocation ci, final Map/*<String, LocalVariable>*/ localVars) {
         return (ci.localVariables = localVars);
     }
 
     // specialized handlers
     private void
-    buildLocalVariableMap(Block block, Map/*<String, Java.LocalVariable>*/ localVars) throws CompileException {
+    buildLocalVariableMap(Block block, Map/*<String, LocalVariable>*/ localVars) throws CompileException {
         block.localVariables = localVars;
         for (Iterator/*<BlockStatement>*/ it = block.statements.iterator(); it.hasNext();) {
             BlockStatement bs = (BlockStatement) it.next();
@@ -2361,15 +2362,15 @@ class UnitCompiler {
     }
 
     private void
-    buildLocalVariableMap(DoStatement ds, final Map/*<String, Java.LocalVariable>*/ localVars) throws CompileException {
+    buildLocalVariableMap(DoStatement ds, final Map/*<String, LocalVariable>*/ localVars) throws CompileException {
         ds.localVariables = localVars;
         this.buildLocalVariableMap(ds.body, localVars);
     }
 
     private void
-    buildLocalVariableMap(ForStatement fs, final Map/*<String, Java.LocalVariable>*/ localVars)
+    buildLocalVariableMap(ForStatement fs, final Map/*<String, LocalVariable>*/ localVars)
     throws CompileException {
-        Map/*<String, Java.LocalVariable>*/ inner = localVars;
+        Map/*<String, LocalVariable>*/ inner = localVars;
         if (fs.optionalInit != null) {
             inner = this.buildLocalVariableMap(fs.optionalInit, localVars);
         }
@@ -2378,7 +2379,7 @@ class UnitCompiler {
     }
 
     private void
-    buildLocalVariableMap(IfStatement is, final Map/*<String, Java.LocalVariable>*/ localVars) throws CompileException {
+    buildLocalVariableMap(IfStatement is, final Map/*<String, LocalVariable>*/ localVars) throws CompileException {
         is.localVariables = localVars;
         this.buildLocalVariableMap(is.thenStatement, localVars);
         if (is.optionalElseStatement != null) {
@@ -2387,15 +2388,15 @@ class UnitCompiler {
     }
 
     private void
-    buildLocalVariableMap(Initializer i, final Map/*<String, Java.LocalVariable>*/ localVars) throws CompileException {
+    buildLocalVariableMap(Initializer i, final Map/*<String, LocalVariable>*/ localVars) throws CompileException {
         this.buildLocalVariableMap(i.block, localVars);
     }
 
     private void
-    buildLocalVariableMap(SwitchStatement ss, final Map/*<String, Java.LocalVariable>*/ localVars)
+    buildLocalVariableMap(SwitchStatement ss, final Map/*<String, LocalVariable>*/ localVars)
     throws CompileException {
         ss.localVariables = localVars;
-        Map/*<String, Java.LocalVariable>*/ vars = localVars;
+        Map/*<String, LocalVariable>*/ vars = localVars;
         for (Iterator/*<SwitchStatement.SwitchBlockStatementGroup>*/ cases = ss.sbsgs.iterator(); cases.hasNext();) {
             SwitchStatement.SwitchBlockStatementGroup sbsg = (SwitchStatement.SwitchBlockStatementGroup) cases.next();
             for (Iterator/*<BlockStatement>*/ stmts = sbsg.blockStatements.iterator(); stmts.hasNext();) {
@@ -2406,17 +2407,18 @@ class UnitCompiler {
     }
 
     private void
-    buildLocalVariableMap(SynchronizedStatement ss, final Map/*<String, Java.LocalVariable>*/ localVars)
+    buildLocalVariableMap(SynchronizedStatement ss, final Map/*<String, LocalVariable>*/ localVars)
     throws CompileException {
         ss.localVariables = localVars;
         this.buildLocalVariableMap(ss.body, localVars);
     }
 
     private void
-    buildLocalVariableMap(TryStatement ts, final Map/*<String, Java.LocalVariable>*/ localVars) throws CompileException {
+    buildLocalVariableMap(TryStatement ts, final Map/*<String, LocalVariable>*/ localVars)
+    throws CompileException {
         ts.localVariables = localVars;
         this.buildLocalVariableMap(ts.body, localVars);
-        for (Iterator/*<Java.CatchClause>*/ it = ts.catchClauses.iterator(); it.hasNext();) {
+        for (Iterator/*<CatchClause>*/ it = ts.catchClauses.iterator(); it.hasNext();) {
             CatchClause cc = (CatchClause) it.next();
             this.buildLocalVariableMap(cc, localVars);
         }
@@ -2426,23 +2428,23 @@ class UnitCompiler {
     }
 
     private void
-    buildLocalVariableMap(WhileStatement ws, final Map/*<String, Java.LocalVariable>*/ localVars)
+    buildLocalVariableMap(WhileStatement ws, final Map/*<String, LocalVariable>*/ localVars)
     throws CompileException {
         ws.localVariables = localVars;
         this.buildLocalVariableMap(ws.body, localVars);
     }
 
-    private Map/*<String, Java.LocalVariable>*/
-    buildLocalVariableMap(LabeledStatement ls, final Map/*<String, Java.LocalVariable>*/ localVars)
+    private Map/*<String, LocalVariable>*/
+    buildLocalVariableMap(LabeledStatement ls, final Map/*<String, LocalVariable>*/ localVars)
     throws CompileException {
         ls.localVariables = localVars;
         return this.buildLocalVariableMap((BlockStatement) ls.body, localVars);
     }
 
-    private Map/*<String, Java.LocalVariable>*/
-    buildLocalVariableMap(LocalVariableDeclarationStatement lvds, final Map/*<String, Java.LocalVariable>*/ localVars)
+    private Map/*<String, LocalVariable>*/
+    buildLocalVariableMap(LocalVariableDeclarationStatement lvds, final Map/*<String, LocalVariable>*/ localVars)
     throws CompileException {
-        Map/*<String, Java.LocalVariable>*/ newVars = new HashMap();
+        Map/*<String, LocalVariable>*/ newVars = new HashMap();
         newVars.putAll(localVars);
         for (int i = 0; i < lvds.variableDeclarators.length; ++i) {
             VariableDeclarator vd = lvds.variableDeclarators[i];
@@ -2456,18 +2458,27 @@ class UnitCompiler {
     }
 
     protected void
-    buildLocalVariableMap(CatchClause cc, Map/*<String, Java.LocalVariable>*/ localVars) throws CompileException {
-        Map/*<String, Java.LocalVariable>*/ vars = new HashMap();
+    buildLocalVariableMap(CatchClause cc, Map/*<String, LocalVariable>*/ localVars) throws CompileException {
+        Map/*<String, LocalVariable>*/ vars = new HashMap();
         vars.putAll(localVars);
         LocalVariable lv = this.getLocalVariable(cc.caughtException);
         vars.put(cc.caughtException.name, lv);
         this.buildLocalVariableMap(cc.body, vars);
     }
-
+    
     public LocalVariable
     getLocalVariable(FunctionDeclarator.FormalParameter fp) throws CompileException {
+        return this.getLocalVariable(fp, false);
+    }
+
+    public LocalVariable
+    getLocalVariable(FunctionDeclarator.FormalParameter fp, boolean isVariableArityParameter) throws CompileException {
         if (fp.localVariable == null) {
-            fp.localVariable = new LocalVariable(fp.finaL, this.getType(fp.type));
+            IClass parameterType = this.getType(fp.type);
+            if (isVariableArityParameter) {
+                parameterType = parameterType.getArrayIClass(this.iClassLoader.JAVA_LANG_OBJECT);
+            }
+            fp.localVariable = new LocalVariable(fp.finaL, parameterType);
         }
         return fp.localVariable;
     }
@@ -2531,7 +2542,7 @@ class UnitCompiler {
             @Override public void visitCharacterLiteral(CharacterLiteral cl)                                  { try { UnitCompiler.this.compile2(cl);    } catch (CompileException e) { throw new UCE(e); } }
             @Override public void visitStringLiteral(StringLiteral sl)                                        { try { UnitCompiler.this.compile2(sl);    } catch (CompileException e) { throw new UCE(e); } }
             @Override public void visitNullLiteral(NullLiteral nl)                                            { try { UnitCompiler.this.compile2(nl);    } catch (CompileException e) { throw new UCE(e); } }
-            @Override public void visitSimpleConstant(SimpleConstant sl)                                        { try { UnitCompiler.this.compile2(sl);    } catch (CompileException e) { throw new UCE(e); } }
+            @Override public void visitSimpleConstant(SimpleConstant sl)                                      { try { UnitCompiler.this.compile2(sl);    } catch (CompileException e) { throw new UCE(e); } }
             @Override public void visitNewAnonymousClassInstance(NewAnonymousClassInstance naci)              { try { UnitCompiler.this.compile2(naci);  } catch (CompileException e) { throw new UCE(e); } }
             @Override public void visitNewArray(NewArray na)                                                  { try { UnitCompiler.this.compile2(na);    } catch (CompileException e) { throw new UCE(e); } }
             @Override public void visitNewInitializedArray(NewInitializedArray nia)                           { try { UnitCompiler.this.compile2(nia);   } catch (CompileException e) { throw new UCE(e); } }
@@ -2722,7 +2733,7 @@ class UnitCompiler {
             @Override public void visitCharacterLiteral(CharacterLiteral cl)                      { try { UnitCompiler.this.compileBoolean2(cl,   dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
             @Override public void visitStringLiteral(StringLiteral sl)                            { try { UnitCompiler.this.compileBoolean2(sl,   dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
             @Override public void visitNullLiteral(NullLiteral nl)                                { try { UnitCompiler.this.compileBoolean2(nl,   dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
-            @Override public void visitSimpleConstant(SimpleConstant sl)                            { try { UnitCompiler.this.compileBoolean2(sl,   dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
+            @Override public void visitSimpleConstant(SimpleConstant sl)                          { try { UnitCompiler.this.compileBoolean2(sl,   dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
             @Override public void visitNewAnonymousClassInstance(NewAnonymousClassInstance naci)  { try { UnitCompiler.this.compileBoolean2(naci, dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
             @Override public void visitNewArray(NewArray na)                                      { try { UnitCompiler.this.compileBoolean2(na,   dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
             @Override public void visitNewInitializedArray(NewInitializedArray nia)               { try { UnitCompiler.this.compileBoolean2(nia,  dst, orientation); } catch (CompileException e) { throw new UCE(e); } }
@@ -3034,7 +3045,7 @@ class UnitCompiler {
             @Override public void visitCharacterLiteral(CharacterLiteral cl)                      {       res[0] = UnitCompiler.this.compileContext2(cl);   }
             @Override public void visitStringLiteral(StringLiteral sl)                            {       res[0] = UnitCompiler.this.compileContext2(sl);   }
             @Override public void visitNullLiteral(NullLiteral nl)                                {       res[0] = UnitCompiler.this.compileContext2(nl);   }
-            @Override public void visitSimpleConstant(SimpleConstant sl)                            {       res[0] = UnitCompiler.this.compileContext2(sl);   }
+            @Override public void visitSimpleConstant(SimpleConstant sl)                          {       res[0] = UnitCompiler.this.compileContext2(sl);   }
             @Override public void visitNewAnonymousClassInstance(NewAnonymousClassInstance naci)  {       res[0] = UnitCompiler.this.compileContext2(naci); }
             @Override public void visitNewArray(NewArray na)                                      {       res[0] = UnitCompiler.this.compileContext2(na);   }
             @Override public void visitNewInitializedArray(NewInitializedArray nia)               {       res[0] = UnitCompiler.this.compileContext2(nia);  }
@@ -3165,7 +3176,7 @@ class UnitCompiler {
             @Override public void visitCharacterLiteral(CharacterLiteral cl)                      { try { res[0] = UnitCompiler.this.compileGet2(cl);   } catch (CompileException e) { throw new UCE(e); } }
             @Override public void visitStringLiteral(StringLiteral sl)                            { try { res[0] = UnitCompiler.this.compileGet2(sl);   } catch (CompileException e) { throw new UCE(e); } }
             @Override public void visitNullLiteral(NullLiteral nl)                                { try { res[0] = UnitCompiler.this.compileGet2(nl);   } catch (CompileException e) { throw new UCE(e); } }
-            @Override public void visitSimpleConstant(SimpleConstant sl)                            {       res[0] = UnitCompiler.this.compileGet2(sl);                                                      }
+            @Override public void visitSimpleConstant(SimpleConstant sl)                          {       res[0] = UnitCompiler.this.compileGet2(sl);                                                      }
             @Override public void visitNewAnonymousClassInstance(NewAnonymousClassInstance naci)  { try { res[0] = UnitCompiler.this.compileGet2(naci); } catch (CompileException e) { throw new UCE(e); } }
             @Override public void visitNewArray(NewArray na)                                      { try { res[0] = UnitCompiler.this.compileGet2(na);   } catch (CompileException e) { throw new UCE(e); } }
             @Override public void visitNewInitializedArray(NewInitializedArray nia)               { try { res[0] = UnitCompiler.this.compileGet2(nia);  } catch (CompileException e) { throw new UCE(e); } }
@@ -3355,11 +3366,11 @@ class UnitCompiler {
             if (!hasClassDollarField) {
                 Type             classType = new SimpleType(loc, icl.JAVA_LANG_CLASS);
                 FieldDeclaration fd        = new FieldDeclaration(
-                    loc,                                          // location
-                    null,                                         // optionalDocComment
-                    new Java.ModifiersAndAnnotations(Mod.STATIC), // modifiers
-                    classType,                                    // type
-                    new VariableDeclarator[] {                    // variableDeclarators
+                    loc,                       // location
+                    null,                      // optionalDocComment
+                    new Modifiers(Mod.STATIC), // modifiers
+                    classType,                 // type
+                    new VariableDeclarator[] { // variableDeclarators
                         new VariableDeclarator(
                             loc,                  // location
                             classDollarFieldName, // name
@@ -3839,13 +3850,41 @@ class UnitCompiler {
         }
 
         // Evaluate method parameters.
-        IClass[] parameterTypes = iMethod.getParameterTypes();
-        for (int i = 0; i < mi.arguments.length; ++i) {
+        // $15.12.4.2.
+        // if this method is vararg, rewritten all args starting from lastParamIndex to the end
+        // as if they were elements of an array
+        IClass[]  parameterTypes = iMethod.getParameterTypes();
+        Rvalue[]  adjustedArgs   = null;
+        final int actualSize     = mi.arguments.length;
+        if (iMethod.isVarargs() && iMethod.argsNeedAdjust()) {
+            adjustedArgs = new Rvalue[parameterTypes.length];
+            Rvalue[]       lastArgs = new Rvalue[actualSize - parameterTypes.length + 1];
+            final Location loc      = mi.getLocation();
+
+            if (lastArgs.length > 0) {
+                for (int i = 0, j = parameterTypes.length - 1; i < lastArgs.length; ++i, ++j) {
+                    lastArgs[i] = mi.arguments[j];
+                }
+            }
+
+            for (int i = parameterTypes.length - 2; i >= 0; --i) {
+                adjustedArgs[i] = mi.arguments[i];
+            }
+            adjustedArgs[adjustedArgs.length - 1] = new NewInitializedArray(
+                loc,                                       // location
+                parameterTypes[parameterTypes.length - 1], // arrayIClass
+                new ArrayInitializer(loc, lastArgs)        // arrayInitializer
+            );
+        } else {
+            adjustedArgs = mi.arguments;
+        }
+        
+        for (int i = 0; i < adjustedArgs.length; ++i) {
             this.assignmentConversion(
-                mi,                        // l
-                this.compileGetValue(mi.arguments[i]), // sourceType
+                mi,                                    // location
+                this.compileGetValue(adjustedArgs[i]), // sourceType
                 parameterTypes[i],                     // targetType
-                this.getConstantValue(mi.arguments[i]) // optionalConstantValue
+                this.getConstantValue(adjustedArgs[i]) // optionalConstantValue
             );
         }
 
@@ -3912,12 +3951,13 @@ class UnitCompiler {
             this.compileError("Cannot invoke superclass method in non-method scope", scmi.getLocation());
             return IClass.INT;
         }
-        if ((fd.modifiersAndAnnotations.modifiers & Mod.STATIC) != 0) {
+        if ((fd.modifiers.flags & Mod.STATIC) != 0) {
             this.compileError("Cannot invoke superclass method in static context", scmi.getLocation());
         }
         this.load(scmi, this.resolve(fd.getDeclaringType()), 0);
 
         // Evaluate method parameters.
+         //TODO: adjust args
         IClass[] parameterTypes = iMethod.getParameterTypes();
         for (int i = 0; i < scmi.arguments.length; ++i) {
             this.assignmentConversion(
@@ -4016,7 +4056,7 @@ class UnitCompiler {
         }
 
         this.invokeConstructor(
-            nci,                  // l
+            nci,                              // l
             nci.getEnclosingBlockStatement(), // scope
             optionalEnclosingInstance,        // optionalEnclosingInstance
             nci.iClass,                       // targetClass
@@ -4027,7 +4067,6 @@ class UnitCompiler {
 
     private IClass
     compileGet2(NewAnonymousClassInstance naci) throws CompileException {
-
         // Find constructors.
         AnonymousClassDeclaration acd           = naci.anonymousClassDeclaration;
         IClass                    sc            = this.resolve(acd).getSuperclass();
@@ -4045,8 +4084,8 @@ class UnitCompiler {
         IClass[] pts = iConstructor.getParameterTypes();
 
         // Determine formal parameters of anonymous constructor.
-        FunctionDeclarator.FormalParameter[] fps;
-        Location                             loc = naci.getLocation();
+        FunctionDeclarator.FormalParameters fps;
+        Location                            loc = naci.getLocation();
         {
             List/*<FunctionDeclarator.FormalParameter>*/ l = new ArrayList();
 
@@ -4063,8 +4102,10 @@ class UnitCompiler {
                 new SimpleType(loc, pts[i]), // type
                 "p" + i                      // name
             ));
-            fps = (FunctionDeclarator.FormalParameter[]) l.toArray(
-                new FunctionDeclarator.FormalParameter[l.size()]
+            fps = new FunctionDeclarator.FormalParameters(
+                loc,
+                (FunctionDeclarator.FormalParameter[]) l.toArray(new FunctionDeclarator.FormalParameter[l.size()]),
+                false
             );
         }
 
@@ -4080,26 +4121,26 @@ class UnitCompiler {
             optionalQualificationAccess = null;
         } else
         {
-            optionalQualificationAccess = new ParameterAccess(loc, fps[j++]);
+            optionalQualificationAccess = new ParameterAccess(loc, fps.parameters[j++]);
         }
         Rvalue[] parameterAccesses = new Rvalue[pts.length];
         for (int i = 0; i < pts.length; ++i) {
-            parameterAccesses[i] = new ParameterAccess(loc, fps[j++]);
+            parameterAccesses[i] = new ParameterAccess(loc, fps.parameters[j++]);
         }
 
         // Generate the anonymous constructor for the anonymous class (JLS 15.9.5.1).
         ConstructorDeclarator anonymousConstructor = new ConstructorDeclarator(
-            loc,                                           // location
-            null,                                          // optionalDocComment
-            new Java.ModifiersAndAnnotations(Mod.PACKAGE), // modifiersAndAnnotations
-            fps,                                           // formalParameters
-            tets,                                          // thrownExceptions
-            new SuperConstructorInvocation(                // optionalConstructorInvocation
-                loc,                         // location
-                optionalQualificationAccess, // optionalQualification
-                parameterAccesses            // arguments
+            loc,                            // location
+            null,                           // optionalDocComment
+            new Modifiers(Mod.PACKAGE),     // modifiers
+            fps,                            // formalParameters
+            tets,                           // thrownExceptions
+            new SuperConstructorInvocation( // optionalConstructorInvocation
+                loc,                            // location
+                optionalQualificationAccess,    // optionalQualification
+                parameterAccesses               // arguments
             ),
-            Collections.EMPTY_LIST                         // optionalStatements
+            Collections.EMPTY_LIST          // optionalStatements
         );
 
         // Compile the anonymous class.
@@ -4111,6 +4152,7 @@ class UnitCompiler {
             this.writeOpcode(naci, Opcode.NEW);
             this.writeConstantClassInfo(this.resolve(naci.anonymousClassDeclaration).getDescriptor());
 
+            // TODO: adjust argument (for varargs case ?)
             // Invoke the anonymous constructor.
             this.writeOpcode(naci, Opcode.DUP);
             Rvalue[] arguments2;
@@ -4122,6 +4164,14 @@ class UnitCompiler {
                 System.arraycopy(naci.arguments, 0, arguments2, 1, naci.arguments.length);
             }
 
+            // adjust if needed
+            // TODO: not doing this now because we don't need vararg-annonymous class (yet)
+//            Rvalue[] adjustedArgs = null;
+//            final int paramsTypeLength = iConstructor.getParameterTypes().length;
+//            if (argsNeedAdjusting[0]) {
+//                adjustedArgs = new Rvalue[paramsTypeLength]; 
+//            }
+            
             // Notice: The enclosing instance of the anonymous class is "this", not the
             // qualification of the NewAnonymousClassInstance.
             Scope s;
@@ -4179,7 +4229,7 @@ class UnitCompiler {
     }
     private IClass
     compileGet2(NewInitializedArray nia) throws CompileException {
-        IClass at = this.getType(nia.arrayType);
+        IClass at = nia.arrayType == null ? nia.arrayIClass : this.getType(nia.arrayType);
         this.compileGetValue(nia.arrayInitializer, at);
         return at;
     }
@@ -4252,7 +4302,7 @@ class UnitCompiler {
     // -------------------- Rvalue.getConstantValue() -----------------
 
     /**
-     * Special return value for the {@link #getConstantValue(Java.Rvalue)} method family indicating that the given
+     * Special return value for the {@link #getConstantValue(Rvalue)} method family indicating that the given
      * {@link Rvalue} does not evaluate to a constant value.
      */
     public static final Object NOT_CONSTANT = IClass.NOT_CONSTANT;
@@ -4287,7 +4337,7 @@ class UnitCompiler {
             @Override public void visitCharacterLiteral(CharacterLiteral cl)                      {       res[0] = UnitCompiler.this.getConstantValue2(cl);                                                     }
             @Override public void visitStringLiteral(StringLiteral sl)                            {       res[0] = UnitCompiler.this.getConstantValue2(sl);                                                     }
             @Override public void visitNullLiteral(NullLiteral nl)                                {       res[0] = UnitCompiler.this.getConstantValue2(nl);                                                     }
-            @Override public void visitSimpleConstant(SimpleConstant sl)                            {       res[0] = UnitCompiler.this.getConstantValue2(sl);                                                     }
+            @Override public void visitSimpleConstant(SimpleConstant sl)                          {       res[0] = UnitCompiler.this.getConstantValue2(sl);                                                     }
             @Override public void visitNewAnonymousClassInstance(NewAnonymousClassInstance naci)  {       res[0] = UnitCompiler.this.getConstantValue2(naci);                                                   }
             @Override public void visitNewArray(NewArray na)                                      {       res[0] = UnitCompiler.this.getConstantValue2(na);                                                     }
             @Override public void visitNewInitializedArray(NewInitializedArray nia)               {       res[0] = UnitCompiler.this.getConstantValue2(nia);                                                    }
@@ -4702,7 +4752,7 @@ class UnitCompiler {
             @Override public void visitCharacterLiteral(CharacterLiteral cl)                      { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(cl);   } catch (CompileException e) { throw new UCE(e); } }
             @Override public void visitStringLiteral(StringLiteral sl)                            { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(sl);   } catch (CompileException e) { throw new UCE(e); } }
             @Override public void visitNullLiteral(NullLiteral nl)                                { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(nl);   } catch (CompileException e) { throw new UCE(e); } }
-            @Override public void visitSimpleConstant(SimpleConstant sl)                            { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(sl);   } catch (CompileException e) { throw new UCE(e); } }
+            @Override public void visitSimpleConstant(SimpleConstant sl)                          { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(sl);   } catch (CompileException e) { throw new UCE(e); } }
             @Override public void visitNewAnonymousClassInstance(NewAnonymousClassInstance naci)  { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(naci); } catch (CompileException e) { throw new UCE(e); } }
             @Override public void visitNewArray(NewArray na)                                      { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(na);   } catch (CompileException e) { throw new UCE(e); } }
             @Override public void visitNewInitializedArray(NewInitializedArray nia)               { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(nia);  } catch (CompileException e) { throw new UCE(e); } }
@@ -5020,7 +5070,7 @@ class UnitCompiler {
             @Override public void visitCharacterLiteral(CharacterLiteral cl)                      {       res[0] = UnitCompiler.this.getType2(cl);                                                   }
             @Override public void visitStringLiteral(StringLiteral sl)                            {       res[0] = UnitCompiler.this.getType2(sl);                                                   }
             @Override public void visitNullLiteral(NullLiteral nl)                                {       res[0] = UnitCompiler.this.getType2(nl);                                                   }
-            @Override public void visitSimpleConstant(SimpleConstant sl)                            {       res[0] = UnitCompiler.this.getType2(sl);                                                   }
+            @Override public void visitSimpleConstant(SimpleConstant sl)                          {       res[0] = UnitCompiler.this.getType2(sl);                                                   }
             @Override public void visitNewAnonymousClassInstance(NewAnonymousClassInstance naci)  {       res[0] = UnitCompiler.this.getType2(naci);                                                   }
             @Override public void visitNewArray(NewArray na)                                      { try { res[0] = UnitCompiler.this.getType2(na);  } catch (CompileException e) { throw new UCE(e); } }
             @Override public void visitNewInitializedArray(NewInitializedArray nia)               { try { res[0] = UnitCompiler.this.getType2(nia); } catch (CompileException e) { throw new UCE(e); } }
@@ -5466,6 +5516,7 @@ class UnitCompiler {
 
     private IClass
     getType2(MethodInvocation mi) throws CompileException {
+        //TODO: cache this (as blackhole)
         if (mi.iMethod == null) {
             mi.iMethod = this.findIMethod(mi);
         }
@@ -5501,7 +5552,7 @@ class UnitCompiler {
 
     private IClass
     getType2(NewInitializedArray nia) throws CompileException {
-        return this.getType(nia.arrayType);
+        return nia.arrayType == null ? nia.arrayIClass : this.getType(nia.arrayType);
     }
 
     @SuppressWarnings("static-method") private IClass
@@ -5588,7 +5639,7 @@ class UnitCompiler {
             @Override public void visitCharacterLiteral(CharacterLiteral cl)                      { res[0] = UnitCompiler.this.isType2(cl);   }
             @Override public void visitStringLiteral(StringLiteral sl)                            { res[0] = UnitCompiler.this.isType2(sl);   }
             @Override public void visitNullLiteral(NullLiteral nl)                                { res[0] = UnitCompiler.this.isType2(nl);   }
-            @Override public void visitSimpleConstant(SimpleConstant sl)                            { res[0] = UnitCompiler.this.isType2(sl);   }
+            @Override public void visitSimpleConstant(SimpleConstant sl)                          { res[0] = UnitCompiler.this.isType2(sl);   }
             @Override public void visitNewAnonymousClassInstance(NewAnonymousClassInstance naci)  { res[0] = UnitCompiler.this.isType2(naci); }
             @Override public void visitNewArray(NewArray na)                                      { res[0] = UnitCompiler.this.isType2(na);   }
             @Override public void visitNewInitializedArray(NewInitializedArray nia)               { res[0] = UnitCompiler.this.isType2(nia);  }
@@ -5861,7 +5912,10 @@ class UnitCompiler {
      */
     void
     assignSyntheticParametersToSyntheticFields(ConstructorDeclarator cd) throws CompileException {
-        for (Iterator/*<IClass.IField>*/ it = cd.getDeclaringClass().syntheticFields.values().iterator(); it.hasNext();) {
+        for (
+            Iterator/*<IClass.IField>*/ it = cd.getDeclaringClass().syntheticFields.values().iterator();
+            it.hasNext();
+        ) {
             IClass.IField sf                 = (IClass.IField) it.next();
             LocalVariable syntheticParameter = (LocalVariable) cd.syntheticParameters.get(sf.getName());
             if (syntheticParameter == null) {
@@ -6318,7 +6372,6 @@ class UnitCompiler {
         IClass    targetClass,
         Rvalue[]  arguments
     ) throws CompileException {
-
         // Find constructors.
         IClass.IConstructor[] iConstructors = targetClass.getDeclaredIConstructors();
         if (iConstructors.length == 0) {
@@ -6328,7 +6381,7 @@ class UnitCompiler {
         }
 
         IClass.IConstructor iConstructor = (IClass.IConstructor) this.findMostSpecificIInvocable(
-            locatable,             // l
+            locatable,     // l
             iConstructors, // iInvocables
             arguments,     // arguments
             scope          // contextScope
@@ -6457,8 +6510,8 @@ class UnitCompiler {
                             // Does the declaring function declare a parameter with that name?
                             while (!(s instanceof FunctionDeclarator)) s = s.getEnclosingScope();
                             FunctionDeclarator fd = (FunctionDeclarator) s;
-                            for (int j = 0; j < fd.formalParameters.length; ++j) {
-                                FunctionDeclarator.FormalParameter fp = fd.formalParameters[j];
+                            for (int j = 0; j < fd.formalParameters.parameters.length; ++j) {
+                                FunctionDeclarator.FormalParameter fp = fd.formalParameters.parameters[j];
                                 if (fp.name.equals(localVariableName)) {
                                     lv = this.getLocalVariable(fp);
                                     break DETERMINE_LV;
@@ -6477,7 +6530,28 @@ class UnitCompiler {
         }
 
         // Evaluate constructor arguments.
+        Rvalue[] adjustedArgs   = null;
         IClass[] parameterTypes = iConstructor.getParameterTypes();
+        int      actualSize     = arguments.length;
+        if (iConstructor.isVarargs() && iConstructor.argsNeedAdjust()) {
+            adjustedArgs = new Rvalue[parameterTypes.length];
+            Rvalue[] lastArgs = new Rvalue[actualSize - parameterTypes.length + 1];
+            for (int i = 0, j = parameterTypes.length - 1; i < lastArgs.length; ++i, ++j) {
+                lastArgs[i] = arguments[j];
+            }
+            Location loc = lastArgs[lastArgs.length - 1].getLocation();
+            
+            for (int i = parameterTypes.length - 2; i >= 0; --i) {
+                adjustedArgs[i] = arguments[i];
+            }
+            adjustedArgs[adjustedArgs.length - 1] = new NewInitializedArray(
+                loc,                                       // location
+                parameterTypes[parameterTypes.length - 1], // arrayIClass
+                new ArrayInitializer(loc, lastArgs)        // arrayInitializer
+            );
+            arguments = adjustedArgs;
+        }
+        
         for (int i = 0; i < arguments.length; ++i) {
             this.assignmentConversion(
                 locatable,                                  // l
@@ -6507,7 +6581,7 @@ class UnitCompiler {
                 // Implement IMember.
                 @Override public Access
                 getAccess() {
-                    switch (fd.modifiersAndAnnotations.modifiers & Mod.PPP) {
+                    switch (fd.modifiers.flags & Mod.PPP) {
                     case Mod.PRIVATE:
                         return Access.PRIVATE;
                     case Mod.PROTECTED:
@@ -6521,10 +6595,13 @@ class UnitCompiler {
                     }
                 }
 
+                @Override public Annotation[]
+                getAnnotations() { return fd.modifiers.annotations; }
+
                 // Implement "IField".
 
                 @Override public boolean
-                isStatic() { return (fd.modifiersAndAnnotations.modifiers & Mod.STATIC) != 0; }
+                isStatic() { return (fd.modifiers.flags & Mod.STATIC) != 0; }
 
                 @Override public IClass
                 getType() throws CompileException {
@@ -6540,7 +6617,7 @@ class UnitCompiler {
                 @Override public Object
                 getConstantValue() throws CompileException {
                     if (
-                        (fd.modifiersAndAnnotations.modifiers & Mod.FINAL) != 0
+                        (fd.modifiers.flags & Mod.FINAL) != 0
                         && vd.optionalInitializer instanceof Rvalue
                     ) {
                         Object constantInitializerValue = UnitCompiler.this.getConstantValue(
@@ -6573,8 +6650,8 @@ class UnitCompiler {
 
         // Check if initializer is constant-final.
         if (
-            (fd.modifiersAndAnnotations.modifiers & Mod.STATIC) != 0
-            && (fd.modifiersAndAnnotations.modifiers & Mod.FINAL) != 0
+            (fd.modifiers.flags & Mod.STATIC) != 0
+            && (fd.modifiers.flags & Mod.FINAL) != 0
             && vd.optionalInitializer instanceof Rvalue
             && this.getConstantValue((Rvalue) vd.optionalInitializer) != NOT_CONSTANT
         ) return null;
@@ -7253,13 +7330,15 @@ class UnitCompiler {
         final IClass[] pts = new IClass[arguments.length];
         for (int i = 0; i < arguments.length; ++i) pts[i] = this.getType(arguments[i]);
         return targetType.new IMethod() {
-            @Override public String   getName()             { return name; }
-            @Override public IClass   getReturnType()       { return IClass.INT; }
-            @Override public boolean  isStatic()            { return false; }
-            @Override public boolean  isAbstract()          { return false; }
-            @Override public IClass[] getParameterTypes()   { return pts; }
-            @Override public IClass[] getThrownExceptions() { return new IClass[0]; }
-            @Override public Access   getAccess()           { return Access.PUBLIC; }
+            @Override public String       getName()             { return name; }
+            @Override public IClass       getReturnType()       { return IClass.INT; }
+            @Override public boolean      isStatic()            { return false; }
+            @Override public boolean      isAbstract()          { return false; }
+            @Override public boolean      isVarargs()           { return false; }
+            @Override public IClass[]     getParameterTypes()   { return pts; }
+            @Override public IClass[]     getThrownExceptions() { return new IClass[0]; }
+            @Override public Access       getAccess()           { return Access.PUBLIC; }
+            @Override public Annotation[] getAnnotations()      { return new Annotation[0]; }
         };
     }
 
@@ -7291,7 +7370,7 @@ class UnitCompiler {
         for (Scope s = scmi.getEnclosingBlockStatement();; s = s.getEnclosingScope()) {
             if (s instanceof FunctionDeclarator) {
                 FunctionDeclarator fd = (FunctionDeclarator) s;
-                if ((fd.modifiersAndAnnotations.modifiers & Mod.STATIC) != 0) {
+                if ((fd.modifiers.flags & Mod.STATIC) != 0) {
                     this.compileError("Superclass method cannot be invoked in static context", scmi.getLocation());
                 }
             }
@@ -7303,7 +7382,7 @@ class UnitCompiler {
         IClass  superclass = this.resolve(declaringClass).getSuperclass();
         IMethod iMethod    = this.findIMethod(
             superclass, // targetType
-            scmi        // invocation
+            scmi        // invocation            
         );
         if (iMethod == null) {
             this.compileError(
@@ -7317,8 +7396,9 @@ class UnitCompiler {
     }
 
     /**
-     * Determine the arguments' types, determine the applicable invocables and choose the most specific invocable.
-     *
+     * Determine the arguments' types, determine the applicable invocables and choose the most specific invocable
+     * and adjust arguments as needed (for varargs case).
+     * 
      * @param iInvocables       Length must be greater than zero
      * @return                  The selected {@link IClass.IInvocable}
      */
@@ -7326,7 +7406,7 @@ class UnitCompiler {
     findMostSpecificIInvocable(
         Locatable          locatable,
         final IInvocable[] iInvocables,
-        Rvalue[]           arguments,
+        final Rvalue[]     arguments,
         Scope              contextScope
     ) throws CompileException {
 
@@ -7364,20 +7444,24 @@ class UnitCompiler {
         // Well, returning a "fake" IInvocable is a bit tricky, because the iInvocables can be of different types.
         if (iInvocables[0] instanceof IClass.IConstructor) {
             return iInvocables[0].getDeclaringIClass().new IConstructor() {
-                @Override public IClass[] getParameterTypes()   { return argumentTypes; }
-                @Override public Access   getAccess()           { return Access.PUBLIC; }
-                @Override public IClass[] getThrownExceptions() { return new IClass[0]; }
+                @Override public boolean      isVarargs()           { return false; }
+                @Override public IClass[]     getParameterTypes()   { return argumentTypes; }
+                @Override public Access       getAccess()           { return Access.PUBLIC; }
+                @Override public IClass[]     getThrownExceptions() { return new IClass[0]; }
+                @Override public Annotation[] getAnnotations()      { return new Annotation[0]; }
             };
         } else
         if (iInvocables[0] instanceof IClass.IMethod) {
             return iInvocables[0].getDeclaringIClass().new IMethod() {
-                @Override public boolean  isStatic()            { return true; }
-                @Override public boolean  isAbstract()          { return false; }
-                @Override public IClass   getReturnType()       { return IClass.INT; }
-                @Override public String   getName()             { return ((IClass.IMethod) iInvocables[0]).getName(); }
-                @Override public Access   getAccess()           { return Access.PUBLIC; }
-                @Override public IClass[] getParameterTypes()   { return argumentTypes; }
-                @Override public IClass[] getThrownExceptions() { return new IClass[0]; }
+                @Override public boolean      isStatic()            { return true; }
+                @Override public boolean      isAbstract()          { return false; }
+                @Override public IClass       getReturnType()       { return IClass.INT; }
+                @Override public String       getName()             { return ((IClass.IMethod) iInvocables[0]).getName(); }
+                @Override public Access       getAccess()           { return Access.PUBLIC; }
+                @Override public boolean      isVarargs()           { return false; }
+                @Override public IClass[]     getParameterTypes()   { return argumentTypes; }
+                @Override public IClass[]     getThrownExceptions() { return new IClass[0]; }
+                @Override public Annotation[] getAnnotations()      { return new Annotation[0]; }
             };
         } else
         {
@@ -7396,7 +7480,7 @@ class UnitCompiler {
     findMostSpecificIInvocable(
         Locatable          locatable,
         final IInvocable[] iInvocables,
-        final IClass[]     argumentTypes,
+        IClass[]           argumentTypes,
         boolean            boxingPermitted,
         Scope              contextScope
     ) throws CompileException {
@@ -7409,37 +7493,97 @@ class UnitCompiler {
 
         // Select applicable methods (15.12.2.1).
         List/*<IClass.IInvocable>*/ applicableIInvocables = new ArrayList();
+        List/*<IClass.IInvocable>*/ varargApplicables     = new ArrayList();
+
         NEXT_METHOD:
         for (int i = 0; i < iInvocables.length; ++i) {
-            IClass.IInvocable ii = iInvocables[i];
+            boolean           argsNeedAdjust = false;
+            IClass.IInvocable ii             = iInvocables[i];
 
-            // Check parameter count.
-            IClass[] parameterTypes = ii.getParameterTypes();
-            if (parameterTypes.length != argumentTypes.length) continue;
+            // Ignore inaccessible invocables.
             if (!this.isAccessible(ii, contextScope)) continue;
 
-            // Check argument types vs. parameter types.
-            if (UnitCompiler.DEBUG) System.out.println("Parameter / argument type check:");
-            for (int j = 0; j < argumentTypes.length; ++j) {
-                // Is method invocation conversion possible (5.3)?
-                if (UnitCompiler.DEBUG) System.out.println(parameterTypes[j] + " <=> " + argumentTypes[j]);
-                if (!this.isMethodInvocationConvertible(argumentTypes[j], parameterTypes[j], boxingPermitted)) {
-                    continue NEXT_METHOD;
+            // Check parameter count.
+            final IClass[] parameterTypes   = ii.getParameterTypes();
+            int            formalParamCount = parameterTypes.length;
+            int            nUncheckedArg    = argumentTypes.length;
+            final boolean  isVarargs        = ii.isVarargs();
+
+            // Match the last formal parameter with all args starting from that index (or none).
+            if (isVarargs) {
+
+                // Decrement the count to get the index.
+                formalParamCount--;
+                final IClass lastParamType = parameterTypes[formalParamCount].getComponentType();
+                final int    lastActualArg = nUncheckedArg - 1;
+
+                // If the two have the same argCount and the last actual arg is an array of the same type
+                // accept it (Eg., void foo(int a, double...b) VS foo(1, new double[0[).
+                if (
+                    formalParamCount == lastActualArg 
+                    && argumentTypes[lastActualArg].isArray()
+                    && isMethodInvocationConvertible(
+                        argumentTypes[lastActualArg].getComponentType(),
+                        lastParamType,
+                        boxingPermitted
+                    )
+                ) {
+                    nUncheckedArg--;
+                } else {
+                    for (int idx = lastActualArg; idx >= formalParamCount; --idx) {
+
+                        // Is method invocation conversion possible (5.3)?
+                        // if (UnitCompiler.DEBUG) System.out.println(lastParamType + " <=> " + argumentTypes[idx]);
+                        if (!this.isMethodInvocationConvertible(argumentTypes[idx], lastParamType, boxingPermitted)) {
+                            continue NEXT_METHOD;
+                        }
+                        
+                        nUncheckedArg--;
+                    }
+                    argsNeedAdjust = true;
                 }
             }
+            
+            if (formalParamCount == nUncheckedArg) {
+                for (int j = 0; j < nUncheckedArg; ++j) {
 
-            // Applicable!
-            if (UnitCompiler.DEBUG) System.out.println("Applicable!");
-            applicableIInvocables.add(ii);
+                    // Is method invocation conversion possible (5.3)?
+                    if (UnitCompiler.DEBUG) System.out.println(parameterTypes[j] + " <=> " + argumentTypes[j]);
+                    if (!this.isMethodInvocationConvertible(argumentTypes[j], parameterTypes[j], boxingPermitted)) {
+                        continue NEXT_METHOD;
+                    }
+                }
+
+                // Applicable!
+                if (UnitCompiler.DEBUG) System.out.println("Applicable!");
+                
+                // varargs has lower priority
+                if (isVarargs) {
+                    ii.setArgsNeedAdjust(argsNeedAdjust);
+                    varargApplicables.add(ii);
+                } else {
+                    applicableIInvocables.add(ii);
+                }
+            }
         }
-        if (applicableIInvocables.size() == 0) return null;
 
         // Choose the most specific invocable (15.12.2.2).
         if (applicableIInvocables.size() == 1) {
             return (IClass.IInvocable) applicableIInvocables.get(0);
+        } else
+
+        // No method found by previous phase(s)
+        if (applicableIInvocables.size() == 0 && !varargApplicables.isEmpty()) {
+            //TODO: 15.12.2.3 (type-conversion?)
+            
+            // 15.12.2.4 : Phase 3: Identify Applicable Variable Arity Methods 
+            applicableIInvocables = varargApplicables;
+            if (applicableIInvocables.size() == 1) {
+                return (IClass.IInvocable) applicableIInvocables.get(0);
+            }
         }
 
-        // Determine the "maximally specific invocables".
+        // 15.12.2.5. Determine the "maximally specific invocables".
         List/*<IClass.IInvocable>*/ maximallySpecificIInvocables = new ArrayList();
         for (int i = 0; i < applicableIInvocables.size(); ++i) {
             IClass.IInvocable applicableIInvocable = (IClass.IInvocable) applicableIInvocables.get(i);
@@ -7561,19 +7705,23 @@ class UnitCompiler {
             final IClass.IMethod im  = (IClass.IMethod) maximallySpecificIInvocables.get(0);
             final IClass[]       tes = (IClass[]) s.toArray(new IClass[s.size()]);
             return im.getDeclaringIClass().new IMethod() {
-                @Override public String   getName()                                   { return im.getName(); }
-                @Override public IClass   getReturnType() throws CompileException     { return im.getReturnType(); }
-                @Override public boolean  isAbstract()                                { return im.isAbstract(); }
-                @Override public boolean  isStatic()                                  { return im.isStatic(); }
-                @Override public Access   getAccess()                                 { return im.getAccess(); }
-                @Override public IClass[] getParameterTypes() throws CompileException { return im.getParameterTypes(); }
-                @Override public IClass[] getThrownExceptions()                       { return tes; }
+                @Override public String       getName()                                   { return im.getName(); }
+                @Override public IClass       getReturnType() throws CompileException     { return im.getReturnType(); }
+                @Override public boolean      isAbstract()                                { return im.isAbstract(); }
+                @Override public boolean      isStatic()                                  { return im.isStatic(); }
+                @Override public Access       getAccess()                                 { return im.getAccess(); }
+                @Override public boolean      isVarargs()                                 { return im.isVarargs(); }
+                @Override public IClass[]     getParameterTypes() throws CompileException { return im.getParameterTypes(); }
+                @Override public IClass[]     getThrownExceptions()                       { return tes; }
+                @Override public Annotation[] getAnnotations()                            { return im.getAnnotations(); }
             };
         }
 
+        if (!boxingPermitted) return null; // to try again
+
         // JLS 15.12.2.2.BL2.B2
         {
-            StringBuilder sb = new StringBuilder("Invocation of constructor/method with actual parameter type(s) \"");
+            StringBuilder sb = new StringBuilder("Invocation of constructor/method with argument type(s) \"");
             for (int i = 0; i < argumentTypes.length; ++i) {
                 if (i > 0) sb.append(", ");
                 sb.append(Descriptor.toString(argumentTypes[i].getDescriptor()));
@@ -7904,10 +8052,10 @@ class UnitCompiler {
             }
 
             @Override public Access
-            getAccess() { return UnitCompiler.modifiers2Access(atd.getModifiersAndAnnotations().modifiers); }
+            getAccess() { return UnitCompiler.modifiers2Access(atd.getModifierFlags()); }
 
             @Override public boolean
-            isFinal() { return (atd.getModifiersAndAnnotations().modifiers & Mod.FINAL) != 0;  }
+            isFinal() { return (atd.getModifierFlags() & Mod.FINAL) != 0;  }
 
             @Override protected IClass[]
             getInterfaces2() throws CompileException {
@@ -7955,7 +8103,7 @@ class UnitCompiler {
             isAbstract() {
                 return (
                     atd instanceof InterfaceDeclaration
-                    || (atd.getModifiersAndAnnotations().modifiers & Mod.ABSTRACT) != 0
+                    || (atd.getModifierFlags() & Mod.ABSTRACT) != 0
                 );
             }
 
@@ -8070,7 +8218,7 @@ class UnitCompiler {
             for (; !(s instanceof FunctionDeclarator); s = s.getEnclosingScope());
             if (
                 (s instanceof MethodDeclarator)
-                && (((FunctionDeclarator) s).modifiersAndAnnotations.modifiers & Mod.STATIC) != 0
+                && (((FunctionDeclarator) s).modifiers.flags & Mod.STATIC) != 0
             ) return null;
             for (; !(s instanceof TypeDeclaration); s = s.getEnclosingScope());
             TypeDeclaration immediatelyEnclosingTypeDeclaration = (TypeDeclaration) s;
@@ -8082,7 +8230,7 @@ class UnitCompiler {
         // Member class declaration.
         if (
             atd instanceof MemberClassDeclaration
-            && (((MemberClassDeclaration) atd).getModifiersAndAnnotations().modifiers & Mod.STATIC) != 0
+            && (((MemberClassDeclaration) atd).getModifierFlags() & Mod.STATIC) != 0
         ) return null;
 
         // Anonymous class declaration, interface declaration
@@ -8109,7 +8257,7 @@ class UnitCompiler {
             );
             if (s instanceof FunctionDeclarator) {
                 FunctionDeclarator function = (FunctionDeclarator) s;
-                if ((function.modifiersAndAnnotations.modifiers & Mod.STATIC) != 0) {
+                if ((function.modifiers.flags & Mod.STATIC) != 0) {
                     this.compileError("No current instance available in static method", tr.getLocation());
                 }
             }
@@ -8143,7 +8291,7 @@ class UnitCompiler {
             // Implement IMember.
             @Override public Access
             getAccess() {
-                switch (cd.modifiersAndAnnotations.modifiers & Mod.PPP) {
+                switch (cd.modifiers.flags & Mod.PPP) {
                 case Mod.PRIVATE:
                     return Access.PRIVATE;
                 case Mod.PROTECTED:
@@ -8156,6 +8304,9 @@ class UnitCompiler {
                     throw new JaninoRuntimeException("Invalid access");
                 }
             }
+
+            @Override public Annotation[]
+            getAnnotations() { return cd.modifiers.annotations; }
 
             // Implement IInvocable.
             @Override public String
@@ -8176,20 +8327,31 @@ class UnitCompiler {
                     IClass.IField sf = (IClass.IField) it.next();
                     if (sf.getName().startsWith("val$")) l.add(sf.getType().getDescriptor());
                 }
-                FunctionDeclarator.FormalParameter[] fps = cd.formalParameters;
+                FunctionDeclarator.FormalParameter[] fps = cd.formalParameters.parameters;
                 for (int i = 0; i < fps.length; ++i) {
-                    l.add(UnitCompiler.this.getType(fps[i].type).getDescriptor());
+                    IClass parameterType = UnitCompiler.this.getType(fps[i].type);
+                    if (i == fps.length - 1 && cd.formalParameters.variableArity) {
+                        parameterType = parameterType.getArrayIClass(UnitCompiler.this.iClassLoader.JAVA_LANG_OBJECT);
+                    }
+                    l.add(parameterType.getDescriptor());
                 }
                 String[] apd = (String[]) l.toArray(new String[l.size()]);
                 return new MethodDescriptor(apd, Descriptor.VOID).toString();
             }
 
+            @Override public boolean
+            isVarargs() { return (cd.modifiers.flags & Mod.VARARGS) != 0; }
+
             @Override public IClass[]
             getParameterTypes() throws CompileException {
-                FunctionDeclarator.FormalParameter[] fps = cd.formalParameters;
+                FunctionDeclarator.FormalParameter[] fps = cd.formalParameters.parameters;
                 IClass[]                             res = new IClass[fps.length];
                 for (int i = 0; i < fps.length; ++i) {
-                    res[i] = UnitCompiler.this.getType(fps[i].type);
+                    IClass parameterType = UnitCompiler.this.getType(fps[i].type);
+                    if (i == fps.length - 1 && cd.formalParameters.variableArity) {
+                        parameterType = parameterType.getArrayIClass(UnitCompiler.this.iClassLoader.JAVA_LANG_OBJECT);
+                    }
+                    res[i] = parameterType;
                 }
                 return res;
             }
@@ -8207,14 +8369,10 @@ class UnitCompiler {
             toString() {
                 StringBuilder sb = new StringBuilder().append(cd.getDeclaringType().getClassName()).append('(');
 
-                FunctionDeclarator.FormalParameter[] fps = cd.formalParameters;
+                FunctionDeclarator.FormalParameter[] fps = cd.formalParameters.parameters;
                 for (int i = 0; i < fps.length; ++i) {
                     if (i != 0) sb.append(", ");
-                    try {
-                        sb.append(UnitCompiler.this.getType(fps[i].type).toString());
-                    } catch (CompileException ex) {
-                        sb.append("???");
-                    }
+                    sb.append(fps[i].toString(i == fps.length - 1 && cd.formalParameters.variableArity));
                 }
                 return sb.append(')').toString();
             }
@@ -8230,7 +8388,7 @@ class UnitCompiler {
             // Implement IMember.
             @Override public Access
             getAccess() {
-                switch (md.modifiersAndAnnotations.modifiers & Mod.PPP) {
+                switch (md.modifiers.flags & Mod.PPP) {
                 case Mod.PRIVATE:
                     return Access.PRIVATE;
                 case Mod.PROTECTED:
@@ -8244,14 +8402,24 @@ class UnitCompiler {
                 }
             }
 
+            @Override public Annotation[]
+            getAnnotations() { return md.modifiers.annotations; }
+
             // Implement IInvocable.
+            
+            @Override public boolean
+            isVarargs() { return (md.modifiers.flags & Mod.VARARGS) != 0; }
 
             @Override public IClass[]
             getParameterTypes() throws CompileException {
-                FunctionDeclarator.FormalParameter[] fps = md.formalParameters;
+                FunctionDeclarator.FormalParameter[] fps = md.formalParameters.parameters;
                 IClass[]                             res = new IClass[fps.length];
                 for (int i = 0; i < fps.length; ++i) {
-                    res[i] = UnitCompiler.this.getType(fps[i].type);
+                    IClass parameterType = UnitCompiler.this.getType(fps[i].type);
+                    if (i == fps.length - 1 && md.formalParameters.variableArity) {
+                        parameterType = parameterType.getArrayIClass(UnitCompiler.this.iClassLoader.JAVA_LANG_OBJECT);
+                    }
+                    res[i] = parameterType;
                 }
                 return res;
             }
@@ -8268,13 +8436,13 @@ class UnitCompiler {
             // Implement IMethod.
 
             @Override public boolean
-            isStatic() { return (md.modifiersAndAnnotations.modifiers & Mod.STATIC) != 0; }
+            isStatic() { return (md.modifiers.flags & Mod.STATIC) != 0; }
 
             @Override public boolean
             isAbstract() {
                 return (
                     (md.getDeclaringType() instanceof InterfaceDeclaration)
-                    || (md.modifiersAndAnnotations.modifiers & Mod.ABSTRACT) != 0
+                    || (md.modifiers.flags & Mod.ABSTRACT) != 0
                 );
             }
 
@@ -8515,7 +8683,7 @@ class UnitCompiler {
             }
         )));
 
-        List/*<Java.CatchClause>*/ l = new ArrayList();
+        List/*<CatchClause>*/ l = new ArrayList();
         l.add(new CatchClause(
             loc,                                    // location
             new FunctionDeclarator.FormalParameter( // caughtException
@@ -8538,20 +8706,24 @@ class UnitCompiler {
 
         // Class class$(String className)
         FunctionDeclarator.FormalParameter fp = new FunctionDeclarator.FormalParameter(
-            loc,                                           // location
-            false,                                         // finaL
+            loc,                                                     // location
+            false,                                                   // finaL
             new SimpleType(loc, this.iClassLoader.JAVA_LANG_STRING), // type
-            "className"                                    // name
+            "className"                                              // name
         );
         MethodDeclarator cdmd = new MethodDeclarator(
-            loc,                                             // location
-            null,                                            // optionalDocComment
-            new Java.ModifiersAndAnnotations(Mod.STATIC),    // modifiers
-            new SimpleType(loc, this.iClassLoader.JAVA_LANG_CLASS),    // type
-            "class$",                                        // name
-            new FunctionDeclarator.FormalParameter[] { fp }, // formalParameters
-            new Type[0],                                     // thrownExceptions
-            statements                                       // optionalStatements
+            loc,                                                    // location
+            null,                                                   // optionalDocComment
+            new Modifiers(Mod.STATIC),                              // modifiers
+            new SimpleType(loc, this.iClassLoader.JAVA_LANG_CLASS), // type
+            "class$",                                               // name
+            new FunctionDeclarator.FormalParameters(                // formalParameters
+                loc,
+                new FunctionDeclarator.FormalParameter[] { fp },
+                false
+            ),
+            new Type[0],                                            // thrownExceptions
+            statements                                              // optionalStatements
         );
 
         declaringType.addDeclaredMethod(cdmd);
@@ -10117,11 +10289,12 @@ class UnitCompiler {
             this.name = name;
             this.type = type;
         }
-        @Override public Object  getConstantValue() { return NOT_CONSTANT; }
-        @Override public String  getName()          { return this.name; }
-        @Override public IClass  getType()          { return this.type; }
-        @Override public boolean isStatic()         { return false; }
-        @Override public Access  getAccess()        { return Access.DEFAULT; }
+        @Override public Object       getConstantValue() { return NOT_CONSTANT; }
+        @Override public String       getName()          { return this.name; }
+        @Override public IClass       getType()          { return this.type; }
+        @Override public boolean      isStatic()         { return false; }
+        @Override public Access       getAccess()        { return Access.DEFAULT; }
+        @Override public Annotation[] getAnnotations()   { return new Annotation[0]; }
     }
 
     private static Access

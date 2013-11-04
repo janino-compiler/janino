@@ -26,8 +26,12 @@
 
 package org.codehaus.janino;
 
-import java.util.*;
-import java.lang.reflect.*;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.Location;
@@ -76,15 +80,16 @@ class ReflectionIClass extends IClass {
         }
         if (methods.length == 0 && this.clazz.isArray()) {
             iMethods.add(new IMethod() {
-
                 // CHECKSTYLE LineLength:OFF
-                @Override public String   getName()             { return "clone"; }
-                @Override public IClass   getReturnType()       { return ReflectionIClass.this.iClassLoader.JAVA_LANG_OBJECT; }
-                @Override public boolean  isAbstract()          { return false; }
-                @Override public boolean  isStatic()            { return false; }
-                @Override public Access   getAccess()           { return Access.PUBLIC; }
-                @Override public IClass[] getParameterTypes()   { return new IClass[0]; }
-                @Override public IClass[] getThrownExceptions() { return new IClass[0]; }
+                @Override public String            getName()             { return "clone"; }
+                @Override public IClass            getReturnType()       { return ReflectionIClass.this.iClassLoader.JAVA_LANG_OBJECT; }
+                @Override public boolean           isAbstract()          { return false; }
+                @Override public boolean           isStatic()            { return false; }
+                @Override public Access            getAccess()           { return Access.PUBLIC; }
+                @Override public boolean           isVarargs()           { return false; }
+                @Override public IClass[]          getParameterTypes()   { return new IClass[0]; }
+                @Override public IClass[]          getThrownExceptions() { return new IClass[0]; }
+                @Override public Java.Annotation[] getAnnotations()      { return new Java.Annotation[0]; }
                 // CHECKSTYLE LineLength:ON
 
             });
@@ -184,13 +189,23 @@ class ReflectionIClass extends IClass {
     private
     class ReflectionIConstructor extends IConstructor {
 
-        public ReflectionIConstructor(Constructor constructor) { this.constructor = constructor; }
+        public
+        ReflectionIConstructor(Constructor constructor) { this.constructor = constructor; }
 
         // Implement IMember.
         @Override public Access
         getAccess() {
             int mod = this.constructor.getModifiers();
             return ReflectionIClass.modifiers2Access(mod);
+        }
+
+        @Override public Java.Annotation[]
+        getAnnotations() { return new Java.Annotation[0]; }
+
+        @Override public boolean
+        isVarargs() {
+            // TRANSIENT is identical with VARARGS.
+            return Modifier.isTransient(this.constructor.getModifiers());
         }
 
         // Implement "IConstructor".
@@ -244,18 +259,29 @@ class ReflectionIClass extends IClass {
 
         final Constructor constructor;
     }
-    private
+    public
     class ReflectionIMethod extends IMethod {
 
-        public ReflectionIMethod(Method method) { this.method = method; }
+        public
+        ReflectionIMethod(Method method) { this.method = method; }
 
         // Implement IMember.
         @Override public Access
         getAccess() { return ReflectionIClass.modifiers2Access(this.method.getModifiers()); }
+        
+        @Override public Java.Annotation[]
+        getAnnotations() { return new Java.Annotation[0]; }
 
         // Implement "IMethod".
         @Override public String
         getName() { return this.method.getName(); }
+
+        @Override public boolean
+        isVarargs() {
+
+            // VARARGS is identical with TRANSIENT.
+            return Modifier.isTransient(this.method.getModifiers());
+        }
 
         @Override public IClass[]
         getParameterTypes() { return ReflectionIClass.this.classesToIClasses(this.method.getParameterTypes()); }
@@ -272,17 +298,21 @@ class ReflectionIClass extends IClass {
         @Override public IClass[]
         getThrownExceptions() { return ReflectionIClass.this.classesToIClasses(this.method.getExceptionTypes()); }
 
-        final Method method;
+        public final Method method;
     }
 
     private
     class ReflectionIField extends IField {
 
-        public ReflectionIField(Field field) { this.field = field; }
+        public
+        ReflectionIField(Field field) { this.field = field; }
 
         // Implement IMember.
         @Override public Access
         getAccess() { return ReflectionIClass.modifiers2Access(this.field.getModifiers()); }
+
+        @Override public Java.Annotation[]
+        getAnnotations() { return new Java.Annotation[0]; }
 
         // Implement "IField".
 

@@ -37,6 +37,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.codehaus.commons.compiler.CompileException;
+import org.codehaus.janino.Java.Annotation;
 
 /**
  * A simplified equivalent to "java.lang.reflect".
@@ -168,7 +169,7 @@ class IClass {
             // Convert "IMethod"s and "List"s to "IMethod[]"s.
             for (Iterator/*<String, IMethod-or-List<IMethod>>*/ it = m.entrySet().iterator(); it.hasNext();) {
                 Map.Entry/*<String, IMethod-or-List<IMethod>>*/ me = (Map.Entry) it.next();
-                Object                         v  = me.getValue();
+                Object                                          v  = me.getValue();
                 if (v instanceof IMethod) {
                     me.setValue(new IMethod[] { (IMethod) v });
                 } else {
@@ -651,13 +652,15 @@ class IClass {
             getDeclaredIMethods2() {
                 return new IClass.IMethod[] {
                     new IMethod() {
-                        @Override public String   getName()             { return "clone"; }
-                        @Override public IClass   getReturnType()       { return objectType /*ot*/; }
-                        @Override public boolean  isAbstract()          { return false; }
-                        @Override public boolean  isStatic()            { return false; }
-                        @Override public Access   getAccess()           { return Access.PUBLIC; }
-                        @Override public IClass[] getParameterTypes()   { return new IClass[0]; }
-                        @Override public IClass[] getThrownExceptions() { return new IClass[0]; }
+                        @Override public String       getName()             { return "clone"; }
+                        @Override public IClass       getReturnType()       { return objectType; }
+                        @Override public boolean      isAbstract()          { return false; }
+                        @Override public boolean      isStatic()            { return false; }
+                        @Override public Access       getAccess()           { return Access.PUBLIC; }
+                        @Override public boolean      isVarargs()           { return false; }
+                        @Override public IClass[]     getParameterTypes()   { return new IClass[0]; }
+                        @Override public IClass[]     getThrownExceptions() { return new IClass[0]; }
+                        @Override public Annotation[] getAnnotations()      { return new Annotation[0]; }
                     }
                 };
             }
@@ -772,6 +775,12 @@ class IClass {
         Access getAccess();
 
         /**
+         * 
+         * @return modifiers and/or annotations of this member
+         */
+        Annotation[] getAnnotations();
+
+        /**
          * Returns the {@link IClass} that declares this {@link IClass.IMember}.
          */
         IClass getDeclaringIClass();
@@ -782,6 +791,16 @@ class IClass {
      */
     public abstract
     class IInvocable implements IMember {
+
+        private boolean argsNeedAdjust;
+
+        public void
+        setArgsNeedAdjust(boolean newVal) { this.argsNeedAdjust = newVal; }
+
+        public boolean
+        argsNeedAdjust() { return this.argsNeedAdjust; }
+
+        public abstract boolean isVarargs();
 
         // Implement IMember.
 
@@ -813,6 +832,88 @@ class IClass {
         isMoreSpecificThan(IInvocable that) throws CompileException {
             if (IClass.DEBUG) System.out.print("\"" + this + "\".isMoreSpecificThan(\"" + that + "\") => ");
 
+            // a variable-length argument is always less specific than a fixed arity.
+            final boolean thatIsVararg;
+
+            if ((thatIsVararg = that.isVarargs()) != this.isVarargs()) {
+
+                // Only one of the two is varargs.
+                return thatIsVararg;
+            } else
+            if (thatIsVararg) {
+
+                // Both are varargs.
+                final IClass[] thisParameterTypes = this.getParameterTypes();
+                final IClass[] thatParameterTypes = that.getParameterTypes();
+                
+                IClass[] t, u;
+                int      n, k;
+                
+                if (thisParameterTypes.length >= thatParameterTypes.length) {
+                    t = thisParameterTypes;
+                    u = thatParameterTypes;
+                    n = t.length;
+                    k = u.length;
+                    IClass[] s = u;
+                    // this = T | T_n
+                    // that = U | U_k
+                    // n >= k
+                    //              ignore generics, for now
+                    
+                    // T0, T1, ..., Tn-1, Tn[]
+                    // U0, U1, .., Uk[]
+                    final int kMinus1 = k - 1;
+                    for (int j = 0; j < kMinus1; ++j) {
+                        // expect T[j] <: S[j]
+                        if (!s[j].isAssignableFrom(t[j])) {
+                            return false;
+                        }
+                    }
+
+                    final IClass sk1     = s[kMinus1].getComponentType();
+                    final int    nMinus1 = n - 1;
+                    for (int j = kMinus1; j < nMinus1; ++j) {
+                        // expect T[j] <: S[k -1]
+                        if (!sk1.isAssignableFrom(t[j])) {
+                            return false;
+                        }
+                    }
+                    if (!sk1.isAssignableFrom(t[nMinus1])) {
+                        return false;
+                    }
+                } else {
+                    u = thisParameterTypes;
+                    t = thatParameterTypes;
+                    n = t.length;
+                    k = u.length;
+                    IClass[] s = t;
+                    // n >= k
+                    final int kMinus1 = k - 1;
+                    for (int j = 0; j < kMinus1; ++j) {
+                        // expect U[j] <: S[j] 
+                        if (!s[j].isAssignableFrom(u[j])) {
+                            return false;
+                        }
+                    }
+                    
+                    final IClass uk1     = u[kMinus1].getComponentType();
+                    final int    nMinus1 = n - 1;
+                    for (int j = kMinus1; j < nMinus1; ++j) {
+                        // expect U[k -1] <: S[j]
+                        if (!s[j].isAssignableFrom(uk1)) {
+                            return false;
+                        }
+                    }
+                    if (!s[nMinus1].getComponentType().isAssignableFrom(uk1)) {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+            
+            // both are fixed arity
+            
             // The following case is tricky: JLS2 says that the invocation is AMBIGUOUS, but only
             // JAVAC 1.2 issues an error; JAVAC 1.4.1, 1.5.0 and 1.6.0 obviously ignore the declaring
             // type and invoke "A.meth(String)".

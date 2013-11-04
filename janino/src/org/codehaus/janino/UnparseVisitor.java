@@ -176,8 +176,8 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor {
     @Override public void
     visitConstructorDeclarator(Java.ConstructorDeclarator cd) {
         this.unparseDocComment(cd);
-        this.unparseAnnotations(cd.modifiersAndAnnotations.annotations);
-        this.unparseModifiers(cd.modifiersAndAnnotations.modifiers);
+        this.unparseAnnotations(cd.modifiers.annotations);
+        this.unparseModifiers(cd.modifiers.flags);
         Java.ClassDeclaration declaringClass = cd.getDeclaringClass();
         this.pw.print(
             declaringClass instanceof Java.NamedClassDeclaration
@@ -212,8 +212,8 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor {
     @Override public void
     visitMethodDeclarator(Java.MethodDeclarator md) {
         this.unparseDocComment(md);
-        this.unparseAnnotations(md.modifiersAndAnnotations.annotations);
-        this.unparseModifiers(md.modifiersAndAnnotations.modifiers);
+        this.unparseAnnotations(md.modifiers.annotations);
+        this.unparseModifiers(md.modifiers.flags);
         this.unparseType(md.type);
         this.pw.print(' ' + md.name);
         this.unparseFunctionDeclaratorRest(md);
@@ -235,8 +235,8 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor {
     @Override public void
     visitFieldDeclaration(Java.FieldDeclaration fd) {
         this.unparseDocComment(fd);
-        this.unparseAnnotations(fd.modifiersAndAnnotations.annotations);
-        this.unparseModifiers(fd.modifiersAndAnnotations.modifiers);
+        this.unparseAnnotations(fd.modifiers.annotations);
+        this.unparseModifiers(fd.modifiers.flags);
         this.unparseType(fd.type);
         this.pw.print(' ');
         for (int i = 0; i < fd.variableDeclarators.length; ++i) {
@@ -379,8 +379,8 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor {
 
     @Override public void
     visitLocalVariableDeclarationStatement(Java.LocalVariableDeclarationStatement lvds) {
-        this.unparseAnnotations(lvds.modifiersAndAnnotations.annotations);
-        this.unparseModifiers(lvds.modifiersAndAnnotations.modifiers);
+        this.unparseAnnotations(lvds.modifiers.annotations);
+        this.unparseModifiers(lvds.modifiers.flags);
         this.unparseType(lvds.type);
         this.pw.print(' ');
         this.pw.print(AutoIndentWriter.TABULATOR);
@@ -453,7 +453,7 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor {
         for (Iterator/*<Java.CatchClause>*/ it = ts.catchClauses.iterator(); it.hasNext();) {
             Java.CatchClause cc = (Java.CatchClause) it.next();
             this.pw.print(" catch (");
-            this.unparseFormalParameter(cc.caughtException);
+            this.unparseFormalParameter(cc.caughtException, false);
             this.pw.print(") ");
             this.unparseBlockStatement(cc.body);
         }
@@ -482,9 +482,10 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor {
     }
 
     public void
-    unparseFormalParameter(Java.FunctionDeclarator.FormalParameter fp) {
+    unparseFormalParameter(Java.FunctionDeclarator.FormalParameter fp, boolean hasEllipsis) {
         if (fp.finaL) this.pw.print("final ");
         this.unparseType(fp.type);
+        if (hasEllipsis) this.pw.write("...");
         this.pw.print(" " + AutoIndentWriter.TABULATOR + fp.name);
     }
 
@@ -876,8 +877,8 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor {
     private void
     unparseNamedClassDeclaration(Java.NamedClassDeclaration ncd) {
         this.unparseDocComment(ncd);
-        this.unparseAnnotations(ncd.getModifiersAndAnnotations().annotations);
-        this.unparseModifiers(ncd.getModifiersAndAnnotations().modifiers);
+        this.unparseAnnotations(ncd.getAnnotations());
+        this.unparseModifiers(ncd.getModifierFlags());
         this.pw.print("class " + ncd.name);
         if (ncd.optionalExtendedType != null) {
             this.pw.print(" extends ");
@@ -960,10 +961,10 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor {
     private void
     unparseInterfaceDeclaration(Java.InterfaceDeclaration id) {
         this.unparseDocComment(id);
-        this.unparseAnnotations(id.getModifiersAndAnnotations().annotations);
-        this.unparseModifiers(id.getModifiersAndAnnotations().modifiers);
+        this.unparseAnnotations(id.getAnnotations());
+        this.unparseModifiers(id.getModifierFlags());
         //make sure we print "interface", even if it wasn't in the modifiers
-        if ((id.getModifiersAndAnnotations().modifiers & Mod.INTERFACE) == 0) {
+        if ((id.getModifierFlags() & Mod.INTERFACE) == 0) {
             this.pw.print("interface ");
         }
         this.pw.print(id.name);
@@ -994,10 +995,10 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor {
     }
     private void
     unparseFunctionDeclaratorRest(Java.FunctionDeclarator fd) {
-        boolean big = fd.formalParameters.length >= 4;
+        boolean big = fd.formalParameters.parameters.length >= 4;
         this.pw.print('(');
         if (big) { this.pw.println(); this.pw.print(AutoIndentWriter.INDENT); }
-        for (int i = 0; i < fd.formalParameters.length; ++i) {
+        for (int i = 0; i < fd.formalParameters.parameters.length; ++i) {
             if (i > 0) {
                 if (big) {
                     this.pw.println(',');
@@ -1006,7 +1007,10 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor {
                     this.pw.print(", ");
                 }
             }
-            this.unparseFormalParameter(fd.formalParameters[i]);
+            this.unparseFormalParameter(
+                fd.formalParameters.parameters[i],
+                i == fd.formalParameters.parameters.length - 1 && fd.formalParameters.variableArity
+            );
         }
         if (big) { this.pw.println(); this.pw.print(AutoIndentWriter.UNINDENT); }
         this.pw.print(')');

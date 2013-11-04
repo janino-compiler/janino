@@ -356,7 +356,7 @@ class UnparseTests {
 
     private void
     testInterfaceHelper(boolean interfaceMod) throws CompileException {
-        Java.ModifiersAndAnnotations maas = new Java.ModifiersAndAnnotations(Mod.PUBLIC);
+        Java.Modifiers maas = new Java.Modifiers(Mod.PUBLIC);
         if (interfaceMod) maas = maas.add(Mod.INTERFACE);
         Java.PackageMemberInterfaceDeclaration decl = new Java.PackageMemberInterfaceDeclaration(
             null,

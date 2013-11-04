@@ -28,6 +28,7 @@ package org.codehaus.janino.util;
 
 import org.codehaus.janino.*;
 import org.codehaus.janino.Java.ElementValueArrayInitializer;
+import org.codehaus.janino.Java.FunctionDeclarator;
 import org.codehaus.janino.Java.MarkerAnnotation;
 import org.codehaus.janino.Java.NormalAnnotation;
 import org.codehaus.janino.Java.SimpleConstant;
@@ -102,7 +103,7 @@ class Traverser {
         @Override public void visitCharacterLiteral(Java.CharacterLiteral cl)                                                  { Traverser.this.traverseCharacterLiteral(cl); }
         @Override public void visitStringLiteral(Java.StringLiteral sl)                                                        { Traverser.this.traverseStringLiteral(sl); }
         @Override public void visitNullLiteral(Java.NullLiteral nl)                                                            { Traverser.this.traverseNullLiteral(nl); }
-        @Override public void visitSimpleConstant(SimpleConstant sl)                                                             { Traverser.this.traverseSimpleLiteral(sl); }
+        @Override public void visitSimpleConstant(SimpleConstant sl)                                                           { Traverser.this.traverseSimpleLiteral(sl); }
         @Override public void visitNewAnonymousClassInstance(Java.NewAnonymousClassInstance naci)                              { Traverser.this.traverseNewAnonymousClassInstance(naci); }
         @Override public void visitNewArray(Java.NewArray na)                                                                  { Traverser.this.traverseNewArray(na); }
         @Override public void visitNewInitializedArray(Java.NewInitializedArray nia)                                           { Traverser.this.traverseNewInitializedArray(nia); }
@@ -465,7 +466,7 @@ class Traverser {
     public void traverseCharacterLiteral(Java.CharacterLiteral cl)          { this.traverseLiteral(cl); }
     public void traverseStringLiteral(Java.StringLiteral sl)                { this.traverseLiteral(sl); }
     public void traverseNullLiteral(Java.NullLiteral nl)                    { this.traverseLiteral(nl); }
-    public void traverseSimpleLiteral(Java.SimpleConstant sl)                { this.traverseRvalue(sl); }
+    public void traverseSimpleLiteral(Java.SimpleConstant sl)               { this.traverseRvalue(sl); }
 
     public void
     traverseNewAnonymousClassInstance(Java.NewAnonymousClassInstance naci) {
@@ -676,14 +677,19 @@ class Traverser {
 
     public void
     traverseFunctionDeclarator(Java.FunctionDeclarator fd) {
-        for (int i = 0; i < fd.formalParameters.length; ++i) {
-            fd.formalParameters[i].type.accept((Visitor.TypeVisitor) this.cv);
-        }
+        traverseFormalParameters(fd.formalParameters);
         if (fd.optionalStatements != null) {
             for (Iterator/*<Java.BlockStatement>*/ it = fd.optionalStatements.iterator(); it.hasNext();) {
                 Java.BlockStatement bs = (Java.BlockStatement) it.next();
                 bs.accept(this.cv);
             }
+        }
+    }
+
+    public void
+    traverseFormalParameters(FunctionDeclarator.FormalParameters formalParameters) {
+        for (int i = 0; i < formalParameters.parameters.length; ++i) {
+            formalParameters.parameters[i].type.accept((Visitor.TypeVisitor) this.cv);
         }
     }
 

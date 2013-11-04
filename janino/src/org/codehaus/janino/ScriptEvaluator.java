@@ -753,11 +753,14 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
             );
         }
 
-        Java.FunctionDeclarator.FormalParameter[]
-        fps = new Java.FunctionDeclarator.FormalParameter[parameterNames.length];
+        Java.FunctionDeclarator.FormalParameters fps = new Java.FunctionDeclarator.FormalParameters(
+            location,
+            new Java.FunctionDeclarator.FormalParameter[parameterNames.length],
+            false
+        );
 
-        for (int i = 0; i < fps.length; ++i) {
-            fps[i] = new Java.FunctionDeclarator.FormalParameter(
+        for (int i = 0; i < fps.parameters.length; ++i) {
+            fps.parameters[i] = new Java.FunctionDeclarator.FormalParameter(
                 location,                                      // location
                 true,                                          // finaL
                 this.classToType(location, parameterTypes[i]), // type
@@ -768,7 +771,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
         return new Java.MethodDeclarator(
             location,                                        // location
             null,                                            // optionalDocComment
-            new Java.ModifiersAndAnnotations((                // modifiers
+            new Java.Modifiers((                             // modifiers
                 staticMethod
                 ? (short) (Mod.PUBLIC | Mod.STATIC)
                 : (short) Mod.PUBLIC

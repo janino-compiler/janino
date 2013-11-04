@@ -57,7 +57,9 @@ class Mod {
     public static final short SUPER        = 0x0020;
     public static final short SYNCHRONIZED = 0x0020;
     public static final short VOLATILE     = 0x0040;
+    public static final short BRIDGE       = 0x0040; // Same value as VOLITILE, but that's OK. a method never has a "volatile" mod.
     public static final short TRANSIENT    = 0x0080;
+    public static final short VARARGS      = 0x0080; // Same value as TRANSIENT, ditto.
     public static final short NATIVE       = 0x0100;
     public static final short INTERFACE    = 0x0200;
     public static final short ABSTRACT     = 0x0400;
@@ -67,7 +69,7 @@ class Mod {
     public static final short SYNTHETIC    = 0x1000;
     public static final short ANNOTATION   = 0x2000;
     public static final short ENUM         = 0x4000;
-
+    
     public static String
     shortToString(short sh) {
         if (sh == 0) return "";
