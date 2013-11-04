@@ -894,13 +894,13 @@ class Scanner {
     /**
      * Line number of the previously produced token (typically starting at one).
      */
-    private short  tokenLineNumber;
+    private short tokenLineNumber;
 
     /**
      * Column number of the first character of the previously produced token (1 if token is immediately preceded by a
      * line break).
      */
-    private short  tokenColumnNumber;
+    private short tokenColumnNumber;
 
     /** The optional JAVADOC comment preceding the {@link #nextToken}. */
     private String docComment;
