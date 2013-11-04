@@ -322,7 +322,7 @@ class JaninoTestSuite {
             this.mode = mode;
         }
 
-        protected abstract void compile() throws Exception;
+        protected abstract void   compile() throws Exception;
         protected abstract Object execute() throws Exception;
 
         /**
