@@ -539,6 +539,28 @@ class ReportedBugs extends JaninoTestSuite {
             + "}\n"
         ), "Test");
     }
+    
+    @Test public void
+    testBug162() throws Exception {
+        this.sim(COOK, (
+            ""
+            + "public class BridgeTest {\n"
+            + "\n"
+            + "    public static class Dad {\n"
+            + "        public Object foo() { return 1; } \n"
+            + "    }\n"
+            + "\n"
+            + "    public static class Kid extends Dad {\n"
+            + "        @Override public Double foo() { return 2.3; }\n"
+            + "    }\n"
+            + "\n"
+            + "\n"
+            + "    public static void main() {\n"
+            + "        new Kid().foo();\n"
+            + "    }\n"
+            + "}"
+        ), "BridgeTest");
+    }
 
     @Test public void
     testBug163() throws Exception {
