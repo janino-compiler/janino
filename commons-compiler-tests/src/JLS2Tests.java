@@ -721,9 +721,12 @@ class JLS2Tests extends JaninoTestSuite {
     }
     
     @Test public void
-    test_15_12_2_4__IdentifyApplicableVariableArityMethods() throws Exception {
+    test_15_12_2_4__IdentifyApplicableVariableArityMethods__1() throws Exception {
         exp(TRUE, "\"two one\".equals(String.format(\"%2$s %1$s\", \"one\", \"two\"))");
+    }
 
+    @Test public void
+    test_15_12_2_4__IdentifyApplicableVariableArityMethods__2() throws Exception {
         clb(TRUE, (
             ""
             + "public static boolean\n"
@@ -742,6 +745,46 @@ class JLS2Tests extends JaninoTestSuite {
             + "    for (int i = 0; i < operands.length; i++) sum += operands[i];\n"
             + "    return sum == expected;\n"
             + "}\n"
+        ));
+    }
+    
+    @Test public void
+    test_15_12_2_4__IdentifyApplicableVariableArityMethods__3() throws Exception {
+        clb(TRUE, (
+            ""
+            + "public static boolean main() {\n"
+            + "    if (meth(1, 2, 3) != 5) return false;\n"
+            + "    if (meth(1) != 0) return false;\n"
+            + "    if (meth(1, null) != 99) return false;\n"
+            + "    return true;\n"
+            + "}\n"
+            + "\n"
+            + "static double meth(int x, double... va) {\n"
+            + "    if (va == null) return 99;\n"
+            + "\n"
+            + "    double sum = 0;\n"
+            + "    for (int i = 0; i < va.length; i++) sum += va[i];\n"
+            + "    return sum;\n"
+            + "}\n"
+        ));
+    }
+
+    @Test public void
+    test_15_12_2_5__IdentifyApplicableVariableArityMethods__3() throws Exception {
+        scr(TRUE, (
+            ""
+            + "class LocalClass {\n"
+            + "    int x;\n"
+            + "\n"
+            + "    LocalClass(String s, Object... oa) {\n"
+            + "        x = oa.length;\n"
+            + "    }\n"
+            + "}\n"
+            + "\n"
+            + "if (new LocalClass(\"\").x != 0) return false;\n"
+            + "if (new LocalClass(\"\", null).x != 1) return false;\n"
+            + "if (new LocalClass(\"\", 1, 2).x != 2) return false;\n"
+            + "return true;\n"
         ));
     }
 

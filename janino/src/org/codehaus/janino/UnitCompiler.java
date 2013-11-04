@@ -7472,9 +7472,8 @@ class UnitCompiler {
     /**
      * Determine the applicable invocables and choose the most specific invocable.
      *
-     * @return                  The maximally specific {@link IClass.IInvocable} or {@code null} if no {@link
-     *                          IClass.IInvocable} is applicable
-     * @throws CompileException
+     * @return The maximally specific {@link IClass.IInvocable} or {@code null} if no {@link IClass.IInvocable} is
+     *         applicable
      */
     public IClass.IInvocable
     findMostSpecificIInvocable(
@@ -7484,6 +7483,7 @@ class UnitCompiler {
         boolean            boxingPermitted,
         Scope              contextScope
     ) throws CompileException {
+
         if (UnitCompiler.DEBUG) {
             System.out.println("Argument types:");
             for (int i = 0; i < argumentTypes.length; ++i) {
@@ -7510,6 +7510,7 @@ class UnitCompiler {
             final boolean  isVarargs        = ii.isVarargs();
 
             // Match the last formal parameter with all args starting from that index (or none).
+            VARARGS:
             if (isVarargs) {
 
                 // Decrement the count to get the index.
@@ -7518,7 +7519,7 @@ class UnitCompiler {
                 final int    lastActualArg = nUncheckedArg - 1;
 
                 // If the two have the same argCount and the last actual arg is an array of the same type
-                // accept it (Eg., void foo(int a, double...b) VS foo(1, new double[0[).
+                // accept it (Eg., void foo(int a, double...b) VS foo(1, new double[0]).
                 if (
                     formalParamCount == lastActualArg 
                     && argumentTypes[lastActualArg].isArray()
@@ -7535,7 +7536,8 @@ class UnitCompiler {
                         // Is method invocation conversion possible (5.3)?
                         // if (UnitCompiler.DEBUG) System.out.println(lastParamType + " <=> " + argumentTypes[idx]);
                         if (!this.isMethodInvocationConvertible(argumentTypes[idx], lastParamType, boxingPermitted)) {
-                            continue NEXT_METHOD;
+                            formalParamCount++;
+                            break VARARGS;
                         }
                         
                         nUncheckedArg--;
@@ -7570,7 +7572,7 @@ class UnitCompiler {
         // Choose the most specific invocable (15.12.2.2).
         if (applicableIInvocables.size() == 1) {
             return (IClass.IInvocable) applicableIInvocables.get(0);
-        } else
+        }
 
         // No method found by previous phase(s)
         if (applicableIInvocables.size() == 0 && !varargApplicables.isEmpty()) {
@@ -7582,6 +7584,8 @@ class UnitCompiler {
                 return (IClass.IInvocable) applicableIInvocables.get(0);
             }
         }
+
+        if (applicableIInvocables.size() == 0) return null;
 
         // 15.12.2.5. Determine the "maximally specific invocables".
         List/*<IClass.IInvocable>*/ maximallySpecificIInvocables = new ArrayList();
