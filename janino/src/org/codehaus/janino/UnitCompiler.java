@@ -6539,11 +6539,11 @@ class UnitCompiler {
             for (int i = 0, j = parameterTypes.length - 1; i < lastArgs.length; ++i, ++j) {
                 lastArgs[i] = arguments[j];
             }
-            Location loc = lastArgs[lastArgs.length - 1].getLocation();
             
             for (int i = parameterTypes.length - 2; i >= 0; --i) {
                 adjustedArgs[i] = arguments[i];
             }
+            Location loc = (lastArgs.length == 0 ? locatable : lastArgs[lastArgs.length - 1]).getLocation();
             adjustedArgs[adjustedArgs.length - 1] = new NewInitializedArray(
                 loc,                                       // location
                 parameterTypes[parameterTypes.length - 1], // arrayIClass
