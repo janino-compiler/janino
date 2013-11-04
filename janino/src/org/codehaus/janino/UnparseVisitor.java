@@ -637,7 +637,7 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor {
     @Override public void visitCharacterLiteral(Java.CharacterLiteral cl)          { this.pw.print(cl.value); }
     @Override public void visitStringLiteral(Java.StringLiteral sl)                { this.pw.print(sl.value); }
     @Override public void visitNullLiteral(Java.NullLiteral nl)                    { this.pw.print(nl.value); }
-    @Override public void visitSimpleConstant(SimpleConstant sl)                     { this.pw.print("[" + sl.value + ']'); } // SUPPRESS CHECKSTYLE LineLength
+    @Override public void visitSimpleConstant(SimpleConstant sl)                   { this.pw.print("[" + sl.value + ']'); } // SUPPRESS CHECKSTYLE LineLength
     @Override public void visitLocalVariableAccess(Java.LocalVariableAccess lva)   { this.pw.print(lva.toString()); }
 
     @Override public void
