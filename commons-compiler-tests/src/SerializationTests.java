@@ -30,6 +30,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.ObjectOutputStream;
 import java.util.Collection;
 
+import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.ICompilerFactory;
 import org.codehaus.commons.compiler.ISimpleCompiler;
 import org.codehaus.commons.compiler.LocatedException;
@@ -40,6 +41,11 @@ import org.junit.runners.Parameterized.Parameters;
 
 import util.TestUtil;
 
+// CHECKSTYLE JavadocMethod:OFF
+
+/**
+ * Tests for the serializability of JANINO data structures.
+ */
 @RunWith(Parameterized.class) public
 class SerializationTests {
 
@@ -55,6 +61,9 @@ class SerializationTests {
         this.compilerFactory = compilerFactory;
     }
 
+    /**
+     * Verifies that {@link CompileException} is serializable.
+     */
     @Test public void
     testExceptionSerializable() throws Exception {
         ISimpleCompiler compiler = this.compilerFactory.newSimpleCompiler();

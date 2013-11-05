@@ -33,6 +33,9 @@ import org.codehaus.commons.compiler.CompilerFactoryFactory;
 import org.codehaus.commons.compiler.ICompilerFactory;
 import org.junit.runners.Parameterized.Parameters;
 
+/**
+ * Utility methods for testing.
+ */
 public final
 class TestUtil {
     /**

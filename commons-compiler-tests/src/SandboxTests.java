@@ -41,6 +41,11 @@ import org.junit.runners.Parameterized.Parameters;
 import util.TestUtil;
 import for_sandbox_tests.ExternalClass;
 
+// CHECKSTYLE JavadocMethod:OFF
+
+/**
+ * Tests for JANINO's 'sandbox mode'.
+ */
 @RunWith(Parameterized.class) public
 class SandboxTests {
 

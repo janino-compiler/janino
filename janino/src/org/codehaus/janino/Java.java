@@ -39,6 +39,7 @@ import java.util.TreeMap;
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.Location;
 import org.codehaus.janino.CodeContext.Offset;
+import org.codehaus.janino.IClass.IMethod;
 import org.codehaus.janino.Visitor.BlockStatementVisitor;
 import org.codehaus.janino.Visitor.ElementValueVisitor;
 import org.codehaus.janino.Visitor.TypeArgumentVisitor;
@@ -544,6 +545,7 @@ class Java {
     public
     interface TypeDeclaration extends Locatable, Scope {
 
+        /** @return The or'ed modifier flags of the type, as defined in {@link Mod} */
         short getModifierFlags();
 
         /** @return The annotations of this {@link TypeDeclaration} */
@@ -886,7 +888,7 @@ class Java {
         final SortedMap/*<String, IClass.IField>*/ syntheticFields = new TreeMap();
     }
 
-    /** Representation of an anonymous class declaration. */
+    /** Representation of a JLS7 15.9.5 'anonymous class declaration'. */
     public static final
     class AnonymousClassDeclaration extends ClassDeclaration implements InnerClassDeclaration {
 
@@ -1479,6 +1481,7 @@ class Java {
             }
         }
 
+        /** @return The annotations of this function */
         public Annotation[]
         getAnnotations() { return this.modifiers.annotations; }
 
@@ -1514,8 +1517,14 @@ class Java {
         public static final
         class FormalParameters extends Located {
 
+            /** The parameters of this function, but not the {@link #variableArity}. */
             public final FormalParameter[] parameters;
-            public final boolean           variableArity;
+
+            /**
+             * Whether this method has 'variable arity', i.e. its last parameter has an ellipsis ('...') after the
+             * type.
+             */
+            public final boolean variableArity;
 
             public
             FormalParameters() { this(null, new FormalParameter[0], false); }
@@ -1560,6 +1569,10 @@ class Java {
                 this.name  = name;
             }
 
+            /**
+             * @param hasEllipsis Whether this is the last function parameter and has an ellipsis ('...') after the
+             *                    type
+             */
             public String
             toString(boolean hasEllipsis) { return this.type.toString() + (hasEllipsis ? "... " : " ") + this.name; }
 
@@ -1722,6 +1735,7 @@ class Java {
             }
         }
 
+        /** @return The annotations of this field */
         public Annotation[]
         getAnnotations() { return this.modifiers.annotations; }
 
@@ -1871,6 +1885,8 @@ class Java {
         getEnclosingScope() { return this.enclosingScope; }
 
         // Compile time members
+
+        /** The map of currently visible local variables. */
         public Map/*<String name, Java.LocalVariable>*/ localVariables;
 
         @Override public Java.LocalVariable
@@ -1880,9 +1896,16 @@ class Java {
         }
     }
 
+    /**
+     * Representation of a JLS7 14.7 'labeled statement'.
+     */
     public static final
     class LabeledStatement extends BreakableStatement {
-        public final String    label;
+
+        /** The lael of this labeled statement. */
+        public final String label;
+
+        /** The labeled block. */
         public final Statement body;
 
         public
@@ -1908,17 +1931,21 @@ class Java {
      */
     public static final
     class Block extends Statement {
+
+        /** The list of statements that comprise the body of the block. */
         public final List/*<BlockStatement>*/ statements = new ArrayList();
 
         public
         Block(Location location) { super(location); }
 
+        /** Adds one statement to the end of the block. */
         public void
         addStatement(BlockStatement statement) {
             this.statements.add(statement);
             statement.setEnclosingScope(this);
         }
 
+        /** Adds a list of statements to the end of the block. */
         public void
         addStatements(List/*<BlockStatement>*/ statements) {
             this.statements.addAll(statements);
@@ -1927,6 +1954,7 @@ class Java {
             }
         }
 
+        /** @return A copy of the list of statements that comprise the body of the block */
         public BlockStatement[]
         getStatements() {
             return (BlockStatement[]) this.statements.toArray(new BlockStatement[this.statements.size()]);
@@ -1941,12 +1969,10 @@ class Java {
     }
 
     /**
-     * Base class for statements that can be terminated abnormally with a
-     * "break" statement.
+     * Base class for statements that can be terminated abnormally with a "break" statement.
      * <p>
-     * According to the JLS, statements that can be terminated abnormally with
-     * a "break" statement are: "COntinuable" statements ("for", "do" and
-     * "while"), labeled statements, and the "switch" statement.
+     * According to the JLS, statements that can be terminated abnormally with a "break" statement are: "continuable"
+     * statements ("for", "do" and "while"), labeled statements, and the "switch" statement.
      */
     public abstract static
     class BreakableStatement extends Statement {
@@ -1954,19 +1980,36 @@ class Java {
         protected
         BreakableStatement(Location location) { super(location); }
 
+        /**
+         * This one's filled in by the first BREAK statement, and is {@link Offset#set()} by this breakable statement.
+         */
         CodeContext.Offset whereToBreak;
     }
 
+    /**
+     * Base class for statements that support the 'continue'statement.
+     * <p>
+     * According to the JLS, these are "for", "do" and "while".
+     */
     public abstract static
     class ContinuableStatement extends BreakableStatement {
         protected
         ContinuableStatement(Location location) { super(location); }
 
+        /**
+         * This one's filled in by the first CONTINUE statement, and is {@link Offset#set()} by this continuable
+         * statement.
+         */
         protected CodeContext.Offset whereToContinue;
     }
 
+    /**
+     * Representation of the JLS7 14.8 'expression statement'.
+     */
     public static final
     class ExpressionStatement extends Statement {
+
+        /** The rvalue that is evaluated when the statement is executed. */
         public final Rvalue rvalue;
 
         public
@@ -2000,8 +2043,11 @@ class Java {
         accept(Visitor.BlockStatementVisitor visitor) { visitor.visitExpressionStatement(this); }
     }
 
+    /** Representation of the JLS7 14.3 'local class declaration statement'. */
     public static final
     class LocalClassDeclarationStatement extends Statement {
+
+        /** The class declaration that poses the body of the statement. */
         public final LocalClassDeclaration lcd;
 
         public
@@ -2017,10 +2063,17 @@ class Java {
         accept(Visitor.BlockStatementVisitor visitor) { visitor.visitLocalClassDeclarationStatement(this); }
     }
 
+    /** Representation of a JLS7 14.9 IF statement. */
     public static final
     class IfStatement extends Statement {
-        public final Rvalue         condition;
+
+        /** The condition of the IF statement. */
+        public final Rvalue condition;
+
+        /** The 'then statement', which is executed iff the condition evaluates to TRUE. */
         public final BlockStatement thenStatement;
+
+        /** The optional ELSE statement, which is executed iff the condition evaluates to FALSE. */
         public final BlockStatement optionalElseStatement;
 
         /**
@@ -2050,11 +2103,20 @@ class Java {
         accept(Visitor.BlockStatementVisitor visitor) { visitor.visitIfStatement(this); }
     }
 
+    /** Representation of a JLS7 14.14.1 'basic FOR statement'. */
     public static final
     class ForStatement extends ContinuableStatement {
+
+        /** The optional 'init' part of the 'basic FOR statement'. */
         public final BlockStatement optionalInit;
-        public final Rvalue         optionalCondition;
-        public final Rvalue[]       optionalUpdate;
+
+        /** The optional 'condition' part of the 'basic FOR statement'. */
+        public final Rvalue optionalCondition;
+
+        /** The optional 'update' part of the 'basic FOR statement'. */
+        public final Rvalue[] optionalUpdate;
+
+        /** The body of the 'basic FOR statement'. */
         public final BlockStatement body;
 
         public
@@ -2086,9 +2148,14 @@ class Java {
         accept(Visitor.BlockStatementVisitor visitor) { visitor.visitForStatement(this); }
     }
 
+    /** Representation of the JLS7 14.2 WHILE statement. */
     public static final
     class WhileStatement extends ContinuableStatement {
-        public final Rvalue         condition;
+
+        /** The 'condition' of the WHILE statement. */
+        public final Rvalue condition;
+
+        /** The body of the WHILE statement. */
         public final BlockStatement body;
 
         public
@@ -2107,11 +2174,18 @@ class Java {
         accept(Visitor.BlockStatementVisitor visitor) { visitor.visitWhileStatement(this); }
     }
 
+    /** Representation of a JLS7 14.20 TRY statement. */
     public static final
     class TryStatement extends Statement {
-        public final BlockStatement             body;
+
+        /** The body of the TRY statement. */
+        public final BlockStatement body;
+
+        /** The list of catch clauses (including the 'default' clause) of the TRY statement. */
         public final List/*<Java.CatchClause>*/ catchClauses;
-        public final Block                      optionalFinally;
+
+        /** The optional 'finally' block of the TRY statement. */
+        public final Block optionalFinally;
 
         public
         TryStatement(
@@ -2144,17 +2218,29 @@ class Java {
         @Override public void
         accept(Visitor.BlockStatementVisitor visitor) { visitor.visitTryStatement(this); }
 
+        /**
+         * This one's created iff the TRY statement has a FINALLY clause when the compilation of the TRY statement
+         * begins.
+         */
         CodeContext.Offset finallyOffset;
     }
 
+    /** Representation of a JLS7 14.20.1 CATCH clause. */
     public static
     class CatchClause extends Located implements Scope {
+
+        /** Container for the type and the name of the caught exception. */
         public final FunctionDeclarator.FormalParameter caughtException;
-        public final Block                              body;
-        private TryStatement                            enclosingTryStatement;
+
+        /** Body of the CATCH clause. */
+        public final Block body;
+
+        /** Link to the enclosing TRY statement. */
+        private TryStatement enclosingTryStatement;
 
         // Compile time fields.
 
+        /** Flag for catch clause reachability analysis. */
         public boolean reachable;
 
         public
@@ -2164,11 +2250,12 @@ class Java {
             (this.body            = body).setEnclosingScope(this);
         }
 
+        /** Links this CATCH clause to the enclosing TRY statement. */
         public void
         setEnclosingTryStatement(TryStatement enclosingTryStatement) {
             if (this.enclosingTryStatement != null && enclosingTryStatement != this.enclosingTryStatement) {
                 throw new JaninoRuntimeException(
-                    "Enclosing TYR statement already set for catch clause "
+                    "Enclosing TRY statement already set for catch clause "
                     + this.toString()
                     + " at "
                     + this.getLocation()
@@ -2190,7 +2277,10 @@ class Java {
     public static final
     class SwitchStatement extends BreakableStatement {
 
-        public final Rvalue                              condition;
+        /** The rvalue that is evaluated and matched with the CASE clauses. */
+        public final Rvalue condition;
+
+        /** The list of 'switch block statement groups' that pose the body of the SWITCH statement. */
         public final List/*<SwitchBlockStatementGroup>*/ sbsgs;
 
         public
@@ -2212,10 +2302,17 @@ class Java {
         @Override public String
         toString() { return "switch (" + this.condition + ") { (" + this.sbsgs.size() + " statement groups) }"; }
 
+        /** Representation of a 'switch block statement group' as defined in JLS7 14.11. */
         public static
         class SwitchBlockStatementGroup extends Java.Located {
-            public final List/*<Rvalue>*/         caseLabels;
-            public final boolean                  hasDefaultLabel;
+
+            /** The CASE labels at the top of the 'switch block statement group'. */
+            public final List/*<Rvalue>*/ caseLabels;
+
+            /** Whether this 'switch block statement group' includes the DEFAULT label. */
+            public final boolean hasDefaultLabel;
+
+            /** The statements following the CASE labels. */
             public final List/*<BlockStatement>*/ blockStatements;
 
             public
@@ -2263,9 +2360,14 @@ class Java {
         }
     }
 
+    /** Representation of a JLS7 14.9 SYNCHRONIZED statement. */
     public static final
     class SynchronizedStatement extends Statement {
-        public final Rvalue         expression;
+
+        /** The object reference on which the statement synchronizes. */
+        public final Rvalue expression;
+
+        /** The body of this SYNCHRONIZED statement. */
         public final BlockStatement body;
 
         public
@@ -2283,13 +2385,19 @@ class Java {
         @Override public void
         accept(Visitor.BlockStatementVisitor visitor) { visitor.visitSynchronizedStatement(this); }
 
+        /** The index of the local variable for the monitor object. */
         short monitorLvIndex = -1;
     }
 
+    /** Representation of a JLS7 14.13 DO statement. */
     public static final
     class DoStatement extends ContinuableStatement {
+
+        /** The body of this DO statement. */
         public final BlockStatement body;
-        public final Rvalue         condition;
+
+        /** The condition in the WHILE clause of this DO statement. */
+        public final Rvalue condition;
 
         public
         DoStatement(Location location, BlockStatement body, Rvalue condition) {
@@ -2307,10 +2415,17 @@ class Java {
         accept(Visitor.BlockStatementVisitor visitor) { visitor.visitDoStatement(this); }
     }
 
+    /** Representation of a JLS7 14.4 'local variable declaration statement'. */
     public static final
     class LocalVariableDeclarationStatement extends Statement {
-        public final Modifiers            modifiers;
-        public final Type                 type;
+
+        /** The local variable modifiers (annotations and/or flags like FINAL). */
+        public final Modifiers modifiers;
+
+        /** The declared type of the local variable. */
+        public final Type type;
+
+        /** The (one or more) 'variable declarators' that follow the type. */
         public final VariableDeclarator[] variableDeclarators;
 
         /**
@@ -2354,8 +2469,11 @@ class Java {
         }
     }
 
+    /** Representation of the JLS7 14.17 RETURN statement. */
     public static final
     class ReturnStatement extends Statement {
+
+        /** The optional rvalue that is returned. */
         public final Rvalue optionalReturnValue;
 
         public
@@ -2374,8 +2492,11 @@ class Java {
         accept(Visitor.BlockStatementVisitor visitor) { visitor.visitReturnStatement(this); }
     }
 
+    /** Representation of a JLS7 14.18 THROW statement. */
     public static final
     class ThrowStatement extends Statement {
+
+        /** The rvalue (of type {@link Throwable}) thrown by this THROW statement. */
         public final Rvalue expression;
 
         public
@@ -2394,10 +2515,12 @@ class Java {
     }
 
     /**
-     * Representation of the Java&trade; "break" statement (JLS 14.14).
+     * Representation of the JLS7 14.15 BREAK statement.
      */
     public static final
     class BreakStatement extends Statement {
+
+        /** The optional label that this BREAK statement refers to. */
         public final String optionalLabel;
 
         public
@@ -2416,11 +2539,12 @@ class Java {
     }
 
     /**
-     * Representation of the Java&trade; "continue" statement (JLS
-     * 14.15).
+     * Representation of the JLS7 14.16 CONTINUE statement.
      */
     public static final
     class ContinueStatement extends Statement {
+
+        /** The optional label that this CONTINUE statement refers to. */
         public final String optionalLabel;
 
         public
@@ -2438,10 +2562,14 @@ class Java {
         accept(Visitor.BlockStatementVisitor visitor) { visitor.visitContinueStatement(this); }
     }
 
+    /** Representation of the JLS7 14.10 ASSERT statement. */
     public static final
     class AssertStatement extends Statement {
 
+        /** The left-hand-side expression of this ASSERT statement. */
         public final Rvalue expression1;
+
+        /** The optional right-hand-side expression of this ASSERT statement. */
         public final Rvalue optionalExpression2;
 
         public
@@ -2483,8 +2611,7 @@ class Java {
     }
 
     /**
-     * Abstract base class for {@link Java.Type}, {@link Java.Rvalue} and
-     * {@link Java.Lvalue}.
+     * Abstract base class for {@link Java.Type}, {@link Java.Rvalue} and {@link Java.Lvalue}.
      */
     public abstract static
     class Atom extends Located {
@@ -2492,8 +2619,13 @@ class Java {
         public
         Atom(Location location) { super(location); }
 
-        public Type   toType()   { return null; }
+        /** @return This atom, converted to {@link Type}, or {@code null} if this atom is not a type */
+        public Type toType() { return null; }
+
+        /** @return This atom, converted to {@link Rvalue}, or {@code null} if this atom is not an rvalue */
         public Rvalue toRvalue() { return null; }
+
+        /** @return This atom, converted to {@link Lvalue}, or {@code null} if this atom is not an lvalue */
         public Lvalue toLvalue() { return null; }
 
         @Override public abstract String
@@ -2501,18 +2633,32 @@ class Java {
 
         // Parse time members:
 
+        /**
+         * @return                  This atom, converted to {@link Type}
+         * @throws CompileException This atom is not a {@link Type}
+         */
         public final Type
         toTypeOrCompileException() throws CompileException {
             Type result = this.toType();
             if (result == null) this.throwCompileException("Expression \"" + this.toString() + "\" is not a type");
             return result;
         }
+
+        /**
+         * @return                  This atom, converted to an {@link Rvalue}
+         * @throws CompileException This atom is not an {@link Rvalue}
+         */
         public final Rvalue
         toRvalueOrCompileException() throws CompileException {
             Rvalue result = this.toRvalue();
             if (result == null) this.throwCompileException("Expression \"" + this.toString() + "\" is not an rvalue");
             return result;
         }
+
+        /**
+         * @return                  This atom, converted to an {@link Lvalue}
+         * @throws CompileException This atom is not a {@link Lvalue}
+         */
         public final Lvalue
         toLvalueOrCompileException() throws CompileException {
             Lvalue result = this.toLvalue();
@@ -2553,6 +2699,9 @@ class Java {
             this.enclosingScope = enclosingScope;
         }
 
+        /**
+         * @return The enclosing scope (as previously set by {@link #setEnclosingScope(Scope)})
+         */
         public Scope
         getEnclosingScope() { return this.enclosingScope; }
 
@@ -2571,6 +2720,8 @@ class Java {
      */
     public static final
     class SimpleType extends Type {
+
+        /** The {@link IClass} represented by this {@link Type}. */
         public final IClass iClass;
 
         public
@@ -2590,11 +2741,12 @@ class Java {
     }
 
     /**
-     * Representation of a Java&trade; "basic type" (obviously
-     * equaivalent to a "primitive type") (JLS 4.2).
+     * Representation of a JLS7 18 "basic type" (obviously equivalent to a JLS7 4.2 "primitive type").
      */
     public static final
     class BasicType extends Type {
+
+        /** One of {@link #VOID}, {@link #BYTE} and consorts. */
         public final int index;
 
         public
@@ -2635,21 +2787,42 @@ class Java {
         @Override public void
         accept(Visitor.AtomVisitor visitor) { visitor.visitBasicType(this); }
 
-        public static final int VOID    = 0;
-        public static final int BYTE    = 1;
-        public static final int SHORT   = 2;
-        public static final int CHAR    = 3;
-        public static final int INT     = 4;
-        public static final int LONG    = 5;
-        public static final int FLOAT   = 6;
-        public static final int DOUBLE  = 7;
+        /** Value representing the VOID type. */
+        public static final int VOID = 0;
+
+        /** Value representing the BYTE type. */
+        public static final int BYTE = 1;
+
+        /** Value representing the SHORT type. */
+        public static final int SHORT = 2;
+
+        /** Value representing the CHAR type. */
+        public static final int CHAR = 3;
+
+        /** Value representing the INT type. */
+        public static final int INT = 4;
+
+        /** Value representing the LONG type. */
+        public static final int LONG = 5;
+
+        /** Value representing the FLOAT type. */
+        public static final int FLOAT = 6;
+
+        /** Value representing the DOUBLE type. */
+        public static final int DOUBLE = 7;
+
+        /** Value representing the BOOLEAN type. */
         public static final int BOOLEAN = 8;
     }
 
+    /** representation of a JLS7 4.3 reference type. */
     public static final
     class ReferenceType extends Type implements TypeArgument {
 
-        public final String[]       identifiers;
+        /** The list of (dot-separated) identifiers that pose the reference type, e.g. "java", "util", "Map". */
+        public final String[] identifiers;
+
+        /** The optional type arguments of the reference type. */
         public final TypeArgument[] optionalTypeArguments;
 
         public
@@ -2677,6 +2850,7 @@ class Java {
         accept(TypeArgumentVisitor visitor) { visitor.visitReferenceType(this); }
     }
 
+    /** Representation of a JLS7 4.5.1 type argument. */
     public
     interface TypeArgument {
 
@@ -2687,10 +2861,17 @@ class Java {
         void accept(Visitor.TypeArgumentVisitor visitor);
     }
 
-    // Helper class for JLS2 15.9.1
+    /**
+     * Representation of the first part of a JLS7 15.9 'Qualified class instance creation expression': The 'a.new
+     * MyClass' part of 'a.new MyClass(...)'.
+     */
     public static final
     class RvalueMemberType extends Type {
+
+        /** The expression that represents the outer instance required for the instantiation of the inner type. */
         public final Rvalue rvalue;
+
+        /** The simple name of the inner type being instantiated. */
         public final String identifier;
 
         /**
@@ -2713,11 +2894,11 @@ class Java {
         accept(Visitor.TypeVisitor visitor) { visitor.visitRvalueMemberType(this); }
     }
 
-    /**
-     * Representation of a Java&trade; array type (JLS 10.1).
-     */
+    /** Representation of a JLS7 10.1 'array type'. */
     public static final
     class ArrayType extends Type {
+
+        /** The (declared) type of the array's components. */
         public final Type componentType;
 
         public
@@ -2797,17 +2978,27 @@ class Java {
             }.comprehensiveVisitor());
         }
 
+        /** @return The enclosing block statement, as set with {@link #setEnclosingBlockStatement(BlockStatement)} */
         public Java.BlockStatement
         getEnclosingBlockStatement() { return this.enclosingBlockStatement; }
 
         @Override public Rvalue
         toRvalue() { return this; }
 
+        /**
+         * The special value for the {@link #constantValue} field indicating that this rvalue does <b>not</b> have a
+         * constant value.
+         */
         static final Object CONSTANT_VALUE_UNKNOWN = new Object() {
 
             @Override public String
             toString() { return "CONSTANT_VALUE_UNKNOWN"; }
         };
+
+        /**
+         * The constant value of this rvalue, or {@link #CONSTANT_VALUE_UNKNOWN} iff this rvalue does <b>not</b> have a
+         * constant value.
+         */
         Object constantValue = Java.Rvalue.CONSTANT_VALUE_UNKNOWN;
 
         /**
@@ -2815,9 +3006,6 @@ class Java {
          * type.
          */
         public abstract void accept(Visitor.RvalueVisitor rvv);
-
-        public static final boolean JUMP_IF_TRUE  = true;
-        public static final boolean JUMP_IF_FALSE = false;
     }
 
     /**
@@ -2850,13 +3038,19 @@ class Java {
     }
 
     /**
-     * This class is special: It does not extend/implement the Atom subclasses,
-     * but overrides Atom's "to...()" methods.
+     * Representation of a JLS7 6.5.2 'ambiguous name'.
+     * <p>
+     * This class is special: It does not extend/implement the {@link Atom} subclasses, but overrides {@link Atom}'s
+     * "{@code to...()}" methods.
      */
     public static final
     class AmbiguousName extends Lvalue {
+
+        /** The first {@link #n} of these identifiers comprise this ambiguous name. */
         public final String[] identifiers;
-        public final int      n;
+
+        /** @see #identifiers */
+        public final int n;
 
         public
         AmbiguousName(Location location, String[] identifiers) {
@@ -2900,6 +3094,7 @@ class Java {
             return this;
         }
 
+        /** The result of 'ambiguous name resolution' furing compilation. */
         Atom reclassified;
 
         @Override public void
@@ -2915,9 +3110,11 @@ class Java {
         accept(Visitor.ElementValueVisitor visitor) { visitor.visitAmbiguousName(this); }
     }
 
-    // Helper class for 6.5.2.1.7, 6.5.2.2.1
+    /** Representation of a JLS7 6.5.2.1.5 'package name'. */
     public static final
     class Package extends Atom {
+
+        /** The complete name of a package, e.g. 'java' or 'java.util'. */
         public final String name;
 
         public
@@ -2938,6 +3135,8 @@ class Java {
      */
     public static final
     class LocalVariableAccess extends Lvalue {
+
+        /** The local variable that is accessed. */
         public final LocalVariable localVariable;
 
         public
@@ -2965,13 +3164,20 @@ class Java {
     }
 
     /**
-     * Representation of an access to a field of a class or an interface. (Does not implement the
-     * "array length" expression, e.g. "ia.length".)
+     * Representation of an access to a field of a class or an interface. (Does not implement the {@link ArrayLength},
+     * e.g. "myArray.length".)
      */
     public static final
     class FieldAccess extends Lvalue {
-        public final Atom           lhs;
-        public final IClass.IField  field;
+
+        /**
+         * The left-hand-side of the field access - either a <i>type</i> or an <i>rvalue</i> (which includes all
+         * lvalues).
+         */
+        public final Atom lhs;
+
+        /** The field within the class or instance identified by the {@link #lhs}. */
+        public final IClass.IField field;
 
         public
         FieldAccess(Location location, Atom lhs, IClass.IField field) {
@@ -3000,8 +3206,11 @@ class Java {
         accept(ElementValueVisitor visitor) { visitor.visitFieldAccess(this); }
     }
 
+    /** Representation of the JLS7 10.7 array type 'length' pseudo-member. */
     public static final
     class ArrayLength extends Rvalue {
+
+        /** The rvalue identifying the array to determine the length of. */
         public final Rvalue lhs;
 
         public
@@ -3028,7 +3237,7 @@ class Java {
     }
 
     /**
-     * Representation of an access to the innermost enclosing instance.
+     * Representation of an JLS7 15.8.3 access to the innermost enclosing instance.
      */
     public static final
     class ThisReference extends Rvalue {
@@ -3041,6 +3250,7 @@ class Java {
 
         // Compile time members.
 
+        /** A cache for the type of the instance that 'this' refers to. */
         IClass iClass;
 
         // Implement "Atom".
@@ -3059,10 +3269,12 @@ class Java {
     }
 
     /**
-     * Representation of an access to the current object or an enclosing instance.
+     * Representation of an JLS7 15.8.4 access to the current object or an enclosing instance.
      */
     public static final
     class QualifiedThisReference extends Rvalue {
+
+        /** The qualification left from the 'this' keyword. */
         public final Type qualification;
 
         /**
@@ -3078,9 +3290,17 @@ class Java {
 
         // Compile time members.
 
-        ClassDeclaration    declaringClass;
+        /** The innermost enclosing class declaration. */
+        ClassDeclaration declaringClass;
+
+        /**
+         * The innermost 'type body declaration' enclosing this 'qualified this reference', i.e. the method,
+         * type initializer or field initializer.
+         */
         TypeBodyDeclaration declaringTypeBodyDeclaration;
-        IClass              targetIClass;
+
+        /** The resolved {@link #qualification}. */
+        IClass targetIClass;
 
         // Implement "Atom".
 
@@ -3097,8 +3317,11 @@ class Java {
         accept(ElementValueVisitor visitor) { visitor.visitQualifiedThisReference(this); }
     }
 
+    /** Representation of a JLS7 15.8.2 'class literal'. */
     public static final
     class ClassLiteral extends Rvalue {
+
+        /** The type left of the '.class' suffix. */
         public final Type type;
 
         public
@@ -3107,9 +3330,7 @@ class Java {
             this.type = type;
         }
 
-        // Compile time members.
-
-        //Implement "Atom".
+        // Implement "Atom".
 
         @Override public String
         toString() { return this.type.toString() + ".class"; }
@@ -3124,10 +3345,20 @@ class Java {
         accept(ElementValueVisitor visitor) { visitor.visitClassLiteral(this); }
     }
 
+    /** Representation of all JLS7 15.26 assignments. */
     public static final
     class Assignment extends Rvalue {
+
+        /** The lvalue to assign to. */
         public final Lvalue lhs;
+
+        /**
+         * The assignment operator; either the 'simple assignment operator ('=', JLS7 15.26.1) or one of the 'compound
+         * assignment operators (JLS7 15.26.2).
+         */
         public final String operator;
+
+        /** The rvalue that is assigned. */
         public final Rvalue rhs;
 
         public
@@ -3155,9 +3386,18 @@ class Java {
         accept(ElementValueVisitor visitor) { visitor.visitAssignment(this); }
     }
 
+    /** Representation of a JLS7 15.25 'conditional operation'. */
     public static final
     class ConditionalExpression extends Rvalue {
-        public final Rvalue lhs, mhs, rhs;
+
+        /** Left-hand side of this conditional operation. */
+        public final Rvalue lhs;
+        
+        /** Middle-hand side of this conditional operation. */
+        public final Rvalue mhs;
+        
+        /** Right-hand side of this conditional operation. */
+        public final Rvalue rhs;
 
         public
         ConditionalExpression(Location location, Rvalue lhs, Rvalue mhs, Rvalue rhs) {
@@ -3183,14 +3423,20 @@ class Java {
     }
 
     /**
-     * Objects of this class represent represent one pre- or post-increment
-     * or decrement.
+     * Representation of a JLS7 15.14.2 'postfix increment operation', a JLS7 15.14.3 'postfix decrement operation', a
+     * JLS7 15.15.1 'prefix increment operation' or a JLS7 15.15.2 'prefix decrement operation'.
      */
     public static final
     class Crement extends Rvalue {
+
+        /** Whether this operation is 'pre' (TRUE) or 'post' (FALSE). */
         public final boolean pre;
-        public final String  operator; // "++" or "--"
-        public final Lvalue  operand;
+
+        /** The operator; either "++" or "--". */
+        public final String operator;
+
+        /** The lvalue to operate upon. */
+        public final Lvalue operand;
 
         public
         Crement(Location location, String operator, Lvalue operand) {
@@ -3224,12 +3470,14 @@ class Java {
         accept(ElementValueVisitor visitor) { visitor.visitCrement(this); }
     }
 
-    /**
-     * This class implements an array access.
-     */
+    /** Representation of a JLS7 15.13 'array access expression'. */
     public static final
     class ArrayAccessExpression extends Lvalue {
+
+        /** The array to access (must be an {@link Lvalue} if the access is modifying). */
         public final Rvalue lhs;
+
+        /** The index value to use. */
         public final Rvalue index;
 
         public
@@ -3260,12 +3508,15 @@ class Java {
     }
 
     /**
-     * This class implements class or interface field access, and also the "array length"
-     * expression "xy.length".
+     * Representation of a JLS7 15.11 'field access expression', including the "array length" pseudo field access.
      */
     public static final
     class FieldAccessExpression extends Lvalue {
-        public final Atom   lhs;
+
+        /** {@link Type}, {@link Rvalue} or {@link Lvalue} to operate upon. */
+        public final Atom lhs;
+
+        /** Name of the field within the {@link #lhs} to access. */
         public final String fieldName;
 
         public
@@ -3294,15 +3545,20 @@ class Java {
         @Override public void
         accept(ElementValueVisitor visitor) { visitor.visitFieldAccessExpression(this); }
 
+        /** The {@link ArrayLength} or {@link FieldAccess} resulting from this 'field access expression'. */
         Rvalue value;
     }
 
     /**
-     * Representation of "super.fld" and "Type.super.fld".
+     * Representation of an JLS7 'superclass field access expression', e.g. "super.fld" and "Type.super.fld".
      */
     public static final
     class SuperclassFieldAccessExpression extends Lvalue {
-        public final Type   optionalQualification;
+
+        /** The optional qualification before '.super.fld'. */
+        public final Type optionalQualification;
+
+        /** The name of the field to access. */
         public final String fieldName;
 
         public
@@ -3337,15 +3593,21 @@ class Java {
         @Override public void
         accept(ElementValueVisitor visitor) { visitor.visitSuperclassFieldAccessExpression(this); }
 
+        /** The {@link FieldAccess} that implements this {@link FieldAccessExpression}. */
         Rvalue value;
     }
 
     /**
-     * This class implements the unary operators "+", "-", "~" and "!".
+     * Representation of a JLS7 15.15.3 'unary plus operator', a JLS7 15.15.4 'unary minus operator', a JLS7 15.15.5
+     * 'bitwise complement operator' or a JLS7 15.15.6 'logical complement operator'.
      */
     public static final
     class UnaryOperation extends BooleanRvalue {
+
+        /** The operator (either "+", "-", "~" or "!"). */
         public final String operator;
+
+        /** The rvalue to operate upon. */
         public final Rvalue operand;
 
         public
@@ -3370,10 +3632,15 @@ class Java {
         accept(ElementValueVisitor visitor) { visitor.visitUnaryOperation(this); }
     }
 
+    /** Representation of a JLS7 15.20.2 'type comparison operation'. */
     public static final
     class Instanceof extends Rvalue {
+
+        /** The rvalue who's type is to be compared. */
         public final Rvalue lhs;
-        public final Type   rhs;
+
+        /** The type that the {@link #lhs} is checked against. */
+        public final Type rhs;
 
         public
         Instanceof(Location location, Rvalue lhs, Type/*<ReferenceType or ArrayType>*/ rhs) {
@@ -3400,19 +3667,47 @@ class Java {
     }
 
     /**
-     * Representation of all non-operand-modifying Java&trade; binary
-     * operations.
+     * Representation of all non-operand-modifying binary operations.
      * <p>
-     * Operations with boolean result:<br>
-     * <tt>|| && == != < > <= >=</tt>
-     * <p>
-     * Operations with non-boolean result:<br>
-     * <tt>| ^ & * / % + - << >> >>></tt>
+     * Operations with boolean result:
+     * <dl>
+     *   <dt>||
+     *   <dd>JLS7 15.24 'conditional or operation'
+     *   <dt>&amp;&amp;
+     *   <dd>JLS7 15.23 'conditional and operation'
+     *   <dt>==
+     *   <dd>JLS7 15.21 'equality operation'
+     *   <dt>!=
+     *   <dd>JLS7 15.22 'non-equality operation'
+     *   <dt>&lt; > &lt;= >=
+     *   <dd>JLS7 15.20.1 'numerical comparison operations'
+     * </dl>
+     * Operations with non-boolean result:
+     * <dl>
+     *   <dt>|
+     *   <dd>JLS7 15.22.1 'integer bitwise OR operation' and JLS7 15.22.2 'boolean logical OR operation'
+     *   <dt>^
+     *   <dd>JLS7 15.22.1 'integer bitwise XOR operation' and JLS7 15.22.2 'boolean logical XOR operation'
+     *   <dt>&amp;
+     *   <dd>JLS7 15.22.1 'integer bitwise AND operation' and JLS7 15.22.2 'boolean logical AND operation'
+     *   <dt>* / %
+     *   <dd>JLS7 15.17 'multiplicative operations'
+     *   <dt>+ -
+     *   <dd>JLS7 15.18 'additive operations'
+     *   <dt>&lt;&lt; >> >>>
+     *   <dd>JLS7 15.19 'shift operations'
+     * </dl>
      */
     public static final
     class BinaryOperation extends BooleanRvalue {
+
+        /** The left hand side operand. */
         public final Rvalue lhs;
+
+        /** The operator; one of thos described in {@link BinaryOperation}. */
         public final String op;
+
+        /** The right hand side operand. */
         public final Rvalue rhs;
 
         public
@@ -3458,9 +3753,14 @@ class Java {
         accept(ElementValueVisitor visitor) { visitor.visitBinaryOperation(this); }
     }
 
+    /** Representation of a JLS7 15.16 'cast expression'. */
     public static final
     class Cast extends Rvalue {
-        public final Type   targetType;
+
+        /** The type to convert to. */
+        public final Type targetType;
+
+        /** The rvalue to convert. */
         public final Rvalue value;
 
         public
@@ -3487,8 +3787,11 @@ class Java {
         accept(ElementValueVisitor visitor) { visitor.visitCast(this); }
     }
 
+    /** Representation of a JLS7 15.8.5 'parenthesized expression'. */
     public static final
     class ParenthesizedExpression extends Lvalue {
+
+        /** The rvalue in parentheses. */
         public final Rvalue value;
 
         public
@@ -3515,10 +3818,14 @@ class Java {
         accept(ElementValueVisitor visitor) { visitor.visitParenthesizedExpression(this); }
     }
 
+    /** Abstract bas class for {@link SuperConstructorInvocation} and {@link AlternateConstructorInvocation}. */
     public abstract static
     class ConstructorInvocation extends Atom implements BlockStatement {
+
+        /** The arguments to pass to the constructor. */
         public final Rvalue[] arguments;
-        private Scope         enclosingScope;
+
+        private Scope enclosingScope;
 
         protected
         ConstructorInvocation(Location location, Rvalue[] arguments) {
@@ -3545,7 +3852,7 @@ class Java {
         @Override public Scope
         getEnclosingScope() { return this.enclosingScope; }
 
-        // Compile time members
+        /** The local variables that are accessible during the compilation of the constructor invocation. */
         public Map/*<String name, Java.LocalVariable>*/ localVariables;
 
         @Override public Java.LocalVariable
@@ -3555,6 +3862,7 @@ class Java {
         }
     }
 
+    /** Representation of a JLS7 8.8.7.1. 'alternate constructor invocation'. */
     public static final
     class AlternateConstructorInvocation extends ConstructorInvocation {
 
@@ -3577,8 +3885,14 @@ class Java {
         accept(Visitor.BlockStatementVisitor visitor) { visitor.visitAlternateConstructorInvocation(this); }
     }
 
+    /** Representation of a JLS7 8.8.7.1. 'superclass constructor invocation'. */
     public static final
     class SuperConstructorInvocation extends ConstructorInvocation {
+
+        /**
+         * The qualification for this 'qualified superclass constructor invocation', or {@code null} iff this is an
+         * 'unqualified superclass constructor invocation'.
+         */
         public final Rvalue optionalQualification;
 
         public
@@ -3604,10 +3918,11 @@ class Java {
         accept(Visitor.BlockStatementVisitor visitor) { visitor.visitSuperConstructorInvocation(this); }
     }
 
+    /** Representation of a JLS7 15.12 'method invocation expression'. */
     public static final
     class MethodInvocation extends Invocation {
 
-        /** null == method invocation by simple method name */
+        /** The optional type or rvalue that qualifies this method invocation. */
         public final Atom optionalTarget;
 
         public
@@ -3617,6 +3932,8 @@ class Java {
         }
 
         // Implement "Atom".
+
+        /** The resolved {@link IMethod}. */
         IClass.IMethod iMethod;
 
         @Override public String
@@ -3642,6 +3959,7 @@ class Java {
         accept(ElementValueVisitor visitor) { visitor.visitMethodInvocation(this); }
     }
 
+    /** Representation of a JLS7 15.12.1.1.3 'superclass method invocation'. */
     public static final
     class SuperclassMethodInvocation extends Invocation {
 
@@ -3665,10 +3983,15 @@ class Java {
         accept(ElementValueVisitor visitor) { visitor.visitSuperclassMethodInvocation(this); }
     }
 
+    /** Abstract base class for {@link MethodInvocation} and {@link SuperclassMethodInvocation}. */
     public abstract static
     class Invocation extends Rvalue {
+
+        /** name of the invoked method. */
+        public final String methodName;
+        
+        /** Arguments to pass to the method. */
         public final Rvalue[] arguments;
-        public final String   methodName;
 
         protected
         Invocation(Location location, String methodName, Rvalue[] arguments) {
@@ -3678,10 +4001,17 @@ class Java {
         }
     }
 
+    /** Representation of a JLS7 'class instance creation expression'. */
     public static final
     class NewClassInstance extends Rvalue {
-        public final Rvalue   optionalQualification;
-        public final Type     type;
+
+        /** The qualification of this 'qualified class instance creation expression'. */
+        public final Rvalue optionalQualification;
+
+        /** The type to instantiate. */
+        public final Type type;
+
+        /** The arguments to pass to the constructor. */
         public final Rvalue[] arguments;
 
         public
@@ -3694,6 +4024,7 @@ class Java {
 
         // Compile time members.
 
+        /** The resolved {@link #type}. */
         protected IClass iClass;
 
         public
@@ -3739,11 +4070,18 @@ class Java {
         accept(ElementValueVisitor visitor) { visitor.visitNewClassInstance(this); }
     }
 
+    /** Representation of a JLS7 15.9 'anonymous class instance creation expression'. */
     public static final
     class NewAnonymousClassInstance extends Rvalue {
-        public final Rvalue                    optionalQualification;
+
+        /** The qualification iff this a 'qualified anonymous class instance creation expression'. */
+        public final Rvalue optionalQualification;
+
+        /** The declaration of the anonymous class to instantiate. */
         public final AnonymousClassDeclaration anonymousClassDeclaration;
-        public final Rvalue[]                  arguments;
+
+        /** The arguments to pass to the constructor. */
+        public final Rvalue[] arguments;
 
         public
         NewAnonymousClassInstance(
@@ -3778,15 +4116,17 @@ class Java {
         accept(ElementValueVisitor visitor) { visitor.visitNewAnonymousClassInstance(this); }
     }
 
-    // Used during compile-time.
+    /** 'Artificial' operation for accessing the parameters of the synthetic constructor of an anonymous class. */
     public static final
     class ParameterAccess extends Rvalue {
+
+        /** The parameter to access. */
         public final FunctionDeclarator.FormalParameter formalParameter;
 
         public
         ParameterAccess(Location location, FunctionDeclarator.FormalParameter formalParameter) {
             super(location);
-            this.formalParameter   = formalParameter;
+            this.formalParameter = formalParameter;
         }
 
         // Implement Atom
@@ -3804,11 +4144,29 @@ class Java {
         accept(ElementValueVisitor visitor) { visitor.visitParameterAccess(this); }
     }
 
+    /** Representation of a JLS7 15.10 'array creation expression'. */
     public static final
     class NewArray extends Rvalue {
-        public final Type     type;
+
+        /**
+         * The component type of the ({@link #dimExprs}{@code .length + }{@link #dims})-dimensional array to
+         * instantiate.
+         */
+        public final Type type;
+
+        /**
+         * The sizes of the first dimensions to instantiate.
+         *
+         * @see #NewArray(Location, Type, Rvalue, int)
+         */
         public final Rvalue[] dimExprs;
-        public final int      dims;
+
+        /**
+         * The count of additional dimensions that the array should have.
+         *
+         * @see #NewArray(Location, Type, Rvalue, int)
+         */
+        public final int dims;
 
         /**
          * Create a new array with dimension dimExprs.length + dims
@@ -3857,6 +4215,7 @@ class Java {
         public final ArrayType        arrayType;
         public final ArrayInitializer arrayInitializer;
         public final IClass           arrayIClass;
+
         public
         NewInitializedArray(Location location, ArrayType arrayType, ArrayInitializer arrayInitializer) {
             super(location);

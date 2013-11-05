@@ -44,6 +44,10 @@ import org.codehaus.commons.compiler.ICompilerFactory;
 import org.codehaus.commons.compiler.IExpressionEvaluator;
 import org.codehaus.commons.compiler.IScriptEvaluator;
 import org.codehaus.commons.compiler.ISimpleCompiler;
+import org.codehaus.janino.ClassBodyEvaluator;
+import org.codehaus.janino.ExpressionEvaluator;
+import org.codehaus.janino.ScriptEvaluator;
+import org.codehaus.janino.SimpleCompiler;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -52,8 +56,15 @@ import org.junit.runners.Parameterized.Parameters;
 import util.TestUtil;
 import for_sandbox_tests.OverridesWithDifferingVisibility;
 
+// CHECKSTYLE JavadocMethod:OFF
+
+/**
+ * Tests for JANINO's {@link ExpressionEvaluator}, {@link ScriptEvaluator}, {@link ClassBodyEvaluator} and
+ * {@link SimpleCompiler}. 
+ */
 @RunWith(Parameterized.class) public
 class EvaluatorTests {
+
     private final ICompilerFactory compilerFactory;
 
     @Parameters public static Collection<Object[]>
@@ -561,7 +572,6 @@ class EvaluatorTests {
         }
     }
 
-
     @Test public void
     testStaticFieldAccess() throws Exception {
         assertCompiles(true, (
@@ -863,6 +873,11 @@ class EvaluatorTests {
         ));
     }
 
+    /**
+     * Compiles {@code prog} with the {@link SimpleCompiler} (but does not execute it).
+     *
+     * @param shouldCompile Whether compilation <i>must</i> succeed or <i>must not</i> succeed
+     */
     public ISimpleCompiler
     assertCompiles(boolean shouldCompile, CharSequence prog) throws Exception {
         try {

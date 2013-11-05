@@ -24,9 +24,19 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-// CHECKSTYLE Javadoc:OFF
+package org.codehaus.commons.compiler;
 
+/**
+ * A wrapper for a {@link CompileException} that extends {@link RuntimeException} and is thus unchecked.
+ */
 public
-interface IPred {
-    boolean filter() throws Exception;
+class UncheckedCompileException extends RuntimeException {
+
+    /** The nested {@link CompileException}. */
+    public final CompileException compileException;
+
+    public
+    UncheckedCompileException(CompileException compileException) {
+        this.compileException = compileException;
+    }
 }

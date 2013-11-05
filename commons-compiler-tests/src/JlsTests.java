@@ -37,12 +37,14 @@ import util.JaninoTestSuite;
 import util.TestUtil;
 
 // CHECKSTYLE MethodName:OFF
+// CHECKSTYLE JavadocMethod:OFF
 
 /**
- * Tests against the \"Java Language Specification\"; 2nd edition
+ * Tests against the \"Java Language Specification\"; 7th edition.
+ * TODO Web link to JLS 7
  */
 @RunWith(Parameterized.class) public
-class JLS2Tests extends JaninoTestSuite {
+class JlsTests extends JaninoTestSuite {
 
     @Parameters public static List<Object[]>
     compilerFactories() throws Exception {
@@ -50,7 +52,7 @@ class JLS2Tests extends JaninoTestSuite {
     }
 
     public
-    JLS2Tests(ICompilerFactory compilerFactory) throws Exception {
+    JlsTests(ICompilerFactory compilerFactory) throws Exception {
         super(compilerFactory);
     }
 
@@ -99,7 +101,7 @@ class JLS2Tests extends JaninoTestSuite {
     }
 
     @Test public void
-    test_3_10_1__Literals_Integer() throws Exception {
+    test_3_10_1__IntegerLiterals() throws Exception {
         exp(TRUE, "17 == 17L");
         exp(TRUE, "255 == 0xFFl");
         exp(TRUE, "17 == 021L");
@@ -120,7 +122,7 @@ class JLS2Tests extends JaninoTestSuite {
     }
 
     @Test public void
-    test_3_10_2__Literals_FloatingPoint() throws Exception {
+    test_3_10_2__FloatingPointLiterals() throws Exception {
         exp(TRUE, "1e1f == 10f");
         exp(TRUE, "1E1F == 10f");
         exp(TRUE, ".3f == 0.3f");
@@ -137,13 +139,13 @@ class JLS2Tests extends JaninoTestSuite {
     }
 
     @Test public void
-    test_3_10_3__Literals_Boolean() throws Exception {
+    test_3_10_3__BooleanLiterals() throws Exception {
         exp(TRUE, "true");
         exp(TRUE, "! false");
     }
 
     @Test public void
-    test_3_10_4__Literals_Character() throws Exception {
+    test_3_10_4__CharacterLiterals() throws Exception {
         exp(TRUE, "'a' == 97");
         exp(COMP, "'''");
         exp(COMP, "'\\'");
@@ -154,7 +156,7 @@ class JLS2Tests extends JaninoTestSuite {
     }
 
     @Test public void
-    test_3_10_5__Literals_String() throws Exception {
+    test_3_10_5__StringLiterals() throws Exception {
         exp(TRUE, "\"'\".charAt(0) == 39"); // Unescaped single quote is allowed!
         // Escape sequences already tested above for character literals.
         exp(TRUE, "\"\\b\".charAt(0) == 8");
@@ -165,7 +167,7 @@ class JLS2Tests extends JaninoTestSuite {
     }
 
     @Test public void
-    test_3_10_6__Literals_EscapeSequences() throws Exception {
+    test_3_10_6__EscapeSequencesForCharacterAndStringLiterals() throws Exception {
         exp(COMP, "'\\u000a'"); // 0x000a is LF
         exp(TRUE, "'\\b' == 8");
         exp(TRUE, "'\\t' == 9");
@@ -183,7 +185,7 @@ class JLS2Tests extends JaninoTestSuite {
     }
 
     @Test public void
-    test_3_10_7__Literals_Null() throws Exception {
+    test_3_10_7__TheNullLiteral() throws Exception {
         exp(EXEC, "null");
     }
 
@@ -198,7 +200,7 @@ class JLS2Tests extends JaninoTestSuite {
     }
     
     @Test public void
-    test_4_5_1__Type_Arguments_and_Wildcards() throws Exception {
+    test_4_5_1__TypeArgumentsAndWildcards() throws Exception {
         scr(TRUE, (
             ""
             + "final List<String> l = new ArrayList();\n"
@@ -209,7 +211,7 @@ class JLS2Tests extends JaninoTestSuite {
     }
 
     @Test public void
-    test_5_1_7__Conversion_Boxing() throws Exception {
+    test_5_1_7__BoxingConversion() throws Exception {
         scr(TRUE, "Boolean   b = true;        return b.booleanValue();");
         scr(TRUE, "Boolean   b = false;       return !b.booleanValue();");
         scr(TRUE, "Byte      b = (byte) 7;    return b.equals(new Byte((byte) 7));");
@@ -222,7 +224,7 @@ class JLS2Tests extends JaninoTestSuite {
     }
 
     @Test public void
-    test_5_1_8__Conversion_UnBoxing() throws Exception {
+    test_5_1_8__UnboxingConversion() throws Exception {
         exp(TRUE, "Boolean.TRUE");
         exp(TRUE, "!Boolean.FALSE");
         exp(TRUE, "new Byte((byte) 9) == (byte) 9");
@@ -235,7 +237,7 @@ class JLS2Tests extends JaninoTestSuite {
     }
 
     @Test public void
-    test_5_2__Conversion_Assignment() throws Exception {
+    test_5_2__AssignmentConversion() throws Exception {
         scr(TRUE, "int i = 7; return i == 7;");
         scr(TRUE, "String s = \"S\"; return s.equals(\"S\");");
         scr(TRUE, "long l = 7; return l == 7L;");
@@ -263,7 +265,7 @@ class JLS2Tests extends JaninoTestSuite {
     }
 
     @Test public void
-    test_5_5__Conversion_Casting() throws Exception {
+    test_5_5__CastingConversion() throws Exception {
         exp(TRUE, "7 == (int) 7");
         exp(TRUE, "(int) 'a' == 97");
         exp(TRUE, "(int) 10000000000L == 1410065408");
@@ -282,7 +284,7 @@ class JLS2Tests extends JaninoTestSuite {
     }
 
     @Test public void
-    test_5_6__Conversion_NumberPromotions() throws Exception {
+    test_5_6__NumberPromotions() throws Exception {
         // 5.6.1 Unary Numeric Promotion
         exp(TRUE, "-new Byte((byte) 7) == -7");
         exp(TRUE, "-new Double(10.0D) == -10.0D");
@@ -390,7 +392,28 @@ class JLS2Tests extends JaninoTestSuite {
     }
     
     @Test public void
-    test_14_9_1__ExecutionOfTryCatch__1() throws Exception {
+    test_14_10__TheAssertStatement() throws Exception {
+        // CHECKSTYLE LineLength:OFF
+        scr(EXEC, "assert true;");
+        scr(TRUE, "try { assert false;                  } catch (AssertionError ae) { return ae.getMessage() == null;       } return false;");
+        scr(TRUE, "try { assert false : \"x\";          } catch (AssertionError ae) { return \"x\".equals(ae.getMessage()); } return false;");
+        scr(TRUE, "try { assert false : 3;              } catch (AssertionError ae) { return \"3\".equals(ae.getMessage()); } return false;");
+        scr(TRUE, "try { assert false : new Integer(8); } catch (AssertionError ae) { return \"8\".equals(ae.getMessage()); } return false;");
+        // CHECKSTYLE LineLength:ON
+    }
+
+    @Test public void
+    test_14_11__TheSwitchStatement() throws Exception {
+        scr(TRUE, "int x = 37; switch (x) {} return x == 37;");
+        scr(TRUE, "int x = 37; switch (x) { default: ++x; break; } return x == 38;");
+        scr(TRUE, "int x = 37; switch (x) { case 36: case 37: case 38: x += x; break; } return x == 74;");
+        scr(TRUE, "int x = 37; switch (x) { case 36: case 37: case 1000: x += x; break; } return x == 74;");
+        scr(TRUE, "int x = 37; switch (x) { case -10000: break; case 10000: break; } return x == 37;");
+        scr(TRUE, "int x = 37; switch (x) { case -2000000000: break; case 2000000000: break; } return x == 37;");
+    }
+
+    @Test public void
+    test_14_20_1__ExecutionOfTryCatch__1() throws Exception {
         clb(TRUE, (
             ""
             + "static void meth() throws Throwable {\n"
@@ -414,7 +437,7 @@ class JLS2Tests extends JaninoTestSuite {
     }
     
     @Test public void
-    test_14_9_1__ExecutionOfTryCatch__2() throws Exception {
+    test_14_20_1__ExecutionOfTryCatch__2() throws Exception {
         clb(COMP, (
             ""
             + "static void meth() throws Throwable {\n"
@@ -438,7 +461,7 @@ class JLS2Tests extends JaninoTestSuite {
     }
     
     @Test public void
-    test_14_9_1__ExecutionOfTryCatch__3() throws Exception {
+    test_14_20_1__ExecutionOfTryCatch__3() throws Exception {
         clb(TRUE, (
             ""
             + "static void meth() throws java.io.IOException {\n"
@@ -462,7 +485,7 @@ class JLS2Tests extends JaninoTestSuite {
     }
     
     @Test public void
-    test_14_9_1__ExecutionOfTryCatch__4() throws Exception {
+    test_14_20_1__ExecutionOfTryCatch__4() throws Exception {
         clb(COMP, (
             ""
             + "static void meth() throws java.io.FileNotFoundException {\n"
@@ -486,7 +509,7 @@ class JLS2Tests extends JaninoTestSuite {
     }
 
     @Test public void
-    test_14_9_1__ExecutionOfTryCatch__5() throws Exception {
+    test_14_20_1__ExecutionOfTryCatch__5() throws Exception {
         clb(TRUE, (
             ""
             + "public static boolean main() { \n"
@@ -507,7 +530,7 @@ class JLS2Tests extends JaninoTestSuite {
     }
     
     @Test public void
-    test_14_9_1__ExecutionOfTryCatch__6() throws Exception {
+    test_14_20_1__ExecutionOfTryCatch__6() throws Exception {
         sim(COOK, (
             ""
             + "public class TestIt {\n"
@@ -546,30 +569,9 @@ class JLS2Tests extends JaninoTestSuite {
             + "}\n"
         ), "TestIt");
     }
-    
-    @Test public void
-    test_14_10a__TheAssertStatement() throws Exception {
-        // CHECKSTYLE LineLength:OFF
-        scr(EXEC, "assert true;");
-        scr(TRUE, "try { assert false;                  } catch (AssertionError ae) { return ae.getMessage() == null;       } return false;");
-        scr(TRUE, "try { assert false : \"x\";          } catch (AssertionError ae) { return \"x\".equals(ae.getMessage()); } return false;");
-        scr(TRUE, "try { assert false : 3;              } catch (AssertionError ae) { return \"3\".equals(ae.getMessage()); } return false;");
-        scr(TRUE, "try { assert false : new Integer(8); } catch (AssertionError ae) { return \"8\".equals(ae.getMessage()); } return false;");
-        // CHECKSTYLE LineLength:ON
-    }
 
     @Test public void
-    test_14_10__TheSwitchStatement() throws Exception {
-        scr(TRUE, "int x = 37; switch (x) {} return x == 37;");
-        scr(TRUE, "int x = 37; switch (x) { default: ++x; break; } return x == 38;");
-        scr(TRUE, "int x = 37; switch (x) { case 36: case 37: case 38: x += x; break; } return x == 74;");
-        scr(TRUE, "int x = 37; switch (x) { case 36: case 37: case 1000: x += x; break; } return x == 74;");
-        scr(TRUE, "int x = 37; switch (x) { case -10000: break; case 10000: break; } return x == 37;");
-        scr(TRUE, "int x = 37; switch (x) { case -2000000000: break; case 2000000000: break; } return x == 37;");
-    }
-
-    @Test public void
-    test_14_20__UnreachableStatements() throws Exception {
+    test_14_21__UnreachableStatements() throws Exception {
         clb(COMP, (
             ""
             + "public void test() throws Exception {}\n"
@@ -607,7 +609,7 @@ class JLS2Tests extends JaninoTestSuite {
     }
 
     @Test public void
-    test_15_9__Expressions__ClassInstanceCreationExpressions() throws Exception {
+    test_15_9__ClassInstanceCreationExpressions() throws Exception {
         // 15.9.1 Determining the class being Instantiated
         exp(TRUE, "new Object() instanceof Object");
         exp(COMP, "new java.util.List()");
@@ -721,12 +723,12 @@ class JLS2Tests extends JaninoTestSuite {
     }
     
     @Test public void
-    test_15_12_2_4__IdentifyApplicableVariableArityMethods__1() throws Exception {
+    test_15_12_2_4__Phase3IdentifyApplicableVariableArityMethods__1() throws Exception {
         exp(TRUE, "\"two one\".equals(String.format(\"%2$s %1$s\", \"one\", \"two\"))");
     }
 
     @Test public void
-    test_15_12_2_4__IdentifyApplicableVariableArityMethods__2() throws Exception {
+    test_15_12_2_4__Phase3IdentifyApplicableVariableArityMethods__2() throws Exception {
         clb(TRUE, (
             ""
             + "public static boolean\n"
@@ -749,7 +751,7 @@ class JLS2Tests extends JaninoTestSuite {
     }
     
     @Test public void
-    test_15_12_2_4__IdentifyApplicableVariableArityMethods__3() throws Exception {
+    test_15_12_2_4__Phase3IdentifyApplicableVariableArityMethods__3() throws Exception {
         clb(TRUE, (
             ""
             + "public static boolean main() {\n"
@@ -770,7 +772,7 @@ class JLS2Tests extends JaninoTestSuite {
     }
 
     @Test public void
-    test_15_12_2_5__IdentifyApplicableVariableArityMethods__3() throws Exception {
+    test_15_12_2_4__Phase3IdentifyApplicableVariableArityMethods__4() throws Exception {
         scr(TRUE, (
             ""
             + "class LocalClass {\n"
@@ -913,7 +915,7 @@ class JLS2Tests extends JaninoTestSuite {
     }
 
     @Test public void
-    test_15_26__ConditionalOrOperator() throws Exception {
+    test_15_26__AssignmentOperators() throws Exception {
         // 15.26.2 Compound Assignment Operators
         scr(TRUE, "int a = 7; a += 3; return a == 10;");
         scr(TRUE, "int a = 7; a %= 3; return a == 1;");

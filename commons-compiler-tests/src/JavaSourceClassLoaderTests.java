@@ -24,7 +24,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-
 import static org.junit.Assert.fail;
 
 import java.io.File;
@@ -32,6 +31,7 @@ import java.util.Collection;
 
 import org.codehaus.commons.compiler.AbstractJavaSourceClassLoader;
 import org.codehaus.commons.compiler.ICompilerFactory;
+import org.codehaus.janino.JavaSourceClassLoader;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -39,6 +39,11 @@ import org.junit.runners.Parameterized.Parameters;
 
 import util.TestUtil;
 
+// CHECKSTYLE JavadocMethod:OFF
+
+/**
+ * Tests for the {@link JavaSourceClassLoader}.
+ */
 @RunWith(Parameterized.class) public
 class JavaSourceClassLoaderTests {
 

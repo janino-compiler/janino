@@ -436,7 +436,7 @@ class ClassFileIClass extends IClass {
             @Override public Object            getConstantValue() { return optionalConstantValue; }
             @Override public String            getName()          { return name; }
             @Override public IClass            getType()          { return type; }
-            @Override public boolean           isStatic()         { return (fieldInfo.getModifierFlags() & Mod.STATIC) != 0; }
+            @Override public boolean           isStatic()         { return (fieldInfo.getModifierFlags() & Mod.STATIC) != 0; } // SUPPRESS CHECKSTYLE LineLength
             @Override public Access            getAccess()        { return access; }
             @Override public Java.Annotation[] getAnnotations()   { return fieldInfo.getAnnotations(); }
         };

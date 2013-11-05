@@ -547,10 +547,6 @@ class JGrep {
             for (Iterator/*<UnitCompiler>*/ it = this.parsedCompilationUnits.iterator(); it.hasNext();) {
                 final UnitCompiler uc = (UnitCompiler) it.next();
                 this.benchmark.beginReporting("Grepping \"" + uc.compilationUnit.optionalFileName + "\"");
-                class UCE extends RuntimeException {
-                    final CompileException ce;
-                    UCE(CompileException ce) { this.ce = ce; }
-                }
                 try {
                     new Traverser() {
 
@@ -560,7 +556,7 @@ class JGrep {
                             try {
                                 this.match(mi, uc.findIMethod(mi));
                             } catch (CompileException ex) {
-                                throw new UCE(ex);
+                                throw new UncheckedCompileException(ex);
                             }
                             super.traverseMethodInvocation(mi);
                         }
@@ -571,7 +567,7 @@ class JGrep {
                             try {
                                 this.match(scmi, uc.findIMethod(scmi));
                             } catch (CompileException ex) {
-                                throw new UCE(ex);
+                                throw new UncheckedCompileException(ex);
                             }
                             super.traverseSuperclassMethodInvocation(scmi);
                         }
@@ -608,8 +604,8 @@ class JGrep {
                             }
                         }
                     }.traverseCompilationUnit(uc.compilationUnit);
-                } catch (UCE uce) {
-                    throw uce.ce; // SUPPRESS CHECKSTYLE AvoidHidingCause
+                } catch (UncheckedCompileException uce) {
+                    throw uce.compileException; // SUPPRESS CHECKSTYLE AvoidHidingCause
                 } finally {
                     this.benchmark.endReporting();
                 }

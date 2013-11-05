@@ -794,12 +794,17 @@ class IClass {
 
         private boolean argsNeedAdjust;
 
+        /** TODO */
         public void
         setArgsNeedAdjust(boolean newVal) { this.argsNeedAdjust = newVal; }
 
+        /** TODO */
         public boolean
         argsNeedAdjust() { return this.argsNeedAdjust; }
 
+        /**
+         * Whether this invocable is 'variable arity', i.e. its last parameter has an ellipsis ('...') after the type.
+         */
         public abstract boolean isVarargs();
 
         // Implement IMember.

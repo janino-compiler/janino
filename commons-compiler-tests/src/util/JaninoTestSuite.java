@@ -43,17 +43,25 @@ import org.codehaus.commons.compiler.IScriptEvaluator;
 import org.codehaus.commons.compiler.ISimpleCompiler;
 import org.codehaus.janino.JavaSourceClassLoader;
 
+/**
+ * A base class for JUnit 4 test cases that provides easy-to-use functionality to test JANINO.
+ */
 public
 class JaninoTestSuite {
+
     /** The test is expected to throw a CompileException. */
     public static final CompileAndExecuteTest.Mode COMP = new CompileAndExecuteTest.Mode();
+
     /** The test is expected to compile successfully, but is not executed. */
     public static final CompileAndExecuteTest.Mode COOK = new CompileAndExecuteTest.Mode();
+
     /** The test is expected to compile and execute successfully. */
     public static final CompileAndExecuteTest.Mode EXEC = new CompileAndExecuteTest.Mode();
+
     /** The test is expected to compile and execute successfully, and return {@code true}. */
     public static final CompileAndExecuteTest.Mode TRUE = new CompileAndExecuteTest.Mode();
 
+    /** The {@link ICompilerFactory} in effect for this test execution. */
     protected final ICompilerFactory compilerFactory;
 
     public
@@ -79,6 +87,10 @@ class JaninoTestSuite {
         et.runTest();
     }
 
+    /**
+     * Like {@link #exp(util.JaninoTestSuite.CompileAndExecuteTest.Mode, String)}, but with additional default
+     * imports, e.g. '{@code java.util.*}'.
+     */
     protected void
     exp(ExpressionTest.Mode mode, String expression, String[] defaultImports) throws Exception {
         ExpressionTest et = new ExpressionTest(mode, expression);
@@ -86,7 +98,7 @@ class JaninoTestSuite {
         et.runTest();
     }
 
-    protected
+    private
     class ExpressionTest extends CompileAndExecuteTest {
 
         private final String               expression;
@@ -126,7 +138,10 @@ class JaninoTestSuite {
      *   <tr><td>{@link #COMP}</td><td>The test is expected to throw a CompileException</tr>
      *   <tr><td>{@link #COOK}</td><td>The test is expected to compile successfully, but is not executed</tr>
      *   <tr><td>{@link #EXEC}</td><td>The test is expected to compile and execute successfully</tr>
-     *   <tr><td>{@link #TRUE}</td><td>The test is expected to compile and execute successfully, and return {@code true}</tr>
+     *   <tr>
+     *     <td>{@link #TRUE}</td>
+     *     <td>The test is expected to compile and execute successfully, and return {@code true}</td>
+     *   </tr>
      * </table>
      */
     protected void
@@ -143,7 +158,10 @@ class JaninoTestSuite {
      *   <tr><td>{@link #COMP}</td><td>The test is expected to throw a CompileException</tr>
      *   <tr><td>{@link #COOK}</td><td>The test is expected to compile successfully, but is not executed</tr>
      *   <tr><td>{@link #EXEC}</td><td>The test is expected to compile and execute successfully</tr>
-     *   <tr><td>{@link #TRUE}</td><td>The test is expected to compile and execute successfully, and return {@code true}</tr>
+     *   <tr>
+     *     <td>{@link #TRUE}</td>
+     *     <td>The test is expected to compile and execute successfully, and return {@code true}</td>
+     *   </tr>
      * </table>
      * @param defaultImports E.g. '<code> new String[] { "java.util.List" }</code>'
      */
@@ -154,7 +172,7 @@ class JaninoTestSuite {
         st.runTest();
     }
 
-    protected
+    private
     class ScriptTest extends CompileAndExecuteTest {
 
         private final String           script;
@@ -204,6 +222,10 @@ class JaninoTestSuite {
         cbt.runTest();
     }
 
+    /**
+     * Like {@link #clb(util.JaninoTestSuite.CompileAndExecuteTest.Mode, String)}, but with additional default
+     * imports, e.g. '{@code java.util.*}'.
+     */
     protected void
     clb(ClassBodyTest.Mode mode, String classBody, String[] defaultImports) throws Exception {
         ClassBodyTest cbt = new ClassBodyTest(mode, classBody);
@@ -211,7 +233,7 @@ class JaninoTestSuite {
         cbt.runTest();
     }
 
-    protected
+    private
     class ClassBodyTest extends CompileAndExecuteTest {
         private final String              classBody;
         private final IClassBodyEvaluator classBodyEvaluator;
@@ -262,7 +284,7 @@ class JaninoTestSuite {
         sct.runTest();
     }
 
-    protected
+    private
     class SimpleCompilerTest extends CompileAndExecuteTest {
 
         private final String          compilationUnit;
@@ -313,7 +335,7 @@ class JaninoTestSuite {
     abstract static
     class CompileAndExecuteTest {
 
-        protected final Mode mode;
+        private final Mode mode;
 
         public static final class Mode { private Mode() {} }
 
@@ -322,7 +344,10 @@ class JaninoTestSuite {
             this.mode = mode;
         }
 
-        protected abstract void   compile() throws Exception;
+        /** @see CompileAndExecuteTest */
+        protected abstract void compile() throws Exception;
+
+        /** @see CompileAndExecuteTest */
         protected abstract Object execute() throws Exception;
 
         /**

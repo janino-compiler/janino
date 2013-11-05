@@ -29,12 +29,12 @@
 package other_package; // SUPPRESS CHECKSTYLE PackageName
 
 /**
- * Helper class for {@link JLS2Tests} -- used to define accessibility tests.
+ * Helper class for {@link JlsTests} -- used to define accessibility tests.
  */
 public
 class Foo {
     public      Foo(int i)     {}
-    /*package*/ Foo(String s)  {}
+    /*package*/ Foo(String s)  {} // SUPPRESS CHECKSTYLE WrapAndIndent
     protected   Foo(boolean b) {}
     private     Foo(char c)    {}
 
