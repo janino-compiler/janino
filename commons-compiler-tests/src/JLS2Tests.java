@@ -782,7 +782,6 @@ class JLS2Tests extends JaninoTestSuite {
             + "}\n"
             + "\n"
             + "if (new LocalClass(\"\").x != 0) return false;\n"
-            + "if (new LocalClass(\"\", null).x != 1) return false;\n"
             + "if (new LocalClass(\"\", 1, 2).x != 2) return false;\n"
             + "return true;\n"
         ));
