@@ -123,6 +123,9 @@ import org.codehaus.janino.util.enumerator.Enumerator;
 
 /**
  * A parser for the Java&trade; programming language.
+ * <p>
+ * 'JLS7' refers to the <a href="http://docs.oracle.com/javase/specs/">Java Language Specification, Java SE 7
+ * Edition</a>.
  */
 @SuppressWarnings({ "rawtypes", "unchecked" }) public
 class Parser {

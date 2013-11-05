@@ -29,10 +29,7 @@ package org.codehaus.janino;
 import org.codehaus.janino.util.enumerator.Enumerator;
 import org.codehaus.janino.util.enumerator.EnumeratorFormatException;
 
-/**
- * Return value for {@link IClass.IMember#getAccess}.
- * JLS2 6.6
- */
+/** Return value for {@link IClass.IMember#getAccess}. */
 public final
 class Access extends Enumerator {
 

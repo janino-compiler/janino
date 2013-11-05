@@ -40,8 +40,7 @@ import util.TestUtil;
 // CHECKSTYLE JavadocMethod:OFF
 
 /**
- * Tests against the \"Java Language Specification\"; 7th edition.
- * TODO Web link to JLS 7
+ * Tests against the <a href="http://docs.oracle.com/javase/specs/">Java Language Specification, Java SE 7 Edition</a>.
  */
 @RunWith(Parameterized.class) public
 class JlsTests extends JaninoTestSuite {

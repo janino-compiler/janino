@@ -50,17 +50,10 @@ import org.codehaus.janino.util.iterator.ReverseListIterator;
  * This wrapper class defines classes that represent the elements of the
  * Java&trade; programming language.
  * <p>
- * Notices:
- * <ul>
- *   <li>
- *     "JLS1" refers to <a href="http://java.sun.com/docs/books/jls/first_edition/html/index.html">"The Java&trade;
- *     Language Specification, First Edition"</a>.
- *   </li>
- *   <li>
- *     "JLS" or "JLS2" refers to <a href="http://java.sun.com/docs/books/jls/second_edition/html/j.title.doc.html">"The
- *     Java&trade; Language Specification, Second Edition"</a>.
- *   </li>
- * </ul>
+ * Notice:
+ * <p>
+ * 'JLS7' refers to the <a href="http://docs.oracle.com/javase/specs/">Java Language Specification, Java SE 7
+ * Edition</a>.
  */
 @SuppressWarnings({ "rawtypes", "unchecked" }) public final
 class Java {

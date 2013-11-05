@@ -41,6 +41,9 @@ import org.codehaus.janino.Java.Annotation;
 
 /**
  * A simplified equivalent to "java.lang.reflect".
+ * <p>
+ * 'JLS7' means a reference to the <a href="http://docs.oracle.com/javase/specs/">Java Language Specification, Java SE
+ * 7 Edition</a>
  */
 @SuppressWarnings({ "rawtypes", "unchecked" }) public abstract
 class IClass {
@@ -493,10 +496,9 @@ class IClass {
     @Override public String toString() { return Descriptor.toClassName(this.getDescriptor()); }
 
     /**
-     * Determine if "this" is assignable from "that". This is true if "this"
-     * is identical with "that" (JLS2 5.1.1), or if "that" is
-     * widening-primitive-convertible to "this" (JLS2 5.1.2), or if "that" is
-     * widening-reference-convertible to "this" (JLS2 5.1.4).
+     * Determine if "this" is assignable from "that". This is true if "this" is identical with "that" (JLS7 5.1.1), or
+     * if "that" is widening-primitive-convertible to "this" (JLS7 5.1.2), or if "that" is
+     * widening-reference-convertible to "this" (JLS7 5.1.5).
      */
     public boolean
     isAssignableFrom(IClass that) throws CompileException {

@@ -32,14 +32,9 @@ import java.lang.reflect.*;
 /**
  * An engine that executes a script in Java&trade; bytecode.
  * <p>
- * The syntax of the script to compile is a sequence of import declarations (not allowed if you
- * compile many scripts at a time, see below) followed by a
- * sequence of statements, as defined in the
- * <a href="http://java.sun.com/docs/books/jls/second_edition">Java Language Specification, 2nd
- * edition</a>, sections
- * <a href="http://java.sun.com/docs/books/jls/second_edition/html/packages.doc.html#70209">7.5</a>
- * and
- * <a href="http://java.sun.com/docs/books/jls/second_edition/html/statements.doc.html#101241">14</a>.
+ * The syntax of the script to compile is a sequence of import declarations (not allowed if you compile many scripts at
+ * a time, see below) followed by a sequence of statements, as defined in the <a
+ * href="http://docs.oracle.com/javase/specs/">Java Language Specification, Java SE 7 Edition</a>, sections 7.5 and 14.
  * <p>
  * Example:
  * <pre>
