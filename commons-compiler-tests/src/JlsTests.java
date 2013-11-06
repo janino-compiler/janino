@@ -273,12 +273,12 @@ class JlsTests extends JaninoTestSuite {
         exp(TRUE, "((Integer) 7).intValue() == 7");
         exp(TRUE, "(int) new Integer(7) == 7");
 
-        // Boxing conversion followed by widening reference conversion - not described in the JLS3, but supported
-        // by JAVAC. See JLS3 5.5, and JANINO-153.
+        // Boxing conversion followed by widening reference conversion - not described in JLS7, but supported by
+        // JAVAC. See JLS7 5.1.7, and JANINO-153.
         exp(TRUE, "null != (Comparable) 5.0");
 
-        // Unboxing conversion followed by widening primitive conversion - not described in the JLS3, but supported
-        // by JAVAC. See JLS3 5.5, and JANINO-153.
+        // Unboxing conversion followed by widening primitive conversion - not described in JLS7, but supported by
+        // JAVAC. See JLS7 5.1.7, and JANINO-153.
         exp(TRUE, "0L != (long) new Integer(8)");
     }
 
@@ -706,11 +706,10 @@ class JlsTests extends JaninoTestSuite {
             + "}\n"
         ), "Main");
 
-        // The following case is tricky: JLS2 says that the invocation is AMBIGUOUS, but only
-        // JAVAC 1.2 issues an error; JAVAC 1.4.1, 1.5.0 and 1.6.0 obviously ignore the declaring
-        // type and invoke "A.meth(String)".
-        // JLS3 is not clear about this. For compatibility with JAVA 1.4.1, 1.5.0 and 1.6.0,
-        // JANINO also ignores the declaring type.
+        // The following case is tricky: JLS7 says that the invocation is AMBIGUOUS, but only JAVAC 1.2 issues an
+        // error; JAVAC 1.4.1, 1.5.0 and 1.6.0 obviously ignore the declaring type and invoke "A.meth(String)".
+        // JLS7 is not clear about this. For compatibility with JAVA 1.4.1, 1.5.0 and 1.6.0, JANINO also ignores the
+        // declaring type.
         //
         // See also JANINO-79 and "IClass.IInvocable.isMoreSpecificThan()".
         sim(TRUE, (

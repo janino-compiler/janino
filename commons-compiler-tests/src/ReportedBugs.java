@@ -406,9 +406,9 @@ class ReportedBugs extends JaninoTestSuite {
 
         ISimpleCompiler compiler = CompilerFactoryFactory.getDefaultCompilerFactory().newSimpleCompiler();
         compiler.cook(new StringReader("public class Test{static{System.setProperty(\"foo\", \"bar\");}}"));
-        Class<?> testClass = compiler.getClassLoader().loadClass("Test"); // Only loads the class (JLS2 12.2)
+        Class<?> testClass = compiler.getClassLoader().loadClass("Test"); // Only loads the class (JLS7 12.2).
         assertNull(System.getProperty("foo"));
-        testClass.newInstance(); // Initializes the class (JLS2 12.4)
+        testClass.newInstance(); // Initializes the class (JLS7 12.4).
         assertEquals("bar", System.getProperty("foo"));
         System.getProperties().remove("foo");
         assertNull(System.getProperty("foo"));
@@ -482,7 +482,7 @@ class ReportedBugs extends JaninoTestSuite {
     @Test public void
     testBug149() throws Exception {
 
-        // JLS3 3.10.6: "aaa\/bbb" contains an invalid escape sequence: "\/".
+        // JLS7 3.10.6: "aaa\/bbb" contains an invalid escape sequence: "\/".
         exp(COMP, "\"aaa\\/bbb\"");
     }
     
@@ -500,8 +500,7 @@ class ReportedBugs extends JaninoTestSuite {
     @Test public void
     testBug153_2() throws Exception {
 
-        // JLS3 says about casting conversion
-        // (http://java.sun.com/docs/books/jls/third_edition/html/conversions.html#5.5):
+        // JLS7 5.5 says about casting conversion:
         //
         //    Casting contexts allow the use of:
         // ...
@@ -520,8 +519,7 @@ class ReportedBugs extends JaninoTestSuite {
     @Test public void
     testBug153_4() throws Exception {
 
-        // JLS3 says about casting conversion
-        // (http://java.sun.com/docs/books/jls/third_edition/html/conversions.html#5.5):
+        // JLS7 5.5 says about casting conversion:
         //
         //    Casting contexts allow the use of:
         // ...
