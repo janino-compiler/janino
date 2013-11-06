@@ -109,11 +109,9 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
 
                     @Override public void
                     report(Diagnostic<? extends JavaFileObject> diagnostic) {
-//System.err.println("*** " + diagnostic.toString() + " *** " + diagnostic.getCode());
 
-                        JavaFileObject source = diagnostic.getSource();
                         Location loc = new Location(
-                            source == null ? null : source.toString(),
+                            null,
                             (short) diagnostic.getLineNumber(),
                             (short) diagnostic.getColumnNumber()
                         );
