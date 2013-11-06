@@ -63,10 +63,10 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
     /** The methods' return types; {@code null} means "none". */
     protected Class[] optionalReturnTypes;
 
-    protected String[]   optionalMethodNames;
-    protected String[][] optionalParameterNames;
-    protected Class[][]  optionalParameterTypes;
-    protected Class[][]  optionalThrownExceptions;
+    private String[]   optionalMethodNames;
+    private String[][] optionalParameterNames;
+    private Class[][]  optionalParameterTypes;
+    private Class[][]  optionalThrownExceptions;
 
     private Method[]     result; // null=uncooked
 
@@ -462,6 +462,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
         this.cook(parsers);
     }
 
+    /** @see #cook(Scanner[]) */
     public final void
     cook(Parser[] parsers) throws CompileException, IOException {
 
@@ -694,31 +695,6 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
         }
 
         return statements;
-    }
-
-    protected void
-    compileToMethods(
-        Java.CompilationUnit compilationUnit,
-        String[]             methodNames,
-        Class[][]            parameterTypes
-    ) throws CompileException {
-
-        // Compile and load the compilation unit.
-        Class c = this.compileToClass(compilationUnit);
-
-        // Find the script method by name.
-        this.result = new Method[methodNames.length];
-        for (int i = 0; i < this.result.length; ++i) {
-            try {
-                this.result[i] = c.getMethod(methodNames[i], parameterTypes[i]);
-            } catch (NoSuchMethodException ex) {
-                throw new JaninoRuntimeException((
-                    "SNO: Loaded class does not declare method \""
-                    + this.optionalMethodNames[i]
-                    + "\""
-                ), ex);
-            }
-        }
     }
 
     /**

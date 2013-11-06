@@ -515,31 +515,31 @@ class IClass {
         // Widening reference conversion, JLS7 5.1.5
         {
 
-            // JLS 5.1.4.1: Target type is superclass of source class type.
+            // JLS7 5.1.4.1: Target type is superclass of source class type.
             if (that.isSubclassOf(this)) return true;
 
-            // JLS 5.1.4.2: Source class type implements target interface type.
-            // JLS 5.1.4.4: Source interface type implements target interface type.
+            // JLS7 5.1.4.2: Source class type implements target interface type.
+            // JLS7 5.1.4.4: Source interface type implements target interface type.
             if (that.implementsInterface(this)) return true;
 
-            // JLS 5.1.4.3 Convert "null" literal to any reference type.
+            // JLS7 5.1.4.3 Convert "null" literal to any reference type.
             if (that == IClass.VOID && !this.isPrimitive()) return true;
 
-            // JLS 5.1.4.5: From any interface to type "Object".
+            // JLS7 5.1.4.5: From any interface to type "Object".
             if (that.isInterface() && this.getDescriptor().equals(Descriptor.JAVA_LANG_OBJECT)) return true;
 
             if (that.isArray()) {
 
-                // JLS 5.1.4.6: From any array type to type "Object".
+                // JLS7 5.1.4.6: From any array type to type "Object".
                 if (this.getDescriptor().equals(Descriptor.JAVA_LANG_OBJECT)) return true;
 
-                // JLS 5.1.4.7: From any array type to type "Cloneable".
+                // JLS7 5.1.4.7: From any array type to type "Cloneable".
                 if (this.getDescriptor().equals(Descriptor.JAVA_LANG_CLONEABLE)) return true;
 
-                // JLS 5.1.4.8: From any array type to type "java.io.Serializable".
+                // JLS7 5.1.4.8: From any array type to type "java.io.Serializable".
                 if (this.getDescriptor().equals(Descriptor.JAVA_IO_SERIALIZABLE)) return true;
 
-                // JLS 5.1.4.9: From SC[] to TC[] while SC if widening reference convertible to TC.
+                // JLS7 5.1.4.9: From SC[] to TC[] while SC if widening reference convertible to TC.
                 if (this.isArray()) {
                     IClass thisCt = this.getComponentType();
                     IClass thatCt = that.getComponentType();
@@ -833,7 +833,7 @@ class IClass {
         getThrownExceptions() throws CompileException;
 
         /**
-         * @return Whether this {@link IInvocable} is more specific then {@code that} (in the sense of JLS3 15.12.2.5)
+         * @return Whether this {@link IInvocable} is more specific then {@code that} (in the sense of JLS7 15.12.2.5)
          */
         public boolean
         isMoreSpecificThan(IInvocable that) throws CompileException {
@@ -921,13 +921,12 @@ class IClass {
             
             // both are fixed arity
             
-            // The following case is tricky: JLS2 says that the invocation is AMBIGUOUS, but only
-            // JAVAC 1.2 issues an error; JAVAC 1.4.1, 1.5.0 and 1.6.0 obviously ignore the declaring
-            // type and invoke "A.meth(String)".
-            // JLS3 is not clear about this. For compatibility with JAVA 1.4.1, 1.5.0 and 1.6.0,
-            // JANINO also ignores the declaring type.
+            // The following case is tricky: JLS7 says that the invocation is AMBIGUOUS, but only JAVAC 1.2 issues an
+            // error; JAVAC 1.4.1, 1.5.0 and 1.6.0 obviously ignore the declaring type and invoke "A.meth(String)".
+            // JLS7 is not clear about this. For compatibility with JAVA 1.4.1, 1.5.0 and 1.6.0, JANINO also ignores
+            // the declaring type.
             //
-            // See also JANINO-79 and JLS2Tests / 15.12.2.2
+            // See also JANINO-79 and JlsTests / 15.12.2.2
             // if (false) {
             //     if (!that.getDeclaringIClass().isAssignableFrom(this.getDeclaringIClass())) {
             //         if (IClass.DEBUG) System.out.println("falsE");
@@ -948,7 +947,7 @@ class IClass {
         }
 
         /**
-         * @return Whether this {@link IInvocable} is less specific then {@code that} (in the sense of JLS3 15.12.2.5)
+         * @return Whether this {@link IInvocable} is less specific then {@code that} (in the sense of JLS7 15.12.2.5)
          */
         public boolean
         isLessSpecificThan(IInvocable that) throws CompileException { return that.isMoreSpecificThan(this); }
@@ -1089,9 +1088,8 @@ class IClass {
         public String getDescriptor() throws CompileException { return this.getType().getDescriptor(); }
 
         /**
-         * Returns the value of the field if it is a compile-time constant
-         * value, i.e. the field is FINAL and its initializer is a constant
-         * expression (JLS2 15.28, bullet 12).
+         * Returns the value of the field if it is a compile-time constant value, i.e. the field is FINAL and its
+         * initializer is a constant expression (JLS7 15.28, bullet 12).
          */
         public abstract Object  getConstantValue() throws CompileException;
 

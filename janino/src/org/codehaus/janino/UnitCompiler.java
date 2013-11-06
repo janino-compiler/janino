@@ -952,7 +952,7 @@ class UnitCompiler {
     }
 
     /**
-     * @return <tt>false</tt> if this statement cannot complete normally (JLS2 14.20)
+     * @return {@code false} if this statement cannot complete normally (JLS7 14.1)
      */
     private boolean
     compile(BlockStatement bs) throws CompileException {
@@ -2612,7 +2612,7 @@ class UnitCompiler {
             a.rhs                 // rhs
         );
 
-        // Convert the result to LHS type (JLS2 15.26.2).
+        // Convert the result to LHS type (JLS7 15.26.2).
         if (
             !this.tryIdentityConversion(resultType, lhsType)
             && !this.tryNarrowingPrimitiveConversion(a, resultType, lhsType)
@@ -2971,7 +2971,7 @@ class UnitCompiler {
                 return;
             }
 
-            // JLS3 15.21.2 Boolean Equality Operators == and !=
+            // JLS7 15.21.2 Boolean Equality Operators == and !=
             if (
                 (lhsType == IClass.BOOLEAN && this.getUnboxedType(rhsType) == IClass.BOOLEAN)
                 || (rhsType == IClass.BOOLEAN && this.getUnboxedType(lhsType) == IClass.BOOLEAN)
@@ -3102,7 +3102,7 @@ class UnitCompiler {
                     "Left-hand side of static field access should be a type, not an rvalue",
                     fa.lhs.getLocation()
                 );
-                // JLS3 15.11.1.3.1.1:
+                // JLS7 15.11.1.3.1.1:
                 this.pop(fa.lhs, this.compileGetValue(rv));
             }
             return 0;
@@ -3466,7 +3466,7 @@ class UnitCompiler {
             ).intern(), // <= IMPORTANT!
             a.rhs                 // rhs
         );
-        // Convert the result to LHS type (JLS2 15.26.2).
+        // Convert the result to LHS type (JLS7 15.26.2).
         if (
             !this.tryIdentityConversion(resultType, lhsType)
             && !this.tryNarrowingPrimitiveConversion(a, resultType, lhsType)
@@ -3510,18 +3510,18 @@ class UnitCompiler {
         IClass expressionType;
         if (mhsType == rhsType) {
 
-            // JLS 15.25.1.1
+            // JLS7 15.25.1.1
             expressionType = mhsType;
         } else
         if (mhsType.isPrimitiveNumeric() && rhsType.isPrimitiveNumeric()) {
 
-            // JLS 15.25.1.2
+            // JLS7 15.25.1.2
 
-            // TODO JLS 15.25.1.2.1
+            // TODO JLS7 15.25.1.2.1
 
-            // TODO JLS 15.25.1.2.2
+            // TODO JLS7 15.25.1.2.2
 
-            // JLS 15.25.1.2.3
+            // JLS7 15.25.1.2.3
             expressionType = this.binaryNumericPromotion(
                 ce,                 // locatable
                 mhsType,            // type1
@@ -3532,12 +3532,12 @@ class UnitCompiler {
         } else
         if (this.getConstantValue(ce.mhs) == null && !rhsType.isPrimitive()) {
 
-            // JLS 15.25.1.3 (null : reference)
+            // JLS7 15.25.1.3 (null : reference)
             expressionType = rhsType;
         } else
         if (!mhsType.isPrimitive() && this.getConstantValue(ce.rhs) == null) {
 
-            // JLS 15.25.1.3 (reference : null)
+            // JLS7 15.25.1.3 (reference : null)
             expressionType = mhsType;
         } else
         if (!mhsType.isPrimitive() && !rhsType.isPrimitive()) {
@@ -3746,7 +3746,7 @@ class UnitCompiler {
     private IClass
     compileGet2(Cast c) throws CompileException {
 
-        // JLS3 5.5 Casting Conversion
+        // JLS7 5.5 Casting Conversion.
         IClass tt = this.getType(c.targetType);
         IClass vt = this.compileGetValue(c.value);
         if (
@@ -3760,9 +3760,8 @@ class UnitCompiler {
         ) return tt;
 
         // JAVAC obviously also permits 'boxing conversion followed by widening reference conversion' and 'unboxing
-        // conversion followed by widening primitive conversion', although these are not described by the JLS3
-        // (http://java.sun.com/docs/books/jls/third_edition/html/conversions.html#5.5). For the sake of compatibility,
-        // we implement them.
+        // conversion followed by widening primitive conversion', although these are not described in JLS7 5.5. For the
+        // sake of compatibility, we implement them.
         // See also http://jira.codehaus.org/browse/JANINO-153
         {
             IClass boxedType = this.isBoxingConvertible(vt);
@@ -3794,7 +3793,7 @@ class UnitCompiler {
 
         if (mi.optionalTarget == null) {
 
-            // JLS2 6.5.7.1, 15.12.4.1.1.1
+            // JLS7 6.5.7.1, 15.12.4.1.1.1
             TypeBodyDeclaration scopeTbd;
             ClassDeclaration    scopeClassDeclaration;
             {
@@ -3814,7 +3813,7 @@ class UnitCompiler {
                     "Implicit access to static method \"" + iMethod.toString() + "\"",
                     mi.getLocation()
                 );
-                // JLS2 15.12.4.1.1.1.1
+                // JLS7 15.12.4.1.1.1.1
                 ;
             } else {
                 this.warning(
@@ -3822,7 +3821,7 @@ class UnitCompiler {
                     "Implicit access to non-static method \"" + iMethod.toString() + "\"",
                     mi.getLocation()
                 );
-                // JLS2 15.12.4.1.1.1.2
+                // JLS7 15.12.4.1.1.1.2
                 if (scopeTbd.isStatic()) {
                     this.compileError(
                         "Instance method \"" + iMethod.toString() + "\" cannot be invoked in static context",
@@ -3848,7 +3847,8 @@ class UnitCompiler {
             }
             if (iMethod.isStatic()) {
                 if (!staticContext) {
-                    // JLS2 15.12.4.1.2.1
+
+                    // JLS7 15.12.4.1.2.1
                     this.pop(mi.optionalTarget, this.getType(mi.optionalTarget));
                 }
             } else {
@@ -4011,7 +4011,7 @@ class UnitCompiler {
                 this.compileError("Static member class cannot be instantiated with qualified NEW");
             }
 
-            // Enclosing instance defined by qualification (JLS 15.9.2.BL1.B3.B2).
+            // Enclosing instance defined by qualification (JLS7 15.9.2.BL1.B3.B2).
             optionalEnclosingInstance = nci.optionalQualification;
         } else {
             Scope s = nci.getEnclosingBlockStatement();
@@ -4027,7 +4027,7 @@ class UnitCompiler {
                 // No enclosing instance in
                 //  + interface method declaration or
                 //  + static type body declaration (here: method or initializer or field declarator)
-                // context (JLS 15.9.2.BL1.B3.B1.B1).
+                // context (JLS7 15.9.2.BL1.B3.B1.B1).
                 if (nci.iClass.getOuterIClass() != null) {
                     this.compileError(
                         "Instantiation of \"" + nci.type + "\" requires an enclosing instance",
@@ -4046,15 +4046,7 @@ class UnitCompiler {
                 } else {
 
                     // Find an appropriate enclosing instance for the new inner class object among
-                    // the enclosing instances of the current object (JLS
-                    // 15.9.2.BL1.B3.B1.B2).
-//                    ClassDeclaration outerClassDeclaration = (ClassDeclaration) enclosingTypeDeclaration;
-//                    optionalEnclosingInstance = new QualifiedThisReference(
-//                        nci.getLocation(),            // location
-//                        outerClassDeclaration,        // declaringClass
-//                        enclosingTypeBodyDeclaration, // declaringTypeBodyDeclaration
-//                        optionalOuterIClass           // targetIClass
-//                    );
+                    // the enclosing instances of the current object (JLS7 15.9.2.BL1.B3.B1.B2).
                     optionalEnclosingInstance = new QualifiedThisReference(
                         nci.getLocation(), // location
                         new SimpleType(    // qualification
@@ -4140,7 +4132,7 @@ class UnitCompiler {
             parameterAccesses[i] = new ParameterAccess(loc, fps.parameters[j++]);
         }
 
-        // Generate the anonymous constructor for the anonymous class (JLS 15.9.5.1).
+        // Generate the anonymous constructor for the anonymous class (JLS7 15.9.5.1).
         ConstructorDeclarator anonymousConstructor = new ConstructorDeclarator(
             loc,                            // location
             null,                           // optionalDocComment
@@ -5201,7 +5193,7 @@ class UnitCompiler {
                 if (importedClass != null) return importedClass;
             }
 
-            // JLS3 ???:  Type imported through single static import.
+            // JLS7 6.5.2.BL1.B2: Type imported through single static import.
             {
                 List/*<IField+IMethod+IClass>*/ l = (List) this.singleStaticImports.get(simpleTypeName);
                 if (l != null) {
@@ -5227,7 +5219,7 @@ class UnitCompiler {
                 }
             }
 
-            // JLS3 ???: Type imported through static-import-on-demand.
+            // JLS7 6.5.2.BL1.B2: Type imported through static-import-on-demand.
             {
                 IClass importedMemberType = null;
                 for (Iterator/*<IClass>*/ it = this.staticImportsOnDemand.iterator(); it.hasNext();) {
@@ -5361,29 +5353,29 @@ class UnitCompiler {
 
         if (mhsType == rhsType) {
 
-            // JLS 15.25.1.1
+            // JLS7 15.25.1.1
             return mhsType;
         } else
         if (mhsType.isPrimitiveNumeric() && rhsType.isPrimitiveNumeric()) {
 
-            // JLS 15.25.1.2
+            // JLS7 15.25.1.2
 
-            // TODO JLS 15.25.1.2.1
+            // TODO JLS7 15.25.1.2.1
 
-            // TODO JLS 15.25.1.2.2
+            // TODO JLS7 15.25.1.2.2
 
-            // JLS 15.25.1.2.3
+            // JLS7 15.25.1.2.3
     
             return this.binaryNumericPromotionType(ce, mhsType, rhsType);
         } else
         if (this.getConstantValue(ce.mhs) == null && !rhsType.isPrimitive()) {
 
-            // JLS 15.25.1.3 (null : reference)
+            // JLS7 15.25.1.3 (null : reference)
             return rhsType;
         } else
         if (!mhsType.isPrimitive() && this.getConstantValue(ce.rhs) == null) {
 
-            // JLS 15.25.1.3 (reference : null)
+            // JLS7 15.25.1.3 (reference : null)
             return mhsType;
         } else
         if (!mhsType.isPrimitive() && !rhsType.isPrimitive()) {
@@ -5677,8 +5669,8 @@ class UnitCompiler {
     isType2(AmbiguousName an) throws CompileException { return this.isType(this.reclassify(an)); }
 
     /**
-     * Determine whether the given {@link IClass.IMember} is accessible in the given context, according to JLS 6.6.1.4.
-     * Issues a {@link #compileError(String)} if not.
+     * Determines whether the given {@link IClass.IMember} is accessible in the given context, according to
+     * JLS7 6.6.1.BL1.B4. Issues a {@link #compileError(String)} if not.
      */
     private boolean
     isAccessible(IClass.IMember member, Scope contextScope) throws CompileException {
@@ -5691,8 +5683,8 @@ class UnitCompiler {
     }
 
     /**
-     * Check whether the given {@link IClass.IMember} is accessible in the given context, according to JLS 6.6.1.4.
-     * Issue a {@link #compileError(String)} if not.
+     * Checks whether the given {@link IClass.IMember} is accessible in the given context, according to JLS7
+     * 6.6.1.BL1.B4. Issues a {@link #compileError(String)} if not.
      */
     private void
     checkAccessible(IClass.IMember member, BlockStatement contextBlockStatement) throws CompileException {
@@ -5704,8 +5696,8 @@ class UnitCompiler {
     }
 
     /**
-     * Determine whether a member (class, interface, field or method) declared in a given class is accessible from a
-     * given block statement context, according to JLS2 6.6.1.4.
+     * Determines whether a member (class, interface, field or method) declared in a given class is accessible from a
+     * given block statement context, according to JLS7 6.6.1.4.
      */
     private boolean
     isAccessible(IClass iClassDeclaringMember, Access memberAccess, Scope contextScope) throws CompileException {
@@ -5713,8 +5705,8 @@ class UnitCompiler {
     }
 
     /**
-     * Verify that a member (class, interface, field or method) declared in a given class is accessible from a given
-     * block statement context, according to JLS2 6.6.1.4. Issue a {@link #compileError(String)} if not.
+     * Verifies that a member (class, interface, field or method) declared in a given class is accessible from a given
+     * block statement context, according to JLS7 6.6.1.4. Issue a {@link #compileError(String)} if not.
      */
     private void
     checkAccessible(
@@ -5815,7 +5807,7 @@ class UnitCompiler {
     }
 
     /**
-     * Determine whether the given {@link IClass} is accessible in the given context, according to JLS2 6.6.1.2 and
+     * Determines whether the given {@link IClass} is accessible in the given context, according to JLS7 6.6.1.2 and
      * 6.6.1.4.
      */
     private boolean
@@ -5824,7 +5816,7 @@ class UnitCompiler {
     }
 
     /**
-     * Check whether the given {@link IClass} is accessible in the given context, according to JLS2 6.6.1.2 and
+     * Checks whether the given {@link IClass} is accessible in the given context, according to JLS7 6.6.1.2 and
      * 6.6.1.4. Issues a {@link #compileError(String)} if not.
      */
     private void
@@ -6339,7 +6331,7 @@ class UnitCompiler {
     interface Compilable { void compile() throws CompileException; }
 
     /**
-     * Convert object of type "sourceType" to type "String". JLS2 15.18.1.1
+     * Convert object of type "sourceType" to type "String" (JLS7 15.18.1.1).
      */
     private void
     stringConversion(Locatable locatable, IClass sourceType) {
@@ -6676,17 +6668,7 @@ class UnitCompiler {
         return an.reclassified;
     }
 
-    /**
-     * JLS 6.5.2.2
-     * <p>
-     * Reclassify the ambiguous name consisting of the first {@code n} of the {@code identifiers}.
-     *
-     * @param location
-     * @param scope
-     * @param identifiers
-     * @param n
-     * @throws CompileException
-     */
+    /** Reclassifies the ambiguous name consisting of the first {@code n} of the {@code identifiers} (JLS7 6.5.2.2). */
     private Atom
     reclassifyName(Location location, Scope scope, final String[] identifiers, int n) throws CompileException {
 
@@ -6791,14 +6773,7 @@ class UnitCompiler {
         }
     }
 
-    /**
-     * JLS 6.5.2.1
-     *
-     * @param location
-     * @param scope
-     * @param identifier
-     * @throws CompileException
-     */
+    /** JLS7 6.5.2.1 */
     private Atom
     reclassifyName(Location location, Scope scope, final String identifier) throws CompileException {
 
@@ -6828,8 +6803,8 @@ class UnitCompiler {
 
         // 6.5.2.1.BL1
 
-        // 6.5.2.BL1.B1.B1.1 (JLS3: 6.5.2.BL1.B1.B1.1) / 6.5.6.1.1 Local variable.
-        // 6.5.2.BL1.B1.B1.2 (JLS3: 6.5.2.BL1.B1.B1.2) / 6.5.6.1.1 Parameter.
+        // 6.5.2.BL1.B1.B1.1 (JLS7: 6.5.2.BL1.B1.B1.1) / 6.5.6.1.1 Local variable.
+        // 6.5.2.BL1.B1.B1.2 (JLS7: 6.5.2.BL1.B1.B1.2) / 6.5.6.1.1 Parameter.
         {
             Scope s = scope;
             if (s instanceof BlockStatement) {
@@ -6889,7 +6864,7 @@ class UnitCompiler {
             }
         }
 
-        // 6.5.2.BL1.B1.B1.3 (JLS3: 6.5.2.BL1.B1.B1.3) / 6.5.6.1.2.1 Field.
+        // 6.5.2.BL1.B1.B1.3 (JLS7: 6.5.2.BL1.B1.B1.3) / 6.5.6.1.2.1 Field.
         BlockStatement enclosingBlockStatement = null;
         for (Scope s = scope; !(s instanceof CompilationUnit); s = s.getEnclosingScope()) {
             if (s instanceof BlockStatement && enclosingBlockStatement == null) {
@@ -6962,7 +6937,7 @@ class UnitCompiler {
             }
         }
 
-        // JLS3 6.5.2.BL1.B1.B2.1 Static field imported through single static import.
+        // JLS7 6.5.2.BL1.B1.B2.1 Static field imported through single static import.
         {
             List/*<IField+IMethod+IClass>*/ l = (List) this.singleStaticImports.get(identifier);
             if (l != null) {
@@ -6981,14 +6956,15 @@ class UnitCompiler {
             }
         }
 
-        // JLS3 6.5.2.BL1.B1.B2.2 Static field imported through static-import-on-demand.
+        // JLS7 6.5.2.BL1.B1.B2.2 Static field imported through static-import-on-demand.
         {
             IField importedField = null;
             for (Iterator/*<IClass>*/ it = this.staticImportsOnDemand.iterator(); it.hasNext();) {
                 IClass iClass = (IClass) it.next();
                 IField f      = iClass.getDeclaredIField(identifier);
                 if (f != null) {
-                    // JLS3 7.5.4 Static-Import-on-Demand Declaration
+
+                    // JLS7 7.5.4 Static-Import-on-Demand Declaration
                     if (!this.isAccessible(f, enclosingBlockStatement)) continue;
 
                     if (importedField != null) {
@@ -7018,13 +6994,13 @@ class UnitCompiler {
         // Hack: "java" MUST be a package, not a class.
         if ("java".equals(identifier)) return new Package(location, identifier);
 
-        // 6.5.2.BL1.B1.B2.1 (JLS3: 6.5.2.BL1.B1.B3.2) Local class.
+        // 6.5.2.BL1.B1.B2.1 (JLS7: 6.5.2.BL1.B1.B3.2) Local class.
         {
             LocalClassDeclaration lcd = findLocalClassDeclaration(scope, identifier);
             if (lcd != null) return new SimpleType(location, this.resolve(lcd));
         }
 
-        // 6.5.2.BL1.B1.B2.2 (JLS3: 6.5.2.BL1.B1.B3.3) Member type.
+        // 6.5.2.BL1.B1.B2.2 (JLS7: 6.5.2.BL1.B1.B3.3) Member type.
         if (scopeTypeDeclaration != null) {
             IClass memberType = this.findMemberType(
                 this.resolve(scopeTypeDeclaration),
@@ -7034,13 +7010,13 @@ class UnitCompiler {
             if (memberType != null) return new SimpleType(location, memberType);
         }
 
-        // 6.5.2.BL1.B1.B3.1 (JLS3: 6.5.2.BL1.B1.B4.1) Single type import.
+        // 6.5.2.BL1.B1.B3.1 (JLS7: 6.5.2.BL1.B1.B4.1) Single type import.
         {
             IClass iClass = this.importSingleType(identifier, location);
             if (iClass != null) return new SimpleType(location, iClass);
         }
 
-        // 6.5.2.BL1.B1.B3.2 (JLS3: 6.5.2.BL1.B1.B3.1) Package member class/interface declared in this compilation
+        // 6.5.2.BL1.B1.B3.2 (JLS7: 6.5.2.BL1.B1.B3.1) Package member class/interface declared in this compilation
         // unit.
         // Notice that JLS2 looks this up AFTER local class, member type, single type import, while JLS3 looks this up
         // BEFORE local class, member type, single type import.
@@ -7061,7 +7037,7 @@ class UnitCompiler {
             if (result != null) return new SimpleType(location, result);
         }
 
-        // 6.5.2.BL1.B1.B5 (JLS3: 6.5.2.BL1.B1.B4.2), 6.5.2.BL1.B1.B6 Type-import-on-demand.
+        // 6.5.2.BL1.B1.B5 (JLS7: 6.5.2.BL1.B1.B4.2), 6.5.2.BL1.B1.B6 Type-import-on-demand.
         {
             IClass importedClass = this.importTypeOnDemand(identifier, location);
             if (importedClass != null) {
@@ -7069,7 +7045,7 @@ class UnitCompiler {
             }
         }
 
-        // JLS3 6.5.2.BL1.B1.B4.3 Type imported through single static import.
+        // JLS7 6.5.2.BL1.B1.B4.3 Type imported through single static import.
         {
             List/*<IField+IMethod+IClass>*/ l = (List) this.singleStaticImports.get(identifier);
             if (l != null) {
@@ -7080,7 +7056,7 @@ class UnitCompiler {
             }
         }
 
-        // JLS3 6.5.2.BL1.B1.B4.4 Type imported through static-import-on-demand.
+        // JLS7 6.5.2.BL1.B1.B4.4 Type imported through static-import-on-demand.
         {
             IClass importedType = null;
             for (Iterator/*<IClass>*/ it = this.staticImportsOnDemand.iterator(); it.hasNext();) {
@@ -7299,7 +7275,7 @@ class UnitCompiler {
     /**
      * Find a {@link IClass.IMethod} in the given {@code targetType}, its superclasses or superinterfaces with the
      * given {@code name} and for the given {@code arguments}. If more than one such method exists, choose the most
-     * specific one (JLS 15.11.2).
+     * specific one (JLS7 15.11.2).
      *
      * @return {@code null} if no appropriate method could be found
      */
@@ -7310,7 +7286,7 @@ class UnitCompiler {
         List/*<IClass.IMethod>*/ ms = new ArrayList();
         this.getIMethods(targetType, invocation.methodName, ms);
 
-        // JLS2 6.4.3
+        // Interfaces inherit the methods declared in 'Object'.
         if (targetType.isInterface()) {
             IClass.IMethod[] oms = this.iClassLoader.JAVA_LANG_OBJECT.getDeclaredIMethods(invocation.methodName);
             for (int i = 0; i < oms.length; ++i) {
@@ -7626,7 +7602,7 @@ class UnitCompiler {
         if (maximallySpecificIInvocables.size() > 1 && iInvocables[0] instanceof IClass.IMethod) {
 
             // Check if all methods have the same signature (i.e. the types of all their parameters are identical) and
-            // exactly one of the methods is non-abstract (JLS 15.12.2.2.BL2.B1).
+            // exactly one of the methods is non-abstract (JLS7 15.12.2.2.BL2.B1).
             IClass.IMethod theNonAbstractMethod = null;
             {
                 Iterator/*<IClass.IInvocable>*/ it                          = maximallySpecificIInvocables.iterator();
@@ -7681,10 +7657,10 @@ class UnitCompiler {
                 }
             }
 
-            // JLS 15.12.2.2.BL2.B1.B1
+            // JLS7 15.12.2.2.BL2.B1.B1
             if (theNonAbstractMethod != null) return theNonAbstractMethod;
 
-            // JLS 15.12.2.2.BL2.B1.B2
+            // JLS7 15.12.2.2.BL2.B1.B2
             // Check "that exception [te1] is declared in the THROWS clause of each of the maximally specific methods".
             Set/*<IClass>*/ s = new HashSet();
             {
@@ -7729,7 +7705,7 @@ class UnitCompiler {
 
         if (!boxingPermitted) return null; // to try again
 
-        // JLS 15.12.2.2.BL2.B2
+        // JLS7 15.12.2.2.BL2.B2
         {
             StringBuilder sb = new StringBuilder("Invocation of constructor/method with argument type(s) \"");
             for (int i = 0; i < argumentTypes.length; ++i) {
@@ -7766,7 +7742,7 @@ class UnitCompiler {
         // 5.3 Widening reference conversion.
         if (this.isWideningReferenceConvertible(sourceType, targetType)) return true;
 
-        // JLS3 5.3 A boxing conversion (JLS3 5.1.7) optionally followed by widening reference conversion.
+        // JLS7 5.3 A boxing conversion (JLS7 5.1.7) optionally followed by widening reference conversion.
         if (boxingPermitted) {
             IClass boxedType = this.isBoxingConvertible(sourceType);
             if (boxedType != null) {
@@ -7777,7 +7753,7 @@ class UnitCompiler {
             }
         }
 
-        // JLS3 5.3 An unboxing conversion (JLS3 5.1.8) optionally followed by a widening primitive conversion.
+        // JLS7 5.3 An unboxing conversion (JLS7 5.1.8) optionally followed by a widening primitive conversion.
         if (boxingPermitted) {
             IClass unboxedType = this.isUnboxingConvertible(sourceType);
             if (unboxedType != null) {
@@ -8141,7 +8117,7 @@ class UnitCompiler {
         TARGET_FOUND: {
             for (j = 0; j < path.size(); ++j) {
 
-                // Notice: JLS 15.9.2.BL1.B3.B1.B2 seems to be wrong: Obviously, JAVAC does not only allow
+                // Notice: JLS7 15.9.2.BL1.B3.B1.B2 seems to be wrong: Obviously, JAVAC does not only allow
                 //
                 //    O is the nth lexically enclosing class
                 //
@@ -8966,9 +8942,7 @@ class UnitCompiler {
         }
     }
 
-    /**
-     * Implements "assignment conversion" (JLS2 5.2).
-     */
+    /** Implements "assignment conversion" (JLS7 5.2). */
     private void
     assignmentConversion(
         Locatable locatable,
@@ -8988,16 +8962,16 @@ class UnitCompiler {
             );
         }
 
-        // JLS2 5.1.1 Identity conversion.
+        // JLS7 5.1.1 Identity conversion.
         if (this.tryIdentityConversion(sourceType, targetType)) return;
 
-        // JLS2 5.1.2 Widening primitive conversion.
+        // JLS7 5.1.2 Widening primitive conversion.
         if (this.tryWideningPrimitiveConversion(locatable, sourceType, targetType)) return;
 
-        // JLS2 5.1.4 Widening reference conversion.
+        // JLS7 5.1.4 Widening reference conversion.
         if (this.isWideningReferenceConvertible(sourceType, targetType)) return;
 
-        // A boxing conversion (JLS3 5.1.7) optionally followed by a widening reference conversion.
+        // A boxing conversion (JLS7 5.1.7) optionally followed by a widening reference conversion.
         {
             IClass boxedType = this.isBoxingConvertible(sourceType);
             if (boxedType != null) {
@@ -9012,7 +8986,7 @@ class UnitCompiler {
             }
         }
 
-        // An unboxing conversion (JLS3 5.1.8) optionally followed by a widening primitive conversion.
+        // An unboxing conversion (JLS7 5.1.8) optionally followed by a widening primitive conversion.
         {
             IClass unboxedType = this.isUnboxingConvertible(sourceType);
             if (unboxedType != null) {
@@ -9043,9 +9017,7 @@ class UnitCompiler {
         );
     }
 
-    /**
-     * Implements "assignment conversion" (JLS2 5.2) on a constant value.
-     */
+    /** Implements "assignment conversion" (JLS7 5.2) on a constant value. */
     private Object
     assignmentConversion(Locatable locatable, Object value, IClass targetType) throws CompileException {
         if (targetType == IClass.BOOLEAN) {
@@ -9166,9 +9138,9 @@ class UnitCompiler {
     }
 
     /**
-     * Implements "unary numeric promotion" (JLS3 5.6.1)
+     * Implements "unary numeric promotion" (JLS7 5.6.1).
      *
-     * @return The promoted type.
+     * @return The promoted type
      */
     private IClass
     unaryNumericPromotion(Locatable locatable, IClass type) throws CompileException {
@@ -9438,9 +9410,7 @@ class UnitCompiler {
         return targetType.isAssignableFrom(sourceType);
     }
 
-    /**
-     * Check whether "narrowing primitive conversion" (JLS 5.1.3) is possible.
-     */
+    /** Checks whether "narrowing primitive conversion" (JLS7 5.1.3) is possible. */
     @SuppressWarnings("static-method") private boolean
     isNarrowingPrimitiveConvertible(IClass sourceType, IClass targetType) {
         return UnitCompiler.PRIMITIVE_NARROWING_CONVERSIONS.containsKey(
@@ -9449,7 +9419,7 @@ class UnitCompiler {
     }
 
     /**
-     * Implements "narrowing primitive conversion" (JLS 5.1.3).
+     * Implements "narrowing primitive conversion" (JLS7 5.1.3).
      *
      * @return Whether the conversion succeeded
      */
@@ -9522,10 +9492,10 @@ class UnitCompiler {
     }, UnitCompiler.PRIMITIVE_NARROWING_CONVERSIONS); }
 
     /**
-     * Check if "constant assignment conversion" (JLS 5.2, paragraph 1) is possible.
+     * Check if "constant assignment conversion" (JLS7 5.2, paragraph 1) is possible.
      *
      * @param constantValue The constant value that is to be converted
-     * @param targetType The type to convert to
+     * @param targetType    The type to convert to
      */
     private boolean
     tryConstantAssignmentConversion(Locatable locatable, Object constantValue, IClass targetType)
@@ -9572,9 +9542,7 @@ class UnitCompiler {
         return false;
     }
 
-    /**
-     * Check whether "narrowing reference conversion" (JLS 5.1.5) is possible.
-     */
+    /** Check whether "narrowing reference conversion" (JLS7 5.1.5) is possible. */
     private boolean
     isNarrowingReferenceConvertible(IClass sourceType, IClass targetType) throws CompileException {
         if (sourceType.isPrimitive()) return false;
@@ -9630,9 +9598,7 @@ class UnitCompiler {
         return true;
     }
 
-    /**
-     * JLS2 5.5
-     */
+    /** JLS7 5.5 */
     private boolean
     isCastReferenceConvertible(IClass sourceType, IClass targetType) throws CompileException {
         return (
@@ -9826,7 +9792,7 @@ class UnitCompiler {
     /**
      * Assign stack top value to the given local variable. (Assignment conversion takes effect.) If {@code
      * optionalConstantValue} is not {@code null}, then the top stack value is a constant value with that type and
-     * value, and a narrowing primitive conversion as described in JLS 5.2 is applied.
+     * value, and a narrowing primitive conversion as described in JLS7 5.2 is applied.
      */
     private void
     store(Locatable locatable, IClass valueType, LocalVariable localVariable) {
@@ -9926,7 +9892,7 @@ class UnitCompiler {
     }
 
     /**
-     * Finds a named field in the given {@link IClass}. Honors superclasses and interfaces. See JLS 8.3.
+     * Finds a named field in the given {@link IClass}. Honors superclasses and interfaces. See JLS7 8.3.
      *
      * @return {@code null} if no field is found
      */

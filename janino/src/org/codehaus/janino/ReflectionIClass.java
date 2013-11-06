@@ -167,6 +167,7 @@ class ReflectionIClass extends IClass {
         );
     }
 
+    /** @return The underlying {@link Class java.lang.Class} */
     public Class
     getClazz() { return this.clazz; }
 
@@ -298,7 +299,7 @@ class ReflectionIClass extends IClass {
         @Override public IClass[]
         getThrownExceptions() { return ReflectionIClass.this.classesToIClasses(this.method.getExceptionTypes()); }
 
-        public final Method method;
+        private final Method method;
     }
 
     private

@@ -1095,7 +1095,7 @@ class Java {
                 implementedTypes      // implementedTypes
             );
 
-            // Check for forbidden modifiers (JLS 7.6).
+            // Check for forbidden modifiers (JLS7 7.6).
             if ((modifiers.flags & (Mod.PROTECTED | Mod.PRIVATE | Mod.STATIC)) != 0) {
                 this.throwCompileException(
                     "Modifiers \"protected\", \"private\" and \"static\" not allowed in package member class "
@@ -1270,7 +1270,7 @@ class Java {
                 extendedTypes       // extendedTypes
             );
 
-            // Check for forbidden modifiers (JLS 7.6).
+            // Check for forbidden modifiers (JLS7 7.6).
             if ((modifiers.flags & (Mod.PROTECTED | Mod.PRIVATE | Mod.STATIC)) != 0) {
                 this.throwCompileException(
                     "Modifiers \"protected\", \"private\" and \"static\" not allowed in package member interface "
@@ -1383,7 +1383,7 @@ class Java {
     }
 
     /**
-     * Representation of an instance (JLS2 8.6) or static initializer (JLS2 8.7).
+     * Representation of an 'instance initializer' (JLS7 8.6) or 'static initializer' (JLS7 8.7).
      */
     public static final
     class Initializer extends AbstractTypeBodyDeclaration implements BlockStatement {
@@ -1804,8 +1804,8 @@ class Java {
             this.brackets            = brackets;
             this.optionalInitializer = optionalInitializer;
 
-            // Used both by field declarations an local variable declarations, so naming
-            // conventions checking (JLS2 6.8) cannot be done here.
+            // Used both by field declarations an local variable declarations, so naming conventions checking (JLS7
+            // 6.4.2) cannot be done here.
         }
 
         @Override public String
@@ -1847,10 +1847,10 @@ class Java {
     }
 
     /**
-     * Everything that can occur in the body of a method or in a block. E.g. explicit constructor invocations and
-     * initializers cannot occur there.
+     * Everything that can occur in the body of a method or in a block. Particularly, explicit constructor invocations
+     * and initializers are <b>not</b> statements in this sense.
      * <p>
-     * This class is mis-named; according to the JLS, its name should be 'BlockStatement'.
+     * This class is mis-named; according to JLS7 8.8.7 and 14.2, its name should be 'BlockStatement'.
      */
     public abstract static
     class Statement extends Located implements BlockStatement {
@@ -1918,7 +1918,7 @@ class Java {
     }
 
     /**
-     * Representation of a Java&trade; "block" (JLS 14.2).
+     * Representation of a Java&trade; "block" (JLS7 14.2).
      * <p>
      * The statements that the block defines are executed in sequence.
      */
@@ -1964,8 +1964,12 @@ class Java {
     /**
      * Base class for statements that can be terminated abnormally with a "break" statement.
      * <p>
-     * According to the JLS, statements that can be terminated abnormally with a "break" statement are: "continuable"
-     * statements ("for", "do" and "while"), labeled statements, and the "switch" statement.
+     * According JLS7 14.15, statements that can be terminated abnormally with a "break" statement are
+     * <ul>
+     *   <li>{@link ContinuableStatement}s ("for", "do" and "while")
+     *   <li>Labeled statements
+     *   <li>"switch" statements
+     * </ul>
      */
     public abstract static
     class BreakableStatement extends Statement {
@@ -1980,9 +1984,9 @@ class Java {
     }
 
     /**
-     * Base class for statements that support the 'continue'statement.
+     * Base class for statements that support the 'continue' statement.
      * <p>
-     * According to the JLS, these are "for", "do" and "while".
+     * According to the JLS7 14.16, these are "for", "do" and "while".
      */
     public abstract static
     class ContinuableStatement extends BreakableStatement {
@@ -4291,7 +4295,7 @@ class Java {
         toString() { return this.value; }
     }
 
-    /** Representation of an "integer literal" (JLS2 3.10.1) (types {@code int} and {@code long}). */
+    /** Representation of an "integer literal" (JLS7 3.10.1) (types {@code int} and {@code long}). */
     public static final
     class IntegerLiteral extends Literal {
         public IntegerLiteral(Location location, String value) { super(location, value); }
@@ -4306,7 +4310,7 @@ class Java {
         accept(ElementValueVisitor visitor) { visitor.visitIntegerLiteral(this); }
     }
 
-    /** Representation of a "floating-point literal" (JLS2 3.10.2) (types {@code float} and {@code double}). */
+    /** Representation of a "floating-point literal" (JLS7 3.10.2) (types {@code float} and {@code double}). */
     public static final
     class FloatingPointLiteral extends Literal {
         public FloatingPointLiteral(Location location, String value) { super(location, value); }
@@ -4321,7 +4325,7 @@ class Java {
         accept(ElementValueVisitor visitor) { visitor.visitFloatingPointLiteral(this); }
     }
 
-    /** Representation of a "boolean literal" (JLS2 3.10.3) (type {@code boolean}). */
+    /** Representation of a "boolean literal" (JLS7 3.10.3) (type {@code boolean}). */
     public static final
     class BooleanLiteral extends Literal {
         public BooleanLiteral(Location location, String value) { super(location, value); }
@@ -4336,7 +4340,7 @@ class Java {
         accept(ElementValueVisitor visitor) { visitor.visitBooleanLiteral(this); }
     }
 
-    /** Representation of a "character literal" (JLS2 3.10.4) (type {@code char}). */
+    /** Representation of a "character literal" (JLS7 3.10.4) (type {@code char}). */
     public static final
     class CharacterLiteral extends Literal {
         public CharacterLiteral(Location location, String value) { super(location, value); }
@@ -4351,7 +4355,7 @@ class Java {
         accept(ElementValueVisitor visitor) { visitor.visitCharacterLiteral(this); }
     }
 
-    /** Representation of a "string literal" (JLS2 3.10.5) (type {@link String}). */
+    /** Representation of a "string literal" (JLS7 3.10.5) (type {@link String}). */
     public static final
     class StringLiteral extends Literal {
         public StringLiteral(Location location, String value) { super(location, value); }
@@ -4366,7 +4370,7 @@ class Java {
         accept(ElementValueVisitor visitor) { visitor.visitStringLiteral(this); }
     }
 
-    /** Representation of a "null literal" (JLS2 3.10.7). */
+    /** Representation of a "null literal" (JLS7 3.10.7). */
     public static final
     class NullLiteral extends Literal {
         public NullLiteral(Location location, String value) { super(location, value); }

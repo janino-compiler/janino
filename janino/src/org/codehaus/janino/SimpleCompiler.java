@@ -56,11 +56,11 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
     private ErrorHandler   optionalCompileErrorHandler;
     private WarningHandler optionalWarningHandler;
 
-    protected boolean debugSource = Boolean.getBoolean(ICookable.SYSTEM_PROPERTY_SOURCE_DEBUGGING_ENABLE);
-    protected boolean debugLines  = this.debugSource;
-    protected boolean debugVars   = this.debugSource;
+    private boolean debugSource = Boolean.getBoolean(ICookable.SYSTEM_PROPERTY_SOURCE_DEBUGGING_ENABLE);
+    private boolean debugLines  = this.debugSource;
+    private boolean debugVars   = this.debugSource;
 
-    public static void
+    public static void // SUPPRESS CHECKSTYLE JavadocMethod
     main(String[] args) throws Exception {
         if (args.length >= 1 && "-help".equals(args[0])) {
             System.out.println("Usage:");

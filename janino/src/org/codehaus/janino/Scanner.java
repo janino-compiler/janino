@@ -814,7 +814,7 @@ class Scanner {
             return;
         }
 
-        // JLS3 3.10.6: Escape sequences for character and string literals.
+        // JLS7 3.10.6: Escape sequences for character and string literals.
         sb.append('\\');
         this.readNextChar();
 

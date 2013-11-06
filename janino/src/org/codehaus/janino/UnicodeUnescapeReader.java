@@ -29,15 +29,11 @@ package org.codehaus.janino;
 import java.io.*;
 
 /**
- * A {@link FilterReader} that unescapes the "Unicode Escapes"
- * as described in
- * <a href="http://java.sun.com/docs/books/jls/second_edition/html/lexical.doc.html#100850">the
- * Java Language Specification, 2nd edition</a>.
+ * A {@link FilterReader} that unescapes the "Unicode Escapes" as described in JLS7 3.10.6.
  * <p>
- * Notice that it is possible to formulate invalid escape sequences, e.g.
- * "&#92;u123g" ("g" is not a valid hex character). This is handled by
- * throwing a {@link java.lang.RuntimeException}-derived
- * {@link org.codehaus.janino.UnicodeUnescapeException}.
+ * Notice that it is possible to formulate invalid escape sequences, e.g. "&#92;u123g" ("g" is not a valid hex
+ * character). This is handled by throwing a {@link java.lang.RuntimeException}-derived {@link
+ * org.codehaus.janino.UnicodeUnescapeException}.
  */
 public
 class UnicodeUnescapeReader extends FilterReader {

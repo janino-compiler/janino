@@ -504,7 +504,7 @@ class Parser {
      *   ClassBodyDeclaration :=
      *     ';' |
      *     ModifiersOpt (
-     *       Block |                                    // Instance (JLS2 8.6) or static initializer (JLS2 8.7)
+     *       Block |                                    // Instance (JLS7 8.6) or static initializer (JLS7 8.7)
      *       'void' Identifier MethodDeclarationRest |
      *       'class' ClassDeclarationRest |
      *       'interface' InterfaceDeclarationRest |
@@ -2208,7 +2208,7 @@ class Parser {
             if (this.peek("(")) {
 
                 // 'this' Arguments
-                // Alternate constructor invocation (JLS 8.8.5.1)
+                // Alternate constructor invocation (JLS7 8.8.7.1).
                 return new AlternateConstructorInvocation(
                     location,             // location
                     this.parseArguments() // arguments
@@ -2225,7 +2225,7 @@ class Parser {
             if (this.peek("(")) {
 
                 // 'super' Arguments
-                // Unqualified superclass constructor invocation (JLS 8.8.5.1)
+                // Unqualified superclass constructor invocation (JLS7 8.8.7.1).
                 return new SuperConstructorInvocation(
                     this.location(),      // location
                     (Rvalue) null,        // optionalQualification
@@ -2330,15 +2330,15 @@ class Parser {
     /**
      * <pre>
      *   Selector :=
-     *     '.' Identifier |                       // FieldAccess 15.11.1
-     *     '.' Identifier Arguments |             // MethodInvocation
-     *     '.' 'this'                             // QualifiedThis 15.8.4
-     *     '.' 'super' Arguments                  // Qualified superclass constructor invocation (JLS 8.8.5.1)
-     *     '.' 'super' '.' Identifier |           // SuperclassFieldReference (JLS 15.11.2)
-     *     '.' 'super' '.' Identifier Arguments | // SuperclassMethodInvocation (JLS 15.12.4.9)
+     *     '.' Identifier |                               // FieldAccess 15.11.1
+     *     '.' Identifier Arguments |                     // MethodInvocation
+     *     '.' 'this'                                     // QualifiedThis 15.8.4
+     *     '.' 'super' Arguments                          // Qualified superclass constructor invocation (JLS7 8.8.7.1)
+     *     '.' 'super' '.' Identifier |                   // SuperclassFieldReference (JLS7 15.11.2)
+     *     '.' 'super' '.' Identifier Arguments |         // SuperclassMethodInvocation (JLS7 15.12.3)
      *     '.' 'new' Identifier Arguments [ ClassBody ] | // QualifiedClassInstanceCreationExpression  15.9
      *     '.' 'class'
-     *     '[' Expression ']'                     // ArrayAccessExpression 15.13
+     *     '[' Expression ']'                             // ArrayAccessExpression 15.13
      * </pre>
      */
     public Atom
@@ -2375,7 +2375,7 @@ class Parser {
                 if (this.peek("(")) {
 
                     // '.' 'super' Arguments
-                    // Qualified superclass constructor invocation (JLS 8.8.5.1) (LHS is an Rvalue)
+                    // Qualified superclass constructor invocation (JLS7 8.7.1.2.2) (LHS is an Rvalue)
                     return new SuperConstructorInvocation(
                         location,             // location
                         atom.toRvalueOrCompileException(),  // optionalQualification
@@ -2388,13 +2388,13 @@ class Parser {
                 if (this.peek("(")) {
 
                     // '.' 'super' '.' Identifier Arguments
-                    // Qualified superclass method invocation (JLS 15.12) (LHS is a ClassName)
+                    // Qualified superclass method invocation (JLS7 15.12.1.1.4) (LHS is a ClassName).
                     // TODO: Qualified superclass method invocation
                     throw this.compileException("Qualified superclass method invocation NYI");
                 } else {
 
                     // '.' 'super' '.' Identifier
-                    // Qualified superclass field access (JLS 15.11.2) (LHS is an Rvalue)
+                    // Qualified superclass field access (JLS7 15.11.2) (LHS is an Rvalue).
                     return new SuperclassFieldAccessExpression(
                         location,          // location
                         atom.toTypeOrCompileException(), // optionalQualification
@@ -2688,16 +2688,13 @@ class Parser {
         return -1;
     }
 
-    /**
-     * Issue a warning if the given string does not comply with the package naming conventions
-     * (JLS2 6.8.1).
-     */
+    /** Issue a warning if the given string does not comply with the package naming conventions. */
     private void
     verifyStringIsConventionalPackageName(String s, Location loc) throws CompileException {
         if (!Character.isLowerCase(s.charAt(0))) {
             this.warning(
                 "UPN",
-                "Package name \"" + s + "\" does not begin with a lower-case letter (see JLS2 6.8.1)",
+                "Package name \"" + s + "\" does not begin with a lower-case letter (see JLS7 6.8.1)",
                 loc
             );
             return;
@@ -2713,15 +2710,15 @@ class Parser {
     }
 
     /**
-     * Issue a warning if the given identifier does not comply with the class and interface type
-     * naming conventions (JLS2 6.8.2).
+     * Issue a warning if the given identifier does not comply with the class and interface type naming conventions
+     * (JLS7 6.8.2).
      */
     private void
     verifyIdentifierIsConventionalClassOrInterfaceName(String id, Location loc) throws CompileException {
         if (!Character.isUpperCase(id.charAt(0))) {
             this.warning(
                 "UCOIN1",
-                "Class or interface name \"" + id + "\" does not begin with an upper-case letter (see JLS2 6.8.2)",
+                "Class or interface name \"" + id + "\" does not begin with an upper-case letter (see JLS7 6.8.2)",
                 loc
             );
             return;
@@ -2734,23 +2731,20 @@ class Parser {
                     + id
                     + "\" contains unconventional character \""
                     + c
-                    + "\" (see JLS2 6.8.2)"
+                    + "\" (see JLS7 6.8.2)"
                 ), loc);
                 return;
             }
         }
     }
 
-    /**
-     * Issue a warning if the given identifier does not comply with the method naming conventions
-     * (JLS2 6.8.3).
-     */
+    /** Issue a warning if the given identifier does not comply with the method naming conventions (JLS7 6.8.3). */
     private void
     verifyIdentifierIsConventionalMethodName(String id, Location loc) throws CompileException {
         if (!Character.isLowerCase(id.charAt(0))) {
             this.warning(
                 "UMN1",
-                "Method name \"" + id + "\" does not begin with a lower-case letter (see JLS2 6.8.3)",
+                "Method name \"" + id + "\" does not begin with a lower-case letter (see JLS7 6.8.3)",
                 loc
             );
             return;
@@ -2760,7 +2754,7 @@ class Parser {
             if (!Character.isLetter(c) && !Character.isDigit(c)) {
                 this.warning(
                     "UMN",
-                    "Method name \"" + id + "\" contains unconventional character \"" + c + "\" (see JLS2 6.8.3)",
+                    "Method name \"" + id + "\" contains unconventional character \"" + c + "\" (see JLS7 6.8.3)",
                     loc
                 );
                 return;
@@ -2769,8 +2763,8 @@ class Parser {
     }
 
     /**
-     * Issue a warning if the given identifier does not comply with the field naming conventions
-     * (JLS2 6.8.4) and constant naming conventions (JLS2 6.8.5).
+     * Issue a warning if the given identifier does not comply with the field naming conventions (JLS7 6.8.4) and
+     * constant naming conventions (JLS7 6.8.5).
      */
     private void
     verifyIdentifierIsConventionalFieldName(String id, Location loc) throws CompileException {
@@ -2784,7 +2778,7 @@ class Parser {
                 if (!Character.isUpperCase(c) && !Character.isDigit(c) && c != '_') {
                     this.warning(
                         "UCN",
-                        "Constant name \"" + id + "\" contains unconventional character \"" + c + "\" (see JLS2 6.8.5)",
+                        "Constant name \"" + id + "\" contains unconventional character \"" + c + "\" (see JLS7 6.8.5)",
                         loc
                     );
                     return;
@@ -2797,7 +2791,7 @@ class Parser {
                 if (!Character.isLetter(c) && !Character.isDigit(c)) {
                     this.warning(
                         "UFN",
-                        "Field name \"" + id + "\" contains unconventional character \"" + c + "\" (see JLS2 6.8.4)",
+                        "Field name \"" + id + "\" contains unconventional character \"" + c + "\" (see JLS7 6.8.4)",
                         loc
                     );
                     return;
@@ -2807,21 +2801,21 @@ class Parser {
             this.warning("UFN1", (
                 "\""
                 + id
-                + "\" is neither a conventional field name (JLS2 6.8.4) nor a conventional constant name (JLS2 6.8.5)"
+                + "\" is neither a conventional field name (JLS7 6.8.4) nor a conventional constant name (JLS7 6.8.5)"
             ), loc);
         }
     }
 
     /**
-     * Issue a warning if the given identifier does not comply with the local variable and
-     * parameter naming conventions (JLS2 6.8.6).
+     * Issue a warning if the given identifier does not comply with the local variable and parameter naming conventions
+     * (JLS7 6.8.6).
      */
     private void
     verifyIdentifierIsConventionalLocalVariableOrParameterName(String id, Location loc) throws CompileException {
         if (!Character.isLowerCase(id.charAt(0))) {
             this.warning(
                 "ULVN1",
-                "Local variable name \"" + id + "\" does not begin with a lower-case letter (see JLS2 6.8.6)",
+                "Local variable name \"" + id + "\" does not begin with a lower-case letter (see JLS7 6.8.6)",
                 loc
             );
             return;
@@ -2834,7 +2828,7 @@ class Parser {
                     + id
                     + "\" contains unconventional character \""
                     + c
-                    + "\" (see JLS2 6.8.6)"
+                    + "\" (see JLS7 6.8.6)"
                 ), loc);
                 return;
             }
