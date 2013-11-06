@@ -76,6 +76,9 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
                 getCharContent(boolean ignoreEncodingErrors) throws IOException {
                     return readString(this.openReader(ignoreEncodingErrors));
                 }
+
+                @Override public String
+                toString() { return String.valueOf(this.uri); }
             };
         }
 
@@ -108,13 +111,13 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
                     report(Diagnostic<? extends JavaFileObject> diagnostic) {
 //System.err.println("*** " + diagnostic.toString() + " *** " + diagnostic.getCode());
 
+                        JavaFileObject source = diagnostic.getSource();
                         Location loc = new Location(
-                            diagnostic.getSource().toString(),
+                            source == null ? null : source.toString(),
                             (short) diagnostic.getLineNumber(),
                             (short) diagnostic.getColumnNumber()
                         );
-                        String code    = diagnostic.getCode();
-                        String message = diagnostic.getMessage(null) + " (" + code + ")";
+                        String message = diagnostic.getMessage(null) + " (" + diagnostic.getCode() + ")";
 
                         try {
                             switch (diagnostic.getKind()) {
@@ -140,7 +143,7 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
                             
                             }
                         } catch (CompileException ce) {
-                            caughtCompileException[0] = ce;
+                            if (caughtCompileException[0] == null) caughtCompileException[0] = ce;
                         }
                     }
                 },
