@@ -34,10 +34,8 @@ import java.lang.reflect.InvocationTargetException;
 /**
  * An engine that evaluates expressions in Java&trade; bytecode.
  * <p>
- * The syntax of the expression to compile is that of a Java&trade; expression, as defined in the <a
- * href="http://docs.oracle.com/javase/specs/">Java Language Specification, Java SE 7 Edition</a>, section <a
- * href="http://java.sun.com/docs/books/jls/second_edition/html/expressions.doc.html#44393">15</a>. Notice that a
- * Java&trade; expression does not have a concluding semicolon.
+ * The syntax of the expression to compile is that of a Java&trade; expression, as defined in JLS7, section 15. Notice
+ * that a Java&trade; expression does not have a concluding semicolon.
  * <p>
  * Example:<pre>
  *   a + 7 * b</pre>
@@ -94,6 +92,9 @@ import java.lang.reflect.InvocationTargetException;
  * Notice that for <i>functionally</i> identical {@link IExpressionEvaluator}s,
  * {@link java.lang.Object#equals(java.lang.Object)} will return <code>true</code>. E.g. "a+b" and
  * "c + d" are functionally identical if "a" and "c" have the same type, and so do "b" and "d".
+ * <p>
+ * 'JLS7' refers to the <a href="http://docs.oracle.com/javase/specs/">Java Language Specification, Java SE 7
+ * Edition</a>.
  */
 @SuppressWarnings("rawtypes") public
 interface IExpressionEvaluator extends IScriptEvaluator {
