@@ -73,7 +73,7 @@ class Location implements Serializable {
 
         StringBuilder sb = new StringBuilder();
         if (this.optionalFileName != null) {
-            sb.append("File ").append(this.optionalFileName).append(", ");
+            sb.append("File '").append(this.optionalFileName).append("', ");
         }
         sb.append("Line ").append(this.lineNumber).append(", ");
         sb.append("Column ").append(this.columnNumber);
