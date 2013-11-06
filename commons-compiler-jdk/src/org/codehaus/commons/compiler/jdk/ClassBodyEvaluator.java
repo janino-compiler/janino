@@ -193,9 +193,7 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
             });
         }
 
-        /**
-         * Compile the generated compilation unit.
-         */
+        /** Compile the generated compilation unit. */
         super.cook(optionalFileName, r);
 
         try {
@@ -209,9 +207,7 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
         }
     }
 
-    /**
-     * @return The {@link Class} created by the preceding call to {@link #cook(Reader)}
-     */
+    /** @return The {@link Class} created by the preceding call to {@link #cook(Reader)} */
     @Override public Class<?>
     getClazz() { return this.result; }
 

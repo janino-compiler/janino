@@ -24,8 +24,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-/**
- * Main package of the plugin.
- */
+/** Main package of the plugin. */
 @de.unkrig.commons.nullanalysis.NotNullByDefault package org.codehaus.commons.compiler.jdk;
 

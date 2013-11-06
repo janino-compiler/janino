@@ -48,15 +48,11 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
     private JavaCompiler    compiler;
     private JavaFileManager fileManager;
 
-    /**
-     * @see ICompilerFactory#newJavaSourceClassLoader()
-     */
+    /** @see ICompilerFactory#newJavaSourceClassLoader() */
     public
     JavaSourceClassLoader() { this.init(); }
 
-    /**
-     * @see ICompilerFactory#newJavaSourceClassLoader(ClassLoader)
-     */
+    /** @see ICompilerFactory#newJavaSourceClassLoader(ClassLoader) */
     public
     JavaSourceClassLoader(ClassLoader parentClassLoader) {
         super(parentClassLoader);

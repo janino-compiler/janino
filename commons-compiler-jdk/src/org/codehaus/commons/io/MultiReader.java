@@ -52,9 +52,7 @@ class MultiReader extends Reader {
     public
     MultiReader(Reader[] delegates) { this(Arrays.asList(delegates)); }
 
-    /**
-     * Closes all delegates.
-     */
+    /** Closes all delegates. */
     @Override public void
     close() throws IOException { for (Reader delegate : this.delegates) delegate.close(); }
 

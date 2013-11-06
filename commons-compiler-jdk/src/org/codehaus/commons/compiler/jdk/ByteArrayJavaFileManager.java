@@ -168,9 +168,7 @@ class ByteArrayJavaFileManager<M extends JavaFileManager> extends ForwardingJava
         return result;
     }
 
-    /**
-     * Byte array-based implementation of {@link JavaFileObject}.
-     */
+    /** Byte array-based implementation of {@link JavaFileObject}. */
     public static
     class ByteArrayJavaFileObject extends SimpleJavaFileObject {
 

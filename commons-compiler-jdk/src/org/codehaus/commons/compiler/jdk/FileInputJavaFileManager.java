@@ -144,9 +144,7 @@ class FileInputJavaFileManager extends ForwardingJavaFileManager<JavaFileManager
         return super.getJavaFileForInput(location, className, kind);
     }
 
-    /**
-     * A {@link JavaFileObject} that reads from a {@link File}.
-     */
+    /** A {@link JavaFileObject} that reads from a {@link File}. */
     private
     class InputFileJavaFileObject extends SimpleJavaFileObject {
         private final File   file;

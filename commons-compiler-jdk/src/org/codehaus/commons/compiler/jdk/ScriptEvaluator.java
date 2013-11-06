@@ -315,9 +315,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
         }
     }
 
-    /**
-     * @param readers The scripts to cook
-     */
+    /** @param readers The scripts to cook */
     protected final void
     cook(String[] optionalFileNames, Reader[] readers, String[] imports) throws CompileException, IOException {
 
@@ -512,9 +510,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
         }
     }
 
-    /**
-     * Don't use.
-     */
+    /** Don't use. */
     @Override public final Object
     createInstance(Reader reader) { throw new UnsupportedOperationException("createInstance"); }
 

@@ -295,15 +295,11 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
         this.optionalWarningHandler = optionalWarningHandler;
     }
 
-    /**
-     * Throw an {@link IllegalStateException} if this {@link Cookable} is not yet cooked.
-     */
+    /** Throw an {@link IllegalStateException} if this {@link Cookable} is not yet cooked. */
     protected void
     assertCooked() { if (this.result == null) throw new IllegalStateException("Not yet cooked"); }
 
-    /**
-     * Throw an {@link IllegalStateException} if this {@link Cookable} is already cooked.
-     */
+    /** Throw an {@link IllegalStateException} if this {@link Cookable} is already cooked. */
     protected void
     assertNotCooked() { if (this.result != null) throw new IllegalStateException("Already cooked"); }
 }
