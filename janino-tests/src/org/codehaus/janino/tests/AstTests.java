@@ -145,9 +145,7 @@ class AstTests {
         return new Java.AmbiguousName(getLocation(), new String[] { name });
     }
 
-    /**
-     * "Clever" method to get a location from a stack trace
-     */
+    /** A "Clever" method to get a location from a stack trace. */
     private static Location
     getLocation() {
         Exception         e   = new Exception();
