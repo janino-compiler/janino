@@ -531,12 +531,30 @@ class ReportedBugs extends JaninoTestSuite {
     }
 
     @Test public void
-    testBug161() throws Exception {
+    testBug161_1() throws Exception {
         this.sim(COOK, (
             ""
             + "public class Test {\n"
             + "    public static void test2(boolean x, boolean y) {\n"
             + "        boolean v4 = x || null == null;\n"
+            + "    }\n"
+            + "}\n"
+        ), "Test");
+    }
+    
+    @Test public void
+    testBug161_2() throws Exception {
+        this.sim(COOK, (
+            ""
+            + "public class Test\n"
+            + "{\n"
+            + "    boolean bar  = false;\n"
+            + "    public void test() {\n"
+            + "        boolean v4 = bar || null == null;\n"
+            + "    }\n"
+            + "\n"
+            + "    public static void main(String[] args) {\n"
+            + "        new Test().test();\n"
             + "    }\n"
             + "}\n"
         ), "Test");

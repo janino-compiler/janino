@@ -786,6 +786,68 @@ class JlsTests extends JaninoTestSuite {
             + "return true;\n"
         ));
     }
+    
+    @Test public void
+    test_15_12_2_6__IdentifyApplicableVariableArityMethods__4() throws Exception {
+        clb(TRUE, (
+            ""
+            + "public static boolean main() {\n"
+            + "    return meth((byte)1, (byte)2) == 1;\n"
+            + "}\n"
+            + "\n"
+            + "static int meth(byte...a) {\n"
+            + "    return 0;\n"
+            + "}\n"
+            + "\n"
+            + "static int meth(int a, int b){\n"
+            + "    return 1;\n"
+            + "}\n"
+            + "\n"
+            + "static int meth(int a, double b){\n"
+            + "     return 2;\n"
+            + "}\n"
+        ));
+    }
+    
+    @Test public void
+    test_15_12_2_7__IdentifyApplicableVariableArityMethods__4() throws Exception {
+ 
+        // The resolution phases should go like this:
+        //  - all three methods are *applicable*, but fixed-arity ones have higher priority
+        //    (meaning the chosen one, if any, must be a fixed-arity)
+        //  - now we are left with (int, int) and (byte, double)
+        //  - neither of these is more specific than the other,
+        //    therefore it is an ambiguous case
+        //  Ref: http://docs.oracle.com/javase/specs/jls/se7/html/jls-15.html#jls-15.12.2.1
+        // 
+        //  (Note: Some versions of javac tries a bit harder,
+        //         choosing the only existing variable-arity method.
+        //         Their reasoning seems to be that
+        //         there is ambiguity amongst fixed-arity applicables, so
+        //         picking a vararg is acceptable if that means there is
+        //         no ambiguity.
+        //         I have not been able to find any piece of documentation
+        //         about this in the docs)
+        
+        clb(COMP, (
+            ""
+            + "public static boolean main() {\n"
+            + "    return meth((byte)1, (byte)2) == 1;\n"
+            + "}\n"
+            + "\n"
+            + "static int meth(byte...a) {\n"
+            + "    return 0;\n"
+            + "}\n"
+            + "\n"
+            + "static int meth(int a, int b){\n"
+            + "    return 1;\n"
+            + "}\n"
+            + "\n"
+            + "static int meth(byte a, double b){\n"
+            + "     return 2;\n"
+            + "}\n"
+        ));
+    }
 
     @Test public void
     test_15_14__PostfixExpressions() throws Exception {
