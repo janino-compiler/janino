@@ -95,9 +95,7 @@ interface ICookable {
      */
     void cook(String optionalFileName, Reader r) throws CompileException, IOException;
 
-    /**
-     * Reads, scans, parses and compiles Java tokens from the given {@link Reader}.
-     */
+    /**Reads, scans, parses and compiles Java tokens from the given {@link Reader}. */
     void cook(Reader r) throws CompileException, IOException;
 
     /**
@@ -133,9 +131,7 @@ interface ICookable {
         String      optionalEncoding
     ) throws CompileException, IOException;
 
-    /**
-     * Reads, scans, parses and compiles Java tokens from the given {@link String}.
-     */
+    /** Reads, scans, parses and compiles Java tokens from the given {@link String}. */
     void cook(String s) throws CompileException;
 
     /**
@@ -164,10 +160,7 @@ interface ICookable {
      */
     void cookFile(String fileName) throws CompileException, IOException;
 
-    /**
-     * Reads, scans, parses and compiles Java tokens from the named file with the given
-     * <code>encoding</code>.
-     */
+    /** Reads, scans, parses and compiles Java tokens from the named file with the given {@code optionalEncoding}. */
     void
     cookFile(String fileName, String optionalEncoding) throws CompileException, IOException;
 

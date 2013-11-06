@@ -50,14 +50,10 @@ class AbstractJavaSourceClassLoader extends ClassLoader {
     public
     AbstractJavaSourceClassLoader(ClassLoader parentClassLoader) { super(parentClassLoader); }
 
-    /**
-     * @param sourcePath The sequence of directories to search for Java&trade; source files
-     */
+    /** @param sourcePath The sequence of directories to search for Java&trade; source files */
     public abstract void setSourcePath(File[] sourcePath);
 
-    /**
-     * @param optionalCharacterEncoding if {@code null}, use platform default encoding
-     */
+    /** @param optionalCharacterEncoding if {@code null}, use platform default encoding */
     public abstract void setSourceFileCharacterEncoding(String optionalCharacterEncoding);
 
     /**
@@ -73,15 +69,11 @@ class AbstractJavaSourceClassLoader extends ClassLoader {
         this.optionalProtectionDomainFactory = optionalProtectionDomainFactory;
     }
 
-    /**
-     * @see AbstractJavaSourceClassLoader#setProtectionDomainFactory
-     */
+    /** @see AbstractJavaSourceClassLoader#setProtectionDomainFactory */
     public
     interface ProtectionDomainFactory {
 
-        /**
-         * @param sourceResourceName E.g. 'pkg1/pkg2/Outer.java'
-         */
+        /** @param sourceResourceName E.g. 'pkg1/pkg2/Outer.java' */
         ProtectionDomain getProtectionDomain(String sourceResourceName);
     }
 

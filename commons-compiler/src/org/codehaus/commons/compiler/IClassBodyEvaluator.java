@@ -131,19 +131,13 @@ interface IClassBodyEvaluator extends ICookable {
      */
     void setExtendedClass(Class optionalExtendedClass);
 
-    /**
-     * @deprecated Use {@link #setExtendedClass(Class)} instead.
-     */
+    /** @deprecated Use {@link #setExtendedClass(Class)} instead. */
     @Deprecated void setExtendedType(Class optionalExtendedClass);
 
-    /**
-     * Set a particular set of interfaces that the generated class will implement.
-     */
+    /** Set a particular set of interfaces that the generated class will implement. */
     void setImplementedInterfaces(Class[] implementedInterfaces);
 
-    /**
-     * @deprecated Use {@link #setImplementedInterfaces(Class[])} instead.
-     */
+    /** @deprecated Use {@link #setImplementedInterfaces(Class[])} instead. */
     @Deprecated void setImplementedTypes(Class[] implementedInterfaces);
 
     /**

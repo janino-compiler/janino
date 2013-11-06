@@ -113,9 +113,7 @@ interface IExpressionEvaluator extends IScriptEvaluator {
      */
     void setExpressionType(Class expressionType);
 
-    /**
-     * Same as {@link #setExpressionType(Class)}, but for multiple expressions.
-     */
+    /** Same as {@link #setExpressionType(Class)}, but for multiple expressions. */
     void setExpressionTypes(Class[] expressionTypes);
 
     /**
@@ -188,9 +186,7 @@ interface IExpressionEvaluator extends IScriptEvaluator {
         String[] parameterNames
     ) throws CompileException;
 
-     /**
-      * @see #createFastEvaluator(String, Class, String[])
-      */
+     /** @see #createFastEvaluator(String, Class, String[]) */
     @Override Object
     createFastEvaluator(
         Reader   reader,

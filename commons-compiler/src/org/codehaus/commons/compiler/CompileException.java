@@ -26,9 +26,7 @@
 
 package org.codehaus.commons.compiler;
 
-/**
- * An exception that reflects an error during compilation.
- */
+/** An exception that reflects an error during compilation. */
 public
 class CompileException extends LocatedException {
 

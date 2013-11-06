@@ -33,9 +33,7 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
 
-/**
- * Utility class that finds implementations of {@link ICompilerFactory}s.
- */
+/** Utility class that finds implementations of {@link ICompilerFactory}s. */
 @SuppressWarnings({ "rawtypes", "unchecked" }) public final
 class CompilerFactoryFactory {
 
@@ -122,9 +120,7 @@ class CompilerFactoryFactory {
         ).newInstance();
     }
 
-    /**
-     * @return The version of the commons-compiler specification, or <code>null</code>
-     */
+    /** @return The version of the commons-compiler specification, or <code>null</code> */
     public static String
     getSpecificationVersion() {
         return CompilerFactoryFactory.class.getPackage().getSpecificationVersion();

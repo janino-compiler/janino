@@ -26,9 +26,7 @@
 
 package org.codehaus.commons.compiler;
 
-/**
- * An {@link Exception} that is associated with an optional {@link Location} in a source file.
- */
+/** An {@link Exception} that is associated with an optional {@link Location} in a source file. */
 public
 class LocatedException extends Exception {
 
@@ -59,10 +57,7 @@ class LocatedException extends Exception {
         );
     }
 
-    /**
-     * Returns the {@link Location} object specified at
-     * construction time (may be <code>null</code>).
-     */
+    /** @eturn The {@link Location} specified at construction time (may be <code>null</code>) */
     public Location
     getLocation() { return this.optionalLocation; }
 }

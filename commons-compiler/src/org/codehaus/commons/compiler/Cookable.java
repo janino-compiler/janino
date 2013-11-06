@@ -28,9 +28,7 @@ package org.codehaus.commons.compiler;
 
 import java.io.*;
 
-/**
- * Base class for a simple {@link ICookable}.
- */
+/** Base class for a simple {@link ICookable}. */
 public abstract
 class Cookable implements ICookable {
 
@@ -119,9 +117,7 @@ class Cookable implements ICookable {
         this.cookFile(new File(fileName), optionalEncoding);
     }
 
-    /**
-     * Reads all characters from the given {@link Reader} into a {@link String}.
-     */
+    /** Reads all characters from the given {@link Reader} into a {@link String}. */
     public static String
     readString(Reader r) throws IOException {
 

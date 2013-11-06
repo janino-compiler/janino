@@ -31,9 +31,7 @@ import java.lang.reflect.*;
 
 import org.codehaus.commons.compiler.*;
 
-/**
- * A test program that allows you to play with the {@link ClassBodyEvaluator} API.
- */
+/** A test program that allows you to play with the {@link ClassBodyEvaluator} API. */
 @SuppressWarnings({ "rawtypes", "unchecked" }) public final
 class ClassBodyDemo {
 

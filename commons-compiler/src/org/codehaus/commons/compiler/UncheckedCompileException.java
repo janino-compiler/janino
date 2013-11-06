@@ -26,9 +26,7 @@
 
 package org.codehaus.commons.compiler;
 
-/**
- * A wrapper for a {@link CompileException} that extends {@link RuntimeException} and is thus unchecked.
- */
+/** A wrapper for a {@link CompileException} that extends {@link RuntimeException} and is thus unchecked. */
 public
 class UncheckedCompileException extends RuntimeException {
 

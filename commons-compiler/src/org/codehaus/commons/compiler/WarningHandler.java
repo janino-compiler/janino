@@ -26,9 +26,7 @@
 
 package org.codehaus.commons.compiler;
 
-/**
- * Processes a warning issued by the compiler.
- */
+/** Processes a warning issued by the compiler. */
 public
 interface WarningHandler {
 

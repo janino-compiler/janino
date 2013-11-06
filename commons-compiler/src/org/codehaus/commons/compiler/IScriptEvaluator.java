@@ -103,15 +103,11 @@ import java.lang.reflect.*;
 @SuppressWarnings("rawtypes") public
 interface IScriptEvaluator extends IClassBodyEvaluator {
 
-    /**
-     * Defines whether the generated method overrides a methods declared in a supertype.
-     */
+    /** Defines whether the generated method overrides a methods declared in a supertype. */
     void
     setOverrideMethod(boolean overrideMethod);
 
-    /**
-     * Define whether the generated method should be STATIC or not. Defaults to <code>true</code>.
-     */
+    /** Defines whether the generated method should be STATIC or not. Defaults to {@code true}. */
     void setStaticMethod(boolean staticMethod);
 
     /**
@@ -119,9 +115,7 @@ interface IScriptEvaluator extends IClassBodyEvaluator {
      */
     void setReturnType(Class returnType);
 
-    /**
-     * Define the name of the generated method. Defaults to an unspecified name.
-     */
+    /** Define the name of the generated method. Defaults to an unspecified name. */
     void setMethodName(String methodName);
 
     /**
@@ -133,9 +127,7 @@ interface IScriptEvaluator extends IClassBodyEvaluator {
      */
     void setParameters(String[] names, Class[] types);
 
-    /**
-     * Define the exceptions that the generated method may throw.
-     */
+    /** Define the exceptions that the generated method may throw. */
     void setThrownExceptions(Class[] thrownExceptions);
 
     /**
@@ -162,15 +154,11 @@ interface IScriptEvaluator extends IClassBodyEvaluator {
      */
     Method getMethod();
 
-    /**
-     * Same as {@link #setOverrideMethod(boolean)}, but for multiple scripts.
-     */
+    /** Same as {@link #setOverrideMethod(boolean)}, but for multiple scripts. */
     void
     setOverrideMethod(boolean[] overrideMethod);
 
-    /**
-     * Same as {@link #setStaticMethod(boolean)}, but for multiple scripts.
-     */
+    /** Same as {@link #setStaticMethod(boolean)}, but for multiple scripts. */
     void setStaticMethod(boolean[] staticMethod);
 
     /**
@@ -190,19 +178,13 @@ interface IScriptEvaluator extends IClassBodyEvaluator {
      */
     void setMethodNames(String[] methodNames);
 
-    /**
-     * Same as {@link #setParameters(String[], Class[])}, but for multiple scripts.
-     */
+    /** Same as {@link #setParameters(String[], Class[])}, but for multiple scripts. */
     void setParameters(String[][] names, Class[][] types);
 
-    /**
-     * Same as {@link #setThrownExceptions(Class[])}, but for multiple scripts.
-     */
+    /** Same as {@link #setThrownExceptions(Class[])}, but for multiple scripts. */
     void setThrownExceptions(Class[][] thrownExceptions);
 
-    /**
-     * Same as {@link #cook(Reader)}, but for multiple scripts.
-     */
+    /** Same as {@link #cook(Reader)}, but for multiple scripts. */
     void cook(Reader[] readers) throws CompileException, IOException;
 
     /**
@@ -220,24 +202,16 @@ interface IScriptEvaluator extends IClassBodyEvaluator {
     void
     cook(String[] optionalFileNames, Reader[] readers) throws CompileException, IOException;
 
-    /**
-     * Same as {@link #cook(String)}, but for multiple scripts.
-     */
+    /** Same as {@link #cook(String)}, but for multiple scripts. */
     void cook(String[] strings) throws CompileException;
 
-    /**
-     * Same as {@link #cook(String, String)}, but for multiple scripts.
-     */
+    /** Same as {@link #cook(String, String)}, but for multiple scripts. */
     void cook(String[] optionalFileNames, String[] strings) throws CompileException;
 
-    /**
-     * Same as {@link #evaluate(Object[])}, but for multiple scripts.
-     */
+    /** Same as {@link #evaluate(Object[])}, but for multiple scripts. */
     Object evaluate(int idx, Object[] arguments) throws InvocationTargetException;
 
-    /**
-     * Same as {@link #getMethod()}, but for multiple scripts.
-     */
+    /** Same as {@link #getMethod()}, but for multiple scripts. */
     Method getMethod(int idx);
 
     /**

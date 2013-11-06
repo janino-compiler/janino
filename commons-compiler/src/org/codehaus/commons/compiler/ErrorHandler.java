@@ -26,14 +26,10 @@
 
 package org.codehaus.commons.compiler;
 
-/**
- * Processes an error issued by the compiler.
- */
+/** Processes an error issued by the compiler. */
 public
 interface ErrorHandler {
 
-    /**
-     * May or may not choose to throw a {@link CompileException}.
-     */
+    /** May or may not choose to throw a {@link CompileException}. */
     void handleError(String message, Location optionalLocation) throws CompileException;
 }
