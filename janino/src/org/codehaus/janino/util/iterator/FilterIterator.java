@@ -29,12 +29,13 @@ package org.codehaus.janino.util.iterator;
 import java.util.*;
 
 /**
- * An {@link java.util.Iterator} that retrieves its elements from a delegate
- * {@link java.util.Iterator}. The default implementation simply passes
- * all method invocations to the delegate.
+ * An {@link java.util.Iterator} that retrieves its elements from a delegate {@link java.util.Iterator}. The default
+ * implementation simply passes all method invocations to the delegate.
  */
 @SuppressWarnings("rawtypes") public abstract
 class FilterIterator/*<T>*/ implements Iterator/*<T>*/ {
+
+    /** @see FilterIterator */
     protected final Iterator delegate;
 
     public FilterIterator(Iterator/*<T>*/ delegate) { this.delegate = delegate; }

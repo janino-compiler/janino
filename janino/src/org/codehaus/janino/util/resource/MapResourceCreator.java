@@ -45,6 +45,7 @@ class MapResourceCreator implements ResourceCreator {
     public
     MapResourceCreator(Map/*<String, byte[]>*/ map) { this.map = map; }
 
+    /** @return The {@link String}-to-{@code byte[]} map of the resources created */
     public final Map/*<String, byte[]>*/
     getMap() { return this.map; }
 

@@ -50,6 +50,7 @@ class ResourceFinderClassLoader extends ClassLoader {
         this.resourceFinder = resourceFinder;
     }
 
+    /** @return The underlying {@link ResourceFinder} */
     public ResourceFinder
     getResourceFinder() { return this.resourceFinder; }
 

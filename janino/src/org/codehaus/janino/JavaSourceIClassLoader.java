@@ -74,11 +74,16 @@ class JavaSourceIClassLoader extends IClassLoader {
         super.postConstruct();
     }
 
+    /** @param pathResourceFinder The source path */
     public void
     setSourceFinder(ResourceFinder pathResourceFinder) {
         this.sourceFinder = pathResourceFinder;
     }
 
+    /**
+     * @param optionalCharacterEncoding The name of the charset that is used to read source files, or {@code null} to
+     *                                  use the platform's 'default charset'
+     */
     public void
     setCharacterEncoding(String optionalCharacterEncoding) {
         this.optionalCharacterEncoding = optionalCharacterEncoding;

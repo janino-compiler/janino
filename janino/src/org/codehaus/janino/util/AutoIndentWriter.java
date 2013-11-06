@@ -35,15 +35,23 @@ import java.util.*;
  */
 @SuppressWarnings({ "rawtypes", "unchecked" }) public
 class AutoIndentWriter extends FilterWriter {
-    public static final char TABULATOR        = 0xffff;
-    public static final char CLEAR_TABULATORS = 0xfffe;
-    public static final char INDENT           = 0xfffd;
-    public static final char UNINDENT         = 0xfffc;
 
-    StringBuilder           lineBuffer = new StringBuilder();
-    int                     indentation;
-    List/*<StringBuilder>*/ tabulatorBuffer;
-    int                     tabulatorIndentation;
+    /** Special character indicating a tabular layout of the following text. */
+    public static final char TABULATOR = 0xffff;
+
+    /** Special character indicating to clear all tabluar layout that was configured through {@link #TABULATOR}. */
+    public static final char CLEAR_TABULATORS = 0xfffe;
+
+    /** Special character that inserts a line break and indents the following text by one position. */
+    public static final char INDENT = 0xfffd;
+    
+    /** Special character that inserts a line break and unindents the following text by one position. */
+    public static final char UNINDENT = 0xfffc;
+
+    private StringBuilder           lineBuffer = new StringBuilder();
+    private int                     indentation;
+    private List/*<StringBuilder>*/ tabulatorBuffer;
+    private int                     tabulatorIndentation;
 
     public
     AutoIndentWriter(Writer out) { super(out); }

@@ -67,7 +67,7 @@ class HprofScrubber {
         }
     }
 
-    public static void
+    public static void // SUPPRESS CHECKSTYLE JavadocMethod
     main(String[] args) throws Exception {
         String fileName = args.length == 0 ? "java.hprof.txt" : args[0];
 

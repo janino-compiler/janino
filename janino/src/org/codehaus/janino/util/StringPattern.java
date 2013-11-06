@@ -65,6 +65,10 @@ class StringPattern {
         this.pattern = pattern;
     }
 
+    /**
+     * @return Whether this {@link StringPattern} represents <i>inclusion</i> ({@link #INCLUDE}) or <i>exclusion</i>
+     *         exclusion ({@link #EXCLUDE}) of subjects
+     */
     public int
     getMode() { return this.mode; }
 
@@ -151,7 +155,10 @@ class StringPattern {
         }
         return false; // No patterns defined or no pattern matches.
     }
+
+    /** A {@link StringPattern} that matches any subject. */
     public static final StringPattern[] PATTERNS_ALL  = new StringPattern[] { new StringPattern("*") };
+    /** A {@link StringPattern} that matches no subject whatsoever. */
     public static final StringPattern[] PATTERNS_NONE = new StringPattern[0];
 
     @Override public String

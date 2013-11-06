@@ -40,6 +40,7 @@ class FileResource implements Resource {
     @Override public final InputStream open() throws IOException { return new FileInputStream(this.file); }
     @Override public final long        lastModified()            { return this.file.lastModified(); }
 
+    /** @return The file containing the contents of this resource */
     public final File getFile() { return this.file; }
 
     @Override public final String toString() { return this.getFileName(); }

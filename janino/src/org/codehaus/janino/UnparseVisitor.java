@@ -106,6 +106,7 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor {
         this.pw.flush();
     }
 
+    /** @param cu The compilation unit to unparse */
     public void
     unparseCompilationUnit(Java.CompilationUnit cu) {
         if (cu.optionalPackageDeclaration != null) {
@@ -471,7 +472,7 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor {
         this.unparseBlockStatement(ws.body);
     }
 
-    public void
+    private void
     unparseVariableDeclarator(Java.VariableDeclarator vd) {
         this.pw.print(vd.name);
         for (int i = 0; i < vd.brackets; ++i) this.pw.print("[]");
@@ -481,7 +482,7 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor {
         }
     }
 
-    public void
+    private void
     unparseFormalParameter(Java.FunctionDeclarator.FormalParameter fp, boolean hasEllipsis) {
         if (fp.finaL) this.pw.print("final ");
         this.unparseType(fp.type);

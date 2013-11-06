@@ -40,7 +40,7 @@ import org.codehaus.janino.util.*;
 public
 class DeclarationCounter extends Traverser {
 
-    public static void
+    public static void // SUPPRESS CHECKSTYLE JavadocMethod
     main(String[] args) throws CompileException, IOException {
         DeclarationCounter dc = new DeclarationCounter();
         for (int i = 0; i < args.length; ++i) {

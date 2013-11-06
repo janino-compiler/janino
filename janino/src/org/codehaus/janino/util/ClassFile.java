@@ -1290,17 +1290,14 @@ class ClassFile {
             this.attributes      = attributes;
         }
 
-        /**
-         * @return The {@link ClassFile} that contains this {@link MethodInfo} object
-         */
+        /** @return The {@link ClassFile} that contains this {@link MethodInfo} object */
         public ClassFile
         getClassFile() { return ClassFile.this; }
 
-        /**
-         * @return The modifier flags of the method; or'ed values are the constants declared in {@link Mod}.
-         */
+        /** @return The modifier flags of this method; or'ed values are the constants declared in {@link Mod}. */
         public short getModifierFlags() { return this.modifiers.flags; }
 
+        /** @return The annotations of this method */
         public Java.Annotation[] getAnnotations() { return this.modifiers.annotations; }
 
         /**
@@ -1383,6 +1380,7 @@ class ClassFile {
          */
         public short getModifierFlags() { return this.modifiers.flags; }
 
+        /** @return The annotations of this field */
         public Java.Annotation[] getAnnotations() { return this.modifiers.annotations; }
 
         /**
