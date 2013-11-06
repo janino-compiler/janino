@@ -33,14 +33,11 @@ import org.codehaus.commons.compiler.CompilerFactoryFactory;
 import org.codehaus.commons.compiler.ICompilerFactory;
 import org.junit.runners.Parameterized.Parameters;
 
-/**
- * Utility methods for testing.
- */
+/** Utility methods for testing. */
 public final
 class TestUtil {
-    /**
-     * Return the available compiler factories in a format suitable for JUnit {@link Parameters}
-     */
+
+    /** @return The available compiler factories in a format suitable for JUnit {@link Parameters} */
     public static List<Object[]>
     getCompilerFactoriesForParameters() throws Exception {
         ArrayList<Object[]> f = new ArrayList<Object[]>();

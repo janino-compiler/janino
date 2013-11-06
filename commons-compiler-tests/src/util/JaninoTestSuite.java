@@ -43,9 +43,7 @@ import org.codehaus.commons.compiler.IScriptEvaluator;
 import org.codehaus.commons.compiler.ISimpleCompiler;
 import org.codehaus.janino.JavaSourceClassLoader;
 
-/**
- * A base class for JUnit 4 test cases that provides easy-to-use functionality to test JANINO.
- */
+/** A base class for JUnit 4 test cases that provides easy-to-use functionality to test JANINO. */
 public
 class JaninoTestSuite {
 

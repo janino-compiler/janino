@@ -43,9 +43,7 @@ import for_sandbox_tests.ExternalClass;
 
 // CHECKSTYLE JavadocMethod:OFF
 
-/**
- * Tests for JANINO's 'sandbox mode'.
- */
+/** Tests for JANINO's 'sandbox mode'. */
 @RunWith(Parameterized.class) public
 class SandboxTests {
 

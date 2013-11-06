@@ -24,8 +24,5 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-/**
- * Utility classes for testing.
- */
-
+/** Utility classes for testing. */
 package util;
