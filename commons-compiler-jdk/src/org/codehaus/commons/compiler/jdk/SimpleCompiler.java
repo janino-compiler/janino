@@ -98,6 +98,7 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
 
         // Run the compiler.
         try {
+            final CompileException[] caughtCompileException = new CompileException[1];
             if (!compiler.getTask(
                 null,                                      // out
                 fileManager,                               // fileManager
@@ -119,7 +120,7 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
                             switch (diagnostic.getKind()) {
                             case ERROR:
                                 if (SimpleCompiler.this.optionalCompileErrorHandler == null) {
-                                    throw new RuntimeException(new CompileException(message, loc));
+                                    throw new CompileException(message, loc);
                                 } else {
                                     SimpleCompiler.this.optionalCompileErrorHandler.handleError(message, loc);
                                 }
@@ -139,10 +140,7 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
                             
                             }
                         } catch (CompileException ce) {
-
-                            // Wrap the exception in a RuntimeException, because "report()" does not declare checked
-                            // exceptions.
-                            throw new RuntimeException(ce);
+                            caughtCompileException[0] = ce;
                         }
                     }
                 },
@@ -158,6 +156,7 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
                 null,                                      // classes
                 Collections.singleton(compilationUnit)     // compilationUnits
             ).call()) {
+                if (caughtCompileException[0] != null) throw caughtCompileException[0];
                 throw new CompileException("Compilation failed", null);
             }
         } catch (RuntimeException rte) {
