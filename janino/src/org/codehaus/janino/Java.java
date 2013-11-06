@@ -4203,11 +4203,18 @@ class Java {
         accept(ElementValueVisitor visitor) { visitor.visitNewArray(this); }
     }
 
+    /** Representation of a JLS7 15.10 'array creation expression'. */
     public static final
     class NewInitializedArray extends Rvalue {
-        public final ArrayType        arrayType;
+
+        /** The array type to be instantiated. */
+        public final ArrayType arrayType;
+
+        /** The (mandatory) initializer for the array. */
         public final ArrayInitializer arrayInitializer;
-        public final IClass           arrayIClass;
+
+        /** The resolved {@link #arrayType}. */
+        public final IClass arrayIClass;
 
         public
         NewInitializedArray(Location location, ArrayType arrayType, ArrayInitializer arrayInitializer) {
@@ -4242,13 +4249,15 @@ class Java {
     }
 
     /**
-     * Represents a Java&trade; array initializer (JLS 10.6).
+     * Representation of a JLS7 10.6 'array initializer'.
      * <p>
      * Allocates an array and initializes its members with (not necessarily
      * constant) values.
      */
     public static final
     class ArrayInitializer extends Located implements ArrayInitializerOrRvalue {
+
+        /** The values to assign to the array elements. */
         public final ArrayInitializerOrRvalue[] values;
 
         public
@@ -4261,17 +4270,19 @@ class Java {
         toString() { return " { (" + this.values.length + " values) }"; }
     }
 
+    /** The union of {@link ArrayInitializer} and {@link Rvalue}. */
     public
     interface ArrayInitializerOrRvalue {
     }
 
+    /** Abstract base class for the various Java&trade; literals; see JLS7 3.10. */
     public abstract static
     class Literal extends Rvalue {
+
+        /** The text of the literal token, as in the source code. */
         public final String value;
 
-        /**
-         * @param value The text of the literal token, as in the source code.
-         */
+        /** @param value The text of the literal token, as in the source code */
         public Literal(Location location, String value) { super(location); this.value = value; }
 
         // Implement "Atom".
@@ -4376,6 +4387,22 @@ class Java {
     public static final
     class SimpleConstant extends Rvalue {
 
+        /**
+         * The value represented by this constant; either {@code null} (representing the {@code null} literal), a
+         * {@link Byte}, {@link Short}, {@link Integer}, {@link Long}, {@link Float}, {@link Double}, {@link
+         * Character}, {@link Boolean} or {@link String}.
+         *
+         * @see #SimpleConstant(Location)
+         * @see #SimpleConstant(Location,byte)
+         * @see #SimpleConstant(Location,short)
+         * @see #SimpleConstant(Location,int)
+         * @see #SimpleConstant(Location,long)
+         * @see #SimpleConstant(Location,float)
+         * @see #SimpleConstant(Location,double)
+         * @see #SimpleConstant(Location,char)
+         * @see #SimpleConstant(Location,boolean)
+         * @see #SimpleConstant(Location,String)
+         */
         final Object value;
 
         /**
@@ -4441,13 +4468,14 @@ class Java {
     }
 
     /**
-     * All local variables have a slot number, local variables that get written into the localvariabletable
+     * All local variables have a slot number; local variables that get written into the 'localvariabletable'
      * also have a start and end offset that defines the variable's extent in the bytecode. If the name is null,
      * or variable debugging is not on, then the variable won't be written into the localvariabletable and the
      * offsets can be ignored.
      */
     public static
     class LocalVariableSlot {
+
         private short        slotIndex = -1;
         private String       name;
         private final IClass type;
@@ -4473,18 +4501,27 @@ class Java {
             return buf.toString();
         }
 
-        public short getSlotIndex()                { return this.slotIndex; }
-        public void  setSlotIndex(short slotIndex) { this.slotIndex = slotIndex; }
+        /** @return The 'local variable index' associated with this local variable */
+        public short getSlotIndex() { return this.slotIndex; }
+        /** @param slotIndex The 'local variable index' to associate with this local variable */
+        public void setSlotIndex(short slotIndex) { this.slotIndex = slotIndex; }
 
-        public String getName()            { return this.name; }
-        public void   setName(String name) { this.name = name; }
+        /** @return The name of this local variable */
+        public String getName() { return this.name; }
+        /** @param name The name of this local variable */
+        public void setName(String name) { this.name = name; }
 
-        public Offset getStart()             { return this.start; }
-        public void   setStart(Offset start) { this.start = start; }
+        /** @return The {@link Offset} from which this local variable is visible */
+        public Offset getStart() { return this.start; }
+        /** @param start The {@link Offset} from which this local variable is visible */
+        public void setStart(Offset start) { this.start = start; }
 
-        public Offset getEnd()           { return this.end; }
-        public void   setEnd(Offset end) { this.end = end; }
+        /** @return The {@link Offset} up to which this local variable is visible */
+        public Offset getEnd() { return this.end; }
+        /** @param end The {@link Offset} up to which this local variable is visible */
+        public void setEnd(Offset end) { this.end = end; }
 
+        /** @return the resolved type of this local variable */
         public IClass getType() { return this.type; }
     }
 
@@ -4493,8 +4530,14 @@ class Java {
      */
     public static
     class LocalVariable {
-        public final boolean     finaL;
-        public final IClass      type;
+
+        /** Whether this local variable has the FINAL modifier flag. */
+        public final boolean finaL;
+
+        /** The type of this local variable. */
+        public final IClass type;
+
+        /** The slot reserved for this local variable. */
         public LocalVariableSlot slot;
 
         public
@@ -4513,9 +4556,10 @@ class Java {
             return sb.toString();
         }
 
-        public void
-        setSlot(LocalVariableSlot slot) { this.slot = slot; }
+        /** @param slot The slot to reserve for this local variable */
+        public void setSlot(LocalVariableSlot slot) { this.slot = slot; }
 
+        /** @return The slot reserved for this local variable */
         public short
         getSlotIndex() {
             if (this.slot == null) return -1;
@@ -4523,14 +4567,32 @@ class Java {
         }
     }
 
+    /** Representation of a JLS7 4.5.1 'wildcard'. */
     public static
     class Wildcard implements TypeArgument {
 
-        public static final int BOUNDS_NONE    = 0;
-        public static final int BOUNDS_EXTENDS = 1;
-        public static final int BOUNDS_SUPER   = 2;
+        /**
+         * Value for {@link #bounds} indicating that this wildcard has no bounds; {@link #referenceType} is irrelevant
+         * in this case.
+         */
+        public static final int BOUNDS_NONE = 0;
 
-        public final int           bounds;
+        /** Value for {@link #bounds} indicating that this wildcard has 'extends' bounds. */
+        public static final int BOUNDS_EXTENDS = 1;
+
+        /** Value for {@link #bounds} indicating that this wildcard has 'super' bounds. */
+        public static final int BOUNDS_SUPER = 2;
+
+        /**
+         * The kind of bounds that this wildcard has.
+         *
+         * @see #BOUNDS_NONE
+         * @see #BOUNDS_EXTENDS
+         * @see #BOUNDS_SUPER
+         */
+        public final int bounds;
+
+        /** The reference type of this wildcard's EXTENDS or SUPER bounds. */
         public final ReferenceType referenceType;
         
         public
@@ -4551,11 +4613,19 @@ class Java {
         accept(TypeArgumentVisitor visitor) { visitor.visitWildcard(this); }
     }
 
+    /**
+     * @return {@code null} iff {@code a == null}, or "" iff {@code a.length == 0}, or the elements of {@code a},
+     *         converted to strings concatenated and separated with the {@code separator}
+     */
     public static String
     join(Object[] a, String separator) {
         return Java.join(a, separator, 0, a.length);
     }
 
+    /**
+     * @return {@code null} iff {@code a == null}, or "" iff {@code off >= len}, or element {@code off ... len-1} of
+     *         {@code a}, converted to strings concatenated and separated with the {@code separator}
+     */
     public static String
     join(Object[] a, String separator, int off, int len) {
         if (a == null) return ("(null)");
