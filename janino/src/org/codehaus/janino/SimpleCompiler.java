@@ -190,8 +190,9 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
     }
 
     /**
-     * Cook this compilation unit directly.
-     *  See {@link Cookable#cook}
+     * Cooks this compilation unit directly.
+     *
+     * @see  Cookable#cook(Reader)
      */
     public void
     cook(Java.CompilationUnit compilationUnit) throws CompileException {
@@ -240,9 +241,7 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
         this.optionalWarningHandler = optionalWarningHandler;
     }
 
-    /**
-     * Wrap a reflection {@link Class} in a {@link Java.Type} object.
-     */
+    /** Wraps a reflection {@link Class} in a {@link Java.Type} object. */
     protected Java.Type
     classToType(final Location location, final Class clazz) {
         if (clazz == null) return null;
@@ -290,9 +289,7 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
         };
     }
 
-    /**
-     * Convert an array of {@link Class}es into an array of{@link Java.Type}s.
-     */
+    /** Converts an array of {@link Class}es into an array of{@link Java.Type}s. */
     protected Java.Type[]
     classesToTypes(Location location, Class[] classes) {
         Java.Type[] types = new Java.Type[classes.length];
@@ -360,9 +357,7 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
         return this.result;
     }
 
-    /**
-     * Throw an {@link IllegalStateException} if this {@link Cookable} is already cooked.
-     */
+    /** @throws IllegalStateException This {@link Cookable} is already cooked */
     protected void
     assertNotCooked() {
         if (this.classLoaderIClassLoader != null) throw new IllegalStateException("Already cooked");

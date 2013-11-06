@@ -89,9 +89,7 @@ class JavaSourceIClassLoader extends IClassLoader {
         this.optionalCharacterEncoding = optionalCharacterEncoding;
     }
 
-    /**
-     * @see UnitCompiler#setCompileErrorHandler(ErrorHandler)
-     */
+    /** @see UnitCompiler#setCompileErrorHandler(ErrorHandler) */
     public void
     setCompileErrorHandler(ErrorHandler optionalCompileErrorHandler) {
         this.optionalCompileErrorHandler = optionalCompileErrorHandler;

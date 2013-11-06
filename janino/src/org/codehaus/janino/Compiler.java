@@ -76,9 +76,7 @@ import org.codehaus.janino.util.resource.ResourceFinder;
 class Compiler {
     private static final boolean DEBUG = false;
 
-    /**
-     * Command line interface.
-     */
+    /** Command line interface. */
     public static void
     main(String[] args) {
         File            destinationDirectory      = Compiler.NO_DESTINATION_DIRECTORY;
@@ -338,9 +336,7 @@ class Compiler {
     /** Backwards compatibility -- previously, "null" was officially documented. */
     public static final File NO_DESTINATION_DIRECTORY = null;
 
-    /**
-     * Prints warnings to STDERR.
-     */
+    /** Prints warnings to STDERR. */
     public static
     class SimpleWarningHandler implements WarningHandler {
 

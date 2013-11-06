@@ -68,10 +68,7 @@ class Java {
         Scope getEnclosingScope();
     }
 
-    /**
-     * This interface is implemented by objects which are associated with a
-     * location in the source code.
-     */
+    /** This interface is implemented by objects which are associated with a location in the source code. */
     public
     interface Locatable {
 
@@ -113,9 +110,7 @@ class Java {
         }
     }
 
-    /**
-     * Holds the result of {@link Parser#parseCompilationUnit}.
-     */
+    /** Holds the result of {@link Parser#parseCompilationUnit}. */
     public static final
     class CompilationUnit implements Scope {
 
@@ -160,9 +155,7 @@ class Java {
             pmtd.setDeclaringCompilationUnit(this);
         }
 
-        /**
-         * Get all classes and interfaces declared in this compilation unit.
-         */
+        /** Gets all classes and interfaces declared in this compilation unit. */
         public PackageMemberTypeDeclaration[]
         getPackageMemberTypeDeclarations() {
             return (PackageMemberTypeDeclaration[]) this.packageMemberTypeDeclarations.toArray(
@@ -207,10 +200,7 @@ class Java {
             toString() { return "import " + Java.join(this.identifiers, ".") + ';'; }
         }
 
-        /**
-         * Represents a type-import-on-demand declaration like<pre>
-         *     import java.util.*;</pre>
-         */
+        /** Represents a type-import-on-demand declaration like {@code  import java.util.*;}. */
         public static
         class TypeImportOnDemandDeclaration extends ImportDeclaration {
 
@@ -517,10 +507,7 @@ class Java {
         accept(Visitor.ElementValueVisitor visitor) { visitor.visitElementValueArrayInitializer(this); }
     }
 
-    /**
-     * Represents a package declaration like
-     * <pre>package com.acme.tools;</pre>
-     */
+    /** Representation of a package declaration like {@code package com.acme.tools;}. */
     public static
     class PackageDeclaration extends Located {
 
@@ -589,9 +576,7 @@ class Java {
     public
     interface DocCommentable {
 
-        /**
-         * Returns the doc comment of the object or <code>null</code>.
-         */
+        /** @eturn The doc comment of the object or {@code null} */
         String getDocComment();
 
         /**
@@ -629,9 +614,7 @@ class Java {
     public
     interface NamedTypeDeclaration extends TypeDeclaration {
 
-        /**
-         * Returns the declared (not the fully qualified) name of the class or interface.
-         */
+        /** @eturns The declared (not the fully qualified) name of the class or interface */
         String getName();
     }
 
@@ -853,9 +836,7 @@ class Java {
             this.syntheticFields.put(iField.getName(), iField);
         }
 
-        /**
-         * Return the declared constructors, or the default constructor.
-         */
+        /** @return The declared constructors, or the default constructor */
         ConstructorDeclarator[]
         getConstructors() {
             if (this.constructors.isEmpty()) {
@@ -1382,9 +1363,7 @@ class Java {
         getEnclosingScope()                     { return this.declaringType; }
     }
 
-    /**
-     * Representation of an 'instance initializer' (JLS7 8.6) or 'static initializer' (JLS7 8.7).
-     */
+    /** Representation of an 'instance initializer' (JLS7 8.6) or 'static initializer' (JLS7 8.7). */
     public static final
     class Initializer extends AbstractTypeBodyDeclaration implements BlockStatement {
 
@@ -1889,9 +1868,7 @@ class Java {
         }
     }
 
-    /**
-     * Representation of a JLS7 14.7 'labeled statement'.
-     */
+    /** Representation of a JLS7 14.7 'labeled statement'. */
     public static final
     class LabeledStatement extends BreakableStatement {
 
@@ -2000,9 +1977,7 @@ class Java {
         protected CodeContext.Offset whereToContinue;
     }
 
-    /**
-     * Representation of the JLS7 14.8 'expression statement'.
-     */
+    /** Representation of the JLS7 14.8 'expression statement'. */
     public static final
     class ExpressionStatement extends Statement {
 
@@ -2268,9 +2243,7 @@ class Java {
         toString() { return "catch (" + this.caughtException + ") " + this.body; }
     }
 
-    /**
-     * 14.10 The "switch" Statement
-     */
+    /** The JLS7 14.10 "switch" Statement. */
     public static final
     class SwitchStatement extends BreakableStatement {
 
@@ -2425,9 +2398,7 @@ class Java {
         /** The (one or more) 'variable declarators' that follow the type. */
         public final VariableDeclarator[] variableDeclarators;
 
-        /**
-         * @param modifiers Only "final" allowed.
-         */
+        /** @param modifiers Only "final" allowed */
         public
         LocalVariableDeclarationStatement(
             Location             location,
@@ -2511,9 +2482,7 @@ class Java {
         accept(Visitor.BlockStatementVisitor visitor) { visitor.visitThrowStatement(this); }
     }
 
-    /**
-     * Representation of the JLS7 14.15 BREAK statement.
-     */
+    /** Representation of the JLS7 14.15 BREAK statement. */
     public static final
     class BreakStatement extends Statement {
 
@@ -2535,9 +2504,7 @@ class Java {
         accept(Visitor.BlockStatementVisitor visitor) { visitor.visitBreakStatement(this); }
     }
 
-    /**
-     * Representation of the JLS7 14.16 CONTINUE statement.
-     */
+    /** Representation of the JLS7 14.16 CONTINUE statement. */
     public static final
     class ContinueStatement extends Statement {
 
@@ -2591,9 +2558,7 @@ class Java {
         @Override public void accept(BlockStatementVisitor visitor) { visitor.visitAssertStatement(this); }
     }
 
-    /**
-     * Represents the "empty statement", i.e. the blank semicolon.
-     */
+    /** Representation of the "empty statement", i.e. the blank semicolon. */
     public static final
     class EmptyStatement extends Statement {
 
@@ -2607,9 +2572,7 @@ class Java {
         accept(Visitor.BlockStatementVisitor visitor) { visitor.visitEmptyStatement(this); }
     }
 
-    /**
-     * Abstract base class for {@link Java.Type}, {@link Java.Rvalue} and {@link Java.Lvalue}.
-     */
+    /** Abstract base class for {@link Java.Type}, {@link Java.Rvalue} and {@link Java.Lvalue}. */
     public abstract static
     class Atom extends Located {
 
@@ -2670,9 +2633,7 @@ class Java {
         accept(Visitor.AtomVisitor visitor);
     }
 
-    /**
-     * Representation of a Java&trade; type.
-     */
+    /** Representation of a Java&trade; type. */
     public abstract static
     class Type extends Atom {
         private Scope enclosingScope;
@@ -2696,9 +2657,7 @@ class Java {
             this.enclosingScope = enclosingScope;
         }
 
-        /**
-         * @return The enclosing scope (as previously set by {@link #setEnclosingScope(Scope)})
-         */
+        /** @return The enclosing scope (as previously set by {@link #setEnclosingScope(Scope)}) */
         public Scope
         getEnclosingScope() { return this.enclosingScope; }
 
@@ -2712,9 +2671,7 @@ class Java {
         accept(Visitor.TypeVisitor visitor);
     }
 
-    /**
-     * This class is not used when code is parsed; it is intended for "programmatic" types.
-     */
+    /** This class is not used when code is parsed; it is intended for "programmatic" types. */
     public static final
     class SimpleType extends Type {
 
@@ -2737,9 +2694,7 @@ class Java {
         accept(Visitor.TypeVisitor visitor) { visitor.visitSimpleType(this); }
     }
 
-    /**
-     * Representation of a JLS7 18 "basic type" (obviously equivalent to a JLS7 4.2 "primitive type").
-     */
+    /** Representation of a JLS7 18 "basic type" (obviously equivalent to a JLS7 4.2 "primitive type"). */
     public static final
     class BasicType extends Type {
 
@@ -2871,9 +2826,7 @@ class Java {
         /** The simple name of the inner type being instantiated. */
         public final String identifier;
 
-        /**
-         * Notice: The <code>rvalue</code> is not a subordinate object!
-         */
+        /** Notice: The {@code rvalue} is not a subordinate object! */
         public
         RvalueMemberType(Location location, Rvalue rvalue, String identifier) {
             super(location);
@@ -2932,9 +2885,7 @@ class Java {
         protected
         Rvalue(Location location) { super(location); }
 
-        /**
-         * Sets enclosing block statement for this object and all subordinate {@link Java.Rvalue} objects.
-         */
+        /** Sets enclosing block statement for this object and all subordinate {@link Java.Rvalue} objects. */
         public final void
         setEnclosingBlockStatement(final Java.BlockStatement enclosingBlockStatement) {
             this.accept((Visitor.RvalueVisitor) new Traverser() {
@@ -3005,10 +2956,7 @@ class Java {
         public abstract void accept(Visitor.RvalueVisitor rvv);
     }
 
-    /**
-     * Base class for {@link Java.Rvalue}s that compile better as conditional
-     * branches.
-     */
+    /** Base class for {@link Java.Rvalue}s that compile better as conditional branches. */
     public abstract static
     class BooleanRvalue extends Rvalue {
         protected BooleanRvalue(Location location) { super(location); }
@@ -3127,9 +3075,7 @@ class Java {
         accept(Visitor.AtomVisitor visitor) { visitor.visitPackage(this); }
     }
 
-    /**
-     * Representation of a local variable access -- used during compilation.
-     */
+    /** Representation of a local variable access -- used during compilation. */
     public static final
     class LocalVariableAccess extends Lvalue {
 
@@ -3233,15 +3179,10 @@ class Java {
         accept(ElementValueVisitor visitor) { visitor.visitArrayLength(this); }
     }
 
-    /**
-     * Representation of an JLS7 15.8.3 access to the innermost enclosing instance.
-     */
+    /** Representation of an JLS7 15.8.3 access to the innermost enclosing instance. */
     public static final
     class ThisReference extends Rvalue {
 
-        /**
-         * Access the declaring class.
-         */
         public
         ThisReference(Location location) { super(location); }
 
@@ -3265,18 +3206,13 @@ class Java {
         accept(ElementValueVisitor visitor) { visitor.visitThisReference(this); }
     }
 
-    /**
-     * Representation of an JLS7 15.8.4 access to the current object or an enclosing instance.
-     */
+    /** Representation of an JLS7 15.8.4 access to the current object or an enclosing instance. */
     public static final
     class QualifiedThisReference extends Rvalue {
 
         /** The qualification left from the 'this' keyword. */
         public final Type qualification;
 
-        /**
-         * Access the given enclosing instance of the declaring class.
-         */
         public
         QualifiedThisReference(Location location, Type qualification) {
             super(location);
@@ -3504,9 +3440,7 @@ class Java {
         accept(ElementValueVisitor visitor) { visitor.visitArrayAccessExpression(this); }
     }
 
-    /**
-     * Representation of a JLS7 15.11 'field access expression', including the "array length" pseudo field access.
-     */
+    /** Representation of a JLS7 15.11 'field access expression', including the "array length" pseudo field access. */
     public static final
     class FieldAccessExpression extends Lvalue {
 
@@ -3546,9 +3480,7 @@ class Java {
         Rvalue value;
     }
 
-    /**
-     * Representation of an JLS7 'superclass field access expression', e.g. "super.fld" and "Type.super.fld".
-     */
+    /** Representation of an JLS7 'superclass field access expression', e.g. "super.fld" and "Type.super.fld". */
     public static final
     class SuperclassFieldAccessExpression extends Lvalue {
 
@@ -4385,9 +4317,7 @@ class Java {
         accept(ElementValueVisitor visitor) { visitor.visitNullLiteral(this); }
     }
 
-    /**
-     * This class is not used when code is parsed; it is intended for "programmatic" literals.
-     */
+    /** This class is not used when code is parsed; it is intended for "programmatic" literals. */
     public static final
     class SimpleConstant extends Rvalue {
 
@@ -4529,9 +4459,7 @@ class Java {
         public IClass getType() { return this.type; }
     }
 
-    /**
-     * Used during resolution.
-     */
+    /** Used during resolution. */
     public static
     class LocalVariable {
 

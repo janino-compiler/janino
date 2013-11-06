@@ -61,9 +61,7 @@ class CodeContext {
     private Inserter                            currentInserter;
     private final List/*<ExceptionTableEntry>*/ exceptionTableEntries;
 
-    /**
-     * All the local variables that are allocated in any block in this {@link CodeContext}.
-     */
+    /** All the local variables that are allocated in any block in this {@link CodeContext}. */
     private final List/*<Java.LocalVariableSlot>*/ allLocalVars = new ArrayList();
 
     /**
@@ -76,9 +74,7 @@ class CodeContext {
     private short                       nextLocalVariableSlot;
     private final List/*<Relocatable>*/ relocatables = new ArrayList();
 
-    /**
-     * Create an empty "Code" attribute.
-     */
+    /** Creates an empty "Code" attribute. */
     public
     CodeContext(ClassFile classFile) {
         this.classFile             = classFile;
@@ -160,9 +156,7 @@ class CodeContext {
         return slot;
     }
 
-    /**
-     * Remember the current size of the local variables array.
-     */
+    /** Remembers the current size of the local variables array. */
     public List/*<Java.LocalVariableSlot>*/
     saveLocalVariables() {
 
@@ -720,9 +714,7 @@ class CodeContext {
         return res;
     }
 
-    /**
-     * fixUp() all of the offsets and relocate() all relocatables
-     */
+    /** Fixes up all of the offsets and relocate() all relocatables. */
     public void
     fixUpAndRelocate() {
 
@@ -735,9 +727,7 @@ class CodeContext {
         } while (!relocate());
     }
 
-    /**
-     * Fix up all offsets.
-     */
+    /** Fixes up all offsets. */
     private void
     fixUp() {
         for (Offset o = this.beginning; o != this.end; o = o.next) {
@@ -762,9 +752,7 @@ class CodeContext {
         return finished;
     }
 
-    /**
-     * Analyse the descriptor of the Fieldref and return its size.
-     */
+    /** Analyses the descriptor of the Fieldref and return its size. */
     private int
     determineFieldSize(short idx) {
         ClassFile.ConstantFieldrefInfo cfi = (
@@ -967,15 +955,11 @@ class CodeContext {
         for (Offset o = this.currentInserter; o != null; o = o.next) o.offset += size;
     }
 
-    /**
-     * @param lineNumber The line number that corresponds to the byte code, or -1
-     */
+    /** @param lineNumber The line number that corresponds to the byte code, or -1 */
     public void
     writeShort(short lineNumber, int v) { this.write(lineNumber, (byte) (v >> 8), (byte) v); }
 
-    /**
-     * @param lineNumber The line number that corresponds to the byte code, or -1
-     */
+    /** @param lineNumber The line number that corresponds to the byte code, or -1 */
     public void
     writeBranch(short lineNumber, int opcode, final Offset dst) {
         this.relocatables.add(new Branch(opcode, dst));
@@ -1070,9 +1054,7 @@ class CodeContext {
         private final Offset   destination;
     }
 
-    /**
-     * E.g. {@link Opcode#IFLT} ("less than") inverts to {@link Opcode#IFGE} ("greater than or equal to").
-     */
+    /** E.g. {@link Opcode#IFLT} ("less than") inverts to {@link Opcode#IFGE} ("greater than or equal to"). */
     private static byte
     invertBranchOpcode(byte branchOpcode) {
         return ((Byte) CodeContext.BRANCH_OPCODE_INVERSION.get(new Byte(branchOpcode))).byteValue();
@@ -1102,9 +1084,7 @@ class CodeContext {
         return Collections.unmodifiableMap(m);
     }
 
-    /**
-     * Writes a four-byte offset (as it is used in TABLESWITCH and LOOKUPSWITCH) into this code context.
-     */
+    /** Writes a four-byte offset (as it is used in TABLESWITCH and LOOKUPSWITCH) into this code context. */
     public void
     writeOffset(short lineNumber, Offset src, final Offset dst) {
         this.relocatables.add(new OffsetBranch(this.newOffset(), src, dst));
@@ -1139,9 +1119,7 @@ class CodeContext {
         private final Offset where, source, destination;
     }
 
-    /**
-     * Creates and inserts an {@link CodeContext.Offset} at the current inserter's current position.
-     */
+    /** Creates and inserts an {@link CodeContext.Offset} at the current inserter's current position. */
     public Offset
     newOffset() {
         Offset o = new Offset();
@@ -1162,16 +1140,11 @@ class CodeContext {
     public Inserter
     newInserter() { Inserter i = new Inserter(); i.set(); return i; }
 
-    /**
-     * @return The current inserter
-     */
+    /** @return The current inserter */
     public Inserter
     currentInserter() { return this.currentInserter; }
 
-    /**
-     * Remember the current {@link Inserter}, then replace it with the
-     * new one.
-     */
+    /** Remember the current {@link Inserter}, then replace it with the new one. */
     public void
     pushInserter(Inserter ins) {
         if (ins.nextInserter != null) throw new JaninoRuntimeException("An Inserter can only be pushed once at a time");
@@ -1249,10 +1222,7 @@ class CodeContext {
         ));
     }
 
-    /**
-     * Representation of an entry in the "exception_table" of a "Code" attribute (see JVMS
-     * 4.7.3).
-     */
+    /** Representation of an entry in the "exception_table" of a "Code" attribute (see JVMS 4.7.3). */
     private static
     class ExceptionTableEntry {
         ExceptionTableEntry(Offset startPc, Offset endPc, Offset handlerPc, short  catchType) {
@@ -1265,18 +1235,13 @@ class CodeContext {
         final short  catchType; // 0 == "finally" clause
     }
 
-    /**
-     * A class that implements an insertion point into a "Code"
-     * attribute.
-     */
+    /** A class that implements an insertion point into a "Code" attribute. */
     public
     class Inserter extends Offset {
         private Inserter nextInserter; // null == not in "currentInserter" stack
     }
 
-    /**
-     * An {@link Offset} who#s sole purpose is to later create a 'LneNumberTable' attribute.
-     */
+    /** An {@link Offset} who#s sole purpose is to later create a 'LneNumberTable' attribute. */
     public
     class LineNumberOffset extends Offset {
         private final int lineNumber;
@@ -1315,9 +1280,7 @@ class CodeContext {
         void fixUp();
     }
 
-    /**
-     * @return All the local variables that are allocated in any block in this {@link CodeContext}
-     */
+    /** @return All the local variables that are allocated in any block in this {@link CodeContext} */
     public List/*<Java.LocalVariableSlot>*/
     getAllLocalVars() { return this.allLocalVars; }
 }

@@ -31,9 +31,7 @@ import org.codehaus.commons.compiler.Location;
 import org.codehaus.commons.compiler.WarningHandler;
 import org.codehaus.janino.util.StringPattern;
 
-/**
- * Invokes a delegate iff the handle of the warning matches one or more of a set of {@link StringPattern}s.
- */
+/** Invokes a delegate iff the handle of the warning matches one or more of a set of {@link StringPattern}s. */
 public
 class FilterWarningHandler implements WarningHandler {
     private final StringPattern[] handlePatterns;

@@ -175,10 +175,7 @@ class Descriptor {
         return idx + 1;
     }
 
-    /**
-     * Convert a class name as defined by "Class.getName()" into a
-     * descriptor.
-     */
+    /** Converts a class name as defined by "Class.getName()" into a descriptor. */
     public static String
     fromClassName(String className) {
         String res = (String) Descriptor.CLASS_NAME_TO_DESCRIPTOR.get(className);
@@ -198,10 +195,7 @@ class Descriptor {
         return 'L' + internalForm + ';';
     }
 
-    /**
-     * Convert a field descriptor into a class name as defined by {@link
-     * Class#getName()}.
-     */
+    /** Converts a field descriptor into a class name as defined by {@link Class#getName()}. */
     public static String
     toClassName(String d) {
         String res = (String) Descriptor.DESCRIPTOR_TO_CLASSNAME.get(d);
@@ -219,9 +213,7 @@ class Descriptor {
         throw new JaninoRuntimeException("(Invalid field descriptor \"" + d + "\")");
     }
 
-    /**
-     * Convert a descriptor into the "internal form" as defined by JVMS 4.2.
-     */
+    /** Converts a descriptor into the "internal form" as defined by JVMS 4.2. */
     public static String
     toInternalForm(String d) {
         if (d.charAt(0) != 'L') {
@@ -256,9 +248,7 @@ class Descriptor {
         return idx == -1 ? null : d.substring(1, idx).replace('/', '.');
     }
 
-    /**
-     * Check whether two reference types are declared in the same package.
-     */
+    /** Checks whether two reference types are declared in the same package. */
     public static boolean
     areInSamePackage(String d1, String d2) {
         String packageName1 = Descriptor.getPackageName(d1);

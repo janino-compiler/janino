@@ -37,22 +37,16 @@ import java.util.*;
 @SuppressWarnings({ "rawtypes", "unchecked" }) public
 class StringPattern {
 
-    /**
-     * @see #matches(StringPattern[], String)
-     */
+    /** @see #matches(StringPattern[], String) */
     public static final int INCLUDE = 0;
 
-    /**
-     * @see #matches(StringPattern[], String)
-     */
+    /** @see #matches(StringPattern[], String) */
     public static final int EXCLUDE = 1;
 
     private final int    mode;
     private final String pattern;
 
-    /**
-     * @param mode {@link #INCLUDE} or {@link #EXCLUDE}
-     */
+    /** @param mode {@link #INCLUDE} or {@link #EXCLUDE} */
     public
     StringPattern(int mode, String pattern) {
         this.mode    = mode;

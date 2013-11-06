@@ -28,9 +28,7 @@ package org.codehaus.janino.util.iterator;
 
 import java.util.*;
 
-/**
- * An {@link java.util.Iterator} that transforms its elements on-the-fly.
- */
+/** An {@link java.util.Iterator} that transforms its elements on-the-fly. */
 @SuppressWarnings("rawtypes") public abstract
 class TransformingIterator/*<T1, T2>*/ extends FilterIterator/*<T>*/ {
 
@@ -40,9 +38,6 @@ class TransformingIterator/*<T1, T2>*/ extends FilterIterator/*<T>*/ {
     @Override public final Object/*T2*/
     next() { return this.transform(this.delegate.next()); }
 
-    /**
-     * Derived classes must implement this method such that it does the
-     * desired transformation.
-     */
+    /** Derived classes must implement this method such that it does the desired transformation. */
     protected abstract Object/*T2*/ transform(Object/*T1*/ o);
 }

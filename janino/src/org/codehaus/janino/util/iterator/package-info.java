@@ -24,7 +24,5 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-/**
- * Some generic {@link java.util.Iterator}-related helper classes.
- */
+/** Some generic {@link java.util.Iterator}-related helper classes. */
 package org.codehaus.janino.util.iterator;

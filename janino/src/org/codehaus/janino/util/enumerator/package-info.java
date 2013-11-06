@@ -24,7 +24,5 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-/**
- * {@link org.codehaus.janino.util.enumerator.Enumerator}-related utility classes.
- */
+/** {@link org.codehaus.janino.util.enumerator.Enumerator}-related utility classes. */
 package org.codehaus.janino.util.enumerator;

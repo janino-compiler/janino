@@ -31,9 +31,7 @@ import java.security.PrivilegedAction;
 
 import org.codehaus.commons.compiler.*;
 
-/**
- * The JANINO implementation of {@link ICompilerFactory}.
- */
+/** The JANINO implementation of {@link ICompilerFactory}. */
 @SuppressWarnings({ "rawtypes", "unchecked" }) public
 class CompilerFactory extends AbstractCompilerFactory {
 

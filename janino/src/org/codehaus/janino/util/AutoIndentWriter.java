@@ -221,9 +221,7 @@ class AutoIndentWriter extends FilterWriter {
         }
     }
 
-    /**
-     * @return a {@link String} of <code>n</code> spaces
-     */
+    /** @return a {@link String} of <code>n</code> spaces */
     private static String
     spaces(int n) {
         if (n < 30) return "                              ".substring(0, n);

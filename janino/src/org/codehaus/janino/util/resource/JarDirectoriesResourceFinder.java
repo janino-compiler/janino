@@ -32,15 +32,11 @@ import java.util.zip.*;
 
 import org.codehaus.janino.util.iterator.*;
 
-/**
- * Finds resources in any of the "*.jar" files that exist in a given set of directories.
- */
+/** Finds resources in any of the "*.jar" files that exist in a given set of directories. */
 public
 class JarDirectoriesResourceFinder extends LazyMultiResourceFinder {
 
-    /**
-     * @param directories The set of directories to search for JAR files.
-     */
+    /** @param directories The set of directories to search for JAR files. */
     public
     JarDirectoriesResourceFinder(final File[] directories) {
         super(new MultiDimensionalIterator(

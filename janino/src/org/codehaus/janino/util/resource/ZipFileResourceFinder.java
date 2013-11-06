@@ -29,9 +29,7 @@ package org.codehaus.janino.util.resource;
 import java.io.*;
 import java.util.zip.*;
 
-/**
- * A {@link org.codehaus.janino.util.resource.ResourceFinder} that finds resources in a ZIP file.
- */
+/** A {@link org.codehaus.janino.util.resource.ResourceFinder} that finds resources in a ZIP file. */
 public
 class ZipFileResourceFinder extends ResourceFinder {
     private final ZipFile zipFile;

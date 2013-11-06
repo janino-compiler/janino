@@ -245,17 +245,13 @@ class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluato
         super.setReturnTypes(returnTypes);
     }
 
-    /**
-     * @deprecated {@link #setExpressionType(Class)} should be called instead
-     */
+    /** @deprecated {@link #setExpressionType(Class)} should be called instead. */
     @Override @Deprecated public final void
     setReturnType(Class returnType) {
         throw new AssertionError("Must not be used on an ExpressionEvaluator; use 'setExpressionType()' instead");
     }
 
-    /**
-     * @deprecated {@link #setExpressionTypes(Class[])} should be called instead
-     */
+    /** @deprecated {@link #setExpressionTypes(Class[])} should be called instead. */
     @Override @Deprecated public final void
     setReturnTypes(Class[] returnTypes) {
         throw new AssertionError("Must not be used on an ExpressionEvaluator; use 'setExpressionTypes()' instead");

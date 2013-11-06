@@ -233,7 +233,9 @@ class Parser {
     }
 
     /**
-     * QualifiedIdentifier := Identifier { '.' Identifier }
+     * <pre>
+     *   QualifiedIdentifier := Identifier { '.' Identifier }
+     * </pre>
      */
     public String[]
     parseQualifiedIdentifier() throws CompileException, IOException {
@@ -2870,9 +2872,7 @@ class Parser {
         }
     }
 
-    /**
-     * Convenience method for throwing a CompileException.
-     */
+    /** Convenience method for throwing a {@link CompileException}. */
     protected final CompileException
     compileException(String message) {
         return new CompileException(message, this.location());

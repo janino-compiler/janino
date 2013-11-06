@@ -28,10 +28,7 @@ package org.codehaus.janino.util.iterator;
 
 import java.util.*;
 
-/**
- * An {@link java.util.Iterator} that iterates over the elements of an
- * {@link java.util.Enumeration}.
- */
+/** An {@link java.util.Iterator} that iterates over the elements of an {@link java.util.Enumeration}. */
 @SuppressWarnings("rawtypes") public
 class EnumerationIterator/*<T>*/ implements Iterator/*<T>*/ {
 

@@ -189,10 +189,7 @@ class Scanner {
         );
     }
 
-    /**
-     * Creates a {@link Scanner} that counts lines and columns from non-default initial
-     * values.
-     */
+    /** Creates a {@link Scanner} that counts lines and columns from non-default initial values. */
     public
     Scanner(
         String optionalFileName,
@@ -233,9 +230,7 @@ class Scanner {
         this.readNextChar();
     }
 
-    /**
-     * Return the file name optionally passed to the constructor.
-     */
+    /** @return The file name optionally passed to the constructor */
     public String
     getFileName() { return this.optionalFileName; }
 
@@ -261,9 +256,7 @@ class Scanner {
         return s;
     }
 
-    /**
-     * Returns the {@link Location} of the next character.
-     */
+    /** @return The {@link Location} of the next character */
     public Location
     location() {
         return new Location(this.optionalFileName, this.nextCharLineNumber, this.nextCharColumnNumber);
@@ -795,9 +788,7 @@ class Scanner {
         }
     }
 
-    /**
-     * Scan the next literal character into a {@link StringBuilder}.
-     */
+    /** Scans the next literal character into a {@link StringBuilder}. */
     private void
     scanLiteralCharacter(StringBuilder sb) throws CompileException, IOException {
         if (this.nextChar == -1) throw new CompileException("EOF in literal", this.location());
@@ -891,9 +882,7 @@ class Scanner {
     private short        nextCharLineNumber;
     private short        nextCharColumnNumber;
 
-    /**
-     * Line number of the previously produced token (typically starting at one).
-     */
+    /** Line number of the previously produced token (typically starting at one). */
     private short tokenLineNumber;
 
     /**

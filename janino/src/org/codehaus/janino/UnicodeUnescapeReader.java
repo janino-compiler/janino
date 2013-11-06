@@ -38,9 +38,6 @@ import java.io.*;
 public
 class UnicodeUnescapeReader extends FilterReader {
 
-    /**
-     * @param in
-     */
     public
     UnicodeUnescapeReader(Reader in) { super(in); }
 
@@ -93,9 +90,7 @@ class UnicodeUnescapeReader extends FilterReader {
         }
     }
 
-    /**
-     * Override {@link FilterReader#read(char[], int, int)}.
-     */
+    /** Overrides {@link FilterReader#read(char[], int, int)}. */
     @Override public int
     read(char[] cbuf, int off, int len) throws IOException {
         if (len == 0) return 0;
@@ -108,9 +103,7 @@ class UnicodeUnescapeReader extends FilterReader {
         return res == 0 ? -1 : res;
     }
 
-    /**
-     * Simple unit testing.
-     */
+    /** Simple unit testing. */
     public static void
     main(String[] args) throws IOException {
         Reader r = new UnicodeUnescapeReader(new StringReader(args[0]));

@@ -45,8 +45,7 @@ import org.codehaus.janino.Java.SimpleConstant;
 import org.codehaus.janino.util.AutoIndentWriter;
 
 /**
- * A visitor that unparses (un-compiles) an AST to a {@link Writer}. See
- * {@link #main(String[])} for a usage example.
+ * A visitor that unparses (un-compiles) an AST to a {@link Writer}. See {@link #main(String[])} for a usage example.
  */
 @SuppressWarnings({ "rawtypes", "unchecked" }) public
 class UnparseVisitor implements Visitor.ComprehensiveVisitor {
@@ -82,9 +81,7 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor {
         w.flush();
     }
 
-    /**
-     * Unparse the given {@link Java.CompilationUnit} to the given {@link Writer}.
-     */
+    /** Unparses the given {@link Java.CompilationUnit} to the given {@link Writer}. */
     public static void
     unparse(Java.CompilationUnit cu, Writer w) {
         UnparseVisitor uv = new UnparseVisitor(w);
@@ -98,13 +95,9 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor {
         this.pw  = new PrintWriter(this.aiw, true);
     }
 
-    /**
-     * Flushes all generated code.
-     */
+    /** Flushes all generated code. */
     public void
-    close() {
-        this.pw.flush();
-    }
+    close() { this.pw.flush(); }
 
     /** @param cu The compilation unit to unparse */
     public void

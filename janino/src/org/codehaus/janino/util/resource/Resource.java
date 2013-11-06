@@ -44,10 +44,7 @@ import java.io.*;
 public
 interface Resource {
 
-    /**
-     * Opens the resource. The caller is responsible for closing the
-     * {@link java.io.InputStream}.
-     */
+    /** Opens the resource. The caller is responsible for closing the {@link java.io.InputStream}. */
     InputStream open() throws IOException;
 
     /**

@@ -84,9 +84,7 @@ class JGrep {
 
     private final List/*<UnitCompiler>*/ parsedCompilationUnits = new ArrayList();
 
-    /**
-     * Command line interface.
-     */
+    /** Command line interface. */
     public static void
     main(String[] args) {
         int idx = 0;
@@ -389,18 +387,14 @@ class JGrep {
         }
     }
 
-    /**
-     * A predicate that examines a method invocation.
-     */
+    /** A predicate that examines a method invocation. */
     interface MethodInvocationPredicate {
 
         /** @return Whether the method incovation met some criterion */
         boolean evaluate(UnitCompiler uc, Java.Invocation invocation, IClass.IMethod method) throws Exception;
     }
 
-    /**
-     * An entity that does something with a method invocation, e.g. report where it occurred.
-     */
+    /** An entity that does something with a method invocation, e.g. report where it occurred. */
     interface MethodInvocationAction {
 
         /** Executes some action for a method invocation. */
@@ -683,7 +677,7 @@ class JGrep {
     class JGrepIClassLoader extends IClassLoader {
 
         /**
-         * @param optionalParentIClassLoader {@link IClassLoader} through which {@link IClass}es are to be loaded
+         * @param optionalParentIClassLoader The {@link IClassLoader} through which {@link IClass}es are to be loaded
          */
         public
         JGrepIClassLoader(IClassLoader optionalParentIClassLoader) {
@@ -691,9 +685,7 @@ class JGrep {
             super.postConstruct();
         }
 
-        /**
-         * @param type field descriptor of the {@IClass} to load, e.g. "Lpkg1/pkg2/Outer$Inner;"
-         */
+        /** @param type Field descriptor of the {@IClass} to load, e.g. "Lpkg1/pkg2/Outer$Inner;" */
         @Override protected IClass
         findIClass(final String type) {
             if (JGrep.DEBUG) System.out.println("type = " + type);

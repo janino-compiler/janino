@@ -64,10 +64,7 @@ class ResourceFinder {
      */
     public abstract Resource findResource(String resourceName);
 
-    /**
-     * This one's useful when a resource finder is required, but cannot be created
-     * for some reason.
-     */
+    /** This one's useful when a resource finder is required, but cannot be created for some reason. */
     public static final ResourceFinder EMPTY_RESOURCE_FINDER = new ResourceFinder() {
         @Override public Resource findResource(String resourceName) { return null; }
         @Override public String   toString()                        { return "invalid entry"; }

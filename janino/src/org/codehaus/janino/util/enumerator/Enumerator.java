@@ -65,9 +65,7 @@ class Enumerator {
     private static final Map/*<Class enumeratorClass, Map<String name, Enumerator>>*/
     INSTANCES = Collections.synchronizedMap(new HashMap());
 
-    /**
-     * Initialize the enumerator to the given value.
-     */
+    /** Initialize the enumerator to the given value. */
     protected
     Enumerator(String name) {
         if (name == null) throw new NullPointerException();
@@ -76,21 +74,15 @@ class Enumerator {
         Enumerator.getInstances(this.getClass()).put(name, this);
     }
 
-    /**
-     * Equality is reference identity.
-     */
+    /** Equality is reference identity. */
     @Override public final boolean
     equals(Object that) { return this == that; }
 
-    /**
-     * Enforce {@link Object}'s notion of {@link Object#hashCode()}.
-     */
+    /** Enforce {@link Object}'s notion of {@link Object#hashCode()}. */
     @Override public final int
     hashCode() { return super.hashCode(); }
 
-    /**
-     * Returns a mapping of name to Enumerator for the given enumeratorClass.
-     */
+    /** Returns a mapping of name to Enumerator for the given enumeratorClass. */
     static Map/*<Map<String name, Enumerator>>*/
     getInstances(Class enumeratorClass) {
         Map/*<Map<String name, Enumerator>>*/ m = (Map) Enumerator.INSTANCES.get(enumeratorClass);
@@ -126,9 +118,7 @@ class Enumerator {
         return value;
     }
 
-    /**
-     * Returns the <code>name</code> passed to {@link #Enumerator(String)}.
-     */
+    /** Returns the <code>name</code> passed to {@link #Enumerator(String)}. */
     @Override public String
     toString() { return this.name; }
 }

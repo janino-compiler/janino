@@ -36,8 +36,7 @@ import org.codehaus.janino.util.resource.ResourceFinder;
 
 
 /**
- * A {@link ClassLoader} that uses a {@link org.codehaus.janino.util.resource.ResourceFinder}
- * to find ".class" files.
+ * A {@link ClassLoader} that uses a {@link org.codehaus.janino.util.resource.ResourceFinder} to find ".class" files.
  */
 @SuppressWarnings({ "rawtypes", "unchecked" }) public
 class ResourceFinderClassLoader extends ClassLoader {
@@ -54,9 +53,6 @@ class ResourceFinderClassLoader extends ClassLoader {
     public ResourceFinder
     getResourceFinder() { return this.resourceFinder; }
 
-    /**
-     * @throws ClassNotFoundException
-     */
     @Override protected Class
     findClass(String className) throws ClassNotFoundException {
 

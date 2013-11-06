@@ -36,9 +36,7 @@ import org.codehaus.janino.util.resource.JarDirectoriesResourceFinder;
 import org.codehaus.janino.util.resource.PathResourceFinder;
 import org.codehaus.janino.util.resource.ResourceFinder;
 
-/**
- * Loads an {@link IClass} by type name.
- */
+/** Loads an {@link IClass} by type name. */
 @SuppressWarnings({ "rawtypes", "unchecked" }) public abstract
 class IClassLoader {
     private static final boolean DEBUG = false;

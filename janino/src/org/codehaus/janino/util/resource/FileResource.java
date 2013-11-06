@@ -28,9 +28,7 @@ package org.codehaus.janino.util.resource;
 
 import java.io.*;
 
-/**
- * Representation of a resource that is a {@link java.io.File}.
- */
+/** Representation of a resource that is a {@link java.io.File}. */
 public
 class FileResource implements Resource {
     public FileResource(File file) { this.file = file; }

@@ -233,17 +233,13 @@ class IClass {
 
     private static final IMethod[] NO_IMETHODS = new IMethod[0];
 
-    /**
-     * @return Whether this {@link IClass} does declare an {@link IMethod} with the given name and parameter types
-     */
+    /** @return Whether this {@link IClass} does declare an {@link IMethod} with the given name and parameter types */
     public final boolean
     hasIMethod(String methodName, IClass[] parameterTypes) throws CompileException {
         return findIMethod(methodName, parameterTypes) != null;
     }
 
-    /**
-     * @return The {@link IMethod} declared in this {@link IClass} with the given name and parameter types
-     */
+    /** @return The {@link IMethod} declared in this {@link IClass} with the given name and parameter types */
     public final IMethod
     findIMethod(String methodName, IClass[] parameterTypes) throws CompileException {
         IMethod[] ims = this.getDeclaredIMethods(methodName);
@@ -289,16 +285,15 @@ class IClass {
     getDeclaredIField(String name) { return (IField) this.getDeclaredIFieldsCache().get(name); }
 
     /**
-     * This class caches the declared fields in order to minimize the invocations of {@link #getDeclaredIFields2()}.
+     * Clears the cache of declared fields which this class maintains in order to minimize the invocations of {@link
+     * #getDeclaredIFields2()}.
      */
     protected void
     clearIFieldCaches() { this.declaredIFieldsCache = null; }
 
     private Map/*<String fieldName, IField>*/ declaredIFieldsCache;
 
-    /**
-     * Uncached version of {@link #getDeclaredIFields()}.
-     */
+    /** Uncached version of {@link #getDeclaredIFields()}. */
     protected abstract IField[] getDeclaredIFields2();
 
     /**
@@ -454,25 +449,16 @@ class IClass {
         return descriptors;
     }
 
-    /**
-     * Returns "true" if this type represents an interface.
-     */
+    /**@return Whether this type represents an interface */
     public abstract boolean isInterface();
 
-    /**
-     * Returns "true" if this type represents an array.
-     */
+    /** @return Whether  this type represents an array */
     public abstract boolean isArray();
 
-    /**
-     * Returns "true" if this type represents a primitive type or "void".
-     */
+    /** @eturn Whether this type represents a primitive type or "void" */
     public abstract boolean isPrimitive();
 
-    /**
-     * Returns "true" if this type represents "byte", "short", "int", "long",
-     * "char", "float" or "double".
-     */
+    /** @return Whether this type represents "byte", "short", "int", "long", "char", "float" or "double" */
     public abstract boolean isPrimitiveNumeric();
 
     /**
@@ -776,21 +762,14 @@ class IClass {
          */
         Access getAccess();
 
-        /**
-         * 
-         * @return modifiers and/or annotations of this member
-         */
+        /** @return Modifiers and/or annotations of this member */
         Annotation[] getAnnotations();
 
-        /**
-         * Returns the {@link IClass} that declares this {@link IClass.IMember}.
-         */
+        /** @eturn The {@link IClass} that declares this {@link IClass.IMember} */
         IClass getDeclaringIClass();
     }
 
-    /**
-     * Base class for {@link IConstructor} and {@link IMethod}
-     */
+    /** Base class for {@link IConstructor} and {@link IMethod}. */
     public abstract
     class IInvocable implements IMember {
 
@@ -805,7 +784,8 @@ class IClass {
         argsNeedAdjust() { return this.argsNeedAdjust; }
 
         /**
-         * Whether this invocable is 'variable arity', i.e. its last parameter has an ellipsis ('...') after the type.
+         * @return Whether this invocable is 'variable arity', i.e. its last parameter has an ellipsis ('...') after
+         *         the type
          */
         public abstract boolean isVarargs();
 
@@ -814,21 +794,15 @@ class IClass {
         @Override public abstract Access getAccess();
         @Override public IClass          getDeclaringIClass() { return IClass.this; }
 
-        /**
-         * @return The types of the parameters of this constructor or method
-         */
+        /** @return The types of the parameters of this constructor or method */
         public abstract IClass[]
         getParameterTypes() throws CompileException;
 
-        /**
-         * @return The method descriptor of this constructor or method
-         */
+        /** @return The method descriptor of this constructor or method */
         public abstract String
         getDescriptor() throws CompileException;
 
-        /**
-         * @return The types thrown by this constructor or method
-         */
+        /** @return The types thrown by this constructor or method */
         public abstract IClass[]
         getThrownExceptions() throws CompileException;
 

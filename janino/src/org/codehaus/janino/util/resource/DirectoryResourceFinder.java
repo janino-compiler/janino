@@ -40,9 +40,7 @@ class DirectoryResourceFinder extends FileResourceFinder {
     private final File                                     directory;
     private final Map/*<String directoryName, Set<File>>*/ subdirectoryNameToFiles = new HashMap();
 
-    /**
-     * @param directory the directory to use as the search base
-     */
+    /** @param directory the directory to use as the search base */
     public
     DirectoryResourceFinder(File directory) { this.directory = directory; }
 

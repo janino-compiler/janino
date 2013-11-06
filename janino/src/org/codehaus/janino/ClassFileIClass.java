@@ -32,10 +32,7 @@ import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.janino.util.ClassFile;
 import org.codehaus.janino.util.ClassFile.ConstantClassInfo;
 
-/**
- * A wrapper object that turns a {@link ClassFile} object into a
- * {@link IClass}.
- */
+/** A wrapper object that turns a {@link ClassFile} object into an {@link IClass}. */
 @SuppressWarnings({ "rawtypes", "unchecked" }) public
 class ClassFileIClass extends IClass {
     private static final boolean DEBUG = false;
@@ -225,9 +222,7 @@ class ClassFileIClass extends IClass {
     @Override protected IClass
     getComponentType2()  { return null; }
 
-    /**
-     * Resolves all classes referenced by this class file.
-     */
+    /** Resolves all classes referenced by this class file. */
     public void
     resolveAllClasses() throws ClassNotFoundException {
         for (short i = 0; i < this.classFile.getConstantPoolSize(); ++i) {
@@ -248,9 +243,7 @@ class ClassFileIClass extends IClass {
         }
     }
 
-    /**
-     * @param index Index of the CONSTANT_Class_info to resolve (JVMS 4.4.1)
-     */
+    /** @param index Index of the CONSTANT_Class_info to resolve (JVMS 4.4.1) */
     private IClass
     resolveClass(short index) throws ClassNotFoundException {
         if (ClassFileIClass.DEBUG) System.out.println("index=" + index);

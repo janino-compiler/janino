@@ -26,9 +26,7 @@
 
 package org.codehaus.janino.util.enumerator;
 
-/**
- * Represents a problem related to parsing {@link Enumerator}s.
- */
+/** Represents a problem related to parsing {@link Enumerator}s. */
 public
 class EnumeratorFormatException extends Exception {
 

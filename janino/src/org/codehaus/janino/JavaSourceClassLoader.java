@@ -140,9 +140,7 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
         this.debugVars   = debugVars;
     }
 
-    /**
-     * @see UnitCompiler#setCompileErrorHandler
-     */
+    /** @see UnitCompiler#setCompileErrorHandler */
     public void
     setCompileErrorHandler(ErrorHandler optionalCompileErrorHandler) {
         this.iClassLoader.setCompileErrorHandler(optionalCompileErrorHandler);
@@ -235,9 +233,8 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
     }
 
     /**
-     * @see #setProtectionDomainFactory
-     *
      * @throws ClassFormatError
+     * @see #setProtectionDomainFactory
      */
     private Class
     defineBytecode(String className, byte[] ba) {
@@ -255,8 +252,6 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
     private boolean debugLines  = this.debugSource;
     private boolean debugVars   = this.debugSource;
 
-    /**
-     * Collection of parsed, but uncompiled compilation units.
-     */
+    /** Collection of parsed, but still uncompiled compilation units. */
     private final Set/*<UnitCompiler>*/ unitCompilers = new HashSet();
 }

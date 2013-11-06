@@ -33,10 +33,7 @@ import java.util.NoSuchElementException;
 
 import org.codehaus.janino.JaninoRuntimeException;
 
-/**
- * An {@link java.util.Iterator} that traverses a {@link java.util.Collection} of
- * {@link java.util.Iterator}s.
- */
+/** An {@link java.util.Iterator} that traverses a {@link java.util.Collection} of {@link java.util.Iterator}s. */
 @SuppressWarnings("rawtypes") public
 class MultiIterator/*<T>*/ implements Iterator/*<T>*/ {
 
@@ -49,45 +46,31 @@ class MultiIterator/*<T>*/ implements Iterator/*<T>*/ {
     private final Iterator/*<?>*/ outer; // Over Iterators, Collections or arrays
     private Iterator/*<T>*/       inner = MultiIterator.AT_END;
 
-    /**
-     * @param iterators An array of {@link Iterator}s
-     */
+    /** @param iterators An array of {@link Iterator}s */
     public
     MultiIterator(Iterator[] iterators) { this.outer = Arrays.asList(iterators).iterator(); }
 
-    /**
-     * @param collections An array of {@link Collection}s
-     */
+    /** @param collections An array of {@link Collection}s */
     public
     MultiIterator(Collection/*<T>*/[] collections) { this.outer = Arrays.asList(collections).iterator(); }
 
-    /**
-     * @param arrays An array of arrays
-     */
+    /** @param arrays An array of arrays */
     public
     MultiIterator(Object/*T*/[][] arrays) { this.outer = Arrays.asList(arrays).iterator(); }
 
-    /**
-     * @param collection A {@link Collection} of {@link Collection}s, {@link Iterator}s and/or arrays
-     */
+    /** @param collection A {@link Collection} of {@link Collection}s, {@link Iterator}s and/or arrays */
     public
     MultiIterator(Collection/*<?>*/ collection) { this.outer = collection.iterator(); }
 
-    /**
-     * @param iterator An iterator over {@link Collection}s, {@link Iterator}s and/or arrays
-     */
+    /** @param iterator An iterator over {@link Collection}s, {@link Iterator}s and/or arrays */
     public
     MultiIterator(Iterator/*<?>*/ iterator) { this.outer = iterator; }
 
-    /**
-     * @param array An array of {@link Collection}s, {@link Iterator}s and/or arrays
-     */
+    /** @param array An array of {@link Collection}s, {@link Iterator}s and/or arrays */
     public
     MultiIterator(Object[] array) { this.outer = Arrays.asList(array).iterator(); }
 
-    /**
-     * Iterates over the given {@link Collection}, prepended with the given {@link Object}.
-     */
+    /** Iterates over the given {@link Collection}, prepended with the given {@link Object}. */
     public
     MultiIterator(Object/*T*/ object, Collection/*<T>*/ collection) {
         this.outer = Arrays.asList(new Object[] {
@@ -96,9 +79,7 @@ class MultiIterator/*<T>*/ implements Iterator/*<T>*/ {
         }).iterator();
     }
 
-    /**
-     * Iterates over the given {@link Collection}, appended with the given {@link Object}.
-     */
+    /** Iterates over the given {@link Collection}, appended with the given {@link Object}. */
     public
     MultiIterator(Collection/*<T>*/ collection, Object/*T*/ object) {
         this.outer = Arrays.asList(new Object[] {
@@ -107,9 +88,7 @@ class MultiIterator/*<T>*/ implements Iterator/*<T>*/ {
         }).iterator();
     }
 
-    /**
-     * Iterates over the given {@link Iterator}, prepended with the given <code>prefix</code>.
-     */
+    /** Iterates over the given {@link Iterator}, prepended with the given {@code prefix}. */
     public
     MultiIterator(Object/*T*/ prefix, Iterator/*<T>*/ iterator) {
         this.outer = Arrays.asList(new Object[] {
@@ -118,9 +97,7 @@ class MultiIterator/*<T>*/ implements Iterator/*<T>*/ {
         }).iterator();
     }
 
-    /**
-     * Iterates over the given {@link Iterator}, appended with the given <code>suffix</code>.
-     */
+    /** Iterates over the given {@link Iterator}, appended with the given <code>suffix</code>. */
     public
     MultiIterator(Iterator/*<T>*/ iterator, Object/*T*/ suffix) {
         this.outer = Arrays.asList(new Object[] {

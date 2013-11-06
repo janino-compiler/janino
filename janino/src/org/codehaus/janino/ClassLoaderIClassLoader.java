@@ -26,17 +26,12 @@
 
 package org.codehaus.janino;
 
-/**
- * An {@link IClassLoader} that loads {@link IClass}es through a reflection
- * {@link ClassLoader}.
- */
+/** An {@link IClassLoader} that loads {@link IClass}es through a reflection {@link ClassLoader}. */
 @SuppressWarnings("rawtypes") public
 class ClassLoaderIClassLoader extends IClassLoader {
     private static final boolean DEBUG = false;
 
-    /**
-     * @param classLoader The delegate that loads the classes.
-     */
+    /** @param classLoader The delegate that loads the classes. */
     public
     ClassLoaderIClassLoader(ClassLoader classLoader) {
         super(

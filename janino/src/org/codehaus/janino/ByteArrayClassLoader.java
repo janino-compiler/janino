@@ -28,10 +28,7 @@ package org.codehaus.janino;
 
 import java.util.*;
 
-/**
- * This {@link ClassLoader} allows for the loading of a set of Java&trade; classes
- * provided in class file format.
- */
+/** This {@link ClassLoader} allows for the loading of a set of Java&trade; classes provided in class file format. */
 @SuppressWarnings({ "rawtypes", "unchecked" }) public
 class ByteArrayClassLoader extends ClassLoader {
 
@@ -43,9 +40,7 @@ class ByteArrayClassLoader extends ClassLoader {
     public
     ByteArrayClassLoader(Map/*<String className, byte[] data>*/ classes) { this.classes = classes; }
 
-    /**
-     * @see #ByteArrayClassLoader(Map)
-     */
+    /** @see #ByteArrayClassLoader(Map) */
     public
     ByteArrayClassLoader(Map/*<String className, byte[] data>*/ classes, ClassLoader parent) {
         super(parent);

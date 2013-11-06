@@ -48,9 +48,7 @@ import org.codehaus.janino.Java.AmbiguousName;
 import org.codehaus.janino.Java.LocalVariableDeclarationStatement;
 import org.codehaus.janino.util.Traverser;
 
-/**
- * A number of "convenience constructors" exist that execute the setup steps instantly. Their use is discouraged.
- */
+/** A number of "convenience constructors" exist that execute the setup steps instantly. Their use is discouraged. */
 @SuppressWarnings({ "rawtypes", "unchecked" }) public
 class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
 
@@ -683,10 +681,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
     protected Class
     getDefaultReturnType() { return void.class; }
 
-    /**
-     * Fill the given <code>block</code> by parsing statements until EOF and adding
-     * them to the block.
-     */
+    /** Fills the given <code>block</code> by parsing statements until EOF and adding them to the block. */
     protected List/*<BlockStatement>*/
     makeStatements(int idx, Parser parser) throws CompileException, IOException {
         List/*<BlockStatement>*/ statements = new ArrayList();
@@ -838,9 +833,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
         return se.createFastEvaluator(scanner, interfaceToImplement, parameterNames);
     }
 
-    /**
-     * Don't use.
-     */
+    /** Don't use. */
     @Override public final Object
     createInstance(Reader reader) {
         throw new UnsupportedOperationException("createInstance");

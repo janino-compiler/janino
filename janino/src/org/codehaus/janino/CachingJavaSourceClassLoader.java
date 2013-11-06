@@ -187,9 +187,7 @@ class CachingJavaSourceClassLoader extends JavaSourceClassLoader {
         return bytecodes;
     }
 
-    /**
-     * Read all bytes from the given resource.
-     */
+    /** Reads all bytes from the given resource. */
     private static byte[]
     readResource(Resource r) throws IOException {
         ByteArrayOutputStream baos   = new ByteArrayOutputStream();
@@ -209,9 +207,7 @@ class CachingJavaSourceClassLoader extends JavaSourceClassLoader {
         return baos.toByteArray();
     }
 
-    /**
-     * Create a resource with the given name and store the data in it.
-     */
+    /** Create a resource with the given name and store the data in it. */
     private static void
     writeResource(ResourceCreator resourceCreator, String resourceName, byte[] data) throws IOException {
         OutputStream os = resourceCreator.createResource(resourceName);

@@ -42,23 +42,17 @@ import org.codehaus.janino.util.iterator.*;
 @SuppressWarnings({ "rawtypes", "unchecked" }) public
 class PathResourceFinder extends LazyMultiResourceFinder {
 
-    /**
-     * @param entries The entries of the "path"
-     */
+    /** @param entries The entries of the "path" */
     public
     PathResourceFinder(final File[] entries) {
         super(PathResourceFinder.createIterator(Arrays.asList(entries).iterator()));
     }
 
-    /**
-     * @param entries The entries of the "path" (type must be {@link File})
-     */
+    /** @param entries The entries of the "path" (type must be {@link File}) */
     public
     PathResourceFinder(Iterator/*<ResourceFinder>*/ entries) { super(entries); }
 
-    /**
-     * @param path A java-like path, i.e. a "path separator"-separated list of entries.
-     */
+    /** @param path A java-like path, i.e. a "path separator"-separated list of entries. */
     public
     PathResourceFinder(String path) { this(PathResourceFinder.parsePath(path)); }
 

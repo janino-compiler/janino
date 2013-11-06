@@ -45,8 +45,6 @@ class FileResourceFinder extends ResourceFinder {
         return new FileResource(file);
     }
 
-    /**
-     * Converts a given resource resource name into a {@link File}.
-     */
+    /** Converts a given resource resource name into a {@link File}. */
     protected abstract File findResourceAsFile(String resourceName);
 }

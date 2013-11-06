@@ -101,9 +101,7 @@ class ClassFile {
         ));
     }
 
-    /**
-     * Adds the "Deprecated" attribute to this class.
-     */
+    /** Adds the "Deprecated" attribute to this class. */
     public void
     addDeprecatedAttribute() {
         this.attributes.add(new DeprecatedAttribute(this.addConstantUtf8Info("Deprecated")));
@@ -188,9 +186,7 @@ class ClassFile {
         this.attributes  = Collections.unmodifiableList(this.loadAttributes(dis)); // attributes_count, attributes
     }
 
-    /**
-     * @return The fully qualified name of this class, e.g. "pkg1.pkg2.Outer$Inner"
-     */
+    /** @return The fully qualified name of this class, e.g. "pkg1.pkg2.Outer$Inner" */
     public String
     getThisClassName() {
         ConstantClassInfo cci = (ConstantClassInfo) this.getConstantPoolInfo(this.thisClass);
@@ -207,15 +203,11 @@ class ClassFile {
         this.minorVersion = minorVersion;
     }
 
-    /**
-     * Returns the current major class file version number.
-     */
+    /** @return The current major class file version number */
     public short
     getMajorVersion() { return this.majorVersion; }
 
-    /**
-     * Returns the current minor class file version number.
-     */
+    /** @return The current minor class file version number */
     public short
     getMinorVersion() { return this.minorVersion; }
 
@@ -366,9 +358,7 @@ class ClassFile {
         return this.addToConstantPool(new ConstantUtf8Info(s));
     }
 
-    /**
-     * Convenience method that adds a String, Integer, Float, Long or Double ConstantInfo.
-     */
+    /** Convenience method that adds a String, Integer, Float, Long or Double ConstantInfo. */
     private short
     addConstantSIFLDInfo(Object cv) { // SUPPRESS CHECKSTYLE AbbreviationAsWord
         if (cv instanceof String) {
@@ -461,15 +451,11 @@ class ClassFile {
         return mi;
     }
 
-    /**
-     * @return The (read-only) constant pool entry indexed by {@code index}
-     */
+    /** @return The (read-only) constant pool entry indexed by {@code index} */
     public ConstantPoolInfo
     getConstantPoolInfo(short index) { return (ConstantPoolInfo) this.constantPool.get(0xffff & index); }
     
-    /**
-     * @return The size of the constant pool
-     */
+    /** @return The size of the constant pool */
     public int
     getConstantPoolSize() { return this.constantPool.size(); }
 
@@ -483,9 +469,7 @@ class ClassFile {
         return cui.s;
     }
 
-    /**
-     * u4 length, u1[length]
-     */
+    /** u4 length, u1[length] */
     private static byte[]
     readLengthAndBytes(DataInputStream dis) throws IOException {
         byte[] ba = new byte[dis.readInt()];
@@ -493,9 +477,7 @@ class ClassFile {
         return ba;
     }
 
-    /**
-     * u2 length, u2[length]
-     */
+    /** u2 length, u2[length] */
     private static short[]
     readShortArray(DataInputStream dis) throws IOException {
         short   count  = dis.readShort();
@@ -504,9 +486,7 @@ class ClassFile {
         return result;
     }
 
-    /**
-     * u2 constant_pool_count, constant_pool[constant_pool_count]
-     */
+    /** u2 constant_pool_count, constant_pool[constant_pool_count] */
     private void
     loadConstantPool(DataInputStream dis) throws IOException {
         this.constantPool.clear();
@@ -525,9 +505,7 @@ class ClassFile {
         }
     }
 
-    /**
-     * u2 fields_count, fields[fields_count]
-     */
+    /** u2 fields_count, fields[fields_count] */
     private List/*<FieldInfo>*/
     loadFields(DataInputStream dis) throws IOException {
         short               fieldsCount = dis.readShort();
@@ -559,9 +537,7 @@ class ClassFile {
         return new Java.Modifiers(mods);
     }
     
-    /**
-     * u2 methods_count, methods[methods_count]
-     */
+    /** u2 methods_count, methods[methods_count] */
     private List/*<MethodInfo>*/
     loadMethods(DataInputStream dis) throws IOException {
         short                methodsCount = dis.readShort();
@@ -570,9 +546,7 @@ class ClassFile {
         return methods;
     }
 
-    /**
-     * u2 attributes_count, attributes[attributes_count]
-     */
+    /** u2 attributes_count, attributes[attributes_count] */
     private List/*<AttributeInfo>*/
     loadAttributes(DataInputStream dis) throws IOException {
         short                   attributesCount = dis.readShort();
@@ -609,9 +583,7 @@ class ClassFile {
         ClassFile.storeAttributes(dos, this.attributes, null); // attributes_count, attributes
     }
 
-    /**
-     * u2 constant_pool_count, constant_pool[constant_pool_count - 1]
-     */
+    /** u2 constant_pool_count, constant_pool[constant_pool_count - 1] */
     private static void
     storeConstantPool(DataOutputStream dos, List/*<ConstantPoolInfo>*/ constantPool) throws IOException {
         dos.writeShort(constantPool.size());
@@ -622,36 +594,28 @@ class ClassFile {
         }
     }
 
-    /**
-     * u2 count, u2[count]
-     */
+    /** u2 count, u2[count] */
     private static void
     storeShortArray(DataOutputStream dos, short[] sa) throws IOException {
         dos.writeShort(sa.length);
         for (int i = 0; i < sa.length; ++i) dos.writeShort(sa[i]);
     }
 
-    /**
-     * u2 fields_count, fields[fields_count]
-     */
+    /** u2 fields_count, fields[fields_count] */
     private static void
     storeFields(DataOutputStream dos, List/*<FieldInfo>*/ fieldInfos) throws IOException {
         dos.writeShort(fieldInfos.size());
         for (int i = 0; i < fieldInfos.size(); ++i) ((FieldInfo) fieldInfos.get(i)).store(dos);
     }
 
-    /**
-     * u2 methods_count, methods[methods_count]
-     */
+    /** u2 methods_count, methods[methods_count] */
     private static void
     storeMethods(DataOutputStream dos, List/*<MethodInfo>*/ methodInfos) throws IOException {
         dos.writeShort(methodInfos.size());
         for (int i = 0; i < methodInfos.size(); ++i) ((MethodInfo) methodInfos.get(i)).store(dos);
     }
 
-    /**
-     * u2 attributes_count, attributes[attributes_count]
-     */
+    /** u2 attributes_count, attributes[attributes_count] */
     private static void
     storeAttributes(DataOutputStream dos, List/*<AttributeInfo>*/ attributeInfos, Java.Annotation[] annotations)
     throws IOException {
@@ -693,9 +657,7 @@ class ClassFile {
     public static String
     getClassFileResourceName(String className) { return className.replace('.', '/') + ".class"; }
 
-    /**
-     * Return the byte code of this {@link ClassFile} as a byte array.
-     */
+    /** Return the byte code of this {@link ClassFile} as a byte array. */
     public byte[]
     toByteArray() {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -734,9 +696,7 @@ class ClassFile {
      */
     public final short accessFlags;
 
-    /**
-     * The constant pool index of the {@link ConstantClassInfo} that describes THIS class.
-     */
+    /** The constant pool index of the {@link ConstantClassInfo} that describes THIS class. */
     public final short thisClass;
     
     /**
@@ -751,27 +711,19 @@ class ClassFile {
      */
     public final short[] interfaces;
 
-    /**
-     * The {@link FieldInfo}s of the field members of this class or interface.
-     */
+    /** The {@link FieldInfo}s of the field members of this class or interface. */
     public final List/*<FieldInfo>*/ fieldInfos;
 
-    /**
-     * The {@link MethodInfo}s of the methods of this class or interface.
-     */
+    /** The {@link MethodInfo}s of the methods of this class or interface. */
     public final List/*<MethodInfo>*/ methodInfos;
     
-    /**
-     * The {@link AttributeInfo}s of the attributes of this class or interface.
-     */
+    /** The {@link AttributeInfo}s of the attributes of this class or interface. */
     private final List/*<AttributeInfo>*/ attributes;
 
     // Convenience.
     private final Map/*<ConstantPoolInfo, Short>*/ constantPoolMap;
 
-    /**
-     * Base for various the constant pool table entry types.
-     */
+    /** Base for various the constant pool table entry types. */
     public abstract static
     class ConstantPoolInfo {
 
@@ -782,9 +734,7 @@ class ClassFile {
          */
         protected abstract void store(DataOutputStream dos) throws IOException;
         
-        /**
-         * @return Whether this CP entry is "wide" in the sense of JVMS7 4.4.5
-         */
+        /** @return Whether this CP entry is "wide" in the sense of JVMS7 4.4.5 */
         protected abstract boolean isWide();
 
         private static ConstantPoolInfo
@@ -854,9 +804,7 @@ class ClassFile {
 
         public ConstantClassInfo(short nameIndex) { this.nameIndex = nameIndex; }
 
-        /**
-         * @return The class's or interface's name in "internal form" (JVMS7 4.2.1)
-         */
+        /** @return The class's or interface's name in "internal form" (JVMS7 4.2.1) */
         public String
         getName(ClassFile classFile) { return classFile.getConstantUtf8(this.nameIndex); }
 
@@ -893,9 +841,7 @@ class ClassFile {
             this.nameAndTypeIndex = nameAndTypeIndex;
         }
 
-        /**
-         * @return The {@link ConstantNameAndTypeInfo} of this {@link ConstantFieldrefInfo}
-         */
+        /** @return The {@link ConstantNameAndTypeInfo} of this {@link ConstantFieldrefInfo} */
         public ConstantNameAndTypeInfo
         getNameAndType(ClassFile classFile) {
             return (ClassFile.ConstantNameAndTypeInfo) classFile.getConstantPoolInfo(this.nameAndTypeIndex);
@@ -939,9 +885,7 @@ class ClassFile {
             this.nameAndTypeIndex = nameAndTypeIndex;
         }
 
-        /**
-         * @return The {@link ConstantNameAndTypeInfo} of this {@link ConstantMethodrefInfo}
-         */
+        /** @return The {@link ConstantNameAndTypeInfo} of this {@link ConstantMethodrefInfo} */
         public ConstantNameAndTypeInfo
         getNameAndType(ClassFile classFile) {
             return (ClassFile.ConstantNameAndTypeInfo) classFile.getConstantPoolInfo(this.nameAndTypeIndex);
@@ -984,9 +928,7 @@ class ClassFile {
             this.nameAndTypeIndex = nameAndTypeIndex;
         }
 
-        /**
-         * @return The {@link ConstantNameAndTypeInfo} of this {@link ConstantInterfaceMethodrefInfo}
-         */
+        /** @return The {@link ConstantNameAndTypeInfo} of this {@link ConstantInterfaceMethodrefInfo} */
         public ConstantNameAndTypeInfo
         getNameAndType(ClassFile classFile) {
             return (ClassFile.ConstantNameAndTypeInfo) classFile.getConstantPoolInfo(this.nameAndTypeIndex);
@@ -1188,9 +1130,7 @@ class ClassFile {
             this.descriptorIndex = descriptorIndex;
         }
 
-        /**
-         * @return The (field or method) descriptor related to the name
-         */
+        /** @return The (field or method) descriptor related to the name */
         public String
         getDescriptor(ClassFile classFile) {
             return classFile.getConstantUtf8(this.descriptorIndex);
@@ -1232,9 +1172,7 @@ class ClassFile {
             this.s = s;
         }
 
-        /**
-         * @return The string contained in this {@link ConstantUtf8Info}
-         */
+        /** @return The string contained in this {@link ConstantUtf8Info} */
         public String
         getString() { return this.s; }
 
@@ -1263,9 +1201,7 @@ class ClassFile {
         hashCode() { return this.s.hashCode(); }
     }
 
-    /**
-     * This class represents a "method_info" structure, as defined by JVMS7 4.6.
-     */
+    /** Representation of a "method_info" structure, as defined by JVMS7 4.6. */
     public
     class MethodInfo {
 
@@ -1274,9 +1210,7 @@ class ClassFile {
         private final short                   descriptorIndex;
         private final List/*<AttributeInfo>*/ attributes;
 
-        /**
-         * Initialize the "method_info" structure.
-         */
+        /** Initializes the "method_info" structure. */
         public
         MethodInfo(
             Java.Modifiers          modifiers,
@@ -1300,35 +1234,25 @@ class ClassFile {
         /** @return The annotations of this method */
         public Java.Annotation[] getAnnotations() { return this.modifiers.annotations; }
 
-        /**
-         * @return The method's name
-         */
+        /** @return The method's name */
         public String
         getName() { return ClassFile.this.getConstantUtf8(this.nameIndex); }
 
-        /**
-         * @return The method descriptor describing this method
-         */
+        /** @return The method descriptor describing this method */
         public String
         getDescriptor() { return ClassFile.this.getConstantUtf8(this.descriptorIndex); }
 
-        /**
-         * @return The attributes of this method
-         */
+        /** @return The attributes of this method */
         public AttributeInfo[]
         getAttributes() {
             return (AttributeInfo[]) this.attributes.toArray(new AttributeInfo[this.attributes.size()]);
         }
 
-        /**
-         * Adds the given {@code attribute} to this method.
-         */
+        /** Adds the given {@code attribute} to this method. */
         public void
         addAttribute(AttributeInfo attribute) { this.attributes.add(attribute); }
 
-        /**
-         * Write this object to a {@link DataOutputStream}, in the format described inJVMS7 4.6.
-         */
+        /** Writes this object to a {@link DataOutputStream}, in the format described inJVMS7 4.6. */
         public void
         store(DataOutputStream dos) throws IOException {
             dos.writeShort(this.modifiers.flags); // access_flags
@@ -1356,9 +1280,7 @@ class ClassFile {
         );
     }
 
-    /**
-     * This class represents a "method_info" structure, as defined by JVMS7 4.5.
-     */
+    /** Representation of a "method_info" structure, as defined by JVMS7 4.5. */
     public static
     class FieldInfo {
 
@@ -1375,43 +1297,31 @@ class ClassFile {
             this.attributes      = attributes;
         }
 
-        /**
-         * @return The modifier flags of the field; or'ed values are the constants declared in {@link Mod}.
-         */
+        /** @return The modifier flags of the field; or'ed values are the constants declared in {@link Mod} */
         public short getModifierFlags() { return this.modifiers.flags; }
 
         /** @return The annotations of this field */
         public Java.Annotation[] getAnnotations() { return this.modifiers.annotations; }
 
-        /**
-         * @return The field's name
-         */
+        /** @return The field's name */
         public String
         getName(ClassFile classFile) { return classFile.getConstantUtf8(this.nameIndex); }
 
-        /**
-         * @return The field descriptor describing this field
-         */
+        /** @return The field descriptor describing this field */
         public String
         getDescriptor(ClassFile classFile) { return classFile.getConstantUtf8(this.descriptorIndex); }
 
-        /**
-         * @return The attributes of this field
-         */
+        /** @return The attributes of this field */
         public AttributeInfo[]
         getAttributes() {
             return (AttributeInfo[]) this.attributes.toArray(new AttributeInfo[this.attributes.size()]);
         }
 
-        /**
-         * Adds the given {@code attribute} to this field.
-         */
+        /** Adds the given {@code attribute} to this field. */
         public void
         addAttribute(AttributeInfo attribute) { this.attributes.add(attribute); }
 
-        /**
-         * Write this object to a {@link DataOutputStream}, in the format described inJVMS7 4.5.
-         */
+        /** Writes this object to a {@link DataOutputStream}, in the format described inJVMS7 4.5. */
         public void
         store(DataOutputStream dos) throws IOException {
             dos.writeShort(this.modifiers.flags); // access_flags
@@ -1430,18 +1340,14 @@ class ClassFile {
         private final List/*<AttributeInfo>*/ attributes;
     }
 
-    /**
-     * Representation of a class file attribute (see JVMS7 4.7).
-     */
+    /** Representation of a class file attribute (see JVMS7 4.7). */
     public abstract static
     class AttributeInfo {
 
         public
         AttributeInfo(short nameIndex) { this.nameIndex = nameIndex; }
 
-        /**
-         * Write this attribute to a {@link DataOutputStream}, in the format described in JVMS7 4.7.
-         */
+        /** Writes this attribute to a {@link DataOutputStream}, in the format described in JVMS7 4.7. */
         public void
         store(DataOutputStream dos) throws IOException {
 
@@ -1453,9 +1359,7 @@ class ClassFile {
             baos.writeTo(dos);              // info
         }
 
-        /**
-         * Writes the body of this attribute in an attribute-type dependent way; see JVMS7 4.7.2 and following.
-         */
+        /** Writes the body of this attribute in an attribute-type dependent way; see JVMS7 4.7.2 and following. */
         protected abstract void
         storeBody(DataOutputStream dos) throws IOException;
 
@@ -1526,9 +1430,7 @@ class ClassFile {
         return result;
     }
 
-    /**
-     * Representation of a "ConstantValue" attribute (see JVMS 4.7.2).
-     */
+    /** Representation of a "ConstantValue" attribute (see JVMS 4.7.2). */
     public static
     class ConstantValueAttribute extends AttributeInfo {
 
@@ -1539,9 +1441,7 @@ class ClassFile {
             this.constantValueIndex = constantValueIndex;
         }
 
-        /**
-         * @return The constant value contained in this attribute
-         */
+        /** @return The constant value contained in this attribute */
         public ConstantValuePoolInfo
         getConstantValue(ClassFile classFile) {
             return (ConstantValuePoolInfo) classFile.getConstantPoolInfo(this.constantValueIndex);
@@ -1562,9 +1462,7 @@ class ClassFile {
         }
     }
 
-    /**
-     * Representation of an "Exceptions" attribute (see JVMS 4.7.4).
-     */
+    /** Representation of an "Exceptions" attribute (see JVMS 4.7.4). */
     public static
     class ExceptionsAttribute extends AttributeInfo {
 
@@ -1576,9 +1474,7 @@ class ClassFile {
             this.exceptionIndexes = exceptionIndexes;
         }
 
-        /**
-         * @return The exception types contained in this {@link ExceptionsAttribute}
-         */
+        /** @return The exception types contained in this {@link ExceptionsAttribute} */
         public ConstantClassInfo[]
         getExceptions(ClassFile classFile) {
             ConstantClassInfo[] es = new ConstantClassInfo[this.exceptionIndexes.length];
@@ -1604,9 +1500,7 @@ class ClassFile {
         }
     }
 
-    /**
-     * Representation of an "InnerClasses" attribute (see JVMS 4.7.5).
-     */
+    /** Representation of an "InnerClasses" attribute (see JVMS 4.7.5). */
     public static
     class InnerClassesAttribute extends AttributeInfo {
 
@@ -1657,9 +1551,7 @@ class ClassFile {
             }
         }
 
-        /**
-         * The structure of the {@code classes} array as described in JVMS7 4.7.6.
-         */
+        /** The structure of the {@code classes} array as described in JVMS7 4.7.6. */
         public static
         class Entry {
 
@@ -1681,9 +1573,7 @@ class ClassFile {
         }
     }
 
-    /**
-     * Representation of a "Synthetic" attribute (see JVMS 4.7.6).
-     */
+    /** Representation of a "Synthetic" attribute (see JVMS 4.7.6). */
     public static
     class SyntheticAttribute extends AttributeInfo {
 
@@ -1703,9 +1593,7 @@ class ClassFile {
         }
     }
 
-    /**
-     * Representation of a "SourceFile" attribute (see JVMS 4.7.7).
-     */
+    /** Representation of a "SourceFile" attribute (see JVMS 4.7.7). */
     public static
     class SourceFileAttribute extends AttributeInfo {
 
@@ -1730,9 +1618,7 @@ class ClassFile {
         storeBody(DataOutputStream dos) throws IOException { dos.writeShort(this.sourceFileIndex); }
     }
 
-    /**
-     * Representation of a "LineNumberTable" attribute (see JVMS 4.7.8).
-     */
+    /** Representation of a "LineNumberTable" attribute (see JVMS 4.7.8). */
     public static
     class LineNumberTableAttribute extends AttributeInfo {
 
@@ -1782,9 +1668,7 @@ class ClassFile {
         }
     }
 
-    /**
-     * Representation of a "LocalVariableTable" attribute (see JVMS 4.7.9).
-     */
+    /** Representation of a "LocalVariableTable" attribute (see JVMS 4.7.9). */
     public static
     class LocalVariableTableAttribute extends AttributeInfo {
 
@@ -1845,9 +1729,7 @@ class ClassFile {
         }
     }
 
-    /**
-     * Representation of a "Deprecated" attribute (see JVMS 4.7.10).
-     */
+    /** Representation of a "Deprecated" attribute (see JVMS 4.7.10). */
     public static
     class DeprecatedAttribute extends AttributeInfo {
 
@@ -1866,9 +1748,7 @@ class ClassFile {
         }
     }
 
-    /**
-     * Representation of an unmodifiable "Code" attribute, as read from a class file.
-     */
+    /** Representation of an unmodifiable "Code" attribute, as read from a class file. */
     private static
     class CodeAttribute extends AttributeInfo {
 
@@ -1945,10 +1825,7 @@ class ClassFile {
             }
         }
 
-        /**
-         * Representation of an entry in the "exception_table" of a "Code" attribute (see JVMS
-         * 4.7.3).
-         */
+        /** Representation of an entry in the "exception_table" of a "Code" attribute (see JVMS 4.7.3). */
         private static
         class ExceptionTableEntry {
 

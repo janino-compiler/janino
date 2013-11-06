@@ -574,9 +574,7 @@ class UnitCompiler {
         this.generatedClassFiles.add(cf);
     }
 
-    /**
-     * Create {@link ClassFile.FieldInfo}s for all fields declared by the given {@link FieldDeclaration}.
-     */
+    /** Creates {@link ClassFile.FieldInfo}s for all fields declared by the given {@link FieldDeclaration}. */
     private void
     addFields(FieldDeclaration fd, ClassFile cf) throws CompileException {
         for (int j = 0; j < fd.variableDeclarators.length; ++j) {
@@ -873,9 +871,7 @@ class UnitCompiler {
         return false;
     }
 
-    /**
-     * @return Whether {@code m} overrides a method of {@code type} or any of its supertypes
-     */
+    /** @return Whether {@code m} overrides a method of {@code type} or any of its supertypes */
     private boolean
     overridesMethod(IMethod m, IClass type) throws CompileException {
 
@@ -889,9 +885,7 @@ class UnitCompiler {
         return this.overridesMethodFromSupertype(m, type);
     }
 
-    /**
-     * Compile a bridge method which will add a method of the signature of base that delegates to override.
-     */
+    /** Compiles a bridge method which will add a method of the signature of base that delegates to override. */
     private void
     compileBridgeMethod(ClassFile cf, IMethod base, IMethod override) throws CompileException {
         ClassFile.MethodInfo mi = cf.addMethodInfo(
@@ -951,9 +945,7 @@ class UnitCompiler {
         });
     }
 
-    /**
-     * @return {@code false} if this statement cannot complete normally (JLS7 14.1)
-     */
+    /** @return Whether this statement can complete normally (JLS7 14.1) */
     private boolean
     compile(BlockStatement bs) throws CompileException {
         final boolean[]       res = new boolean[1];
@@ -991,9 +983,7 @@ class UnitCompiler {
         }
     }
 
-    /**
-     * Call to check whether the given {@link Rvalue} compiles or not.
-     */
+    /** Called to check whether the given {@link Rvalue} compiles or not. */
     private boolean
     fakeCompile(BlockStatement bs) throws CompileException {
         CodeContext savedCodeContext = this.replaceCodeContext(this.createDummyCodeContext());
@@ -1693,9 +1683,7 @@ class UnitCompiler {
         return true;
     }
 
-    /**
-     * Find a local class declared in any block enclosing the given block statement.
-     */
+    /** Finds a local class declared in any block enclosing the given block statement. */
     private static LocalClassDeclaration
     findLocalClassDeclaration(Scope s, String name) {
         for (;;) {
@@ -2250,9 +2238,7 @@ class UnitCompiler {
         });
     }
 
-    /**
-     * Make the variable name and class name Constant Pool names used by local variables.
-     */
+    /** Makes the variable name and class name Constant Pool names used by local variables. */
     private static void
     makeLocalVariableNames(final CodeContext cc, final ClassFile.MethodInfo mi) {
         ClassFile                       cf   = mi.getClassFile();
@@ -2498,9 +2484,7 @@ class UnitCompiler {
 
     // ------------------ Rvalue.compile() ----------------
 
-    /**
-     * Call to check whether the given {@link ArrayInitializerOrRvalue} compiles or not.
-     */
+    /** Called to check whether the given {@link ArrayInitializerOrRvalue} compiles or not. */
     private void
     fakeCompile(ArrayInitializerOrRvalue aior) throws CompileException {
         if (aior instanceof Rvalue) {
@@ -2515,9 +2499,7 @@ class UnitCompiler {
         }
     }
 
-    /**
-     * Call to check whether the given {@link Rvalue} compiles or not.
-     */
+    /** Called to check whether the given {@link Rvalue} compiles or not. */
     private void
     fakeCompile(Rvalue rv) throws CompileException {
         CodeContext savedCodeContext = this.replaceCodeContext(this.createDummyCodeContext());
@@ -2529,9 +2511,7 @@ class UnitCompiler {
         }
     }
 
-    /**
-     * Some {@link Rvalue}s compile more efficiently when their value is not needed, e.g. "i++".
-     */
+    /** Some {@link Rvalue}s compile more efficiently when their value is not needed, e.g. "i++". */
     private void
     compile(Rvalue rv) throws CompileException {
 
@@ -4820,9 +4800,7 @@ class UnitCompiler {
 
     // ------------ BlockStatement.generatesCode() -------------
 
-    /**
-     * Check whether invocation of {@link #compile(BlockStatement)} would generate more than zero code bytes.
-     */
+    /** Checks whether invocation of {@link #compile(BlockStatement)} would generate more than zero code bytes. */
     private boolean
     generatesCode(BlockStatement bs) throws CompileException {
         final boolean[]       res = new boolean[1];
@@ -5940,9 +5918,7 @@ class UnitCompiler {
         }
     }
 
-    /**
-     * Compiles the instance variable initializers and the instance initializers in their lexical order.
-     */
+    /** Compiles the instance variable initializers and the instance initializers in their lexical order. */
     void
     initializeInstanceVariablesAndInvokeInstanceInitializers(ConstructorDeclarator cd) throws CompileException {
         for (int i = 0; i < cd.getDeclaringClass().variableDeclaratorsAndInitializers.size(); ++i) {
@@ -6330,9 +6306,7 @@ class UnitCompiler {
 
     interface Compilable { void compile() throws CompileException; }
 
-    /**
-     * Convert object of type "sourceType" to type "String" (JLS7 15.18.1.1).
-     */
+    /** Converts object of type "sourceType" to type "String" (JLS7 15.18.1.1). */
     private void
     stringConversion(Locatable locatable, IClass sourceType) {
         this.writeOpcode(locatable, Opcode.INVOKESTATIC);
@@ -7122,9 +7096,7 @@ class UnitCompiler {
         fae.value.setEnclosingBlockStatement(fae.getEnclosingBlockStatement());
     }
 
-    /**
-     * "super.fld", "Type.super.fld"
-     */
+    /** "super.fld", "Type.super.fld" */
     private void
     determineValue(SuperclassFieldAccessExpression scfae) throws CompileException {
         if (scfae.value != null) return;
@@ -7723,9 +7695,7 @@ class UnitCompiler {
         return iInvocables[0];
     }
 
-    /**
-     * Check if "method invocation conversion" (5.3) is possible.
-     */
+    /** Checks if "method invocation conversion" (5.3) is possible. */
     private boolean
     isMethodInvocationConvertible(
         IClass  sourceType,
@@ -7769,9 +7739,7 @@ class UnitCompiler {
         return false;
     }
 
-    /**
-     * @throws CompileException if the {@link Invocation} throws exceptions that are disallowed in the given scope
-     */
+    /** @throws CompileException if the {@link Invocation} throws exceptions that are disallowed in the given scope */
     private void
     checkThrownExceptions(Invocation in, IMethod iMethod) throws CompileException {
         IClass[] thrownExceptions = iMethod.getThrownExceptions();
@@ -7785,7 +7753,7 @@ class UnitCompiler {
     }
 
     /**
-     * @throws CompileException if the exception with the given type must not be thrown in the given scope
+     * @throws CompileException The exception with the given {@code type} must not be thrown in the given {@code scope}
      */
     private void
     checkThrownException(Locatable locatable, IClass type, Scope scope) throws CompileException {
@@ -7872,9 +7840,7 @@ class UnitCompiler {
         return qtr.targetIClass;
     }
 
-    /**
-     * Checks whether the operand is an integer-like local variable.
-     */
+    /** Checks whether the operand is an integer-like local variable. */
     LocalVariable
     isIntLv(Crement c) throws CompileException {
         if (!(c.operand instanceof AmbiguousName)) return null;
@@ -8456,9 +8422,7 @@ class UnitCompiler {
         }
     }
 
-    /**
-     * If the given name was declared in a simple type import, load that class.
-     */
+    /** If the given name was declared in a simple type import, load that class. */
     private IClass
     importSingleType(String simpleTypeName, Location location) throws CompileException {
         String[] ss = this.getSingleTypeImport(simpleTypeName, location);
@@ -9608,9 +9572,7 @@ class UnitCompiler {
         );
     }
 
-    /**
-     * @return the boxed type or {@code null}
-     */
+    /** @return The boxed type or {@code null} */
     private IClass
     isBoxingConvertible(IClass sourceType) {
         IClassLoader icl = this.iClassLoader;
@@ -9671,9 +9633,7 @@ class UnitCompiler {
         );
     }
 
-    /**
-     * @return the unboxed type or {@code null}
-     */
+    /** @return The unboxed type or {@code null} */
     private IClass
     isUnboxingConvertible(IClass sourceType) {
         IClassLoader icl = this.iClassLoader;
@@ -9977,9 +9937,7 @@ class UnitCompiler {
         return this.resolve(td);
     }
 
-    /**
-     * Equivalent to {@link #compileError(String, Location)} with a {@code null} location argument.
-     */
+    /** Equivalent with {@link #compileError(String, Location)} with a {@code null} location argument. */
     private void
     compileError(String message) throws CompileException { this.compileError(message, null); }
 

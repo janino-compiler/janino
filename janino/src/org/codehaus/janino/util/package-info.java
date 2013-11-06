@@ -24,7 +24,5 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-/**
- * Application-independent helper classes.
- */
+/** Application-independent helper classes. */
 package org.codehaus.janino.util;

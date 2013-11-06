@@ -69,23 +69,17 @@ class Benchmark {
         this.reporter         = null;
     }
 
-    /**
-     * @see Benchmark
-     */
+    /** @see Benchmark */
     public void
     begin() { this.beginTimes.push(new Long(System.currentTimeMillis())); }
 
-    /**
-     * @see Benchmark
-     */
+    /** @see Benchmark */
     public long
     end() { return System.currentTimeMillis() - ((Long) this.beginTimes.pop()).longValue(); }
 
     // Reporting-related methods and fields.
 
-    /**
-     * Set up a {@link Benchmark} with a default {@link Reporter} that reports to {@code System.out}.
-     */
+    /** Sets up a {@link Benchmark} with a default {@link Reporter} that reports to {@code System.out}. */
     public
     Benchmark(boolean reportingEnabled) {
         this.reportingEnabled = reportingEnabled;
@@ -94,9 +88,7 @@ class Benchmark {
         };
     }
 
-    /**
-     * Set up a {@link Benchmark} with a custom {@link Reporter}.
-     */
+    /** Set up a {@link Benchmark} with a custom {@link Reporter}. */
     public
     Benchmark(boolean reportingEnabled, Reporter reporter) {
         this.reportingEnabled = reportingEnabled;
@@ -106,9 +98,7 @@ class Benchmark {
     private final boolean  reportingEnabled;
     private final Reporter reporter;
 
-    /**
-     * Interface used to report messages.
-     */
+    /** Interface used to report messages. */
     public
     interface Reporter {
 
@@ -116,9 +106,7 @@ class Benchmark {
         void report(String message);
     }
 
-    /**
-     * Begin a benchmark (see {@link #begin()}) and report the fact.
-     */
+    /** Begin a benchmark (see {@link #begin()}) and report the fact. */
     public void
     beginReporting() {
         if (!this.reportingEnabled) return;
@@ -127,9 +115,7 @@ class Benchmark {
         this.begin();
     }
 
-    /**
-     * Begin a benchmark (see {@link #begin()}) and report the fact.
-     */
+    /** Begin a benchmark (see {@link #begin()}) and report the fact. */
     public void
     beginReporting(String message) {
         if (!this.reportingEnabled) return;
@@ -137,27 +123,21 @@ class Benchmark {
         this.begin();
     }
 
-    /**
-     * End a benchmark (see {@link #end()}) and report the fact.
-     */
+    /** End a benchmark (see {@link #end()}) and report the fact. */
     public void
     endReporting() {
         if (!this.reportingEnabled) return;
         this.reportIndented("... took " + this.end() + " ms");
     }
 
-    /**
-     * End a benchmark (see {@link #begin()}) and report the fact.
-     */
+    /** End a benchmark (see {@link #begin()}) and report the fact. */
     public void
     endReporting(String message) {
         if (!this.reportingEnabled) return;
         this.reportIndented("... took " + this.end() + " ms: " + message);
     }
 
-    /**
-     * Report the given message.
-     */
+    /** Report the given message. */
     public void
     report(String message) {
         if (!this.reportingEnabled) return;
@@ -206,10 +186,7 @@ class Benchmark {
     }
     private static final String PAD = "                       ";
 
-    /**
-     * Report a message through {@link #reporter}, indent by N spaces where N is the current
-     * benchmark stack depth.
-     */
+    /** Report a message through {@link #reporter}, indent by N spaces where N is the current benchmark stack depth. */
     private void
     reportIndented(String message) {
         StringBuilder sb = new StringBuilder();

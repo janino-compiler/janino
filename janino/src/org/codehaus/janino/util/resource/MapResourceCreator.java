@@ -29,16 +29,12 @@ package org.codehaus.janino.util.resource;
 import java.io.*;
 import java.util.*;
 
-/**
- * Creates resources as byte arrays in a delegate {@link java.util.Map}.
- */
+/** Creates resources as byte arrays in a delegate {@link java.util.Map}. */
 @SuppressWarnings({ "rawtypes", "unchecked" }) public
 class MapResourceCreator implements ResourceCreator {
     private final Map/*<String, byte[]>*/ map;
 
-    /**
-     * Auto-create the delegate {@link Map}.
-     */
+    /** Auto-create the delegate {@link Map}. */
     public
     MapResourceCreator() { this.map = new HashMap(); }
 

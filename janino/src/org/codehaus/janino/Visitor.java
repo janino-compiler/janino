@@ -27,10 +27,7 @@
 package org.codehaus.janino;
 
 
-/**
- * Basis for the "visitor" pattern as described in "Gamma, Helm, Johnson,
- * Vlissides: Design Patterns".
- */
+/** Basis for the "visitor" pattern as described in "Gamma, Helm, Johnson, Vlissides: Design Patterns". */
 public
 class Visitor {
 

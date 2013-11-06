@@ -36,17 +36,13 @@ import java.util.List;
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.Location;
 
-/**
- * Wraps a {@link java.lang.Class} in an {@link org.codehaus.janino.IClass}.
- */
+/** Wraps a {@link java.lang.Class} in an {@link org.codehaus.janino.IClass}. */
 @SuppressWarnings({ "rawtypes", "unchecked" })
 class ReflectionIClass extends IClass {
     private final Class        clazz;
     private final IClassLoader iClassLoader;
 
-    /**
-     * @param iClassLoader required to load other {@link IClass}es on <code>get...()</code>.
-     */
+    /** @param iClassLoader Required to load other {@link IClass}es on {@code get...()} */
     public
     ReflectionIClass(Class clazz, IClassLoader iClassLoader) {
         this.clazz        = clazz;
@@ -171,9 +167,7 @@ class ReflectionIClass extends IClass {
     public Class
     getClazz() { return this.clazz; }
 
-    /**
-     * @return E.g. "int", "int[][]", "pkg1.pkg2.Outer$Inner[]"
-     */
+    /** @return E.g. "int", "int[][]", "pkg1.pkg2.Outer$Inner[]" */
     @Override public String
     toString() {
         int   brackets = 0;
@@ -368,10 +362,7 @@ class ReflectionIClass extends IClass {
         final Field field;
     }
 
-    /**
-     * Load {@link Class} through {@link IClassLoader} to
-     * ensure unique {@link IClass}es.
-     */
+    /** Loads {@link Class} through {@link IClassLoader} to ensure unique {@link IClass}es. */
     private IClass
     classToIClass(Class c) {
         IClass iClass;
@@ -386,9 +377,7 @@ class ReflectionIClass extends IClass {
         return iClass;
     }
 
-    /**
-     * @see #classToIClass(Class)
-     */
+    /** @see #classToIClass(Class) */
     private IClass[]
     classesToIClasses(Class[] cs) {
         IClass[] result = new IClass[cs.length];

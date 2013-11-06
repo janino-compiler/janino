@@ -24,7 +24,5 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-/**
- * Sample applications for the Janino Java<sup>TM</sup> compiler.
- */
+/** Sample applications for the Janino Java<sup>TM</sup> compiler. */
 package org.codehaus.janino.samples;

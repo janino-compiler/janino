@@ -28,9 +28,7 @@ package org.codehaus.janino;
 
 import java.util.*;
 
-/**
- * Representation of a "method descriptor" (JVMS 4.3.3).
- */
+/** Representation of a "method descriptor" (JVMS 4.3.3). */
 @SuppressWarnings({ "rawtypes", "unchecked" }) public
 class MethodDescriptor {
 
@@ -47,9 +45,7 @@ class MethodDescriptor {
         this.returnFD     = returnFd;
     }
 
-    /**
-     * Parse a method descriptor into parameter FDs and return FDs.
-     */
+    /** Parse a method descriptor into parameter FDs and return FDs. */
     public
     MethodDescriptor(String s) {
         if (s.charAt(0) != '(') throw new JaninoRuntimeException();
@@ -75,9 +71,7 @@ class MethodDescriptor {
         this.returnFD     = s.substring(++from);
     }
 
-    /**
-     * Returns the "method descriptor" (JVMS 4.3.3).
-     */
+    /** @return The "method descriptor" (JVMS 4.3.3) */
     @Override public String
     toString() {
         StringBuilder sb = new StringBuilder("(");
@@ -85,9 +79,7 @@ class MethodDescriptor {
         return sb.append(')').append(this.returnFD).toString();
     }
 
-    /**
-     * Patch an additional parameter into a given method descriptor.
-     */
+    /** Patches an additional parameter into a given method descriptor. */
     public static String
     prependParameter(String md, String parameterFd) { return '(' + parameterFd + md.substring(1); }
 }
