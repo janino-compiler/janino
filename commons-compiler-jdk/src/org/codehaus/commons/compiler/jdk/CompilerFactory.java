@@ -30,6 +30,7 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import org.codehaus.commons.compiler.*;
 
+/** The {@link CompilerFactory} implementation for {@code org.codehaus.commons.compiler.jdk}. */
 public
 class CompilerFactory extends AbstractCompilerFactory {
 

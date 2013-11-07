@@ -57,11 +57,11 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
     /** Whether methods are static; {@code null} means "all". */
     protected boolean[] optionalStaticMethod;
 
-    protected Class<?>[]   optionalReturnTypes;
-    protected String[]     optionalMethodNames;
-    protected String[][]   optionalParameterNames;
-    protected Class<?>[][] optionalParameterTypes;
-    protected Class<?>[][] optionalThrownExceptions;
+    private Class<?>[]   optionalReturnTypes;
+    private String[]     optionalMethodNames;
+    private String[][]   optionalParameterNames;
+    private Class<?>[][] optionalParameterTypes;
+    private Class<?>[][] optionalThrownExceptions;
 
     /** null=uncooked */
     private Method[] result;
@@ -490,6 +490,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
         }
     }
 
+    /** The default return type of a script is {@code void}. */
     protected Class<?>
     getDefaultReturnType() { return void.class; }
 

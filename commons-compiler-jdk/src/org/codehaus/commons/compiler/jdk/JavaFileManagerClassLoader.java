@@ -35,6 +35,7 @@ import javax.tools.JavaFileObject;
 import javax.tools.StandardLocation;
 import javax.tools.JavaFileObject.Kind;
 
+/** A {@link ClassLoader} that loads classes through a {@link JavaFileManager}. */
 public
 class JavaFileManagerClassLoader extends ClassLoader {
 

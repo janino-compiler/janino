@@ -35,6 +35,10 @@ import javax.tools.JavaFileObject.Kind;
 import org.codehaus.commons.compiler.*;
 import org.codehaus.commons.compiler.jdk.ByteArrayJavaFileManager.ByteArrayJavaFileObject;
 
+/**
+ * A {@link ClassLoader} that loads classes by looking for their source files through a 'source path' and compiling
+ * them on-the-fly.
+ */
 public
 class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 
@@ -259,7 +263,7 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
         return className.replace('.', '/') + ".java";
     }
 
-    public static
+    private static
     class DiagnosticException extends RuntimeException {
 
         private static final long serialVersionUID = 5589635876875819926L;

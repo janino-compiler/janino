@@ -37,6 +37,7 @@ import javax.tools.JavaFileObject.Kind;
 
 import org.codehaus.commons.compiler.*;
 
+/** The JDK-based implementation of {@link ISimpleCompiler}. */
 public
 class SimpleCompiler extends Cookable implements ISimpleCompiler {
 
@@ -182,79 +183,79 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
         });
     }
 
-    protected void
-    cook(JavaFileObject compilationUnit) throws CompileException, IOException {
-
-        // Find the JDK Java compiler.
-        JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
-        if (compiler == null) {
-            throw new CompileException(
-                "JDK Java compiler not available - probably you're running a JRE, not a JDK",
-                null
-            );
-        }
-
-        // Get the original FM, which reads class files through this JVM's BOOTCLASSPATH and
-        // CLASSPATH.
-        final JavaFileManager fm = compiler.getStandardFileManager(null, null, null);
-
-        // Wrap it so that the output files (in our case class files) are stored in memory rather
-        // than in files.
-        final JavaFileManager fileManager = new ByteArrayJavaFileManager<JavaFileManager>(fm);
-
-        // Run the compiler.
-        try {
-            if (!compiler.getTask(
-                null,                                  // out
-                fileManager,                           // fileManager
-                new DiagnosticListener<JavaFileObject>() { // diagnosticListener
-
-                    @Override public void
-                    report(Diagnostic<? extends JavaFileObject> diagnostic) {
-                        System.err.println("*** " + diagnostic.toString() + " *** " + diagnostic.getCode());
-
-                        Location loc = new Location(
-                            diagnostic.getSource().toString(),
-                            (short) diagnostic.getLineNumber(),
-                            (short) diagnostic.getColumnNumber()
-                        );
-                        String code    = diagnostic.getCode();
-                        String message = diagnostic.getMessage(null) + " (" + code + ")";
-
-                        // Wrap the exception in a RuntimeException, because "report()" does not declare checked
-                        // exceptions.
-                        throw new RuntimeException(new CompileException(message, loc));
-                    }
-                },
-                null,                                  // options
-                null,                                  // classes
-                Collections.singleton(compilationUnit) // compilationUnits
-            ).call()) {
-                throw new CompileException("Compilation failed", null);
-            }
-        } catch (RuntimeException rte) {
-
-            // Unwrap the compilation exception and throw it.
-            Throwable cause = rte.getCause();
-            if (cause != null) {
-                cause = cause.getCause();
-                if (cause instanceof CompileException) {
-                    throw (CompileException) cause; // SUPPRESS CHECKSTYLE AvoidHidingCause
-                }
-                if (cause instanceof IOException) {
-                    throw (IOException) cause; // SUPPRESS CHECKSTYLE AvoidHidingCause
-                }
-            }
-            throw rte;
-        }
-
-        // Create a ClassLoader that reads class files from our FM.
-        this.result = AccessController.doPrivileged(new PrivilegedAction<JavaFileManagerClassLoader>() {
-
-            @Override public JavaFileManagerClassLoader
-            run() { return new JavaFileManagerClassLoader(fileManager, SimpleCompiler.this.parentClassLoader); }
-        });
-    }
+//    protected void
+//    cook(JavaFileObject compilationUnit) throws CompileException, IOException {
+//
+//        // Find the JDK Java compiler.
+//        JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+//        if (compiler == null) {
+//            throw new CompileException(
+//                "JDK Java compiler not available - probably you're running a JRE, not a JDK",
+//                null
+//            );
+//        }
+//
+//        // Get the original FM, which reads class files through this JVM's BOOTCLASSPATH and
+//        // CLASSPATH.
+//        final JavaFileManager fm = compiler.getStandardFileManager(null, null, null);
+//
+//        // Wrap it so that the output files (in our case class files) are stored in memory rather
+//        // than in files.
+//        final JavaFileManager fileManager = new ByteArrayJavaFileManager<JavaFileManager>(fm);
+//
+//        // Run the compiler.
+//        try {
+//            if (!compiler.getTask(
+//                null,                                  // out
+//                fileManager,                           // fileManager
+//                new DiagnosticListener<JavaFileObject>() { // diagnosticListener
+//
+//                    @Override public void
+//                    report(Diagnostic<? extends JavaFileObject> diagnostic) {
+//                        System.err.println("*** " + diagnostic.toString() + " *** " + diagnostic.getCode());
+//
+//                        Location loc = new Location(
+//                            diagnostic.getSource().toString(),
+//                            (short) diagnostic.getLineNumber(),
+//                            (short) diagnostic.getColumnNumber()
+//                        );
+//                        String code    = diagnostic.getCode();
+//                        String message = diagnostic.getMessage(null) + " (" + code + ")";
+//
+//                        // Wrap the exception in a RuntimeException, because "report()" does not declare checked
+//                        // exceptions.
+//                        throw new RuntimeException(new CompileException(message, loc));
+//                    }
+//                },
+//                null,                                  // options
+//                null,                                  // classes
+//                Collections.singleton(compilationUnit) // compilationUnits
+//            ).call()) {
+//                throw new CompileException("Compilation failed", null);
+//            }
+//        } catch (RuntimeException rte) {
+//
+//            // Unwrap the compilation exception and throw it.
+//            Throwable cause = rte.getCause();
+//            if (cause != null) {
+//                cause = cause.getCause();
+//                if (cause instanceof CompileException) {
+//                    throw (CompileException) cause; // SUPPRESS CHECKSTYLE AvoidHidingCause
+//                }
+//                if (cause instanceof IOException) {
+//                    throw (IOException) cause; // SUPPRESS CHECKSTYLE AvoidHidingCause
+//                }
+//            }
+//            throw rte;
+//        }
+//
+//        // Create a ClassLoader that reads class files from our FM.
+//        this.result = AccessController.doPrivileged(new PrivilegedAction<JavaFileManagerClassLoader>() {
+//
+//            @Override public JavaFileManagerClassLoader
+//            run() { return new JavaFileManagerClassLoader(fileManager, SimpleCompiler.this.parentClassLoader); }
+//        });
+//    }
 
     @Override public void
     setDebuggingInformation(boolean debugSource, boolean debugLines, boolean debugVars) {
@@ -273,13 +274,7 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
         );
     }
 
-    /**
-     * Auxiliary classes never really worked... don't use them.
-     *
-     * @param optionalParentClassLoader
-     * @param auxiliaryClasses
-     * @deprecated
-     */
+    /** @deprecated Auxiliary classes never really worked... don't use them. */
     @Deprecated public void
     setParentClassLoader(ClassLoader optionalParentClassLoader, Class<?>[] auxiliaryClasses) {
         this.setParentClassLoader(optionalParentClassLoader);
