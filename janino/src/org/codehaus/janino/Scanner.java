@@ -60,7 +60,7 @@ class Scanner {
      * <p>
      * <b>This method is deprecated because it leaves the input file open.</b>
      *
-     * @deprecated
+     * @deprecated // SUPPRESS CHECKSTYLE MissingDeprecated
      */
     @Deprecated public
     Scanner(String fileName) throws CompileException, IOException {
@@ -75,7 +75,7 @@ class Scanner {
      * <p>
      * <b>This method is deprecated because it leaves the input file open.</b>
      *
-     * @deprecated
+     * @deprecated // SUPPRESS CHECKSTYLE MissingDeprecated
      */
     @Deprecated public
     Scanner(String fileName, String encoding) throws CompileException, IOException {
@@ -92,7 +92,7 @@ class Scanner {
      * <p>
      * <b>This method is deprecated because it leaves the input file open.</b>
      *
-     * @deprecated
+     * @deprecated // SUPPRESS CHECKSTYLE MissingDeprecated
      */
     @Deprecated public
     Scanner(File file) throws CompileException, IOException {
@@ -108,7 +108,7 @@ class Scanner {
      * <p>
      * <b>This method is deprecated because it leaves the input file open.</b>
      *
-     * @deprecated
+     * @deprecated // SUPPRESS CHECKSTYLE MissingDeprecated
      */
     @Deprecated public
     Scanner(File file, String optionalEncoding) throws CompileException, IOException {
@@ -262,6 +262,7 @@ class Scanner {
         return new Location(this.optionalFileName, this.nextCharLineNumber, this.nextCharColumnNumber);
     }
 
+    /** Representation of a Java&trade; token. */
     public final
     class Token {
         private final String optionalFileName;
@@ -269,18 +270,52 @@ class Scanner {
         private final short  columnNumber;
         private Location     location;
 
-        public final int        type;
-        public static final int EOF                    = 0;
-        public static final int IDENTIFIER             = 1;
-        public static final int KEYWORD                = 2;
-        public static final int INTEGER_LITERAL        = 3;
-        public static final int FLOATING_POINT_LITERAL = 4;
-        public static final int BOOLEAN_LITERAL        = 5;
-        public static final int CHARACTER_LITERAL      = 6;
-        public static final int STRING_LITERAL         = 7;
-        public static final int NULL_LITERAL           = 8;
-        public static final int OPERATOR               = 9;
+        /** The type of this token; legal values are the various public constant declared in this class. */
+        public final int type;
 
+        /** Indication of the 'end-of-input' condition. */
+        public static final int EOF = 0;
+
+        /** The token represents an identifier. */
+        public static final int IDENTIFIER = 1;
+
+        /** The token represents a keyword. */
+        public static final int KEYWORD = 2;
+
+        /**
+         * The token represents an integer literal; its {@link #value} is the text of the integer literal exactly as it
+         * appears in the source code.
+         */
+        public static final int INTEGER_LITERAL = 3;
+
+        /**
+         * The token represents a floating-point literal; its {@link #value} is the text of the floating-point literal
+         * exactly as it appears in the source code.
+         */
+        public static final int FLOATING_POINT_LITERAL = 4;
+
+        /** The token represents a boolean literal; its {@link #value} is either 'true' or 'false'. */
+        public static final int BOOLEAN_LITERAL = 5;
+
+        /**
+         * The token represents a character literal; its {@link #value} is the text of the character literal exactly as
+         * it appears in the source code (including the single quotes around it).
+         */
+        public static final int CHARACTER_LITERAL = 6;
+
+        /**
+         * The token represents a string literal; its {@link #value} is the text of the string literal exactly as it
+         * appears in the source code (including the double quotes around it).
+         */
+        public static final int STRING_LITERAL = 7;
+
+        /** The token represents the {@code null} literal; its {@link #value} is 'null'. */
+        public static final int NULL_LITERAL = 8;
+
+        /** The token represents an operator; its {@link #value} is exactly the particular operator (e.g. "<<<="). */
+        public static final int OPERATOR = 9;
+
+        /** The text of the token exactly as it appears in the source code. */
         public final String value;
 
         private
@@ -292,6 +327,7 @@ class Scanner {
             this.value            = value;
         }
 
+        /** @return The location of the first character of this token */
         public Location
         getLocation() {
             if (this.location == null) {
@@ -304,6 +340,10 @@ class Scanner {
         toString() { return this.value; }
     }
 
+    /**
+     * Preduces and returns the next token. Notice that end-of-input is <i>not</i> signalized with a {@code null}
+     * product, but by the special {@link #EOF} token.
+     */
     public Token
     produce() throws CompileException, IOException {
         if (this.docComment != null) {

@@ -1422,22 +1422,22 @@ class Java {
             Modifiers                modifiers,
             Type                     type,
             String                   name,
-            FormalParameters         formalParameters,
+            FormalParameters         parameters,
             Type[]                   thrownExceptions,
             List/*<BlockStatement>*/ optionalStatements
         ) {
             super(location, (modifiers.flags & Mod.STATIC) != 0);
             this.optionalDocComment = optionalDocComment;
-            this.modifiers          = formalParameters.variableArity ? modifiers.add(Mod.VARARGS) : modifiers;
+            this.modifiers          = parameters.variableArity ? modifiers.add(Mod.VARARGS) : modifiers;
             this.type               = type;
             this.name               = name;
-            this.formalParameters   = formalParameters;
+            this.formalParameters   = parameters;
             this.thrownExceptions   = thrownExceptions;
             this.optionalStatements = optionalStatements;
 
             this.type.setEnclosingScope(this);
-            for (int i = 0; i < formalParameters.parameters.length; ++i) {
-                formalParameters.parameters[i].type.setEnclosingScope(this);
+            for (int i = 0; i < parameters.parameters.length; ++i) {
+                parameters.parameters[i].type.setEnclosingScope(this);
             }
             for (int i = 0; i < thrownExceptions.length; ++i) thrownExceptions[i].setEnclosingScope(this);
             if (optionalStatements != null) {
@@ -1575,7 +1575,7 @@ class Java {
             Location                            location,
             String                              optionalDocComment,
             Modifiers                           modifiers,
-            FunctionDeclarator.FormalParameters formalParameters,
+            FunctionDeclarator.FormalParameters parameters,
             Type[]                              thrownExceptions,
             ConstructorInvocation               optionalConstructorInvocation,
             List/*<BlockStatement>*/            statements
@@ -1586,7 +1586,7 @@ class Java {
                 modifiers,                               // modifiers
                 new BasicType(location, BasicType.VOID), // type
                 "<init>",                                // name
-                formalParameters,                        // formalParameters
+                parameters,                        // formalParameters
                 thrownExceptions,                        // thrownExceptions
                 statements                               // optionalStatements
             );
@@ -1632,7 +1632,7 @@ class Java {
             Java.Modifiers                      modifiers,
             Type                                type,
             String                              name,
-            FunctionDeclarator.FormalParameters formalParameters,
+            FunctionDeclarator.FormalParameters parameters,
             Type[]                              thrownExceptions,
             List/*<BlockStatement>*/            optionalStatements
         ) {
@@ -1642,7 +1642,7 @@ class Java {
                 modifiers,          // modifiers
                 type,               // type
                 name,               // name
-                formalParameters,   // formalParameters
+                parameters,         // parameters
                 thrownExceptions,   // thrownExceptions
                 optionalStatements  // optionalStatements
             );
@@ -4459,7 +4459,7 @@ class Java {
         public IClass getType() { return this.type; }
     }
 
-    /** Used during resolution. */
+    /** Representation of a local variable while it is in scope during compilation. */
     public static
     class LocalVariable {
 

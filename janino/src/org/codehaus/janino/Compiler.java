@@ -39,6 +39,7 @@ import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.ErrorHandler;
 import org.codehaus.commons.compiler.Location;
 import org.codehaus.commons.compiler.WarningHandler;
+import org.codehaus.janino.Java.CompilationUnit;
 import org.codehaus.janino.util.Benchmark;
 import org.codehaus.janino.util.ClassFile;
 import org.codehaus.janino.util.StringPattern;
@@ -511,10 +512,14 @@ class Compiler {
             // grow while they are being compiled, but eventually all CUs will
             // be compiled.
             for (int i = 0; i < this.parsedCompilationUnits.size(); ++i) {
-                UnitCompiler         unitCompiler = (UnitCompiler) this.parsedCompilationUnits.get(i);
-                Java.CompilationUnit cu           = unitCompiler.compilationUnit;
-                if (cu.optionalFileName == null) throw new JaninoRuntimeException();
-                File sourceFile = new File(cu.optionalFileName);
+                UnitCompiler unitCompiler = (UnitCompiler) this.parsedCompilationUnits.get(i);
+
+                File sourceFile;
+                {
+                    CompilationUnit compilationUnit = unitCompiler.getCompilationUnit();
+                    if (compilationUnit.optionalFileName == null) throw new JaninoRuntimeException();
+                    sourceFile = new File(compilationUnit.optionalFileName);
+                }
 
                 unitCompiler.setCompileErrorHandler(ceh);
                 unitCompiler.setWarningHandler(this.optionalWarningHandler);

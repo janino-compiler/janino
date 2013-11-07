@@ -134,6 +134,7 @@ class Parser {
     public
     Parser(Scanner scanner) { this.scanner = scanner; }
 
+    /** @return The scanner that produces the tokens for this parser. */
     public Scanner
     getScanner() { return this.scanner; }
 
@@ -477,11 +478,22 @@ class Parser {
         this.parseClassBody(namedClassDeclaration);
         return namedClassDeclaration;
     }
+
+    /** Enumerator for the kinds of context where a class declaration can occur. */
     public static final
     class ClassDeclarationContext extends Enumerator {
-        public static final ClassDeclarationContext BLOCK            = new ClassDeclarationContext("block");
+
+        /** Enumerator for the kinds of context where a class declaration can occur. */
+        /** The class declaration appears inside a 'block'. */
+        /** The class declaration appears inside a 'block'. */
+        public static final ClassDeclarationContext BLOCK = new ClassDeclarationContext("block");
+        
+        /** The class declaration appears (directly) inside a type declaration. */
         public static final ClassDeclarationContext TYPE_DECLARATION = new ClassDeclarationContext("type_declaration");
+        
+        /** The class declaration appears on the top level. */
         public static final ClassDeclarationContext COMPILATION_UNIT = new ClassDeclarationContext("compilation_unit");
+
         private ClassDeclarationContext(String name) { super(name); }
     }
 
@@ -673,14 +685,20 @@ class Parser {
         this.parseInterfaceBody(interfaceDeclaration);
         return interfaceDeclaration;
     }
+
+    /** Enumerator for the kinds of context where an interface declaration can occur. */
     public static final
     class InterfaceDeclarationContext extends Enumerator {
-        // CHECKSTYLE LineLengthCheck:OFF
-        public static final InterfaceDeclarationContext NAMED_TYPE_DECLARATION = new InterfaceDeclarationContext("named_type_declaration");
-        public static final InterfaceDeclarationContext COMPILATION_UNIT       = new InterfaceDeclarationContext("compilation_unit");
-        // CHECKSTYLE LineLengthCheck:ON
 
-        InterfaceDeclarationContext(String name) { super(name); }
+        /** The interface declaration appears (directly) inside a 'named type declaration'. */
+        public static final InterfaceDeclarationContext
+        NAMED_TYPE_DECLARATION = new InterfaceDeclarationContext("named_type_declaration");
+
+        /** The interface declaration appears at the top level. */
+        public static final InterfaceDeclarationContext
+        COMPILATION_UNIT = new InterfaceDeclarationContext("compilation_unit");
+
+        private InterfaceDeclarationContext(String name) { super(name); }
     }
 
     /**
@@ -2515,6 +2533,17 @@ class Parser {
         return (Rvalue[]) l.toArray(new Rvalue[l.size()]);
     }
 
+    /**
+     * <pre>
+     *   Literal :=
+     *     IntegerLiteral
+     *     | FloatingPointLiteral
+     *     | BooleanLiteral
+     *     | CharacterLiteral
+     *     | StringLiteral
+     *     | NullLiteral
+     * </pre>
+     */
     public Rvalue
     parseLiteral() throws CompileException, IOException {
         Token t = this.read();
@@ -2543,6 +2572,7 @@ class Parser {
         return new ExpressionStatement(rv);
     }
 
+    /** @return The location of the first character of the previously {@link #peek()}ed or {@link #read()} token */
     public Location
     location() { return this.scanner.location(); }
 
@@ -2550,12 +2580,14 @@ class Parser {
 
     // Token-level methods.
 
+    /** @return The next token, but does not consume it */
     public Token
     peek() throws CompileException, IOException {
         if (this.nextToken == null) this.nextToken = this.scanner.produce();
         return this.nextToken;
     }
 
+    /** @return The next-but-one token, but consumes neither the next nor the next-but-one token */
     public Token
     peekNextButOne() throws CompileException, IOException {
         if (this.nextToken == null) this.nextToken = this.scanner.produce();
@@ -2563,6 +2595,7 @@ class Parser {
         return this.nextButOneToken;
     }
 
+    /** @return The next and also consumes it, or {@code null} iff the scanner is at end-of-input */
     public Token
     read() throws CompileException, IOException {
         if (this.nextToken == null) return this.scanner.produce();
@@ -2574,51 +2607,88 @@ class Parser {
 
     // Peek/read/peekRead convenience methods.
 
+    /** @return Whether the value of the next token equals {@code suspected}; does not consume the next token */
     public boolean
-    peek(String value) throws CompileException, IOException {
-        return this.peek().value.equals(value);
+    peek(String suspected) throws CompileException, IOException {
+        return this.peek().value.equals(suspected);
     }
 
+    /**
+     * Checks whether the value of the next token equals any of the {@code suspected}; does not consume the next
+     * token.
+     *
+     * @return The index of the first of the {@code suspected} that equals the value of the next token, or -1 if the
+     *         value of the next token equals none of the {@code suspected}
+     */
     public int
-    peek(String[] values) throws CompileException, IOException {
-        return indexOf(values, this.peek().value);
+    peek(String[] suspected) throws CompileException, IOException {
+        return indexOf(suspected, this.peek().value);
     }
 
+    /**
+     * Checks whether the type of the next token is any of the {@code suspected}; does not consume the next token.
+     *
+     * @return The index of the first of the {@code suspected} types that is the next token's type, or -1 if the type
+     *         of the next token is none of the {@code suspected} types
+     */
     public int
-    peek(int[] types) throws CompileException, IOException {
-        return indexOf(types, this.peek().type);
+    peek(int[] suspected) throws CompileException, IOException {
+        return indexOf(suspected, this.peek().type);
     }
 
+    /**
+     * @return Whether the value of the next-but-one token equals the {@code suspected}; consumes neither the next
+     *         nor the next-but-one token
+     */
     public boolean
-    peekNextButOne(String value) throws CompileException, IOException {
-        return this.peekNextButOne().value.equals(value);
+    peekNextButOne(String suspected) throws CompileException, IOException {
+        return this.peekNextButOne().value.equals(suspected);
     }
 
+    /**
+     * Verifies that the value of the next token equals {@code expected}, and consumes the token.
+     *
+     * @throws CompileException The value of the next token does not equal {@code expected} (this includes the case
+     *                          that  the scanner is at end-of-input)
+     */
     public void
-    read(String value) throws CompileException, IOException {
+    read(String expected) throws CompileException, IOException {
         String s = this.read().value;
-        if (!s.equals(value)) throw this.compileException("'" + value + "' expected instead of '" + s + "'");
+        if (!s.equals(expected)) throw this.compileException("'" + expected + "' expected instead of '" + s + "'");
     }
 
+    /**
+     * Verifies that the value of the next token equals one of the {@code expected}, and consumes the token.
+     *
+     * @throws CompileException The value of the next token does not equal any of the {@code expected} (this includes
+     *                          the case where the scanner is at end-of-input)
+     */
     public int
-    read(String[] values) throws CompileException, IOException {
-        String s   = this.read().value;
-        int    idx = indexOf(values, s);
+    read(String[] expected) throws CompileException, IOException {
+
+        String s = this.read().value;
+
+        int idx = indexOf(expected, s);
         if (idx == -1) {
-            throw this.compileException("One of '" + join(values, " ") + "' expected instead of '" + s + "'");
+            throw this.compileException("One of '" + join(expected, " ") + "' expected instead of '" + s + "'");
         }
         return idx;
     }
 
+    /**
+     * @return Whether the value of the next token equals the {@code suspected}; if so, it consumes the next token
+     * @throws CompileException
+     * @throws IOException
+     */
     public boolean
-    peekRead(String value) throws CompileException, IOException {
+    peekRead(String suspected) throws CompileException, IOException {
         if (this.nextToken == null) {
             Token t = this.scanner.produce();
-            if (t.value.equals(value)) return true;
+            if (t.value.equals(suspected)) return true;
             this.nextToken = t;
             return false;
         }
-        if (!this.nextToken.value.equals(value)) return false;
+        if (!this.nextToken.value.equals(suspected)) return false;
         this.nextToken       = this.nextButOneToken;
         this.nextButOneToken = null;
         return true;
@@ -2641,17 +2711,20 @@ class Parser {
         return idx;
     }
 
+    /** @return Whether the scanner is at end-of-input */
     public boolean
     peekEof() throws CompileException, IOException {
         return this.peek().type == Token.EOF;
     }
 
+    /** @return {@code null} iff the next token is not an identifier, otherwise the value of the identifier token */
     public String
     peekIdentifier() throws CompileException, IOException {
         Token t = this.peek();
         return t.type == Token.IDENTIFIER ? t.value : null;
     }
 
+    /** @return Whether the next token is a literal */
     public boolean
     peekLiteral() throws CompileException, IOException {
         return this.peek(new int[] {
@@ -2660,6 +2733,10 @@ class Parser {
         }) != -1;
     }
 
+    /**
+     * @return                  The value of the next token, which is an indentifier
+     * @throws CompileException The next token is not an identifier
+     */
     public String
     readIdentifier() throws CompileException, IOException {
         Token t = this.read();
@@ -2667,6 +2744,10 @@ class Parser {
         return t.value;
     }
 
+    /**
+     * @return                  The value of the next token, which is an operator
+     * @throws CompileException The next token is not an operator
+     */
     public String
     readOperator() throws CompileException, IOException {
         Token t = this.read();

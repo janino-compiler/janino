@@ -43,6 +43,7 @@ import org.codehaus.janino.ExpressionEvaluator;
 import org.codehaus.janino.IClass;
 import org.codehaus.janino.IClassLoader;
 import org.codehaus.janino.Java;
+import org.codehaus.janino.Java.CompilationUnit;
 import org.codehaus.janino.Parser;
 import org.codehaus.janino.Scanner;
 import org.codehaus.janino.UnitCompiler;
@@ -539,8 +540,9 @@ class JGrep {
         this.benchmark.beginReporting();
         try {
             for (Iterator/*<UnitCompiler>*/ it = this.parsedCompilationUnits.iterator(); it.hasNext();) {
-                final UnitCompiler uc = (UnitCompiler) it.next();
-                this.benchmark.beginReporting("Grepping \"" + uc.compilationUnit.optionalFileName + "\"");
+                final UnitCompiler unitCompiler    = (UnitCompiler) it.next();
+                CompilationUnit    compilationUnit = unitCompiler.getCompilationUnit();
+                this.benchmark.beginReporting("Grepping \"" + compilationUnit.optionalFileName + "\"");
                 try {
                     new Traverser() {
 
@@ -548,7 +550,7 @@ class JGrep {
                         @Override public void
                         traverseMethodInvocation(Java.MethodInvocation mi) {
                             try {
-                                this.match(mi, uc.findIMethod(mi));
+                                this.match(mi, unitCompiler.findIMethod(mi));
                             } catch (CompileException ex) {
                                 throw new UncheckedCompileException(ex);
                             }
@@ -559,7 +561,7 @@ class JGrep {
                         @Override public void
                         traverseSuperclassMethodInvocation(Java.SuperclassMethodInvocation scmi) {
                             try {
-                                this.match(scmi, uc.findIMethod(scmi));
+                                this.match(scmi, unitCompiler.findIMethod(scmi));
                             } catch (CompileException ex) {
                                 throw new UncheckedCompileException(ex);
                             }
@@ -594,10 +596,10 @@ class JGrep {
                                 it2.hasNext();
                             ) {
                                 MethodInvocationTarget mit = (MethodInvocationTarget) it2.next();
-                                mit.apply(uc, invocation, method);
+                                mit.apply(unitCompiler, invocation, method);
                             }
                         }
-                    }.traverseCompilationUnit(uc.compilationUnit);
+                    }.traverseCompilationUnit(compilationUnit);
                 } catch (UncheckedCompileException uce) {
                     throw uce.compileException; // SUPPRESS CHECKSTYLE AvoidHidingCause
                 } finally {
