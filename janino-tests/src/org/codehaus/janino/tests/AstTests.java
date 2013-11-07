@@ -58,6 +58,11 @@ import org.codehaus.janino.SimpleCompiler;
 import org.codehaus.janino.UnparseVisitor;
 import org.junit.Test;
 
+// CHECKSTYLE JavadocMethod:OFF
+
+/**
+ * Tests for 'programmatically created' ASTs.
+ */
 public
 class AstTests {
 

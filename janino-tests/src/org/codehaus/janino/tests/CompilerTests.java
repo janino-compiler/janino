@@ -58,6 +58,9 @@ import org.codehaus.janino.util.resource.ResourceCreator;
 import org.codehaus.janino.util.resource.ResourceFinder;
 import org.junit.Test;
 
+// CHECKSTYLE JavadocMethod:OFF
+
+/** Unit tests for the {@link SimpleCompiler}. */
 public
 class CompilerTests {
 

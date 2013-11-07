@@ -40,6 +40,9 @@ import org.codehaus.janino.Scanner;
 import org.codehaus.janino.ScriptEvaluator;
 import org.junit.Test;
 
+// CHECKSTYLE JavadocMethod:OFF
+
+/** Unit tests fot the {@link ExpressionEvaluator}. */
 public
 class ExpressionEvaluatorTest {
 

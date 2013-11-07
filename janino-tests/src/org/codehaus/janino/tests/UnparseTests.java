@@ -86,6 +86,9 @@ import org.codehaus.janino.Java.UnaryOperation;
 import org.codehaus.janino.util.Traverser;
 import org.junit.Test;
 
+// CHECKSTYLE JavadocMethod:OFF
+
+/** Unit tests for the 'unparsing' feature. */
 public
 class UnparseTests {
 
