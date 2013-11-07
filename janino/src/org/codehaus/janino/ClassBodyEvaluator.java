@@ -35,8 +35,6 @@ import org.codehaus.commons.compiler.IClassBodyEvaluator;
 import org.codehaus.commons.compiler.ICompilerFactory;
 import org.codehaus.commons.compiler.Location;
 
-// CHECKSTYLE MissingDeprecated:OFF
-
 /**
  * The <code>optionalClassLoader</code> serves two purposes:
  * <ul>
@@ -413,8 +411,8 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
      * cbe.{@link IClassBodyEvaluator#createInstance(Reader) createInstance}(reader);
      * </pre>
      *
-     * @see #createInstance(Reader)
-     * @deprecated
+     * @see        #createInstance(Reader)
+     * @deprecated Use {@link #createInstance(Reader)} instead.
      */
     @Deprecated public static Object
     createFastClassBodyEvaluator(
