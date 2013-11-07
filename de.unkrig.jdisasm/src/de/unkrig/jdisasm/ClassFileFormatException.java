@@ -28,9 +28,7 @@ package de.unkrig.jdisasm;
 
 import java.io.IOException;
 
-/**
- * Represents an invalid class file format.
- */
+/** Represents an invalid class file format. */
 public
 class ClassFileFormatException extends IOException {
 

@@ -39,9 +39,7 @@ import de.unkrig.jdisasm.ConstantPool.ConstantNameAndTypeInfo;
 import de.unkrig.jdisasm.ConstantPool.ConstantUtf8Info;
 import de.unkrig.jdisasm.SignatureParser.SignatureException;
 
-/**
- * Representation of a Java&trade; class file.
- */
+/** Representation of a Java&trade; class file. */
 public
 class ClassFile {
 
@@ -63,9 +61,7 @@ class ClassFile {
      */
     public short accessFlags;
 
-    /**
-     * The fully qualified (dot-separated) name of this type.
-     */
+    /** The fully qualified (dot-separated) name of this type. */
     public String thisClassName;
 
     /**
@@ -74,9 +70,7 @@ class ClassFile {
      */
     @Nullable public String superClassName;
 
-    /**
-     * Fully qualified (dot-separated) names of the interfaces that this type implements.
-     */
+    /** Fully qualified (dot-separated) names of the interfaces that this type implements. */
     public final List<String> interfaceNames = new ArrayList<String>();
 
     /**
@@ -99,50 +93,31 @@ class ClassFile {
      */
     public final List<Method> methods = new ArrayList<Method>();
 
-    /**
-     * The optional {@code Deprecated} attribute of this class or interface.
-     */
+    /** The optional {@code Deprecated} attribute of this class or interface. */
     @Nullable public DeprecatedAttribute deprecatedAttribute;
 
-    /**
-     * The optional {@code EnclosingMethod} attribute of this class or interface.
-     */
+    /** The optional {@code EnclosingMethod} attribute of this class or interface. */
     @Nullable public EnclosingMethodAttribute enclosingMethodAttribute;
 
-    /**
-     * The optional {@code InnerClasses} attribute of this class or interface.
-     */
+    /** The optional {@code InnerClasses} attribute of this class or interface. */
     @Nullable public InnerClassesAttribute innerClassesAttribute;
 
-    /**
-     * The optional {@code RuntimeInvisibleAnnotations} attribute of this class or interface.
-     */
+    /** The optional {@code RuntimeInvisibleAnnotations} attribute of this class or interface. */
     @Nullable public RuntimeInvisibleAnnotationsAttribute runtimeInvisibleAnnotationsAttribute;
 
-    /**
-     * The optional {@code RuntimeVisibleAnnotations} attribute of this class or interface.
-d     * 
-     */
+    /** The optional {@code RuntimeVisibleAnnotations} attribute of this class or interface. */
     @Nullable public RuntimeVisibleAnnotationsAttribute runtimeVisibleAnnotationsAttribute;
 
-    /**
-     * The optional {@code Signature} attribute of this class or interface.
-     */
+    /** The optional {@code Signature} attribute of this class or interface. */
     @Nullable public SignatureAttribute signatureAttribute;
 
-    /**
-     * The optional {@code Signature} attribute of this class or interface.
-     */
+    /** The optional {@code Signature} attribute of this class or interface. */
     @Nullable public SourceFileAttribute sourceFileAttribute;
 
-    /**
-     * The optional {@code Synthetic} attribute of this class or interface.
-     */
+    /** The optional {@code Synthetic} attribute of this class or interface. */
     @Nullable public SyntheticAttribute syntheticAttribute;
 
-    /**
-     * The other attributes of this class or interface.
-     */
+    /** The other attributes of this class or interface. */
     public final List<Attribute> attributes = new ArrayList<Attribute>();
 
     // Class, nested class, field and method access and property flags.
@@ -292,9 +267,7 @@ d     *
         });
     }
 
-    /**
-     * @return The major/minor version of this class file translated into a human-readable JDK name.
-     */
+    /** @return The major/minor version of this class file translated into a human-readable JDK name */
     public String
     getJdkName() {
         switch (this.majorVersion) {
@@ -503,22 +476,14 @@ d     *
     public
     interface Attribute {
 
-        /**
-         * Accepts the {@code visitor}.
-         */
-        void
-        accept(AttributeVisitor visitor);
+        /** Accepts the {@code visitor}. */
+        void accept(AttributeVisitor visitor);
 
-        /**
-         * @return This attribute's name
-         */
-        String
-        getName();
+        /** @return This attribute's name */
+        String getName();
     }
 
-    /**
-     * Reads a set of attributs and has them accept the {@code visitor}.
-     */
+    /** Reads a set of attributs and has them accept the {@code visitor}. */
     final void
     readAttributes(DataInputStream dis, AttributeVisitor visitor) throws IOException {
         short n = dis.readShort();
@@ -655,9 +620,7 @@ d     *
         void visit(SyntheticAttribute                            sa);
         // CHECKSTYLE MethodCheck:ON
 
-        /**
-         * An unknown attribute accepted this visitor.
-         */
+        /** An unknown attribute accepted this visitor. */
         void visit(UnknownAttribute unknownAttribute);
     }
 
@@ -665,9 +628,7 @@ d     *
     public abstract static
     class AbstractAttributeVisitor implements AttributeVisitor {
 
-        /**
-         * Called by the default implementations of the {@code visit(...)} methods.
-         */
+        /** Called by the default implementations of the {@code visit(...)} methods. */
         public abstract void visitOther(Attribute ai);
 
         @Override public void visit(AnnotationDefaultAttribute                    ada)   { this.visitOther(ada); }
@@ -700,9 +661,7 @@ d     *
          */
         public final String name;
 
-        /**
-         * The (unstructured) attribute information.
-         */
+        /** The (unstructured) attribute information. */
         public byte[] info;
 
         UnknownAttribute(String name, DataInputStream dis, ClassFile cf) throws IOException {
@@ -775,9 +734,7 @@ d     *
             }
         }
 
-        /**
-         * The inner/outer class relationship relevant for this class.
-         */
+        /** The inner/outer class relationship relevant for this class. */
         public final List<ClasS> classes = new ArrayList<ClasS>();
 
         InnerClassesAttribute(DataInputStream dis, ClassFile cf) throws IOException {
@@ -803,9 +760,7 @@ d     *
          */
         public final List<Annotation> annotations = new ArrayList<Annotation>();
 
-        /**
-         * Reads and populates this object from the given {@link DataInputStream}.
-         */
+        /** Reads and populates this object from the given {@link DataInputStream}. */
         RuntimeVisibleAnnotationsAttribute(DataInputStream dis, ClassFile cf) throws IOException {
             for (int i = 0xffff & dis.readShort(); i > 0; --i) {
                 this.annotations.add(new Annotation(dis, cf));
@@ -828,9 +783,7 @@ d     *
         @Override public void accept(AttributeVisitor visitor) { visitor.visit(this); }
     }
 
-    /**
-     * Helper class for {@link RuntimeVisibleParameterAnnotationsAttribute}.
-     */
+    /** Helper class for {@link RuntimeVisibleParameterAnnotationsAttribute}. */
     public static
     class ParameterAnnotation {
 
@@ -964,9 +917,7 @@ d     *
          */
         public String typeName;
 
-        /**
-         * Each value of this list represents a single element-value pair in the {@link Annotation}.
-         */
+        /** Each value of this list represents a single element-value pair in the {@link Annotation}. */
         public final List<ElementValuePair> elementValuePairs = new ArrayList<ElementValuePair>();
 
         public
@@ -997,16 +948,12 @@ d     *
         }
     }
 
-    /**
-     * Representation of an annotation element value.
-     */
+    /** Representation of an annotation element value. */
     public
     interface ElementValue {
     }
 
-    /**
-     * Reads one {@link ElementValue} from the given {@link DataInputStream}.
-     */
+    /** Reads one {@link ElementValue} from the given {@link DataInputStream}. */
     static ElementValue
     newElementValue(DataInputStream dis, ClassFile cf) throws IOException {
         final byte tag = dis.readByte();
@@ -1178,24 +1125,16 @@ d     *
          */
         public final List<ExceptionTableEntry> exceptionTable = new ArrayList<ExceptionTableEntry>();
 
-        /**
-         * The {@code Code} attribute's optional {@code LocalVariableTable} attribute.
-         */
+        /** The {@code Code} attribute's optional {@code LocalVariableTable} attribute. */
         @Nullable public LocalVariableTableAttribute localVariableTableAttribute;
 
-        /**
-         * The {@code Code} attribute's optional {@code LocalVariableTypeTable} attribute.
-         */
+        /** The {@code Code} attribute's optional {@code LocalVariableTypeTable} attribute. */
         @Nullable public LocalVariableTypeTableAttribute localVariableTypeTableAttribute;
 
-        /**
-         * The {@code Code} attribute's optional {@code LineNumberTable} attribute.
-         */
+        /** The {@code Code} attribute's optional {@code LineNumberTable} attribute. */
         @Nullable public LineNumberTableAttribute lineNumberTableAttribute;
 
-        /**
-         * The attributes of the {@code Code} attribute. 
-         */
+        /** The attributes of the {@code Code} attribute. */
         public final List<Attribute> attributes = new ArrayList<Attribute>();
 
         CodeAttribute(DataInputStream dis, ClassFile cf) throws IOException {
@@ -1359,9 +1298,7 @@ d     *
          */
         public int startPc;
 
-        /**
-         * The value must give the corresponding line number in the original source file. 
-         */
+        /** The value must give the corresponding line number in the original source file. */
         public int lineNumber;
 
         LineNumberTableEntry(DataInputStream dis) throws IOException {
@@ -1399,14 +1336,10 @@ d     *
              */
             public final short startPC, length;
 
-            /**
-             * Represents a valid unqualified name denoting a local variable. 
-             */
+            /** Represents a valid unqualified name denoting a local variable. */
             public final String name;
 
-            /**
-             * Representing a field descriptor encoding the type of a local variable in the source program. 
-             */
+            /** Representation of a field descriptor encoding the type of a local variable in the source program. */
             public final String descriptor;
 
             /**
@@ -1470,13 +1403,11 @@ d     *
              */
             public final int startPC, length;
 
-            /**
-             * Represents a valid unqualified name denoting a local variable. 
-             */
+            /** Represents a valid unqualified name denoting a local variable. */
             public final String name;
 
             /**
-             * Representing a field type signature encoding the type of a local variable in the source program. 
+             * Representation of a field type signature encoding the type of a local variable in the source program.
              */
             public final String signature;
 

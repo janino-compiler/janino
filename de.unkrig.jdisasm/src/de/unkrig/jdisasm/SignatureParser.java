@@ -46,9 +46,7 @@ class SignatureParser {
 
     private SignatureParser() {}
 
-    /**
-     * Decodes a 'class signature' as defined in JLS7 4.3.4.
-     */
+    /** Decodes a 'class signature' as defined in JLS7 4.3.4. */
     public static ClassSignature
     decodeClassSignature(String s) throws SignatureException {
         try {
@@ -66,9 +64,7 @@ class SignatureParser {
         }
     }
 
-    /**
-     * Decodes a 'method type signature' as defined in JLS7 4.3.4.
-     */
+    /** Decodes a 'method type signature' as defined in JLS7 4.3.4. */
     public static MethodTypeSignature
     decodeMethodTypeSignature(String s) throws SignatureException {
         try {
@@ -85,9 +81,7 @@ class SignatureParser {
         }
     }
 
-    /**
-     * Decodes a 'type signature' as defined in JLS7 4.3.4.
-     */
+    /** Decodes a 'type signature' as defined in JLS7 4.3.4. */
     public static TypeSignature
     decodeTypeSignature(String s) throws SignatureException {
         try {
@@ -104,9 +98,7 @@ class SignatureParser {
         }
     }
 
-    /**
-     * Decodes a 'field type signature' as defined in JLS7 4.3.4.
-     */
+    /** Decodes a 'field type signature' as defined in JLS7 4.3.4. */
     public static FieldTypeSignature
     decodeFieldTypeSignature(String s) throws SignatureException {
         try {
@@ -123,9 +115,7 @@ class SignatureParser {
         }
     }
 
-    /**
-     * Decodes a 'method descriptor' as defined in JLS7 4.3.3.
-     */
+    /** Decodes a 'method descriptor' as defined in JLS7 4.3.3. */
     public static MethodTypeSignature
     decodeMethodDescriptor(String s) throws SignatureException {
         try {
@@ -142,9 +132,7 @@ class SignatureParser {
         }
     }
 
-    /**
-     * Decodes a 'field descriptor' as defined in JLS7 4.3.2.
-     */
+    /** Decodes a 'field descriptor' as defined in JLS7 4.3.2. */
     public static TypeSignature
     decodeFieldDescriptor(String s) throws SignatureException {
         try {
@@ -161,9 +149,7 @@ class SignatureParser {
         }
     }
 
-    /**
-     * Decodes a 'return type' as defined in JLS7 4.3.4.
-     */
+    /** Decodes a 'return type' as defined in JLS7 4.3.4. */
     public static TypeSignature
     decodeReturnType(String s) throws SignatureException {
         try {
@@ -373,9 +359,7 @@ class SignatureParser {
             this.typeArguments   = typeArguments;
         }
 
-        /**
-         * Converts this simple class type signature into a nice, human-readable string like '{@code MyClass<U>}'.
-         */
+        /** Converts this simple class type signature into a nice, human-readable string like '{@code MyClass<U>}'. */
         @Override public String
         toString() {
             StringBuilder sb = new StringBuilder(this.simpleClassName);
@@ -529,9 +513,7 @@ class SignatureParser {
          */
         @Nullable public final FieldTypeSignature fieldTypeSignature;
 
-        /**
-         * @param fieldTypeSignature {@code null} iff {@code mode == ANY}
-         */
+        /** @param fieldTypeSignature {@code null} iff {@code mode == ANY} */
         public
         TypeArgument(Mode mode, @Nullable FieldTypeSignature fieldTypeSignature) {
             assert mode == Mode.ANY ^ fieldTypeSignature == null;

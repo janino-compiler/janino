@@ -33,9 +33,7 @@ import java.io.InputStream;
 import de.unkrig.commons.nullanalysis.Nullable;
 import de.unkrig.jdisasm.SignatureParser.SignatureException;
 
-/**
- * Representation of the "constant pool" in a Java&trade; class file.
- */
+/** Representation of the "constant pool" in a Java&trade; class file. */
 public
 class ConstantPool {
 
@@ -48,9 +46,7 @@ class ConstantPool {
     public static
     class ConstantClassInfo implements ConstantPoolEntry {
 
-        /**
-         * Fully qualified (dot-separated) class name.
-         */
+        /** Fully qualified (dot-separated) class name. */
         public final String name;
 
         public ConstantClassInfo(String name) { this.name = name; }
@@ -263,9 +259,7 @@ class ConstantPool {
         }
     }
 
-    /**
-     * The entries of this pool, as read from a class file by {@link #ConstantPool}.
-     */
+    /** The entries of this pool, as read from a class file by {@link #ConstantPool}. */
     final ConstantPoolEntry[] entries;
 
     /**
@@ -514,9 +508,7 @@ class ConstantPool {
         }
     }
 
-    /**
-     * Checks that the indexed constant pool entry has the given {@code clasS}, and returns it.
-     */
+    /** Checks that the indexed constant pool entry has the given {@code clasS}, and returns it. */
     public <T extends ConstantPoolEntry> T
     get(short index, Class<T> clasS) {
         int ii = 0xffff & index;
@@ -538,9 +530,7 @@ class ConstantPool {
         return result;
     }
 
-    /**
-     * @return {@code null} iff {@code index == 0}
-     */
+    /** @return {@code null} iff {@code index == 0} */
     @Nullable public <T extends ConstantPoolEntry> T
     getOptional(short index, Class<T> clasS) {
         if (index == 0) return null;
@@ -620,9 +610,7 @@ class ConstantPool {
         throw new ClassCastException("CP index " + (0xffff & index) + ": " + e);
     }
 
-    /**
-     * @return The number of entries in this {@link >ConstantPool}
-     */
+    /** @return The number of entries in this {@link >ConstantPool} */
     public int
     getSize() { return this.entries.length; }
 

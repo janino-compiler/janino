@@ -101,13 +101,9 @@ interface CharStream {
      */
     int peekRead(String chars) throws IOException;
 
-    /**
-     * @return Whether this stream is at end-of-input
-     */
+    /** @return Whether this stream is at end-of-input */
     boolean atEoi() throws IOException;
 
-    /**
-     * @throws UnexpectedCharacterException This stream is <i>not</i> at end-of-input
-     */
+    /** @throws UnexpectedCharacterException This stream is <i>not</i> at end-of-input */
     void eoi() throws UnexpectedCharacterException;
 }
