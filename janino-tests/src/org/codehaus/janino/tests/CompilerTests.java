@@ -41,6 +41,7 @@ import java.util.Map;
 
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.ErrorHandler;
+import org.codehaus.commons.compiler.ICookable;
 import org.codehaus.commons.compiler.Location;
 import org.codehaus.commons.compiler.WarningHandler;
 import org.codehaus.janino.ClassLoaderIClassLoader;
@@ -70,7 +71,7 @@ class CompilerTests {
     @Test public void
     testSelfCompile() throws Exception {
 
-        ClassLoader bootstrapClassLoader = SimpleCompiler.BOOT_CLASS_LOADER;
+        ClassLoader bootstrapClassLoader = ICookable.BOOT_CLASS_LOADER;
         File[]      sourceFiles          = new File[] {
             new File(JANINO_SRC + "/org/codehaus/janino/Compiler.java"),
             new File(COMMONS_COMPILER_SRC + "/org/codehaus/commons/compiler/samples/ExpressionDemo.java"),
@@ -102,7 +103,7 @@ class CompilerTests {
             );
             c.setCompileErrorHandler(new ErrorHandler() {
 
-                public void
+                @Override public void
                 handleError(String message, Location optionalLocation) throws CompileException {
                     throw new CompileException(message, optionalLocation);
                 }
@@ -134,7 +135,7 @@ class CompilerTests {
             );
             c.setCompileErrorHandler(new ErrorHandler() {
 
-                public void
+                @Override public void
                 handleError(String message, Location optionalLocation) throws CompileException {
                     throw new CompileException(message, optionalLocation);
                 }

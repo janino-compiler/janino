@@ -151,7 +151,7 @@ class UnparseTests {
         final Java.Rvalue[]   res = new Java.Rvalue[1];
         Visitor.RvalueVisitor rv  = new Visitor.RvalueVisitor() {
 
-            public void
+            @Override public void
             visitArrayLength(ArrayLength al) {
                 res[0] = new Java.ArrayLength(
                     al.getLocation(),
@@ -159,7 +159,7 @@ class UnparseTests {
                 );
             }
 
-            public void
+            @Override public void
             visitAssignment(Assignment a) {
                 res[0] = new Java.Assignment(
                     a.getLocation(),
@@ -169,7 +169,7 @@ class UnparseTests {
                 );
             }
 
-            public void
+            @Override public void
             visitBinaryOperation(BinaryOperation bo) {
                 res[0] = new Java.BinaryOperation(
                     bo.getLocation(),
@@ -179,7 +179,7 @@ class UnparseTests {
                 );
             }
 
-            public void
+            @Override public void
             visitCast(Cast c) {
                 res[0] = new Java.Cast(
                     c.getLocation(),
@@ -188,12 +188,12 @@ class UnparseTests {
                 );
             }
 
-            public void
+            @Override public void
             visitClassLiteral(ClassLiteral cl) {
                 res[0] = cl; //too much effort
             }
 
-            public void
+            @Override public void
             visitConditionalExpression(ConditionalExpression ce) {
                 res[0] = new Java.ConditionalExpression(
                     ce.getLocation(),
@@ -203,7 +203,7 @@ class UnparseTests {
                 );
             }
 
-            public void
+            @Override public void
             visitCrement(Crement c) {
                 if (c.pre) {
                     res[0] = new Java.Crement(
@@ -220,7 +220,7 @@ class UnparseTests {
                 }
             }
 
-            public void
+            @Override public void
             visitInstanceof(Instanceof io) {
                 res[0] = new Java.Instanceof(
                     io.getLocation(),
@@ -229,16 +229,16 @@ class UnparseTests {
                 );
             }
 
-            public void visitIntegerLiteral(IntegerLiteral il)              { res[0] = il; }
-            public void visitFloatingPointLiteral(FloatingPointLiteral fpl) { res[0] = fpl; }
-            public void visitBooleanLiteral(BooleanLiteral bl)              { res[0] = bl; }
-            public void visitCharacterLiteral(CharacterLiteral cl)          { res[0] = cl; }
-            public void visitStringLiteral(StringLiteral sl)                { res[0] = sl; }
-            public void visitNullLiteral(NullLiteral nl)                    { res[0] = nl; }
+            @Override public void visitIntegerLiteral(IntegerLiteral il)              { res[0] = il; }
+            @Override public void visitFloatingPointLiteral(FloatingPointLiteral fpl) { res[0] = fpl; }
+            @Override public void visitBooleanLiteral(BooleanLiteral bl)              { res[0] = bl; }
+            @Override public void visitCharacterLiteral(CharacterLiteral cl)          { res[0] = cl; }
+            @Override public void visitStringLiteral(StringLiteral sl)                { res[0] = sl; }
+            @Override public void visitNullLiteral(NullLiteral nl)                    { res[0] = nl; }
 
-            public void visitSimpleConstant(SimpleConstant sl) { res[0] = sl; }
+            @Override public void visitSimpleConstant(SimpleConstant sl) { res[0] = sl; }
 
-            public void
+            @Override public void
             visitMethodInvocation(MethodInvocation mi) {
                 res[0] = new Java.MethodInvocation(
                     mi.getLocation(),
@@ -248,12 +248,12 @@ class UnparseTests {
                 );
             }
 
-            public void
+            @Override public void
             visitNewAnonymousClassInstance(NewAnonymousClassInstance naci) {
                 res[0] = naci; //too much effort
             }
 
-            public void
+            @Override public void
             visitNewArray(NewArray na) {
                 res[0] = new Java.NewArray(
                     na.getLocation(),
@@ -263,7 +263,7 @@ class UnparseTests {
                 );
             }
 
-            public void
+            @Override public void
             visitNewClassInstance(NewClassInstance nci) {
                 res[0] = new Java.NewClassInstance(
                     nci.getLocation(),
@@ -273,18 +273,18 @@ class UnparseTests {
                 );
             }
 
-            public void
+            @Override public void
             visitNewInitializedArray(NewInitializedArray nia) {
                 res[0] = nia; //too much effort
             }
 
-            public void
+            @Override public void
             visitParameterAccess(ParameterAccess pa) { res[0] = pa; }
 
-            public void
+            @Override public void
             visitQualifiedThisReference(QualifiedThisReference qtr) { res[0] = qtr; }
 
-            public void
+            @Override public void
             visitSuperclassMethodInvocation(SuperclassMethodInvocation smi) {
                 res[0] = new Java.SuperclassMethodInvocation(
                     smi.getLocation(),
@@ -293,10 +293,10 @@ class UnparseTests {
                 );
             }
 
-            public void
+            @Override public void
             visitThisReference(ThisReference tr) { res[0] = tr; }
 
-            public void
+            @Override public void
             visitUnaryOperation(UnaryOperation uo) {
                 res[0] = new Java.UnaryOperation(
                     uo.getLocation(),
@@ -305,10 +305,10 @@ class UnparseTests {
                 );
             }
 
-            public void
+            @Override public void
             visitAmbiguousName(AmbiguousName an) { res[0] = an; }
 
-            public void
+            @Override public void
             visitArrayAccessExpression(ArrayAccessExpression aae) {
                 res[0] = new Java.ArrayAccessExpression(
                     aae.getLocation(),
@@ -317,7 +317,7 @@ class UnparseTests {
                 );
             }
 
-            public void
+            @Override public void
             visitFieldAccess(FieldAccess fa) {
                 res[0] = new Java.FieldAccess(
                     fa.getLocation(),
@@ -326,7 +326,7 @@ class UnparseTests {
                 );
             }
 
-            public void
+            @Override public void
             visitFieldAccessExpression(FieldAccessExpression fae) {
                 res[0] = new Java.FieldAccessExpression(
                     fae.getLocation(),
@@ -335,15 +335,15 @@ class UnparseTests {
                 );
             }
 
-            public void
+            @Override public void
             visitLocalVariableAccess(LocalVariableAccess lva) { res[0] = lva; }
 
-            public void
+            @Override public void
             visitParenthesizedExpression(ParenthesizedExpression pe) {
                 res[0] = UnparseTests.stripUnnecessaryParenExprs(pe.value);
             }
 
-            public void
+            @Override public void
             visitSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae) { res[0] = scfae; }
 
         };
@@ -353,8 +353,8 @@ class UnparseTests {
 
     @Test public void
     testInterface() throws Exception {
-        testInterfaceHelper(false);
-        testInterfaceHelper(true);
+        this.testInterfaceHelper(false);
+        this.testInterfaceHelper(true);
     }
 
     private void
@@ -472,7 +472,7 @@ class UnparseTests {
         // Must use the "janino" project directory, because that is pre-Java 5.
         this.find(new File("../janino/src"), new FileFilter() {
 
-            public boolean
+            @Override public boolean
             accept(File f) {
                 if (f.isDirectory()) return true;
 
@@ -538,13 +538,13 @@ class UnparseTests {
                 new Traverser() {
 
                     // Two implementations of "Locatable": "Located" and "AbstractTypeDeclaration".
-                    public void
+                    @Override public void
                     traverseLocated(Located l) {
                         locatables.add(l);
                         super.traverseLocated(l);
                     }
 
-                    public void
+                    @Override public void
                     traverseAbstractTypeDeclaration(AbstractTypeDeclaration atd) {
                         locatables.add(atd);
                         super.traverseAbstractTypeDeclaration(atd);
