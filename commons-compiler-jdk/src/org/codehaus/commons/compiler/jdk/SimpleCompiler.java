@@ -50,11 +50,11 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
     private WarningHandler optionalWarningHandler;
 
     @Override public ClassLoader
-    getClassLoader() { assertCooked(); return this.result; }
+    getClassLoader() { this.assertCooked(); return this.result; }
 
     @Override public void
     cook(String optionalFileName, final Reader r) throws CompileException, IOException {
-        assertNotCooked();
+        this.assertNotCooked();
 
         // Create one Java source file in memory, which will be compiled later.
         JavaFileObject compilationUnit;
@@ -139,7 +139,7 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
                             case OTHER:
                             default:
                                 break;
-                            
+
                             }
                         } catch (CompileException ce) {
                             if (caughtCompileException[0] == null) caughtCompileException[0] = ce;
@@ -266,7 +266,7 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
 
     @Override public void
     setParentClassLoader(ClassLoader optionalParentClassLoader) {
-        assertNotCooked();
+        this.assertNotCooked();
         this.parentClassLoader = (
             optionalParentClassLoader != null
             ? optionalParentClassLoader

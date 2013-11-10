@@ -185,7 +185,7 @@ class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluato
 
     @Override public void
     setExpressionTypes(@SuppressWarnings("rawtypes") Class[] expressionTypes) {
-        assertNotCooked();
+        this.assertNotCooked();
         this.optionalExpressionTypes = expressionTypes;
 
         Class<?>[] returnTypes = new Class[expressionTypes.length];

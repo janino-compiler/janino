@@ -68,19 +68,19 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
 
     @Override public void
     setClassName(String className) {
-        assertNotCooked();
+        this.assertNotCooked();
         this.className = className;
     }
 
     @Override public void
     setDefaultImports(String[] optionalDefaultImports) {
-        assertNotCooked();
+        this.assertNotCooked();
         this.optionalDefaultImports = optionalDefaultImports;
     }
 
     @Override public void
     setExtendedClass(@SuppressWarnings("rawtypes") Class optionalExtendedType) {
-        assertNotCooked();
+        this.assertNotCooked();
         this.optionalExtendedType = optionalExtendedType;
     }
 
@@ -92,7 +92,7 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
 
     @Override public void
     setImplementedInterfaces(@SuppressWarnings("rawtypes") Class[] implementedTypes) {
-        assertNotCooked();
+        this.assertNotCooked();
         this.implementedTypes = implementedTypes;
     }
 
