@@ -35,7 +35,7 @@ class Base implements Cloneable, CloneableData {
      * Clone this tuple, the new tuple will not share any buffers or data with the original
      * @return A copy of this Tuple
      */
-    public Base
+    @Override public Base
     clone() throws CloneNotSupportedException {
         //subclasses must implement
         throw new CloneNotSupportedException();

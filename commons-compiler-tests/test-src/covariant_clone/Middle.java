@@ -34,18 +34,18 @@ class Middle extends Base {
     public Base
     cloneWithOutArguments() {
         try {
-            return clone();
+            return this.clone();
         } catch (CloneNotSupportedException e) {
-            throw new RuntimeException("Clone not supported on class: " + getClass().getName(), e);
+            throw new RuntimeException("Clone not supported on class: " + this.getClass().getName(), e);
         }
     }
 
     public Middle
     cloneWithArguments() {
-        return other(1, null);
+        return this.other(1, null);
     }
 
-    public Middle
+    @Override public Middle
     other(long i, Object o) {
         throw new RuntimeException("Middle() called");
     }

@@ -29,6 +29,6 @@
 public
 class Pred implements IPred {
 
-    public boolean
+    @Override public boolean
     filter() { return false; }
 }
