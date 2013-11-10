@@ -288,15 +288,15 @@ class ConstantPool {
 
             /** Returns the {@link ConstantClassInfo} entry with the given {@code index}. */
             ConstantClassInfo
-            getConstantClassInfo(short index) { return (ConstantClassInfo) get(index); }
+            getConstantClassInfo(short index) { return (ConstantClassInfo) this.get(index); }
 
             /** Returns the {@link ConstantNameAndTypeInfo} entry with the given {@code index}. */
             ConstantNameAndTypeInfo
-            getConstantNameAndTypeInfo(short index) { return (ConstantNameAndTypeInfo) get(index); }
+            getConstantNameAndTypeInfo(short index) { return (ConstantNameAndTypeInfo) this.get(index); }
 
             /** Returns the {@link ConstantUtf8Info} entry with the given {@code index}. */
             ConstantUtf8Info
-            getConstantUtf8Info(short index) { return (ConstantUtf8Info) get(index); }
+            getConstantUtf8Info(short index) { return (ConstantUtf8Info) this.get(index); }
 
             /** Returns the {@link ConstantPoolInfo} entry with the given {@code index}. */
             abstract ConstantPoolEntry
@@ -332,7 +332,7 @@ class ConstantPool {
 
                         @Override ConstantPoolEntry
                         cook() {
-                            return new ConstantClassInfo(getConstantUtf8Info(nameIndex).bytes.replace('/', '.'));
+                            return new ConstantClassInfo(this.getConstantUtf8Info(nameIndex).bytes.replace('/', '.'));
                         }
                     };
                     i++;
@@ -347,8 +347,8 @@ class ConstantPool {
                         @Override ConstantPoolEntry
                         cook() {
                             return new ConstantFieldrefInfo(
-                                getConstantClassInfo(classIndex),
-                                getConstantNameAndTypeInfo(nameAndTypeIndex)
+                                this.getConstantClassInfo(classIndex),
+                                this.getConstantNameAndTypeInfo(nameAndTypeIndex)
                             );
                         }
                     };
@@ -364,8 +364,8 @@ class ConstantPool {
                         @Override ConstantPoolEntry
                         cook() {
                             return new ConstantMethodrefInfo(
-                                getConstantClassInfo(classIndex),
-                                getConstantNameAndTypeInfo(nameAndTypeIndex)
+                                this.getConstantClassInfo(classIndex),
+                                this.getConstantNameAndTypeInfo(nameAndTypeIndex)
                             );
                         }
                     };
@@ -381,8 +381,8 @@ class ConstantPool {
                         @Override ConstantPoolEntry
                         cook() {
                             return new ConstantInterfaceMethodrefInfo(
-                                getConstantClassInfo(classIndex),
-                                getConstantNameAndTypeInfo(nameAndTypeIndex)
+                                this.getConstantClassInfo(classIndex),
+                                this.getConstantNameAndTypeInfo(nameAndTypeIndex)
                             );
                         }
                     };
@@ -396,7 +396,7 @@ class ConstantPool {
 
                         @Override ConstantPoolEntry
                         cook() {
-                            return new ConstantStringInfo(getConstantUtf8Info(stringIndex).bytes);
+                            return new ConstantStringInfo(this.getConstantUtf8Info(stringIndex).bytes);
                         }
                     };
                     i++;
@@ -471,8 +471,8 @@ class ConstantPool {
                         @Override ConstantPoolEntry
                         cook() {
                             return new ConstantNameAndTypeInfo(
-                                getConstantUtf8Info(nameIndex),
-                                getConstantUtf8Info(descriptorIndex)
+                                this.getConstantUtf8Info(nameIndex),
+                                this.getConstantUtf8Info(descriptorIndex)
                             );
                         }
                     };

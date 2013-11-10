@@ -89,7 +89,7 @@ class ClassFile {
      * The {@link Method} structures represent all methods declared by this class or interface type, including instance
      * methods, class methods, instance initialization methods, and any class or interface initialization method.
      * The methods table does not include items representing methods that are inherited from superclasses or
-     * superinterfaces. 
+     * superinterfaces.
      */
     public final List<Method> methods = new ArrayList<Method>();
 
@@ -210,7 +210,7 @@ class ClassFile {
         }
 
         // Class attributes.
-        readAttributes(dis, new AbstractAttributeVisitor() {
+        this.readAttributes(dis, new AbstractAttributeVisitor() {
 
             @Override public void
             visit(DeprecatedAttribute da) {
@@ -272,7 +272,7 @@ class ClassFile {
     getJdkName() {
         switch (this.majorVersion) {
         case 51:
-            return "J2SE 7"; 
+            return "J2SE 7";
         case 50:
             return "J2SE 6.0";
         case 49:
@@ -314,7 +314,7 @@ class ClassFile {
             this.descriptor  = ClassFile.this.constantPool.get(dis.readShort(), ConstantUtf8Info.class).bytes;
 
             // Read field attributes.
-            readAttributes(dis, new AbstractAttributeVisitor() {
+            ClassFile.this.readAttributes(dis, new AbstractAttributeVisitor() {
 
                 @Override public void
                 visit(ConstantValueAttribute cva) {
@@ -390,7 +390,7 @@ class ClassFile {
             try {
 
                 // Read method attributes.
-                readAttributes(dis, new AbstractAttributeVisitor() {
+                ClassFile.this.readAttributes(dis, new AbstractAttributeVisitor() {
 
                     @Override public void
                     visit(AnnotationDefaultAttribute ada) {
@@ -489,7 +489,7 @@ class ClassFile {
         short n = dis.readShort();
         for (int i = 0; i < n; ++i) {
             try {
-                readAttribute(dis, visitor);
+                this.readAttribute(dis, visitor);
             } catch (IOException ioe) {
                 IOException ioe2 = new IOException("Reading attribute #" + i + " of " + n + ": " + ioe.getMessage());
                 ioe2.initCause(ioe);
@@ -756,7 +756,7 @@ class ClassFile {
 
         /**
          * The <a href="http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.7.16-300-D">annotations
-         * table<a>. 
+         * table<a>.
          */
         public final List<Annotation> annotations = new ArrayList<Annotation>();
 
@@ -789,7 +789,7 @@ class ClassFile {
 
         /**
          * Each value represents a single run-time-visible annotation on the parameter corresponding to the sequence
-         * number of this {@link ParameterAnnotation}. 
+         * number of this {@link ParameterAnnotation}.
          */
         public final List<Annotation> annotations = new ArrayList<Annotation>();
 
@@ -865,7 +865,7 @@ class ClassFile {
      * <p>
      * Represents a single <a
      * href="http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.7.16-300-D">run-time-visible
-     * annotation</a> on a program element. 
+     * annotation</a> on a program element.
      */
     public static
     class Annotation {
@@ -883,7 +883,7 @@ class ClassFile {
             /**
              * A valid field descriptor that denotes the <a
              * href="http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.7.16-300-D.2-3-1">name of the
-             * annotation type element</a> represented by this {@link ElementValuePair}. 
+             * annotation type element</a> represented by this {@link ElementValuePair}.
              */
             public final String elementName;
 
@@ -1031,7 +1031,7 @@ class ClassFile {
          * <a href="http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.7.9-300-C">A class signature
          * if this {@link SignatureAttribute} is an attribute of a {@link ClassFile}; a method signature if this
          * {@link SignatureAttribute} attribute is an attribute of a {@link Method}; or a field type signature
-         * otherwise</a>. 
+         * otherwise</a>.
          */
         public final String signature;
 
@@ -1078,7 +1078,7 @@ class ClassFile {
         /**
          * Each value of the list represents a <a
          * href="http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.7.5-300-D">class type that this
-         * method is declared to throw</a>. 
+         * method is declared to throw</a>.
          */
         public final List<ConstantClassInfo> exceptionNames = new ArrayList<ConstantClassInfo>();
 
@@ -1101,14 +1101,14 @@ class ClassFile {
 
         /**
          * The <a href="http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.7.3-300-C">maximum depth
-         * of the operand stack of this method at any point during execution of the method</a>. 
+         * of the operand stack of this method at any point during execution of the method</a>.
          */
         public final short maxStack;
 
         /**
          * The <a href="http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.7.3-300-D">number of local
          * variables in the local variable array allocated upon invocation of this method, including the local
-         * variables used to pass parameters to the method on its invocation</a>. 
+         * variables used to pass parameters to the method on its invocation</a>.
          */
         public final short maxLocals;
 
@@ -1121,7 +1121,7 @@ class ClassFile {
         /**
          * Each entry in the list describes <a
          * href="http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.7.3-300-H">one exception handler
-         * in the code array</a>. The order of the handlers in the exception_table array is significant. 
+         * in the code array</a>. The order of the handlers in the exception_table array is significant.
          */
         public final List<ExceptionTableEntry> exceptionTable = new ArrayList<ExceptionTableEntry>();
 
@@ -1197,7 +1197,7 @@ class ClassFile {
          * the length of the code array. The value of {@link #startPc} must be less than the value of {@link #endPc}.
          * <p>
          * The {@link #startPc} is inclusive and {@link #endPc} is exclusive; that is, the exception handler must be
-         * active while the program counter is within the interval [{@link #startPc}, {@link #endPc}). 
+         * active while the program counter is within the interval [{@link #startPc}, {@link #endPc}).
          */
         public int startPc, endPc;
 
@@ -1205,7 +1205,7 @@ class ClassFile {
          * The value <a
          * href="http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.7.3-300-H.1-2">indicates the
          * start of the exception handler</a>. The value of the item must be a valid index into the code array and must
-         * be the index of the opcode of an instruction. 
+         * be the index of the opcode of an instruction.
          */
         public int handlerPc;
 
@@ -1215,7 +1215,7 @@ class ClassFile {
          * if the thrown exception is an instance of the given class or one of its subclasses.
          * <p>
          * If the value is {@code null}, this exception handler is called for all exceptions. This is used to implement
-         * {@code finally} 
+         * {@code finally}
          */
         @Nullable public ConstantClassInfo catchType;
 
@@ -1253,7 +1253,7 @@ class ClassFile {
          * source file from which this class file was compiled</a>. It will not be interpreted as indicating the name
          * of a directory containing the file or an absolute path name for the file; such platform-specific additional
          * information must be supplied by the run-time interpreter or development tool at the time the file name is
-         * actually used. 
+         * actually used.
          */
         public String sourceFile;
 
@@ -1294,7 +1294,7 @@ class ClassFile {
 
         /**
          * The value must indicate the index into the code array at which the code for a new line in the original
-         * source file begins. The value must be less than {@link CodeAttribute#code CodeAttribute.code.length}. 
+         * source file begins. The value must be less than {@link CodeAttribute#code CodeAttribute.code.length}.
          */
         public int startPc;
 
@@ -1314,7 +1314,7 @@ class ClassFile {
      * <p>
      * If {@link LocalVariableTableAttribute}s are present in the attributes table of a given {@link CodeAttribute},
      * then they may appear in any order. There may be no more than one {@link LocalVariableTableAttribute} per local
-     * variable in the {@link CodeAttribute}. 
+     * variable in the {@link CodeAttribute}.
      */
     public
     class LocalVariableTableAttribute implements Attribute {
@@ -1332,7 +1332,7 @@ class ClassFile {
              * <p>
              * The value of {@link #startPC} + {@link #length} must either be a valid index into the code array of this
              * {@link CodeAttribute} and be the index of the opcode of an instruction, or it must be the first index
-             * beyond the end of that code array. 
+             * beyond the end of that code array.
              */
             public final short startPC, length;
 
@@ -1345,7 +1345,7 @@ class ClassFile {
             /**
              * The given local variable must be at {@link #index} in the local variable array of the current frame. If
              * the local variable at index is of type double or long, it occupies both {@link #index} and {@link
-             * #index} + 1. 
+             * #index} + 1.
              */
             public final short index;
 
@@ -1361,7 +1361,7 @@ class ClassFile {
         /**
          * Each entry in the list indicates a range of code array offsets within which a local variable has a value.
          * It also indicates the index into the local variable array of the current frame at which that local variable
-         * can be found. 
+         * can be found.
          */
         public final List<Entry> entries = new ArrayList<Entry>();
 
@@ -1399,7 +1399,7 @@ class ClassFile {
              * <p>
              * The value of {@link #startPC} + {@link #length} must either be a valid index into the code array of this
              * {@link CodeAttribute} and be the index of the opcode of an instruction, or it must be the first index
-             * beyond the end of that code array. 
+             * beyond the end of that code array.
              */
             public final int startPC, length;
 
@@ -1414,7 +1414,7 @@ class ClassFile {
             /**
              * The given local variable must be at {@link #index} in the local variable array of the current frame. If
              * the local variable at {@link #index} is of type double or long, it occupies both {@link #index} and
-             * {@link #index} + 1. 
+             * {@link #index} + 1.
              */
             public final short index;
 

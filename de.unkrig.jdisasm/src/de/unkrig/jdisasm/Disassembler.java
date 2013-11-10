@@ -158,7 +158,7 @@ class Disassembler {
     @Nullable private String thisClassPackageName;
 
     @Nullable private Map<Integer /*offset*/, String /*label*/> branchTargets;
-    
+
     private static enum AttributeContext { CLASS, FIELD, METHOD }
 
     /**/
@@ -369,7 +369,7 @@ class Disassembler {
             this.println();
             this.println(
                 "// This class is enclosed by method '"
-                + beautify(className)
+                + this.beautify(className)
                 + ("<init>".equals(methodName) ? "(...)" : "." + methodName + "(...)")
                 + "'."
             );
@@ -417,12 +417,12 @@ class Disassembler {
         {
             SignatureAttribute sa = cf.signatureAttribute;
             if (sa != null) {
-                this.print(beautify(decodeClassSignature(sa.signature).toString(cf.thisClassName)));
+                this.print(this.beautify(this.decodeClassSignature(sa.signature).toString(cf.thisClassName)));
             } else {
-                this.print(beautify(cf.thisClassName));
+                this.print(this.beautify(cf.thisClassName));
                 {
                     String scn = cf.superClassName;
-                    if (scn != null && !"java.lang.Object".equals(scn)) this.print(" extends " + beautify(scn));
+                    if (scn != null && !"java.lang.Object".equals(scn)) this.print(" extends " + this.beautify(scn));
                 }
                 List<String> ifs = cf.interfaceNames;
                 if ((cf.accessFlags & ACC_ANNOTATION) != 0 && ifs.contains("java.lang.annotation.Annotation")) {
@@ -431,9 +431,9 @@ class Disassembler {
                 }
                 if (!ifs.isEmpty()) {
                     Iterator<String> it = ifs.iterator();
-                    this.print(" implements " + beautify(it.next()));
+                    this.print(" implements " + this.beautify(it.next()));
                     while (it.hasNext()) {
-                        this.print(", " + beautify(it.next()));
+                        this.print(", " + this.beautify(it.next()));
                     }
                 }
             }
@@ -449,7 +449,7 @@ class Disassembler {
             for (int i = 0; i < cp.getSize(); i++) {
                 ConstantPoolEntry constantPoolEntry = cp.getOptional((short) i, ConstantPoolEntry.class);
                 if (constantPoolEntry == null) continue;
-                this.println("    //   #" + i + ": " + beautify(constantPoolEntry.toString()));
+                this.println("    //   #" + i + ": " + this.beautify(constantPoolEntry.toString()));
             }
         }
 
@@ -460,13 +460,13 @@ class Disassembler {
                 this.println();
                 this.println("    // Enclosing/enclosed types:");
                 for (InnerClassesAttribute.ClasS c : ica.classes) {
-                    this.println("    //   " + toString(c));
+                    this.println("    //   " + this.toString(c));
                 }
             }
         }
 
         // Print fields.
-        disassembleFields(cf.fields);
+        this.disassembleFields(cf.fields);
 
         // Read source file.
         Map<Integer, String> sourceLines = new HashMap<Integer, String>();
@@ -505,13 +505,13 @@ class Disassembler {
 
         // Methods.
         for (Method m : cf.methods) {
-            disassembleMethod(m, cf, sourceLines);
+            this.disassembleMethod(m, cf, sourceLines);
         }
 
         this.println("}");
 
         // Print class attributes.
-        printAttributes(cf.attributes, "// ", new Attribute[] {
+        this.printAttributes(cf.attributes, "// ", new Attribute[] {
             cf.deprecatedAttribute,
             ema,
             cf.innerClassesAttribute,
@@ -573,11 +573,15 @@ class Disassembler {
             MethodTypeSignature mts;
             {
                 SignatureAttribute sa = method.signatureAttribute;
-                mts = sa == null ? decodeMethodDescriptor(method.descriptor) : decodeMethodTypeSignature(sa.signature);
+                mts = (
+                    sa == null
+                    ? this.decodeMethodDescriptor(method.descriptor)
+                    : this.decodeMethodTypeSignature(sa.signature)
+                );
                 if (!mts.formalTypeParameters.isEmpty()) {
                     Iterator<FormalTypeParameter> it = mts.formalTypeParameters.iterator();
-                    this.print("<" + beautify(it.next().toString()));
-                    while (it.hasNext()) this.print(", " + beautify(it.next().toString()));
+                    this.print("<" + this.beautify(it.next().toString()));
+                    while (it.hasNext()) this.print(", " + this.beautify(it.next().toString()));
                     this.print(">");
                 }
             }
@@ -605,8 +609,8 @@ class Disassembler {
                 && mts.formalTypeParameters.isEmpty()
                 && mts.returnType == SignatureParser.VOID
             ) {
-                this.print(beautify(cf.thisClassName));
-                printParameters(
+                this.print(this.beautify(cf.thisClassName));
+                this.printParameters(
                     method.runtimeInvisibleParameterAnnotationsAttribute,
                     method.runtimeVisibleParameterAnnotationsAttribute,
                     mts.parameterTypes,
@@ -616,9 +620,9 @@ class Disassembler {
                 );
             } else
             {
-                this.print(beautify(mts.returnType.toString()) + ' ');
+                this.print(this.beautify(mts.returnType.toString()) + ' ');
                 this.print(functionName);
-                printParameters(
+                this.printParameters(
                     method.runtimeInvisibleParameterAnnotationsAttribute,
                     method.runtimeVisibleParameterAnnotationsAttribute,
                     mts.parameterTypes,
@@ -631,13 +635,13 @@ class Disassembler {
             // Thrown types.
             if (!mts.thrownTypes.isEmpty()) {
                 Iterator<ThrowsSignature> it = mts.thrownTypes.iterator();
-                this.print(" throws " + beautify(it.next().toString()));
-                while (it.hasNext()) this.print(", " + beautify(it.next().toString()));
+                this.print(" throws " + this.beautify(it.next().toString()));
+                while (it.hasNext()) this.print(", " + this.beautify(it.next().toString()));
             } else
             if (!exceptionNames.isEmpty()) {
                 Iterator<ConstantClassInfo> it = exceptionNames.iterator();
-                this.print(" throws " + beautify(it.next().name));
-                while (it.hasNext()) this.print(", " + beautify(it.next().name));
+                this.print(" throws " + this.beautify(it.next().name));
+                while (it.hasNext()) this.print(", " + this.beautify(it.next().name));
             }
 
             // Annotation default.
@@ -654,7 +658,7 @@ class Disassembler {
                 } else {
                     this.println(" {");
                     try {
-                        disassembleBytecode(
+                        this.disassembleBytecode(
                             new ByteArrayInputStream(ca.code),
                             ca.exceptionTable,
                             ca.lineNumberTableAttribute,
@@ -670,7 +674,7 @@ class Disassembler {
             }
 
             // Print method attributes.
-            printAttributes(method.attributes, "    // ", new Attribute[] {
+            this.printAttributes(method.attributes, "    // ", new Attribute[] {
                 method.annotationDefaultAttribute,
                 method.codeAttribute,
                 method.deprecatedAttribute,
@@ -718,10 +722,10 @@ class Disassembler {
             String parametrizedType;
             {
                 SignatureAttribute sa = field.signatureAttribute;
-                parametrizedType = beautify(
+                parametrizedType = this.beautify(
                     sa == null
-                    ? decodeFieldDescriptor(field.descriptor).toString()
-                    : decodeFieldTypeSignature(sa.signature).toString()
+                    ? this.decodeFieldDescriptor(field.descriptor).toString()
+                    : this.decodeFieldTypeSignature(sa.signature).toString()
                 );
             }
 
@@ -742,7 +746,7 @@ class Disassembler {
             }
 
             // Print field attributes.
-            printAttributes(field.attributes, "    // ", new Attribute[] {
+            this.printAttributes(field.attributes, "    // ", new Attribute[] {
                 field.constantValueAttribute,
                 field.deprecatedAttribute,
                 field.runtimeInvisibleAnnotationsAttribute,
@@ -758,7 +762,7 @@ class Disassembler {
         ConstantClassInfo oci = c.outerClassInfo;
         ConstantClassInfo ici = c.innerClassInfo;
         return (
-            (oci == null ? "[local class]" : beautify(oci.name))
+            (oci == null ? "[local class]" : this.beautify(oci.name))
             + " { "
             + decodeAccess((short) (c.innerClassAccessFlags & ( // Hide ABSTRACT and STATIC for interfaces
                 (c.innerClassAccessFlags & ACC_INTERFACE) != 0
@@ -766,7 +770,7 @@ class Disassembler {
                 : 0xffff
             )))
             + ((c.innerClassAccessFlags & (ACC_ENUM | ACC_ANNOTATION | ACC_INTERFACE)) == 0 ? "class " : "")
-            + beautify(ici.name) + " }"
+            + this.beautify(ici.name) + " }"
         );
     }
 
@@ -881,7 +885,9 @@ class Disassembler {
             Disassembler.this.println(this.prefix + "  class/method = " + (
                 m == null
                 ? "(none)"
-                : beautify(decodeMethodDescriptor(m.descriptor.bytes).toString(ema.clasS.name, m.name.bytes))
+                : Disassembler.this.beautify(
+                    Disassembler.this.decodeMethodDescriptor(m.descriptor.bytes).toString(ema.clasS.name, m.name.bytes)
+                )
             ));
         }
 
@@ -922,7 +928,7 @@ class Disassembler {
                     + ": "
                     + e.index
                     + " = "
-                    + beautify(decodeFieldDescriptor(e.descriptor).toString())
+                    + Disassembler.this.beautify(Disassembler.this.decodeFieldDescriptor(e.descriptor).toString())
                     + " "
                     + e.name
                 );
@@ -942,7 +948,7 @@ class Disassembler {
                     + ": "
                     + e.index
                     + " = "
-                    + beautify(decodeFieldTypeSignature(e.signature).toString())
+                    + Disassembler.this.beautify(Disassembler.this.decodeFieldTypeSignature(e.signature).toString())
                     + " "
                     + e.name
                 );
@@ -993,17 +999,23 @@ class Disassembler {
                 Disassembler.this.println(
                     this.prefix
                     + "  "
-                    + decodeClassSignature(sa.signature).toString("[this-class]")
+                    + Disassembler.this.decodeClassSignature(sa.signature).toString("[this-class]")
                 );
                 break;
             case FIELD:
-                Disassembler.this.println(this.prefix + "  " + decodeFieldTypeSignature(sa.signature).toString());
+                Disassembler.this.println(
+                    this.prefix
+                    + "  "
+                    + Disassembler.this.decodeFieldTypeSignature(sa.signature).toString()
+                );
                 break;
             case METHOD:
                 Disassembler.this.println(
                     this.prefix
                     + "  "
-                    + decodeMethodTypeSignature(sa.signature).toString("[declaring-class]", "[this-method]")
+                    + Disassembler.this.decodeMethodTypeSignature(
+                        sa.signature
+                    ).toString("[declaring-class]", "[this-method]")
                 );
                 break;
             }
@@ -1062,13 +1074,13 @@ class Disassembler {
 
                 // Parameter type.
                 if (varargs && !it.hasNext() && pts instanceof ArrayTypeSignature) {
-                    this.print(beautify(((ArrayTypeSignature) pts).componentTypeSignature.toString()) + "...");
+                    this.print(this.beautify(((ArrayTypeSignature) pts).componentTypeSignature.toString()) + "...");
                 } else {
-                    this.print(beautify(pts.toString()));
+                    this.print(this.beautify(pts.toString()));
                 }
 
                 // Parameter name.
-                this.print(' ' + getLocalVariable(firstIndex, 0, method).name);
+                this.print(' ' + this.getLocalVariable(firstIndex, 0, method).name);
 
                 if (!it.hasNext()) break;
                 firstIndex++;
@@ -1143,7 +1155,7 @@ class Disassembler {
                     lines.put(instructionOffset, "??? (invalid opcode \"" + opcode + "\")");
                 } else {
                     try {
-                        lines.put(instructionOffset, instruction.getMnemonic() + disassembleOperands(
+                        lines.put(instructionOffset, instruction.getMnemonic() + this.disassembleOperands(
                             instruction.getOperands(),
                             dis,
                             instructionOffset,
@@ -1178,7 +1190,7 @@ class Disassembler {
                     for (Entry<Integer, List<ExceptionTableEntry>> e3 : startPc2Ete.entrySet()) {
                         List<ExceptionTableEntry> etes = e3.getValue();
                         if (endPc < instructionOffset) {
-                            error(
+                            this.error(
                                 "Exception table entry ends at invalid code array index "
                                 + endPc
                                 + " (current instruction offset is "
@@ -1192,9 +1204,9 @@ class Disassembler {
                             ExceptionTableEntry ete = it2.next();
                             ConstantClassInfo   ct  = ete.catchType;
                             this.print(
-                                (ct == null ? "[all exceptions]" : beautify(ct.name))
+                                (ct == null ? "[all exceptions]" : this.beautify(ct.name))
                                 + " => "
-                                + branchTarget(ete.handlerPc)
+                                + this.branchTarget(ete.handlerPc)
                             );
                             if (!it2.hasNext()) break;
                             this.print(", ");
@@ -1218,7 +1230,7 @@ class Disassembler {
 
                     for (int i = sc.getValue().size(); i > 0; i--) {
                         if (startPc < instructionOffset) {
-                            error(
+                            this.error(
                                 "Exception table entry starts at invalid code array index "
                                 + startPc
                                 + " (current instruction offset is "
@@ -2005,8 +2017,8 @@ class Disassembler {
             SignatureAttribute  sa  = method.signatureAttribute;
             MethodTypeSignature mts = (
                 sa != null
-                ? decodeMethodTypeSignature(sa.signature)
-                : decodeMethodDescriptor(method.descriptor)
+                ? this.decodeMethodTypeSignature(sa.signature)
+                : this.decodeMethodDescriptor(method.descriptor)
             );
             parameterTypes = mts.parameterTypes;
         }
@@ -2031,7 +2043,7 @@ class Disassembler {
                         && localVariableIndex == lvtte.index
                     ) {
                         return new LocalVariable(
-                            decodeFieldTypeSignature(lvtte.signature),
+                            this.decodeFieldTypeSignature(lvtte.signature),
                             this.hideVars ? defaultName : lvtte.name
                         );
                     }
@@ -2047,7 +2059,7 @@ class Disassembler {
                         && localVariableIndex == lvte.index
                     ) {
                         return new LocalVariable(
-                            decodeFieldDescriptor(lvte.descriptor),
+                            this.decodeFieldDescriptor(lvte.descriptor),
                             this.hideVars ? defaultName : lvte.name
                         );
                     }
@@ -2067,7 +2079,7 @@ class Disassembler {
         try {
             return SignatureParser.decodeClassSignature(cs);
         } catch (SignatureException e) {
-            error("Decoding class signature '" + cs + "': " + e.getMessage());
+            this.error("Decoding class signature '" + cs + "': " + e.getMessage());
             return new ClassSignature(NO_FORMAL_TYPE_PARAMETERS, SignatureParser.OBJECT, NO_CLASS_TYPE_SIGNATURES);
         }
     }
@@ -2077,7 +2089,7 @@ class Disassembler {
         try {
             return SignatureParser.decodeFieldTypeSignature(fs);
         } catch (SignatureException e) {
-            error("Decoding field type signature '" + fs + "': " + e.getMessage());
+            this.error("Decoding field type signature '" + fs + "': " + e.getMessage());
             return SignatureParser.OBJECT;
         }
     }
@@ -2087,7 +2099,7 @@ class Disassembler {
         try {
             return SignatureParser.decodeMethodTypeSignature(ms);
         } catch (SignatureException e) {
-            error("Decoding method type signature '" + ms + "': " + e.getMessage());
+            this.error("Decoding method type signature '" + ms + "': " + e.getMessage());
             return new MethodTypeSignature(
                 NO_FORMAL_TYPE_PARAMETERS,
                 NO_TYPE_SIGNATURES,
@@ -2102,7 +2114,7 @@ class Disassembler {
         try {
             return SignatureParser.decodeFieldDescriptor(fd);
         } catch (SignatureException e) {
-            error("Decoding field descriptor '" + fd + "': " + e.getMessage());
+            this.error("Decoding field descriptor '" + fd + "': " + e.getMessage());
             return SignatureParser.INT;
         }
     }
@@ -2112,7 +2124,7 @@ class Disassembler {
         try {
             return SignatureParser.decodeMethodDescriptor(md);
         } catch (SignatureException e) {
-            error("Decoding method descriptor '" + md + "': " + e.getMessage());
+            this.error("Decoding method descriptor '" + md + "': " + e.getMessage());
             return new MethodTypeSignature(
                 NO_FORMAL_TYPE_PARAMETERS,
                 NO_TYPE_SIGNATURES,

@@ -492,9 +492,9 @@ class SignatureParser {
      * <pre>
      *   type-argument :=
      *     'extends' {@link FieldTypeSignature field-type-signature}
-     *     | 'super' {@link FieldTypeSignature field-type-signature} 
-     *     | '*' 
-     *     | {@link FieldTypeSignature field-type-signature} 
+     *     | 'super' {@link FieldTypeSignature field-type-signature}
+     *     | '*'
+     *     | {@link FieldTypeSignature field-type-signature}
      * </pre>
      */
     public static
@@ -508,7 +508,7 @@ class SignatureParser {
 
         /**
          * Must be {@code} for {@link Mode#ANY}, non-{@code null} otherwise.
-         * 
+         *
          * @see TypeArgument
          */
         @Nullable public final FieldTypeSignature fieldTypeSignature;
