@@ -44,11 +44,11 @@ class AutoIndentWriter extends FilterWriter {
 
     /** Special character that inserts a line break and indents the following text by one position. */
     public static final char INDENT = 0xfffd;
-    
+
     /** Special character that inserts a line break and unindents the following text by one position. */
     public static final char UNINDENT = 0xfffc;
 
-    private StringBuilder           lineBuffer = new StringBuilder();
+    private final StringBuilder     lineBuffer = new StringBuilder();
     private int                     indentation;
     private List/*<StringBuilder>*/ tabulatorBuffer;
     private int                     tabulatorIndentation;

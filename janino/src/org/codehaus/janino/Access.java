@@ -35,13 +35,13 @@ class Access extends Enumerator {
 
     /** Representation of PRIVATE accessibility. */
     public static final Access PRIVATE = new Access("private");
-    
+
     /** Representation of PROTECTED accessibility. */
     public static final Access PROTECTED = new Access("protected");
-    
+
     /** Representation of DEFAULT accessibility. */
     public static final Access DEFAULT = new Access("/*default*/");
-    
+
     /** Representation of PUBLIC accessibility. */
     public static final Access PUBLIC = new Access("public");
 

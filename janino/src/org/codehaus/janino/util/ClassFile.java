@@ -454,7 +454,7 @@ class ClassFile {
     /** @return The (read-only) constant pool entry indexed by {@code index} */
     public ConstantPoolInfo
     getConstantPoolInfo(short index) { return (ConstantPoolInfo) this.constantPool.get(0xffff & index); }
-    
+
     /** @return The size of the constant pool */
     public int
     getConstantPoolSize() { return this.constantPool.size(); }
@@ -536,7 +536,7 @@ class ClassFile {
         //TODO: extract the annotations
         return new Java.Modifiers(mods);
     }
-    
+
     /** u2 methods_count, methods[methods_count] */
     private List/*<MethodInfo>*/
     loadMethods(DataInputStream dis) throws IOException {
@@ -698,7 +698,7 @@ class ClassFile {
 
     /** The constant pool index of the {@link ConstantClassInfo} that describes THIS class. */
     public final short thisClass;
-    
+
     /**
      * The constant pool index of the {@link ConstantClassInfo} that describes the superclass of THIS class. Zero
      * for class {@link Object}, {@link Object} for interfaces.
@@ -716,7 +716,7 @@ class ClassFile {
 
     /** The {@link MethodInfo}s of the methods of this class or interface. */
     public final List/*<MethodInfo>*/ methodInfos;
-    
+
     /** The {@link AttributeInfo}s of the attributes of this class or interface. */
     private final List/*<AttributeInfo>*/ attributes;
 
@@ -733,7 +733,7 @@ class ClassFile {
          * See JVMS7 4.4.1 and following
          */
         protected abstract void store(DataOutputStream dos) throws IOException;
-        
+
         /** @return Whether this CP entry is "wide" in the sense of JVMS7 4.4.5 */
         protected abstract boolean isWide();
 

@@ -246,7 +246,7 @@ class Visitor {
         /** Invoked by {@link Java.SingleElementAnnotation#accept(AnnotationVisitor)} */
         void visitSingleElementAnnotation(Java.SingleElementAnnotation sea);
     }
-    
+
     /** The visitor for all kinds of {@link Java.ElementValue}s. */
     public
     interface ElementValueVisitor extends RvalueVisitor, AnnotationVisitor {

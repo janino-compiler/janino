@@ -156,7 +156,7 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
 
     @Override public void
     setParentClassLoader(ClassLoader optionalParentClassLoader) {
-        assertNotCooked();
+        this.assertNotCooked();
         this.parentClassLoader = (
             optionalParentClassLoader != null
             ? optionalParentClassLoader
@@ -251,7 +251,7 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
         return new Java.Type(location) {
 
             private Java.SimpleType delegate;
-            
+
             @Override public String toString()                  { return this.getDelegate().toString(); }
             @Override public void   accept(AtomVisitor visitor) { this.getDelegate().accept((TypeVisitor) visitor); }
             @Override public void   accept(TypeVisitor visitor) { this.getDelegate().accept(visitor); }

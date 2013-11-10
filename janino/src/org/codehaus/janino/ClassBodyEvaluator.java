@@ -172,20 +172,20 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
 
     @Override public void
     setDefaultImports(String[] optionalDefaultImports) {
-        assertNotCooked();
+        this.assertNotCooked();
         this.optionalDefaultImports = optionalDefaultImports;
     }
 
     @Override public void
     setClassName(String className) {
         if (className == null) throw new NullPointerException();
-        assertNotCooked();
+        this.assertNotCooked();
         this.className = className;
     }
 
     @Override public void
     setExtendedClass(Class optionalExtendedType) {
-        assertNotCooked();
+        this.assertNotCooked();
         this.optionalExtendedType = optionalExtendedType;
     }
 
@@ -202,7 +202,7 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
                 "Zero implemented types must be specified as 'new Class[0]', not 'null'"
             );
         }
-        assertNotCooked();
+        this.assertNotCooked();
         this.implementedTypes = implementedTypes;
     }
 

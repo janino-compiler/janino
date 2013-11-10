@@ -313,7 +313,7 @@ class Java {
 
         @Override public void
         setEnclosingScope(Scope enclosingScope) { this.type.setEnclosingScope(enclosingScope); }
-        
+
         @Override public String toString() { return "@" + this.type; }
 
         @Override public Type
@@ -909,7 +909,7 @@ class Java {
 
         /** The type of the extended class. */
         public final Type optionalExtendedType;
-        
+
         /** The types of the implemented interfaces. */
         public final Type[] implementedTypes;
 
@@ -1394,7 +1394,7 @@ class Java {
     /** Abstract base class for {@link Java.ConstructorDeclarator} and {@link Java.MethodDeclarator}. */
     public abstract static
     class FunctionDeclarator extends AbstractTypeBodyDeclaration implements DocCommentable {
-        
+
         private final String optionalDocComment;
 
         /** The {@link Modifiers} of this declarator. */
@@ -3246,7 +3246,7 @@ class Java {
         @Override public void
         accept(Visitor.RvalueVisitor visitor) { visitor.visitQualifiedThisReference(this); }
 
-        @Override public void 
+        @Override public void
         accept(ElementValueVisitor visitor) { visitor.visitQualifiedThisReference(this); }
     }
 
@@ -3325,10 +3325,10 @@ class Java {
 
         /** Left-hand side of this conditional operation. */
         public final Rvalue lhs;
-        
+
         /** Middle-hand side of this conditional operation. */
         public final Rvalue mhs;
-        
+
         /** Right-hand side of this conditional operation. */
         public final Rvalue rhs;
 
@@ -3918,7 +3918,7 @@ class Java {
 
         /** name of the invoked method. */
         public final String methodName;
-        
+
         /** Arguments to pass to the method. */
         public final Rvalue[] arguments;
 
@@ -4166,7 +4166,7 @@ class Java {
             this.arrayInitializer = arrayInitializer;
             this.arrayIClass      = arrayIClass;
         }
-        
+
         // Implement "Atom".
 
         @Override public String
@@ -4346,39 +4346,39 @@ class Java {
          * SimpleConstant#SimpleLiteral(Location, String)} with {@code null} as the second argument.
          */
         public SimpleConstant(Location location) { super(location); this.value = null; }
-        
+
         /** Equivalent of an literal, casted to {@code byte}. */
         public SimpleConstant(Location location, byte value) { super(location); this.value = value; }
-        
+
         /** Equivalent of an literal, casted to {@code short}. */
         public SimpleConstant(Location location, short value) { super(location); this.value = value; }
 
         /** Equivalent of an {@link IntegerLiteral} with type {@code int}. */
         public SimpleConstant(Location location, int value) { super(location); this.value = value; }
-        
+
         /** Equivalent of an {@link IntegerLiteral} with type {@code long}. */
         public SimpleConstant(Location location, long value) { super(location); this.value = value; }
-        
+
         /**
          * Equivalent of a {@link FloatingPointLiteral} with type {@code float}.
          * Notice that this class supports the special values {@link Float#NaN}, {@link Float#NEGATIVE_INFINITY} and
          * {@link Float#POSITIVE_INFINITY}, which can not be represented with a {@link FloatingPointLiteral}.
          */
         public SimpleConstant(Location location, float value) { super(location); this.value = value; }
-        
+
         /**
          * Equivalent of a {@link FloatingPointLiteral} with type {@code double}.
          * Notice that this class supports the special values {@link Double#NaN}, {@link Double#NEGATIVE_INFINITY} and
          * {@link Double#POSITIVE_INFINITY}, which can not be represented with a {@link FloatingPointLiteral}.
          */
         public SimpleConstant(Location location, double value) { super(location); this.value = value; }
-        
+
         /** Equivalent of a {@link CharacterLiteral}. */
         public SimpleConstant(Location location, char value) { super(location); this.value = value; }
-        
+
         /** Equivalent of a {@link BooleanLiteral}. */
         public SimpleConstant(Location location, boolean value) { super(location); this.value = value; }
-        
+
         /**
          * Equivalent of a {@link StringLiteral}, or, if {@code value} is null, the equivalent of a {@link
          * NullLiteral}.
@@ -4387,13 +4387,13 @@ class Java {
          * SimpleConstant#SimpleLiteral(Location)}.
          */
         public SimpleConstant(Location location, String value) { super(location); this.value = value; }
-        
+
         @Override public void
         accept(Visitor.AtomVisitor visitor) { visitor.visitSimpleConstant(this); }
-        
+
         @Override public void
         accept(Visitor.RvalueVisitor visitor) { visitor.visitSimpleConstant(this); }
-        
+
         @Override public void
         accept(ElementValueVisitor visitor) { visitor.visitSimpleConstant(this); }
 
@@ -4526,7 +4526,7 @@ class Java {
 
         /** The reference type of this wildcard's EXTENDS or SUPER bounds. */
         public final ReferenceType referenceType;
-        
+
         public
         Wildcard() {
             this.bounds        = BOUNDS_NONE;

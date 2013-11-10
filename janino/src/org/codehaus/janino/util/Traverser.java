@@ -753,7 +753,7 @@ class Traverser {
     /** @see Traverser */
     public void
     traverseFunctionDeclarator(Java.FunctionDeclarator fd) {
-        traverseFormalParameters(fd.formalParameters);
+        this.traverseFormalParameters(fd.formalParameters);
         if (fd.optionalStatements != null) {
             for (Iterator/*<Java.BlockStatement>*/ it = fd.optionalStatements.iterator(); it.hasNext();) {
                 Java.BlockStatement bs = (Java.BlockStatement) it.next();

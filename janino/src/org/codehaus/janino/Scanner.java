@@ -985,7 +985,7 @@ class Scanner {
      * <p>
      * The <code>handle</code> argument qulifies the warning and is typically used by
      * the {@link WarningHandler} to suppress individual warnings.
-     * @throws CompileException 
+     * @throws CompileException
      */
     private void
     warning(String handle, String message, Location optionalLocation) throws CompileException {

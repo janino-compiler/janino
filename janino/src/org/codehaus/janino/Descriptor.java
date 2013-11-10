@@ -258,7 +258,7 @@ class Descriptor {
 
     /** The field descriptor for the type VOID. */
     public static final String VOID = "V";
-    
+
     /** The field descriptor for the primitive type BYTE. */
     public static final String BYTE = "B";
     /** The field descriptor for the primitive type CHAR. */

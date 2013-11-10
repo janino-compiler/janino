@@ -199,7 +199,7 @@ class UnitCompiler {
      * of the operand stack is TRUE.
      */
     public static final boolean JUMP_IF_TRUE  = true;
-    
+
     /**
      * Special value for the {@code orientation} parameter of the {@link #compileBoolean(Rvalue, CodeContext.Offset,
      * boolean)} methods, indicating that the code should be generated such that execution branches if the value on top
@@ -727,10 +727,10 @@ class UnitCompiler {
             List/*<BlockStatements>*/ statements = new ArrayList();
             statements.addAll(id.constantDeclarations);
 
-            maybeCreateInitMethod(id, cf, statements);
+            this.maybeCreateInitMethod(id, cf, statements);
         }
 
-        compileDeclaredMethods(id, cf);
+        this.compileDeclaredMethods(id, cf);
 
         // Class variables.
         for (int i = 0; i < id.constantDeclarations.size(); ++i) {
@@ -739,7 +739,7 @@ class UnitCompiler {
             this.addFields((FieldDeclaration) bs, cf);
         }
 
-        compileDeclaredMemberTypes(id, cf);
+        this.compileDeclaredMemberTypes(id, cf);
 
         // Add the generated class file to a thread-local store.
         this.generatedClassFiles.add(cf);
@@ -833,19 +833,19 @@ class UnitCompiler {
             MethodDeclarator md = (MethodDeclarator) typeDeclaration.getMethodDeclarations().get(i);
 
             IMethod m                     = this.toIMethod(md);
-            boolean overrides             = overridesMethodFromSupertype(m, this.resolve(md.getDeclaringType()));
-            boolean hasOverrideAnnotation = hasAnnotation(md, this.iClassLoader.JAVA_LANG_OVERRIDE);
+            boolean overrides             = this.overridesMethodFromSupertype(m, this.resolve(md.getDeclaringType()));
+            boolean hasOverrideAnnotation = this.hasAnnotation(md, this.iClassLoader.JAVA_LANG_OVERRIDE);
             if (overrides && !hasOverrideAnnotation && !(typeDeclaration instanceof InterfaceDeclaration)) {
-                warning("MO", "Missing @Override", md.getLocation());
+                this.warning("MO", "Missing @Override", md.getLocation());
             } else
             if (!overrides && hasOverrideAnnotation) {
-                compileError("Method does not override a method declared in a supertype", md.getLocation());
+                this.compileError("Method does not override a method declared in a supertype", md.getLocation());
             }
 
             this.compile(md, cf);
         }
     }
-    
+
     private boolean
     hasAnnotation(FunctionDeclarator fd, IClass methodAnnotation) throws CompileException {
         Annotation[] methodAnnotations = fd.modifiers.annotations;
@@ -861,13 +861,13 @@ class UnitCompiler {
         // Check whether it overrides a method declared in the superclass (or any of its supertypes).
         {
             IClass superclass = type.getSuperclass();
-            if (superclass != null && overridesMethod(m, superclass)) return true;
+            if (superclass != null && this.overridesMethod(m, superclass)) return true;
         }
 
         // Check whether it overrides a method declared in an interface (or any of its superinterfaces).
         IClass[] ifs = type.getInterfaces();
         for (int i = 0; i < ifs.length; i++) {
-            if (overridesMethod(m, ifs[i])) return true;
+            if (this.overridesMethod(m, ifs[i])) return true;
         }
 
         return false;
@@ -1005,7 +1005,7 @@ class UnitCompiler {
     compile2(Block b) throws CompileException {
         this.codeContext.saveLocalVariables();
         try {
-            return compileStatements(b.statements);
+            return this.compileStatements(b.statements);
         } finally {
             this.codeContext.restoreLocalVariables();
         }
@@ -2090,7 +2090,7 @@ class UnitCompiler {
                 );
             }
         } else {
-            
+
             mi = classFile.addMethodInfo(
                 fd.modifiers,                         // modifiers
                 fd.name,                              // methodName
@@ -2554,7 +2554,7 @@ class UnitCompiler {
             @Override public void visitParameterAccess(ParameterAccess pa)                                    { try { UnitCompiler.this.compile2(pa);    } catch (CompileException e) { throw new UncheckedCompileException(e); } }
             @Override public void visitQualifiedThisReference(QualifiedThisReference qtr)                     { try { UnitCompiler.this.compile2(qtr);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
             @Override public void visitThisReference(ThisReference tr)                                        { try { UnitCompiler.this.compile2(tr);    } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-                                                                                                    
+
             @Override public void visitAmbiguousName(AmbiguousName an)                                        { try { UnitCompiler.this.compile2(an);    } catch (CompileException e) { throw new UncheckedCompileException(e); } }
             @Override public void visitArrayAccessExpression(ArrayAccessExpression aae)                       { try { UnitCompiler.this.compile2(aae);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
             @Override public void visitFieldAccess(FieldAccess fa)                                            { try { UnitCompiler.this.compile2(fa);    } catch (CompileException e) { throw new UncheckedCompileException(e); } }
@@ -2621,7 +2621,7 @@ class UnitCompiler {
         // Optimized crement of integer local variable.
         LocalVariable lv = this.isIntLv(c);
         if (lv != null) {
-            compileLocalVariableCrement(c, lv);
+            this.compileLocalVariableCrement(c, lv);
             return;
         }
 
@@ -2999,8 +2999,8 @@ class UnitCompiler {
                     this.compileError("Operator \"" + bo.op + "\" not allowed on reference operands", bo.getLocation());
                 }
                 if (
-                    !isCastReferenceConvertible(lhsType, rhsType)
-                    || !isCastReferenceConvertible(rhsType, lhsType)
+                    !this.isCastReferenceConvertible(lhsType, rhsType)
+                    || !this.isCastReferenceConvertible(rhsType, lhsType)
                 ) this.compileError("Incomparable types '" + lhsType + "' and '" + rhsType + "'", bo.getLocation());
                 this.writeBranch(bo, Opcode.IF_ACMPEQ + opIdx, dst);
                 return;
@@ -3565,7 +3565,7 @@ class UnitCompiler {
         LocalVariable lv = this.isIntLv(c);
         if (lv != null) {
             if (!c.pre) this.load(c, lv);
-            compileLocalVariableCrement(c, lv);
+            this.compileLocalVariableCrement(c, lv);
             if (c.pre) this.load(c, lv);
             return lv.type;
         }
@@ -3882,7 +3882,7 @@ class UnitCompiler {
         } else {
             adjustedArgs = mi.arguments;
         }
-        
+
         for (int i = 0; i < adjustedArgs.length; ++i) {
             this.assignmentConversion(
                 mi,                                    // location
@@ -4165,9 +4165,9 @@ class UnitCompiler {
 //            Rvalue[] adjustedArgs = null;
 //            final int paramsTypeLength = iConstructor.getParameterTypes().length;
 //            if (argsNeedAdjusting[0]) {
-//                adjustedArgs = new Rvalue[paramsTypeLength]; 
+//                adjustedArgs = new Rvalue[paramsTypeLength];
 //            }
-            
+
             // Notice: The enclosing instance of the anonymous class is "this", not the
             // qualification of the NewAnonymousClassInstance.
             Scope s;
@@ -4712,7 +4712,7 @@ class UnitCompiler {
 
     @SuppressWarnings("static-method") private Object
     getConstantValue2(NullLiteral nl) { return null; }
-    
+
     @SuppressWarnings("static-method") private Object
     getConstantValue2(SimpleConstant sl) { return sl.value; }
 
@@ -5180,7 +5180,7 @@ class UnitCompiler {
                     scopeCompilationUnit.optionalPackageDeclaration.packageName
                 );
                 String className = pkg == null ? simpleTypeName : pkg + "." + simpleTypeName;
-                IClass result    = findTypeByName(rt.getLocation(), className);
+                IClass result    = this.findTypeByName(rt.getLocation(), className);
                 if (result != null) return result;
             }
 
@@ -5258,7 +5258,7 @@ class UnitCompiler {
             // 6.5.5.2.1 PACKAGE.CLASS
             if (q instanceof Package) {
                 String className = Java.join(rt.identifiers, ".");
-                IClass result    = findTypeByName(rt.getLocation(), className);
+                IClass result    = this.findTypeByName(rt.getLocation(), className);
                 if (result != null) return result;
 
                 this.compileError("Class \"" + className + "\" not found", rt.getLocation());
@@ -5362,7 +5362,7 @@ class UnitCompiler {
             // TODO JLS7 15.25.1.2.2
 
             // JLS7 15.25.1.2.3
-    
+
             return this.binaryNumericPromotionType(ce, mhsType, rhsType);
         } else
         if (this.getConstantValue(ce.mhs) == null && !rhsType.isPrimitive()) {
@@ -5444,8 +5444,8 @@ class UnitCompiler {
             || bo.op == "&&"
             || bo.op == "=="
             || bo.op == "!="
-            || bo.op == "<" 
-            || bo.op == ">" 
+            || bo.op == "<"
+            || bo.op == ">"
             || bo.op == "<="
             || bo.op == ">="
             // CHECKSTYLE StringLiteralEquality:ON
@@ -5477,7 +5477,7 @@ class UnitCompiler {
             do {
                 IClass rhsType = this.getUnboxedType(this.getType(((Rvalue) ops.next())));
                 if (bo.op == "+" && rhsType == icl.JAVA_LANG_STRING) { // SUPPRESS CHECKSTYLE StringLiteralEquality
-                    return icl.JAVA_LANG_STRING; 
+                    return icl.JAVA_LANG_STRING;
                 }
                 lhsType = this.binaryNumericPromotionType(bo, lhsType, rhsType);
             } while (ops.hasNext());
@@ -5583,7 +5583,7 @@ class UnitCompiler {
     getType2(NullLiteral nl) {
         return IClass.VOID;
     }
-    
+
     private IClass
     getType2(SimpleConstant sl) {
         Object v = sl.value;
@@ -6530,7 +6530,7 @@ class UnitCompiler {
             for (int i = 0, j = parameterTypes.length - 1; i < lastArgs.length; ++i, ++j) {
                 lastArgs[i] = arguments[j];
             }
-            
+
             for (int i = parameterTypes.length - 2; i >= 0; --i) {
                 adjustedArgs[i] = arguments[i];
             }
@@ -6542,7 +6542,7 @@ class UnitCompiler {
             );
             arguments = adjustedArgs;
         }
-        
+
         for (int i = 0; i < arguments.length; ++i) {
             this.assignmentConversion(
                 locatable,                                  // l
@@ -6685,7 +6685,7 @@ class UnitCompiler {
         if (UnitCompiler.DEBUG) System.out.println("lhs = " + lhs);
         if (lhs instanceof Package) {
             String className = ((Package) lhs).name + '.' + rhs;
-            IClass result    = findTypeByName(location, className);
+            IClass result    = this.findTypeByName(location, className);
             if (result != null) return new SimpleType(location, result);
 
             return new Package(location, className);
@@ -7258,7 +7258,7 @@ class UnitCompiler {
                 + mi.methodName
                 + "\" is not declared in any enclosing class nor any supertype, nor through a static import"
             ), mi.getLocation());
-            return fakeIMethod(this.iClassLoader.JAVA_LANG_OBJECT, mi.methodName, mi.arguments);
+            return this.fakeIMethod(this.iClassLoader.JAVA_LANG_OBJECT, mi.methodName, mi.arguments);
         }
 
         this.checkThrownExceptions(mi, iMethod);
@@ -7360,7 +7360,7 @@ class UnitCompiler {
         IClass  superclass = this.resolve(declaringClass).getSuperclass();
         IMethod iMethod    = this.findIMethod(
             superclass, // targetType
-            superclassMethodInvocation        // invocation            
+            superclassMethodInvocation        // invocation
         );
         if (iMethod == null) {
             this.compileError(
@@ -7380,7 +7380,7 @@ class UnitCompiler {
     /**
      * Determine the arguments' types, determine the applicable invocables and choose the most specific invocable
      * and adjust arguments as needed (for varargs case).
-     * 
+     *
      * @param iInvocables       Length must be greater than zero
      * @return                  The selected {@link IClass.IInvocable}
      */
@@ -7504,9 +7504,9 @@ class UnitCompiler {
                 // If the two have the same argCount and the last actual arg is an array of the same type
                 // accept it (Eg., void foo(int a, double...b) VS foo(1, new double[0]).
                 if (
-                    formalParamCount == lastActualArg 
+                    formalParamCount == lastActualArg
                     && argumentTypes[lastActualArg].isArray()
-                    && isMethodInvocationConvertible(
+                    && this.isMethodInvocationConvertible(
                         argumentTypes[lastActualArg].getComponentType(),
                         lastParamType,
                         boxingPermitted
@@ -7522,13 +7522,13 @@ class UnitCompiler {
                             formalParamCount++;
                             break VARARGS;
                         }
-                        
+
                         nUncheckedArg--;
                     }
                     argsNeedAdjust = true;
                 }
             }
-            
+
             if (formalParamCount == nUncheckedArg) {
                 for (int j = 0; j < nUncheckedArg; ++j) {
 
@@ -7541,7 +7541,7 @@ class UnitCompiler {
 
                 // Applicable!
                 if (UnitCompiler.DEBUG) System.out.println("Applicable!");
-                
+
                 // varargs has lower priority
                 if (isVarargs) {
                     ii.setArgsNeedAdjust(argsNeedAdjust);
@@ -7560,8 +7560,8 @@ class UnitCompiler {
         // No method found by previous phase(s)
         if (applicableIInvocables.size() == 0 && !varargApplicables.isEmpty()) {
             //TODO: 15.12.2.3 (type-conversion?)
-            
-            // 15.12.2.4 : Phase 3: Identify Applicable Variable Arity Methods 
+
+            // 15.12.2.4 : Phase 3: Identify Applicable Variable Arity Methods
             applicableIInvocables = varargApplicables;
             if (applicableIInvocables.size() == 1) {
                 return (IClass.IInvocable) applicableIInvocables.get(0);
@@ -8398,7 +8398,7 @@ class UnitCompiler {
             getAnnotations() { return methodDeclarator.modifiers.annotations; }
 
             // Implement IInvocable.
-            
+
             @Override public boolean
             isVarargs() { return (methodDeclarator.modifiers.flags & Mod.VARARGS) != 0; }
 

@@ -57,7 +57,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
 
     /** Whether methods are static; {@code null} means "all". */
     protected boolean[] optionalStaticMethod;
-    
+
     /** The methods' return types; {@code null} means "none". */
     protected Class[] optionalReturnTypes;
 
@@ -382,13 +382,13 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
 
     @Override public void
     setOverrideMethod(boolean[] overrideMethod) {
-        assertNotCooked();
+        this.assertNotCooked();
         this.optionalOverrideMethod = overrideMethod.clone();
     }
 
     @Override public void
     setStaticMethod(boolean[] staticMethod) {
-        assertNotCooked();
+        this.assertNotCooked();
         this.optionalStaticMethod = staticMethod.clone();
     }
 
@@ -403,26 +403,26 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
      */
     @Override public void
     setReturnTypes(Class[] returnTypes) {
-        assertNotCooked();
+        this.assertNotCooked();
         this.optionalReturnTypes = returnTypes.clone();
     }
 
     @Override public void
     setMethodNames(String[] methodNames) {
-        assertNotCooked();
+        this.assertNotCooked();
         this.optionalMethodNames = methodNames.clone();
     }
 
     @Override public void
     setParameters(String[][] parameterNames, Class[][] parameterTypes) {
-        assertNotCooked();
+        this.assertNotCooked();
         this.optionalParameterNames = parameterNames.clone();
         this.optionalParameterTypes = parameterTypes.clone();
     }
 
     @Override public void
     setThrownExceptions(Class[][] thrownExceptions) {
-        assertNotCooked();
+        this.assertNotCooked();
         this.optionalThrownExceptions = thrownExceptions.clone();
     }
 

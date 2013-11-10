@@ -263,7 +263,7 @@ class ReflectionIClass extends IClass {
         // Implement IMember.
         @Override public Access
         getAccess() { return ReflectionIClass.modifiers2Access(this.method.getModifiers()); }
-        
+
         @Override public Java.Annotation[]
         getAnnotations() { return new Java.Annotation[0]; }
 

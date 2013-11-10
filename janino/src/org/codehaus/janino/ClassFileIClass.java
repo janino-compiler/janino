@@ -355,7 +355,7 @@ class ClassFileIClass extends IClass {
 
                 @Override public IClass[]          getThrownExceptions() { return thrownExceptions; }
                 @Override public Access            getAccess()           { return access; }
-                @Override public Java.Annotation[] getAnnotations()      { return methodInfo.getAnnotations(); } 
+                @Override public Java.Annotation[] getAnnotations()      { return methodInfo.getAnnotations(); }
             };
         } else {
             result = new IClass.IMethod() {

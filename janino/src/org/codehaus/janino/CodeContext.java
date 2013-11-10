@@ -142,7 +142,7 @@ class CodeContext {
         Java.LocalVariableSlot slot = new Java.LocalVariableSlot(name, this.nextLocalVariableSlot, type);
 
         if (slot.getName() != null) {
-            slot.setStart(newOffset());
+            slot.setStart(this.newOffset());
         }
 
         this.nextLocalVariableSlot += size;
@@ -184,7 +184,7 @@ class CodeContext {
             Java.LocalVariableSlot slot = (Java.LocalVariableSlot) iter.next();
 
             if (slot.getName() != null) {
-                slot.setEnd(newOffset());
+                slot.setEnd(this.newOffset());
             }
         }
     }
@@ -235,7 +235,7 @@ class CodeContext {
 
         // Add "LocalVariableTable" attribute.
         if (localVariableTableAttributeNameIndex != 0) {
-            ClassFile.AttributeInfo ai = storeLocalVariableTable(dos, localVariableTableAttributeNameIndex);
+            ClassFile.AttributeInfo ai = this.storeLocalVariableTable(dos, localVariableTableAttributeNameIndex);
 
             if (ai != null) attributes.add(ai);
         }
@@ -255,7 +255,7 @@ class CodeContext {
         ClassFile       cf                                                         = this.getClassFile();
         final List      entryList/*<ClassFile.LocalVariableTableAttribute.Entry>*/ = new ArrayList();
 
-        for (Iterator/*<Java.LocalVariableSlot>*/ iter = getAllLocalVars().iterator(); iter.hasNext();) {
+        for (Iterator/*<Java.LocalVariableSlot>*/ iter = this.getAllLocalVars().iterator(); iter.hasNext();) {
             Java.LocalVariableSlot slot = (Java.LocalVariableSlot) iter.next();
 
             if (slot.getName() != null) {
@@ -435,7 +435,7 @@ class CodeContext {
                 /* FALL THROUGH */
             case Opcode.SD_GETSTATIC:
                 stackSize += this.determineFieldSize((short) (
-                    extract16BitValue(0, operandOffset, code)
+                    this.extract16BitValue(0, operandOffset, code)
                 ));
                 break;
 
@@ -444,7 +444,7 @@ class CodeContext {
                 /* FALL THROUGH */
             case Opcode.SD_PUTSTATIC:
                 stackSize -= this.determineFieldSize((short) (
-                    extract16BitValue(0, operandOffset, code)
+                    this.extract16BitValue(0, operandOffset, code)
                 ));
                 break;
 
@@ -455,7 +455,7 @@ class CodeContext {
                 /* FALL THROUGH */
             case Opcode.SD_INVOKESTATIC:
                 stackSize -= this.determineArgumentsSize((short) (
-                    extract16BitValue(0, operandOffset, code)
+                    this.extract16BitValue(0, operandOffset, code)
                 ));
                 break;
 
@@ -528,7 +528,7 @@ class CodeContext {
                 this.flowAnalysis(
                     functionName,
                     code, codeSize,
-                    extract16BitValue(offset, operandOffset, code),
+                    this.extract16BitValue(offset, operandOffset, code),
                     stackSize,
                     stackSizes
                 );
@@ -542,7 +542,7 @@ class CodeContext {
                     System.out.println(code[operandOffset]);
                     System.out.println(code[operandOffset + 1]);
                 }
-                int targetOffset = extract16BitValue(offset, operandOffset, code);
+                int targetOffset = this.extract16BitValue(offset, operandOffset, code);
                 operandOffset += 2;
                 if (stackSizes[targetOffset] == CodeContext.UNEXAMINED) {
                     this.flowAnalysis(
@@ -559,7 +559,7 @@ class CodeContext {
                 this.flowAnalysis(
                     functionName,
                     code, codeSize,
-                    extract32BitValue(offset, operandOffset, code),
+                    this.extract32BitValue(offset, operandOffset, code),
                     stackSize, stackSizes
                 );
                 operandOffset += 4;
@@ -570,12 +570,12 @@ class CodeContext {
                 this.flowAnalysis(
                     functionName,
                     code, codeSize,
-                    extract32BitValue(offset, operandOffset, code),
+                    this.extract32BitValue(offset, operandOffset, code),
                     stackSize, stackSizes
                 );
                 operandOffset += 4;
 
-                int npairs = extract32BitValue(0, operandOffset, code);
+                int npairs = this.extract32BitValue(0, operandOffset, code);
                 operandOffset += 4;
 
                 for (int i = 0; i < npairs; ++i) {
@@ -583,7 +583,7 @@ class CodeContext {
                     this.flowAnalysis(
                         functionName,
                         code, codeSize,
-                        extract32BitValue(offset, operandOffset, code),
+                        this.extract32BitValue(offset, operandOffset, code),
                         stackSize, stackSizes
                     );
                     operandOffset += 4; //advance over offset
@@ -595,19 +595,19 @@ class CodeContext {
                 this.flowAnalysis(
                     functionName,
                     code, codeSize,
-                    extract32BitValue(offset, operandOffset, code),
+                    this.extract32BitValue(offset, operandOffset, code),
                     stackSize, stackSizes
                 );
                 operandOffset += 4;
-                int low = extract32BitValue(offset, operandOffset, code);
+                int low = this.extract32BitValue(offset, operandOffset, code);
                 operandOffset += 4;
-                int hi = extract32BitValue(offset, operandOffset, code);
+                int hi = this.extract32BitValue(offset, operandOffset, code);
                 operandOffset += 4;
                 for (int i = low; i <= hi; ++i) {
                     this.flowAnalysis(
                         functionName,
                         code, codeSize,
-                        extract32BitValue(offset, operandOffset, code),
+                        this.extract32BitValue(offset, operandOffset, code),
                         stackSize, stackSizes
                     );
                     operandOffset += 4;
@@ -723,8 +723,8 @@ class CodeContext {
         // that a late relocatable will grow the size of the bytecode, and require
         // an earlier relocatable to switch from 32K mode to 64K mode branching
         do {
-            fixUp();
-        } while (!relocate());
+            this.fixUp();
+        } while (!this.relocate());
     }
 
     /** Fixes up all offsets. */

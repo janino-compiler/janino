@@ -193,7 +193,7 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
      * yet defined i.e. which were not yet passed to
      * {@link ClassLoader#defineClass(java.lang.String, byte[], int, int)}.
      */
-    private Map/*<String name, byte[] bytecode>*/ precompiledClasses = new HashMap();
+    private final Map/*<String name, byte[] bytecode>*/ precompiledClasses = new HashMap();
 
     /**
      * Find, scan, parse the right compilation unit. Compile the parsed compilation unit to

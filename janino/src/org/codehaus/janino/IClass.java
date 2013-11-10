@@ -236,7 +236,7 @@ class IClass {
     /** @return Whether this {@link IClass} does declare an {@link IMethod} with the given name and parameter types */
     public final boolean
     hasIMethod(String methodName, IClass[] parameterTypes) throws CompileException {
-        return findIMethod(methodName, parameterTypes) != null;
+        return this.findIMethod(methodName, parameterTypes) != null;
     }
 
     /** @return The {@link IMethod} declared in this {@link IClass} with the given name and parameter types */
@@ -257,7 +257,7 @@ class IClass {
      */
     public final IField[]
     getDeclaredIFields() {
-        Collection/*<IField>*/ allFields = getDeclaredIFieldsCache().values();
+        Collection/*<IField>*/ allFields = this.getDeclaredIFieldsCache().values();
 
         return (IField[]) allFields.toArray(new IField[allFields.size()]);
     }
@@ -267,7 +267,7 @@ class IClass {
     getDeclaredIFieldsCache() {
         if (this.declaredIFieldsCache == null) {
 
-            IField[] fields = getDeclaredIFields2();
+            IField[] fields = this.getDeclaredIFields2();
 
             Map/*<String fieldName, IField>*/ m = new HashMap();
             for (int i = 0; i < fields.length; ++i) m.put(fields[i].getName(), fields[i]);
@@ -826,10 +826,10 @@ class IClass {
                 // Both are varargs.
                 final IClass[] thisParameterTypes = this.getParameterTypes();
                 final IClass[] thatParameterTypes = that.getParameterTypes();
-                
+
                 IClass[] t, u;
                 int      n, k;
-                
+
                 if (thisParameterTypes.length >= thatParameterTypes.length) {
                     t = thisParameterTypes;
                     u = thatParameterTypes;
@@ -840,7 +840,7 @@ class IClass {
                     // that = U | U_k
                     // n >= k
                     //              ignore generics, for now
-                    
+
                     // T0, T1, ..., Tn-1, Tn[]
                     // U0, U1, .., Uk[]
                     final int kMinus1 = k - 1;
@@ -871,12 +871,12 @@ class IClass {
                     // n >= k
                     final int kMinus1 = k - 1;
                     for (int j = 0; j < kMinus1; ++j) {
-                        // expect U[j] <: S[j] 
+                        // expect U[j] <: S[j]
                         if (!s[j].isAssignableFrom(u[j])) {
                             return false;
                         }
                     }
-                    
+
                     final IClass uk1     = u[kMinus1].getComponentType();
                     final int    nMinus1 = n - 1;
                     for (int j = kMinus1; j < nMinus1; ++j) {
@@ -892,9 +892,9 @@ class IClass {
 
                 return true;
             }
-            
+
             // both are fixed arity
-            
+
             // The following case is tricky: JLS7 says that the invocation is AMBIGUOUS, but only JAVAC 1.2 issues an
             // error; JAVAC 1.4.1, 1.5.0 and 1.6.0 obviously ignore the declaring type and invoke "A.meth(String)".
             // JLS7 is not clear about this. For compatibility with JAVA 1.4.1, 1.5.0 and 1.6.0, JANINO also ignores
@@ -984,13 +984,13 @@ class IClass {
 
         /** @return Whether this method is STATIC */
         public abstract boolean isStatic();
-        
+
         /** @return Whether this method is ABSTRACT */
         public abstract boolean isAbstract();
-        
+
         /** @return The return type of this method */
         public abstract IClass getReturnType() throws CompileException;
-        
+
         /** @return The name of this method */
         public abstract String  getName();
 
@@ -1051,13 +1051,13 @@ class IClass {
 
         /** @return Whether this field is STATIC */
         public abstract boolean isStatic();
-        
+
         /** @return The type of this field */
         public abstract IClass getType() throws CompileException;
-        
+
         /** @return The name this field */
         public abstract String getName();
-        
+
         /** @return The descriptor of this field */
         public String getDescriptor() throws CompileException { return this.getType().getDescriptor(); }
 

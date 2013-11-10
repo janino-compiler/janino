@@ -352,7 +352,7 @@ class Parser {
         if (!this.peekRead("(")) return new Java.MarkerAnnotation(type);
 
         if (this.peekIdentifier() == null || !this.peekNextButOne("=")) {
-            Java.ElementValue elementValue = parseElementValue();
+            Java.ElementValue elementValue = this.parseElementValue();
             this.read(")");
             return new Java.SingleElementAnnotation(type, elementValue);
         }
@@ -487,10 +487,10 @@ class Parser {
         /** The class declaration appears inside a 'block'. */
         /** The class declaration appears inside a 'block'. */
         public static final ClassDeclarationContext BLOCK = new ClassDeclarationContext("block");
-        
+
         /** The class declaration appears (directly) inside a type declaration. */
         public static final ClassDeclarationContext TYPE_DECLARATION = new ClassDeclarationContext("type_declaration");
-        
+
         /** The class declaration appears on the top level. */
         public static final ClassDeclarationContext COMPILATION_UNIT = new ClassDeclarationContext("compilation_unit");
 
@@ -994,11 +994,11 @@ class Parser {
         List/*<FormalParameter>*/ l           = new ArrayList();
         boolean[]                 hasEllipsis = new boolean[1];
         do {
-            if (hasEllipsis[0]) throw compileException("Only the last parameter may have an ellipsis");
+            if (hasEllipsis[0]) throw this.compileException("Only the last parameter may have an ellipsis");
             l.add(this.parseFormalParameter(hasEllipsis));
         } while (this.read(new String[] { ",", ")" }) == 0);
         return new FunctionDeclarator.FormalParameters(
-            location(),
+            this.location(),
             (FunctionDeclarator.FormalParameter[]) l.toArray(new FunctionDeclarator.FormalParameter[l.size()]),
             hasEllipsis[0]
         );
@@ -1490,7 +1490,7 @@ class Parser {
             this.read("(");
             boolean[]                          hasEllipsis     = new boolean[1];
             FunctionDeclarator.FormalParameter caughtException = this.parseFormalParameter(hasEllipsis);
-            if (hasEllipsis[0]) throw compileException("Catch clause parameter must not have an ellipsis");
+            if (hasEllipsis[0]) throw this.compileException("Catch clause parameter must not have an ellipsis");
             this.read(")");
             ccs.add(new CatchClause(
                 loc,              // location
@@ -2944,7 +2944,7 @@ class Parser {
      * the {@link WarningHandler} to suppress individual warnings.
      *
      * @throws CompileException The optionally installed {@link WarningHandler} decided to throw a {@link
-     *                          CompileException} 
+     *                          CompileException}
      */
     private void
     warning(String handle, String message, Location optionalLocation) throws CompileException {
