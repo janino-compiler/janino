@@ -50,8 +50,11 @@ import org.codehaus.janino.util.AutoIndentWriter;
 @SuppressWarnings({ "rawtypes", "unchecked" }) public
 class UnparseVisitor implements Visitor.ComprehensiveVisitor {
 
-    private final AutoIndentWriter aiw;
-    private final PrintWriter      pw;
+    /**
+     * Where the {@code visit...()} methods print their text. Noice that this {@link PrintWriter} does not print to
+     * the output directly, but through an {@link AutoIndentWriter}.
+     */
+    protected final PrintWriter pw;
 
     /**
      * Testing of parsing/unparsing.
@@ -91,8 +94,7 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor {
 
     public
     UnparseVisitor(Writer w) {
-        this.aiw = new AutoIndentWriter(w);
-        this.pw  = new PrintWriter(this.aiw, true);
+        this.pw  = new PrintWriter(new AutoIndentWriter(w), true);
     }
 
     /** Flushes all generated code. */
