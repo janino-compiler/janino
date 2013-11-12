@@ -639,7 +639,7 @@ class JlsTests extends JaninoTestSuite {
             + "    public MyFile() { super(\"/my/file\"); }\n"
             + "}\n"
             + "public class Main {\n"
-            + "    public static boolean test() {\n"
+            + "    public static boolean main() {\n"
             + "        return 0 == new MyFile().compareTo(new MyFile());\n"
             + "    }\n"
             + "}"
@@ -655,7 +655,7 @@ class JlsTests extends JaninoTestSuite {
         assertCompilationUnitMainExecutable((
             ""
             + "public class Foo {\n"
-            + "    public static void test() { new Foo().meth(); }\n"
+            + "    public static void main() { new Foo().meth(); }\n"
             + "    private Object meth() {\n"
             + "        return new Object() {};\n"
             + "    }\n"
@@ -664,7 +664,7 @@ class JlsTests extends JaninoTestSuite {
         assertCompilationUnitMainExecutable((
             ""
             + "public class A {\n"
-            + "    public static void test() { new A(); }\n"
+            + "    public static void main() { new A(); }\n"
             + "    public A(Object o) {}\n"
             + "    public A() {\n"
             + "        this(new Object() {});\n"
@@ -682,7 +682,7 @@ class JlsTests extends JaninoTestSuite {
             + "public class T2 extends T1 { int x = 2; }\n"
             + "public class T3 extends T2 {\n"
             + "    int x = 3;\n"
-            + "    public static boolean test() {\n"
+            + "    public static boolean main() {\n"
             + "        return new T3().test2();\n"
             + "    }\n"
             + "    public boolean test2() {\n"
@@ -719,7 +719,7 @@ class JlsTests extends JaninoTestSuite {
         // See also JANINO-79 and "IClass.IInvocable.isMoreSpecificThan()".
         assertCompilationUnitMainReturnsTrue((
             ""
-            + "public class Main        { public static boolean test()  { return new B().meth(\"x\"); } }\n"
+            + "public class Main        { public static boolean main()  { return new B().meth(\"x\"); } }\n"
             + "public class A           { public boolean meth(String s) { return true; } }\n"
             + "public class B extends A { public boolean meth(Object o) { return false; } }\n"
         ), "Main");

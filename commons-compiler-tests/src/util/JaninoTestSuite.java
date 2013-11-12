@@ -71,7 +71,7 @@ class JaninoTestSuite {
     }
     
     /**
-     * Asserts that the given {@code expression} can be cooked and evaluated.
+     * Asserts that the given {@code expression} can be cooked and evaluated. (Its value is ignored.)
      */
     protected void
     assertExpressionEvaluatable(String expression) throws Exception {
@@ -126,7 +126,7 @@ class JaninoTestSuite {
     }
     
     /**
-     * Asserts that the given {@code script} can be cooked and executed.
+     * Asserts that the given {@code script} can be cooked and executed. (Its return value is ignored.)
      */
     protected void
     assertScriptExecutable(String script) throws Exception {
@@ -193,8 +193,8 @@ class JaninoTestSuite {
     }
     
     /**
-     * Asserts that the given {@code classBody} declares a method {@code public static boolean main()} which executes
-     * and terminates normally.
+     * Asserts that the given {@code classBody} declares a method '{@code public static }<i>any-type</i> {@code
+     * main()}' which executes and terminates normally. (The return value is ignored.)
      */
     protected void
     assertClassBodyExecutable(String classBody) throws Exception {
@@ -228,10 +228,10 @@ class JaninoTestSuite {
 
         protected Object
         execute() throws Exception {
-            @SuppressWarnings("unchecked") Method method = this.classBodyEvaluator.getClazz().getMethod(
-                "main",
-                new Class[0]
-            );
+
+            @SuppressWarnings("unchecked") Method
+            method = this.classBodyEvaluator.getClazz().getMethod("main", new Class[0]);
+
             return method.invoke(null, new Object[0]);
         }
     }
@@ -254,8 +254,9 @@ class JaninoTestSuite {
     }
 
     /**
-     * Asserts that the given {@code compilationUnit} can be cooked by the {@link ISimpleCompiler} and its {@code public
-     * static boolean }<i>className</i>{@code .main()} method completes without exceptions.
+     * Asserts that the given {@code compilationUnit} can be cooked by the {@link ISimpleCompiler} and its '{@code
+     * public static }<i>any-type className</i>{@code .main()}' method completes without exceptions. (The return value
+     * is ignored.)
      */
     protected void
     assertCompilationUnitMainExecutable(String compilationUnit, String className) throws Exception {
@@ -295,7 +296,7 @@ class JaninoTestSuite {
             return (
                 this.simpleCompiler.getClassLoader()
                 .loadClass(this.className)
-                .getMethod("test", new Class[0])
+                .getMethod("main", new Class[0])
                 .invoke(null, new Object[0])
             );
         }

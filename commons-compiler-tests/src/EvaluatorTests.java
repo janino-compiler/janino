@@ -49,8 +49,8 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
+import util.JaninoTestSuite;
 import util.TestUtil;
-import for_sandbox_tests.OverridesWithDifferingVisibility;
 
 // CHECKSTYLE JavadocMethod:OFF
 
@@ -59,15 +59,13 @@ import for_sandbox_tests.OverridesWithDifferingVisibility;
  * {@link SimpleCompiler}. 
  */
 @RunWith(Parameterized.class) public
-class EvaluatorTests {
-
-    private final ICompilerFactory compilerFactory;
+class EvaluatorTests extends JaninoTestSuite {
 
     @Parameters public static Collection<Object[]>
     compilerFactories() throws Exception { return TestUtil.getCompilerFactoriesForParameters(); }
 
     public
-    EvaluatorTests(ICompilerFactory compilerFactory) { this.compilerFactory = compilerFactory; }
+    EvaluatorTests(ICompilerFactory compilerFactory) { super(compilerFactory); }
 
     @Test public void
     testMultiScriptEvaluator() throws Exception {
@@ -570,7 +568,7 @@ class EvaluatorTests {
 
     @Test public void
     testStaticFieldAccess() throws Exception {
-        assertCompiles(true, (
+        assertCompilationUnitCookable((
             ""
             + "package test;\n"
             + "public class Test {\n"
@@ -671,43 +669,56 @@ class EvaluatorTests {
 
     @Test public void
     testOverrideVisibility() throws Exception {
-        // note that this compiles without problem
-        OverridesWithDifferingVisibility.test(new Object[] { "asdf" });
 
         // so should this
-        assertCompiles(true, (
+        assertCompilationUnitMainReturnsTrue((
             ""
             + "package test;\n"
             + "public class Test {\n"
-            + "    public void runTest() {\n"
-            + "       for_sandbox_tests.OverridesWithDifferingVisibility.test(new Object[] { \"asdf\"} );\n"
+            + "    public static boolean main() {\n"
+            + "       return \"A\".equals(test.OverridesWithDifferingVisibility.test(new Object[] { \"asdf\"} ));\n"
             + "    }\n"
             + "}\n"
-        ));
+            + "\n"
+            + "public\n"
+            + "class OverridesWithDifferingVisibility {\n"
+            + "\n"
+            + "    public static String  test(Object o)     { return \"A\"; }\n"
+            + "    private static String test(Object[] arr) { return \"B\"; }\n"
+            + "}"
+        ), "test.Test");
     }
 
     @Test public void
     testCovariantReturns() throws Exception {
-        assertCompiles(true, (
+        assertCompilationUnitCookable(
             ""
             + "package test;\n"
-            + "public class Test extends for_sandbox_tests.CovariantReturns {\n"
+            + "public class Test extends CovariantReturns {\n"
             + "    @Override public Test overrideMe() { return this; }\n"
+            + "}\n"
+            + "public abstract\n"
+            + "class CovariantReturns {\n"
+            + "    public abstract CovariantReturns overrideMe();\n"
             + "}"
-        ));
-        assertCompiles(false, (
+        );
+        assertCompilationUnitUncookable(
             ""
             + "package test;\n"
-            + "public class Test2 extends for_sandbox_tests.CovariantReturns {\n"
+            + "public class Test2 extends CovariantReturns {\n"
             + "    public Integer overrideMe() { return null; }\n"
+            + "}\n"
+            + "public abstract\n"
+            + "class CovariantReturns {\n"
+            + "    public abstract CovariantReturns overrideMe();\n"
             + "}"
-        ));
+        );
     }
 
     @Test public void
     testNonExistentImport() throws Exception {
-        assertCompiles(false, "import does.not.Exist; public class Test { private final Exist e = null; }");
-        assertCompiles(false, "import does.not.Exist; public class Test { }");
+        assertCompilationUnitUncookable("import does.not.Exist; public class Test { private final Exist e = null; }");
+        assertCompilationUnitUncookable("import does.not.Exist; public class Test { }");
     }
 
     @Test public void
@@ -775,14 +786,14 @@ class EvaluatorTests {
 
     @Test public void
     testAbstractGrandParentsWithCovariantReturns() throws Exception {
-        assertCompiles(true, (
+        assertCompilationUnitCookable(
             ""
             + "public class Top {\n"
             + "    private static class IndentPrintWriter extends java.io.PrintWriter { "
             + "        public IndentPrintWriter(java.io.OutputStream os) { super(os); }"
             + "    }"
             + "}"
-        ));
+        );
     }
 
     @Test public void
@@ -887,7 +898,7 @@ class EvaluatorTests {
 
     @Test public void
     testBaseClassAccess() throws Exception {
-        assertCompiles(true, (
+        assertCompilationUnitCookable(
             ""
             + "class top extends other_package.ScopingRules {\n"
             + "    class Inner extends other_package.ScopingRules.ProtectedInner {\n"
@@ -901,40 +912,22 @@ class EvaluatorTests {
             + "        i.publicMethod();\n"
             + "    }\n"
             + "}\n"
-        ));
+        );
     }
 
     @Test public void
     testNullComparator() throws Exception {
-        assertCompiles(true, (
+        assertCompilationUnitCookable(
             ""
             + "class Test {\n"
             + "    public void test() {\n"
             + "        if (null == null) {\n"
-            + "           // success\n"
+            + "            // success\n"
             + "        } else if (null != null) {\n"
             + "            throw new RuntimeException();\n"
             + "        }\n"
             + "    }\n"
             + "}\n"
-        ));
-    }
-
-    /**
-     * Compiles {@code prog} with the {@link SimpleCompiler} (but does not execute it).
-     *
-     * @param shouldCompile Whether compilation <i>must</i> succeed or <i>must not</i> succeed
-     */
-    public ISimpleCompiler
-    assertCompiles(boolean shouldCompile, CharSequence prog) throws Exception {
-        try {
-            ISimpleCompiler sc = this.compilerFactory.newSimpleCompiler();
-            sc.cook(prog.toString());
-            assertTrue("Compilation should have failed for:\n" + prog, shouldCompile);
-            return sc;
-        } catch (CompileException ce) {
-            if (shouldCompile) throw ce;
-        }
-        return null;
+        );
     }
 }

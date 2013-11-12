@@ -78,7 +78,6 @@ class SandboxTests {
 
         // Invoke method of allowed external class.
         IExpressionEvaluator ee = this.compilerFactory.newExpressionEvaluator();
-//        ee.setParentClassLoader(null, new Class[] { ExternalClass.class });
         ee.cook("for_sandbox_tests.ExternalClass.m1()");
         assertEquals(7, ((Integer) ee.evaluate(new Object[0])).intValue());
     }
@@ -88,7 +87,6 @@ class SandboxTests {
 
         // Invoke method of base class.
         IExpressionEvaluator ee = this.compilerFactory.newExpressionEvaluator();
-//        ee.setParentClassLoader(SimpleCompiler.BOOT_CLASS_LOADER, new Class[] { OtherExternalClass.class });
         ee.setExtendedClass(ExternalClass.class);
         ee.cook("m1()");
         assertEquals(7, ((Integer) ee.evaluate(new Object[0])).intValue());

@@ -66,8 +66,9 @@ class ReportedBugs extends JaninoTestSuite {
             ""
             + "package demo;\n"
             + "public class Service {\n"
-            + "    public static void test() {\n"
+            + "    public static boolean main() {\n"
             + "        Broken[] dummy = new Broken[5];\n"
+            + "        return true;\n"
             + "    }\n"
             + "    class Broken {\n"
             + "    }\n"
@@ -77,7 +78,7 @@ class ReportedBugs extends JaninoTestSuite {
             ""
             + "package demo;\n"
             + "public class Service {\n"
-            + "    public static Broken[] test() {\n"
+            + "    public static Broken[] main() {\n"
             + "        return null;\n"
             + "    }\n"
             + "}\n"
@@ -269,7 +270,7 @@ class ReportedBugs extends JaninoTestSuite {
         assertCompilationUnitMainExecutable((
             ""
             + "public class Test {\n"
-            + "    public static void test() {\n"
+            + "    public static void main() {\n"
             + "        Object foo = baz();\n"
             + "        System.out.println(\"hello\");\n"
             + "    }\n"
@@ -318,7 +319,7 @@ class ReportedBugs extends JaninoTestSuite {
         assertCompilationUnitMainReturnsTrue((
             ""
             + "public class ACI {\n"
-            + "    public static boolean test() {\n"
+            + "    public static boolean main() {\n"
             + "        Sub s = new ACI().new Sub(new int[] { 1, 2 });\n"
             + "        return s.x == 1 && s.y == 2;\n"
             + "    }\n"
@@ -337,7 +338,7 @@ class ReportedBugs extends JaninoTestSuite {
         assertCompilationUnitMainReturnsTrue((
             ""
             + "public class SCI {\n"
-            + "    public static boolean test() {\n"
+            + "    public static boolean main() {\n"
             + "        Sub s = new SCI().new Sub(1, 2);\n"
             + "        return s.x == 1 && s.y == 2;\n"
             + "    }\n"
@@ -390,15 +391,15 @@ class ReportedBugs extends JaninoTestSuite {
         assertCompilationUnitMainReturnsTrue((
             ""
             + "public class Test{\n"
-            + "  static String x = \"\";\n"
-            + "  static { x += 0; }\n"
-            + "  static int a = 7;\n"
-            + "  static { x += a; }\n"
-            + "  static { System.out.println(\"HELLO\");\n }\n"
-            + "  public static boolean test() {\n"
-            + "    System.out.println(\">>>\" + x + \"<<<\");\n"
-            + "    return x.equals(\"07\");\n"
-            + "  }\n"
+            + "    static String x = \"\";\n"
+            + "    static { x += 0; }\n"
+            + "    static int a = 7;\n"
+            + "    static { x += a; }\n"
+            + "    static { System.out.println(\"HELLO\");\n }\n"
+            + "    public static boolean main() {\n"
+            + "        System.out.println(\">>>\" + x + \"<<<\");\n"
+            + "        return x.equals(\"07\");\n"
+            + "    }\n"
             + "}"
         ), "Test");
 
@@ -443,17 +444,19 @@ class ReportedBugs extends JaninoTestSuite {
     testBug106() throws Exception {
         assertJavaSourceLoadable(new File("aux-files/Bug 106"), "b.C3");
         assertCompilationUnitMainReturnsTrue((
-            "class MyFile extends java.io.File {\n"
+            ""
+            + "class MyFile extends java.io.File {\n"
             + "    public MyFile() { super(\"/my/file\"); }\n"
             + "}\n"
             + "public class Main {\n"
-            + "    public static boolean test() {\n"
+            + "    public static boolean main() {\n"
             + "        return 0 == new MyFile().compareTo(new MyFile());\n"
             + "    }\n"
             + "}"
         ), "Main");
         assertScriptReturnsTrue(
-            "StringBuffer sb = new StringBuffer();\n"
+            ""
+            + "StringBuffer sb = new StringBuffer();\n"
             + "sb.append('(');\n"
             + "return sb.length() == 1;\n"
         );
