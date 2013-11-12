@@ -62,7 +62,7 @@ class ReportedBugs extends JaninoTestSuite {
 
     @Test public void
     testBug48() throws Exception {
-        sim(EXEC, (
+        assertCompilationUnitMainExecutable((
             ""
             + "package demo;\n"
             + "public class Service {\n"
@@ -73,7 +73,7 @@ class ReportedBugs extends JaninoTestSuite {
             + "    }\n"
             + "}"
         ), "demo.Service");
-        sim(EXEC, (
+        assertCompilationUnitMainExecutable((
             ""
             + "package demo;\n"
             + "public class Service {\n"
@@ -88,7 +88,7 @@ class ReportedBugs extends JaninoTestSuite {
 
     @Test public void
     testBug54() throws Exception {
-        scr(TRUE, (
+        assertScriptReturnsTrue(
             ""
             + "String s = \"\";\n"
             + "try {\n"
@@ -113,8 +113,8 @@ class ReportedBugs extends JaninoTestSuite {
             + "    s +=\"finally\";\n"
             + "}\n"
             + "return \"set1returnfinally\".equals(s);"
-        ));
-        clb(COOK, (
+        );
+        assertClassBodyCookable(
             ""
             + "void foo() {\n"
             + "    while (true) {\n"
@@ -134,8 +134,8 @@ class ReportedBugs extends JaninoTestSuite {
             + "        return;\n"
             + "    }\n"
             + "}\n"
-        ));
-        clb(COOK, (
+        );
+        assertClassBodyCookable(
             ""
             + "void baz1() {\n"
             + "    for (int i = 0; i < 100;) {\n"
@@ -147,8 +147,8 @@ class ReportedBugs extends JaninoTestSuite {
             + "        i += 2;\n"
             + "    }\n"
             + "}\n"
-        ));
-        clb(COOK, (
+        );
+        assertClassBodyCookable(
             ""
             + "void baz2() {\n"
             + "    for (int i = 0; i < 100; i++) {\n"
@@ -160,24 +160,24 @@ class ReportedBugs extends JaninoTestSuite {
             + "        i += 2;\n"
             + "    }\n"
             + "}\n"
-        ));
-        clb(COOK, (
+        );
+        assertClassBodyCookable(
             ""
             + "public void foo() throws Exception {\n"
             + "    for (int i = 0 ; true; i++) {\n"
             + "        break;\n"
             + "    }\n"
             + "}\n"
-        ));
-        clb(COOK, (
+        );
+        assertClassBodyCookable(
             ""
             + "public void foo() throws Exception {\n"
             + "    for (int i = 0 ; true; i++) {\n"
             + "        if (true) { break; }\n"
             + "    }\n"
             + "}\n"
-        ));
-        clb(COOK, (
+        );
+        assertClassBodyCookable(
             ""
             + "public void foo() throws Exception {\n"
             + "    {\n"
@@ -198,8 +198,8 @@ class ReportedBugs extends JaninoTestSuite {
             + "        } finally {}\n"
             + "    }\n"
             + "}\n"
-        ));
-        scr(EXEC, (
+        );
+        assertScriptExecutable(
             ""
             + "int c = 5;\n"
             + "if (c == 5) {\n"
@@ -208,22 +208,22 @@ class ReportedBugs extends JaninoTestSuite {
             + "    return;\n"
             + "}\n"
             + "int b = 3;\n" // Physically unreachable, but logically reachable, hence not a compile error.
-        ));
+        );
     }
 
     @Test public void
     testBug55() throws Exception {
-        sim(COOK, (
+        assertCompilationUnitCookable(
             ""
             + "class Junk {" + "\n"
             + "    double[][] x = { { 123.4 } };" + "\n"
             + "}"
-        ), null);
+        );
     }
 
     @Test public void
     testBug56() throws Exception {
-        scr(COOK, (
+        assertScriptCookable(
             ""
             + "int dummy3 = 3;\n"
             + "try {\n"
@@ -243,30 +243,30 @@ class ReportedBugs extends JaninoTestSuite {
             + "} finally {\n"
             + "    ++dummy3;\n"
             + "}\n"
-        ));
+        );
     }
 
     @Test public void
     testBug63() throws Exception {
-        clb(COMP, (
+        assertClassBodyUncookable(
             ""
             + "public static boolean main() {\n"
             + "    IPred p = new Pred();\n"
             + "    return !p.filter();\n" // Comile error, because 'IPred.filter()' throws 'Exception'
             + "}\n"
-        ));
-        clb(TRUE, (
+        );
+        assertClassBodyMainReturnsTrue(
             ""
             + "public static boolean main() {\n"
             + "    Pred p = new Pred();\n"
             + "    return !p.filter();\n"
             + "}\n"
-        ));
+        );
     }
 
     @Test public void
     testBug69() throws Exception {
-        sim(EXEC, (
+        assertCompilationUnitMainExecutable((
             ""
             + "public class Test {\n"
             + "    public static void test() {\n"
@@ -298,7 +298,7 @@ class ReportedBugs extends JaninoTestSuite {
 
     @Test public void
     testBug70() throws Exception {
-        clb(COOK, (
+        assertClassBodyCookable(
             ""
             + "public String result = \"allow\", email = null, anno = null, cnd = null, transactionID = null;\n"
             + "public String treeCode(String root) {\n"
@@ -310,12 +310,12 @@ class ReportedBugs extends JaninoTestSuite {
             + "    }\n"
             + "    return result;\n"
             + "}\n"
-        ));
+        );
     }
 
     @Test public void
     testBug71() throws Exception {
-        sim(TRUE, (
+        assertCompilationUnitMainReturnsTrue((
             ""
             + "public class ACI {\n"
             + "    public static boolean test() {\n"
@@ -334,7 +334,7 @@ class ReportedBugs extends JaninoTestSuite {
             + "    }\n"
             + "}\n"
         ), "ACI");
-        sim(TRUE, (
+        assertCompilationUnitMainReturnsTrue((
             ""
             + "public class SCI {\n"
             + "    public static boolean test() {\n"
@@ -362,32 +362,32 @@ class ReportedBugs extends JaninoTestSuite {
     @Test public void
     testBug80() throws Exception {
         // Expression compilation is said to throw StackOverflowError!?
-        exp(COMP, "(10).total >= 100.0 ? 0.0 : 7.95");
+        assertExpressionUncookable("(10).total >= 100.0 ? 0.0 : 7.95");
     }
 
     @Test public void
     testBug81() throws Exception {
         // IncompatibleClassChangeError when invoking getClass() on interface references
-        scr(EXEC, (
+        assertScriptExecutable(
             ""
             + "import java.util.ArrayList;\n"
             + "import java.util.List;\n"
             + "\n"
             + "List list = new ArrayList();\n"
             + "System.out.println(list.getClass());\n"
-        ));
+        );
     }
 
     @Test public void
     testBug99() throws Exception {
         // ConcurrentModificationException due to instance variable of Class type initialized using a class literal
-        sim(COOK, "class Test{Class c = String.class;}", "Test");
+        assertCompilationUnitCookable("class Test{Class c = String.class;}");
     }
 
     @Test public void
     testBug102() throws Exception {
         // Static initializers are not executed
-        sim(TRUE, (
+        assertCompilationUnitMainReturnsTrue((
             ""
             + "public class Test{\n"
             + "  static String x = \"\";\n"
@@ -415,7 +415,7 @@ class ReportedBugs extends JaninoTestSuite {
     @Test public void
     testBug105() throws Exception {
         // Possible to call a method of an enclosing class as if it was a member of an inner class
-        clb(COMP, (
+        assertClassBodyUncookable(
             ""
             + "class Price {\n"
             + "  public int getPriceA() {\n"
@@ -436,13 +436,13 @@ class ReportedBugs extends JaninoTestSuite {
             + "int rate() {\n"
             + "  return 17;\n"
             + "}\n"
-        ));
+        );
     }
 
     @Test public void
     testBug106() throws Exception {
-        jscl("Bug 106", new File("aux-files/Bug 106"), "b.C3");
-        sim(TRUE, (
+        assertJavaSourceLoadable(new File("aux-files/Bug 106"), "b.C3");
+        assertCompilationUnitMainReturnsTrue((
             "class MyFile extends java.io.File {\n"
             + "    public MyFile() { super(\"/my/file\"); }\n"
             + "}\n"
@@ -452,16 +452,16 @@ class ReportedBugs extends JaninoTestSuite {
             + "    }\n"
             + "}"
         ), "Main");
-        scr(TRUE, (
+        assertScriptReturnsTrue(
             "StringBuffer sb = new StringBuffer();\n"
             + "sb.append('(');\n"
             + "return sb.length() == 1;\n"
-        ));
+        );
     }
 
     @Test public void
     testBug147() throws Exception {
-        sim(COOK, (
+        assertCompilationUnitCookable(
             "public class Foo {\n"
             + "    public static void main(String[] args) {\n"
             + "        new Object() {\n"
@@ -474,14 +474,14 @@ class ReportedBugs extends JaninoTestSuite {
             + "        };\n"
             + "    }\n"
             + "}"
-        ), "Foo");
+        );
     }
 
     @Test public void
     testBug149() throws Exception {
 
         // JLS7 3.10.6: "aaa\/bbb" contains an invalid escape sequence: "\/".
-        exp(COMP, "\"aaa\\/bbb\"");
+        assertExpressionUncookable("\"aaa\\/bbb\"");
     }
     
     @SuppressWarnings("deprecation") @Test(expected = AssertionError.class) public void
@@ -492,7 +492,7 @@ class ReportedBugs extends JaninoTestSuite {
 
     @Test public void
     testBug153_1() throws Exception {
-        scr(EXEC, "Comparable x = 5.0;");
+        assertScriptExecutable("Comparable x = 5.0;");
     }
 
     @Test public void
@@ -506,12 +506,12 @@ class ReportedBugs extends JaninoTestSuite {
         //
         // , but obviously (JAVAC) a boxing conversion followed by a widening reference conversion is also
         // permitted (as for assignment conversion).
-        scr(EXEC, "Comparable x = (Comparable) 5.0;");
+        assertScriptExecutable("Comparable x = (Comparable) 5.0;");
     }
 
     @Test public void
     testBug153_3() throws Exception {
-        scr(EXEC, "long x = new Integer(8);");
+        assertScriptExecutable("long x = new Integer(8);");
     }
 
     @Test public void
@@ -525,24 +525,24 @@ class ReportedBugs extends JaninoTestSuite {
         //
         // , but obviously (JAVAC) an unboxing conversion followed by a widening primitive conversion is also
         // permitted (as for assignment conversion).
-        scr(EXEC, "long x = (long) new Integer(8);");
+        assertScriptExecutable("long x = (long) new Integer(8);");
     }
 
     @Test public void
     testBug161_1() throws Exception {
-        this.sim(COOK, (
+        assertCompilationUnitCookable(
             ""
             + "public class Test {\n"
             + "    public static void test2(boolean x, boolean y) {\n"
             + "        boolean v4 = x || null == null;\n"
             + "    }\n"
             + "}\n"
-        ), "Test");
+        );
     }
     
     @Test public void
     testBug161_2() throws Exception {
-        this.sim(COOK, (
+        assertCompilationUnitCookable(
             ""
             + "public class Test\n"
             + "{\n"
@@ -555,12 +555,12 @@ class ReportedBugs extends JaninoTestSuite {
             + "        new Test().test();\n"
             + "    }\n"
             + "}\n"
-        ), "Test");
+        );
     }
     
     @Test public void
     testBug162() throws Exception {
-        this.sim(COOK, (
+        assertCompilationUnitCookable(
             ""
             + "public class BridgeTest {\n"
             + "\n"
@@ -577,13 +577,15 @@ class ReportedBugs extends JaninoTestSuite {
             + "        new Kid().foo();\n"
             + "    }\n"
             + "}"
-        ), "BridgeTest");
+        );
     }
 
     @Test public void
     testBug163() throws Exception {
-        this.clb(COOK, (
+        assertClassBodyCookable(
             ""
+            + "import java.io.*;\n"
+            + "\n"
             + "public void foo() throws IOException {\n"
             + "    if (true) {\n"
             + "        try {\n"
@@ -597,6 +599,6 @@ class ReportedBugs extends JaninoTestSuite {
             + "        }\n"
             + "    }\n"
             + "}"
-        ), new String[] { "java.io.*" });
+        );
     }
 }

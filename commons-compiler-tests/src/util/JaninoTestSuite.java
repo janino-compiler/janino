@@ -41,23 +41,10 @@ import org.codehaus.commons.compiler.ICompilerFactory;
 import org.codehaus.commons.compiler.IExpressionEvaluator;
 import org.codehaus.commons.compiler.IScriptEvaluator;
 import org.codehaus.commons.compiler.ISimpleCompiler;
-import org.codehaus.janino.JavaSourceClassLoader;
 
 /** A base class for JUnit 4 test cases that provides easy-to-use functionality to test JANINO. */
 public
 class JaninoTestSuite {
-
-    /** The test is expected to throw a CompileException. */
-    public static final CompileAndExecuteTest.Mode COMP = new CompileAndExecuteTest.Mode();
-
-    /** The test is expected to compile successfully, but is not executed. */
-    public static final CompileAndExecuteTest.Mode COOK = new CompileAndExecuteTest.Mode();
-
-    /** The test is expected to compile and execute successfully. */
-    public static final CompileAndExecuteTest.Mode EXEC = new CompileAndExecuteTest.Mode();
-
-    /** The test is expected to compile and execute successfully, and return {@code true}. */
-    public static final CompileAndExecuteTest.Mode TRUE = new CompileAndExecuteTest.Mode();
 
     /** The {@link ICompilerFactory} in effect for this test execution. */
     protected final ICompilerFactory compilerFactory;
@@ -68,32 +55,35 @@ class JaninoTestSuite {
     }
 
     /**
-     * Add a test case that scans, parses and compiles an expression, and verifies that it
-     * evaluates to {@code true}.
-     *
-     * <table>
-     *   <tr><th>{@code mode}</th><th>Meaning</th></tr>
-     *   <tr><td>COMP</td><td>The test is expected to throw a CompileException</td></tr>
-     *   <tr><td>COOK</td><td>The test is expected to compile successfully, but is not executed</td></tr>
-     *   <tr><td>EXEC</td><td>The test is expected to compile and execute successfully</td></tr>
-     *   <tr><td>TRUE</td><td>The test is expected to compile and execute successfully, and return {@code true}</tr>
-     * </table>
+     * Asserts that cooking the given {@code expression} issues an error.
      */
     protected void
-    exp(ExpressionTest.Mode mode, String expression) throws Exception {
-        ExpressionTest et = new ExpressionTest(mode, expression);
-        et.runTest();
+    assertExpressionUncookable(String expression) throws Exception {
+        new ExpressionTest(expression).assertUncookable();
     }
 
     /**
-     * Like {@link #exp(util.JaninoTestSuite.CompileAndExecuteTest.Mode, String)}, but with additional default
-     * imports, e.g. '{@code java.util.*}'.
+     * Asserts that the given {@code expression} can be cooked without errors and warnings.
      */
     protected void
-    exp(ExpressionTest.Mode mode, String expression, String[] defaultImports) throws Exception {
-        ExpressionTest et = new ExpressionTest(mode, expression);
-        et.setDefaultImports(defaultImports);
-        et.runTest();
+    assertExpressionCookable(String expression) throws Exception {
+        new ExpressionTest(expression).assertCookable();
+    }
+    
+    /**
+     * Asserts that the given {@code expression} can be cooked and evaluated.
+     */
+    protected void
+    assertExpressionEvaluatable(String expression) throws Exception {
+        new ExpressionTest(expression).assertExecutable();
+    }
+    
+    /**
+     * Asserts that the given {@code expression} evaluates to TRUE.
+     */
+    protected void
+    assertExpressionEvaluatesTrue(String expression) throws Exception {
+        new ExpressionTest(expression).assertResultTrue();
     }
 
     private
@@ -103,18 +93,9 @@ class JaninoTestSuite {
         private final IExpressionEvaluator expressionEvaluator;
 
         public
-        ExpressionTest(Mode mode, String expression) throws Exception {
-            super(mode);
+        ExpressionTest(String expression) throws Exception {
             this.expression          = expression;
             this.expressionEvaluator = JaninoTestSuite.this.compilerFactory.newExpressionEvaluator();
-
-            this.expressionEvaluator.setExpressionType(mode == TRUE ? boolean.class : IExpressionEvaluator.ANY_TYPE);
-        }
-
-        public ExpressionTest
-        setDefaultImports(String[] defaultImports) {
-            this.expressionEvaluator.setDefaultImports(defaultImports);
-            return this;
         }
 
         protected void
@@ -129,45 +110,35 @@ class JaninoTestSuite {
     }
 
     /**
-     * Add a test case that scans, parses, compiles and executes a Janino script, and verifies
-     * that it returns {@code true}.
-     *
-     * @param mode <table>
-     *   <tr><td>{@link #COMP}</td><td>The test is expected to throw a CompileException</tr>
-     *   <tr><td>{@link #COOK}</td><td>The test is expected to compile successfully, but is not executed</tr>
-     *   <tr><td>{@link #EXEC}</td><td>The test is expected to compile and execute successfully</tr>
-     *   <tr>
-     *     <td>{@link #TRUE}</td>
-     *     <td>The test is expected to compile and execute successfully, and return {@code true}</td>
-     *   </tr>
-     * </table>
+     * Asserts that cooking the given {@code script} issues an error.
      */
     protected void
-    scr(ScriptTest.Mode mode, String script) throws Exception {
-        ScriptTest st = new ScriptTest(mode, script);
-        st.runTest();
+    assertScriptUncookable(String script) throws Exception {
+        new ScriptTest(script).assertUncookable();
     }
 
     /**
-     * Add a test case that scans, parses, compiles and executes a Janino script, and verifies
-     * that it returns {@code true}.
-     *
-     * @param mode <table>
-     *   <tr><td>{@link #COMP}</td><td>The test is expected to throw a CompileException</tr>
-     *   <tr><td>{@link #COOK}</td><td>The test is expected to compile successfully, but is not executed</tr>
-     *   <tr><td>{@link #EXEC}</td><td>The test is expected to compile and execute successfully</tr>
-     *   <tr>
-     *     <td>{@link #TRUE}</td>
-     *     <td>The test is expected to compile and execute successfully, and return {@code true}</td>
-     *   </tr>
-     * </table>
-     * @param defaultImports E.g. '<code> new String[] { "java.util.List" }</code>'
+     * Asserts that the given {@code script} can be cooked without errors and warnings.
      */
     protected void
-    scr(ScriptTest.Mode mode, String script, String[] defaultImports) throws Exception {
-        ScriptTest st = new ScriptTest(mode, script);
-        st.setDefaultImports(defaultImports);
-        st.runTest();
+    assertScriptCookable(String script) throws Exception {
+        new ScriptTest(script).assertCookable();
+    }
+    
+    /**
+     * Asserts that the given {@code script} can be cooked and executed.
+     */
+    protected void
+    assertScriptExecutable(String script) throws Exception {
+        new ScriptTest(script).assertExecutable();
+    }
+    
+    /**
+     * Asserts that the given {@code script} returns TRUE.
+     */
+    protected void
+    assertScriptReturnsTrue(String script) throws Exception {
+        new ScriptTest(script).assertResultTrue();
     }
 
     private
@@ -177,18 +148,21 @@ class JaninoTestSuite {
         private final IScriptEvaluator scriptEvaluator;
 
         public
-        ScriptTest(Mode mode, String script) throws Exception {
-            super(mode);
+        ScriptTest(String script) throws Exception {
             this.script          = script;
             this.scriptEvaluator = JaninoTestSuite.this.compilerFactory.newScriptEvaluator();
-
-            this.scriptEvaluator.setReturnType(mode == TRUE ? boolean.class : void.class);
         }
 
-        public ScriptTest
-        setDefaultImports(String[] defaultImports) {
-            this.scriptEvaluator.setDefaultImports(defaultImports);
-            return this;
+        @Override protected void
+        assertExecutable() throws Exception {
+            this.scriptEvaluator.setReturnType(void.class);
+            super.assertExecutable();
+        }
+
+        @Override protected void
+        assertResultTrue() throws Exception {
+            this.scriptEvaluator.setReturnType(boolean.class);
+            super.assertResultTrue();
         }
 
         protected void
@@ -203,49 +177,48 @@ class JaninoTestSuite {
     }
 
     /**
-     * Add a test case that scans, parses and compiles a class body, invokes its {@code public static boolean main()}
-     * method and verifies that it returns {@code true}.
-     *
-     * <table>
-     *   <tr><th>{@code mode}</th><th>Meaning</th></tr>
-     *   <tr><td>COMP</td><td>The test is expected to throw a CompileException</tr>
-     *   <tr><td>COOK</td><td>The test is expected to compile successfully, but is not executed</tr>
-     *   <tr><td>EXEC</td><td>The test is expected to compile and execute successfully</tr>
-     *   <tr><td>TRUE</td><td>The test is expected to compile and execute successfully, and return {@code true}</tr>
-     * </table>
+     * Asserts that cooking the given {@code classBody} issues an error.
      */
     protected void
-    clb(ClassBodyTest.Mode mode, String classBody) throws Exception {
-        ClassBodyTest cbt = new ClassBodyTest(mode, classBody);
-        cbt.runTest();
+    assertClassBodyUncookable(String classBody) throws Exception {
+        new ClassBodyTest(classBody).assertUncookable();
     }
 
     /**
-     * Like {@link #clb(util.JaninoTestSuite.CompileAndExecuteTest.Mode, String)}, but with additional default
-     * imports, e.g. '{@code java.util.*}'.
+     * Asserts that the given {@code classBody} can be cooked without errors and warnings.
      */
     protected void
-    clb(ClassBodyTest.Mode mode, String classBody, String[] defaultImports) throws Exception {
-        ClassBodyTest cbt = new ClassBodyTest(mode, classBody);
-        cbt.setDefaultImports(defaultImports);
-        cbt.runTest();
+    assertClassBodyCookable(String classBody) throws Exception {
+        new ClassBodyTest(classBody).assertCookable();
     }
-
+    
+    /**
+     * Asserts that the given {@code classBody} declares a method {@code public static boolean main()} which executes
+     * and terminates normally.
+     */
+    protected void
+    assertClassBodyExecutable(String classBody) throws Exception {
+        new ClassBodyTest(classBody).assertExecutable();
+    }
+    
+    /**
+     * Asserts that the given {@code classBody} declares a method {@code public static boolean main()} which executes
+     * and returns {@code true}.
+     */
+    protected void
+    assertClassBodyMainReturnsTrue(String classBody) throws Exception {
+        new ClassBodyTest(classBody).assertResultTrue();
+    }
+    
     private
     class ClassBodyTest extends CompileAndExecuteTest {
         private final String              classBody;
         private final IClassBodyEvaluator classBodyEvaluator;
 
         public
-        ClassBodyTest(Mode mode, String classBody) throws Exception {
-            super(mode);
+        ClassBodyTest(String classBody) throws Exception {
             this.classBody          = classBody;
             this.classBodyEvaluator = JaninoTestSuite.this.compilerFactory.newClassBodyEvaluator();
-        }
-        public ClassBodyTest
-        setDefaultImports(String[] defaultImports) {
-            this.classBodyEvaluator.setDefaultImports(defaultImports);
-            return this;
         }
 
         protected void
@@ -264,22 +237,38 @@ class JaninoTestSuite {
     }
 
     /**
-     * Add a test case that scans, parses and compiles a compilation unit, then calls the {@code public static boolean
-     * test()} method of the named class, and verifies that it returns {@code true}.
-     *
-     * <table>
-     *   <tr><th>{@code mode}</th><th>Meaning</th></tr>
-     *   <tr><td>COMP</td><td>The test is expected to throw a CompileException</tr>
-     *   <tr><td>COOK</td><td>The test is expected to compile successfully, but is not executed</tr>
-     *   <tr><td>EXEC</td><td>The test is expected to compile and execute successfully</tr>
-     *   <tr><td>TRUE</td><td>The test is expected to compile and execute successfully, and return {@code true}</tr>
-     * </table>
-     * @param className The name of the class with the {@code public static boolean test()} method
+     * Asserts that cooking the given {@code compilationUnit} with the {@link ISimpleCompiler} issues an error.
      */
     protected void
-    sim(SimpleCompilerTest.Mode mode, String compilationUnit, String className) throws Exception {
-        SimpleCompilerTest sct = new SimpleCompilerTest(mode, compilationUnit, className);
-        sct.runTest();
+    assertCompilationUnitUncookable(String compilationUnit) throws Exception {
+        new SimpleCompilerTest(compilationUnit, "Xxx").assertUncookable();
+    }
+
+    /**
+     * Asserts that the given {@code compilationUnit} can be cooked by the {@link ISimpleCompiler} without errors and
+     * warnings.
+     */
+    protected void
+    assertCompilationUnitCookable(String compilationUnit) throws Exception {
+        new SimpleCompilerTest(compilationUnit, "Xxx").assertCookable();
+    }
+
+    /**
+     * Asserts that the given {@code compilationUnit} can be cooked by the {@link ISimpleCompiler} and its {@code public
+     * static boolean }<i>className</i>{@code .main()} method completes without exceptions.
+     */
+    protected void
+    assertCompilationUnitMainExecutable(String compilationUnit, String className) throws Exception {
+        new SimpleCompilerTest(compilationUnit, className).assertExecutable();
+    }
+    
+    /**
+     * Asserts that the given {@code compilationUnit} can be cooked by the {@link ISimpleCompiler} and its {@code public
+     * static boolean }<i>className</i>{@code .main()} method returns TRUE.
+     */
+    protected void
+    assertCompilationUnitMainReturnsTrue(String compilationUnit, String className) throws Exception {
+        new SimpleCompilerTest(compilationUnit, className).assertResultTrue();
     }
 
     private
@@ -290,8 +279,7 @@ class JaninoTestSuite {
         private final ISimpleCompiler simpleCompiler;
 
         public
-        SimpleCompilerTest(Mode mode, String compilationUnit, String className) throws Exception {
-            super(mode);
+        SimpleCompilerTest(String compilationUnit, String className) throws Exception {
             this.compilationUnit = compilationUnit;
             this.className       = className;
             this.simpleCompiler  = JaninoTestSuite.this.compilerFactory.newSimpleCompiler();
@@ -314,13 +302,10 @@ class JaninoTestSuite {
     }
 
     /**
-     * Create and return a test case that sets up a {@link JavaSourceClassLoader} that reads sources from a given
-     * directory, and then loads the named class.
-     *
-     * @param className The name of the class to be loaded from the {@link JavaSourceClassLoader}
+     * Loads the class with the given {@code className} from the given {@code sourceDirectory}.
      */
     protected void
-    jscl(String testCaseName, final File sourceDirectory, final String className) throws Exception {
+    assertJavaSourceLoadable(final File sourceDirectory, final String className) throws Exception {
         AbstractJavaSourceClassLoader loader = this.compilerFactory.newJavaSourceClassLoader();
         loader.setSourcePath(new File[] { sourceDirectory });
         loader.loadClass(className);
@@ -333,15 +318,6 @@ class JaninoTestSuite {
     abstract static
     class CompileAndExecuteTest {
 
-        private final Mode mode;
-
-        public static final class Mode { private Mode() {} }
-
-        public
-        CompileAndExecuteTest(Mode mode) {
-            this.mode = mode;
-        }
-
         /** @see CompileAndExecuteTest */
         protected abstract void compile() throws Exception;
 
@@ -349,36 +325,45 @@ class JaninoTestSuite {
         protected abstract Object execute() throws Exception;
 
         /**
-         * Invoke {@link #compile()}, then {@link #execute()}, and verify that they throw exceptions and return
-         * results as expected.
+         * Assert that cooking issues an error with the given {@code message}.
          */
         protected void
-        runTest() throws Exception {
-            if (this.mode == COMP) {
-                try {
-                    this.compile();
-                } catch (CompileException ex) {
-                    return;
-                }
-                fail("Should have issued an error, but compiled successfully");
-            } else
-            if (this.mode == COOK) {
+        assertUncookable() throws Exception {
+            try {
                 this.compile();
-            } else
-            if (this.mode == EXEC) {
-                this.compile();
-                this.execute();
-            } else
-            if (this.mode == TRUE) {
-                this.compile();
-                Object result = this.execute();
-                assertNotNull("Test result not NULL", result);
-                assertSame("Test return type is BOOLEAN", Boolean.class, result.getClass());
-                assertEquals("Test result is TRUE", true, ((Boolean) result).booleanValue());
-            } else
-            {
-                fail("Invalid mode \"" + this.mode + "\"");
+            } catch (CompileException ce) {
+                return; // SUPPRESS CHECKSTYLE AvoidHidingCause
             }
+            fail("Should have issued an error, but compiled successfully");
+        }
+        
+        /**
+         * Assert that cooking completes without errors.
+         */
+        protected void
+        assertCookable() throws Exception {
+            this.compile();
+        }
+
+        /**
+         * Assert that cooking and executing completes normally.
+         */
+        protected void
+        assertExecutable() throws Exception {
+            this.compile();
+            this.execute();
+        }
+        
+        /**
+         * Assert that cooking completes normally and executing returns TRUE.
+         */
+        protected void
+        assertResultTrue() throws Exception {
+            this.compile();
+            Object result = this.execute();
+            assertNotNull("Test result not NULL", result);
+            assertSame("Test return type is BOOLEAN", Boolean.class, result.getClass());
+            assertEquals("Test result is TRUE", true, ((Boolean) result).booleanValue());
         }
     }
 }
