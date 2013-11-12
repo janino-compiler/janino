@@ -233,13 +233,19 @@ class IClass {
 
     private static final IMethod[] NO_IMETHODS = new IMethod[0];
 
-    /** @return Whether this {@link IClass} does declare an {@link IMethod} with the given name and parameter types */
+    /**
+     * @return Whether this {@link IClass} (or its superclass or the interfaces it implements) has an {@link IMethod}
+     *         with the given name and parameter types
+     */
     public final boolean
     hasIMethod(String methodName, IClass[] parameterTypes) throws CompileException {
         return this.findIMethod(methodName, parameterTypes) != null;
     }
 
-    /** @return The {@link IMethod} declared in this {@link IClass} with the given name and parameter types */
+    /**
+     * @return The {@link IMethod} declared in this {@link IClass} (or its superclass or the interfaces it implements)
+     *         with the given name and parameter types
+     */
     public final IMethod
     findIMethod(String methodName, IClass[] parameterTypes) throws CompileException {
         IMethod[] ims = this.getDeclaredIMethods(methodName);
@@ -247,6 +253,25 @@ class IClass {
             IClass[] pts = ims[i].getParameterTypes();
             if (Arrays.equals(pts, parameterTypes)) return ims[i];
         }
+
+        {
+            IClass superclass = this.getSuperclass();
+            if (superclass != null) {
+                IMethod result = superclass.findIMethod(methodName, parameterTypes);
+                if (result != null) return result;
+            }
+        }
+
+        {
+            IClass[] interfaces = this.getInterfaces();
+            for (int i = 0; i < interfaces.length; i++) {
+                IClass interfacE = interfaces[i];
+
+                IMethod result = interfacE.findIMethod(methodName, parameterTypes);
+                if (result != null) return result;
+            }                
+        }
+
         return null;
     }
 
