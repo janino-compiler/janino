@@ -252,7 +252,7 @@ class ReportedBugs extends JaninoTestSuite {
             ""
             + "public static boolean main() {\n"
             + "    IPred p = new Pred();\n"
-            + "    return !p.filter();\n"
+            + "    return !p.filter();\n" // Comile error, because 'IPred.filter()' throws 'Exception'
             + "}\n"
         ));
         clb(TRUE, (
