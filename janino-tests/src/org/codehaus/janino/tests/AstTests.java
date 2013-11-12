@@ -353,7 +353,7 @@ class AstTests {
                 getLocation(),
                 new Java.AmbiguousName(
                     getLocation(),
-                    new String[] { "other_package", "ScopingRules" }
+                    new String[] { "other_package2", "ScopingRules" }
                 ),
                 "publicStaticDouble"
             )
@@ -362,6 +362,6 @@ class AstTests {
         createMethod(clazz, body, createDoubleType());
 
         Object res = compileAndEval(cu);
-        assertEquals(other_package.ScopingRules.publicStaticDouble, res);
+        assertEquals(other_package2.ScopingRules.publicStaticDouble, res);
     }
 }
