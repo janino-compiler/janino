@@ -435,7 +435,7 @@ class CodeContext {
                 /* FALL THROUGH */
             case Opcode.SD_GETSTATIC:
                 stackSize += this.determineFieldSize((short) (
-                    this.extract16BitValue(0, operandOffset, code)
+                    CodeContext.extract16BitValue(0, operandOffset, code)
                 ));
                 break;
 
@@ -444,7 +444,7 @@ class CodeContext {
                 /* FALL THROUGH */
             case Opcode.SD_PUTSTATIC:
                 stackSize -= this.determineFieldSize((short) (
-                    this.extract16BitValue(0, operandOffset, code)
+                    CodeContext.extract16BitValue(0, operandOffset, code)
                 ));
                 break;
 
@@ -455,7 +455,7 @@ class CodeContext {
                 /* FALL THROUGH */
             case Opcode.SD_INVOKESTATIC:
                 stackSize -= this.determineArgumentsSize((short) (
-                    this.extract16BitValue(0, operandOffset, code)
+                    CodeContext.extract16BitValue(0, operandOffset, code)
                 ));
                 break;
 
@@ -528,7 +528,7 @@ class CodeContext {
                 this.flowAnalysis(
                     functionName,
                     code, codeSize,
-                    this.extract16BitValue(offset, operandOffset, code),
+                    CodeContext.extract16BitValue(offset, operandOffset, code),
                     stackSize,
                     stackSizes
                 );
@@ -542,7 +542,7 @@ class CodeContext {
                     System.out.println(code[operandOffset]);
                     System.out.println(code[operandOffset + 1]);
                 }
-                int targetOffset = this.extract16BitValue(offset, operandOffset, code);
+                int targetOffset = CodeContext.extract16BitValue(offset, operandOffset, code);
                 operandOffset += 2;
                 if (stackSizes[targetOffset] == CodeContext.UNEXAMINED) {
                     this.flowAnalysis(
@@ -559,7 +559,7 @@ class CodeContext {
                 this.flowAnalysis(
                     functionName,
                     code, codeSize,
-                    this.extract32BitValue(offset, operandOffset, code),
+                    CodeContext.extract32BitValue(offset, operandOffset, code),
                     stackSize, stackSizes
                 );
                 operandOffset += 4;
@@ -570,12 +570,12 @@ class CodeContext {
                 this.flowAnalysis(
                     functionName,
                     code, codeSize,
-                    this.extract32BitValue(offset, operandOffset, code),
+                    CodeContext.extract32BitValue(offset, operandOffset, code),
                     stackSize, stackSizes
                 );
                 operandOffset += 4;
 
-                int npairs = this.extract32BitValue(0, operandOffset, code);
+                int npairs = CodeContext.extract32BitValue(0, operandOffset, code);
                 operandOffset += 4;
 
                 for (int i = 0; i < npairs; ++i) {
@@ -583,7 +583,7 @@ class CodeContext {
                     this.flowAnalysis(
                         functionName,
                         code, codeSize,
-                        this.extract32BitValue(offset, operandOffset, code),
+                        CodeContext.extract32BitValue(offset, operandOffset, code),
                         stackSize, stackSizes
                     );
                     operandOffset += 4; //advance over offset
@@ -595,19 +595,19 @@ class CodeContext {
                 this.flowAnalysis(
                     functionName,
                     code, codeSize,
-                    this.extract32BitValue(offset, operandOffset, code),
+                    CodeContext.extract32BitValue(offset, operandOffset, code),
                     stackSize, stackSizes
                 );
                 operandOffset += 4;
-                int low = this.extract32BitValue(offset, operandOffset, code);
+                int low = CodeContext.extract32BitValue(offset, operandOffset, code);
                 operandOffset += 4;
-                int hi = this.extract32BitValue(offset, operandOffset, code);
+                int hi = CodeContext.extract32BitValue(offset, operandOffset, code);
                 operandOffset += 4;
                 for (int i = low; i <= hi; ++i) {
                     this.flowAnalysis(
                         functionName,
                         code, codeSize,
-                        this.extract32BitValue(offset, operandOffset, code),
+                        CodeContext.extract32BitValue(offset, operandOffset, code),
                         stackSize, stackSizes
                     );
                     operandOffset += 4;
@@ -665,7 +665,7 @@ class CodeContext {
      * @param code   The array of bytes
      * @return       An integer that treats the two bytes at position offset as an UNSIGNED SHORT
      */
-    private int
+    private static int
     extract16BitValue(int bias, int offset, byte[] code) {
         int res = bias + (
             ((code[offset]) << 8)
@@ -687,7 +687,7 @@ class CodeContext {
      * @param code   The array of bytes
      * @return       The 4 bytes at position offset + bias
      */
-    private int
+    private static int
     extract32BitValue(int bias, int offset, byte[] code) {
         int res = bias + (
             (code[offset] << 24)
