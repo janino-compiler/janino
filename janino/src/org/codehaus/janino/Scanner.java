@@ -342,7 +342,7 @@ class Scanner {
 
     /**
      * Preduces and returns the next token. Notice that end-of-input is <i>not</i> signalized with a {@code null}
-     * product, but by the special {@link #EOF} token.
+     * product, but by the special {@link Token#EOF} token.
      */
     public Token
     produce() throws CompileException, IOException {

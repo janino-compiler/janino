@@ -194,16 +194,16 @@ class UnitCompiler {
     private static final int STRING_CONCAT_LIMIT = 3;
 
     /**
-     * Special value for the {@code orientation} parameter of the {@link #compileBoolean(Rvalue, CodeContext.Offset,
-     * boolean)} methods, indicating that the code should be generated such that execution branches if the value on top
-     * of the operand stack is TRUE.
+     * Special value for the {@code orientation} parameter of the {@link #compileBoolean(Java.Rvalue,
+     * CodeContext.Offset, boolean)} methods, indicating that the code should be generated such that execution branches
+     * if the value on top of the operand stack is TRUE.
      */
     public static final boolean JUMP_IF_TRUE  = true;
 
     /**
-     * Special value for the {@code orientation} parameter of the {@link #compileBoolean(Rvalue, CodeContext.Offset,
-     * boolean)} methods, indicating that the code should be generated such that execution branches if the value on top
-     * of the operand stack is FALSE.
+     * Special value for the {@code orientation} parameter of the {@link #compileBoolean(Java.Rvalue,
+     * CodeContext.Offset, boolean)} methods, indicating that the code should be generated such that execution branches
+     * if the value on top of the operand stack is FALSE.
      */
     public static final boolean JUMP_IF_FALSE = false;
 
@@ -4298,8 +4298,8 @@ class UnitCompiler {
     // -------------------- Rvalue.getConstantValue() -----------------
 
     /**
-     * Special return value for the {@link #getConstantValue(Rvalue)} method family indicating that the given
-     * {@link Rvalue} does not evaluate to a constant value.
+     * Special return value for the {@link #getConstantValue(Java.Rvalue)} method family indicating that the given
+     * {@link Java.Rvalue} does not evaluate to a constant value.
      */
     public static final Object NOT_CONSTANT = IClass.NOT_CONSTANT;
 

@@ -480,7 +480,7 @@ class IClass {
     /** @return Whether  this type represents an array */
     public abstract boolean isArray();
 
-    /** @eturn Whether this type represents a primitive type or "void" */
+    /** @return Whether this type represents a primitive type or "void" */
     public abstract boolean isPrimitive();
 
     /** @return Whether this type represents "byte", "short", "int", "long", "char", "float" or "double" */
@@ -790,7 +790,7 @@ class IClass {
         /** @return Modifiers and/or annotations of this member */
         Annotation[] getAnnotations();
 
-        /** @eturn The {@link IClass} that declares this {@link IClass.IMember} */
+        /** @return The {@link IClass} that declares this {@link IClass.IMember} */
         IClass getDeclaringIClass();
     }
 

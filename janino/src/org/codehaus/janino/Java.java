@@ -576,7 +576,7 @@ class Java {
     public
     interface DocCommentable {
 
-        /** @eturn The doc comment of the object or {@code null} */
+        /** @return The doc comment of the object or {@code null} */
         String getDocComment();
 
         /**
@@ -614,7 +614,7 @@ class Java {
     public
     interface NamedTypeDeclaration extends TypeDeclaration {
 
-        /** @eturns The declared (not the fully qualified) name of the class or interface */
+        /** @return The declared (not the fully qualified) name of the class or interface */
         String getName();
     }
 
@@ -823,7 +823,7 @@ class Java {
 
         // Forward-implement InnerClassDeclaration.
 
-        /** @see InnerClassDeclaration#defineSyntheticField(org.codehaus.janino.IClass.IField) */
+        /** @see Java.InnerClassDeclaration#defineSyntheticField(IClass.IField) */
         public void
         defineSyntheticField(IClass.IField iField) throws CompileException {
             if (!(this instanceof InnerClassDeclaration)) throw new JaninoRuntimeException();
@@ -1353,7 +1353,7 @@ class Java {
         @Override public boolean
         isStatic() { return this.statiC; }
 
-        /** Forward-implements {@link BlockStatement#setEnclosingScope(Scope)}. */
+        /** Forward-implements {@link BlockStatement#setEnclosingScope(Java.Scope)}. */
         public void
         setEnclosingScope(Scope enclosingScope) { this.declaringType = (TypeDeclaration) enclosingScope; }
 
@@ -2657,7 +2657,7 @@ class Java {
             this.enclosingScope = enclosingScope;
         }
 
-        /** @return The enclosing scope (as previously set by {@link #setEnclosingScope(Scope)}) */
+        /** @return The enclosing scope (as previously set by {@link #setEnclosingScope(Java.Scope)}) */
         public Scope
         getEnclosingScope() { return this.enclosingScope; }
 
@@ -2926,7 +2926,9 @@ class Java {
             }.comprehensiveVisitor());
         }
 
-        /** @return The enclosing block statement, as set with {@link #setEnclosingBlockStatement(BlockStatement)} */
+        /**
+         * @return The enclosing block statement, as set with {@link #setEnclosingBlockStatement(Java.BlockStatement)}
+         */
         public Java.BlockStatement
         getEnclosingBlockStatement() { return this.enclosingBlockStatement; }
 
@@ -4343,7 +4345,7 @@ class Java {
          * Equivalent of the {@code null} literal.
          * <p>
          * An alternative way to get an equivalent of the {@link NullLiteral} is {@link
-         * SimpleConstant#SimpleLiteral(Location, String)} with {@code null} as the second argument.
+         * #SimpleConstant(Location, String)} with {@code null} as the second argument.
          */
         public SimpleConstant(Location location) { super(location); this.value = null; }
 
@@ -4384,7 +4386,7 @@ class Java {
          * NullLiteral}.
          * <p>
          * An alternative way to get an equivalent of the {@link NullLiteral} is {@link
-         * SimpleConstant#SimpleLiteral(Location)}.
+         * SimpleConstant#SimpleConstant(Location)}.
          */
         public SimpleConstant(Location location, String value) { super(location); this.value = value; }
 

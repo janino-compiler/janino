@@ -57,7 +57,7 @@ class LocatedException extends Exception {
         );
     }
 
-    /** @eturn The {@link Location} specified at construction time (may be <code>null</code>) */
+    /** @return The {@link Location} specified at construction time (may be <code>null</code>) */
     public Location
     getLocation() { return this.optionalLocation; }
 }

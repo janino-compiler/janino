@@ -31,7 +31,6 @@ import java.util.Collection;
 
 import org.codehaus.commons.compiler.AbstractJavaSourceClassLoader;
 import org.codehaus.commons.compiler.ICompilerFactory;
-import org.codehaus.janino.JavaSourceClassLoader;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -41,7 +40,7 @@ import util.TestUtil;
 
 // CHECKSTYLE JavadocMethod:OFF
 
-/** Tests for the {@link JavaSourceClassLoader}. */
+/** Tests for the {@link IJavaSourceClassLoader}. */
 @RunWith(Parameterized.class) public
 class JavaSourceClassLoaderTests {
 

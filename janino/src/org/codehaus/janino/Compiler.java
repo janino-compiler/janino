@@ -352,7 +352,7 @@ class Compiler {
 
     /**
      * The default value for the {@code warningHandlerPatterns} parameter of {@link Compiler#Compiler(File[], File[],
-     * File[], File[], File, String, boolean, boolean, boolean, boolean, StringPattern[], boolean).
+     * File[], File[], File, String, boolean, boolean, boolean, boolean, StringPattern[], boolean)}.
      */
     public static final StringPattern[] DEFAULT_WARNING_HANDLE_PATTERNS = StringPattern.PATTERNS_NONE;
 
@@ -450,7 +450,7 @@ class Compiler {
      * This method must be called exactly once after object construction.
      * <p>
      * Compile errors are reported as described at
-     * {@link #setCompileErrorHandler(UnitCompiler.ErrorHandler)}.
+     * {@link #setCompileErrorHandler(ErrorHandler)}.
      *
      * @param sourceFiles       Contain the compilation units to compile
      * @return                  {@code true} for backwards compatibility (return value can safely be ignored)
