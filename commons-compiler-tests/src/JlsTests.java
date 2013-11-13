@@ -58,153 +58,153 @@ class JlsTests extends JaninoTestSuite {
     @Test public void
     test_3__LexicalStructure() throws Exception {
         // 3.1. Lexical Structure -- Unicode
-        assertExpressionEvaluatesTrue("'\\u00e4' == '\u00e4'");
+        this.assertExpressionEvaluatesTrue("'\\u00e4' == '\u00e4'");
 
         // 3.2. Lexical Structure -- Translations
-        assertScriptUncookable("3--4");
+        this.assertScriptUncookable("3--4");
 
         // 3.3. Lexical Structure -- Unicode Escapes
-        assertExpressionUncookable("aaa\\u123gbbb");
-        assertExpressionEvaluatesTrue("\"\\u0041\".equals(\"A\")");
-        assertExpressionEvaluatesTrue("\"\\uu0041\".equals(\"A\")");
-        assertExpressionEvaluatesTrue("\"\\uuu0041\".equals(\"A\")");
-        assertExpressionEvaluatesTrue("\"\\\\u0041\".equals(\"\\\\\" + \"u0041\")");
-        assertExpressionEvaluatesTrue("\"\\\\\\u0041\".equals(\"\\\\\" + \"A\")");
+        this.assertExpressionUncookable("aaa\\u123gbbb");
+        this.assertExpressionEvaluatesTrue("\"\\u0041\".equals(\"A\")");
+        this.assertExpressionEvaluatesTrue("\"\\uu0041\".equals(\"A\")");
+        this.assertExpressionEvaluatesTrue("\"\\uuu0041\".equals(\"A\")");
+        this.assertExpressionEvaluatesTrue("\"\\\\u0041\".equals(\"\\\\\" + \"u0041\")");
+        this.assertExpressionEvaluatesTrue("\"\\\\\\u0041\".equals(\"\\\\\" + \"A\")");
 
         // 3.3. Lexical Structure -- Line Terminators
-        assertExpressionEvaluatesTrue("1//\r+//\r\n2//\n==//\n\r3");
+        this.assertExpressionEvaluatesTrue("1//\r+//\r\n2//\n==//\n\r3");
 
         // 3.6. Lexical Structure -- White Space
-        assertExpressionEvaluatesTrue("3\t\r \n==3");
+        this.assertExpressionEvaluatesTrue("3\t\r \n==3");
 
         // 3.7. Lexical Structure -- Comments
-        assertExpressionEvaluatesTrue("7/* */==7");
-        assertExpressionEvaluatesTrue("7/**/==7");
-        assertExpressionEvaluatesTrue("7/***/==7");
-        assertExpressionUncookable("7/*/==7");
-        assertExpressionEvaluatesTrue("7/*\r*/==7");
-        assertExpressionEvaluatesTrue("7//\r==7");
-        assertExpressionEvaluatesTrue("7//\n==7");
-        assertExpressionEvaluatesTrue("7//\r\n==7");
-        assertExpressionEvaluatesTrue("7//\n\r==7");
-        assertScriptUncookable("7// /*\n\rXXX*/==7");
+        this.assertExpressionEvaluatesTrue("7/* */==7");
+        this.assertExpressionEvaluatesTrue("7/**/==7");
+        this.assertExpressionEvaluatesTrue("7/***/==7");
+        this.assertExpressionUncookable("7/*/==7");
+        this.assertExpressionEvaluatesTrue("7/*\r*/==7");
+        this.assertExpressionEvaluatesTrue("7//\r==7");
+        this.assertExpressionEvaluatesTrue("7//\n==7");
+        this.assertExpressionEvaluatesTrue("7//\r\n==7");
+        this.assertExpressionEvaluatesTrue("7//\n\r==7");
+        this.assertScriptUncookable("7// /*\n\rXXX*/==7");
 
         // 3.8. Lexical Structure -- Identifiers
-        assertScriptExecutable("int a;");
-        assertScriptExecutable("int \u00e4\u00e4\u00e4;");
-        assertScriptExecutable("int \\u0391;"); // Greek alpha
-        assertScriptExecutable("int _aaa;");
-        assertScriptExecutable("int $aaa;");
-        assertScriptUncookable("int 9aaa;");
-        assertScriptUncookable("int const;");
+        this.assertScriptExecutable("int a;");
+        this.assertScriptExecutable("int \u00e4\u00e4\u00e4;");
+        this.assertScriptExecutable("int \\u0391;"); // Greek alpha
+        this.assertScriptExecutable("int _aaa;");
+        this.assertScriptExecutable("int $aaa;");
+        this.assertScriptUncookable("int 9aaa;");
+        this.assertScriptUncookable("int const;");
     }
 
     @Test public void
     test_3_10_1__IntegerLiterals() throws Exception {
-        assertExpressionEvaluatesTrue("17 == 17L");
-        assertExpressionEvaluatesTrue("255 == 0xFFl");
-        assertExpressionEvaluatesTrue("17 == 021L");
-        assertExpressionUncookable("17 == 029"); // Digit "9" not allowed in octal literal.
-        assertExpressionEvaluatesTrue("2 * 2147483647 == -2");
-        assertExpressionEvaluatesTrue("2 * -2147483648 == 0");
-        assertExpressionUncookable("2147483648");
-        assertExpressionEvaluatable("-2147483648");
-        assertExpressionEvaluatesTrue("-1 == 0xffffffff");
-        assertExpressionEvaluatesTrue("1 == -0xffffffff");
-        assertExpressionEvaluatesTrue("-0xf == -15");
-        assertExpressionEvaluatable("9223372036854775807L");
-        assertExpressionUncookable("9223372036854775808L");
-        assertExpressionUncookable("9223372036854775809L");
-        assertExpressionUncookable("99999999999999999999999999999L");
-        assertExpressionEvaluatable("-9223372036854775808L");
-        assertExpressionUncookable("-9223372036854775809L");
+        this.assertExpressionEvaluatesTrue("17 == 17L");
+        this.assertExpressionEvaluatesTrue("255 == 0xFFl");
+        this.assertExpressionEvaluatesTrue("17 == 021L");
+        this.assertExpressionUncookable("17 == 029"); // Digit "9" not allowed in octal literal.
+        this.assertExpressionEvaluatesTrue("2 * 2147483647 == -2");
+        this.assertExpressionEvaluatesTrue("2 * -2147483648 == 0");
+        this.assertExpressionUncookable("2147483648");
+        this.assertExpressionEvaluatable("-2147483648");
+        this.assertExpressionEvaluatesTrue("-1 == 0xffffffff");
+        this.assertExpressionEvaluatesTrue("1 == -0xffffffff");
+        this.assertExpressionEvaluatesTrue("-0xf == -15");
+        this.assertExpressionEvaluatable("9223372036854775807L");
+        this.assertExpressionUncookable("9223372036854775808L");
+        this.assertExpressionUncookable("9223372036854775809L");
+        this.assertExpressionUncookable("99999999999999999999999999999L");
+        this.assertExpressionEvaluatable("-9223372036854775808L");
+        this.assertExpressionUncookable("-9223372036854775809L");
     }
 
     @Test public void
     test_3_10_2__FloatingPointLiterals() throws Exception {
-        assertExpressionEvaluatesTrue("1e1f == 10f");
-        assertExpressionEvaluatesTrue("1E1F == 10f");
-        assertExpressionEvaluatesTrue(".3f == 0.3f");
-        assertExpressionEvaluatesTrue("0f == (float) 0");
-        assertExpressionEvaluatable("3.14f");
-        assertExpressionEvaluatable("3.40282347e+38f");
-        assertExpressionUncookable("3.40282357e+38f");
-        assertExpressionEvaluatable("1.40239846e-45f");
-        assertExpressionUncookable("7.0e-46f");
-        assertExpressionEvaluatable("1.79769313486231570e+308D");
-        assertExpressionUncookable("1.79769313486231581e+308d");
-        assertExpressionEvaluatable("4.94065645841246544e-324D");
-        assertExpressionUncookable("2e-324D");
+        this.assertExpressionEvaluatesTrue("1e1f == 10f");
+        this.assertExpressionEvaluatesTrue("1E1F == 10f");
+        this.assertExpressionEvaluatesTrue(".3f == 0.3f");
+        this.assertExpressionEvaluatesTrue("0f == (float) 0");
+        this.assertExpressionEvaluatable("3.14f");
+        this.assertExpressionEvaluatable("3.40282347e+38f");
+        this.assertExpressionUncookable("3.40282357e+38f");
+        this.assertExpressionEvaluatable("1.40239846e-45f");
+        this.assertExpressionUncookable("7.0e-46f");
+        this.assertExpressionEvaluatable("1.79769313486231570e+308D");
+        this.assertExpressionUncookable("1.79769313486231581e+308d");
+        this.assertExpressionEvaluatable("4.94065645841246544e-324D");
+        this.assertExpressionUncookable("2e-324D");
     }
 
     @Test public void
     test_3_10_3__BooleanLiterals() throws Exception {
-        assertExpressionEvaluatesTrue("true");
-        assertExpressionEvaluatesTrue("! false");
+        this.assertExpressionEvaluatesTrue("true");
+        this.assertExpressionEvaluatesTrue("! false");
     }
 
     @Test public void
     test_3_10_4__CharacterLiterals() throws Exception {
-        assertExpressionEvaluatesTrue("'a' == 97");
-        assertExpressionUncookable("'''");
-        assertExpressionUncookable("'\\'");
-        assertExpressionUncookable("'\n'");
-        assertExpressionUncookable("'ax'");
-        assertExpressionUncookable("'a\n'");
-        assertExpressionEvaluatesTrue("'\"' == 34"); // Unescaped double quote is allowed!
+        this.assertExpressionEvaluatesTrue("'a' == 97");
+        this.assertExpressionUncookable("'''");
+        this.assertExpressionUncookable("'\\'");
+        this.assertExpressionUncookable("'\n'");
+        this.assertExpressionUncookable("'ax'");
+        this.assertExpressionUncookable("'a\n'");
+        this.assertExpressionEvaluatesTrue("'\"' == 34"); // Unescaped double quote is allowed!
     }
 
     @Test public void
     test_3_10_5__StringLiterals() throws Exception {
-        assertExpressionEvaluatesTrue("\"'\".charAt(0) == 39"); // Unescaped single quote is allowed!
+        this.assertExpressionEvaluatesTrue("\"'\".charAt(0) == 39"); // Unescaped single quote is allowed!
         // Escape sequences already tested above for character literals.
-        assertExpressionEvaluatesTrue("\"\\b\".charAt(0) == 8");
-        assertExpressionUncookable("\"aaa\nbbb\"");
-        assertExpressionUncookable("\"aaa\rbbb\"");
-        assertExpressionEvaluatesTrue("\"aaa\" == \"aaa\"");
-        assertExpressionEvaluatesTrue("\"aaa\" != \"bbb\"");
+        this.assertExpressionEvaluatesTrue("\"\\b\".charAt(0) == 8");
+        this.assertExpressionUncookable("\"aaa\nbbb\"");
+        this.assertExpressionUncookable("\"aaa\rbbb\"");
+        this.assertExpressionEvaluatesTrue("\"aaa\" == \"aaa\"");
+        this.assertExpressionEvaluatesTrue("\"aaa\" != \"bbb\"");
     }
 
     @Test public void
     test_3_10_6__EscapeSequencesForCharacterAndStringLiterals() throws Exception {
-        assertExpressionUncookable("'\\u000a'"); // 0x000a is LF
-        assertExpressionEvaluatesTrue("'\\b' == 8");
-        assertExpressionEvaluatesTrue("'\\t' == 9");
-        assertExpressionEvaluatesTrue("'\\n' == 10");
-        assertExpressionEvaluatesTrue("'\\f' == 12");
-        assertExpressionEvaluatesTrue("'\\r' == 13");
-        assertExpressionEvaluatesTrue("'\\\"' == 34");
-        assertExpressionEvaluatesTrue("'\\'' == 39");
-        assertExpressionEvaluatesTrue("'\\\\' == 92");
-        assertExpressionEvaluatesTrue("'\\0' == 0");
-        assertExpressionEvaluatesTrue("'\\07' == 7");
-        assertExpressionEvaluatesTrue("'\\377' == 255");
-        assertExpressionUncookable("'\\400'");
-        assertExpressionUncookable("'\\1234'");
+        this.assertExpressionUncookable("'\\u000a'"); // 0x000a is LF
+        this.assertExpressionEvaluatesTrue("'\\b' == 8");
+        this.assertExpressionEvaluatesTrue("'\\t' == 9");
+        this.assertExpressionEvaluatesTrue("'\\n' == 10");
+        this.assertExpressionEvaluatesTrue("'\\f' == 12");
+        this.assertExpressionEvaluatesTrue("'\\r' == 13");
+        this.assertExpressionEvaluatesTrue("'\\\"' == 34");
+        this.assertExpressionEvaluatesTrue("'\\'' == 39");
+        this.assertExpressionEvaluatesTrue("'\\\\' == 92");
+        this.assertExpressionEvaluatesTrue("'\\0' == 0");
+        this.assertExpressionEvaluatesTrue("'\\07' == 7");
+        this.assertExpressionEvaluatesTrue("'\\377' == 255");
+        this.assertExpressionUncookable("'\\400'");
+        this.assertExpressionUncookable("'\\1234'");
     }
 
     @Test public void
     test_3_10_7__TheNullLiteral() throws Exception {
-        assertExpressionEvaluatable("null");
+        this.assertExpressionEvaluatable("null");
     }
 
     @Test public void
     test_3_11__Separators() throws Exception {
-        assertScriptExecutable(";");
+        this.assertScriptExecutable(";");
     }
 
     @Test public void
     test_3_12__Operators() throws Exception {
-        assertScriptReturnsTrue("int a = -11; a >>>= 2; return a == 1073741821;");
+        this.assertScriptReturnsTrue("int a = -11; a >>>= 2; return a == 1073741821;");
     }
-    
+
     @Test public void
     test_4_5_1__TypeArgumentsAndWildcards() throws Exception {
-        assertScriptReturnsTrue(
+        this.assertScriptReturnsTrue(
             ""
             + "import java.util.*;\n"
             + "final List<String> l = new ArrayList();\n"
-            + "l.add(\"x\");\n" 
+            + "l.add(\"x\");\n"
             + "final Iterator<Integer> it = l.iterator();\n"
             + "return it.hasNext();"
         );
@@ -212,213 +212,213 @@ class JlsTests extends JaninoTestSuite {
 
     @Test public void
     test_5_1_7__BoxingConversion() throws Exception {
-        assertScriptReturnsTrue("Boolean   b = true;        return b.booleanValue();");
-        assertScriptReturnsTrue("Boolean   b = false;       return !b.booleanValue();");
-        assertScriptReturnsTrue("Byte      b = (byte) 7;    return b.equals(new Byte((byte) 7));");
-        assertScriptReturnsTrue("Character c = 'X';         return c.equals(new Character('X'));");
-        assertScriptReturnsTrue("Short     s = (short) 322; return s.equals(new Short((short) 322));");
-        assertScriptReturnsTrue("Integer   i = 99;          return i.equals(new Integer(99));");
-        assertScriptReturnsTrue("Long      l = 733L;        return l.equals(new Long(733L));");
-        assertScriptReturnsTrue("Float     f = 12.5F;       return f.equals(new Float(12.5F));");
-        assertScriptReturnsTrue("Double    d = 14.3D;       return d.equals(new Double(14.3D));");
+        this.assertScriptReturnsTrue("Boolean   b = true;        return b.booleanValue();");
+        this.assertScriptReturnsTrue("Boolean   b = false;       return !b.booleanValue();");
+        this.assertScriptReturnsTrue("Byte      b = (byte) 7;    return b.equals(new Byte((byte) 7));");
+        this.assertScriptReturnsTrue("Character c = 'X';         return c.equals(new Character('X'));");
+        this.assertScriptReturnsTrue("Short     s = (short) 322; return s.equals(new Short((short) 322));");
+        this.assertScriptReturnsTrue("Integer   i = 99;          return i.equals(new Integer(99));");
+        this.assertScriptReturnsTrue("Long      l = 733L;        return l.equals(new Long(733L));");
+        this.assertScriptReturnsTrue("Float     f = 12.5F;       return f.equals(new Float(12.5F));");
+        this.assertScriptReturnsTrue("Double    d = 14.3D;       return d.equals(new Double(14.3D));");
     }
 
     @Test public void
     test_5_1_8__UnboxingConversion() throws Exception {
-        assertExpressionEvaluatesTrue("Boolean.TRUE");
-        assertExpressionEvaluatesTrue("!Boolean.FALSE");
-        assertExpressionEvaluatesTrue("new Byte((byte) 9) == (byte) 9");
-        assertExpressionEvaluatesTrue("new Character('Y') == 'Y'");
-        assertExpressionEvaluatesTrue("new Short((short) 33) == (short) 33");
-        assertExpressionEvaluatesTrue("new Integer(-444) == -444");
-        assertExpressionEvaluatesTrue("new Long(987654321L) == 987654321L");
-        assertExpressionEvaluatesTrue("new Float(33.3F) == 33.3F");
-        assertExpressionEvaluatesTrue("new Double(939.939D) == 939.939D");
+        this.assertExpressionEvaluatesTrue("Boolean.TRUE");
+        this.assertExpressionEvaluatesTrue("!Boolean.FALSE");
+        this.assertExpressionEvaluatesTrue("new Byte((byte) 9) == (byte) 9");
+        this.assertExpressionEvaluatesTrue("new Character('Y') == 'Y'");
+        this.assertExpressionEvaluatesTrue("new Short((short) 33) == (short) 33");
+        this.assertExpressionEvaluatesTrue("new Integer(-444) == -444");
+        this.assertExpressionEvaluatesTrue("new Long(987654321L) == 987654321L");
+        this.assertExpressionEvaluatesTrue("new Float(33.3F) == 33.3F");
+        this.assertExpressionEvaluatesTrue("new Double(939.939D) == 939.939D");
     }
 
     @Test public void
     test_5_2__AssignmentConversion() throws Exception {
-        assertScriptReturnsTrue("int i = 7; return i == 7;");
-        assertScriptReturnsTrue("String s = \"S\"; return s.equals(\"S\");");
-        assertScriptReturnsTrue("long l = 7; return l == 7L;");
-        assertScriptReturnsTrue("Object o = \"A\"; return o.equals(\"A\");");
-        assertScriptReturnsTrue("Integer i = 7; return i.intValue() == 7;");
-        assertScriptReturnsTrue("Object o = 7; return o.equals(new Integer(7));");
-        assertScriptReturnsTrue("int i = new Integer(7); return i == 7;");
-        assertScriptReturnsTrue("long l = new Integer(7); return l == 7L;");
-        assertScriptExecutable("byte b = -128;");
-        assertScriptUncookable("byte b = 128;");
-        assertScriptExecutable("short s = -32768;");
-        assertScriptUncookable("short s = 32768;");
-        assertScriptUncookable("char c = -1;");
-        assertScriptExecutable("char c = 0;");
-        assertScriptExecutable("char c = 65535;");
-        assertScriptUncookable("char c = 65536;");
-        assertScriptExecutable("Byte b = -128;");
-        assertScriptUncookable("Byte b = 128;");
-        assertScriptExecutable("Short s = -32768;");
-        assertScriptUncookable("Short s = 32768;");
-        assertScriptUncookable("Character c = -1;");
-        assertScriptExecutable("Character c = 0;");
-        assertScriptExecutable("Character c = 65535;");
-        assertScriptUncookable("Character c = 65536;");
+        this.assertScriptReturnsTrue("int i = 7; return i == 7;");
+        this.assertScriptReturnsTrue("String s = \"S\"; return s.equals(\"S\");");
+        this.assertScriptReturnsTrue("long l = 7; return l == 7L;");
+        this.assertScriptReturnsTrue("Object o = \"A\"; return o.equals(\"A\");");
+        this.assertScriptReturnsTrue("Integer i = 7; return i.intValue() == 7;");
+        this.assertScriptReturnsTrue("Object o = 7; return o.equals(new Integer(7));");
+        this.assertScriptReturnsTrue("int i = new Integer(7); return i == 7;");
+        this.assertScriptReturnsTrue("long l = new Integer(7); return l == 7L;");
+        this.assertScriptExecutable("byte b = -128;");
+        this.assertScriptUncookable("byte b = 128;");
+        this.assertScriptExecutable("short s = -32768;");
+        this.assertScriptUncookable("short s = 32768;");
+        this.assertScriptUncookable("char c = -1;");
+        this.assertScriptExecutable("char c = 0;");
+        this.assertScriptExecutable("char c = 65535;");
+        this.assertScriptUncookable("char c = 65536;");
+        this.assertScriptExecutable("Byte b = -128;");
+        this.assertScriptUncookable("Byte b = 128;");
+        this.assertScriptExecutable("Short s = -32768;");
+        this.assertScriptUncookable("Short s = 32768;");
+        this.assertScriptUncookable("Character c = -1;");
+        this.assertScriptExecutable("Character c = 0;");
+        this.assertScriptExecutable("Character c = 65535;");
+        this.assertScriptUncookable("Character c = 65536;");
     }
 
     @Test public void
     test_5_5__CastingConversion() throws Exception {
-        assertExpressionEvaluatesTrue("7 == (int) 7");
-        assertExpressionEvaluatesTrue("(int) 'a' == 97");
-        assertExpressionEvaluatesTrue("(int) 10000000000L == 1410065408");
-        assertExpressionEvaluatesTrue("((Object) \"SS\").equals(\"SS\")");
-        assertScriptReturnsTrue("Object o = \"SS\"; return ((String) o).length() == 2;");
-        assertExpressionEvaluatesTrue("((Integer) 7).intValue() == 7");
-        assertExpressionEvaluatesTrue("(int) new Integer(7) == 7");
+        this.assertExpressionEvaluatesTrue("7 == (int) 7");
+        this.assertExpressionEvaluatesTrue("(int) 'a' == 97");
+        this.assertExpressionEvaluatesTrue("(int) 10000000000L == 1410065408");
+        this.assertExpressionEvaluatesTrue("((Object) \"SS\").equals(\"SS\")");
+        this.assertScriptReturnsTrue("Object o = \"SS\"; return ((String) o).length() == 2;");
+        this.assertExpressionEvaluatesTrue("((Integer) 7).intValue() == 7");
+        this.assertExpressionEvaluatesTrue("(int) new Integer(7) == 7");
 
         // Boxing conversion followed by widening reference conversion - not described in JLS7, but supported by
         // JAVAC. See JLS7 5.1.7, and JANINO-153.
-        assertExpressionEvaluatesTrue("null != (Comparable) 5.0");
+        this.assertExpressionEvaluatesTrue("null != (Comparable) 5.0");
 
         // Unboxing conversion followed by widening primitive conversion - not described in JLS7, but supported by
         // JAVAC. See JLS7 5.1.7, and JANINO-153.
-        assertExpressionEvaluatesTrue("0L != (long) new Integer(8)");
+        this.assertExpressionEvaluatesTrue("0L != (long) new Integer(8)");
     }
 
     @Test public void
     test_5_6__NumberPromotions() throws Exception {
         // 5.6.1 Unary Numeric Promotion
-        assertExpressionEvaluatesTrue("-new Byte((byte) 7) == -7");
-        assertExpressionEvaluatesTrue("-new Double(10.0D) == -10.0D");
-        assertScriptReturnsTrue("char c = 'a'; return -c == -97;");
+        this.assertExpressionEvaluatesTrue("-new Byte((byte) 7) == -7");
+        this.assertExpressionEvaluatesTrue("-new Double(10.0D) == -10.0D");
+        this.assertScriptReturnsTrue("char c = 'a'; return -c == -97;");
 
         // 5.6.2 Binary Numeric Promotion
-        assertExpressionEvaluatesTrue("2.5D * new Integer(4) == 10D");
-        assertExpressionEvaluatesTrue("7 % new Float(2.5F) == 2F");
-        assertExpressionEvaluatesTrue("2000000000 + 2000000000L == 4000000000L");
-        assertExpressionEvaluatesTrue("(short) 32767 + (byte) 100 == 32867");
+        this.assertExpressionEvaluatesTrue("2.5D * new Integer(4) == 10D");
+        this.assertExpressionEvaluatesTrue("7 % new Float(2.5F) == 2F");
+        this.assertExpressionEvaluatesTrue("2000000000 + 2000000000L == 4000000000L");
+        this.assertExpressionEvaluatesTrue("(short) 32767 + (byte) 100 == 32867");
     }
 
     @Test public void
     test_7_5__ImportDeclarations() throws Exception {
         // Default imports
-        assertExpressionEvaluatesTrue(
+        this.assertExpressionEvaluatesTrue(
             "import java.util.*; new ArrayList().getClass().getName().equals(\"java.util.ArrayList\")"
         );
-        assertScriptUncookable("import java.util#;");
-        assertScriptUncookable("import java.util.9;");
-        assertScriptCookable("import java.util.*;");
-        assertClassBodyMainReturnsTrue(
+        this.assertScriptUncookable("import java.util#;");
+        this.assertScriptUncookable("import java.util.9;");
+        this.assertScriptCookable("import java.util.*;");
+        this.assertClassBodyMainReturnsTrue(
             "import java.util.*; public static boolean main() { return new ArrayList() instanceof List; }"
         );
-        assertExpressionUncookable("import java.io.*; new ArrayList()");
+        this.assertExpressionUncookable("import java.io.*; new ArrayList()");
 
         // 7.5.1 Import Declarations -- Single-Type-Import
-        assertExpressionEvaluatable("import java.util.ArrayList; new ArrayList()");
-        assertExpressionEvaluatable("import java.util.ArrayList; import java.util.ArrayList; new ArrayList()");
-        assertScriptUncookable("import java.util.List; import java.awt.List;");
+        this.assertExpressionEvaluatable("import java.util.ArrayList; new ArrayList()");
+        this.assertExpressionEvaluatable("import java.util.ArrayList; import java.util.ArrayList; new ArrayList()");
+        this.assertScriptUncookable("import java.util.List; import java.awt.List;");
 
         // 7.5.2 Import Declarations -- Import-on-Demand
-        assertExpressionEvaluatable("import java.util.*; new ArrayList()");
-        assertExpressionEvaluatable("import java.util.*; import java.util.*; new ArrayList()");
+        this.assertExpressionEvaluatable("import java.util.*; new ArrayList()");
+        this.assertExpressionEvaluatable("import java.util.*; import java.util.*; new ArrayList()");
 
         // 7.5.3 Import Declarations -- Single Static Import
-        assertExpressionEvaluatesTrue(
+        this.assertExpressionEvaluatesTrue(
             "import static java.util.Collections.EMPTY_SET; EMPTY_SET instanceof java.util.Set"
         );
-        assertExpressionEvaluatesTrue(
+        this.assertExpressionEvaluatesTrue(
             "import static java.util.Collections.EMPTY_SET;"
             + "import static java.util.Collections.EMPTY_SET;"
             + "EMPTY_SET instanceof java.util.Set"
         );
-        assertScriptExecutable("import static java.util.Map.Entry; Entry e;");
-        assertScriptExecutable(
+        this.assertScriptExecutable("import static java.util.Map.Entry; Entry e;");
+        this.assertScriptExecutable(
             "import static java.util.Map.Entry;"
             + "import static java.util.Map.Entry;"
             + "Entry e;"
         );
-        assertScriptUncookable(
+        this.assertScriptUncookable(
             "import static java.util.Map.Entry;"
             + "import static java.security.KeyStore.Entry;"
             + "Entry e;"
         );
-        assertExpressionEvaluatesTrue(
+        this.assertExpressionEvaluatesTrue(
             "import static java.util.Arrays.asList;"
             + "asList(new String[] { \"HELLO\", \"WORLD\" }).size() == 2"
         );
-        assertExpressionEvaluatesTrue(
+        this.assertExpressionEvaluatesTrue(
             "import static java.util.Arrays.asList;"
             + "import static java.util.Arrays.asList;"
             + "asList(new String[] { \"HELLO\", \"WORLD\" }).size() == 2"
         );
-        assertScriptUncookable(
+        this.assertScriptUncookable(
             "import static java.lang.Integer.decode;"
             + "import static java.lang.Long.decode;"
             + "decode(\"4000000000\");"
         );
 
         // 7.5.4 Import Declarations -- Static-Import-on-Demand
-        assertExpressionEvaluatesTrue("import static java.util.Collections.*; EMPTY_SET instanceof java.util.Set");
-        assertScriptExecutable("import static java.util.Map.*; Entry e;");
-        assertExpressionEvaluatesTrue(
+        this.assertExpressionEvaluatesTrue("import static java.util.Collections.*; EMPTY_SET instanceof java.util.Set");
+        this.assertScriptExecutable("import static java.util.Map.*; Entry e;");
+        this.assertExpressionEvaluatesTrue(
             "import static java.util.Arrays.*;"
             + "asList(new String[] { \"HELLO\", \"WORLD\" }).size() == 2"
         );
     }
-    
+
     @Test public void
     test_9_7__Annotations() throws Exception {
-        assertClassBodyCookable("class C { @Override public String toString() { return \"foo!\"; } }");
-        assertClassBodyCookable("class C {           public String toString() { return \"foo!\"; } }");
-        assertClassBodyUncookable("class C { @Override public String meth1()    { return \"foo!\"; } }");
-        assertClassBodyCookable("class C {           public String meth1()    { return \"foo!\"; } }");
+        this.assertClassBodyCookable("class C { @Override public String toString() { return \"foo!\"; } }");
+        this.assertClassBodyCookable("class C {           public String toString() { return \"foo!\"; } }");
+        this.assertClassBodyUncookable("class C { @Override public String meth1()    { return \"foo!\"; } }");
+        this.assertClassBodyCookable("class C {           public String meth1()    { return \"foo!\"; } }");
 
-        assertClassBodyCookable("interface I extends Runnable { @Override void run(); }");
-        assertClassBodyCookable("interface I extends Runnable {           void run(); }");
+        this.assertClassBodyCookable("interface I extends Runnable { @Override void run(); }");
+        this.assertClassBodyCookable("interface I extends Runnable {           void run(); }");
     }
 
     @Test public void
     test_14_3__LocalClassDeclarations() throws Exception {
-        assertScriptReturnsTrue(
+        this.assertScriptReturnsTrue(
             "class S2 extends SC { public int foo() { return 37; } }; return new S2().foo() == 37;"
         );
     }
 
     @Test public void
     test_14_8__ExpressionStatements() throws Exception {
-        assertScriptReturnsTrue("int a; a = 8; ++a; a++; if (a != 10) return false; --a; a--; return a == 8;");
-        assertScriptExecutable("System.currentTimeMillis();");
-        assertScriptExecutable("new Object();");
-        assertScriptUncookable("new Object[3];");
-        assertScriptUncookable("int a; a;");
+        this.assertScriptReturnsTrue("int a; a = 8; ++a; a++; if (a != 10) return false; --a; a--; return a == 8;");
+        this.assertScriptExecutable("System.currentTimeMillis();");
+        this.assertScriptExecutable("new Object();");
+        this.assertScriptUncookable("new Object[3];");
+        this.assertScriptUncookable("int a; a;");
     }
-    
+
     @Test public void
     test_14_10__TheAssertStatement() throws Exception {
         // CHECKSTYLE LineLength:OFF
-        assertScriptExecutable("assert true;");
-        assertScriptReturnsTrue("try { assert false;                  } catch (AssertionError ae) { return ae.getMessage() == null;       } return false;");
-        assertScriptReturnsTrue("try { assert false : \"x\";          } catch (AssertionError ae) { return \"x\".equals(ae.getMessage()); } return false;");
-        assertScriptReturnsTrue("try { assert false : 3;              } catch (AssertionError ae) { return \"3\".equals(ae.getMessage()); } return false;");
-        assertScriptReturnsTrue("try { assert false : new Integer(8); } catch (AssertionError ae) { return \"8\".equals(ae.getMessage()); } return false;");
+        this.assertScriptExecutable("assert true;");
+        this.assertScriptReturnsTrue("try { assert false;                  } catch (AssertionError ae) { return ae.getMessage() == null;       } return false;");
+        this.assertScriptReturnsTrue("try { assert false : \"x\";          } catch (AssertionError ae) { return \"x\".equals(ae.getMessage()); } return false;");
+        this.assertScriptReturnsTrue("try { assert false : 3;              } catch (AssertionError ae) { return \"3\".equals(ae.getMessage()); } return false;");
+        this.assertScriptReturnsTrue("try { assert false : new Integer(8); } catch (AssertionError ae) { return \"8\".equals(ae.getMessage()); } return false;");
         // CHECKSTYLE LineLength:ON
     }
 
     @Test public void
     test_14_11__TheSwitchStatement() throws Exception {
-        assertScriptReturnsTrue("int x = 37; switch (x) {} return x == 37;");
-        assertScriptReturnsTrue("int x = 37; switch (x) { default: ++x; break; } return x == 38;");
-        assertScriptReturnsTrue("int x = 37; switch (x) { case 36: case 37: case 38: x += x; break; } return x == 74;");
-        assertScriptReturnsTrue(
+        this.assertScriptReturnsTrue("int x = 37; switch (x) {} return x == 37;");
+        this.assertScriptReturnsTrue("int x = 37; switch (x) { default: ++x; break; } return x == 38;");
+        this.assertScriptReturnsTrue("int x = 37; switch (x) { case 36: case 37: case 38: x += x; break; } return x == 74;");
+        this.assertScriptReturnsTrue(
             "int x = 37; switch (x) { case 36: case 37: case 1000: x += x; break; } return x == 74;"
         );
-        assertScriptReturnsTrue("int x = 37; switch (x) { case -10000: break; case 10000: break; } return x == 37;");
-        assertScriptReturnsTrue(
+        this.assertScriptReturnsTrue("int x = 37; switch (x) { case -10000: break; case 10000: break; } return x == 37;");
+        this.assertScriptReturnsTrue(
             "int x = 37; switch (x) { case -2000000000: break; case 2000000000: break; } return x == 37;"
         );
     }
 
     @Test public void
     test_14_20_1__ExecutionOfTryCatch__1() throws Exception {
-        assertClassBodyMainReturnsTrue(
+        this.assertClassBodyMainReturnsTrue(
             ""
             + "static void meth() throws Throwable {\n"
             + "}\n"
@@ -439,10 +439,10 @@ class JlsTests extends JaninoTestSuite {
             + "}\n"
         );
     }
-    
+
     @Test public void
     test_14_20_1__ExecutionOfTryCatch__2() throws Exception {
-        assertClassBodyUncookable(
+        this.assertClassBodyUncookable(
             ""
             + "static void meth() throws Throwable {\n"
             + "}\n"
@@ -463,10 +463,10 @@ class JlsTests extends JaninoTestSuite {
             + "}\n"
         );
     }
-    
+
     @Test public void
     test_14_20_1__ExecutionOfTryCatch__3() throws Exception {
-        assertClassBodyMainReturnsTrue(
+        this.assertClassBodyMainReturnsTrue(
             ""
             + "static void meth() throws java.io.IOException {\n"
             + "}\n"
@@ -487,10 +487,10 @@ class JlsTests extends JaninoTestSuite {
             + "}\n"
         );
     }
-    
+
     @Test public void
     test_14_20_1__ExecutionOfTryCatch__4() throws Exception {
-        assertClassBodyUncookable(
+        this.assertClassBodyUncookable(
             ""
             + "static void meth() throws java.io.FileNotFoundException {\n"
             + "}\n"
@@ -514,7 +514,7 @@ class JlsTests extends JaninoTestSuite {
 
     @Test public void
     test_14_20_1__ExecutionOfTryCatch__5() throws Exception {
-        assertClassBodyMainReturnsTrue(
+        this.assertClassBodyMainReturnsTrue(
             ""
             + "public static boolean main() { \n"
             + "    try {\n"
@@ -532,10 +532,10 @@ class JlsTests extends JaninoTestSuite {
             + "}\n"
         );
     }
-    
+
     @Test public void
     test_14_20_1__ExecutionOfTryCatch__6() throws Exception {
-        assertCompilationUnitCookable(
+        this.assertCompilationUnitCookable(
             ""
             + "public class TestIt {\n"
             + "    public static class MyException extends Exception implements Runnable {\n"
@@ -576,7 +576,7 @@ class JlsTests extends JaninoTestSuite {
 
     @Test public void
     test_14_21__UnreachableStatements() throws Exception {
-        assertClassBodyUncookable(
+        this.assertClassBodyUncookable(
             ""
             + "public void test() throws Exception {}\n"
             + "public void test2() {\n"
@@ -590,7 +590,7 @@ class JlsTests extends JaninoTestSuite {
             + "}\n"
         );
 
-        assertClassBodyCookable(
+        this.assertClassBodyCookable(
             ""
             + "public void test2() {\n"
             + "    try {\n"
@@ -615,26 +615,26 @@ class JlsTests extends JaninoTestSuite {
     @Test public void
     test_15_9__ClassInstanceCreationExpressions() throws Exception {
         // 15.9.1 Determining the class being Instantiated
-        assertExpressionEvaluatesTrue("new Object() instanceof Object");
-        assertExpressionUncookable("new java.util.List()");
-        assertExpressionUncookable("new other_package.PackageClass()");
-        assertExpressionUncookable("new java.util.AbstractList()");
-        assertExpressionEvaluatesTrue(
+        this.assertExpressionEvaluatesTrue("new Object() instanceof Object");
+        this.assertExpressionUncookable("new java.util.List()");
+        this.assertExpressionUncookable("new other_package.PackageClass()");
+        this.assertExpressionUncookable("new java.util.AbstractList()");
+        this.assertExpressionEvaluatesTrue(
             "new other_package.Foo(3).new PublicMemberClass() instanceof other_package.Foo.PublicMemberClass"
         );
-        assertExpressionUncookable("new other_package.Foo(3).new Foo.PublicMemberClass()");
-        assertExpressionUncookable("new other_package.Foo(3).new other_package.Foo.PublicMemberClass()");
-        assertExpressionUncookable("new other_package.Foo(3).new PackageMemberClass()");
-        assertExpressionUncookable("new other_package.Foo(3).new PublicAbstractMemberClass()");
-        assertExpressionUncookable("new other_package.Foo(3).new PublicStaticMemberClass()");
-        assertExpressionUncookable("new other_package.Foo(3).new PublicMemberInterface()");
-        assertExpressionUncookable("new java.util.ArrayList().new PublicMemberClass()");
+        this.assertExpressionUncookable("new other_package.Foo(3).new Foo.PublicMemberClass()");
+        this.assertExpressionUncookable("new other_package.Foo(3).new other_package.Foo.PublicMemberClass()");
+        this.assertExpressionUncookable("new other_package.Foo(3).new PackageMemberClass()");
+        this.assertExpressionUncookable("new other_package.Foo(3).new PublicAbstractMemberClass()");
+        this.assertExpressionUncookable("new other_package.Foo(3).new PublicStaticMemberClass()");
+        this.assertExpressionUncookable("new other_package.Foo(3).new PublicMemberInterface()");
+        this.assertExpressionUncookable("new java.util.ArrayList().new PublicMemberClass()");
 
         // The following one is tricky: A Java 6 JRE declares
         //    public int          File.compareTo(File)
         //    public abstract int Comparable.compareTo(Object)
         // , and yet "File" is not abstract!
-        assertCompilationUnitMainReturnsTrue((
+        this.assertCompilationUnitMainReturnsTrue((
             "class MyFile extends java.io.File {\n"
             + "    public MyFile() { super(\"/my/file\"); }\n"
             + "}\n"
@@ -646,13 +646,13 @@ class JlsTests extends JaninoTestSuite {
         ), "Main");
 
         // 15.9.3 Choosing the Constructor and its Arguments
-        assertExpressionEvaluatable("new Integer(3)");
-        assertExpressionEvaluatable("new Integer(new Integer(3))");
-        assertExpressionEvaluatable("new Integer(new Byte((byte) 3))");
-        assertExpressionUncookable("new Integer(new Object())");
+        this.assertExpressionEvaluatable("new Integer(3)");
+        this.assertExpressionEvaluatable("new Integer(new Integer(3))");
+        this.assertExpressionEvaluatable("new Integer(new Byte((byte) 3))");
+        this.assertExpressionUncookable("new Integer(new Object())");
 
         // 15.9.5 Anonymous Class Declarations
-        assertCompilationUnitMainExecutable((
+        this.assertCompilationUnitMainExecutable((
             ""
             + "public class Foo {\n"
             + "    public static void main() { new Foo().meth(); }\n"
@@ -661,7 +661,7 @@ class JlsTests extends JaninoTestSuite {
             + "    }\n"
             + "}\n"
         ), "Foo");
-        assertCompilationUnitMainExecutable((
+        this.assertCompilationUnitMainExecutable((
             ""
             + "public class A {\n"
             + "    public static void main() { new A(); }\n"
@@ -676,7 +676,7 @@ class JlsTests extends JaninoTestSuite {
     @Test public void
     test_15_11__FieldAccessExpressions() throws Exception {
         // 15.11.2 Accessing Superclass Members using super
-        assertCompilationUnitMainReturnsTrue((
+        this.assertCompilationUnitMainReturnsTrue((
             ""
             + "public class T1            { int x = 1; }\n"
             + "public class T2 extends T1 { int x = 2; }\n"
@@ -702,7 +702,7 @@ class JlsTests extends JaninoTestSuite {
     @Test public void
     test_15_12__MethodInvocationExpressions() throws Exception {
         // 15.12.2.2 Choose the Most Specific Method
-        assertCompilationUnitUncookable(
+        this.assertCompilationUnitUncookable(
             ""
             + "public class Main { public static boolean test() { return new A().meth(\"x\", \"y\"); } }\n"
             + "public class A {\n"
@@ -717,22 +717,22 @@ class JlsTests extends JaninoTestSuite {
         // declaring type.
         //
         // See also JANINO-79 and "IClass.IInvocable.isMoreSpecificThan()".
-        assertCompilationUnitMainReturnsTrue((
+        this.assertCompilationUnitMainReturnsTrue((
             ""
             + "public class Main        { public static boolean main()  { return new B().meth(\"x\"); } }\n"
             + "public class A           { public boolean meth(String s) { return true; } }\n"
             + "public class B extends A { public boolean meth(Object o) { return false; } }\n"
         ), "Main");
     }
-    
+
     @Test public void
     test_15_12_2_4__Phase3IdentifyApplicableVariableArityMethods__1() throws Exception {
-        assertExpressionEvaluatesTrue("\"two one\".equals(String.format(\"%2$s %1$s\", \"one\", \"two\"))");
+        this.assertExpressionEvaluatesTrue("\"two one\".equals(String.format(\"%2$s %1$s\", \"one\", \"two\"))");
     }
 
     @Test public void
     test_15_12_2_4__Phase3IdentifyApplicableVariableArityMethods__2() throws Exception {
-        assertClassBodyMainReturnsTrue(
+        this.assertClassBodyMainReturnsTrue(
             ""
             + "public static boolean\n"
             + "main() {\n"
@@ -752,10 +752,10 @@ class JlsTests extends JaninoTestSuite {
             + "}\n"
         );
     }
-    
+
     @Test public void
     test_15_12_2_4__Phase3IdentifyApplicableVariableArityMethods__3() throws Exception {
-        assertClassBodyMainReturnsTrue(
+        this.assertClassBodyMainReturnsTrue(
             ""
             + "public static boolean main() {\n"
             + "    if (meth(1, 2, 3) != 5) return false;\n"
@@ -776,7 +776,7 @@ class JlsTests extends JaninoTestSuite {
 
     @Test public void
     test_15_12_2_4__Phase3IdentifyApplicableVariableArityMethods__4() throws Exception {
-        assertScriptReturnsTrue(
+        this.assertScriptReturnsTrue(
             ""
             + "class LocalClass {\n"
             + "    int x;\n"
@@ -791,10 +791,10 @@ class JlsTests extends JaninoTestSuite {
             + "return true;\n"
         );
     }
-    
+
     @Test public void
     test_15_12_2_6__IdentifyApplicableVariableArityMethods__4() throws Exception {
-        assertClassBodyMainReturnsTrue(
+        this.assertClassBodyMainReturnsTrue(
             ""
             + "public static boolean main() {\n"
             + "    return meth((byte)1, (byte)2) == 1;\n"
@@ -813,10 +813,10 @@ class JlsTests extends JaninoTestSuite {
             + "}\n"
         );
     }
-    
+
     @Test public void
     test_15_12_2_7__IdentifyApplicableVariableArityMethods__4() throws Exception {
- 
+
         // The resolution phases should go like this:
         //  - all three methods are *applicable*, but fixed-arity ones have higher priority
         //    (meaning the chosen one, if any, must be a fixed-arity)
@@ -824,7 +824,7 @@ class JlsTests extends JaninoTestSuite {
         //  - neither of these is more specific than the other,
         //    therefore it is an ambiguous case
         //  Ref: http://docs.oracle.com/javase/specs/jls/se7/html/jls-15.html#jls-15.12.2.1
-        // 
+        //
         //  (Note: Some versions of javac tries a bit harder,
         //         choosing the only existing variable-arity method.
         //         Their reasoning seems to be that
@@ -833,8 +833,8 @@ class JlsTests extends JaninoTestSuite {
         //         no ambiguity.
         //         I have not been able to find any piece of documentation
         //         about this in the docs)
-        
-        assertClassBodyUncookable(
+
+        this.assertClassBodyUncookable(
             ""
             + "public static boolean main() {\n"
             + "    return meth((byte)1, (byte)2) == 1;\n"
@@ -855,21 +855,39 @@ class JlsTests extends JaninoTestSuite {
     }
 
     @Test public void
+    test_15_2_2_5_ChoosingTheMostSpecificVarargMethod_1() throws Exception {
+        this.assertClassBodyMainReturnsTrue(
+            ""
+            + "public static boolean main() {\n"
+            + "    return meth(new int[][] { { 3 } }) == 1;\n"
+            + "}\n"
+            + "\n"
+            + "static int meth(int[][]...a) {\n"
+            + "    return 0;\n"
+            + "}\n"
+            + "\n"
+            + "static int meth(int[]... b) {\n"
+            + "    return 1;\n"
+            + "}\n"
+        );
+    }
+
+    @Test public void
     test_15_14__PostfixExpressions() throws Exception {
         // "15.14.2 Postfix Increment Operator ++
-        assertScriptReturnsTrue("int i = 7; i++; return i == 8;");
-        assertScriptReturnsTrue("Integer i = new Integer(7); i++; return i.intValue() == 8;");
-        assertScriptReturnsTrue("int i = 7; return i == 7 && i++ == 7 && i == 8;");
-        assertScriptReturnsTrue(
+        this.assertScriptReturnsTrue("int i = 7; i++; return i == 8;");
+        this.assertScriptReturnsTrue("Integer i = new Integer(7); i++; return i.intValue() == 8;");
+        this.assertScriptReturnsTrue("int i = 7; return i == 7 && i++ == 7 && i == 8;");
+        this.assertScriptReturnsTrue(
             "Integer i = new Integer(7);"
             + "return i.intValue() == 7 && (i++).intValue() == 7 && i.intValue() == 8;"
         );
 
         // 15.14.3 Postfix Decrement Operator --
-        assertScriptReturnsTrue("int i = 7; i--; return i == 6;");
-        assertScriptReturnsTrue("Integer i = new Integer(7); i--; return i.intValue() == 6;");
-        assertScriptReturnsTrue("int i = 7; return i == 7 && i-- == 7 && i == 6;");
-        assertScriptReturnsTrue(
+        this.assertScriptReturnsTrue("int i = 7; i--; return i == 6;");
+        this.assertScriptReturnsTrue("Integer i = new Integer(7); i--; return i.intValue() == 6;");
+        this.assertScriptReturnsTrue("int i = 7; return i == 7 && i-- == 7 && i == 6;");
+        this.assertScriptReturnsTrue(
             "Integer i = new Integer(7);"
             + "return i.intValue() == 7 && (i--).intValue() == 7 && i.intValue() == 6;"
         );
@@ -878,121 +896,121 @@ class JlsTests extends JaninoTestSuite {
     @Test public void
     test_15_15__UnaryOperators() throws Exception {
         // 15.15.1 Prefix Increment Operator ++
-        assertScriptReturnsTrue("int i = 7; ++i; return i == 8;");
-        assertScriptReturnsTrue("Integer i = new Integer(7); ++i; return i.intValue() == 8;");
-        assertScriptReturnsTrue("int i = 7; return i == 7 && ++i == 8 && i == 8;");
-        assertScriptReturnsTrue(
+        this.assertScriptReturnsTrue("int i = 7; ++i; return i == 8;");
+        this.assertScriptReturnsTrue("Integer i = new Integer(7); ++i; return i.intValue() == 8;");
+        this.assertScriptReturnsTrue("int i = 7; return i == 7 && ++i == 8 && i == 8;");
+        this.assertScriptReturnsTrue(
             "Integer i = new Integer(7);"
             + "return i.intValue() == 7 && (++i).intValue() == 8 && i.intValue() == 8;"
         );
 
         // 15.15.2 Prefix Decrement Operator --
-        assertScriptReturnsTrue("int i = 7; --i; return i == 6;");
-        assertScriptReturnsTrue("Integer i = new Integer(7); --i; return i.intValue() == 6;");
-        assertScriptReturnsTrue("int i = 7; return i == 7 && --i == 6 && i == 6;");
-        assertScriptReturnsTrue(
+        this.assertScriptReturnsTrue("int i = 7; --i; return i == 6;");
+        this.assertScriptReturnsTrue("Integer i = new Integer(7); --i; return i.intValue() == 6;");
+        this.assertScriptReturnsTrue("int i = 7; return i == 7 && --i == 6 && i == 6;");
+        this.assertScriptReturnsTrue(
             "Integer i = new Integer(7);"
             + "return i.intValue() == 7 && (--i).intValue() == 6 && i.intValue() == 6;"
         );
 
         // 15.15.3 Unary Plus Operator +
-        assertExpressionEvaluatesTrue("new Integer(+new Integer(7)).intValue() == 7");
+        this.assertExpressionEvaluatesTrue("new Integer(+new Integer(7)).intValue() == 7");
 
         // 15.15.4 Unary Minus Operator -
-        assertExpressionEvaluatesTrue("new Integer(-new Integer(7)).intValue() == -7");
+        this.assertExpressionEvaluatesTrue("new Integer(-new Integer(7)).intValue() == -7");
     }
 
     @Test public void
     test_15_17__MultiplicativeOperators() throws Exception {
-        assertExpressionEvaluatesTrue("new Integer(new Byte((byte) 2) * new Short((short) 3)).intValue() == 6");
+        this.assertExpressionEvaluatesTrue("new Integer(new Byte((byte) 2) * new Short((short) 3)).intValue() == 6");
     }
 
     @Test public void
     test_15_18__AdditiveOperators() throws Exception {
         // 15.18 Additive Operators -- Numeric
-        assertExpressionEvaluatesTrue("(new Byte((byte) 7) - new Double(1.5D) + \"x\").equals(\"5.5x\")");
+        this.assertExpressionEvaluatesTrue("(new Byte((byte) 7) - new Double(1.5D) + \"x\").equals(\"5.5x\")");
 
         // 15.18.1.3 Additive Operators -- String Concatentation
-        assertExpressionEvaluatesTrue(
+        this.assertExpressionEvaluatesTrue(
             "(\"The square root of 6.25 is \" + Math.sqrt(6.25)).equals(\"The square root of 6.25 is 2.5\")"
         );
-        assertExpressionEvaluatesTrue("1 + 2 + \" fiddlers\" == \"3 fiddlers\"");
-        assertExpressionEvaluatesTrue("\"fiddlers \" + 1 + 2 == \"fiddlers 12\"");
+        this.assertExpressionEvaluatesTrue("1 + 2 + \" fiddlers\" == \"3 fiddlers\"");
+        this.assertExpressionEvaluatesTrue("\"fiddlers \" + 1 + 2 == \"fiddlers 12\"");
         for (int i = 65530; i <= 65537; ++i) {
             char[] ca = new char[i];
             Arrays.fill(ca, 'x');
             String s1 = new String(ca);
-            assertExpressionEvaluatesTrue("\"" + s1 + "\".length() == " + i);
-            assertExpressionEvaluatesTrue("(\"" + s1 + "\" + \"XXX\").length() == " + (i + 3));
+            this.assertExpressionEvaluatesTrue("\"" + s1 + "\".length() == " + i);
+            this.assertExpressionEvaluatesTrue("(\"" + s1 + "\" + \"XXX\").length() == " + (i + 3));
         }
     }
 
     @Test public void
     test_15_20__RelationOperators() throws Exception {
         // 15.20.1 Numerical Comparison Operators <, <=, > and >=
-        assertExpressionEvaluatesTrue("new Integer(7) > new Byte((byte) 5)");
+        this.assertExpressionEvaluatesTrue("new Integer(7) > new Byte((byte) 5)");
     }
 
     @Test public void
     test_15_21__EqualityOperators() throws Exception {
 
         // 15.21.1 Numerical Equality Operators == and !=
-        assertExpressionUncookable("new Integer(7) != new Byte((byte) 5)");
-        assertExpressionEvaluatesTrue("new Integer(7) == 7");
-        assertExpressionEvaluatesTrue("new Byte((byte) -7) == -7");
-        assertExpressionEvaluatesTrue("5 == new Byte((byte) 5)");
+        this.assertExpressionUncookable("new Integer(7) != new Byte((byte) 5)");
+        this.assertExpressionEvaluatesTrue("new Integer(7) == 7");
+        this.assertExpressionEvaluatesTrue("new Byte((byte) -7) == -7");
+        this.assertExpressionEvaluatesTrue("5 == new Byte((byte) 5)");
 
         // 15.21.2 Boolean Equality Operators == and !=
-        assertExpressionEvaluatesTrue("new Boolean(true) != new Boolean(true)");
-        assertExpressionEvaluatesTrue("new Boolean(true) == true");
-        assertExpressionEvaluatesTrue("false == new Boolean(false)");
-        assertExpressionEvaluatesTrue("false != true");
+        this.assertExpressionEvaluatesTrue("new Boolean(true) != new Boolean(true)");
+        this.assertExpressionEvaluatesTrue("new Boolean(true) == true");
+        this.assertExpressionEvaluatesTrue("false == new Boolean(false)");
+        this.assertExpressionEvaluatesTrue("false != true");
 
         // 15.21.3 Reference Equality Operators == and !=
-        assertExpressionEvaluatesTrue("new Object() != new Object()");
-        assertExpressionEvaluatesTrue("new Object() != null");
-        assertExpressionEvaluatesTrue("new Object() != \"foo\"");
-        assertExpressionUncookable("new Integer(3) == \"foo\"");
+        this.assertExpressionEvaluatesTrue("new Object() != new Object()");
+        this.assertExpressionEvaluatesTrue("new Object() != null");
+        this.assertExpressionEvaluatesTrue("new Object() != \"foo\"");
+        this.assertExpressionUncookable("new Integer(3) == \"foo\"");
     }
 
     @Test public void
     test_15_22__BitwiseAndLogicalOperators() throws Exception {
         // 15.22.2 Boolean Logical Operators &, ^, and |
-        assertExpressionEvaluatesTrue("new Boolean(true) & new Boolean(true)");
-        assertExpressionEvaluatesTrue("new Boolean(true) ^ false");
-        assertExpressionEvaluatesTrue("false | new Boolean(true)");
+        this.assertExpressionEvaluatesTrue("new Boolean(true) & new Boolean(true)");
+        this.assertExpressionEvaluatesTrue("new Boolean(true) ^ false");
+        this.assertExpressionEvaluatesTrue("false | new Boolean(true)");
     }
 
     @Test public void
     test_15_23__ConditionalAndOperator() throws Exception {
         // 15.23 Conditional-And Operator &&
-        assertExpressionEvaluatesTrue("new Boolean(true) && new Boolean(true)");
-        assertExpressionEvaluatesTrue("new Boolean(true) && true");
-        assertExpressionEvaluatesTrue("true && new Boolean(true)");
+        this.assertExpressionEvaluatesTrue("new Boolean(true) && new Boolean(true)");
+        this.assertExpressionEvaluatesTrue("new Boolean(true) && true");
+        this.assertExpressionEvaluatesTrue("true && new Boolean(true)");
     }
 
     @Test public void
     test_15_24__ConditionalOrOperator() throws Exception {
         // 15.24 Conditional-Or Operator ||
-        assertExpressionEvaluatesTrue("new Boolean(true) || new Boolean(false)");
-        assertExpressionEvaluatesTrue("new Boolean(false) || true");
-        assertExpressionEvaluatesTrue("true || new Boolean(true)");
+        this.assertExpressionEvaluatesTrue("new Boolean(true) || new Boolean(false)");
+        this.assertExpressionEvaluatesTrue("new Boolean(false) || true");
+        this.assertExpressionEvaluatesTrue("true || new Boolean(true)");
     }
 
     @Test public void
     test_15_26__AssignmentOperators() throws Exception {
         // 15.26.2 Compound Assignment Operators
-        assertScriptReturnsTrue("int a = 7; a += 3; return a == 10;");
-        assertScriptReturnsTrue("int a = 7; a %= 3; return a == 1;");
-        assertScriptUncookable("Object a = \"foo\"; a += 3;");
-        assertScriptUncookable("int a = 7; a += \"foo\";");
-        assertScriptReturnsTrue("String a = \"foo\"; a += 3; return a.equals(\"foo3\");");
-        assertScriptReturnsTrue("String a = \"foo\"; a += 'o'; return a.equals(\"fooo\");");
-        assertScriptReturnsTrue("String a = \"foo\"; a += 1.0; return a.equals(\"foo1.0\");");
-        assertScriptReturnsTrue("String[] a = { \"foo\" }; a[0] += 1.0; return a[0].equals(\"foo1.0\");");
-        assertScriptReturnsTrue("Integer a = 7; a += 3; return a == 10;");
-        assertScriptReturnsTrue("int a = 7; a += new Integer(3); return a == 10;");
+        this.assertScriptReturnsTrue("int a = 7; a += 3; return a == 10;");
+        this.assertScriptReturnsTrue("int a = 7; a %= 3; return a == 1;");
+        this.assertScriptUncookable("Object a = \"foo\"; a += 3;");
+        this.assertScriptUncookable("int a = 7; a += \"foo\";");
+        this.assertScriptReturnsTrue("String a = \"foo\"; a += 3; return a.equals(\"foo3\");");
+        this.assertScriptReturnsTrue("String a = \"foo\"; a += 'o'; return a.equals(\"fooo\");");
+        this.assertScriptReturnsTrue("String a = \"foo\"; a += 1.0; return a.equals(\"foo1.0\");");
+        this.assertScriptReturnsTrue("String[] a = { \"foo\" }; a[0] += 1.0; return a[0].equals(\"foo1.0\");");
+        this.assertScriptReturnsTrue("Integer a = 7; a += 3; return a == 10;");
+        this.assertScriptReturnsTrue("int a = 7; a += new Integer(3); return a == 10;");
         // JANINO-155: Compound assignment does not implement boxing conversion
-        assertScriptReturnsTrue("Double[] a = { 1.0, 2.0 }; a[0] += 1.0; return a[0] == 2.0;");
+        this.assertScriptReturnsTrue("Double[] a = { 1.0, 2.0 }; a[0] += 1.0; return a[0] == 2.0;");
     }
 }
