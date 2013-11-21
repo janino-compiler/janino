@@ -406,11 +406,15 @@ class JlsTests extends JaninoTestSuite {
     test_14_11__TheSwitchStatement() throws Exception {
         this.assertScriptReturnsTrue("int x = 37; switch (x) {} return x == 37;");
         this.assertScriptReturnsTrue("int x = 37; switch (x) { default: ++x; break; } return x == 38;");
-        this.assertScriptReturnsTrue("int x = 37; switch (x) { case 36: case 37: case 38: x += x; break; } return x == 74;");
+        this.assertScriptReturnsTrue(
+            "int x = 37; switch (x) { case 36: case 37: case 38: x += x; break; } return x == 74;"
+        );
         this.assertScriptReturnsTrue(
             "int x = 37; switch (x) { case 36: case 37: case 1000: x += x; break; } return x == 74;"
         );
-        this.assertScriptReturnsTrue("int x = 37; switch (x) { case -10000: break; case 10000: break; } return x == 37;");
+        this.assertScriptReturnsTrue(
+            "int x = 37; switch (x) { case -10000: break; case 10000: break; } return x == 37;"
+        );
         this.assertScriptReturnsTrue(
             "int x = 37; switch (x) { case -2000000000: break; case 2000000000: break; } return x == 37;"
         );
