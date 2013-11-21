@@ -440,7 +440,7 @@ class Java {
 
         /**
          * @param newAccess One of {@link Mod#PUBLIC}, {@link Mod#PRIVATE}, {@link Mod#PROTECTED}, {@link Mod#PACKAGE}
-         * @return This object, with the access changed to {@code newAccess}
+         * @return          This object, with the access changed to {@code newAccess}
          */
         public Modifiers
         changeAccess(int newAccess) {
@@ -1002,7 +1002,7 @@ class Java {
         getDeclaringType() { return (TypeDeclaration) this.getEnclosingScope(); }
 
         @Override public boolean
-        isStatic() { return (this.getModifierFlags() & Mod.STATIC) != 0; }
+        isStatic() { return Mod.isStatic(this.getModifierFlags()); }
 
         // Implement TypeDeclaration.
 
@@ -1222,7 +1222,7 @@ class Java {
         getDeclaringType() { return (TypeDeclaration) this.getEnclosingScope(); }
 
         @Override public boolean
-        isStatic() { return (this.getModifierFlags() & Mod.STATIC) != 0; }
+        isStatic() { return Mod.isStatic(this.getModifierFlags()); }
 
         @Override public void
         accept(Visitor.TypeDeclarationVisitor visitor) { visitor.visitMemberInterfaceDeclaration(this); }
@@ -1426,7 +1426,7 @@ class Java {
             Type[]                   thrownExceptions,
             List/*<BlockStatement>*/ optionalStatements
         ) {
-            super(location, (modifiers.flags & Mod.STATIC) != 0);
+            super(location, Mod.isStatic(modifiers.flags));
             this.optionalDocComment = optionalDocComment;
             this.modifiers          = parameters.variableArity ? modifiers.add(Mod.VARARGS) : modifiers;
             this.type               = type;
@@ -1720,7 +1720,7 @@ class Java {
         getDeclaringType() { return (TypeDeclaration) this.getEnclosingScope(); }
 
         @Override public boolean
-        isStatic() { return (this.modifiers.flags & Mod.STATIC) != 0; }
+        isStatic() { return Mod.isStatic(this.modifiers.flags); }
 
         @Override public String
         toString() {

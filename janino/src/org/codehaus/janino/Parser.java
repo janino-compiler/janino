@@ -545,9 +545,9 @@ class Parser {
             }
 
             Initializer initializer = new Initializer(
-                this.location(),                                       // location
-                (modifiers.flags & Mod.STATIC) != 0, // statiC
-                this.parseBlock()                                      // block
+                this.location(),               // location
+                Mod.isStatic(modifiers.flags), // statiC
+                this.parseBlock()              // block
             );
 
             classDeclaration.addVariableDeclaratorOrInitializer(initializer);
@@ -749,7 +749,7 @@ class Parser {
                 interfaceDeclaration.addMemberTypeDeclaration(
                     (MemberTypeDeclaration) this.parseClassDeclarationRest(
                         optionalDocComment,                      // optionalDocComment
-                        modifiers.add(Mod.STATIC | Mod.PUBLIC),       // ModifiersAndAnnotations
+                        modifiers.add(Mod.STATIC | Mod.PUBLIC),  // ModifiersAndAnnotations
                         ClassDeclarationContext.TYPE_DECLARATION // context
                     )
                 );
@@ -763,7 +763,7 @@ class Parser {
                 interfaceDeclaration.addMemberTypeDeclaration(
                     (MemberTypeDeclaration) this.parseInterfaceDeclarationRest(
                         optionalDocComment,                                // optionalDocComment
-                        modifiers.add(Mod.STATIC | Mod.PUBLIC),                 // ModifiersAndAnnotations
+                        modifiers.add(Mod.STATIC | Mod.PUBLIC),            // ModifiersAndAnnotations
                         InterfaceDeclarationContext.NAMED_TYPE_DECLARATION // context
                     )
                 );
@@ -857,10 +857,10 @@ class Parser {
                 if (this.peekIdentifier() != null) {
                     Type variableType = a.toTypeOrCompileException();
                     s = new LocalVariableDeclarationStatement(
-                        a.getLocation(),                            // location
-                        new Java.Modifiers(Mod.NONE), // modifiers
-                        variableType,                               // type
-                        this.parseLocalVariableDeclarators()        // variableDeclarators
+                        a.getLocation(),                     // location
+                        new Java.Modifiers(Mod.NONE),        // modifiers
+                        variableType,                        // type
+                        this.parseLocalVariableDeclarators() // variableDeclarators
                     );
                     this.read(";");
                 } else {
@@ -918,12 +918,12 @@ class Parser {
 
         List/*<BlockStatement>*/ optionalStatements;
         if (this.peekRead(";")) {
-            if ((modifiers.flags & (Mod.ABSTRACT | Mod.NATIVE)) == 0) {
+            if (!Mod.isAbstract(modifiers.flags) && !Mod.isNative(modifiers.flags)) {
                 throw this.compileException("Non-abstract, non-native method must have a body");
             }
             optionalStatements = null;
         } else {
-            if ((modifiers.flags & (Mod.ABSTRACT | Mod.NATIVE)) != 0) {
+            if (Mod.isAbstract(modifiers.flags) || Mod.isNative(modifiers.flags)) {
                 throw this.compileException("Abstract or native method must not have a body");
             }
             this.read("{");

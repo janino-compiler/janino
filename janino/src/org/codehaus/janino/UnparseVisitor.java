@@ -960,9 +960,7 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor {
         this.unparseAnnotations(id.getAnnotations());
         this.unparseModifiers(id.getModifierFlags());
         //make sure we print "interface", even if it wasn't in the modifiers
-        if ((id.getModifierFlags() & Mod.INTERFACE) == 0) {
-            this.pw.print("interface ");
-        }
+        if (!Mod.isInterface(id.getModifierFlags())) this.pw.print("interface ");
         this.pw.print(id.name);
         if (id.extendedTypes.length > 0) this.pw.print(" extends " + Java.join(id.extendedTypes, ", "));
         this.pw.println(" {");

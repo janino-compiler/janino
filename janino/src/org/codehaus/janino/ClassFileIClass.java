@@ -85,7 +85,7 @@ class ClassFileIClass extends IClass {
 
             // Skip JDK 1.5 synthetic methods (e.g. those generated for
             // covariant return values).
-            if ((mi.getModifierFlags() & Mod.SYNTHETIC) != 0) continue;
+            if (Mod.isSynthetic(mi.getModifierFlags())) continue;
 
             IInvocable ii;
             try {
@@ -170,7 +170,7 @@ class ClassFileIClass extends IClass {
                 } else  {
 
                     // Member type.
-                    if ((e.innerClassAccessFlags & Mod.STATIC) != 0) return null;
+                    if (Mod.isStatic(e.innerClassAccessFlags)) return null;
                     try {
                         return this.resolveClass(e.outerClassInfoIndex);
                     } catch (ClassNotFoundException ex) {
@@ -196,19 +196,19 @@ class ClassFileIClass extends IClass {
     getAccess() { return ClassFileIClass.accessFlags2Access(this.accessFlags); }
 
     @Override public boolean
-    isFinal() { return (this.accessFlags & Mod.FINAL) != 0; }
+    isFinal() { return Mod.isFinal(this.accessFlags); }
 
     @Override protected IClass[]
     getInterfaces2() throws CompileException { return this.resolveClasses(this.classFile.interfaces); }
 
     @Override public boolean
-    isAbstract() { return (this.accessFlags & Mod.ABSTRACT) != 0; }
+    isAbstract() { return Mod.isAbstract(this.accessFlags); }
 
     @Override protected String
     getDescriptor2() { return Descriptor.fromClassName(this.classFile.getThisClassName()); }
 
     @Override public boolean
-    isInterface() { return (this.accessFlags & Mod.INTERFACE) != 0; }
+    isInterface() { return Mod.isInterface(this.accessFlags); }
 
     @Override public boolean
     isArray() { return false; }
@@ -325,7 +325,7 @@ class ClassFileIClass extends IClass {
             result = new IClass.IConstructor() {
 
                 @Override public boolean
-                isVarargs() { return (methodInfo.getModifierFlags() & Mod.VARARGS) != 0; }
+                isVarargs() { return Mod.isVarargs(methodInfo.getModifierFlags()); }
 
                 @Override public IClass[]
                 getParameterTypes() throws CompileException {
@@ -367,13 +367,13 @@ class ClassFileIClass extends IClass {
                 getReturnType() { return returnType; }
 
                 @Override public boolean
-                isStatic() { return (methodInfo.getModifierFlags() & Mod.STATIC) != 0; }
+                isStatic() { return Mod.isStatic(methodInfo.getModifierFlags()); }
 
                 @Override public boolean
-                isAbstract() { return (methodInfo.getModifierFlags() & Mod.ABSTRACT) != 0; }
+                isAbstract() { return Mod.isAbstract(methodInfo.getModifierFlags()); }
 
                 @Override public boolean
-                isVarargs() { return (methodInfo.getModifierFlags() & Mod.VARARGS) != 0; }
+                isVarargs() { return Mod.isVarargs(methodInfo.getModifierFlags()); }
 
                 @Override public IClass[]
                 getParameterTypes() { return parameterTypes; }
@@ -426,7 +426,7 @@ class ClassFileIClass extends IClass {
             @Override public Object            getConstantValue() { return optionalConstantValue; }
             @Override public String            getName()          { return name; }
             @Override public IClass            getType()          { return type; }
-            @Override public boolean           isStatic()         { return (fieldInfo.getModifierFlags() & Mod.STATIC) != 0; } // SUPPRESS CHECKSTYLE LineLength
+            @Override public boolean           isStatic()         { return Mod.isStatic(fieldInfo.getModifierFlags()); }
             @Override public Access            getAccess()        { return access; }
             @Override public Java.Annotation[] getAnnotations()   { return fieldInfo.getAnnotations(); }
         };
@@ -437,9 +437,9 @@ class ClassFileIClass extends IClass {
     private static Access
     accessFlags2Access(short accessFlags) {
         return (
-            (accessFlags & Mod.PUBLIC)    != 0 ? Access.PUBLIC
-            : (accessFlags & Mod.PROTECTED) != 0 ? Access.PROTECTED
-            : (accessFlags & Mod.PRIVATE)   != 0 ? Access.PRIVATE
+            Mod.isPublicAccess(accessFlags)      ? Access.PUBLIC
+            : Mod.isProtectedAccess(accessFlags) ? Access.PROTECTED
+            : Mod.isPrivateAccess(accessFlags)   ? Access.PRIVATE
             : Access.DEFAULT
         );
     }

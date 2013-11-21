@@ -69,7 +69,7 @@ class ReflectionIClass extends IClass {
             // Formerly, the Java 5 synthetic methods were skipped here, because they are not "declared", i.e. hand-
             // written. However that turned out to be a bad idea, because with parameterized types the check that
             // all abstract methods are implemented fails.
-//            if ((m.getModifiers() & Mod.SYNTHETIC) != 0) continue;
+//            if (Mod.isSynthetic(m.getModifiers())) continue;
 
             // Wrap java.reflection.Method in an IMethod.
             iMethods.add(new ReflectionIMethod(m));

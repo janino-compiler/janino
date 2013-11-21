@@ -399,7 +399,7 @@ class UnitCompiler {
         IClass iClass = this.resolve(cd);
 
         // Check that all methods are implemented.
-        if ((cd.getModifierFlags() & Mod.ABSTRACT) == 0) {
+        if (!Mod.isAbstract(cd.getModifierFlags())) {
             IMethod[] ms = iClass.getIMethods();
             for (int i = 0; i < ms.length; ++i) {
                 IMethod base = ms[i];
@@ -422,10 +422,10 @@ class UnitCompiler {
 
         // Create "ClassFile" object.
         ClassFile cf = new ClassFile(
-            (short) (cd.getModifierFlags() | Mod.SUPER), // accessFlags
-            iClass.getDescriptor(),                                          // thisClassFD
-            iClass.getSuperclass().getDescriptor(),                          // superclassFD
-            IClass.getDescriptors(iClass.getInterfaces())                    // interfaceFDs
+            (short) (cd.getModifierFlags() | Mod.SUPER),  // accessFlags
+            iClass.getDescriptor(),                       // thisClassFD
+            iClass.getSuperclass().getDescriptor(),       // superclassFD
+            IClass.getDescriptors(iClass.getInterfaces()) // interfaceFDs
         );
 
         // TODO: Add annotations with retention != SOURCE.
@@ -587,10 +587,7 @@ class UnitCompiler {
             for (int k = 0; k < vd.brackets; ++k) type = new ArrayType(type);
 
             Object ocv = NOT_CONSTANT;
-            if (
-                (fd.modifiers.flags & Mod.FINAL) != 0
-                && vd.optionalInitializer instanceof Rvalue
-            ) {
+            if (Mod.isFinal(fd.modifiers.flags) && vd.optionalInitializer instanceof Rvalue) {
                 ocv = this.getConstantValue((Rvalue) vd.optionalInitializer);
             }
 
@@ -688,15 +685,10 @@ class UnitCompiler {
 
         // Create "ClassFile" object.
         ClassFile cf = new ClassFile(
-            (short) (               // accessFlags
-                id.getModifierFlags()
-                | Mod.SUPER
-                | Mod.INTERFACE
-                | Mod.ABSTRACT
-            ),
-            iClass.getDescriptor(), // thisClassFD
-            Descriptor.JAVA_LANG_OBJECT, // superclassFD
-            interfaceDescriptors    // interfaceFDs
+            (short) (id.getModifierFlags() | Mod.SUPER | Mod.INTERFACE | Mod.ABSTRACT), // accessFlags
+            iClass.getDescriptor(),                                                     // thisClassFD
+            Descriptor.JAVA_LANG_OBJECT,                                                // superclassFD
+            interfaceDescriptors                                                        // interfaceFDs
         );
 
         // TODO: Add annotations with retention != SOURCE.
@@ -1533,9 +1525,7 @@ class UnitCompiler {
             if (initializer == null) continue;
 
             assert fd.modifiers.annotations.length == 0;
-            if ((fd.modifiers.flags & Mod.STATIC) == 0) {
-                this.writeOpcode(fd, Opcode.ALOAD_0);
-            }
+            if (!Mod.isStatic(fd.modifiers.flags)) this.writeOpcode(fd, Opcode.ALOAD_0);
             IClass fieldType = this.getType(fd.type);
             if (initializer instanceof Rvalue) {
                 Rvalue rvalue          = (Rvalue) initializer;
@@ -1562,7 +1552,7 @@ class UnitCompiler {
             ;
 
             assert fd.modifiers.annotations.length == 0;
-            if ((fd.modifiers.flags & Mod.STATIC) != 0) {
+            if (Mod.isStatic(fd.modifiers.flags)) {
                 this.writeOpcode(fd, Opcode.PUTSTATIC);
             } else {
                 this.writeOpcode(fd, Opcode.PUTFIELD);
@@ -1769,8 +1759,8 @@ class UnitCompiler {
 
             assert lvds.modifiers.annotations.length == 0;
             vd.localVariable = new LocalVariable(
-                (lvds.modifiers.flags & Mod.FINAL) != 0, // finaL
-                this.getType(variableType)                                 // type
+                Mod.isFinal(lvds.modifiers.flags), // finaL
+                this.getType(variableType)         // type
             );
         }
         return vd.localVariable;
@@ -2063,7 +2053,7 @@ class UnitCompiler {
                 //  + A parameter of type "declaring class" is prepended to the signature
                 short modifiers = Mod.changeAccess(
                     fd.modifiers.flags, // modifiers
-                    Mod.PACKAGE                           // newAccess
+                    Mod.PACKAGE         // newAccess
                 );
                 modifiers |= Mod.STATIC;
 
@@ -2115,7 +2105,7 @@ class UnitCompiler {
             mi.addAttribute(new ClassFile.DeprecatedAttribute(classFile.addConstantUtf8Info("Deprecated")));
         }
 
-        if ((fd.modifiers.flags & (Mod.ABSTRACT | Mod.NATIVE)) != 0) return;
+        if (Mod.isAbstract(fd.modifiers.flags) || Mod.isNative(fd.modifiers.flags)) return;
 
         // Create CodeContext.
         final CodeContext codeContext = new CodeContext(mi.getClassFile());
@@ -2125,7 +2115,7 @@ class UnitCompiler {
             this.codeContext.saveLocalVariables();
 
             // Define special parameter "this".
-            if ((fd.modifiers.flags & Mod.STATIC) == 0) {
+            if (!Mod.isStatic(fd.modifiers.flags)) {
                 this.codeContext.allocateLocalVariable((short) 1, "this", this.resolve(fd.getDeclaringType()));
             }
 
@@ -3955,7 +3945,7 @@ class UnitCompiler {
             this.compileError("Cannot invoke superclass method in non-method scope", scmi.getLocation());
             return IClass.INT;
         }
-        if ((fd.modifiers.flags & Mod.STATIC) != 0) {
+        if (Mod.isStatic(fd.modifiers.flags)) {
             this.compileError("Cannot invoke superclass method in static context", scmi.getLocation());
         }
         this.load(scmi, this.resolve(fd.getDeclaringType()), 0);
@@ -6593,7 +6583,7 @@ class UnitCompiler {
                 // Implement "IField".
 
                 @Override public boolean
-                isStatic() { return (fieldDescriptor.modifiers.flags & Mod.STATIC) != 0; }
+                isStatic() { return Mod.isStatic(fieldDescriptor.modifiers.flags); }
 
                 @Override public IClass
                 getType() throws CompileException {
@@ -6608,10 +6598,7 @@ class UnitCompiler {
 
                 @Override public Object
                 getConstantValue() throws CompileException {
-                    if (
-                        (fieldDescriptor.modifiers.flags & Mod.FINAL) != 0
-                        && vd.optionalInitializer instanceof Rvalue
-                    ) {
+                    if (Mod.isFinal(fieldDescriptor.modifiers.flags) && vd.optionalInitializer instanceof Rvalue) {
                         Object constantInitializerValue = UnitCompiler.this.getConstantValue(
                             (Rvalue) vd.optionalInitializer
                         );
@@ -6642,8 +6629,8 @@ class UnitCompiler {
 
         // Check if initializer is constant-final.
         if (
-            (fd.modifiers.flags & Mod.STATIC) != 0
-            && (fd.modifiers.flags & Mod.FINAL) != 0
+            Mod.isStatic(fd.modifiers.flags)
+            && Mod.isFinal(fd.modifiers.flags)
             && vd.optionalInitializer instanceof Rvalue
             && this.getConstantValue((Rvalue) vd.optionalInitializer) != NOT_CONSTANT
         ) return null;
@@ -7345,7 +7332,7 @@ class UnitCompiler {
         for (Scope s = superclassMethodInvocation.getEnclosingBlockStatement();; s = s.getEnclosingScope()) {
             if (s instanceof FunctionDeclarator) {
                 FunctionDeclarator fd = (FunctionDeclarator) s;
-                if ((fd.modifiers.flags & Mod.STATIC) != 0) {
+                if (Mod.isStatic(fd.modifiers.flags)) {
                     this.compileError(
                         "Superclass method cannot be invoked in static context",
                         superclassMethodInvocation.getLocation()
@@ -8036,7 +8023,7 @@ class UnitCompiler {
             getAccess() { return UnitCompiler.modifiers2Access(atd.getModifierFlags()); }
 
             @Override public boolean
-            isFinal() { return (atd.getModifierFlags() & Mod.FINAL) != 0;  }
+            isFinal() { return Mod.isFinal(atd.getModifierFlags());  }
 
             @Override protected IClass[]
             getInterfaces2() throws CompileException {
@@ -8081,12 +8068,7 @@ class UnitCompiler {
             }
 
             @Override public boolean
-            isAbstract() {
-                return (
-                    atd instanceof InterfaceDeclaration
-                    || (atd.getModifierFlags() & Mod.ABSTRACT) != 0
-                );
-            }
+            isAbstract() { return atd instanceof InterfaceDeclaration || Mod.isAbstract(atd.getModifierFlags()); }
 
             @Override public boolean
             isInterface() { return atd instanceof InterfaceDeclaration; }
@@ -8198,10 +8180,7 @@ class UnitCompiler {
         if (typeDeclaration instanceof LocalClassDeclaration) {
             Scope s = typeDeclaration.getEnclosingScope();
             for (; !(s instanceof FunctionDeclarator); s = s.getEnclosingScope());
-            if (
-                (s instanceof MethodDeclarator)
-                && (((FunctionDeclarator) s).modifiers.flags & Mod.STATIC) != 0
-            ) return null;
+            if ((s instanceof MethodDeclarator) && Mod.isStatic(((FunctionDeclarator) s).modifiers.flags)) return null;
             for (; !(s instanceof TypeDeclaration); s = s.getEnclosingScope());
             TypeDeclaration immediatelyEnclosingTypeDeclaration = (TypeDeclaration) s;
             return (
@@ -8212,7 +8191,7 @@ class UnitCompiler {
         // Member class declaration.
         if (
             typeDeclaration instanceof MemberClassDeclaration
-            && (((MemberClassDeclaration) typeDeclaration).getModifierFlags() & Mod.STATIC) != 0
+            && Mod.isStatic(((MemberClassDeclaration) typeDeclaration).getModifierFlags())
         ) return null;
 
         // Anonymous class declaration, interface declaration
@@ -8239,7 +8218,7 @@ class UnitCompiler {
             );
             if (s instanceof FunctionDeclarator) {
                 FunctionDeclarator function = (FunctionDeclarator) s;
-                if ((function.modifiers.flags & Mod.STATIC) != 0) {
+                if (Mod.isStatic(function.modifiers.flags)) {
                     this.compileError("No current instance available in static method", tr.getLocation());
                 }
             }
@@ -8326,7 +8305,7 @@ class UnitCompiler {
             }
 
             @Override public boolean
-            isVarargs() { return (constructorDeclarator.modifiers.flags & Mod.VARARGS) != 0; }
+            isVarargs() { return Mod.isVarargs(constructorDeclarator.modifiers.flags); }
 
             @Override public IClass[]
             getParameterTypes() throws CompileException {
@@ -8400,7 +8379,7 @@ class UnitCompiler {
             // Implement IInvocable.
 
             @Override public boolean
-            isVarargs() { return (methodDeclarator.modifiers.flags & Mod.VARARGS) != 0; }
+            isVarargs() { return Mod.isVarargs(methodDeclarator.modifiers.flags); }
 
             @Override public IClass[]
             getParameterTypes() throws CompileException {
@@ -8428,13 +8407,13 @@ class UnitCompiler {
             // Implement IMethod.
 
             @Override public boolean
-            isStatic() { return (methodDeclarator.modifiers.flags & Mod.STATIC) != 0; }
+            isStatic() { return Mod.isStatic(methodDeclarator.modifiers.flags); }
 
             @Override public boolean
             isAbstract() {
                 return (
                     (methodDeclarator.getDeclaringType() instanceof InterfaceDeclaration)
-                    || (methodDeclarator.modifiers.flags & Mod.ABSTRACT) != 0
+                    || Mod.isAbstract(methodDeclarator.modifiers.flags)
                 );
             }
 
@@ -10274,9 +10253,9 @@ class UnitCompiler {
     private static Access
     modifiers2Access(short modifiers) {
         return (
-            (modifiers & Mod.PUBLIC)    != 0 ? Access.PUBLIC    :
-            (modifiers & Mod.PROTECTED) != 0 ? Access.PROTECTED :
-            (modifiers & Mod.PRIVATE)   != 0 ? Access.PRIVATE   :
+            Mod.isPublicAccess(modifiers)    ? Access.PUBLIC    :
+            Mod.isProtectedAccess(modifiers) ? Access.PROTECTED :
+            Mod.isPrivateAccess(modifiers)   ? Access.PRIVATE   :
             Access.DEFAULT
         );
     }
