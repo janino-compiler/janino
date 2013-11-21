@@ -481,14 +481,22 @@ class UnparseTests {
                     try {
 
                         // Parse the source file once.
-                        InputStream     is  = new FileInputStream(f);
-                        CompilationUnit cu1 = new Parser(new Scanner(f.toString(), is)).parseCompilationUnit();
-                        is.close();
+                        CompilationUnit cu1;
+                        {
+                            InputStream is = new FileInputStream(f);
+                            cu1 = new Parser(new Scanner(f.toString(), is)).parseCompilationUnit();
+                            is.close();
+                        }
 
-                        // Unparse the compilation unit, then parse again.
-                        StringWriter sw = new StringWriter();
-                        UnparseVisitor.unparse(cu1, sw);
-                        String          text = sw.toString();
+                        // Unparse the compilation unit.
+                        String text;
+                        {
+                            StringWriter sw = new StringWriter();
+                            UnparseVisitor.unparse(cu1, sw);
+                            text = sw.toString();
+                        }
+
+                        // Then parse again.
                         CompilationUnit cu2  = new Parser(
                             new Scanner(f.toString(), new StringReader(text))
                         ).parseCompilationUnit();
