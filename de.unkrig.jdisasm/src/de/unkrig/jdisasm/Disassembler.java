@@ -189,19 +189,20 @@ class Disassembler {
             } else
             if ("-help".equals(arg)) {
 
-                // CHECKSTYLE LineLengthCheck:OFF
-                System.out.println("Prints a disassembly listing of the given JAVA[TM] class files (or STDIN) to ");
-                System.out.println("STDOUT.");
-                System.out.println("Usage:");
-                System.out.println("  java " + Disassembler.class.getName() + " [ <option> ] ... [ <class-file-name> | <class-file-url> | '-' ] ...");
-                System.out.println("Valid options are:");
-                System.out.println("  -o <output-file>   Store disassembly output in a file.");
-                System.out.println("  -verbose");
-                System.out.println("  -src <source-dir>  Interweave the output with the class file's source code.");
-                System.out.println("  -hide-lines        Don't print the line numbers.");
-                System.out.println("  -hide-vars         Don't print the local variable names.");
-                System.out.println("  -symbolic-labels   Use symbolic labels instead of offsets.");
-                // CHECKSTYLE LineLengthCheck:ON
+                System.out.printf((
+                    ""
+                    + "Prints a disassembly listing of the given JAVA[TM] class files (or STDIN) to%n"
+                    + "STDOUT.%n"
+                    + "Usage:%n"
+                    + "  java %1$s [ <option> ] ... [ <class-file-name> | <class-file-url> | '-' ] ...%n"
+                    + "Valid options are:%n"
+                    + "  -o <output-file>   Store disassembly output in a file.%n"
+                    + "  -verbose%n"
+                    + "  -src <source-dir>  Interweave the output with the class file's source code.%n"
+                    + "  -hide-lines        Don't print the line numbers.%n"
+                    + "  -hide-vars         Don't print the local variable names.%n"
+                    + "  -symbolic-labels   Use symbolic labels instead of offsets.%n"
+                ), Disassembler.class.getName());
 
                 System.exit(0);
             } else
