@@ -8,6 +8,6 @@
 </listAttribute>
 <stringAttribute key="org.eclipse.jdt.launching.JRE_CONTAINER" value="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
 <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="de.unkrig.jdisasm.Disassembler"/>
-<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="-o Disassembler.asm&#13;&#10;-symbolic-labels&#13;&#10;bin/de/unkrig/jdisasm/Disassembler.class"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="-help"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="de.unkrig.jdisasm"/>
 </launchConfiguration>
