@@ -404,10 +404,16 @@ class Disassembler {
         this.print(
             decodeAccess((short) (
                 cf.accessFlags
-                & ~ACC_SYNCHRONIZED // Has no meaning but is always set for backwards compatibility
-                & ~ACC_SYNTHETIC // SYNTHETIC has already been printed as a comment.
+
+                // Has no meaning but is always set for backwards compatibility
+                & ~ACC_SYNCHRONIZED
+
+                // SYNTHETIC has already been printed as a comment.
+                & ~ACC_SYNTHETIC
+
                 // Suppress redundant "abstract" modifier for interfaces.
                 & ((cf.accessFlags & ACC_INTERFACE) != 0 ? ~ACC_ABSTRACT : 0xffff)
+
                 // Suppress redundant "final" modifier for enums.
                 & ((cf.accessFlags & ACC_ENUM) != 0 ? ~ACC_FINAL : 0xffff)
             ))
