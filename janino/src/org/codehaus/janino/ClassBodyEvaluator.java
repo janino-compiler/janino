@@ -219,10 +219,7 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
         Java.CompilationUnit compilationUnit = this.makeCompilationUnit(parser);
 
         // Add class declaration.
-        Java.ClassDeclaration cd = this.addPackageMemberClassDeclaration(
-            scanner.location(),
-            compilationUnit
-        );
+        Java.ClassDeclaration cd = this.addPackageMemberClassDeclaration(scanner.location(), compilationUnit);
 
         // Parse class body declarations (member declarations) until EOF.
         while (!parser.peekEof()) {
