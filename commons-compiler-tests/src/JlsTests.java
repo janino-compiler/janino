@@ -365,14 +365,29 @@ class JlsTests extends JaninoTestSuite {
     }
 
     @Test public void
-    test_9_7__Annotations() throws Exception {
-        this.assertClassBodyCookable("class C { @Override public String toString() { return \"foo!\"; } }");
-        this.assertClassBodyCookable("class C {           public String toString() { return \"foo!\"; } }");
-        this.assertClassBodyUncookable("class C { @Override public String meth1()    { return \"foo!\"; } }");
-        this.assertClassBodyCookable("class C {           public String meth1()    { return \"foo!\"; } }");
-
-        this.assertClassBodyCookable("interface I extends Runnable { @Override void run(); }");
-        this.assertClassBodyCookable("interface I extends Runnable {           void run(); }");
+    test_8_4_8_3__Requirements_in_Overriding_and_Hiding() throws Exception {
+        this.assertClassBodyExecutable(
+            ""
+            + "public static interface FirstCloneable extends Cloneable {\n"
+            + "   public Object clone() throws CloneNotSupportedException;\n"
+            + "}\n"
+            + "\n"
+            + "public static interface SecondCloneable extends Cloneable {\n"
+            + "    public SecondCloneable clone() throws CloneNotSupportedException;\n"
+            + "}\n"
+            + "\n"
+            + "public static abstract class BaseClone implements FirstCloneable, SecondCloneable {\n"
+            + "    @Override public BaseClone clone() throws CloneNotSupportedException {\n"
+            + "        return (BaseClone)super.clone();\n"
+            + "    }\n"
+            + "}\n"
+            + "\n"
+            + "public static class KidClone extends BaseClone {}\n"
+            + "\n"
+            + "public static void main() throws Exception {\n"
+            + "    new KidClone().clone();\n"
+            + "}\n"
+        );
     }
 
     @Test public void
