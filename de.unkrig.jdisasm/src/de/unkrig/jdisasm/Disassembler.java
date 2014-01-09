@@ -1459,8 +1459,8 @@ class Disassembler {
         + "104 imul\n"
         + "116 ineg\n"
         + "193 instanceof      class2\n"
-        // For Java 7; see
-        // http://cr.openjdk.java.net/~jrose/pres/indy-javadoc-mlvm/java/lang/invoke/package-summary.html
+// For Java 7; see
+// http://cr.openjdk.java.net/~jrose/pres/indy-javadoc-mlvm/java/lang/invoke/package-summary.html
 //        + "186 invokedynamic   invokedynamic2\n"
         + "185 invokeinterface interfacemethodref2\n"
         + "183 invokespecial   methodref2\n"
