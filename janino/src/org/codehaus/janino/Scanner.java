@@ -114,8 +114,8 @@ class Scanner {
     Scanner(File file, String optionalEncoding) throws CompileException, IOException {
         this(
             file.getAbsolutePath(),    // optionalFileName
-            new FileInputStream(file), // fis
-            optionalEncoding                   // optionalEncoding
+            new FileInputStream(file), // is
+            optionalEncoding           // optionalEncoding
         );
     }
 

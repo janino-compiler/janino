@@ -1949,9 +1949,9 @@ class Parser {
 
         while (this.peek(new String[] { "==", "!=" }) != -1) {
             a = new BinaryOperation(
-                this.location(),                                // location
+                this.location(),                                              // location
                 a.toRvalueOrCompileException(),                               // lhs
-                this.read().value,                              // op
+                this.read().value,                                            // op
                 this.parseRelationalExpression().toRvalueOrCompileException() // rhs
             );
         }
@@ -1982,9 +1982,9 @@ class Parser {
             } else
             if (this.peek(new String[] { "<", ">", "<=", ">=" }) != -1) {
                 a = new BinaryOperation(
-                    this.location(),                           // location
+                    this.location(),                                         // location
                     a.toRvalueOrCompileException(),                          // lhs
-                    this.read().value,                         // op
+                    this.read().value,                                       // op
                     this.parseShiftExpression().toRvalueOrCompileException() // rhs
                 );
             } else {
@@ -2005,9 +2005,9 @@ class Parser {
 
         while (this.peek(new String[] { "<<", ">>", ">>>" }) != -1) {
             a = new BinaryOperation(
-                this.location(),                              // location
+                this.location(),                                            // location
                 a.toRvalueOrCompileException(),                             // lhs
-                this.read().value,                            // op
+                this.read().value,                                          // op
                 this.parseAdditiveExpression().toRvalueOrCompileException() // rhs
             );
         }
@@ -2026,9 +2026,9 @@ class Parser {
 
         while (this.peek(new String[] { "+", "-" }) != -1) {
             a = new BinaryOperation(
-                this.location(),                                    // location
+                this.location(),                                                  // location
                 a.toRvalueOrCompileException(),                                   // lhs
-                this.read().value,                                  // op
+                this.read().value,                                                // op
                 this.parseMultiplicativeExpression().toRvalueOrCompileException() // rhs
             );
         }
@@ -2047,9 +2047,9 @@ class Parser {
 
         while (this.peek(new String[] { "*", "/", "%" }) != -1) {
             a = new BinaryOperation(
-                this.location(),                           // location
+                this.location(),                                         // location
                 a.toRvalueOrCompileException(),                          // lhs
-                this.read().value,                         // op
+                this.read().value,                                       // op
                 this.parseUnaryExpression().toRvalueOrCompileException() // rhs
             );
         }
@@ -2070,16 +2070,16 @@ class Parser {
     parseUnaryExpression() throws CompileException, IOException {
         if (this.peek(new String[] { "++", "--" }) != -1) {
             return new Crement(
-                this.location(),                           // location
-                this.read().value,                         // operator
+                this.location(),                                         // location
+                this.read().value,                                       // operator
                 this.parseUnaryExpression().toLvalueOrCompileException() // operand
             );
         }
 
         if (this.peek(new String[] { "+", "-", "~", "!" }) != -1) {
             return new UnaryOperation(
-                this.location(),                           // location
-                this.read().value,                         // operator
+                this.location(),                                         // location
+                this.read().value,                                       // operator
                 this.parseUnaryExpression().toRvalueOrCompileException() // operand
             );
         }
@@ -2092,9 +2092,9 @@ class Parser {
 
         while (this.peek(new String[] { "++", "--" }) != -1) {
             a = new Crement(
-                this.location(),   // location
-                a.toLvalueOrCompileException(),  // operand
-                this.read().value  // operator
+                this.location(),                // location
+                a.toLvalueOrCompileException(), // operand
+                this.read().value               // operator
             );
         }
 
@@ -2149,8 +2149,8 @@ class Parser {
                 this.read(")");
                 for (int i = 0; i < brackets; ++i) type = new ArrayType(type);
                 return new Cast(
-                    this.location(),                           // location
-                    type,                                      // targetType
+                    this.location(),                                         // location
+                    type,                                                    // targetType
                     this.parseUnaryExpression().toRvalueOrCompileException() // value
                 );
             }
@@ -2165,7 +2165,7 @@ class Parser {
             ) {
                 // '(' Expression ')' UnaryExpression
                 return new Cast(
-                    this.location(),                           // location
+                    this.location(),                                         // location
                     a.toTypeOrCompileException(),                            // targetType
                     this.parseUnaryExpression().toRvalueOrCompileException() // value
                 );
@@ -2369,25 +2369,25 @@ class Parser {
                 if (this.peek("(")) {
                     // '.' Identifier Arguments
                     return new MethodInvocation(
-                        this.location(),      // location
-                        atom.toRvalueOrCompileException(),  // optionalTarget
-                        identifier,           // methodName
-                        this.parseArguments() // arguments
+                        this.location(),                   // location
+                        atom.toRvalueOrCompileException(), // optionalTarget
+                        identifier,                        // methodName
+                        this.parseArguments()              // arguments
                     );
                 }
                 // '.' Identifier
                 return new FieldAccessExpression(
-                    this.location(),     // location
+                    this.location(),                   // location
                     atom.toRvalueOrCompileException(), // lhs
-                    identifier           // fieldName
+                    identifier                         // fieldName
                 );
             }
             if (this.peekRead("this")) {
                 // '.' 'this'
                 Location location = this.location();
                 return new QualifiedThisReference(
-                    location,                // location
-                    atom.toTypeOrCompileException()        // qualification
+                    location,                       // location
+                    atom.toTypeOrCompileException() // qualification
                 );
             }
             if (this.peekRead("super")) {
@@ -2397,9 +2397,9 @@ class Parser {
                     // '.' 'super' Arguments
                     // Qualified superclass constructor invocation (JLS7 8.7.1.2.2) (LHS is an Rvalue)
                     return new SuperConstructorInvocation(
-                        location,             // location
-                        atom.toRvalueOrCompileException(),  // optionalQualification
-                        this.parseArguments() // arguments
+                        location,                          // location
+                        atom.toRvalueOrCompileException(), // optionalQualification
+                        this.parseArguments()              // arguments
                     );
                 }
                 this.read(".");
@@ -2416,9 +2416,9 @@ class Parser {
                     // '.' 'super' '.' Identifier
                     // Qualified superclass field access (JLS7 15.11.2) (LHS is an Rvalue).
                     return new SuperclassFieldAccessExpression(
-                        location,          // location
+                        location,                        // location
                         atom.toTypeOrCompileException(), // optionalQualification
-                        identifier         // fieldName
+                        identifier                       // fieldName
                     );
                 }
             }
@@ -2469,9 +2469,9 @@ class Parser {
             Rvalue   index    = this.parseExpression().toRvalueOrCompileException();
             this.read("]");
             return new ArrayAccessExpression(
-                location,            // location
+                location,                          // location
                 atom.toRvalueOrCompileException(), // lhs
-                index                // index
+                index                              // index
             );
         }
         throw this.compileException("Unexpected token '" + this.peek().value + "' in selector");

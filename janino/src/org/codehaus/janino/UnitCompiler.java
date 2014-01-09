@@ -429,6 +429,7 @@ class UnitCompiler {
         );
 
         // TODO: Add annotations with retention != SOURCE.
+
 //        for (int i = 0; i < cd.getModifiersAndAnnotations().annotations.length; i++) {
 //            Annotation a = cd.getModifiersAndAnnotations().annotations[i];
 //            assert false : "Class '" + iClass + "' has annotation '" + a + "'";
@@ -447,9 +448,9 @@ class UnitCompiler {
             );
             assert cd.getAnnotations().length == 0 : "NYI";
             cf.addInnerClassesAttributeEntry(new ClassFile.InnerClassesAttribute.Entry(
-                innerClassInfoIndex,                      // innerClassInfoIndex
-                (short) 0,                                // outerClassInfoIndex
-                innerNameIndex,                           // innerNameIndex
+                innerClassInfoIndex,  // innerClassInfoIndex
+                (short) 0,            // outerClassInfoIndex
+                innerNameIndex,       // innerNameIndex
                 cd.getModifierFlags() // innerClassAccessFlags
             ));
         } else
@@ -461,9 +462,9 @@ class UnitCompiler {
             short innerNameIndex = cf.addConstantUtf8Info(((MemberTypeDeclaration) cd).getName());
             assert cd.getAnnotations().length == 0 : "NYI";
             cf.addInnerClassesAttributeEntry(new ClassFile.InnerClassesAttribute.Entry(
-                innerClassInfoIndex,                      // innerClassInfoIndex
-                outerClassInfoIndex,                      // outerClassInfoIndex
-                innerNameIndex,                           // innerNameIndex
+                innerClassInfoIndex,  // innerClassInfoIndex
+                outerClassInfoIndex,  // outerClassInfoIndex
+                innerNameIndex,       // innerNameIndex
                 cd.getModifierFlags() // innerClassAccessFlags
             ));
         }
@@ -692,6 +693,7 @@ class UnitCompiler {
         );
 
         // TODO: Add annotations with retention != SOURCE.
+
 //        for (int i = 0; i < id.getModifiersAndAnnotations().annotations.length; i++) {
 //            Annotation a = id.getModifiersAndAnnotations().annotations[i];
 //            assert false : "Interface '" + iClass + "' has annotation '" + a + "'";
@@ -788,9 +790,9 @@ class UnitCompiler {
             short innerNameIndex      = cf.addConstantUtf8Info(((MemberTypeDeclaration) td).getName());
             assert td.getAnnotations().length == 0;
             cf.addInnerClassesAttributeEntry(new ClassFile.InnerClassesAttribute.Entry(
-                innerClassInfoIndex,                      // innerClassInfoIndex
-                outerClassInfoIndex,                      // outerClassInfoIndex
-                innerNameIndex,                           // innerNameIndex
+                innerClassInfoIndex,  // innerClassInfoIndex
+                outerClassInfoIndex,  // outerClassInfoIndex
+                innerNameIndex,       // innerNameIndex
                 td.getModifierFlags() // innerClassAccessFlags
             ));
         }
@@ -3811,7 +3813,7 @@ class UnitCompiler {
                     );
                 }
                 this.referenceThis(
-                    mi,              // l
+                    mi,                          // locatable
                     scopeClassDeclaration,       // declaringClass
                     scopeTbd,                    // declaringTypeBodyDeclaration
                     iMethod.getDeclaringIClass() // targetIClass
@@ -3951,11 +3953,11 @@ class UnitCompiler {
         this.load(scmi, this.resolve(fd.getDeclaringType()), 0);
 
         // Evaluate method parameters.
-         //TODO: adjust args
+        // TODO: adjust args
         IClass[] parameterTypes = iMethod.getParameterTypes();
         for (int i = 0; i < scmi.arguments.length; ++i) {
             this.assignmentConversion(
-                scmi,                        // l
+                scmi,                                    // locatable
                 this.compileGetValue(scmi.arguments[i]), // sourceType
                 parameterTypes[i],                       // targetType
                 this.getConstantValue(scmi.arguments[i]) // optionalConstantValue
@@ -4061,10 +4063,10 @@ class UnitCompiler {
 
         // Determine most specific constructor.
         IClass.IConstructor iConstructor = (IClass.IConstructor) this.findMostSpecificIInvocable(
-            naci, // l
-            iConstructors,    // iInvocables
-            naci.arguments,   // arguments
-            acd               // contextScope
+            naci,           // locatable
+            iConstructors,  // iInvocables
+            naci.arguments, // arguments
+            acd             // contextScope
         );
 
         IClass[] pts = iConstructor.getParameterTypes();
@@ -4152,6 +4154,7 @@ class UnitCompiler {
 
             // adjust if needed
             // TODO: not doing this now because we don't need vararg-annonymous class (yet)
+
 //            Rvalue[] adjustedArgs = null;
 //            final int paramsTypeLength = iConstructor.getParameterTypes().length;
 //            if (argsNeedAdjusting[0]) {
@@ -4175,8 +4178,8 @@ class UnitCompiler {
                 oei.setEnclosingBlockStatement(naci.getEnclosingBlockStatement());
             }
             this.invokeConstructor(
-                naci,                             // l
-                naci.getEnclosingBlockStatement(),    // scope
+                naci,                                         // locatable
+                naci.getEnclosingBlockStatement(),            // scope
                 oei,                                          // optionalEnclosingInstance
                 this.resolve(naci.anonymousClassDeclaration), // targetClass
                 arguments2                                    // arguments
@@ -4201,13 +4204,13 @@ class UnitCompiler {
         for (int i = 0; i < na.dimExprs.length; ++i) {
             IClass dimType = this.compileGetValue(na.dimExprs[i]);
             if (dimType != IClass.INT && this.unaryNumericPromotion(
-                na, // l
-                dimType         // type
+                na,     // locatable
+                dimType // type
             ) != IClass.INT) this.compileError("Invalid array size expression type", na.getLocation());
         }
 
         return this.newArray(
-            na,       // l
+            na,                   // locatable
             na.dimExprs.length,   // dimExprCount
             na.dims,              // dims
             this.getType(na.type) // componentType
@@ -4228,10 +4231,10 @@ class UnitCompiler {
 
         this.pushConstant(ai, new Integer(ai.values.length));
         this.newArray(
-            ai, // l
-            1,              // dimExprCount,
-            0,              // dims,
-            ct              // componentType
+            ai, // locatable
+            1,  // dimExprCount
+            0,  // dims
+            ct  // componentType
         );
 
         for (int i = 0; i < ai.values.length; ++i) {
@@ -4241,7 +4244,7 @@ class UnitCompiler {
             if (aiorv instanceof Rvalue) {
                 Rvalue rv = (Rvalue) aiorv;
                 this.assignmentConversion(
-                    ai,           // l
+                    ai,                       // locatable
                     this.compileGetValue(rv), // sourceType
                     ct,                       // targetType
                     this.getConstantValue(rv) // optionalConstantValue
@@ -6257,9 +6260,9 @@ class UnitCompiler {
                 if (operandOnStack) {
                     this.writeOpcode(locatable, Opcode.INVOKEVIRTUAL);
                     this.writeConstantMethodrefInfo(
-                        Descriptor.JAVA_LANG_STRING,                                // classFD
-                        "concat",                                         // methodName
-                        "(" + Descriptor.JAVA_LANG_STRING + ")" + Descriptor.JAVA_LANG_STRING // methodMD
+                        Descriptor.JAVA_LANG_STRING,                                          // classFd
+                        "concat",                                                             // methodName
+                        "(" + Descriptor.JAVA_LANG_STRING + ")" + Descriptor.JAVA_LANG_STRING // methodMd
                     );
                 } else
                 {
@@ -6287,9 +6290,9 @@ class UnitCompiler {
         }
         this.writeOpcode(locatable, Opcode.INVOKESPECIAL);
         this.writeConstantMethodrefInfo(
-            Descriptor.JAVA_LANG_STRINGBUILDER,                                 // classFD
-            "<init>",                                        // methodName
-            "(" + Descriptor.JAVA_LANG_STRING + ")" + Descriptor.VOID // methodMD
+            Descriptor.JAVA_LANG_STRINGBUILDER,                       // classFd
+            "<init>",                                                 // methodName
+            "(" + Descriptor.JAVA_LANG_STRING + ")" + Descriptor.VOID // methodMd
         );
         while (it.hasNext()) {
             ((Compilable) it.next()).compile();
@@ -6297,18 +6300,18 @@ class UnitCompiler {
             // "StringBuilder.append(b)":
             this.writeOpcode(locatable, Opcode.INVOKEVIRTUAL);
             this.writeConstantMethodrefInfo(
-                Descriptor.JAVA_LANG_STRINGBUILDER,                                // classFD
-                "append",                                       // methodName
-                "(" + Descriptor.JAVA_LANG_STRING + ")" + Descriptor.JAVA_LANG_STRINGBUILDER
+                Descriptor.JAVA_LANG_STRINGBUILDER,                                          // classFD
+                "append",                                                                    // methodName
+                "(" + Descriptor.JAVA_LANG_STRING + ")" + Descriptor.JAVA_LANG_STRINGBUILDER // methodMd
             );
         }
 
         // "StringBuilder.toString()":
         this.writeOpcode(locatable, Opcode.INVOKEVIRTUAL);
         this.writeConstantMethodrefInfo(
-            Descriptor.JAVA_LANG_STRINGBUILDER,         // classFD
-            "toString",              // methodName
-            "()" + Descriptor.JAVA_LANG_STRING // methodMD
+            Descriptor.JAVA_LANG_STRINGBUILDER, // classFd
+            "toString",                         // methodName
+            "()" + Descriptor.JAVA_LANG_STRING  // methodMd
         );
         return this.iClassLoader.JAVA_LANG_STRING;
     }
@@ -6321,9 +6324,9 @@ class UnitCompiler {
     stringConversion(Locatable locatable, IClass sourceType) {
         this.writeOpcode(locatable, Opcode.INVOKESTATIC);
         this.writeConstantMethodrefInfo(
-            Descriptor.JAVA_LANG_STRING, // classFD
-            "valueOf",         // methodName
-            "(" + ((           // methodMD
+            Descriptor.JAVA_LANG_STRING, // classFd
+            "valueOf",                   // methodName
+            "(" + ((                     // methodMd
                 sourceType == IClass.BOOLEAN
                 || sourceType == IClass.CHAR
                 || sourceType == IClass.LONG
@@ -6535,7 +6538,7 @@ class UnitCompiler {
 
         for (int i = 0; i < arguments.length; ++i) {
             this.assignmentConversion(
-                locatable,                                  // l
+                locatable,                          // locatable
                 this.compileGetValue(arguments[i]), // sourceType
                 parameterTypes[i],                  // targetType
                 this.getConstantValue(arguments[i]) // optionalConstantValue
@@ -7346,8 +7349,8 @@ class UnitCompiler {
         }
         IClass  superclass = this.resolve(declaringClass).getSuperclass();
         IMethod iMethod    = this.findIMethod(
-            superclass, // targetType
-            superclassMethodInvocation        // invocation
+            superclass,                // targetType
+            superclassMethodInvocation // invocation
         );
         if (iMethod == null) {
             this.compileError(
@@ -7761,8 +7764,8 @@ class UnitCompiler {
         IClass[] thrownExceptions = iMethod.getThrownExceptions();
         for (int i = 0; i < thrownExceptions.length; ++i) {
             this.checkThrownException(
-                in,                         // l
-                thrownExceptions[i],                    // type
+                in,                             // locatable
+                thrownExceptions[i],            // type
                 in.getEnclosingBlockStatement() // scope
             );
         }
@@ -8607,10 +8610,10 @@ class UnitCompiler {
         // try {
         // return Class.forName(className);
         MethodInvocation mi = new MethodInvocation(
-            loc,                                          // location
+            loc,                                                    // location
             new SimpleType(loc, this.iClassLoader.JAVA_LANG_CLASS), // optionalTarget
-            "forName",                                    // methodName
-            new Rvalue[] {                                // arguments
+            "forName",                                              // methodName
+            new Rvalue[] {                                          // arguments
                 new AmbiguousName(loc, new String[] { "className" })
             }
         );
@@ -8639,7 +8642,7 @@ class UnitCompiler {
         Block b = new Block(loc);
         // throw new NoClassDefFoundError(e.getMessage());
         b.addStatement(new ThrowStatement(loc, new NewClassInstance(
-            loc,                                              // location
+            loc,                                             // location
             (Rvalue) null,                                   // optionalQualification
             new SimpleType(loc, noClassDefFoundErrorIClass), // type
             new Rvalue[] {                                   // arguments
@@ -8793,9 +8796,9 @@ class UnitCompiler {
                 this.writeLdc(locatable, this.addConstantStringInfo(ss[i]));
                 this.writeOpcode(locatable, Opcode.INVOKEVIRTUAL);
                 this.writeConstantMethodrefInfo(
-                    Descriptor.JAVA_LANG_STRING,                                // classFD
-                    "concat",                                         // methodName
-                    "(" + Descriptor.JAVA_LANG_STRING + ")" + Descriptor.JAVA_LANG_STRING // methodMD
+                    Descriptor.JAVA_LANG_STRING,                                          // classFd
+                    "concat",                                                             // methodName
+                    "(" + Descriptor.JAVA_LANG_STRING + ")" + Descriptor.JAVA_LANG_STRING // methodMd
                 );
             }
             return this.iClassLoader.JAVA_LANG_STRING;
@@ -9174,7 +9177,7 @@ class UnitCompiler {
         if (
             !this.tryIdentityConversion(sourceType, targetType)
             && !this.tryWideningPrimitiveConversion(
-                locatable,          // locatable
+                locatable,  // locatable
                 sourceType, // sourceType
                 targetType  // targetType
             )
@@ -9646,9 +9649,9 @@ class UnitCompiler {
         }
         this.writeOpcode(locatable, Opcode.INVOKESPECIAL);
         this.writeConstantMethodrefInfo(
-            targetType.getDescriptor(),                               // classFD
-            "<init>",                                                 // methodName
-            '(' + sourceType.getDescriptor() + ')' + Descriptor.VOID // methodMD
+            targetType.getDescriptor(),                              // classFd
+            "<init>",                                                // methodName
+            '(' + sourceType.getDescriptor() + ')' + Descriptor.VOID // methodMd
         );
     }
 
@@ -9776,7 +9779,7 @@ class UnitCompiler {
     private void
     store(Locatable locatable, IClass valueType, LocalVariable localVariable) {
         this.store(
-            locatable,                           // l
+            locatable,                   // locatable
             localVariable.type,          // lvType
             localVariable.getSlotIndex() // lvIndex
         );

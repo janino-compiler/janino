@@ -1586,7 +1586,7 @@ class Java {
                 modifiers,                               // modifiers
                 new BasicType(location, BasicType.VOID), // type
                 "<init>",                                // name
-                parameters,                        // formalParameters
+                parameters,                              // parameters
                 thrownExceptions,                        // thrownExceptions
                 statements                               // optionalStatements
             );

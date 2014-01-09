@@ -163,6 +163,7 @@ class ClassFile {
 
         // Explicitly DO NOT CHECK the major and minor version of the CLASS file, because SUN increase them with each
         // platform update while keeping them backwards compatible.
+
 //        if (!ClassFile.isRecognizedVersion(this.majorVersion, this.minorVersion)) {
 //            throw new ClassFormatError(
 //                "Unrecognized class file format version "
@@ -426,7 +427,7 @@ class ClassFile {
             ));
         }
         FieldInfo fi = new FieldInfo(
-            modifiers,                           // modifierAndAnnotations
+            modifiers,                             // modifierAndAnnotations
             this.addConstantUtf8Info(fieldName),   // nameIndex
             this.addConstantUtf8Info(fieldTypeFd), // descriptorIndex
             attributes                             // attributes
@@ -1682,8 +1683,8 @@ class ClassFile {
 
         private static AttributeInfo
         loadBody(short attributeNameIndex, DataInputStream dis) throws IOException {
-            short   localVariableTableLength = dis.readShort();
-            Entry[] lvtes                    = new Entry[localVariableTableLength];   // local_variable_table_length
+            short   localVariableTableLength = dis.readShort(); // local_variable_table_length
+            Entry[] lvtes                    = new Entry[localVariableTableLength];
             for (short i = 0; i < localVariableTableLength; ++i) { // local_variable_table
                 lvtes[i] = new LocalVariableTableAttribute.Entry(
                     dis.readShort(), // startPC
