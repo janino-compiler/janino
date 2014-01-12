@@ -108,6 +108,8 @@ class Visitor {
         void visitIfStatement(Java.IfStatement is);
         /** Invoked by {@link Java.ForStatement#accept(Visitor.BlockStatementVisitor)} */
         void visitForStatement(Java.ForStatement fs);
+        /** Invoked by {@link Java.ForeachStatement#accept(Visitor.BlockStatementVisitor)} */
+        void visitForEachStatement(Java.ForEachStatement forEachStatement);
         /** Invoked by {@link Java.WhileStatement#accept(Visitor.BlockStatementVisitor)} */
         void visitWhileStatement(Java.WhileStatement ws);
         /** Invoked by {@link Java.TryStatement#accept(Visitor.BlockStatementVisitor)} */
@@ -261,5 +263,7 @@ class Visitor {
         void visitWildcard(Java.Wildcard w);
         /** Invoked by {@link Java.ReferenceType#accept(Visitor.TypeArgumentVisitor)} */
         void visitReferenceType(Java.ReferenceType rt);
+        /** Invoked by {@link Java.ArrayType#accept(Visitor.TypeArgumentVisitor)} */
+        void visitArrayType(Java.ArrayType arrayType);
     }
 }
