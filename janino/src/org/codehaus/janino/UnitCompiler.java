@@ -96,6 +96,7 @@ import org.codehaus.janino.Java.FieldAccess;
 import org.codehaus.janino.Java.FieldAccessExpression;
 import org.codehaus.janino.Java.FieldDeclaration;
 import org.codehaus.janino.Java.FloatingPointLiteral;
+import org.codehaus.janino.Java.ForEachStatement;
 import org.codehaus.janino.Java.ForStatement;
 import org.codehaus.janino.Java.FunctionDeclarator;
 import org.codehaus.janino.Java.IfStatement;
@@ -954,6 +955,7 @@ class UnitCompiler {
             @Override public void visitExpressionStatement(ExpressionStatement es)                               { try { res[0] = UnitCompiler.this.compile2(es);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
             @Override public void visitIfStatement(IfStatement is)                                               { try { res[0] = UnitCompiler.this.compile2(is);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
             @Override public void visitForStatement(ForStatement fs)                                             { try { res[0] = UnitCompiler.this.compile2(fs);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public void visitForEachStatement(ForEachStatement fes)                                    { try { res[0] = UnitCompiler.this.compile2(fes);  } catch (CompileException e) { throw new UncheckedCompileException(e); } }
             @Override public void visitWhileStatement(WhileStatement ws)                                         { try { res[0] = UnitCompiler.this.compile2(ws);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
             @Override public void visitTryStatement(TryStatement ts)                                             { try { res[0] = UnitCompiler.this.compile2(ts);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
             @Override public void visitSwitchStatement(SwitchStatement ss)                                       { try { res[0] = UnitCompiler.this.compile2(ss);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
@@ -1123,6 +1125,12 @@ class UnitCompiler {
             fs.whereToBreak = null;
         }
 
+        return true;
+    }
+
+    private boolean
+    compile2(ForEachStatement fes) throws CompileException {
+        this.compileError("Advanced FOR statement NYI");
         return true;
     }
 
@@ -2313,15 +2321,16 @@ class UnitCompiler {
             @Override public void visitLocalClassDeclarationStatement(LocalClassDeclarationStatement lcds) { UnitCompiler.buildLocalVariableMap(lcds, localVars); }
 
             // more complicated statements with specialized handlers, but don't add new variables in this scope
-            @Override public void visitBlock(Block b)                                  { try { UnitCompiler.this.buildLocalVariableMap(b,  localVars); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitDoStatement(DoStatement ds)                     { try { UnitCompiler.this.buildLocalVariableMap(ds, localVars); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitForStatement(ForStatement fs)                   { try { UnitCompiler.this.buildLocalVariableMap(fs, localVars); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitIfStatement(IfStatement is)                     { try { UnitCompiler.this.buildLocalVariableMap(is, localVars); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitInitializer(Initializer i)                      { try { UnitCompiler.this.buildLocalVariableMap(i,  localVars); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitSwitchStatement(SwitchStatement ss)             { try { UnitCompiler.this.buildLocalVariableMap(ss, localVars); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitSynchronizedStatement(SynchronizedStatement ss) { try { UnitCompiler.this.buildLocalVariableMap(ss, localVars); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitTryStatement(TryStatement ts)                   { try { UnitCompiler.this.buildLocalVariableMap(ts, localVars); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitWhileStatement(WhileStatement ws)               { try { UnitCompiler.this.buildLocalVariableMap(ws, localVars); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public void visitBlock(Block b)                                  { try { UnitCompiler.this.buildLocalVariableMap(b,   localVars); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public void visitDoStatement(DoStatement ds)                     { try { UnitCompiler.this.buildLocalVariableMap(ds,  localVars); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public void visitForStatement(ForStatement fs)                   { try { UnitCompiler.this.buildLocalVariableMap(fs,  localVars); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public void visitForEachStatement(ForEachStatement fes)          { try { UnitCompiler.this.buildLocalVariableMap(fes, localVars); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public void visitIfStatement(IfStatement is)                     { try { UnitCompiler.this.buildLocalVariableMap(is,  localVars); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public void visitInitializer(Initializer i)                      { try { UnitCompiler.this.buildLocalVariableMap(i,   localVars); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public void visitSwitchStatement(SwitchStatement ss)             { try { UnitCompiler.this.buildLocalVariableMap(ss,  localVars); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public void visitSynchronizedStatement(SynchronizedStatement ss) { try { UnitCompiler.this.buildLocalVariableMap(ss,  localVars); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public void visitTryStatement(TryStatement ts)                   { try { UnitCompiler.this.buildLocalVariableMap(ts,  localVars); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public void visitWhileStatement(WhileStatement ws)               { try { UnitCompiler.this.buildLocalVariableMap(ws,  localVars); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
 
             // more complicated statements with specialized handlers, that can add variables in this scope
             @Override public void visitLabeledStatement(LabeledStatement ls)                                     { try { resVars[0] = UnitCompiler.this.buildLocalVariableMap(ls,   localVars); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
@@ -2371,6 +2380,12 @@ class UnitCompiler {
         }
         fs.localVariables = inner;
         this.buildLocalVariableMap(fs.body, inner);
+    }
+
+    private void
+    buildLocalVariableMap(ForEachStatement fes, final Map/*<String, LocalVariable>*/ localVars)
+    throws CompileException {
+        this.compileError("Enhanced FOR statement NYI");
     }
 
     private void
@@ -4813,26 +4828,27 @@ class UnitCompiler {
             // CHECKSTYLE LineLengthCheck:OFF
             @Override public void visitInitializer(Initializer i)                                                { try { res[0] = UnitCompiler.this.generatesCode2(i);  } catch (CompileException e) { throw new UncheckedCompileException(e); } }
             @Override public void visitFieldDeclaration(FieldDeclaration fd)                                     { try { res[0] = UnitCompiler.this.generatesCode2(fd); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitLabeledStatement(LabeledStatement ls)                                     {       res[0] = UnitCompiler.this.generatesCode2(ls);                                                    }
+            @Override public void visitLabeledStatement(LabeledStatement ls)                                     {       res[0] = UnitCompiler.this.generatesCode2(ls);                                                                          }
             @Override public void visitBlock(Block b)                                                            { try { res[0] = UnitCompiler.this.generatesCode2(b);  } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitExpressionStatement(ExpressionStatement es)                               {       res[0] = UnitCompiler.this.generatesCode2(es);                                                    }
-            @Override public void visitIfStatement(IfStatement is)                                               {       res[0] = UnitCompiler.this.generatesCode2(is);                                                    }
-            @Override public void visitForStatement(ForStatement fs)                                             {       res[0] = UnitCompiler.this.generatesCode2(fs);                                                    }
-            @Override public void visitWhileStatement(WhileStatement ws)                                         {       res[0] = UnitCompiler.this.generatesCode2(ws);                                                    }
-            @Override public void visitTryStatement(TryStatement ts)                                             {       res[0] = UnitCompiler.this.generatesCode2(ts);                                                    }
-            @Override public void visitSwitchStatement(SwitchStatement ss)                                       {       res[0] = UnitCompiler.this.generatesCode2(ss);                                                    }
-            @Override public void visitSynchronizedStatement(SynchronizedStatement ss)                           {       res[0] = UnitCompiler.this.generatesCode2(ss);                                                    }
-            @Override public void visitDoStatement(DoStatement ds)                                               {       res[0] = UnitCompiler.this.generatesCode2(ds);                                                    }
-            @Override public void visitLocalVariableDeclarationStatement(LocalVariableDeclarationStatement lvds) {       res[0] = UnitCompiler.this.generatesCode2(lvds);                                                  }
-            @Override public void visitReturnStatement(ReturnStatement rs)                                       {       res[0] = UnitCompiler.this.generatesCode2(rs);                                                    }
-            @Override public void visitThrowStatement(ThrowStatement ts)                                         {       res[0] = UnitCompiler.this.generatesCode2(ts);                                                    }
-            @Override public void visitBreakStatement(BreakStatement bs)                                         {       res[0] = UnitCompiler.this.generatesCode2(bs);                                                    }
-            @Override public void visitContinueStatement(ContinueStatement cs)                                   {       res[0] = UnitCompiler.this.generatesCode2(cs);                                                    }
-            @Override public void visitAssertStatement(AssertStatement as)                                       {       res[0] = UnitCompiler.this.generatesCode2(as);                                                    }
-            @Override public void visitEmptyStatement(EmptyStatement es)                                         {       res[0] = UnitCompiler.this.generatesCode2(es);                                                    }
-            @Override public void visitLocalClassDeclarationStatement(LocalClassDeclarationStatement lcds)       {       res[0] = UnitCompiler.this.generatesCode2(lcds);                                                  }
-            @Override public void visitAlternateConstructorInvocation(AlternateConstructorInvocation aci)        {       res[0] = UnitCompiler.this.generatesCode2(aci);                                                   }
-            @Override public void visitSuperConstructorInvocation(SuperConstructorInvocation sci)                {       res[0] = UnitCompiler.this.generatesCode2(sci);                                                   }
+            @Override public void visitExpressionStatement(ExpressionStatement es)                               {       res[0] = UnitCompiler.this.generatesCode2(es);                                                                          }
+            @Override public void visitIfStatement(IfStatement is)                                               {       res[0] = UnitCompiler.this.generatesCode2(is);                                                                          }
+            @Override public void visitForStatement(ForStatement fs)                                             {       res[0] = UnitCompiler.this.generatesCode2(fs);                                                                          }
+            @Override public void visitForEachStatement(ForEachStatement fes)                                    {       res[0] = UnitCompiler.this.generatesCode2(fes);                                                                         }
+            @Override public void visitWhileStatement(WhileStatement ws)                                         {       res[0] = UnitCompiler.this.generatesCode2(ws);                                                                          }
+            @Override public void visitTryStatement(TryStatement ts)                                             {       res[0] = UnitCompiler.this.generatesCode2(ts);                                                                          }
+            @Override public void visitSwitchStatement(SwitchStatement ss)                                       {       res[0] = UnitCompiler.this.generatesCode2(ss);                                                                          }
+            @Override public void visitSynchronizedStatement(SynchronizedStatement ss)                           {       res[0] = UnitCompiler.this.generatesCode2(ss);                                                                          }
+            @Override public void visitDoStatement(DoStatement ds)                                               {       res[0] = UnitCompiler.this.generatesCode2(ds);                                                                          }
+            @Override public void visitLocalVariableDeclarationStatement(LocalVariableDeclarationStatement lvds) {       res[0] = UnitCompiler.this.generatesCode2(lvds);                                                                        }
+            @Override public void visitReturnStatement(ReturnStatement rs)                                       {       res[0] = UnitCompiler.this.generatesCode2(rs);                                                                          }
+            @Override public void visitThrowStatement(ThrowStatement ts)                                         {       res[0] = UnitCompiler.this.generatesCode2(ts);                                                                          }
+            @Override public void visitBreakStatement(BreakStatement bs)                                         {       res[0] = UnitCompiler.this.generatesCode2(bs);                                                                          }
+            @Override public void visitContinueStatement(ContinueStatement cs)                                   {       res[0] = UnitCompiler.this.generatesCode2(cs);                                                                          }
+            @Override public void visitAssertStatement(AssertStatement as)                                       {       res[0] = UnitCompiler.this.generatesCode2(as);                                                                          }
+            @Override public void visitEmptyStatement(EmptyStatement es)                                         {       res[0] = UnitCompiler.this.generatesCode2(es);                                                                          }
+            @Override public void visitLocalClassDeclarationStatement(LocalClassDeclarationStatement lcds)       {       res[0] = UnitCompiler.this.generatesCode2(lcds);                                                                        }
+            @Override public void visitAlternateConstructorInvocation(AlternateConstructorInvocation aci)        {       res[0] = UnitCompiler.this.generatesCode2(aci);                                                                         }
+            @Override public void visitSuperConstructorInvocation(SuperConstructorInvocation sci)                {       res[0] = UnitCompiler.this.generatesCode2(sci);                                                                         }
             // CHECKSTYLE LineLengthCheck:ON
         };
         try {
@@ -4903,6 +4919,7 @@ class UnitCompiler {
             @Override public void visitExpressionStatement(ExpressionStatement es)                               { UnitCompiler.this.leave2(es,   optionalStackValueType); }
             @Override public void visitIfStatement(IfStatement is)                                               { UnitCompiler.this.leave2(is,   optionalStackValueType); }
             @Override public void visitForStatement(ForStatement fs)                                             { UnitCompiler.this.leave2(fs,   optionalStackValueType); }
+            @Override public void visitForEachStatement(ForEachStatement fes)                                    { UnitCompiler.this.leave2(fes,  optionalStackValueType); }
             @Override public void visitWhileStatement(WhileStatement ws)                                         { UnitCompiler.this.leave2(ws,   optionalStackValueType); }
             @Override public void visitTryStatement(TryStatement ts)                                             { UnitCompiler.this.leave2(ts,   optionalStackValueType); }
             @Override public void visitSwitchStatement(SwitchStatement ss)                                       { UnitCompiler.this.leave2(ss,   optionalStackValueType); }
