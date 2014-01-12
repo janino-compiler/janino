@@ -2120,6 +2120,41 @@ class Java {
         accept(Visitor.BlockStatementVisitor visitor) { visitor.visitForStatement(this); }
     }
 
+    /** Representation of a JLS7 14.14.2 'enhanced FOR statement'. */
+    public static final
+    class ForEachStatement extends ContinuableStatement {
+
+        /** The optional 'formal parameter' part of the 'enhanced FOR statement'. */
+        public final FunctionDeclarator.FormalParameter formalParameter;
+
+        /** The optional 'expression' part of the 'enhanced FOR statement'. */
+        public final Rvalue expression;
+
+        /** The body of the 'enhanced FOR statement'. */
+        public final BlockStatement body;
+
+        public
+        ForEachStatement(
+            Location                           location,
+            FunctionDeclarator.FormalParameter formalParameter,
+            Rvalue                             expression,
+            BlockStatement                     body
+        ) {
+            super(location);
+            this.formalParameter = formalParameter;
+            (this.expression = expression).setEnclosingBlockStatement(this);
+            (this.body = body).setEnclosingScope(this);
+        }
+
+        @Override public String
+        toString() { return "for (... : ...) ..."; }
+
+        // Compile time members:
+
+        @Override public void
+        accept(Visitor.BlockStatementVisitor visitor) { visitor.visitForEachStatement(this); }
+    }
+
     /** Representation of the JLS7 14.2 WHILE statement. */
     public static final
     class WhileStatement extends ContinuableStatement {
@@ -2846,7 +2881,7 @@ class Java {
 
     /** Representation of a JLS7 10.1 'array type'. */
     public static final
-    class ArrayType extends Type {
+    class ArrayType extends Type implements TypeArgument {
 
         /** The (declared) type of the array's components. */
         public final Type componentType;
@@ -2871,6 +2906,9 @@ class Java {
 
         @Override public void
         accept(Visitor.TypeVisitor visitor) { visitor.visitArrayType(this); }
+
+        @Override public void
+        accept(TypeArgumentVisitor visitor) { visitor.visitArrayType(this); }
     }
 
     /**
