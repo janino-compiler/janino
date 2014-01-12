@@ -26,16 +26,12 @@
 
 package org.codehaus.janino.util;
 
-import org.codehaus.janino.*;
-import org.codehaus.janino.Java.ElementValueArrayInitializer;
-import org.codehaus.janino.Java.FunctionDeclarator;
-import org.codehaus.janino.Java.MarkerAnnotation;
-import org.codehaus.janino.Java.NormalAnnotation;
-import org.codehaus.janino.Java.SimpleConstant;
-import org.codehaus.janino.Java.SingleElementAnnotation;
-import org.codehaus.janino.Visitor.ComprehensiveVisitor;
+import java.util.Iterator;
 
-import java.util.*;
+import org.codehaus.janino.JaninoRuntimeException;
+import org.codehaus.janino.Java;
+import org.codehaus.janino.Visitor;
+import org.codehaus.janino.Visitor.ComprehensiveVisitor;
 
 /**
  * This class traverses the subnodes of an AST. Derived classes may override
@@ -73,6 +69,7 @@ class Traverser {
         @Override public void visitExpressionStatement(Java.ExpressionStatement es)                                            { Traverser.this.traverseExpressionStatement(es); }
         @Override public void visitIfStatement(Java.IfStatement is)                                                            { Traverser.this.traverseIfStatement(is); }
         @Override public void visitForStatement(Java.ForStatement fs)                                                          { Traverser.this.traverseForStatement(fs); }
+        @Override public void visitForEachStatement(Java.ForEachStatement fes)                                                 { Traverser.this.traverseForEachStatement(fes); }
         @Override public void visitWhileStatement(Java.WhileStatement ws)                                                      { Traverser.this.traverseWhileStatement(ws); }
         @Override public void visitTryStatement(Java.TryStatement ts)                                                          { Traverser.this.traverseTryStatement(ts); }
         @Override public void visitSwitchStatement(Java.SwitchStatement ss)                                                    { Traverser.this.traverseSwitchStatement(ss); }
@@ -104,7 +101,7 @@ class Traverser {
         @Override public void visitCharacterLiteral(Java.CharacterLiteral cl)                                                  { Traverser.this.traverseCharacterLiteral(cl); }
         @Override public void visitStringLiteral(Java.StringLiteral sl)                                                        { Traverser.this.traverseStringLiteral(sl); }
         @Override public void visitNullLiteral(Java.NullLiteral nl)                                                            { Traverser.this.traverseNullLiteral(nl); }
-        @Override public void visitSimpleConstant(SimpleConstant sl)                                                           { Traverser.this.traverseSimpleLiteral(sl); }
+        @Override public void visitSimpleConstant(Java.SimpleConstant sl)                                                      { Traverser.this.traverseSimpleLiteral(sl); }
         @Override public void visitNewAnonymousClassInstance(Java.NewAnonymousClassInstance naci)                              { Traverser.this.traverseNewAnonymousClassInstance(naci); }
         @Override public void visitNewArray(Java.NewArray na)                                                                  { Traverser.this.traverseNewArray(na); }
         @Override public void visitNewInitializedArray(Java.NewInitializedArray nia)                                           { Traverser.this.traverseNewInitializedArray(nia); }
@@ -126,10 +123,10 @@ class Traverser {
         @Override public void visitSuperclassFieldAccessExpression(Java.SuperclassFieldAccessExpression scfae)                 { Traverser.this.traverseSuperclassFieldAccessExpression(scfae); }
         @Override public void visitLocalVariableAccess(Java.LocalVariableAccess lva)                                           { Traverser.this.traverseLocalVariableAccess(lva); }
         @Override public void visitParenthesizedExpression(Java.ParenthesizedExpression pe)                                    { Traverser.this.traverseParenthesizedExpression(pe); }
-        @Override public void visitMarkerAnnotation(MarkerAnnotation ma)                                                       { Traverser.this.traverseMarkerAnnotation(ma); }
-        @Override public void visitNormalAnnotation(NormalAnnotation na)                                                       { Traverser.this.traverseNormalAnnotation(na); }
-        @Override public void visitSingleElementAnnotation(SingleElementAnnotation sea)                                        { Traverser.this.traverseSingleElementAnnotation(sea); }
-        @Override public void visitElementValueArrayInitializer(ElementValueArrayInitializer evai)                             { Traverser.this.traverseElementValueArrayInitializer(evai); }
+        @Override public void visitMarkerAnnotation(Java.MarkerAnnotation ma)                                                  { Traverser.this.traverseMarkerAnnotation(ma); }
+        @Override public void visitNormalAnnotation(Java.NormalAnnotation na)                                                  { Traverser.this.traverseNormalAnnotation(na); }
+        @Override public void visitSingleElementAnnotation(Java.SingleElementAnnotation sea)                                   { Traverser.this.traverseSingleElementAnnotation(sea); }
+        @Override public void visitElementValueArrayInitializer(Java.ElementValueArrayInitializer evai)                        { Traverser.this.traverseElementValueArrayInitializer(evai); }
         // CHECKSTYLE LineLengthCheck:ON
     };
 
@@ -291,6 +288,15 @@ class Traverser {
         }
         fs.body.accept(this.cv);
         this.traverseContinuableStatement(fs);
+    }
+
+    /** @see Traverser */
+    public void
+    traverseForEachStatement(Java.ForEachStatement fes) {
+        this.traverseFormalParameter(fes.formalParameter);
+        fes.expression.accept((Visitor.RvalueVisitor) this.cv);
+        fes.body.accept(this.cv);
+        this.traverseContinuableStatement(fes);
     }
 
     /** @see Traverser */
@@ -665,7 +671,7 @@ class Traverser {
 
     /** @see Traverser */
     public void
-    traverseElementValueArrayInitializer(ElementValueArrayInitializer evai) {
+    traverseElementValueArrayInitializer(Java.ElementValueArrayInitializer evai) {
         for (int i = 0; i < evai.elementValues.length; i++) {
             evai.elementValues[i].accept(this.cv);
         }
@@ -678,7 +684,7 @@ class Traverser {
 
     /** @see Traverser */
     public void
-    traverseSingleElementAnnotation(SingleElementAnnotation sea) {
+    traverseSingleElementAnnotation(Java.SingleElementAnnotation sea) {
         sea.type.accept(this.cv);
         sea.elementValue.accept(this.cv);
         this.traverseAnnotation(sea);
@@ -700,7 +706,7 @@ class Traverser {
 
     /** @see Traverser */
     public void
-    traverseMarkerAnnotation(MarkerAnnotation ma) {
+    traverseMarkerAnnotation(Java.MarkerAnnotation ma) {
         ma.type.accept(this.cv);
         this.traverseAnnotation(ma);
     }
@@ -764,10 +770,16 @@ class Traverser {
 
     /** @see Traverser */
     public void
-    traverseFormalParameters(FunctionDeclarator.FormalParameters formalParameters) {
+    traverseFormalParameters(Java.FunctionDeclarator.FormalParameters formalParameters) {
         for (int i = 0; i < formalParameters.parameters.length; ++i) {
-            formalParameters.parameters[i].type.accept((Visitor.TypeVisitor) this.cv);
+            this.traverseFormalParameter(formalParameters.parameters[i]);
         }
+    }
+
+    /** @see Traverser */
+    public void
+    traverseFormalParameter(Java.FunctionDeclarator.FormalParameter formalParameter) {
+        formalParameter.type.accept((Visitor.TypeVisitor) this.cv);
     }
 
     /** @see Traverser */
