@@ -41,6 +41,7 @@ import org.codehaus.janino.Java.ArrayAccessExpression;
 import org.codehaus.janino.Java.ArrayInitializer;
 import org.codehaus.janino.Java.ArrayInitializerOrRvalue;
 import org.codehaus.janino.Java.ArrayType;
+import org.codehaus.janino.Java.AssertStatement;
 import org.codehaus.janino.Java.Assignment;
 import org.codehaus.janino.Java.Atom;
 import org.codehaus.janino.Java.BasicType;
@@ -69,6 +70,7 @@ import org.codehaus.janino.Java.ExpressionStatement;
 import org.codehaus.janino.Java.FieldAccessExpression;
 import org.codehaus.janino.Java.FieldDeclaration;
 import org.codehaus.janino.Java.FloatingPointLiteral;
+import org.codehaus.janino.Java.ForEachStatement;
 import org.codehaus.janino.Java.ForStatement;
 import org.codehaus.janino.Java.FunctionDeclarator;
 import org.codehaus.janino.Java.IfStatement;
@@ -118,6 +120,7 @@ import org.codehaus.janino.Java.TypeArgument;
 import org.codehaus.janino.Java.UnaryOperation;
 import org.codehaus.janino.Java.VariableDeclarator;
 import org.codehaus.janino.Java.WhileStatement;
+import org.codehaus.janino.Java.Wildcard;
 import org.codehaus.janino.Scanner.Token;
 import org.codehaus.janino.util.enumerator.Enumerator;
 
@@ -857,10 +860,10 @@ class Parser {
                 if (this.peekIdentifier() != null) {
                     Type variableType = a.toTypeOrCompileException();
                     s = new LocalVariableDeclarationStatement(
-                        a.getLocation(),                     // location
-                        new Java.Modifiers(Mod.NONE),        // modifiers
-                        variableType,                        // type
-                        this.parseLocalVariableDeclarators() // variableDeclarators
+                        a.getLocation(),                // location
+                        new Java.Modifiers(Mod.NONE),   // modifiers
+                        variableType,                   // type
+                        this.parseVariableDeclarators() // variableDeclarators
                     );
                     this.read(";");
                 } else {
@@ -1081,12 +1084,12 @@ class Parser {
     /**
      * <pre>
      *   BlockStatement := { Identifier ':' } (
-     *     ( Modifiers Type | ModifiersOpt BasicType ) LocalVariableDeclarators ';' |
+     *     ( Modifiers Type | ModifiersOpt BasicType ) VariableDeclarators ';' |
      *     'class' ... |
      *     Statement |
-     *     'final' Type LocalVariableDeclarators ';' |
+     *     'final' Type VariableDeclarators ';' |
      *     Expression ';' |
-     *     Expression LocalVariableDeclarators ';'   (1)
+     *     Expression VariableDeclarators ';'   (1)
      *   )
      * </pre>
      *
@@ -1123,15 +1126,15 @@ class Parser {
             return new LocalClassDeclarationStatement(lcd);
         }
 
-        // 'final' Type LocalVariableDeclarators ';'
+        // 'final' Type VariableDeclarators ';'
         if (this.peekRead("final")) {
             Location                          location     = this.location();
             Type                              variableType = this.parseType();
             LocalVariableDeclarationStatement lvds         = new LocalVariableDeclarationStatement(
-                location,                            // location
-                new Java.Modifiers(Mod.FINAL),       // modifiers
-                variableType,                        // type
-                this.parseLocalVariableDeclarators() // variableDeclarators
+                location,                       // location
+                new Java.Modifiers(Mod.FINAL),  // modifiers
+                variableType,                   // type
+                this.parseVariableDeclarators() // variableDeclarators
             );
             this.read(";");
             return lvds;
@@ -1146,13 +1149,13 @@ class Parser {
             return new ExpressionStatement(a.toRvalueOrCompileException());
         }
 
-        // Expression LocalVariableDeclarators ';'
+        // Expression VariableDeclarators ';'
         Type                              variableType = a.toTypeOrCompileException();
         LocalVariableDeclarationStatement lvds         = new LocalVariableDeclarationStatement(
-            a.getLocation(),                     // location
-            new Java.Modifiers(Mod.NONE),        // modifiers
-            variableType,                        // type
-            this.parseLocalVariableDeclarators() // variableDeclarators
+            a.getLocation(),                // location
+            new Java.Modifiers(Mod.NONE),   // modifiers
+            variableType,                   // type
+            this.parseVariableDeclarators() // variableDeclarators
         );
         this.read(";");
         return lvds;
@@ -1160,11 +1163,11 @@ class Parser {
 
     /**
      * <pre>
-     *   LocalVariableDeclarators := VariableDeclarator { ',' VariableDeclarator }
+     *   VariableDeclarators := VariableDeclarator { ',' VariableDeclarator }
      * </pre>
      */
     public VariableDeclarator[]
-    parseLocalVariableDeclarators() throws CompileException, IOException {
+    parseVariableDeclarators() throws CompileException, IOException {
         List/*<VariableDeclarator>*/ l = new ArrayList();
         do {
             VariableDeclarator vd = this.parseVariableDeclarator();
@@ -1325,6 +1328,7 @@ class Parser {
      *       [ Expression ] ';'
      *       [ ExpressionList ]
      *     ')' Statement
+     *     | 'for' '(' Type identifier ':' Expression ')' Statement
      * </pre>
      */
     public Statement
@@ -1335,7 +1339,27 @@ class Parser {
         this.read("(");
 
         BlockStatement optionalInit = null;
-        if (!this.peek(";")) optionalInit = this.parseForInit();
+        if (!this.peek(";")) {
+            optionalInit = this.parseForInit();
+            if (optionalInit instanceof LocalVariableDeclarationStatement) {
+                LocalVariableDeclarationStatement lvds = (LocalVariableDeclarationStatement) optionalInit;
+                if (lvds.variableDeclarators.length == 1 && this.peekRead(":")) {
+                    Rvalue expression = this.parseExpression().toRvalue();
+                    this.read(")");
+                    return new ForEachStatement(
+                        location,                               // location
+                        new FunctionDeclarator.FormalParameter( // formalParameter
+                            location,
+                            false,
+                            lvds.type,
+                            lvds.variableDeclarators[0].name
+                        ),
+                        expression,                             // expression
+                        this.parseStatement()                   // body
+                    );
+                }
+            }
+        }
 
         this.read(";");
 
@@ -1361,8 +1385,8 @@ class Parser {
     /**
      * <pre>
      *   ForInit :=
-     *     Modifiers Type LocalVariableDeclarators |
-     *     ModifiersOpt BasicType LocalVariableDeclarators |
+     *     Modifiers Type VariableDeclarators |
+     *     ModifiersOpt BasicType VariableDeclarators |
      *     Expression (
      *       LocalVariableDeclarators |       (1)
      *       { ',' Expression }
@@ -1382,23 +1406,23 @@ class Parser {
             Modifiers modifiers    = this.parseModifiers();
             Type      variableType = this.parseType();
             return new LocalVariableDeclarationStatement(
-                this.location(),                     // location
-                modifiers,                           // modifiers
-                variableType,                        // type
-                this.parseLocalVariableDeclarators() // variableDeclarators
+                this.location(),                // location
+                modifiers,                      // modifiers
+                variableType,                   // type
+                this.parseVariableDeclarators() // variableDeclarators
             );
         }
 
         Atom a = this.parseExpression();
 
-        // Expression LocalVariableDeclarators
+        // Expression VariableDeclarators
         if (this.peekIdentifier() != null) {
             Type variableType = a.toTypeOrCompileException();
             return new LocalVariableDeclarationStatement(
-                a.getLocation(),                     // location
-                new Java.Modifiers(Mod.NONE),        // modifiers
-                variableType,                        // type
-                this.parseLocalVariableDeclarators() // variableDeclarators
+                a.getLocation(),                // location
+                new Java.Modifiers(Mod.NONE),   // modifiers
+                variableType,                   // type
+                this.parseVariableDeclarators() // variableDeclarators
             );
         }
 
@@ -1662,7 +1686,7 @@ class Parser {
         Rvalue optionalExpression2 = this.peekRead(":") ? this.parseExpression().toRvalueOrCompileException() : null;
         this.read(";");
 
-        return new Java.AssertStatement(loc, expression1, optionalExpression2);
+        return new AssertStatement(loc, expression1, optionalExpression2);
     }
 
     /**
@@ -1731,7 +1755,7 @@ class Parser {
      *   TypeArguments := '<' TypeArgument { ',' TypeArgument } '>'
      * </pre>
      */
-    private Java.TypeArgument[]
+    private TypeArgument[]
     parseTypeArgumentsOpt() throws CompileException, IOException {
         if (!this.peekRead("<")) return null;
         List/*<TypeArgument>*/ typeArguments = new ArrayList();
@@ -1740,27 +1764,35 @@ class Parser {
             this.read(",");
             typeArguments.add(this.parseTypeArgument());
         }
-        return (TypeArgument[]) typeArguments.toArray(new Java.TypeArgument[typeArguments.size()]);
+        return (TypeArgument[]) typeArguments.toArray(new TypeArgument[typeArguments.size()]);
     }
 
     /**
      * <pre>
      *   TypeArgument :=
-     *     ReferenceType
+     *     ReferenceType { '[' ']' }    &lt;= The optional brackets are mising in JLS7, section 18!?
      *     | '?' extends ReferenceType
      *     | '?' super ReferenceType
      * </pre>
      */
-    private Java.TypeArgument
+    private TypeArgument
     parseTypeArgument() throws CompileException, IOException {
         if (this.peekRead("?")) {
             return (
-                this.peekRead("extends") ? new Java.Wildcard(Java.Wildcard.BOUNDS_EXTENDS, this.parseReferenceType()) :
-                this.peekRead("super") ? new Java.Wildcard(Java.Wildcard.BOUNDS_SUPER, this.parseReferenceType()) :
-                new Java.Wildcard()
+                this.peekRead("extends") ? new Wildcard(Wildcard.BOUNDS_EXTENDS, this.parseReferenceType()) :
+                this.peekRead("super")   ? new Wildcard(Wildcard.BOUNDS_SUPER,   this.parseReferenceType()) :
+                new Wildcard()
             );
         }
-        return this.parseReferenceType();
+
+        ReferenceType rt = this.parseReferenceType();
+
+        int i = this.parseBracketsOpt();
+        if (i == 0) return rt;
+
+        ArrayType at = new ArrayType(rt);
+        for (i--; i > 0; i--) at = new ArrayType(at);
+        return at;
     }
 
     /**
@@ -1962,8 +1994,9 @@ class Parser {
      * <pre>
      *   RelationalExpression :=
      *     ShiftExpression {
-     *       ( ( '<' | '>' | '<=' | '>=' ) ShiftExpression ) |
-     *       ( 'instanceof' ReferenceType )
+     *       'instanceof' ReferenceType
+     *       | '<' ShiftExpression [ { ',' TypeArgument } '>' ]
+     *       | ( '>' | '<=' | '>=' ) ShiftExpression
      *     }
      * </pre>
      */
@@ -1981,11 +2014,37 @@ class Parser {
                 );
             } else
             if (this.peek(new String[] { "<", ">", "<=", ">=" }) != -1) {
+                String op  = this.read().value;
+                Atom   rhs = this.parseShiftExpression();
+
+                if ("<".equals(op) && this.peek(new String[] { ">", "," }) != -1) {
+
+                    // '<' ShiftExpression { ',' TypeArgument } '>'
+                    Type t = rhs.toTypeOrCompileException();
+
+                    TypeArgument ta;
+                    if (t instanceof ArrayType)     { ta = (ArrayType)     t; } else
+                    if (t instanceof ReferenceType) { ta = (ReferenceType) t; } else
+                    {
+                        throw this.compileException("'" + t + "' is not a valid type argument");
+                    }
+
+                    List/*<TypeArgument>*/ typeArguments = new ArrayList();
+                    typeArguments.add(ta);
+                    while (this.read(new String[] { ">", "," }) == 1) typeArguments.add(this.parseTypeArgument());
+
+                    new ReferenceType(
+                        this.location(),
+                        this.parseQualifiedIdentifier(),
+                        (TypeArgument[]) typeArguments.toArray(new TypeArgument[typeArguments.size()])
+                    );
+                }
+
                 a = new BinaryOperation(
-                    this.location(),                                         // location
-                    a.toRvalueOrCompileException(),                          // lhs
-                    this.read().value,                                       // op
-                    this.parseShiftExpression().toRvalueOrCompileException() // rhs
+                    this.location(),                 // location
+                    a.toRvalueOrCompileException(),  // lhs
+                    op,                              // op
+                    rhs.toRvalueOrCompileException() // rhs
                 );
             } else {
                 return a;
@@ -2660,6 +2719,7 @@ class Parser {
     /**
      * Verifies that the value of the next token equals one of the {@code expected}, and consumes the token.
      *
+     * @return                  The index of the consumed token within {@code expected}
      * @throws CompileException The value of the next token does not equal any of the {@code expected} (this includes
      *                          the case where the scanner is at end-of-input)
      */
