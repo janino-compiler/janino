@@ -2455,6 +2455,7 @@ class UnitCompiler {
         vars.putAll(localVars);
         LocalVariable elementLv = this.getLocalVariable(fes.currentElement, fes.currentElement.variableDeclarators[0]);
         vars.put(fes.currentElement.variableDeclarators[0].name, elementLv);
+        fes.localVariables = vars;
         this.buildLocalVariableMap(fes.body, vars);
     }
 
