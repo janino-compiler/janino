@@ -69,7 +69,7 @@ class JaninoTestSuite {
     assertExpressionCookable(String expression) throws Exception {
         new ExpressionTest(expression).assertCookable();
     }
-    
+
     /**
      * Asserts that the given {@code expression} can be cooked and evaluated. (Its value is ignored.)
      */
@@ -77,7 +77,7 @@ class JaninoTestSuite {
     assertExpressionEvaluatable(String expression) throws Exception {
         new ExpressionTest(expression).assertExecutable();
     }
-    
+
     /**
      * Asserts that the given {@code expression} evaluates to TRUE.
      */
@@ -98,11 +98,13 @@ class JaninoTestSuite {
             this.expressionEvaluator = JaninoTestSuite.this.compilerFactory.newExpressionEvaluator();
         }
 
+        @Override
         protected void
         compile() throws Exception {
             this.expressionEvaluator.cook(this.expression);
         }
 
+        @Override
         protected Object
         execute() throws Exception {
             return this.expressionEvaluator.evaluate(new Object[0]);
@@ -118,13 +120,22 @@ class JaninoTestSuite {
     }
 
     /**
+     * Asserts that cooking the given {@code script} issues an error, and the error message contains the
+     * {@code messageInfix}.
+     */
+    protected void
+    assertScriptUncookable(String script, String messageInfix) throws Exception {
+        new ScriptTest(script).assertUncookable(messageInfix);
+    }
+
+    /**
      * Asserts that the given {@code script} can be cooked without errors and warnings.
      */
     protected void
     assertScriptCookable(String script) throws Exception {
         new ScriptTest(script).assertCookable();
     }
-    
+
     /**
      * Asserts that the given {@code script} can be cooked and executed. (Its return value is ignored.)
      */
@@ -132,7 +143,7 @@ class JaninoTestSuite {
     assertScriptExecutable(String script) throws Exception {
         new ScriptTest(script).assertExecutable();
     }
-    
+
     /**
      * Asserts that the given {@code script} returns TRUE.
      */
@@ -165,11 +176,13 @@ class JaninoTestSuite {
             super.assertResultTrue();
         }
 
+        @Override
         protected void
         compile() throws Exception {
             this.scriptEvaluator.cook(this.script);
         }
 
+        @Override
         protected Object
         execute() throws Exception {
             return this.scriptEvaluator.evaluate(new Object[0]);
@@ -191,7 +204,7 @@ class JaninoTestSuite {
     assertClassBodyCookable(String classBody) throws Exception {
         new ClassBodyTest(classBody).assertCookable();
     }
-    
+
     /**
      * Asserts that the given {@code classBody} declares a method '{@code public static }<i>any-type</i> {@code
      * main()}' which executes and terminates normally. (The return value is ignored.)
@@ -200,7 +213,7 @@ class JaninoTestSuite {
     assertClassBodyExecutable(String classBody) throws Exception {
         new ClassBodyTest(classBody).assertExecutable();
     }
-    
+
     /**
      * Asserts that the given {@code classBody} declares a method {@code public static boolean main()} which executes
      * and returns {@code true}.
@@ -209,7 +222,7 @@ class JaninoTestSuite {
     assertClassBodyMainReturnsTrue(String classBody) throws Exception {
         new ClassBodyTest(classBody).assertResultTrue();
     }
-    
+
     private
     class ClassBodyTest extends CompileAndExecuteTest {
         private final String              classBody;
@@ -221,11 +234,13 @@ class JaninoTestSuite {
             this.classBodyEvaluator = JaninoTestSuite.this.compilerFactory.newClassBodyEvaluator();
         }
 
+        @Override
         protected void
         compile() throws Exception {
             this.classBodyEvaluator.cook(this.classBody);
         }
 
+        @Override
         protected Object
         execute() throws Exception {
 
@@ -262,7 +277,7 @@ class JaninoTestSuite {
     assertCompilationUnitMainExecutable(String compilationUnit, String className) throws Exception {
         new SimpleCompilerTest(compilationUnit, className).assertExecutable();
     }
-    
+
     /**
      * Asserts that the given {@code compilationUnit} can be cooked by the {@link ISimpleCompiler} and its {@code public
      * static boolean }<i>className</i>{@code .main()} method returns TRUE.
@@ -286,11 +301,13 @@ class JaninoTestSuite {
             this.simpleCompiler  = JaninoTestSuite.this.compilerFactory.newSimpleCompiler();
         }
 
+        @Override
         protected void
         compile() throws Exception {
             this.simpleCompiler.cook(this.compilationUnit);
         }
 
+        @Override
         protected Object
         execute() throws Exception {
             return (
@@ -326,7 +343,7 @@ class JaninoTestSuite {
         protected abstract Object execute() throws Exception;
 
         /**
-         * Assert that cooking issues an error with the given {@code message}.
+         * Assert that cooking issues an error.
          */
         protected void
         assertUncookable() throws Exception {
@@ -337,7 +354,23 @@ class JaninoTestSuite {
             }
             fail("Should have issued an error, but compiled successfully");
         }
-        
+
+        /**
+         * Assert that cooking issues an error, and the error message contains the {@code messageInfix}.
+         */
+        protected void
+        assertUncookable(String messageInfix) throws Exception {
+            try {
+                this.compile();
+            } catch (CompileException ce) {
+                if (!ce.getMessage().contains(messageInfix)) {
+                    fail("Error message '" + ce.getMessage() + "' does not contain'" + messageInfix + "'");
+                }
+                return;
+            }
+            fail("Should have issued an error, but compiled successfully");
+        }
+
         /**
          * Assert that cooking completes without errors.
          */
@@ -354,7 +387,7 @@ class JaninoTestSuite {
             this.compile();
             this.execute();
         }
-        
+
         /**
          * Assert that cooking completes normally and executing returns TRUE.
          */

@@ -353,7 +353,7 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor {
     @Override public void
     visitForEachStatement(Java.ForEachStatement fes) {
         this.pw.print("for (");
-        this.unparseFormalParameter(fes.formalParameter, false);
+        this.unparseBlockStatement(fes.currentElement);
         this.pw.print(" : ");
         this.unparse(fes.expression);
         this.pw.print(") ");

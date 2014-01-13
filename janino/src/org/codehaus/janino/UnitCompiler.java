@@ -1130,7 +1130,73 @@ class UnitCompiler {
 
     private boolean
     compile2(ForEachStatement fes) throws CompileException {
-        this.compileError("Advanced FOR statement NYI");
+        IClass expressionType = this.getType(fes.expression);
+        if (expressionType.isArray()) {
+            this.codeContext.saveLocalVariables();
+            try {
+
+                // Allocate the local variable for the current element.
+                this.compile2(fes.currentElement);
+                LocalVariable elementLv = this.getLocalVariable(
+                    fes.currentElement,
+                    fes.currentElement.variableDeclarators[0]
+                );
+
+                // Compile initializer.
+                this.compileGetValue(fes.expression);
+                short expressionLv = this.codeContext.allocateLocalVariable((short) 1);
+                this.store(fes.expression, expressionType, expressionLv);
+
+                this.pushConstant(fes, 0);
+                LocalVariable indexLv = new LocalVariable(false, IClass.INT);
+                indexLv.setSlot(this.codeContext.allocateLocalVariable((short) 1, null, indexLv.type));
+                this.store(fes, IClass.INT, indexLv);
+
+                CodeContext.Offset toCondition = this.codeContext.new Offset();
+                this.writeBranch(fes, Opcode.GOTO, toCondition);
+
+                // Compile the body.
+                fes.whereToContinue = null;
+                CodeContext.Offset bodyOffset = this.codeContext.newOffset();
+
+                this.load(fes, expressionType, expressionLv);
+                this.load(fes, indexLv);
+                this.writeOpcode(fes, Opcode.IALOAD + UnitCompiler.ilfdabcs(expressionType.getComponentType()));
+                this.assignmentConversion(fes.currentElement, expressionType.getComponentType(), elementLv.type, null);
+                this.store(fes, elementLv.type, elementLv);
+
+                boolean bodyCcn = this.compile(fes.body);
+                if (fes.whereToContinue != null) fes.whereToContinue.set();
+
+                // Compile update.
+                if (!bodyCcn && fes.whereToContinue == null) {
+                    this.warning("FUUR", "For update is unreachable", fes.getLocation());
+                } else {
+                    this.crement(fes, indexLv, "++");
+                }
+                fes.whereToContinue = null;
+
+                // Compile condition.
+                toCondition.set();
+                this.load(fes, indexLv);
+                this.load(fes, expressionType, expressionLv);
+                this.writeOpcode(fes, Opcode.ARRAYLENGTH);
+                this.writeBranch(fes, Opcode.IF_ICMPLT, bodyOffset);
+            } finally {
+                this.codeContext.restoreLocalVariables();
+            }
+
+            if (fes.whereToBreak != null) {
+                fes.whereToBreak.set();
+                fes.whereToBreak = null;
+            }
+        } else
+        if (this.iClassLoader.JAVA_LANG_ITERABLE.isAssignableFrom(expressionType)) {
+            this.compileError("Advanced FOR statement NYI for java.lang.Iterable type");
+        } else
+        {
+            this.compileError("Cannot iterate over '" + expressionType + "'");
+        }
         return true;
     }
 
@@ -2385,7 +2451,11 @@ class UnitCompiler {
     private void
     buildLocalVariableMap(ForEachStatement fes, final Map/*<String, LocalVariable>*/ localVars)
     throws CompileException {
-        this.compileError("Enhanced FOR statement NYI");
+        Map/*<String, LocalVariable>*/ vars = new HashMap();
+        vars.putAll(localVars);
+        LocalVariable elementLv = this.getLocalVariable(fes.currentElement, fes.currentElement.variableDeclarators[0]);
+        vars.put(fes.currentElement.variableDeclarators[0].name, elementLv);
+        this.buildLocalVariableMap(fes.body, vars);
     }
 
     private void
@@ -2492,6 +2562,7 @@ class UnitCompiler {
     getLocalVariable(FunctionDeclarator.FormalParameter parameter, boolean isVariableArityParameter)
     throws CompileException {
         if (parameter.localVariable == null) {
+            assert parameter.type != null;
             IClass parameterType = this.getType(parameter.type);
             if (isVariableArityParameter) {
                 parameterType = parameterType.getArrayIClass(this.iClassLoader.JAVA_LANG_OBJECT);
@@ -3614,15 +3685,20 @@ class UnitCompiler {
 
     private void
     compileLocalVariableCrement(Crement c, LocalVariable lv) {
+        this.crement(c, lv, c.operator);
+    }
+
+    private void
+    crement(Locatable locatable, LocalVariable lv, String operator) {
         if (lv.getSlotIndex() > 255) {
-            this.writeOpcode(c, Opcode.WIDE);
-            this.writeOpcode(c, Opcode.IINC);
+            this.writeOpcode(locatable, Opcode.WIDE);
+            this.writeOpcode(locatable, Opcode.IINC);
             this.writeShort(lv.getSlotIndex());
-            this.writeShort(c.operator == "++" ? 1 : -1); // SUPPRESS CHECKSTYLE StringLiteralEquality
+            this.writeShort(operator == "++" ? 1 : -1); // SUPPRESS CHECKSTYLE StringLiteralEquality
         } else {
-            this.writeOpcode(c, Opcode.IINC);
+            this.writeOpcode(locatable, Opcode.IINC);
             this.writeByte(lv.getSlotIndex());
-            this.writeByte(c.operator == "++" ? 1 : -1); // SUPPRESS CHECKSTYLE StringLiteralEquality
+            this.writeByte(operator == "++" ? 1 : -1); // SUPPRESS CHECKSTYLE StringLiteralEquality
         }
     }
 

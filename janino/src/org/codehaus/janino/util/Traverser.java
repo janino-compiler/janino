@@ -293,7 +293,7 @@ class Traverser {
     /** @see Traverser */
     public void
     traverseForEachStatement(Java.ForEachStatement fes) {
-        this.traverseFormalParameter(fes.formalParameter);
+        this.traverseLocalVariableDeclarationStatement(fes.currentElement);
         fes.expression.accept((Visitor.RvalueVisitor) this.cv);
         fes.body.accept(this.cv);
         this.traverseContinuableStatement(fes);

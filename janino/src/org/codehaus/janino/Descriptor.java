@@ -296,6 +296,8 @@ class Descriptor {
     public static final String JAVA_LANG_CLONEABLE = "Ljava/lang/Cloneable;";
     /** The field descriptor for the annotation {@link Override}. */
     public static final String JAVA_LANG_OVERRIDE = "Ljava/lang/Override;";
+    /** The field descriptor for the interface {@link java.lang.Iterable}. */
+    public static final String JAVA_LANG_ITERABLE = "Ljava/io/Serializable;";
     /** The field descriptor for the interface {@link java.io.Serializable}. */
     public static final String JAVA_IO_SERIALIZABLE = "Ljava/io/Serializable;";
     /** The field descriptor for the wrapper class {@link AssertionError}. */

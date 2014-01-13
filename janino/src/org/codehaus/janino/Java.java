@@ -2124,10 +2124,10 @@ class Java {
     public static final
     class ForEachStatement extends ContinuableStatement {
 
-        /** The optional 'formal parameter' part of the 'enhanced FOR statement'. */
-        public final FunctionDeclarator.FormalParameter formalParameter;
+        /** The 'current element local variable declaration' part of the 'enhanced FOR statement'. */
+        public final LocalVariableDeclarationStatement currentElement;
 
-        /** The optional 'expression' part of the 'enhanced FOR statement'. */
+        /** The 'expression' part of the 'enhanced FOR statement'. */
         public final Rvalue expression;
 
         /** The body of the 'enhanced FOR statement'. */
@@ -2135,15 +2135,15 @@ class Java {
 
         public
         ForEachStatement(
-            Location                           location,
-            FunctionDeclarator.FormalParameter formalParameter,
-            Rvalue                             expression,
-            BlockStatement                     body
+            Location                          location,
+            LocalVariableDeclarationStatement currentElement,
+            Rvalue                            expression,
+            BlockStatement                    body
         ) {
             super(location);
-            this.formalParameter = formalParameter;
-            (this.expression = expression).setEnclosingBlockStatement(this);
-            (this.body = body).setEnclosingScope(this);
+            (this.currentElement = currentElement).setEnclosingScope(this);
+            (this.expression     = expression).setEnclosingBlockStatement(this);
+            (this.body           = body).setEnclosingScope(this);
         }
 
         @Override public String

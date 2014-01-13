@@ -1328,8 +1328,10 @@ class Parser {
      *       [ Expression ] ';'
      *       [ ExpressionList ]
      *     ')' Statement
-     *     | 'for' '(' Type identifier ':' Expression ')' Statement
+     *     | 'for' '(' LocalVariableDeclarationStatement ':' Expression ')' Statement   (1)
      * </pre>
+     * (1) The LocalVariableDeclarationStatement must have exactly ONE variable declarator, and that MUST NOT have an
+     * initializer.
      */
     public Statement
     parseForStatement() throws CompileException, IOException {
@@ -1343,19 +1345,20 @@ class Parser {
             optionalInit = this.parseForInit();
             if (optionalInit instanceof LocalVariableDeclarationStatement) {
                 LocalVariableDeclarationStatement lvds = (LocalVariableDeclarationStatement) optionalInit;
-                if (lvds.variableDeclarators.length == 1 && this.peekRead(":")) {
+                if (
+                    lvds.variableDeclarators.length == 1
+                    && lvds.variableDeclarators[0].optionalInitializer == null
+                    && this.peekRead(":")
+                ) {
+
+                    // 'for' '(' LocalVariableDeclarationStatement ':' Expression ')' Statement
                     Rvalue expression = this.parseExpression().toRvalue();
                     this.read(")");
                     return new ForEachStatement(
-                        location,                               // location
-                        new FunctionDeclarator.FormalParameter( // formalParameter
-                            location,
-                            false,
-                            lvds.type,
-                            lvds.variableDeclarators[0].name
-                        ),
-                        expression,                             // expression
-                        this.parseStatement()                   // body
+                        location,             // location
+                        lvds,                 // currentElement
+                        expression,           // expression
+                        this.parseStatement() // body
                     );
                 }
             }
@@ -1385,12 +1388,10 @@ class Parser {
     /**
      * <pre>
      *   ForInit :=
-     *     Modifiers Type VariableDeclarators |
-     *     ModifiersOpt BasicType VariableDeclarators |
-     *     Expression (
-     *       LocalVariableDeclarators |       (1)
-     *       { ',' Expression }
-     *     )
+     *     Modifiers Type VariableDeclarators
+     *     | ModifiersOpt BasicType VariableDeclarators
+     *     | Expression VariableDeclarators              (1)
+     *     | Expression { ',' Expression }
      * </pre>
      *
      * (1) "Expression" must pose a type.
@@ -1398,17 +1399,15 @@ class Parser {
     private BlockStatement
     parseForInit() throws CompileException, IOException {
 
-        // Modifiers Type LocalVariableDeclarators
-        // ModifiersOpt BasicType LocalVariableDeclarators
+        // Modifiers Type VariableDeclarators
+        // ModifiersOpt BasicType VariableDeclarators
         if (this.peek(new String[] {
             "final", "byte", "short", "char", "int", "long", "float", "double", "boolean"
         }) != -1) {
-            Modifiers modifiers    = this.parseModifiers();
-            Type      variableType = this.parseType();
             return new LocalVariableDeclarationStatement(
                 this.location(),                // location
-                modifiers,                      // modifiers
-                variableType,                   // type
+                this.parseModifiers(),          // modifiers
+                this.parseType(),               // type
                 this.parseVariableDeclarators() // variableDeclarators
             );
         }
@@ -1417,11 +1416,10 @@ class Parser {
 
         // Expression VariableDeclarators
         if (this.peekIdentifier() != null) {
-            Type variableType = a.toTypeOrCompileException();
             return new LocalVariableDeclarationStatement(
                 a.getLocation(),                // location
                 new Java.Modifiers(Mod.NONE),   // modifiers
-                variableType,                   // type
+                a.toTypeOrCompileException(),   // type
                 this.parseVariableDeclarators() // variableDeclarators
             );
         }

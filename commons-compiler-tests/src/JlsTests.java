@@ -436,6 +436,34 @@ class JlsTests extends JaninoTestSuite {
     }
 
     @Test public void
+    test_14_14_2_2__TheEnhancedForStatement_Array() throws Exception {
+
+        // Primitive array.
+        this.assertScriptReturnsTrue(
+            "int x = 1; for (int y : new int[] { 1, 2, 3 }) x += x * y; return x == 24;"
+        );
+        this.assertScriptReturnsTrue(
+            "int x = 1; for (int y : new short[] { 1, 2, 3 }) x += x * y; return x == 24;"
+        );
+        this.assertScriptUncookable(
+            "int x = 1; for (short y : new int[] { 1, 2, 3 }) x += x * y; return x == 24;",
+            "Assignment conversion not possible from type \"int\" to type \"short\""
+        );
+
+        // Object array.
+        this.assertScriptReturnsTrue(
+            "String x = \"A\"; for (String y : new String[] { \"B\", \"C\" }) x += y; return x.equals(\"ABC\");"
+        );
+        this.assertScriptReturnsTrue(
+            "String x = \"A\"; for (Object y : new String[] { \"B\", \"C\" }) x += y; return x.equals(\"ABC\");"
+        );
+        this.assertScriptUncookable(
+            "String x = \"A\"; for (Number y : new String[] { \"B\", \"C\" }) x += y; return x.equals(\"ABC\");",
+            "Assignment conversion not possible from type \"java.lang.String\" to type \"java.lang.Number\""
+        );
+    }
+
+    @Test public void
     test_14_20_1__ExecutionOfTryCatch__1() throws Exception {
         this.assertClassBodyMainReturnsTrue(
             ""

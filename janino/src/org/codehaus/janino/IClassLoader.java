@@ -41,7 +41,7 @@ import org.codehaus.janino.util.resource.ResourceFinder;
 class IClassLoader {
     private static final boolean DEBUG = false;
 
-    // The following are constants, but cannot be declared FINAL, because they are only initialized by the
+    // The following are constants, but cannot be declared FINAL, because they are only initialized by
     // "postConstruct()".
 
     // CHECKSTYLE MemberName:OFF
@@ -57,6 +57,7 @@ class IClassLoader {
     public IClass JAVA_LANG_CLONEABLE;
     public IClass JAVA_LANG_ASSERTIONERROR;
     public IClass JAVA_LANG_OVERRIDE;
+    public IClass JAVA_LANG_ITERABLE;
     public IClass JAVA_IO_SERIALIZABLE;
 
     public IClass JAVA_LANG_BOOLEAN;
@@ -95,6 +96,7 @@ class IClassLoader {
             this.JAVA_LANG_CLONEABLE        = this.loadIClass(Descriptor.JAVA_LANG_CLONEABLE);
             this.JAVA_LANG_ASSERTIONERROR   = this.loadIClass(Descriptor.JAVA_LANG_ASSERTIONERROR);
             this.JAVA_LANG_OVERRIDE         = this.loadIClass(Descriptor.JAVA_LANG_OVERRIDE);
+            this.JAVA_LANG_ITERABLE         = this.loadIClass(Descriptor.JAVA_LANG_ITERABLE);
             this.JAVA_IO_SERIALIZABLE       = this.loadIClass(Descriptor.JAVA_IO_SERIALIZABLE);
 
             this.JAVA_LANG_BOOLEAN   = this.loadIClass(Descriptor.JAVA_LANG_BOOLEAN);
