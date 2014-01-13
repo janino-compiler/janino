@@ -599,7 +599,7 @@ class ClassFile {
     private static void
     storeShortArray(DataOutputStream dos, short[] sa) throws IOException {
         dos.writeShort(sa.length);
-        for (int i = 0; i < sa.length; ++i) dos.writeShort(sa[i]);
+        for (short s : sa) dos.writeShort(s);
     }
 
     /** u2 fields_count, fields[fields_count] */
@@ -1648,9 +1648,9 @@ class ClassFile {
         @Override protected void
         storeBody(DataOutputStream dos) throws IOException {
             dos.writeShort(this.entries.length);            // line_number_table_length
-            for (int i = 0; i < this.entries.length; ++i) {
-                dos.writeShort(this.entries[i].startPC);
-                dos.writeShort(this.entries[i].lineNumber);
+            for (Entry entry : this.entries) {
+                dos.writeShort(entry.startPC);
+                dos.writeShort(entry.lineNumber);
             }
         }
 
@@ -1701,9 +1701,8 @@ class ClassFile {
 
         @Override protected void
         storeBody(DataOutputStream dos) throws IOException {
-            dos.writeShort(this.entries.length);            // local_variable_table_length
-            for (int i = 0; i < this.entries.length; ++i) { // local_variable_table
-                Entry lnte = this.entries[i];
+            dos.writeShort(this.entries.length); // local_variable_table_length
+            for (Entry lnte :this.entries) {     // local_variable_table
                 dos.writeShort(lnte.startPC);         // start_pc;
                 dos.writeShort(lnte.length);          // length
                 dos.writeShort(lnte.nameIndex);       // name_index
@@ -1808,22 +1807,19 @@ class ClassFile {
 
         @Override protected void
         storeBody(DataOutputStream dos) throws IOException {
-            dos.writeShort(this.maxStack);                                // max_stack
-            dos.writeShort(this.maxLocals);                               // max_locals
-            dos.writeInt(this.code.length);                               // code_length
-            dos.write(this.code);                                         // code
-            dos.writeShort(this.exceptionTableEntries.length);            // exception_table_length
-            for (int i = 0; i < this.exceptionTableEntries.length; ++i) { // exception_table
-                ExceptionTableEntry ete = this.exceptionTableEntries[i];
+            dos.writeShort(this.maxStack);                               // max_stack
+            dos.writeShort(this.maxLocals);                              // max_locals
+            dos.writeInt(this.code.length);                              // code_length
+            dos.write(this.code);                                        // code
+            dos.writeShort(this.exceptionTableEntries.length);           // exception_table_length
+            for (ExceptionTableEntry ete : this.exceptionTableEntries) { // exception_table
                 dos.writeShort(ete.startPc);   // start_pc
                 dos.writeShort(ete.endPc);     // end_pc
                 dos.writeShort(ete.handlerPc); // handler_pc
                 dos.writeShort(ete.catchType); // catch_type
             }
-            dos.writeShort(this.attributes.length);                       // attributes_count
-            for (int i = 0; i < this.attributes.length; ++i) {            // attributes
-                this.attributes[i].store(dos);
-            }
+            dos.writeShort(this.attributes.length);                      // attributes_count
+            for (AttributeInfo ai : this.attributes) ai.store(dos);      // attributes
         }
 
         /** Representation of an entry in the "exception_table" of a "Code" attribute (see JVMS 4.7.3). */

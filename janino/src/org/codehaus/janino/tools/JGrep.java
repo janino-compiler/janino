@@ -123,7 +123,7 @@ class JGrep {
                 verbose = true;
             } else
             if ("-help".equals(arg)) {
-                for (int j = 0; j < JGrep.USAGE.length; ++j) System.out.println(JGrep.USAGE[j]);
+                for (String s : JGrep.USAGE) System.out.println(s);
                 System.exit(1);
             } else
             {

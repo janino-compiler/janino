@@ -88,8 +88,7 @@ class DirectoryIterator extends ProducerIterator/*<File>*/ {
                     }
                     List/*<File>*/ directoryList = new ArrayList();
                     List/*<File>*/ fileList      = new ArrayList();
-                    for (int i = 0; i < entries.length; ++i) {
-                        File entry = entries[i];
+                    for (File entry : entries) {
                         if (entry.isDirectory()) {
                             if (directoryNameFilter.accept(dir, entry.getName())) directoryList.add(entry);
                         } else
@@ -119,8 +118,8 @@ class DirectoryIterator extends ProducerIterator/*<File>*/ {
         FilenameFilter fileNameFilter
     ) {
         List/*<Iterator<File>>*/ result = new ArrayList();
-        for (int i = 0; i < rootDirectories.length; ++i) {
-            result.add(new DirectoryIterator(rootDirectories[i], directoryNameFilter, fileNameFilter));
+        for (File rootDirectory : rootDirectories) {
+            result.add(new DirectoryIterator(rootDirectory, directoryNameFilter, fileNameFilter));
         }
         return new MultiDimensionalIterator(result.iterator(), 2);
     }

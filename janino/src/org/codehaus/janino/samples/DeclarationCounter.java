@@ -43,8 +43,7 @@ class DeclarationCounter extends Traverser {
     public static void // SUPPRESS CHECKSTYLE JavadocMethod
     main(String[] args) throws CompileException, IOException {
         DeclarationCounter dc = new DeclarationCounter();
-        for (int i = 0; i < args.length; ++i) {
-            String fileName = args[i];
+        for (String fileName : args) {
 
             // Parse each compilation unit.
             FileReader           r = new FileReader(fileName);

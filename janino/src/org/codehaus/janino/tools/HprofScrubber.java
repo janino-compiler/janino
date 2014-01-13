@@ -149,8 +149,7 @@ class HprofScrubber {
         });
 
         int totalAllocatedBytes = 0, totalAllocatedObjects = 0;
-        for (int i = 0; i < ss.length; ++i) {
-            Site site = ss[i];
+        for (Site site : ss) {
             totalAllocatedBytes   += site.allocatedBytes;
             totalAllocatedObjects += site.allocatedObjects;
         }
@@ -194,8 +193,8 @@ class HprofScrubber {
             ));
             String[] stackFrames = (String[]) traces.get(new Integer(site.traceNumber));
             if (stackFrames != null) {
-                for (int j = 0; j < stackFrames.length; ++j) {
-                    System.out.println("                           " + stackFrames[j]);
+                for (String stackFrame : stackFrames) {
+                    System.out.println("                           " + stackFrame);
                 }
             }
         }
@@ -204,7 +203,7 @@ class HprofScrubber {
     private static void
     dumpSamples(Sample[] ss, Map/*<Integer, String[]>*/ traces) {
         int totalCount = 0;
-        for (int i = 0; i < ss.length; ++i) totalCount += ss[i].count;
+        for (Sample s : ss) totalCount += s.count;
 
         System.out.println("          percent");
         System.out.println("rank   self  accum      count");
@@ -242,9 +241,7 @@ class HprofScrubber {
             ));
             String[] stackFrames = (String[]) traces.get(new Integer(sample.traceNumber));
             if (stackFrames != null) {
-                for (int j = 0; j < stackFrames.length; ++j) {
-                    System.out.println("                           " + stackFrames[j]);
-                }
+                for (String stackFrame : stackFrames) System.out.println("                           " + stackFrame);
             }
         }
     }

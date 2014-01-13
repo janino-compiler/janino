@@ -174,7 +174,7 @@ class Benchmark {
                 this.reportIndented(optionalTitle == null ? "Array:" : optionalTitle + ':');
                 this.begin();
                 try {
-                    for (int i = 0; i < oa.length; ++i) this.report(null, oa[i]);
+                    for (Object o2 : oa) this.report(null, o2);
                 } finally {
                     this.end();
                 }

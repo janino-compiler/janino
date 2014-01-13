@@ -237,8 +237,8 @@ class Traverser {
     public void
     traverseFieldDeclaration(Java.FieldDeclaration fd) {
         fd.type.accept((Visitor.TypeVisitor) this.cv);
-        for (int i = 0; i < fd.variableDeclarators.length; ++i) {
-            Java.ArrayInitializerOrRvalue optionalInitializer = fd.variableDeclarators[i].optionalInitializer;
+        for (Java.VariableDeclarator vd : fd.variableDeclarators) {
+            Java.ArrayInitializerOrRvalue optionalInitializer = vd.optionalInitializer;
             if (optionalInitializer != null) this.traverseArrayInitializerOrRvalue(optionalInitializer);
         }
         this.traverseStatement(fd);
@@ -282,9 +282,7 @@ class Traverser {
         if (fs.optionalInit != null) fs.optionalInit.accept(this.cv);
         if (fs.optionalCondition != null) fs.optionalCondition.accept((Visitor.RvalueVisitor) this.cv);
         if (fs.optionalUpdate != null) {
-            for (int i = 0; i < fs.optionalUpdate.length; ++i) {
-                fs.optionalUpdate[i].accept((Visitor.RvalueVisitor) this.cv);
-            }
+            for (Java.Rvalue rv : fs.optionalUpdate) rv.accept((Visitor.RvalueVisitor) this.cv);
         }
         fs.body.accept(this.cv);
         this.traverseContinuableStatement(fs);
@@ -293,7 +291,7 @@ class Traverser {
     /** @see Traverser */
     public void
     traverseForEachStatement(Java.ForEachStatement fes) {
-        this.traverseLocalVariableDeclarationStatement(fes.currentElement);
+        this.traverseFormalParameter(fes.currentElement);
         fes.expression.accept((Visitor.RvalueVisitor) this.cv);
         fes.body.accept(this.cv);
         this.traverseContinuableStatement(fes);
@@ -357,8 +355,8 @@ class Traverser {
     public void
     traverseLocalVariableDeclarationStatement(Java.LocalVariableDeclarationStatement lvds) {
         lvds.type.accept((Visitor.TypeVisitor) this.cv);
-        for (int i = 0; i < lvds.variableDeclarators.length; ++i) {
-            Java.ArrayInitializerOrRvalue optionalInitializer = lvds.variableDeclarators[i].optionalInitializer;
+        for (Java.VariableDeclarator vd : lvds.variableDeclarators) {
+            Java.ArrayInitializerOrRvalue optionalInitializer = vd.optionalInitializer;
             if (optionalInitializer != null) this.traverseArrayInitializerOrRvalue(optionalInitializer);
         }
         this.traverseStatement(lvds);
@@ -526,7 +524,7 @@ class Traverser {
     traverseNewAnonymousClassInstance(Java.NewAnonymousClassInstance naci) {
         if (naci.optionalQualification != null) naci.optionalQualification.accept((Visitor.RvalueVisitor) this.cv);
         naci.anonymousClassDeclaration.accept(this.cv);
-        for (int i = 0; i < naci.arguments.length; ++i) naci.arguments[i].accept((Visitor.RvalueVisitor) this.cv);
+        for (Java.Rvalue argument : naci.arguments) argument.accept((Visitor.RvalueVisitor) this.cv);
         this.traverseRvalue(naci);
     }
 
@@ -553,7 +551,7 @@ class Traverser {
         } else
         if (aiorv instanceof Java.ArrayInitializer) {
             Java.ArrayInitializerOrRvalue[] values = ((Java.ArrayInitializer) aiorv).values;
-            for (int i = 0; i < values.length; ++i) this.traverseArrayInitializerOrRvalue(values[i]);
+            for (Java.ArrayInitializerOrRvalue value : values) this.traverseArrayInitializerOrRvalue(value);
         } else
         {
             throw new JaninoRuntimeException(
@@ -567,7 +565,7 @@ class Traverser {
     traverseNewClassInstance(Java.NewClassInstance nci) {
         if (nci.optionalQualification != null) nci.optionalQualification.accept((Visitor.RvalueVisitor) this.cv);
         if (nci.type != null) nci.type.accept((Visitor.TypeVisitor) this.cv);
-        for (int i = 0; i < nci.arguments.length; ++i) nci.arguments[i].accept((Visitor.RvalueVisitor) this.cv);
+        for (Java.Rvalue argument : nci.arguments) argument.accept((Visitor.RvalueVisitor) this.cv);
         this.traverseRvalue(nci);
     }
 
@@ -672,9 +670,7 @@ class Traverser {
     /** @see Traverser */
     public void
     traverseElementValueArrayInitializer(Java.ElementValueArrayInitializer evai) {
-        for (int i = 0; i < evai.elementValues.length; i++) {
-            evai.elementValues[i].accept(this.cv);
-        }
+        for (Java.ElementValue elementValue : evai.elementValues) elementValue.accept(this.cv);
         this.traverseElementValue(evai);
     }
 
@@ -698,8 +694,8 @@ class Traverser {
     public void
     traverseNormalAnnotation(Java.NormalAnnotation na) {
         na.type.accept(this.cv);
-        for (int i = 0; i < na.elementValuePairs.length; i++) {
-            na.elementValuePairs[i].elementValue.accept(this.cv);
+        for (Java.ElementValuePair elementValuePair : na.elementValuePairs) {
+            elementValuePair.elementValue.accept(this.cv);
         }
         this.traverseAnnotation(na);
     }
@@ -737,9 +733,7 @@ class Traverser {
     /** @see Traverser */
     public void
     traverseNamedClassDeclaration(Java.NamedClassDeclaration ncd) {
-        for (int i = 0; i < ncd.implementedTypes.length; ++i) {
-            ncd.implementedTypes[i].accept((Visitor.TypeVisitor) this.cv);
-        }
+        for (Java.Type implementedType : ncd.implementedTypes) implementedType.accept((Visitor.TypeVisitor) this.cv);
         if (ncd.optionalExtendedType != null) ncd.optionalExtendedType.accept((Visitor.TypeVisitor) this.cv);
         this.traverseClassDeclaration(ncd);
     }
@@ -750,9 +744,7 @@ class Traverser {
         for (Iterator/*<TypeBodyDeclaration>*/ it = id.constantDeclarations.iterator(); it.hasNext();) {
             ((Java.TypeBodyDeclaration) it.next()).accept(this.cv);
         }
-        for (int i = 0; i < id.extendedTypes.length; ++i) {
-            id.extendedTypes[i].accept((Visitor.TypeVisitor) this.cv);
-        }
+        for (Java.Type extendedType : id.extendedTypes) extendedType.accept((Visitor.TypeVisitor) this.cv);
         this.traverseAbstractTypeDeclaration(id);
     }
 
@@ -771,8 +763,8 @@ class Traverser {
     /** @see Traverser */
     public void
     traverseFormalParameters(Java.FunctionDeclarator.FormalParameters formalParameters) {
-        for (int i = 0; i < formalParameters.parameters.length; ++i) {
-            this.traverseFormalParameter(formalParameters.parameters[i]);
+        for (Java.FunctionDeclarator.FormalParameter formalParameter : formalParameters.parameters) {
+            this.traverseFormalParameter(formalParameter);
         }
     }
 
@@ -809,14 +801,14 @@ class Traverser {
     /** @see Traverser */
     public void
     traverseInvocation(Java.Invocation i) {
-        for (int j = 0; j < i.arguments.length; ++j) i.arguments[j].accept((Visitor.RvalueVisitor) this.cv);
+        for (Java.Rvalue argument : i.arguments) argument.accept((Visitor.RvalueVisitor) this.cv);
         this.traverseRvalue(i);
     }
 
     /** @see Traverser */
     public void
     traverseConstructorInvocation(Java.ConstructorInvocation ci) {
-        for (int i = 0; i < ci.arguments.length; ++i) ci.arguments[i].accept((Visitor.RvalueVisitor) this.cv);
+        for (Java.Rvalue argument : ci.arguments) argument.accept((Visitor.RvalueVisitor) this.cv);
         this.traverseAtom(ci);
     }
 
