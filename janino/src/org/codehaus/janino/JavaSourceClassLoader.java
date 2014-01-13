@@ -220,10 +220,7 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
                     } catch (CompileException ex) {
                         throw new ClassNotFoundException(ex.getMessage(), ex);
                     }
-                    for (int i = 0; i < cfs.length; ++i) {
-                        ClassFile cf = cfs[i];
-                        bytecodes.put(cf.getThisClassName(), cf.toByteArray());
-                    }
+                    for (ClassFile cf : cfs) bytecodes.put(cf.getThisClassName(), cf.toByteArray());
                     compiledUnitCompilers.add(uc);
                     continue COMPILE_UNITS;
                 }

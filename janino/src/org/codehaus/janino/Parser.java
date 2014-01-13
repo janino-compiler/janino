@@ -72,7 +72,8 @@ import org.codehaus.janino.Java.FieldDeclaration;
 import org.codehaus.janino.Java.FloatingPointLiteral;
 import org.codehaus.janino.Java.ForEachStatement;
 import org.codehaus.janino.Java.ForStatement;
-import org.codehaus.janino.Java.FunctionDeclarator;
+import org.codehaus.janino.Java.FunctionDeclarator.FormalParameter;
+import org.codehaus.janino.Java.FunctionDeclarator.FormalParameters;
 import org.codehaus.janino.Java.IfStatement;
 import org.codehaus.janino.Java.Initializer;
 import org.codehaus.janino.Java.Instanceof;
@@ -307,8 +308,7 @@ class Parser {
             short  x  = MODIFIER_CODES[idx];
 
             if ((mod & x) != 0) throw this.compileException("Duplicate modifier \"" + kw + "\"");
-            for (int i = 0; i < Parser.MUTUALLY_EXCLUSIVE_MODIFIER_CODES.length; ++i) {
-                short m = Parser.MUTUALLY_EXCLUSIVE_MODIFIER_CODES[i];
+            for (short m : Parser.MUTUALLY_EXCLUSIVE_MODIFIER_CODES) {
                 if ((x & m) != 0 && (mod & m) != 0) {
                     throw this.compileException("Only one of '" + Mod.shortToString(m) + "' allowed");
                 }
@@ -824,7 +824,7 @@ class Parser {
         this.readIdentifier();  // Class name
 
         // Parse formal parameters.
-        FunctionDeclarator.FormalParameters formalParameters = this.parseFormalParameters();
+        FormalParameters formalParameters = this.parseFormalParameters();
 
         // Parse "throws" clause.
         ReferenceType[] thrownExceptions;
@@ -908,7 +908,7 @@ class Parser {
 
         this.verifyIdentifierIsConventionalMethodName(name, location);
 
-        FunctionDeclarator.FormalParameters formalParameters = this.parseFormalParameters();
+        FormalParameters formalParameters = this.parseFormalParameters();
 
         for (int i = this.parseBracketsOpt(); i > 0; --i) type = new ArrayType(type);
 
@@ -989,10 +989,10 @@ class Parser {
      *   FormalParameters := '(' [ FormalParameter { ',' FormalParameter } ] ')'
      * </pre>
      */
-    public FunctionDeclarator.FormalParameters
+    public FormalParameters
     parseFormalParameters() throws CompileException, IOException {
         this.read("(");
-        if (this.peekRead(")")) return new FunctionDeclarator.FormalParameters();
+        if (this.peekRead(")")) return new FormalParameters();
 
         List/*<FormalParameter>*/ l           = new ArrayList();
         boolean[]                 hasEllipsis = new boolean[1];
@@ -1000,10 +1000,10 @@ class Parser {
             if (hasEllipsis[0]) throw this.compileException("Only the last parameter may have an ellipsis");
             l.add(this.parseFormalParameter(hasEllipsis));
         } while (this.read(new String[] { ",", ")" }) == 0);
-        return new FunctionDeclarator.FormalParameters(
-            this.location(),
-            (FunctionDeclarator.FormalParameter[]) l.toArray(new FunctionDeclarator.FormalParameter[l.size()]),
-            hasEllipsis[0]
+        return new FormalParameters(
+            this.location(),                                              // location
+            (FormalParameter[]) l.toArray(new FormalParameter[l.size()]), // parameters
+            hasEllipsis[0]                                                // variableArity
         );
     }
 
@@ -1012,7 +1012,7 @@ class Parser {
      *   FormalParameter := [ 'final' ] Type [ '.' '.' '.' ] Identifier BracketsOpt
      * </pre>
      */
-    public FunctionDeclarator.FormalParameter
+    public FormalParameter
     parseFormalParameter(boolean[] hasEllipsis) throws CompileException, IOException {
         boolean finaL = this.peekRead("final");
 
@@ -1028,7 +1028,7 @@ class Parser {
         this.verifyIdentifierIsConventionalLocalVariableOrParameterName(name, location);
 
         for (int i = this.parseBracketsOpt(); i > 0; --i) type = new ArrayType(type);
-        return new FunctionDeclarator.FormalParameter(location, finaL, type, name);
+        return new FormalParameter(location, finaL, type, name);
     }
 
     /**
@@ -1323,44 +1323,118 @@ class Parser {
     /**
      * <pre>
      *   ForStatement :=
-     *     'for' '('
-     *       [ ForInit ] ';'
-     *       [ Expression ] ';'
-     *       [ ExpressionList ]
-     *     ')' Statement
-     *     | 'for' '(' LocalVariableDeclarationStatement ':' Expression ')' Statement   (1)
+     *     'for' '(' [ ForInit ] ';' [ Expression ] ';' [ ExpressionList ] ')' Statement
+     *     | 'for' '(' FormalParameter ':' Expression ')' Statement
+     *
+     *   ForInit :=
+     *     Modifiers Type VariableDeclarators
+     *     | ModifiersOpt BasicType VariableDeclarators
+     *     | Expression VariableDeclarators              (1)
+     *     | Expression { ',' Expression }
      * </pre>
-     * (1) The LocalVariableDeclarationStatement must have exactly ONE variable declarator, and that MUST NOT have an
-     * initializer.
+     * (1) "Expression" must pose a type.
      */
     public Statement
     parseForStatement() throws CompileException, IOException {
-        Location location = this.location();
         this.read("for");
+        Location forLocation = this.location();
 
         this.read("(");
 
         BlockStatement optionalInit = null;
+        INIT:
         if (!this.peek(";")) {
-            optionalInit = this.parseForInit();
-            if (optionalInit instanceof LocalVariableDeclarationStatement) {
-                LocalVariableDeclarationStatement lvds = (LocalVariableDeclarationStatement) optionalInit;
-                if (
-                    lvds.variableDeclarators.length == 1
-                    && lvds.variableDeclarators[0].optionalInitializer == null
-                    && this.peekRead(":")
-                ) {
 
-                    // 'for' '(' LocalVariableDeclarationStatement ':' Expression ')' Statement
+            // 'for' '(' Modifiers Type VariableDeclarators
+            // 'for' '(' [ Modifiers ] BasicType VariableDeclarators
+            if (this.peek(new String[] {
+                "final", "byte", "short", "char", "int", "long", "float", "double", "boolean"
+            }) != -1) {
+                Modifiers modifiers = this.parseModifiers();
+                Type      type      = this.parseType();
+                if (this.peekIdentifier() != null && this.peekNextButOne(":")) {
+
+                    // 'for' '(' [ Modifiers ] Type identifier ':' Expression ')' Statement
+                    String name = this.readIdentifier();
+                    Location nameLocation = this.location();
+                    this.read(":");
                     Rvalue expression = this.parseExpression().toRvalue();
                     this.read(")");
                     return new ForEachStatement(
-                        location,             // location
-                        lvds,                 // currentElement
+                        forLocation,          // location
+                        new FormalParameter(  // currentElement
+                            nameLocation,
+                            Mod.isFinal(modifiers.flags),
+                            type,
+                            name
+                        ),
                         expression,           // expression
                         this.parseStatement() // body
                     );
                 }
+
+                // 'for' '(' [ Modifiers ] Type VariableDeclarators
+                optionalInit = new LocalVariableDeclarationStatement(
+                    this.location(),                // location
+                    modifiers,                      // modifiers
+                    type,                           // type
+                    this.parseVariableDeclarators() // variableDeclarators
+                );
+                break INIT;
+            }
+
+            Atom a = this.parseExpression();
+
+            if (this.peekIdentifier() != null) {
+                if (this.peekNextButOne(":")) {
+
+                    // 'for' '(' Expression identifier ':' Expression ')' Statement
+                    String   name = this.readIdentifier();
+                    Location nameLocation = this.location();
+                    this.read(":");
+                    Rvalue expression = this.parseExpression().toRvalue();
+                    this.read(")");
+                    return new ForEachStatement(
+                        forLocation,             // location
+                        new FormalParameter(  // currentElement
+                            nameLocation,
+                            false,
+                            a.toTypeOrCompileException(),
+                            name
+                        ),
+                        expression,           // expression
+                        this.parseStatement() // body
+                    );
+                }
+
+                // 'for' '(' Expression VariableDeclarators
+                optionalInit = new LocalVariableDeclarationStatement(
+                    this.location(),                // location
+                    new Java.Modifiers(Mod.NONE),   // modifiers
+                    a.toTypeOrCompileException(),   // type
+                    this.parseVariableDeclarators() // variableDeclarators
+                );
+                break INIT;
+            }
+
+            if (!this.peekRead(",")) {
+
+                // 'for' '(' Expression
+                optionalInit = new ExpressionStatement(a.toRvalueOrCompileException());
+                break INIT;
+            }
+
+            // 'for' '(' Expression { ',' Expression }
+            {
+                List/*<BlockStatement>*/ l = new ArrayList();
+                l.add(new ExpressionStatement(a.toRvalueOrCompileException()));
+                do {
+                    l.add(new ExpressionStatement(this.parseExpression().toRvalueOrCompileException()));
+                } while (this.peekRead(","));
+
+                Block b = new Block(a.getLocation());
+                b.addStatements(l);
+                optionalInit = b;
             }
         }
 
@@ -1377,66 +1451,12 @@ class Parser {
         this.read(")");
 
         return new ForStatement(
-            location,             // location
+            forLocation,          // location
             optionalInit,         // optionalInit
             optionalCondition,    // optionalCondition
             optionalUpdate,       // optionalUpdate
             this.parseStatement() // body
         );
-    }
-
-    /**
-     * <pre>
-     *   ForInit :=
-     *     Modifiers Type VariableDeclarators
-     *     | ModifiersOpt BasicType VariableDeclarators
-     *     | Expression VariableDeclarators              (1)
-     *     | Expression { ',' Expression }
-     * </pre>
-     *
-     * (1) "Expression" must pose a type.
-     */
-    private BlockStatement
-    parseForInit() throws CompileException, IOException {
-
-        // Modifiers Type VariableDeclarators
-        // ModifiersOpt BasicType VariableDeclarators
-        if (this.peek(new String[] {
-            "final", "byte", "short", "char", "int", "long", "float", "double", "boolean"
-        }) != -1) {
-            return new LocalVariableDeclarationStatement(
-                this.location(),                // location
-                this.parseModifiers(),          // modifiers
-                this.parseType(),               // type
-                this.parseVariableDeclarators() // variableDeclarators
-            );
-        }
-
-        Atom a = this.parseExpression();
-
-        // Expression VariableDeclarators
-        if (this.peekIdentifier() != null) {
-            return new LocalVariableDeclarationStatement(
-                a.getLocation(),                // location
-                new Java.Modifiers(Mod.NONE),   // modifiers
-                a.toTypeOrCompileException(),   // type
-                this.parseVariableDeclarators() // variableDeclarators
-            );
-        }
-
-        // Expression { ',' Expression }
-        if (!this.peekRead(",")) {
-            return new ExpressionStatement(a.toRvalueOrCompileException());
-        }
-        List/*<BlockStatement>*/ l = new ArrayList();
-        l.add(new ExpressionStatement(a.toRvalueOrCompileException()));
-        do {
-            l.add(new ExpressionStatement(this.parseExpression().toRvalueOrCompileException()));
-        } while (this.peekRead(","));
-
-        Block b = new Block(a.getLocation());
-        b.addStatements(l);
-        return b;
     }
 
     /**
@@ -1510,8 +1530,8 @@ class Parser {
         while (this.peekRead("catch")) {
             Location loc = this.location();
             this.read("(");
-            boolean[]                          hasEllipsis     = new boolean[1];
-            FunctionDeclarator.FormalParameter caughtException = this.parseFormalParameter(hasEllipsis);
+            boolean[]       hasEllipsis     = new boolean[1];
+            FormalParameter caughtException = this.parseFormalParameter(hasEllipsis);
             if (hasEllipsis[0]) throw this.compileException("Catch clause parameter must not have an ellipsis");
             this.read(")");
             ccs.add(new CatchClause(

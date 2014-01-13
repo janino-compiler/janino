@@ -41,7 +41,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.codehaus.janino.Java.SimpleConstant;
+import org.codehaus.janino.Java.Annotation;
+import org.codehaus.janino.Java.Rvalue;
 import org.codehaus.janino.util.AutoIndentWriter;
 
 /**
@@ -66,8 +67,7 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor {
     main(String[] args) throws Exception {
 
         Writer w = new BufferedWriter(new OutputStreamWriter(System.out));
-        for (int i = 0; i < args.length; ++i) {
-            String fileName = args[i];
+        for (String fileName : args) {
 
             // Parse each compilation unit.
             FileReader           r = new FileReader(fileName);
@@ -353,7 +353,7 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor {
     @Override public void
     visitForEachStatement(Java.ForEachStatement fes) {
         this.pw.print("for (");
-        this.unparseBlockStatement(fes.currentElement);
+        this.unparseFormalParameter(fes.currentElement, false);
         this.pw.print(" : ");
         this.unparse(fes.expression);
         this.pw.print(") ");
@@ -644,16 +644,16 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor {
     @Override public void visitCharacterLiteral(Java.CharacterLiteral cl)          { this.pw.print(cl.value); }
     @Override public void visitStringLiteral(Java.StringLiteral sl)                { this.pw.print(sl.value); }
     @Override public void visitNullLiteral(Java.NullLiteral nl)                    { this.pw.print(nl.value); }
-    @Override public void visitSimpleConstant(SimpleConstant sl)                   { this.pw.print("[" + sl.value + ']'); } // SUPPRESS CHECKSTYLE LineLength
+    @Override public void visitSimpleConstant(Java.SimpleConstant sl)              { this.pw.print("[" + sl.value + ']'); } // SUPPRESS CHECKSTYLE LineLength
     @Override public void visitLocalVariableAccess(Java.LocalVariableAccess lva)   { this.pw.print(lva.toString()); }
 
     @Override public void
     visitNewArray(Java.NewArray na) {
         this.pw.print("new ");
         this.unparseType(na.type);
-        for (int i = 0; i < na.dimExprs.length; ++i) {
+        for (Rvalue dimExpr : na.dimExprs) {
             this.pw.print('[');
-            this.unparse(na.dimExprs[i]);
+            this.unparse(dimExpr);
             this.pw.print(']');
         }
         for (int i = 0; i < na.dims; ++i) {
@@ -1044,9 +1044,7 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor {
 
     private void
     unparseAnnotations(Java.Annotation[] annotations) {
-        for (int i = 0; i < annotations.length; i++) {
-            annotations[i].accept(this);
-        }
+        for (Annotation a : annotations) a.accept(this);
     }
 
     private void
@@ -1084,8 +1082,7 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor {
     @Override public void
     visitNormalAnnotation(Java.NormalAnnotation na) {
         this.pw.append('@').append(na.type.toString()).append('(');
-        for (int i = 0; i < na.elementValuePairs.length; i++) {
-            Java.ElementValuePair evp = na.elementValuePairs[i];
+        for (Java.ElementValuePair evp : na.elementValuePairs) {
             this.pw.append(evp.identifier).append(" = ");
             evp.elementValue.accept(this);
         }

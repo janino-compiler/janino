@@ -543,9 +543,7 @@ class Compiler {
                     + "\""
                 );
                 try {
-                    for (int j = 0; j < classFiles.length; ++j) {
-                        this.storeClassFile(classFiles[j], sourceFile);
-                    }
+                    for (ClassFile classFile : classFiles) this.storeClassFile(classFile, sourceFile);
                 } finally {
                     this.benchmark.endReporting();
                 }

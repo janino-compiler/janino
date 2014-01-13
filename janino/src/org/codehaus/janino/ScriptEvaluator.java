@@ -44,8 +44,7 @@ import org.codehaus.commons.compiler.Cookable;
 import org.codehaus.commons.compiler.IExpressionEvaluator;
 import org.codehaus.commons.compiler.IScriptEvaluator;
 import org.codehaus.commons.compiler.Location;
-import org.codehaus.janino.Java.AmbiguousName;
-import org.codehaus.janino.Java.LocalVariableDeclarationStatement;
+import org.codehaus.janino.Java.VariableDeclarator;
 import org.codehaus.janino.util.Traverser;
 
 /** A number of "convenience constructors" exist that execute the setup steps instantly. Their use is discouraged. */
@@ -606,18 +605,13 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
                 @Override public int
                 hashCode() {
                     int hc = this.name.hashCode();
-                    for (int i = 0; i < this.parameterTypes.length; ++i) {
-                        hc ^= this.parameterTypes[i].hashCode();
-                    }
+                    for (Class parameterType : this.parameterTypes) hc ^= parameterType.hashCode();
                     return hc;
                 }
             }
             Method[]                       ma  = c.getDeclaredMethods();
             Map/*<MethodWrapper, Method>*/ dms = new HashMap(2 * count);
-            for (int i = 0; i < ma.length; ++i) {
-                Method m = ma[i];
-                dms.put(new MethodWrapper(m.getName(), m.getParameterTypes()), m);
-            }
+            for (Method m : ma) dms.put(new MethodWrapper(m.getName(), m.getParameterTypes()), m);
             for (int i = 0; i < count; ++i) {
                 Method m = (Method) dms.get(new MethodWrapper(
                     methodNames[i],
@@ -941,15 +935,13 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
         new Traverser() {
 
             @Override public void
-            traverseLocalVariableDeclarationStatement(LocalVariableDeclarationStatement lvds) {
-                for (int i = 0; i < lvds.variableDeclarators.length; ++i) {
-                    localVariableNames.add(lvds.variableDeclarators[i].name);
-                }
+            traverseLocalVariableDeclarationStatement(Java.LocalVariableDeclarationStatement lvds) {
+                for (VariableDeclarator vd : lvds.variableDeclarators) localVariableNames.add(vd.name);
                 super.traverseLocalVariableDeclarationStatement(lvds);
             }
 
             @Override public void
-            traverseAmbiguousName(AmbiguousName an) {
+            traverseAmbiguousName(Java.AmbiguousName an) {
 
                 // If any of the components starts with an upper-case letter, then the ambiguous
                 // name is most probably a type name, e.g. "System.out" or "java.lang.System.out".

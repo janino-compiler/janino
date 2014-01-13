@@ -152,8 +152,7 @@ class IClass {
 
             // Fill the map with "IMethod"s and "List"s.
             IMethod[] dims = this.getDeclaredIMethods();
-            for (int i = 0; i < dims.length; i++) {
-                IMethod dim = dims[i];
+            for (IMethod dim : dims) {
                 String  mn  = dim.getName();
                 Object  o   = m.get(mn);
                 if (o == null) {
@@ -209,8 +208,7 @@ class IClass {
         IMethod[] ms = this.getDeclaredIMethods();
 
         SCAN_DECLARED_METHODS:
-        for (int i = 0; i < ms.length; ++i) {
-            IMethod candidate           = ms[i];
+        for (IMethod candidate : ms) {
             String  candidateDescriptor = candidate.getDescriptor();
             String  candidateName       = candidate.getName();
 
@@ -227,8 +225,7 @@ class IClass {
         IClass sc = this.getSuperclass();
         if (sc != null) sc.getIMethods(result);
 
-        IClass[] iis = this.getInterfaces();
-        for (int i = 0; i < iis.length; ++i) iis[i].getIMethods(result);
+        for (IClass ii : this.getInterfaces()) ii.getIMethods(result);
     }
 
     private static final IMethod[] NO_IMETHODS = new IMethod[0];
@@ -249,9 +246,8 @@ class IClass {
     public final IMethod
     findIMethod(String methodName, IClass[] parameterTypes) throws CompileException {
         IMethod[] ims = this.getDeclaredIMethods(methodName);
-        for (int i = 0; i < ims.length; ++i) {
-            IClass[] pts = ims[i].getParameterTypes();
-            if (Arrays.equals(pts, parameterTypes)) return ims[i];
+        for (IMethod im : ims) {
+            if (Arrays.equals(im.getParameterTypes(), parameterTypes)) return im;
         }
 
         {
@@ -264,12 +260,10 @@ class IClass {
 
         {
             IClass[] interfaces = this.getInterfaces();
-            for (int i = 0; i < interfaces.length; i++) {
-                IClass interfacE = interfaces[i];
-
+            for (IClass interfacE : interfaces) {
                 IMethod result = interfacE.findIMethod(methodName, parameterTypes);
                 if (result != null) return result;
-            }                
+            }
         }
 
         return null;
@@ -295,7 +289,7 @@ class IClass {
             IField[] fields = this.getDeclaredIFields2();
 
             Map/*<String fieldName, IField>*/ m = new HashMap();
-            for (int i = 0; i < fields.length; ++i) m.put(fields[i].getName(), fields[i]);
+            for (IField f : fields) m.put(f.getName(), f);
             this.declaredIFieldsCache = m;
         }
         return this.declaredIFieldsCache;
@@ -428,8 +422,8 @@ class IClass {
     getInterfaces() throws CompileException {
         if (this.interfacesCache == null) {
             this.interfacesCache = this.getInterfaces2();
-            for (int i = 0; i < this.interfacesCache.length; ++i) {
-                if (this.interfacesCache[i].implementsInterface(this)) {
+            for (IClass ii : this.interfacesCache) {
+                if (ii.implementsInterface(this)) {
                     throw new CompileException(
                         "Interface circularity detected for \"" + Descriptor.toClassName(this.getDescriptor()) + "\"",
                         null
@@ -591,7 +585,7 @@ class IClass {
 
             Descriptor.FLOAT + Descriptor.DOUBLE,
         };
-        for (int i = 0; i < pwcs.length; ++i) IClass.PRIMITIVE_WIDENING_CONVERSIONS.add(pwcs[i]);
+        for (String pwc : pwcs) IClass.PRIMITIVE_WIDENING_CONVERSIONS.add(pwc);
     }
 
     /**
@@ -617,8 +611,7 @@ class IClass {
     implementsInterface(IClass that) throws CompileException {
         for (IClass c = this; c != null; c = c.getSuperclass()) {
             IClass[] tis = c.getInterfaces();
-            for (int i = 0; i < tis.length; ++i) {
-                IClass ti = tis[i];
+            for (IClass ti : tis) {
                 if (ti == that || ti.implementsInterface(that)) return true;
             }
         }
@@ -743,8 +736,7 @@ class IClass {
                 + '$'
                 + optionalName
             );
-            for (int i = 0; i < memberTypes.length; ++i) {
-                final IClass mt = memberTypes[i];
+            for (final IClass mt : memberTypes) {
                 if (mt.getDescriptor().equals(memberDescriptor)) {
                     result.add(mt);
                     return;
@@ -759,10 +751,7 @@ class IClass {
         }
 
         // Examine interfaces.
-        {
-            IClass[] ifs = this.getInterfaces();
-            for (int i = 0; i < ifs.length; ++i) ifs[i].findMemberType(optionalName, result);
-        }
+        for (IClass i : this.getInterfaces()) i.findMemberType(optionalName, result);
 
         // Examine enclosing type declarations.
         {

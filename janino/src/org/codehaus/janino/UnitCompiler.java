@@ -99,6 +99,8 @@ import org.codehaus.janino.Java.FloatingPointLiteral;
 import org.codehaus.janino.Java.ForEachStatement;
 import org.codehaus.janino.Java.ForStatement;
 import org.codehaus.janino.Java.FunctionDeclarator;
+import org.codehaus.janino.Java.FunctionDeclarator.FormalParameter;
+import org.codehaus.janino.Java.FunctionDeclarator.FormalParameters;
 import org.codehaus.janino.Java.IfStatement;
 import org.codehaus.janino.Java.Initializer;
 import org.codehaus.janino.Java.InnerClassDeclaration;
@@ -402,8 +404,7 @@ class UnitCompiler {
         // Check that all methods are implemented.
         if (!Mod.isAbstract(cd.getModifierFlags())) {
             IMethod[] ms = iClass.getIMethods();
-            for (int i = 0; i < ms.length; ++i) {
-                IMethod base = ms[i];
+            for (IMethod base : ms) {
                 if (base.isAbstract()) {
                     IMethod override = iClass.findIMethod(base.getName(), base.getParameterTypes());
                     if (
@@ -431,8 +432,7 @@ class UnitCompiler {
 
         // TODO: Add annotations with retention != SOURCE.
 
-//        for (int i = 0; i < cd.getModifiersAndAnnotations().annotations.length; i++) {
-//            Annotation a = cd.getModifiersAndAnnotations().annotations[i];
+//        for (Annotation a : cd.getAnnotations()) {
 //            assert false : "Class '" + iClass + "' has annotation '" + a + "'";
 //        }
 
@@ -514,15 +514,15 @@ class UnitCompiler {
         int declaredMethodCount = cd.getMethodDeclarations().size();
         {
             int                     syntheticFieldCount = cd.syntheticFields.size();
-            ConstructorDeclarator[] cds                 = cd.getConstructors();
-            for (int i = 0; i < cds.length; ++i) {
-                this.compile(cds[i], cf);
+            ConstructorDeclarator[] ctords              = cd.getConstructors();
+            for (ConstructorDeclarator ctord : ctords) {
+                this.compile(ctord, cf);
                 if (syntheticFieldCount != cd.syntheticFields.size()) {
                     throw new JaninoRuntimeException(
                         "SNO: Compilation of constructor \""
-                        + cds[i]
+                        + ctord
                         + "\" ("
-                        + cds[i].getLocation()
+                        + ctord.getLocation()
                         + ") added synthetic fields!?"
                     );
                 }
@@ -541,8 +541,7 @@ class UnitCompiler {
             // this is used to correctly dispatch into covariant return types
             // from existing code
             IMethod[] ms = iClass.getIMethods();
-            for (int i = 0; i < ms.length; ++i) {
-                IMethod base = ms[i];
+            for (IMethod base : ms) {
                 if (!base.isStatic()) {
                     IMethod override = iClass.findIMethod(base.getName(), base.getParameterTypes());
 
@@ -583,10 +582,10 @@ class UnitCompiler {
     /** Creates {@link ClassFile.FieldInfo}s for all fields declared by the given {@link FieldDeclaration}. */
     private void
     addFields(FieldDeclaration fd, ClassFile cf) throws CompileException {
-        for (int j = 0; j < fd.variableDeclarators.length; ++j) {
-            VariableDeclarator vd   = fd.variableDeclarators[j];
-            Type               type = fd.type;
-            for (int k = 0; k < vd.brackets; ++k) type = new ArrayType(type);
+        for (VariableDeclarator vd : fd.variableDeclarators) {
+
+            Type type = fd.type;
+            for (int i = 0; i < vd.brackets; ++i) type = new ArrayType(type);
 
             Object ocv = NOT_CONSTANT;
             if (Mod.isFinal(fd.modifiers.flags) && vd.optionalInitializer instanceof Rvalue) {
@@ -657,8 +656,7 @@ class UnitCompiler {
                 TypeBodyDeclaration tbd = (TypeBodyDeclaration) cd.variableDeclaratorsAndInitializers.get(i);
                 if (tbd instanceof FieldDeclaration) {
                     FieldDeclaration fd = (FieldDeclaration) tbd;
-                    for (int j = 0; j < fd.variableDeclarators.length; ++j) {
-                        VariableDeclarator vd = fd.variableDeclarators[j];
+                    for (VariableDeclarator vd : fd.variableDeclarators) {
                         if (vd.optionalInitializer != null) {
                             this.fakeCompile(vd.optionalInitializer);
                         }
@@ -695,8 +693,7 @@ class UnitCompiler {
 
         // TODO: Add annotations with retention != SOURCE.
 
-//        for (int i = 0; i < id.getModifiersAndAnnotations().annotations.length; i++) {
-//            Annotation a = id.getModifiersAndAnnotations().annotations[i];
+//        for (Annotation a : id.getAnnotations()) {
 //            assert false : "Interface '" + iClass + "' has annotation '" + a + "'";
 //        }
 
@@ -765,7 +762,7 @@ class UnitCompiler {
                     BasicType.VOID
                 ),
                 "<clinit>",                                       // name
-                new FunctionDeclarator.FormalParameters(),        // formalParameters
+                new FormalParameters(),                           // formalParameters
                 new ReferenceType[0],                             // thrownExceptions
                 statements                                        // optionalStatements
             );
@@ -844,8 +841,8 @@ class UnitCompiler {
     private boolean
     hasAnnotation(FunctionDeclarator fd, IClass methodAnnotation) throws CompileException {
         Annotation[] methodAnnotations = fd.modifiers.annotations;
-        for (int i = 0; i < methodAnnotations.length; i++) {
-            if (this.getType(methodAnnotations[i].getType()) == methodAnnotation) return true;
+        for (Annotation ma : methodAnnotations) {
+            if (this.getType(ma.getType()) == methodAnnotation) return true;
         }
         return false;
     }
@@ -861,25 +858,25 @@ class UnitCompiler {
 
         // Check whether it overrides a method declared in an interface (or any of its superinterfaces).
         IClass[] ifs = type.getInterfaces();
-        for (int i = 0; i < ifs.length; i++) {
-            if (this.overridesMethod(m, ifs[i])) return true;
+        for (IClass i : ifs) {
+            if (this.overridesMethod(m, i)) return true;
         }
 
         return false;
     }
 
-    /** @return Whether {@code m} overrides a method of {@code type} or any of its supertypes */
+    /** @return Whether {@code method} overrides a method of {@code type} or any of its supertypes */
     private boolean
-    overridesMethod(IMethod m, IClass type) throws CompileException {
+    overridesMethod(IMethod method, IClass type) throws CompileException {
 
         // Check whether it overrides a method declared in THIS type.
-        IMethod[] ms = type.getDeclaredIMethods(m.getName());
-        for (int i = 0; i < ms.length; i++) {
-            if (Arrays.equals(m.getParameterTypes(), ms[i].getParameterTypes())) return true;
+        IMethod[] ms = type.getDeclaredIMethods(method.getName());
+        for (IMethod m : ms) {
+            if (Arrays.equals(method.getParameterTypes(), m.getParameterTypes())) return true;
         }
 
         // Check whether it overrides a method declared in a supertype.
-        return this.overridesMethodFromSupertype(m, type);
+        return this.overridesMethodFromSupertype(method, type);
     }
 
     /** Compiles a bridge method which will add a method of the signature of base that delegates to override. */
@@ -919,9 +916,7 @@ class UnitCompiler {
         }
 
         this.writeOpcode(Located.NOWHERE, Opcode.ALOAD_0);
-        for (int i = 0; i < locals.length; ++i) {
-            this.load(Located.NOWHERE, locals[i].getType(), locals[i].getSlotIndex());
-        }
+        for (LocalVariableSlot l : locals) this.load(Located.NOWHERE, l.getType(), l.getSlotIndex());
         this.writeOpcode(Located.NOWHERE, Opcode.INVOKEVIRTUAL);
         this.writeConstantMethodrefInfo(
             override.getDeclaringIClass().getDescriptor(), // classFD
@@ -1106,9 +1101,7 @@ class UnitCompiler {
                     this.warning("FUUR", "For update is unreachable", fs.getLocation());
                 } else
                 {
-                    for (int i = 0; i < fs.optionalUpdate.length; ++i) {
-                        this.compile(fs.optionalUpdate[i]);
-                    }
+                    for (Rvalue rv : fs.optionalUpdate) this.compile(rv);
                 }
             }
             fs.whereToContinue = null;
@@ -1136,11 +1129,12 @@ class UnitCompiler {
             try {
 
                 // Allocate the local variable for the current element.
-                this.compile2(fes.currentElement);
-                LocalVariable elementLv = this.getLocalVariable(
-                    fes.currentElement,
-                    fes.currentElement.variableDeclarators[0]
-                );
+                LocalVariable elementLv = this.getLocalVariable(fes.currentElement, false);
+                elementLv.setSlot(this.codeContext.allocateLocalVariable(
+                    Descriptor.size(elementLv.type.getDescriptor()),
+                    fes.currentElement.name,
+                    elementLv.type
+                ) );
 
                 // Compile initializer.
                 this.compileGetValue(fes.expression);
@@ -1264,7 +1258,7 @@ class UnitCompiler {
             this.warning("LUUR", "Loop update is unreachable", update[0].getLocation());
         } else
         {
-            for (int i = 0; i < update.length; ++i) this.compile(update[i]);
+            for (Rvalue rv : update) this.compile(rv);
             this.writeBranch(cs, Opcode.GOTO, bodyOffset);
         }
         cs.whereToContinue = null;
@@ -1594,8 +1588,7 @@ class UnitCompiler {
 
     private boolean
     compile2(FieldDeclaration fd) throws CompileException {
-        for (int i = 0; i < fd.variableDeclarators.length; ++i) {
-            VariableDeclarator vd = fd.variableDeclarators[i];
+        for (VariableDeclarator vd : fd.variableDeclarators) {
 
             ArrayInitializerOrRvalue initializer = this.getNonConstantFinalInitializer(fd, vd);
             if (initializer == null) continue;
@@ -1791,8 +1784,7 @@ class UnitCompiler {
             );
         }
 
-        for (int j = 0; j < lvds.variableDeclarators.length; ++j) {
-            VariableDeclarator vd = lvds.variableDeclarators[j];
+        for (VariableDeclarator vd : lvds.variableDeclarators) {
 
             LocalVariable lv = this.getLocalVariable(lvds, vd);
             lv.setSlot(
@@ -2333,9 +2325,9 @@ class UnitCompiler {
 
         // Add function parameters.
         for (int i = 0; i < fd.formalParameters.parameters.length; ++i) {
-            FunctionDeclarator.FormalParameter fp              = fd.formalParameters.parameters[i];
-            IClass                             parameterIClass = this.getType(fp.type);
-            LocalVariable                      lv              = this.getLocalVariable(
+            FormalParameter fp              = fd.formalParameters.parameters[i];
+            IClass          parameterIClass = this.getType(fp.type);
+            LocalVariable   lv              = this.getLocalVariable(
                 fp,
                 i == fd.formalParameters.parameters.length - 1 && fd.formalParameters.variableArity
             );
@@ -2453,8 +2445,8 @@ class UnitCompiler {
     throws CompileException {
         Map/*<String, LocalVariable>*/ vars = new HashMap();
         vars.putAll(localVars);
-        LocalVariable elementLv = this.getLocalVariable(fes.currentElement, fes.currentElement.variableDeclarators[0]);
-        vars.put(fes.currentElement.variableDeclarators[0].name, elementLv);
+        LocalVariable elementLv = this.getLocalVariable(fes.currentElement, false);
+        vars.put(fes.currentElement.name, elementLv);
         fes.localVariables = vars;
         this.buildLocalVariableMap(fes.body, vars);
     }
@@ -2527,8 +2519,7 @@ class UnitCompiler {
     throws CompileException {
         Map/*<String, LocalVariable>*/ newVars = new HashMap();
         newVars.putAll(localVars);
-        for (int i = 0; i < lvds.variableDeclarators.length; ++i) {
-            VariableDeclarator vd = lvds.variableDeclarators[i];
+        for (VariableDeclarator vd : lvds.variableDeclarators) {
             LocalVariable      lv = this.getLocalVariable(lvds, vd);
             if (newVars.put(vd.name, lv) != null) {
                 this.compileError("Redefinition of local variable \"" + vd.name + "\" ", vd.getLocation());
@@ -2550,7 +2541,7 @@ class UnitCompiler {
 
     /** @return The {@link LocalVariable} corresponding with the {@code parameter} */
     public LocalVariable
-    getLocalVariable(FunctionDeclarator.FormalParameter parameter) throws CompileException {
+    getLocalVariable(FormalParameter parameter) throws CompileException {
         return this.getLocalVariable(parameter, false);
     }
 
@@ -2560,7 +2551,7 @@ class UnitCompiler {
      * @return                         The {@link LocalVariable} corresponding with the {@code parameter}
      */
     public LocalVariable
-    getLocalVariable(FunctionDeclarator.FormalParameter parameter, boolean isVariableArityParameter)
+    getLocalVariable(FormalParameter parameter, boolean isVariableArityParameter)
     throws CompileException {
         if (parameter.localVariable == null) {
             assert parameter.type != null;
@@ -2579,14 +2570,10 @@ class UnitCompiler {
     private void
     fakeCompile(ArrayInitializerOrRvalue aior) throws CompileException {
         if (aior instanceof Rvalue) {
-            Rvalue rv = (Rvalue) aior;
-            this.fakeCompile(rv);
+            this.fakeCompile((Rvalue) aior);
         }
         if (aior instanceof ArrayInitializer) {
-            ArrayInitializer ai = (ArrayInitializer) aior;
-            for (int i = 0; i < ai.values.length; ++i) {
-                this.fakeCompile(ai.values[i]);
-            }
+            for (ArrayInitializerOrRvalue v : ((ArrayInitializer) aior).values) this.fakeCompile(v);
         }
     }
 
@@ -3436,10 +3423,8 @@ class UnitCompiler {
                 TypeBodyDeclaration tbd = (TypeBodyDeclaration) it.next();
                 if (!tbd.isStatic()) continue;
                 if (tbd instanceof FieldDeclaration) {
-                    FieldDeclaration fd  = (FieldDeclaration) tbd;
-                    IClass.IField[]  fds = this.getIFields(fd);
-                    for (int j = 0; j < fds.length; ++j) {
-                        if (fds[j].getName().equals(classDollarFieldName)) {
+                    for (IField f : this.getIFields((FieldDeclaration) tbd)) {
+                        if (f.getName().equals(classDollarFieldName)) {
                             hasClassDollarField = true;
                             break BLOCK_STATEMENTS;
                         }
@@ -3985,9 +3970,8 @@ class UnitCompiler {
                 iMethod.getName(),                            // methodName
                 iMethod.getDescriptor()                       // methodMD
             );
-            IClass[] pts   = iMethod.getParameterTypes();
-            int      count = 1;
-            for (int i = 0; i < pts.length; ++i) count += Descriptor.size(pts[i].getDescriptor());
+            int count = 1;
+            for (IClass pt : iMethod.getParameterTypes()) count += Descriptor.size(pt.getDescriptor());
             this.writeByte(count);
             this.writeByte(0);
         } else {
@@ -4164,27 +4148,27 @@ class UnitCompiler {
         IClass[] pts = iConstructor.getParameterTypes();
 
         // Determine formal parameters of anonymous constructor.
-        FunctionDeclarator.FormalParameters parameters;
-        Location                            loc = naci.getLocation();
+        FormalParameters parameters;
+        Location         loc = naci.getLocation();
         {
-            List/*<FunctionDeclarator.FormalParameter>*/ l = new ArrayList();
+            List/*<FormalParameter>*/ l = new ArrayList();
 
             // Pass the enclosing instance of the base class as parameter #1.
-            if (naci.optionalQualification != null) l.add(new FunctionDeclarator.FormalParameter(
+            if (naci.optionalQualification != null) l.add(new FormalParameter(
                 loc,                                                           // location
                 true,                                                          // finaL
                 new SimpleType(loc, this.getType(naci.optionalQualification)), // type
                 "this$base"                                                    // name
             ));
-            for (int i = 0; i < pts.length; ++i) l.add(new FunctionDeclarator.FormalParameter(
+            for (int i = 0; i < pts.length; ++i) l.add(new FormalParameter(
                 loc,                         // location
                 true,                        // finaL
                 new SimpleType(loc, pts[i]), // type
                 "p" + i                      // name
             ));
-            parameters = new FunctionDeclarator.FormalParameters(
+            parameters = new FormalParameters(
                 loc,
-                (FunctionDeclarator.FormalParameter[]) l.toArray(new FunctionDeclarator.FormalParameter[l.size()]),
+                (FormalParameter[]) l.toArray(new FormalParameter[l.size()]),
                 false
             );
         }
@@ -4293,8 +4277,8 @@ class UnitCompiler {
     }
     private IClass
     compileGet2(NewArray na) throws CompileException {
-        for (int i = 0; i < na.dimExprs.length; ++i) {
-            IClass dimType = this.compileGetValue(na.dimExprs[i]);
+        for (Rvalue dimExpr : na.dimExprs) {
+            IClass dimType = this.compileGetValue(dimExpr);
             if (dimType != IClass.INT && this.unaryNumericPromotion(
                 na,     // locatable
                 dimType // type
@@ -4965,8 +4949,7 @@ class UnitCompiler {
     private boolean
     generatesCode2(FieldDeclaration fd) throws CompileException {
         // Code is only generated if at least one of the declared variables has a non-constant-final initializer.
-        for (int i = 0; i < fd.variableDeclarators.length; ++i) {
-            VariableDeclarator vd = fd.variableDeclarators[i];
+        for (VariableDeclarator vd : fd.variableDeclarators) {
             if (this.getNonConstantFinalInitializer(fd, vd) != null) return true;
         }
         return false;
@@ -5309,8 +5292,7 @@ class UnitCompiler {
                 for (Iterator/*<IClass>*/ it = this.staticImportsOnDemand.iterator(); it.hasNext();) {
                     IClass   ic          = (IClass) it.next();
                     IClass[] memberTypes = ic.getDeclaredIClasses();
-                    for (int i = 0; i < memberTypes.length; ++i) {
-                        IClass mt = memberTypes[i];
+                    for (IClass mt : memberTypes) {
                         if (!this.isAccessible(mt, scopeBlockStatement)) continue;
                         if (mt.getDescriptor().endsWith('$' + simpleTypeName + ';')) {
                             if (importedMemberType != null) {
@@ -6331,8 +6313,7 @@ class UnitCompiler {
                 }
                 // Break long string constants up into UTF8-able chunks.
                 final String[] ss = UnitCompiler.makeUtf8Able(cv.toString());
-                for (int i = 0; i < ss.length; ++i) {
-                    final String s = ss[i];
+                for (final String s : ss) {
                     tmp.add(new Compilable() {
                         @Override public void compile() { UnitCompiler.this.pushConstant(locatable, s); }
                     });
@@ -6467,12 +6448,8 @@ class UnitCompiler {
 
         // Check exceptions that the constructor may throw.
         IClass[] thrownExceptions = iConstructor.getThrownExceptions();
-        for (int i = 0; i < thrownExceptions.length; ++i) {
-            this.checkThrownException(
-                locatable,
-                thrownExceptions[i],
-                scope
-            );
+        for (IClass te : thrownExceptions) {
+            this.checkThrownException(locatable, te, scope);
         }
 
         // Pass enclosing instance as a synthetic parameter.
@@ -6509,8 +6486,7 @@ class UnitCompiler {
                 }
             } else {
                 ClassDeclaration scopeClassDeclaration = (ClassDeclaration) scopeTypeDeclaration;
-                for (int i = 0; i < syntheticFields.length; ++i) {
-                    IClass.IField sf = syntheticFields[i];
+                for (IClass.IField sf : syntheticFields) {
                     if (!sf.getName().startsWith("val$")) continue;
                     IClass.IField eisf = (IClass.IField) scopeClassDeclaration.syntheticFields.get(sf.getName());
                     if (eisf != null) {
@@ -6563,6 +6539,14 @@ class UnitCompiler {
                                 if (es instanceof FunctionDeclarator) {
                                     statements = ((FunctionDeclarator) es).optionalStatements;
                                 } else
+                                if (es instanceof ForEachStatement) {
+                                    FunctionDeclarator.FormalParameter fp = ((ForEachStatement) es).currentElement;
+                                    if (fp.name.equals(localVariableName)) {
+                                        lv = this.getLocalVariable(fp);
+                                        break DETERMINE_LV;
+                                    }
+                                    continue;
+                                } else
                                 {
                                     continue;
                                 }
@@ -6574,10 +6558,9 @@ class UnitCompiler {
                                         LocalVariableDeclarationStatement lvds = (
                                             (LocalVariableDeclarationStatement) bs2
                                         );
-                                        VariableDeclarator[] vds = lvds.variableDeclarators;
-                                        for (int j = 0; j < vds.length; ++j) {
-                                            if (vds[j].name.equals(localVariableName)) {
-                                                lv = this.getLocalVariable(lvds, vds[j]);
+                                        for (VariableDeclarator vd : lvds.variableDeclarators) {
+                                            if (vd.name.equals(localVariableName)) {
+                                                lv = this.getLocalVariable(lvds, vd);
                                                 break DETERMINE_LV;
                                             }
                                         }
@@ -6588,8 +6571,7 @@ class UnitCompiler {
                             // Does the declaring function declare a parameter with that name?
                             while (!(s instanceof FunctionDeclarator)) s = s.getEnclosingScope();
                             FunctionDeclarator fd = (FunctionDeclarator) s;
-                            for (int j = 0; j < fd.formalParameters.parameters.length; ++j) {
-                                FunctionDeclarator.FormalParameter fp = fd.formalParameters.parameters[j];
+                            for (FormalParameter fp : fd.formalParameters.parameters) {
                                 if (fp.name.equals(localVariableName)) {
                                     lv = this.getLocalVariable(fp);
                                     break DETERMINE_LV;
@@ -6807,9 +6789,8 @@ class UnitCompiler {
         }
 
         IClass[] classes = lhsType.getDeclaredIClasses();
-        for (int i = 0; i < classes.length; ++i) {
-            final IClass memberType = classes[i];
-            String       name       = Descriptor.toClassName(memberType.getDescriptor());
+        for (final IClass memberType : classes) {
+            String name = Descriptor.toClassName(memberType.getDescriptor());
             name = name.substring(name.lastIndexOf('$') + 1);
             if (name.equals(rhs)) {
 
@@ -8389,7 +8370,7 @@ class UnitCompiler {
                     IClass.IField sf = (IClass.IField) it.next();
                     if (sf.getName().startsWith("val$")) l.add(sf.getType().getDescriptor());
                 }
-                FunctionDeclarator.FormalParameter[] parameters = constructorDeclarator.formalParameters.parameters;
+                FormalParameter[] parameters = constructorDeclarator.formalParameters.parameters;
                 for (int i = 0; i < parameters.length; ++i) {
                     IClass parameterType = UnitCompiler.this.getType(parameters[i].type);
                     if (i == parameters.length - 1 && constructorDeclarator.formalParameters.variableArity) {
@@ -8406,8 +8387,8 @@ class UnitCompiler {
 
             @Override public IClass[]
             getParameterTypes() throws CompileException {
-                FunctionDeclarator.FormalParameter[] parameters = constructorDeclarator.formalParameters.parameters;
-                IClass[]                             res        = new IClass[parameters.length];
+                FormalParameter[] parameters = constructorDeclarator.formalParameters.parameters;
+                IClass[]          res        = new IClass[parameters.length];
                 for (int i = 0; i < parameters.length; ++i) {
                     IClass parameterType = UnitCompiler.this.getType(parameters[i].type);
                     if (i == parameters.length - 1 && constructorDeclarator.formalParameters.variableArity) {
@@ -8433,7 +8414,7 @@ class UnitCompiler {
                     constructorDeclarator.getDeclaringType().getClassName()
                 ).append('(');
 
-                FunctionDeclarator.FormalParameter[] parameters = constructorDeclarator.formalParameters.parameters;
+                FormalParameter[] parameters = constructorDeclarator.formalParameters.parameters;
                 for (int i = 0; i < parameters.length; ++i) {
                     if (i != 0) sb.append(", ");
                     sb.append(parameters[i].toString(
@@ -8480,8 +8461,8 @@ class UnitCompiler {
 
             @Override public IClass[]
             getParameterTypes() throws CompileException {
-                FunctionDeclarator.FormalParameter[] parameters = methodDeclarator.formalParameters.parameters;
-                IClass[]                             res        = new IClass[parameters.length];
+                FormalParameter[] parameters = methodDeclarator.formalParameters.parameters;
+                IClass[]          res        = new IClass[parameters.length];
                 for (int i = 0; i < parameters.length; ++i) {
                     IClass parameterType = UnitCompiler.this.getType(parameters[i].type);
                     if (i == parameters.length - 1 && methodDeclarator.formalParameters.variableArity) {
@@ -8751,14 +8732,14 @@ class UnitCompiler {
 
         List/*<CatchClause>*/ l = new ArrayList();
         l.add(new CatchClause(
-            loc,                                    // location
-            new FunctionDeclarator.FormalParameter( // caughtException
+            loc,                 // location
+            new FormalParameter( // caughtException
                 loc,                                               // location
                 true,                                              // finaL
                 new SimpleType(loc, classNotFoundExceptionIClass), // type
                 "ex"                                               // name
             ),
-            b                                       // body
+            b                    // body
         ));
         TryStatement ts = new TryStatement(
             loc,                          // location
@@ -8771,7 +8752,7 @@ class UnitCompiler {
         statements.add(ts);
 
         // Class class$(String className)
-        FunctionDeclarator.FormalParameter parameter = new FunctionDeclarator.FormalParameter(
+        FormalParameter parameter = new FormalParameter(
             loc,                                                     // location
             false,                                                   // finaL
             new SimpleType(loc, this.iClassLoader.JAVA_LANG_STRING), // type
@@ -8783,9 +8764,9 @@ class UnitCompiler {
             new Modifiers(Mod.STATIC),                              // modifiers
             new SimpleType(loc, this.iClassLoader.JAVA_LANG_CLASS), // type
             "class$",                                               // name
-            new FunctionDeclarator.FormalParameters(                // parameters
+            new FormalParameters(                                   // parameters
                 loc,
-                new FunctionDeclarator.FormalParameter[] { parameter },
+                new FormalParameter[] { parameter },
                 false
             ),
             new Type[0],                                            // thrownExceptions

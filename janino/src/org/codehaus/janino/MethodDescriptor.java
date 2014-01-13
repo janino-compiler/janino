@@ -33,16 +33,16 @@ import java.util.*;
 class MethodDescriptor {
 
     /** The field descriptors of the method parameters. */
-    public final String[] parameterFDs;
+    public final String[] parameterFds;
 
     /** The field descriptor of the method return value. */
-    public final String   returnFD;
+    public final String   returnFd;
 
     /** */
     public
     MethodDescriptor(String[] parameterFds, String returnFd) {
-        this.parameterFDs = parameterFds;
-        this.returnFD     = returnFd;
+        this.parameterFds = parameterFds;
+        this.returnFd     = returnFd;
     }
 
     /** Parse a method descriptor into parameter FDs and return FDs. */
@@ -67,16 +67,16 @@ class MethodDescriptor {
             parameterFDs.add(s.substring(from, to));
             from = to;
         }
-        this.parameterFDs = (String[]) parameterFDs.toArray(new String[parameterFDs.size()]);
-        this.returnFD     = s.substring(++from);
+        this.parameterFds = (String[]) parameterFDs.toArray(new String[parameterFDs.size()]);
+        this.returnFd     = s.substring(++from);
     }
 
     /** @return The "method descriptor" (JVMS 4.3.3) */
     @Override public String
     toString() {
         StringBuilder sb = new StringBuilder("(");
-        for (int i = 0; i < this.parameterFDs.length; ++i) sb.append(this.parameterFDs[i]);
-        return sb.append(')').append(this.returnFD).toString();
+        for (String parameterFd : this.parameterFds) sb.append(parameterFd);
+        return sb.append(')').append(this.returnFd).toString();
     }
 
     /** Patches an additional parameter into a given method descriptor. */

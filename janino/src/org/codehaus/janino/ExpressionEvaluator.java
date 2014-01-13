@@ -412,8 +412,8 @@ class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluato
 
                 // If any of the components starts with an upper-case letter, then the ambiguous
                 // name is most probably a type name, e.g. "System.out" or "java.lang.System.out".
-                for (int i = 0; i < an.identifiers.length; ++i) {
-                    if (Character.isUpperCase(an.identifiers[i].charAt(0))) return;
+                for (String identifier : an.identifiers) {
+                    if (Character.isUpperCase(identifier.charAt(0))) return;
                 }
 
                 // It's most probably a parameter name (although it could be a field name as well).

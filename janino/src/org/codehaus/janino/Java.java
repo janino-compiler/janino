@@ -40,6 +40,8 @@ import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.Location;
 import org.codehaus.janino.CodeContext.Offset;
 import org.codehaus.janino.IClass.IMethod;
+import org.codehaus.janino.Java.FunctionDeclarator.FormalParameter;
+import org.codehaus.janino.Java.FunctionDeclarator.FormalParameters;
 import org.codehaus.janino.Visitor.BlockStatementVisitor;
 import org.codehaus.janino.Visitor.ElementValueVisitor;
 import org.codehaus.janino.Visitor.TypeArgumentVisitor;
@@ -841,13 +843,13 @@ class Java {
         getConstructors() {
             if (this.constructors.isEmpty()) {
                 ConstructorDeclarator defaultConstructor = new ConstructorDeclarator(
-                    this.getLocation(),                        // location
-                    null,                                      // optionalDocComment
-                    new Java.Modifiers(Mod.PUBLIC),            // modifiers
-                    new FunctionDeclarator.FormalParameters(), // formalParameters
-                    new Type[0],                               // thrownExceptions
-                    null,                                      // optionalExplicitConstructorInvocation
-                    Collections.EMPTY_LIST                     // optionalStatements
+                    this.getLocation(),             // location
+                    null,                           // optionalDocComment
+                    new Java.Modifiers(Mod.PUBLIC), // modifiers
+                    new FormalParameters(),         // formalParameters
+                    new Type[0],                    // thrownExceptions
+                    null,                           // optionalExplicitConstructorInvocation
+                    Collections.EMPTY_LIST          // optionalStatements
                 );
                 defaultConstructor.setDeclaringType(this);
                 return new ConstructorDeclarator[] { defaultConstructor };
@@ -930,8 +932,8 @@ class Java {
                 optionalExtendedType.setEnclosingScope(new EnclosingScopeOfTypeDeclaration(this));
             }
             this.implementedTypes     = implementedTypes;
-            for (int i = 0; i < implementedTypes.length; ++i) {
-                implementedTypes[i].setEnclosingScope(new EnclosingScopeOfTypeDeclaration(this));
+            for (Type implementedType : implementedTypes) {
+                implementedType.setEnclosingScope(new EnclosingScopeOfTypeDeclaration(this));
             }
         }
 
@@ -1134,8 +1136,8 @@ class Java {
             this.optionalDocComment = optionalDocComment;
             this.name               = name;
             this.extendedTypes      = extendedTypes;
-            for (int i = 0; i < extendedTypes.length; ++i) {
-                extendedTypes[i].setEnclosingScope(new EnclosingScopeOfTypeDeclaration(this));
+            for (Type extendedType : extendedTypes) {
+                extendedType.setEnclosingScope(new EnclosingScopeOfTypeDeclaration(this));
             }
         }
 
@@ -1436,10 +1438,8 @@ class Java {
             this.optionalStatements = optionalStatements;
 
             this.type.setEnclosingScope(this);
-            for (int i = 0; i < parameters.parameters.length; ++i) {
-                parameters.parameters[i].type.setEnclosingScope(this);
-            }
-            for (int i = 0; i < thrownExceptions.length; ++i) thrownExceptions[i].setEnclosingScope(this);
+            for (FormalParameter fp : parameters.parameters) fp.type.setEnclosingScope(this);
+            for (Type te : thrownExceptions) te.setEnclosingScope(this);
             if (optionalStatements != null) {
                 for (Iterator/*<BlockStatement>*/ it = optionalStatements.iterator(); it.hasNext();) {
                     Java.BlockStatement bs = (Java.BlockStatement) it.next();
@@ -1462,9 +1462,7 @@ class Java {
         @Override public void
         setDeclaringType(TypeDeclaration declaringType) {
             super.setDeclaringType(declaringType);
-            for (int i = 0; i < this.modifiers.annotations.length; i++) {
-                this.modifiers.annotations[i].setEnclosingScope(declaringType);
-            }
+            for (Annotation a : this.modifiers.annotations) a.setEnclosingScope(declaringType);
         }
 
         // Implement "Scope".
@@ -1572,13 +1570,13 @@ class Java {
 
         public
         ConstructorDeclarator(
-            Location                            location,
-            String                              optionalDocComment,
-            Modifiers                           modifiers,
-            FunctionDeclarator.FormalParameters parameters,
-            Type[]                              thrownExceptions,
-            ConstructorInvocation               optionalConstructorInvocation,
-            List/*<BlockStatement>*/            statements
+            Location                 location,
+            String                   optionalDocComment,
+            Modifiers                modifiers,
+            FormalParameters         parameters,
+            Type[]                   thrownExceptions,
+            ConstructorInvocation    optionalConstructorInvocation,
+            List/*<BlockStatement>*/ statements
         ) {
             super(
                 location,                                // location
@@ -1609,7 +1607,7 @@ class Java {
         toString() {
             StringBuilder sb = new StringBuilder(this.getDeclaringClass().getClassName()).append('(');
 
-            FunctionDeclarator.FormalParameter[] fps = this.formalParameters.parameters;
+            FormalParameter[] fps = this.formalParameters.parameters;
             for (int i = 0; i < fps.length; ++i) {
                 if (i > 0) sb.append(", ");
                 sb.append(fps[i].toString(i == fps.length - 1 && this.formalParameters.variableArity));
@@ -1627,14 +1625,14 @@ class Java {
     class MethodDeclarator extends FunctionDeclarator {
         public
         MethodDeclarator(
-            Location                            location,
-            String                              optionalDocComment,
-            Java.Modifiers                      modifiers,
-            Type                                type,
-            String                              name,
-            FunctionDeclarator.FormalParameters parameters,
-            Type[]                              thrownExceptions,
-            List/*<BlockStatement>*/            optionalStatements
+            Location                 location,
+            String                   optionalDocComment,
+            Java.Modifiers           modifiers,
+            Type                     type,
+            String                   name,
+            FormalParameters         parameters,
+            Type[]                   thrownExceptions,
+            List/*<BlockStatement>*/ optionalStatements
         ) {
             super(
                 location,           // location
@@ -1650,8 +1648,8 @@ class Java {
 
         @Override public String
         toString() {
-            StringBuilder                        sb  = new StringBuilder(this.name).append('(');
-            FunctionDeclarator.FormalParameter[] fps = this.formalParameters.parameters;
+            StringBuilder     sb  = new StringBuilder(this.name).append('(');
+            FormalParameter[] fps = this.formalParameters.parameters;
             for (int i = 0; i < fps.length; ++i) {
                 if (i > 0) sb.append(", ");
                 sb.append(fps[i].toString(i == fps.length - 1 && this.formalParameters.variableArity));
@@ -1701,8 +1699,7 @@ class Java {
             this.variableDeclarators = variableDeclarators;
 
             this.type.setEnclosingScope(this);
-            for (int i = 0; i < variableDeclarators.length; ++i) {
-                VariableDeclarator vd = variableDeclarators[i];
+            for (VariableDeclarator vd : variableDeclarators) {
                 if (vd.optionalInitializer != null) Java.setEnclosingBlockStatement(vd.optionalInitializer, this);
             }
         }
@@ -1755,8 +1752,9 @@ class Java {
             ((Rvalue) aiorv).setEnclosingBlockStatement(enclosingBlockStatement);
         } else
         if (aiorv instanceof ArrayInitializer) {
-            ArrayInitializerOrRvalue[] values = ((ArrayInitializer) aiorv).values;
-            for (int i = 0; i < values.length; ++i) Java.setEnclosingBlockStatement(values[i], enclosingBlockStatement);
+            for (ArrayInitializerOrRvalue v : ((ArrayInitializer) aiorv).values) {
+                Java.setEnclosingBlockStatement(v, enclosingBlockStatement);
+            }
         } else
         {
             throw new JaninoRuntimeException("Unexpected array or initializer class " + aiorv.getClass().getName());
@@ -2105,9 +2103,7 @@ class Java {
             this.optionalCondition = optionalCondition;
             if (optionalCondition != null) optionalCondition.setEnclosingBlockStatement(this);
             this.optionalUpdate = optionalUpdate;
-            if (optionalUpdate != null) {
-                for (int i = 0; i < optionalUpdate.length; ++i) optionalUpdate[i].setEnclosingBlockStatement(this);
-            }
+            if (optionalUpdate != null) for (Rvalue rv : optionalUpdate) rv.setEnclosingBlockStatement(this);
             (this.body = body).setEnclosingScope(this);
         }
 
@@ -2125,7 +2121,7 @@ class Java {
     class ForEachStatement extends ContinuableStatement {
 
         /** The 'current element local variable declaration' part of the 'enhanced FOR statement'. */
-        public final LocalVariableDeclarationStatement currentElement;
+        public final FormalParameter currentElement;
 
         /** The 'expression' part of the 'enhanced FOR statement'. */
         public final Rvalue expression;
@@ -2134,14 +2130,9 @@ class Java {
         public final BlockStatement body;
 
         public
-        ForEachStatement(
-            Location                          location,
-            LocalVariableDeclarationStatement currentElement,
-            Rvalue                            expression,
-            BlockStatement                    body
-        ) {
+        ForEachStatement(Location location, FormalParameter currentElement, Rvalue expression, BlockStatement body) {
             super(location);
-            (this.currentElement = currentElement).setEnclosingScope(this);
+            (this.currentElement = currentElement).type.setEnclosingScope(this);
             (this.expression     = expression).setEnclosingBlockStatement(this);
             (this.body           = body).setEnclosingScope(this);
         }
@@ -2237,7 +2228,7 @@ class Java {
     class CatchClause extends Located implements Scope {
 
         /** Container for the type and the name of the caught exception. */
-        public final FunctionDeclarator.FormalParameter caughtException;
+        public final FormalParameter caughtException;
 
         /** Body of the CATCH clause. */
         public final Block body;
@@ -2251,7 +2242,7 @@ class Java {
         public boolean reachable;
 
         public
-        CatchClause(Location location, FunctionDeclarator.FormalParameter caughtException, Block body) {
+        CatchClause(Location location, FormalParameter caughtException, Block body) {
             super(location);
             (this.caughtException = caughtException).type.setEnclosingScope(this);
             (this.body            = body).setEnclosingScope(this);
@@ -2447,8 +2438,7 @@ class Java {
             this.variableDeclarators = variableDeclarators;
 
             this.type.setEnclosingScope(this);
-            for (int i = 0; i < variableDeclarators.length; ++i) {
-                VariableDeclarator vd = variableDeclarators[i];
+            for (VariableDeclarator vd : variableDeclarators) {
                 if (vd.optionalInitializer != null) Java.setEnclosingBlockStatement(vd.optionalInitializer, this);
             }
         }
@@ -3800,7 +3790,7 @@ class Java {
         ConstructorInvocation(Location location, Rvalue[] arguments) {
             super(location);
             this.arguments = arguments;
-            for (int i = 0; i < arguments.length; ++i) arguments[i].setEnclosingBlockStatement(this);
+            for (Rvalue a : arguments) a.setEnclosingBlockStatement(this);
         }
 
         // Implement BlockStatement
@@ -4090,10 +4080,10 @@ class Java {
     class ParameterAccess extends Rvalue {
 
         /** The parameter to access. */
-        public final FunctionDeclarator.FormalParameter formalParameter;
+        public final FormalParameter formalParameter;
 
         public
-        ParameterAccess(Location location, FunctionDeclarator.FormalParameter formalParameter) {
+        ParameterAccess(Location location, FormalParameter formalParameter) {
             super(location);
             this.formalParameter = formalParameter;
         }

@@ -461,6 +461,18 @@ class JlsTests extends JaninoTestSuite {
             "String x = \"A\"; for (Number y : new String[] { \"B\", \"C\" }) x += y; return x.equals(\"ABC\");",
             "Assignment conversion not possible from type \"java.lang.String\" to type \"java.lang.Number\""
         );
+        this.assertScriptReturnsTrue(
+            "String x = \"A\"; String[] sa = { \"B\",\"C\" }; for (String y : sa) x += y; return x.equals(\"ABC\");"
+        );
+        this.assertScriptReturnsTrue(
+            "final StringBuilder sb = new StringBuilder();\n"
+            + "for (final String y : new String[] { \"A\", \"B\", \"C\" }) {\n"
+            + "    new Runnable() {\n"
+            + "        public void run() { sb.append(y); }\n"
+            + "    }.run();\n"
+            + "}\n"
+            + "return sb.toString().equals(\"ABC\");"
+        );
     }
 
     @Test public void

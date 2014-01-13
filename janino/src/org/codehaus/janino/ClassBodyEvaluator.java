@@ -246,8 +246,8 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
 
         // Set default imports.
         if (this.optionalDefaultImports != null) {
-            for (int i = 0; i < this.optionalDefaultImports.length; ++i) {
-                Scanner s       = new Scanner(null, new StringReader(this.optionalDefaultImports[i]));
+            for (String defaultImport : this.optionalDefaultImports) {
+                Scanner s       = new Scanner(null, new StringReader(defaultImport));
                 Parser  parser2 = new Parser(s);
                 cu.addImportDeclaration(parser2.parseImportDeclarationBody());
                 if (!parser2.peekEof()) {

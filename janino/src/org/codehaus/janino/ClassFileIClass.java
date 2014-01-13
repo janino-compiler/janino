@@ -234,8 +234,8 @@ class ClassFileIClass extends IClass {
                 String descriptor = ((ClassFile.ConstantNameAndTypeInfo) cpi).getDescriptor(this.classFile);
                 if (descriptor.charAt(0) == '(') {
                     MethodDescriptor md = new MethodDescriptor(descriptor);
-                    this.resolveClass(md.returnFD);
-                    for (int j = 0; j < md.parameterFDs.length; ++j) this.resolveClass(md.parameterFDs[j]);
+                    this.resolveClass(md.returnFd);
+                    for (String parameterFd : md.parameterFds) this.resolveClass(parameterFd);
                 } else {
                     this.resolveClass(descriptor);
                 }
@@ -297,22 +297,21 @@ class ClassFileIClass extends IClass {
         // Determine return type.
         MethodDescriptor md = new MethodDescriptor(methodInfo.getDescriptor());
 
-        final IClass returnType = this.resolveClass(md.returnFD);
+        final IClass returnType = this.resolveClass(md.returnFd);
 
         // Determine parameter types.
-        final IClass[] parameterTypes = new IClass[md.parameterFDs.length];
-        for (int i = 0; i < parameterTypes.length; ++i) parameterTypes[i] = this.resolveClass(md.parameterFDs[i]);
+        final IClass[] parameterTypes = new IClass[md.parameterFds.length];
+        for (int i = 0; i < parameterTypes.length; ++i) parameterTypes[i] = this.resolveClass(md.parameterFds[i]);
 
         // Determine thrown exceptions.
         IClass[]                  tes = null;
         ClassFile.AttributeInfo[] ais = methodInfo.getAttributes();
-        for (int i = 0; i < ais.length; ++i) {
-            ClassFile.AttributeInfo ai = ais[i];
+        for (ClassFile.AttributeInfo ai : ais) {
             if (ai instanceof ClassFile.ExceptionsAttribute) {
                 ConstantClassInfo[] ccis = ((ClassFile.ExceptionsAttribute) ai).getExceptions(this.classFile);
                 tes = new IClass[ccis.length];
-                for (int j = 0; j < tes.length; ++j) {
-                    tes[j] = this.resolveClass(Descriptor.fromInternalForm(ccis[j].getName(this.classFile)));
+                for (int i = 0; i < tes.length; ++i) {
+                    tes[i] = this.resolveClass(Descriptor.fromInternalForm(ccis[i].getName(this.classFile)));
                 }
             }
         }
@@ -410,9 +409,7 @@ class ClassFileIClass extends IClass {
         // because typical Java&trade; compilers do not generate a "ConstantValue" attribute for fields like
         // "int RED = 0", because "0" is the default value for an integer field.
         ClassFile.ConstantValueAttribute cva = null;
-        ClassFile.AttributeInfo[]        ais = fieldInfo.getAttributes();
-        for (int i = 0; i < ais.length; ++i) {
-            ClassFile.AttributeInfo ai = ais[i];
+        for (ClassFile.AttributeInfo ai : fieldInfo.getAttributes()) {
             if (ai instanceof ClassFile.ConstantValueAttribute) {
                 cva = (ClassFile.ConstantValueAttribute) ai;
                 break;

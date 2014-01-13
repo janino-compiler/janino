@@ -63,8 +63,7 @@ class ReflectionIClass extends IClass {
     getDeclaredIMethods2() {
         Method[]          methods  = this.clazz.getDeclaredMethods();
         List/*<IMethod>*/ iMethods = new ArrayList();
-        for (int i = 0; i < methods.length; ++i) {
-            Method m = methods[i];
+        for (Method m : methods) {
 
             // Formerly, the Java 5 synthetic methods were skipped here, because they are not "declared", i.e. hand-
             // written. However that turned out to be a bad idea, because with parameterized types the check that
