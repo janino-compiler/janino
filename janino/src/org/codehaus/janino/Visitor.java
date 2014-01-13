@@ -108,7 +108,7 @@ class Visitor {
         void visitIfStatement(Java.IfStatement is);
         /** Invoked by {@link Java.ForStatement#accept(Visitor.BlockStatementVisitor)} */
         void visitForStatement(Java.ForStatement fs);
-        /** Invoked by {@link Java.ForeachStatement#accept(Visitor.BlockStatementVisitor)} */
+        /** Invoked by {@link Java.ForEachStatement#accept(Visitor.BlockStatementVisitor)} */
         void visitForEachStatement(Java.ForEachStatement forEachStatement);
         /** Invoked by {@link Java.WhileStatement#accept(Visitor.BlockStatementVisitor)} */
         void visitWhileStatement(Java.WhileStatement ws);

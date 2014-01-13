@@ -4113,32 +4113,25 @@ class Java {
          */
         public final Type type;
 
-        /**
-         * The sizes of the first dimensions to instantiate.
-         *
-         * @see #NewArray(Location, Type, Rvalue, int)
-         */
+        /** The sizes of the first dimensions to instantiate. */
         public final Rvalue[] dimExprs;
 
-        /**
-         * The count of additional dimensions that the array should have.
-         *
-         * @see #NewArray(Location, Type, Rvalue, int)
-         */
+        /** The count of additional dimensions that the array should have. */
         public final int dims;
 
         /**
          * Create a new array with dimension dimExprs.length + dims
          * <p>
          * e.g. byte[12][][] is created with
+         * <pre>
          *     new NewArray(
          *         null,
          *         Java.BasicType(NULL, Java.BasicType.BYTE),
-         *         new Rvalue[] {
-         *             new Java.Literal(null, Integer.valueOf(12)
-         *         },
+         *         new Rvalue[] { new Java.Literal(null, Integer.valueOf(12) },
          *         2
          *     )
+         * </pre>
+         *
          * @param location  the location of this element
          * @param type      the base type of the array
          * @param dimExprs  sizes for dimensions being allocated with specific sizes
@@ -4369,12 +4362,7 @@ class Java {
          */
         final Object value;
 
-        /**
-         * Equivalent of the {@code null} literal.
-         * <p>
-         * An alternative way to get an equivalent of the {@link NullLiteral} is {@link
-         * #SimpleConstant(Location, String)} with {@code null} as the second argument.
-         */
+        /** Equivalent of the {@code null} literal. */
         public SimpleConstant(Location location) { super(location); this.value = null; }
 
         /** Equivalent of an literal, casted to {@code byte}. */
@@ -4412,9 +4400,6 @@ class Java {
         /**
          * Equivalent of a {@link StringLiteral}, or, if {@code value} is null, the equivalent of a {@link
          * NullLiteral}.
-         * <p>
-         * An alternative way to get an equivalent of the {@link NullLiteral} is {@link
-         * SimpleConstant#SimpleConstant(Location)}.
          */
         public SimpleConstant(Location location, String value) { super(location); this.value = value; }
 
