@@ -162,7 +162,7 @@ interface IScriptEvaluator extends IClassBodyEvaluator {
     void setStaticMethod(boolean[] staticMethod);
 
     /**
-     * Defines the return types of the generated methods. The meaning of {@code null} values is
+     * Defines the return types of the generated methods. The meaning of {@code null} elements is
      * implementation-dependent.
      */
     void setReturnTypes(Class[] returnTypes);

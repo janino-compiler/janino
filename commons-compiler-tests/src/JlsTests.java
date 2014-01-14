@@ -434,6 +434,21 @@ class JlsTests extends JaninoTestSuite {
             "int x = 37; switch (x) { case -2000000000: break; case 2000000000: break; } return x == 37;"
         );
     }
+    
+    @Test public void
+    test_14_14_2_1__TheEnhancedForStatement_Iterable() throws Exception {
+        
+        this.assertScriptReturnsTrue(
+            "String x = \"A\";\n"
+            + "for (Object y : java.util.Arrays.asList(new String[] { \"B\", \"C\" })) x += y;\n"
+            + "return x.equals(\"ABC\");"
+        );
+        this.assertScriptReturnsTrue(
+            "String x = \"A\";\n"
+            + "for (String y : java.util.Arrays.asList(new String[] { \"B\", \"C\" })) x += y.length();\n"
+            + "return x.equals(\"ABC\");"
+        );
+    }
 
     @Test public void
     test_14_14_2_2__TheEnhancedForStatement_Array() throws Exception {
@@ -446,7 +461,7 @@ class JlsTests extends JaninoTestSuite {
             "int x = 1; for (int y : new short[] { 1, 2, 3 }) x += x * y; return x == 24;"
         );
         this.assertScriptUncookable(
-            "int x = 1; for (short y : new int[] { 1, 2, 3 }) x += x * y; return x == 24;",
+            "int x = 1; for (short y : new int[] { 1, 2, 3 }) x += x * y;",
             "Assignment conversion not possible from type \"int\" to type \"short\""
         );
 

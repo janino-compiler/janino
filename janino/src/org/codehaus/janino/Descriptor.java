@@ -297,9 +297,11 @@ class Descriptor {
     /** The field descriptor for the annotation {@link Override}. */
     public static final String JAVA_LANG_OVERRIDE = "Ljava/lang/Override;";
     /** The field descriptor for the interface {@link java.lang.Iterable}. */
-    public static final String JAVA_LANG_ITERABLE = "Ljava/io/Serializable;";
+    public static final String JAVA_LANG_ITERABLE = "Ljava/lang/Iterable;";
     /** The field descriptor for the interface {@link java.io.Serializable}. */
     public static final String JAVA_IO_SERIALIZABLE = "Ljava/io/Serializable;";
+    /** The field descriptor for the interface {@link java.util.Iterator}. */
+    public static final String JAVA_UTIL_ITERATOR = "Ljava/util/Iterator;";
     /** The field descriptor for the wrapper class {@link AssertionError}. */
     public static final String JAVA_LANG_ASSERTIONERROR = "Ljava/lang/AssertionError;";
 

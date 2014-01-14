@@ -1134,7 +1134,7 @@ class UnitCompiler {
                     Descriptor.size(elementLv.type.getDescriptor()),
                     fes.currentElement.name,
                     elementLv.type
-                ) );
+                ));
 
                 // Compile initializer.
                 this.compileGetValue(fes.expression);
@@ -1144,7 +1144,7 @@ class UnitCompiler {
                 this.pushConstant(fes, 0);
                 LocalVariable indexLv = new LocalVariable(false, IClass.INT);
                 indexLv.setSlot(this.codeContext.allocateLocalVariable((short) 1, null, indexLv.type));
-                this.store(fes, IClass.INT, indexLv);
+                this.store(fes, indexLv);
 
                 CodeContext.Offset toCondition = this.codeContext.new Offset();
                 this.writeBranch(fes, Opcode.GOTO, toCondition);
@@ -1157,7 +1157,7 @@ class UnitCompiler {
                 this.load(fes, indexLv);
                 this.writeOpcode(fes, Opcode.IALOAD + UnitCompiler.ilfdabcs(expressionType.getComponentType()));
                 this.assignmentConversion(fes.currentElement, expressionType.getComponentType(), elementLv.type, null);
-                this.store(fes, elementLv.type, elementLv);
+                this.store(fes, elementLv);
 
                 boolean bodyCcn = this.compile(fes.body);
                 if (fes.whereToContinue != null) fes.whereToContinue.set();
@@ -1186,7 +1186,78 @@ class UnitCompiler {
             }
         } else
         if (this.iClassLoader.JAVA_LANG_ITERABLE.isAssignableFrom(expressionType)) {
-            this.compileError("Advanced FOR statement NYI for java.lang.Iterable type");
+            this.codeContext.saveLocalVariables();
+            try {
+
+                // Allocate the local variable for the current element.
+                LocalVariable elementLv = this.getLocalVariable(fes.currentElement, false);
+                elementLv.setSlot(this.codeContext.allocateLocalVariable(
+                    (short) 1,
+                    fes.currentElement.name,
+                    elementLv.type
+                ));
+
+                // Compile initializer.
+                this.compileGetValue(fes.expression);
+                this.writeOpcode(fes.expression, Opcode.INVOKEINTERFACE);
+                this.writeConstantInterfaceMethodrefInfo(
+                    Descriptor.JAVA_LANG_ITERABLE, // classFD
+                    "iterator",                    // methodName
+                    "()Ljava/util/Iterator;"       // methodMD
+                );
+                this.writeByte(1);
+                this.writeByte(0);
+                LocalVariable iteratorLv = new LocalVariable(false, this.iClassLoader.JAVA_UTIL_ITERATOR);
+                iteratorLv.setSlot(this.codeContext.allocateLocalVariable((short) 1, null, iteratorLv.type));
+                this.store(fes, iteratorLv);
+
+                CodeContext.Offset toCondition = this.codeContext.new Offset();
+                this.writeBranch(fes, Opcode.GOTO, toCondition);
+
+                // Compile the body.
+                fes.whereToContinue = null;
+                CodeContext.Offset bodyOffset = this.codeContext.newOffset();
+
+                this.load(fes, iteratorLv);
+                this.writeOpcode(fes.expression, Opcode.INVOKEINTERFACE);
+                this.writeConstantInterfaceMethodrefInfo(
+                    Descriptor.JAVA_UTIL_ITERATOR, // classFD
+                    "next",                        // methodName
+                    "()Ljava/lang/Object;"         // methodMD
+                );
+                this.writeByte(1);
+                this.writeByte(0);
+                this.store(fes, elementLv);
+
+                boolean bodyCcn = this.compile(fes.body);
+                if (fes.whereToContinue != null) fes.whereToContinue.set();
+
+                // Compile update.
+                if (!bodyCcn && fes.whereToContinue == null) {
+                    this.warning("FUUR", "For update is unreachable", fes.getLocation());
+                }
+                fes.whereToContinue = null;
+
+                // Compile condition.
+                toCondition.set();
+                this.load(fes, iteratorLv);
+                this.writeOpcode(fes.expression, Opcode.INVOKEINTERFACE);
+                this.writeConstantInterfaceMethodrefInfo(
+                    Descriptor.JAVA_UTIL_ITERATOR, // classFD
+                    "hasNext",                     // methodName
+                    "()Z"                          // methodMD
+                );
+                this.writeByte(1);
+                this.writeByte(0);
+                this.writeBranch(fes, Opcode.IFNE, bodyOffset);
+            } finally {
+                this.codeContext.restoreLocalVariables();
+            }
+
+            if (fes.whereToBreak != null) {
+                fes.whereToBreak.set();
+                fes.whereToBreak = null;
+            }
         } else
         {
             this.compileError("Cannot iterate over '" + expressionType + "'");
@@ -1810,7 +1881,7 @@ class UnitCompiler {
                         + vd.optionalInitializer.getClass().getName()
                     );
                 }
-                this.store(lvds, lv.type, lv);
+                this.store(lvds, lv);
             }
         }
         return true;
@@ -5069,9 +5140,7 @@ class UnitCompiler {
     }
 
     private void
-    compileSet2(LocalVariableAccess lva) {
-        this.store(lva, lva.localVariable.type, lva.localVariable);
-    }
+    compileSet2(LocalVariableAccess lva) { this.store(lva, lva.localVariable); }
 
     private void
     compileSet2(FieldAccess fa) throws CompileException {
@@ -9847,12 +9916,10 @@ class UnitCompiler {
     }
 
     /**
-     * Assign stack top value to the given local variable. (Assignment conversion takes effect.) If {@code
-     * optionalConstantValue} is not {@code null}, then the top stack value is a constant value with that type and
-     * value, and a narrowing primitive conversion as described in JLS7 5.2 is applied.
+     * Assign top stack top value to the given local variable.
      */
     private void
-    store(Locatable locatable, IClass valueType, LocalVariable localVariable) {
+    store(Locatable locatable, LocalVariable localVariable) {
         this.store(
             locatable,                   // locatable
             localVariable.type,          // lvType

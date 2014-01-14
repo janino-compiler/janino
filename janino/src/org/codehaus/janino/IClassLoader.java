@@ -59,6 +59,7 @@ class IClassLoader {
     public IClass JAVA_LANG_OVERRIDE;
     public IClass JAVA_LANG_ITERABLE;
     public IClass JAVA_IO_SERIALIZABLE;
+    public IClass JAVA_UTIL_ITERATOR;
 
     public IClass JAVA_LANG_BOOLEAN;
     public IClass JAVA_LANG_BYTE;
@@ -98,6 +99,7 @@ class IClassLoader {
             this.JAVA_LANG_OVERRIDE         = this.loadIClass(Descriptor.JAVA_LANG_OVERRIDE);
             this.JAVA_LANG_ITERABLE         = this.loadIClass(Descriptor.JAVA_LANG_ITERABLE);
             this.JAVA_IO_SERIALIZABLE       = this.loadIClass(Descriptor.JAVA_IO_SERIALIZABLE);
+            this.JAVA_UTIL_ITERATOR         = this.loadIClass(Descriptor.JAVA_UTIL_ITERATOR);
 
             this.JAVA_LANG_BOOLEAN   = this.loadIClass(Descriptor.JAVA_LANG_BOOLEAN);
             this.JAVA_LANG_BYTE      = this.loadIClass(Descriptor.JAVA_LANG_BYTE);

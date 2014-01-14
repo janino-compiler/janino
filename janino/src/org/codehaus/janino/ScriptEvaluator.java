@@ -346,6 +346,15 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
         this.setStaticMethod(new boolean[] { staticMethod });
     }
 
+    /**
+     * Defines the return types of the generated methods.
+     *
+     * @param returnType The method's return type; {@code null} means the "default return type", which is the type
+     *                   returned by {@link #getDefaultReturnType()} ({@code void.class} for {@link ScriptEvaluator}
+     *                   and {@code Object.class} for {@link ExpressionEvaluator})
+     * @see              ScriptEvaluator#getDefaultReturnType()
+     * @see              ExpressionEvaluator#getDefaultReturnType()
+     */
     @Override public void
     setReturnType(Class returnType) {
         this.setReturnTypes(new Class[] { returnType });
@@ -394,7 +403,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
     /**
      * Defines the return types of the generated methods.
      *
-     * @param returnTypes The methods' return types; {@code null} values mean the "default return type", which is the
+     * @param returnTypes The methods' return types; {@code null} elements mean the "default return type", which is the
      *                    type returned by {@link #getDefaultReturnType()} ({@code void.class} for {@link
      *                    ScriptEvaluator} and {@code Object.class} for {@link ExpressionEvaluator})
      * @see               ScriptEvaluator#getDefaultReturnType()
@@ -693,7 +702,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
      *       names and values and thrown exceptions
      *   <li>A block
      * </ul>
-     * @param annotations TODO
+     *
      * @param returnType Return type of the declared method
      */
     protected Java.MethodDeclarator
