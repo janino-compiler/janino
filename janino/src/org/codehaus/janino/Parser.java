@@ -2295,8 +2295,8 @@ class Parser {
             }
             // Name
             return new AmbiguousName(
-                this.location(), // location
-                qi               // identifiers
+                location, // location
+                qi        // identifiers
             );
         }
 
