@@ -165,25 +165,17 @@ class JaninoTestSuite {
         }
 
         @Override protected void
-        assertExecutable() throws Exception {
-            this.scriptEvaluator.setReturnType(void.class);
-            super.assertExecutable();
-        }
-
-        @Override protected void
         assertResultTrue() throws Exception {
             this.scriptEvaluator.setReturnType(boolean.class);
             super.assertResultTrue();
         }
 
-        @Override
-        protected void
+        @Override protected void
         compile() throws Exception {
             this.scriptEvaluator.cook(this.script);
         }
 
-        @Override
-        protected Object
+        @Override protected Object
         execute() throws Exception {
             return this.scriptEvaluator.evaluate(new Object[0]);
         }
