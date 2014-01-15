@@ -1702,7 +1702,7 @@ class ClassFile {
         @Override protected void
         storeBody(DataOutputStream dos) throws IOException {
             dos.writeShort(this.entries.length); // local_variable_table_length
-            for (Entry lnte :this.entries) {     // local_variable_table
+            for (Entry lnte : this.entries) { // local_variable_table
                 dos.writeShort(lnte.startPC);         // start_pc;
                 dos.writeShort(lnte.length);          // length
                 dos.writeShort(lnte.nameIndex);       // name_index
