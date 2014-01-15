@@ -1355,7 +1355,7 @@ class Parser {
                 if (this.peekIdentifier() != null && this.peekNextButOne(":")) {
 
                     // 'for' '(' [ Modifiers ] Type identifier ':' Expression ')' Statement
-                    String name = this.readIdentifier();
+                    String   name         = this.readIdentifier();
                     Location nameLocation = this.location();
                     this.read(":");
                     Rvalue expression = this.parseExpression().toRvalue();
@@ -1389,7 +1389,7 @@ class Parser {
                 if (this.peekNextButOne(":")) {
 
                     // 'for' '(' Expression identifier ':' Expression ')' Statement
-                    String   name = this.readIdentifier();
+                    String   name         = this.readIdentifier();
                     Location nameLocation = this.location();
                     this.read(":");
                     Rvalue expression = this.parseExpression().toRvalue();
