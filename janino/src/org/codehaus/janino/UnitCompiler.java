@@ -917,12 +917,7 @@ class UnitCompiler {
 
         this.writeOpcode(Located.NOWHERE, Opcode.ALOAD_0);
         for (LocalVariableSlot l : locals) this.load(Located.NOWHERE, l.getType(), l.getSlotIndex());
-        this.writeOpcode(Located.NOWHERE, Opcode.INVOKEVIRTUAL);
-        this.writeConstantMethodrefInfo(
-            override.getDeclaringIClass().getDescriptor(), // classFD
-            override.getName(),                            // methodName
-            override.getDescriptor()                       // methodMD
-        );
+        this.invoke(Located.NOWHERE, override);
         this.writeOpcode(Located.NOWHERE, Opcode.ARETURN);
         this.replaceCodeContext(savedCodeContext);
         codeContext.flowAnalysis(override.getName());
@@ -1199,14 +1194,7 @@ class UnitCompiler {
 
                 // Compile initializer.
                 this.compileGetValue(fes.expression);
-                this.writeOpcode(fes.expression, Opcode.INVOKEINTERFACE);
-                this.writeConstantInterfaceMethodrefInfo(
-                    Descriptor.JAVA_LANG_ITERABLE, // classFD
-                    "iterator",                    // methodName
-                    "()Ljava/util/Iterator;"       // methodMD
-                );
-                this.writeByte(1);
-                this.writeByte(0);
+                this.invoke(fes.expression, this.iClassLoader.JAVA_LANG_ITERABLE__ITERATOR);
                 LocalVariable iteratorLv = new LocalVariable(false, this.iClassLoader.JAVA_UTIL_ITERATOR);
                 iteratorLv.setSlot(this.codeContext.allocateLocalVariable((short) 1, null, iteratorLv.type));
                 this.store(fes, iteratorLv);
@@ -1219,14 +1207,7 @@ class UnitCompiler {
                 CodeContext.Offset bodyOffset = this.codeContext.newOffset();
 
                 this.load(fes, iteratorLv);
-                this.writeOpcode(fes.expression, Opcode.INVOKEINTERFACE);
-                this.writeConstantInterfaceMethodrefInfo(
-                    Descriptor.JAVA_UTIL_ITERATOR, // classFD
-                    "next",                        // methodName
-                    "()Ljava/lang/Object;"         // methodMD
-                );
-                this.writeByte(1);
-                this.writeByte(0);
+                this.invoke(fes.expression, this.iClassLoader.JAVA_UTIL_ITERATOR__NEXT);
                 if (
                     !this.tryAssignmentConversion(
                         fes.currentElement,
@@ -1254,14 +1235,7 @@ class UnitCompiler {
                 // Compile condition.
                 toCondition.set();
                 this.load(fes, iteratorLv);
-                this.writeOpcode(fes.expression, Opcode.INVOKEINTERFACE);
-                this.writeConstantInterfaceMethodrefInfo(
-                    Descriptor.JAVA_UTIL_ITERATOR, // classFD
-                    "hasNext",                     // methodName
-                    "()Z"                          // methodMD
-                );
-                this.writeByte(1);
-                this.writeByte(0);
+                this.invoke(fes.expression, this.iClassLoader.JAVA_UTIL_ITERATOR__HAS_NEXT);
                 this.writeBranch(fes, Opcode.IFNE, bodyOffset);
             } finally {
                 this.codeContext.restoreLocalVariables();
@@ -4048,16 +4022,7 @@ class UnitCompiler {
         // Invoke!
         this.checkAccessible(iMethod, mi.getEnclosingBlockStatement());
         if (iMethod.getDeclaringIClass().isInterface()) {
-            this.writeOpcode(mi, Opcode.INVOKEINTERFACE);
-            this.writeConstantInterfaceMethodrefInfo(
-                iMethod.getDeclaringIClass().getDescriptor(), // classFD
-                iMethod.getName(),                            // methodName
-                iMethod.getDescriptor()                       // methodMD
-            );
-            int count = 1;
-            for (IClass pt : iMethod.getParameterTypes()) count += Descriptor.size(pt.getDescriptor());
-            this.writeByte(count);
-            this.writeByte(0);
+            this.invoke(mi, iMethod);
         } else {
             if (!iMethod.isStatic() && iMethod.getAccess() == Access.PRIVATE) {
 
@@ -4080,13 +4045,7 @@ class UnitCompiler {
                 );
             } else
             {
-                byte opcode = iMethod.isStatic() ? Opcode.INVOKESTATIC : Opcode.INVOKEVIRTUAL;
-                this.writeOpcode(mi, opcode);
-                this.writeConstantMethodrefInfo(
-                    iMethod.getDeclaringIClass().getDescriptor(), // classFD
-                    iMethod.getName(),                            // methodName
-                    iMethod.getDescriptor()                       // methodMD
-                );
+                this.invoke(mi, iMethod);
             }
         }
         return iMethod.getReturnType();
@@ -6415,12 +6374,7 @@ class UnitCompiler {
 
                 // Concatenate.
                 if (operandOnStack) {
-                    this.writeOpcode(locatable, Opcode.INVOKEVIRTUAL);
-                    this.writeConstantMethodrefInfo(
-                        Descriptor.JAVA_LANG_STRING,                                          // classFd
-                        "concat",                                                             // methodName
-                        "(" + Descriptor.JAVA_LANG_STRING + ")" + Descriptor.JAVA_LANG_STRING // methodMd
-                    );
+                    this.invoke(locatable, this.iClassLoader.JAVA_LANG_STRING__CONCAT__JAVA_LANG_STRING);
                 } else
                 {
                     operandOnStack = true;
@@ -6432,7 +6386,7 @@ class UnitCompiler {
         // String concatenation through "new StringBuilder(a).append(b).append(c).append(d).toString()".
         Iterator/*<Compilable>*/ it = tmp.iterator();
 
-        // "new StringBuilder(a)":
+        // "new StringBuilder(String a)":
         if (operandOnStack) {
             this.writeOpcode(locatable, Opcode.NEW);
             this.writeConstantClassInfo(Descriptor.JAVA_LANG_STRINGBUILDER);
@@ -6454,13 +6408,14 @@ class UnitCompiler {
         while (it.hasNext()) {
             ((Compilable) it.next()).compile();
 
-            // "StringBuilder.append(b)":
-            this.writeOpcode(locatable, Opcode.INVOKEVIRTUAL);
-            this.writeConstantMethodrefInfo(
-                Descriptor.JAVA_LANG_STRINGBUILDER,                                          // classFD
-                "append",                                                                    // methodName
-                "(" + Descriptor.JAVA_LANG_STRING + ")" + Descriptor.JAVA_LANG_STRINGBUILDER // methodMd
-            );
+            // "StringBuilder.append(String b)":
+            this.invoke(locatable, this.iClassLoader.JAVA_LANG_STRINGBUILDER__APPEND__JAVA_LANG_STRING);
+//            this.writeOpcode(locatable, Opcode.INVOKEVIRTUAL);
+//            this.writeConstantMethodrefInfo(
+//                Descriptor.JAVA_LANG_STRINGBUILDER,                                          // classFD
+//                "append",                                                                    // methodName
+//                "(" + Descriptor.JAVA_LANG_STRING + ")" + Descriptor.JAVA_LANG_STRINGBUILDER // methodMd
+//            );
         }
 
         // "StringBuilder.toString()":
@@ -10038,6 +9993,29 @@ class UnitCompiler {
         if (t == IClass.CHAR)    return 6;
         if (t == IClass.SHORT)   return 7;
         throw new JaninoRuntimeException("Unexpected type \"" + t + "\"");
+    }
+
+    private void
+    invoke(Locatable locatable, IMethod iMethod) throws CompileException {
+        if (iMethod.getDeclaringIClass().isInterface()) {
+            this.writeOpcode(locatable, Opcode.INVOKEINTERFACE);
+            this.writeConstantInterfaceMethodrefInfo(
+                iMethod.getDeclaringIClass().getDescriptor(), // classFD
+                iMethod.getName(),                            // methodName
+                iMethod.getDescriptor()                       // methodMD
+            );
+            int count = 1;
+            for (IClass pt : iMethod.getParameterTypes()) count += Descriptor.size(pt.getDescriptor());
+            this.writeByte(count);
+            this.writeByte(0);
+        } else {
+            this.writeOpcode(locatable, iMethod.isStatic() ? Opcode.INVOKESTATIC : Opcode.INVOKEVIRTUAL);
+            this.writeConstantMethodrefInfo(
+                iMethod.getDeclaringIClass().getDescriptor(), // classFD
+                iMethod.getName(),                            // methodName
+                iMethod.getDescriptor()                       // methodMD
+            );
+        }
     }
 
     /**
