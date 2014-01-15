@@ -110,9 +110,7 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor {
         }
         if (!cu.importDeclarations.isEmpty()) {
             this.pw.println();
-            for (Iterator/*<ImportDeclaration>*/ it = cu.importDeclarations.iterator(); it.hasNext();) {
-                ((Java.CompilationUnit.ImportDeclaration) it.next()).accept(this);
-            }
+            for (Java.CompilationUnit.ImportDeclaration id : cu.importDeclarations) id.accept(this);
         }
         for (
             Iterator/*<PackageMemberTypeDeclaration>*/ it = cu.packageMemberTypeDeclarations.iterator();
@@ -261,12 +259,11 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor {
     }
 
     private void
-    unparseStatements(List/*<Java.BlockStatement>*/ statements) {
+    unparseStatements(List<Java.BlockStatement> statements) {
 
         int state = -1;
-        for (Iterator/*<Java.BlockStatement>*/ it = statements.iterator(); it.hasNext();) {
-            Java.BlockStatement bs = (Java.BlockStatement) it.next();
-            int                 x  = (
+        for (Java.BlockStatement bs : statements) {
+            int x  = (
                 bs instanceof Java.Block                             ? 1 :
                 bs instanceof Java.LocalClassDeclarationStatement    ? 2 :
                 bs instanceof Java.LocalVariableDeclarationStatement ? 3 :
@@ -413,24 +410,20 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor {
         this.pw.print("switch (");
         this.unparse(ss.condition);
         this.pw.println(") {");
-        for (Iterator/*<SwitchBlockStatementGroup>*/ it = ss.sbsgs.iterator(); it.hasNext();) {
-            Java.SwitchStatement.SwitchBlockStatementGroup sbgs = (
-                (Java.SwitchStatement.SwitchBlockStatementGroup) it.next()
-            );
+        for (Java.SwitchStatement.SwitchBlockStatementGroup sbsg : ss.sbsgs) {
             this.pw.print(AutoIndentWriter.UNINDENT);
             try {
-                for (Iterator/*<Java.Rvalue>*/ it2 = sbgs.caseLabels.iterator(); it2.hasNext();) {
-                    Java.Rvalue rv = (Java.Rvalue) it2.next();
+                for (Java.Rvalue rv : sbsg.caseLabels) {
                     this.pw.print("case ");
                     this.unparse(rv);
                     this.pw.println(':');
                 }
-                if (sbgs.hasDefaultLabel) this.pw.println("default:");
+                if (sbsg.hasDefaultLabel) this.pw.println("default:");
             } finally {
                 this.pw.print(AutoIndentWriter.INDENT);
             }
-            for (Iterator/*<Java.BlockStatement>*/ it2 = sbgs.blockStatements.iterator(); it2.hasNext();) {
-                this.unparseBlockStatement((Java.BlockStatement) it2.next());
+            for (Java.BlockStatement bs : sbsg.blockStatements) {
+                this.unparseBlockStatement(bs);
                 this.pw.println();
             }
         }
@@ -456,8 +449,7 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor {
     visitTryStatement(Java.TryStatement ts) {
         this.pw.print("try ");
         this.unparseBlockStatement(ts.body);
-        for (Iterator/*<Java.CatchClause>*/ it = ts.catchClauses.iterator(); it.hasNext();) {
-            Java.CatchClause cc = (Java.CatchClause) it.next();
+        for (Java.CatchClause cc : ts.catchClauses) {
             this.pw.print(" catch (");
             this.unparseFormalParameter(cc.caughtException, false);
             this.pw.print(") ");
@@ -952,15 +944,15 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor {
     // Multi-line!
     private void
     unparseClassDeclarationBody(Java.ClassDeclaration cd) {
-        for (Iterator/*<ConstructorDeclarator>*/ it = cd.constructors.iterator(); it.hasNext();) {
+        for (Java.ConstructorDeclarator ctord : cd.constructors) {
             this.pw.println();
-            ((Java.ConstructorDeclarator) it.next()).accept(this);
+            ctord.accept(this);
             this.pw.println();
         }
         this.unparseAbstractTypeDeclarationBody(cd);
-        for (Iterator/*<TypeBodyDeclaration>*/ it = cd.variableDeclaratorsAndInitializers.iterator(); it.hasNext();) {
+        for (Java.TypeBodyDeclaration vdai : cd.variableDeclaratorsAndInitializers) {
             this.pw.println();
-            ((Java.TypeBodyDeclaration) it.next()).accept(this);
+            vdai.accept(this);
             this.pw.println();
         }
     }
@@ -976,8 +968,8 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor {
         this.pw.println(" {");
         this.pw.print(AutoIndentWriter.INDENT);
         this.unparseAbstractTypeDeclarationBody(id);
-        for (Iterator/*<FieldDeclaration>*/ it = id.constantDeclarations.iterator(); it.hasNext();) {
-            ((Java.TypeBodyDeclaration) it.next()).accept(this);
+        for (Java.TypeBodyDeclaration cnstd : id.constantDeclarations) {
+            cnstd.accept(this);
             this.pw.println();
         }
         this.pw.print(AutoIndentWriter.UNINDENT + "}");

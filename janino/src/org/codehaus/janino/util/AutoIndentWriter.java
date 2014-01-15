@@ -48,10 +48,10 @@ class AutoIndentWriter extends FilterWriter {
     /** Special character that inserts a line break and unindents the following text by one position. */
     public static final char UNINDENT = 0xfffc;
 
-    private final StringBuilder     lineBuffer = new StringBuilder();
-    private int                     indentation;
-    private List/*<StringBuilder>*/ tabulatorBuffer;
-    private int                     tabulatorIndentation;
+    private final StringBuilder  lineBuffer = new StringBuilder();
+    private int                  indentation;
+    private List<StringBuilder>  tabulatorBuffer;
+    private int                  tabulatorIndentation;
 
     public
     AutoIndentWriter(Writer out) { super(out); }
@@ -113,12 +113,12 @@ class AutoIndentWriter extends FilterWriter {
 
     private void
     flushTabulatorBuffer() throws IOException {
-        List/*<List<StringBuilder>>*/ lineGroups = new ArrayList();
+        List<List<StringBuilder> > lineGroups = new ArrayList();
         lineGroups.add(new ArrayList/*<StringBuilder>*/());
 
-        for (Iterator/*<StringBuilder>*/ it = this.tabulatorBuffer.iterator(); it.hasNext();) {
-            StringBuilder line = (StringBuilder) it.next();
-            int           idx  = 0;
+        for (StringBuilder line : this.tabulatorBuffer) {
+
+            int idx = 0;
             if (line.charAt(0) == INDENT) {
                 lineGroups.add(new ArrayList/*<StringBuilder>*/());
                 ++idx;
@@ -139,12 +139,10 @@ class AutoIndentWriter extends FilterWriter {
                 }
             }
         }
-        for (Iterator/*<List<StringBuilder>>*/ it = lineGroups.iterator(); it.hasNext();) {
-            resolveTabs((List/*<StringBuilder)*/) it.next());
-        }
+        for (List<StringBuilder> lg : lineGroups) resolveTabs(lg);
         int ind = this.tabulatorIndentation;
-        for (Iterator/*<StringBuilder>*/ it = this.tabulatorBuffer.iterator(); it.hasNext();) {
-            String line = ((StringBuilder) it.next()).toString();
+        for (StringBuilder sb : this.tabulatorBuffer) {
+            String line = sb.toString();
             if (line.charAt(0) == INDENT) {
                 ++ind;
                 line = line.substring(1);
@@ -175,14 +173,13 @@ class AutoIndentWriter extends FilterWriter {
      *   aaa bbb ccc\r\n</pre>
      */
     private static void
-    resolveTabs(List/*<StringBuilder>*/ lineGroup) {
+    resolveTabs(List<StringBuilder> lineGroup) {
 
         // Determine the tabulator offsets for this line group.
         List/*<Integer>*/ tabulatorOffsets = new ArrayList/*<Integer>*/(); // 4, 4
-        for (Iterator/*<StringBuilder>*/ it = lineGroup.iterator(); it.hasNext();) {
-            StringBuilder line        = (StringBuilder) it.next();
-            int           tabCount    = 0;
-            int           previousTab = 0;
+        for (StringBuilder line : lineGroup) {
+            int tabCount    = 0;
+            int previousTab = 0;
             if (line.charAt(previousTab) == INDENT) ++previousTab;
             if (line.charAt(previousTab) == UNINDENT) ++previousTab;
             for (int i = previousTab; i < line.length(); ++i) {

@@ -123,10 +123,10 @@ class Java {
         public PackageDeclaration optionalPackageDeclaration;
 
         /** The IMPORT declarations in this CU. */
-        public final List/*<ImportDeclaration>*/ importDeclarations = new ArrayList();
+        public final List<ImportDeclaration> importDeclarations = new ArrayList();
 
         /** The top-level declarations in this CU. */
-        public final List/*<PackageMemberTypeDeclaration>*/ packageMemberTypeDeclarations = new ArrayList();
+        public final List<PackageMemberTypeDeclaration> packageMemberTypeDeclarations = new ArrayList();
 
         public
         CompilationUnit(String optionalFileName) { this.optionalFileName = optionalFileName; }
@@ -540,7 +540,7 @@ class Java {
         MemberTypeDeclaration getMemberTypeDeclaration(String name);
 
         /** @return The (possibly empty) set of member types declared inside this {@link TypeDeclaration} */
-        Collection/*<MemberTypeDeclaration>*/ getMemberTypeDeclarations();
+        Collection<MemberTypeDeclaration> getMemberTypeDeclarations();
 
         /**
          * Return the first method declared with the given name. (Does not honor inherited methods.)
@@ -746,7 +746,7 @@ class Java {
             return null;
         }
 
-        @Override public List/*<MethodDeclaration>*/
+        @Override public List<MethodDeclarator>
         getMethodDeclarations() { return this.declaredMethods; }
 
         @Override public String
@@ -794,10 +794,10 @@ class Java {
     class ClassDeclaration extends AbstractTypeDeclaration {
 
         /** List of {@link ConstructorDeclarator}s of this class. */
-        public final List/*<ConstructorDeclarator>*/ constructors = new ArrayList();
+        public final List<ConstructorDeclarator> constructors = new ArrayList();
 
         /** List of {@link TypeBodyDeclaration}s of this class. */
-        public final List/*<TypeBodyDeclaration>*/ variableDeclaratorsAndInitializers = new ArrayList();
+        public final List<TypeBodyDeclaration> variableDeclaratorsAndInitializers = new ArrayList();
 
         public
         ClassDeclaration(Location location, Modifiers modifiers) {
@@ -861,7 +861,7 @@ class Java {
         }
 
         /** All field names start with "this$" or "val$". */
-        final SortedMap/*<String, IClass.IField>*/ syntheticFields = new TreeMap();
+        final SortedMap<String, IClass.IField> syntheticFields = new TreeMap();
     }
 
     /** Representation of a JLS7 15.9.5 'anonymous class declaration'. */
@@ -1158,7 +1158,7 @@ class Java {
         public final Type[] extendedTypes;
 
         /** The constants that this interface declares. */
-        public final List/*<FieldDeclaration>*/ constantDeclarations = new ArrayList();
+        public final List<FieldDeclaration> constantDeclarations = new ArrayList();
 
         /** Set during "compile()". */
         IClass[] interfaces;
@@ -1415,7 +1415,7 @@ class Java {
         public final Type[] thrownExceptions;
 
         /** The statements that comprise the function; {@code null} for abstract method declarations. */
-        public final List/*<BlockStatement>*/ optionalStatements;
+        public final List<BlockStatement> optionalStatements;
 
         public
         FunctionDeclarator(
@@ -1901,7 +1901,7 @@ class Java {
     class Block extends Statement {
 
         /** The list of statements that comprise the body of the block. */
-        public final List/*<BlockStatement>*/ statements = new ArrayList();
+        public final List<BlockStatement> statements = new ArrayList();
 
         public
         Block(Location location) { super(location); }
@@ -2180,7 +2180,7 @@ class Java {
         public final BlockStatement body;
 
         /** The list of catch clauses (including the 'default' clause) of the TRY statement. */
-        public final List/*<Java.CatchClause>*/ catchClauses;
+        public final List<Java.CatchClause> catchClauses;
 
         /** The optional 'finally' block of the TRY statement. */
         public final Block optionalFinally;
@@ -2277,7 +2277,7 @@ class Java {
         public final Rvalue condition;
 
         /** The list of 'switch block statement groups' that pose the body of the SWITCH statement. */
-        public final List/*<SwitchBlockStatementGroup>*/ sbsgs;
+        public final List<SwitchBlockStatementGroup> sbsgs;
 
         public
         SwitchStatement(Location location, Rvalue condition, List/*<SwitchBlockStatementGroup>*/ sbsgs) {
@@ -2303,13 +2303,13 @@ class Java {
         class SwitchBlockStatementGroup extends Java.Located {
 
             /** The CASE labels at the top of the 'switch block statement group'. */
-            public final List/*<Rvalue>*/ caseLabels;
+            public final List<Rvalue> caseLabels;
 
             /** Whether this 'switch block statement group' includes the DEFAULT label. */
             public final boolean hasDefaultLabel;
 
             /** The statements following the CASE labels. */
-            public final List/*<BlockStatement>*/ blockStatements;
+            public final List<BlockStatement> blockStatements;
 
             public
             SwitchBlockStatementGroup(
@@ -3685,7 +3685,7 @@ class Java {
         toString() { return this.lhs.toString() + ' ' + this.op + ' ' + this.rhs.toString(); }
 
         /** Returns an {@link Iterator} over a left-to-right sequence of {@link Java.Rvalue}s. */
-        public Iterator/*<Ralue>*/
+        public Iterator<Rvalue>
         unrollLeftAssociation() {
             List/*<Ralue>*/ operands = new ArrayList();
             BinaryOperation x        = this;
@@ -4558,6 +4558,15 @@ class Java {
 
         @Override public void
         accept(TypeArgumentVisitor visitor) { visitor.visitWildcard(this); }
+
+        @Override public String
+        toString() {
+            return (
+                this.bounds == BOUNDS_EXTENDS ? "? extends " + this.referenceType : 
+                this.bounds == BOUNDS_SUPER   ? "? super "   + this.referenceType : 
+                this.referenceType.toString()
+            );
+        }
     }
 
     /**

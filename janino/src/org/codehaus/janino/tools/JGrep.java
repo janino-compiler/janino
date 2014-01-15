@@ -83,7 +83,7 @@ class JGrep {
 
     private static final boolean DEBUG = false;
 
-    private final List/*<UnitCompiler>*/ parsedCompilationUnits = new ArrayList();
+    private final List<UnitCompiler> parsedCompilationUnits = new ArrayList();
 
     /** Command line interface. */
     public static void
@@ -175,7 +175,7 @@ class JGrep {
                         try {
                             IExpressionEvaluator ee = new ExpressionEvaluator();
                             ee.setClassName(JGrep.class.getName() + "PE");
-                            mit.predicates.add(ee.createFastEvaluator(
+                            mit.predicates.add((MethodInvocationPredicate) ee.createFastEvaluator(
                                 predicateExpression,
                                 MethodInvocationPredicate.class,
                                 new String[] { "uc", "invocation", "method" }
@@ -336,11 +336,11 @@ class JGrep {
     private static
     class MethodInvocationTarget {
 
-        String                              optionalClassNamePattern;
-        String                              methodNamePattern;
-        String[]                            optionalArgumentTypeNamePatterns;
-        List/*<MethodInvocationPredicate>*/ predicates = new ArrayList();
-        List/*<MethodInvocationAction>*/    actions    = new ArrayList();
+        String                          optionalClassNamePattern;
+        String                          methodNamePattern;
+        String[]                        optionalArgumentTypeNamePatterns;
+        List<MethodInvocationPredicate> predicates = new ArrayList();
+        List<MethodInvocationAction>    actions    = new ArrayList();
 
         void
         apply(UnitCompiler uc, Java.Invocation invocation, IClass.IMethod method) throws CompileException {
@@ -367,8 +367,7 @@ class JGrep {
             }
 
             // Verify that all predicates (JANINO expressions) return TRUE.
-            for (Iterator/*<MethodInvocationPredicate>*/ it = this.predicates.iterator(); it.hasNext();) {
-                MethodInvocationPredicate mip = (MethodInvocationPredicate) it.next();
+            for (MethodInvocationPredicate mip : this.predicates) {
                 try {
                     if (!mip.evaluate(uc, invocation, method)) return;
                 } catch (Exception ex) {
@@ -377,8 +376,7 @@ class JGrep {
             }
 
             // Now that all checks were successful, execute all method invocation actions.
-            for (Iterator/*<MethodInvocationAction>*/ it = this.actions.iterator(); it.hasNext();) {
-                MethodInvocationAction mia = (MethodInvocationAction) it.next();
+            for (MethodInvocationAction mia : this.actions) {
                 try {
                     mia.execute(uc, invocation, method);
                 } catch (Exception ex) {
@@ -539,9 +537,9 @@ class JGrep {
         // Traverse the parsed compilation units.
         this.benchmark.beginReporting();
         try {
-            for (Iterator/*<UnitCompiler>*/ it = this.parsedCompilationUnits.iterator(); it.hasNext();) {
-                final UnitCompiler unitCompiler    = (UnitCompiler) it.next();
-                CompilationUnit    compilationUnit = unitCompiler.getCompilationUnit();
+            for (final UnitCompiler unitCompiler : this.parsedCompilationUnits) {
+
+                CompilationUnit compilationUnit = unitCompiler.getCompilationUnit();
                 this.benchmark.beginReporting("Grepping \"" + compilationUnit.optionalFileName + "\"");
                 try {
                     new Traverser() {

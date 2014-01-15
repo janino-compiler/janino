@@ -32,22 +32,21 @@ import java.util.*;
  * A {@link org.codehaus.janino.util.resource.ResourceFinder} that finds its resources through a collection of
  * other {@link org.codehaus.janino.util.resource.ResourceFinder}s.
  */
-@SuppressWarnings("rawtypes") public
+public
 class MultiResourceFinder extends ResourceFinder {
 
-    private final Collection/*<ResourceFinder>*/ resourceFinders; // One for each entry
+    private final Collection<ResourceFinder> resourceFinders; // One for each entry
 
     /** @param resourceFinders The entries of the "path" */
     public
-    MultiResourceFinder(Collection/*<ResourceFinder>*/ resourceFinders) { this.resourceFinders = resourceFinders; }
+    MultiResourceFinder(Collection<ResourceFinder> resourceFinders) { this.resourceFinders = resourceFinders; }
 
     // Implement ResourceFinder.
 
     @Override public final Resource
     findResource(String resourceName) {
-        for (Iterator/*<ResourceFinder>*/ it = this.resourceFinders.iterator(); it.hasNext();) {
-            ResourceFinder rf       = (ResourceFinder) it.next();
-            Resource       resource = rf.findResource(resourceName);
+        for (ResourceFinder rf : this.resourceFinders) {
+            Resource resource = rf.findResource(resourceName);
 //System.err.println("*** " + resourceName + " in " + rf + "? => " + url);
             if (resource != null) return resource;
         }

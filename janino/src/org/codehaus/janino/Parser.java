@@ -774,6 +774,8 @@ class Parser {
 
             // Member method or field.
             {
+                this.parseTypeArgumentsOpt();
+
                 Type     memberType = this.parseType();
                 String   memberName = this.readIdentifier();
                 Location location   = this.location();
@@ -1142,6 +1144,7 @@ class Parser {
 
         // It's either a non-final local variable declaration or an expression statement. We can
         // only tell after parsing an expression.
+
         Atom a = this.parseExpression();
 
         // Expression ';'
@@ -2014,6 +2017,7 @@ class Parser {
      *     ShiftExpression {
      *       'instanceof' ReferenceType
      *       | '<' ShiftExpression [ { ',' TypeArgument } '>' ]
+     *       | '<' TypeArgument [ { ',' TypeArgument } '>' ]
      *       | ( '>' | '<=' | '>=' ) ShiftExpression
      *     }
      * </pre>
@@ -2033,7 +2037,23 @@ class Parser {
             } else
             if (this.peek(new String[] { "<", ">", "<=", ">=" }) != -1) {
                 String op  = this.read().value;
-                Atom   rhs = this.parseShiftExpression();
+
+                if ("<".equals(op) && a instanceof Java.AmbiguousName && this.peek("?")) {
+                    String[] identifiers = ((Java.AmbiguousName) a).identifiers;
+
+                    // '<' TypeArgument [ { ',' TypeArgument } '>' ]
+                    List<TypeArgument> typeArguments = new ArrayList();
+                    typeArguments.add(this.parseTypeArgument());
+                    while (this.read(new String[] { ">", "," }) == 1) typeArguments.add(this.parseTypeArgument());
+
+                    return new ReferenceType(
+                        this.location(),
+                        identifiers,
+                        (TypeArgument[]) typeArguments.toArray(new TypeArgument[typeArguments.size()])
+                    );
+                }
+
+                Atom rhs = this.parseShiftExpression();
 
                 if ("<".equals(op) && a instanceof Java.AmbiguousName && this.peek(new String[] { ">", "," }) != -1) {
                     String[] identifiers = ((Java.AmbiguousName) a).identifiers;

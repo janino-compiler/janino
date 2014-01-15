@@ -218,10 +218,10 @@ interface IScriptEvaluator extends IClassBodyEvaluator {
      * @param script Contains the sequence of script tokens
      * @see          #createFastEvaluator(Reader, Class, String[])
      */
-    Object
+    <T> Object
     createFastEvaluator(
         String   script,
-        Class    interfaceToImplement,
+        Class<T> interfaceToImplement,
         String[] parameterNames
     ) throws CompileException;
 
@@ -268,10 +268,10 @@ interface IScriptEvaluator extends IClassBodyEvaluator {
      * @param parameterNames       The names of the parameters of that method
      * @return                     An object that implements the given interface
      */
-    Object
+    <T> Object
     createFastEvaluator(
         Reader   reader,
-        Class    interfaceToImplement,
+        Class<T> interfaceToImplement,
         String[] parameterNames
     ) throws CompileException, IOException;
 }

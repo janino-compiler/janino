@@ -246,6 +246,29 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
     classToType(final Location location, final Class clazz) {
         if (clazz == null) return null;
 
+//        IClass iClass;
+//        synchronized (this.classes) {
+//            iClass = (IClass) this.classes.get(clazz);
+//            if (iClass == null) {
+//                if (clazz.isPrimitive()) {
+//                    if (clazz == byte.class)    { iClass = IClass.BYTE;    } else
+//                    if (clazz == short.class)   { iClass = IClass.SHORT;   } else
+//                    if (clazz == int.class)     { iClass = IClass.INT;     } else
+//                    if (clazz == long.class)    { iClass = IClass.LONG;    } else
+//                    if (clazz == float.class)   { iClass = IClass.FLOAT;   } else
+//                    if (clazz == double.class)  { iClass = IClass.DOUBLE;  } else
+//                    if (clazz == char.class)    { iClass = IClass.CHAR;    } else
+//                    if (clazz == boolean.class) { iClass = IClass.BOOLEAN; } else
+//                    if (clazz == void.class)    { iClass = IClass.VOID;    } else
+//                    { throw new AssertionError(clazz); }
+//                } else {
+//                    iClass = new ReflectionIClass(clazz, null);
+//                }
+//                this.classes.put(clazz, iClass);
+//            }
+//        }
+//        return new Java.SimpleType(location, iClass);
+
         // Can't use a SimpleType here because the classLoaderIClassLoader is not yet set up. Instead, create a
         // Type that lazily creates a delegate Type at COMPILE TIME.
         return new Java.Type(location) {
@@ -288,6 +311,7 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
             }
         };
     }
+//    private final Map/*<Class, IClass>*/ classes = new HashMap();
 
     /** Converts an array of {@link Class}es into an array of{@link Java.Type}s. */
     protected Java.Type[]

@@ -79,7 +79,7 @@ class IteratorCollection/*<T>*/ extends AbstractCollection/*<T>*/ {
     @Override public int
     size() {
         int size = 0;
-        for (Iterator/*<T>*/ it = this.iterator(); it.hasNext(); it.next()) ++size;
+        for (Object o : this) ++size;
         return size;
     }
 }

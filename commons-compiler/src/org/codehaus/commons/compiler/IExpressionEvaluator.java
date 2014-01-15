@@ -179,18 +179,18 @@ interface IExpressionEvaluator extends IScriptEvaluator {
      * <code>public</code>, or with <code>protected</code> or default access in the package of the compiled class (see
      * {@link #setClassName(String)}.
      */
-    @Override Object
+    @Override <T> Object
     createFastEvaluator(
         String   expression,
-        Class    interfaceToImplement,
+        Class<T> interfaceToImplement,
         String[] parameterNames
     ) throws CompileException;
 
      /** @see #createFastEvaluator(String, Class, String[]) */
-    @Override Object
+    @Override <T> Object
     createFastEvaluator(
         Reader   reader,
-        Class    interfaceToImplement,
+        Class<T> interfaceToImplement,
         String[] parameterNames
     ) throws CompileException, IOException;
 }
