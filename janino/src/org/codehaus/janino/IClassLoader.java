@@ -32,6 +32,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.codehaus.janino.IClass.IConstructor;
 import org.codehaus.janino.IClass.IMethod;
 import org.codehaus.janino.util.resource.JarDirectoriesResourceFinder;
 import org.codehaus.janino.util.resource.PathResourceFinder;
@@ -74,9 +75,19 @@ class IClassLoader {
 
     public IMethod JAVA_LANG_ITERABLE__ITERATOR;
     public IMethod JAVA_LANG_STRING__CONCAT__JAVA_LANG_STRING;
+    public IMethod JAVA_LANG_STRING__VALUEOF__INT;
+    public IMethod JAVA_LANG_STRING__VALUEOF__LONG;
+    public IMethod JAVA_LANG_STRING__VALUEOF__FLOAT;
+    public IMethod JAVA_LANG_STRING__VALUEOF__DOUBLE;
+    public IMethod JAVA_LANG_STRING__VALUEOF__CHAR;
+    public IMethod JAVA_LANG_STRING__VALUEOF__BOOLEAN;
+    public IMethod JAVA_LANG_STRING__VALUEOF__JAVA_LANG_OBJECT;
     public IMethod JAVA_LANG_STRINGBUILDER__APPEND__JAVA_LANG_STRING;
+    public IMethod JAVA_LANG_STRINGBUILDER__TOSTRING;
     public IMethod JAVA_UTIL_ITERATOR__HAS_NEXT;
     public IMethod JAVA_UTIL_ITERATOR__NEXT;
+
+    public IConstructor JAVA_LANG_STRINGBUILDER__CTOR__JAVA_LANG_STRING;
     // CHECKSTYLE JavadocVariable:ON
     // CHECKSTYLE AbbreviationAsWordInName:ON
     // CHECKSTYLE MemberName:ON
@@ -123,9 +134,19 @@ class IClassLoader {
             // CHECKSTYLE Whitespace:OFF
             this.JAVA_LANG_ITERABLE__ITERATOR                      = this.JAVA_LANG_ITERABLE     .findIMethod("iterator", new IClass[0]);
             this.JAVA_LANG_STRING__CONCAT__JAVA_LANG_STRING        = this.JAVA_LANG_STRING       .findIMethod("concat",   new IClass[] { this.JAVA_LANG_STRING });
+            this.JAVA_LANG_STRING__VALUEOF__INT                    = this.JAVA_LANG_STRING       .findIMethod("valueOf",  new IClass[] { IClass.INT });
+            this.JAVA_LANG_STRING__VALUEOF__LONG                   = this.JAVA_LANG_STRING       .findIMethod("valueOf",  new IClass[] { IClass.LONG });
+            this.JAVA_LANG_STRING__VALUEOF__FLOAT                  = this.JAVA_LANG_STRING       .findIMethod("valueOf",  new IClass[] { IClass.FLOAT });
+            this.JAVA_LANG_STRING__VALUEOF__DOUBLE                 = this.JAVA_LANG_STRING       .findIMethod("valueOf",  new IClass[] { IClass.DOUBLE });
+            this.JAVA_LANG_STRING__VALUEOF__CHAR                   = this.JAVA_LANG_STRING       .findIMethod("valueOf",  new IClass[] { IClass.CHAR });
+            this.JAVA_LANG_STRING__VALUEOF__BOOLEAN                = this.JAVA_LANG_STRING       .findIMethod("valueOf",  new IClass[] { IClass.BOOLEAN });
+            this.JAVA_LANG_STRING__VALUEOF__JAVA_LANG_OBJECT       = this.JAVA_LANG_STRING       .findIMethod("valueOf",  new IClass[] { this.JAVA_LANG_OBJECT });
             this.JAVA_LANG_STRINGBUILDER__APPEND__JAVA_LANG_STRING = this.JAVA_LANG_STRINGBUILDER.findIMethod("append",   new IClass[] { this.JAVA_LANG_STRING });
+            this.JAVA_LANG_STRINGBUILDER__TOSTRING                 = this.JAVA_LANG_STRINGBUILDER.findIMethod("toString", new IClass[0]);
             this.JAVA_UTIL_ITERATOR__HAS_NEXT                      = this.JAVA_UTIL_ITERATOR     .findIMethod("hasNext",  new IClass[0]);
             this.JAVA_UTIL_ITERATOR__NEXT                          = this.JAVA_UTIL_ITERATOR     .findIMethod("next",     new IClass[0]);
+
+            this.JAVA_LANG_STRINGBUILDER__CTOR__JAVA_LANG_STRING   = this.JAVA_LANG_STRINGBUILDER.findIConstructor(new IClass[] { this.JAVA_LANG_STRING });
             // CHECKSTYLE Whitespace:ON
             // CHECKSTYLE LineLength:ON
         } catch (Exception e) {

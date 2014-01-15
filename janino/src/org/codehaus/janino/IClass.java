@@ -269,6 +269,20 @@ class IClass {
 
         return null;
     }
+    
+    /**
+     * @return The {@link IConstructor} declared in this {@link IClass} with the given parameter types, or {@code null}
+     *         if an applicable constrcutor could not be found
+     */
+    public final IConstructor
+    findIConstructor(IClass[] parameterTypes) throws CompileException {
+        IConstructor[] ics = this.getDeclaredIConstructors();
+        for (IConstructor ic : ics) {
+            if (Arrays.equals(ic.getParameterTypes(), parameterTypes)) return ic;
+        }
+        
+        return null;
+    }
 
     /**
      * Returns the {@link IField}s declared in this {@link IClass} (but not inherited fields).

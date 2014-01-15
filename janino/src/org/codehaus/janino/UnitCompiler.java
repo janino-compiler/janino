@@ -47,6 +47,7 @@ import org.codehaus.commons.compiler.ErrorHandler;
 import org.codehaus.commons.compiler.Location;
 import org.codehaus.commons.compiler.UncheckedCompileException;
 import org.codehaus.commons.compiler.WarningHandler;
+import org.codehaus.janino.IClass.IConstructor;
 import org.codehaus.janino.IClass.IField;
 import org.codehaus.janino.IClass.IInvocable;
 import org.codehaus.janino.IClass.IMethod;
@@ -3304,7 +3305,7 @@ class UnitCompiler {
             @Override public void visitCharacterLiteral(CharacterLiteral cl)                      { try { res[0] = UnitCompiler.this.compileGet2(cl);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
             @Override public void visitStringLiteral(StringLiteral sl)                            { try { res[0] = UnitCompiler.this.compileGet2(sl);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
             @Override public void visitNullLiteral(NullLiteral nl)                                { try { res[0] = UnitCompiler.this.compileGet2(nl);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitSimpleConstant(SimpleConstant sl)                          {       res[0] = UnitCompiler.this.compileGet2(sl);                                                      }
+            @Override public void visitSimpleConstant(SimpleConstant sl)                          { try { res[0] = UnitCompiler.this.compileGet2(sl);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
             @Override public void visitNewAnonymousClassInstance(NewAnonymousClassInstance naci)  { try { res[0] = UnitCompiler.this.compileGet2(naci); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
             @Override public void visitNewArray(NewArray na)                                      { try { res[0] = UnitCompiler.this.compileGet2(na);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
             @Override public void visitNewInitializedArray(NewInitializedArray nia)               { try { res[0] = UnitCompiler.this.compileGet2(nia);  } catch (CompileException e) { throw new UncheckedCompileException(e); } }
@@ -4385,7 +4386,7 @@ class UnitCompiler {
         return this.pushConstant(l, this.getConstantValue(l));
     }
     private IClass
-    compileGet2(SimpleConstant sl) {
+    compileGet2(SimpleConstant sl) throws CompileException {
         return this.pushConstant(sl, sl.value);
     }
 
@@ -6356,7 +6357,8 @@ class UnitCompiler {
                 final String[] ss = UnitCompiler.makeUtf8Able(cv.toString());
                 for (final String s : ss) {
                     tmp.add(new Compilable() {
-                        @Override public void compile() { UnitCompiler.this.pushConstant(locatable, s); }
+                        @Override public void
+                        compile() throws CompileException { UnitCompiler.this.pushConstant(locatable, s); }
                     });
                 }
             }
@@ -6399,32 +6401,18 @@ class UnitCompiler {
             this.writeOpcode(locatable, Opcode.DUP);
             ((Compilable) it.next()).compile();
         }
-        this.writeOpcode(locatable, Opcode.INVOKESPECIAL);
-        this.writeConstantMethodrefInfo(
-            Descriptor.JAVA_LANG_STRINGBUILDER,                       // classFd
-            "<init>",                                                 // methodName
-            "(" + Descriptor.JAVA_LANG_STRING + ")" + Descriptor.VOID // methodMd
-        );
+        this.invoke(locatable, this.iClassLoader.JAVA_LANG_STRINGBUILDER__CTOR__JAVA_LANG_STRING);
+
         while (it.hasNext()) {
             ((Compilable) it.next()).compile();
 
             // "StringBuilder.append(String b)":
             this.invoke(locatable, this.iClassLoader.JAVA_LANG_STRINGBUILDER__APPEND__JAVA_LANG_STRING);
-//            this.writeOpcode(locatable, Opcode.INVOKEVIRTUAL);
-//            this.writeConstantMethodrefInfo(
-//                Descriptor.JAVA_LANG_STRINGBUILDER,                                          // classFD
-//                "append",                                                                    // methodName
-//                "(" + Descriptor.JAVA_LANG_STRING + ")" + Descriptor.JAVA_LANG_STRINGBUILDER // methodMd
-//            );
         }
 
         // "StringBuilder.toString()":
-        this.writeOpcode(locatable, Opcode.INVOKEVIRTUAL);
-        this.writeConstantMethodrefInfo(
-            Descriptor.JAVA_LANG_STRINGBUILDER, // classFd
-            "toString",                         // methodName
-            "()" + Descriptor.JAVA_LANG_STRING  // methodMd
-        );
+        this.invoke(locatable, this.iClassLoader.JAVA_LANG_STRINGBUILDER__TOSTRING);
+
         return this.iClassLoader.JAVA_LANG_STRING;
     }
 
@@ -6433,23 +6421,18 @@ class UnitCompiler {
 
     /** Converts object of type "sourceType" to type "String" (JLS7 15.18.1.1). */
     private void
-    stringConversion(Locatable locatable, IClass sourceType) {
-        this.writeOpcode(locatable, Opcode.INVOKESTATIC);
-        this.writeConstantMethodrefInfo(
-            Descriptor.JAVA_LANG_STRING, // classFd
-            "valueOf",                   // methodName
-            "(" + ((                     // methodMd
-                sourceType == IClass.BOOLEAN
-                || sourceType == IClass.CHAR
-                || sourceType == IClass.LONG
-                || sourceType == IClass.FLOAT
-                || sourceType == IClass.DOUBLE
-            ) ? sourceType.getDescriptor() : (
-                sourceType == IClass.BYTE
-                || sourceType == IClass.SHORT
-                || sourceType == IClass.INT
-            ) ? Descriptor.INT : Descriptor.JAVA_LANG_OBJECT) + ")" + Descriptor.JAVA_LANG_STRING
-        );
+    stringConversion(Locatable locatable, IClass sourceType) throws CompileException {
+        this.invoke(locatable, (
+            sourceType == IClass.BYTE    ? this.iClassLoader.JAVA_LANG_STRING__VALUEOF__INT :
+            sourceType == IClass.SHORT   ? this.iClassLoader.JAVA_LANG_STRING__VALUEOF__INT :
+            sourceType == IClass.INT     ? this.iClassLoader.JAVA_LANG_STRING__VALUEOF__INT :
+            sourceType == IClass.LONG    ? this.iClassLoader.JAVA_LANG_STRING__VALUEOF__LONG :
+            sourceType == IClass.FLOAT   ? this.iClassLoader.JAVA_LANG_STRING__VALUEOF__FLOAT :
+            sourceType == IClass.DOUBLE  ? this.iClassLoader.JAVA_LANG_STRING__VALUEOF__DOUBLE :
+            sourceType == IClass.CHAR    ? this.iClassLoader.JAVA_LANG_STRING__VALUEOF__CHAR :
+            sourceType == IClass.BOOLEAN ? this.iClassLoader.JAVA_LANG_STRING__VALUEOF__BOOLEAN :
+            this.iClassLoader.JAVA_LANG_STRING__VALUEOF__JAVA_LANG_OBJECT
+        ));
     }
 
     /**
@@ -6660,12 +6643,7 @@ class UnitCompiler {
 
         // Invoke!
         // Notice that the method descriptor is "iConstructor.getDescriptor()" prepended with the synthetic parameters.
-        this.writeOpcode(locatable, Opcode.INVOKESPECIAL);
-        this.writeConstantMethodrefInfo(
-            targetClass.getDescriptor(), // classFD
-            "<init>",                    // methodName
-            iConstructor.getDescriptor() // methodMD
-        );
+        this.invoke(locatable, iConstructor);
     }
 
     /** @return The {@link IField}s that are declared by the {@code fieldDescriptor} */
@@ -8819,7 +8797,7 @@ class UnitCompiler {
      *              {@link Double}, {@link String}, {@link Boolean} or {@code null}
      */
     private IClass
-    pushConstant(Locatable locatable, Object value) {
+    pushConstant(Locatable locatable, Object value) throws CompileException {
 
         PUSH_INTEGER_CONSTANT: {
             int iv;
@@ -8906,12 +8884,7 @@ class UnitCompiler {
             this.writeLdc(locatable, this.addConstantStringInfo(ss[0]));
             for (int i = 1; i < ss.length; ++i) {
                 this.writeLdc(locatable, this.addConstantStringInfo(ss[i]));
-                this.writeOpcode(locatable, Opcode.INVOKEVIRTUAL);
-                this.writeConstantMethodrefInfo(
-                    Descriptor.JAVA_LANG_STRING,                                          // classFd
-                    "concat",                                                             // methodName
-                    "(" + Descriptor.JAVA_LANG_STRING + ")" + Descriptor.JAVA_LANG_STRING // methodMd
-                );
+                this.invoke(locatable, iClassLoader.JAVA_LANG_STRING__CONCAT__JAVA_LANG_STRING);
             }
             return this.iClassLoader.JAVA_LANG_STRING;
         }
@@ -10016,6 +9989,16 @@ class UnitCompiler {
                 iMethod.getDescriptor()                       // methodMD
             );
         }
+    }
+    
+    private void
+    invoke(Locatable locatable, IConstructor iConstructor) throws CompileException {
+        this.writeOpcode(locatable, Opcode.INVOKESPECIAL);
+        this.writeConstantMethodrefInfo(
+            iConstructor.getDeclaringIClass().getDescriptor(), // classFD
+            "<init>",                                         // methodName
+            iConstructor.getDescriptor()                       // methodMD
+        );
     }
 
     /**
