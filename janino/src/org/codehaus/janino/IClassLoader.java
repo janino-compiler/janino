@@ -32,6 +32,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.codehaus.janino.IClass.IMethod;
 import org.codehaus.janino.util.resource.JarDirectoriesResourceFinder;
 import org.codehaus.janino.util.resource.PathResourceFinder;
 import org.codehaus.janino.util.resource.ResourceFinder;
@@ -49,6 +50,7 @@ class IClassLoader {
     // CHECKSTYLE JavadocVariable:OFF
     public IClass JAVA_LANG_OBJECT;
     public IClass JAVA_LANG_STRING;
+    public IClass JAVA_LANG_STRINGBUILDER;
     public IClass JAVA_LANG_CLASS;
     public IClass JAVA_LANG_THROWABLE;
     public IClass JAVA_LANG_RUNTIMEEXCEPTION;
@@ -69,6 +71,12 @@ class IClassLoader {
     public IClass JAVA_LANG_LONG;
     public IClass JAVA_LANG_FLOAT;
     public IClass JAVA_LANG_DOUBLE;
+
+    public IMethod JAVA_LANG_ITERABLE__ITERATOR;
+    public IMethod JAVA_LANG_STRING__CONCAT__JAVA_LANG_STRING;
+    public IMethod JAVA_LANG_STRINGBUILDER__APPEND__JAVA_LANG_STRING;
+    public IMethod JAVA_UTIL_ITERATOR__HAS_NEXT;
+    public IMethod JAVA_UTIL_ITERATOR__NEXT;
     // CHECKSTYLE JavadocVariable:ON
     // CHECKSTYLE AbbreviationAsWordInName:ON
     // CHECKSTYLE MemberName:ON
@@ -89,6 +97,7 @@ class IClassLoader {
         try {
             this.JAVA_LANG_OBJECT           = this.loadIClass(Descriptor.JAVA_LANG_OBJECT);
             this.JAVA_LANG_STRING           = this.loadIClass(Descriptor.JAVA_LANG_STRING);
+            this.JAVA_LANG_STRINGBUILDER    = this.loadIClass(Descriptor.JAVA_LANG_STRINGBUILDER);
             this.JAVA_LANG_CLASS            = this.loadIClass(Descriptor.JAVA_LANG_CLASS);
             this.JAVA_LANG_THROWABLE        = this.loadIClass(Descriptor.JAVA_LANG_THROWABLE);
             this.JAVA_LANG_RUNTIMEEXCEPTION = this.loadIClass(Descriptor.JAVA_LANG_RUNTIMEEXCEPTION);
@@ -109,7 +118,17 @@ class IClassLoader {
             this.JAVA_LANG_LONG      = this.loadIClass(Descriptor.JAVA_LANG_LONG);
             this.JAVA_LANG_FLOAT     = this.loadIClass(Descriptor.JAVA_LANG_FLOAT);
             this.JAVA_LANG_DOUBLE    = this.loadIClass(Descriptor.JAVA_LANG_DOUBLE);
-        } catch (ClassNotFoundException e) {
+
+            // CHECKSTYLE LineLength:OFF
+            // CHECKSTYLE Whitespace:OFF
+            this.JAVA_LANG_ITERABLE__ITERATOR                      = this.JAVA_LANG_ITERABLE     .findIMethod("iterator", new IClass[0]);
+            this.JAVA_LANG_STRING__CONCAT__JAVA_LANG_STRING        = this.JAVA_LANG_STRING       .findIMethod("concat",   new IClass[] { this.JAVA_LANG_STRING });
+            this.JAVA_LANG_STRINGBUILDER__APPEND__JAVA_LANG_STRING = this.JAVA_LANG_STRINGBUILDER.findIMethod("append",   new IClass[] { this.JAVA_LANG_STRING });
+            this.JAVA_UTIL_ITERATOR__HAS_NEXT                      = this.JAVA_UTIL_ITERATOR     .findIMethod("hasNext",  new IClass[0]);
+            this.JAVA_UTIL_ITERATOR__NEXT                          = this.JAVA_UTIL_ITERATOR     .findIMethod("next",     new IClass[0]);
+            // CHECKSTYLE Whitespace:ON
+            // CHECKSTYLE LineLength:ON
+        } catch (Exception e) {
             throw new JaninoRuntimeException("Cannot load simple types", e);
         }
     }
