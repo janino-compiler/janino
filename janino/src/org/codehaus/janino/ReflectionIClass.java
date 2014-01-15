@@ -31,7 +31,10 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.Location;
@@ -61,24 +64,12 @@ class ReflectionIClass extends IClass {
 
     @Override protected IMethod[]
     getDeclaredIMethods2() {
-        Method[]          methods  = this.clazz.getDeclaredMethods();
-        List/*<IMethod>*/ iMethods = new ArrayList();
-        for (Method m : methods) {
+        Method[] methods  = this.clazz.getDeclaredMethods();
 
-            // Formerly, the Java 5 synthetic methods were skipped here, because they are not "declared", i.e. hand-
-            // written. However that turned out to be a bad idea, because with parameterized types the check that
-            // all abstract methods are implemented fails.
-
-//            if (Mod.isSynthetic(m.getModifiers())) continue;
-
-            // Wrap java.reflection.Method in an IMethod.
-            iMethods.add(new ReflectionIMethod(m));
-        }
         if (methods.length == 0 && this.clazz.isArray()) {
-            iMethods.add(new IMethod() {
-                // CHECKSTYLE LineLength:OFF
+            return new IMethod[] { new IMethod() {
                 @Override public String            getName()             { return "clone"; }
-                @Override public IClass            getReturnType()       { return ReflectionIClass.this.iClassLoader.JAVA_LANG_OBJECT; }
+                @Override public IClass            getReturnType()       { return ReflectionIClass.this.iClassLoader.JAVA_LANG_OBJECT; } // SUPPRESS CHECKSTYLE LineLength
                 @Override public boolean           isAbstract()          { return false; }
                 @Override public boolean           isStatic()            { return false; }
                 @Override public Access            getAccess()           { return Access.PUBLIC; }
@@ -86,9 +77,35 @@ class ReflectionIClass extends IClass {
                 @Override public IClass[]          getParameterTypes()   { return new IClass[0]; }
                 @Override public IClass[]          getThrownExceptions() { return new IClass[0]; }
                 @Override public Java.Annotation[] getAnnotations()      { return new Java.Annotation[0]; }
-                // CHECKSTYLE LineLength:ON
+            } };
+        }
 
-            });
+        // Remove synthetic methods that implement 'covariant methods'.
+        Collection<Method> decovariantedMethods;
+        {
+            Map<String, Method> univariants = new HashMap(methods.length);
+            for (Method m : methods) {
+    
+                String key = m.getName() + ' ' + Arrays.toString(m.getParameterTypes());
+                Method m2  = (Method) univariants.get(key);
+                if (m2 == null || m2.getReturnType().isAssignableFrom(m.getReturnType())) {
+                    univariants.put(key, m);
+                }
+            }
+            decovariantedMethods = univariants.values();
+        }
+        
+        Collection/*<IMethod>*/ iMethods = new ArrayList(decovariantedMethods.size());
+        for (Method m : decovariantedMethods) {
+            
+            // Formerly, the Java 5 synthetic methods were skipped here, because they are not "declared", i.e. hand-
+            // written. However that turned out to be a bad idea, because with parameterized types the check that
+            // all abstract methods are implemented fails.
+            
+//            if (Mod.isSynthetic(m.getModifiers())) continue;
+            
+            // Wrap java.reflection.Method in an IMethod.
+            iMethods.add(new ReflectionIMethod(m));
         }
         return (IMethod[]) iMethods.toArray(new IMethod[iMethods.size()]);
     }
