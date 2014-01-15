@@ -2035,7 +2035,8 @@ class Parser {
                 String op  = this.read().value;
                 Atom   rhs = this.parseShiftExpression();
 
-                if ("<".equals(op) && this.peek(new String[] { ">", "," }) != -1) {
+                if ("<".equals(op) && a instanceof Java.AmbiguousName && this.peek(new String[] { ">", "," }) != -1) {
+                    String[] identifiers = ((Java.AmbiguousName) a).identifiers;
 
                     // '<' ShiftExpression { ',' TypeArgument } '>'
                     Type t = rhs.toTypeOrCompileException();
@@ -2051,9 +2052,9 @@ class Parser {
                     typeArguments.add(ta);
                     while (this.read(new String[] { ">", "," }) == 1) typeArguments.add(this.parseTypeArgument());
 
-                    new ReferenceType(
+                    return new ReferenceType(
                         this.location(),
-                        this.parseQualifiedIdentifier(),
+                        identifiers,
                         (TypeArgument[]) typeArguments.toArray(new TypeArgument[typeArguments.size()])
                     );
                 }
