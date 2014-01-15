@@ -122,8 +122,9 @@ class IClass {
     protected abstract IConstructor[] getDeclaredIConstructors2();
 
     /**
-     * Returns the methods of the class or interface (but not inherited
-     * methods).<br>
+     * Returns the methods of the class or interface (but not inherited methods). For covariant methods, only the
+     * method with the most derived return type is included.
+     * <br>
      * Returns an empty array for an array, primitive type or "void".
      */
     public final IMethod[]
@@ -139,8 +140,8 @@ class IClass {
     protected abstract IMethod[] getDeclaredIMethods2();
 
     /**
-     * Returns all methods with the given name declared in the class or
-     * interface (but not inherited methods).<br>
+     * Returns all methods with the given name declared in the class or interface (but not inherited methods).
+     * <br>
      * Returns an empty array if no methods with that name are declared.
      *
      * @return an array of {@link IMethod}s that must not be modified
@@ -148,10 +149,10 @@ class IClass {
     public final IMethod[]
     getDeclaredIMethods(String methodName) {
         if (this.declaredIMethodCache == null) {
-            Map/*<String, IMethod-or-List<IMethod>>*/ m = new HashMap();
-
-            // Fill the map with "IMethod"s and "List"s.
             IMethod[] dims = this.getDeclaredIMethods();
+
+            // Fill the map with "IMethod"s and "List<IMethod>"s.
+            Map/*<String, IMethod-or-List<IMethod>>*/ m = new HashMap();
             for (IMethod dim : dims) {
                 String  mn  = dim.getName();
                 Object  o   = m.get(mn);
@@ -241,7 +242,7 @@ class IClass {
 
     /**
      * @return The {@link IMethod} declared in this {@link IClass} (or its superclass or the interfaces it implements)
-     *         with the given name and parameter types
+     *         with the given name and parameter types, or {@code null} if an applicable method could not be found
      */
     public final IMethod
     findIMethod(String methodName, IClass[] parameterTypes) throws CompileException {
