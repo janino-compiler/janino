@@ -2055,10 +2055,15 @@ class Parser {
 
                 Atom rhs = this.parseShiftExpression();
 
-                if ("<".equals(op) && a instanceof Java.AmbiguousName && this.peek(new String[] { ">", "," }) != -1) {
+                if (
+                    "<".equals(op)
+                    && a instanceof Java.AmbiguousName
+                    && this.peek(new String[] { "<", ">", "," }) != -1
+                ) {
                     String[] identifiers = ((Java.AmbiguousName) a).identifiers;
 
-                    // '<' ShiftExpression { ',' TypeArgument } '>'
+                    // '<' ShiftExpression [ TypeArguments ] { ',' TypeArgument } '>'
+                    this.parseTypeArgumentsOpt();
                     Type t = rhs.toTypeOrCompileException();
 
                     TypeArgument ta;

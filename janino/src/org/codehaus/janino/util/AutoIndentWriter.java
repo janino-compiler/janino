@@ -124,11 +124,11 @@ class AutoIndentWriter extends FilterWriter {
                 ++idx;
             }
             if (line.charAt(idx) == UNINDENT) {
-                resolveTabs((List/*<StringBuilder>*/) lineGroups.remove(lineGroups.size() - 1));
+                resolveTabs(lineGroups.remove(lineGroups.size() - 1));
                 ++idx;
             }
             if (line.charAt(idx) == CLEAR_TABULATORS) {
-                List/*<StringBuilder>*/ lg = (List/*<StringBuilder>*/) lineGroups.get(lineGroups.size() - 1);
+                List/*<StringBuilder>*/ lg = lineGroups.get(lineGroups.size() - 1);
                 resolveTabs(lg);
                 lg.clear();
                 line.deleteCharAt(idx);
