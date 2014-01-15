@@ -437,7 +437,6 @@ class JlsTests extends JaninoTestSuite {
     
     @Test public void
     test_14_14_2_1__TheEnhancedForStatement_Iterable() throws Exception {
-        
         this.assertScriptReturnsTrue(
             "String x = \"A\";\n"
             + "for (Object y : java.util.Arrays.asList(new String[] { \"B\", \"C\" })) x += y;\n"
@@ -446,7 +445,7 @@ class JlsTests extends JaninoTestSuite {
         this.assertScriptReturnsTrue(
             "String x = \"A\";\n"
             + "for (String y : java.util.Arrays.asList(new String[] { \"B\", \"C\" })) x += y.length();\n"
-            + "return x.equals(\"ABC\");"
+            + "return x.equals(\"A11\");"
         );
     }
 

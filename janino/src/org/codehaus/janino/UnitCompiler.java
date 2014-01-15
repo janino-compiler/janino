@@ -1227,6 +1227,19 @@ class UnitCompiler {
                 );
                 this.writeByte(1);
                 this.writeByte(0);
+                if (
+                    !this.tryAssignmentConversion(
+                        fes.currentElement,
+                        this.iClassLoader.JAVA_LANG_OBJECT,
+                        elementLv.type,
+                        null
+                    )
+                    && !tryNarrowingReferenceConversion(
+                        fes.currentElement,
+                        this.iClassLoader.JAVA_LANG_OBJECT,
+                        elementLv.type
+                    )
+                ) throw new AssertionError();
                 this.store(fes, elementLv);
 
                 boolean bodyCcn = this.compile(fes.body);
@@ -9080,6 +9093,21 @@ class UnitCompiler {
         IClass    targetType,
         Object    optionalConstantValue
     ) throws CompileException {
+        if (!tryAssignmentConversion(locatable, sourceType, targetType, optionalConstantValue)) {
+            this.compileError(
+                "Assignment conversion not possible from type \"" + sourceType + "\" to type \"" + targetType + "\"",
+                locatable.getLocation()
+            );
+        }
+    }
+
+    private boolean
+    tryAssignmentConversion(
+        Locatable locatable,
+        IClass    sourceType,
+        IClass    targetType,
+        Object    optionalConstantValue
+    ) throws CompileException {
         if (UnitCompiler.DEBUG) {
             System.out.println(
                 "assignmentConversion("
@@ -9093,13 +9121,13 @@ class UnitCompiler {
         }
 
         // JLS7 5.1.1 Identity conversion.
-        if (this.tryIdentityConversion(sourceType, targetType)) return;
+        if (this.tryIdentityConversion(sourceType, targetType)) return true;
 
         // JLS7 5.1.2 Widening primitive conversion.
-        if (this.tryWideningPrimitiveConversion(locatable, sourceType, targetType)) return;
+        if (this.tryWideningPrimitiveConversion(locatable, sourceType, targetType)) return true;
 
         // JLS7 5.1.4 Widening reference conversion.
-        if (this.isWideningReferenceConvertible(sourceType, targetType)) return;
+        if (this.isWideningReferenceConvertible(sourceType, targetType)) return true;
 
         // A boxing conversion (JLS7 5.1.7) optionally followed by a widening reference conversion.
         {
@@ -9107,11 +9135,11 @@ class UnitCompiler {
             if (boxedType != null) {
                 if (this.tryIdentityConversion(boxedType, targetType)) {
                     this.boxingConversion(locatable, sourceType, boxedType);
-                    return;
-                } else
+                    return true;
+                }
                 if (this.isWideningReferenceConvertible(boxedType, targetType)) {
                     this.boxingConversion(locatable, sourceType, boxedType);
-                    return;
+                    return true;
                 }
             }
         }
@@ -9122,12 +9150,12 @@ class UnitCompiler {
             if (unboxedType != null) {
                 if (this.tryIdentityConversion(unboxedType, targetType)) {
                     this.unboxingConversion(locatable, sourceType, unboxedType);
-                    return;
-                } else
+                    return true;
+                }
                 if (this.isWideningPrimitiveConvertible(unboxedType, targetType)) {
                     this.unboxingConversion(locatable, sourceType, unboxedType);
                     this.tryWideningPrimitiveConversion(locatable, unboxedType, targetType);
-                    return;
+                    return true;
                 }
             }
         }
@@ -9138,13 +9166,10 @@ class UnitCompiler {
                 locatable,
                 optionalConstantValue, // constantValue
                 targetType             // targetType
-            )) return;
+            )) return true;
         }
 
-        this.compileError(
-            "Assignment conversion not possible from type \"" + sourceType + "\" to type \"" + targetType + "\"",
-            locatable.getLocation()
-        );
+        return false;
     }
 
     /** Implements "assignment conversion" (JLS7 5.2) on a constant value. */
