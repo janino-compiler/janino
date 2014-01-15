@@ -827,7 +827,7 @@ class UnitCompiler {
 
             IMethod m                     = this.toIMethod(md);
             boolean overrides             = this.overridesMethodFromSupertype(m, this.resolve(md.getDeclaringType()));
-            boolean hasOverrideAnnotation = this.hasAnnotation(md, this.iClassLoader.JAVA_LANG_OVERRIDE);
+            boolean hasOverrideAnnotation = this.hasAnnotation(md, this.iClassLoader.ANNO_java_lang_Override);
             if (overrides && !hasOverrideAnnotation && !(typeDeclaration instanceof InterfaceDeclaration)) {
                 this.warning("MO", "Missing @Override", md.getLocation());
             } else
@@ -1181,7 +1181,7 @@ class UnitCompiler {
                 fes.whereToBreak = null;
             }
         } else
-        if (this.iClassLoader.JAVA_LANG_ITERABLE.isAssignableFrom(expressionType)) {
+        if (this.iClassLoader.TYPE_java_lang_Iterable.isAssignableFrom(expressionType)) {
             this.codeContext.saveLocalVariables();
             try {
 
@@ -1195,8 +1195,8 @@ class UnitCompiler {
 
                 // Compile initializer.
                 this.compileGetValue(fes.expression);
-                this.invoke(fes.expression, this.iClassLoader.JAVA_LANG_ITERABLE__ITERATOR);
-                LocalVariable iteratorLv = new LocalVariable(false, this.iClassLoader.JAVA_UTIL_ITERATOR);
+                this.invoke(fes.expression, this.iClassLoader.METH_java_lang_Iterable__iterator);
+                LocalVariable iteratorLv = new LocalVariable(false, this.iClassLoader.TYPE_java_util_Iterator);
                 iteratorLv.setSlot(this.codeContext.allocateLocalVariable((short) 1, null, iteratorLv.type));
                 this.store(fes, iteratorLv);
 
@@ -1208,17 +1208,17 @@ class UnitCompiler {
                 CodeContext.Offset bodyOffset = this.codeContext.newOffset();
 
                 this.load(fes, iteratorLv);
-                this.invoke(fes.expression, this.iClassLoader.JAVA_UTIL_ITERATOR__NEXT);
+                this.invoke(fes.expression, this.iClassLoader.METH_java_util_Iterator__next);
                 if (
                     !this.tryAssignmentConversion(
                         fes.currentElement,
-                        this.iClassLoader.JAVA_LANG_OBJECT,
+                        this.iClassLoader.TYPE_java_lang_Object,
                         elementLv.type,
                         null
                     )
                     && !tryNarrowingReferenceConversion(
                         fes.currentElement,
-                        this.iClassLoader.JAVA_LANG_OBJECT,
+                        this.iClassLoader.TYPE_java_lang_Object,
                         elementLv.type
                     )
                 ) throw new AssertionError();
@@ -1236,7 +1236,7 @@ class UnitCompiler {
                 // Compile condition.
                 toCondition.set();
                 this.load(fes, iteratorLv);
-                this.invoke(fes.expression, this.iClassLoader.JAVA_UTIL_ITERATOR__HAS_NEXT);
+                this.invoke(fes.expression, this.iClassLoader.METH_java_util_Iterator__hasNext);
                 this.writeBranch(fes, Opcode.IFNE, bodyOffset);
             } finally {
                 this.codeContext.restoreLocalVariables();
@@ -1626,7 +1626,7 @@ class UnitCompiler {
                 as,                                         // locatable
                 as,                                         // scope
                 null,                                       // optionalEnclosingInstance
-                this.iClassLoader.JAVA_LANG_ASSERTIONERROR, // targetClass
+                this.iClassLoader.TYPE_java_lang_AssertionError, // targetClass
                 arguments                                   // arguments
             );
             this.writeOpcode(as, Opcode.ATHROW);
@@ -1658,7 +1658,7 @@ class UnitCompiler {
             if (initializer instanceof Rvalue) {
                 Rvalue rvalue          = (Rvalue) initializer;
                 IClass initializerType = this.compileGetValue(rvalue);
-                fieldType = fieldType.getArrayIClass(vd.brackets, this.iClassLoader.JAVA_LANG_OBJECT);
+                fieldType = fieldType.getArrayIClass(vd.brackets, this.iClassLoader.TYPE_java_lang_Object);
                 this.assignmentConversion(
                     fd,                           // locatable
                     initializerType,              // sourceType
@@ -1940,7 +1940,7 @@ class UnitCompiler {
     compile2(SynchronizedStatement ss) throws CompileException {
 
         // Evaluate monitor object expression.
-        if (!this.iClassLoader.JAVA_LANG_OBJECT.isAssignableFrom(this.compileGetValue(ss.expression))) {
+        if (!this.iClassLoader.TYPE_java_lang_Object.isAssignableFrom(this.compileGetValue(ss.expression))) {
             this.compileError(
                 "Monitor object of \"synchronized\" statement is not a subclass of \"Object\"",
                 ss.getLocation()
@@ -1956,7 +1956,7 @@ class UnitCompiler {
 
             // Store the monitor object.
             this.writeOpcode(ss, Opcode.DUP);
-            this.store(ss, this.iClassLoader.JAVA_LANG_OBJECT, ss.monitorLvIndex);
+            this.store(ss, this.iClassLoader.TYPE_java_lang_Object, ss.monitorLvIndex);
 
             // Create lock on the monitor object.
             this.writeOpcode(ss, Opcode.MONITORENTER);
@@ -1977,7 +1977,7 @@ class UnitCompiler {
                 here,            // handlerPC
                 null             // catchTypeFD
             );
-            this.leave(ss, this.iClassLoader.JAVA_LANG_THROWABLE);
+            this.leave(ss, this.iClassLoader.TYPE_java_lang_Throwable);
             this.writeOpcode(ss, Opcode.ATHROW);
 
             // Unlock monitor object.
@@ -2034,11 +2034,11 @@ class UnitCompiler {
                 IClass      caughtExceptionType = this.getType(cc.caughtException.type);
                 cc.reachable = (
                     // Superclass or subclass of "java.lang.Error"?
-                    this.iClassLoader.JAVA_LANG_ERROR.isAssignableFrom(caughtExceptionType)
-                    || caughtExceptionType.isAssignableFrom(this.iClassLoader.JAVA_LANG_ERROR)
+                    this.iClassLoader.TYPE_java_lang_Error.isAssignableFrom(caughtExceptionType)
+                    || caughtExceptionType.isAssignableFrom(this.iClassLoader.TYPE_java_lang_Error)
                     // Superclass or subclass of "java.lang.RuntimeException"?
-                    || this.iClassLoader.JAVA_LANG_RUNTIMEEXCEPTION.isAssignableFrom(caughtExceptionType)
-                    || caughtExceptionType.isAssignableFrom(this.iClassLoader.JAVA_LANG_RUNTIMEEXCEPTION)
+                    || this.iClassLoader.TYPE_java_lang_RuntimeException.isAssignableFrom(caughtExceptionType)
+                    || caughtExceptionType.isAssignableFrom(this.iClassLoader.TYPE_java_lang_RuntimeException)
                 );
             }
 
@@ -2119,13 +2119,13 @@ class UnitCompiler {
                     short evi = this.codeContext.allocateLocalVariable((short) 1);
                     this.store(
                         ts.optionalFinally,                 // locatable
-                        this.iClassLoader.JAVA_LANG_OBJECT, // lvType
+                        this.iClassLoader.TYPE_java_lang_Object, // lvType
                         evi                                 // lvIndex
                     );
                     this.writeBranch(ts.optionalFinally, Opcode.JSR, ts.finallyOffset);
                     this.load(
                         ts.optionalFinally,                 // locatable
-                        this.iClassLoader.JAVA_LANG_OBJECT, // type
+                        this.iClassLoader.TYPE_java_lang_Object, // type
                         evi                                 // index
                     );
                     this.writeOpcode(ts.optionalFinally, Opcode.ATHROW);
@@ -2134,7 +2134,7 @@ class UnitCompiler {
                     ts.finallyOffset.set();
                     this.store(
                         ts.optionalFinally,                 // locatable
-                        this.iClassLoader.JAVA_LANG_OBJECT, // lvType
+                        this.iClassLoader.TYPE_java_lang_Object, // lvType
                         pcLvIndex                           // lvIndex
                     );
                     if (this.compile(ts.optionalFinally)) {
@@ -2616,7 +2616,7 @@ class UnitCompiler {
             assert parameter.type != null;
             IClass parameterType = this.getType(parameter.type);
             if (isVariableArityParameter) {
-                parameterType = parameterType.getArrayIClass(this.iClassLoader.JAVA_LANG_OBJECT);
+                parameterType = parameterType.getArrayIClass(this.iClassLoader.TYPE_java_lang_Object);
             }
             parameter.localVariable = new LocalVariable(parameter.finaL, parameterType);
         }
@@ -2892,8 +2892,8 @@ class UnitCompiler {
     compileBoolean2(Rvalue rv, CodeContext.Offset dst, boolean orientation) throws CompileException {
         IClass       type = this.compileGetValue(rv);
         IClassLoader icl  = this.iClassLoader;
-        if (type == icl.JAVA_LANG_BOOLEAN) {
-            this.unboxingConversion(rv, icl.JAVA_LANG_BOOLEAN, IClass.BOOLEAN);
+        if (type == icl.TYPE_java_lang_Boolean) {
+            this.unboxingConversion(rv, icl.TYPE_java_lang_Boolean, IClass.BOOLEAN);
         } else
         if (type != IClass.BOOLEAN) {
             this.compileError("Not a boolean expression", rv.getLocation());
@@ -3099,18 +3099,18 @@ class UnitCompiler {
                 IClassLoader icl = this.iClassLoader;
 
                 // Unbox LHS if necessary.
-                if (lhsType == icl.JAVA_LANG_BOOLEAN) {
+                if (lhsType == icl.TYPE_java_lang_Boolean) {
                     this.codeContext.pushInserter(convertLhsInserter);
                     try {
-                        this.unboxingConversion(bo, icl.JAVA_LANG_BOOLEAN, IClass.BOOLEAN);
+                        this.unboxingConversion(bo, icl.TYPE_java_lang_Boolean, IClass.BOOLEAN);
                     } finally {
                         this.codeContext.popInserter();
                     }
                 }
 
                 // Unbox RHS if necessary.
-                if (rhsType == icl.JAVA_LANG_BOOLEAN) {
-                    this.unboxingConversion(bo, icl.JAVA_LANG_BOOLEAN, IClass.BOOLEAN);
+                if (rhsType == icl.TYPE_java_lang_Boolean) {
+                    this.unboxingConversion(bo, icl.TYPE_java_lang_Boolean, IClass.BOOLEAN);
                 }
 
                 this.writeBranch(bo, Opcode.IF_ICMPEQ + opIdx, dst);
@@ -3423,7 +3423,7 @@ class UnitCompiler {
                 "TYPE",                 // fieldName
                 "Ljava/lang/Class;"     // fieldFD
             );
-            return icl.JAVA_LANG_CLASS;
+            return icl.TYPE_java_lang_Class;
         }
 
         // Non-primitive class literal.
@@ -3491,7 +3491,7 @@ class UnitCompiler {
                 }
             }
             if (!hasClassDollarField) {
-                Type             classType = new SimpleType(loc, icl.JAVA_LANG_CLASS);
+                Type             classType = new SimpleType(loc, icl.TYPE_java_lang_Class);
                 FieldDeclaration fd        = new FieldDeclaration(
                     loc,                       // location
                     null,                      // optionalDocComment
@@ -3666,7 +3666,7 @@ class UnitCompiler {
                     "Reference types \"" + mhsType + "\" and \"" + rhsType + "\" don't match",
                     ce.getLocation()
                 );
-                return this.iClassLoader.JAVA_LANG_OBJECT;
+                return this.iClassLoader.TYPE_java_lang_Object;
             }
         } else
         {
@@ -3674,7 +3674,7 @@ class UnitCompiler {
                 "Incompatible expression types \"" + mhsType + "\" and \"" + rhsType + "\"",
                 ce.getLocation()
             );
-            return this.iClassLoader.JAVA_LANG_OBJECT;
+            return this.iClassLoader.TYPE_java_lang_Object;
         }
         toEnd.set();
 
@@ -3816,7 +3816,7 @@ class UnitCompiler {
         }
 
         this.compileError("Unexpected operator \"" + uo.operator + "\"", uo.getLocation());
-        return this.iClassLoader.JAVA_LANG_OBJECT;
+        return this.iClassLoader.TYPE_java_lang_Object;
     }
 
     private IClass
@@ -5049,7 +5049,7 @@ class UnitCompiler {
 
     private void
     leave2(SynchronizedStatement ss, IClass optionalStackValueType) {
-        this.load(ss, this.iClassLoader.JAVA_LANG_OBJECT, ss.monitorLvIndex);
+        this.load(ss, this.iClassLoader.TYPE_java_lang_Object, ss.monitorLvIndex);
         this.writeOpcode(ss, Opcode.MONITOREXIT);
     }
 
@@ -5197,7 +5197,7 @@ class UnitCompiler {
         };
         try {
             a.accept(av);
-            return res[0] != null ? res[0] : this.iClassLoader.JAVA_LANG_OBJECT;
+            return res[0] != null ? res[0] : this.iClassLoader.TYPE_java_lang_Object;
         } catch (UncheckedCompileException uce) {
             throw uce.compileException; // SUPPRESS CHECKSTYLE AvoidHidingCause
         }
@@ -5355,7 +5355,7 @@ class UnitCompiler {
 
             // 6.5.5.1.8 Give up.
             this.compileError("Cannot determine simple type name \"" + simpleTypeName + "\"", rt.getLocation());
-            return this.iClassLoader.JAVA_LANG_OBJECT;
+            return this.iClassLoader.TYPE_java_lang_Object;
         } else {
 
             // 6.5.5.2 Qualified type name (two or more identifiers).
@@ -5373,7 +5373,7 @@ class UnitCompiler {
                 if (result != null) return result;
 
                 this.compileError("Class \"" + className + "\" not found", rt.getLocation());
-                return this.iClassLoader.JAVA_LANG_OBJECT;
+                return this.iClassLoader.TYPE_java_lang_Object;
             }
 
             // 6.5.5.2.2 CLASS.CLASS (member type)
@@ -5389,7 +5389,7 @@ class UnitCompiler {
                     rt.getLocation()
                 );
             }
-            return this.iClassLoader.JAVA_LANG_OBJECT;
+            return this.iClassLoader.TYPE_java_lang_Object;
         }
     }
 
@@ -5405,7 +5405,7 @@ class UnitCompiler {
 
     private IClass
     getType2(ArrayType at) throws CompileException {
-        return this.getType(at.componentType).getArrayIClass(this.iClassLoader.JAVA_LANG_OBJECT);
+        return this.getType(at.componentType).getArrayIClass(this.iClassLoader.TYPE_java_lang_Object);
     }
 
     private IClass
@@ -5416,7 +5416,7 @@ class UnitCompiler {
     private IClass
     getType2(Package p) throws CompileException {
         this.compileError("Unknown variable or type \"" + p.name + "\"", p.getLocation());
-        return this.iClassLoader.JAVA_LANG_OBJECT;
+        return this.iClassLoader.TYPE_java_lang_Object;
     }
 
     @SuppressWarnings("static-method") private IClass
@@ -5446,7 +5446,7 @@ class UnitCompiler {
 
     private IClass
     getType2(ClassLiteral cl) {
-        return this.iClassLoader.JAVA_LANG_CLASS;
+        return this.iClassLoader.TYPE_java_lang_Class;
     }
 
     private IClass
@@ -5497,7 +5497,7 @@ class UnitCompiler {
                     "Reference types \"" + mhsType + "\" and \"" + rhsType + "\" don't match",
                     ce.getLocation()
                 );
-                return this.iClassLoader.JAVA_LANG_OBJECT;
+                return this.iClassLoader.TYPE_java_lang_Object;
             }
         } else
         {
@@ -5505,7 +5505,7 @@ class UnitCompiler {
                 "Incompatible expression types \"" + mhsType + "\" and \"" + rhsType + "\"",
                 ce.getLocation()
             );
-            return this.iClassLoader.JAVA_LANG_OBJECT;
+            return this.iClassLoader.TYPE_java_lang_Object;
         }
     }
 
@@ -5565,7 +5565,7 @@ class UnitCompiler {
         if (bo.op == "|" || bo.op == "^" || bo.op == "&") { // SUPPRESS CHECKSTYLE StringLiteralEquality
             IClass lhsType = this.getType(bo.lhs);
             return (
-                lhsType == IClass.BOOLEAN || lhsType == this.iClassLoader.JAVA_LANG_BOOLEAN
+                lhsType == IClass.BOOLEAN || lhsType == this.iClassLoader.TYPE_java_lang_Boolean
                 ? IClass.BOOLEAN
                 : this.binaryNumericPromotionType(bo, lhsType, this.getType(bo.rhs))
             );
@@ -5580,15 +5580,15 @@ class UnitCompiler {
 
             // Check the far left operand type.
             IClass lhsType = this.getUnboxedType(this.getType(((Rvalue) ops.next())));
-            if (bo.op == "+" && lhsType == icl.JAVA_LANG_STRING) { // SUPPRESS CHECKSTYLE StringLiteralEquality
-                return icl.JAVA_LANG_STRING;
+            if (bo.op == "+" && lhsType == icl.TYPE_java_lang_String) { // SUPPRESS CHECKSTYLE StringLiteralEquality
+                return icl.TYPE_java_lang_String;
             }
 
             // Determine the expression type.
             do {
                 IClass rhsType = this.getUnboxedType(this.getType(((Rvalue) ops.next())));
-                if (bo.op == "+" && rhsType == icl.JAVA_LANG_STRING) { // SUPPRESS CHECKSTYLE StringLiteralEquality
-                    return icl.JAVA_LANG_STRING;
+                if (bo.op == "+" && rhsType == icl.TYPE_java_lang_String) { // SUPPRESS CHECKSTYLE StringLiteralEquality
+                    return icl.TYPE_java_lang_String;
                 }
                 lhsType = this.binaryNumericPromotionType(bo, lhsType, rhsType);
             } while (ops.hasNext());
@@ -5601,7 +5601,7 @@ class UnitCompiler {
         }
 
         this.compileError("Unexpected operator \"" + bo.op + "\"", bo.getLocation());
-        return this.iClassLoader.JAVA_LANG_OBJECT;
+        return this.iClassLoader.TYPE_java_lang_Object;
     }
 
     private IClass
@@ -5653,7 +5653,7 @@ class UnitCompiler {
     private IClass
     getType2(NewArray na) throws CompileException {
         IClass res = this.getType(na.type);
-        return res.getArrayIClass(na.dimExprs.length + na.dims, this.iClassLoader.JAVA_LANG_OBJECT);
+        return res.getArrayIClass(na.dimExprs.length + na.dims, this.iClassLoader.TYPE_java_lang_Object);
     }
 
     private IClass
@@ -5687,7 +5687,7 @@ class UnitCompiler {
 
     private IClass
     getType2(StringLiteral sl) {
-        return this.iClassLoader.JAVA_LANG_STRING;
+        return this.iClassLoader.TYPE_java_lang_String;
     }
 
     @SuppressWarnings("static-method") private IClass
@@ -5706,7 +5706,7 @@ class UnitCompiler {
         if (v instanceof Double)    return IClass.DOUBLE;
         if (v instanceof Boolean)   return IClass.BOOLEAN;
         if (v instanceof Character) return IClass.CHAR;
-        if (v instanceof String)    return this.iClassLoader.JAVA_LANG_STRING;
+        if (v instanceof String)    return this.iClassLoader.TYPE_java_lang_String;
         if (v == null)              return IClass.VOID;
         throw new JaninoRuntimeException("Invalid SimpleLiteral value type '" + v.getClass() + "'");
     }
@@ -5980,7 +5980,7 @@ class UnitCompiler {
         Type result = a.toType();
         if (result == null) {
             this.compileError("Expression \"" + a.toString() + "\" is not a type", a.getLocation());
-            return new SimpleType(a.getLocation(), this.iClassLoader.JAVA_LANG_OBJECT);
+            return new SimpleType(a.getLocation(), this.iClassLoader.TYPE_java_lang_Object);
         }
         return result;
     }
@@ -6158,16 +6158,16 @@ class UnitCompiler {
                         && (rhsType == IClass.BOOLEAN || this.getUnboxedType(rhsType) == IClass.BOOLEAN)
                     ) {
                         IClassLoader icl = this.iClassLoader;
-                        if (type == icl.JAVA_LANG_BOOLEAN) {
+                        if (type == icl.TYPE_java_lang_Boolean) {
                             this.codeContext.pushInserter(convertLhsInserter);
                             try {
-                                this.unboxingConversion(locatable, icl.JAVA_LANG_BOOLEAN, IClass.BOOLEAN);
+                                this.unboxingConversion(locatable, icl.TYPE_java_lang_Boolean, IClass.BOOLEAN);
                             } finally {
                                 this.codeContext.popInserter();
                             }
                         }
-                        if (rhsType == icl.JAVA_LANG_BOOLEAN) {
-                            this.unboxingConversion(locatable, icl.JAVA_LANG_BOOLEAN, IClass.BOOLEAN);
+                        if (rhsType == icl.TYPE_java_lang_Boolean) {
+                            this.unboxingConversion(locatable, icl.TYPE_java_lang_Boolean, IClass.BOOLEAN);
                         }
                         this.writeOpcode(locatable, iopcode);
                         type = IClass.BOOLEAN;
@@ -6207,7 +6207,10 @@ class UnitCompiler {
 
                 // String concatenation?
                 // SUPPRESS CHECKSTYLE StringLiteralEquality
-                if (operator == "+" && (type == icl.JAVA_LANG_STRING || operandType == icl.JAVA_LANG_STRING)) {
+                if (
+                    operator == "+"
+                    && (type == icl.TYPE_java_lang_String || operandType == icl.TYPE_java_lang_String)
+                ) {
                     return this.compileStringConcatenation(locatable, type, operand, operands);
                 }
 
@@ -6376,13 +6379,13 @@ class UnitCompiler {
 
                 // Concatenate.
                 if (operandOnStack) {
-                    this.invoke(locatable, this.iClassLoader.JAVA_LANG_STRING__CONCAT__JAVA_LANG_STRING);
+                    this.invoke(locatable, this.iClassLoader.METH_java_lang_String__concat__java_lang_String);
                 } else
                 {
                     operandOnStack = true;
                 }
             }
-            return this.iClassLoader.JAVA_LANG_STRING;
+            return this.iClassLoader.TYPE_java_lang_String;
         }
 
         // String concatenation through "new StringBuilder(a).append(b).append(c).append(d).toString()".
@@ -6401,19 +6404,19 @@ class UnitCompiler {
             this.writeOpcode(locatable, Opcode.DUP);
             ((Compilable) it.next()).compile();
         }
-        this.invoke(locatable, this.iClassLoader.JAVA_LANG_STRINGBUILDER__CTOR__JAVA_LANG_STRING);
+        this.invoke(locatable, this.iClassLoader.CTOR_java_lang_StringBuilder__java_lang_String);
 
         while (it.hasNext()) {
             ((Compilable) it.next()).compile();
 
             // "StringBuilder.append(String b)":
-            this.invoke(locatable, this.iClassLoader.JAVA_LANG_STRINGBUILDER__APPEND__JAVA_LANG_STRING);
+            this.invoke(locatable, this.iClassLoader.METH_java_lang_StringBuilder__append__java_lang_String);
         }
 
         // "StringBuilder.toString()":
-        this.invoke(locatable, this.iClassLoader.JAVA_LANG_STRINGBUILDER__TOSTRING);
+        this.invoke(locatable, this.iClassLoader.METH_java_lang_StringBuilder__toString);
 
-        return this.iClassLoader.JAVA_LANG_STRING;
+        return this.iClassLoader.TYPE_java_lang_String;
     }
 
     /** Helper interface for string conversion. */
@@ -6423,15 +6426,15 @@ class UnitCompiler {
     private void
     stringConversion(Locatable locatable, IClass sourceType) throws CompileException {
         this.invoke(locatable, (
-            sourceType == IClass.BYTE    ? this.iClassLoader.JAVA_LANG_STRING__VALUEOF__INT :
-            sourceType == IClass.SHORT   ? this.iClassLoader.JAVA_LANG_STRING__VALUEOF__INT :
-            sourceType == IClass.INT     ? this.iClassLoader.JAVA_LANG_STRING__VALUEOF__INT :
-            sourceType == IClass.LONG    ? this.iClassLoader.JAVA_LANG_STRING__VALUEOF__LONG :
-            sourceType == IClass.FLOAT   ? this.iClassLoader.JAVA_LANG_STRING__VALUEOF__FLOAT :
-            sourceType == IClass.DOUBLE  ? this.iClassLoader.JAVA_LANG_STRING__VALUEOF__DOUBLE :
-            sourceType == IClass.CHAR    ? this.iClassLoader.JAVA_LANG_STRING__VALUEOF__CHAR :
-            sourceType == IClass.BOOLEAN ? this.iClassLoader.JAVA_LANG_STRING__VALUEOF__BOOLEAN :
-            this.iClassLoader.JAVA_LANG_STRING__VALUEOF__JAVA_LANG_OBJECT
+            sourceType == IClass.BYTE    ? this.iClassLoader.METH_java_lang_String__valueOf__int :
+            sourceType == IClass.SHORT   ? this.iClassLoader.METH_java_lang_String__valueOf__int :
+            sourceType == IClass.INT     ? this.iClassLoader.METH_java_lang_String__valueOf__int :
+            sourceType == IClass.LONG    ? this.iClassLoader.METH_java_lang_String__valueOf__long :
+            sourceType == IClass.FLOAT   ? this.iClassLoader.METH_java_lang_String__valueOf__float :
+            sourceType == IClass.DOUBLE  ? this.iClassLoader.METH_java_lang_String__valueOf__double :
+            sourceType == IClass.CHAR    ? this.iClassLoader.METH_java_lang_String__valueOf__char :
+            sourceType == IClass.BOOLEAN ? this.iClassLoader.METH_java_lang_String__valueOf__boolean :
+            this.iClassLoader.METH_java_lang_String__valueOf__java_lang_Object
         ));
     }
 
@@ -6683,7 +6686,7 @@ class UnitCompiler {
                 getType() throws CompileException {
                     return UnitCompiler.this.getType(fieldDescriptor.type).getArrayIClass(
                         vd.brackets,
-                        UnitCompiler.this.iClassLoader.JAVA_LANG_OBJECT
+                        UnitCompiler.this.iClassLoader.TYPE_java_lang_Object
                     );
                 }
 
@@ -7338,7 +7341,7 @@ class UnitCompiler {
                 + mi.methodName
                 + "\" is not declared in any enclosing class nor any supertype, nor through a static import"
             ), mi.getLocation());
-            return this.fakeIMethod(this.iClassLoader.JAVA_LANG_OBJECT, mi.methodName, mi.arguments);
+            return this.fakeIMethod(this.iClassLoader.TYPE_java_lang_Object, mi.methodName, mi.arguments);
         }
 
         this.checkThrownExceptions(mi, iMethod);
@@ -7361,7 +7364,7 @@ class UnitCompiler {
 
         // Interfaces inherit the methods declared in 'Object'.
         if (targetType.isInterface()) {
-            IClass.IMethod[] oms = this.iClassLoader.JAVA_LANG_OBJECT.getDeclaredIMethods(invocation.methodName);
+            IClass.IMethod[] oms = this.iClassLoader.TYPE_java_lang_Object.getDeclaredIMethods(invocation.methodName);
             for (int i = 0; i < oms.length; ++i) {
                 IClass.IMethod om = oms[i];
                 if (!om.isStatic() && om.getAccess() == Access.PUBLIC) ms.add(om);
@@ -7868,7 +7871,7 @@ class UnitCompiler {
     checkThrownException(Locatable locatable, IClass type, Scope scope) throws CompileException {
 
         // Thrown object must be assignable to "Throwable".
-        if (!this.iClassLoader.JAVA_LANG_THROWABLE.isAssignableFrom(type)) {
+        if (!this.iClassLoader.TYPE_java_lang_Throwable.isAssignableFrom(type)) {
             this.compileError(
                 "Thrown object of type \"" + type + "\" is not assignable to \"Throwable\"",
                 locatable.getLocation()
@@ -7877,8 +7880,8 @@ class UnitCompiler {
 
         // "RuntimeException" and "Error" are never checked.
         if (
-            this.iClassLoader.JAVA_LANG_RUNTIMEEXCEPTION.isAssignableFrom(type)
-            || this.iClassLoader.JAVA_LANG_ERROR.isAssignableFrom(type)
+            this.iClassLoader.TYPE_java_lang_RuntimeException.isAssignableFrom(type)
+            || this.iClassLoader.TYPE_java_lang_Error.isAssignableFrom(type)
         ) return;
 
         for (;; scope = scope.getEnclosingScope()) {
@@ -8095,11 +8098,11 @@ class UnitCompiler {
             getSuperclass2() throws CompileException {
                 if (atd instanceof AnonymousClassDeclaration) {
                     IClass bt = UnitCompiler.this.getType(((AnonymousClassDeclaration) atd).baseType);
-                    return bt.isInterface() ? UnitCompiler.this.iClassLoader.JAVA_LANG_OBJECT : bt;
+                    return bt.isInterface() ? UnitCompiler.this.iClassLoader.TYPE_java_lang_Object : bt;
                 }
                 if (atd instanceof NamedClassDeclaration) {
                     NamedClassDeclaration ncd = (NamedClassDeclaration) atd;
-                    if (ncd.optionalExtendedType == null) return UnitCompiler.this.iClassLoader.JAVA_LANG_OBJECT;
+                    if (ncd.optionalExtendedType == null) return UnitCompiler.this.iClassLoader.TYPE_java_lang_Object;
                     IClass superclass = UnitCompiler.this.getType(ncd.optionalExtendedType);
                     if (superclass.isInterface()) {
                         UnitCompiler.this.compileError(
@@ -8389,7 +8392,9 @@ class UnitCompiler {
                 for (int i = 0; i < parameters.length; ++i) {
                     IClass parameterType = UnitCompiler.this.getType(parameters[i].type);
                     if (i == parameters.length - 1 && constructorDeclarator.formalParameters.variableArity) {
-                        parameterType = parameterType.getArrayIClass(UnitCompiler.this.iClassLoader.JAVA_LANG_OBJECT);
+                        parameterType = parameterType.getArrayIClass(
+                            UnitCompiler.this.iClassLoader.TYPE_java_lang_Object
+                        );
                     }
                     l.add(parameterType.getDescriptor());
                 }
@@ -8407,7 +8412,9 @@ class UnitCompiler {
                 for (int i = 0; i < parameters.length; ++i) {
                     IClass parameterType = UnitCompiler.this.getType(parameters[i].type);
                     if (i == parameters.length - 1 && constructorDeclarator.formalParameters.variableArity) {
-                        parameterType = parameterType.getArrayIClass(UnitCompiler.this.iClassLoader.JAVA_LANG_OBJECT);
+                        parameterType = parameterType.getArrayIClass(
+                            UnitCompiler.this.iClassLoader.TYPE_java_lang_Object
+                        );
                     }
                     res[i] = parameterType;
                 }
@@ -8481,7 +8488,9 @@ class UnitCompiler {
                 for (int i = 0; i < parameters.length; ++i) {
                     IClass parameterType = UnitCompiler.this.getType(parameters[i].type);
                     if (i == parameters.length - 1 && methodDeclarator.formalParameters.variableArity) {
-                        parameterType = parameterType.getArrayIClass(UnitCompiler.this.iClassLoader.JAVA_LANG_OBJECT);
+                        parameterType = parameterType.getArrayIClass(
+                            UnitCompiler.this.iClassLoader.TYPE_java_lang_Object
+                        );
                     }
                     res[i] = parameterType;
                 }
@@ -8543,7 +8552,7 @@ class UnitCompiler {
         IClass iClass = this.findTypeByFullyQualifiedName(location, ss);
         if (iClass == null) {
             this.compileError("Imported class \"" + Java.join(ss, ".") + "\" could not be loaded", location);
-            return this.iClassLoader.JAVA_LANG_OBJECT;
+            return this.iClassLoader.TYPE_java_lang_Object;
         }
         return iClass;
     }
@@ -8701,7 +8710,7 @@ class UnitCompiler {
         // return Class.forName(className);
         MethodInvocation mi = new MethodInvocation(
             loc,                                                    // location
-            new SimpleType(loc, this.iClassLoader.JAVA_LANG_CLASS), // optionalTarget
+            new SimpleType(loc, this.iClassLoader.TYPE_java_lang_Class), // optionalTarget
             "forName",                                              // methodName
             new Rvalue[] {                                          // arguments
                 new AmbiguousName(loc, new String[] { "className" })
@@ -8770,14 +8779,14 @@ class UnitCompiler {
         FormalParameter parameter = new FormalParameter(
             loc,                                                     // location
             false,                                                   // finaL
-            new SimpleType(loc, this.iClassLoader.JAVA_LANG_STRING), // type
+            new SimpleType(loc, this.iClassLoader.TYPE_java_lang_String), // type
             "className"                                              // name
         );
         MethodDeclarator cdmd = new MethodDeclarator(
             loc,                                                    // location
             null,                                                   // optionalDocComment
             new Modifiers(Mod.STATIC),                              // modifiers
-            new SimpleType(loc, this.iClassLoader.JAVA_LANG_CLASS), // type
+            new SimpleType(loc, this.iClassLoader.TYPE_java_lang_Class), // type
             "class$",                                               // name
             new FormalParameters(                                   // parameters
                 loc,
@@ -8884,9 +8893,9 @@ class UnitCompiler {
             this.writeLdc(locatable, this.addConstantStringInfo(ss[0]));
             for (int i = 1; i < ss.length; ++i) {
                 this.writeLdc(locatable, this.addConstantStringInfo(ss[i]));
-                this.invoke(locatable, iClassLoader.JAVA_LANG_STRING__CONCAT__JAVA_LANG_STRING);
+                this.invoke(locatable, this.iClassLoader.METH_java_lang_String__concat__java_lang_String);
             }
-            return this.iClassLoader.JAVA_LANG_STRING;
+            return this.iClassLoader.TYPE_java_lang_String;
         }
 
         if (Boolean.TRUE.equals(value)) {
@@ -9106,7 +9115,7 @@ class UnitCompiler {
         if (targetType == IClass.BOOLEAN) {
             if (value instanceof Boolean) return value;
         } else
-        if (targetType == this.iClassLoader.JAVA_LANG_STRING) {
+        if (targetType == this.iClassLoader.TYPE_java_lang_String) {
             if (value instanceof String) return value;
         } else
         if (targetType == IClass.BYTE) {
@@ -9609,15 +9618,15 @@ class UnitCompiler {
         if (targetType == IClass.CHAR)  return cv >= Character.MIN_VALUE && cv <= Character.MAX_VALUE;
 
         IClassLoader icl = this.iClassLoader;
-        if (targetType == icl.JAVA_LANG_BYTE && cv >= Byte.MIN_VALUE && cv <= Byte.MAX_VALUE) {
+        if (targetType == icl.TYPE_java_lang_Byte && cv >= Byte.MIN_VALUE && cv <= Byte.MAX_VALUE) {
             this.boxingConversion(locatable, IClass.BYTE, targetType);
             return true;
         }
-        if (targetType == icl.JAVA_LANG_SHORT && cv >= Short.MIN_VALUE && cv <= Short.MAX_VALUE) {
+        if (targetType == icl.TYPE_java_lang_Short && cv >= Short.MIN_VALUE && cv <= Short.MAX_VALUE) {
             this.boxingConversion(locatable, IClass.SHORT, targetType);
             return true;
         }
-        if (targetType == icl.JAVA_LANG_CHARACTER && cv >= Character.MIN_VALUE && cv <= Character.MAX_VALUE) {
+        if (targetType == icl.TYPE_java_lang_Character && cv >= Character.MIN_VALUE && cv <= Character.MAX_VALUE) {
             this.boxingConversion(locatable, IClass.CHAR, targetType);
             return true;
         }
@@ -9638,10 +9647,10 @@ class UnitCompiler {
         if (targetType.isInterface() && !sourceType.isFinal() && !targetType.isAssignableFrom(sourceType)) return true;
 
         // 5.1.5.3
-        if (sourceType == this.iClassLoader.JAVA_LANG_OBJECT && targetType.isArray()) return true;
+        if (sourceType == this.iClassLoader.TYPE_java_lang_Object && targetType.isArray()) return true;
 
         // 5.1.5.4
-        if (sourceType == this.iClassLoader.JAVA_LANG_OBJECT && targetType.isInterface()) return true;
+        if (sourceType == this.iClassLoader.TYPE_java_lang_Object && targetType.isInterface()) return true;
 
         // 5.1.5.5
         if (sourceType.isInterface() && !targetType.isFinal()) return true;
@@ -9695,14 +9704,14 @@ class UnitCompiler {
     private IClass
     isBoxingConvertible(IClass sourceType) {
         IClassLoader icl = this.iClassLoader;
-        if (sourceType == IClass.BOOLEAN) return icl.JAVA_LANG_BOOLEAN;
-        if (sourceType == IClass.BYTE)    return icl.JAVA_LANG_BYTE;
-        if (sourceType == IClass.CHAR)    return icl.JAVA_LANG_CHARACTER;
-        if (sourceType == IClass.SHORT)   return icl.JAVA_LANG_SHORT;
-        if (sourceType == IClass.INT)     return icl.JAVA_LANG_INTEGER;
-        if (sourceType == IClass.LONG)    return icl.JAVA_LANG_LONG;
-        if (sourceType == IClass.FLOAT)   return icl.JAVA_LANG_FLOAT;
-        if (sourceType == IClass.DOUBLE)  return icl.JAVA_LANG_DOUBLE;
+        if (sourceType == IClass.BOOLEAN) return icl.TYPE_java_lang_Boolean;
+        if (sourceType == IClass.BYTE)    return icl.TYPE_java_lang_Byte;
+        if (sourceType == IClass.CHAR)    return icl.TYPE_java_lang_Character;
+        if (sourceType == IClass.SHORT)   return icl.TYPE_java_lang_Short;
+        if (sourceType == IClass.INT)     return icl.TYPE_java_lang_Integer;
+        if (sourceType == IClass.LONG)    return icl.TYPE_java_lang_Long;
+        if (sourceType == IClass.FLOAT)   return icl.TYPE_java_lang_Float;
+        if (sourceType == IClass.DOUBLE)  return icl.TYPE_java_lang_Double;
         return null;
     }
 
@@ -9756,14 +9765,14 @@ class UnitCompiler {
     private IClass
     isUnboxingConvertible(IClass sourceType) {
         IClassLoader icl = this.iClassLoader;
-        if (sourceType == icl.JAVA_LANG_BOOLEAN)   return IClass.BOOLEAN;
-        if (sourceType == icl.JAVA_LANG_BYTE)      return IClass.BYTE;
-        if (sourceType == icl.JAVA_LANG_CHARACTER) return IClass.CHAR;
-        if (sourceType == icl.JAVA_LANG_SHORT)     return IClass.SHORT;
-        if (sourceType == icl.JAVA_LANG_INTEGER)   return IClass.INT;
-        if (sourceType == icl.JAVA_LANG_LONG)      return IClass.LONG;
-        if (sourceType == icl.JAVA_LANG_FLOAT)     return IClass.FLOAT;
-        if (sourceType == icl.JAVA_LANG_DOUBLE)    return IClass.DOUBLE;
+        if (sourceType == icl.TYPE_java_lang_Boolean)   return IClass.BOOLEAN;
+        if (sourceType == icl.TYPE_java_lang_Byte)      return IClass.BYTE;
+        if (sourceType == icl.TYPE_java_lang_Character) return IClass.CHAR;
+        if (sourceType == icl.TYPE_java_lang_Short)     return IClass.SHORT;
+        if (sourceType == icl.TYPE_java_lang_Integer)   return IClass.INT;
+        if (sourceType == icl.TYPE_java_lang_Long)      return IClass.LONG;
+        if (sourceType == icl.TYPE_java_lang_Float)     return IClass.FLOAT;
+        if (sourceType == icl.TYPE_java_lang_Double)    return IClass.DOUBLE;
         return null;
     }
 
@@ -10334,19 +10343,19 @@ class UnitCompiler {
                 componentType == IClass.INT     ? 10 :
                 componentType == IClass.LONG    ? 11 : -1
             ));
-            return componentType.getArrayIClass(this.iClassLoader.JAVA_LANG_OBJECT);
+            return componentType.getArrayIClass(this.iClassLoader.TYPE_java_lang_Object);
         }
 
         if (dimExprCount == 1) {
-            IClass at = componentType.getArrayIClass(dims, this.iClassLoader.JAVA_LANG_OBJECT);
+            IClass at = componentType.getArrayIClass(dims, this.iClassLoader.TYPE_java_lang_Object);
 
             // "new <class-or-interface>[<size>]"
             // "new <anything>[<size>][]..."
             this.writeOpcode(locatable, Opcode.ANEWARRAY);
             this.writeConstantClassInfo(at.getDescriptor());
-            return at.getArrayIClass(this.iClassLoader.JAVA_LANG_OBJECT);
+            return at.getArrayIClass(this.iClassLoader.TYPE_java_lang_Object);
         } else {
-            IClass at = componentType.getArrayIClass(dimExprCount + dims, this.iClassLoader.JAVA_LANG_OBJECT);
+            IClass at = componentType.getArrayIClass(dimExprCount + dims, this.iClassLoader.TYPE_java_lang_Object);
 
             // "new <anything>[]..."
             // "new <anything>[<size1>][<size2>]..."

@@ -49,45 +49,45 @@ class IClassLoader {
     // CHECKSTYLE MemberName:OFF
     // CHECKSTYLE AbbreviationAsWordInName:OFF
     // CHECKSTYLE JavadocVariable:OFF
-    public IClass JAVA_LANG_OBJECT;
-    public IClass JAVA_LANG_STRING;
-    public IClass JAVA_LANG_STRINGBUILDER;
-    public IClass JAVA_LANG_CLASS;
-    public IClass JAVA_LANG_THROWABLE;
-    public IClass JAVA_LANG_RUNTIMEEXCEPTION;
-    public IClass JAVA_LANG_EXCEPTION;
-    public IClass JAVA_LANG_ERROR;
-    public IClass JAVA_LANG_CLONEABLE;
-    public IClass JAVA_LANG_ASSERTIONERROR;
-    public IClass JAVA_LANG_OVERRIDE;
-    public IClass JAVA_LANG_ITERABLE;
-    public IClass JAVA_IO_SERIALIZABLE;
-    public IClass JAVA_UTIL_ITERATOR;
+    public IClass ANNO_java_lang_Override;
 
-    public IClass JAVA_LANG_BOOLEAN;
-    public IClass JAVA_LANG_BYTE;
-    public IClass JAVA_LANG_CHARACTER;
-    public IClass JAVA_LANG_SHORT;
-    public IClass JAVA_LANG_INTEGER;
-    public IClass JAVA_LANG_LONG;
-    public IClass JAVA_LANG_FLOAT;
-    public IClass JAVA_LANG_DOUBLE;
+    public IClass TYPE_java_lang_AssertionError;
+    public IClass TYPE_java_lang_Boolean;
+    public IClass TYPE_java_lang_Byte;
+    public IClass TYPE_java_lang_Character;
+    public IClass TYPE_java_lang_Class;
+    public IClass TYPE_java_lang_Cloneable;
+    public IClass TYPE_java_lang_Double;
+    public IClass TYPE_java_lang_Exception;
+    public IClass TYPE_java_lang_Error;
+    public IClass TYPE_java_lang_Float;
+    public IClass TYPE_java_lang_Integer;
+    public IClass TYPE_java_lang_Iterable;
+    public IClass TYPE_java_lang_Long;
+    public IClass TYPE_java_lang_Object;
+    public IClass TYPE_java_lang_RuntimeException;
+    public IClass TYPE_java_lang_Short;
+    public IClass TYPE_java_lang_String;
+    public IClass TYPE_java_lang_StringBuilder;
+    public IClass TYPE_java_lang_Throwable;
+    public IClass TYPE_java_io_Serializable;
+    public IClass TYPE_java_util_Iterator;
 
-    public IMethod JAVA_LANG_ITERABLE__ITERATOR;
-    public IMethod JAVA_LANG_STRING__CONCAT__JAVA_LANG_STRING;
-    public IMethod JAVA_LANG_STRING__VALUEOF__INT;
-    public IMethod JAVA_LANG_STRING__VALUEOF__LONG;
-    public IMethod JAVA_LANG_STRING__VALUEOF__FLOAT;
-    public IMethod JAVA_LANG_STRING__VALUEOF__DOUBLE;
-    public IMethod JAVA_LANG_STRING__VALUEOF__CHAR;
-    public IMethod JAVA_LANG_STRING__VALUEOF__BOOLEAN;
-    public IMethod JAVA_LANG_STRING__VALUEOF__JAVA_LANG_OBJECT;
-    public IMethod JAVA_LANG_STRINGBUILDER__APPEND__JAVA_LANG_STRING;
-    public IMethod JAVA_LANG_STRINGBUILDER__TOSTRING;
-    public IMethod JAVA_UTIL_ITERATOR__HAS_NEXT;
-    public IMethod JAVA_UTIL_ITERATOR__NEXT;
+    public IMethod METH_java_lang_Iterable__iterator;
+    public IMethod METH_java_lang_String__concat__java_lang_String;
+    public IMethod METH_java_lang_String__valueOf__int;
+    public IMethod METH_java_lang_String__valueOf__long;
+    public IMethod METH_java_lang_String__valueOf__float;
+    public IMethod METH_java_lang_String__valueOf__double;
+    public IMethod METH_java_lang_String__valueOf__char;
+    public IMethod METH_java_lang_String__valueOf__boolean;
+    public IMethod METH_java_lang_String__valueOf__java_lang_Object;
+    public IMethod METH_java_lang_StringBuilder__append__java_lang_String;
+    public IMethod METH_java_lang_StringBuilder__toString;
+    public IMethod METH_java_util_Iterator__hasNext;
+    public IMethod METH_java_util_Iterator__next;
 
-    public IConstructor JAVA_LANG_STRINGBUILDER__CTOR__JAVA_LANG_STRING;
+    public IConstructor CTOR_java_lang_StringBuilder__java_lang_String;
     // CHECKSTYLE JavadocVariable:ON
     // CHECKSTYLE AbbreviationAsWordInName:ON
     // CHECKSTYLE MemberName:ON
@@ -106,47 +106,47 @@ class IClassLoader {
     protected final void
     postConstruct() {
         try {
-            this.JAVA_LANG_OBJECT           = this.loadIClass(Descriptor.JAVA_LANG_OBJECT);
-            this.JAVA_LANG_STRING           = this.loadIClass(Descriptor.JAVA_LANG_STRING);
-            this.JAVA_LANG_STRINGBUILDER    = this.loadIClass(Descriptor.JAVA_LANG_STRINGBUILDER);
-            this.JAVA_LANG_CLASS            = this.loadIClass(Descriptor.JAVA_LANG_CLASS);
-            this.JAVA_LANG_THROWABLE        = this.loadIClass(Descriptor.JAVA_LANG_THROWABLE);
-            this.JAVA_LANG_RUNTIMEEXCEPTION = this.loadIClass(Descriptor.JAVA_LANG_RUNTIMEEXCEPTION);
-            this.JAVA_LANG_EXCEPTION        = this.loadIClass(Descriptor.JAVA_LANG_EXCEPTION);
-            this.JAVA_LANG_ERROR            = this.loadIClass(Descriptor.JAVA_LANG_ERROR);
-            this.JAVA_LANG_CLONEABLE        = this.loadIClass(Descriptor.JAVA_LANG_CLONEABLE);
-            this.JAVA_LANG_ASSERTIONERROR   = this.loadIClass(Descriptor.JAVA_LANG_ASSERTIONERROR);
-            this.JAVA_LANG_OVERRIDE         = this.loadIClass(Descriptor.JAVA_LANG_OVERRIDE);
-            this.JAVA_LANG_ITERABLE         = this.loadIClass(Descriptor.JAVA_LANG_ITERABLE);
-            this.JAVA_IO_SERIALIZABLE       = this.loadIClass(Descriptor.JAVA_IO_SERIALIZABLE);
-            this.JAVA_UTIL_ITERATOR         = this.loadIClass(Descriptor.JAVA_UTIL_ITERATOR);
+            this.ANNO_java_lang_Override = this.loadIClass(Descriptor.JAVA_LANG_OVERRIDE);
 
-            this.JAVA_LANG_BOOLEAN   = this.loadIClass(Descriptor.JAVA_LANG_BOOLEAN);
-            this.JAVA_LANG_BYTE      = this.loadIClass(Descriptor.JAVA_LANG_BYTE);
-            this.JAVA_LANG_CHARACTER = this.loadIClass(Descriptor.JAVA_LANG_CHARACTER);
-            this.JAVA_LANG_SHORT     = this.loadIClass(Descriptor.JAVA_LANG_SHORT);
-            this.JAVA_LANG_INTEGER   = this.loadIClass(Descriptor.JAVA_LANG_INTEGER);
-            this.JAVA_LANG_LONG      = this.loadIClass(Descriptor.JAVA_LANG_LONG);
-            this.JAVA_LANG_FLOAT     = this.loadIClass(Descriptor.JAVA_LANG_FLOAT);
-            this.JAVA_LANG_DOUBLE    = this.loadIClass(Descriptor.JAVA_LANG_DOUBLE);
+            this.TYPE_java_lang_AssertionError   = this.loadIClass(Descriptor.JAVA_LANG_ASSERTIONERROR);
+            this.TYPE_java_lang_Boolean          = this.loadIClass(Descriptor.JAVA_LANG_BOOLEAN);
+            this.TYPE_java_lang_Byte             = this.loadIClass(Descriptor.JAVA_LANG_BYTE);
+            this.TYPE_java_lang_Character        = this.loadIClass(Descriptor.JAVA_LANG_CHARACTER);
+            this.TYPE_java_lang_Class            = this.loadIClass(Descriptor.JAVA_LANG_CLASS);
+            this.TYPE_java_lang_Cloneable        = this.loadIClass(Descriptor.JAVA_LANG_CLONEABLE);
+            this.TYPE_java_lang_Double           = this.loadIClass(Descriptor.JAVA_LANG_DOUBLE);
+            this.TYPE_java_lang_Exception        = this.loadIClass(Descriptor.JAVA_LANG_EXCEPTION);
+            this.TYPE_java_lang_Error            = this.loadIClass(Descriptor.JAVA_LANG_ERROR);
+            this.TYPE_java_lang_Float            = this.loadIClass(Descriptor.JAVA_LANG_FLOAT);
+            this.TYPE_java_lang_Integer          = this.loadIClass(Descriptor.JAVA_LANG_INTEGER);
+            this.TYPE_java_lang_Iterable         = this.loadIClass(Descriptor.JAVA_LANG_ITERABLE);
+            this.TYPE_java_lang_Long             = this.loadIClass(Descriptor.JAVA_LANG_LONG);
+            this.TYPE_java_lang_Object           = this.loadIClass(Descriptor.JAVA_LANG_OBJECT);
+            this.TYPE_java_lang_RuntimeException = this.loadIClass(Descriptor.JAVA_LANG_RUNTIMEEXCEPTION);
+            this.TYPE_java_lang_Short            = this.loadIClass(Descriptor.JAVA_LANG_SHORT);
+            this.TYPE_java_lang_String           = this.loadIClass(Descriptor.JAVA_LANG_STRING);
+            this.TYPE_java_lang_StringBuilder    = this.loadIClass(Descriptor.JAVA_LANG_STRINGBUILDER);
+            this.TYPE_java_lang_Throwable        = this.loadIClass(Descriptor.JAVA_LANG_THROWABLE);
+            this.TYPE_java_io_Serializable       = this.loadIClass(Descriptor.JAVA_IO_SERIALIZABLE);
+            this.TYPE_java_util_Iterator         = this.loadIClass(Descriptor.JAVA_UTIL_ITERATOR);
 
             // CHECKSTYLE LineLength:OFF
             // CHECKSTYLE Whitespace:OFF
-            this.JAVA_LANG_ITERABLE__ITERATOR                      = this.JAVA_LANG_ITERABLE     .findIMethod("iterator", new IClass[0]);
-            this.JAVA_LANG_STRING__CONCAT__JAVA_LANG_STRING        = this.JAVA_LANG_STRING       .findIMethod("concat",   new IClass[] { this.JAVA_LANG_STRING });
-            this.JAVA_LANG_STRING__VALUEOF__INT                    = this.JAVA_LANG_STRING       .findIMethod("valueOf",  new IClass[] { IClass.INT });
-            this.JAVA_LANG_STRING__VALUEOF__LONG                   = this.JAVA_LANG_STRING       .findIMethod("valueOf",  new IClass[] { IClass.LONG });
-            this.JAVA_LANG_STRING__VALUEOF__FLOAT                  = this.JAVA_LANG_STRING       .findIMethod("valueOf",  new IClass[] { IClass.FLOAT });
-            this.JAVA_LANG_STRING__VALUEOF__DOUBLE                 = this.JAVA_LANG_STRING       .findIMethod("valueOf",  new IClass[] { IClass.DOUBLE });
-            this.JAVA_LANG_STRING__VALUEOF__CHAR                   = this.JAVA_LANG_STRING       .findIMethod("valueOf",  new IClass[] { IClass.CHAR });
-            this.JAVA_LANG_STRING__VALUEOF__BOOLEAN                = this.JAVA_LANG_STRING       .findIMethod("valueOf",  new IClass[] { IClass.BOOLEAN });
-            this.JAVA_LANG_STRING__VALUEOF__JAVA_LANG_OBJECT       = this.JAVA_LANG_STRING       .findIMethod("valueOf",  new IClass[] { this.JAVA_LANG_OBJECT });
-            this.JAVA_LANG_STRINGBUILDER__APPEND__JAVA_LANG_STRING = this.JAVA_LANG_STRINGBUILDER.findIMethod("append",   new IClass[] { this.JAVA_LANG_STRING });
-            this.JAVA_LANG_STRINGBUILDER__TOSTRING                 = this.JAVA_LANG_STRINGBUILDER.findIMethod("toString", new IClass[0]);
-            this.JAVA_UTIL_ITERATOR__HAS_NEXT                      = this.JAVA_UTIL_ITERATOR     .findIMethod("hasNext",  new IClass[0]);
-            this.JAVA_UTIL_ITERATOR__NEXT                          = this.JAVA_UTIL_ITERATOR     .findIMethod("next",     new IClass[0]);
+            this.METH_java_lang_Iterable__iterator                      = this.TYPE_java_lang_Iterable     .findIMethod("iterator", new IClass[0]);
+            this.METH_java_lang_String__concat__java_lang_String        = this.TYPE_java_lang_String       .findIMethod("concat",   new IClass[] { this.TYPE_java_lang_String });
+            this.METH_java_lang_String__valueOf__int                    = this.TYPE_java_lang_String       .findIMethod("valueOf",  new IClass[] { IClass.INT });
+            this.METH_java_lang_String__valueOf__long                   = this.TYPE_java_lang_String       .findIMethod("valueOf",  new IClass[] { IClass.LONG });
+            this.METH_java_lang_String__valueOf__float                  = this.TYPE_java_lang_String       .findIMethod("valueOf",  new IClass[] { IClass.FLOAT });
+            this.METH_java_lang_String__valueOf__double                 = this.TYPE_java_lang_String       .findIMethod("valueOf",  new IClass[] { IClass.DOUBLE });
+            this.METH_java_lang_String__valueOf__char                   = this.TYPE_java_lang_String       .findIMethod("valueOf",  new IClass[] { IClass.CHAR });
+            this.METH_java_lang_String__valueOf__boolean                = this.TYPE_java_lang_String       .findIMethod("valueOf",  new IClass[] { IClass.BOOLEAN });
+            this.METH_java_lang_String__valueOf__java_lang_Object       = this.TYPE_java_lang_String       .findIMethod("valueOf",  new IClass[] { this.TYPE_java_lang_Object });
+            this.METH_java_lang_StringBuilder__append__java_lang_String = this.TYPE_java_lang_StringBuilder.findIMethod("append",   new IClass[] { this.TYPE_java_lang_String });
+            this.METH_java_lang_StringBuilder__toString                 = this.TYPE_java_lang_StringBuilder.findIMethod("toString", new IClass[0]);
+            this.METH_java_util_Iterator__hasNext                       = this.TYPE_java_util_Iterator     .findIMethod("hasNext",  new IClass[0]);
+            this.METH_java_util_Iterator__next                          = this.TYPE_java_util_Iterator     .findIMethod("next",     new IClass[0]);
 
-            this.JAVA_LANG_STRINGBUILDER__CTOR__JAVA_LANG_STRING   = this.JAVA_LANG_STRINGBUILDER.findIConstructor(new IClass[] { this.JAVA_LANG_STRING });
+            this.CTOR_java_lang_StringBuilder__java_lang_String   = this.TYPE_java_lang_StringBuilder.findIConstructor(new IClass[] { this.TYPE_java_lang_String });
             // CHECKSTYLE Whitespace:ON
             // CHECKSTYLE LineLength:ON
         } catch (Exception e) {
@@ -167,16 +167,16 @@ class IClassLoader {
 
         if (Descriptor.isPrimitive(fieldDescriptor)) {
             return (
-                fieldDescriptor.equals(Descriptor.VOID) ? IClass.VOID
-                : fieldDescriptor.equals(Descriptor.BYTE) ? IClass.BYTE
-                : fieldDescriptor.equals(Descriptor.CHAR) ? IClass.CHAR
-                : fieldDescriptor.equals(Descriptor.DOUBLE) ? IClass.DOUBLE
-                : fieldDescriptor.equals(Descriptor.FLOAT) ? IClass.FLOAT
-                : fieldDescriptor.equals(Descriptor.INT) ? IClass.INT
-                : fieldDescriptor.equals(Descriptor.LONG) ? IClass.LONG
-                : fieldDescriptor.equals(Descriptor.SHORT) ? IClass.SHORT
-                : fieldDescriptor.equals(Descriptor.BOOLEAN) ? IClass.BOOLEAN
-                : null
+                fieldDescriptor.equals(Descriptor.VOID)    ? IClass.VOID :
+                fieldDescriptor.equals(Descriptor.BYTE)    ? IClass.BYTE :
+                fieldDescriptor.equals(Descriptor.CHAR)    ? IClass.CHAR :
+                fieldDescriptor.equals(Descriptor.DOUBLE)  ? IClass.DOUBLE :
+                fieldDescriptor.equals(Descriptor.FLOAT)   ? IClass.FLOAT :
+                fieldDescriptor.equals(Descriptor.INT)     ? IClass.INT :
+                fieldDescriptor.equals(Descriptor.LONG)    ? IClass.LONG :
+                fieldDescriptor.equals(Descriptor.SHORT)   ? IClass.SHORT :
+                fieldDescriptor.equals(Descriptor.BOOLEAN) ? IClass.BOOLEAN :
+                null
             );
         }
 
@@ -208,7 +208,7 @@ class IClassLoader {
                 if (componentIClass == null) return null;
 
                 // Now get and define the array type.
-                IClass arrayIClass = componentIClass.getArrayIClass(this.JAVA_LANG_OBJECT);
+                IClass arrayIClass = componentIClass.getArrayIClass(this.TYPE_java_lang_Object);
                 this.loadedIClasses.put(fieldDescriptor, arrayIClass);
                 return arrayIClass;
             }

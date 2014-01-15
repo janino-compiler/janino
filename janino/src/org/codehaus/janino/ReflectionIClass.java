@@ -69,7 +69,7 @@ class ReflectionIClass extends IClass {
         if (methods.length == 0 && this.clazz.isArray()) {
             return new IMethod[] { new IMethod() {
                 @Override public String            getName()             { return "clone"; }
-                @Override public IClass            getReturnType()       { return ReflectionIClass.this.iClassLoader.JAVA_LANG_OBJECT; } // SUPPRESS CHECKSTYLE LineLength
+                @Override public IClass            getReturnType()       { return ReflectionIClass.this.iClassLoader.TYPE_java_lang_Object; } // SUPPRESS CHECKSTYLE LineLength
                 @Override public boolean           isAbstract()          { return false; }
                 @Override public boolean           isStatic()            { return false; }
                 @Override public Access            getAccess()           { return Access.PUBLIC; }
