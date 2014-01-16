@@ -98,14 +98,12 @@ class JaninoTestSuite {
             this.expressionEvaluator = JaninoTestSuite.this.compilerFactory.newExpressionEvaluator();
         }
 
-        @Override
-        protected void
+        @Override protected void
         compile() throws Exception {
             this.expressionEvaluator.cook(this.expression);
         }
 
-        @Override
-        protected Object
+        @Override protected Object
         execute() throws Exception {
             return this.expressionEvaluator.evaluate(new Object[0]);
         }
@@ -226,14 +224,12 @@ class JaninoTestSuite {
             this.classBodyEvaluator = JaninoTestSuite.this.compilerFactory.newClassBodyEvaluator();
         }
 
-        @Override
-        protected void
+        @Override protected void
         compile() throws Exception {
             this.classBodyEvaluator.cook(this.classBody);
         }
 
-        @Override
-        protected Object
+        @Override protected Object
         execute() throws Exception {
 
             @SuppressWarnings("unchecked") Method
@@ -293,14 +289,12 @@ class JaninoTestSuite {
             this.simpleCompiler  = JaninoTestSuite.this.compilerFactory.newSimpleCompiler();
         }
 
-        @Override
-        protected void
+        @Override protected void
         compile() throws Exception {
             this.simpleCompiler.cook(this.compilationUnit);
         }
 
-        @Override
-        protected Object
+        @Override protected Object
         execute() throws Exception {
             return (
                 this.simpleCompiler.getClassLoader()
