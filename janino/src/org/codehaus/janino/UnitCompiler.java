@@ -852,6 +852,12 @@ class UnitCompiler {
             if (this.overridesMethod(m, i)) return true;
         }
 
+        // Special handling for interfaces that don't extend other interfaces: JLS7 dictates that these stem from
+        // 'Object', but 'getSuperclass()' returns NULL for interfaces.
+        if (ifs.length == 0 && type.isInterface()) {
+            return this.overridesMethod(m, this.iClassLoader.TYPE_java_lang_Object);
+        }
+
         return false;
     }
 
