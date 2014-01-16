@@ -32,10 +32,10 @@ import java.util.NoSuchElementException;
 import org.codehaus.janino.util.Producer;
 
 /**
- * An {@link java.util.Iterator} that iterates over all the objects produced by a delegate {@link
- * org.codehaus.janino.util.Producer}.
+ * An {@link Iterator} that iterates over all the objects produced by a delegate {@link Producer}.
  *
- * @see org.codehaus.janino.util.Producer
+ * @param <T> The type of the products and the iterator elements
+ * @see       Producer
  */
 @SuppressWarnings("rawtypes") public
 class ProducerIterator<T> implements Iterator/*<T>*/ {

@@ -33,7 +33,11 @@ import java.util.NoSuchElementException;
 
 import org.codehaus.janino.JaninoRuntimeException;
 
-/** An {@link java.util.Iterator} that traverses a {@link java.util.Collection} of {@link java.util.Iterator}s. */
+/**
+ * An {@link java.util.Iterator} that traverses a {@link java.util.Collection} of {@link java.util.Iterator}s.
+ *
+ * @param <T> The element type of the iterator
+ */
 @SuppressWarnings("rawtypes") public
 class MultiIterator<T> implements Iterator/*<T>*/ {
 

@@ -28,15 +28,28 @@ package org.codehaus.janino.util.iterator;
 
 import java.util.*;
 
-/** An {@link java.util.Iterator} that transforms its elements on-the-fly. */
-@SuppressWarnings("unused") public abstract
-class TransformingIterator<T1, T2> extends FilterIterator<T1> {
+/**
+ * An {@link java.util.Iterator} that transforms its elements on-the-fly.
+ *
+ * @param <T1> The element type of the delegate iterator
+ * @param <T2> The element type of this iterator
+ */
+@SuppressWarnings("rawtypes") public abstract
+class TransformingIterator<T1, T2> implements Iterator/*<T2>*/ {
+
+    private final Iterator<T1> delegate;
 
     public
-    TransformingIterator(Iterator<T1> delegate) { super(delegate); }
+    TransformingIterator(Iterator<T1> delegate) { this.delegate = delegate; }
+
+    @Override public boolean
+    hasNext() { return this.delegate.hasNext(); }
 
     @Override public final Object/*T2*/
     next() { return this.transform(this.delegate.next()); }
+
+    @Override public void
+    remove() { this.delegate.remove(); }
 
     /** Derived classes must implement this method such that it does the desired transformation. */
     protected abstract Object/*T2*/ transform(Object/*T1*/ o);

@@ -31,6 +31,8 @@ import java.util.*;
 /**
  * An {@link java.util.ListIterator} that retrieves its elements from a delegate {@link java.util.ListIterator}. The
  * default implementation simply passes all method invocations to the delegate.
+ *
+ * @param <T> The element type of the list iterator
  */
 @SuppressWarnings({ "rawtypes", "unchecked" }) public abstract
 class FilterListIterator<T> implements ListIterator/*<T>*/ {

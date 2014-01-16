@@ -34,6 +34,8 @@ import java.util.*;
  * <p>
  * In other words, you can call {@link #iterator()} as often as you want, but the
  * {@link IteratorCollection} will iterate over its delegate only once.
+ *
+ * @param <T> The element type of the iterator and the collection
  */
 @SuppressWarnings({ "rawtypes", "unchecked" }) public
 class IteratorCollection<T> extends AbstractCollection/*<T>*/ {

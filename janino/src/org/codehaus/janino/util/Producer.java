@@ -35,10 +35,11 @@ package org.codehaus.janino.util;
  * {@link java.util.Iterator#next()}. This simplifies the implementation of
  * certain complex iterations.
  *
- * @see org.codehaus.janino.util.iterator.DirectoryIterator
- * @see org.codehaus.janino.util.iterator.ProducerIterator
+ * @param <T> The type of the products
+ * @see       org.codehaus.janino.util.iterator.DirectoryIterator
+ * @see       org.codehaus.janino.util.iterator.ProducerIterator
  */
-@SuppressWarnings("unused") public
+public
 interface Producer<T> {
 
     /**

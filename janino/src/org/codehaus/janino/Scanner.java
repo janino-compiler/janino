@@ -638,9 +638,15 @@ class Scanner {
         );
     }
 
+    /** @return Whether the scanner is currently in 'expect greater' mode */
     public boolean
     getExpectGreater() { return this.expectGreater; }
-    
+
+    /**
+     * Sets or resets the 'expect greater' mode.
+     *
+     * @return Whether the 'expect greater' mode was previously active
+     */
     public boolean
     setExpectGreater(boolean value) {
         boolean tmp = this.expectGreater;

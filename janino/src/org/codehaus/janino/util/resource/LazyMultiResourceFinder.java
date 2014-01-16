@@ -41,8 +41,7 @@ import org.codehaus.janino.util.iterator.IteratorCollection;
 class LazyMultiResourceFinder extends MultiResourceFinder {
 
     /** @param resourceFinders delegate {@link ResourceFinder}s */
-    @SuppressWarnings("rawtypes")
-    public
+    @SuppressWarnings("rawtypes") public
     LazyMultiResourceFinder(Iterator<ResourceFinder> resourceFinders) {
         super(new IteratorCollection(resourceFinders));
     }
