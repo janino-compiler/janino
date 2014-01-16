@@ -36,7 +36,6 @@ import java.io.StringReader;
 import java.io.Writer;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -112,12 +111,9 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor {
             this.pw.println();
             for (Java.CompilationUnit.ImportDeclaration id : cu.importDeclarations) id.accept(this);
         }
-        for (
-            Iterator/*<PackageMemberTypeDeclaration>*/ it = cu.packageMemberTypeDeclarations.iterator();
-            it.hasNext();
-        ) {
+        for (Java.PackageMemberTypeDeclaration pmtd : cu.packageMemberTypeDeclarations) {
             this.pw.println();
-            this.unparseTypeDeclaration((Java.PackageMemberTypeDeclaration) it.next());
+            this.unparseTypeDeclaration(pmtd);
             this.pw.println();
         }
     }
@@ -833,10 +829,10 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor {
         return ((Integer) UnparseVisitor.OPERATOR_PRECEDENCE.get(operator)).intValue();
     }
 
-    private static final Set/*<String>*/          LEFT_ASSOCIATIVE_OPERATORS  = new HashSet();
-    private static final Set/*<String>*/          RIGHT_ASSOCIATIVE_OPERATORS = new HashSet();
-    private static final Set/*<String>*/          UNARY_OPERATORS             = new HashSet();
-    private static final Map/*<String, Integer>*/ OPERATOR_PRECEDENCE         = new HashMap();
+    private static final Set<String>          LEFT_ASSOCIATIVE_OPERATORS  = new HashSet();
+    private static final Set<String>          RIGHT_ASSOCIATIVE_OPERATORS = new HashSet();
+    private static final Set<String>          UNARY_OPERATORS             = new HashSet();
+    private static final Map<String, Integer> OPERATOR_PRECEDENCE         = new HashMap();
     static {
         Object[] ops = {
             UnparseVisitor.RIGHT_ASSOCIATIVE_OPERATORS, "=", "*=", "/=", "%=", "+=", "-=", "<<=", ">>=", ">>>=",
@@ -860,7 +856,7 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor {
         };
         int precedence = 0;
         LOOP1: for (int i = 0;;) {
-            Set/*<String>*/ s  = (Set) ops[i++];
+            Set<String> s  = (Set) ops[i++];
             Integer         pi = new Integer(++precedence);
             for (;;) {
                 if (i == ops.length) break LOOP1;
@@ -950,9 +946,9 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor {
             this.pw.println();
         }
         this.unparseAbstractTypeDeclarationBody(cd);
-        for (Java.TypeBodyDeclaration vdai : cd.variableDeclaratorsAndInitializers) {
+        for (Java.BlockStatement vdoi : cd.variableDeclaratorsAndInitializers) {
             this.pw.println();
-            vdai.accept(this);
+            vdoi.accept(this);
             this.pw.println();
         }
     }
@@ -978,14 +974,14 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor {
     // Multi-line!
     private void
     unparseAbstractTypeDeclarationBody(Java.AbstractTypeDeclaration atd) {
-        for (Iterator/*<MethodDeclaration>*/ it = atd.getMethodDeclarations().iterator(); it.hasNext();) {
+        for (Java.MethodDeclarator md : atd.getMethodDeclarations()) {
             this.pw.println();
-            ((Java.MethodDeclarator) it.next()).accept(this);
+            md.accept(this);
             this.pw.println();
         }
-        for (Iterator/*<MemberTypeDeclaration>*/ it = atd.getMemberTypeDeclarations().iterator(); it.hasNext();) {
+        for (Java.MemberTypeDeclaration mtd : atd.getMemberTypeDeclarations()) {
             this.pw.println();
-            ((Java.TypeBodyDeclaration) it.next()).accept(this);
+            ((Java.TypeBodyDeclaration) mtd).accept(this);
             this.pw.println();
         }
     }

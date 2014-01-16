@@ -172,11 +172,7 @@ class Java {
          */
         public PackageMemberTypeDeclaration
         getPackageMemberTypeDeclaration(String name) {
-            for (
-                Iterator/*<PackageMemberTypeDeclaration>*/ it = this.packageMemberTypeDeclarations.iterator();
-                it.hasNext();
-            ) {
-                PackageMemberTypeDeclaration pmtd = (PackageMemberTypeDeclaration) it.next();
+            for (PackageMemberTypeDeclaration pmtd : this.packageMemberTypeDeclarations) {
                 if (pmtd.getName().equals(name)) return pmtd;
             }
             return null;
@@ -553,7 +549,7 @@ class Java {
          * @return The list of methods declared in this {@link TypeDeclaration}, not including methods declared in
          *         supertypes
          */
-        List/*<MethodDeclaration>*/ getMethodDeclarations();
+        List<MethodDeclarator> getMethodDeclarations();
 
         /** Determines the effective class name, e.g. "pkg.Outer$Inner". */
         String getClassName();
@@ -660,11 +656,11 @@ class Java {
     /** Abstract implementation of {@link TypeDeclaration}. */
     public abstract static
     class AbstractTypeDeclaration implements TypeDeclaration {
-        private final Location                        location;
-        private final Modifiers                       modifiers;
-        private final List/*<MethodDeclarator>*/      declaredMethods              = new ArrayList();
-        private final List/*<MemberTypeDeclaration>*/ declaredClassesAndInterfaces = new ArrayList();
-        private Scope                                 enclosingScope;
+        private final Location                    location;
+        private final Modifiers                   modifiers;
+        private final List<MethodDeclarator>      declaredMethods              = new ArrayList();
+        private final List<MemberTypeDeclaration> declaredClassesAndInterfaces = new ArrayList();
+        private Scope                             enclosingScope;
 
         /** Holds the resolved type during compilation. */
         IClass resolvedType;
@@ -725,13 +721,12 @@ class Java {
 
         // Implement TypeDeclaration.
 
-        @Override public Collection/*<MemberTypeDeclaration>*/
+        @Override public Collection<MemberTypeDeclaration>
         getMemberTypeDeclarations() { return this.declaredClassesAndInterfaces; }
 
         @Override public MemberTypeDeclaration
         getMemberTypeDeclaration(String name) {
-            for (Iterator/*<MemberTypeDeclaration>*/ it = this.declaredClassesAndInterfaces.iterator(); it.hasNext();) {
-                MemberTypeDeclaration mtd = (MemberTypeDeclaration) it.next();
+            for (MemberTypeDeclaration mtd : this.declaredClassesAndInterfaces) {
                 if (mtd.getName().equals(name)) return mtd;
             }
             return null;
@@ -739,8 +734,7 @@ class Java {
 
         @Override public MethodDeclarator
         getMethodDeclaration(String name) {
-            for (Iterator/*<MethodDeclarator>*/ it = this.declaredMethods.iterator(); it.hasNext();) {
-                MethodDeclarator md = (MethodDeclarator) it.next();
+            for (MethodDeclarator md : this.declaredMethods) {
                 if (md.name.equals(name)) return md;
             }
             return null;
@@ -797,7 +791,7 @@ class Java {
         public final List<ConstructorDeclarator> constructors = new ArrayList();
 
         /** List of {@link TypeBodyDeclaration}s of this class. */
-        public final List<TypeBodyDeclaration> variableDeclaratorsAndInitializers = new ArrayList();
+        public final List<BlockStatement> variableDeclaratorsAndInitializers = new ArrayList();
 
         public
         ClassDeclaration(Location location, Modifiers modifiers) {
@@ -811,11 +805,21 @@ class Java {
             cd.setDeclaringType(this);
         }
 
-        /** Adds one {@link VariableDeclarator} or {@link Initializer} to this class. */
+        /** Adds one field declaration to this class. */
         public void
-        addVariableDeclaratorOrInitializer(TypeBodyDeclaration tbd) {
-            this.variableDeclaratorsAndInitializers.add(tbd);
-            tbd.setDeclaringType(this);
+        addFieldDeclaration(FieldDeclaration fd) {
+            this.variableDeclaratorsAndInitializers.add(fd);
+            fd.setDeclaringType(this);
+
+            // Clear resolved type cache.
+            if (this.resolvedType != null) this.resolvedType.clearIFieldCaches();
+        }
+
+        /** Adds one initializer to this class. */
+        public void
+        addInitializer(Initializer i) {
+            this.variableDeclaratorsAndInitializers.add(i);
+            i.setDeclaringType(this);
 
             // Clear resolved type cache.
             if (this.resolvedType != null) this.resolvedType.clearIFieldCaches();
@@ -1419,14 +1423,14 @@ class Java {
 
         public
         FunctionDeclarator(
-            Location                 location,
-            String                   optionalDocComment,
-            Modifiers                modifiers,
-            Type                     type,
-            String                   name,
-            FormalParameters         parameters,
-            Type[]                   thrownExceptions,
-            List/*<BlockStatement>*/ optionalStatements
+            Location             location,
+            String               optionalDocComment,
+            Modifiers            modifiers,
+            Type                 type,
+            String               name,
+            FormalParameters     parameters,
+            Type[]               thrownExceptions,
+            List<BlockStatement> optionalStatements
         ) {
             super(location, Mod.isStatic(modifiers.flags));
             this.optionalDocComment = optionalDocComment;
@@ -1441,8 +1445,7 @@ class Java {
             for (FormalParameter fp : parameters.parameters) fp.type.setEnclosingScope(this);
             for (Type te : thrownExceptions) te.setEnclosingScope(this);
             if (optionalStatements != null) {
-                for (Iterator/*<BlockStatement>*/ it = optionalStatements.iterator(); it.hasNext();) {
-                    Java.BlockStatement bs = (Java.BlockStatement) it.next();
+                for (Java.BlockStatement bs : optionalStatements) {
 
                     // Catch 22: In the initializers, some statement have their enclosing already
                     // set!
@@ -1555,7 +1558,7 @@ class Java {
         // Compile time members
 
         /** Mapping of variable names to {@link LocalVariable}s. */
-        public Map/*<String, Java.LocalVariable>*/ localVariables;
+        public Map<String, Java.LocalVariable> localVariables;
     }
 
     /** Representation of a constructor declarator. */
@@ -1570,13 +1573,13 @@ class Java {
 
         public
         ConstructorDeclarator(
-            Location                 location,
-            String                   optionalDocComment,
-            Modifiers                modifiers,
-            FormalParameters         parameters,
-            Type[]                   thrownExceptions,
-            ConstructorInvocation    optionalConstructorInvocation,
-            List/*<BlockStatement>*/ statements
+            Location              location,
+            String                optionalDocComment,
+            Modifiers             modifiers,
+            FormalParameters      parameters,
+            Type[]                thrownExceptions,
+            ConstructorInvocation optionalConstructorInvocation,
+            List<BlockStatement>  statements
         ) {
             super(
                 location,                                // location
@@ -1599,7 +1602,7 @@ class Java {
         // Compile time members.
 
         /** Synthetic parameter name to {@link Java.LocalVariable} mapping. */
-        final Map/*<String, LocalVariable>*/ syntheticParameters = new HashMap();
+        final Map<String, LocalVariable> syntheticParameters = new HashMap();
 
         // Implement "FunctionDeclarator":
 
@@ -1625,14 +1628,14 @@ class Java {
     class MethodDeclarator extends FunctionDeclarator {
         public
         MethodDeclarator(
-            Location                 location,
-            String                   optionalDocComment,
-            Java.Modifiers           modifiers,
-            Type                     type,
-            String                   name,
-            FormalParameters         parameters,
-            Type[]                   thrownExceptions,
-            List/*<BlockStatement>*/ optionalStatements
+            Location             location,
+            String               optionalDocComment,
+            Java.Modifiers       modifiers,
+            Type                 type,
+            String               name,
+            FormalParameters     parameters,
+            Type[]               thrownExceptions,
+            List<BlockStatement> optionalStatements
         ) {
             super(
                 location,           // location
@@ -1857,7 +1860,7 @@ class Java {
         // Compile time members
 
         /** The map of currently visible local variables. */
-        public Map/*<String name, Java.LocalVariable>*/ localVariables;
+        public Map<String /*name*/, Java.LocalVariable> localVariables;
 
         @Override public Java.LocalVariable
         findLocalVariable(String name) {
@@ -1915,11 +1918,9 @@ class Java {
 
         /** Adds a list of statements to the end of the block. */
         public void
-        addStatements(List/*<BlockStatement>*/ statements) {
+        addStatements(List<BlockStatement> statements) {
             this.statements.addAll(statements);
-            for (Iterator/*<BlockStatement>*/ it = statements.iterator(); it.hasNext();) {
-                ((BlockStatement) it.next()).setEnclosingScope(this);
-            }
+            for (BlockStatement bs : statements) bs.setEnclosingScope(this);
         }
 
         /** @return A copy of the list of statements that comprise the body of the block */
@@ -2187,17 +2188,14 @@ class Java {
 
         public
         TryStatement(
-            Location              location,
-            BlockStatement        body,
-            List/*<CatchClause>*/ catchClauses,
-            Block                 optionalFinally
+            Location          location,
+            BlockStatement    body,
+            List<CatchClause> catchClauses,
+            Block             optionalFinally
         ) {
             super(location);
-            (this.body            = body).setEnclosingScope(this);
-            this.catchClauses    = catchClauses;
-            for (Iterator/*<CatchClause>*/ it = catchClauses.iterator(); it.hasNext();) {
-                ((CatchClause) it.next()).setEnclosingTryStatement(this);
-            }
+            (this.body = body).setEnclosingScope(this);
+            for (CatchClause cc : (this.catchClauses = catchClauses)) cc.setEnclosingTryStatement(this);
             this.optionalFinally = optionalFinally;
             if (optionalFinally != null) optionalFinally.setEnclosingScope(this);
         }
@@ -2280,18 +2278,12 @@ class Java {
         public final List<SwitchBlockStatementGroup> sbsgs;
 
         public
-        SwitchStatement(Location location, Rvalue condition, List/*<SwitchBlockStatementGroup>*/ sbsgs) {
+        SwitchStatement(Location location, Rvalue condition, List<SwitchBlockStatementGroup> sbsgs) {
             super(location);
             (this.condition = condition).setEnclosingBlockStatement(this);
-            this.sbsgs     = sbsgs;
-            for (Iterator/*<SwitchBlockStatementGroup>*/ it = sbsgs.iterator(); it.hasNext();) {
-                SwitchBlockStatementGroup sbsg = ((SwitchBlockStatementGroup) it.next());
-                for (Iterator/*<Rvalue>*/ it2 = sbsg.caseLabels.iterator(); it2.hasNext();) {
-                    ((Rvalue) (it2.next())).setEnclosingBlockStatement(this);
-                }
-                for (Iterator it2/*<BlockStatement>*/ = sbsg.blockStatements.iterator(); it2.hasNext();) {
-                    ((BlockStatement) (it2.next())).setEnclosingScope(this);
-                }
+            for (SwitchBlockStatementGroup sbsg : (this.sbsgs = sbsgs)) {
+                for (Rvalue cl : sbsg.caseLabels) cl.setEnclosingBlockStatement(this);
+                for (BlockStatement bs : sbsg.blockStatements) bs.setEnclosingScope(this);
             }
         }
 
@@ -2313,10 +2305,10 @@ class Java {
 
             public
             SwitchBlockStatementGroup(
-                Location                 location,
-                List/*<Rvalue*/          caseLabels,
-                boolean                  hasDefaultLabel,
-                List/*<BlockStatement>*/ blockStatements
+                Location             location,
+                List<Rvalue>         caseLabels,
+                boolean              hasDefaultLabel,
+                List<BlockStatement> blockStatements
             ) {
                 super(location);
                 this.caseLabels      = caseLabels;
@@ -3602,7 +3594,7 @@ class Java {
         public final Type rhs;
 
         public
-        Instanceof(Location location, Rvalue lhs, Type/*<ReferenceType or ArrayType>*/ rhs) {
+        Instanceof(Location location, Rvalue lhs, Type rhs) {
             super(location);
             this.lhs = lhs;
             this.rhs = rhs;
@@ -3687,13 +3679,13 @@ class Java {
         /** Returns an {@link Iterator} over a left-to-right sequence of {@link Java.Rvalue}s. */
         public Iterator<Rvalue>
         unrollLeftAssociation() {
-            List/*<Ralue>*/ operands = new ArrayList();
-            BinaryOperation x        = this;
+            List<Rvalue>    operands = new ArrayList();
+            BinaryOperation bo       = this;
             for (;;) {
-                operands.add(x.rhs);
-                Rvalue lhs = x.lhs;
+                operands.add(bo.rhs);
+                Rvalue lhs = bo.lhs;
                 if (lhs instanceof BinaryOperation && ((BinaryOperation) lhs).op == this.op) {
-                    x = (BinaryOperation) lhs;
+                    bo = (BinaryOperation) lhs;
                 } else {
                     operands.add(lhs);
                     break;
@@ -3812,7 +3804,7 @@ class Java {
         getEnclosingScope() { return this.enclosingScope; }
 
         /** The local variables that are accessible during the compilation of the constructor invocation. */
-        public Map/*<String name, Java.LocalVariable>*/ localVariables;
+        public Map<String /*name*/, Java.LocalVariable> localVariables;
 
         @Override public Java.LocalVariable
         findLocalVariable(String name) {

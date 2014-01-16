@@ -519,7 +519,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
         for (int i = 0; i < count; ++i) {
             Parser parser = parsers[i];
 
-            List/*<BlockStatement>*/ statements = this.makeStatements(i, parser);
+            List<Java.BlockStatement> statements = this.makeStatements(i, parser);
 
             // Determine the following script properties AFTER the call to "makeBlock()",
             // because "makeBlock()" may modify these script properties on-the-fly.
@@ -618,8 +618,8 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
                     return hc;
                 }
             }
-            Method[]                       ma  = c.getDeclaredMethods();
-            Map/*<MethodWrapper, Method>*/ dms = new HashMap(2 * count);
+            Method[]                   ma  = c.getDeclaredMethods();
+            Map<MethodWrapper, Method> dms = new HashMap(2 * count);
             for (Method m : ma) dms.put(new MethodWrapper(m.getName(), m.getParameterTypes()), m);
             for (int i = 0; i < count; ++i) {
                 Method m = (Method) dms.get(new MethodWrapper(
@@ -685,9 +685,9 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
     getDefaultReturnType() { return void.class; }
 
     /** Fills the given <code>block</code> by parsing statements until EOF and adding them to the block. */
-    protected List/*<BlockStatement>*/
+    protected List<Java.BlockStatement>
     makeStatements(int idx, Parser parser) throws CompileException, IOException {
-        List/*<BlockStatement>*/ statements = new ArrayList();
+        List<Java.BlockStatement> statements = new ArrayList();
         while (!parser.peekEof()) {
             statements.add(parser.parseBlockStatement());
         }
@@ -707,15 +707,15 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
      */
     protected Java.MethodDeclarator
     makeMethodDeclaration(
-        Location                 location,
-        Java.Annotation[]        annotations,
-        boolean                  staticMethod,
-        Class                    returnType,
-        String                   methodName,
-        Class[]                  parameterTypes,
-        String[]                 parameterNames,
-        Class[]                  thrownExceptions,
-        List/*<BlockStatement>*/ statements
+        Location                  location,
+        Java.Annotation[]         annotations,
+        boolean                   staticMethod,
+        Class                     returnType,
+        String                    methodName,
+        Class[]                   parameterTypes,
+        String[]                  parameterNames,
+        Class[]                   thrownExceptions,
+        List<Java.BlockStatement> statements
     ) {
         if (parameterNames.length != parameterTypes.length) {
             throw new JaninoRuntimeException(
@@ -939,8 +939,8 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
         while (!parser.peekEof()) block.addStatement(parser.parseBlockStatement());
 
         // Traverse the block for ambiguous names and guess which of them are parameter names.
-        final Set/*<String>*/ localVariableNames = new HashSet();
-        final Set/*<String>*/ parameterNames     = new HashSet();
+        final Set<String> localVariableNames = new HashSet();
+        final Set<String> parameterNames     = new HashSet();
         new Traverser() {
 
             @Override public void

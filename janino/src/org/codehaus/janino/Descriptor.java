@@ -28,7 +28,6 @@ package org.codehaus.janino;
 
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 /**
@@ -322,9 +321,9 @@ class Descriptor {
     /** The field descriptor for the wrapper class {@link Double}. */
     public static final String JAVA_LANG_DOUBLE = "Ljava/lang/Double;";
 
-    private static final Map/*<String, String>*/ DESCRIPTOR_TO_CLASSNAME;
+    private static final Map<String, String> DESCRIPTOR_TO_CLASSNAME;
     static {
-        Map/*<String, String>*/ m = new HashMap();
+        Map<String, String> m = new HashMap();
         m.put(Descriptor.VOID,                       "void");
         m.put(Descriptor.BYTE,                       "byte");
         m.put(Descriptor.CHAR,                       "char");
@@ -356,12 +355,11 @@ class Descriptor {
         DESCRIPTOR_TO_CLASSNAME = Collections.unmodifiableMap(m);
     }
 
-    private static final Map/*<String, String>*/ CLASS_NAME_TO_DESCRIPTOR;
+    private static final Map<String, String> CLASS_NAME_TO_DESCRIPTOR;
 
     static {
-        Map/*<String, String>*/ m = new HashMap();
-        for (Iterator it = DESCRIPTOR_TO_CLASSNAME.entrySet().iterator(); it.hasNext();) {
-            Map.Entry e = (Map.Entry) it.next();
+        Map<String, String> m = new HashMap();
+        for (Map.Entry<String, String> e : DESCRIPTOR_TO_CLASSNAME.entrySet()) {
             m.put(e.getValue(), e.getKey());
         }
         CLASS_NAME_TO_DESCRIPTOR = Collections.unmodifiableMap(m);

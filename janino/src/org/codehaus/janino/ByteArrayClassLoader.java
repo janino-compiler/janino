@@ -38,11 +38,11 @@ class ByteArrayClassLoader extends ClassLoader {
      * @param classes String className => byte[] data
      */
     public
-    ByteArrayClassLoader(Map/*<String className, byte[] data>*/ classes) { this.classes = classes; }
+    ByteArrayClassLoader(Map<String /*className*/, byte[] /*data*/> classes) { this.classes = classes; }
 
     /** @see #ByteArrayClassLoader(Map) */
     public
-    ByteArrayClassLoader(Map/*<String className, byte[] data>*/ classes, ClassLoader parent) {
+    ByteArrayClassLoader(Map<String /*className*/, byte[] /*data*/> classes, ClassLoader parent) {
         super(parent);
         this.classes = classes;
     }
@@ -93,11 +93,7 @@ class ByteArrayClassLoader extends ClassLoader {
         }
 
         if (this.classes.size() != that.classes.size()) return false;
-        for (
-            Iterator/*<Map.Entry<String className, byte[] data>>*/ it = this.classes.entrySet().iterator();
-            it.hasNext();
-        ) {
-            Map.Entry/*<String className, byte[] data>*/ me = (Map.Entry) it.next();
+        for (Map.Entry<String /*className*/, byte[] /*data*/> me : this.classes.entrySet()) {
 
             byte[] ba = (byte[]) that.classes.get(me.getKey());
             if (ba == null) return false; // Key missing in "that".
@@ -111,11 +107,7 @@ class ByteArrayClassLoader extends ClassLoader {
     hashCode() {
         int hc = this.getParent().hashCode();
 
-        for (
-            Iterator/*<Map.Entry<String className, byte[] data>>*/ it = this.classes.entrySet().iterator();
-            it.hasNext();
-        ) {
-            Map.Entry/*<String className, byte[] data>*/ me = (Map.Entry) it.next();
+        for (Map.Entry<String /*className*/, byte[] /*data*/> me : this.classes.entrySet()) {
             hc ^= me.getKey().hashCode();
             byte[] ba = (byte[]) me.getValue();
             for (int i = 0; i < ba.length; ++i) {
@@ -125,5 +117,5 @@ class ByteArrayClassLoader extends ClassLoader {
         return hc;
     }
 
-    private final Map/*<String className, byte[] data>*/ classes;
+    private final Map<String /*className*/, byte[] /*data*/> classes;
 }

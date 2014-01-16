@@ -41,7 +41,7 @@ class ClassFileIClass extends IClass {
     private final IClassLoader iClassLoader;
     private final short        accessFlags;
 
-    private final Map/*<FieldInfo, IField>*/ resolvedFields = new HashMap();
+    private final Map<ClassFile.FieldInfo, IField> resolvedFields = new HashMap();
 
     /**
      * @param classFile Source of data
@@ -62,9 +62,8 @@ class ClassFileIClass extends IClass {
     getDeclaredIConstructors2() {
         List iConstructors = new ArrayList();
 
-        for (Iterator/*<MethodInfo>*/ it = this.classFile.methodInfos.iterator(); it.hasNext();) {
-            ClassFile.MethodInfo mi = (ClassFile.MethodInfo) it.next();
-            IInvocable           ii;
+        for (ClassFile.MethodInfo mi : this.classFile.methodInfos) {
+            IInvocable ii;
             try {
                 ii = this.resolveMethod(mi);
             } catch (ClassNotFoundException ex) {
@@ -78,10 +77,9 @@ class ClassFileIClass extends IClass {
 
     @Override protected IMethod[]
     getDeclaredIMethods2() {
-        List/*<IMethod>*/ iMethods = new ArrayList();
+        List<IMethod> iMethods = new ArrayList();
 
-        for (Iterator/*<MethodInfo>*/ it = this.classFile.methodInfos.iterator(); it.hasNext();) {
-            ClassFile.MethodInfo mi = (ClassFile.MethodInfo) it.next();
+        for (ClassFile.MethodInfo mi : this.classFile.methodInfos) {
 
             // Skip JDK 1.5 synthetic methods (e.g. those generated for
             // covariant return values).
@@ -93,7 +91,7 @@ class ClassFileIClass extends IClass {
             } catch (ClassNotFoundException ex) {
                 throw new JaninoRuntimeException(ex.getMessage(), ex);
             }
-            if (ii instanceof IMethod) iMethods.add(ii);
+            if (ii instanceof IMethod) iMethods.add((IMethod) ii);
         }
 
         return (IMethod[]) iMethods.toArray(new IMethod[iMethods.size()]);
@@ -117,10 +115,8 @@ class ClassFileIClass extends IClass {
         ClassFile.InnerClassesAttribute ica = this.classFile.getInnerClassesAttribute();
         if (ica == null) return new IClass[0];
 
-        List/*<ClassFile.InnerClassAttribute.Entry>*/ ices = ica.getEntries();
-        List/*<IClass>*/                              res  = new ArrayList();
-        for (Iterator/*<ClassFile.InnerClassAttribute.Entry>*/ it = ices.iterator(); it.hasNext();) {
-            ClassFile.InnerClassesAttribute.Entry e = (ClassFile.InnerClassesAttribute.Entry) it.next();
+        List<IClass> res = new ArrayList();
+        for (ClassFile.InnerClassesAttribute.Entry e : ica.getEntries()) {
             if (e.outerClassInfoIndex == this.classFile.thisClass) {
                 try {
                     res.add(this.resolveClass(e.innerClassInfoIndex));
@@ -137,9 +133,7 @@ class ClassFileIClass extends IClass {
         ClassFile.InnerClassesAttribute ica = this.classFile.getInnerClassesAttribute();
         if (ica == null) return null;
 
-        List/*<ClassFile.InnerClassAttribute.Entry>*/ ices = ica.getEntries();
-        for (Iterator/*<ClassFile.InnerClassAttribute.Entry>*/ it = ices.iterator(); it.hasNext();) {
-            ClassFile.InnerClassesAttribute.Entry e = (ClassFile.InnerClassesAttribute.Entry) it.next();
+        for (ClassFile.InnerClassesAttribute.Entry e : ica.getEntries()) {
             if (e.innerClassInfoIndex == this.classFile.thisClass) {
                 // Is this an anonymous class?
                 if (e.outerClassInfoIndex == 0) return null;
@@ -158,9 +152,7 @@ class ClassFileIClass extends IClass {
         ClassFile.InnerClassesAttribute ica = this.classFile.getInnerClassesAttribute();
         if (ica == null) return null;
 
-        List/*<ClassFile.InnerClassAttribute.Entry>*/ ices = ica.getEntries();
-        for (Iterator/*<ClassFile.InnerClassAttribute.Entry>*/ it = ices.iterator(); it.hasNext();) {
-            ClassFile.InnerClassesAttribute.Entry e = (ClassFile.InnerClassesAttribute.Entry) it.next();
+        for (ClassFile.InnerClassesAttribute.Entry e : ica.getEntries()) {
             if (e.innerClassInfoIndex == this.classFile.thisClass) {
                 if (e.outerClassInfoIndex == 0) {
 
@@ -264,7 +256,7 @@ class ClassFileIClass extends IClass {
         this.resolvedClasses.put(descriptor, result);
         return result;
     }
-    private final Map/*<String descriptor, IClass>*/ resolvedClasses = new HashMap();
+    private final Map<String /*descriptor*/, IClass> resolvedClasses = new HashMap();
 
     private IClass[]
     resolveClasses(short[] ifs) throws CompileException {
@@ -390,7 +382,7 @@ class ClassFileIClass extends IClass {
         this.resolvedMethods.put(methodInfo, result);
         return result;
     }
-    private final Map/*<MethodInfo, IInvocable>*/ resolvedMethods = new HashMap();
+    private final Map<ClassFile.MethodInfo, IInvocable> resolvedMethods = new HashMap();
 
     private IField
     resolveField(final ClassFile.FieldInfo fieldInfo) throws ClassNotFoundException {

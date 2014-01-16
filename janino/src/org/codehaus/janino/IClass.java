@@ -31,7 +31,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -152,7 +151,7 @@ class IClass {
             IMethod[] dims = this.getDeclaredIMethods();
 
             // Fill the map with "IMethod"s and "List<IMethod>"s.
-            Map/*<String, IMethod-or-List<IMethod>>*/ m = new HashMap();
+            Map<String, Object /*IMethod-or-List<IMethod>*/> m = new HashMap();
             for (IMethod dim : dims) {
                 String  mn  = dim.getName();
                 Object  o   = m.get(mn);
@@ -170,13 +169,12 @@ class IClass {
             }
 
             // Convert "IMethod"s and "List"s to "IMethod[]"s.
-            for (Iterator/*<String, IMethod-or-List<IMethod>>*/ it = m.entrySet().iterator(); it.hasNext();) {
-                Map.Entry/*<String, IMethod-or-List<IMethod>>*/ me = (Map.Entry) it.next();
-                Object                                          v  = me.getValue();
+            for (Map.Entry<String, Object/*IMethod-or-List<IMethod>*/> me : m.entrySet()) {
+                Object v = me.getValue();
                 if (v instanceof IMethod) {
                     me.setValue(new IMethod[] { (IMethod) v });
                 } else {
-                    List/*<IMethod>*/ l = (List) v;
+                    List<IMethod> l = (List) v;
                     me.setValue(l.toArray(new IMethod[l.size()]));
                 }
             }
@@ -186,7 +184,7 @@ class IClass {
         IMethod[] methods = (IMethod[]) this.declaredIMethodCache.get(methodName);
         return methods == null ? IClass.NO_IMETHODS : methods;
     }
-    private Map/*<String methodName, IMethod[]>*/ declaredIMethodCache;
+    private Map<String /*methodName*/, Object /*IMethod-or-List<IMethod>*/> declaredIMethodCache;
 
     /**
      * Returns all methods declared in the class or interface, its superclasses and its
@@ -197,7 +195,7 @@ class IClass {
     public final IMethod[]
     getIMethods() throws CompileException {
         if (this.iMethodCache == null) {
-            List/*<IMethod>*/ iMethods = new ArrayList();
+            List<IMethod> iMethods = new ArrayList();
             this.getIMethods(iMethods);
             this.iMethodCache = (IMethod[]) iMethods.toArray(new IMethod[iMethods.size()]);
         }
@@ -205,7 +203,7 @@ class IClass {
     }
     private IMethod[] iMethodCache;
     private void
-    getIMethods(List/*<IMethod>*/ result) throws CompileException {
+    getIMethods(List<IMethod> result) throws CompileException {
         IMethod[] ms = this.getDeclaredIMethods();
 
         SCAN_DECLARED_METHODS:
@@ -269,7 +267,7 @@ class IClass {
 
         return null;
     }
-    
+
     /**
      * @return The {@link IConstructor} declared in this {@link IClass} with the given parameter types, or {@code null}
      *         if an applicable constrcutor could not be found
@@ -280,7 +278,7 @@ class IClass {
         for (IConstructor ic : ics) {
             if (Arrays.equals(ic.getParameterTypes(), parameterTypes)) return ic;
         }
-        
+
         return null;
     }
 
@@ -291,19 +289,18 @@ class IClass {
      */
     public final IField[]
     getDeclaredIFields() {
-        Collection/*<IField>*/ allFields = this.getDeclaredIFieldsCache().values();
-
+        Collection<IField> allFields = this.getDeclaredIFieldsCache().values();
         return (IField[]) allFields.toArray(new IField[allFields.size()]);
     }
 
     /** @return String fieldName => IField */
-    private Map/*<String fieldName, IField>*/
+    private Map<String /*fieldName*/, IField>
     getDeclaredIFieldsCache() {
         if (this.declaredIFieldsCache == null) {
 
             IField[] fields = this.getDeclaredIFields2();
 
-            Map/*<String fieldName, IField>*/ m = new HashMap();
+            Map<String /*fieldName*/, IField> m = new HashMap();
             for (IField f : fields) m.put(f.getName(), f);
             this.declaredIFieldsCache = m;
         }
@@ -325,7 +322,7 @@ class IClass {
     protected void
     clearIFieldCaches() { this.declaredIFieldsCache = null; }
 
-    private Map/*<String fieldName, IField>*/ declaredIFieldsCache;
+    private Map<String /*fieldName*/, IField> declaredIFieldsCache;
 
     /** Uncached version of {@link #getDeclaredIFields()}. */
     protected abstract IField[] getDeclaredIFields2();
@@ -570,7 +567,7 @@ class IClass {
         return false;
     }
 
-    private static final Set/*<String>*/ PRIMITIVE_WIDENING_CONVERSIONS = new HashSet();
+    private static final Set<String> PRIMITIVE_WIDENING_CONVERSIONS = new HashSet();
     static {
         String[] pwcs = new String[] {
             Descriptor.BYTE  + Descriptor.SHORT,
@@ -727,7 +724,7 @@ class IClass {
 
             // Notice: A type may be added multiply to the result set because we are in its scope
             // multiply. E.g. the type is a member of a superclass AND a member of an enclosing type.
-            Set/*<IClass>*/ s = new HashSet();
+            Set<IClass> s = new HashSet();
             this.findMemberType(optionalName, s);
             res = s.isEmpty() ? IClass.ZERO_ICLASSES : (IClass[]) s.toArray(new IClass[s.size()]);
 
@@ -736,10 +733,10 @@ class IClass {
 
         return res;
     }
-    private final Map/*<String name, IClass[]>*/ memberTypeCache = new HashMap();
+    private final Map<String /*name*/, IClass[]> memberTypeCache = new HashMap();
     private static final IClass[]                ZERO_ICLASSES   = new IClass[0];
     private void
-    findMemberType(String optionalName, Collection/*<IClass>*/ result) throws CompileException {
+    findMemberType(String optionalName, Collection<IClass> result) throws CompileException {
 
         // Search for a type with the given name in the current class.
         IClass[] memberTypes = this.getDeclaredIClasses();

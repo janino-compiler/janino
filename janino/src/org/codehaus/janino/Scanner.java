@@ -934,7 +934,7 @@ class Scanner {
     /** The optional JAVADOC comment preceding the {@link #nextToken}. */
     private String docComment;
 
-    private static final Map/*<String, String>*/ JAVA_KEYWORDS = new HashMap();
+    private static final Map<String, String> JAVA_KEYWORDS = new HashMap();
     static {
         String[] ks = {
             "abstract", "assert", "boolean", "break", "byte", "case", "catch", "char", "class", "const", "continue",
@@ -945,7 +945,7 @@ class Scanner {
         };
         for (int i = 0; i < ks.length; ++i) Scanner.JAVA_KEYWORDS.put(ks[i], ks[i]);
     }
-    private static final Map/*<String, String>*/ JAVA_OPERATORS = new HashMap();
+    private static final Map<String, String> JAVA_OPERATORS = new HashMap();
     static {
         String[] ops = {
             // Separators:

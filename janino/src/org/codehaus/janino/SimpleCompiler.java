@@ -311,7 +311,7 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
             }
         };
     }
-//    private final Map/*<Class, IClass>*/ classes = new HashMap();
+//    private final Map<Class, IClass> classes = new HashMap();
 
     /** Converts an array of {@link Class}es into an array of{@link Java.Type}s. */
     protected Java.Type[]
@@ -346,7 +346,7 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
         ClassFile[] classFiles = unitCompiler.compileUnit(this.debugSource, this.debugLines, this.debugVars);
 
         // Convert the class files to bytes and store them in a Map.
-        final Map/*<String className, byte[] data>*/ classes = new HashMap();
+        final Map<String /*className*/, byte[] /*bytecode*/> classes = new HashMap();
         for (ClassFile cf : classFiles) {
             byte[] contents = cf.toByteArray();
             if (DEBUG) {

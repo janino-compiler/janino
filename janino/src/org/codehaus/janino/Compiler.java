@@ -225,8 +225,8 @@ class Compiler {
     private WarningHandler              optionalWarningHandler;
     private ErrorHandler                optionalCompileErrorHandler;
 
-    private final IClassLoader           iClassLoader;
-    private final List/*<UnitCompiler>*/ parsedCompilationUnits = new ArrayList();
+    private final IClassLoader       iClassLoader;
+    private final List<UnitCompiler> parsedCompilationUnits = new ArrayList();
 
     /**
      * Initialize a Java&trade; compiler with the given parameters.

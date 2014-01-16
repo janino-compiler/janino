@@ -26,8 +26,6 @@
 
 package org.codehaus.janino.util;
 
-import java.util.Iterator;
-
 import org.codehaus.janino.JaninoRuntimeException;
 import org.codehaus.janino.Java;
 import org.codehaus.janino.Visitor;
@@ -692,24 +690,16 @@ class Traverser {
     /** @see Traverser */
     public void
     traverseClassDeclaration(Java.ClassDeclaration cd) {
-        for (Iterator/*<ConstructorDeclarator>*/ it = cd.constructors.iterator(); it.hasNext();) {
-            ((Java.ConstructorDeclarator) it.next()).accept(this.cv);
-        }
-        for (Iterator/*<TypeBodyDeclaration>*/ it = cd.variableDeclaratorsAndInitializers.iterator(); it.hasNext();) {
-            ((Java.TypeBodyDeclaration) it.next()).accept(this.cv);
-        }
+        for (Java.ConstructorDeclarator ctord : cd.constructors) ctord.accept(this.cv);
+        for (Java.BlockStatement vdoi : cd.variableDeclaratorsAndInitializers) vdoi.accept(this.cv);
         this.traverseAbstractTypeDeclaration(cd);
     }
 
     /** @see Traverser */
     public void
     traverseAbstractTypeDeclaration(Java.AbstractTypeDeclaration atd) {
-        for (Iterator/*<NamedTypeDeclaration>*/ it = atd.getMemberTypeDeclarations().iterator(); it.hasNext();) {
-            ((Java.NamedTypeDeclaration) it.next()).accept(this.cv);
-        }
-        for (Iterator/*<MethodDeclarator>*/ it = atd.getMethodDeclarations().iterator(); it.hasNext();) {
-            this.traverseMethodDeclarator((Java.MethodDeclarator) it.next());
-        }
+        for (Java.NamedTypeDeclaration mtd : atd.getMemberTypeDeclarations()) mtd.accept(this.cv);
+        for (Java.MethodDeclarator md : atd.getMethodDeclarations()) this.traverseMethodDeclarator(md);
     }
 
     /** @see Traverser */
@@ -723,9 +713,7 @@ class Traverser {
     /** @see Traverser */
     public void
     traverseInterfaceDeclaration(Java.InterfaceDeclaration id) {
-        for (Iterator/*<TypeBodyDeclaration>*/ it = id.constantDeclarations.iterator(); it.hasNext();) {
-            ((Java.TypeBodyDeclaration) it.next()).accept(this.cv);
-        }
+        for (Java.TypeBodyDeclaration cd : id.constantDeclarations) cd.accept(this.cv);
         for (Java.Type extendedType : id.extendedTypes) extendedType.accept((Visitor.TypeVisitor) this.cv);
         this.traverseAbstractTypeDeclaration(id);
     }
@@ -735,10 +723,7 @@ class Traverser {
     traverseFunctionDeclarator(Java.FunctionDeclarator fd) {
         this.traverseFormalParameters(fd.formalParameters);
         if (fd.optionalStatements != null) {
-            for (Iterator/*<Java.BlockStatement>*/ it = fd.optionalStatements.iterator(); it.hasNext();) {
-                Java.BlockStatement bs = (Java.BlockStatement) it.next();
-                bs.accept(this.cv);
-            }
+            for (Java.BlockStatement bs : fd.optionalStatements) bs.accept(this.cv);
         }
     }
 

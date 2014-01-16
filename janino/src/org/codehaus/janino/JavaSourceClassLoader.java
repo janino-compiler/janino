@@ -30,7 +30,6 @@ import java.io.File;
 import java.io.Reader;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -169,7 +168,7 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 
             // Read, scan, parse and compile the right compilation unit.
             {
-                Map/*<String name, byte[] bytecode>*/ bytecodes = this.generateBytecodes(name);
+                Map<String /*name*/, byte[] /*bytecode*/> bytecodes = this.generateBytecodes(name);
                 if (bytecodes == null) throw new ClassNotFoundException(name);
                 this.precompiledClasses.putAll(bytecodes);
             }
@@ -193,7 +192,7 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
      * yet defined i.e. which were not yet passed to
      * {@link ClassLoader#defineClass(java.lang.String, byte[], int, int)}.
      */
-    private final Map/*<String name, byte[] bytecode>*/ precompiledClasses = new HashMap();
+    private final Map<String /*name*/, byte[] /*bytecode*/> precompiledClasses = new HashMap();
 
     /**
      * Find, scan, parse the right compilation unit. Compile the parsed compilation unit to
@@ -203,16 +202,15 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
      * @return String name => byte[] bytecode, or <code>null</code> if no source code could be found
      * @throws ClassNotFoundException on compilation problems
      */
-    protected Map/*<String name, byte[] bytecode>*/
+    protected Map<String /*name*/, byte[] /*bytecode*/>
     generateBytecodes(String name) throws ClassNotFoundException {
         if (this.iClassLoader.loadIClass(Descriptor.fromClassName(name)) == null) return null;
 
-        Map/*<String name, byte[] bytecode>*/ bytecodes             = new HashMap();
-        Set/*<UnitCompiler>*/                 compiledUnitCompilers = new HashSet();
+        Map<String /*name*/, byte[] /*bytecode*/> bytecodes             = new HashMap();
+        Set<UnitCompiler>                         compiledUnitCompilers = new HashSet();
         COMPILE_UNITS:
         for (;;) {
-            for (Iterator/*<UnitCompiler>*/ it = this.unitCompilers.iterator(); it.hasNext();) {
-                UnitCompiler uc = (UnitCompiler) it.next();
+            for (UnitCompiler uc : this.unitCompilers) {
                 if (!compiledUnitCompilers.contains(uc)) {
                     ClassFile[] cfs;
                     try {
@@ -250,5 +248,5 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
     private boolean debugVars   = this.debugSource;
 
     /** Collection of parsed, but still uncompiled compilation units. */
-    private final Set/*<UnitCompiler>*/ unitCompilers = new HashSet();
+    private final Set<UnitCompiler> unitCompilers = new HashSet();
 }

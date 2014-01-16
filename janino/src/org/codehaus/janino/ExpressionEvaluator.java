@@ -260,9 +260,9 @@ class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluato
     @Override protected Class
     getDefaultReturnType() { return Object.class; }
 
-    @Override protected List/*<BlockStatement>*/
+    @Override protected List<BlockStatement>
     makeStatements(int idx, Parser parser) throws CompileException, IOException {
-        List/*<BlockStatement>*/ statements = new ArrayList();
+        List<BlockStatement> statements = new ArrayList();
 
         // Parse the expression.
         Rvalue value = parser.parseExpression().toRvalueOrCompileException();
@@ -404,7 +404,7 @@ class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluato
         }
 
         // Traverse the expression for ambiguous names and guess which of them are parameter names.
-        final Set/*<String>*/ parameterNames = new HashSet();
+        final Set<String> parameterNames = new HashSet();
         rvalue.accept((RvalueVisitor) new Traverser() {
 
             @Override public void

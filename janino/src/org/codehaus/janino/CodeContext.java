@@ -32,7 +32,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -52,27 +51,27 @@ class CodeContext {
     private static final byte    INVALID_OFFSET = -2;
     private static final int     MAX_STACK_SIZE = 254;
 
-    private final ClassFile                     classFile;
-    private short                               maxStack;
-    private short                               maxLocals;
-    private byte[]                              code;
-    private final Offset                        beginning;
-    private final Inserter                      end;
-    private Inserter                            currentInserter;
-    private final List/*<ExceptionTableEntry>*/ exceptionTableEntries;
+    private final ClassFile                 classFile;
+    private short                           maxStack;
+    private short                           maxLocals;
+    private byte[]                          code;
+    private final Offset                    beginning;
+    private final Inserter                  end;
+    private Inserter                        currentInserter;
+    private final List<ExceptionTableEntry> exceptionTableEntries;
 
     /** All the local variables that are allocated in any block in this {@link CodeContext}. */
-    private final List/*<Java.LocalVariableSlot>*/ allLocalVars = new ArrayList();
+    private final List<Java.LocalVariableSlot> allLocalVars = new ArrayList();
 
     /**
      * List of List of Java.LocalVariableSlot objects. Each List of Java.LocalVariableSlot is
      * the local variables allocated for a block. They are pushed and poped onto the list together
      * to make allocation of the next local variable slot easy.
      */
-    private final List/*<List<Java.LocalVariableSlot>>*/ scopedVars = new ArrayList();
+    private final List<List<Java.LocalVariableSlot> > scopedVars = new ArrayList();
 
-    private short                       nextLocalVariableSlot;
-    private final List/*<Relocatable>*/ relocatables = new ArrayList();
+    private short                   nextLocalVariableSlot;
+    private final List<Relocatable> relocatables = new ArrayList();
 
     /** Creates an empty "Code" attribute. */
     public
@@ -131,12 +130,12 @@ class CodeContext {
      */
     public Java.LocalVariableSlot
     allocateLocalVariable(short size, String name, IClass type) {
-        List/*<Java.LocalVariableSlot>*/ currentVars = null;
+        List<Java.LocalVariableSlot> currentVars = null;
 
         if (this.scopedVars.size() == 0) {
             throw new Error("saveLocalVariables must be called first");
         } else {
-            currentVars = (List/*<Java.LocalVariableSlot>*/) this.scopedVars.get(this.scopedVars.size() - 1);
+            currentVars = (List<Java.LocalVariableSlot>) this.scopedVars.get(this.scopedVars.size() - 1);
         }
 
         Java.LocalVariableSlot slot = new Java.LocalVariableSlot(name, this.nextLocalVariableSlot, type);
@@ -157,11 +156,11 @@ class CodeContext {
     }
 
     /** Remembers the current size of the local variables array. */
-    public List/*<Java.LocalVariableSlot>*/
+    public List<Java.LocalVariableSlot>
     saveLocalVariables() {
 
         // Push empty list on the stack to hold a new block's local vars.
-        List/*<Java.LocalVariableSlot>*/ l = new ArrayList();
+        List<Java.LocalVariableSlot> l = new ArrayList();
         this.scopedVars.add(l);
 
         return l;
@@ -176,13 +175,10 @@ class CodeContext {
     restoreLocalVariables() {
 
         // Pop the list containing the current block's local vars.
-        Iterator/*<Java.LocalVariableSlot>*/ iter = (
-            (List/*<Java.LocalVariableSlot>*/) this.scopedVars.remove(this.scopedVars.size() - 1)
-        ).iterator();
-
-        while (iter.hasNext()) {
-            Java.LocalVariableSlot slot = (Java.LocalVariableSlot) iter.next();
-
+        List<Java.LocalVariableSlot> slots = (
+            (List<Java.LocalVariableSlot>) this.scopedVars.remove(this.scopedVars.size() - 1)
+        );
+        for (Java.LocalVariableSlot slot : slots) {
             if (slot.getName() != null) {
                 slot.setEnd(this.newOffset());
             }
@@ -214,11 +210,11 @@ class CodeContext {
             dos.writeShort(exceptionTableEntry.catchType);
         }
 
-        List/*<ClassFile.AttributeInfo>*/ attributes = new ArrayList();
+        List<ClassFile.AttributeInfo> attributes = new ArrayList();
 
         // Add "LineNumberTable" attribute.
         if (lineNumberTableAttributeNameIndex != 0) {
-            List/*<ClassFile.LineNumberTableAttribute.Entry>*/ lnt = new ArrayList();
+            List<ClassFile.LineNumberTableAttribute.Entry> lnt = new ArrayList();
             for (Offset o = this.beginning; o != null; o = o.next) {
                 if (o instanceof LineNumberOffset) {
                     lnt.add(new ClassFile.LineNumberTableAttribute.Entry(o.offset, ((LineNumberOffset) o).lineNumber));
@@ -240,9 +236,8 @@ class CodeContext {
             if (ai != null) attributes.add(ai);
         }
 
-        dos.writeShort(attributes.size());                                                      // attributes_count
-        for (Iterator/*<ClassFile.AttributeInfo>*/ it = attributes.iterator(); it.hasNext();) { // attributes;
-            ClassFile.AttributeInfo attribute = (ClassFile.AttributeInfo) it.next();
+        dos.writeShort(attributes.size());                     // attributes_count
+        for (ClassFile.AttributeInfo attribute : attributes) { // attributes;
             attribute.store(dos);
         }
     }
@@ -252,11 +247,10 @@ class CodeContext {
      */
     protected ClassFile.AttributeInfo
     storeLocalVariableTable(DataOutputStream dos, short localVariableTableAttributeNameIndex) {
-        ClassFile       cf                                                         = this.getClassFile();
-        final List      entryList/*<ClassFile.LocalVariableTableAttribute.Entry>*/ = new ArrayList();
+        ClassFile                                               cf        = this.getClassFile();
+        final List<ClassFile.LocalVariableTableAttribute.Entry> entryList = new ArrayList();
 
-        for (Iterator/*<Java.LocalVariableSlot>*/ iter = this.getAllLocalVars().iterator(); iter.hasNext();) {
-            Java.LocalVariableSlot slot = (Java.LocalVariableSlot) iter.next();
+        for (Java.LocalVariableSlot slot : this.getAllLocalVars()) {
 
             if (slot.getName() != null) {
                 String typeName    = slot.getType().getDescriptor();
@@ -1060,11 +1054,11 @@ class CodeContext {
         return ((Byte) CodeContext.BRANCH_OPCODE_INVERSION.get(new Byte(branchOpcode))).byteValue();
     }
 
-    private static final Map/*<Byte branch-opcode, Byte inverted-branch-opcode>*/
+    private static final Map<Byte /*branch-opcode*/, Byte /*inverted-branch-opcode*/>
     BRANCH_OPCODE_INVERSION = CodeContext.createBranchOpcodeInversion();
-    private static Map/*<Byte, Byte>*/
+    private static Map<Byte, Byte>
     createBranchOpcodeInversion() {
-        Map/*<Byte, Byte>*/ m = new HashMap();
+        Map<Byte, Byte> m = new HashMap();
         m.put(new Byte(Opcode.IF_ACMPEQ), new Byte(Opcode.IF_ACMPNE));
         m.put(new Byte(Opcode.IF_ACMPNE), new Byte(Opcode.IF_ACMPEQ));
         m.put(new Byte(Opcode.IF_ICMPEQ), new Byte(Opcode.IF_ICMPNE));
@@ -1281,6 +1275,6 @@ class CodeContext {
     }
 
     /** @return All the local variables that are allocated in any block in this {@link CodeContext} */
-    public List/*<Java.LocalVariableSlot>*/
+    public List<Java.LocalVariableSlot>
     getAllLocalVars() { return this.allLocalVars; }
 }

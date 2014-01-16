@@ -46,11 +46,11 @@ import org.codehaus.janino.util.resource.*;
 class JavaSourceIClassLoader extends IClassLoader {
     private static final boolean DEBUG = false;
 
-    private ResourceFinder              sourceFinder;
-    private String                      optionalCharacterEncoding;
-    private final Set/*<UnitCompiler>*/ unitCompilers;
-    private ErrorHandler                optionalCompileErrorHandler;
-    private WarningHandler              optionalWarningHandler;
+    private ResourceFinder          sourceFinder;
+    private String                  optionalCharacterEncoding;
+    private final Set<UnitCompiler> unitCompilers;
+    private ErrorHandler            optionalCompileErrorHandler;
+    private WarningHandler          optionalWarningHandler;
 
     /**
      * Notice that the <code>unitCompilers</code> set is both read and written
@@ -61,10 +61,10 @@ class JavaSourceIClassLoader extends IClassLoader {
      */
     public
     JavaSourceIClassLoader(
-        ResourceFinder        sourceFinder,
-        String                optionalCharacterEncoding,
-        Set/*<UnitCompiler>*/ unitCompilers,
-        IClassLoader          optionalParentIClassLoader
+        ResourceFinder    sourceFinder,
+        String            optionalCharacterEncoding,
+        Set<UnitCompiler> unitCompilers,
+        IClassLoader      optionalParentIClassLoader
     ) {
         super(optionalParentIClassLoader);
 
@@ -127,9 +127,8 @@ class JavaSourceIClassLoader extends IClassLoader {
         }
 
         // Check the already-parsed compilation units.
-        for (Iterator/*<UnitCompiler>*/ it = this.unitCompilers.iterator(); it.hasNext();) {
-            UnitCompiler uc  = (UnitCompiler) it.next();
-            IClass       res = uc.findClass(topLevelClassName);
+        for (UnitCompiler uc : this.unitCompilers) {
+            IClass res = uc.findClass(topLevelClassName);
             if (res != null) {
                 if (!className.equals(topLevelClassName)) {
                     res = uc.findClass(className);
