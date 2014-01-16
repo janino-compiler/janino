@@ -48,47 +48,81 @@ class IClassLoader {
 
     // CHECKSTYLE MemberName:OFF
     // CHECKSTYLE AbbreviationAsWordInName:OFF
-    // CHECKSTYLE JavadocVariable:OFF
+    /** Representation of the {@link java.lang.Override} annotation. */
     public IClass ANNO_java_lang_Override;
 
+    /** Representation of the {@link java.lang.AssertionError} type. */
     public IClass TYPE_java_lang_AssertionError;
+    /** Representation of the {@link java.lang.Boolean} type. */
     public IClass TYPE_java_lang_Boolean;
+    /** Representation of the {@link java.lang.Byte} type. */
     public IClass TYPE_java_lang_Byte;
+    /** Representation of the {@link java.lang.Character} type. */
     public IClass TYPE_java_lang_Character;
+    /** Representation of the {@link java.lang.Class} type. */
     public IClass TYPE_java_lang_Class;
+    /** Representation of the {@link java.lang.Cloneable} type. */
     public IClass TYPE_java_lang_Cloneable;
+    /** Representation of the {@link java.lang.Double} type. */
     public IClass TYPE_java_lang_Double;
+    /** Representation of the {@link java.lang.Exception} type. */
     public IClass TYPE_java_lang_Exception;
+    /** Representation of the {@link java.lang.Error} type. */
     public IClass TYPE_java_lang_Error;
+    /** Representation of the {@link java.lang.Float} type. */
     public IClass TYPE_java_lang_Float;
+    /** Representation of the {@link java.lang.Integer} type. */
     public IClass TYPE_java_lang_Integer;
+    /** Representation of the {@link java.lang.Iterable} type. */
     public IClass TYPE_java_lang_Iterable;
+    /** Representation of the {@link java.lang.Long} type. */
     public IClass TYPE_java_lang_Long;
+    /** Representation of the {@link java.lang.Object} type. */
     public IClass TYPE_java_lang_Object;
+    /** Representation of the {@link java.lang.RuntimeException} type. */
     public IClass TYPE_java_lang_RuntimeException;
+    /** Representation of the {@link java.lang.Short} type. */
     public IClass TYPE_java_lang_Short;
+    /** Representation of the {@link java.lang.String} type. */
     public IClass TYPE_java_lang_String;
+    /** Representation of the {@link java.lang.StringBuilder} type. */
     public IClass TYPE_java_lang_StringBuilder;
+    /** Representation of the {@link java.lang.Throwable} type. */
     public IClass TYPE_java_lang_Throwable;
+    /** Representation of the {@link java.io.Serializable} type. */
     public IClass TYPE_java_io_Serializable;
+    /** Representation of the {@link java.util.Iterator} type. */
     public IClass TYPE_java_util_Iterator;
 
+    /** Representation of the {@link Iterable#iterator()} method. */
     public IMethod METH_java_lang_Iterable__iterator;
+    /** Representation of the {@link String#concat(String)} method. */
     public IMethod METH_java_lang_String__concat__java_lang_String;
+    /** Representation of the {@link String#valueOf(int)} method. */
     public IMethod METH_java_lang_String__valueOf__int;
+    /** Representation of the {@link String#valueOf(long)} method. */
     public IMethod METH_java_lang_String__valueOf__long;
+    /** Representation of the {@link String#valueOf(float)} method. */
     public IMethod METH_java_lang_String__valueOf__float;
+    /** Representation of the {@link String#valueOf(double)} method. */
     public IMethod METH_java_lang_String__valueOf__double;
+    /** Representation of the {@link String#valueOf(char)} method. */
     public IMethod METH_java_lang_String__valueOf__char;
+    /** Representation of the {@link String#valueOf(boolean)} method. */
     public IMethod METH_java_lang_String__valueOf__boolean;
+    /** Representation of the {@link String#valueOf(Object)} method. */
     public IMethod METH_java_lang_String__valueOf__java_lang_Object;
+    /** Representation of the {@link StringBuilder#append(String)} method. */
     public IMethod METH_java_lang_StringBuilder__append__java_lang_String;
+    /** Representation of the {@link StringBuilder#toString()} method. */
     public IMethod METH_java_lang_StringBuilder__toString;
+    /** Representation of the {@link java.util.Iterator#hasNext()} method. */
     public IMethod METH_java_util_Iterator__hasNext;
+    /** Representation of the {@link java.util.Iterator#next()} method. */
     public IMethod METH_java_util_Iterator__next;
 
+    /** Representation of the {@link StringBuilder#StringBuilder(String)} constructor. */
     public IConstructor CTOR_java_lang_StringBuilder__java_lang_String;
-    // CHECKSTYLE JavadocVariable:ON
     // CHECKSTYLE AbbreviationAsWordInName:ON
     // CHECKSTYLE MemberName:ON
 

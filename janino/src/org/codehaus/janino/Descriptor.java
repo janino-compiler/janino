@@ -258,6 +258,8 @@ class Descriptor {
     /** The field descriptor for the type VOID. */
     public static final String VOID = "V";
 
+    // Primitive types.
+
     /** The field descriptor for the primitive type BYTE. */
     public static final String BYTE = "B";
     /** The field descriptor for the primitive type CHAR. */
@@ -275,83 +277,103 @@ class Descriptor {
     /** The field descriptor for the primitive type BOOLEAN. */
     public static final String BOOLEAN = "Z";
 
-    /** The field descriptor for the class {@link Object}. */
-    public static final String JAVA_LANG_OBJECT = "Ljava/lang/Object;";
-    /** The field descriptor for the class {@link String}. */
-    public static final String JAVA_LANG_STRING = "Ljava/lang/String;";
-    /** The field descriptor for the class {@link StringBuilder}. */
-    public static final String JAVA_LANG_STRINGBUILDER = "Ljava/lang/StringBuilder;"; // Since 1.5!
-    /** The field descriptor for the class {@link Class}. */
-    public static final String JAVA_LANG_CLASS = "Ljava/lang/Class;";
-    /** The field descriptor for the class {@link Throwable}. */
-    public static final String JAVA_LANG_THROWABLE = "Ljava/lang/Throwable;";
-    /** The field descriptor for the class {@link RuntimeException}. */
-    public static final String JAVA_LANG_RUNTIMEEXCEPTION = "Ljava/lang/RuntimeException;";
-    /** The field descriptor for the class {@link Exception}. */
-    public static final String JAVA_LANG_EXCEPTION = "Ljava/lang/Exception;";
-    /** The field descriptor for the class {@link Error}. */
-    public static final String JAVA_LANG_ERROR = "Ljava/lang/Error;";
-    /** The field descriptor for the interface {@link Cloneable}. */
-    public static final String JAVA_LANG_CLONEABLE = "Ljava/lang/Cloneable;";
-    /** The field descriptor for the annotation {@link Override}. */
+    // Annotations.
+
+    /** The field descriptor for the annotation {@link java.lang.Override}. */
     public static final String JAVA_LANG_OVERRIDE = "Ljava/lang/Override;";
-    /** The field descriptor for the interface {@link java.lang.Iterable}. */
-    public static final String JAVA_LANG_ITERABLE = "Ljava/lang/Iterable;";
+
+    // Classes.
+
+    /** The field descriptor for the class {@link java.lang.AssertionError}. */
+    public static final String JAVA_LANG_ASSERTIONERROR = "Ljava/lang/AssertionError;";
+    /** The field descriptor for the class {@link java.lang.Boolean}. */
+    public static final String JAVA_LANG_BOOLEAN = "Ljava/lang/Boolean;";
+    /** The field descriptor for the class {@link java.lang.Byte}. */
+    public static final String JAVA_LANG_BYTE = "Ljava/lang/Byte;";
+    /** The field descriptor for the class {@link java.lang.Character}. */
+    public static final String JAVA_LANG_CHARACTER = "Ljava/lang/Character;";
+    /** The field descriptor for the class {@link java.lang.Class}. */
+    public static final String JAVA_LANG_CLASS = "Ljava/lang/Class;";
+    /** The field descriptor for the class {@link java.lang.Double}. */
+    public static final String JAVA_LANG_DOUBLE = "Ljava/lang/Double;";
+    /** The field descriptor for the class {@link java.lang.Exception}. */
+    public static final String JAVA_LANG_EXCEPTION = "Ljava/lang/Exception;";
+    /** The field descriptor for the class {@link java.lang.Error}. */
+    public static final String JAVA_LANG_ERROR = "Ljava/lang/Error;";
+    /** The field descriptor for the class {@link java.lang.Float}. */
+    public static final String JAVA_LANG_FLOAT = "Ljava/lang/Float;";
+    /** The field descriptor for the class {@link java.lang.Integer}. */
+    public static final String JAVA_LANG_INTEGER = "Ljava/lang/Integer;";
+    /** The field descriptor for the class {@link java.lang.Long}. */
+    public static final String JAVA_LANG_LONG = "Ljava/lang/Long;";
+    /** The field descriptor for the class {@link java.lang.Object}. */
+    public static final String JAVA_LANG_OBJECT = "Ljava/lang/Object;";
+    /** The field descriptor for the class {@link java.lang.RuntimeException}. */
+    public static final String JAVA_LANG_RUNTIMEEXCEPTION = "Ljava/lang/RuntimeException;";
+    /** The field descriptor for the class {@link java.lang.Short}. */
+    public static final String JAVA_LANG_SHORT = "Ljava/lang/Short;";
+    /** The field descriptor for the class {@link java.lang.String}. */
+    public static final String JAVA_LANG_STRING = "Ljava/lang/String;";
+    /** The field descriptor for the class {@link java.lang.StringBuilder}. */
+    public static final String JAVA_LANG_STRINGBUILDER = "Ljava/lang/StringBuilder;"; // Since 1.5!
+    /** The field descriptor for the class {@link java.lang.Throwable}. */
+    public static final String JAVA_LANG_THROWABLE = "Ljava/lang/Throwable;";
+
+    // Interfaces.
+
     /** The field descriptor for the interface {@link java.io.Serializable}. */
     public static final String JAVA_IO_SERIALIZABLE = "Ljava/io/Serializable;";
+    /** The field descriptor for the interface {@link java.lang.Cloneable}. */
+    public static final String JAVA_LANG_CLONEABLE = "Ljava/lang/Cloneable;";
+    /** The field descriptor for the interface {@link java.lang.Iterable}. */
+    public static final String JAVA_LANG_ITERABLE = "Ljava/lang/Iterable;";
     /** The field descriptor for the interface {@link java.util.Iterator}. */
     public static final String JAVA_UTIL_ITERATOR = "Ljava/util/Iterator;";
-    /** The field descriptor for the wrapper class {@link AssertionError}. */
-    public static final String JAVA_LANG_ASSERTIONERROR = "Ljava/lang/AssertionError;";
-
-    /** The field descriptor for the wrapper class {@link Boolean}. */
-    public static final String JAVA_LANG_BOOLEAN = "Ljava/lang/Boolean;";
-    /** The field descriptor for the wrapper class {@link Byte}. */
-    public static final String JAVA_LANG_BYTE = "Ljava/lang/Byte;";
-    /** The field descriptor for the wrapper class {@link Character}. */
-    public static final String JAVA_LANG_CHARACTER = "Ljava/lang/Character;";
-    /** The field descriptor for the wrapper class {@link Short}. */
-    public static final String JAVA_LANG_SHORT = "Ljava/lang/Short;";
-    /** The field descriptor for the wrapper class {@link Integer}. */
-    public static final String JAVA_LANG_INTEGER = "Ljava/lang/Integer;";
-    /** The field descriptor for the wrapper class {@link Long}. */
-    public static final String JAVA_LANG_LONG = "Ljava/lang/Long;";
-    /** The field descriptor for the wrapper class {@link Float}. */
-    public static final String JAVA_LANG_FLOAT = "Ljava/lang/Float;";
-    /** The field descriptor for the wrapper class {@link Double}. */
-    public static final String JAVA_LANG_DOUBLE = "Ljava/lang/Double;";
 
     private static final Map<String, String> DESCRIPTOR_TO_CLASSNAME;
     static {
         Map<String, String> m = new HashMap();
-        m.put(Descriptor.VOID,                       "void");
-        m.put(Descriptor.BYTE,                       "byte");
-        m.put(Descriptor.CHAR,                       "char");
-        m.put(Descriptor.DOUBLE,                     "double");
-        m.put(Descriptor.FLOAT,                      "float");
-        m.put(Descriptor.INT,                        "int");
-        m.put(Descriptor.LONG,                       "long");
-        m.put(Descriptor.SHORT,                      "short");
-        m.put(Descriptor.BOOLEAN,                    "boolean");
-        m.put(Descriptor.JAVA_LANG_OBJECT,           "java.lang.Object");
-        m.put(Descriptor.JAVA_LANG_STRING,           "java.lang.String");
-        m.put(Descriptor.JAVA_LANG_STRINGBUILDER,    "java.lang.StringBuilder");
-        m.put(Descriptor.JAVA_LANG_CLASS,            "java.lang.Class");
-        m.put(Descriptor.JAVA_LANG_THROWABLE,        "java.lang.Throwable");
-        m.put(Descriptor.JAVA_LANG_RUNTIMEEXCEPTION, "java.lang.RuntimeException");
-        m.put(Descriptor.JAVA_LANG_ERROR,            "java.lang.Error");
-        m.put(Descriptor.JAVA_LANG_CLONEABLE,        "java.lang.Cloneable");
+
+        m.put(Descriptor.VOID, "void");
+
+        // Primitive types.
+        m.put(Descriptor.BYTE,    "byte");
+        m.put(Descriptor.CHAR,    "char");
+        m.put(Descriptor.DOUBLE,  "double");
+        m.put(Descriptor.FLOAT,   "float");
+        m.put(Descriptor.INT,     "int");
+        m.put(Descriptor.LONG,    "long");
+        m.put(Descriptor.SHORT,   "short");
+        m.put(Descriptor.BOOLEAN, "boolean");
+
+        // Annotations.
+        m.put(Descriptor.JAVA_LANG_OVERRIDE, "java.lang.Override");
+
+        // Classes.
         m.put(Descriptor.JAVA_LANG_ASSERTIONERROR,   "java.lang.AssertionError");
-        m.put(Descriptor.JAVA_LANG_OVERRIDE,         "java.lang.Override");
-        m.put(Descriptor.JAVA_IO_SERIALIZABLE,       "java.io.Serializable");
         m.put(Descriptor.JAVA_LANG_BOOLEAN,          "java.lang.Boolean");
         m.put(Descriptor.JAVA_LANG_BYTE,             "java.lang.Byte");
         m.put(Descriptor.JAVA_LANG_CHARACTER,        "java.lang.Character");
-        m.put(Descriptor.JAVA_LANG_SHORT,            "java.lang.Short");
+        m.put(Descriptor.JAVA_LANG_CLASS,            "java.lang.Class");
+        m.put(Descriptor.JAVA_LANG_DOUBLE,           "java.lang.Double");
+        m.put(Descriptor.JAVA_LANG_EXCEPTION,        "java.lang.Exception");
+        m.put(Descriptor.JAVA_LANG_ERROR,            "java.lang.Error");
+        m.put(Descriptor.JAVA_LANG_FLOAT,            "java.lang.Float");
         m.put(Descriptor.JAVA_LANG_INTEGER,          "java.lang.Integer");
         m.put(Descriptor.JAVA_LANG_LONG,             "java.lang.Long");
-        m.put(Descriptor.JAVA_LANG_FLOAT,            "java.lang.Float");
-        m.put(Descriptor.JAVA_LANG_DOUBLE,           "java.lang.Double");
+        m.put(Descriptor.JAVA_LANG_OBJECT,           "java.lang.Object");
+        m.put(Descriptor.JAVA_LANG_RUNTIMEEXCEPTION, "java.lang.RuntimeException");
+        m.put(Descriptor.JAVA_LANG_SHORT,            "java.lang.Short");
+        m.put(Descriptor.JAVA_LANG_STRING,           "java.lang.String");
+        m.put(Descriptor.JAVA_LANG_STRINGBUILDER,    "java.lang.StringBuilder");
+        m.put(Descriptor.JAVA_LANG_THROWABLE,        "java.lang.Throwable");
+
+        // Interfaces.
+        m.put(Descriptor.JAVA_IO_SERIALIZABLE, "java.io.Serializable");
+        m.put(Descriptor.JAVA_LANG_CLONEABLE,  "java.lang.Cloneable");
+        m.put(Descriptor.JAVA_LANG_ITERABLE,   "java.lang.Iterable");
+        m.put(Descriptor.JAVA_UTIL_ITERATOR,   "java.util.Iterator");
+
         DESCRIPTOR_TO_CLASSNAME = Collections.unmodifiableMap(m);
     }
 
