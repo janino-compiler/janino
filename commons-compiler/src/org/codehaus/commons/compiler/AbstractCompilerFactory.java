@@ -32,6 +32,8 @@ class AbstractCompilerFactory implements ICompilerFactory {
 
     @Override public abstract String getId();
 
+    @Override public abstract String toString();
+
     @Override public abstract String getImplementationVersion();
 
     @Override public IExpressionEvaluator
