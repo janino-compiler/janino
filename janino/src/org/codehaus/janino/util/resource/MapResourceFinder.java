@@ -33,7 +33,7 @@ import java.util.*;
  * A {@link org.codehaus.janino.util.resource.ResourceFinder} that provides access
  * to resource stored as byte arrays in a {@link java.util.Map}.
  */
-@SuppressWarnings("rawtypes") public
+public
 class MapResourceFinder extends ResourceFinder {
     private final Map<String, byte[]> map;
     private long                      lastModified;

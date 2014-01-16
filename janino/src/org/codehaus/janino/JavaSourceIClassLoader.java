@@ -42,7 +42,7 @@ import org.codehaus.janino.util.resource.*;
  * <p>
  * Notice that it does not compile them!
  */
-@SuppressWarnings({ "rawtypes", "unchecked" }) public final
+public final
 class JavaSourceIClassLoader extends IClassLoader {
     private static final boolean DEBUG = false;
 

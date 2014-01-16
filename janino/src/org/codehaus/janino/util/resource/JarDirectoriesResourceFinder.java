@@ -37,7 +37,7 @@ public
 class JarDirectoriesResourceFinder extends LazyMultiResourceFinder {
 
     /** @param directories The set of directories to search for JAR files. */
-    public
+    @SuppressWarnings("unchecked") public
     JarDirectoriesResourceFinder(final File[] directories) {
         super(new MultiDimensionalIterator(
 

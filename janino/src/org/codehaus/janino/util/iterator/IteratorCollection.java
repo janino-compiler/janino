@@ -79,7 +79,7 @@ class IteratorCollection/*<T>*/ extends AbstractCollection/*<T>*/ {
     @Override public int
     size() {
         int size = 0;
-        for (Object o : this) ++size;
+        for (@SuppressWarnings("unused") Object o : this) ++size;
         return size;
     }
 }

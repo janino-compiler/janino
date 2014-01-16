@@ -857,7 +857,7 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor {
         int precedence = 0;
         LOOP1: for (int i = 0;;) {
             Set<String> s  = (Set) ops[i++];
-            Integer         pi = new Integer(++precedence);
+            Integer     pi = new Integer(++precedence);
             for (;;) {
                 if (i == ops.length) break LOOP1;
                 if (!(ops[i] instanceof String)) break;

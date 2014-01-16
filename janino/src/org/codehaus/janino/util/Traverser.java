@@ -43,7 +43,7 @@ import org.codehaus.janino.Visitor.ComprehensiveVisitor;
  *         }
  *     }.comprehensiveVisitor());</pre>
  */
-@SuppressWarnings("rawtypes") public
+public
 class Traverser {
 
     private final Visitor.ComprehensiveVisitor cv = new Visitor.ComprehensiveVisitor() {

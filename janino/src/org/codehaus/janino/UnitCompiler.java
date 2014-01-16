@@ -1608,11 +1608,11 @@ class UnitCompiler {
                 : new Rvalue[] { as.optionalExpression2 }
             );
             this.invokeConstructor(
-                as,                                         // locatable
-                as,                                         // scope
-                null,                                       // optionalEnclosingInstance
+                as,                                              // locatable
+                as,                                              // scope
+                null,                                            // optionalEnclosingInstance
                 this.iClassLoader.TYPE_java_lang_AssertionError, // targetClass
-                arguments                                   // arguments
+                arguments                                        // arguments
             );
             this.writeOpcode(as, Opcode.ATHROW);
         } finally {
@@ -2102,24 +2102,24 @@ class UnitCompiler {
                     // Save the exception object in an anonymous local variable.
                     short evi = this.codeContext.allocateLocalVariable((short) 1);
                     this.store(
-                        ts.optionalFinally,                 // locatable
+                        ts.optionalFinally,                      // locatable
                         this.iClassLoader.TYPE_java_lang_Object, // lvType
-                        evi                                 // lvIndex
+                        evi                                      // lvIndex
                     );
                     this.writeBranch(ts.optionalFinally, Opcode.JSR, ts.finallyOffset);
                     this.load(
-                        ts.optionalFinally,                 // locatable
+                        ts.optionalFinally,                      // locatable
                         this.iClassLoader.TYPE_java_lang_Object, // type
-                        evi                                 // index
+                        evi                                      // index
                     );
                     this.writeOpcode(ts.optionalFinally, Opcode.ATHROW);
 
                     // Compile the "finally" body.
                     ts.finallyOffset.set();
                     this.store(
-                        ts.optionalFinally,                 // locatable
+                        ts.optionalFinally,                      // locatable
                         this.iClassLoader.TYPE_java_lang_Object, // lvType
-                        pcLvIndex                           // lvIndex
+                        pcLvIndex                                // lvIndex
                     );
                     if (this.compile(ts.optionalFinally)) {
                         if (pcLvIndex > 255) {
@@ -2396,7 +2396,7 @@ class UnitCompiler {
     buildLocalVariableMap(BlockStatement blockStatement, final Map<String, LocalVariable> localVars)
     throws CompileException {
         final Map<String, LocalVariable>[] resVars = new Map[] { localVars };
-        BlockStatementVisitor                  bsv     = new BlockStatementVisitor() {
+        BlockStatementVisitor              bsv     = new BlockStatementVisitor() {
             // CHECKSTYLE LineLengthCheck:OFF
 
             // basic statements that use the default handlers
@@ -4506,7 +4506,7 @@ class UnitCompiler {
 
             // Compute the constant value of the unrolled binary operation.
             Iterator<Object> it  = cvs.iterator();
-            Object               lhs = it.next();
+            Object           lhs = it.next();
             while (it.hasNext()) {
                 if (lhs == NOT_CONSTANT) return NOT_CONSTANT;
 
@@ -6067,10 +6067,10 @@ class UnitCompiler {
      */
     private IClass
     compileArithmeticOperation(
-        final Locatable      locatable,
-        IClass               type,
+        final Locatable  locatable,
+        IClass           type,
         Iterator<Rvalue> operands,
-        String               operator
+        String           operator
     ) throws CompileException {
         if (operator == "|" || operator == "^" || operator == "&") { // SUPPRESS CHECKSTYLE StringLiteralEquality
             final int iopcode = (
@@ -6261,9 +6261,9 @@ class UnitCompiler {
      */
     private IClass
     compileStringConcatenation(
-        final Locatable      locatable,
-        IClass               type,
-        Rvalue               operand,
+        final Locatable  locatable,
+        IClass           type,
+        Rvalue           operand,
         Iterator<Rvalue> operands
     ) throws CompileException {
         boolean operandOnStack;
@@ -6511,8 +6511,8 @@ class UnitCompiler {
 
                             // Does one of the enclosing blocks declare a local variable with that name?
                             for (s = scope; s instanceof BlockStatement; s = s.getEnclosingScope()) {
-                                BlockStatement           bs = (BlockStatement) s;
-                                Scope                    es = bs.getEnclosingScope();
+                                BlockStatement       bs = (BlockStatement) s;
+                                Scope                es = bs.getEnclosingScope();
                                 List<BlockStatement> statements;
                                 if (es instanceof Block) {
                                     statements = ((Block) es).statements;
@@ -7642,8 +7642,8 @@ class UnitCompiler {
             IClass.IMethod theNonAbstractMethod = null;
             {
                 Iterator<IClass.IInvocable> it                          = maximallySpecificIInvocables.iterator();
-                IClass.IMethod                  m                           = (IClass.IMethod) it.next();
-                IClass[]                        parameterTypesOfFirstMethod = m.getParameterTypes();
+                IClass.IMethod              m                           = (IClass.IMethod) it.next();
+                IClass[]                    parameterTypesOfFirstMethod = m.getParameterTypes();
                 for (;;) {
                     if (!m.isAbstract()) {
                         if (theNonAbstractMethod == null) {
@@ -7700,7 +7700,7 @@ class UnitCompiler {
             // Check "that exception [te1] is declared in the THROWS clause of each of the maximally specific methods".
             Set<IClass> s = new HashSet();
             {
-                IClass[][]                      tes = new IClass[maximallySpecificIInvocables.size()][];
+                IClass[][]                  tes = new IClass[maximallySpecificIInvocables.size()][];
                 Iterator<IClass.IInvocable> it  = maximallySpecificIInvocables.iterator();
                 for (int i = 0; i < tes.length; ++i) {
                     tes[i] = ((IClass.IMethod) it.next()).getThrownExceptions();
@@ -8002,7 +8002,7 @@ class UnitCompiler {
             @Override protected IField[]
             getDeclaredIFields2() {
                 if (atd instanceof ClassDeclaration) {
-                    ClassDeclaration        cd = (ClassDeclaration) atd;
+                    ClassDeclaration    cd = (ClassDeclaration) atd;
                     List<IClass.IField> l  = new ArrayList();
 
                     // Determine variable declarators of type declaration.
@@ -8017,8 +8017,8 @@ class UnitCompiler {
                     return (IClass.IField[]) l.toArray(new IClass.IField[l.size()]);
                 } else
                 if (atd instanceof InterfaceDeclaration) {
-                    InterfaceDeclaration    id = (InterfaceDeclaration) atd;
-                    List<IClass.IField> l  = new ArrayList();
+                    InterfaceDeclaration id = (InterfaceDeclaration) atd;
+                    List<IClass.IField>  l  = new ArrayList();
 
                     // Determine static fields.
                     for (int i = 0; i < id.constantDeclarations.size(); ++i) {
@@ -8648,10 +8648,10 @@ class UnitCompiler {
         // try {
         // return Class.forName(className);
         MethodInvocation mi = new MethodInvocation(
-            loc,                                                    // location
+            loc,                                                         // location
             new SimpleType(loc, this.iClassLoader.TYPE_java_lang_Class), // optionalTarget
-            "forName",                                              // methodName
-            new Rvalue[] {                                          // arguments
+            "forName",                                                   // methodName
+            new Rvalue[] {                                               // arguments
                 new AmbiguousName(loc, new String[] { "className" })
             }
         );
@@ -8716,24 +8716,24 @@ class UnitCompiler {
 
         // Class class$(String className)
         FormalParameter parameter = new FormalParameter(
-            loc,                                                     // location
-            false,                                                   // finaL
+            loc,                                                          // location
+            false,                                                        // finaL
             new SimpleType(loc, this.iClassLoader.TYPE_java_lang_String), // type
-            "className"                                              // name
+            "className"                                                   // name
         );
         MethodDeclarator cdmd = new MethodDeclarator(
-            loc,                                                    // location
-            null,                                                   // optionalDocComment
-            new Modifiers(Mod.STATIC),                              // modifiers
+            loc,                                                         // location
+            null,                                                        // optionalDocComment
+            new Modifiers(Mod.STATIC),                                   // modifiers
             new SimpleType(loc, this.iClassLoader.TYPE_java_lang_Class), // type
-            "class$",                                               // name
-            new FormalParameters(                                   // parameters
+            "class$",                                                    // name
+            new FormalParameters(                                        // parameters
                 loc,
                 new FormalParameter[] { parameter },
                 false
             ),
-            new Type[0],                                            // thrownExceptions
-            statements                                              // optionalStatements
+            new Type[0],                                                 // thrownExceptions
+            statements                                                   // optionalStatements
         );
 
         declaringType.addDeclaredMethod(cdmd);
@@ -8919,8 +8919,8 @@ class UnitCompiler {
     makeUtf8Able(String s) {
         if (s.length() < (65536 / 3)) return new String[] { s };
 
-        int              sLength = s.length(), utfLength = 0;
-        int              from    = 0;
+        int          sLength = s.length(), utfLength = 0;
+        int          from    = 0;
         List<String> l       = new ArrayList();
         for (int i = 0;; i++) {
             if (i == sLength) {
@@ -9944,7 +9944,7 @@ class UnitCompiler {
         this.writeOpcode(locatable, Opcode.INVOKESPECIAL);
         this.writeConstantMethodrefInfo(
             iConstructor.getDeclaringIClass().getDescriptor(), // classFD
-            "<init>",                                         // methodName
+            "<init>",                                          // methodName
             iConstructor.getDescriptor()                       // methodMD
         );
     }
@@ -10422,7 +10422,7 @@ class UnitCompiler {
     private final CompilationUnit compilationUnit;
 
     private final IClassLoader  iClassLoader;
-    private List<ClassFile> generatedClassFiles;
+    private List<ClassFile>     generatedClassFiles;
 
     private boolean debugSource;
     private boolean debugLines;
