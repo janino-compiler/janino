@@ -62,7 +62,7 @@ class Enumerator {
 
     private final String name;
 
-    private static final Map<Class /*enumeratorClass*/, Map<String /*name*/, Enumerator> >
+    private static final Map<Class /*enumeratorClass*/, Map<String /*name*/, Enumerator>>
     INSTANCES = Collections.synchronizedMap(new HashMap());
 
     /** Initialize the enumerator to the given value. */

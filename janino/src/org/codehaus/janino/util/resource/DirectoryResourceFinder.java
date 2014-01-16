@@ -37,8 +37,8 @@ import java.util.*;
  */
 @SuppressWarnings({ "rawtypes", "unchecked" }) public
 class DirectoryResourceFinder extends FileResourceFinder {
-    private final File                                      directory;
-    private final Map<String /*directoryName*/, Set<File> > subdirectoryNameToFiles = new HashMap();
+    private final File                                     directory;
+    private final Map<String /*directoryName*/, Set<File>> subdirectoryNameToFiles = new HashMap();
 
     /** @param directory the directory to use as the search base */
     public

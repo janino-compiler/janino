@@ -68,7 +68,7 @@ class CodeContext {
      * the local variables allocated for a block. They are pushed and poped onto the list together
      * to make allocation of the next local variable slot easy.
      */
-    private final List<List<Java.LocalVariableSlot> > scopedVars = new ArrayList();
+    private final List<List<Java.LocalVariableSlot>> scopedVars = new ArrayList();
 
     private short                   nextLocalVariableSlot;
     private final List<Relocatable> relocatables = new ArrayList();

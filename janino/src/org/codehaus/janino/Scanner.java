@@ -621,7 +621,11 @@ class Scanner {
             if (v != null) {
                 for (;;) {
                     this.readNextChar();
-                    String v2 = (String) Scanner.JAVA_OPERATORS.get(v + (char) this.nextChar);
+                    String v2 = (String) (
+                        this.expectGreater
+                        ? Scanner.JAVA_OPERATORS_EXPECT_GREATER
+                        : Scanner.JAVA_OPERATORS
+                    ).get(v + (char) this.nextChar);
                     if (v2 == null) return new Token(Token.OPERATOR, v);
                     v = v2;
                 }
@@ -632,6 +636,16 @@ class Scanner {
             "Invalid character input \"" + (char) this.nextChar + "\" (character code " + this.nextChar + ")",
             this.location()
         );
+    }
+
+    public boolean
+    getExpectGreater() { return this.expectGreater; }
+    
+    public boolean
+    setExpectGreater(boolean value) {
+        boolean tmp = this.expectGreater;
+        this.expectGreater = value;
+        return tmp;
     }
 
     private Token
@@ -934,6 +948,12 @@ class Scanner {
     /** The optional JAVADOC comment preceding the {@link #nextToken}. */
     private String docComment;
 
+    /**
+     * Whether the scanner is in 'expect greater' mode: If so, it parses character sequences like ">>>=" as
+     * ">", ">", ">", "=".
+     */
+    private boolean expectGreater;
+
     private static final Map<String, String> JAVA_KEYWORDS = new HashMap();
     static {
         String[] ks = {
@@ -945,7 +965,8 @@ class Scanner {
         };
         for (int i = 0; i < ks.length; ++i) Scanner.JAVA_KEYWORDS.put(ks[i], ks[i]);
     }
-    private static final Map<String, String> JAVA_OPERATORS = new HashMap();
+    private static final Map<String, String> JAVA_OPERATORS                = new HashMap();
+    private static final Map<String, String> JAVA_OPERATORS_EXPECT_GREATER = new HashMap();
     static {
         String[] ops = {
             // Separators:
@@ -956,7 +977,10 @@ class Scanner {
             "+",  "-",  "*",  "/",  "&",  "|",  "^",  "%",  "<<",  ">>",  ">>>",
             "+=", "-=", "*=", "/=", "&=", "|=", "^=", "%=", "<<=", ">>=", ">>>=",
         };
-        for (int i = 0; i < ops.length; ++i) Scanner.JAVA_OPERATORS.put(ops[i], ops[i]);
+        for (String op : ops) {
+            Scanner.JAVA_OPERATORS.put(op, op);
+            if (!op.startsWith(">>")) Scanner.JAVA_OPERATORS_EXPECT_GREATER.put(op, op);
+        }
     }
 
     /**

@@ -113,7 +113,7 @@ class AutoIndentWriter extends FilterWriter {
 
     private void
     flushTabulatorBuffer() throws IOException {
-        List<List<StringBuilder> > lineGroups = new ArrayList();
+        List<List<StringBuilder>> lineGroups = new ArrayList();
         lineGroups.add(new ArrayList<StringBuilder>());
 
         for (StringBuilder line : this.tabulatorBuffer) {

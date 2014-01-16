@@ -117,7 +117,7 @@ class DirectoryIterator extends ProducerIterator/*<File>*/ {
         FilenameFilter directoryNameFilter,
         FilenameFilter fileNameFilter
     ) {
-        List<Iterator<File> > result = new ArrayList();
+        List<Iterator<File>> result = new ArrayList();
         for (File rootDirectory : rootDirectories) {
             result.add(new DirectoryIterator(rootDirectory, directoryNameFilter, fileNameFilter));
         }

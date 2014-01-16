@@ -1779,13 +1779,21 @@ class Parser {
     private TypeArgument[]
     parseTypeArgumentsOpt() throws CompileException, IOException {
         if (!this.peekRead("<")) return null;
-        List<TypeArgument> typeArguments = new ArrayList();
-        typeArguments.add(this.parseTypeArgument());
-        while (!this.peekRead(">")) {
-            this.read(",");
+
+        // Temporarily switch the scanner into 'expect greater' mode, where it doesn't recognize operators starting
+        // with '>>'.
+        boolean orig = this.scanner.setExpectGreater(true);
+        try {
+
+            List<TypeArgument> typeArguments = new ArrayList();
             typeArguments.add(this.parseTypeArgument());
+            while (this.read(new String[] { ">", "," }) == 1) {
+                typeArguments.add(this.parseTypeArgument());
+            }
+            return (TypeArgument[]) typeArguments.toArray(new TypeArgument[typeArguments.size()]);
+        } finally {
+            this.scanner.setExpectGreater(orig);
         }
-        return (TypeArgument[]) typeArguments.toArray(new TypeArgument[typeArguments.size()]);
     }
 
     /**
@@ -2040,47 +2048,64 @@ class Parser {
                 if ("<".equals(op) && a instanceof Java.AmbiguousName && this.peek("?")) {
                     String[] identifiers = ((Java.AmbiguousName) a).identifiers;
 
-                    // '<' TypeArgument [ { ',' TypeArgument } '>' ]
-                    List<TypeArgument> typeArguments = new ArrayList();
-                    typeArguments.add(this.parseTypeArgument());
-                    while (this.read(new String[] { ">", "," }) == 1) typeArguments.add(this.parseTypeArgument());
+                    // Temporarily switch the scanner into 'expect greater' mode, where it doesn't recognize operators
+                    // starting with '>>'.
+                    boolean orig = this.scanner.setExpectGreater(true);
+                    try {
 
-                    return new ReferenceType(
-                        this.location(),
-                        identifiers,
-                        (TypeArgument[]) typeArguments.toArray(new TypeArgument[typeArguments.size()])
-                    );
+                        // '<' TypeArgument [ { ',' TypeArgument } '>' ]
+                        List<TypeArgument> typeArguments = new ArrayList();
+                        typeArguments.add(this.parseTypeArgument());
+                        while (this.read(new String[] { ">", "," }) == 1) typeArguments.add(this.parseTypeArgument());
+    
+                        return new ReferenceType(
+                            this.location(),
+                            identifiers,
+                            (TypeArgument[]) typeArguments.toArray(new TypeArgument[typeArguments.size()])
+                        );
+                    } finally {
+                        this.scanner.setExpectGreater(orig);
+                    }
                 }
 
                 Atom rhs = this.parseShiftExpression();
 
-                if (
-                    "<".equals(op)
-                    && a instanceof Java.AmbiguousName
-                    && this.peek(new String[] { "<", ">", "," }) != -1
-                ) {
-                    String[] identifiers = ((Java.AmbiguousName) a).identifiers;
+                if ("<".equals(op) && a instanceof Java.AmbiguousName) {
 
-                    // '<' ShiftExpression [ TypeArguments ] { ',' TypeArgument } '>'
-                    this.parseTypeArgumentsOpt();
-                    Type t = rhs.toTypeOrCompileException();
+                    // Temporarily switch the scanner into 'expect greater' mode, where it doesn't recognize operators
+                    // starting with '>>'.
+                    boolean orig = this.scanner.setExpectGreater(true);
+                    try {
 
-                    TypeArgument ta;
-                    if (t instanceof ArrayType)     { ta = (ArrayType)     t; } else
-                    if (t instanceof ReferenceType) { ta = (ReferenceType) t; } else
-                    {
-                        throw this.compileException("'" + t + "' is not a valid type argument");
+                        if (this.peek(new String[] { "<", ">", "," }) != -1) {
+                            String[] identifiers = ((Java.AmbiguousName) a).identifiers;
+        
+                            // '<' ShiftExpression [ TypeArguments ] { ',' TypeArgument } '>'
+                            this.parseTypeArgumentsOpt();
+                            Type t = rhs.toTypeOrCompileException();
+        
+                            TypeArgument ta;
+                            if (t instanceof ArrayType)     { ta = (ArrayType)     t; } else
+                            if (t instanceof ReferenceType) { ta = (ReferenceType) t; } else
+                            {
+                                throw this.compileException("'" + t + "' is not a valid type argument");
+                            }
+        
+                            List<TypeArgument> typeArguments = new ArrayList();
+                            typeArguments.add(ta);
+                            while (this.read(new String[] { ">", "," }) == 1) {
+                                typeArguments.add(this.parseTypeArgument());
+                            }
+        
+                            return new ReferenceType(
+                                this.location(),
+                                identifiers,
+                                (TypeArgument[]) typeArguments.toArray(new TypeArgument[typeArguments.size()])
+                            );
+                        }
+                    } finally {
+                        this.scanner.setExpectGreater(orig);
                     }
-
-                    List<TypeArgument> typeArguments = new ArrayList();
-                    typeArguments.add(ta);
-                    while (this.read(new String[] { ">", "," }) == 1) typeArguments.add(this.parseTypeArgument());
-
-                    return new ReferenceType(
-                        this.location(),
-                        identifiers,
-                        (TypeArgument[]) typeArguments.toArray(new TypeArgument[typeArguments.size()])
-                    );
                 }
 
                 a = new BinaryOperation(
