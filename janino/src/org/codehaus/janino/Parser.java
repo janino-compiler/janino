@@ -1351,7 +1351,7 @@ class Parser {
             // 'for' '(' Modifiers Type VariableDeclarators
             // 'for' '(' [ Modifiers ] BasicType VariableDeclarators
             if (this.peek(new String[] {
-                "final", "byte", "short", "char", "int", "long", "float", "double", "boolean"
+                "final", "@", "byte", "short", "char", "int", "long", "float", "double", "boolean"
             }) != -1) {
                 Modifiers modifiers = this.parseModifiers();
                 Type      type      = this.parseType();
@@ -1398,7 +1398,7 @@ class Parser {
                     Rvalue expression = this.parseExpression().toRvalue();
                     this.read(")");
                     return new ForEachStatement(
-                        forLocation,             // location
+                        forLocation,          // location
                         new FormalParameter(  // currentElement
                             nameLocation,
                             false,
@@ -2419,7 +2419,7 @@ class Parser {
         }
 
         // BasicType
-        if (this.peek(new String[] { "boolean", "char", "byte", "short", "int", "long", "float", "double", }) != -1) {
+        if (this.peek(new String[] { "boolean", "char", "byte", "short", "int", "long", "float", "double" }) != -1) {
             Type res      = this.parseType();
             int  brackets = this.parseBracketsOpt();
             for (int i = 0; i < brackets; ++i) res = new ArrayType(res);
