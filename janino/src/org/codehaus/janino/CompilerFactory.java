@@ -39,6 +39,9 @@ class CompilerFactory extends AbstractCompilerFactory {
     getId() { return "org.codehaus.janino"; }
 
     @Override public String
+    toString() { return "janino"; }
+
+    @Override public String
     getImplementationVersion() { return CompilerFactory.class.getPackage().getImplementationVersion(); }
 
     @Override public IExpressionEvaluator

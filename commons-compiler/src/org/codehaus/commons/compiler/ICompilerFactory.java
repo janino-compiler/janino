@@ -36,10 +36,16 @@ public
 interface ICompilerFactory {
 
     /**
-     * @return A {@link String} that identifies the concrete implementation of this interface, e.g.
-     *         'org.codehaus.janino' or 'org.codehaus.commons.compiler.jdk'
+     * @return A {@link String} which uniquely identifies the concrete implementation of this interface, e.g.
+     *         "org.codehaus.janino" or "org.codehaus.commons.compiler.jdk"
      */
     String getId();
+    
+    /**
+     * @return A human-readable {@link String} that identifies the concrete implementation of this interface in a user
+     *         interface, e.g. "janino" or "jdk"
+     */
+    @Override String toString();
 
     /** @return The version of <i>this</i> implementation of the commons-compiler specification, or <code>null</code> */
     String getImplementationVersion();

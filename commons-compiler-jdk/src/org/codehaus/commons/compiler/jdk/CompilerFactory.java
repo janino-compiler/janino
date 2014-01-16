@@ -28,6 +28,7 @@ package org.codehaus.commons.compiler.jdk;
 
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+
 import org.codehaus.commons.compiler.*;
 
 /** The {@link CompilerFactory} implementation for {@code org.codehaus.commons.compiler.jdk}. */
@@ -36,6 +37,9 @@ class CompilerFactory extends AbstractCompilerFactory {
 
     @Override public String
     getId() { return "org.codehaus.commons.compiler.jdk"; }
+
+    @Override public String
+    toString() { return "jdk"; }
 
     @Override public String
     getImplementationVersion() { return CompilerFactory.class.getPackage().getImplementationVersion(); }

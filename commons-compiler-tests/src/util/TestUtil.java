@@ -37,7 +37,18 @@ import org.junit.runners.Parameterized.Parameters;
 public final
 class TestUtil {
 
-    /** @return The available compiler factories in a format suitable for JUnit {@link Parameters} */
+    /**
+     * Use this method as follows:
+     * <pre>
+     *     &#64;Parameters(name = "CompilerFactory={0}")
+     *     public static Collection&lt;Object[]>
+     *     <i>any-name</i>() throws Exception {
+     *         return TestUtil.getCompilerFactoriesForParameters();
+     *     }
+     * </pre>
+     *
+     * @return The available compiler factories in a format suitable for JUnit {@link Parameters}
+     */
     public static List<Object[]>
     getCompilerFactoriesForParameters() throws Exception {
         ArrayList<Object[]> f = new ArrayList<Object[]>();
