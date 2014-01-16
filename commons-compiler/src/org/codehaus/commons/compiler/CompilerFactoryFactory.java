@@ -80,8 +80,8 @@ class CompilerFactoryFactory {
      */
     public static ICompilerFactory[]
     getAllCompilerFactories() throws Exception {
-        ClassLoader                cl        = Thread.currentThread().getContextClassLoader();
-        List/*<IConpilerFactory>*/ factories = new ArrayList();
+        ClassLoader            cl        = Thread.currentThread().getContextClassLoader();
+        List<ICompilerFactory> factories = new ArrayList();
         for (Enumeration en = cl.getResources("org.codehaus.commons.compiler.properties"); en.hasMoreElements();) {
             URL url = (URL) en.nextElement();
 

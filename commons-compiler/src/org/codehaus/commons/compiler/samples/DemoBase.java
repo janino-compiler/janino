@@ -70,8 +70,8 @@ class DemoBase {
     /** @return {@code s}, split at the commas */
     public static String[]
     explode(String s) {
-        StringTokenizer  st = new StringTokenizer(s, ",");
-        List/*<String>*/ l  = new ArrayList();
+        StringTokenizer st = new StringTokenizer(s, ",");
+        List<String>    l  = new ArrayList();
         while (st.hasMoreTokens()) l.add(st.nextToken());
         return (String[]) l.toArray(new String[l.size()]);
     }
@@ -127,8 +127,8 @@ class DemoBase {
     public static Class[]
     stringToTypes(String s) {
 
-        StringTokenizer  st = new StringTokenizer(s, ",");
-        List/*<String>*/ l  = new ArrayList();
+        StringTokenizer st = new StringTokenizer(s, ",");
+        List<Class>     l  = new ArrayList();
         while (st.hasMoreTokens()) l.add(DemoBase.stringToType(st.nextToken()));
         Class[] res = new Class[l.size()];
         l.toArray(res);

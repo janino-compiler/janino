@@ -32,17 +32,17 @@ import java.util.*;
 /** Creates resources as byte arrays in a delegate {@link java.util.Map}. */
 @SuppressWarnings({ "rawtypes", "unchecked" }) public
 class MapResourceCreator implements ResourceCreator {
-    private final Map/*<String, byte[]>*/ map;
+    private final Map<String, byte[]> map;
 
     /** Auto-create the delegate {@link Map}. */
     public
     MapResourceCreator() { this.map = new HashMap(); }
 
     public
-    MapResourceCreator(Map/*<String, byte[]>*/ map) { this.map = map; }
+    MapResourceCreator(Map<String, byte[]> map) { this.map = map; }
 
     /** @return The {@link String}-to-{@code byte[]} map of the resources created */
-    public final Map/*<String, byte[]>*/
+    public final Map<String, byte[]>
     getMap() { return this.map; }
 
     @Override public final OutputStream

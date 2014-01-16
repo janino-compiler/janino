@@ -60,7 +60,7 @@ class DirectoryIterator extends ProducerIterator/*<File>*/ {
         final FilenameFilter fileNameFilter
     ) {
         super(new Producer() {
-            private final List/*<State>*/ stateStack = DirectoryIterator.newArrayList(new State(rootDirectory));
+            private final List<State> stateStack = DirectoryIterator.newArrayList(new State(rootDirectory));
 
             @Override public Object
             produce() {
@@ -86,8 +86,8 @@ class DirectoryIterator extends ProducerIterator/*<File>*/ {
                     if (entries == null) {
                         throw new JaninoRuntimeException("Directory \"" + dir + "\" could not be read");
                     }
-                    List/*<File>*/ directoryList = new ArrayList();
-                    List/*<File>*/ fileList      = new ArrayList();
+                    List<File> directoryList = new ArrayList();
+                    List<File> fileList      = new ArrayList();
                     for (File entry : entries) {
                         if (entry.isDirectory()) {
                             if (directoryNameFilter.accept(dir, entry.getName())) directoryList.add(entry);
@@ -99,8 +99,8 @@ class DirectoryIterator extends ProducerIterator/*<File>*/ {
                     this.directories = directoryList.iterator();
                     this.files       = fileList.iterator();
                 }
-                final Iterator/*<File>*/ directories;
-                final Iterator/*<File>*/ files;
+                final Iterator<File> directories;
+                final Iterator<File> files;
             }
         });
     }
@@ -117,7 +117,7 @@ class DirectoryIterator extends ProducerIterator/*<File>*/ {
         FilenameFilter directoryNameFilter,
         FilenameFilter fileNameFilter
     ) {
-        List/*<Iterator<File>>*/ result = new ArrayList();
+        List<Iterator<File> > result = new ArrayList();
         for (File rootDirectory : rootDirectories) {
             result.add(new DirectoryIterator(rootDirectory, directoryNameFilter, fileNameFilter));
         }

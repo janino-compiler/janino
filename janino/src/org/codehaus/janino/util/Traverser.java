@@ -143,15 +143,8 @@ class Traverser {
         // The optionalPackageDeclaration is considered an integral part of
         // the compilation unit and is thus not traversed.
 
-        for (Iterator/*<ImportDeclaration>*/ it = cu.importDeclarations.iterator(); it.hasNext();) {
-            ((Java.CompilationUnit.ImportDeclaration) it.next()).accept(this.cv);
-        }
-        for (
-            Iterator/*<PackageMemberTypeDeclaration>*/ it = cu.packageMemberTypeDeclarations.iterator();
-            it.hasNext();
-        ) {
-            ((Java.PackageMemberTypeDeclaration) it.next()).accept(this.cv);
-        }
+        for (Java.CompilationUnit.ImportDeclaration id : cu.importDeclarations) id.accept(this.cv);
+        for (Java.PackageMemberTypeDeclaration pmtd : cu.packageMemberTypeDeclarations) pmtd.accept(this.cv);
     }
 
     /** @see Traverser */
@@ -254,9 +247,7 @@ class Traverser {
     /** @see Traverser */
     public void
     traverseBlock(Java.Block b) {
-        for (Iterator/*<BlockStatement>*/ it = b.statements.iterator(); it.hasNext();) {
-            ((Java.Statement) it.next()).accept(this.cv);
-        }
+        for (Java.BlockStatement bs : b.statements) bs.accept(this.cv);
         this.traverseStatement(b);
     }
 
@@ -309,9 +300,7 @@ class Traverser {
     public void
     traverseTryStatement(Java.TryStatement ts) {
         ts.body.accept(this.cv);
-        for (Iterator/*<CatchClause>*/ it = ts.catchClauses.iterator(); it.hasNext();) {
-            ((Java.CatchClause) it.next()).body.accept(this.cv);
-        }
+        for (Java.CatchClause cc : ts.catchClauses) cc.body.accept(this.cv);
         if (ts.optionalFinally != null) ts.optionalFinally.accept(this.cv);
         this.traverseStatement(ts);
     }
@@ -320,16 +309,9 @@ class Traverser {
     public void
     traverseSwitchStatement(Java.SwitchStatement ss) {
         ss.condition.accept((Visitor.RvalueVisitor) this.cv);
-        for (Iterator/*<SwitchBlockStatementGroup>*/ it = ss.sbsgs.iterator(); it.hasNext();) {
-            Java.SwitchStatement.SwitchBlockStatementGroup sbsg = (
-                (Java.SwitchStatement.SwitchBlockStatementGroup) it.next()
-            );
-            for (Iterator/*<Rvalue>*/ it2 = sbsg.caseLabels.iterator(); it2.hasNext();) {
-                ((Java.Rvalue) it2.next()).accept((Visitor.RvalueVisitor) this.cv);
-            }
-            for (Iterator/*<Rvalue>*/ it2 = sbsg.blockStatements.iterator(); it2.hasNext();) {
-                ((Java.BlockStatement) it2.next()).accept(this.cv);
-            }
+        for (Java.SwitchStatement.SwitchBlockStatementGroup sbsg : ss.sbsgs) {
+            for (Java.Rvalue cl : sbsg.caseLabels) cl.accept((Visitor.RvalueVisitor) this.cv);
+            for (Java.BlockStatement bs : sbsg.blockStatements) bs.accept(this.cv);
             this.traverseLocated(sbsg);
         }
         this.traverseBreakableStatement(ss);

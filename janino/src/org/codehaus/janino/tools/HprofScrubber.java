@@ -73,9 +73,9 @@ class HprofScrubber {
 
         BufferedReader br = new BufferedReader(new FileReader(fileName));
         try {
-            Map/*<Integer number, String[] stackFrames>*/ traces  = new HashMap();
-            List/*<Site>*/                                sites   = new ArrayList();
-            List/*<Sample>*/                              samples = new ArrayList();
+            Map<Integer /*number*/, String[] /*stackFrames*/> traces  = new HashMap();
+            List<Site>                                        sites   = new ArrayList();
+            List<Sample>                                      samples = new ArrayList();
 
             String s = br.readLine();
             while (s != null) {
@@ -100,8 +100,8 @@ class HprofScrubber {
                     }
                 } else
                 if (s.startsWith("TRACE ") && s.endsWith(":")) {
-                    int              traceNumber = Integer.parseInt(s.substring(6, s.length() - 1));
-                    List/*<String>*/ l           = new ArrayList();
+                    int          traceNumber = Integer.parseInt(s.substring(6, s.length() - 1));
+                    List<String> l           = new ArrayList();
                     for (;;) {
                         s = br.readLine();
                         if (!s.startsWith("\t")) break;
@@ -109,7 +109,7 @@ class HprofScrubber {
                     }
                     traces.put(
                         new Integer(traceNumber),
-                        l.toArray(new String[l.size()])
+                        (String[]) l.toArray(new String[l.size()])
                     );
                 } else
                 if (s.startsWith("CPU SAMPLES BEGIN")) {
@@ -141,7 +141,7 @@ class HprofScrubber {
     }
 
     private static void
-    dumpSites(Site[] ss, Map/*<Integer, String[]>*/ traces) {
+    dumpSites(Site[] ss, Map<Integer, String[]> traces) {
         Arrays.sort(ss, new Comparator() {
 
             @Override public int
@@ -201,7 +201,7 @@ class HprofScrubber {
     }
 
     private static void
-    dumpSamples(Sample[] ss, Map/*<Integer, String[]>*/ traces) {
+    dumpSamples(Sample[] ss, Map<Integer, String[]> traces) {
         int totalCount = 0;
         for (Sample s : ss) totalCount += s.count;
 

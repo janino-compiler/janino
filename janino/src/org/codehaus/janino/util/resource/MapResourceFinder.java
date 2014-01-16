@@ -35,11 +35,11 @@ import java.util.*;
  */
 @SuppressWarnings("rawtypes") public
 class MapResourceFinder extends ResourceFinder {
-    private final Map/*<String, byte[]>*/ map;
-    private long                          lastModified;
+    private final Map<String, byte[]> map;
+    private long                      lastModified;
 
     public
-    MapResourceFinder(Map/*<String, byte[]>*/ map) { this.map = map; }
+    MapResourceFinder(Map<String, byte[]> map) { this.map = map; }
 
     /** @param lastModified The return value of {@link Resource#lastModified()} for the next resources found */
     public final void

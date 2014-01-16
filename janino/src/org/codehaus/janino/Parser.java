@@ -1792,6 +1792,7 @@ class Parser {
      * <pre>
      *   TypeArgument :=
      *     ReferenceType { '[' ']' }    &lt;= The optional brackets are mising in JLS7, section 18!?
+     *     | BasicType '[' ']' { '[' ']' }
      *     | '?' extends ReferenceType
      *     | '?' super ReferenceType
      * </pre>
@@ -1806,14 +1807,12 @@ class Parser {
             );
         }
 
-        ReferenceType rt = this.parseReferenceType();
+        Type t = this.parseType();
 
         int i = this.parseBracketsOpt();
-        if (i == 0) return rt;
-
-        ArrayType at = new ArrayType(rt);
-        for (i--; i > 0; i--) at = new ArrayType(at);
-        return at;
+        for (; i > 0; i--) t = new ArrayType(t);
+        if (!(t instanceof TypeArgument)) throw this.compileException("'" + t + "' is not a valid type argument");
+        return (TypeArgument) t;
     }
 
     /**

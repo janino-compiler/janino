@@ -42,7 +42,7 @@ class LazyMultiResourceFinder extends MultiResourceFinder {
 
     /** @param resourceFinders delegate {@link ResourceFinder}s */
     public
-    LazyMultiResourceFinder(Iterator/*<ResourceFinder>*/ resourceFinders) {
+    LazyMultiResourceFinder(Iterator<ResourceFinder> resourceFinders) {
         super(new IteratorCollection(resourceFinders));
     }
 }

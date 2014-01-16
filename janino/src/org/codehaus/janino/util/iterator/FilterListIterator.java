@@ -48,7 +48,7 @@ class FilterListIterator/*<T>*/ implements ListIterator/*<T>*/ {
     hasNext() { return this.delegate.hasNext(); }
 
     /** Calls {@link #delegate}.{@link java.util.ListIterator#next()} */
-    @Override public Object/*<T>*/
+    @Override public Object/*T*/
     next() { return this.delegate.next(); }
 
     /** Calls {@link #delegate}.{@link java.util.ListIterator#hasPrevious()} */
@@ -56,7 +56,7 @@ class FilterListIterator/*<T>*/ implements ListIterator/*<T>*/ {
     hasPrevious() { return this.delegate.hasPrevious(); }
 
     /** Calls {@link #delegate}.{@link java.util.ListIterator#previous()} */
-    @Override public Object/*<T>*/
+    @Override public Object/*T*/
     previous() { return this.delegate.previous(); }
 
     /** Calls {@link #delegate}.{@link java.util.ListIterator#nextIndex()} */

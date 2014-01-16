@@ -2813,7 +2813,7 @@ class Java {
         @Override public String
         toString() {
             String s = join(this.identifiers, ".");
-            if (this.optionalTypeArguments != null) s += '<' + join(this.optionalTypeArguments, ", ") + '>';
+            if (this.optionalTypeArguments != null) s += '<' + join(this.optionalTypeArguments, ", ") + " >";
             return s;
         }
 
@@ -4562,8 +4562,8 @@ class Java {
         @Override public String
         toString() {
             return (
-                this.bounds == BOUNDS_EXTENDS ? "? extends " + this.referenceType : 
-                this.bounds == BOUNDS_SUPER   ? "? super "   + this.referenceType : 
+                this.bounds == BOUNDS_EXTENDS ? "? extends " + this.referenceType :
+                this.bounds == BOUNDS_SUPER   ? "? super "   + this.referenceType :
                 this.referenceType.toString()
             );
         }

@@ -36,8 +36,8 @@ class EnumerationIterator/*<T>*/ implements Iterator/*<T>*/ {
 
     public EnumerationIterator(Enumeration/*<T>*/ e) { this.e = e; }
 
-    @Override public boolean       hasNext() { return this.e.hasMoreElements(); }
-    @Override public Object/*<T>*/ next()    { return this.e.nextElement(); }
+    @Override public boolean     hasNext() { return this.e.hasMoreElements(); }
+    @Override public Object/*T*/ next()    { return this.e.nextElement(); }
 
     /**
      * Since {@link Enumeration}s don't support element removal, this method always throws

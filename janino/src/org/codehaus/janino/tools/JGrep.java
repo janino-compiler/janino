@@ -156,7 +156,7 @@ class JGrep {
             verbose
         );
 
-        List/*<MethodInvocationTarget>*/ mits = new ArrayList();
+        List<MethodInvocationTarget> mits = new ArrayList();
         for (; idx < args.length; ++idx) {
             String arg = args[idx];
             if ("-method-invocation".equals(arg)) {
@@ -285,7 +285,7 @@ class JGrep {
             String s = JGrep.readIdentifierPattern(parser);
             if (parser.peekRead("(")) {
                 mit.methodNamePattern = s;
-                List/*<String>*/ l = new ArrayList();
+                List<String> l = new ArrayList();
                 if (!parser.peekRead(")")) {
                     for (;;) {
                         l.add(JGrep.readIdentifierPattern(parser));
@@ -489,10 +489,10 @@ class JGrep {
 
     private void
     jGrep(
-        File[]                           rootDirectories,
-        final StringPattern[]            directoryNamePatterns,
-        final StringPattern[]            fileNamePatterns,
-        List/*<MethodInvocationTarget>*/ methodInvocationTargets
+        File[]                       rootDirectories,
+        final StringPattern[]        directoryNamePatterns,
+        final StringPattern[]        fileNamePatterns,
+        List<MethodInvocationTarget> methodInvocationTargets
     ) throws CompileException, IOException {
         this.benchmark.report("Root dirs",               rootDirectories);
         this.benchmark.report("Directory name patterns", directoryNamePatterns);
@@ -512,7 +512,7 @@ class JGrep {
     }
 
     private  void
-    jGrep(Iterator/*<File>*/ sourceFilesIterator, final List/*<MethodInvocationTarget>*/ methodInvocationTargets)
+    jGrep(Iterator<File> sourceFilesIterator, final List<MethodInvocationTarget> methodInvocationTargets)
     throws CompileException, IOException {
 
         // Parse the given source files.
@@ -589,11 +589,7 @@ class JGrep {
 
                         private void
                         match(Java.Invocation invocation, IClass.IMethod method) throws CompileException {
-                            for (
-                                Iterator/*<MethodInvocationTarget>*/ it2 = methodInvocationTargets.iterator();
-                                it2.hasNext();
-                            ) {
-                                MethodInvocationTarget mit = (MethodInvocationTarget) it2.next();
+                            for (MethodInvocationTarget mit : methodInvocationTargets) {
                                 mit.apply(unitCompiler, invocation, method);
                             }
                         }

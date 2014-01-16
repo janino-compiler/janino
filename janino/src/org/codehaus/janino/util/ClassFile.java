@@ -116,7 +116,7 @@ class ClassFile {
         Short ni = (Short) this.constantPoolMap.get(new ConstantUtf8Info("InnerClasses"));
         if (ni == null) return null;
 
-        for (Iterator/*<AttributeInfo>*/ it = this.attributes.iterator(); it.hasNext();) {
+        for (Iterator<AttributeInfo> it = this.attributes.iterator(); it.hasNext();) {
             AttributeInfo ai = (AttributeInfo) it.next();
             if (ai.nameIndex == ni.shortValue() && ai instanceof InnerClassesAttribute) {
                 return (InnerClassesAttribute) ai;
@@ -419,7 +419,7 @@ class ClassFile {
         String         fieldTypeFd,
         Object         optionalConstantValue
     ) {
-        List/*<AttributeInfo>*/ attributes = new ArrayList();
+        List<AttributeInfo> attributes = new ArrayList();
         if (optionalConstantValue != null) {
             attributes.add(new ConstantValueAttribute(
                 this.addConstantUtf8Info("ConstantValue"),
@@ -507,15 +507,15 @@ class ClassFile {
     }
 
     /** u2 fields_count, fields[fields_count] */
-    private List/*<FieldInfo>*/
+    private List<FieldInfo>
     loadFields(DataInputStream dis) throws IOException {
-        short               fieldsCount = dis.readShort();
-        List/*<FieldInfo>*/ fields      = new ArrayList(fieldsCount);
+        short           fieldsCount = dis.readShort();
+        List<FieldInfo> fields      = new ArrayList(fieldsCount);
         for (int i = 0; i < fieldsCount; ++i) {
-            short                   mods      = dis.readShort();
-            short                   nameIndex = dis.readShort();
-            short                   descIndex = dis.readShort();
-            List/*<AttributeInfo>*/ atts      = this.loadAttributes(dis);
+            short               mods      = dis.readShort();
+            short               nameIndex = dis.readShort();
+            short               descIndex = dis.readShort();
+            List<AttributeInfo> atts      = this.loadAttributes(dis);
             fields.add(new FieldInfo(
                 buildModsAndAnns(mods, atts),
                 nameIndex,
@@ -539,19 +539,19 @@ class ClassFile {
     }
 
     /** u2 methods_count, methods[methods_count] */
-    private List/*<MethodInfo>*/
+    private List<MethodInfo>
     loadMethods(DataInputStream dis) throws IOException {
-        short                methodsCount = dis.readShort();
-        List/*<MethodInfo>*/ methods      = new ArrayList(methodsCount);
+        short            methodsCount = dis.readShort();
+        List<MethodInfo> methods      = new ArrayList(methodsCount);
         for (int i = 0; i < methodsCount; ++i) methods.add(this.loadMethodInfo(dis));
         return methods;
     }
 
     /** u2 attributes_count, attributes[attributes_count] */
-    private List/*<AttributeInfo>*/
+    private List<AttributeInfo>
     loadAttributes(DataInputStream dis) throws IOException {
-        short                   attributesCount = dis.readShort();
-        List/*<AttributeInfo>*/ attributes      = new ArrayList(attributesCount);
+        short               attributesCount = dis.readShort();
+        List<AttributeInfo> attributes      = new ArrayList(attributesCount);
         for (int i = 0; i < attributesCount; ++i) attributes.add(this.loadAttribute(dis));
         return attributes;
     }
@@ -586,7 +586,7 @@ class ClassFile {
 
     /** u2 constant_pool_count, constant_pool[constant_pool_count - 1] */
     private static void
-    storeConstantPool(DataOutputStream dos, List/*<ConstantPoolInfo>*/ constantPool) throws IOException {
+    storeConstantPool(DataOutputStream dos, List<ConstantPoolInfo> constantPool) throws IOException {
         dos.writeShort(constantPool.size());
         for (int i = 1; i < constantPool.size(); ++i) {
             ConstantPoolInfo cpi = (ConstantPoolInfo) constantPool.get(i);
@@ -604,21 +604,21 @@ class ClassFile {
 
     /** u2 fields_count, fields[fields_count] */
     private static void
-    storeFields(DataOutputStream dos, List/*<FieldInfo>*/ fieldInfos) throws IOException {
+    storeFields(DataOutputStream dos, List<FieldInfo> fieldInfos) throws IOException {
         dos.writeShort(fieldInfos.size());
         for (int i = 0; i < fieldInfos.size(); ++i) ((FieldInfo) fieldInfos.get(i)).store(dos);
     }
 
     /** u2 methods_count, methods[methods_count] */
     private static void
-    storeMethods(DataOutputStream dos, List/*<MethodInfo>*/ methodInfos) throws IOException {
+    storeMethods(DataOutputStream dos, List<MethodInfo> methodInfos) throws IOException {
         dos.writeShort(methodInfos.size());
         for (int i = 0; i < methodInfos.size(); ++i) ((MethodInfo) methodInfos.get(i)).store(dos);
     }
 
     /** u2 attributes_count, attributes[attributes_count] */
     private static void
-    storeAttributes(DataOutputStream dos, List/*<AttributeInfo>*/ attributeInfos, Java.Annotation[] annotations)
+    storeAttributes(DataOutputStream dos, List<AttributeInfo> attributeInfos, Java.Annotation[] annotations)
     throws IOException {
         //TODO: write annotation attributes
         dos.writeShort(attributeInfos.size());
@@ -686,9 +686,9 @@ class ClassFile {
     public static final short MINOR_VERSION_JDK_1_5 = 0;
     // CHECKSTYLE JavadocVariable:ON
 
-    private short                            majorVersion;
-    private short                            minorVersion;
-    private final List/*<ConstantPoolInfo>*/ constantPool;
+    private short                        majorVersion;
+    private short                        minorVersion;
+    private final List<ConstantPoolInfo> constantPool;
 
     /**
      * The access flags of the class.
@@ -713,16 +713,16 @@ class ClassFile {
     public final short[] interfaces;
 
     /** The {@link FieldInfo}s of the field members of this class or interface. */
-    public final List/*<FieldInfo>*/ fieldInfos;
+    public final List<FieldInfo> fieldInfos;
 
     /** The {@link MethodInfo}s of the methods of this class or interface. */
-    public final List/*<MethodInfo>*/ methodInfos;
+    public final List<MethodInfo> methodInfos;
 
     /** The {@link AttributeInfo}s of the attributes of this class or interface. */
-    private final List/*<AttributeInfo>*/ attributes;
+    private final List<AttributeInfo> attributes;
 
     // Convenience.
-    private final Map/*<ConstantPoolInfo, Short>*/ constantPoolMap;
+    private final Map<ConstantPoolInfo, Short> constantPoolMap;
 
     /** Base for various the constant pool table entry types. */
     public abstract static
@@ -1206,18 +1206,18 @@ class ClassFile {
     public
     class MethodInfo {
 
-        private final Java.Modifiers          modifiers;
-        private final short                   nameIndex;
-        private final short                   descriptorIndex;
-        private final List/*<AttributeInfo>*/ attributes;
+        private final Java.Modifiers      modifiers;
+        private final short               nameIndex;
+        private final short               descriptorIndex;
+        private final List<AttributeInfo> attributes;
 
         /** Initializes the "method_info" structure. */
         public
         MethodInfo(
-            Java.Modifiers          modifiers,
-            short                   nameIndex,
-            short                   descriptorIndex,
-            List/*<AttributeInfo>*/ attributes
+            Java.Modifiers      modifiers,
+            short               nameIndex,
+            short               descriptorIndex,
+            List<AttributeInfo> attributes
         ) {
             this.modifiers       = modifiers;
             this.nameIndex       = nameIndex;
@@ -1269,10 +1269,10 @@ class ClassFile {
 
     private MethodInfo
     loadMethodInfo(DataInputStream dis) throws IOException {
-        short                   mods       = dis.readShort();
-        short                   nameIndex  = dis.readShort();
-        short                   descIndex  = dis.readShort();
-        List/*<AttributeInfo>*/ attributes = this.loadAttributes(dis);
+        short               mods       = dis.readShort();
+        short               nameIndex  = dis.readShort();
+        short               descIndex  = dis.readShort();
+        List<AttributeInfo> attributes = this.loadAttributes(dis);
         return new MethodInfo(
             ClassFile.buildModsAndAnns(mods, attributes),
             nameIndex,
@@ -1287,10 +1287,10 @@ class ClassFile {
 
         public
         FieldInfo(
-            Java.Modifiers          modifiers,
-            short                   nameIndex,
-            short                   descriptorIndex,
-            List/*<AttributeInfo>*/ attributes
+            Java.Modifiers      modifiers,
+            short               nameIndex,
+            short               descriptorIndex,
+            List<AttributeInfo> attributes
         ) {
             this.modifiers       = modifiers;
             this.nameIndex       = nameIndex;
@@ -1335,10 +1335,10 @@ class ClassFile {
             );
         }
 
-        private final Java.Modifiers          modifiers;
-        private final short                   nameIndex;
-        private final short                   descriptorIndex;
-        private final List/*<AttributeInfo>*/ attributes;
+        private final Java.Modifiers      modifiers;
+        private final short               nameIndex;
+        private final short               descriptorIndex;
+        private final List<AttributeInfo> attributes;
     }
 
     /** Representation of a class file attribute (see JVMS7 4.7). */
@@ -1505,7 +1505,7 @@ class ClassFile {
     public static
     class InnerClassesAttribute extends AttributeInfo {
 
-        private final List/*<InnerClassesAttribute.Entry>*/ entries;
+        private final List<InnerClassesAttribute.Entry> entries;
 
         InnerClassesAttribute(short attributeNameIndex) {
             super(attributeNameIndex);
@@ -1520,7 +1520,7 @@ class ClassFile {
          * @return A {@code List<InnerClassesAttribute.Entry>}: The {@link Entry}s contained in this {@link
          *         InnerClassesAttribute}, see JVMS7 4.7.6
          */
-        public List/*<InnerClassesAttribute.Entry>*/
+        public List<InnerClassesAttribute.Entry>
         getEntries() { return this.entries; }
 
         private static AttributeInfo
@@ -1543,8 +1543,7 @@ class ClassFile {
         storeBody(DataOutputStream dos) throws IOException {
 
             dos.writeShort(this.entries.size());
-            for (Iterator/*<InnerClassesAttribute.Entry>*/ it = this.entries.iterator(); it.hasNext();) {
-                Entry e = (Entry) it.next();
+            for (InnerClassesAttribute.Entry e : this.entries) {
                 dos.writeShort(e.innerClassInfoIndex);
                 dos.writeShort(e.outerClassInfoIndex);
                 dos.writeShort(e.innerNameIndex);

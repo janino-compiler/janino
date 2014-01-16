@@ -62,7 +62,7 @@ class Enumerator {
 
     private final String name;
 
-    private static final Map/*<Class enumeratorClass, Map<String name, Enumerator>>*/
+    private static final Map<Class /*enumeratorClass*/, Map<String /*name*/, Enumerator> >
     INSTANCES = Collections.synchronizedMap(new HashMap());
 
     /** Initialize the enumerator to the given value. */
@@ -71,7 +71,7 @@ class Enumerator {
         if (name == null) throw new NullPointerException();
         this.name = name;
 
-        Enumerator.getInstances(this.getClass()).put(name, this);
+        ((Map<String /*name*/, Enumerator>) Enumerator.getInstances(this.getClass())).put(name, this);
     }
 
     /** Equality is reference identity. */
@@ -83,9 +83,9 @@ class Enumerator {
     hashCode() { return super.hashCode(); }
 
     /** Returns a mapping of name to Enumerator for the given enumeratorClass. */
-    static Map/*<Map<String name, Enumerator>>*/
+    static Map<String /*name*/, Enumerator>
     getInstances(Class enumeratorClass) {
-        Map/*<Map<String name, Enumerator>>*/ m = (Map) Enumerator.INSTANCES.get(enumeratorClass);
+        Map<String /*name*/, Enumerator> m = (Map) Enumerator.INSTANCES.get(enumeratorClass);
         if (m != null) return m;
 
         // The map need not be synchronized because it is modified only during initialization
