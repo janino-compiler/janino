@@ -36,7 +36,7 @@ import java.util.*;
  * {@link IteratorCollection} will iterate over its delegate only once.
  */
 @SuppressWarnings({ "rawtypes", "unchecked" }) public
-class IteratorCollection/*<T>*/ extends AbstractCollection/*<T>*/ {
+class IteratorCollection<T> extends AbstractCollection/*<T>*/ {
 
     /** The delegate. */
     private final Iterator/*<T>*/ iterator;
@@ -47,10 +47,11 @@ class IteratorCollection/*<T>*/ extends AbstractCollection/*<T>*/ {
     public
     IteratorCollection(Iterator iterator) { this.iterator = iterator; }
 
-    @Override public Iterator/*<T>*/
+    @Override public Iterator<T>
     iterator() {
         return new Iterator/*<T>*/() {
-            private Iterator/*<T>*/ elementsIterator = IteratorCollection.this.elements.iterator();
+
+            private Iterator<T> elementsIterator = IteratorCollection.this.elements.iterator();
 
             @Override public Object
             next() {

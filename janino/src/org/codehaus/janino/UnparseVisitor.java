@@ -255,7 +255,7 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor {
     }
 
     private void
-    unparseStatements(List<Java.BlockStatement> statements) {
+    unparseStatements(List<? extends Java.BlockStatement> statements) {
 
         int state = -1;
         for (Java.BlockStatement bs : statements) {

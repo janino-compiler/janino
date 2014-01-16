@@ -29,11 +29,11 @@ package org.codehaus.janino.util.iterator;
 import java.util.*;
 
 /** An {@link java.util.Iterator} that transforms its elements on-the-fly. */
-@SuppressWarnings("rawtypes") public abstract
-class TransformingIterator/*<T1, T2>*/ extends FilterIterator/*<T>*/ {
+@SuppressWarnings("unused") public abstract
+class TransformingIterator<T1, T2> extends FilterIterator<T1> {
 
     public
-    TransformingIterator(Iterator/*<T1>*/ delegate) { super(delegate); }
+    TransformingIterator(Iterator<T1> delegate) { super(delegate); }
 
     @Override public final Object/*T2*/
     next() { return this.transform(this.delegate.next()); }

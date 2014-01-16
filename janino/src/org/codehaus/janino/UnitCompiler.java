@@ -994,7 +994,7 @@ class UnitCompiler {
     }
 
     private boolean
-    compileStatements(List<BlockStatement> statements) throws CompileException {
+    compileStatements(List<? extends BlockStatement> statements) throws CompileException {
         boolean previousStatementCanCompleteNormally = true;
         for (int i = 0; i < statements.size(); ++i) {
             BlockStatement bs = (BlockStatement) statements.get(i);
@@ -1804,8 +1804,8 @@ class UnitCompiler {
                 s instanceof BlockStatement
                 && (es instanceof Block || es instanceof FunctionDeclarator)
             ) {
-                BlockStatement       bs         = (BlockStatement) s;
-                List<BlockStatement> statements = (
+                BlockStatement                 bs         = (BlockStatement) s;
+                List<? extends BlockStatement> statements = (
                     es instanceof BlockStatement
                     ? ((Block) es).statements
                     : ((FunctionDeclarator) es).optionalStatements
@@ -6519,7 +6519,8 @@ class UnitCompiler {
                             for (s = scope; s instanceof BlockStatement; s = s.getEnclosingScope()) {
                                 BlockStatement       bs = (BlockStatement) s;
                                 Scope                es = bs.getEnclosingScope();
-                                List<BlockStatement> statements;
+
+                                List<? extends BlockStatement> statements;
                                 if (es instanceof Block) {
                                     statements = ((Block) es).statements;
                                 } else
@@ -10434,7 +10435,8 @@ class UnitCompiler {
     private boolean debugLines;
     private boolean debugVars;
 
-    private final Map/*<String staticMemberName, List <IField+IMethod+IClass>>*/ singleStaticImports = new HashMap();
+    private final Map<String /*staticMemberName*/, List<Object /*IField+IMethod+IClass*/>>
+    singleStaticImports = new HashMap();
 
     private final Collection<IClass> staticImportsOnDemand = new ArrayList();
 }

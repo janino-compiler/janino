@@ -542,7 +542,7 @@ class UnparseTests {
              */
             private Locatable[]
             listSyntaxElements(CompilationUnit cu) {
-                final List/*<Locatable>*/ locatables = new ArrayList();
+                final List<Locatable> locatables = new ArrayList();
                 new Traverser() {
 
                     // Two implementations of "Locatable": "Located" and "AbstractTypeDeclaration".

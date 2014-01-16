@@ -56,7 +56,7 @@ class MultiDimensionalIterator implements Iterator {
     }
 
     /** @throws UniterableElementException */
-    @Override public boolean
+    @SuppressWarnings("unchecked") @Override public boolean
     hasNext() {
 
         // Unroll this check because it is so performance critical:
@@ -82,7 +82,7 @@ class MultiDimensionalIterator implements Iterator {
                     this.nest[++i] = ((Collection) o).iterator();
                 } else
                 if (o instanceof Enumeration) {
-                    this.nest[++i] = new EnumerationIterator((Enumeration) o);
+                    this.nest[++i] = new EnumerationIterator<Object>((Enumeration) o);
                 } else
                 {
                     throw new UniterableElementException();

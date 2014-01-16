@@ -1419,18 +1419,18 @@ class Java {
         public final Type[] thrownExceptions;
 
         /** The statements that comprise the function; {@code null} for abstract method declarations. */
-        public final List<BlockStatement> optionalStatements;
+        public final List<? extends BlockStatement> optionalStatements;
 
         public
         FunctionDeclarator(
-            Location             location,
-            String               optionalDocComment,
-            Modifiers            modifiers,
-            Type                 type,
-            String               name,
-            FormalParameters     parameters,
-            Type[]               thrownExceptions,
-            List<BlockStatement> optionalStatements
+            Location                       location,
+            String                         optionalDocComment,
+            Modifiers                      modifiers,
+            Type                           type,
+            String                         name,
+            FormalParameters               parameters,
+            Type[]                         thrownExceptions,
+            List<? extends BlockStatement> optionalStatements
         ) {
             super(location, Mod.isStatic(modifiers.flags));
             this.optionalDocComment = optionalDocComment;
@@ -1628,14 +1628,14 @@ class Java {
     class MethodDeclarator extends FunctionDeclarator {
         public
         MethodDeclarator(
-            Location             location,
-            String               optionalDocComment,
-            Java.Modifiers       modifiers,
-            Type                 type,
-            String               name,
-            FormalParameters     parameters,
-            Type[]               thrownExceptions,
-            List<BlockStatement> optionalStatements
+            Location                       location,
+            String                         optionalDocComment,
+            Java.Modifiers                 modifiers,
+            Type                           type,
+            String                         name,
+            FormalParameters               parameters,
+            Type[]                         thrownExceptions,
+            List<? extends BlockStatement> optionalStatements
         ) {
             super(
                 location,           // location
@@ -4556,7 +4556,7 @@ class Java {
             return (
                 this.bounds == BOUNDS_EXTENDS ? "? extends " + this.referenceType :
                 this.bounds == BOUNDS_SUPER   ? "? super "   + this.referenceType :
-                this.referenceType.toString()
+                "?"
             );
         }
     }

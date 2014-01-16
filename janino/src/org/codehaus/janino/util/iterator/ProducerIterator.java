@@ -38,7 +38,7 @@ import org.codehaus.janino.util.Producer;
  * @see org.codehaus.janino.util.Producer
  */
 @SuppressWarnings("rawtypes") public
-class ProducerIterator/*<T>*/ implements Iterator/*<T>*/ {
+class ProducerIterator<T> implements Iterator/*<T>*/ {
 
     private final Producer/*<T>*/ producer;
 
@@ -47,7 +47,7 @@ class ProducerIterator/*<T>*/ implements Iterator/*<T>*/ {
     private Object/*<T>*/       nextElement = UNKNOWN;
 
     public
-    ProducerIterator(Producer/*<T>*/ producer) { this.producer = producer; }
+    ProducerIterator(Producer<T> producer) { this.producer = producer; }
 
     @Override public boolean
     hasNext() {

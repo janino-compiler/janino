@@ -52,7 +52,7 @@ import org.codehaus.janino.util.Producer;
  * </ul>
  */
 @SuppressWarnings({ "rawtypes", "unchecked" }) public
-class DirectoryIterator extends ProducerIterator/*<File>*/ {
+class DirectoryIterator extends ProducerIterator<File> {
     public
     DirectoryIterator(
         final File           rootDirectory,
@@ -111,7 +111,7 @@ class DirectoryIterator extends ProducerIterator/*<File>*/ {
      *
      * @see #DirectoryIterator(File, FilenameFilter, FilenameFilter)
      */
-    public static Iterator/*<File>*/
+    public static Iterator<File>
     traverseDirectories(
         File[]         rootDirectories,
         FilenameFilter directoryNameFilter,

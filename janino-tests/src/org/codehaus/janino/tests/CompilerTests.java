@@ -36,7 +36,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 
 import org.codehaus.commons.compiler.CompileException;
@@ -110,7 +109,7 @@ class CompilerTests {
             });
             c.compile(sourceFiles);
         }
-        Map/*<String, byte[]>*/ classFileMap1 = classFileResources1.getMap();
+        Map<String, byte[]> classFileMap1 = classFileResources1.getMap();
         b.endReporting("Generated " + classFileMap1.size() + " class files.");
 
         b.beginReporting(
@@ -179,8 +178,8 @@ class CompilerTests {
                 return object.getClass().getDeclaredMethod(methodName, parameterTypes).invoke(object, arguments);
             }
         }
-        Loader                  l             = new Loader();
-        Map/*<String, byte[]>*/ classFileMap3 = new HashMap();
+        Loader              l             = new Loader();
+        Map<String, byte[]> classFileMap3 = new HashMap();
         {
             Object sf = l.instantiate(MultiResourceFinder.class, new Class[] { Collection.class }, new Object[] {
                 Arrays.asList(new Object[] {
@@ -232,15 +231,14 @@ class CompilerTests {
         // Compare "classFileMap1" and "classFileMap3". We cannot use "Map.equals()" because we
         // want to check byte-by-byte identity rather than reference identity.
         assertEquals(classFileMap1.size(), classFileMap3.size());
-        for (Iterator/*<Entry<String, byte[]>>*/ it = classFileMap1.entrySet().iterator(); it.hasNext();) {
-            Map.Entry/*<String, byte[]>*/ me = (Map.Entry) it.next();
+        for (Map.Entry<String, byte[]> me : classFileMap1.entrySet()) {
             assertTrue(Arrays.equals((byte[]) me.getValue(), (byte[]) classFileMap3.get(me.getKey())));
         }
     }
 
     @Test public void
     testCompileErrors() throws Exception {
-        Map/*<String, String>*/ sources = new HashMap();
+        Map<String, byte[]> sources = new HashMap();
         sources.put("pkg/A.java", ( // Class A uses class B, C, D.
             ""
             + "package pkg;\n"
@@ -272,8 +270,8 @@ class CompilerTests {
         ).getBytes());
         ResourceFinder sourceFinder = new MapResourceFinder(sources);
 
-        Map/*<String, byte[]>*/ classes  = new HashMap();
-        Compiler                compiler = new Compiler(
+        Map<String, byte[]> classes  = new HashMap();
+        Compiler            compiler = new Compiler(
             sourceFinder,                                                  // sourceFinder
             new ClassLoaderIClassLoader(this.getClass().getClassLoader()), // iClassLoader
             ResourceFinder.EMPTY_RESOURCE_FINDER,                          // classFileFinder
@@ -302,14 +300,7 @@ class CompilerTests {
      * mysterious {@link CompileException}s like '"{" expected at start of class body'.
      */
     @Test public void
-    testGenerics() {
-        try {
-            new SimpleCompiler().cook("class Foo<K, V> {}");
-        } catch (CompileException ce) {
-            if (ce.getMessage().contains("does not support generics")) return;
-            fail("Unexpected CompileException message '" + ce.getMessage() + "'");
-        }
-        fail("Usage of generics should cause a CompileException");
-
+    testGenerics() throws CompileException {
+        new SimpleCompiler().cook("class Foo<K, V> {}");
     }
 }

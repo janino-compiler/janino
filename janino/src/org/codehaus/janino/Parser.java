@@ -415,7 +415,7 @@ class Parser {
     /**
      * <pre>
      *   ClassDeclarationRest :=
-     *        Identifier
+     *        Identifier [ typeParameters ]
      *        [ 'extends' ReferenceType ]
      *        [ 'implements' ReferenceTypeList ]
      *        ClassBody
@@ -431,7 +431,7 @@ class Parser {
         String   className = this.readIdentifier();
         this.verifyIdentifierIsConventionalClassOrInterfaceName(className, location);
 
-        if (this.peek("<")) throw this.compileException("JANINO does not support generics");
+        this.parseTypeParametersOpt();
 
         ReferenceType optionalExtendedType = null;
         if (this.peekRead("extends")) {
@@ -642,7 +642,7 @@ class Parser {
     /**
      * <pre>
      *   InterfaceDeclarationRest :=
-     *     Identifier
+     *     Identifier [ typeParameters ]
      *     [ 'extends' ReferenceTypeList ]
      *     InterfaceBody
      * </pre>
@@ -656,6 +656,8 @@ class Parser {
         Location location      = this.location();
         String   interfaceName = this.readIdentifier();
         this.verifyIdentifierIsConventionalClassOrInterfaceName(interfaceName, location);
+        
+        this.parseTypeParametersOpt();
 
         ReferenceType[] extendedTypes = new ReferenceType[0];
         if (this.peekRead("extends")) {
@@ -1769,6 +1771,36 @@ class Parser {
     public ReferenceType
     parseReferenceType() throws CompileException, IOException {
         return new ReferenceType(this.location(), this.parseQualifiedIdentifier(), this.parseTypeArgumentsOpt());
+    }
+
+    /**
+     * <pre>
+     *   TypeParameters := '<' TypeParameter { ',' TypeParameter } '>'
+     * </pre>
+     */
+    private void // TODO
+    parseTypeParametersOpt() throws CompileException, IOException {
+        if (!this.peekRead("<")) return;
+        this.parseTypeParameter();
+        while (this.read(new String[] { ",", ">" }) == 0) this.parseTypeParameter();
+    }
+
+    /**
+     * <pre>
+     *   TypeParameter := identifier [ 'extends' ( identifier | ReferenceType { '&' ReferenceType }
+     * </pre>
+     */
+    private void // TODO
+    parseTypeParameter() throws CompileException, IOException {
+        this.readIdentifier();
+        if (peekRead("extends")) {
+            if (this.peekIdentifier() != null && (this.peekNextButOne(",") || this.peekNextButOne(">"))) {
+                this.readIdentifier();
+                return;
+            }
+            this.parseReferenceType();
+            while (this.peekRead("&")) this.parseReferenceType();
+        }
     }
 
     /**

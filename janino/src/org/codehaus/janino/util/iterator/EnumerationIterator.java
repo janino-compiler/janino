@@ -30,11 +30,11 @@ import java.util.*;
 
 /** An {@link java.util.Iterator} that iterates over the elements of an {@link java.util.Enumeration}. */
 @SuppressWarnings("rawtypes") public
-class EnumerationIterator/*<T>*/ implements Iterator/*<T>*/ {
+class EnumerationIterator<T> implements Iterator/*<T>*/ {
 
-    private final Enumeration/*<T>*/ e;
+    private final Enumeration<T> e;
 
-    public EnumerationIterator(Enumeration/*<T>*/ e) { this.e = e; }
+    public EnumerationIterator(Enumeration<T> e) { this.e = e; }
 
     @Override public boolean     hasNext() { return this.e.hasMoreElements(); }
     @Override public Object/*T*/ next()    { return this.e.nextElement(); }

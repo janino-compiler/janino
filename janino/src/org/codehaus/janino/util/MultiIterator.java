@@ -35,7 +35,7 @@ import org.codehaus.janino.JaninoRuntimeException;
 
 /** An {@link java.util.Iterator} that traverses a {@link java.util.Collection} of {@link java.util.Iterator}s. */
 @SuppressWarnings("rawtypes") public
-class MultiIterator/*<T>*/ implements Iterator/*<T>*/ {
+class MultiIterator<T> implements Iterator/*<T>*/ {
 
     private static final Iterator AT_END = new Iterator() {
         @Override public boolean hasNext() { return false; }
@@ -52,7 +52,7 @@ class MultiIterator/*<T>*/ implements Iterator/*<T>*/ {
 
     /** @param collections An array of {@link Collection}s */
     public
-    MultiIterator(Collection/*<T>*/[] collections) { this.outer = Arrays.asList(collections).iterator(); }
+    MultiIterator(Collection<T>[] collections) { this.outer = Arrays.asList(collections).iterator(); }
 
     /** @param arrays An array of arrays */
     public
@@ -60,11 +60,11 @@ class MultiIterator/*<T>*/ implements Iterator/*<T>*/ {
 
     /** @param collection A {@link Collection} of {@link Collection}s, {@link Iterator}s and/or arrays */
     public
-    MultiIterator(Collection/*<?>*/ collection) { this.outer = collection.iterator(); }
+    MultiIterator(Collection<?> collection) { this.outer = collection.iterator(); }
 
     /** @param iterator An iterator over {@link Collection}s, {@link Iterator}s and/or arrays */
     public
-    MultiIterator(Iterator/*<?>*/ iterator) { this.outer = iterator; }
+    MultiIterator(Iterator<?> iterator) { this.outer = iterator; }
 
     /** @param array An array of {@link Collection}s, {@link Iterator}s and/or arrays */
     public
@@ -72,7 +72,7 @@ class MultiIterator/*<T>*/ implements Iterator/*<T>*/ {
 
     /** Iterates over the given {@link Collection}, prepended with the given {@link Object}. */
     public
-    MultiIterator(Object/*T*/ object, Collection/*<T>*/ collection) {
+    MultiIterator(Object/*T*/ object, Collection<T> collection) {
         this.outer = Arrays.asList(new Object[] {
             new Object[] { object },
             collection
@@ -81,7 +81,7 @@ class MultiIterator/*<T>*/ implements Iterator/*<T>*/ {
 
     /** Iterates over the given {@link Collection}, appended with the given {@link Object}. */
     public
-    MultiIterator(Collection/*<T>*/ collection, Object/*T*/ object) {
+    MultiIterator(Collection<T> collection, Object/*T*/ object) {
         this.outer = Arrays.asList(new Object[] {
             collection,
             new Object[] { object }
@@ -90,7 +90,7 @@ class MultiIterator/*<T>*/ implements Iterator/*<T>*/ {
 
     /** Iterates over the given {@link Iterator}, prepended with the given {@code prefix}. */
     public
-    MultiIterator(Object/*T*/ prefix, Iterator/*<T>*/ iterator) {
+    MultiIterator(Object/*T*/ prefix, Iterator<T> iterator) {
         this.outer = Arrays.asList(new Object[] {
             new Object[] { prefix },
             iterator
@@ -99,7 +99,7 @@ class MultiIterator/*<T>*/ implements Iterator/*<T>*/ {
 
     /** Iterates over the given {@link Iterator}, appended with the given <code>suffix</code>. */
     public
-    MultiIterator(Iterator/*<T>*/ iterator, Object/*T*/ suffix) {
+    MultiIterator(Iterator<T> iterator, Object/*T*/ suffix) {
         this.outer = Arrays.asList(new Object[] {
             iterator,
             new Object[] { suffix }

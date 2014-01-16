@@ -113,7 +113,7 @@ class AstTests {
     createFloatingPointLiteral(String value) { return new FloatingPointLiteral(getLocation(), value); }
 
     private static void
-    createMethod(PackageMemberClassDeclaration clazz, List/*<BlockStatement>*/ statements, Type returnType) {
+    createMethod(PackageMemberClassDeclaration clazz, List<? extends Java.BlockStatement> statements, Type returnType) {
         MethodDeclarator method = new MethodDeclarator(
             getLocation(),
             null,
@@ -168,7 +168,7 @@ class AstTests {
 
         PackageMemberClassDeclaration clazz = createClass(cu);
 
-        List/*<Statement>*/ body = new ArrayList();
+        List<Java.Statement> body = new ArrayList();
 
         Block sub = new Block(getLocation());
         sub.addStatement(createVarDecl("x", "2.0"));
@@ -202,8 +202,8 @@ class AstTests {
 
         PackageMemberClassDeclaration clazz = createClass(cu);
 
-        Byte                exp  = Byte.valueOf((byte) 1);
-        List/*<Statement>*/ body = new ArrayList();
+        Byte                 exp  = Byte.valueOf((byte) 1);
+        List<Java.Statement> body = new ArrayList();
         body.add(
             new ReturnStatement(
                 getLocation(),
@@ -232,7 +232,7 @@ class AstTests {
 
         PackageMemberClassDeclaration clazz = createClass(cu);
 
-        List/*<Statement>*/ body = new ArrayList();
+        List<Java.Statement> body = new ArrayList();
         body.add(createVarDecl("x", "2.0"));
         body.add(
             new ReturnStatement(
@@ -259,7 +259,7 @@ class AstTests {
 
         PackageMemberClassDeclaration clazz = createClass(cu);
 
-        List/*<Statement>*/ body = new ArrayList();
+        List<Java.Statement> body = new ArrayList();
         body.add(
             new ReturnStatement(
                 getLocation(),
@@ -279,7 +279,7 @@ class AstTests {
 
         PackageMemberClassDeclaration clazz = createClass(cu);
 
-        List/*<Statement>*/ body = new ArrayList();
+        List<Java.Statement> body = new ArrayList();
 
         body.add(
             new ReturnStatement(
@@ -346,7 +346,7 @@ class AstTests {
 
         PackageMemberClassDeclaration clazz = createClass(cu);
 
-        List/*<Statement>*/ body = new ArrayList();
+        List<Java.Statement> body = new ArrayList();
         body.add(new Java.ReturnStatement(
             getLocation(),
             new Java.FieldAccessExpression(

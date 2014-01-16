@@ -33,13 +33,13 @@ import java.util.*;
  * default implementation simply passes all method invocations to the delegate.
  */
 @SuppressWarnings({ "rawtypes", "unchecked" }) public abstract
-class FilterListIterator/*<T>*/ implements ListIterator/*<T>*/ {
+class FilterListIterator<T> implements ListIterator/*<T>*/ {
 
     /** @see FilterListIterator */
     protected final ListIterator/*<T>*/ delegate;
 
     public
-    FilterListIterator(ListIterator/*<T>*/ delegate) {
+    FilterListIterator(ListIterator<T> delegate) {
         this.delegate = delegate;
     }
 

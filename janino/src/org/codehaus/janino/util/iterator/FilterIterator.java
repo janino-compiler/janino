@@ -33,12 +33,12 @@ import java.util.*;
  * implementation simply passes all method invocations to the delegate.
  */
 @SuppressWarnings("rawtypes") public abstract
-class FilterIterator/*<T>*/ implements Iterator/*<T>*/ {
+class FilterIterator<T> implements Iterator/*<T>*/ {
 
     /** @see FilterIterator */
     protected final Iterator delegate;
 
-    public FilterIterator(Iterator/*<T>*/ delegate) { this.delegate = delegate; }
+    public FilterIterator(Iterator<T> delegate) { this.delegate = delegate; }
 
     @Override public boolean     hasNext() { return this.delegate.hasNext(); }
     @Override public Object/*T*/ next()    { return this.delegate.next(); }
