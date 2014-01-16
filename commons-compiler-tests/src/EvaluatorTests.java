@@ -61,7 +61,7 @@ import util.TestUtil;
 @RunWith(Parameterized.class) public
 class EvaluatorTests extends JaninoTestSuite {
 
-    @Parameters public static Collection<Object[]>
+    @Parameters(name = "CompilerFactory={0}") public static Collection<Object[]>
     compilerFactories() throws Exception { return TestUtil.getCompilerFactoriesForParameters(); }
 
     public

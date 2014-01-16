@@ -49,15 +49,11 @@ class SerializationTests {
 
     private final ICompilerFactory compilerFactory;
 
-    @Parameters public static Collection<Object[]>
-    compilerFactories() throws Exception {
-        return TestUtil.getCompilerFactoriesForParameters();
-    }
+    @Parameters(name = "CompilerFactory={0}") public static Collection<Object[]>
+    compilerFactories() throws Exception { return TestUtil.getCompilerFactoriesForParameters(); }
 
     public
-    SerializationTests(ICompilerFactory compilerFactory) {
-        this.compilerFactory = compilerFactory;
-    }
+    SerializationTests(ICompilerFactory compilerFactory) { this.compilerFactory = compilerFactory; }
 
     /** Verifies that {@link CompileException} is serializable. */
     @Test public void

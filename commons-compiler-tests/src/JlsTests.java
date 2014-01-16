@@ -45,7 +45,7 @@ import util.TestUtil;
 @RunWith(Parameterized.class) public
 class JlsTests extends JaninoTestSuite {
 
-    @Parameters public static List<Object[]>
+    @Parameters(name = "CompilerFactory={0}") public static List<Object[]>
     compilerFactories() throws Exception {
         return TestUtil.getCompilerFactoriesForParameters();
     }
