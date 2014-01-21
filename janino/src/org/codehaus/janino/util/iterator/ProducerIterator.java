@@ -37,14 +37,14 @@ import org.codehaus.janino.util.Producer;
  * @param <T> The type of the products and the iterator elements
  * @see       Producer
  */
-@SuppressWarnings("rawtypes") public
-class ProducerIterator<T> implements Iterator/*<T>*/ {
+public
+class ProducerIterator<T> implements Iterator<T> {
 
-    private final Producer/*<T>*/ producer;
+    private final Producer<T> producer;
 
     private static final Object UNKNOWN     = new Object();
     private static final Object AT_END      = null;
-    private Object/*<T>*/       nextElement = UNKNOWN;
+    private Object              nextElement = UNKNOWN;
 
     public
     ProducerIterator(Producer<T> producer) { this.producer = producer; }
@@ -55,11 +55,11 @@ class ProducerIterator<T> implements Iterator/*<T>*/ {
         return this.nextElement != AT_END;
     }
 
-    @Override public Object
+    @Override public T
     next() {
         if (this.nextElement == UNKNOWN) this.nextElement = this.producer.produce();
         if (this.nextElement == AT_END) throw new NoSuchElementException();
-        Object result = this.nextElement;
+        @SuppressWarnings("unchecked") T result = (T) this.nextElement;
         this.nextElement = UNKNOWN;
         return result;
     }

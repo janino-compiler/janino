@@ -93,8 +93,9 @@ class AstTests {
             null,
             new Java.Modifiers(Mod.PUBLIC),
             "HandMade",
-            null,
-            new Type[0]
+            null,         // optionalTypeParameters
+            null,         // optionalExtendedType
+            new Type[0]   // implementedTypes
         );
         cu.addPackageMemberTypeDeclaration(clazz);
         return clazz;

@@ -34,8 +34,8 @@ import java.util.*;
  * @param <T1> The element type of the delegate iterator
  * @param <T2> The element type of this iterator
  */
-@SuppressWarnings("rawtypes") public abstract
-class TransformingIterator<T1, T2> implements Iterator/*<T2>*/ {
+public abstract
+class TransformingIterator<T1, T2> implements Iterator<T2> {
 
     private final Iterator<T1> delegate;
 
@@ -45,12 +45,12 @@ class TransformingIterator<T1, T2> implements Iterator/*<T2>*/ {
     @Override public boolean
     hasNext() { return this.delegate.hasNext(); }
 
-    @Override public final Object/*T2*/
+    @Override public final T2
     next() { return this.transform(this.delegate.next()); }
 
     @Override public void
     remove() { this.delegate.remove(); }
 
     /** Derived classes must implement this method such that it does the desired transformation. */
-    protected abstract Object/*T2*/ transform(Object/*T1*/ o);
+    protected abstract T2 transform(T1 o);
 }

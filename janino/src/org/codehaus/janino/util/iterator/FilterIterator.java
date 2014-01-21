@@ -34,15 +34,15 @@ import java.util.*;
  *
  * @param <T> The element type of the iterator
  */
-@SuppressWarnings("rawtypes") public abstract
-class FilterIterator<T> implements Iterator/*<T>*/ {
+public abstract
+class FilterIterator<T> implements Iterator<T> {
 
     /** @see FilterIterator */
-    protected final Iterator delegate;
+    protected final Iterator<T> delegate;
 
     public FilterIterator(Iterator<T> delegate) { this.delegate = delegate; }
 
-    @Override public boolean     hasNext() { return this.delegate.hasNext(); }
-    @Override public Object/*T*/ next()    { return this.delegate.next(); }
-    @Override public void        remove()  { this.delegate.remove(); }
+    @Override public boolean hasNext() { return this.delegate.hasNext(); }
+    @Override public T       next()    { return this.delegate.next(); }
+    @Override public void    remove()  { this.delegate.remove(); }
 }

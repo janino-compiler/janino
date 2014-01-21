@@ -294,13 +294,4 @@ class CompilerTests {
 
         assertEquals(new HashSet(Arrays.asList(new Object[] { "pkg/A.class", "pkg/B.class", })), classes.keySet());
     }
-
-    /**
-     * JANINO (as of now) does not support generics, and should clearly state the fact instead of throwing
-     * mysterious {@link CompileException}s like '"{" expected at start of class body'.
-     */
-    @Test public void
-    testGenerics() throws CompileException {
-        new SimpleCompiler().cook("class Foo<K, V> {}");
-    }
 }

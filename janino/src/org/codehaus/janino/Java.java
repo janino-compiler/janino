@@ -614,6 +614,9 @@ class Java {
 
         /** @return The declared (not the fully qualified) name of the class or interface */
         String getName();
+
+        /** @return The declared type parameters */
+        TypeParameter[] getOptionalTypeParameters();
     }
 
     /**
@@ -913,6 +916,9 @@ class Java {
         /** The simple name of this class. */
         public final String  name;
 
+        /** The optional type parameters of this interface. */
+        public final TypeParameter[] optionalTypeParameters;
+
         /** The type of the extended class. */
         public final Type optionalExtendedType;
 
@@ -921,17 +927,19 @@ class Java {
 
         public
         NamedClassDeclaration(
-            Location  location,
-            String    optionalDocComment,
-            Modifiers modifiers,
-            String    name,
-            Type      optionalExtendedType,
-            Type[]    implementedTypes
+            Location        location,
+            String          optionalDocComment,
+            Modifiers       modifiers,
+            String          name,
+            TypeParameter[] optionalTypeParameters,
+            Type            optionalExtendedType,
+            Type[]          implementedTypes
         ) {
             super(location, modifiers);
-            this.optionalDocComment   = optionalDocComment;
-            this.name                 = name;
-            this.optionalExtendedType = optionalExtendedType;
+            this.optionalDocComment     = optionalDocComment;
+            this.name                   = name;
+            this.optionalTypeParameters = optionalTypeParameters;
+            this.optionalExtendedType   = optionalExtendedType;
             if (optionalExtendedType != null) {
                 optionalExtendedType.setEnclosingScope(new EnclosingScopeOfTypeDeclaration(this));
             }
@@ -948,6 +956,9 @@ class Java {
 
         @Override public String
         getName() { return this.name; }
+
+        @Override public TypeParameter[]
+        getOptionalTypeParameters() { return this.optionalTypeParameters; }
 
         // Implement DocCommentable.
 
@@ -982,20 +993,22 @@ class Java {
     class MemberClassDeclaration extends NamedClassDeclaration implements MemberTypeDeclaration, InnerClassDeclaration {
         public
         MemberClassDeclaration(
-            Location  location,
-            String    optionalDocComment,
-            Modifiers modifiers,
-            String    name,
-            Type      optionalExtendedType,
-            Type[]    implementedTypes
+            Location        location,
+            String          optionalDocComment,
+            Modifiers       modifiers,
+            String          name,
+            TypeParameter[] optionalTypeParameters,
+            Type            optionalExtendedType,
+            Type[]          implementedTypes
         ) {
             super(
-                location,             // location
-                optionalDocComment,   // optionalDocComment
-                modifiers,            // modifiers
-                name,                 // name
-                optionalExtendedType, // optionalExtendedType
-                implementedTypes      // implementedTypes
+                location,               // location
+                optionalDocComment,     // optionalDocComment
+                modifiers,              // modifiers
+                name,                   // name
+                optionalTypeParameters, // optionalTypeParameters
+                optionalExtendedType,   // optionalExtendedType
+                implementedTypes        // implementedTypes
             );
         }
 
@@ -1028,20 +1041,22 @@ class Java {
 
         public
         LocalClassDeclaration(
-            Location  location,
-            String    optionalDocComment,
-            Modifiers modifiers,
-            String    name,
-            Type      optionalExtendedType,
-            Type[]    implementedTypes
+            Location        location,
+            String          optionalDocComment,
+            Modifiers       modifiers,
+            String          name,
+            TypeParameter[] optionalTypeParameters,
+            Type            optionalExtendedType,
+            Type[]          implementedTypes
         ) {
             super(
-                location,             // location
-                optionalDocComment,   // optionalDocComment
-                modifiers,            // modifiers
-                name,                 // name
-                optionalExtendedType, // optionalExtendedType
-                implementedTypes      // implementedTypes
+                location,               // location
+                optionalDocComment,     // optionalDocComment
+                modifiers,              // modifiers
+                name,                   // name
+                optionalTypeParameters, // optionalTypeParameters
+                optionalExtendedType,   // optionalExtendedType
+                implementedTypes        // implementedTypes
             );
         }
 
@@ -1066,20 +1081,22 @@ class Java {
 
         public
         PackageMemberClassDeclaration(
-            Location  location,
-            String    optionalDocComment,
-            Modifiers modifiers,
-            String    name,
-            Type      optionalExtendedType,
-            Type[]    implementedTypes
+            Location        location,
+            String          optionalDocComment,
+            Modifiers       modifiers,
+            String          name,
+            TypeParameter[] optionalTypeParameters,
+            Type            optionalExtendedType,
+            Type[]          implementedTypes
         ) throws CompileException {
             super(
-                location,             // location
-                optionalDocComment,   // optionalDocComment
-                modifiers,            // modifiers
-                name,                 // name
-                optionalExtendedType, // optionalExtendedType
-                implementedTypes      // implementedTypes
+                location,               // location
+                optionalDocComment,     // optionalDocComment
+                modifiers,              // modifiers
+                name,                   // name
+                optionalTypeParameters, // optionalTypeParameters
+                optionalExtendedType,   // optionalExtendedType
+                implementedTypes        // implementedTypes
             );
 
             // Check for forbidden modifiers (JLS7 7.6).
@@ -1128,18 +1145,23 @@ class Java {
         /** The simple name of the interface. */
         public final String name;
 
+        /** The optional type parameters of this interface. */
+        public final TypeParameter[] optionalTypeParameters;
+
         protected
         InterfaceDeclaration(
-            Location  location,
-            String    optionalDocComment,
-            Modifiers modifiers,
-            String    name,
-            Type[]    extendedTypes
+            Location        location,
+            String          optionalDocComment,
+            Modifiers       modifiers,
+            String          name,
+            TypeParameter[] optionalTypeParameters,
+            Type[]          extendedTypes
         ) {
             super(location, modifiers);
-            this.optionalDocComment = optionalDocComment;
-            this.name               = name;
-            this.extendedTypes      = extendedTypes;
+            this.optionalDocComment     = optionalDocComment;
+            this.name                   = name;
+            this.optionalTypeParameters = optionalTypeParameters;
+            this.extendedTypes          = extendedTypes;
             for (Type extendedType : extendedTypes) {
                 extendedType.setEnclosingScope(new EnclosingScopeOfTypeDeclaration(this));
             }
@@ -1172,6 +1194,9 @@ class Java {
         @Override public String
         getName() { return this.name; }
 
+        @Override public TypeParameter[]
+        getOptionalTypeParameters() { return this.optionalTypeParameters; }
+
         // Implement DocCommentable.
 
         @Override public String
@@ -1192,18 +1217,20 @@ class Java {
 
         public
         MemberInterfaceDeclaration(
-            Location  location,
-            String    optionalDocComment,
-            Modifiers modifiers,
-            String    name,
-            Type[]    extendedTypes
+            Location        location,
+            String          optionalDocComment,
+            Modifiers       modifiers,
+            String          name,
+            TypeParameter[] optionalTypeParameters,
+            Type[]          extendedTypes
         ) {
             super(
-                location,           // location
-                optionalDocComment, // optionalDocComment
-                modifiers,          // modifiers
-                name,               // name
-                extendedTypes       // extendedTypes
+                location,               // location
+                optionalDocComment,     // optionalDocComment
+                modifiers,              // modifiers
+                name,                   // name
+                optionalTypeParameters, // optionalTypeParameters
+                extendedTypes           // extendedTypes
             );
         }
 
@@ -1243,18 +1270,20 @@ class Java {
 
         public
         PackageMemberInterfaceDeclaration(
-            Location  location,
-            String    optionalDocComment,
-            Modifiers modifiers,
-            String    name,
-            Type[]    extendedTypes
+            Location        location,
+            String          optionalDocComment,
+            Modifiers       modifiers,
+            String          name,
+            TypeParameter[] optionalTypeParameters,
+            Type[]          extendedTypes
         ) throws CompileException {
             super(
-                location,           // location
-                optionalDocComment, // optionalDocComment
-                modifiers,          // modifiers
-                name,               // name
-                extendedTypes       // extendedTypes
+                location,               // location
+                optionalDocComment,     // optionalDocComment
+                modifiers,              // modifiers
+                name,                   // name
+                optionalTypeParameters, // optionalTypeParameters
+                extendedTypes           // extendedTypes
             );
 
             // Check for forbidden modifiers (JLS7 7.6).
@@ -1292,6 +1321,29 @@ class Java {
 
         @Override public void
         accept(Visitor.TypeDeclarationVisitor visitor) { visitor.visitPackageMemberInterfaceDeclaration(this); }
+    }
+
+    /** Representation of a type parameter (which declares a type variable). */
+    public static
+    class TypeParameter {
+
+        /** The name of the type variable. */
+        public final String name;
+
+        /** The optional bound of the type parameter. */
+        public final ReferenceType[] optionalBound;
+
+        public
+        TypeParameter(String name, ReferenceType[] optionalBound) {
+            assert name != null;
+            this.name          = name;
+            this.optionalBound = optionalBound;
+        }
+
+        @Override public String
+        toString() {
+            return this.optionalBound == null ? this.name : this.name + " extends " + join(this.optionalBound, " & ");
+        }
     }
 
     /**
@@ -1549,7 +1601,11 @@ class Java {
             public String
             toString(boolean hasEllipsis) { return this.type.toString() + (hasEllipsis ? "... " : " ") + this.name; }
 
+            @Override public String
+            toString() { return this.toString(false); }
+
             // Compile time members.
+
 
             /** The local variable associated with this parameter. */
             public Java.LocalVariable localVariable;
@@ -2805,7 +2861,7 @@ class Java {
         @Override public String
         toString() {
             String s = join(this.identifiers, ".");
-            if (this.optionalTypeArguments != null) s += '<' + join(this.optionalTypeArguments, ", ") + " >";
+            if (this.optionalTypeArguments != null) s += '<' + join(this.optionalTypeArguments, ", ") + ">";
             return s;
         }
 

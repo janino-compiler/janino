@@ -49,11 +49,11 @@ class ReverseListIterator<T> extends FilterListIterator<T> {
     hasPrevious() { return super.hasNext(); }
 
     /** Calls {@link #delegate}.{@link java.util.ListIterator#previous()} */
-    @Override public Object/*T*/
+    @Override public T
     next() { return super.previous(); }
 
     /** Calls {@link #delegate}.{@link java.util.ListIterator#next()} */
-    @Override public Object/*T*/
+    @Override public T
     previous() { return super.next(); }
 
     /** Throws an {@link UnsupportedOperationException}. */

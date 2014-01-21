@@ -366,7 +366,8 @@ class UnparseTests {
             "foo",
             maas,
             "Foo",
-            new Type[0]
+            null,       // optionalTypeParameters
+            new Type[0] // extendedTypes
         );
         StringWriter   sw = new StringWriter();
         UnparseVisitor uv = new UnparseVisitor(sw);

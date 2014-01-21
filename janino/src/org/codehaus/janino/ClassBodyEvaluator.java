@@ -291,6 +291,7 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
             null,                                                  // optionalDocComment
             new Java.Modifiers(Mod.PUBLIC),                        // modifiers
             cn,                                                    // name
+            null,                                                  // optionalTypeParameters
             this.classToType(location, this.optionalExtendedType), // optionalExtendedType
             this.classesToTypes(location, this.implementedTypes)   // implementedTypes
         );

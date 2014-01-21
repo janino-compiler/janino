@@ -38,10 +38,10 @@ import java.util.*;
  * @param <T> The element type of the iterator and the collection
  */
 @SuppressWarnings({ "rawtypes", "unchecked" }) public
-class IteratorCollection<T> extends AbstractCollection/*<T>*/ {
+class IteratorCollection<T> extends AbstractCollection<T> {
 
     /** The delegate. */
-    private final Iterator/*<T>*/ iterator;
+    private final Iterator<T> iterator;
 
     /** Lazily-filled collection of the elements delivered by the delegate. */
     private final List/*<T>*/ elements = new ArrayList();
@@ -53,7 +53,7 @@ class IteratorCollection<T> extends AbstractCollection/*<T>*/ {
     iterator() {
         return new Iterator/*<T>*/() {
 
-            private Iterator<T> elementsIterator = IteratorCollection.this.elements.iterator();
+            private Iterator/*<T>*/ elementsIterator = IteratorCollection.this.elements.iterator();
 
             @Override public Object
             next() {
@@ -61,7 +61,7 @@ class IteratorCollection<T> extends AbstractCollection/*<T>*/ {
                     if (this.elementsIterator.hasNext()) return this.elementsIterator.next();
                     this.elementsIterator = null;
                 }
-                Object/*T*/ o = IteratorCollection.this.iterator.next();
+                Object o = IteratorCollection.this.iterator.next();
                 IteratorCollection.this.elements.add(o);
                 return o;
             }

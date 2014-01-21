@@ -35,10 +35,10 @@ import java.util.*;
  * @param <T> The element type of the list iterator
  */
 @SuppressWarnings({ "rawtypes", "unchecked" }) public abstract
-class FilterListIterator<T> implements ListIterator/*<T>*/ {
+class FilterListIterator<T> implements ListIterator<T> {
 
     /** @see FilterListIterator */
-    protected final ListIterator/*<T>*/ delegate;
+    protected final ListIterator<T> delegate;
 
     public
     FilterListIterator(ListIterator<T> delegate) {
@@ -50,7 +50,7 @@ class FilterListIterator<T> implements ListIterator/*<T>*/ {
     hasNext() { return this.delegate.hasNext(); }
 
     /** Calls {@link #delegate}.{@link java.util.ListIterator#next()} */
-    @Override public Object/*T*/
+    @Override public T
     next() { return this.delegate.next(); }
 
     /** Calls {@link #delegate}.{@link java.util.ListIterator#hasPrevious()} */
@@ -58,7 +58,7 @@ class FilterListIterator<T> implements ListIterator/*<T>*/ {
     hasPrevious() { return this.delegate.hasPrevious(); }
 
     /** Calls {@link #delegate}.{@link java.util.ListIterator#previous()} */
-    @Override public Object/*T*/
+    @Override public T
     previous() { return this.delegate.previous(); }
 
     /** Calls {@link #delegate}.{@link java.util.ListIterator#nextIndex()} */
@@ -75,9 +75,9 @@ class FilterListIterator<T> implements ListIterator/*<T>*/ {
 
     /** Calls {@link #delegate}.{@link java.util.ListIterator#set(java.lang.Object)} */
     @Override public void
-    set(Object o) { this.delegate.set(o); }
+    set(T o) { this.delegate.set(o); }
 
     /** Calls {@link #delegate}.{@link java.util.ListIterator#add(java.lang.Object)} */
     @Override public void
-    add(Object o) { this.delegate.add(o); }
+    add(T o) { this.delegate.add(o); }
 }

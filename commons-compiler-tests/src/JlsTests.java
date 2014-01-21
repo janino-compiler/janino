@@ -365,6 +365,28 @@ class JlsTests extends JaninoTestSuite {
     }
 
     @Test public void
+    test_8_1_2__Generic_Classes_and_Type_Parameters() throws Exception {
+        this.assertCompilationUnitMainReturnsTrue((
+            ""
+            + "public class Bag<T> {\n"
+            + "\n"
+            + "    private T contents;\n"
+            + "\n"
+            + "    void put(T element) { this.contents = element; }\n"
+            + "\n"
+            + "    T get() { return this.contents; }\n"
+            + "\n"
+            + "    public static boolean main() {\n"
+            + "        Bag<String> b = new Bag<String>();\n"
+            + "        b.put(\"FOO\");\n"
+            + "        String s = (String) b.get();\n"
+            + "        return \"FOO\".equals(s);\n"
+            + "    }\n"
+            + "}\n"
+        ), "Bag");
+    }
+
+    @Test public void
     test_8_4_8_3__Requirements_in_Overriding_and_Hiding() throws Exception {
         this.assertClassBodyExecutable(
             ""
@@ -434,7 +456,7 @@ class JlsTests extends JaninoTestSuite {
             "int x = 37; switch (x) { case -2000000000: break; case 2000000000: break; } return x == 37;"
         );
     }
-    
+
     @Test public void
     test_14_14_2_1__TheEnhancedForStatement_Iterable() throws Exception {
         this.assertScriptReturnsTrue(

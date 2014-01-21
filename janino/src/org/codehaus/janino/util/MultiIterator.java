@@ -38,21 +38,21 @@ import org.codehaus.janino.JaninoRuntimeException;
  *
  * @param <T> The element type of the iterator
  */
-@SuppressWarnings("rawtypes") public
-class MultiIterator<T> implements Iterator/*<T>*/ {
+@SuppressWarnings("unchecked") public
+class MultiIterator<T> implements Iterator<T> {
 
-    private static final Iterator AT_END = new Iterator() {
+    private static final Iterator<?> AT_END = new Iterator<Object>() {
         @Override public boolean hasNext() { return false; }
         @Override public Object  next()    { throw new NoSuchElementException(); }
         @Override public void    remove()  { throw new UnsupportedOperationException(); }
     };
 
-    private final Iterator/*<?>*/ outer; // Over Iterators, Collections or arrays
-    private Iterator/*<T>*/       inner = MultiIterator.AT_END;
+    private final Iterator<?> outer; // Over Iterators, Collections or arrays
+    private Iterator<T>       inner = (Iterator<T>) MultiIterator.AT_END;
 
     /** @param iterators An array of {@link Iterator}s */
     public
-    MultiIterator(Iterator[] iterators) { this.outer = Arrays.asList(iterators).iterator(); }
+    MultiIterator(Iterator<T>[] iterators) { this.outer = Arrays.asList(iterators).iterator(); }
 
     /** @param collections An array of {@link Collection}s */
     public
@@ -117,13 +117,13 @@ class MultiIterator<T> implements Iterator/*<T>*/ {
             if (!this.outer.hasNext()) return false;
             Object o = this.outer.next();
             if (o instanceof Iterator) {
-                this.inner = (Iterator) o;
+                this.inner = (Iterator<T>) o;
             } else
             if (o instanceof Collection) {
-                this.inner = ((Collection) o).iterator();
+                this.inner = ((Collection<T>) o).iterator();
             } else
             if (o instanceof Object[]) {
-                this.inner = Arrays.asList((Object[]) o).iterator();
+                this.inner = Arrays.asList((T[]) o).iterator();
             } else
             {
                 throw new JaninoRuntimeException("Unexpected element type \"" + o.getClass().getName() + "\"");
@@ -131,7 +131,7 @@ class MultiIterator<T> implements Iterator/*<T>*/ {
         }
     }
 
-    @Override public Object
+    @Override public T
     next() {
         if (this.hasNext()) return this.inner.next();
         throw new NoSuchElementException();

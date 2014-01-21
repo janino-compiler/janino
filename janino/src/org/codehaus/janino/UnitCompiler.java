@@ -161,6 +161,7 @@ import org.codehaus.janino.Java.TryStatement;
 import org.codehaus.janino.Java.Type;
 import org.codehaus.janino.Java.TypeBodyDeclaration;
 import org.codehaus.janino.Java.TypeDeclaration;
+import org.codehaus.janino.Java.TypeParameter;
 import org.codehaus.janino.Java.UnaryOperation;
 import org.codehaus.janino.Java.VariableDeclarator;
 import org.codehaus.janino.Java.WhileStatement;
@@ -591,19 +592,19 @@ class UnitCompiler {
                 //  + Access is changed from PRIVATE to PACKAGE
                 assert fd.modifiers.annotations.length == 0 : "NYI";
                 fi = cf.addFieldInfo(
-                    fd.modifiers.changeAccess(Mod.PACKAGE), // modifiers
-                    vd.name,                                // fieldName
-                    this.getType(type).getDescriptor(),     // fieldTypeFD
-                    ocv == NOT_CONSTANT ? null : ocv        // optionalConstantValue
+                    fd.modifiers.changeAccess(Mod.PACKAGE),   // modifiers
+                    vd.name,                                  // fieldName
+                    this.getType(type).getDescriptor(), // fieldTypeFD
+                    ocv == NOT_CONSTANT ? null : ocv          // optionalConstantValue
                 );
             } else
             {
                 assert fd.modifiers.annotations.length == 0 : "NYI";
                 fi = cf.addFieldInfo(
-                    fd.modifiers,                       // modifiers
-                    vd.name,                            // fieldName
+                    fd.modifiers,                             // modifiers
+                    vd.name,                                  // fieldName
                     this.getType(type).getDescriptor(), // fieldTypeFD
-                    ocv == NOT_CONSTANT ? null : ocv    // optionalConstantValue
+                    ocv == NOT_CONSTANT ? null : ocv          // optionalConstantValue
                 );
             }
 
@@ -1877,7 +1878,7 @@ class UnitCompiler {
             assert lvds.modifiers.annotations.length == 0;
             vd.localVariable = new LocalVariable(
                 Mod.isFinal(lvds.modifiers.flags), // finaL
-                this.getType(variableType)         // type
+                this.getType(variableType)   // type
             );
         }
         return vd.localVariable;
@@ -2175,11 +2176,11 @@ class UnitCompiler {
                 modifiers |= Mod.STATIC;
 
                 mi = classFile.addMethodInfo(
-                    new Modifiers(modifiers, fd.modifiers.annotations), // modifiersAnd
-                    fd.name + '$',                                      // methodName
-                    MethodDescriptor.prependParameter(                  // methodMD
+                    new Modifiers(modifiers, fd.modifiers.annotations),              // modifiersAnd
+                    fd.name + '$',                                                   // methodName
+                    MethodDescriptor.prependParameter(                               // methodMD
                         this.toIMethod((MethodDeclarator) fd).getDescriptor(), // md
-                        this.resolve(fd.getDeclaringType()).getDescriptor()    // parameterFD
+                        this.resolve(fd.getDeclaringType()).getDescriptor()          // parameterFD
                     )
                 );
             } else
@@ -2679,7 +2680,7 @@ class UnitCompiler {
             this.assignmentConversion(
                 a,                           // locatable
                 this.compileGetValue(a.rhs), // sourceType
-                this.getType(a.lhs),         // targetType
+                this.getType(a.lhs),   // targetType
                 this.getConstantValue(a.rhs) // optionalConstantValue
             );
             this.compileSet(a.lhs);
@@ -4169,10 +4170,10 @@ class UnitCompiler {
 
             // Pass the enclosing instance of the base class as parameter #1.
             if (naci.optionalQualification != null) l.add(new FormalParameter(
-                loc,                                                           // location
-                true,                                                          // finaL
+                loc,                                                                 // location
+                true,                                                                // finaL
                 new SimpleType(loc, this.getType(naci.optionalQualification)), // type
-                "this$base"                                                    // name
+                "this$base"                                                          // name
             ));
             for (int i = 0; i < pts.length; ++i) l.add(new FormalParameter(
                 loc,                         // location
@@ -4300,9 +4301,9 @@ class UnitCompiler {
         }
 
         return this.newArray(
-            na,                   // locatable
-            na.dimExprs.length,   // dimExprCount
-            na.dims,              // dims
+            na,                         // locatable
+            na.dimExprs.length,         // dimExprCount
+            na.dims,                    // dims
             this.getType(na.type) // componentType
         );
     }
@@ -5210,9 +5211,30 @@ class UnitCompiler {
         }
 
         if (rt.identifiers.length == 1) {
-
             // 6.5.5.1 Simple type name (single identifier).
             String simpleTypeName = rt.identifiers[0];
+
+            // JLS7 ??? Type variable.
+            if (scopeTypeDeclaration instanceof NamedTypeDeclaration) {
+                TypeParameter[]
+                optionalTypeParameters = ((NamedTypeDeclaration) scopeTypeDeclaration).getOptionalTypeParameters();
+                if (optionalTypeParameters != null) {
+                    for (TypeParameter tp : optionalTypeParameters) {
+                        if (tp.name.equals(simpleTypeName)) {
+                            IClass[] boundTypes;
+                            if (tp.optionalBound == null) {
+                                boundTypes = new IClass[] { this.iClassLoader.TYPE_java_lang_Object };
+                            } else {
+                                boundTypes = new IClass[tp.optionalBound.length];
+                                for (int i = 0; i < boundTypes.length; i++) {
+                                    boundTypes[i] = this.getType(tp.optionalBound[i]);
+                                }
+                            }
+                            return boundTypes[0];
+                        }
+                    }
+                }
+            }
 
             // 6.5.5.1.1 Local class.
             {
@@ -5238,21 +5260,18 @@ class UnitCompiler {
                 }
             }
 
+            // 6.5.5.1.4a Single-type import.
             {
+                IClass importedClass = this.importSingleType(simpleTypeName, rt.getLocation());
+                if (importedClass != null) return importedClass;
+            }
 
-                // 6.5.5.1.4a Single-type import.
-                {
-                    IClass importedClass = this.importSingleType(simpleTypeName, rt.getLocation());
-                    if (importedClass != null) return importedClass;
-                }
-
-                // 6.5.5.1.4b Type declared in same compilation unit.
-                {
-                    PackageMemberTypeDeclaration pmtd = (
-                        scopeCompilationUnit.getPackageMemberTypeDeclaration(simpleTypeName)
-                    );
-                    if (pmtd != null) return this.resolve(pmtd);
-                }
+            // 6.5.5.1.4b Type declared in same compilation unit.
+            {
+                PackageMemberTypeDeclaration pmtd = (
+                    scopeCompilationUnit.getPackageMemberTypeDeclaration(simpleTypeName)
+                );
+                if (pmtd != null) return this.resolve(pmtd);
             }
 
             // 6.5.5.1.5 Type declared in other compilation unit of same package.
@@ -7238,7 +7257,7 @@ class UnitCompiler {
                 // type.
                 iMethod = this.findIMethod(
                     this.getType(mi.optionalTarget), // targetType
-                    mi                               // invocable
+                    mi                                     // invocable
                 );
                 if (iMethod != null) break FIND_METHOD;
             }
@@ -7936,6 +7955,12 @@ class UnitCompiler {
     resolve(final TypeDeclaration td) {
         final AbstractTypeDeclaration atd = (AbstractTypeDeclaration) td;
         if (atd.resolvedType == null) atd.resolvedType = new IClass() {
+
+//            final TypeParameter[] optionalTypeParameters = (
+//                atd instanceof NamedTypeDeclaration
+//                ? ((NamedTypeDeclaration) atd).getOptionalTypeParameters()
+//                : null
+//            );
 
             @Override protected IClass.IMethod[]
             getDeclaredIMethods2() {

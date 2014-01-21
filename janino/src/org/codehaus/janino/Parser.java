@@ -118,6 +118,7 @@ import org.codehaus.janino.Java.ThrowStatement;
 import org.codehaus.janino.Java.TryStatement;
 import org.codehaus.janino.Java.Type;
 import org.codehaus.janino.Java.TypeArgument;
+import org.codehaus.janino.Java.TypeParameter;
 import org.codehaus.janino.Java.UnaryOperation;
 import org.codehaus.janino.Java.VariableDeclarator;
 import org.codehaus.janino.Java.WhileStatement;
@@ -431,7 +432,7 @@ class Parser {
         String   className = this.readIdentifier();
         this.verifyIdentifierIsConventionalClassOrInterfaceName(className, location);
 
-        this.parseTypeParametersOpt();
+        TypeParameter[] optionalTypeParameters = this.parseTypeParametersOpt();
 
         ReferenceType optionalExtendedType = null;
         if (this.peekRead("extends")) {
@@ -446,32 +447,35 @@ class Parser {
         NamedClassDeclaration namedClassDeclaration;
         if (context == ClassDeclarationContext.COMPILATION_UNIT) {
             namedClassDeclaration = new PackageMemberClassDeclaration(
-                location,             // location
-                optionalDocComment,   // optionalDocComment
-                modifiers,            // modifiers
-                className,            // name
-                optionalExtendedType, // optinalExtendedType
-                implementedTypes      // implementedTypes
+                location,               // location
+                optionalDocComment,     // optionalDocComment
+                modifiers,              // modifiers
+                className,              // name
+                optionalTypeParameters, // optionalTypeParameters
+                optionalExtendedType,   // optinalExtendedType
+                implementedTypes        // implementedTypes
             );
         } else
         if (context == ClassDeclarationContext.TYPE_DECLARATION) {
             namedClassDeclaration = new MemberClassDeclaration(
-                location,             // location
-                optionalDocComment,   // optionalDocComment
-                modifiers,            // modifiers
-                className,            // name
-                optionalExtendedType, // optionalExtendedType
-                implementedTypes      // implementedTypes
+                location,               // location
+                optionalDocComment,     // optionalDocComment
+                modifiers,              // modifiers
+                className,              // name
+                optionalTypeParameters, // optionalTypeParameters
+                optionalExtendedType,   // optionalExtendedType
+                implementedTypes        // implementedTypes
             );
         } else
         if (context == ClassDeclarationContext.BLOCK) {
             namedClassDeclaration = new LocalClassDeclaration(
-                location,             // location
-                optionalDocComment,   // optionalDocComment
-                modifiers,            // modifiers
-                className,            // name
-                optionalExtendedType, // optionalExtendedType
-                implementedTypes      // implementedTypes
+                location,               // location
+                optionalDocComment,     // optionalDocComment
+                modifiers,              // modifiers
+                className,              // name
+                optionalTypeParameters, // optionalTypeParameters
+                optionalExtendedType,   // optionalExtendedType
+                implementedTypes        // implementedTypes
             );
         } else
         {
@@ -656,8 +660,8 @@ class Parser {
         Location location      = this.location();
         String   interfaceName = this.readIdentifier();
         this.verifyIdentifierIsConventionalClassOrInterfaceName(interfaceName, location);
-        
-        this.parseTypeParametersOpt();
+
+        TypeParameter[] optionalTypeParameters = this.parseTypeParametersOpt();
 
         ReferenceType[] extendedTypes = new ReferenceType[0];
         if (this.peekRead("extends")) {
@@ -667,20 +671,22 @@ class Parser {
         InterfaceDeclaration interfaceDeclaration;
         if (context == InterfaceDeclarationContext.COMPILATION_UNIT) {
             interfaceDeclaration = new PackageMemberInterfaceDeclaration(
-                location,                              // location
-                optionalDocComment,                    // optionalDocComment
-                modifiers,                             // modifiers
-                interfaceName,                         // name
-                extendedTypes                          // extendedTypes
+                location,               // location
+                optionalDocComment,     // optionalDocComment
+                modifiers,              // modifiers
+                interfaceName,          // name
+                optionalTypeParameters, // optionalTypeParameters
+                extendedTypes           // extendedTypes
             );
         } else
         if (context == InterfaceDeclarationContext.NAMED_TYPE_DECLARATION) {
             interfaceDeclaration = new MemberInterfaceDeclaration(
-                location,                                   // location
-                optionalDocComment,                         // optionalDocComment
-                modifiers,                                  // modifiers
-                interfaceName,                              // name
-                extendedTypes                               // extendedTypes
+                location,               // location
+                optionalDocComment,     // optionalDocComment
+                modifiers,              // modifiers
+                interfaceName,          // name
+                optionalTypeParameters, // optionalTypeParameters
+                extendedTypes           // extendedTypes
             );
         } else
         {
@@ -1130,14 +1136,12 @@ class Parser {
             return new LocalClassDeclarationStatement(lcd);
         }
 
-        // 'final' Type VariableDeclarators ';'
-        if (this.peekRead("final")) {
-            Location                          location     = this.location();
-            Type                              variableType = this.parseType();
-            LocalVariableDeclarationStatement lvds         = new LocalVariableDeclarationStatement(
-                location,                       // location
-                new Java.Modifiers(Mod.FINAL),  // modifiers
-                variableType,                   // type
+        // Modifiers Type VariableDeclarators ';'
+        if (this.peek(new String[] { "final", "@" }) != -1) {
+            LocalVariableDeclarationStatement lvds = new LocalVariableDeclarationStatement(
+                this.location(),                // location
+                this.parseModifiers(),          // modifiers
+                this.parseType(),               // type
                 this.parseVariableDeclarators() // variableDeclarators
             );
             this.read(";");
@@ -1778,11 +1782,15 @@ class Parser {
      *   TypeParameters := '<' TypeParameter { ',' TypeParameter } '>'
      * </pre>
      */
-    private void // TODO
+    private TypeParameter[]
     parseTypeParametersOpt() throws CompileException, IOException {
-        if (!this.peekRead("<")) return;
-        this.parseTypeParameter();
-        while (this.read(new String[] { ",", ">" }) == 0) this.parseTypeParameter();
+        if (!this.peekRead("<")) return null;
+        List<TypeParameter> l = new ArrayList<TypeParameter>();
+        l.add(this.parseTypeParameter());
+        while (this.read(new String[] { ",", ">" }) == 0) {
+            l.add(this.parseTypeParameter());
+        }
+        return (TypeParameter[]) l.toArray(new TypeParameter[l.size()]);
     }
 
     /**
@@ -1790,17 +1798,16 @@ class Parser {
      *   TypeParameter := identifier [ 'extends' ( identifier | ReferenceType { '&' ReferenceType }
      * </pre>
      */
-    private void // TODO
+    private TypeParameter
     parseTypeParameter() throws CompileException, IOException {
-        this.readIdentifier();
-        if (peekRead("extends")) {
-            if (this.peekIdentifier() != null && (this.peekNextButOne(",") || this.peekNextButOne(">"))) {
-                this.readIdentifier();
-                return;
-            }
-            this.parseReferenceType();
+        String name = this.readIdentifier();
+        if (this.peekRead("extends")) {
+            List<ReferenceType> bound = new ArrayList<ReferenceType>();
+            bound.add(this.parseReferenceType());
             while (this.peekRead("&")) this.parseReferenceType();
+            return new TypeParameter(name, (ReferenceType[]) bound.toArray(new ReferenceType[bound.size()]));
         }
+        return new TypeParameter(name, null);
     }
 
     /**
@@ -2089,7 +2096,7 @@ class Parser {
                         List<TypeArgument> typeArguments = new ArrayList();
                         typeArguments.add(this.parseTypeArgument());
                         while (this.read(new String[] { ">", "," }) == 1) typeArguments.add(this.parseTypeArgument());
-    
+
                         return new ReferenceType(
                             this.location(),
                             identifiers,
@@ -2111,24 +2118,24 @@ class Parser {
 
                         if (this.peek(new String[] { "<", ">", "," }) != -1) {
                             String[] identifiers = ((Java.AmbiguousName) a).identifiers;
-        
+
                             // '<' ShiftExpression [ TypeArguments ] { ',' TypeArgument } '>'
                             this.parseTypeArgumentsOpt();
                             Type t = rhs.toTypeOrCompileException();
-        
+
                             TypeArgument ta;
                             if (t instanceof ArrayType)     { ta = (ArrayType)     t; } else
                             if (t instanceof ReferenceType) { ta = (ReferenceType) t; } else
                             {
                                 throw this.compileException("'" + t + "' is not a valid type argument");
                             }
-        
+
                             List<TypeArgument> typeArguments = new ArrayList();
                             typeArguments.add(ta);
                             while (this.read(new String[] { ">", "," }) == 1) {
                                 typeArguments.add(this.parseTypeArgument());
                             }
-        
+
                             return new ReferenceType(
                                 this.location(),
                                 identifiers,

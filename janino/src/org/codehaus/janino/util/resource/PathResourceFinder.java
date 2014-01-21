@@ -58,7 +58,7 @@ class PathResourceFinder extends LazyMultiResourceFinder {
 
     private static Iterator<ResourceFinder>
     createIterator(final Iterator<File> entries) {
-        return new TransformingIterator<File, ResourceFinder>(entries) {
+        return new TransformingIterator/*<File, ResourceFinder>*/(entries) {
             @Override protected Object transform(Object o) { return PathResourceFinder.createResourceFinder((File) o); }
         };
     }
