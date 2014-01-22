@@ -438,7 +438,7 @@ class ClassFile {
 
     /**
      * Creates a {@link MethodInfo} and adds it to this class. The return value can be used e.g. to add attributes
-     * ({@code Code}, {@code Depreecated}, {@code Exceptions}, ...) to the method.
+     * ({@code Code}, {@code Deprecated}, {@code Exceptions}, ...) to the method.
      */
     public MethodInfo
     addMethodInfo(Java.Modifiers modifiers, String methodName, String methodMd) {
