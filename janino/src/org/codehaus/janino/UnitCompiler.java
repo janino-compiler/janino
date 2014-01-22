@@ -6521,12 +6521,13 @@ class UnitCompiler {
                             } else {
                                 this.load(locatable, syntheticParameter);
                             }
-                        } else {
+                        } else
+                        {
                             this.compileError((
                                 "Compiler limitation: "
                                 + "Initializers cannot access local variables declared in an enclosing block."
                             ), locatable.getLocation());
-                            this.writeOpcode(locatable, Opcode.ACONST_NULL);
+                            this.writeOpcode(scopeTbd, Opcode.ACONST_NULL);
                         }
                     } else {
                         String        localVariableName = sf.getName().substring(4);
@@ -6885,7 +6886,12 @@ class UnitCompiler {
             if (s instanceof InnerClassDeclaration) {
                 InnerClassDeclaration icd = (InnerClassDeclaration) s;
                 s = s.getEnclosingScope();
-                if (s instanceof AnonymousClassDeclaration) s = s.getEnclosingScope();
+                if (s instanceof AnonymousClassDeclaration) {
+                    s = s.getEnclosingScope();
+                } else
+                if (s instanceof FieldDeclaration) {
+                    s = s.getEnclosingScope().getEnclosingScope();
+                }
                 while (s instanceof BlockStatement) {
                     LocalVariable lv = ((BlockStatement) s).findLocalVariable(identifier);
                     if (lv != null) {
