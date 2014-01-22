@@ -62,7 +62,7 @@ class ReportedBugs extends JaninoTestSuite {
 
     @Test public void
     testBug48() throws Exception {
-        assertCompilationUnitMainExecutable((
+        this.assertCompilationUnitMainExecutable((
             ""
             + "package demo;\n"
             + "public class Service {\n"
@@ -74,7 +74,7 @@ class ReportedBugs extends JaninoTestSuite {
             + "    }\n"
             + "}"
         ), "demo.Service");
-        assertCompilationUnitMainExecutable((
+        this.assertCompilationUnitMainExecutable((
             ""
             + "package demo;\n"
             + "public class Service {\n"
@@ -89,7 +89,7 @@ class ReportedBugs extends JaninoTestSuite {
 
     @Test public void
     testBug54() throws Exception {
-        assertScriptReturnsTrue(
+        this.assertScriptReturnsTrue(
             ""
             + "String s = \"\";\n"
             + "try {\n"
@@ -115,7 +115,7 @@ class ReportedBugs extends JaninoTestSuite {
             + "}\n"
             + "return \"set1returnfinally\".equals(s);"
         );
-        assertClassBodyCookable(
+        this.assertClassBodyCookable(
             ""
             + "void foo() {\n"
             + "    while (true) {\n"
@@ -136,7 +136,7 @@ class ReportedBugs extends JaninoTestSuite {
             + "    }\n"
             + "}\n"
         );
-        assertClassBodyCookable(
+        this.assertClassBodyCookable(
             ""
             + "void baz1() {\n"
             + "    for (int i = 0; i < 100;) {\n"
@@ -149,7 +149,7 @@ class ReportedBugs extends JaninoTestSuite {
             + "    }\n"
             + "}\n"
         );
-        assertClassBodyCookable(
+        this.assertClassBodyCookable(
             ""
             + "void baz2() {\n"
             + "    for (int i = 0; i < 100; i++) {\n"
@@ -162,7 +162,7 @@ class ReportedBugs extends JaninoTestSuite {
             + "    }\n"
             + "}\n"
         );
-        assertClassBodyCookable(
+        this.assertClassBodyCookable(
             ""
             + "public void foo() throws Exception {\n"
             + "    for (int i = 0 ; true; i++) {\n"
@@ -170,7 +170,7 @@ class ReportedBugs extends JaninoTestSuite {
             + "    }\n"
             + "}\n"
         );
-        assertClassBodyCookable(
+        this.assertClassBodyCookable(
             ""
             + "public void foo() throws Exception {\n"
             + "    for (int i = 0 ; true; i++) {\n"
@@ -178,7 +178,7 @@ class ReportedBugs extends JaninoTestSuite {
             + "    }\n"
             + "}\n"
         );
-        assertClassBodyCookable(
+        this.assertClassBodyCookable(
             ""
             + "public void foo() throws Exception {\n"
             + "    {\n"
@@ -200,7 +200,7 @@ class ReportedBugs extends JaninoTestSuite {
             + "    }\n"
             + "}\n"
         );
-        assertScriptExecutable(
+        this.assertScriptExecutable(
             ""
             + "int c = 5;\n"
             + "if (c == 5) {\n"
@@ -214,7 +214,7 @@ class ReportedBugs extends JaninoTestSuite {
 
     @Test public void
     testBug55() throws Exception {
-        assertCompilationUnitCookable(
+        this.assertCompilationUnitCookable(
             ""
             + "class Junk {" + "\n"
             + "    double[][] x = { { 123.4 } };" + "\n"
@@ -224,7 +224,7 @@ class ReportedBugs extends JaninoTestSuite {
 
     @Test public void
     testBug56() throws Exception {
-        assertScriptCookable(
+        this.assertScriptCookable(
             ""
             + "int dummy3 = 3;\n"
             + "try {\n"
@@ -249,14 +249,14 @@ class ReportedBugs extends JaninoTestSuite {
 
     @Test public void
     testBug63() throws Exception {
-        assertClassBodyUncookable(
+        this.assertClassBodyUncookable(
             ""
             + "public static boolean main() {\n"
             + "    IPred p = new Pred();\n"
             + "    return !p.filter();\n" // Comile error, because 'IPred.filter()' throws 'Exception'
             + "}\n"
         );
-        assertClassBodyMainReturnsTrue(
+        this.assertClassBodyMainReturnsTrue(
             ""
             + "public static boolean main() {\n"
             + "    Pred p = new Pred();\n"
@@ -267,7 +267,7 @@ class ReportedBugs extends JaninoTestSuite {
 
     @Test public void
     testBug69() throws Exception {
-        assertCompilationUnitMainExecutable((
+        this.assertCompilationUnitMainExecutable((
             ""
             + "public class Test {\n"
             + "    public static void main() {\n"
@@ -299,7 +299,7 @@ class ReportedBugs extends JaninoTestSuite {
 
     @Test public void
     testBug70() throws Exception {
-        assertClassBodyCookable(
+        this.assertClassBodyCookable(
             ""
             + "public String result = \"allow\", email = null, anno = null, cnd = null, transactionID = null;\n"
             + "public String treeCode(String root) {\n"
@@ -316,7 +316,7 @@ class ReportedBugs extends JaninoTestSuite {
 
     @Test public void
     testBug71() throws Exception {
-        assertCompilationUnitMainReturnsTrue((
+        this.assertCompilationUnitMainReturnsTrue((
             ""
             + "public class ACI {\n"
             + "    public static boolean main() {\n"
@@ -335,7 +335,7 @@ class ReportedBugs extends JaninoTestSuite {
             + "    }\n"
             + "}\n"
         ), "ACI");
-        assertCompilationUnitMainReturnsTrue((
+        this.assertCompilationUnitMainReturnsTrue((
             ""
             + "public class SCI {\n"
             + "    public static boolean main() {\n"
@@ -363,13 +363,13 @@ class ReportedBugs extends JaninoTestSuite {
     @Test public void
     testBug80() throws Exception {
         // Expression compilation is said to throw StackOverflowError!?
-        assertExpressionUncookable("(10).total >= 100.0 ? 0.0 : 7.95");
+        this.assertExpressionUncookable("(10).total >= 100.0 ? 0.0 : 7.95");
     }
 
     @Test public void
     testBug81() throws Exception {
         // IncompatibleClassChangeError when invoking getClass() on interface references
-        assertScriptExecutable(
+        this.assertScriptExecutable(
             ""
             + "import java.util.ArrayList;\n"
             + "import java.util.List;\n"
@@ -382,13 +382,13 @@ class ReportedBugs extends JaninoTestSuite {
     @Test public void
     testBug99() throws Exception {
         // ConcurrentModificationException due to instance variable of Class type initialized using a class literal
-        assertCompilationUnitCookable("class Test{Class c = String.class;}");
+        this.assertCompilationUnitCookable("class Test{Class c = String.class;}");
     }
 
     @Test public void
     testBug102() throws Exception {
         // Static initializers are not executed
-        assertCompilationUnitMainReturnsTrue((
+        this.assertCompilationUnitMainReturnsTrue((
             ""
             + "public class Test{\n"
             + "    static String x = \"\";\n"
@@ -416,7 +416,7 @@ class ReportedBugs extends JaninoTestSuite {
     @Test public void
     testBug105() throws Exception {
         // Possible to call a method of an enclosing class as if it was a member of an inner class
-        assertClassBodyUncookable(
+        this.assertClassBodyUncookable(
             ""
             + "class Price {\n"
             + "  public int getPriceA() {\n"
@@ -442,8 +442,8 @@ class ReportedBugs extends JaninoTestSuite {
 
     @Test public void
     testBug106() throws Exception {
-        assertJavaSourceLoadable(new File("aux-files/Bug 106"), "b.C3");
-        assertCompilationUnitMainReturnsTrue((
+        this.assertJavaSourceLoadable(new File("aux-files/Bug 106"), "b.C3");
+        this.assertCompilationUnitMainReturnsTrue((
             ""
             + "class MyFile extends java.io.File {\n"
             + "    public MyFile() { super(\"/my/file\"); }\n"
@@ -454,7 +454,7 @@ class ReportedBugs extends JaninoTestSuite {
             + "    }\n"
             + "}"
         ), "Main");
-        assertScriptReturnsTrue(
+        this.assertScriptReturnsTrue(
             ""
             + "StringBuffer sb = new StringBuffer();\n"
             + "sb.append('(');\n"
@@ -464,7 +464,7 @@ class ReportedBugs extends JaninoTestSuite {
 
     @Test public void
     testBug147() throws Exception {
-        assertCompilationUnitCookable(
+        this.assertCompilationUnitCookable(
             "public class Foo {\n"
             + "    public static void main(String[] args) {\n"
             + "        new Object() {\n"
@@ -484,9 +484,9 @@ class ReportedBugs extends JaninoTestSuite {
     testBug149() throws Exception {
 
         // JLS7 3.10.6: "aaa\/bbb" contains an invalid escape sequence: "\/".
-        assertExpressionUncookable("\"aaa\\/bbb\"");
+        this.assertExpressionUncookable("\"aaa\\/bbb\"");
     }
-    
+
     @SuppressWarnings("deprecation") @Test(expected = AssertionError.class) public void
     testBug157() throws Exception {
         IExpressionEvaluator evaluator = CompilerFactoryFactory.getDefaultCompilerFactory().newExpressionEvaluator();
@@ -495,7 +495,7 @@ class ReportedBugs extends JaninoTestSuite {
 
     @Test public void
     testBug153_1() throws Exception {
-        assertScriptExecutable("Comparable x = 5.0;");
+        this.assertScriptExecutable("Comparable x = 5.0;");
     }
 
     @Test public void
@@ -509,12 +509,12 @@ class ReportedBugs extends JaninoTestSuite {
         //
         // , but obviously (JAVAC) a boxing conversion followed by a widening reference conversion is also
         // permitted (as for assignment conversion).
-        assertScriptExecutable("Comparable x = (Comparable) 5.0;");
+        this.assertScriptExecutable("Comparable x = (Comparable) 5.0;");
     }
 
     @Test public void
     testBug153_3() throws Exception {
-        assertScriptExecutable("long x = new Integer(8);");
+        this.assertScriptExecutable("long x = new Integer(8);");
     }
 
     @Test public void
@@ -528,12 +528,12 @@ class ReportedBugs extends JaninoTestSuite {
         //
         // , but obviously (JAVAC) an unboxing conversion followed by a widening primitive conversion is also
         // permitted (as for assignment conversion).
-        assertScriptExecutable("long x = (long) new Integer(8);");
+        this.assertScriptExecutable("long x = (long) new Integer(8);");
     }
 
     @Test public void
     testBug161_1() throws Exception {
-        assertCompilationUnitCookable(
+        this.assertCompilationUnitCookable(
             ""
             + "public class Test {\n"
             + "    public static void test2(boolean x, boolean y) {\n"
@@ -542,10 +542,10 @@ class ReportedBugs extends JaninoTestSuite {
             + "}\n"
         );
     }
-    
+
     @Test public void
     testBug161_2() throws Exception {
-        assertCompilationUnitCookable(
+        this.assertCompilationUnitCookable(
             ""
             + "public class Test\n"
             + "{\n"
@@ -560,10 +560,10 @@ class ReportedBugs extends JaninoTestSuite {
             + "}\n"
         );
     }
-    
+
     @Test public void
     testBug162() throws Exception {
-        assertCompilationUnitCookable(
+        this.assertCompilationUnitCookable(
             ""
             + "public class BridgeTest {\n"
             + "\n"
@@ -585,7 +585,7 @@ class ReportedBugs extends JaninoTestSuite {
 
     @Test public void
     testBug163() throws Exception {
-        assertClassBodyCookable(
+        this.assertClassBodyCookable(
             ""
             + "import java.io.*;\n"
             + "\n"
@@ -602,6 +602,103 @@ class ReportedBugs extends JaninoTestSuite {
             + "        }\n"
             + "    }\n"
             + "}"
+        );
+    }
+
+    @Test public void
+    testBug169() throws Exception {
+        this.assertCompilationUnitCookable(
+            ""
+            + "import java.util.*;\n"
+            + "\n"
+            + "class Test2 {\n"
+            + "    final Object fld1 = null;\n"
+            + "    public void bind(final Object param2) {\n"
+            + "        fld1.hashCode();\n"
+            + "        final Object lvar3 = param2;\n"
+            + "        new Object() {\n"
+            + "            {\n"
+            + "                fld1.hashCode();\n"
+            + "                param2.hashCode();\n"
+            + "            }\n"
+            + "            final Object fld4 = fld1.hashCode() + param2.hashCode() + lvar3.hashCode() + fld4.hashCode();\n"
+            + "            public void meth(final Object parm5) {\n"
+            + "                fld1.hashCode();\n"
+            + "                param2.hashCode();\n"
+            + "                lvar3.hashCode();\n"
+            + "                fld4.hashCode();\n"
+            + "                parm5.hashCode();\n"
+            + "                final Object lvar5a = null;\n"
+            + "                final Object lvar6 = new Object() {\n"
+            + "                    void meth() {\n"
+            + "                        fld1.hashCode();\n"
+            + "                        param2.hashCode();\n"
+            + "                        lvar3.hashCode();\n"
+            + "                        fld4.hashCode();\n"
+            + "                        parm5.hashCode();\n"
+            + "       //SNO            lvar6.hashCode();\n"
+            + "                    }\n"
+            + "                    final Object fld7 = fld1.hashCode() + param2.hashCode() + lvar3.hashCode() + fld4.hashCode() + parm5.hashCode() + lvar5a.hashCode() + /*SNO lvar6.hashCode() +*/ fld7.hashCode();\n"
+            + "                    Object fld8 = new Object() {\n"
+            + "                        final Object fld9 = fld1.hashCode() + /*param2.hashCode() + lvar3.hashCode() +*/ fld4.hashCode() + /*parm5.hashCode() + lvar5a.hashCode() + lvar6.hashCode()*/ + fld7.hashCode() + fld8.hashCode();\n"
+            + "                        public void apply(final Object parm10) {\n"
+            + "                            fld1.hashCode();\n"
+            + "    // Unknown var or type  param2.hashCode();\n"
+            + "    // Unknown var or type  lvar3.hashCode();\n"
+            + "                            fld4.hashCode();\n"
+            + "    // Unknown var or type  parm5.hashCode();\n"
+            + "    // Unknown var or type  lvar6.hashCode();\n"
+            + "                            fld7.hashCode();\n"
+            + "                            fld8.hashCode();\n"
+            + "                            fld9.hashCode();\n"
+            + "                            parm10.hashCode();\n"
+            + "                            final Object lvar11 = null;\n"
+            + "                            final Object lvar12 = new Object() {\n"
+            + "                                final Object fld13 = fld1.hashCode() + fld4.hashCode() + fld7.hashCode() + fld8.hashCode();\n"
+            + "                                public void meth(final Object parm14) {\n"
+            + "                                    fld1.hashCode();\n"
+            + "            // Unknown var or type  param2.hashCode();\n"
+            + "            // Unknown var or type  lvar3.hashCode();\n"
+            + "                                    fld4.hashCode();\n"
+            + "            // Unknown var or type  parm5.hashCode();\n"
+            + "            // Unknown var or type  lvar6.hashCode();\n"
+            + "                                    fld7.hashCode();\n"
+            + "                                    fld8.hashCode();\n"
+            + "                                    fld9.hashCode();\n"
+            + "                                    parm10.hashCode();\n"
+            + "                                    lvar11.hashCode();\n"
+            + "                        // SNO      lvar12.hashCode();\n"
+            + "                                    fld13.hashCode();\n"
+            + "                                    parm14.hashCode();\n"
+            + "                                    final Object lvar15 = fld1.hashCode() + fld4.hashCode() + fld7.hashCode() + fld8.hashCode();\n"
+            + "                                    new Object() {\n"
+            + "                                        void meth() {\n"
+            + "                                            fld1.hashCode();\n"
+            + "                   // Unknown var or type   param2.hashCode();\n"
+            + "                   // Unknown var or type   lvar3.hashCode();\n"
+            + "                                            fld4.hashCode();\n"
+            + "                   // Unknown var or type   parm5.hashCode();\n"
+            + "                   // Unknown var or type   lvar6.hashCode();\n"
+            + "                                            fld7.hashCode();\n"
+            + "                                            fld8.hashCode();\n"
+            + "                                            fld9.hashCode();\n"
+            + "                                            parm10.hashCode();\n"
+            + "                                            lvar11.hashCode();\n"
+            + "                          // SNO            lvar12.hashCode();\n"
+            + "                                            fld13.hashCode();\n"
+            + "                                            parm14.hashCode();\n"
+            + "                                            lvar15.hashCode();\n"
+            + "                                        }\n"
+            + "                                    };\n"
+            + "                                }\n"
+            + "                            };\n"
+            + "                        }\n"
+            + "                    };\n"
+            + "                };\n"
+            + "            }\n"
+            + "        };\n"
+            + "    }\n"
+            + "}\n"
         );
     }
 }
