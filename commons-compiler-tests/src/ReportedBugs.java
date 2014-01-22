@@ -647,6 +647,7 @@ class ReportedBugs extends JaninoTestSuite {
             + "    // Unknown var or type  lvar3.hashCode();\n"
             + "                            fld4.hashCode();\n"
             + "    // Unknown var or type  parm5.hashCode();\n"
+            + "    // Unknown var or type  lvar5a.hashCode();\n"
             + "    // Unknown var or type  lvar6.hashCode();\n"
             + "                            fld7.hashCode();\n"
             + "                            fld8.hashCode();\n"
