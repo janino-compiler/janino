@@ -45,7 +45,7 @@ class ClassBodyDemo {
             System.out.println("  ClassBodyDemo -help");
             System.out.println("If <class-body> starts with a '@', then the class body is read");
             System.out.println("from the named file.");
-            System.out.println("The <class-body> must declare a method \"public static main(String[])\"");
+            System.out.println("The <class-body> must declare a method \"public static void main(String[])\"");
             System.out.println("to which the <argument>s are passed. If the return type of that method is");
             System.out.println("not VOID, then the returned value is printed to STDOUT.");
             System.exit(0);
