@@ -66,7 +66,7 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
             System.out.println("Usage:");
             System.out.println("    org.codehaus.janino.SimpleCompiler <source-file> <class-name> { <argument> }");
             System.out.println("Reads a compilation unit from the given <source-file> and invokes method");
-            System.out.println("\"public static void main(String[])\" of class <class-name>, passing the.");
+            System.out.println("\"public static void main(String[])\" of class <class-name>, passing the");
             System.out.println("given <argument>s.");
             System.exit(1);
         }
