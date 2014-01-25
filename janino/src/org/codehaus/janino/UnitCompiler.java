@@ -2695,7 +2695,7 @@ class UnitCompiler {
             a.operator.substring( // operator
                 0,
                 a.operator.length() - 1
-            ).intern(), // <= IMPORTANT!
+            ).intern(), /* <= IMPORTANT! */
             a.rhs                 // rhs
         );
 
