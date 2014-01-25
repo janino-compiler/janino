@@ -34,7 +34,7 @@ import java.util.*;
  *
  * @param <T> The element type of the list iterator
  */
-@SuppressWarnings({ "rawtypes", "unchecked" }) public abstract
+public abstract
 class FilterListIterator<T> implements ListIterator<T> {
 
     /** @see FilterListIterator */
