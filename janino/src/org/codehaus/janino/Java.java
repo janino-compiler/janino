@@ -1512,6 +1512,15 @@ class Java {
         public Annotation[]
         getAnnotations() { return this.modifiers.annotations; }
 
+        // Implement "FunctionDeclarator".
+
+        /**
+         * Invokes the '{@code visit...()}' method of {@link Visitor.FunctionDeclaratorVisitor} for the concrete
+         * {@link FunctionDeclarator} type.
+         */
+        public abstract void
+        accept(Visitor.FunctionDeclaratorVisitor visitor);
+
         // Override "AbstractTypeBodyDeclaration"
 
         @Override public void
@@ -1677,6 +1686,9 @@ class Java {
 
         @Override public void
         accept(Visitor.TypeBodyDeclarationVisitor visitor) { visitor.visitConstructorDeclarator(this); }
+
+        @Override public void
+        accept(Visitor.FunctionDeclaratorVisitor visitor) { visitor.visitConstructorDeclarator(this); }
     }
 
     /** Representation of a method declarator. */
@@ -1719,6 +1731,9 @@ class Java {
 
         @Override public void
         accept(Visitor.TypeBodyDeclarationVisitor visitor) { visitor.visitMethodDeclarator(this); }
+
+        @Override public void
+        accept(Visitor.FunctionDeclaratorVisitor visitor) { visitor.visitMethodDeclarator(this); }
 
         /** The resolved {@link IMethod}. */
         IClass.IMethod iMethod;

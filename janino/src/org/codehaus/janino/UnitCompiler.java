@@ -400,7 +400,7 @@ class UnitCompiler {
     compile2(ClassDeclaration cd) throws CompileException {
         IClass iClass = this.resolve(cd);
 
-        // Check that all methods are implemented.
+        // Check that all methods of the non-abstract class are implemented.
         if (!Mod.isAbstract(cd.getModifierFlags())) {
             IMethod[] ms = iClass.getIMethods();
             for (IMethod base : ms) {
@@ -2194,6 +2194,8 @@ class UnitCompiler {
                 );
             }
         } else {
+
+            // Non-PRIVATE function.
 
             mi = classFile.addMethodInfo(
                 fd.modifiers,                         // modifiers
@@ -6897,7 +6899,7 @@ class UnitCompiler {
                                 + "\" from inner class"
                             );
                         }
-                        final IClass lvType = lv.type;
+                        final IClass  lvType = lv.type;
                         IClass.IField iField = new SimpleIField(
                             this.resolve(icd),
                             "val$" + identifier,
@@ -8358,18 +8360,20 @@ class UnitCompiler {
                     return super.getDescriptor();
                 }
 
-                List<String> l = new ArrayList();
+                List<String> parameterFds = new ArrayList();
 
                 // Convert enclosing instance reference into prepended constructor parameters.
                 IClass outerClass = UnitCompiler.this.resolve(
                     constructorDeclarator.getDeclaringClass()
                 ).getOuterIClass();
-                if (outerClass != null) l.add(outerClass.getDescriptor());
+                if (outerClass != null) parameterFds.add(outerClass.getDescriptor());
 
                 // Convert synthetic fields into prepended constructor parameters.
                 for (IField sf : constructorDeclarator.getDeclaringClass().syntheticFields.values()) {
-                    if (sf.getName().startsWith("val$")) l.add(sf.getType().getDescriptor());
+                    if (sf.getName().startsWith("val$")) parameterFds.add(sf.getType().getDescriptor());
                 }
+
+                // Process the 'normal' (declared) function parameters.
                 FormalParameter[] parameters = constructorDeclarator.formalParameters.parameters;
                 for (int i = 0; i < parameters.length; ++i) {
                     IClass parameterType = UnitCompiler.this.getType(parameters[i].type);
@@ -8378,10 +8382,12 @@ class UnitCompiler {
                             UnitCompiler.this.iClassLoader.TYPE_java_lang_Object
                         );
                     }
-                    l.add(parameterType.getDescriptor());
+                    parameterFds.add(parameterType.getDescriptor());
                 }
-                String[] apd = (String[]) l.toArray(new String[l.size()]);
-                return new MethodDescriptor(apd, Descriptor.VOID).toString();
+                return new MethodDescriptor(
+                    (String[]) parameterFds.toArray(new String[parameterFds.size()]), // parameterFds
+                    Descriptor.VOID                                                   // returnFd
+                ).toString();
             }
 
             @Override public boolean
@@ -8511,18 +8517,15 @@ class UnitCompiler {
     }
 
     private IClass.IInvocable
-    toIInvocable(FunctionDeclarator fd) {
-        if (fd instanceof ConstructorDeclarator) {
-            return this.toIConstructor((ConstructorDeclarator) fd);
-        } else
-        if (fd instanceof MethodDeclarator) {
-            return this.toIMethod((MethodDeclarator) fd);
-        } else
-        {
-            throw new JaninoRuntimeException(
-                "FunctionDeclarator is neither ConstructorDeclarator nor MethodDeclarator"
-            );
-        }
+    toIInvocable(final FunctionDeclarator fd) {
+        final IClass.IInvocable[] result = new IClass.IInvocable[1];
+        fd.accept(new Visitor.FunctionDeclaratorVisitor() {
+            // CHECKSTYLE LineLength:OFF
+            @Override public void visitMethodDeclarator(MethodDeclarator md)           { result[0] = UnitCompiler.this.toIMethod((MethodDeclarator) fd);           }
+            @Override public void visitConstructorDeclarator(ConstructorDeclarator cd) { result[0] = UnitCompiler.this.toIConstructor((ConstructorDeclarator) fd); }
+            // CHECKSTYLE LineLength:ON
+        });
+        return result[0];
     }
 
     /** If the given name was declared in a simple type import, load that class. */

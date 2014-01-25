@@ -71,22 +71,27 @@ class Visitor {
         void visitMemberClassDeclaration(Java.MemberClassDeclaration mcd);
     }
 
+    /** The visitor for all kinds of {@link Java.FunctionDeclarator}s. */
+    public
+    interface FunctionDeclaratorVisitor {
+        /** Invoked by {@link Java.ConstructorDeclarator#accept(Visitor.TypeBodyDeclarationVisitor)} */
+        void visitConstructorDeclarator(Java.ConstructorDeclarator cd);
+        /** Invoked by {@link Java.MethodDeclarator#accept(Visitor.TypeBodyDeclarationVisitor)} */
+        void visitMethodDeclarator(Java.MethodDeclarator md);
+    }
+
     /**
      * The visitor for all kinds of {@link Java.TypeBodyDeclaration}s (declarations that may appear in the body of a
      * type declaration).
      */
     public
-    interface TypeBodyDeclarationVisitor {
+    interface TypeBodyDeclarationVisitor extends FunctionDeclaratorVisitor {
         /** Invoked by {@link Java.MemberInterfaceDeclaration#accept(Visitor.TypeBodyDeclarationVisitor)} */
         void visitMemberInterfaceDeclaration(Java.MemberInterfaceDeclaration mid);
         /** Invoked by {@link Java.MemberClassDeclaration#accept(Visitor.TypeBodyDeclarationVisitor)} */
         void visitMemberClassDeclaration(Java.MemberClassDeclaration mcd);
-        /** Invoked by {@link Java.ConstructorDeclarator#accept(Visitor.TypeBodyDeclarationVisitor)} */
-        void visitConstructorDeclarator(Java.ConstructorDeclarator cd);
         /** Invoked by {@link Java.Initializer#accept(Visitor.TypeBodyDeclarationVisitor)} */
         void visitInitializer(Java.Initializer i);
-        /** Invoked by {@link Java.MethodDeclarator#accept(Visitor.TypeBodyDeclarationVisitor)} */
-        void visitMethodDeclarator(Java.MethodDeclarator md);
         /** Invoked by {@link Java.FieldDeclaration#accept(Visitor.TypeBodyDeclarationVisitor)} */
         void visitFieldDeclaration(Java.FieldDeclaration fd);
     }
