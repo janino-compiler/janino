@@ -639,7 +639,7 @@ class UnitCompiler {
             }
         }
 
-        // For classes that enclose surrounding scopes, trawl their initializers looking for synthetic fields.
+        // For classes that enclose surrounding scopes, trawl their field initializers looking for synthetic fields.
         if (icd instanceof AnonymousClassDeclaration || icd instanceof LocalClassDeclaration) {
             ClassDeclaration cd = (ClassDeclaration) icd;
             for (int i = 0; i < cd.variableDeclaratorsAndInitializers.size(); ++i) {
@@ -3326,16 +3326,7 @@ class UnitCompiler {
     private IClass
     compileGet2(FieldAccess fa) throws CompileException {
         this.checkAccessible(fa.field, fa.getEnclosingBlockStatement());
-        if (fa.field.isStatic()) {
-            this.writeOpcode(fa, Opcode.GETSTATIC);
-        } else {
-            this.writeOpcode(fa, Opcode.GETFIELD);
-        }
-        this.writeConstantFieldrefInfo(
-            fa.field.getDeclaringIClass().getDescriptor(), // classFD
-            fa.field.getName(),                            // fieldName
-            fa.field.getType().getDescriptor()             // fieldFD
-        );
+        this.getfield(fa, fa.field);
         return fa.field.getType();
     }
 
@@ -5086,12 +5077,7 @@ class UnitCompiler {
     private void
     compileSet2(FieldAccess fa) throws CompileException {
         this.checkAccessible(fa.field, fa.getEnclosingBlockStatement());
-        this.writeOpcode(fa, fa.field.isStatic() ? Opcode.PUTSTATIC : Opcode.PUTFIELD);
-        this.writeConstantFieldrefInfo(
-            fa.field.getDeclaringIClass().getDescriptor(), // classFD
-            fa.field.getName(),                            // fieldName
-            fa.field.getDescriptor()                       // fieldFD
-        );
+        this.putfield(fa, fa.field);
     }
     private void
     compileSet2(ArrayAccessExpression aae) throws CompileException {
@@ -6487,108 +6473,109 @@ class UnitCompiler {
                 if (syntheticFields.length > 0) {
                     throw new JaninoRuntimeException("SNO: Target class has synthetic fields");
                 }
-            } else {
-                ClassDeclaration scopeClassDeclaration = (ClassDeclaration) scopeTypeDeclaration;
-                for (IClass.IField sf : syntheticFields) {
-                    if (!sf.getName().startsWith("val$")) continue;
-                    IClass.IField eisf = (IClass.IField) scopeClassDeclaration.syntheticFields.get(sf.getName());
-                    if (eisf != null) {
-                        if (scopeTbd instanceof MethodDeclarator) {
-                            this.load(locatable, this.resolve(scopeClassDeclaration), 0);
-                            this.writeOpcode(locatable, Opcode.GETFIELD);
-                            this.writeConstantFieldrefInfo(
-                                this.resolve(scopeClassDeclaration).getDescriptor(), // classFD
-                                sf.getName(),                                        // fieldName
-                                sf.getDescriptor()                                   // fieldFD
-                            );
-                        } else
-                        if (scopeTbd instanceof ConstructorDeclarator) {
-                            ConstructorDeclarator constructorDeclarator = (ConstructorDeclarator) scopeTbd;
-                            LocalVariable         syntheticParameter    = (
-                                (LocalVariable) constructorDeclarator.syntheticParameters.get(sf.getName())
-                            );
-                            if (syntheticParameter == null) {
-                                this.compileError((
-                                    "Compiler limitation: Constructor cannot access local variable \""
-                                    + sf.getName().substring(4)
-                                    + "\" declared in an enclosing block because none of the methods accesses it. "
-                                    + "As a workaround, declare a dummy method that accesses the local variable."
-                                ), locatable.getLocation());
-                                this.writeOpcode(locatable, Opcode.ACONST_NULL);
-                            } else {
-                                this.load(locatable, syntheticParameter);
-                            }
-                        } else
-                        {
+                return;
+            }
+
+            ClassDeclaration scopeClassDeclaration = (ClassDeclaration) scopeTypeDeclaration;
+            for (IClass.IField sf : syntheticFields) {
+                if (!sf.getName().startsWith("val$")) continue;
+                IClass.IField eisf = (IClass.IField) scopeClassDeclaration.syntheticFields.get(sf.getName());
+                if (eisf != null) {
+                    if (scopeTbd instanceof MethodDeclarator) {
+                        this.load(locatable, this.resolve(scopeClassDeclaration), 0);
+                        this.getfield(locatable, eisf);
+                    } else
+                    if (scopeTbd instanceof ConstructorDeclarator) {
+                        ConstructorDeclarator constructorDeclarator = (ConstructorDeclarator) scopeTbd;
+                        LocalVariable         syntheticParameter    = (
+                            (LocalVariable) constructorDeclarator.syntheticParameters.get(sf.getName())
+                        );
+                        if (syntheticParameter == null) {
                             this.compileError((
-                                "Compiler limitation: "
-                                + "Initializers cannot access local variables declared in an enclosing block."
+                                "Compiler limitation: Constructor cannot access local variable \""
+                                + sf.getName().substring(4)
+                                + "\" declared in an enclosing block because none of the methods accesses it. "
+                                + "As a workaround, declare a dummy method that accesses the local variable."
                             ), locatable.getLocation());
-                            this.writeOpcode(scopeTbd, Opcode.ACONST_NULL);
+                            this.writeOpcode(locatable, Opcode.ACONST_NULL);
+                        } else {
+                            this.load(locatable, syntheticParameter);
                         }
-                    } else {
-                        String        localVariableName = sf.getName().substring(4);
-                        LocalVariable lv;
-                        DETERMINE_LV: {
-                            Scope s;
+                    } else
+                    if (scopeTbd instanceof FieldDeclaration) {
+                        this.compileError((
+                            "Compiler limitation: Field initializers cannot access local variable \""
+                            + sf.getName().substring(4)
+                            + "\" declared in an enclosing block because none of the methods accesses it. "
+                            + "As a workaround, declare a dummy method that accesses the local variable."
+                        ), locatable.getLocation());
+                        this.writeOpcode(scopeTbd, Opcode.ACONST_NULL);
+                    } else
+                    {
+                        throw new AssertionError(scopeTbd);
+                    }
+                } else {
+                    String        localVariableName = sf.getName().substring(4);
+                    LocalVariable lv;
+                    DETERMINE_LV: {
+                        Scope s;
 
-                            // Does one of the enclosing blocks declare a local variable with that name?
-                            for (s = scope; s instanceof BlockStatement; s = s.getEnclosingScope()) {
-                                BlockStatement       bs = (BlockStatement) s;
-                                Scope                es = bs.getEnclosingScope();
+                        // Does one of the enclosing blocks declare a local variable with that name?
+                        for (s = scope; s instanceof BlockStatement; s = s.getEnclosingScope()) {
+                            BlockStatement       bs = (BlockStatement) s;
+                            Scope                es = bs.getEnclosingScope();
 
-                                List<? extends BlockStatement> statements;
-                                if (es instanceof Block) {
-                                    statements = ((Block) es).statements;
-                                } else
-                                if (es instanceof FunctionDeclarator) {
-                                    statements = ((FunctionDeclarator) es).optionalStatements;
-                                } else
-                                if (es instanceof ForEachStatement) {
-                                    FunctionDeclarator.FormalParameter fp = ((ForEachStatement) es).currentElement;
-                                    if (fp.name.equals(localVariableName)) {
-                                        lv = this.getLocalVariable(fp);
-                                        break DETERMINE_LV;
-                                    }
-                                    continue;
-                                } else
-                                {
-                                    continue;
-                                }
-
-                                for (BlockStatement bs2 : statements) {
-                                    if (bs2 == bs) break;
-                                    if (bs2 instanceof LocalVariableDeclarationStatement) {
-                                        LocalVariableDeclarationStatement lvds = (
-                                            (LocalVariableDeclarationStatement) bs2
-                                        );
-                                        for (VariableDeclarator vd : lvds.variableDeclarators) {
-                                            if (vd.name.equals(localVariableName)) {
-                                                lv = this.getLocalVariable(lvds, vd);
-                                                break DETERMINE_LV;
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-
-                            // Does the declaring function declare a parameter with that name?
-                            while (!(s instanceof FunctionDeclarator)) s = s.getEnclosingScope();
-                            FunctionDeclarator fd = (FunctionDeclarator) s;
-                            for (FormalParameter fp : fd.formalParameters.parameters) {
+                            List<? extends BlockStatement> statements;
+                            if (es instanceof Block) {
+                                statements = ((Block) es).statements;
+                            } else
+                            if (es instanceof FunctionDeclarator) {
+                                statements = ((FunctionDeclarator) es).optionalStatements;
+                            } else
+                            if (es instanceof ForEachStatement) {
+                                FunctionDeclarator.FormalParameter fp = ((ForEachStatement) es).currentElement;
                                 if (fp.name.equals(localVariableName)) {
                                     lv = this.getLocalVariable(fp);
                                     break DETERMINE_LV;
                                 }
+                                continue;
+                            } else
+                            {
+                                continue;
                             }
-                            throw new JaninoRuntimeException(
-                                "SNO: Synthetic field \""
-                                + sf.getName()
-                                + "\" neither maps a synthetic field of an enclosing instance nor a local variable"
-                            );
+
+                            for (BlockStatement bs2 : statements) {
+                                if (bs2 == bs) break;
+                                if (bs2 instanceof LocalVariableDeclarationStatement) {
+                                    LocalVariableDeclarationStatement lvds = (
+                                        (LocalVariableDeclarationStatement) bs2
+                                    );
+                                    for (VariableDeclarator vd : lvds.variableDeclarators) {
+                                        if (vd.name.equals(localVariableName)) {
+                                            lv = this.getLocalVariable(lvds, vd);
+                                            break DETERMINE_LV;
+                                        }
+                                    }
+                                }
+                            }
                         }
-                        this.load(locatable, lv);
+
+                        // Does the declaring function declare a parameter with that name?
+                        while (!(s instanceof FunctionDeclarator)) s = s.getEnclosingScope();
+                        FunctionDeclarator fd = (FunctionDeclarator) s;
+                        for (FormalParameter fp : fd.formalParameters.parameters) {
+                            if (fp.name.equals(localVariableName)) {
+                                lv = this.getLocalVariable(fp);
+                                break DETERMINE_LV;
+                            }
+                        }
+                        throw new JaninoRuntimeException(
+                            "SNO: Synthetic field \""
+                            + sf.getName()
+                            + "\" neither maps a synthetic field of an enclosing instance nor a local variable"
+                        );
                     }
+                    this.load(locatable, lv);
                 }
             }
         }
@@ -8221,22 +8208,16 @@ class UnitCompiler {
             i = 0;
         }
         for (; i < j; ++i) {
-            final String                fieldName = "this$" + (path.size() - i - 2);
             final InnerClassDeclaration inner     = (InnerClassDeclaration) path.get(i);
-            IClass                      iic       = this.resolve(inner);
             final TypeDeclaration       outer     = (TypeDeclaration) path.get(i + 1);
-            final IClass                oic       = this.resolve(outer);
-            inner.defineSyntheticField(new SimpleIField(
-                iic,
-                fieldName,
-                oic
-            ));
-            this.writeOpcode(locatable, Opcode.GETFIELD);
-            this.writeConstantFieldrefInfo(
-                iic.getDescriptor(), // classFD
-                fieldName,           // fieldName
-                oic.getDescriptor()  // fieldFD
+
+            SimpleIField sf = new SimpleIField(
+                this.resolve(inner),             // declaringIClass
+                "this$" + (path.size() - i - 2), // name
+                this.resolve(outer)              // type
             );
+            inner.defineSyntheticField(sf);
+            this.getfield(locatable, sf);
         }
     }
 
@@ -9848,6 +9829,26 @@ class UnitCompiler {
             this.writeOpcode(locatable, Opcode.ISTORE + ilfda(lvType));
             this.writeShort(lvIndex);
         }
+    }
+
+    private void
+    getfield(Locatable locatable, IClass.IField iField) throws CompileException {
+        this.writeOpcode(locatable, iField.isStatic() ? Opcode.GETSTATIC : Opcode.GETFIELD);
+        this.writeConstantFieldrefInfo(
+            iField.getDeclaringIClass().getDescriptor(), // classFD
+            iField.getName(),                            // fieldName
+            iField.getDescriptor()                       // fieldFD
+        );
+    }
+
+    private void
+    putfield(Locatable locatable, IField iField) throws CompileException {
+        this.writeOpcode(locatable, iField.isStatic() ? Opcode.PUTSTATIC : Opcode.PUTFIELD);
+        this.writeConstantFieldrefInfo(
+            iField.getDeclaringIClass().getDescriptor(), // classFD
+            iField.getName(),                            // fieldName
+            iField.getDescriptor()                       // fieldFD
+        );
     }
 
     private void
