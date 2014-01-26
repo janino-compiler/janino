@@ -4294,7 +4294,7 @@ class Java {
 
     /** The union of {@link ArrayInitializer} and {@link Rvalue}. */
     public
-    interface ArrayInitializerOrRvalue {
+    interface ArrayInitializerOrRvalue extends Locatable {
     }
 
     /** Abstract base class for the various Java&trade; literals; see JLS7 3.10. */
