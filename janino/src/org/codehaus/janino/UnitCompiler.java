@@ -1670,16 +1670,7 @@ class UnitCompiler {
             ;
 
             assert fd.modifiers.annotations.length == 0;
-            if (Mod.isStatic(fd.modifiers.flags)) {
-                this.writeOpcode(fd, Opcode.PUTSTATIC);
-            } else {
-                this.writeOpcode(fd, Opcode.PUTFIELD);
-            }
-            this.writeConstantFieldrefInfo(
-                this.resolve(fd.getDeclaringType()).getDescriptor(), // classFD
-                vd.name,                                             // fieldName
-                fieldType.getDescriptor()                            // fieldFD
-            );
+            this.putfield(fd, this.resolve(fd.getDeclaringType()).getDeclaredIField(vd.name));
         }
         return true;
     }
@@ -3437,45 +3428,42 @@ class UnitCompiler {
         }
 
         // Declare the static "class dollar field" if not already done.
-        {
-            boolean hasClassDollarField = false;
-            BLOCK_STATEMENTS: for (BlockStatement bs : statics) {
+        ADD_CLASS_DOLLAR_FIELD: {
+            for (BlockStatement bs : statics) {
                 if (!((TypeBodyDeclaration) bs).isStatic()) continue;
                 if (bs instanceof FieldDeclaration) {
-                    for (IField f : this.getIFields((FieldDeclaration) bs)) {
-                        if (f.getName().equals(classDollarFieldName)) {
-                            hasClassDollarField = true;
-                            break BLOCK_STATEMENTS;
+                    for (VariableDeclarator vd : ((FieldDeclaration) bs).variableDeclarators) {
+                        if (vd.name.equals(classDollarFieldName)) {
+                            break ADD_CLASS_DOLLAR_FIELD;
                         }
                     }
                 }
             }
-            if (!hasClassDollarField) {
-                Type             classType = new SimpleType(loc, icl.TYPE_java_lang_Class);
-                FieldDeclaration fd        = new FieldDeclaration(
-                    loc,                       // location
-                    null,                      // optionalDocComment
-                    new Modifiers(Mod.STATIC), // modifiers
-                    classType,                 // type
-                    new VariableDeclarator[] { // variableDeclarators
-                        new VariableDeclarator(
-                            loc,                  // location
-                            classDollarFieldName, // name
-                            0,                    // brackets
-                            (Rvalue) null         // optionalInitializer
-                        )
-                    }
-                );
-                if (declaringType instanceof ClassDeclaration) {
-                    ((ClassDeclaration) declaringType).addFieldDeclaration(fd);
-                } else
-                if (declaringType instanceof InterfaceDeclaration) {
-                    ((InterfaceDeclaration) declaringType).addConstantDeclaration(fd);
-                } else {
-                    throw new JaninoRuntimeException(
-                        "SNO: AbstractTypeDeclaration is neither ClassDeclaration nor InterfaceDeclaration"
-                    );
+
+            Type             classType = new SimpleType(loc, icl.TYPE_java_lang_Class);
+            FieldDeclaration fd        = new FieldDeclaration(
+                loc,                       // location
+                null,                      // optionalDocComment
+                new Modifiers(Mod.STATIC), // modifiers
+                classType,                 // type
+                new VariableDeclarator[] { // variableDeclarators
+                    new VariableDeclarator(
+                        loc,                  // location
+                        classDollarFieldName, // name
+                        0,                    // brackets
+                        (Rvalue) null         // optionalInitializer
+                    )
                 }
+            );
+            if (declaringType instanceof ClassDeclaration) {
+                ((ClassDeclaration) declaringType).addFieldDeclaration(fd);
+            } else
+            if (declaringType instanceof InterfaceDeclaration) {
+                ((InterfaceDeclaration) declaringType).addConstantDeclaration(fd);
+            } else {
+                throw new JaninoRuntimeException(
+                    "SNO: AbstractTypeDeclaration is neither ClassDeclaration nor InterfaceDeclaration"
+                );
             }
         }
 
@@ -6617,18 +6605,18 @@ class UnitCompiler {
         this.invoke(locatable, iConstructor);
     }
 
-    /** @return The {@link IField}s that are declared by the {@code fieldDescriptor} */
+    /** @return The {@link IField}s that are declared by the {@code fieldDeclaration} */
     private IClass.IField[]
-    getIFields(final FieldDeclaration fieldDescriptor) {
-        IClass.IField[] res = new IClass.IField[fieldDescriptor.variableDeclarators.length];
+    getIFields(final FieldDeclaration fieldDeclaration) {
+        IClass.IField[] res = new IClass.IField[fieldDeclaration.variableDeclarators.length];
         for (int i = 0; i < res.length; ++i) {
-            final VariableDeclarator vd = fieldDescriptor.variableDeclarators[i];
-            res[i] = this.resolve(fieldDescriptor.getDeclaringType()).new IField() {
+            final VariableDeclarator variableDeclarator = fieldDeclaration.variableDeclarators[i];
+            res[i] = this.resolve(fieldDeclaration.getDeclaringType()).new IField() {
 
                 // Implement IMember.
                 @Override public Access
                 getAccess() {
-                    switch (fieldDescriptor.modifiers.flags & Mod.PPP) {
+                    switch (fieldDeclaration.modifiers.flags & Mod.PPP) {
                     case Mod.PRIVATE:
                         return Access.PRIVATE;
                     case Mod.PROTECTED:
@@ -6643,34 +6631,37 @@ class UnitCompiler {
                 }
 
                 @Override public Annotation[]
-                getAnnotations() { return fieldDescriptor.modifiers.annotations; }
+                getAnnotations() { return fieldDeclaration.modifiers.annotations; }
 
                 // Implement "IField".
 
                 @Override public boolean
-                isStatic() { return Mod.isStatic(fieldDescriptor.modifiers.flags); }
+                isStatic() { return Mod.isStatic(fieldDeclaration.modifiers.flags); }
 
                 @Override public IClass
                 getType() throws CompileException {
-                    return UnitCompiler.this.getType(fieldDescriptor.type).getArrayIClass(
-                        vd.brackets,
+                    return UnitCompiler.this.getType(fieldDeclaration.type).getArrayIClass(
+                        variableDeclarator.brackets,
                         UnitCompiler.this.iClassLoader.TYPE_java_lang_Object
                     );
                 }
 
                 @Override public String
-                getName() { return vd.name; }
+                getName() { return variableDeclarator.name; }
 
                 @Override public Object
                 getConstantValue() throws CompileException {
-                    if (Mod.isFinal(fieldDescriptor.modifiers.flags) && vd.optionalInitializer instanceof Rvalue) {
+                    if (
+                        Mod.isFinal(fieldDeclaration.modifiers.flags)
+                        && variableDeclarator.optionalInitializer instanceof Rvalue
+                    ) {
                         Object constantInitializerValue = UnitCompiler.this.getConstantValue(
-                            (Rvalue) vd.optionalInitializer
+                            (Rvalue) variableDeclarator.optionalInitializer
                         );
                         if (constantInitializerValue != NOT_CONSTANT) return UnitCompiler.this.assignmentConversion(
-                            (Locatable) vd.optionalInitializer, // l
-                            constantInitializerValue,           // value
-                            this.getType()                      // targetType
+                            variableDeclarator.optionalInitializer, // locatable
+                            constantInitializerValue,               // value
+                            this.getType()                          // targetType
                         );
                     }
                     return NOT_CONSTANT;
