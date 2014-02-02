@@ -70,52 +70,5 @@ class ByteArrayClassLoader extends ClassLoader {
         );
     }
 
-    /**
-     * An object is regarded equal to <code>this</code> iff
-     * <ul>
-     *   <li>It is also an instance of {@link ByteArrayClassLoader}
-     *   <li>Both have the same parent {@link ClassLoader}
-     *   <li>Exactly the same classes (name, bytecode) were added to both
-     * </ul>
-     * Roughly speaking, equal {@link ByteArrayClassLoader}s will return functionally identical
-     * {@link Class}es on {@link ClassLoader#loadClass(java.lang.String)}.
-     */
-    @Override public boolean
-    equals(Object o) {
-        if (!(o instanceof ByteArrayClassLoader)) return false;
-        if (this == o) return true;
-        ByteArrayClassLoader that = (ByteArrayClassLoader) o;
-
-        {
-            final ClassLoader parentOfThis = this.getParent();
-            final ClassLoader parentOfThat = that.getParent();
-            if (parentOfThis == null ? parentOfThat != null : !parentOfThis.equals(parentOfThat)) return false;
-        }
-
-        if (this.classes.size() != that.classes.size()) return false;
-        for (Map.Entry<String /*className*/, byte[] /*data*/> me : this.classes.entrySet()) {
-
-            byte[] ba = (byte[]) that.classes.get(me.getKey());
-            if (ba == null) return false; // Key missing in "that".
-
-            if (!Arrays.equals((byte[]) me.getValue(), ba)) return false; // Byte arrays differ.
-        }
-        return true;
-    }
-
-    @Override public int
-    hashCode() {
-        int hc = this.getParent().hashCode();
-
-        for (Map.Entry<String /*className*/, byte[] /*data*/> me : this.classes.entrySet()) {
-            hc ^= me.getKey().hashCode();
-            byte[] ba = (byte[]) me.getValue();
-            for (int i = 0; i < ba.length; ++i) {
-                hc = (31 * hc) ^ ba[i];
-            }
-        }
-        return hc;
-    }
-
     private final Map<String /*className*/, byte[] /*data*/> classes;
 }
