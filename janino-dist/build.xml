@@ -1,4 +1,4 @@
-<project>
+<project default="build">
 
 	<property file="local_build.properties"/>
 	<property file="build.properties"/>
@@ -15,7 +15,7 @@
 		resource="ant_issue_54883.properties"
 	/>
 
-	<target name="build" description="Builds download site in './mirror'">
+	<target name="build" description="Creates and populates a directory './mirror' for later upload to the web site.">
 		<delete dir="mirror"/>
 		<mkdir dir="mirror/download"/>
 
@@ -151,12 +151,13 @@
 
 		<!-- Build 'mirror/download/janino-VERSION.zip' file. -->
 		<zip destfile="mirror/download/janino-${version}.zip" filesonly="true">
-			<zipfileset file="build/commons-compiler.jar"     prefix="janino-${version}"/>
-			<zipfileset file="build/janino.jar"               prefix="janino-${version}"/>
-			<zipfileset file="build/commons-compiler-jdk.jar" prefix="janino-${version}"/>
-
+			<zipfileset file="build/commons-compiler.jar"         prefix="janino-${version}"/>
 			<zipfileset file="build/commons-compiler-src.zip"     prefix="janino-${version}"/>
+
+			<zipfileset file="build/janino.jar"                   prefix="janino-${version}"/>
 			<zipfileset file="build/janino-src.zip"               prefix="janino-${version}"/>
+
+			<zipfileset file="build/commons-compiler-jdk.jar"     prefix="janino-${version}"/>
 			<zipfileset file="build/commons-compiler-jdk-src.zip" prefix="janino-${version}"/>
 
 			<zipfileset file="README.txt"                         prefix="janino-${version}"/>
@@ -199,6 +200,8 @@
 			<fileset dir="../janino/src/org/codehaus/janino" includes="samples/*.java"/>
 			<fileset dir="../commons-compiler/src/org/codehaus/commons/compiler" includes="samples/*.java"/>
 		</copy>
+
+		<echo message="*** The next step is to execute target 'publish', which uploads the artefacts to the JANINO web site." />
 	</target>
 
 	<target name="publish" description="Uploads './mirror' to 'unkrig.de/janino'">
@@ -243,6 +246,8 @@
 		>
 			<fileset dir="mirror"/>
 		</ftp2>
+
+		<echo message="*** The next step is to execute target 'tag', which creates a tag for the new version in SVN." />
 	</target>
 
 	<target name="tag" description="Tags all projects as 'janino_${version}'">
@@ -277,5 +282,8 @@
 			<copy srcpath="../de.unkrig.checkstyle-configuration" desturl="${d2}"/>
 			<copy srcpath="../de.unkrig.commons.nullanalysis"     desturl="${d2}"/>
 		</de.unkrig.subclipse.svn>
+
+		<echo message="*** The next (and final) step is to officially release the new version on" />
+		<echo message="***    https://jira.codehaus.org/plugins/servlet/project-config/JANINO/versions" />
 	</target>
 </project>
