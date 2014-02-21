@@ -5,7 +5,7 @@ declare -a java_args;
 declare -a main_args;
 do_nothing=0;
 
-janino_jar=`dirname $0`/../build/lib/janino.jar;
+lib="`dirname $0`/../../janino-dist/build";
 
 while (( $# > 0 )); do
     arg=$1; shift;
@@ -75,7 +75,7 @@ done;
 
 java=java;
 
-cmd="$java -classpath $janino_jar ${java_args[@]} org.codehaus.janino.Compiler ${compiler_args[@]} $class_name ${main_args[@]}";
+cmd="$java -classpath $lib/janino.jar;$lib/commons-compiler.jar ${java_args[@]} org.codehaus.janino.Compiler ${compiler_args[@]} $class_name ${main_args[@]}";
 
 if (( $do_nothing )); then
     echo $cmd;
