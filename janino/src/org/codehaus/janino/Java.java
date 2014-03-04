@@ -2038,13 +2038,18 @@ class Java {
     public abstract static
     class ContinuableStatement extends BreakableStatement {
         protected
-        ContinuableStatement(Location location) { super(location); }
+        ContinuableStatement(Location location, BlockStatement body) {
+            super(location);
+            (this.body = body).setEnclosingScope(this);
+        }
 
         /**
          * This one's filled in by the first CONTINUE statement, and is {@link Offset#set()} by this continuable
          * statement.
          */
         protected CodeContext.Offset whereToContinue;
+        /** The body of this continuable statement. */
+        public final BlockStatement body;
     }
 
     /** Representation of the JLS7 14.8 'expression statement'. */
@@ -2158,9 +2163,6 @@ class Java {
         /** The optional 'update' part of the 'basic FOR statement'. */
         public final Rvalue[] optionalUpdate;
 
-        /** The body of the 'basic FOR statement'. */
-        public final BlockStatement body;
-
         public
         ForStatement(
             Location       location,
@@ -2169,14 +2171,13 @@ class Java {
             Rvalue[]       optionalUpdate,
             BlockStatement body
         ) {
-            super(location);
+            super(location, body);
             this.optionalInit = optionalInit;
             if (optionalInit != null) optionalInit.setEnclosingScope(this);
             this.optionalCondition = optionalCondition;
             if (optionalCondition != null) optionalCondition.setEnclosingBlockStatement(this);
             this.optionalUpdate = optionalUpdate;
             if (optionalUpdate != null) for (Rvalue rv : optionalUpdate) rv.setEnclosingBlockStatement(this);
-            (this.body = body).setEnclosingScope(this);
         }
 
         @Override public String
@@ -2198,15 +2199,11 @@ class Java {
         /** The 'expression' part of the 'enhanced FOR statement'. */
         public final Rvalue expression;
 
-        /** The body of the 'enhanced FOR statement'. */
-        public final BlockStatement body;
-
         public
         ForEachStatement(Location location, FormalParameter currentElement, Rvalue expression, BlockStatement body) {
-            super(location);
+            super(location, body);
             (this.currentElement = currentElement).type.setEnclosingScope(this);
             (this.expression     = expression).setEnclosingBlockStatement(this);
-            (this.body           = body).setEnclosingScope(this);
         }
 
         @Override public String
@@ -2225,14 +2222,10 @@ class Java {
         /** The 'condition' of the WHILE statement. */
         public final Rvalue condition;
 
-        /** The body of the WHILE statement. */
-        public final BlockStatement body;
-
         public
         WhileStatement(Location location, Rvalue condition, BlockStatement body) {
-            super(location);
+            super(location, body);
             (this.condition = condition).setEnclosingBlockStatement(this);
-            (this.body = body).setEnclosingScope(this);
         }
 
         @Override public String
@@ -2452,16 +2445,12 @@ class Java {
     public static final
     class DoStatement extends ContinuableStatement {
 
-        /** The body of this DO statement. */
-        public final BlockStatement body;
-
         /** The condition in the WHILE clause of this DO statement. */
         public final Rvalue condition;
 
         public
         DoStatement(Location location, BlockStatement body, Rvalue condition) {
-            super(location);
-            (this.body      = body).setEnclosingScope(this);
+            super(location, body);
             (this.condition = condition).setEnclosingBlockStatement(this);
         }
 
