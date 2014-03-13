@@ -95,7 +95,8 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
     }
 
     /**
-     * Set up a {@link JavaSourceClassLoader} that finds Java&trade; source code through a given {@link ResourceFinder}.
+     * Constructs a {@link JavaSourceClassLoader} that finds Java&trade; source code through a given {@link
+     * ResourceFinder}.
      * <p>
      * You can specify to include certain debugging information in the generated class files, which
      * is useful if you want to debug through the generated classes (see
@@ -112,14 +113,20 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
         ResourceFinder sourceFinder,
         String         optionalCharacterEncoding
     ) {
-        super(parentClassLoader);
-
-        this.iClassLoader = new JavaSourceIClassLoader(
+        this(parentClassLoader, new JavaSourceIClassLoader(
             sourceFinder,                                  // sourceFinder
             optionalCharacterEncoding,                     // optionalCharacterEncoding
-            this.unitCompilers,                            // unitCompilers
             new ClassLoaderIClassLoader(parentClassLoader) // optionalParentIClassLoader
-        );
+        ));
+    }
+
+    /**
+     * Constructs a {@link JavaSourceClassLoader} that finds classes through an {@link JavaSourceIClassLoader}.
+     */
+    public
+    JavaSourceClassLoader(ClassLoader parentClassLoader, JavaSourceIClassLoader iClassLoader) {
+        super(parentClassLoader);
+        this.iClassLoader = iClassLoader;
     }
 
     @Override public void
@@ -210,7 +217,7 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
         Set<UnitCompiler>                         compiledUnitCompilers = new HashSet();
         COMPILE_UNITS:
         for (;;) {
-            for (UnitCompiler uc : this.unitCompilers) {
+            for (UnitCompiler uc : this.iClassLoader.getUnitCompilers()) {
                 if (!compiledUnitCompilers.contains(uc)) {
                     ClassFile[] cfs;
                     try {
@@ -246,7 +253,4 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
     private boolean debugSource = Boolean.getBoolean(ICookable.SYSTEM_PROPERTY_SOURCE_DEBUGGING_ENABLE);
     private boolean debugLines  = this.debugSource;
     private boolean debugVars   = this.debugSource;
-
-    /** Collection of parsed, but still uncompiled compilation units. */
-    private final Set<UnitCompiler> unitCompilers = new HashSet();
 }
