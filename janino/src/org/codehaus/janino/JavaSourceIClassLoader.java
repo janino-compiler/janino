@@ -170,7 +170,7 @@ class JavaSourceIClassLoader extends IClassLoader {
         }
     }
 
-    private CompilationUnit
+    protected CompilationUnit
     findCompilationUnit(String className) throws IOException, CompileException {
 
         // Find source file.
