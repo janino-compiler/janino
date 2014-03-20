@@ -43,7 +43,7 @@ import org.codehaus.janino.util.resource.*;
  * <p>
  * Notice that it does not compile them!
  */
-public final
+public
 class JavaSourceIClassLoader extends IClassLoader {
     private static final boolean DEBUG = false;
 
