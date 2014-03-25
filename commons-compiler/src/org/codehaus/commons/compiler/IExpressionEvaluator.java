@@ -84,7 +84,7 @@ import java.lang.reflect.InvocationTargetException;
  *   <li>{@link #setExpressionTypes(Class[])}
  *   <li>{@link #setStaticMethod(boolean[])}
  *   <li>{@link #setThrownExceptions(Class[][])}
- *   <li>{@link #cook(String, java.io.Reader)}
+ *   <li>{@link #cook(String[], Reader[])}
  *   <li>{@link #evaluate(int, Object[])}
  * </ul>
  * Notice that these methods have array parameters in contrast to their one-expression brethren.
