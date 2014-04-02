@@ -28,6 +28,7 @@ package de.unkrig.io.charstream;
 
 import java.io.EOFException;
 import java.io.IOException;
+import java.io.Reader;
 
 /**
  * This interface produces a sequence of {@code char}s. These can either be "read", which means basically the same as

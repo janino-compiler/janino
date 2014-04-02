@@ -26,24 +26,6 @@
 
 package de.unkrig.jdisasm;
 
-import static de.unkrig.jdisasm.ClassFile.ACC_ABSTRACT;
-import static de.unkrig.jdisasm.ClassFile.ACC_ANNOTATION;
-import static de.unkrig.jdisasm.ClassFile.ACC_BRIDGE;
-import static de.unkrig.jdisasm.ClassFile.ACC_ENUM;
-import static de.unkrig.jdisasm.ClassFile.ACC_FINAL;
-import static de.unkrig.jdisasm.ClassFile.ACC_INTERFACE;
-import static de.unkrig.jdisasm.ClassFile.ACC_NATIVE;
-import static de.unkrig.jdisasm.ClassFile.ACC_PRIVATE;
-import static de.unkrig.jdisasm.ClassFile.ACC_PROTECTED;
-import static de.unkrig.jdisasm.ClassFile.ACC_PUBLIC;
-import static de.unkrig.jdisasm.ClassFile.ACC_STATIC;
-import static de.unkrig.jdisasm.ClassFile.ACC_STRICT;
-import static de.unkrig.jdisasm.ClassFile.ACC_SYNCHRONIZED;
-import static de.unkrig.jdisasm.ClassFile.ACC_SYNTHETIC;
-import static de.unkrig.jdisasm.ClassFile.ACC_TRANSIENT;
-import static de.unkrig.jdisasm.ClassFile.ACC_VARARGS;
-import static de.unkrig.jdisasm.ClassFile.ACC_VOLATILE;
-
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.File;
@@ -219,7 +201,7 @@ class Disassembler {
                 if ("-".equals(name)) {
                     d.disasm(System.in);
                 } else
-                if (IS_URL.matcher(name).matches()) {
+                if (Disassembler.IS_URL.matcher(name).matches()) {
                     d.disasm(new URL(name));
                 } else
                 {
@@ -379,7 +361,7 @@ class Disassembler {
         this.println();
 
         // Print SYNTHETIC notice.
-        if ((cf.accessFlags & ACC_SYNTHETIC) != 0 || cf.syntheticAttribute != null) {
+        if ((cf.accessFlags & ClassFile.ACC_SYNTHETIC) != 0 || cf.syntheticAttribute != null) {
             this.println("// This is a synthetic class.");
         }
 
@@ -402,22 +384,26 @@ class Disassembler {
 
         // Print type access flags.
         this.print(
-            decodeAccess((short) (
+            Disassembler.decodeAccess((short) (
                 cf.accessFlags
 
                 // Has no meaning but is always set for backwards compatibility
-                & ~ACC_SYNCHRONIZED
+                & ~ClassFile.ACC_SYNCHRONIZED
 
                 // SYNTHETIC has already been printed as a comment.
-                & ~ACC_SYNTHETIC
+                & ~ClassFile.ACC_SYNTHETIC
 
                 // Suppress redundant "abstract" modifier for interfaces.
-                & ((cf.accessFlags & ACC_INTERFACE) != 0 ? ~ACC_ABSTRACT : 0xffff)
+                & ((cf.accessFlags & ClassFile.ACC_INTERFACE) != 0 ? ~ClassFile.ACC_ABSTRACT : 0xffff)
 
                 // Suppress redundant "final" modifier for enums.
-                & ((cf.accessFlags & ACC_ENUM) != 0 ? ~ACC_FINAL : 0xffff)
+                & ((cf.accessFlags & ClassFile.ACC_ENUM) != 0 ? ~ClassFile.ACC_FINAL : 0xffff)
             ))
-            + ((cf.accessFlags & (ACC_ENUM | ACC_ANNOTATION | ACC_INTERFACE)) == 0 ? "class " : "")
+            + (
+                (cf.accessFlags & (ClassFile.ACC_ENUM | ClassFile.ACC_ANNOTATION | ClassFile.ACC_INTERFACE)) == 0
+                ? "class "
+                : ""
+            )
         );
 
         // Print name, EXTENDS and IMPLEMENTS clauses.
@@ -432,7 +418,10 @@ class Disassembler {
                     if (scn != null && !"java.lang.Object".equals(scn)) this.print(" extends " + this.beautify(scn));
                 }
                 List<String> ifs = cf.interfaceNames;
-                if ((cf.accessFlags & ACC_ANNOTATION) != 0 && ifs.contains("java.lang.annotation.Annotation")) {
+                if (
+                    (cf.accessFlags & ClassFile.ACC_ANNOTATION) != 0
+                    && ifs.contains("java.lang.annotation.Annotation")
+                ) {
                     ifs = new ArrayList<String>(ifs);
                     ifs.remove("java.lang.annotation.Annotation");
                 }
@@ -539,12 +528,12 @@ class Disassembler {
             this.println();
 
             // Print SYNTHETIC notice.
-            if ((method.accessFlags & ACC_SYNTHETIC) != 0 || method.syntheticAttribute != null) {
+            if ((method.accessFlags & ClassFile.ACC_SYNTHETIC) != 0 || method.syntheticAttribute != null) {
                 this.println("    // (Synthetic method)");
             }
 
             // Print BRIDGE notice.
-            if ((method.accessFlags & ACC_BRIDGE) != 0) this.println("    // (Bridge method)");
+            if ((method.accessFlags & ClassFile.ACC_BRIDGE) != 0) this.println("    // (Bridge method)");
 
             // Print DEPRECATED notice.
             if (method.deprecatedAttribute != null) this.println("    /** @deprecated */");
@@ -567,12 +556,16 @@ class Disassembler {
             String functionName = method.name;
             Disassembler.this.print(
                 "    "
-                + decodeAccess((short) (
+                + Disassembler.decodeAccess((short) (
                     method.accessFlags
-                    & ~ACC_SYNTHETIC
-                    & ~ACC_BRIDGE
-                    & ~ACC_VARARGS
-                    & ((cf.accessFlags & ACC_INTERFACE) != 0 ? ~(ACC_PUBLIC | ACC_ABSTRACT) : 0xffff)
+                    & ~ClassFile.ACC_SYNTHETIC
+                    & ~ClassFile.ACC_BRIDGE
+                    & ~ClassFile.ACC_VARARGS
+                    & (
+                        (cf.accessFlags & ClassFile.ACC_INTERFACE) != 0
+                        ? ~(ClassFile.ACC_PUBLIC | ClassFile.ACC_ABSTRACT)
+                        : 0xffff
+                    )
                 ))
             );
 
@@ -597,11 +590,11 @@ class Disassembler {
             List<ConstantClassInfo> exceptionNames;
             {
                 ExceptionsAttribute ea = method.exceptionsAttribute;
-                exceptionNames = ea == null ? NO_CONSTANT_CLASS_INFOS : ea.exceptionNames;
+                exceptionNames = ea == null ? Disassembler.NO_CONSTANT_CLASS_INFOS : ea.exceptionNames;
             }
             if (
                 "<clinit>".equals(functionName)
-                && (method.accessFlags & ACC_STATIC) != 0
+                && (method.accessFlags & ClassFile.ACC_STATIC) != 0
                 && exceptionNames.isEmpty()
                 && mts.formalTypeParameters.isEmpty()
                 && mts.parameterTypes.isEmpty()
@@ -612,7 +605,10 @@ class Disassembler {
             } else
             if (
                 "<init>".equals(functionName)
-                && (method.accessFlags & (ACC_ABSTRACT | ACC_FINAL | ACC_INTERFACE | ACC_STATIC)) == 0
+                && (
+                    method.accessFlags
+                    & (ClassFile.ACC_ABSTRACT | ClassFile.ACC_FINAL | ClassFile.ACC_INTERFACE | ClassFile.ACC_STATIC)
+                ) == 0
                 && mts.formalTypeParameters.isEmpty()
                 && mts.returnType == SignatureParser.VOID
             ) {
@@ -623,7 +619,7 @@ class Disassembler {
                     mts.parameterTypes,
                     method,
                     (short) 1,
-                    (method.accessFlags & ACC_VARARGS) != 0
+                    (method.accessFlags & ClassFile.ACC_VARARGS) != 0
                 );
             } else
             {
@@ -634,8 +630,8 @@ class Disassembler {
                     method.runtimeVisibleParameterAnnotationsAttribute,
                     mts.parameterTypes,
                     method,
-                    (method.accessFlags & ACC_STATIC) == 0 ? (short) 1 : (short) 0,
-                    (method.accessFlags & ACC_VARARGS) != 0
+                    (method.accessFlags & ClassFile.ACC_STATIC) == 0 ? (short) 1 : (short) 0,
+                    (method.accessFlags & ClassFile.ACC_VARARGS) != 0
                 );
             }
 
@@ -718,7 +714,7 @@ class Disassembler {
             }
 
             // print SYNTHETIC notice.
-            if ((field.accessFlags & ACC_SYNTHETIC) != 0 || field.syntheticAttribute != null) {
+            if ((field.accessFlags & ClassFile.ACC_SYNTHETIC) != 0 || field.syntheticAttribute != null) {
                 this.println("    // (Synthetic field)");
             }
 
@@ -740,7 +736,7 @@ class Disassembler {
             {
                 String prefix = (
                     "    "
-                    + decodeAccess((short) (field.accessFlags & ~ACC_SYNTHETIC))
+                    + Disassembler.decodeAccess((short) (field.accessFlags & ~ClassFile.ACC_SYNTHETIC))
                     + parametrizedType
                     + " "
                 );
@@ -771,12 +767,15 @@ class Disassembler {
         return (
             (oci == null ? "[local class]" : this.beautify(oci.name))
             + " { "
-            + decodeAccess((short) (c.innerClassAccessFlags & ( // Hide ABSTRACT and STATIC for interfaces
-                (c.innerClassAccessFlags & ACC_INTERFACE) != 0
-                ? (~ACC_ABSTRACT & ~ACC_STATIC)
+            + Disassembler.decodeAccess((short) (c.innerClassAccessFlags & ( // Hide ABSTRACT and STATIC for interfaces
+                (c.innerClassAccessFlags & ClassFile.ACC_INTERFACE) != 0
+                ? (~ClassFile.ACC_ABSTRACT & ~ClassFile.ACC_STATIC)
                 : 0xffff
             )))
-            + ((c.innerClassAccessFlags & (ACC_ENUM | ACC_ANNOTATION | ACC_INTERFACE)) == 0 ? "class " : "")
+            + ((
+                c.innerClassAccessFlags
+                & (ClassFile.ACC_ENUM | ClassFile.ACC_ANNOTATION | ClassFile.ACC_INTERFACE)
+            ) == 0 ? "class " : "")
             + this.beautify(ici.name) + " }"
         );
     }
@@ -1060,12 +1059,12 @@ class Disassembler {
     ) {
         Iterator<ParameterAnnotation> ipas = (
             ripaa == null
-            ? NO_PARAMETER_ANNOTATIONS
+            ? Disassembler.NO_PARAMETER_ANNOTATIONS
             : ripaa.parameterAnnotations
         ).iterator();
         Iterator<ParameterAnnotation> vpas = (
             rvpaa == null
-            ? NO_PARAMETER_ANNOTATIONS
+            ? Disassembler.NO_PARAMETER_ANNOTATIONS
             : rvpaa.parameterAnnotations
         ).iterator();
 
@@ -1157,7 +1156,7 @@ class Disassembler {
                 int opcode = dis.read();
                 if (opcode == -1) break;
 
-                Instruction instruction = OPCODE_TO_INSTRUCTION[opcode];
+                Instruction instruction = Disassembler.OPCODE_TO_INSTRUCTION[opcode];
                 if (instruction == null) {
                     lines.put(instructionOffset, "??? (invalid opcode \"" + opcode + "\")");
                 } else {
@@ -1255,7 +1254,7 @@ class Disassembler {
                 PRINT_SOURCE_LINE: {
                     if (lineNumberTableAttribute == null) break PRINT_SOURCE_LINE;
 
-                    int lineNumber = findLineNumber(lineNumberTableAttribute, instructionOffset);
+                    int lineNumber = Disassembler.findLineNumber(lineNumberTableAttribute, instructionOffset);
                     if (lineNumber == -1) break PRINT_SOURCE_LINE;
 
                     String sourceLine = sourceLines.get(lineNumber);
@@ -1329,7 +1328,7 @@ class Disassembler {
         return sb.toString();
     }
 
-    private static final Instruction[] OPCODE_TO_INSTRUCTION = compileInstructions(
+    private static final Instruction[] OPCODE_TO_INSTRUCTION = Disassembler.compileInstructions(
         "50  aaload\n"
         + "83  aastore\n"
         + "1   aconst_null\n"
@@ -1536,7 +1535,7 @@ class Disassembler {
         + "196 wide            wide\n"
     );
 
-    private static final Instruction[] OPCODE_TO_WIDE_INSTRUCTION = compileInstructions(
+    private static final Instruction[] OPCODE_TO_WIDE_INSTRUCTION = Disassembler.compileInstructions(
         "21  iload           localvariableindex2\n"
         + "23  fload           localvariableindex2\n"
         + "25  aload           localvariableindex2\n"
@@ -1976,7 +1975,7 @@ class Disassembler {
                                 Disassembler    d
                             ) throws IOException {
                                 int         subopcode       = 0xff & dis.readByte();
-                                Instruction wideInstruction = OPCODE_TO_WIDE_INSTRUCTION[subopcode];
+                                Instruction wideInstruction = Disassembler.OPCODE_TO_WIDE_INSTRUCTION[subopcode];
                                 if (wideInstruction == null) {
                                     return (
                                         "Invalid opcode "
@@ -2014,7 +2013,7 @@ class Disassembler {
     getLocalVariable(short localVariableIndex, int  instructionOffset, Method method) {
 
         // Calculate index of first parameter.
-        int firstParameter = (method.accessFlags & ACC_STATIC) == 0 ? 1 : 0;
+        int firstParameter = (method.accessFlags & ClassFile.ACC_STATIC) == 0 ? 1 : 0;
         if (localVariableIndex < firstParameter) {
             return new LocalVariable(null, "this");
         }
@@ -2087,7 +2086,11 @@ class Disassembler {
             return SignatureParser.decodeClassSignature(cs);
         } catch (SignatureException e) {
             this.error("Decoding class signature '" + cs + "': " + e.getMessage());
-            return new ClassSignature(NO_FORMAL_TYPE_PARAMETERS, SignatureParser.OBJECT, NO_CLASS_TYPE_SIGNATURES);
+            return new ClassSignature(
+                Disassembler.NO_FORMAL_TYPE_PARAMETERS,
+                SignatureParser.OBJECT,
+                Disassembler.NO_CLASS_TYPE_SIGNATURES
+            );
         }
     }
 
@@ -2108,10 +2111,10 @@ class Disassembler {
         } catch (SignatureException e) {
             this.error("Decoding method type signature '" + ms + "': " + e.getMessage());
             return new MethodTypeSignature(
-                NO_FORMAL_TYPE_PARAMETERS,
-                NO_TYPE_SIGNATURES,
+                Disassembler.NO_FORMAL_TYPE_PARAMETERS,
+                Disassembler.NO_TYPE_SIGNATURES,
                 SignatureParser.VOID,
-                NO_THROWS_SIGNATURES
+                Disassembler.NO_THROWS_SIGNATURES
             );
         }
     }
@@ -2133,10 +2136,10 @@ class Disassembler {
         } catch (SignatureException e) {
             this.error("Decoding method descriptor '" + md + "': " + e.getMessage());
             return new MethodTypeSignature(
-                NO_FORMAL_TYPE_PARAMETERS,
-                NO_TYPE_SIGNATURES,
+                Disassembler.NO_FORMAL_TYPE_PARAMETERS,
+                Disassembler.NO_TYPE_SIGNATURES,
                 SignatureParser.VOID,
-                NO_THROWS_SIGNATURES
+                Disassembler.NO_THROWS_SIGNATURES
             );
         }
     }
@@ -2240,23 +2243,23 @@ class Disassembler {
     private static String
     decodeAccess(short n) {
         StringBuilder sb = new StringBuilder();
-        if ((n & ACC_PUBLIC) != 0)       { sb.append("public ");       n &= ~ACC_PUBLIC; }
-        if ((n & ACC_PRIVATE) != 0)      { sb.append("private ");      n &= ~ACC_PRIVATE; }
-        if ((n & ACC_PROTECTED) != 0)    { sb.append("protected ");    n &= ~ACC_PROTECTED; }
+        if ((n & ClassFile.ACC_PUBLIC) != 0)       { sb.append("public ");       n &= ~ClassFile.ACC_PUBLIC; }
+        if ((n & ClassFile.ACC_PRIVATE) != 0)      { sb.append("private ");      n &= ~ClassFile.ACC_PRIVATE; }
+        if ((n & ClassFile.ACC_PROTECTED) != 0)    { sb.append("protected ");    n &= ~ClassFile.ACC_PROTECTED; }
 
-        if ((n & ACC_ABSTRACT) != 0)     { sb.append("abstract ");     n &= ~ACC_ABSTRACT; }
-        if ((n & ACC_STATIC) != 0)       { sb.append("static ");       n &= ~ACC_STATIC; }
-        if ((n & ACC_FINAL) != 0)        { sb.append("final ");        n &= ~ACC_FINAL; }
-        if ((n & ACC_TRANSIENT) != 0)    { sb.append("transient ");    n &= ~ACC_TRANSIENT; }
-        if ((n & ACC_VOLATILE) != 0)     { sb.append("volatile ");     n &= ~ACC_VOLATILE; }
-        if ((n & ACC_SYNCHRONIZED) != 0) { sb.append("synchronized "); n &= ~ACC_SYNCHRONIZED; }
-        if ((n & ACC_NATIVE) != 0)       { sb.append("native ");       n &= ~ACC_NATIVE; }
-        if ((n & ACC_STRICT) != 0)       { sb.append("strictfp ");     n &= ~ACC_STRICT; }
-        if ((n & ACC_SYNTHETIC) != 0)    { sb.append("synthetic ");    n &= ~ACC_SYNTHETIC; }
+        if ((n & ClassFile.ACC_ABSTRACT) != 0)     { sb.append("abstract ");     n &= ~ClassFile.ACC_ABSTRACT; }
+        if ((n & ClassFile.ACC_STATIC) != 0)       { sb.append("static ");       n &= ~ClassFile.ACC_STATIC; }
+        if ((n & ClassFile.ACC_FINAL) != 0)        { sb.append("final ");        n &= ~ClassFile.ACC_FINAL; }
+        if ((n & ClassFile.ACC_TRANSIENT) != 0)    { sb.append("transient ");    n &= ~ClassFile.ACC_TRANSIENT; }
+        if ((n & ClassFile.ACC_VOLATILE) != 0)     { sb.append("volatile ");     n &= ~ClassFile.ACC_VOLATILE; }
+        if ((n & ClassFile.ACC_SYNCHRONIZED) != 0) { sb.append("synchronized "); n &= ~ClassFile.ACC_SYNCHRONIZED; }
+        if ((n & ClassFile.ACC_NATIVE) != 0)       { sb.append("native ");       n &= ~ClassFile.ACC_NATIVE; }
+        if ((n & ClassFile.ACC_STRICT) != 0)       { sb.append("strictfp ");     n &= ~ClassFile.ACC_STRICT; }
+        if ((n & ClassFile.ACC_SYNTHETIC) != 0)    { sb.append("synthetic ");    n &= ~ClassFile.ACC_SYNTHETIC; }
 
-        if ((n & ACC_ANNOTATION) != 0)   { sb.append("@");             n &= ~ACC_ANNOTATION; }
-        if ((n & ACC_INTERFACE) != 0)    { sb.append("interface ");    n &= ~ACC_INTERFACE; }
-        if ((n & ACC_ENUM) != 0)         { sb.append("enum ");         n &= ~ACC_ENUM; }
+        if ((n & ClassFile.ACC_ANNOTATION) != 0)   { sb.append("@");             n &= ~ClassFile.ACC_ANNOTATION; }
+        if ((n & ClassFile.ACC_INTERFACE) != 0)    { sb.append("interface ");    n &= ~ClassFile.ACC_INTERFACE; }
+        if ((n & ClassFile.ACC_ENUM) != 0)         { sb.append("enum ");         n &= ~ClassFile.ACC_ENUM; }
 
         if (n != 0) sb.append("+ " + n + " ");
         return sb.toString();

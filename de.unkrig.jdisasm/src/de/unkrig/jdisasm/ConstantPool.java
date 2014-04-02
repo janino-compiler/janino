@@ -166,7 +166,7 @@ class ConstantPool {
         ConstantStringInfo(String string) { this.string = string; }
 
         @Override public String
-        toString() { return stringToJavaLiteral(this.string); }
+        toString() { return ConstantPool.stringToJavaLiteral(this.string); }
     }
 
     /** Representation of a CONSTANT_Integer_info entry. */
@@ -579,7 +579,7 @@ class ConstantPool {
         if (e instanceof ConstantFloatInfo) return e.toString();
         if (e instanceof ConstantLongInfo) return e.toString();
         if (e instanceof ConstantDoubleInfo) return e.toString();
-        if (e instanceof ConstantStringInfo) return stringToJavaLiteral(((ConstantStringInfo) e).string);
+        if (e instanceof ConstantStringInfo) return ConstantPool.stringToJavaLiteral(((ConstantStringInfo) e).string);
         throw new ClassCastException("CP index " + (0xffff & index) + ": " + e);
     }
 
@@ -592,7 +592,7 @@ class ConstantPool {
         ConstantPoolEntry e = this.get(index, ConstantPoolEntry.class);
         if (e instanceof ConstantLongInfo) return e.toString();
         if (e instanceof ConstantDoubleInfo) return e.toString();
-        if (e instanceof ConstantStringInfo) return stringToJavaLiteral(((ConstantStringInfo) e).string);
+        if (e instanceof ConstantStringInfo) return ConstantPool.stringToJavaLiteral(((ConstantStringInfo) e).string);
         throw new ClassCastException("CP index " + (0xffff & index) + ": " + e);
     }
 

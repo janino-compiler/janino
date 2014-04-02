@@ -52,7 +52,7 @@ class SignatureParser {
         try {
             StringCharStream scs = new StringCharStream(s);
             ClassSignature   cls;
-            cls = parseClassSignature(scs);
+            cls = SignatureParser.parseClassSignature(scs);
             scs.eoi();
             return cls;
         } catch (SignatureException e) {
@@ -69,7 +69,7 @@ class SignatureParser {
     decodeMethodTypeSignature(String s) throws SignatureException {
         try {
             StringCharStream    scs = new StringCharStream(s);
-            MethodTypeSignature mts = parseMethodTypeSignature(scs);
+            MethodTypeSignature mts = SignatureParser.parseMethodTypeSignature(scs);
             scs.eoi();
             return mts;
         } catch (SignatureException e) {
@@ -86,7 +86,7 @@ class SignatureParser {
     decodeTypeSignature(String s) throws SignatureException {
         try {
             StringCharStream scs = new StringCharStream(s);
-            TypeSignature    ts  = parseTypeSignature(scs);
+            TypeSignature    ts  = SignatureParser.parseTypeSignature(scs);
             scs.eoi();
             return ts;
         } catch (SignatureException e) {
@@ -103,7 +103,7 @@ class SignatureParser {
     decodeFieldTypeSignature(String s) throws SignatureException {
         try {
             StringCharStream   scs = new StringCharStream(s);
-            FieldTypeSignature fts = parseFieldTypeSignature(scs);
+            FieldTypeSignature fts = SignatureParser.parseFieldTypeSignature(scs);
             scs.eoi();
             return fts;
         } catch (SignatureException e) {
@@ -120,7 +120,7 @@ class SignatureParser {
     decodeMethodDescriptor(String s) throws SignatureException {
         try {
             StringCharStream    scs = new StringCharStream(s);
-            MethodTypeSignature mts = parseMethodDescriptor(scs);
+            MethodTypeSignature mts = SignatureParser.parseMethodDescriptor(scs);
             scs.eoi();
             return mts;
         } catch (SignatureException e) {
@@ -137,7 +137,7 @@ class SignatureParser {
     decodeFieldDescriptor(String s) throws SignatureException {
         try {
             StringCharStream scs = new StringCharStream(s);
-            TypeSignature    ts  = parseFieldDescriptor(scs);
+            TypeSignature    ts  = SignatureParser.parseFieldDescriptor(scs);
             scs.eoi();
             return ts;
         } catch (SignatureException e) {
@@ -154,7 +154,7 @@ class SignatureParser {
     decodeReturnType(String s) throws SignatureException {
         try {
             StringCharStream scs = new StringCharStream(s);
-            TypeSignature    ts  = parseReturnType(scs);
+            TypeSignature    ts  = SignatureParser.parseReturnType(scs);
             scs.eoi();
             return ts;
         } catch (SignatureException e) {
@@ -228,7 +228,7 @@ class SignatureParser {
                 }
             }
             sb.append(')');
-            if (this.returnType != VOID) sb.append(" => ").append(this.returnType.toString());
+            if (this.returnType != SignatureParser.VOID) sb.append(" => ").append(this.returnType.toString());
             return sb.toString();
         }
 
@@ -595,23 +595,23 @@ class SignatureParser {
 
     private static TypeSignature
     parseFieldDescriptor(StringCharStream scs) throws EOFException, UnexpectedCharacterException, SignatureException {
-        return parseTypeSignature(scs);
+        return SignatureParser.parseTypeSignature(scs);
     }
 
     private static MethodTypeSignature
     parseMethodDescriptor(StringCharStream scs) throws EOFException, UnexpectedCharacterException, SignatureException {
-        return parseMethodTypeSignature(scs);
+        return SignatureParser.parseMethodTypeSignature(scs);
     }
 
     private static ClassSignature
     parseClassSignature(StringCharStream scs) throws EOFException, SignatureException, UnexpectedCharacterException {
         List<FormalTypeParameter> ftps = new ArrayList<SignatureParser.FormalTypeParameter>();
-        if (scs.peekRead('<')) while (!scs.peekRead('>')) ftps.add(parseFormalTypeParameter(scs));
+        if (scs.peekRead('<')) while (!scs.peekRead('>')) ftps.add(SignatureParser.parseFormalTypeParameter(scs));
 
-        ClassTypeSignature cts = parseClassTypeSignature(scs);
+        ClassTypeSignature cts = SignatureParser.parseClassTypeSignature(scs);
 
         List<ClassTypeSignature> siss = new ArrayList<SignatureParser.ClassTypeSignature>();
-        while (!scs.atEoi()) siss.add(parseClassTypeSignature(scs));
+        while (!scs.atEoi()) siss.add(SignatureParser.parseClassTypeSignature(scs));
 
         return new ClassSignature(ftps, cts, siss);
     }
@@ -621,30 +621,34 @@ class SignatureParser {
     throws EOFException, UnexpectedCharacterException, SignatureException {
 
         List<FormalTypeParameter> ftps = new ArrayList<SignatureParser.FormalTypeParameter>();
-        if (scs.peekRead('<')) while (!scs.peekRead('>')) ftps.add(parseFormalTypeParameter(scs));
+        if (scs.peekRead('<')) while (!scs.peekRead('>')) ftps.add(SignatureParser.parseFormalTypeParameter(scs));
 
         scs.read('(');
         List<TypeSignature> pts = new ArrayList<SignatureParser.TypeSignature>();
-        while (!scs.peekRead(')')) pts.add(parseTypeSignature(scs));
+        while (!scs.peekRead(')')) pts.add(SignatureParser.parseTypeSignature(scs));
 
-        TypeSignature rt = parseReturnType(scs);
+        TypeSignature rt = SignatureParser.parseReturnType(scs);
 
         List<ThrowsSignature> tts = new ArrayList<SignatureParser.ThrowsSignature>();
-        while (!scs.atEoi()) tts.add(parseThrowsSignature(scs));
+        while (!scs.atEoi()) tts.add(SignatureParser.parseThrowsSignature(scs));
 
         return new MethodTypeSignature(ftps, pts, rt, tts);
     }
 
     private static TypeSignature
     parseReturnType(StringCharStream scs) throws EOFException, UnexpectedCharacterException, SignatureException {
-        if (scs.peekRead('V')) return VOID;
-        return parseTypeSignature(scs);
+        if (scs.peekRead('V')) return SignatureParser.VOID;
+        return SignatureParser.parseTypeSignature(scs);
     }
 
     private static ThrowsSignature
     parseThrowsSignature(StringCharStream scs) throws EOFException, UnexpectedCharacterException, SignatureException {
         scs.read('^');
-        return scs.peek('T') ? parseTypeVariableSignature(scs) : parseClassTypeSignature(scs);
+        return (
+            scs.peek('T')
+            ? SignatureParser.parseTypeVariableSignature(scs)
+            : SignatureParser.parseClassTypeSignature(scs)
+        );
     }
 
     private static ClassTypeSignature
@@ -659,12 +663,12 @@ class SignatureParser {
 
         PART1:
         for (;;) {
-            String s = parseIdentifier(scs);
+            String s = SignatureParser.parseIdentifier(scs);
             switch (scs.peek("<./;")) {
             case 0: // '<'
                 scs.read('<');
                 scn = s;
-                while (!scs.peekRead('>')) tas.add(parseTypeArgument(scs));
+                while (!scs.peekRead('>')) tas.add(SignatureParser.parseTypeArgument(scs));
                 break PART1;
             case 1: // '.'
                 scn = s;
@@ -681,7 +685,7 @@ class SignatureParser {
             }
         }
 
-        while (scs.peekRead('.')) ss.add(parseSimpleClassTypeSignature(scs));
+        while (scs.peekRead('.')) ss.add(SignatureParser.parseSimpleClassTypeSignature(scs));
 
         scs.read(';');
 
@@ -708,7 +712,7 @@ class SignatureParser {
     parseTypeVariableSignature(StringCharStream scs)
     throws EOFException, UnexpectedCharacterException, SignatureException {
         scs.read('T');
-        String identifier = parseIdentifier(scs);
+        String identifier = SignatureParser.parseIdentifier(scs);
         scs.read(';');
         return new TypeVariableSignature(identifier);
     }
@@ -716,13 +720,13 @@ class SignatureParser {
     private static FormalTypeParameter
     parseFormalTypeParameter(StringCharStream scs)
     throws EOFException, SignatureException, UnexpectedCharacterException {
-        String identifier = parseIdentifier(scs);
+        String identifier = SignatureParser.parseIdentifier(scs);
         scs.read(':');
 
-        FieldTypeSignature cb = !scs.peek(':') ? parseFieldTypeSignature(scs) : null;
+        FieldTypeSignature cb = !scs.peek(':') ? SignatureParser.parseFieldTypeSignature(scs) : null;
 
         List<FieldTypeSignature> ibs = new ArrayList<SignatureParser.FieldTypeSignature>();
-        while (scs.peekRead(':')) ibs.add(parseFieldTypeSignature(scs));
+        while (scs.peekRead(':')) ibs.add(SignatureParser.parseFieldTypeSignature(scs));
 
         return new FormalTypeParameter(identifier, cb, ibs);
     }
@@ -731,12 +735,19 @@ class SignatureParser {
     parseTypeSignature(StringCharStream scs) throws EOFException, UnexpectedCharacterException, SignatureException {
         int idx = scs.peekRead("BCDFIJSZ");
         if (idx != -1) {
-            return PRIMITIVE_TYPES[idx];
+            return SignatureParser.PRIMITIVE_TYPES[idx];
         }
-        return parseFieldTypeSignature(scs);
+        return SignatureParser.parseFieldTypeSignature(scs);
     }
     private static final PrimitiveTypeSignature[] PRIMITIVE_TYPES = {
-        BYTE, CHAR, DOUBLE, FLOAT, INT, LONG, SHORT, BOOLEAN
+        SignatureParser.BYTE,
+        SignatureParser.CHAR,
+        SignatureParser.DOUBLE,
+        SignatureParser.FLOAT,
+        SignatureParser.INT,
+        SignatureParser.LONG,
+        SignatureParser.SHORT,
+        SignatureParser.BOOLEAN,
     };
 
     private static FieldTypeSignature
@@ -744,11 +755,11 @@ class SignatureParser {
     throws EOFException, UnexpectedCharacterException, SignatureException {
         switch (scs.peek("L[T")) {
         case 0:
-            return parseClassTypeSignature(scs);
+            return SignatureParser.parseClassTypeSignature(scs);
         case 1:
-            return parseArrayTypeSignature(scs);
+            return SignatureParser.parseArrayTypeSignature(scs);
         case 2:
-            return parseTypeVariableSignature(scs);
+            return SignatureParser.parseTypeVariableSignature(scs);
         default:
             throw new SignatureException(
                 "Class type signature, array type signature or type variable signature expected"
@@ -760,17 +771,17 @@ class SignatureParser {
     parseArrayTypeSignature(StringCharStream scs)
     throws EOFException, UnexpectedCharacterException, SignatureException {
         scs.read('[');
-        return new ArrayTypeSignature(parseTypeSignature(scs));
+        return new ArrayTypeSignature(SignatureParser.parseTypeSignature(scs));
     }
 
     private static SimpleClassTypeSignature
     parseSimpleClassTypeSignature(StringCharStream scs)
     throws EOFException, SignatureException, UnexpectedCharacterException {
 
-        String scn = parseIdentifier(scs);
+        String scn = SignatureParser.parseIdentifier(scs);
 
         List<TypeArgument> ta = new ArrayList<SignatureParser.TypeArgument>();
-        if (scs.peekRead('<')) while (!scs.peekRead('>')) ta.add(parseTypeArgument(scs));
+        if (scs.peekRead('<')) while (!scs.peekRead('>')) ta.add(SignatureParser.parseTypeArgument(scs));
 
         return new SimpleClassTypeSignature(scn, ta);
     }
@@ -778,10 +789,19 @@ class SignatureParser {
     private static TypeArgument
     parseTypeArgument(StringCharStream scs) throws EOFException, UnexpectedCharacterException, SignatureException {
 
-        if (scs.peekRead('+')) return new TypeArgument(TypeArgument.Mode.EXTENDS, parseFieldTypeSignature(scs));
-        if (scs.peekRead('-')) return new TypeArgument(TypeArgument.Mode.SUPER, parseFieldTypeSignature(scs));
-        if (scs.peekRead('*')) return new TypeArgument(TypeArgument.Mode.ANY, null);
-        return new TypeArgument(TypeArgument.Mode.NONE, parseFieldTypeSignature(scs));
+        if (scs.peekRead('+')) {
+            return new TypeArgument(TypeArgument.Mode.EXTENDS, SignatureParser.parseFieldTypeSignature(scs));
+        }
+
+        if (scs.peekRead('-')) {
+            return new TypeArgument(TypeArgument.Mode.SUPER, SignatureParser.parseFieldTypeSignature(scs));
+        }
+
+        if (scs.peekRead('*')) {
+            return new TypeArgument(TypeArgument.Mode.ANY, null);
+        }
+
+        return new TypeArgument(TypeArgument.Mode.NONE, SignatureParser.parseFieldTypeSignature(scs));
     }
 
     /** Signalizes am malformed signature. */

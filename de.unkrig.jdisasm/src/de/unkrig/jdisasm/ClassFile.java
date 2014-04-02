@@ -666,7 +666,7 @@ class ClassFile {
 
         UnknownAttribute(String name, DataInputStream dis, ClassFile cf) throws IOException {
             this.name = name;
-            this.info = readByteArray(dis, dis.available());
+            this.info = ClassFile.readByteArray(dis, dis.available());
         }
 
         @Override public void   accept(AttributeVisitor visitor) { visitor.visit(this); }
@@ -853,7 +853,7 @@ class ClassFile {
         public ElementValue defaultValue;
 
         AnnotationDefaultAttribute(DataInputStream dis, ClassFile cf) throws IOException {
-            this.defaultValue = newElementValue(dis, cf);
+            this.defaultValue = ClassFile.newElementValue(dis, cf);
         }
 
         @Override public void   accept(AttributeVisitor visitor) { visitor.visit(this); }
@@ -898,7 +898,7 @@ class ClassFile {
             public
             ElementValuePair(DataInputStream dis, ClassFile cf) throws IOException {
                 this.elementName  = cf.constantPool.get(dis.readShort(), ConstantUtf8Info.class).bytes;
-                this.elementValue = newElementValue(dis, cf);
+                this.elementValue = ClassFile.newElementValue(dis, cf);
             }
 
             @Override public String
@@ -993,7 +993,7 @@ class ClassFile {
         if (tag == '[') {
             final List<ElementValue> values = new ArrayList<ElementValue>();
             for (int i = dis.readShort(); i > 0; --i) {
-                values.add(newElementValue(dis, cf));
+                values.add(ClassFile.newElementValue(dis, cf));
             }
             return new ElementValue() {
 
@@ -1142,7 +1142,7 @@ class ClassFile {
             this.maxLocals = dis.readShort();
 
             // Byte code.
-            this.code = readByteArray(dis, dis.readInt());
+            this.code = ClassFile.readByteArray(dis, dis.readInt());
 
             // Exception table.
             for (short i = dis.readShort(); i > 0; --i) {
