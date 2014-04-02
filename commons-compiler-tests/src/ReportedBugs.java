@@ -24,9 +24,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-
 import java.io.File;
 import java.io.StringReader;
 import java.util.Collection;
@@ -35,6 +32,7 @@ import org.codehaus.commons.compiler.CompilerFactoryFactory;
 import org.codehaus.commons.compiler.ICompilerFactory;
 import org.codehaus.commons.compiler.IExpressionEvaluator;
 import org.codehaus.commons.compiler.ISimpleCompiler;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -406,11 +404,11 @@ class ReportedBugs extends JaninoTestSuite {
         ISimpleCompiler compiler = CompilerFactoryFactory.getDefaultCompilerFactory().newSimpleCompiler();
         compiler.cook(new StringReader("public class Test{static{System.setProperty(\"foo\", \"bar\");}}"));
         Class<?> testClass = compiler.getClassLoader().loadClass("Test"); // Only loads the class (JLS7 12.2).
-        assertNull(System.getProperty("foo"));
+        Assert.assertNull(System.getProperty("foo"));
         testClass.newInstance(); // Initializes the class (JLS7 12.4).
-        assertEquals("bar", System.getProperty("foo"));
+        Assert.assertEquals("bar", System.getProperty("foo"));
         System.getProperties().remove("foo");
-        assertNull(System.getProperty("foo"));
+        Assert.assertNull(System.getProperty("foo"));
     }
 
     @Test public void
@@ -607,6 +605,7 @@ class ReportedBugs extends JaninoTestSuite {
 
     @Test public void
     testBug169() throws Exception {
+        // SUPPRESS CHECKSTYLE LineLength:94
         this.assertCompilationUnitCookable(
             ""
             + "import java.util.*;\n"
@@ -639,6 +638,7 @@ class ReportedBugs extends JaninoTestSuite {
             + "       //SNO            lvar6.hashCode();\n"
             + "                    }\n"
             + "                    final Object fld7 = fld1.hashCode() + param2.hashCode() + lvar3.hashCode() + fld4.hashCode() + parm5.hashCode() + lvar5a.hashCode() + /*SNO lvar6.hashCode() +*/ fld7.hashCode();\n"
+            + "                    private void dummy() { throw new AssertionError(lvar5a); }\n"
             + "                    Object fld8 = new Object() {\n"
             + "                        final Object fld9 = fld1.hashCode() + /*param2.hashCode() + lvar3.hashCode() +*/ fld4.hashCode() + /*parm5.hashCode() + lvar5a.hashCode() + lvar6.hashCode()*/ + fld7.hashCode() + fld8.hashCode();\n"
             + "                        public void apply(final Object parm10) {\n"
@@ -647,7 +647,7 @@ class ReportedBugs extends JaninoTestSuite {
             + "    // Unknown var or type  lvar3.hashCode();\n"
             + "                            fld4.hashCode();\n"
             + "    // Unknown var or type  parm5.hashCode();\n"
-            + "    // Unknown var or type  lvar5a.hashCode();\n"
+            + "    /* Unknown var or type*/  lvar5a.hashCode();\n"
             + "    // Unknown var or type  lvar6.hashCode();\n"
             + "                            fld7.hashCode();\n"
             + "                            fld8.hashCode();\n"
