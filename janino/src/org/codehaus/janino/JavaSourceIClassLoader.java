@@ -26,16 +26,19 @@
 
 package org.codehaus.janino;
 
-import java.io.*;
-import java.util.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.ErrorHandler;
 import org.codehaus.commons.compiler.Location;
 import org.codehaus.commons.compiler.WarningHandler;
 import org.codehaus.janino.Java.CompilationUnit;
-import org.codehaus.janino.util.*;
-import org.codehaus.janino.util.resource.*;
+import org.codehaus.janino.util.ClassFile;
+import org.codehaus.janino.util.resource.Resource;
+import org.codehaus.janino.util.resource.ResourceFinder;
 
 
 /**
@@ -170,6 +173,12 @@ class JavaSourceIClassLoader extends IClassLoader {
         }
     }
 
+    /**
+     * Finds the Java&trade; source file for the named class through the configured 'source resource finder' and
+     * parses it.
+     *
+     * @return {@code null} iff the source file could not be found
+     */
     protected CompilationUnit
     findCompilationUnit(String className) throws IOException, CompileException {
 
