@@ -224,9 +224,10 @@ class UnitCompiler {
 
     private void
     import2(SingleStaticImportDeclaration ssid) throws CompileException {
-        String name = last(ssid.identifiers);
+        String name = UnitCompiler.last(ssid.identifiers);
 
-        List<Object/*IField+IMethod+IClass*/> importedObjects = (List) this.singleStaticImports.get(name);
+        List<Object/*IField+IMethod+IClass*/>
+        importedObjects = (List<Object/*IField+IMethod+IClass*/>) this.singleStaticImports.get(name);
         if (importedObjects == null) {
             importedObjects = new ArrayList();
             this.singleStaticImports.put(name, importedObjects);
@@ -241,7 +242,7 @@ class UnitCompiler {
             }
         }
 
-        String[] typeName = allButLast(ssid.identifiers);
+        String[] typeName = UnitCompiler.allButLast(ssid.identifiers);
         IClass   iClass   = this.findTypeByFullyQualifiedName(ssid.getLocation(), typeName);
         if (iClass == null) {
             this.compileError("Could not load \"" + Java.join(typeName, ".") + "\"", ssid.getLocation());
@@ -577,7 +578,7 @@ class UnitCompiler {
             Type type = fd.type;
             for (int i = 0; i < vd.brackets; ++i) type = new ArrayType(type);
 
-            Object ocv = NOT_CONSTANT;
+            Object ocv = UnitCompiler.NOT_CONSTANT;
             if (Mod.isFinal(fd.modifiers.flags) && vd.optionalInitializer instanceof Rvalue) {
                 ocv = this.getConstantValue((Rvalue) vd.optionalInitializer);
             }
@@ -590,19 +591,19 @@ class UnitCompiler {
                 //  + Access is changed from PRIVATE to PACKAGE
                 assert fd.modifiers.annotations.length == 0 : "NYI";
                 fi = cf.addFieldInfo(
-                    fd.modifiers.changeAccess(Mod.PACKAGE), // modifiers
-                    vd.name,                                // fieldName
-                    this.getType(type).getDescriptor(),     // fieldTypeFD
-                    ocv == NOT_CONSTANT ? null : ocv        // optionalConstantValue
+                    fd.modifiers.changeAccess(Mod.PACKAGE),       // modifiers
+                    vd.name,                                      // fieldName
+                    this.getType(type).getDescriptor(),           // fieldTypeFD
+                    ocv == UnitCompiler.NOT_CONSTANT ? null : ocv // optionalConstantValue
                 );
             } else
             {
                 assert fd.modifiers.annotations.length == 0 : "NYI";
                 fi = cf.addFieldInfo(
-                    fd.modifiers,                       // modifiers
-                    vd.name,                            // fieldName
-                    this.getType(type).getDescriptor(), // fieldTypeFD
-                    ocv == NOT_CONSTANT ? null : ocv    // optionalConstantValue
+                    fd.modifiers,                                 // modifiers
+                    vd.name,                                      // fieldName
+                    this.getType(type).getDescriptor(),           // fieldTypeFD
+                    ocv == UnitCompiler.NOT_CONSTANT ? null : ocv // optionalConstantValue
                 );
             }
 
@@ -715,11 +716,7 @@ class UnitCompiler {
         this.compileDeclaredMethods(id, cf);
 
         // Class variables.
-        for (int i = 0; i < id.constantDeclarations.size(); ++i) {
-            BlockStatement bs = (BlockStatement) id.constantDeclarations.get(i);
-            if (!(bs instanceof FieldDeclaration)) continue;
-            this.addFields((FieldDeclaration) bs, cf);
-        }
+        for (FieldDeclaration constantDeclaration : id.constantDeclarations) this.addFields(constantDeclaration, cf);
 
         this.compileDeclaredMemberTypes(id, cf);
 
@@ -995,8 +992,7 @@ class UnitCompiler {
     private boolean
     compileStatements(List<? extends BlockStatement> statements) throws CompileException {
         boolean previousStatementCanCompleteNormally = true;
-        for (int i = 0; i < statements.size(); ++i) {
-            BlockStatement bs = (BlockStatement) statements.get(i);
+        for (BlockStatement bs : statements) {
             if (!previousStatementCanCompleteNormally && this.generatesCode(bs)) {
                 this.compileError("Statement is unreachable", bs.getLocation());
                 break;
@@ -1009,7 +1005,7 @@ class UnitCompiler {
     private boolean
     compile2(DoStatement ds) throws CompileException {
         Object cvc = this.getConstantValue(ds.condition);
-        if (cvc != NOT_CONSTANT) {
+        if (cvc != UnitCompiler.NOT_CONSTANT) {
             if (Boolean.TRUE.equals(cvc)) {
                 this.warning("DSTC", (
                     "Condition of DO statement is always TRUE; "
@@ -1039,7 +1035,7 @@ class UnitCompiler {
         }
 
         // Compile condition.
-        this.compileBoolean(ds.condition, bodyOffset, JUMP_IF_TRUE);
+        this.compileBoolean(ds.condition, bodyOffset, UnitCompiler.JUMP_IF_TRUE);
 
         if (ds.whereToBreak != null) {
             ds.whereToBreak.set();
@@ -1062,7 +1058,7 @@ class UnitCompiler {
             } else
             {
                 Object cvc = this.getConstantValue(fs.optionalCondition);
-                if (cvc != NOT_CONSTANT) {
+                if (cvc != UnitCompiler.NOT_CONSTANT) {
                     if (Boolean.TRUE.equals(cvc)) {
                         this.warning("FSTC", (
                             "Condition of FOR statement is always TRUE; "
@@ -1098,7 +1094,7 @@ class UnitCompiler {
 
             // Compile condition.
             toCondition.set();
-            this.compileBoolean(fs.optionalCondition, bodyOffset, JUMP_IF_TRUE);
+            this.compileBoolean(fs.optionalCondition, bodyOffset, UnitCompiler.JUMP_IF_TRUE);
         } finally {
             this.codeContext.restoreLocalVariables();
         }
@@ -1250,7 +1246,7 @@ class UnitCompiler {
     private boolean
     compile2(WhileStatement ws) throws CompileException {
         Object cvc = this.getConstantValue(ws.condition);
-        if (cvc != NOT_CONSTANT) {
+        if (cvc != UnitCompiler.NOT_CONSTANT) {
             if (Boolean.TRUE.equals(cvc)) {
                 this.warning("WSTC", (
                     "Condition of WHILE statement is always TRUE; "
@@ -1272,7 +1268,7 @@ class UnitCompiler {
         ws.whereToContinue = null;
 
         // Compile condition.
-        this.compileBoolean(ws.condition, bodyOffset, JUMP_IF_TRUE);
+        this.compileBoolean(ws.condition, bodyOffset, UnitCompiler.JUMP_IF_TRUE);
 
         if (ws.whereToBreak != null) {
             ws.whereToBreak.set();
@@ -1350,22 +1346,21 @@ class UnitCompiler {
         CodeContext.Offset                   defaultLabelOffset = null;
         CodeContext.Offset[]                 sbsgOffsets        = new CodeContext.Offset[ss.sbsgs.size()];
         for (int i = 0; i < ss.sbsgs.size(); ++i) {
-            SwitchStatement.SwitchBlockStatementGroup sbsg = (
-                (SwitchStatement.SwitchBlockStatementGroup) ss.sbsgs.get(i)
+            SwitchStatement.SwitchBlockStatementGroup sbsg = (SwitchStatement.SwitchBlockStatementGroup) (
+                ss.sbsgs.get(i)
             );
             sbsgOffsets[i] = this.codeContext.new Offset();
-            for (int j = 0; j < sbsg.caseLabels.size(); ++j) {
+            for (Rvalue caseLabel : sbsg.caseLabels) {
 
                 // Verify that case label value is a constant.
-                Rvalue rv = (Rvalue) sbsg.caseLabels.get(j);
-                Object cv = this.getConstantValue(rv);
-                if (cv == NOT_CONSTANT) {
-                    this.compileError("Value of \"case\" label does not pose a constant value", rv.getLocation());
+                Object cv = this.getConstantValue(caseLabel);
+                if (cv == UnitCompiler.NOT_CONSTANT) {
+                    this.compileError("Value of 'case' label does not pose a constant value", caseLabel.getLocation());
                     cv = new Integer(99);
                 }
 
                 // Verify that case label is assignable to the type of the switch expression.
-                IClass rvType = this.getType(rv);
+                IClass rvType = this.getType(caseLabel);
                 this.assignmentConversion(
                     ss,                   // locatable
                     rvType,               // sourceType
@@ -1386,14 +1381,14 @@ class UnitCompiler {
                 } else {
                     this.compileError(
                         "Value of case label must be a char, byte, short or int constant",
-                        rv.getLocation()
+                        caseLabel.getLocation()
                     );
                     civ = new Integer(99);
                 }
 
                 // Store in case label map.
                 if (caseLabelMap.containsKey(civ)) {
-                    this.compileError("Duplicate \"case\" switch label value", rv.getLocation());
+                    this.compileError("Duplicate \"case\" switch label value", caseLabel.getLocation());
                 }
                 caseLabelMap.put(civ, sbsgOffsets[i]);
             }
@@ -1413,11 +1408,14 @@ class UnitCompiler {
             ;
         } else
         if (
-            ((Integer) caseLabelMap.firstKey()).intValue() + caseLabelMap.size() // Beware of INT overflow!
-            >= ((Integer) caseLabelMap.lastKey()).intValue() - caseLabelMap.size()
+            (Integer) caseLabelMap.firstKey() + caseLabelMap.size() // Beware of INT overflow!
+            >= (Integer) caseLabelMap.lastKey() - caseLabelMap.size()
         ) {
-            int low  = ((Integer) caseLabelMap.firstKey()).intValue();
-            int high = ((Integer) caseLabelMap.lastKey()).intValue();
+
+            // The case label values are strictly consecutity or almost consecutive (at most 50% 'gaps'), so
+            // let's use a TABLESWITCH.
+            int low  = (Integer) caseLabelMap.firstKey();
+            int high = (Integer) caseLabelMap.lastKey();
 
             this.writeOpcode(ss, Opcode.TABLESWITCH);
             new Padder(this.codeContext).set();
@@ -1426,21 +1424,26 @@ class UnitCompiler {
             this.writeInt(high);
             int cur = low;
             for (Map.Entry<Integer, CodeContext.Offset> me : caseLabelMap.entrySet()) {
-                int val = ((Integer) me.getKey()).intValue();
-                while (cur < val) {
+                int                caseLabelValue  = (Integer) me.getKey();
+                CodeContext.Offset caseLabelOffset = (CodeContext.Offset) me.getValue();
+
+                while (cur < caseLabelValue) {
                     this.writeOffset(switchOffset, defaultLabelOffset);
                     ++cur;
                 }
-                this.writeOffset(switchOffset, (CodeContext.Offset) me.getValue());
+                this.writeOffset(switchOffset, caseLabelOffset);
                 ++cur;
             }
-        } else {
+        } else
+        {
+
+            // The case label values are not 'consecutive enough', so use a LOOKUPSWOTCH.
             this.writeOpcode(ss, Opcode.LOOKUPSWITCH);
             new Padder(this.codeContext).set();
             this.writeOffset(switchOffset, defaultLabelOffset);
             this.writeInt(caseLabelMap.size());
             for (Map.Entry<Integer, CodeContext.Offset> me : caseLabelMap.entrySet()) {
-                this.writeInt(((Integer) me.getKey()).intValue());
+                this.writeInt((Integer) me.getKey());
                 this.writeOffset(switchOffset, (CodeContext.Offset) me.getValue());
             }
         }
@@ -1601,7 +1604,7 @@ class UnitCompiler {
         //   if (!expression1) throw new AssertionError(expression2);
         CodeContext.Offset end = this.codeContext.new Offset();
         try {
-            this.compileBoolean(as.expression1, end, JUMP_IF_TRUE);
+            this.compileBoolean(as.expression1, end, UnitCompiler.JUMP_IF_TRUE);
 
             this.writeOpcode(as, Opcode.NEW);
             this.writeConstantClassInfo(Descriptor.JAVA_LANG_ASSERTIONERROR);
@@ -1729,7 +1732,7 @@ class UnitCompiler {
                 // if (expression) statement else statement
                 CodeContext.Offset eso = this.codeContext.new Offset();
                 CodeContext.Offset end = this.codeContext.new Offset();
-                this.compileBoolean(is.condition, eso, JUMP_IF_FALSE);
+                this.compileBoolean(is.condition, eso, UnitCompiler.JUMP_IF_FALSE);
                 boolean tsccn = this.compile(is.thenStatement);
                 if (tsccn) this.writeBranch(is, Opcode.GOTO, end);
                 eso.set();
@@ -1740,7 +1743,7 @@ class UnitCompiler {
 
                 // if (expression) statement else ;
                 CodeContext.Offset end = this.codeContext.new Offset();
-                this.compileBoolean(is.condition, end, JUMP_IF_FALSE);
+                this.compileBoolean(is.condition, end, UnitCompiler.JUMP_IF_FALSE);
                 this.compile(is.thenStatement);
                 end.set();
                 return true;
@@ -1750,7 +1753,7 @@ class UnitCompiler {
 
                 // if (expression) ; else statement
                 CodeContext.Offset end = this.codeContext.new Offset();
-                this.compileBoolean(is.condition, end, JUMP_IF_TRUE);
+                this.compileBoolean(is.condition, end, UnitCompiler.JUMP_IF_TRUE);
                 this.compile(es);
                 end.set();
                 return true;
@@ -1769,7 +1772,7 @@ class UnitCompiler {
     compile2(LocalClassDeclarationStatement lcds) throws CompileException {
 
         // Check for redefinition.
-        LocalClassDeclaration otherLcd = findLocalClassDeclaration(lcds, lcds.lcd.name);
+        LocalClassDeclaration otherLcd = UnitCompiler.findLocalClassDeclaration(lcds, lcds.lcd.name);
         if (otherLcd != lcds.lcd) {
             this.compileError(
                 "Redeclaration of local class \""
@@ -1911,7 +1914,7 @@ class UnitCompiler {
             enclosingFunction,      // to
             returnType              // optionalStackValueType
         );
-        this.writeOpcode(rs, Opcode.IRETURN + ilfda(returnType));
+        this.writeOpcode(rs, Opcode.IRETURN + UnitCompiler.ilfda(returnType));
         return false;
     }
 
@@ -2319,7 +2322,7 @@ class UnitCompiler {
 
         final short lvtani;
         if (this.debugVars) {
-            makeLocalVariableNames(codeContext, mi);
+            UnitCompiler.makeLocalVariableNames(codeContext, mi);
             lvtani = classFile.addConstantUtf8Info("LocalVariableTable");
         } else {
             lvtani = 0;
@@ -2859,7 +2862,7 @@ class UnitCompiler {
         if (type != IClass.BOOLEAN) {
             this.compileError("Not a boolean expression", rv.getLocation());
         }
-        this.writeBranch(rv, orientation == JUMP_IF_TRUE ? Opcode.IFNE : Opcode.IFEQ, dst);
+        this.writeBranch(rv, orientation == UnitCompiler.JUMP_IF_TRUE ? Opcode.IFNE : Opcode.IFEQ, dst);
     }
 
     /**
@@ -2896,14 +2899,14 @@ class UnitCompiler {
                     this.compileBoolean(
                         bo.rhs,
                         dst,
-                        JUMP_IF_TRUE ^ orientation == JUMP_IF_FALSE
+                        UnitCompiler.JUMP_IF_TRUE ^ orientation == UnitCompiler.JUMP_IF_FALSE
                     );
                 } else {
                     // "false && a", "true || a"
                     this.compileBoolean(
                         bo.lhs,
                         dst,
-                        JUMP_IF_TRUE ^ orientation == JUMP_IF_FALSE
+                        UnitCompiler.JUMP_IF_TRUE ^ orientation == UnitCompiler.JUMP_IF_FALSE
                     );
                     this.fakeCompile(bo.rhs);
                 }
@@ -2916,7 +2919,7 @@ class UnitCompiler {
                     this.compileBoolean(
                         bo.lhs,
                         dst,
-                        JUMP_IF_TRUE ^ orientation == JUMP_IF_FALSE
+                        UnitCompiler.JUMP_IF_TRUE ^ orientation == UnitCompiler.JUMP_IF_FALSE
                     );
                 } else {
                     // "a && false", "a || true"
@@ -2924,18 +2927,20 @@ class UnitCompiler {
                     this.compileBoolean(
                         bo.rhs,
                         dst,
-                        JUMP_IF_TRUE ^ orientation == JUMP_IF_FALSE
+                        UnitCompiler.JUMP_IF_TRUE ^ orientation == UnitCompiler.JUMP_IF_FALSE
                     );
                 }
                 return;
             }
-            if (bo.op == "||" ^ orientation == JUMP_IF_FALSE) { // SUPPRESS CHECKSTYLE StringLiteralEquality
-                this.compileBoolean(bo.lhs, dst, JUMP_IF_TRUE ^ orientation == JUMP_IF_FALSE);
-                this.compileBoolean(bo.rhs, dst, JUMP_IF_TRUE ^ orientation == JUMP_IF_FALSE);
+
+            // SUPPRESS CHECKSTYLE StringLiteralEquality
+            if (bo.op == "||" ^ orientation == UnitCompiler.JUMP_IF_FALSE) {
+                this.compileBoolean(bo.lhs, dst, UnitCompiler.JUMP_IF_TRUE ^ orientation == UnitCompiler.JUMP_IF_FALSE);
+                this.compileBoolean(bo.rhs, dst, UnitCompiler.JUMP_IF_TRUE ^ orientation == UnitCompiler.JUMP_IF_FALSE);
             } else {
                 CodeContext.Offset end = this.codeContext.new Offset();
-                this.compileBoolean(bo.lhs, end, JUMP_IF_FALSE ^ orientation == JUMP_IF_FALSE);
-                this.compileBoolean(bo.rhs, dst, JUMP_IF_TRUE ^ orientation == JUMP_IF_FALSE);
+                this.compileBoolean(bo.lhs, end, UnitCompiler.JUMP_IF_FALSE ^ orientation == UnitCompiler.JUMP_IF_FALSE); // SUPPRESS CHECKSTYLE LineLength
+                this.compileBoolean(bo.rhs, dst, UnitCompiler.JUMP_IF_TRUE ^ orientation == UnitCompiler.JUMP_IF_FALSE);
                 end.set();
             }
             return;
@@ -2958,7 +2963,7 @@ class UnitCompiler {
                 bo.op == "<=" ? 5 : // SUPPRESS CHECKSTYLE StringLiteralEquality
                 Integer.MIN_VALUE
             );
-            if (orientation == JUMP_IF_FALSE) opIdx ^= 1;
+            if (orientation == UnitCompiler.JUMP_IF_FALSE) opIdx ^= 1;
 
             // Comparison with "null".
             {
@@ -3295,7 +3300,7 @@ class UnitCompiler {
     private IClass
     compileGet2(BooleanRvalue brv) throws CompileException {
         CodeContext.Offset isTrue = this.codeContext.new Offset();
-        this.compileBoolean(brv, isTrue, JUMP_IF_TRUE);
+        this.compileBoolean(brv, isTrue, UnitCompiler.JUMP_IF_TRUE);
         this.writeOpcode(brv, Opcode.ICONST_0);
         CodeContext.Offset end = this.codeContext.new Offset();
         this.writeBranch(brv, Opcode.GOTO, end);
@@ -3561,7 +3566,7 @@ class UnitCompiler {
             } else {
                 CodeContext.Offset toRhs = this.codeContext.new Offset();
 
-                this.compileBoolean(ce.lhs, toRhs, JUMP_IF_FALSE);
+                this.compileBoolean(ce.lhs, toRhs, UnitCompiler.JUMP_IF_FALSE);
                 mhsType            = this.compileGetValue(ce.mhs);
                 mhsConvertInserter = this.codeContext.newInserter();
                 this.writeBranch(ce, Opcode.GOTO, toEnd);
@@ -3732,7 +3737,7 @@ class UnitCompiler {
 
             {
                 Object ncv = this.getNegatedConstantValue(uo.operand);
-                if (ncv != NOT_CONSTANT) {
+                if (ncv != UnitCompiler.NOT_CONSTANT) {
                     return this.unaryNumericPromotion(uo, this.pushConstant(uo, ncv));
                 }
             }
@@ -4344,7 +4349,7 @@ class UnitCompiler {
     private IClass
     compileGetValue(Rvalue rv) throws CompileException {
         Object cv = this.getConstantValue(rv);
-        if (cv != NOT_CONSTANT) {
+        if (cv != UnitCompiler.NOT_CONSTANT) {
             this.fakeCompile(rv); // To check that, e.g., "a" compiles in "true || a".
             this.pushConstant(rv, cv);
             return this.getType(rv);
@@ -4419,7 +4424,7 @@ class UnitCompiler {
     }
 
     @SuppressWarnings("static-method") private Object
-    getConstantValue2(Rvalue rv) { return NOT_CONSTANT; }
+    getConstantValue2(Rvalue rv) { return UnitCompiler.NOT_CONSTANT; }
 
     private Object
     getConstantValue2(AmbiguousName an) throws CompileException {
@@ -4440,10 +4445,10 @@ class UnitCompiler {
             return (
                 cv == Boolean.TRUE ? Boolean.FALSE :
                 cv == Boolean.FALSE ? Boolean.TRUE :
-                NOT_CONSTANT
+                UnitCompiler.NOT_CONSTANT
             );
         }
-        return NOT_CONSTANT;
+        return UnitCompiler.NOT_CONSTANT;
     }
 
     private Object
@@ -4456,7 +4461,7 @@ class UnitCompiler {
                 : this.getConstantValue(ce.rhs)
             );
         }
-        return NOT_CONSTANT;
+        return UnitCompiler.NOT_CONSTANT;
     }
 
     private Object
@@ -4482,7 +4487,7 @@ class UnitCompiler {
             List<Object> cvs = new ArrayList();
             for (Iterator<Rvalue> it = bo.unrollLeftAssociation(); it.hasNext();) {
                 Object cv = this.getConstantValue(((Rvalue) it.next()));
-                if (cv == NOT_CONSTANT) return NOT_CONSTANT;
+                if (cv == UnitCompiler.NOT_CONSTANT) return UnitCompiler.NOT_CONSTANT;
                 cvs.add(cv);
             }
 
@@ -4490,7 +4495,7 @@ class UnitCompiler {
             Iterator<Object> it  = cvs.iterator();
             Object           lhs = it.next();
             while (it.hasNext()) {
-                if (lhs == NOT_CONSTANT) return NOT_CONSTANT;
+                if (lhs == UnitCompiler.NOT_CONSTANT) return UnitCompiler.NOT_CONSTANT;
 
                 Object rhs = it.next();
 
@@ -4516,7 +4521,7 @@ class UnitCompiler {
                                 bo.op == "-" ? new Double(lhsD - rhsD) :
                                 bo.op == "==" ? Boolean.valueOf(lhsD == rhsD) :
                                 bo.op == "!=" ? Boolean.valueOf(lhsD != rhsD) :
-                                NOT_CONSTANT
+                                UnitCompiler.NOT_CONSTANT
                                 // CHECKSTYLE StringLiteralEquality:ON
                             );
                             continue;
@@ -4533,7 +4538,7 @@ class UnitCompiler {
                                 bo.op == "-" ? new Float(lhsF - rhsF) :
                                 bo.op == "==" ? Boolean.valueOf(lhsF == rhsF) :
                                 bo.op == "!=" ? Boolean.valueOf(lhsF != rhsF) :
-                                NOT_CONSTANT
+                                UnitCompiler.NOT_CONSTANT
                                 // CHECKSTYLE StringLiteralEquality:ON
                             );
                             continue;
@@ -4553,7 +4558,7 @@ class UnitCompiler {
                                 bo.op == "-" ? new Long(lhsL - rhsL) :
                                 bo.op == "==" ? Boolean.valueOf(lhsL == rhsL) :
                                 bo.op == "!=" ? Boolean.valueOf(lhsL != rhsL) :
-                                NOT_CONSTANT
+                                UnitCompiler.NOT_CONSTANT
                                 // CHECKSTYLE StringLiteralEquality:ON
                             );
                             continue;
@@ -4576,7 +4581,7 @@ class UnitCompiler {
                                 bo.op == "-" ? new Integer(lhsI - rhsI) :
                                 bo.op == "==" ? Boolean.valueOf(lhsI == rhsI) :
                                 bo.op == "!=" ? Boolean.valueOf(lhsI != rhsI) :
-                                NOT_CONSTANT
+                                UnitCompiler.NOT_CONSTANT
                                 // CHECKSTYLE StringLiteralEquality:ON
                             );
                             continue;
@@ -4585,7 +4590,7 @@ class UnitCompiler {
 
                         // Most likely a divide by zero or modulo by zero. Guess we can't make this expression into a
                         // constant.
-                        return NOT_CONSTANT;
+                        return UnitCompiler.NOT_CONSTANT;
                     }
                     throw new IllegalStateException();
                 }
@@ -4596,7 +4601,7 @@ class UnitCompiler {
                     lhs = (
                         bo.op == "==" ? Boolean.valueOf(lhsC == rhsC) : // SUPPRESS CHECKSTYLE StringLiteralEquality
                         bo.op == "!=" ? Boolean.valueOf(lhsC != rhsC) : // SUPPRESS CHECKSTYLE StringLiteralEquality
-                        NOT_CONSTANT
+                        UnitCompiler.NOT_CONSTANT
                     );
                     continue;
                 }
@@ -4605,12 +4610,12 @@ class UnitCompiler {
                     lhs = (
                         bo.op == "==" ? Boolean.valueOf(lhs == rhs) : // SUPPRESS CHECKSTYLE StringLiteralEquality
                         bo.op == "!=" ? Boolean.valueOf(lhs != rhs) : // SUPPRESS CHECKSTYLE StringLiteralEquality
-                        NOT_CONSTANT
+                        UnitCompiler.NOT_CONSTANT
                     );
                     continue;
                 }
 
-                return NOT_CONSTANT;
+                return UnitCompiler.NOT_CONSTANT;
             }
             return lhs;
         }
@@ -4628,13 +4633,13 @@ class UnitCompiler {
             }
         }
 
-        return NOT_CONSTANT;
+        return UnitCompiler.NOT_CONSTANT;
     }
 
     private Object
     getConstantValue2(Cast c) throws CompileException {
         Object cv = this.getConstantValue(c.value);
-        if (cv == NOT_CONSTANT) return NOT_CONSTANT;
+        if (cv == UnitCompiler.NOT_CONSTANT) return UnitCompiler.NOT_CONSTANT;
 
         if (cv instanceof Number) {
             IClass tt = this.getType(c.targetType);
@@ -4646,7 +4651,7 @@ class UnitCompiler {
             if (tt == IClass.DOUBLE) return new Double(((Number) cv).doubleValue());
         }
 
-        return NOT_CONSTANT;
+        return UnitCompiler.NOT_CONSTANT;
     }
 
     private Object
@@ -4660,15 +4665,15 @@ class UnitCompiler {
         if (v.startsWith("0x")) {
             return (
                 v.endsWith("L") || v.endsWith("l")
-                ? (Object) Long.valueOf(hex2Long(il, v.substring(2, v.length() - 1)))
-                : Integer.valueOf(hex2Int(il, v.substring(2)))
+                ? (Object) Long.valueOf(UnitCompiler.hex2Long(il, v.substring(2, v.length() - 1)))
+                : Integer.valueOf(UnitCompiler.hex2Int(il, v.substring(2)))
             );
         }
         if (v.startsWith("0")) {
             return (
                 v.endsWith("L") || v.endsWith("l")
-                ? (Object) Long.valueOf(oct2Long(il, v.substring(0, v.length() - 1)))
-                : Integer.valueOf(oct2Int(il, v))
+                ? (Object) Long.valueOf(UnitCompiler.oct2Long(il, v.substring(0, v.length() - 1)))
+                : Integer.valueOf(UnitCompiler.oct2Int(il, v))
             );
         }
         try {
@@ -4679,7 +4684,7 @@ class UnitCompiler {
             );
         } catch (NumberFormatException e) {
             // SUPPRESS CHECKSTYLE AvoidHidingCause
-            throw compileException(il, "Value of decimal integer literal '" + v + "' is out of range");
+            throw UnitCompiler.compileException(il, "Value of decimal integer literal '" + v + "' is out of range");
         }
     }
 
@@ -4699,7 +4704,7 @@ class UnitCompiler {
                 throw new JaninoRuntimeException("SNO: parsing float literal '" + v + "': " + e.getMessage(), e);
             }
             if (Float.isInfinite(fv)) {
-                throw compileException(fpl, "Value of float literal '" + v + "' is out of range");
+                throw UnitCompiler.compileException(fpl, "Value of float literal '" + v + "' is out of range");
             }
             if (Float.isNaN(fv)) {
                 throw new JaninoRuntimeException("SNO: parsing float literal '" + v + "' results in NaN");
@@ -4710,7 +4715,10 @@ class UnitCompiler {
                 for (int i = 0; i < v.length(); ++i) {
                     char c = v.charAt(i);
                     if ("123456789".indexOf(c) != -1) {
-                        throw compileException(fpl,  "Literal '" + v + "' is too small to be represented as a float");
+                        throw UnitCompiler.compileException(
+                            fpl,
+                            "Literal '" + v + "' is too small to be represented as a float"
+                        );
                     }
                     if (c != '0' && c != '.') break;
                 }
@@ -4728,7 +4736,7 @@ class UnitCompiler {
             throw new JaninoRuntimeException("SNO: parsing double literal '" + v + "': " + e.getMessage(), e);
         }
         if (Double.isInfinite(dv)) {
-            throw compileException(fpl, "Value of double literal '" + v + "' is out of range");
+            throw UnitCompiler.compileException(fpl, "Value of double literal '" + v + "' is out of range");
         }
         if (Double.isNaN(dv)) {
             throw new JaninoRuntimeException("SNO: parsing double literal '" + v + "' results is NaN");
@@ -4739,7 +4747,10 @@ class UnitCompiler {
             for (int i = 0; i < v.length(); ++i) {
                 char c = v.charAt(i);
                 if ("123456789".indexOf(c) != -1) {
-                    throw compileException(fpl, "Literal '" + v + "' is too small to be represented as a double");
+                    throw UnitCompiler.compileException(
+                        fpl,
+                        "Literal '" + v + "' is too small to be represented as a double"
+                    );
                 }
                 if (c != '0' && c != '.') break;
             }
@@ -4758,7 +4769,7 @@ class UnitCompiler {
     @SuppressWarnings("static-method") private Object
     getConstantValue2(CharacterLiteral cl) {
         String v = cl.value;
-        return Character.valueOf(unescape(v.substring(1, v.length() - 1)).charAt(0));
+        return Character.valueOf(UnitCompiler.unescape(v.substring(1, v.length() - 1)).charAt(0));
     }
 
     @SuppressWarnings("static-method") private Object
@@ -4767,7 +4778,7 @@ class UnitCompiler {
             return "";
         }
         String v = sl.value;
-        return unescape(v.substring(1, v.length() - 1));
+        return UnitCompiler.unescape(v.substring(1, v.length() - 1));
     }
 
     @SuppressWarnings("static-method") private Object
@@ -4840,14 +4851,14 @@ class UnitCompiler {
         if (cv instanceof Long)    return new Long(-((Long) cv).longValue());
         if (cv instanceof Float)   return new Float(-((Float) cv).floatValue());
         if (cv instanceof Double)  return new Double(-((Double) cv).doubleValue());
-        return NOT_CONSTANT;
+        return UnitCompiler.NOT_CONSTANT;
     }
     private Object
     getNegatedConstantValue2(UnaryOperation uo) throws CompileException {
         return (
             uo.operator.equals("+") ? this.getNegatedConstantValue(uo.operand) :
             uo.operator.equals("-") ? this.getConstantValue(uo.operand) :
-            NOT_CONSTANT
+            UnitCompiler.NOT_CONSTANT
         );
     }
     private Object
@@ -5209,7 +5220,10 @@ class UnitCompiler {
 
             // 6.5.5.1.1 Local class.
             {
-                LocalClassDeclaration lcd = findLocalClassDeclaration(rt.getEnclosingScope(), simpleTypeName);
+                LocalClassDeclaration lcd = UnitCompiler.findLocalClassDeclaration(
+                    rt.getEnclosingScope(),
+                    simpleTypeName
+                );
                 if (lcd != null) return this.resolve(lcd);
             }
 
@@ -6275,7 +6289,7 @@ class UnitCompiler {
         List<Compilable> tmp = new ArrayList();
         do {
             Object cv = this.getConstantValue(operand);
-            if (cv == NOT_CONSTANT) {
+            if (cv == UnitCompiler.NOT_CONSTANT) {
                 // Non-constant operand.
                 final Rvalue finalOperand = operand;
                 tmp.add(new Compilable() {
@@ -6293,7 +6307,7 @@ class UnitCompiler {
                 if (operands.hasNext()) {
                     operand = (Rvalue) operands.next();
                     Object cv2 = this.getConstantValue(operand);
-                    if (cv2 != NOT_CONSTANT) {
+                    if (cv2 != UnitCompiler.NOT_CONSTANT) {
                         StringBuilder sb = new StringBuilder(cv.toString()).append(cv2);
                         for (;;) {
                             if (!operands.hasNext()) {
@@ -6302,7 +6316,7 @@ class UnitCompiler {
                             }
                             operand = (Rvalue) operands.next();
                             Object cv3 = this.getConstantValue(operand);
-                            if (cv3 == NOT_CONSTANT) break;
+                            if (cv3 == UnitCompiler.NOT_CONSTANT) break;
                             sb.append(cv3);
                         }
                         cv = sb.toString();
@@ -6325,7 +6339,7 @@ class UnitCompiler {
         // At this point "tmp" contains an optimized sequence of Strings (representing constant portions) and Rvalues
         // (non-constant portions).
 
-        if (tmp.size() <= (operandOnStack ? STRING_CONCAT_LIMIT - 1 : STRING_CONCAT_LIMIT)) {
+        if (tmp.size() <= (operandOnStack ? UnitCompiler.STRING_CONCAT_LIMIT - 1 : UnitCompiler.STRING_CONCAT_LIMIT)) {
 
             // String concatenation through "a.concat(b).concat(c)".
             for (Compilable c : tmp) {
@@ -6658,13 +6672,15 @@ class UnitCompiler {
                         Object constantInitializerValue = UnitCompiler.this.getConstantValue(
                             (Rvalue) variableDeclarator.optionalInitializer
                         );
-                        if (constantInitializerValue != NOT_CONSTANT) return UnitCompiler.this.assignmentConversion(
-                            variableDeclarator.optionalInitializer, // locatable
-                            constantInitializerValue,               // value
-                            this.getType()                          // targetType
-                        );
+                        if (constantInitializerValue != UnitCompiler.NOT_CONSTANT) {
+                            return UnitCompiler.this.assignmentConversion(
+                                variableDeclarator.optionalInitializer, // locatable
+                                constantInitializerValue,               // value
+                                this.getType()                          // targetType
+                            );
+                        }
                     }
-                    return NOT_CONSTANT;
+                    return UnitCompiler.NOT_CONSTANT;
                 }
             };
         }
@@ -6688,7 +6704,7 @@ class UnitCompiler {
             Mod.isStatic(fd.modifiers.flags)
             && Mod.isFinal(fd.modifiers.flags)
             && vd.optionalInitializer instanceof Rvalue
-            && this.getConstantValue((Rvalue) vd.optionalInitializer) != NOT_CONSTANT
+            && this.getConstantValue((Rvalue) vd.optionalInitializer) != UnitCompiler.NOT_CONSTANT
         ) return null;
 
         return vd.optionalInitializer;
@@ -7037,7 +7053,7 @@ class UnitCompiler {
 
         // 6.5.2.BL1.B1.B2.1 (JLS7: 6.5.2.BL1.B1.B3.2) Local class.
         {
-            LocalClassDeclaration lcd = findLocalClassDeclaration(scope, identifier);
+            LocalClassDeclaration lcd = UnitCompiler.findLocalClassDeclaration(scope, identifier);
             if (lcd != null) return new SimpleType(location, this.resolve(lcd));
         }
 
@@ -7334,7 +7350,7 @@ class UnitCompiler {
 
         // Determine arguments' types, choose the most specific method.
         return (IClass.IMethod) this.findMostSpecificIInvocable(
-            (Locatable) invocation,                                       // l
+            invocation,                                                   // locatable
             (IClass.IMethod[]) ms.toArray(new IClass.IMethod[ms.size()]), // iInvocables
             invocation.arguments,                                         // arguments
             invocation.getEnclosingBlockStatement()                       // contextScope
@@ -8326,10 +8342,11 @@ class UnitCompiler {
             getAnnotations() { return constructorDeclarator.modifiers.annotations; }
 
             // Implement IInvocable.
+
             @Override public String
-            getDescriptor() throws CompileException {
+            getDescriptor2() throws CompileException {
                 if (!(constructorDeclarator.getDeclaringClass() instanceof InnerClassDeclaration)) {
-                    return super.getDescriptor();
+                    return super.getDescriptor2();
                 }
 
                 List<String> parameterFds = new ArrayList();
@@ -8545,7 +8562,7 @@ class UnitCompiler {
             for (SingleTypeImportDeclaration stid : stids) {
 
                 String[] ids        = stid.identifiers;
-                String   simpleName = last(ids);
+                String   simpleName = UnitCompiler.last(ids);
 
                 // Check for re-import of same simple name.
                 String[] prev = (String[]) this.singleTypeImports.put(simpleName, ids);
@@ -8608,7 +8625,7 @@ class UnitCompiler {
 
         IClass importedClass = null;
         for (String[] packageComponents : this.typeImportsOnDemand) {
-            String[] typeComponents = concat(packageComponents, simpleTypeName);
+            String[] typeComponents = UnitCompiler.concat(packageComponents, simpleTypeName);
             IClass   iClass         = this.findTypeByFullyQualifiedName(location, typeComponents);
             if (iClass != null) {
                 if (importedClass != null && importedClass != iClass) {
@@ -8868,7 +8885,7 @@ class UnitCompiler {
         int result = 0;
         for (int i = 0; i < value.length(); ++i) {
             if ((result & 0xf0000000) != 0) {
-                throw compileException(
+                throw UnitCompiler.compileException(
                     locatable,
                     "Value of hexadecimal integer literal \"" + value + "\" is out of range"
                 );
@@ -8883,7 +8900,10 @@ class UnitCompiler {
         int result = 0;
         for (int i = 0; i < value.length(); ++i) {
             if ((result & 0xe0000000) != 0) {
-                throw compileException(locatable, "Value of octal integer literal \"" + value + "\" is out of range");
+                throw UnitCompiler.compileException(
+                    locatable,
+                    "Value of octal integer literal '" + value + "' is out of range"
+                );
             }
             result = (result << 3) + Character.digit(value.charAt(i), 8);
         }
@@ -8895,7 +8915,7 @@ class UnitCompiler {
         long result = 0L;
         for (int i = 0; i < value.length(); ++i) {
             if ((result & 0xf000000000000000L) != 0L) {
-                throw compileException(
+                throw UnitCompiler.compileException(
                     locatable,
                     "Value of hexadecimal long literal \"" + value + "\" is out of range"
                 );
@@ -8910,7 +8930,10 @@ class UnitCompiler {
         long result = 0L;
         for (int i = 0; i < value.length(); ++i) {
             if ((result & 0xe000000000000000L) != 0) {
-                throw compileException(locatable, "Value of octal long literal \"" + value + "\" is out of range");
+                throw UnitCompiler.compileException(
+                    locatable,
+                    "Value of octal long literal '" + value + "' is out of range"
+                );
             }
             result = (result << 3) + Character.digit(value.charAt(i), 8);
         }
@@ -9045,7 +9068,7 @@ class UnitCompiler {
         }
 
         // 5.2 Special narrowing primitive conversion.
-        if (optionalConstantValue != NOT_CONSTANT) {
+        if (optionalConstantValue != UnitCompiler.NOT_CONSTANT) {
             if (this.tryConstantAssignmentConversion(
                 locatable,
                 optionalConstantValue, // constantValue
@@ -9782,15 +9805,15 @@ class UnitCompiler {
     private void
     load(Locatable locatable, IClass type, int index) {
         if (index <= 3) {
-            this.writeOpcode(locatable, Opcode.ILOAD_0 + 4 * ilfda(type) + index);
+            this.writeOpcode(locatable, Opcode.ILOAD_0 + 4 * UnitCompiler.ilfda(type) + index);
         } else
         if (index <= 255) {
-            this.writeOpcode(locatable, Opcode.ILOAD + ilfda(type));
+            this.writeOpcode(locatable, Opcode.ILOAD + UnitCompiler.ilfda(type));
             this.writeByte(index);
         } else
         {
             this.writeOpcode(locatable, Opcode.WIDE);
-            this.writeOpcode(locatable, Opcode.ILOAD + ilfda(type));
+            this.writeOpcode(locatable, Opcode.ILOAD + UnitCompiler.ilfda(type));
             this.writeShort(index);
         }
     }
@@ -9809,15 +9832,15 @@ class UnitCompiler {
     private void
     store(Locatable locatable, IClass lvType, short lvIndex) {
         if (lvIndex <= 3) {
-            this.writeOpcode(locatable, Opcode.ISTORE_0 + 4 * ilfda(lvType) + lvIndex);
+            this.writeOpcode(locatable, Opcode.ISTORE_0 + 4 * UnitCompiler.ilfda(lvType) + lvIndex);
         } else
         if (lvIndex <= 255) {
-            this.writeOpcode(locatable, Opcode.ISTORE + ilfda(lvType));
+            this.writeOpcode(locatable, Opcode.ISTORE + UnitCompiler.ilfda(lvType));
             this.writeByte(lvIndex);
         } else
         {
             this.writeOpcode(locatable, Opcode.WIDE);
-            this.writeOpcode(locatable, Opcode.ISTORE + ilfda(lvType));
+            this.writeOpcode(locatable, Opcode.ISTORE + UnitCompiler.ilfda(lvType));
             this.writeShort(lvIndex);
         }
     }
@@ -10320,7 +10343,7 @@ class UnitCompiler {
             this.name = name;
             this.type = type;
         }
-        @Override public Object       getConstantValue() { return NOT_CONSTANT; }
+        @Override public Object       getConstantValue() { return UnitCompiler.NOT_CONSTANT; }
         @Override public String       getName()          { return this.name; }
         @Override public IClass       getType()          { return this.type; }
         @Override public boolean      isStatic()         { return false; }

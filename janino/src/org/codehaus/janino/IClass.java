@@ -456,7 +456,7 @@ class IClass {
      */
     public abstract boolean isAbstract();
 
-    /** @return The field descriptor for the type as defined by JVMS 4.3.2. */
+    /** Returns the field descriptor for the type as defined by JVMS 4.3.2. This method is fast. */
     public final String
     getDescriptor() {
         if (this.descriptorCache == null) {
@@ -778,7 +778,10 @@ class IClass {
         }
     }
 
-    /** Base for the members of an {@link IClass}. */
+    /**
+     * Base for the members of an {@link IClass}. {@link IMember} are expected to be immutable, i.e. all getter methods
+     * return constant values.
+     */
     public
     interface IMember {
 
@@ -824,9 +827,19 @@ class IClass {
         public abstract IClass[]
         getParameterTypes() throws CompileException;
 
-        /** @return The method descriptor of this constructor or method */
+        /** Returns the method descriptor of this constructor or method. This method is fast. */
+        public final String
+        getDescriptor() throws CompileException {
+            if (this.descriptorCache == null) {
+                this.descriptorCache = this.getDescriptor2();
+            }
+            return this.descriptorCache;
+        }
+        private String descriptorCache;
+
+        /** Uncached implementation of {@link #getDescriptor()}. */
         public abstract String
-        getDescriptor() throws CompileException;
+        getDescriptor2() throws CompileException;
 
         /** @return The types thrown by this constructor or method */
         public abstract IClass[]
@@ -968,11 +981,11 @@ class IClass {
         @Override public abstract IClass[] getParameterTypes() throws CompileException;
 
         /**
-         * Opposed to {@link #getParameterTypes()}, the method descriptor returned by this
-         * method does include the optionally leading synthetic parameters.
+         * Opposed to {@link #getParameterTypes()}, the method descriptor returned by this method does include the
+         * optionally leading synthetic parameters.
          */
         @Override public String
-        getDescriptor() throws CompileException {
+        getDescriptor2() throws CompileException {
             IClass[] parameterTypes = this.getParameterTypes();
 
             IClass outerIClass = IClass.this.getOuterIClass();
@@ -1018,10 +1031,10 @@ class IClass {
         public abstract IClass getReturnType() throws CompileException;
 
         /** @return The name of this method */
-        public abstract String  getName();
+        public abstract String getName();
 
-        @Override  public String
-        getDescriptor() throws CompileException {
+        @Override public String
+        getDescriptor2() throws CompileException {
             return new MethodDescriptor(
                 IClass.getDescriptors(this.getParameterTypes()),
                 this.getReturnType().getDescriptor()
@@ -1091,7 +1104,7 @@ class IClass {
          * Returns the value of the field if it is a compile-time constant value, i.e. the field is FINAL and its
          * initializer is a constant expression (JLS7 15.28, bullet 12).
          */
-        public abstract Object  getConstantValue() throws CompileException;
+        public abstract Object getConstantValue() throws CompileException;
 
         @Override public String
         toString() { return this.getDeclaringIClass().toString() + "." + this.getName(); }

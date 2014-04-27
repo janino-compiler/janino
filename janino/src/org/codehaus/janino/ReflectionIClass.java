@@ -255,7 +255,7 @@ class ReflectionIClass extends IClass {
         }
 
         @Override public String
-        getDescriptor() {
+        getDescriptor2() {
             Class[]  parameterTypes       = this.constructor.getParameterTypes();
             String[] parameterDescriptors = new String[parameterTypes.length];
             for (int i = 0; i < parameterDescriptors.length; ++i) {
@@ -373,7 +373,7 @@ class ReflectionIClass extends IClass {
                     );
                 }
             }
-            return NOT_CONSTANT;
+            return IClass.NOT_CONSTANT;
         }
 
         final Field field;
