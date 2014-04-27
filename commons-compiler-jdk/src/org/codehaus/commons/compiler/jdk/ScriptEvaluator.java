@@ -488,8 +488,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
             }
             Method[]                   ma  = c.getDeclaredMethods();
             Map<MethodWrapper, Method> dms = new HashMap<MethodWrapper, Method>(2 * count);
-            for (int i = 0; i < ma.length; ++i) {
-                Method m = ma[i];
+            for (Method m : ma) {
                 dms.put(new MethodWrapper(m.getName(), m.getParameterTypes()), m);
             }
             for (int i = 0; i < count; ++i) {
