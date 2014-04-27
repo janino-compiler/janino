@@ -26,11 +26,26 @@
 
 package org.codehaus.commons.compiler.jdk;
 
-import java.io.*;
-import java.lang.reflect.*;
-import java.util.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintWriter;
+import java.io.Reader;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-import org.codehaus.commons.compiler.*;
+import org.codehaus.commons.compiler.CompileException;
+import org.codehaus.commons.compiler.Cookable;
+import org.codehaus.commons.compiler.IClassBodyEvaluator;
+import org.codehaus.commons.compiler.IExpressionEvaluator;
+import org.codehaus.commons.compiler.IScriptEvaluator;
 import org.codehaus.commons.io.MultiReader;
 
 /**
@@ -246,38 +261,38 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
 
     @Override public void
     setOverrideMethod(boolean[] overrideMethod) {
-        assertNotCooked();
+        this.assertNotCooked();
         this.optionalOverrideMethod = overrideMethod.clone();
     }
 
     @Override public void
     setStaticMethod(boolean[] staticMethod) {
-        assertNotCooked();
+        this.assertNotCooked();
         this.optionalStaticMethod = staticMethod.clone();
     }
 
     @Override public void
     setReturnTypes(@SuppressWarnings("rawtypes") Class[] returnTypes) {
-        assertNotCooked();
+        this.assertNotCooked();
         this.optionalReturnTypes = returnTypes.clone();
     }
 
     @Override public void
     setMethodNames(String[] methodNames) {
-        assertNotCooked();
+        this.assertNotCooked();
         this.optionalMethodNames = methodNames.clone();
     }
 
     @Override public void
     setParameters(String[][] names, @SuppressWarnings("rawtypes") Class[][] types) {
-        assertNotCooked();
+        this.assertNotCooked();
         this.optionalParameterNames = names.clone();
         this.optionalParameterTypes = types.clone();
     }
 
     @Override public void
     setThrownExceptions(@SuppressWarnings("rawtypes") Class[][] thrownExceptions) {
-        assertNotCooked();
+        this.assertNotCooked();
         this.optionalThrownExceptions = thrownExceptions.clone();
     }
 
@@ -292,7 +307,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
             if (!readers[0].markSupported()) {
                 readers = new Reader[] { new BufferedReader(readers[0]) };
             }
-            imports = parseImportDeclarations(readers[0]);
+            imports = ClassBodyEvaluator.parseImportDeclarations(readers[0]);
         } else
         {
             imports = new String[0];

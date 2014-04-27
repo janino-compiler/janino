@@ -26,8 +26,13 @@
 
 package org.codehaus.commons.io;
 
-import java.io.*;
-import java.util.*;
+import java.io.FilterReader;
+import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * Similar to {@link FilterReader}, but when the first delegate is at end-of-input, it continues
@@ -41,7 +46,7 @@ class MultiReader extends Reader {
 
     private final List<Reader>     delegates;
     private final Iterator<Reader> delegateIterator;
-    private Reader                 currentDelegate = EMPTY_READER;
+    private Reader                 currentDelegate = MultiReader.EMPTY_READER;
 
     public
     MultiReader(List<Reader> delegates) {

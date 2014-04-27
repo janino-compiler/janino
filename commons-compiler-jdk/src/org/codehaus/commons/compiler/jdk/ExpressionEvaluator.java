@@ -191,7 +191,7 @@ class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluato
         Class<?>[] returnTypes = new Class[expressionTypes.length];
         for (int i = 0; i < returnTypes.length; ++i) {
             Class<?> et = expressionTypes[i];
-            returnTypes[i] = et == ANY_TYPE ? Object.class : et;
+            returnTypes[i] = et == IExpressionEvaluator.ANY_TYPE ? Object.class : et;
         }
         super.setReturnTypes(returnTypes);
     }
@@ -220,7 +220,7 @@ class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluato
         String[] imports;
         if (readers.length == 1) {
             if (!readers[0].markSupported()) readers[0] = new BufferedReader(readers[0]);
-            imports = parseImportDeclarations(readers[0]);
+            imports = ClassBodyEvaluator.parseImportDeclarations(readers[0]);
         } else
         {
             imports = new String[0];
@@ -231,17 +231,20 @@ class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluato
             StringWriter sw = new StringWriter();
             PrintWriter  pw = new PrintWriter(sw);
 
-            if (this.optionalExpressionTypes == null || this.optionalExpressionTypes[i] == ANY_TYPE) {
+            if (
+                this.optionalExpressionTypes == null
+                || this.optionalExpressionTypes[i] == IExpressionEvaluator.ANY_TYPE
+            ) {
                 returnTypes[i] = Object.class;
                 pw.print("return org.codehaus.commons.compiler.PrimitiveWrapper.wrap(");
-                pw.write(readString(readers[i]));
+                pw.write(Cookable.readString(readers[i]));
                 pw.println(");");
             } else {
                 returnTypes[i] = this.optionalExpressionTypes[i];
                 if (returnTypes[i] != void.class && returnTypes[i] != Void.class) {
                     pw.print("return ");
                 }
-                pw.write(readString(readers[i]));
+                pw.write(Cookable.readString(readers[i]));
                 pw.println(";");
             }
             pw.close();

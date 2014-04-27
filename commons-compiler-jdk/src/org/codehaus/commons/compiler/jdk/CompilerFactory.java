@@ -29,7 +29,12 @@ package org.codehaus.commons.compiler.jdk;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 
-import org.codehaus.commons.compiler.*;
+import org.codehaus.commons.compiler.AbstractCompilerFactory;
+import org.codehaus.commons.compiler.AbstractJavaSourceClassLoader;
+import org.codehaus.commons.compiler.IClassBodyEvaluator;
+import org.codehaus.commons.compiler.IExpressionEvaluator;
+import org.codehaus.commons.compiler.IScriptEvaluator;
+import org.codehaus.commons.compiler.ISimpleCompiler;
 
 /** The {@link CompilerFactory} implementation for {@code org.codehaus.commons.compiler.jdk}. */
 public

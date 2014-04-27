@@ -232,7 +232,7 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
 
         List<String> imports         = new ArrayList<String>();
         int          afterLastImport = 0;
-        for (Matcher matcher = IMPORT_STATEMENT_PATTERN.matcher(cb); matcher.find();) {
+        for (Matcher matcher = ClassBodyEvaluator.IMPORT_STATEMENT_PATTERN.matcher(cb); matcher.find();) {
             imports.add(matcher.group(1));
             afterLastImport = matcher.end();
         }

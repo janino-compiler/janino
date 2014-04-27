@@ -32,8 +32,8 @@ import java.io.InputStream;
 
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
-import javax.tools.StandardLocation;
 import javax.tools.JavaFileObject.Kind;
+import javax.tools.StandardLocation;
 
 /** A {@link ClassLoader} that loads classes through a {@link JavaFileManager}. */
 public

@@ -26,13 +26,26 @@
 
 package org.codehaus.commons.compiler.jdk;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
-import javax.tools.*;
+import javax.tools.Diagnostic;
+import javax.tools.DiagnosticListener;
+import javax.tools.JavaCompiler;
+import javax.tools.JavaFileManager;
+import javax.tools.JavaFileObject;
 import javax.tools.JavaFileObject.Kind;
+import javax.tools.StandardLocation;
+import javax.tools.ToolProvider;
 
-import org.codehaus.commons.compiler.*;
+import org.codehaus.commons.compiler.AbstractJavaSourceClassLoader;
+import org.codehaus.commons.compiler.ICompilerFactory;
 import org.codehaus.commons.compiler.jdk.ByteArrayJavaFileManager.ByteArrayJavaFileObject;
 
 /**
@@ -236,7 +249,9 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
         return this.defineClass(className, ba, 0, size, (
             this.optionalProtectionDomainFactory == null
             ? null
-            : this.optionalProtectionDomainFactory.getProtectionDomain(getSourceResourceName(className))
+            : this.optionalProtectionDomainFactory.getProtectionDomain(
+                JavaSourceClassLoader.getSourceResourceName(className)
+            )
         ));
     }
 
