@@ -499,18 +499,17 @@ class Compiler {
 
             // Parse all source files.
             this.parsedCompilationUnits.clear();
-            for (int i = 0; i < sourceResources.length; ++i) {
-                if (Compiler.DEBUG) System.out.println("Compiling \"" + sourceResources[i] + "\"");
+            for (Resource sourceResource : sourceResources) {
+                if (Compiler.DEBUG) System.out.println("Compiling \"" + sourceResource + "\"");
                 this.parsedCompilationUnits.add(new UnitCompiler(this.parseCompilationUnit(
-                    sourceResources[i].getFileName(),                   // fileName
-                    new BufferedInputStream(sourceResources[i].open()), // inputStream
-                    this.optionalCharacterEncoding                      // optionalCharacterEncoding
+                    sourceResource.getFileName(),                   // fileName
+                    new BufferedInputStream(sourceResource.open()), // inputStream
+                    this.optionalCharacterEncoding                  // optionalCharacterEncoding
                 ), this.iClassLoader));
             }
 
-            // Compile all parsed compilation units. The vector of parsed CUs may
-            // grow while they are being compiled, but eventually all CUs will
-            // be compiled.
+            // Compile all parsed compilation units. The vector of parsed CUs may grow while they are being compiled,
+            // but eventually all CUs will be compiled.
             for (int i = 0; i < this.parsedCompilationUnits.size(); ++i) {
                 UnitCompiler unitCompiler = (UnitCompiler) this.parsedCompilationUnits.get(i);
 

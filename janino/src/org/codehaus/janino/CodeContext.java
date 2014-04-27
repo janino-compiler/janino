@@ -197,13 +197,12 @@ class CodeContext {
         short            lineNumberTableAttributeNameIndex,
         short            localVariableTableAttributeNameIndex
     ) throws IOException {
-        dos.writeShort(this.maxStack);                                // max_stack
-        dos.writeShort(this.maxLocals);                               // max_locals
-        dos.writeInt(this.end.offset);                                // code_length
-        dos.write(this.code, 0, this.end.offset);                     // code
-        dos.writeShort(this.exceptionTableEntries.size());            // exception_table_length
-        for (int i = 0; i < this.exceptionTableEntries.size(); ++i) { // exception_table
-            ExceptionTableEntry exceptionTableEntry = (ExceptionTableEntry) this.exceptionTableEntries.get(i);
+        dos.writeShort(this.maxStack);                                               // max_stack
+        dos.writeShort(this.maxLocals);                                              // max_locals
+        dos.writeInt(this.end.offset);                                               // code_length
+        dos.write(this.code, 0, this.end.offset);                                    // code
+        dos.writeShort(this.exceptionTableEntries.size());                           // exception_table_length
+        for (ExceptionTableEntry exceptionTableEntry : this.exceptionTableEntries) { // exception_table
             dos.writeShort(exceptionTableEntry.startPC.offset);
             dos.writeShort(exceptionTableEntry.endPC.offset);
             dos.writeShort(exceptionTableEntry.handlerPC.offset);
@@ -309,8 +308,7 @@ class CodeContext {
         // Analyze flow from exception handler entry points.
         int analyzedExceptionHandlers = 0;
         while (analyzedExceptionHandlers != this.exceptionTableEntries.size()) {
-            for (int i = 0; i < this.exceptionTableEntries.size(); ++i) {
-                ExceptionTableEntry exceptionTableEntry = (ExceptionTableEntry) this.exceptionTableEntries.get(i);
+            for (ExceptionTableEntry exceptionTableEntry : this.exceptionTableEntries) {
                 if (stackSizes[exceptionTableEntry.startPC.offset] != CodeContext.UNEXAMINED) {
                     this.flowAnalysis(
                         functionName,
@@ -737,11 +735,11 @@ class CodeContext {
     private boolean
     relocate() {
         boolean finished = true;
-        for (int i = 0; i < this.relocatables.size(); ++i) {
-            //do not terminate earlier so that everything gets a chance to grow in the first pass
-            //changes the common case for this to be O(n) instead of O(n**2)
-            boolean part =  ((Relocatable) this.relocatables.get(i)).relocate();
-            finished = finished && part;
+        for (Relocatable relocatable : this.relocatables) {
+
+            // Do not terminate earlier so that everything gets a chance to grow in the first pass changes the common
+            // case for this to be O(n) instead of O(n**2).
+            finished &= relocatable.relocate();
         }
         return finished;
     }

@@ -212,8 +212,7 @@ class IClass {
             String  candidateName       = candidate.getName();
 
             // Check if a method with the same name and descriptor has been added before.
-            for (int j = 0; j < result.size(); ++j) {
-                IMethod oldMethod = (IMethod) result.get(j);
+            for (IMethod oldMethod : result) {
                 if (
                     candidateName.equals(oldMethod.getName())
                     && candidateDescriptor.equals(oldMethod.getDescriptor())

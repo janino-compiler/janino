@@ -643,10 +643,9 @@ class UnitCompiler {
         // For classes that enclose surrounding scopes, trawl their field initializers looking for synthetic fields.
         if (icd instanceof AnonymousClassDeclaration || icd instanceof LocalClassDeclaration) {
             ClassDeclaration cd = (ClassDeclaration) icd;
-            for (int i = 0; i < cd.variableDeclaratorsAndInitializers.size(); ++i) {
-                TypeBodyDeclaration tbd = (TypeBodyDeclaration) cd.variableDeclaratorsAndInitializers.get(i);
-                if (tbd instanceof FieldDeclaration) {
-                    FieldDeclaration fd = (FieldDeclaration) tbd;
+            for (BlockStatement vdoi : cd.variableDeclaratorsAndInitializers) {
+                if (vdoi instanceof FieldDeclaration) {
+                    FieldDeclaration fd = (FieldDeclaration) vdoi;
                     for (VariableDeclarator vd : fd.variableDeclarators) {
                         if (vd.optionalInitializer != null) {
                             this.fakeCompile(vd.optionalInitializer);
@@ -1456,8 +1455,7 @@ class UnitCompiler {
             );
             sbsgOffsets[i].set();
             canCompleteNormally = true;
-            for (int j = 0; j < sbsg.blockStatements.size(); ++j) {
-                BlockStatement bs = (BlockStatement) sbsg.blockStatements.get(j);
+            for (BlockStatement bs : sbsg.blockStatements) {
                 if (!canCompleteNormally) {
                     this.compileError("Statement is unreachable", bs.getLocation());
                     break;
@@ -2010,10 +2008,9 @@ class UnitCompiler {
             );
 
             // Initialize all catch clauses as "unreachable" only to check later that they ARE indeed reachable.
-            for (int i = 0; i < ts.catchClauses.size(); ++i) {
-                CatchClause cc                  = (CatchClause) ts.catchClauses.get(i);
-                IClass      caughtExceptionType = this.getType(cc.caughtException.type);
-                cc.reachable = (
+            for (CatchClause catchClause : ts.catchClauses) {
+                IClass caughtExceptionType = this.getType(catchClause.caughtException.type);
+                catchClause.reachable = (
                     // Superclass or subclass of "java.lang.Error"?
                     this.iClassLoader.TYPE_java_lang_Error.isAssignableFrom(caughtExceptionType)
                     || caughtExceptionType.isAssignableFrom(this.iClassLoader.TYPE_java_lang_Error)
@@ -2036,24 +2033,24 @@ class UnitCompiler {
                         try {
                             this.codeContext.saveLocalVariables();
 
-                            CatchClause cc                  = (CatchClause) ts.catchClauses.get(i);
-                            IClass      caughtExceptionType = this.getType(cc.caughtException.type);
+                            CatchClause catchClause         = (CatchClause) ts.catchClauses.get(i);
+                            IClass      caughtExceptionType = this.getType(catchClause.caughtException.type);
 
                             // Verify that the CATCH clause is reachable.
-                            if (!cc.reachable) {
-                                this.compileError("Catch clause is unreachable", cc.getLocation());
+                            if (!catchClause.reachable) {
+                                this.compileError("Catch clause is unreachable", catchClause.getLocation());
                             }
 
                             // Allocate the "exception variable".
                             LocalVariableSlot exceptionVarSlot = this.codeContext.allocateLocalVariable(
                                 (short) 1,
-                                cc.caughtException.name,
+                                catchClause.caughtException.name,
                                 caughtExceptionType
                             );
                             short evi = exceptionVarSlot.getSlotIndex();
 
                             // Kludge: Treat the exception variable like a local variable of the catch clause body.
-                            this.getLocalVariable(cc.caughtException).setSlot(exceptionVarSlot);
+                            this.getLocalVariable(catchClause.caughtException).setSlot(exceptionVarSlot);
 
                             this.codeContext.addExceptionTableEntry(
                                 beginningOfBody,                    // startPC
@@ -2062,18 +2059,18 @@ class UnitCompiler {
                                 caughtExceptionType.getDescriptor() // catchTypeFD
                             );
                             this.store(
-                                cc,                  // locatable
+                                catchClause,         // locatable
                                 caughtExceptionType, // lvType
                                 evi                  // lvIndex
                             );
 
 
-                            if (this.compile(cc.body)) {
+                            if (this.compile(catchClause.body)) {
                                 canCompleteNormally = true;
                                 if (
                                     i < ts.catchClauses.size() - 1
                                     || ts.optionalFinally != null
-                                ) this.writeBranch(cc, Opcode.GOTO, afterStatement);
+                                ) this.writeBranch(catchClause, Opcode.GOTO, afterStatement);
                             }
                         } finally {
                             this.codeContext.restoreLocalVariables();
@@ -4939,9 +4936,7 @@ class UnitCompiler {
 
     private boolean
     generatesCode2(List<BlockStatement> l) throws CompileException {
-        for (int i = 0; i < l.size(); ++i) {
-            if (this.generatesCode(((BlockStatement) l.get(i)))) return true;
-        }
+        for (BlockStatement bs : l) if (this.generatesCode(bs)) return true;
         return false;
     }
 
@@ -6020,12 +6015,8 @@ class UnitCompiler {
     /** Compiles the instance variable initializers and the instance initializers in their lexical order. */
     void
     initializeInstanceVariablesAndInvokeInstanceInitializers(ConstructorDeclarator cd) throws CompileException {
-        for (int i = 0; i < cd.getDeclaringClass().variableDeclaratorsAndInitializers.size(); ++i) {
-            TypeBodyDeclaration tbd = (
-                (TypeBodyDeclaration) cd.getDeclaringClass().variableDeclaratorsAndInitializers.get(i)
-            );
-            if (!tbd.isStatic()) {
-                BlockStatement bs = (BlockStatement) tbd;
+        for (BlockStatement bs : cd.getDeclaringClass().variableDeclaratorsAndInitializers) {
+            if (!((TypeBodyDeclaration) bs).isStatic()) {
                 if (!this.compile(bs)) {
                     this.compileError(
                         "Instance variable declarator or instance initializer does not complete normally",
@@ -7117,20 +7108,19 @@ class UnitCompiler {
             IClass importedType = null;
             for (IClass ic : this.staticImportsOnDemand) {
                 IClass[] memberTypes = ic.getDeclaredIClasses();
-                for (int i = 0; i < memberTypes.length; ++i) {
-                    IClass mt = memberTypes[i];
-                    if (!this.isAccessible(mt, scopeBlockStatement)) continue;
-                    if (mt.getDescriptor().endsWith('$' + identifier + ';')) {
+                for (IClass memberType : memberTypes) {
+                    if (!this.isAccessible(memberType, scopeBlockStatement)) continue;
+                    if (memberType.getDescriptor().endsWith('$' + identifier + ';')) {
                         if (importedType != null) {
                             this.compileError(
                                 "Ambiguous static type import: \""
                                 + importedType.toString()
                                 + "\" vs. \""
-                                + mt.toString()
+                                + memberType.toString()
                                 + "\""
                             );
                         }
-                        importedType = mt;
+                        importedType = memberType;
                     }
                 }
             }
@@ -7340,8 +7330,7 @@ class UnitCompiler {
         // Interfaces inherit the methods declared in 'Object'.
         if (targetType.isInterface()) {
             IClass.IMethod[] oms = this.iClassLoader.TYPE_java_lang_Object.getDeclaredIMethods(invocation.methodName);
-            for (int i = 0; i < oms.length; ++i) {
-                IClass.IMethod om = oms[i];
+            for (IMethod om : oms) {
                 if (!om.isStatic() && om.getAccess() == Access.PUBLIC) ms.add(om);
             }
         }
@@ -7384,7 +7373,7 @@ class UnitCompiler {
         // Check methods declared by this type.
         {
             IClass.IMethod[] ims = type.getDeclaredIMethods(methodName);
-            for (int i = 0; i < ims.length; ++i) v.add(ims[i]);
+            for (IMethod im : ims) v.add(im);
         }
 
         // Check superclass.
@@ -7393,7 +7382,7 @@ class UnitCompiler {
 
         // Check superinterfaces.
         IClass[] interfaces = type.getInterfaces();
-        for (int i = 0; i < interfaces.length; ++i) this.getIMethods(interfaces[i], methodName, v);
+        for (IClass interfacE : interfaces) this.getIMethods(interfacE, methodName, v);
     }
 
     /** @return The {@link IClass.IMethod} that implements the {@code superclassMethodInvocation} */
@@ -7527,9 +7516,7 @@ class UnitCompiler {
 
         if (UnitCompiler.DEBUG) {
             System.out.println("Argument types:");
-            for (int i = 0; i < argumentTypes.length; ++i) {
-                System.out.println(argumentTypes[i]);
-            }
+            for (IClass argumentType : argumentTypes) System.out.println(argumentType);
         }
 
         // Select applicable methods (15.12.2.1).
@@ -7537,9 +7524,8 @@ class UnitCompiler {
         List<IClass.IInvocable> varargApplicables     = new ArrayList();
 
         NEXT_METHOD:
-        for (int i = 0; i < iInvocables.length; ++i) {
-            boolean           argsNeedAdjust = false;
-            IClass.IInvocable ii             = iInvocables[i];
+        for (IClass.IInvocable ii : iInvocables) {
+            boolean argsNeedAdjust = false;
 
             // Ignore inaccessible invocables.
             if (!this.isAccessible(ii, contextScope)) continue;
@@ -7630,11 +7616,9 @@ class UnitCompiler {
 
         // 15.12.2.5. Determine the "maximally specific invocables".
         List<IClass.IInvocable> maximallySpecificIInvocables = new ArrayList();
-        for (int i = 0; i < applicableIInvocables.size(); ++i) {
-            IClass.IInvocable applicableIInvocable = (IClass.IInvocable) applicableIInvocables.get(i);
-            int               moreSpecific         = 0, lessSpecific = 0;
-            for (int j = 0; j < maximallySpecificIInvocables.size(); ++j) {
-                IClass.IInvocable mostSpecificIInvocable = (IClass.IInvocable) maximallySpecificIInvocables.get(j);
+        for (IClass.IInvocable applicableIInvocable : applicableIInvocables) {
+            int moreSpecific = 0, lessSpecific = 0;
+            for (IClass.IInvocable mostSpecificIInvocable : maximallySpecificIInvocables) {
                 if (applicableIInvocable.isMoreSpecificThan(mostSpecificIInvocable)) {
                     ++moreSpecific;
                 } else
@@ -7730,13 +7714,11 @@ class UnitCompiler {
                 }
                 for (int i = 0; i < tes.length; ++i) {
                     EACH_EXCEPTION:
-                    for (int j = 0; j < tes[i].length; ++j) {
-                        IClass te1 = tes[i][j];
+                    for (IClass te1 : tes[i]) {
                         EACH_METHOD:
                         for (int k = 0; k < tes.length; ++k) {
                             if (k == i) continue;
-                            for (int m = 0; m < tes[k].length; ++m) {
-                                IClass te2 = tes[k][m];
+                            for (IClass te2 : tes[k]) {
                                 if (te2.isAssignableFrom(te1)) continue EACH_METHOD;
                             }
                             continue EACH_EXCEPTION;
@@ -7830,10 +7812,10 @@ class UnitCompiler {
     private void
     checkThrownExceptions(Invocation in, IMethod iMethod) throws CompileException {
         IClass[] thrownExceptions = iMethod.getThrownExceptions();
-        for (int i = 0; i < thrownExceptions.length; ++i) {
+        for (IClass thrownException : thrownExceptions) {
             this.checkThrownException(
                 in,                             // locatable
-                thrownExceptions[i],            // type
+                thrownException,                // type
                 in.getEnclosingBlockStatement() // scope
             );
         }
@@ -7897,9 +7879,8 @@ class UnitCompiler {
             // Match against "throws" clause of declaring function.
             if (scope instanceof FunctionDeclarator) {
                 FunctionDeclarator fd = (FunctionDeclarator) scope;
-                for (int i = 0; i < fd.thrownExceptions.length; ++i) {
-                    IClass te = this.getType(fd.thrownExceptions[i]);
-                    if (te.isAssignableFrom(type)) return;
+                for (Type thrownException : fd.thrownExceptions) {
+                    if (this.getType(thrownException).isAssignableFrom(type)) return;
                 }
                 break;
             } else
@@ -8035,12 +8016,11 @@ class UnitCompiler {
                     List<IClass.IField> l  = new ArrayList();
 
                     // Determine variable declarators of type declaration.
-                    for (int i = 0; i < cd.variableDeclaratorsAndInitializers.size(); ++i) {
-                        BlockStatement vdoi = (BlockStatement) cd.variableDeclaratorsAndInitializers.get(i);
+                    for (BlockStatement vdoi : cd.variableDeclaratorsAndInitializers) {
                         if (vdoi instanceof FieldDeclaration) {
                             FieldDeclaration fd   = (FieldDeclaration) vdoi;
                             IClass.IField[]  flds = UnitCompiler.this.getIFields(fd);
-                            for (int j = 0; j < flds.length; ++j) l.add(flds[j]);
+                            for (IField fld : flds) l.add(fld);
                         }
                     }
                     return (IClass.IField[]) l.toArray(new IClass.IField[l.size()]);
@@ -8050,12 +8030,11 @@ class UnitCompiler {
                     List<IClass.IField>  l  = new ArrayList();
 
                     // Determine static fields.
-                    for (int i = 0; i < id.constantDeclarations.size(); ++i) {
-                        BlockStatement bs = (BlockStatement) id.constantDeclarations.get(i);
+                    for (BlockStatement bs : id.constantDeclarations) {
                         if (bs instanceof FieldDeclaration) {
                             FieldDeclaration fd   = (FieldDeclaration) bs;
                             IClass.IField[]  flds = UnitCompiler.this.getIFields(fd);
-                            for (int j = 0; j < flds.length; ++j) l.add(flds[j]);
+                            for (IField fld : flds) l.add(fld);
                         }
                     }
                     return (IClass.IField[]) l.toArray(new IClass.IField[l.size()]);
@@ -9438,8 +9417,7 @@ class UnitCompiler {
     private static void
     fillConversionMap(Object[] array, Map<String /*descriptor*/, byte[] /*opcodes*/> map) {
         byte[] opcodes = null;
-        for (int i = 0; i < array.length; ++i) {
-            Object o = array[i];
+        for (Object o : array) {
             if (o instanceof byte[]) {
                 opcodes = (byte[]) o;
             } else {
@@ -9991,8 +9969,8 @@ class UnitCompiler {
 
         // Examine interfaces.
         IClass[] ifs = iClass.getInterfaces();
-        for (int i = 0; i < ifs.length; ++i) {
-            IClass.IField f2 = this.findIField(ifs[i], name, location);
+        for (IClass iF : ifs) {
+            IClass.IField f2 = this.findIField(iF, name, location);
             if (f2 != null) {
                 if (f != null) {
                     throw new CompileException((

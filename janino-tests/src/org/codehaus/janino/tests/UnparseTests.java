@@ -26,9 +26,6 @@
 
 package org.codehaus.janino.tests;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
@@ -40,18 +37,6 @@ import java.util.List;
 
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.janino.Java;
-import org.codehaus.janino.Java.BooleanLiteral;
-import org.codehaus.janino.Java.CharacterLiteral;
-import org.codehaus.janino.Java.FloatingPointLiteral;
-import org.codehaus.janino.Java.IntegerLiteral;
-import org.codehaus.janino.Java.NullLiteral;
-import org.codehaus.janino.Java.SimpleConstant;
-import org.codehaus.janino.Java.StringLiteral;
-import org.codehaus.janino.Mod;
-import org.codehaus.janino.Parser;
-import org.codehaus.janino.Scanner;
-import org.codehaus.janino.UnparseVisitor;
-import org.codehaus.janino.Visitor;
 import org.codehaus.janino.Java.AbstractTypeDeclaration;
 import org.codehaus.janino.Java.AmbiguousName;
 import org.codehaus.janino.Java.ArrayAccessExpression;
@@ -59,14 +44,18 @@ import org.codehaus.janino.Java.ArrayLength;
 import org.codehaus.janino.Java.Assignment;
 import org.codehaus.janino.Java.Atom;
 import org.codehaus.janino.Java.BinaryOperation;
+import org.codehaus.janino.Java.BooleanLiteral;
 import org.codehaus.janino.Java.Cast;
+import org.codehaus.janino.Java.CharacterLiteral;
 import org.codehaus.janino.Java.ClassLiteral;
 import org.codehaus.janino.Java.CompilationUnit;
 import org.codehaus.janino.Java.ConditionalExpression;
 import org.codehaus.janino.Java.Crement;
 import org.codehaus.janino.Java.FieldAccess;
 import org.codehaus.janino.Java.FieldAccessExpression;
+import org.codehaus.janino.Java.FloatingPointLiteral;
 import org.codehaus.janino.Java.Instanceof;
+import org.codehaus.janino.Java.IntegerLiteral;
 import org.codehaus.janino.Java.LocalVariableAccess;
 import org.codehaus.janino.Java.Locatable;
 import org.codehaus.janino.Java.Located;
@@ -75,15 +64,24 @@ import org.codehaus.janino.Java.NewAnonymousClassInstance;
 import org.codehaus.janino.Java.NewArray;
 import org.codehaus.janino.Java.NewClassInstance;
 import org.codehaus.janino.Java.NewInitializedArray;
+import org.codehaus.janino.Java.NullLiteral;
 import org.codehaus.janino.Java.ParameterAccess;
 import org.codehaus.janino.Java.ParenthesizedExpression;
 import org.codehaus.janino.Java.QualifiedThisReference;
+import org.codehaus.janino.Java.SimpleConstant;
+import org.codehaus.janino.Java.StringLiteral;
 import org.codehaus.janino.Java.SuperclassFieldAccessExpression;
 import org.codehaus.janino.Java.SuperclassMethodInvocation;
 import org.codehaus.janino.Java.ThisReference;
 import org.codehaus.janino.Java.Type;
 import org.codehaus.janino.Java.UnaryOperation;
+import org.codehaus.janino.Mod;
+import org.codehaus.janino.Parser;
+import org.codehaus.janino.Scanner;
+import org.codehaus.janino.UnparseVisitor;
+import org.codehaus.janino.Visitor;
 import org.codehaus.janino.util.Traverser;
+import org.junit.Assert;
 import org.junit.Test;
 
 // CHECKSTYLE JavadocMethod:OFF
@@ -107,7 +105,7 @@ class UnparseTests {
         String s = sw.toString();
         s = UnparseTests.replace(s, "((( ", "(");
         s = UnparseTests.replace(s, " )))", ")");
-        assertEquals(expect, s);
+        Assert.assertEquals(expect, s);
     }
 
     private static String
@@ -375,7 +373,7 @@ class UnparseTests {
         uv.close();
         String s             = sw.toString();
         String correctString = "/**foo */ public interface Foo { }";
-        assertEquals(correctString, normalizeWhitespace(s));
+        Assert.assertEquals(correctString, UnparseTests.normalizeWhitespace(s));
     }
 
     @Test public void
@@ -384,15 +382,15 @@ class UnparseTests {
             { new FloatingPointLiteral(null, "-0.0D"), "-0.0D" },
             { new FloatingPointLiteral(null, "-0.0F"), "-0.0F" },
         };
-        for (int i = 0; i < tests.length; ++i) {
-            Atom   expr     = (Atom) tests[i][0];
-            String expected = (String) tests[i][1];
+        for (Object[] test : tests) {
+            Atom   expr     = (Atom)   test[0];
+            String expected = (String) test[1];
 
             StringWriter   sw = new StringWriter();
             UnparseVisitor uv = new UnparseVisitor(sw);
             expr.accept(uv);
             uv.close();
-            assertEquals(expected, sw.toString());
+            Assert.assertEquals(expected, sw.toString());
         }
     }
 
@@ -449,14 +447,14 @@ class UnparseTests {
             { "-0x8000000000000000l",                  "-0x8000000000000000l",                "-0x8000000000000000l" },
         };
 
-        for (int i = 0; i < exprs.length; ++i) {
-            String input          = exprs[i][0];
-            String expectSimplify = exprs[i][1];
+        for (String[] expr : exprs) {
+            String input          = expr[0];
+            String expectSimplify = expr[1];
             if (expectSimplify == null) {
                 expectSimplify = input;
             }
 
-            String expectNoSimplify = exprs[i][2];
+            String expectNoSimplify = expr[2];
             if (expectNoSimplify == null) {
                 expectNoSimplify = input;
             }
@@ -508,19 +506,19 @@ class UnparseTests {
                         for (int i = 0;; ++i) {
                             if (i == elements1.length) {
                                 if (i == elements2.length) break;
-                                fail("Extra element " + elements2[i]);
+                                Assert.fail("Extra element " + elements2[i]);
                             }
                             Locatable locatable1 = elements1[i];
 
                             if (i == elements2.length) {
-                                fail("Element missing: " + locatable1);
+                                Assert.fail("Element missing: " + locatable1);
                             }
                             Locatable locatable2 = elements2[i];
 
                             String s1 = locatable1.toString();
                             String s2 = locatable2.toString();
                             if (!s1.equals(s2)) {
-                                fail(
+                                Assert.fail(
                                     locatable1.getLocation().toString()
                                     + ": Expected \""
                                     + s1
@@ -559,7 +557,7 @@ class UnparseTests {
                         super.traverseAbstractTypeDeclaration(atd);
                     }
                 }.traverseCompilationUnit(cu);
-                return (Locatable[]) locatables.toArray(new Java.Locatable[locatables.size()]);
+                return locatables.toArray(new Java.Locatable[locatables.size()]);
             }
         });
     }
@@ -572,7 +570,7 @@ class UnparseTests {
     private void
     find(File directory, FileFilter fileFilter) {
         File[] subDirectories = directory.listFiles(fileFilter);
-        if (subDirectories == null) fail(directory + " is not a directory");
-        for (int i = 0; i < subDirectories.length; ++i) this.find(subDirectories[i], fileFilter);
+        if (subDirectories == null) Assert.fail(directory + " is not a directory");
+        for (File subDirectorie : subDirectories) this.find(subDirectorie, fileFilter);
     }
 }

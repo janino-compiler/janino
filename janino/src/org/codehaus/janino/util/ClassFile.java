@@ -517,7 +517,7 @@ class ClassFile {
             short               descIndex = dis.readShort();
             List<AttributeInfo> atts      = this.loadAttributes(dis);
             fields.add(new FieldInfo(
-                buildModsAndAnns(mods, atts),
+                ClassFile.buildModsAndAnns(mods, atts),
                 nameIndex,
                 descIndex,
                 atts
@@ -606,14 +606,14 @@ class ClassFile {
     private static void
     storeFields(DataOutputStream dos, List<FieldInfo> fieldInfos) throws IOException {
         dos.writeShort(fieldInfos.size());
-        for (int i = 0; i < fieldInfos.size(); ++i) ((FieldInfo) fieldInfos.get(i)).store(dos);
+        for (FieldInfo fieldInfo : fieldInfos) fieldInfo.store(dos);
     }
 
     /** u2 methods_count, methods[methods_count] */
     private static void
     storeMethods(DataOutputStream dos, List<MethodInfo> methodInfos) throws IOException {
         dos.writeShort(methodInfos.size());
-        for (int i = 0; i < methodInfos.size(); ++i) ((MethodInfo) methodInfos.get(i)).store(dos);
+        for (MethodInfo methodInfo : methodInfos) methodInfo.store(dos);
     }
 
     /** u2 attributes_count, attributes[attributes_count] */
@@ -622,7 +622,7 @@ class ClassFile {
     throws IOException {
         //TODO: write annotation attributes
         dos.writeShort(attributeInfos.size());
-        for (int i = 0; i < attributeInfos.size(); ++i) ((AttributeInfo) attributeInfos.get(i)).store(dos);
+        for (AttributeInfo attributeInfo : attributeInfos) attributeInfo.store(dos);
     }
 
     /**
@@ -1481,7 +1481,6 @@ class ClassFile {
             ConstantClassInfo[] es = new ConstantClassInfo[this.exceptionIndexes.length];
             for (int i = 0; i < es.length; i++) {
                 es[i] = (ConstantClassInfo) classFile.getConstantPoolInfo(this.exceptionIndexes[i]);
-
             }
             return es;
         }

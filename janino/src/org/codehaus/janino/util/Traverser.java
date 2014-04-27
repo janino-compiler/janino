@@ -28,6 +28,7 @@ package org.codehaus.janino.util;
 
 import org.codehaus.janino.JaninoRuntimeException;
 import org.codehaus.janino.Java;
+import org.codehaus.janino.Java.Rvalue;
 import org.codehaus.janino.Visitor;
 import org.codehaus.janino.Visitor.ComprehensiveVisitor;
 
@@ -512,7 +513,7 @@ class Traverser {
     public void
     traverseNewArray(Java.NewArray na) {
         na.type.accept((Visitor.TypeVisitor) this.cv);
-        for (int i =  0; i < na.dimExprs.length; ++i) na.dimExprs[i].accept((Visitor.RvalueVisitor) this.cv);
+        for (Rvalue dimExpr : na.dimExprs) dimExpr.accept((Visitor.RvalueVisitor) this.cv);
         this.traverseRvalue(na);
     }
 

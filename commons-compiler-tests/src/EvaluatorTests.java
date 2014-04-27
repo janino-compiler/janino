@@ -273,13 +273,13 @@ class EvaluatorTests extends JaninoTestSuite {
         };
 
 
-        Method[] m        = exp[0].getMethods();
+        Method[] methods  = exp[0].getMethods();
         Object   inst     = exp[0].newInstance();
         int      numTests = 0;
-        for (int i = 0; i < m.length; ++i) {
+        for (Method method : methods) {
             for (int j = 0; j < exp.length; ++j) {
-                if (m[i].getName().startsWith("getL" + j)) {
-                    Class<?> res = (Class<?>) m[i].invoke(inst, new Object[0]);
+                if (method.getName().startsWith("getL" + j)) {
+                    Class<?> res = (Class<?>) method.invoke(inst, new Object[0]);
                     Assert.assertEquals(exp[j], res);
                     ++numTests;
                 }
@@ -316,12 +316,11 @@ class EvaluatorTests extends JaninoTestSuite {
         Class<?> c = sc.getClassLoader().loadClass("test.Test");
         Object   o = c.newInstance();
 
-        Method[] m = c.getMethods();
-        for (int i = 0; i < m.length; ++i) {
-            if (m[i].getName().startsWith("run")) {
+        for (Method method : c.getMethods()) {
+            if (method.getName().startsWith("run")) {
                 try {
-                    Object res = m[i].invoke(o, new Object[0]);
-                    Assert.fail("Method " + m[i] + " should have failed, but got " + res);
+                    Object res = method.invoke(o, new Object[0]);
+                    Assert.fail("Method " + method + " should have failed, but got " + res);
                 } catch (InvocationTargetException ae) {
                     Assert.assertTrue(ae.getTargetException() instanceof ArithmeticException);
                 }
@@ -408,10 +407,10 @@ class EvaluatorTests extends JaninoTestSuite {
         ISimpleCompiler sc = this.compilerFactory.newSimpleCompiler();
         sc.cook(prog);
 
-        Class<?>   c    = sc.getClassLoader().loadClass("test.Test");
-        Method     dm   = c.getMethod("compare", new Class[] { double.class, double.class, String.class });
-        Method     fm   = c.getMethod("compare", new Class[] { float.class, float.class, String.class });
-        Double[][] args = new Double[][] {
+        Class<?>   c     = sc.getClassLoader().loadClass("test.Test");
+        Method     dm    = c.getMethod("compare", new Class[] { double.class, double.class, String.class });
+        Method     fm    = c.getMethod("compare", new Class[] { float.class, float.class, String.class });
+        Double[][] argss = new Double[][] {
             { new Double(Double.NaN), new Double(Double.NaN) },
             { new Double(Double.NaN), new Double(1.0) },
             { new Double(1.0), new Double(Double.NaN) },
@@ -419,17 +418,17 @@ class EvaluatorTests extends JaninoTestSuite {
             { new Double(2.0), new Double(1.0) },
             { new Double(1.0), new Double(1.0) },
         };
-        String[] opcode = new String[] { "==", "!=", "<", "<=", ">", ">=" };
-        for (int opIdx = 0; opIdx < opcode.length; ++opIdx) {
-            for (int argIdx = 0; argIdx < args.length; ++argIdx) {
-                String msg = "\"" + args[argIdx][0] + " " + opcode[opIdx] + " " + args[argIdx][1] + "\"";
+        String[] operators = new String[] { "==", "!=", "<", "<=", ">", ">=" };
+        for (String operator : operators) {
+            for (Double[] args : argss) {
+                String msg = "\"" + args[0] + " " + operator + " " + args[1] + "\"";
                 {
                     boolean exp = EvaluatorTests.compare(
-                        args[argIdx][0].doubleValue(),
-                        args[argIdx][1].doubleValue(),
-                        opcode[opIdx]
+                        args[0].doubleValue(),
+                        args[1].doubleValue(),
+                        operator
                     );
-                    Object[] objs   = new Object[] { args[argIdx][0], args[argIdx][1], opcode[opIdx] };
+                    Object[] objs   = new Object[] { args[0], args[1], operator };
                     Object   actual = dm.invoke(null, objs);
                     Assert.assertEquals(msg, exp, actual);
                 }
@@ -437,14 +436,14 @@ class EvaluatorTests extends JaninoTestSuite {
                 {
                     msg = "float: " + msg;
                     boolean exp = EvaluatorTests.compare(
-                        args[argIdx][0].floatValue(),
-                        args[argIdx][1].floatValue(),
-                        opcode[opIdx]
+                        args[0].floatValue(),
+                        args[1].floatValue(),
+                        operator
                     );
                     Object[] objs = new Object[] {
-                        new Float(args[argIdx][0].floatValue()),
-                        new Float(args[argIdx][1].floatValue()),
-                        opcode[opIdx]
+                        new Float(args[0].floatValue()),
+                        new Float(args[1].floatValue()),
+                        operator
                     };
                     Object actual = fm.invoke(null, objs);
                     Assert.assertEquals(msg, exp, actual);
@@ -475,13 +474,11 @@ class EvaluatorTests extends JaninoTestSuite {
             + "}"
         );
 
-        int[] tests = new int[] { 1, 10, 100, Short.MAX_VALUE / 5, Short.MAX_VALUE / 4, Short.MAX_VALUE / 2 };
-        for (int i = 0; i < tests.length; ++i) {
-            int repititions = tests[i];
-
+        int[] repetitionss = new int[] { 1, 10, 100, Short.MAX_VALUE / 5, Short.MAX_VALUE / 4, Short.MAX_VALUE / 2 };
+        for (int repetitions : repetitionss) {
             StringBuilder sb = new StringBuilder();
             sb.append(preamble);
-            for (int j = 0; j < repititions; ++j) {
+            for (int j = 0; j < repetitions; ++j) {
                 sb.append(middle);
             }
             sb.append(postamble);
@@ -493,7 +490,7 @@ class EvaluatorTests extends JaninoTestSuite {
             Method   m   = c.getDeclaredMethod("run", new Class[0]);
             Object   o   = c.newInstance();
             Object   res = m.invoke(o, new Object[0]);
-            Assert.assertEquals(2 * repititions, res);
+            Assert.assertEquals(2 * repetitions, res);
         }
 
     }
@@ -508,13 +505,11 @@ class EvaluatorTests extends JaninoTestSuite {
             "}"
         );
 
-        int[] tests = new int[] { 1, 100, 13020 };
-        for (int i = 0; i < tests.length; ++i) {
-            int repititions = tests[i];
-
+        int[] repetitionss = new int[] { 1, 100, 13020 };
+        for (int repetitions : repetitionss) {
             StringBuilder sb = new StringBuilder();
             sb.append(preamble);
-            for (int j = 0; j < repititions; ++j) {
+            for (int j = 0; j < repetitions; ++j) {
                 sb.append("boolean _v").append(Integer.toString(j)).append(" = false;\n");
             }
             sb.append(postamble);
@@ -549,13 +544,11 @@ class EvaluatorTests extends JaninoTestSuite {
             + "}"
         );
 
-        int[] tests = new int[] { 1, 10, 8192 };
-        for (int i = 0; i < tests.length; ++i) {
-            int repititions = tests[i];
-
+        int[] repetitionss = new int[] { 1, 10, 8192 };
+        for (int repetitions : repetitionss) {
             StringBuilder sb = new StringBuilder();
             sb.append(preamble);
-            for (int j = 0; j < repititions; ++j) {
+            for (int j = 0; j < repetitions; ++j) {
                 sb.append(middle);
             }
             sb.append(postamble);
@@ -613,10 +606,8 @@ class EvaluatorTests extends JaninoTestSuite {
             + "}"
         );
 
-        int[] tests = new int[] { 1, 128, };
-        for (int i = 0; i < tests.length; ++i) {
-            int repititions = tests[i];
-
+        int[] repetitionss = new int[] { 1, 128, };
+        for (int repititions : repetitionss) {
             StringBuilder sb = new StringBuilder();
             sb.append(preamble);
             for (int j = 0; j < repititions; ++j) {
