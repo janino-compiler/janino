@@ -6015,7 +6015,12 @@ class UnitCompiler {
     /** Compiles the instance variable initializers and the instance initializers in their lexical order. */
     void
     initializeInstanceVariablesAndInvokeInstanceInitializers(ConstructorDeclarator cd) throws CompileException {
-        for (BlockStatement bs : cd.getDeclaringClass().variableDeclaratorsAndInitializers) {
+
+        // Compilation of block statments can create synthetic variables, so we must not use an iterator.
+        List<BlockStatement> vdai = cd.getDeclaringClass().variableDeclaratorsAndInitializers;
+        for (int i = 0; i < vdai.size(); i++) {
+            BlockStatement bs = (BlockStatement) vdai.get(i);
+
             if (!((TypeBodyDeclaration) bs).isStatic()) {
                 if (!this.compile(bs)) {
                     this.compileError(
