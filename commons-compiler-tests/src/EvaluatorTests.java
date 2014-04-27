@@ -607,10 +607,10 @@ class EvaluatorTests extends JaninoTestSuite {
         );
 
         int[] repetitionss = new int[] { 1, 128, };
-        for (int repititions : repetitionss) {
+        for (int repetitions : repetitionss) {
             StringBuilder sb = new StringBuilder();
             sb.append(preamble);
-            for (int j = 0; j < repititions; ++j) {
+            for (int j = 0; j < repetitions; ++j) {
                 sb.append(MessageFormat.format(middle, new Object[] { j }));
             }
             sb.append(postamble);
