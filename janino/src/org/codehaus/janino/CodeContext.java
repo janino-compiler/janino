@@ -477,7 +477,7 @@ class CodeContext {
                 }
             }
 
-            if (stackSize > MAX_STACK_SIZE) {
+            if (stackSize > CodeContext.MAX_STACK_SIZE) {
                 String msg = (
                     this.classFile.getThisClassName()
                     + '.'

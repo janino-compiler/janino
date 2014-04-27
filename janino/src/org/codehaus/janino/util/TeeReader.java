@@ -26,7 +26,10 @@
 
 package org.codehaus.janino.util;
 
-import java.io.*;
+import java.io.FilterReader;
+import java.io.IOException;
+import java.io.Reader;
+import java.io.Writer;
 
 /**
  * A {@link java.io.FilterReader} that copies the bytes being passed through

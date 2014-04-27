@@ -26,8 +26,11 @@
 
 package org.codehaus.janino.util.resource;
 
-import java.io.*;
-import java.util.*;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 /** Creates resources as byte arrays in a delegate {@link java.util.Map}. */
 @SuppressWarnings({ "rawtypes", "unchecked" }) public

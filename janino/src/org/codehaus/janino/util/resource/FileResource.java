@@ -26,7 +26,10 @@
 
 package org.codehaus.janino.util.resource;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
 /** Representation of a resource that is a {@link java.io.File}. */
 public

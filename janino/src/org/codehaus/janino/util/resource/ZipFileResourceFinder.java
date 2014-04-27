@@ -26,8 +26,10 @@
 
 package org.codehaus.janino.util.resource;
 
-import java.io.*;
-import java.util.zip.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 /** A {@link org.codehaus.janino.util.resource.ResourceFinder} that finds resources in a ZIP file. */
 public

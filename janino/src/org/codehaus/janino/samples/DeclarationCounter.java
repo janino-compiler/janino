@@ -26,11 +26,14 @@
 
 package org.codehaus.janino.samples;
 
-import java.io.*;
+import java.io.FileReader;
+import java.io.IOException;
 
 import org.codehaus.commons.compiler.CompileException;
-import org.codehaus.janino.*;
-import org.codehaus.janino.util.*;
+import org.codehaus.janino.Java;
+import org.codehaus.janino.Parser;
+import org.codehaus.janino.Scanner;
+import org.codehaus.janino.util.Traverser;
 
 /**
  * An example application for the {@link org.codehaus.janino.util.Traverser}:

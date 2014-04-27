@@ -26,7 +26,7 @@
 
 package org.codehaus.janino.util;
 
-import java.util.*;
+import java.util.Stack;
 
 /**
  * Implements a scheme for benchmarking, i.e. for determining and/or reporting the time elapsed

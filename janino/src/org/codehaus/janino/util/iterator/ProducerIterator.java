@@ -44,23 +44,23 @@ class ProducerIterator<T> implements Iterator<T> {
 
     private static final Object UNKNOWN     = new Object();
     private static final Object AT_END      = null;
-    private Object              nextElement = UNKNOWN;
+    private Object              nextElement = ProducerIterator.UNKNOWN;
 
     public
     ProducerIterator(Producer<T> producer) { this.producer = producer; }
 
     @Override public boolean
     hasNext() {
-        if (this.nextElement == UNKNOWN) this.nextElement = this.producer.produce();
-        return this.nextElement != AT_END;
+        if (this.nextElement == ProducerIterator.UNKNOWN) this.nextElement = this.producer.produce();
+        return this.nextElement != ProducerIterator.AT_END;
     }
 
     @Override public T
     next() {
-        if (this.nextElement == UNKNOWN) this.nextElement = this.producer.produce();
-        if (this.nextElement == AT_END) throw new NoSuchElementException();
+        if (this.nextElement == ProducerIterator.UNKNOWN) this.nextElement = this.producer.produce();
+        if (this.nextElement == ProducerIterator.AT_END) throw new NoSuchElementException();
         @SuppressWarnings("unchecked") T result = (T) this.nextElement;
-        this.nextElement = UNKNOWN;
+        this.nextElement = ProducerIterator.UNKNOWN;
         return result;
     }
 

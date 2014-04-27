@@ -26,7 +26,7 @@
 
 package org.codehaus.janino.util.resource;
 
-import java.io.*;
+import java.io.File;
 
 /**
  * Creates a resource in a given directory:<pre>

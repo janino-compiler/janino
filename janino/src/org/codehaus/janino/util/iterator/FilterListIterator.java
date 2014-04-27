@@ -26,7 +26,7 @@
 
 package org.codehaus.janino.util.iterator;
 
-import java.util.*;
+import java.util.ListIterator;
 
 /**
  * An {@link java.util.ListIterator} that retrieves its elements from a delegate {@link java.util.ListIterator}. The

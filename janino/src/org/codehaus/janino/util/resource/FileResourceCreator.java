@@ -26,7 +26,10 @@
 
 package org.codehaus.janino.util.resource;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 
 /** Stores a stream of bytes in a named resource. */
 public abstract

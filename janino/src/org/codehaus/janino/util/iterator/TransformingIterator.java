@@ -26,7 +26,7 @@
 
 package org.codehaus.janino.util.iterator;
 
-import java.util.*;
+import java.util.Iterator;
 
 /**
  * An {@link java.util.Iterator} that transforms its elements on-the-fly.

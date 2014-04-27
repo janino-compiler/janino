@@ -26,7 +26,8 @@
 
 package org.codehaus.janino;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /** Representation of a "method descriptor" (JVMS 4.3.3). */
 @SuppressWarnings({ "rawtypes", "unchecked" }) public

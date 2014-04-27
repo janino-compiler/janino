@@ -381,7 +381,7 @@ class Descriptor {
 
     static {
         Map<String, String> m = new HashMap();
-        for (Map.Entry<String, String> e : DESCRIPTOR_TO_CLASSNAME.entrySet()) {
+        for (Map.Entry<String, String> e : Descriptor.DESCRIPTOR_TO_CLASSNAME.entrySet()) {
             m.put(e.getValue(), e.getKey());
         }
         CLASS_NAME_TO_DESCRIPTOR = Collections.unmodifiableMap(m);

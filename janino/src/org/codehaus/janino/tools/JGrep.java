@@ -37,7 +37,11 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.codehaus.commons.compiler.*;
+import org.codehaus.commons.compiler.CompileException;
+import org.codehaus.commons.compiler.CompilerFactoryFactory;
+import org.codehaus.commons.compiler.ICompilerFactory;
+import org.codehaus.commons.compiler.IExpressionEvaluator;
+import org.codehaus.commons.compiler.UncheckedCompileException;
 import org.codehaus.janino.Descriptor;
 import org.codehaus.janino.ExpressionEvaluator;
 import org.codehaus.janino.IClass;
@@ -347,7 +351,7 @@ class JGrep {
 
             // Verify that the class declaring the invoked method matches.
             if (this.optionalClassNamePattern != null) {
-                if (!typeMatches(
+                if (!JGrep.typeMatches(
                     this.optionalClassNamePattern,
                     Descriptor.toClassName(method.getDeclaringIClass().getDescriptor())
                 )) return;

@@ -26,7 +26,8 @@
 
 package org.codehaus.janino.util.iterator;
 
-import java.util.*;
+import java.util.Enumeration;
+import java.util.Iterator;
 
 /**
  * An {@link java.util.Iterator} that iterates over the elements of an {@link java.util.Enumeration}.

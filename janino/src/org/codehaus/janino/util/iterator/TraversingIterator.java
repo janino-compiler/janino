@@ -26,7 +26,12 @@
 
 package org.codehaus.janino.util.iterator;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Enumeration;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+import java.util.Stack;
 
 /**
  * An {@link java.util.Iterator} that iterates over a delegate, and while it encounters an array, a {@link

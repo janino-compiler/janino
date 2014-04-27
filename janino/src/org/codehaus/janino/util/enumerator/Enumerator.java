@@ -26,7 +26,9 @@
 
 package org.codehaus.janino.util.enumerator;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * A class that represents an enumerated value. Its main features are its {@link #toString()} and

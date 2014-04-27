@@ -29,7 +29,13 @@ package org.codehaus.janino;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 
-import org.codehaus.commons.compiler.*;
+import org.codehaus.commons.compiler.AbstractCompilerFactory;
+import org.codehaus.commons.compiler.AbstractJavaSourceClassLoader;
+import org.codehaus.commons.compiler.IClassBodyEvaluator;
+import org.codehaus.commons.compiler.ICompilerFactory;
+import org.codehaus.commons.compiler.IExpressionEvaluator;
+import org.codehaus.commons.compiler.IScriptEvaluator;
+import org.codehaus.commons.compiler.ISimpleCompiler;
 
 /** The JANINO implementation of {@link ICompilerFactory}. */
 @SuppressWarnings({ "rawtypes", "unchecked" }) public

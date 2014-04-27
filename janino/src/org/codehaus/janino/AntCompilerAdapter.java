@@ -26,9 +26,10 @@
 
 package org.codehaus.janino;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 
-import org.apache.tools.ant.taskdefs.compilers.*;
+import org.apache.tools.ant.taskdefs.compilers.DefaultCompilerAdapter;
 import org.apache.tools.ant.types.Path;
 import org.codehaus.commons.compiler.CompileException;
 

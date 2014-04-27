@@ -26,7 +26,7 @@
 
 package org.codehaus.janino.util.resource;
 
-import java.util.*;
+import java.util.Collection;
 
 /**
  * A {@link org.codehaus.janino.util.resource.ResourceFinder} that finds its resources through a collection of

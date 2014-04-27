@@ -26,8 +26,9 @@
 
 package org.codehaus.janino.util.resource;
 
-import java.io.*;
-import java.util.*;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.util.Map;
 
 /**
  * A {@link org.codehaus.janino.util.resource.ResourceFinder} that provides access

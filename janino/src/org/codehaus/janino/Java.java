@@ -1342,7 +1342,11 @@ class Java {
 
         @Override public String
         toString() {
-            return this.optionalBound == null ? this.name : this.name + " extends " + join(this.optionalBound, " & ");
+            return (
+                this.optionalBound == null
+                ? this.name
+                : this.name + " extends " + Java.join(this.optionalBound, " & ")
+            );
         }
     }
 
@@ -2864,8 +2868,8 @@ class Java {
 
         @Override public String
         toString() {
-            String s = join(this.identifiers, ".");
-            if (this.optionalTypeArguments != null) s += '<' + join(this.optionalTypeArguments, ", ") + ">";
+            String s = Java.join(this.identifiers, ".");
+            if (this.optionalTypeArguments != null) s += '<' + Java.join(this.optionalTypeArguments, ", ") + ">";
             return s;
         }
 
@@ -4596,13 +4600,13 @@ class Java {
 
         public
         Wildcard() {
-            this.bounds        = BOUNDS_NONE;
+            this.bounds        = Wildcard.BOUNDS_NONE;
             this.referenceType = null;
         }
 
         public
         Wildcard(int bounds, ReferenceType referenceType) {
-            assert bounds == BOUNDS_EXTENDS || bounds == BOUNDS_SUPER;
+            assert bounds == Wildcard.BOUNDS_EXTENDS || bounds == Wildcard.BOUNDS_SUPER;
             this.bounds = bounds;
             assert referenceType != null;
             this.referenceType = referenceType;
@@ -4614,8 +4618,8 @@ class Java {
         @Override public String
         toString() {
             return (
-                this.bounds == BOUNDS_EXTENDS ? "? extends " + this.referenceType :
-                this.bounds == BOUNDS_SUPER   ? "? super "   + this.referenceType :
+                this.bounds == Wildcard.BOUNDS_EXTENDS ? "? extends " + this.referenceType :
+                this.bounds == Wildcard.BOUNDS_SUPER   ? "? super "   + this.referenceType :
                 "?"
             );
         }

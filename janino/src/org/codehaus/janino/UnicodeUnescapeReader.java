@@ -26,7 +26,10 @@
 
 package org.codehaus.janino;
 
-import java.io.*;
+import java.io.FilterReader;
+import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
 
 /**
  * A {@link FilterReader} that unescapes the "Unicode Escapes" as described in JLS7 3.10.6.

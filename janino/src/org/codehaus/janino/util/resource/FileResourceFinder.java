@@ -26,7 +26,7 @@
 
 package org.codehaus.janino.util.resource;
 
-import java.io.*;
+import java.io.File;
 
 /**
  * This class specializes the {@link org.codehaus.janino.util.resource.ResourceFinder}

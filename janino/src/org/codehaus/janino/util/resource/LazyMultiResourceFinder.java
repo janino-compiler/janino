@@ -26,7 +26,7 @@
 
 package org.codehaus.janino.util.resource;
 
-import java.util.*;
+import java.util.Iterator;
 
 import org.codehaus.janino.util.iterator.IteratorCollection;
 

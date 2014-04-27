@@ -26,11 +26,15 @@
 
 package org.codehaus.janino.util.resource;
 
-import java.io.*;
-import java.util.*;
-import java.util.zip.*;
+import java.io.File;
+import java.io.FilenameFilter;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.zip.ZipFile;
 
-import org.codehaus.janino.util.iterator.*;
+import org.codehaus.janino.util.iterator.MultiDimensionalIterator;
+import org.codehaus.janino.util.iterator.TransformingIterator;
 
 /** Finds resources in any of the "*.jar" files that exist in a given set of directories. */
 public

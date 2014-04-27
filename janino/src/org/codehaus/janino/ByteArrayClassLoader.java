@@ -26,7 +26,7 @@
 
 package org.codehaus.janino;
 
-import java.util.*;
+import java.util.Map;
 
 /** This {@link ClassLoader} allows for the loading of a set of Java&trade; classes provided in class file format. */
 @SuppressWarnings({ "rawtypes", "unchecked" }) public

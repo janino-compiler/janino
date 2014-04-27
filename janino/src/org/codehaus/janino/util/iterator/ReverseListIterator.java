@@ -26,7 +26,7 @@
 
 package org.codehaus.janino.util.iterator;
 
-import java.util.*;
+import java.util.ListIterator;
 
 /**
  * A {@link java.util.ListIterator} that reverses the direction of all operations

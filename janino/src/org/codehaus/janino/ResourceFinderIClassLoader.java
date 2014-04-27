@@ -26,10 +26,12 @@
 
 package org.codehaus.janino;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
 
 import org.codehaus.janino.util.ClassFile;
-import org.codehaus.janino.util.resource.*;
+import org.codehaus.janino.util.resource.Resource;
+import org.codehaus.janino.util.resource.ResourceFinder;
 
 
 /**

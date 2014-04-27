@@ -26,11 +26,26 @@
 
 package org.codehaus.janino;
 
-import java.io.*;
-import java.util.*;
+import java.io.IOException;
+import java.io.Reader;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
-import org.codehaus.commons.compiler.*;
-import org.codehaus.janino.Java.*;
+import org.codehaus.commons.compiler.CompileException;
+import org.codehaus.commons.compiler.CompilerFactoryFactory;
+import org.codehaus.commons.compiler.Cookable;
+import org.codehaus.commons.compiler.IClassBodyEvaluator;
+import org.codehaus.commons.compiler.ICompilerFactory;
+import org.codehaus.commons.compiler.ICookable;
+import org.codehaus.commons.compiler.IExpressionEvaluator;
+import org.codehaus.commons.compiler.IScriptEvaluator;
+import org.codehaus.commons.compiler.ISimpleCompiler;
+import org.codehaus.commons.compiler.PrimitiveWrapper;
+import org.codehaus.janino.Java.AmbiguousName;
+import org.codehaus.janino.Java.BlockStatement;
+import org.codehaus.janino.Java.Rvalue;
 import org.codehaus.janino.Visitor.RvalueVisitor;
 import org.codehaus.janino.util.Traverser;
 
@@ -240,7 +255,7 @@ class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluato
         Class[] returnTypes = new Class[expressionTypes.length];
         for (int i = 0; i < returnTypes.length; ++i) {
             Class et = expressionTypes[i];
-            returnTypes[i] = et == ANY_TYPE ? Object.class : et;
+            returnTypes[i] = et == IExpressionEvaluator.ANY_TYPE ? Object.class : et;
         }
         super.setReturnTypes(returnTypes);
     }
@@ -267,7 +282,11 @@ class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluato
         // Parse the expression.
         Rvalue value = parser.parseExpression().toRvalueOrCompileException();
 
-        Class et = this.optionalExpressionTypes == null ? ANY_TYPE : this.optionalExpressionTypes[idx];
+        Class et = (
+            this.optionalExpressionTypes == null
+            ? IExpressionEvaluator.ANY_TYPE
+            : this.optionalExpressionTypes[idx]
+        );
         if (et == void.class) {
 
             // ExpressionEvaluator with an expression type "void" is a simple expression statement.
@@ -276,7 +295,7 @@ class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluato
 
             // Special case: Expression type "ANY_TYPE" means return type "Object" and automatic
             // wrapping of primitive types.
-            if (et == ANY_TYPE) {
+            if (et == IExpressionEvaluator.ANY_TYPE) {
                 value = new Java.MethodInvocation(
                     parser.location(),          // location
                     new Java.ReferenceType(     // optionalTarget

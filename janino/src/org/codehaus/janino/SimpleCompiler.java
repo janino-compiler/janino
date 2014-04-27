@@ -26,17 +26,29 @@
 
 package org.codehaus.janino;
 
-import java.io.*;
-import java.lang.reflect.*;
+import java.io.ByteArrayInputStream;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStreamWriter;
+import java.io.Reader;
+import java.lang.reflect.Method;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
-import org.codehaus.commons.compiler.*;
+import org.codehaus.commons.compiler.CompileException;
+import org.codehaus.commons.compiler.Cookable;
+import org.codehaus.commons.compiler.ErrorHandler;
+import org.codehaus.commons.compiler.ICookable;
+import org.codehaus.commons.compiler.ISimpleCompiler;
+import org.codehaus.commons.compiler.Location;
+import org.codehaus.commons.compiler.WarningHandler;
 import org.codehaus.janino.Java.Type;
 import org.codehaus.janino.Visitor.AtomVisitor;
 import org.codehaus.janino.Visitor.TypeVisitor;
-import org.codehaus.janino.util.*;
+import org.codehaus.janino.util.ClassFile;
 
 /**
  * To set up a {@link SimpleCompiler} object, proceed as described for {@link ISimpleCompiler}.
@@ -349,7 +361,7 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
         final Map<String /*className*/, byte[] /*bytecode*/> classes = new HashMap();
         for (ClassFile cf : classFiles) {
             byte[] contents = cf.toByteArray();
-            if (DEBUG) {
+            if (SimpleCompiler.DEBUG) {
                 try {
                     Class disassemblerClass = Class.forName("de.unkrig.jdisasm.Disassembler");
                     disassemblerClass.getMethod(

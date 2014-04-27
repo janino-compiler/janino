@@ -26,7 +26,8 @@
 
 package org.codehaus.janino.util.resource;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
 
 
 /**

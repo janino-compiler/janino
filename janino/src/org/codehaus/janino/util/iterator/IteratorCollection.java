@@ -26,7 +26,10 @@
 
 package org.codehaus.janino.util.iterator;
 
-import java.util.*;
+import java.util.AbstractCollection;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * A {@link java.util.Collection} that lazily reads its elements from an

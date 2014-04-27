@@ -591,24 +591,24 @@ class Opcode {
     /** The {@code n}th element of this array describes the properties of the JVM opcode {@code WIDE n}. */
     public static final short[] WIDE_OPCODE_PROPERTIES = new short[256];
     static {
-        for (int i = 0; i < WIDE_OPCODE_PROPERTIES.length; ++i) {
-            WIDE_OPCODE_PROPERTIES[i] = Opcode.INVALID_OPCODE;
+        for (int i = 0; i < Opcode.WIDE_OPCODE_PROPERTIES.length; ++i) {
+            Opcode.WIDE_OPCODE_PROPERTIES[i] = Opcode.INVALID_OPCODE;
         }
         // load instructions
-        WIDE_OPCODE_PROPERTIES[0xff & Opcode.ILOAD] = Opcode.SD_P1 | Opcode.OP1_LV2;
-        WIDE_OPCODE_PROPERTIES[0xff & Opcode.FLOAD] = Opcode.SD_P1 | Opcode.OP1_LV2;
-        WIDE_OPCODE_PROPERTIES[0xff & Opcode.ALOAD] = Opcode.SD_P1 | Opcode.OP1_LV2;
-        WIDE_OPCODE_PROPERTIES[0xff & Opcode.LLOAD] = Opcode.SD_P2 | Opcode.OP1_LV2;
-        WIDE_OPCODE_PROPERTIES[0xff & Opcode.DLOAD] = Opcode.SD_P2 | Opcode.OP1_LV2;
+        Opcode.WIDE_OPCODE_PROPERTIES[0xff & Opcode.ILOAD] = Opcode.SD_P1 | Opcode.OP1_LV2;
+        Opcode.WIDE_OPCODE_PROPERTIES[0xff & Opcode.FLOAD] = Opcode.SD_P1 | Opcode.OP1_LV2;
+        Opcode.WIDE_OPCODE_PROPERTIES[0xff & Opcode.ALOAD] = Opcode.SD_P1 | Opcode.OP1_LV2;
+        Opcode.WIDE_OPCODE_PROPERTIES[0xff & Opcode.LLOAD] = Opcode.SD_P2 | Opcode.OP1_LV2;
+        Opcode.WIDE_OPCODE_PROPERTIES[0xff & Opcode.DLOAD] = Opcode.SD_P2 | Opcode.OP1_LV2;
 
         // store instructions
-        WIDE_OPCODE_PROPERTIES[0xff & Opcode.ISTORE] = Opcode.SD_M1 | Opcode.OP1_LV2;
-        WIDE_OPCODE_PROPERTIES[0xff & Opcode.FSTORE] = Opcode.SD_M1 | Opcode.OP1_LV2;
-        WIDE_OPCODE_PROPERTIES[0xff & Opcode.ASTORE] = Opcode.SD_M1 | Opcode.OP1_LV2;
-        WIDE_OPCODE_PROPERTIES[0xff & Opcode.LSTORE] = Opcode.SD_M2 | Opcode.OP1_LV2;
-        WIDE_OPCODE_PROPERTIES[0xff & Opcode.DSTORE] = Opcode.SD_M2 | Opcode.OP1_LV2;
+        Opcode.WIDE_OPCODE_PROPERTIES[0xff & Opcode.ISTORE] = Opcode.SD_M1 | Opcode.OP1_LV2;
+        Opcode.WIDE_OPCODE_PROPERTIES[0xff & Opcode.FSTORE] = Opcode.SD_M1 | Opcode.OP1_LV2;
+        Opcode.WIDE_OPCODE_PROPERTIES[0xff & Opcode.ASTORE] = Opcode.SD_M1 | Opcode.OP1_LV2;
+        Opcode.WIDE_OPCODE_PROPERTIES[0xff & Opcode.LSTORE] = Opcode.SD_M2 | Opcode.OP1_LV2;
+        Opcode.WIDE_OPCODE_PROPERTIES[0xff & Opcode.DSTORE] = Opcode.SD_M2 | Opcode.OP1_LV2;
 
-        WIDE_OPCODE_PROPERTIES[0xff & Opcode.IINC] = Opcode.SD_P0 | Opcode.OP1_LV2 | Opcode.OP2_SS;
-        WIDE_OPCODE_PROPERTIES[0xff & Opcode.RET]  = Opcode.SD_P0 | Opcode.OP1_LV2;
+        Opcode.WIDE_OPCODE_PROPERTIES[0xff & Opcode.IINC] = Opcode.SD_P0 | Opcode.OP1_LV2 | Opcode.OP2_SS;
+        Opcode.WIDE_OPCODE_PROPERTIES[0xff & Opcode.RET]  = Opcode.SD_P0 | Opcode.OP1_LV2;
     }
 }

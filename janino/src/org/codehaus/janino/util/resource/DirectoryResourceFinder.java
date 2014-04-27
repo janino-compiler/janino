@@ -26,8 +26,13 @@
 
 package org.codehaus.janino.util.resource;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * A {@link org.codehaus.janino.util.resource.FileResourceFinder} that finds file resources in

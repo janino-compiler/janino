@@ -96,7 +96,7 @@ class Mod {
      * methods, and STATIC nested classes.
      */
     public static final short STATIC = 0x0008;
-    
+
     /** @return Whether the given modifier includes {@link #STATIC} */
     public static boolean isStatic(short sh) { return (sh & Mod.STATIC) != 0; }
 

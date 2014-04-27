@@ -303,10 +303,10 @@ class Parser {
                 continue;
             }
 
-            int idx = this.peekRead(MODIFIER_NAMES);
+            int idx = this.peekRead(Parser.MODIFIER_NAMES);
             if (idx == -1) break;
-            String kw = MODIFIER_NAMES[idx];
-            short  x  = MODIFIER_CODES[idx];
+            String kw = Parser.MODIFIER_NAMES[idx];
+            short  x  = Parser.MODIFIER_CODES[idx];
 
             if ((mod & x) != 0) throw this.compileException("Duplicate modifier \"" + kw + "\"");
             for (short m : Parser.MUTUALLY_EXCLUSIVE_MODIFIER_CODES) {
@@ -1753,8 +1753,12 @@ class Parser {
      */
     public Type
     parseType() throws CompileException, IOException {
-        int  idx = this.peekRead(BASIC_TYPE_NAMES);
-        Type res = idx != -1 ? (Type) new BasicType(this.location(), BASIC_TYPE_CODES[idx]) : this.parseReferenceType();
+        int  idx = this.peekRead(Parser.BASIC_TYPE_NAMES);
+        Type res = (
+            idx != -1
+            ? (Type) new BasicType(this.location(), Parser.BASIC_TYPE_CODES[idx])
+            : this.parseReferenceType()
+        );
         for (int i = this.parseBracketsOpt(); i > 0; --i) res = new ArrayType(res);
         return res;
     }
@@ -2788,7 +2792,7 @@ class Parser {
      */
     public int
     peek(String[] suspected) throws CompileException, IOException {
-        return indexOf(suspected, this.peek().value);
+        return Parser.indexOf(suspected, this.peek().value);
     }
 
     /**
@@ -2799,7 +2803,7 @@ class Parser {
      */
     public int
     peek(int[] suspected) throws CompileException, IOException {
-        return indexOf(suspected, this.peek().type);
+        return Parser.indexOf(suspected, this.peek().type);
     }
 
     /**
@@ -2835,9 +2839,9 @@ class Parser {
 
         String s = this.read().value;
 
-        int idx = indexOf(expected, s);
+        int idx = Parser.indexOf(expected, s);
         if (idx == -1) {
-            throw this.compileException("One of '" + join(expected, " ") + "' expected instead of '" + s + "'");
+            throw this.compileException("One of '" + Parser.join(expected, " ") + "' expected instead of '" + s + "'");
         }
         return idx;
     }
@@ -2866,12 +2870,12 @@ class Parser {
     peekRead(String[] values) throws CompileException, IOException {
         if (this.nextToken == null) {
             Token t   = this.scanner.produce();
-            int   idx = indexOf(values, t.value);
+            int   idx = Parser.indexOf(values, t.value);
             if (idx != -1) return idx;
             this.nextToken = t;
             return -1;
         }
-        int idx = indexOf(values, this.nextToken.value);
+        int idx = Parser.indexOf(values, this.nextToken.value);
         if (idx == -1) return -1;
         this.nextToken       = this.nextButOneToken;
         this.nextButOneToken = null;
