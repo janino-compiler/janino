@@ -26,7 +26,10 @@
 
 package org.codehaus.commons.compiler;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
 
 /**
  * "Cooking" means scanning a sequence of characters and turning them into some

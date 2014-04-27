@@ -26,7 +26,8 @@
 
 package org.codehaus.commons.compiler.samples;
 
-import org.codehaus.commons.compiler.*;
+import org.codehaus.commons.compiler.CompilerFactoryFactory;
+import org.codehaus.commons.compiler.IExpressionEvaluator;
 
 /**
  * Sample application which demonstrates how to use the

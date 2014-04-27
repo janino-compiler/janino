@@ -26,8 +26,10 @@
 
 package org.codehaus.commons.compiler;
 
-import java.io.*;
-import java.lang.reflect.*;
+import java.io.IOException;
+import java.io.Reader;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 /**
  * An engine that executes a script in Java&trade; bytecode.

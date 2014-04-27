@@ -27,9 +27,11 @@
 package org.codehaus.commons.compiler;
 
 import java.io.File;
-import java.lang.reflect.*;
+import java.lang.reflect.Method;
 import java.security.ProtectionDomain;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.StringTokenizer;
 
 /**
  * A {@link ClassLoader} that, unlike usual {@link ClassLoader}s, does not load byte code, but reads Java&trade; source
@@ -110,7 +112,7 @@ class AbstractJavaSourceClassLoader extends ClassLoader {
             if (!arg.startsWith("-")) break;
 
             if ("-sourcepath".equals(arg)) {
-                optionalSourcePath = splitPath(args[++i]);
+                optionalSourcePath = AbstractJavaSourceClassLoader.splitPath(args[++i]);
             } else
             if ("-encoding".equals(arg)) {
                 optionalCharacterEncoding = args[++i];

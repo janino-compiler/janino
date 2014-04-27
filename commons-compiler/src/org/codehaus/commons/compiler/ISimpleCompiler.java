@@ -26,6 +26,8 @@
 
 package org.codehaus.commons.compiler;
 
+import java.io.Reader;
+
 /**
  * A simplified Java&trade; compiler that can compile only a single compilation unit. (A "compilation unit" is the
  * document stored in a ".java" file.)

@@ -24,8 +24,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-import static org.junit.Assert.fail;
-
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectOutputStream;
 import java.util.Collection;
@@ -34,6 +32,7 @@ import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.ICompilerFactory;
 import org.codehaus.commons.compiler.ISimpleCompiler;
 import org.codehaus.commons.compiler.LocatedException;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -61,7 +60,7 @@ class SerializationTests {
         ISimpleCompiler compiler = this.compilerFactory.newSimpleCompiler();
         try {
             compiler.cook("this is not valid Java");
-            fail("Cook should have thrown an exception");
+            Assert.fail("Cook should have thrown an exception");
         } catch (LocatedException e) {
             ObjectOutputStream oos = new ObjectOutputStream(new ByteArrayOutputStream());
             oos.writeObject(e);

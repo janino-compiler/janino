@@ -26,8 +26,11 @@
 
 package org.codehaus.commons.compiler.samples;
 
-import java.lang.reflect.*;
-import java.util.*;
+import java.lang.reflect.Array;
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.StringTokenizer;
 
 /** Common base class for the "...Demo" classes that demostrate Janino. */
 @SuppressWarnings({ "rawtypes", "unchecked" }) public

@@ -26,10 +26,13 @@
 
 package org.codehaus.commons.compiler.samples;
 
-import java.io.*;
-import java.lang.reflect.*;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.Reader;
+import java.lang.reflect.Method;
 
-import org.codehaus.commons.compiler.*;
+import org.codehaus.commons.compiler.CompilerFactoryFactory;
+import org.codehaus.commons.compiler.IClassBodyEvaluator;
 
 /** A test program that allows you to play with the {@link ClassBodyEvaluator} API. */
 @SuppressWarnings({ "rawtypes", "unchecked" }) public final

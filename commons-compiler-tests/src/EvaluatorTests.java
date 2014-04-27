@@ -24,11 +24,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -44,6 +39,7 @@ import org.codehaus.commons.compiler.ICompilerFactory;
 import org.codehaus.commons.compiler.IExpressionEvaluator;
 import org.codehaus.commons.compiler.IScriptEvaluator;
 import org.codehaus.commons.compiler.ISimpleCompiler;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -56,7 +52,7 @@ import util.TestUtil;
 
 /**
  * Tests for JANINO's {@link ExpressionEvaluator}, {@link ScriptEvaluator}, {@link ClassBodyEvaluator} and
- * {@link SimpleCompiler}. 
+ * {@link SimpleCompiler}.
  */
 @RunWith(Parameterized.class) public
 class EvaluatorTests extends JaninoTestSuite {
@@ -77,8 +73,11 @@ class EvaluatorTests extends JaninoTestSuite {
         se.setParameters(new String[][] { { "a", "b" }, {} }, new Class<?>[][] { { double.class, double.class }, {} });
         se.setStaticMethod(new boolean[] { true, true });
         se.cook(new String[] { "return a + b;", "return 0;" });
-        assertEquals(se.getMethod(0).invoke(null, new Object[] { new Double(3.0), new Double(4.0) }), new Double(7.0));
-        assertEquals(se.getMethod(1).invoke(null, new Object[0]), new Double(0.0));
+        Assert.assertEquals(
+            new Double(7.0),
+            se.getMethod(0).invoke(null, new Object[] { new Double(3.0), new Double(4.0) })
+        );
+        Assert.assertEquals(new Double(0.0), se.getMethod(1).invoke(null, new Object[0]));
     }
 
     @Test public void
@@ -134,14 +133,14 @@ class EvaluatorTests extends JaninoTestSuite {
         {
             Method m        = ee.getMethod(0);
             Object instance = m.getDeclaringClass().newInstance();
-            assertEquals(5, m.invoke(instance, new Object[] { 2, 3 }));
+            Assert.assertEquals(5, m.invoke(instance, new Object[] { 2, 3 }));
         }
 
         try {
             ee.evaluate(1, new Object[0]);
-            fail("Should have thrown an InvocationTargetException");
+            Assert.fail("Should have thrown an InvocationTargetException");
         } catch (InvocationTargetException ex) {
-            assertTrue("FileNotFoundException", ex.getTargetException() instanceof FileNotFoundException);
+            Assert.assertTrue("FileNotFoundException", ex.getTargetException() instanceof FileNotFoundException);
         }
 
         try {
@@ -149,7 +148,7 @@ class EvaluatorTests extends JaninoTestSuite {
             Object instance = m.getDeclaringClass().newInstance();
             m.invoke(instance, new Object[0]);
         } catch (Exception e) {
-            fail(e.getMessage());
+            Assert.fail(e.getMessage());
         }
     }
 
@@ -179,7 +178,7 @@ class EvaluatorTests extends JaninoTestSuite {
                 + "    System.out.println(\"Got here\");\n"
                 + "}"
             );
-            fail("CompileException expected");
+            Assert.fail("CompileException expected");
         } catch (CompileException ex) {
             ;
         }
@@ -203,9 +202,9 @@ class EvaluatorTests extends JaninoTestSuite {
     testManyEEs() throws Exception {
         IExpressionEvaluator ee = this.compilerFactory.newExpressionEvaluator();
 
-        String[]     expressions    = new String[COUNT];
-        String[][]   parameterNames = new String[COUNT][2];
-        Class<?>[][] parameterTypes = new Class[COUNT][2];
+        String[]     expressions    = new String[EvaluatorTests.COUNT];
+        String[][]   parameterNames = new String[EvaluatorTests.COUNT][2];
+        Class<?>[][] parameterTypes = new Class[EvaluatorTests.COUNT][2];
         for (int i = 0; i < expressions.length; ++i) {
             expressions[i]       = "a + b";
             parameterNames[i][0] = "a";
@@ -216,7 +215,7 @@ class EvaluatorTests extends JaninoTestSuite {
         ee.setParameters(parameterNames, parameterTypes);
 
         ee.cook(expressions);
-        assertEquals(165, ee.evaluate(3 * COUNT / 4, new Object[] { 77, 88 }));
+        Assert.assertEquals(165, ee.evaluate(3 * EvaluatorTests.COUNT / 4, new Object[] { 77, 88 }));
     }
 
     @Test public void
@@ -228,7 +227,7 @@ class EvaluatorTests extends JaninoTestSuite {
         } catch (IllegalStateException ex) {
             return;
         }
-        fail();
+        Assert.fail();
     }
 
     @Test public void
@@ -281,14 +280,14 @@ class EvaluatorTests extends JaninoTestSuite {
             for (int j = 0; j < exp.length; ++j) {
                 if (m[i].getName().startsWith("getL" + j)) {
                     Class<?> res = (Class<?>) m[i].invoke(inst, new Object[0]);
-                    assertEquals(exp[j], res);
+                    Assert.assertEquals(exp[j], res);
                     ++numTests;
                 }
             }
         }
         //we count tests just to make sure things didn't go horrifically wrong and
         //the above loops become empty
-        assertEquals(8, numTests);
+        Assert.assertEquals(8, numTests);
     }
 
     @Test public void
@@ -322,9 +321,9 @@ class EvaluatorTests extends JaninoTestSuite {
             if (m[i].getName().startsWith("run")) {
                 try {
                     Object res = m[i].invoke(o, new Object[0]);
-                    fail("Method " + m[i] + " should have failed, but got " + res);
+                    Assert.fail("Method " + m[i] + " should have failed, but got " + res);
                 } catch (InvocationTargetException ae) {
-                    assertTrue(ae.getTargetException() instanceof ArithmeticException);
+                    Assert.assertTrue(ae.getTargetException() instanceof ArithmeticException);
                 }
             }
         }
@@ -351,8 +350,8 @@ class EvaluatorTests extends JaninoTestSuite {
         Method   falseMeth = c.getMethod("runFalse");
 
         Object   o = c.newInstance();
-        assertEquals(-1, trueMeth.invoke(o, new Object[0]));
-        assertEquals(1, falseMeth.invoke(o, new Object[0]));
+        Assert.assertEquals(-1, trueMeth.invoke(o, new Object[0]));
+        Assert.assertEquals(1, falseMeth.invoke(o, new Object[0]));
     }
 
     public static boolean
@@ -425,26 +424,30 @@ class EvaluatorTests extends JaninoTestSuite {
             for (int argIdx = 0; argIdx < args.length; ++argIdx) {
                 String msg = "\"" + args[argIdx][0] + " " + opcode[opIdx] + " " + args[argIdx][1] + "\"";
                 {
-                    boolean exp = compare(
+                    boolean exp = EvaluatorTests.compare(
                         args[argIdx][0].doubleValue(),
                         args[argIdx][1].doubleValue(),
                         opcode[opIdx]
                     );
                     Object[] objs   = new Object[] { args[argIdx][0], args[argIdx][1], opcode[opIdx] };
                     Object   actual = dm.invoke(null, objs);
-                    assertEquals(msg, exp, actual);
+                    Assert.assertEquals(msg, exp, actual);
                 }
 
                 {
                     msg = "float: " + msg;
-                    boolean  exp  = compare(args[argIdx][0].floatValue(), args[argIdx][1].floatValue(), opcode[opIdx]);
+                    boolean exp = EvaluatorTests.compare(
+                        args[argIdx][0].floatValue(),
+                        args[argIdx][1].floatValue(),
+                        opcode[opIdx]
+                    );
                     Object[] objs = new Object[] {
                         new Float(args[argIdx][0].floatValue()),
                         new Float(args[argIdx][1].floatValue()),
                         opcode[opIdx]
                     };
                     Object actual = fm.invoke(null, objs);
-                    assertEquals(msg, exp, actual);
+                    Assert.assertEquals(msg, exp, actual);
                 }
             }
         }
@@ -490,7 +493,7 @@ class EvaluatorTests extends JaninoTestSuite {
             Method   m   = c.getDeclaredMethod("run", new Class[0]);
             Object   o   = c.newInstance();
             Object   res = m.invoke(o, new Object[0]);
-            assertEquals(2 * repititions, res);
+            Assert.assertEquals(2 * repititions, res);
         }
 
     }
@@ -521,7 +524,7 @@ class EvaluatorTests extends JaninoTestSuite {
 
             Class<?> c = sc.getClassLoader().loadClass("test.Test");
             Object   o = c.newInstance();
-            assertNotNull(o);
+            Assert.assertNotNull(o);
         }
     }
 
@@ -562,13 +565,13 @@ class EvaluatorTests extends JaninoTestSuite {
 
             Class<?> c = sc.getClassLoader().loadClass("test.Test");
             Object   o = c.newInstance();
-            assertNotNull(o);
+            Assert.assertNotNull(o);
         }
     }
 
     @Test public void
     testStaticFieldAccess() throws Exception {
-        assertCompilationUnitCookable((
+        this.assertCompilationUnitCookable((
             ""
             + "package test;\n"
             + "public class Test {\n"
@@ -626,7 +629,7 @@ class EvaluatorTests extends JaninoTestSuite {
             Class<?> c = sc.getClassLoader().loadClass("test.Test");
             Method   m = c.getDeclaredMethod("run", new Class[0]);
             Object   o = m.invoke(null, new Object[0]);
-            assertEquals("hi 1 1.0 1.0 1 1 true try finally", o);
+            Assert.assertEquals("hi 1 1.0 1.0 1 1 true try finally", o);
         }
 
     }
@@ -654,24 +657,24 @@ class EvaluatorTests extends JaninoTestSuite {
         sc.cook(test);
         Class<?> c  = sc.getClassLoader().loadClass("test.Test");
         Method   m0 = c.getDeclaredMethod("run", new Class[] {});
-        assertEquals(false, m0.invoke(null, new Object[0]));
+        Assert.assertEquals(false, m0.invoke(null, new Object[0]));
 
         Method mStr = c.getDeclaredMethod("run", new Class[] { String.class });
         Method mObj = c.getDeclaredMethod("run", new Class[] { Object.class });
 
-        assertEquals(true,  mObj.invoke(null, new Object[] { "" }));
-        assertEquals(false, mObj.invoke(null, new Object[] { 1 }));
-        assertEquals(false, mObj.invoke(null, new Object[] { null }));
+        Assert.assertEquals(true,  mObj.invoke(null, new Object[] { "" }));
+        Assert.assertEquals(false, mObj.invoke(null, new Object[] { 1 }));
+        Assert.assertEquals(false, mObj.invoke(null, new Object[] { null }));
 
-        assertEquals(true,  mStr.invoke(null, new Object[] { "" }));
-        assertEquals(false, mStr.invoke(null, new Object[] { null }));
+        Assert.assertEquals(true,  mStr.invoke(null, new Object[] { "" }));
+        Assert.assertEquals(false, mStr.invoke(null, new Object[] { null }));
     }
 
     @Test public void
     testOverrideVisibility() throws Exception {
 
         // so should this
-        assertCompilationUnitMainReturnsTrue((
+        this.assertCompilationUnitMainReturnsTrue((
             ""
             + "package test;\n"
             + "public class Test {\n"
@@ -691,7 +694,7 @@ class EvaluatorTests extends JaninoTestSuite {
 
     @Test public void
     testCovariantReturns() throws Exception {
-        assertCompilationUnitCookable(
+        this.assertCompilationUnitCookable(
             ""
             + "package test;\n"
             + "public class Test extends CovariantReturns {\n"
@@ -702,7 +705,7 @@ class EvaluatorTests extends JaninoTestSuite {
             + "    public abstract CovariantReturns overrideMe();\n"
             + "}"
         );
-        assertCompilationUnitUncookable(
+        this.assertCompilationUnitUncookable(
             ""
             + "package test;\n"
             + "public class Test2 extends CovariantReturns {\n"
@@ -717,8 +720,10 @@ class EvaluatorTests extends JaninoTestSuite {
 
     @Test public void
     testNonExistentImport() throws Exception {
-        assertCompilationUnitUncookable("import does.not.Exist; public class Test { private final Exist e = null; }");
-        assertCompilationUnitUncookable("import does.not.Exist; public class Test { }");
+        this.assertCompilationUnitUncookable(
+            "import does.not.Exist; public class Test { private final Exist e = null; }"
+        );
+        this.assertCompilationUnitUncookable("import does.not.Exist; public class Test { }");
     }
 
     @Test public void
@@ -786,7 +791,7 @@ class EvaluatorTests extends JaninoTestSuite {
 
     @Test public void
     testAbstractGrandParentsWithCovariantReturns() throws Exception {
-        assertCompilationUnitCookable(
+        this.assertCompilationUnitCookable(
             ""
             + "public class Top {\n"
             + "    private static class IndentPrintWriter extends java.io.PrintWriter { "
@@ -811,11 +816,11 @@ class EvaluatorTests extends JaninoTestSuite {
         Object   t        = topClass.newInstance();
 
         StringBuilder sb = new StringBuilder();
-        assertEquals(sb.length(), get.invoke(t, new Object[] { sb }));
+        Assert.assertEquals(sb.length(), get.invoke(t, new Object[] { sb }));
         sb.append("asdf");
-        assertEquals(sb.length(), get.invoke(t, new Object[] { sb }));
+        Assert.assertEquals(sb.length(), get.invoke(t, new Object[] { sb }));
         sb.append("qwer");
-        assertEquals(sb.length(), get.invoke(t, new Object[] { sb }));
+        Assert.assertEquals(sb.length(), get.invoke(t, new Object[] { sb }));
     }
 
     @Test public void
@@ -892,13 +897,13 @@ class EvaluatorTests extends JaninoTestSuite {
         Method   bar      = topClass.getMethod("cloneWithOutArguments");
         Object   t        = topClass.newInstance();
 
-        assertNotNull(foo.invoke(t, new Object[0]));
-        assertNotNull(bar.invoke(t, new Object[0]));
+        Assert.assertNotNull(foo.invoke(t, new Object[0]));
+        Assert.assertNotNull(bar.invoke(t, new Object[0]));
     }
 
     @Test public void
     testBaseClassAccess() throws Exception {
-        assertCompilationUnitCookable(
+        this.assertCompilationUnitCookable(
             ""
             + "class top extends other_package.ScopingRules {\n"
             + "    class Inner extends other_package.ScopingRules.ProtectedInner {\n"
@@ -917,7 +922,7 @@ class EvaluatorTests extends JaninoTestSuite {
 
     @Test public void
     testNullComparator() throws Exception {
-        assertCompilationUnitCookable(
+        this.assertCompilationUnitCookable(
             ""
             + "class Test {\n"
             + "    public void test() {\n"

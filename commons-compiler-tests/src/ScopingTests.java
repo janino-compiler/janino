@@ -24,14 +24,12 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
 import java.lang.reflect.Method;
 import java.util.Collection;
 
 import org.codehaus.commons.compiler.ICompilerFactory;
 import org.codehaus.commons.compiler.ISimpleCompiler;
+import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -110,17 +108,17 @@ class ScopingTests {
         Object res;
         {   // non-static
             res = get.invoke(i, new Object[0]);
-            assertEquals(1, res);
+            Assert.assertEquals(1, res);
             set.invoke(i, new Object[0]);
             res = get.invoke(i, new Object[0]);
-            assertEquals(11, res);
+            Assert.assertEquals(11, res);
         }
         {   //static
             res = getS.invoke(i, new Object[0]);
-            assertEquals(2, res);
+            Assert.assertEquals(2, res);
             setS.invoke(i, new Object[0]);
             res = getS.invoke(i, new Object[0]);
-            assertEquals(12, res);
+            Assert.assertEquals(12, res);
         }
     }
 
@@ -167,11 +165,11 @@ class ScopingTests {
         };
         for (int i = 0; i < 3; ++i) {
             Object g1 = gets[i].invoke(inner, new Object[0]);
-            assertEquals(1, g1);
+            Assert.assertEquals(1, g1);
             Object s1 = sets[i].invoke(inner, new Object[0]);
-            assertEquals(i, s1);
+            Assert.assertEquals(i, s1);
             Object g2 = gets[i].invoke(inner, new Object[0]);
-            assertEquals(i, g2);
+            Assert.assertEquals(i, g2);
         }
     }
 
@@ -206,8 +204,8 @@ class ScopingTests {
         Class<?> topClass    = sc.getClassLoader().loadClass("test.Outer");
         Method   createInner = topClass.getDeclaredMethod("createInner", new Class[0]);
         Object   t           = topClass.newInstance();
-        assertNotNull(t);
+        Assert.assertNotNull(t);
         Object inner = createInner.invoke(t, new Object[0]);
-        assertNotNull(inner);
+        Assert.assertNotNull(inner);
     }
 }

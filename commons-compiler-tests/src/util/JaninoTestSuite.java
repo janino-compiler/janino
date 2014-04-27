@@ -26,11 +26,6 @@
 
 package util;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.fail;
-
 import java.io.File;
 import java.lang.reflect.Method;
 
@@ -41,6 +36,7 @@ import org.codehaus.commons.compiler.ICompilerFactory;
 import org.codehaus.commons.compiler.IExpressionEvaluator;
 import org.codehaus.commons.compiler.IScriptEvaluator;
 import org.codehaus.commons.compiler.ISimpleCompiler;
+import org.junit.Assert;
 
 /** A base class for JUnit 4 test cases that provides easy-to-use functionality to test JANINO. */
 public
@@ -338,7 +334,7 @@ class JaninoTestSuite {
             } catch (CompileException ce) {
                 return; // SUPPRESS CHECKSTYLE AvoidHidingCause
             }
-            fail("Should have issued an error, but compiled successfully");
+            Assert.fail("Should have issued an error, but compiled successfully");
         }
 
         /**
@@ -350,11 +346,11 @@ class JaninoTestSuite {
                 this.compile();
             } catch (CompileException ce) {
                 if (!ce.getMessage().contains(messageInfix)) {
-                    fail("Error message '" + ce.getMessage() + "' does not contain'" + messageInfix + "'");
+                    Assert.fail("Error message '" + ce.getMessage() + "' does not contain'" + messageInfix + "'");
                 }
                 return;
             }
-            fail("Should have issued an error, but compiled successfully");
+            Assert.fail("Should have issued an error, but compiled successfully");
         }
 
         /**
@@ -381,9 +377,9 @@ class JaninoTestSuite {
         assertResultTrue() throws Exception {
             this.compile();
             Object result = this.execute();
-            assertNotNull("Test result not NULL", result);
-            assertSame("Test return type is BOOLEAN", Boolean.class, result.getClass());
-            assertEquals("Test result is TRUE", true, ((Boolean) result).booleanValue());
+            Assert.assertNotNull("Test result not NULL", result);
+            Assert.assertSame("Test return type is BOOLEAN", Boolean.class, result.getClass());
+            Assert.assertEquals("Test result is TRUE", true, ((Boolean) result).booleanValue());
         }
     }
 }

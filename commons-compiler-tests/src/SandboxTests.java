@@ -24,15 +24,13 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-
 import java.util.Collection;
 
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.ICompilerFactory;
 import org.codehaus.commons.compiler.ICookable;
 import org.codehaus.commons.compiler.IExpressionEvaluator;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -67,7 +65,7 @@ class SandboxTests {
             IExpressionEvaluator ee = this.compilerFactory.newExpressionEvaluator();
             ee.setParentClassLoader(ICookable.BOOT_CLASS_LOADER);
             ee.cook("for_sandbox_tests.ExternalClass.m1()");
-            fail("Should have thrown a CompileException");
+            Assert.fail("Should have thrown a CompileException");
         } catch (CompileException ex) {
             ;
         }
@@ -79,7 +77,7 @@ class SandboxTests {
         // Invoke method of allowed external class.
         IExpressionEvaluator ee = this.compilerFactory.newExpressionEvaluator();
         ee.cook("for_sandbox_tests.ExternalClass.m1()");
-        assertEquals(7, ((Integer) ee.evaluate(new Object[0])).intValue());
+        Assert.assertEquals(7, ((Integer) ee.evaluate(new Object[0])).intValue());
     }
 
     @Test public void
@@ -89,7 +87,7 @@ class SandboxTests {
         IExpressionEvaluator ee = this.compilerFactory.newExpressionEvaluator();
         ee.setExtendedClass(ExternalClass.class);
         ee.cook("m1()");
-        assertEquals(7, ((Integer) ee.evaluate(new Object[0])).intValue());
+        Assert.assertEquals(7, ((Integer) ee.evaluate(new Object[0])).intValue());
     }
 }
 

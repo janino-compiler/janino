@@ -40,7 +40,7 @@ interface ICompilerFactory {
      *         "org.codehaus.janino" or "org.codehaus.commons.compiler.jdk"
      */
     String getId();
-    
+
     /**
      * @return A human-readable {@link String} that identifies the concrete implementation of this interface in a user
      *         interface, e.g. "janino" or "jdk"

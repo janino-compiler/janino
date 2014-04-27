@@ -24,13 +24,12 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-import static org.junit.Assert.fail;
-
 import java.io.File;
 import java.util.Collection;
 
 import org.codehaus.commons.compiler.AbstractJavaSourceClassLoader;
 import org.codehaus.commons.compiler.ICompilerFactory;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -69,16 +68,16 @@ class JavaSourceClassLoaderTests {
         ClassLoader extensionsClassLoader = systemClassLoader.getParent();
         try {
             extensionsClassLoader.loadClass(this.getClass().getName());
-            fail("extensionsClassLoader should be separate from the current classloader");
+            Assert.fail("extensionsClassLoader should be separate from the current classloader");
         } catch (ClassNotFoundException cnfe) {
             // as we had intended
         }
         extensionsClassLoader.loadClass("java.lang.String");
         AbstractJavaSourceClassLoader jscl = this.compilerFactory.newJavaSourceClassLoader(extensionsClassLoader);
-        jscl.setSourcePath(SOURCE_PATH);
+        jscl.setSourcePath(JavaSourceClassLoaderTests.SOURCE_PATH);
         jscl.loadClass("org.codehaus.janino.Compiler");
     }
-    
+
     @Test public void
     testCircularSingleTypeImports() throws Exception {
         AbstractJavaSourceClassLoader jscl = this.compilerFactory.newJavaSourceClassLoader(

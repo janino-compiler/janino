@@ -50,7 +50,7 @@ class CompilerFactoryFactory {
      */
     public static ICompilerFactory
     getDefaultCompilerFactory() throws Exception {
-        if (defaultCompilerFactory == null) {
+        if (CompilerFactoryFactory.defaultCompilerFactory == null) {
             Properties  properties = new Properties();
             InputStream is         = Thread.currentThread().getContextClassLoader().getResourceAsStream(
                 "org.codehaus.commons.compiler.properties"
@@ -66,9 +66,11 @@ class CompilerFactoryFactory {
                 is.close();
             }
             String compilerFactoryClassName = properties.getProperty("compilerFactory");
-            defaultCompilerFactory = getCompilerFactory(compilerFactoryClassName);
+            CompilerFactoryFactory.defaultCompilerFactory = (
+                CompilerFactoryFactory.getCompilerFactory(compilerFactoryClassName)
+            );
         }
-        return defaultCompilerFactory;
+        return CompilerFactoryFactory.defaultCompilerFactory;
     }
 
     /**
@@ -101,7 +103,7 @@ class CompilerFactoryFactory {
                 throw new IllegalStateException(url.toString() + " does not specify the 'compilerFactory' property");
             }
 
-            factories.add(getCompilerFactory(compilerFactoryClassName));
+            factories.add(CompilerFactoryFactory.getCompilerFactory(compilerFactoryClassName));
         }
         return (ICompilerFactory[]) factories.toArray(new ICompilerFactory[factories.size()]);
     }
