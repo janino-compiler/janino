@@ -322,7 +322,7 @@ class ClassFileIClass extends IClass {
                 isVarargs() { return Mod.isVarargs(methodInfo.getModifierFlags()); }
 
                 @Override public IClass[]
-                getParameterTypes() throws CompileException {
+                getParameterTypes2() throws CompileException {
 
                     // Process magic first parameter of inner class constructor.
                     IClass outerIClass = ClassFileIClass.this.getOuterIClass();
@@ -347,9 +347,9 @@ class ClassFileIClass extends IClass {
                     return parameterTypes;
                 }
 
-                @Override public IClass[]          getThrownExceptions() { return thrownExceptions; }
-                @Override public Access            getAccess()           { return access; }
-                @Override public Java.Annotation[] getAnnotations()      { return methodInfo.getAnnotations(); }
+                @Override public IClass[]          getThrownExceptions2() { return thrownExceptions; }
+                @Override public Access            getAccess()            { return access; }
+                @Override public Java.Annotation[] getAnnotations()       { return methodInfo.getAnnotations(); }
             };
         } else {
             result = new IClass.IMethod() {
@@ -370,10 +370,10 @@ class ClassFileIClass extends IClass {
                 isVarargs() { return Mod.isVarargs(methodInfo.getModifierFlags()); }
 
                 @Override public IClass[]
-                getParameterTypes() { return parameterTypes; }
+                getParameterTypes2() { return parameterTypes; }
 
                 @Override public IClass[]
-                getThrownExceptions() { return thrownExceptions; }
+                getThrownExceptions2() { return thrownExceptions; }
 
                 @Override public Access
                 getAccess() { return access; }

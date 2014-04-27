@@ -670,15 +670,15 @@ class IClass {
             getDeclaredIMethods2() {
                 return new IClass.IMethod[] {
                     new IMethod() {
-                        @Override public String       getName()             { return "clone"; }
-                        @Override public IClass       getReturnType()       { return objectType; }
-                        @Override public boolean      isAbstract()          { return false; }
-                        @Override public boolean      isStatic()            { return false; }
-                        @Override public Access       getAccess()           { return Access.PUBLIC; }
-                        @Override public boolean      isVarargs()           { return false; }
-                        @Override public IClass[]     getParameterTypes()   { return new IClass[0]; }
-                        @Override public IClass[]     getThrownExceptions() { return new IClass[0]; }
-                        @Override public Annotation[] getAnnotations()      { return new Annotation[0]; }
+                        @Override public String       getName()              { return "clone"; }
+                        @Override public IClass       getReturnType()        { return objectType; }
+                        @Override public boolean      isAbstract()           { return false; }
+                        @Override public boolean      isStatic()             { return false; }
+                        @Override public Access       getAccess()            { return Access.PUBLIC; }
+                        @Override public boolean      isVarargs()            { return false; }
+                        @Override public IClass[]     getParameterTypes2()   { return new IClass[0]; }
+                        @Override public IClass[]     getThrownExceptions2() { return new IClass[0]; }
+                        @Override public Annotation[] getAnnotations()       { return new Annotation[0]; }
                     }
                 };
             }
@@ -823,9 +823,19 @@ class IClass {
         @Override public abstract Access getAccess();
         @Override public IClass          getDeclaringIClass() { return IClass.this; }
 
+        /** Returns the types of the parameters of this constructor or method. This method is fast. */
+        public final IClass[]
+        getParameterTypes() throws CompileException {
+            if (this.parameterTypesCache == null) {
+                this.parameterTypesCache = this.getParameterTypes2();
+            }
+            return this.parameterTypesCache;
+        }
+        private IClass[] parameterTypesCache;
+
         /** @return The types of the parameters of this constructor or method */
         public abstract IClass[]
-        getParameterTypes() throws CompileException;
+        getParameterTypes2() throws CompileException;
 
         /** Returns the method descriptor of this constructor or method. This method is fast. */
         public final String
@@ -841,9 +851,19 @@ class IClass {
         public abstract String
         getDescriptor2() throws CompileException;
 
+        /** Returns the types thrown by this constructor or method. This method is fast. */
+        public final IClass[]
+        getThrownExceptions() throws CompileException {
+            if (this.thrownExceptionsCache == null) {
+                this.thrownExceptionsCache = this.getThrownExceptions2();
+            }
+            return this.thrownExceptionsCache;
+        }
+        private IClass[] thrownExceptionsCache;
+
         /** @return The types thrown by this constructor or method */
         public abstract IClass[]
-        getThrownExceptions() throws CompileException;
+        getThrownExceptions2() throws CompileException;
 
         /**
          * @return Whether this {@link IInvocable} is more specific then {@code that} (in the sense of JLS7 15.12.2.5)
@@ -978,7 +998,7 @@ class IClass {
          * return value of this method does not include the optionally leading "synthetic
          * parameters".
          */
-        @Override public abstract IClass[] getParameterTypes() throws CompileException;
+        @Override public abstract IClass[] getParameterTypes2() throws CompileException;
 
         /**
          * Opposed to {@link #getParameterTypes()}, the method descriptor returned by this method does include the

@@ -7362,15 +7362,15 @@ class UnitCompiler {
         final IClass[] pts = new IClass[arguments.length];
         for (int i = 0; i < arguments.length; ++i) pts[i] = this.getType(arguments[i]);
         return targetType.new IMethod() {
-            @Override public String       getName()             { return name; }
-            @Override public IClass       getReturnType()       { return IClass.INT; }
-            @Override public boolean      isStatic()            { return false; }
-            @Override public boolean      isAbstract()          { return false; }
-            @Override public boolean      isVarargs()           { return false; }
-            @Override public IClass[]     getParameterTypes()   { return pts; }
-            @Override public IClass[]     getThrownExceptions() { return new IClass[0]; }
-            @Override public Access       getAccess()           { return Access.PUBLIC; }
-            @Override public Annotation[] getAnnotations()      { return new Annotation[0]; }
+            @Override public String       getName()              { return name; }
+            @Override public IClass       getReturnType()        { return IClass.INT; }
+            @Override public boolean      isStatic()             { return false; }
+            @Override public boolean      isAbstract()           { return false; }
+            @Override public boolean      isVarargs()            { return false; }
+            @Override public IClass[]     getParameterTypes2()   { return pts; }
+            @Override public IClass[]     getThrownExceptions2() { return new IClass[0]; }
+            @Override public Access       getAccess()            { return Access.PUBLIC; }
+            @Override public Annotation[] getAnnotations()       { return new Annotation[0]; }
         };
     }
 
@@ -7484,25 +7484,25 @@ class UnitCompiler {
         // Well, returning a "fake" IInvocable is a bit tricky, because the iInvocables can be of different types.
         if (iInvocables[0] instanceof IClass.IConstructor) {
             return iInvocables[0].getDeclaringIClass().new IConstructor() {
-                @Override public boolean      isVarargs()           { return false; }
-                @Override public IClass[]     getParameterTypes()   { return argumentTypes; }
-                @Override public Access       getAccess()           { return Access.PUBLIC; }
-                @Override public IClass[]     getThrownExceptions() { return new IClass[0]; }
-                @Override public Annotation[] getAnnotations()      { return new Annotation[0]; }
+                @Override public boolean      isVarargs()            { return false; }
+                @Override public IClass[]     getParameterTypes2()   { return argumentTypes; }
+                @Override public Access       getAccess()            { return Access.PUBLIC; }
+                @Override public IClass[]     getThrownExceptions2() { return new IClass[0]; }
+                @Override public Annotation[] getAnnotations()       { return new Annotation[0]; }
             };
         } else
         if (iInvocables[0] instanceof IClass.IMethod) {
             final String methodName = ((IClass.IMethod) iInvocables[0]).getName();
             return iInvocables[0].getDeclaringIClass().new IMethod() {
-                @Override public boolean      isStatic()            { return true; }
-                @Override public boolean      isAbstract()          { return false; }
-                @Override public IClass       getReturnType()       { return IClass.INT; }
-                @Override public String       getName()             { return methodName; }
-                @Override public Access       getAccess()           { return Access.PUBLIC; }
-                @Override public boolean      isVarargs()           { return false; }
-                @Override public IClass[]     getParameterTypes()   { return argumentTypes; }
-                @Override public IClass[]     getThrownExceptions() { return new IClass[0]; }
-                @Override public Annotation[] getAnnotations()      { return new Annotation[0]; }
+                @Override public boolean      isStatic()             { return true; }
+                @Override public boolean      isAbstract()           { return false; }
+                @Override public IClass       getReturnType()        { return IClass.INT; }
+                @Override public String       getName()              { return methodName; }
+                @Override public Access       getAccess()            { return Access.PUBLIC; }
+                @Override public boolean      isVarargs()            { return false; }
+                @Override public IClass[]     getParameterTypes2()   { return argumentTypes; }
+                @Override public IClass[]     getThrownExceptions2() { return new IClass[0]; }
+                @Override public Annotation[] getAnnotations()       { return new Annotation[0]; }
             };
         } else
         {
@@ -7750,15 +7750,15 @@ class UnitCompiler {
             final IClass.IMethod im  = (IClass.IMethod) maximallySpecificIInvocables.get(0);
             final IClass[]       tes = (IClass[]) s.toArray(new IClass[s.size()]);
             return im.getDeclaringIClass().new IMethod() {
-                @Override public String       getName()                                   { return im.getName(); }
-                @Override public IClass       getReturnType() throws CompileException     { return im.getReturnType(); }
-                @Override public boolean      isAbstract()                                { return im.isAbstract(); }
-                @Override public boolean      isStatic()                                  { return im.isStatic(); }
-                @Override public Access       getAccess()                                 { return im.getAccess(); }
-                @Override public boolean      isVarargs()                                 { return im.isVarargs(); }
-                @Override public IClass[]     getParameterTypes() throws CompileException { return im.getParameterTypes(); } // SUPPRESS CHECKSTYLE LineLength
-                @Override public IClass[]     getThrownExceptions()                       { return tes; }
-                @Override public Annotation[] getAnnotations()                            { return im.getAnnotations(); } // SUPPRESS CHECKSTYLE LineLength
+                @Override public String       getName()                                    { return im.getName(); }
+                @Override public IClass       getReturnType() throws CompileException      { return im.getReturnType(); } // SUPPRESS CHECKSTYLE LineLength
+                @Override public boolean      isAbstract()                                 { return im.isAbstract(); }
+                @Override public boolean      isStatic()                                   { return im.isStatic(); }
+                @Override public Access       getAccess()                                  { return im.getAccess(); }
+                @Override public boolean      isVarargs()                                  { return im.isVarargs(); }
+                @Override public IClass[]     getParameterTypes2() throws CompileException { return im.getParameterTypes(); } // SUPPRESS CHECKSTYLE LineLength
+                @Override public IClass[]     getThrownExceptions2()                       { return tes; }
+                @Override public Annotation[] getAnnotations()                             { return im.getAnnotations(); } // SUPPRESS CHECKSTYLE LineLength
             };
         }
 
@@ -8383,7 +8383,7 @@ class UnitCompiler {
             isVarargs() { return Mod.isVarargs(constructorDeclarator.modifiers.flags); }
 
             @Override public IClass[]
-            getParameterTypes() throws CompileException {
+            getParameterTypes2() throws CompileException {
                 FormalParameter[] parameters = constructorDeclarator.formalParameters.parameters;
                 IClass[]          res        = new IClass[parameters.length];
                 for (int i = 0; i < parameters.length; ++i) {
@@ -8399,7 +8399,7 @@ class UnitCompiler {
             }
 
             @Override public IClass[]
-            getThrownExceptions() throws CompileException {
+            getThrownExceptions2() throws CompileException {
                 IClass[] res = new IClass[constructorDeclarator.thrownExceptions.length];
                 for (int i = 0; i < res.length; ++i) {
                     res[i] = UnitCompiler.this.getType(constructorDeclarator.thrownExceptions[i]);
@@ -8459,7 +8459,7 @@ class UnitCompiler {
             isVarargs() { return Mod.isVarargs(methodDeclarator.modifiers.flags); }
 
             @Override public IClass[]
-            getParameterTypes() throws CompileException {
+            getParameterTypes2() throws CompileException {
                 FormalParameter[] parameters = methodDeclarator.formalParameters.parameters;
                 IClass[]          res        = new IClass[parameters.length];
                 for (int i = 0; i < parameters.length; ++i) {
@@ -8475,7 +8475,7 @@ class UnitCompiler {
             }
 
             @Override public IClass[]
-            getThrownExceptions() throws CompileException {
+            getThrownExceptions2() throws CompileException {
                 IClass[] res = new IClass[methodDeclarator.thrownExceptions.length];
                 for (int i = 0; i < res.length; ++i) {
                     res[i] = UnitCompiler.this.getType(methodDeclarator.thrownExceptions[i]);

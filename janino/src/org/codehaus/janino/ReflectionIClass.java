@@ -68,15 +68,15 @@ class ReflectionIClass extends IClass {
 
         if (methods.length == 0 && this.clazz.isArray()) {
             return new IMethod[] { new IMethod() {
-                @Override public String            getName()             { return "clone"; }
-                @Override public IClass            getReturnType()       { return ReflectionIClass.this.iClassLoader.TYPE_java_lang_Object; } // SUPPRESS CHECKSTYLE LineLength
-                @Override public boolean           isAbstract()          { return false; }
-                @Override public boolean           isStatic()            { return false; }
-                @Override public Access            getAccess()           { return Access.PUBLIC; }
-                @Override public boolean           isVarargs()           { return false; }
-                @Override public IClass[]          getParameterTypes()   { return new IClass[0]; }
-                @Override public IClass[]          getThrownExceptions() { return new IClass[0]; }
-                @Override public Java.Annotation[] getAnnotations()      { return new Java.Annotation[0]; }
+                @Override public String            getName()              { return "clone"; }
+                @Override public IClass            getReturnType()        { return ReflectionIClass.this.iClassLoader.TYPE_java_lang_Object; } // SUPPRESS CHECKSTYLE LineLength
+                @Override public boolean           isAbstract()           { return false; }
+                @Override public boolean           isStatic()             { return false; }
+                @Override public Access            getAccess()            { return Access.PUBLIC; }
+                @Override public boolean           isVarargs()            { return false; }
+                @Override public IClass[]          getParameterTypes2()   { return new IClass[0]; }
+                @Override public IClass[]          getThrownExceptions2() { return new IClass[0]; }
+                @Override public Java.Annotation[] getAnnotations()       { return new Java.Annotation[0]; }
             } };
         }
 
@@ -222,7 +222,7 @@ class ReflectionIClass extends IClass {
 
         // Implement "IConstructor".
         @Override public IClass[]
-        getParameterTypes() throws CompileException {
+        getParameterTypes2() throws CompileException {
             IClass[] parameterTypes = ReflectionIClass.this.classesToIClasses(this.constructor.getParameterTypes());
 
             // The JAVADOC of java.lang.reflect.Constructor does not document it, but
@@ -265,7 +265,7 @@ class ReflectionIClass extends IClass {
         }
 
         @Override public IClass[]
-        getThrownExceptions() {
+        getThrownExceptions2() {
             return ReflectionIClass.this.classesToIClasses(this.constructor.getExceptionTypes());
         }
 
@@ -296,7 +296,7 @@ class ReflectionIClass extends IClass {
         }
 
         @Override public IClass[]
-        getParameterTypes() { return ReflectionIClass.this.classesToIClasses(this.method.getParameterTypes()); }
+        getParameterTypes2() { return ReflectionIClass.this.classesToIClasses(this.method.getParameterTypes()); }
 
         @Override public boolean
         isStatic() { return Modifier.isStatic(this.method.getModifiers()); }
@@ -308,7 +308,7 @@ class ReflectionIClass extends IClass {
         getReturnType() { return ReflectionIClass.this.classToIClass(this.method.getReturnType()); }
 
         @Override public IClass[]
-        getThrownExceptions() { return ReflectionIClass.this.classesToIClasses(this.method.getExceptionTypes()); }
+        getThrownExceptions2() { return ReflectionIClass.this.classesToIClasses(this.method.getExceptionTypes()); }
 
         private final Method method;
     }
