@@ -30,17 +30,12 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.Location;
 
 /** Wraps a {@link java.lang.Class} in an {@link org.codehaus.janino.IClass}. */
-@SuppressWarnings({ "rawtypes", "unchecked" })
+@SuppressWarnings("rawtypes")
 class ReflectionIClass extends IClass {
     private final Class        clazz;
     private final IClassLoader iClassLoader;
@@ -80,34 +75,9 @@ class ReflectionIClass extends IClass {
             } };
         }
 
-        // Remove synthetic methods that implement 'covariant methods'.
-        Collection<Method> decovariantedMethods;
-        {
-            Map<String, Method> univariants = new HashMap(methods.length);
-            for (Method m : methods) {
-
-                String key = m.getName() + ' ' + Arrays.toString(m.getParameterTypes());
-                Method m2  = (Method) univariants.get(key);
-                if (m2 == null || m2.getReturnType().isAssignableFrom(m.getReturnType())) {
-                    univariants.put(key, m);
-                }
-            }
-            decovariantedMethods = univariants.values();
-        }
-
-        Collection<IMethod> iMethods = new ArrayList(decovariantedMethods.size());
-        for (Method m : decovariantedMethods) {
-
-            // Formerly, the Java 5 synthetic methods were skipped here, because they are not "declared", i.e. hand-
-            // written. However that turned out to be a bad idea, because with parameterized types the check that
-            // all abstract methods are implemented fails.
-
-//            if (Mod.isSynthetic(m.getModifiers())) continue;
-
-            // Wrap java.reflection.Method in an IMethod.
-            iMethods.add(new ReflectionIMethod(m));
-        }
-        return (IMethod[]) iMethods.toArray(new IMethod[iMethods.size()]);
+        IMethod[] result = new IMethod[methods.length];
+        for (int i = 0; i < result.length; i++) result[i] = new ReflectionIMethod(methods[i]);
+        return result;
     }
 
     @Override protected IField[]
