@@ -553,7 +553,6 @@ class Disassembler {
             }
 
             // Print method access flags.
-            String functionName = method.name;
             Disassembler.this.print(
                 "    "
                 + Disassembler.decodeAccess((short) (
@@ -592,6 +591,8 @@ class Disassembler {
                 ExceptionsAttribute ea = method.exceptionsAttribute;
                 exceptionNames = ea == null ? Disassembler.NO_CONSTANT_CLASS_INFOS : ea.exceptionNames;
             }
+
+            String functionName = method.name;
             if (
                 "<clinit>".equals(functionName)
                 && (method.accessFlags & ClassFile.ACC_STATIC) != 0
@@ -1062,17 +1063,17 @@ class Disassembler {
             ? Disassembler.NO_PARAMETER_ANNOTATIONS
             : ripaa.parameterAnnotations
         ).iterator();
+        this.print("(");
         Iterator<ParameterAnnotation> vpas = (
             rvpaa == null
             ? Disassembler.NO_PARAMETER_ANNOTATIONS
             : rvpaa.parameterAnnotations
         ).iterator();
 
-        this.print("(");
         Iterator<TypeSignature> it = parameterTypes.iterator();
         if (it.hasNext()) {
             for (;;) {
-                TypeSignature pts = it.next();
+                final TypeSignature pts = it.next();
 
                 // Parameter annotations.
                 if (ipas.hasNext()) for (Annotation a : ipas.next().annotations) this.print(a.toString() + ' ');
@@ -1181,8 +1182,8 @@ class Disassembler {
             // Format and print the disassembly lines.
             String indentation = "        ";
             for (Entry<Integer, String> e : lines.entrySet()) {
-                int    instructionOffset = e.getKey();
-                String text              = e.getValue();
+                final int    instructionOffset = e.getKey();
+                final String text              = e.getValue();
 
                 // Print ends of TRY bodies.
                 for (Iterator<Entry<Integer, SortedMap<Integer, List<ExceptionTableEntry>>>> it = (
@@ -1193,8 +1194,8 @@ class Disassembler {
                     if (endPc > instructionOffset) break;
 
                     SortedMap<Integer, List<ExceptionTableEntry>> startPc2Ete = e2.getValue();
-                    for (Entry<Integer, List<ExceptionTableEntry>> e3 : startPc2Ete.entrySet()) {
-                        List<ExceptionTableEntry> etes = e3.getValue();
+                    for (List<ExceptionTableEntry> etes : startPc2Ete.values()) {
+
                         if (endPc < instructionOffset) {
                             this.error(
                                 "Exception table entry ends at invalid code array index "
@@ -1555,11 +1556,13 @@ class Disassembler {
         Instruction[] result = new Instruction[256];
 
         for (StringTokenizer st1 = new StringTokenizer(instructions, "\n"); st1.hasMoreTokens();) {
+
             StringTokenizer st2      = new StringTokenizer(st1.nextToken());
-            String          os       = st2.nextToken();
-            int             opcode   = Integer.parseInt(os);
-            String          mnemonic = st2.nextToken();
-            Operand[]       operands;
+
+            final int opcode   = Integer.parseInt(st2.nextToken());
+            String    mnemonic = st2.nextToken();
+
+            Operand[] operands;
             if (!st2.hasMoreTokens()) {
                 operands = new Operand[0];
             } else {
