@@ -1107,50 +1107,51 @@ class Disassembler {
         ConstantPool                       cp,
         Method                             method
     ) throws IOException {
-        CountingInputStream cis = new CountingInputStream(is);
-        DataInputStream     dis = new DataInputStream(cis);
 
-        this.branchTargets = new HashMap<Integer, String>();
-        try {
+        // Analyze the TRY bodies.
 
-            // Analyze TRY bodies.
+        SortedMap<Integer /*startPC*/, Set<Integer /*endPC*/>>
+        tryStarts = new TreeMap<Integer, Set<Integer>>();
 
-            SortedMap<Integer /*startPC*/, Set<Integer /*endPC*/>> tryStarts = new TreeMap<Integer, Set<Integer>>();
+        SortedMap<Integer /*endPC*/, SortedMap<Integer /*startPC*/, List<ExceptionTableEntry>>>
+        tryEnds = new TreeMap<Integer, SortedMap<Integer, List<ExceptionTableEntry>>>();
 
-            SortedMap<Integer /*endPC*/, SortedMap<Integer /*startPC*/, List<ExceptionTableEntry>>> tryEnds = (
-                new TreeMap<Integer, SortedMap<Integer, List<ExceptionTableEntry>>>()
-            );
+        for (ExceptionTableEntry e : exceptionTable) {
 
-            for (ExceptionTableEntry e : exceptionTable) {
-
-                // Register the entry in "tryStarts".
-                {
-                    Set<Integer> s = tryStarts.get(e.startPc);
-                    if (s == null) {
-                        s = new HashSet<Integer>();
-                        tryStarts.put(e.startPc, s);
-                    }
-                    s.add(e.endPc);
+            // Register the entry in "tryStarts".
+            {
+                Set<Integer> s = tryStarts.get(e.startPc);
+                if (s == null) {
+                    s = new HashSet<Integer>();
+                    tryStarts.put(e.startPc, s);
                 }
-
-                // Register the entry in "tryEnds".
-                {
-                    SortedMap<Integer, List<ExceptionTableEntry>> m = tryEnds.get(e.endPc);
-                    if (m == null) {
-                        m = new TreeMap<Integer, List<ExceptionTableEntry>>(Collections.reverseOrder());
-                        tryEnds.put(e.endPc, m);
-                    }
-                    List<ExceptionTableEntry> l = m.get(e.startPc);
-                    if (l == null) {
-                        l = new ArrayList<ExceptionTableEntry>();
-                        m.put(e.startPc, l);
-                    }
-                    l.add(e);
-                }
+                s.add(e.endPc);
             }
 
-            // Disassemble the byte code into a sequence of lines.
-            SortedMap<Integer /*instructionOffset*/, String /*text*/> lines = new TreeMap<Integer, String>();
+            // Register the entry in "tryEnds".
+            {
+                SortedMap<Integer, List<ExceptionTableEntry>> m = tryEnds.get(e.endPc);
+                if (m == null) {
+                    m = new TreeMap<Integer, List<ExceptionTableEntry>>(Collections.reverseOrder());
+                    tryEnds.put(e.endPc, m);
+                }
+                List<ExceptionTableEntry> l = m.get(e.startPc);
+                if (l == null) {
+                    l = new ArrayList<ExceptionTableEntry>();
+                    m.put(e.startPc, l);
+                }
+                l.add(e);
+            }
+        }
+
+        // Now disassemble the byte code into a sequence of lines.
+
+        SortedMap<Integer /*instructionOffset*/, String /*text*/> lines;
+        {
+            CountingInputStream cis = new CountingInputStream(is);
+            DataInputStream     dis = new DataInputStream(cis);
+
+            lines = new TreeMap<Integer, String>();
             for (;;) {
                 int instructionOffset = (int) cis.getCount();
 
@@ -1162,13 +1163,16 @@ class Disassembler {
                     lines.put(instructionOffset, "??? (invalid opcode \"" + opcode + "\")");
                 } else {
                     try {
-                        lines.put(instructionOffset, instruction.getMnemonic() + this.disassembleOperands(
-                            instruction.getOperands(),
-                            dis,
+                        lines.put(
                             instructionOffset,
-                            method,
-                            cp
-                        ));
+                            instruction.getMnemonic() + this.disassembleOperands(
+                                instruction.getOperands(),
+                                dis,
+                                instructionOffset,
+                                method,
+                                cp
+                            )
+                        );
                     } catch (RuntimeException rte) {
                         for (Iterator<Entry<Integer, String>> it = lines.entrySet().iterator(); it.hasNext();) {
                             Entry<Integer, String> e = it.next();
@@ -1178,6 +1182,10 @@ class Disassembler {
                     }
                 }
             }
+        }
+
+        this.branchTargets = new HashMap<Integer, String>();
+        try {
 
             // Format and print the disassembly lines.
             String indentation = "        ";
@@ -1189,8 +1197,9 @@ class Disassembler {
                 for (Iterator<Entry<Integer, SortedMap<Integer, List<ExceptionTableEntry>>>> it = (
                     tryEnds.entrySet().iterator()
                 ); it.hasNext();) {
-                    Entry<Integer, SortedMap<Integer, List<ExceptionTableEntry>>> e2    = it.next();
-                    int                                                           endPc = e2.getKey().intValue();
+                    Entry<Integer, SortedMap<Integer, List<ExceptionTableEntry>>> e2 = it.next();
+
+                    int endPc = e2.getKey();
                     if (endPc > instructionOffset) break;
 
                     SortedMap<Integer, List<ExceptionTableEntry>> startPc2Ete = e2.getValue();
@@ -1686,18 +1695,18 @@ class Disassembler {
                                 ConstantPool    cp,
                                 Disassembler    d
                             ) throws IOException {
-                                short                          index = dis.readShort();
-                                ConstantInterfaceMethodrefInfo imr   = cp.get(
-                                    index,
-                                    ConstantInterfaceMethodrefInfo.class
-                                );
+
+                                short index = dis.readShort(); // SUPPRESS CHECKSTYLE UsageDistance
                                 dis.readByte();
                                 dis.readByte();
+
+                                ConstantInterfaceMethodrefInfo
+                                imr = cp.get(index, ConstantInterfaceMethodrefInfo.class);
+
                                 String t = d.beautify(
-                                    d.decodeMethodDescriptor(imr.nameAndType.descriptor.bytes).toString(
-                                        imr.clasS.name,
-                                        imr.nameAndType.name.bytes
-                                    )
+                                    d
+                                    .decodeMethodDescriptor(imr.nameAndType.descriptor.bytes)
+                                    .toString(imr.clasS.name, imr.nameAndType.name.bytes)
                                 );
                                 if (d.verbose) t += " (" + (0xffff & index) + ")";
                                 return ' ' + t;
@@ -1715,9 +1724,11 @@ class Disassembler {
                                 ConstantPool    cp,
                                 Disassembler    d
                             ) throws IOException {
+
                                 short  index = dis.readShort();
-                                String name  = cp.get(index, ConstantClassInfo.class).name;
-                                String t     = d.beautify(
+
+                                String name = cp.get(index, ConstantClassInfo.class).name;
+                                String t    = d.beautify(
                                     name.startsWith("[")
                                     ? d.decodeFieldDescriptor(name).toString()
                                     : name.replace('/', '.')
@@ -1738,12 +1749,14 @@ class Disassembler {
                                 ConstantPool    cp,
                                 Disassembler    d
                             ) throws IOException {
+
                                 byte index = dis.readByte();
+
                                 // For an initial assignment (e.g. 'istore 7'), the local variable is only visible
                                 // AFTER this instruction.
                                 LocalVariable lv = d.getLocalVariable(
                                     (short) (0xff & index),
-                                    instructionOffset + 2,
+                                    instructionOffset + 2, // <==
                                     method
                                 );
                                 return d.beautify(lv.toString());
@@ -1761,7 +1774,9 @@ class Disassembler {
                                 ConstantPool    cp,
                                 Disassembler    d
                             ) throws IOException {
+
                                 short index = dis.readShort();
+
                                 // For an initial assignment (e.g. 'wide istore 300'), the local variable is only
                                 // visible AFTER this instruction.
                                 LocalVariable lv = d.getLocalVariable(index, instructionOffset + 4, method);
@@ -1801,9 +1816,7 @@ class Disassembler {
                                 Method          method,
                                 ConstantPool    cp,
                                 Disassembler    d
-                            ) throws IOException {
-                                return " " + d.branchTarget(instructionOffset + dis.readShort());
-                            }
+                            ) throws IOException { return " " + d.branchTarget(instructionOffset + dis.readShort()); }
                         };
                     } else
                     if ("branchoffset4".equals(s)) {
@@ -1816,9 +1829,7 @@ class Disassembler {
                                 Method          method,
                                 ConstantPool    cp,
                                 Disassembler    d
-                            ) throws IOException {
-                                return " " + d.branchTarget(instructionOffset + dis.readInt());
-                            }
+                            ) throws IOException { return " " + d.branchTarget(instructionOffset + dis.readInt()); }
                         };
                     } else
                     if ("signedbyte".equals(s)) {
@@ -1831,9 +1842,7 @@ class Disassembler {
                                 Method          method,
                                 ConstantPool    cp,
                                 Disassembler    d
-                            ) throws IOException {
-                                return " " + dis.readByte();
-                            }
+                            ) throws IOException { return " " + dis.readByte(); }
                         };
                     } else
                     if ("unsignedbyte".equals(s)) {
@@ -1846,9 +1855,7 @@ class Disassembler {
                                 Method          method,
                                 ConstantPool    cp,
                                 Disassembler    d
-                            ) throws IOException {
-                                return " " + (0xff & dis.readByte());
-                            }
+                            ) throws IOException { return " " + (0xff & dis.readByte()); }
                         };
                     } else
                     if ("atype".equals(s)) {
@@ -1887,9 +1894,7 @@ class Disassembler {
                                 Method          method,
                                 ConstantPool    cp,
                                 Disassembler    d
-                            ) throws IOException {
-                                return " " + dis.readShort();
-                            }
+                            ) throws IOException { return " " + dis.readShort(); }
                         };
                     } else
                     if ("tableswitch".equals(s)) {
@@ -1980,11 +1985,7 @@ class Disassembler {
                                 int         subopcode       = 0xff & dis.readByte();
                                 Instruction wideInstruction = Disassembler.OPCODE_TO_WIDE_INSTRUCTION[subopcode];
                                 if (wideInstruction == null) {
-                                    return (
-                                        "Invalid opcode "
-                                        + subopcode
-                                        + " after opcode WIDE"
-                                    );
+                                    return "Invalid opcode " + subopcode + " after opcode WIDE";
                                 }
                                 return wideInstruction.getMnemonic() + d.disassembleOperands(
                                     wideInstruction.getOperands(),
@@ -2009,6 +2010,7 @@ class Disassembler {
 
             result[opcode] = new Instruction(mnemonic, operands);
         }
+
         return result;
     }
 
