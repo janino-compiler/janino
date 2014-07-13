@@ -228,8 +228,8 @@
 			<label text="Proxy user ID (optional):" /><text property="ftp.proxy.userid"   defaultvalue="${ftp.proxy.userid}"/>
 			<label text="Proxy password (optional):"/><text property="ftp.proxy.password" defaultvalue="${ftp.proxy.password}" secure="true"/>
 			<label text="Remote directory:"         /><text property="ftp.remotedir"      defaultvalue="${ftp.remotedir}"/>
-			<checkbox text="Use passive FTP"   property="ftp.passive" defaultvalue="true"/>
-			<checkbox text="Verbose reporting" property="ftp.verbose" defaultvalue="true"/>
+			<checkbox text="Use passive FTP"   property="ftp.passive" preselected="true"/>
+			<checkbox text="Verbose reporting" property="ftp.verbose" preselected="true"/>
 		</swingDialog>
 
 		<!--
