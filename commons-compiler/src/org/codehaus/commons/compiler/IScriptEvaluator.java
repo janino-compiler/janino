@@ -126,6 +126,8 @@ interface IScriptEvaluator extends IClassBodyEvaluator {
      * <code>names</code> and <code>types</code> must have the same number of elements.
      * <p>
      * The parameters can be of primitive type, e.g. <code>double.class</code>.
+     * <p>
+     * The default is to have zero parameters.
      */
     void setParameters(String[] names, Class[] types);
 
