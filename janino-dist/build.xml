@@ -343,8 +343,8 @@
 		</mvn>
 		<delete file="${versioned.pom.file}" />
 
-		<echo message="Now open 'https://nexus.codehaus.org/#stagingRepositories', select repository 'orgcodehausjanino-1001', check its" />
-		<echo message="content, then hit 'Close' and afterwards 'Release'." />
+		<echo message="*** Now open 'https://nexus.codehaus.org/#stagingRepositories', select repository 'orgcodehausjanino-*', check its" />
+		<echo message="*** content, then hit 'Close' and afterwards 'Release'." />
 	</target>
 
 	<target name="tag" description="Tags all projects as 'janino_${version}'">
@@ -380,7 +380,8 @@
 			<copy srcpath="../de.unkrig.commons.nullanalysis"     desturl="${d2}"/>
 		</de.unkrig.subclipse.svn>
 
-		<echo message="*** The next (and final) step is to officially release the new version on" />
+		<echo message="*** The next step is to officially release the new version on" />
 		<echo message="***    https://jira.codehaus.org/plugins/servlet/project-config/JANINO/versions" />
+		<echo message="*** Then execute target 'stage', to stage the release on codehaus's NEXUS." />
 	</target>
 </project>
