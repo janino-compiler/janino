@@ -57,7 +57,8 @@ class CompilerFactoryFactory {
             );
             if (is == null) {
                 throw new ClassNotFoundException(
-                    "No implementation of org.codehaus.commons.compiler is on the class path"
+                    "No implementation of org.codehaus.commons.compiler is on the class path. Typically, you'd have "
+                    + "'janino.jar', or 'commons-compiler-jdk.jar', or both on the classpath."
                 );
             }
             try {
