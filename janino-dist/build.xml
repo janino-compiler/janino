@@ -3,16 +3,27 @@
 	<property file="local_build.properties"/>
 	<property file="build.properties"/>
 
-	<!-- Task 'de.unkrig.ant-contrib.swing-dialog'. -->
 	<taskdef
 		classpath="lib/de.unkrig.ant-contrib.jar"
-		resource="de/unkrig/antcontrib/ant.properties"
+		resource="de/unkrig/antcontrib/ant.xml"
+	/>
+
+	<taskdef
+		classpath="lib/ant-contrib-1.0b3.jar"
+		resource="net/sf/antcontrib/antlib.xml"
 	/>
 
 	<!-- Task 'ftp2' which adds supprt for FTP proxies. -->
 	<taskdef
 		classpath="lib/ant_issue_54883.jar"
 		resource="ant_issue_54883.properties"
+	/>
+
+	<!-- MAVEN ant tasks. -->
+	<taskdef
+		classpath="lib/maven-ant-tasks-2.1.3.jar"
+		resource="org/apache/maven/artifact/ant/antlib.xml"
+		uri=""
 	/>
 
 	<target name="build" description="Creates and populates a directory './mirror' for later upload to the web site.">
@@ -207,7 +218,7 @@
 	<target name="publish" description="Uploads './mirror' to 'unkrig.de/janino'">
 
 		<!-- Have the FTP parameters entered/confirmed by the user. -->
-		<de.unkrig.ant-contrib.swing-dialog title="FTP upload of update site">
+		<swingDialog title="FTP upload of update site">
 			<label text="Server:"                   /><text property="ftp.server"         defaultvalue="${ftp.server}"/>
 			<label text="Port (optional):"          /><text property="ftp.port"           defaultvalue="${ftp.port}"/>
 			<label text="User ID:"                  /><text property="ftp.userid"         defaultvalue="${ftp.userid}"/>
@@ -219,7 +230,7 @@
 			<label text="Remote directory:"         /><text property="ftp.remotedir"      defaultvalue="${ftp.remotedir}"/>
 			<checkbox text="Use passive FTP"   property="ftp.passive" defaultvalue="true"/>
 			<checkbox text="Verbose reporting" property="ftp.verbose" defaultvalue="true"/>
-		</de.unkrig.ant-contrib.swing-dialog>
+		</swingDialog>
 
 		<!--
 			If there are problems with the FTP upload, add argument '-debug' to the ANT external tool configuration.
@@ -248,6 +259,92 @@
 		</ftp2>
 
 		<echo message="*** The next step is to execute target 'tag', which creates a tag for the new version in SVN." />
+	</target>
+
+	<target name="stage" description="Deploy release version to Maven staging repository.">
+
+		<!-- Enter the GPG passphrase. -->
+		<var name="gpg.passphrase" unset="true" />
+		<swingDialog title="Deploying to staging repository">
+			<label text="GPG passphrase" />
+			<text property="gpg.passphrase" secure="true" focus="true" />
+		</swingDialog>
+
+		<!-- All artifacts get this same JAVADOC jar file. -->
+		<jar jarfile="build/janino-javadoc.jar"><fileset dir="mirror/javadoc" /></jar>
+
+		<forEach2 list="commons-compiler,commons-compiler-jdk,janino" param="artifactId">
+			<sequential>
+
+				<var name="versioned.pom.file" unset="true" />
+				<tempfile property="versioned.pom.file" suffix=".pom"/>
+				<copy file="poms/@{artifactId}.pom" tofile="${versioned.pom.file}">
+					<filterchain><replacestring from="@VERSION@" to="${version}" /></filterchain>
+				</copy>
+
+				<!-- Sign and deploy the main artifact. -->
+				<mvn>
+					<arg value="org.apache.maven.plugins:maven-gpg-plugin:1.3:sign-and-deploy-file" />
+					<arg value="-Durl=${maven-staging-repository-url}" />
+					<arg value="-DrepositoryId=${maven-staging-repository-id}" />
+					<arg value="-DpomFile=${versioned.pom.file}" />
+					<arg value="-Dfile=build/@{artifactId}.jar" />
+					<arg value="-Dgpg.passphrase=${gpg.passphrase}" />
+					<arg value="-Dgpg.executable=${gpg.executable}" />
+					<arg value="-Pgpg" />
+				</mvn>
+
+				<!-- Sign and deploy the sources artifact. -->
+				<mvn>
+					<arg value="org.apache.maven.plugins:maven-gpg-plugin:1.3:sign-and-deploy-file" />
+					<arg value="-Durl=${maven-staging-repository-url}" />
+					<arg value="-DrepositoryId=${maven-staging-repository-id}" />
+					<arg value="-DpomFile=${versioned.pom.file}" />
+					<arg value="-Dfile=build/@{artifactId}-src.zip" />
+					<arg value="-Dclassifier=sources" />
+					<arg value="-Dgpg.passphrase=${gpg.passphrase}" />
+					<arg value="-Dgpg.executable=${gpg.executable}" />
+					<arg value="-Pgpg" />
+				</mvn>
+
+				<!-- Sign and deploy the javadoc artifact. -->
+				<mvn>
+					<arg value="org.apache.maven.plugins:maven-gpg-plugin:1.3:sign-and-deploy-file" />
+					<arg value="-Durl=${maven-staging-repository-url}" />
+					<arg value="-DrepositoryId=${maven-staging-repository-id}" />
+					<arg value="-DpomFile=${versioned.pom.file}" />
+					<arg value="-Dfile=build/janino-javadoc.jar" />
+					<arg value="-Dclassifier=javadoc" />
+					<arg value="-Dgpg.passphrase=${gpg.passphrase}" />
+					<arg value="-Dgpg.executable=${gpg.executable}" />
+					<arg value="-Pgpg" />
+				</mvn>
+
+				<delete file="${versioned.pom.file}" />
+			</sequential>
+		</forEach2>
+
+		<!-- Sign and deploy the 'janino-parent' artifact. -->
+
+		<var name="versioned.pom.file" unset="true" />
+		<tempfile property="versioned.pom.file" suffix=".pom"/>
+		<copy file="poms/janino-parent.pom" tofile="${versioned.pom.file}">
+			<filterchain><replacestring from="@VERSION@" to="${version}" /></filterchain>
+		</copy>
+		<mvn>
+			<arg value="org.apache.maven.plugins:maven-gpg-plugin:1.3:sign-and-deploy-file" />
+			<arg value="-Durl=${maven-staging-repository-url}" />
+			<arg value="-DrepositoryId=${maven-staging-repository-id}" />
+			<arg value="-DpomFile=${versioned.pom.file}" />
+			<arg value="-Dfile=${versioned.pom.file}" />
+			<arg value="-Dgpg.passphrase=${gpg.passphrase}" />
+			<arg value="-Dgpg.executable=${gpg.executable}" />
+			<arg value="-Pgpg" />
+		</mvn>
+		<delete file="${versioned.pom.file}" />
+
+		<echo message="Now open 'https://nexus.codehaus.org/#stagingRepositories', select repository 'orgcodehausjanino-1001', check its" />
+		<echo message="content, then hit 'Close' and afterwards 'Release'." />
 	</target>
 
 	<target name="tag" description="Tags all projects as 'janino_${version}'">
