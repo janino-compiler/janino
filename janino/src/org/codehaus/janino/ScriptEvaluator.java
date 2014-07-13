@@ -334,6 +334,9 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
         this.cook(scanner);
     }
 
+    /**
+     * Constructs a script evaluator with all the default settings (return type {@code void}
+     */
     public ScriptEvaluator() {}
 
     @Override public void
