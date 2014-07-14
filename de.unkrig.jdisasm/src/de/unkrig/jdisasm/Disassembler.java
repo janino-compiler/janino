@@ -1108,84 +1108,87 @@ class Disassembler {
         Method                             method
     ) throws IOException {
 
-        // Analyze the TRY bodies.
+        assert this.branchTargets == null;
+        this.branchTargets = new HashMap<Integer, String>();
+        try {
 
-        SortedMap<Integer /*startPC*/, Set<Integer /*endPC*/>>
-        tryStarts = new TreeMap<Integer, Set<Integer>>();
+            // Analyze the TRY bodies.
 
-        SortedMap<Integer /*endPC*/, SortedMap<Integer /*startPC*/, List<ExceptionTableEntry>>>
-        tryEnds = new TreeMap<Integer, SortedMap<Integer, List<ExceptionTableEntry>>>();
+            SortedMap<Integer /*startPC*/, Set<Integer /*endPC*/>>
+            tryStarts = new TreeMap<Integer, Set<Integer>>();
 
-        for (ExceptionTableEntry e : exceptionTable) {
+            SortedMap<Integer /*endPC*/, SortedMap<Integer /*startPC*/, List<ExceptionTableEntry>>>
+            tryEnds = new TreeMap<Integer, SortedMap<Integer, List<ExceptionTableEntry>>>();
 
-            // Register the entry in "tryStarts".
-            {
-                Set<Integer> s = tryStarts.get(e.startPc);
-                if (s == null) {
-                    s = new HashSet<Integer>();
-                    tryStarts.put(e.startPc, s);
+            for (ExceptionTableEntry e : exceptionTable) {
+
+                // Register the entry in "tryStarts".
+                {
+                    Set<Integer> s = tryStarts.get(e.startPc);
+                    if (s == null) {
+                        s = new HashSet<Integer>();
+                        tryStarts.put(e.startPc, s);
+                    }
+                    s.add(e.endPc);
                 }
-                s.add(e.endPc);
+
+                // Register the entry in "tryEnds".
+                {
+                    SortedMap<Integer, List<ExceptionTableEntry>> m = tryEnds.get(e.endPc);
+                    if (m == null) {
+                        m = new TreeMap<Integer, List<ExceptionTableEntry>>(Collections.reverseOrder());
+                        tryEnds.put(e.endPc, m);
+                    }
+                    List<ExceptionTableEntry> l = m.get(e.startPc);
+                    if (l == null) {
+                        l = new ArrayList<ExceptionTableEntry>();
+                        m.put(e.startPc, l);
+                    }
+                    l.add(e);
+                }
             }
 
-            // Register the entry in "tryEnds".
+            // Now disassemble the byte code into a sequence of lines.
+            SortedMap<Integer /*instructionOffset*/, String /*text*/> lines;
             {
-                SortedMap<Integer, List<ExceptionTableEntry>> m = tryEnds.get(e.endPc);
-                if (m == null) {
-                    m = new TreeMap<Integer, List<ExceptionTableEntry>>(Collections.reverseOrder());
-                    tryEnds.put(e.endPc, m);
-                }
-                List<ExceptionTableEntry> l = m.get(e.startPc);
-                if (l == null) {
-                    l = new ArrayList<ExceptionTableEntry>();
-                    m.put(e.startPc, l);
-                }
-                l.add(e);
-            }
-        }
+                CountingInputStream cis = new CountingInputStream(is);
+                DataInputStream     dis = new DataInputStream(cis);
 
-        // Now disassemble the byte code into a sequence of lines.
+                lines = new TreeMap<Integer, String>();
+                for (;;) {
+                    int instructionOffset = (int) cis.getCount();
 
-        SortedMap<Integer /*instructionOffset*/, String /*text*/> lines;
-        {
-            CountingInputStream cis = new CountingInputStream(is);
-            DataInputStream     dis = new DataInputStream(cis);
+                    int opcode = dis.read();
+                    if (opcode == -1) break;
 
-            lines = new TreeMap<Integer, String>();
-            for (;;) {
-                int instructionOffset = (int) cis.getCount();
-
-                int opcode = dis.read();
-                if (opcode == -1) break;
-
-                Instruction instruction = Disassembler.OPCODE_TO_INSTRUCTION[opcode];
-                if (instruction == null) {
-                    lines.put(instructionOffset, "??? (invalid opcode \"" + opcode + "\")");
-                } else {
-                    try {
-                        lines.put(
-                            instructionOffset,
-                            instruction.getMnemonic() + this.disassembleOperands(
-                                instruction.getOperands(),
-                                dis,
+                    Instruction instruction = Disassembler.OPCODE_TO_INSTRUCTION[opcode];
+                    if (instruction == null) {
+                        lines.put(instructionOffset, "??? (invalid opcode \"" + opcode + "\")");
+                    } else {
+                        try {
+                            lines.put(
                                 instructionOffset,
-                                method,
-                                cp
-                            )
-                        );
-                    } catch (RuntimeException rte) {
-                        for (Iterator<Entry<Integer, String>> it = lines.entrySet().iterator(); it.hasNext();) {
-                            Entry<Integer, String> e = it.next();
-                            this.println("#" + e.getKey() + " " + e.getValue());
+                                instruction.getMnemonic() + this.disassembleOperands(
+                                    instruction.getOperands(),
+                                    dis,
+                                    instructionOffset,
+                                    method,
+                                    cp
+                                )
+                            );
+                        } catch (RuntimeException rte) {
+                            for (Iterator<Entry<Integer, String>> it = lines.entrySet().iterator(); it.hasNext();) {
+                                Entry<Integer, String> e = it.next();
+                                this.println("#" + e.getKey() + " " + e.getValue());
+                            }
+                            throw new RuntimeException(
+                                "Instruction '" + instruction + "', pc=" + instructionOffset,
+                                rte
+                            );
                         }
-                        throw new RuntimeException("Instruction '" + instruction + "', pc=" + instructionOffset, rte);
                     }
                 }
             }
-        }
-
-        this.branchTargets = new HashMap<Integer, String>();
-        try {
 
             // Format and print the disassembly lines.
             String indentation = "        ";
@@ -1234,7 +1237,9 @@ class Disassembler {
 
                 // Print instruction offsets only for branch targets.
                 {
-                    String label = this.branchTargets.get(instructionOffset);
+                    Map<Integer, String> bts = this.branchTargets;
+                    assert bts != null;
+                    String label = bts.get(instructionOffset);
                     if (label != null) this.println(label);
                 }
 
