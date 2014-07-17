@@ -88,7 +88,7 @@ class ScriptDemo extends DemoBase {
             System.err.println("Script missing on command line; try \"-help\".");
             System.exit(1);
         }
-        String script = args[i++];
+        final String script = args[i++];
 
         if (parameterTypes.length != parameterNames.length) {
             System.err.println("Parameter type count and parameter name count do not match; try \"-help\".");

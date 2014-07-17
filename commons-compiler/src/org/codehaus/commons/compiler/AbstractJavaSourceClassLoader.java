@@ -163,7 +163,7 @@ class AbstractJavaSourceClassLoader extends ClassLoader {
             System.err.println("No class name given, try \"-help\"");
             System.exit(1);
         }
-        String className = args[i++];
+        final String className = args[i++];
 
         // Determine arguments passed to "main()".
         String[] mainArgs = new String[args.length - i];

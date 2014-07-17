@@ -89,7 +89,7 @@ class ExpressionDemo extends DemoBase {
             System.err.println("Expression missing; try \"-help\".");
             System.exit(1);
         }
-        String expression = args[i++];
+        final String expression = args[i++];
 
         if (parameterTypes.length != parameterNames.length) {
             System.err.println(
