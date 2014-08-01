@@ -243,9 +243,15 @@ class IClass {
      */
     public final IMethod
     findIMethod(String methodName, IClass[] parameterTypes) throws CompileException {
-        IMethod[] ims = this.getDeclaredIMethods(methodName);
-        for (IMethod im : ims) {
-            if (Arrays.equals(im.getParameterTypes(), parameterTypes)) return im;
+        {
+            IMethod result = null;
+            for (IMethod im : this.getDeclaredIMethods(methodName)) {
+                if (
+                    Arrays.equals(im.getParameterTypes(), parameterTypes)
+                    && (result == null || result.getReturnType().isAssignableFrom(im.getReturnType()))
+                ) result = im;
+            }
+            if (result != null) return result;
         }
 
         {
