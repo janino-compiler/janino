@@ -92,6 +92,7 @@ import org.codehaus.janino.Java.Crement;
 import org.codehaus.janino.Java.DoStatement;
 import org.codehaus.janino.Java.DocCommentable;
 import org.codehaus.janino.Java.EmptyStatement;
+import org.codehaus.janino.Java.EnclosingScopeOfTypeDeclaration;
 import org.codehaus.janino.Java.ExpressionStatement;
 import org.codehaus.janino.Java.FieldAccess;
 import org.codehaus.janino.Java.FieldAccessExpression;
@@ -5804,34 +5805,34 @@ class UnitCompiler {
         Scope  contextScope
     ) throws CompileException {
 
-        // At this point, memberAccess is PUBLIC, DEFAULT, PROECTEDED or PRIVATE.
+        // At this point, memberAccess is PUBLIC, DEFAULT, PROTECTED or PRIVATE.
 
         // PUBLIC members are always accessible.
         if (memberAccess == Access.PUBLIC) return null;
 
         // At this point, the member is DEFAULT, PROECTEDED or PRIVATE accessible.
 
-        // Determine the class declaring the context block statement.
-        IClass iClassDeclaringContextBlockStatement;
-        for (Scope s = contextScope;; s = s.getEnclosingScope()) {
+        // Determine the class declaring the context.
+        IClass iClassDeclaringContext = null;
+        for (Scope s = contextScope; !(s instanceof CompilationUnit); s = s.getEnclosingScope()) {
             if (s instanceof TypeDeclaration) {
-                iClassDeclaringContextBlockStatement = this.resolve((TypeDeclaration) s);
+                iClassDeclaringContext = this.resolve((TypeDeclaration) s);
                 break;
             }
         }
 
         // Access is always allowed for block statements declared in the same class as the member.
-        if (iClassDeclaringContextBlockStatement == iClassDeclaringMember) return null;
+        if (iClassDeclaringContext == iClassDeclaringMember) return null;
 
         // Check whether the member and the context block statement are enclosed by the same top-level type.
-        {
+        if (iClassDeclaringContext != null) {
             IClass topLevelIClassEnclosingMember = iClassDeclaringMember;
             for (IClass c = iClassDeclaringMember.getDeclaringIClass(); c != null; c = c.getDeclaringIClass()) {
                 topLevelIClassEnclosingMember = c;
             }
-            IClass topLevelIClassEnclosingContextBlockStatement = iClassDeclaringContextBlockStatement;
+            IClass topLevelIClassEnclosingContextBlockStatement = iClassDeclaringContext;
             for (
-                IClass c = iClassDeclaringContextBlockStatement.getDeclaringIClass();
+                IClass c = iClassDeclaringContext.getDeclaringIClass();
                 c != null;
                 c = c.getDeclaringIClass()
             ) topLevelIClassEnclosingContextBlockStatement = c;
@@ -5840,7 +5841,7 @@ class UnitCompiler {
         }
 
         if (memberAccess == Access.PRIVATE) {
-            return "Private member cannot be accessed from type \"" + iClassDeclaringContextBlockStatement + "\".";
+            return "Private member cannot be accessed from type \"" + iClassDeclaringContext + "\".";
         }
 
         // At this point, the member is DEFAULT or PROTECTED accessible.
@@ -5848,7 +5849,7 @@ class UnitCompiler {
         // Check whether the member and the context block statement are declared in the same package.
         if (Descriptor.areInSamePackage(
             iClassDeclaringMember.getDescriptor(),
-            iClassDeclaringContextBlockStatement.getDescriptor()
+            iClassDeclaringContext.getDescriptor()
         )) return null;
 
         if (memberAccess == Access.DEFAULT) {
@@ -5856,7 +5857,7 @@ class UnitCompiler {
                 "Member with \""
                 + memberAccess
                 + "\" access cannot be accessed from type \""
-                + iClassDeclaringContextBlockStatement
+                + iClassDeclaringContext
                 + "\"."
             );
         }
@@ -5865,17 +5866,19 @@ class UnitCompiler {
 
         // Check whether the class declaring the context block statement is a subclass of the class declaring the
         // member or a nested class whose parent is a subclass
-        IClass parentClass = iClassDeclaringContextBlockStatement;
-        do {
-            if (iClassDeclaringMember.isAssignableFrom(parentClass)) {
-                return null;
-            }
-            parentClass = parentClass.getOuterIClass();
-        } while (parentClass != null);
+        if (iClassDeclaringContext != null) {
+            IClass parentClass = iClassDeclaringContext;
+            do {
+                if (iClassDeclaringMember.isAssignableFrom(parentClass)) {
+                    return null;
+                }
+                parentClass = parentClass.getOuterIClass();
+            } while (parentClass != null);
+        }
 
         return (
             "Protected member cannot be accessed from type \""
-            + iClassDeclaringContextBlockStatement
+            + iClassDeclaringContext
             + "\", which is neither declared in the same package as nor is a subclass of \""
             + iClassDeclaringMember
             + "\"."
@@ -5919,6 +5922,10 @@ class UnitCompiler {
                 for (Scope s = contextScope;; s = s.getEnclosingScope()) {
                     if (s instanceof TypeDeclaration) {
                         iClassDeclaringContextBlockStatement = this.resolve((TypeDeclaration) s);
+                        break;
+                    }
+                    if (s instanceof EnclosingScopeOfTypeDeclaration) {
+                        iClassDeclaringContextBlockStatement = this.resolve(((EnclosingScopeOfTypeDeclaration) s).typeDeclaration);
                         break;
                     }
                 }
@@ -6991,7 +6998,7 @@ class UnitCompiler {
             }
         }
 
-        // JLS7 6.5.2.BL1.B1.B2.1 Static field imported through single static import.
+        // JLS7 6.5.2.BL1.B2.1 Static field imported through single static import.
         {
             List<Object/*IField+IMethod+IClass*/> l = (List) this.singleStaticImports.get(identifier);
             if (l != null) {
@@ -7009,7 +7016,7 @@ class UnitCompiler {
             }
         }
 
-        // JLS7 6.5.2.BL1.B1.B2.2 Static field imported through static-import-on-demand.
+        // JLS7 6.5.2.BL1.B2.2 Static field imported through static-import-on-demand.
         {
             IField importedField = null;
             for (IClass iClass : this.staticImportsOnDemand) {
@@ -7047,13 +7054,21 @@ class UnitCompiler {
         // Hack: "java" MUST be a package, not a class.
         if ("java".equals(identifier)) return new Package(location, identifier);
 
-        // 6.5.2.BL1.B1.B2.1 (JLS7: 6.5.2.BL1.B1.B3.2) Local class.
+        // JLS7: 6.5.2.BL1.B3.1 Unnamed package class
+        // JLS7: 6.5.2.BL1.B3.2 Unnamed package interface
+        // JLS7: 7.4.2
+        {
+            IClass unnamedPackageType = this.findTypeByName(location, identifier);
+            if (unnamedPackageType != null) return new SimpleType(location, unnamedPackageType);
+        }
+
+        // 6.5.2.BL1.B1.B2.1 (JLS7: 6.5.2.BL1.B3.3) Local class.
         {
             LocalClassDeclaration lcd = UnitCompiler.findLocalClassDeclaration(scope, identifier);
             if (lcd != null) return new SimpleType(location, this.resolve(lcd));
         }
 
-        // 6.5.2.BL1.B1.B2.2 (JLS7: 6.5.2.BL1.B1.B3.3) Member type.
+        // 6.5.2.BL1.B1.B2.2 (JLS7: 6.5.2.BL1.B3.4) Member type.
         if (scopeTypeDeclaration != null) {
             IClass memberType = this.findMemberType(
                 this.resolve(scopeTypeDeclaration),
@@ -7114,7 +7129,7 @@ class UnitCompiler {
             for (IClass ic : this.staticImportsOnDemand) {
                 IClass[] memberTypes = ic.getDeclaredIClasses();
                 for (IClass memberType : memberTypes) {
-                    if (!this.isAccessible(memberType, scopeBlockStatement)) continue;
+                    if (!this.isAccessible(memberType, scope)) continue;
                     if (memberType.getDescriptor().endsWith('$' + identifier + ';')) {
                         if (importedType != null) {
                             this.compileError(
