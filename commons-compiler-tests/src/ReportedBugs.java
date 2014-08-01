@@ -26,6 +26,9 @@
 
 import java.io.File;
 import java.io.StringReader;
+import java.security.Permissions;
+import java.security.ProtectionDomain;
+import java.security.SecureClassLoader;
 import java.util.Collection;
 
 import org.codehaus.commons.compiler.CompilerFactoryFactory;
@@ -702,4 +705,38 @@ class ReportedBugs extends JaninoTestSuite {
             + "}\n"
         );
     }
+
+    @Test public void
+    testBug180() throws Exception {
+
+        class JaninoRestrictedClassLoader extends SecureClassLoader {
+
+            Class<?>
+            defineClass(String name, byte[] b) {
+                return this.defineClass(
+                    name,
+                    b,
+                    0,
+                    b.length,
+                    new ProtectionDomain(null, new Permissions(), this, null)
+                );
+            }
+        }
+
+        System.out.println(System.getProperty("java.version"));
+        String script = (
+            ""
+            + "package test.compiled;\n"
+            + "import static java.lang.Math.*;\n"
+            + "public final class JaninoCompiledFastexpr1 implements " + UnaryDoubleFunction.class.getCanonicalName() + " {\n"
+            + "    public double evaluate(double x) {\n"
+            + "        return (2 + (7-5) * 3.14159 * x + sin(0));\n"
+            + "    }\n"
+            + "}"
+        );
+        ISimpleCompiler sc = CompilerFactoryFactory.getDefaultCompilerFactory().newSimpleCompiler();
+        sc.setParentClassLoader(new JaninoRestrictedClassLoader());
+        sc.cook(script);
+    }
+    public interface UnaryDoubleFunction { double evaluate(double x); }
 }
