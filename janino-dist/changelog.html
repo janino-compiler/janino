@@ -51,6 +51,21 @@ h5 {
 
     <a href="http://docs.codehaus.org/display/JANINO/Home">Back to JANINO home page</a>
 
+    <h4>Version ?, ? - <a href="download/janino-?.zip">Download</a></h4>
+    <ul>
+      <li>
+        'IClass.findIMethod(name, parameterTypes)' now ignores synthetic bridge methods by picking the method with the
+        most significant return type.
+      </li>
+      <li>
+        JANINO-180 <a href="http://jira.codehaus.org/browse/JANINO-180">NullPointerException with JDK8</a>
+      </li>
+      <li>
+        Reclassification of 'empty package types' was forgotten (JLS7: 6.5.2.BL1.B3.1 and .2). This caused
+        'EvaluatorTests.testWideInstructions()' to fail.
+      </li>
+    </ul>
+
     <h4>Version 2.7.5, Jul 13, 2014 - <a href="download/janino-2.7.4.zip">Download</a></h4>
     <ul>
       <li>
