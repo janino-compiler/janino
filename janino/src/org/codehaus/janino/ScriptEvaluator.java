@@ -878,15 +878,18 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
             throw new JaninoRuntimeException("\"" + interfaceToImplement + "\" is not an interface");
         }
 
-        Method[] methods = interfaceToImplement.getDeclaredMethods();
-        if (methods.length != 1) {
-            throw new JaninoRuntimeException(
-                "Interface \""
-                + interfaceToImplement
-                + "\" must declare exactly one method"
-            );
+        Method methodToImplement;
+        {
+            Method[] methods = interfaceToImplement.getDeclaredMethods();
+            if (methods.length != 1) {
+                throw new JaninoRuntimeException(
+                    "Interface \""
+                    + interfaceToImplement
+                    + "\" must declare exactly one method"
+                );
+            }
+            methodToImplement = methods[0];
         }
-        Method methodToImplement = methods[0];
 
         this.setImplementedInterfaces(new Class[] { interfaceToImplement });
         this.setOverrideMethod(true);
