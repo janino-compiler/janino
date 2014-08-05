@@ -42,7 +42,6 @@ import org.codehaus.commons.compiler.Location;
 import org.codehaus.commons.compiler.WarningHandler;
 import org.codehaus.janino.util.TeeReader;
 
-
 /**
  * Splits up a character stream into tokens and returns them as
  * {@link java.lang.String String} objects.
@@ -600,7 +599,6 @@ class Scanner {
 
         // Scan character literal.
         if (this.nextChar == '\'') {
-            StringBuilder sb = new StringBuilder("'");
             this.readNextChar();
             if (this.nextChar == '\'') {
                 throw new CompileException(
@@ -608,6 +606,8 @@ class Scanner {
                     this.location()
                 );
             }
+
+            StringBuilder sb = new StringBuilder("'");
             this.scanLiteralCharacter(sb);
             if (this.nextChar != '\'') throw new CompileException("Closing single quote missing", this.location());
             this.readNextChar();
