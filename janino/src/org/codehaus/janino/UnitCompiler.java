@@ -508,7 +508,7 @@ class UnitCompiler {
         // As a side effect of compiling methods and constructors, synthetic "class-dollar" methods (which implement
         // class literals) are generated on-the fly. We need to note how many we have here so we can compile the
         // extras.
-        int declaredMethodCount = cd.getMethodDeclarations().size();
+        final int declaredMethodCount = cd.getMethodDeclarations().size();
         {
             int                     syntheticFieldCount = cd.syntheticFields.size();
             ConstructorDeclarator[] ctords              = cd.getConstructors();
@@ -644,15 +644,12 @@ class UnitCompiler {
         // For classes that enclose surrounding scopes, trawl their field initializers looking for synthetic fields.
         if (icd instanceof AnonymousClassDeclaration || icd instanceof LocalClassDeclaration) {
             ClassDeclaration cd = (ClassDeclaration) icd;
-            for (BlockStatement vdoi : cd.variableDeclaratorsAndInitializers) {
-                if (vdoi instanceof FieldDeclaration) {
-                    FieldDeclaration fd = (FieldDeclaration) vdoi;
-                    for (VariableDeclarator vd : fd.variableDeclarators) {
-                        if (vd.optionalInitializer != null) {
-                            this.fakeCompile(vd.optionalInitializer);
-                        }
-                    }
-                }
+
+            // Compilation of field declarations can create synthetic variables, so we must not use an iterator.
+            List<BlockStatement> vdais = cd.variableDeclaratorsAndInitializers;
+            for (int i = 0; i < vdais.size(); i++) {
+                BlockStatement vdoi = (BlockStatement) vdais.get(i);
+                this.fakeCompile(vdoi);
             }
         }
 
@@ -664,7 +661,7 @@ class UnitCompiler {
 
     private void
     compile2(InterfaceDeclaration id) throws CompileException {
-        IClass iClass = this.resolve(id);
+        final IClass iClass = this.resolve(id);
 
         // Determine extended interfaces.
         id.interfaces = new IClass[id.extendedTypes.length];
@@ -892,7 +889,7 @@ class UnitCompiler {
         }
 
         final CodeContext codeContext      = new CodeContext(mi.getClassFile());
-        CodeContext       savedCodeContext = this.replaceCodeContext(codeContext);
+        final CodeContext savedCodeContext = this.replaceCodeContext(codeContext);
 
         // Allocate all our local variables.
         codeContext.saveLocalVariables();
@@ -1018,7 +1015,7 @@ class UnitCompiler {
             }
         }
 
-        CodeContext.Offset bodyOffset = this.codeContext.newOffset();
+        final CodeContext.Offset bodyOffset = this.codeContext.newOffset();
 
         // Compile body.
         ds.whereToContinue = null;
@@ -1077,8 +1074,8 @@ class UnitCompiler {
 
             // Compile body.
             fs.whereToContinue = null;
-            CodeContext.Offset bodyOffset = this.codeContext.newOffset();
-            boolean            bodyCcn    = this.compile(fs.body);
+            final CodeContext.Offset bodyOffset = this.codeContext.newOffset();
+            boolean                  bodyCcn    = this.compile(fs.body);
             if (fs.whereToContinue != null) fs.whereToContinue.set();
 
             // Compile update.
@@ -1137,7 +1134,7 @@ class UnitCompiler {
 
                 // Compile the body.
                 fes.whereToContinue = null;
-                CodeContext.Offset bodyOffset = this.codeContext.newOffset();
+                final CodeContext.Offset bodyOffset = this.codeContext.newOffset();
 
                 this.load(fes, expressionType, expressionLv);
                 this.load(fes, indexLv);
@@ -1195,7 +1192,7 @@ class UnitCompiler {
 
                 // Compile the body.
                 fes.whereToContinue = null;
-                CodeContext.Offset bodyOffset = this.codeContext.newOffset();
+                final CodeContext.Offset bodyOffset = this.codeContext.newOffset();
 
                 this.load(fes, iteratorLv);
                 this.invoke(fes.expression, this.iClassLoader.METH_java_util_Iterator__next);
@@ -1262,7 +1259,7 @@ class UnitCompiler {
         // Compile body.
         ws.whereToContinue = this.codeContext.new Offset();
         this.writeBranch(ws, Opcode.GOTO, ws.whereToContinue);
-        CodeContext.Offset bodyOffset = this.codeContext.newOffset();
+        final CodeContext.Offset bodyOffset = this.codeContext.newOffset();
         this.compile(ws.body); // Return value (CCN) is ignored.
         ws.whereToContinue.set();
         ws.whereToContinue = null;
@@ -1298,8 +1295,8 @@ class UnitCompiler {
 
         // Compile body.
         cs.whereToContinue = null;
-        CodeContext.Offset bodyOffset = this.codeContext.newOffset();
-        boolean            bodyCcn    = this.compile(body);
+        final CodeContext.Offset bodyOffset = this.codeContext.newOffset();
+        boolean                  bodyCcn    = this.compile(body);
 
         // Compile the "update".
         if (cs.whereToContinue != null) cs.whereToContinue.set();
@@ -1414,8 +1411,8 @@ class UnitCompiler {
 
             // The case label values are strictly consecutity or almost consecutive (at most 50% 'gaps'), so
             // let's use a TABLESWITCH.
-            int low  = (Integer) caseLabelMap.firstKey();
-            int high = (Integer) caseLabelMap.lastKey();
+            final int low  = (Integer) caseLabelMap.firstKey();
+            final int high = (Integer) caseLabelMap.lastKey();
 
             this.writeOpcode(ss, Opcode.TABLESWITCH);
             new Padder(this.codeContext).set();
@@ -1699,9 +1696,9 @@ class UnitCompiler {
             }
 
             // Compile the seeing statement.
-            CodeContext.Inserter ins   = this.codeContext.newInserter();
-            boolean              ssccn = this.compile(seeingStatement);
-            boolean              bsccn = this.fakeCompile(blindStatement);
+            final CodeContext.Inserter ins   = this.codeContext.newInserter();
+            boolean                    ssccn = this.compile(seeingStatement);
+            boolean                    bsccn = this.fakeCompile(blindStatement);
             if (ssccn) return true;
             if (!bsccn) return false;
 
@@ -1943,8 +1940,8 @@ class UnitCompiler {
             this.writeOpcode(ss, Opcode.MONITORENTER);
 
             // Compile the statement body.
-            CodeContext.Offset monitorExitOffset = this.codeContext.new Offset();
-            CodeContext.Offset beginningOfBody   = this.codeContext.newOffset();
+            final CodeContext.Offset monitorExitOffset = this.codeContext.new Offset();
+            final CodeContext.Offset beginningOfBody   = this.codeContext.newOffset();
             canCompleteNormally = this.compile(ss.body);
             if (canCompleteNormally) {
                 this.writeBranch(ss, Opcode.GOTO, monitorExitOffset);
@@ -1989,8 +1986,8 @@ class UnitCompiler {
     compile2(TryStatement ts) throws CompileException {
         if (ts.optionalFinally != null) ts.finallyOffset = this.codeContext.new Offset();
 
-        CodeContext.Offset beginningOfBody = this.codeContext.newOffset();
-        CodeContext.Offset afterStatement  = this.codeContext.new Offset();
+        final CodeContext.Offset beginningOfBody = this.codeContext.newOffset();
+        final CodeContext.Offset afterStatement  = this.codeContext.new Offset();
 
         this.codeContext.saveLocalVariables();
         try {
@@ -2002,7 +1999,7 @@ class UnitCompiler {
             //   body's variables are out of scope when it comes to the FINALLY clause!?), otherwise you get
             //     java.lang.VerifyError: ... Accessing value from uninitialized local variable 4
             //   See bug #56.
-            short pcLvIndex = (
+            final short pcLvIndex = (
                 ts.optionalFinally != null
                 ? this.codeContext.allocateLocalVariable((short) 1)
                 : (short) 0
@@ -2048,7 +2045,7 @@ class UnitCompiler {
                                 catchClause.caughtException.name,
                                 caughtExceptionType
                             );
-                            short evi = exceptionVarSlot.getSlotIndex();
+                            final short evi = exceptionVarSlot.getSlotIndex();
 
                             // Kludge: Treat the exception variable like a local variable of the catch clause body.
                             this.getLocalVariable(catchClause.caughtException).setSlot(exceptionVarSlot);
@@ -2586,17 +2583,6 @@ class UnitCompiler {
     }
 
     // ------------------ Rvalue.compile() ----------------
-
-    /** Called to check whether the given {@link ArrayInitializerOrRvalue} compiles or not. */
-    private void
-    fakeCompile(ArrayInitializerOrRvalue aior) throws CompileException {
-        if (aior instanceof Rvalue) {
-            this.fakeCompile((Rvalue) aior);
-        }
-        if (aior instanceof ArrayInitializer) {
-            for (ArrayInitializerOrRvalue v : ((ArrayInitializer) aior).values) this.fakeCompile(v);
-        }
-    }
 
     /** Called to check whether the given {@link Rvalue} compiles or not. */
     private void
@@ -3349,7 +3335,7 @@ class UnitCompiler {
 
     private IClass
     compileGet2(ClassLiteral cl) throws CompileException {
-        Location           loc    = cl.getLocation();
+        final Location     loc    = cl.getLocation();
         final IClassLoader icl    = this.iClassLoader;
         IClass             iClass = this.getType(cl.type);
 
@@ -4003,7 +3989,7 @@ class UnitCompiler {
 
     private IClass
     compileGet2(SuperclassMethodInvocation scmi) throws CompileException {
-        IClass.IMethod iMethod = this.findIMethod(scmi);
+        final IClass.IMethod iMethod = this.findIMethod(scmi);
 
         Scope s;
         for (
@@ -5866,7 +5852,7 @@ class UnitCompiler {
 
         // Check whether the class declaring the context block statement is a subclass of the class declaring the
         // member or a nested class whose parent is a subclass
-        if (iClassDeclaringContext != null) {
+        {
             IClass parentClass = iClassDeclaringContext;
             do {
                 if (iClassDeclaringMember.isAssignableFrom(parentClass)) {
@@ -5925,7 +5911,9 @@ class UnitCompiler {
                         break;
                     }
                     if (s instanceof EnclosingScopeOfTypeDeclaration) {
-                        iClassDeclaringContextBlockStatement = this.resolve(((EnclosingScopeOfTypeDeclaration) s).typeDeclaration);
+                        iClassDeclaringContextBlockStatement = this.resolve(
+                            ((EnclosingScopeOfTypeDeclaration) s).typeDeclaration
+                        );
                         break;
                     }
                 }
@@ -6231,7 +6219,7 @@ class UnitCompiler {
                     type = this.compileGetValue(operand);
                 } else {
                     CodeContext.Inserter convertLhsInserter = this.codeContext.newInserter();
-                    IClass               rhsType            = this.compileGetValue(operand);
+                    final IClass         rhsType            = this.compileGetValue(operand);
 
                     IClass promotedLhsType;
                     this.codeContext.pushInserter(convertLhsInserter);
@@ -6834,13 +6822,11 @@ class UnitCompiler {
     reclassifyName(Location location, Scope scope, final String identifier) throws CompileException {
 
         // Determine scope block statement, type body declaration, type and compilation unit.
-        BlockStatement          scopeBlockStatement  = null;
         TypeBodyDeclaration     scopeTbd             = null;
         AbstractTypeDeclaration scopeTypeDeclaration = null;
         CompilationUnit         scopeCompilationUnit;
         {
             Scope s = scope;
-            if (s instanceof BlockStatement) scopeBlockStatement = (BlockStatement) s;
             while (
                 (s instanceof BlockStatement || s instanceof CatchClause)
                 && !(s instanceof TypeBodyDeclaration)
@@ -6878,7 +6864,8 @@ class UnitCompiler {
                 s = s.getEnclosingScope();
             }
             if (s instanceof InnerClassDeclaration) {
-                InnerClassDeclaration icd = (InnerClassDeclaration) s;
+                InnerClassDeclaration icd = (InnerClassDeclaration) s; // SUPPRESS CHECKSTYLE UsageDistance
+
                 s = s.getEnclosingScope();
                 if (s instanceof AnonymousClassDeclaration) {
                     s = s.getEnclosingScope();
@@ -7670,7 +7657,7 @@ class UnitCompiler {
             {
                 Iterator<IClass.IInvocable> it                          = maximallySpecificIInvocables.iterator();
                 IClass.IMethod              m                           = (IClass.IMethod) it.next();
-                IClass[]                    parameterTypesOfFirstMethod = m.getParameterTypes();
+                final IClass[]              parameterTypesOfFirstMethod = m.getParameterTypes();
                 for (;;) {
                     if (!m.isAbstract()) {
                         if (theNonAbstractMethod == null) {
@@ -8671,7 +8658,7 @@ class UnitCompiler {
 
         // try {
         // return Class.forName(className);
-        MethodInvocation mi = new MethodInvocation(
+        final MethodInvocation mi = new MethodInvocation(
             loc,                                                         // location
             new SimpleType(loc, this.iClassLoader.TYPE_java_lang_Class), // optionalTarget
             "forName",                                                   // methodName
