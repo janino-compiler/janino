@@ -1774,9 +1774,9 @@ class ClassFile {
 
         public static AttributeInfo
         loadBody(short attributeNameIndex, ClassFile classFile, DataInputStream dis) throws IOException {
-            short  maxStack  = dis.readShort();                                    // max_stack
-            short  maxLocals = dis.readShort();                                    // max_locals
-            byte[] code      = ClassFile.readLengthAndBytes(dis);                  // code_length, code
+            final short  maxStack  = dis.readShort();                   // max_stack
+            final short  maxLocals = dis.readShort();                   // max_locals
+            final byte[] code      = ClassFile.readLengthAndBytes(dis); // code_length, code
 
             ExceptionTableEntry[] etes = new ExceptionTableEntry[dis.readShort()]; // exception_table_length
             for (int i = 0; i < etes.length; ++i) {                                // exception_table

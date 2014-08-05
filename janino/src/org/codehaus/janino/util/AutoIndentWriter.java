@@ -183,10 +183,10 @@ class AutoIndentWriter extends FilterWriter {
         // Determine the tabulator offsets for this line group.
         List<Integer> tabulatorOffsets = new ArrayList<Integer>(); // 4, 4
         for (StringBuilder line : lineGroup) {
-            int tabCount    = 0;
             int previousTab = 0;
             if (line.charAt(previousTab) == AutoIndentWriter.INDENT) ++previousTab;
             if (line.charAt(previousTab) == AutoIndentWriter.UNINDENT) ++previousTab;
+            int tabCount    = 0;
             for (int i = previousTab; i < line.length(); ++i) {
                 if (line.charAt(i) == AutoIndentWriter.TABULATOR) {
                     int tabOffset = i - previousTab;
