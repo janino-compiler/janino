@@ -793,7 +793,10 @@ class Java {
         /** List of {@link ConstructorDeclarator}s of this class. */
         public final List<ConstructorDeclarator> constructors = new ArrayList();
 
-        /** List of {@link TypeBodyDeclaration}s of this class. */
+        /**
+         * List of {@link TypeBodyDeclaration}s of this class: Field declarations (both static and non-static),
+         * (static and non-static) initializers (a.k.a. "class initializers" and "instance initializers").
+         */
         public final List<BlockStatement> variableDeclaratorsAndInitializers = new ArrayList();
 
         public
