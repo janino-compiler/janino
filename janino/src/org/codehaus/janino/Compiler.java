@@ -478,7 +478,7 @@ class Compiler {
     compile(Resource[] sourceResources) throws CompileException, IOException {
 
         // Set up the compile error handler as described at "setCompileErrorHandler()".
-        ErrorHandler ceh = (
+        final ErrorHandler ceh = (
             this.optionalCompileErrorHandler != null
             ? this.optionalCompileErrorHandler
             : new ErrorHandler() {

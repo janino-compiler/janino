@@ -355,7 +355,7 @@ class IClassLoader {
             ? PathResourceFinder.parsePath(System.getProperty("java.ext.dirs"))
             : optionalExtDirs
         );
-        ResourceFinder classPathResourceFinder = new PathResourceFinder(classPath);
+        final ResourceFinder classPathResourceFinder = new PathResourceFinder(classPath);
 
         // We can load classes through "ResourceFinderIClassLoader"s, which means
         // they are read into "ClassFile" objects, or we can load classes through

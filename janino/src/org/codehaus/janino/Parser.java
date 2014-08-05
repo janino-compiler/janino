@@ -206,14 +206,10 @@ class Parser {
      */
     public CompilationUnit.ImportDeclaration
     parseImportDeclarationBody() throws CompileException, IOException {
-        Location loc = this.location();
-        boolean  isStatic;
-        if (this.peekRead("static")) {
-            isStatic = true;
-        } else
-        {
-            isStatic = false;
-        }
+        final Location loc = this.location();
+
+        boolean isStatic = this.peekRead("static");
+
         List<String> l = new ArrayList();
         l.add(this.readIdentifier());
         for (;;) {
@@ -830,11 +826,10 @@ class Parser {
     public ConstructorDeclarator
     parseConstructorDeclarator(String optionalDocComment, Modifiers modifiers)
     throws CompileException, IOException {
-        Location location = this.location();
         this.readIdentifier();  // Class name
 
         // Parse formal parameters.
-        FormalParameters formalParameters = this.parseFormalParameters();
+        final FormalParameters formalParameters = this.parseFormalParameters();
 
         // Parse "throws" clause.
         ReferenceType[] thrownExceptions;
@@ -845,7 +840,7 @@ class Parser {
         }
 
         // Parse constructor body.
-        location = this.location();
+        final Location location = this.location();
         this.read("{");
 
         // Special treatment for the first statement of the constructor body: If this is surely an
@@ -918,7 +913,7 @@ class Parser {
 
         this.verifyIdentifierIsConventionalMethodName(name, location);
 
-        FormalParameters formalParameters = this.parseFormalParameters();
+        final FormalParameters formalParameters = this.parseFormalParameters();
 
         for (int i = this.parseBracketsOpt(); i > 0; --i) type = new ArrayType(type);
 
@@ -980,7 +975,7 @@ class Parser {
      */
     public ArrayInitializer
     parseArrayInitializer() throws CompileException, IOException {
-        Location location = this.location();
+        final Location location = this.location();
         this.read("{");
         List<ArrayInitializerOrRvalue> l = new ArrayList();
         while (!this.peekRead("}")) {
@@ -1024,9 +1019,9 @@ class Parser {
      */
     public FormalParameter
     parseFormalParameter(boolean[] hasEllipsis) throws CompileException, IOException {
-        boolean finaL = this.peekRead("final");
+        final boolean finaL = this.peekRead("final");
 
-        Type type = this.parseType();
+        Type type = this.parseType(); // SUPPRESS CHECKSTYLE UsageDistance
 
         if (this.peekRead(".")) {
             this.read(".");
@@ -1308,7 +1303,7 @@ class Parser {
      */
     public Statement
     parseIfStatement() throws CompileException, IOException {
-        Location location = this.location();
+        final Location location = this.location();
         this.read("if");
         this.read("(");
         final Rvalue condition = this.parseExpression().toRvalueOrCompileException();
@@ -1364,8 +1359,8 @@ class Parser {
                 if (this.peekIdentifier() != null && this.peekNextButOne(":")) {
 
                     // 'for' '(' [ Modifiers ] Type identifier ':' Expression ')' Statement
-                    String   name         = this.readIdentifier();
-                    Location nameLocation = this.location();
+                    final String   name         = this.readIdentifier();
+                    final Location nameLocation = this.location();
                     this.read(":");
                     Rvalue expression = this.parseExpression().toRvalue();
                     this.read(")");
@@ -1398,8 +1393,8 @@ class Parser {
                 if (this.peekNextButOne(":")) {
 
                     // 'for' '(' Expression identifier ':' Expression ')' Statement
-                    String   name         = this.readIdentifier();
-                    Location nameLocation = this.location();
+                    final String   name         = this.readIdentifier();
+                    final Location nameLocation = this.location();
                     this.read(":");
                     Rvalue expression = this.parseExpression().toRvalue();
                     this.read(")");
@@ -1475,7 +1470,7 @@ class Parser {
      */
     public Statement
     parseWhileStatement() throws CompileException, IOException {
-        Location location = this.location();
+        final Location location = this.location();
         this.read("while");
 
         this.read("(");
@@ -1496,14 +1491,14 @@ class Parser {
      */
     public Statement
     parseDoStatement() throws CompileException, IOException {
-        Location location = this.location();
+        final Location location = this.location();
         this.read("do");
 
-        Statement body = this.parseStatement();
+        final Statement body = this.parseStatement();
 
         this.read("while");
         this.read("(");
-        Rvalue condition = this.parseExpression().toRvalueOrCompileException();
+        final Rvalue condition = this.parseExpression().toRvalueOrCompileException();
         this.read(")");
         this.read(";");
 
@@ -1532,15 +1527,15 @@ class Parser {
         Location location = this.location();
         this.read("try");
 
-        Block body = this.parseBlock();
+        final Block body = this.parseBlock();
 
         // { CatchClause }
         List<CatchClause> ccs = new ArrayList();
         while (this.peekRead("catch")) {
-            Location loc = this.location();
+            final Location loc = this.location();
             this.read("(");
-            boolean[]       hasEllipsis     = new boolean[1];
-            FormalParameter caughtException = this.parseFormalParameter(hasEllipsis);
+            boolean[]             hasEllipsis     = new boolean[1];
+            final FormalParameter caughtException = this.parseFormalParameter(hasEllipsis);
             if (hasEllipsis[0]) throw this.compileException("Catch clause parameter must not have an ellipsis");
             this.read(")");
             ccs.add(new CatchClause(
@@ -1579,11 +1574,11 @@ class Parser {
      */
     public Statement
     parseSwitchStatement() throws CompileException, IOException {
-        Location location = this.location();
+        final Location location = this.location();
         this.read("switch");
 
         this.read("(");
-        Rvalue condition = this.parseExpression().toRvalueOrCompileException();
+        final Rvalue condition = this.parseExpression().toRvalueOrCompileException();
         this.read(")");
 
         this.read("{");
@@ -1628,7 +1623,7 @@ class Parser {
      */
     public Statement
     parseSynchronizedStatement() throws CompileException, IOException {
-        Location location = this.location();
+        final Location location = this.location();
         this.read("synchronized");
         this.read("(");
         Rvalue expression = this.parseExpression().toRvalueOrCompileException();
@@ -1647,7 +1642,7 @@ class Parser {
      */
     public Statement
     parseReturnStatement() throws CompileException, IOException {
-        Location location = this.location();
+        final Location location = this.location();
         this.read("return");
         Rvalue returnValue = this.peek(";") ? null : this.parseExpression().toRvalueOrCompileException();
         this.read(";");
@@ -1661,7 +1656,7 @@ class Parser {
      */
     public Statement
     parseThrowStatement() throws CompileException, IOException {
-        Location location = this.location();
+        final Location location = this.location();
         this.read("throw");
         final Rvalue expression = this.parseExpression().toRvalueOrCompileException();
         this.read(";");
@@ -1676,7 +1671,7 @@ class Parser {
      */
     public Statement
     parseBreakStatement() throws CompileException, IOException {
-        Location location = this.location();
+        final Location location = this.location();
         this.read("break");
         String optionalLabel = null;
         if (this.peekIdentifier() != null) optionalLabel = this.readIdentifier();
@@ -1691,7 +1686,7 @@ class Parser {
      */
     public Statement
     parseContinueStatement() throws CompileException, IOException {
-        Location location = this.location();
+        final Location location = this.location();
         this.read("continue");
         String optionalLabel = null;
         if (this.peekIdentifier() != null) optionalLabel = this.readIdentifier();
@@ -2089,7 +2084,7 @@ class Parser {
                 String op  = this.read().value;
 
                 if ("<".equals(op) && a instanceof Java.AmbiguousName && this.peek("?")) {
-                    String[] identifiers = ((Java.AmbiguousName) a).identifiers;
+                    final String[] identifiers = ((Java.AmbiguousName) a).identifiers;
 
                     // Temporarily switch the scanner into 'expect greater' mode, where it doesn't recognize operators
                     // starting with '>>'.
@@ -2121,7 +2116,7 @@ class Parser {
                     try {
 
                         if (this.peek(new String[] { "<", ">", "," }) != -1) {
-                            String[] identifiers = ((Java.AmbiguousName) a).identifiers;
+                            final String[] identifiers = ((Java.AmbiguousName) a).identifiers;
 
                             // '<' ShiftExpression [ TypeArguments ] { ',' TypeArgument } '>'
                             this.parseTypeArgumentsOpt();
@@ -2769,7 +2764,7 @@ class Parser {
     public Token
     read() throws CompileException, IOException {
         if (this.nextToken == null) return this.scanner.produce();
-        Token result = this.nextToken;
+        final Token result = this.nextToken;
         this.nextToken       = this.nextButOneToken;
         this.nextButOneToken = null;
         return result;

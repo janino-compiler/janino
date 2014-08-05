@@ -984,7 +984,7 @@ class CodeContext {
             if (!this.expanded && (offset > Short.MAX_VALUE || offset < Short.MIN_VALUE)) {
                 //we want to insert the data without skewing our source position,
                 //so we will cache it and then restore it later.
-                int pos = this.source.offset;
+                final int pos = this.source.offset;
                 CodeContext.this.pushInserter(this.source);
                 {
                     // promotion to a wide instruction only requires 2 extra bytes
