@@ -379,22 +379,22 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
             boolean overrideMethod = this.optionalOverrideMethod != null && this.optionalOverrideMethod[i];
             boolean staticMethod   = this.optionalStaticMethod   == null || this.optionalStaticMethod[i];
 
-            Class<?> returnType = (
+            final Class<?> returnType = (
                 this.optionalReturnTypes == null
                 ? this.getDefaultReturnType()
                 : this.optionalReturnTypes[i]
             );
-            String[] parameterNames = (
+            final String[] parameterNames = (
                 this.optionalParameterNames == null
                 ? new String[0]
                 : this.optionalParameterNames[i]
             );
-            Class<?>[] parameterTypes = (
+            final Class<?>[] parameterTypes = (
                 this.optionalParameterTypes == null
                 ? new Class<?>[0]
                 : this.optionalParameterTypes[i]
             );
-            Class<?>[] thrownExceptions = (
+            final Class<?>[] thrownExceptions = (
                 this.optionalThrownExceptions == null
                 ? new Class<?>[0]
                 : this.optionalThrownExceptions[i]
@@ -539,14 +539,16 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
             throw new RuntimeException("\"" + interfaceToImplement + "\" is not an interface");
         }
 
+        this.setImplementedInterfaces(new Class[] { interfaceToImplement });
+
+        this.setStaticMethod(false);
+
         Method[] methods = interfaceToImplement.getDeclaredMethods();
         if (methods.length != 1) {
             throw new RuntimeException("Interface \"" + interfaceToImplement + "\" must declare exactly one method");
         }
         Method methodToImplement = methods[0];
 
-        this.setImplementedInterfaces(new Class[] { interfaceToImplement });
-        this.setStaticMethod(false);
         if (this instanceof IExpressionEvaluator) {
 
             // Must not call "IExpressionEvaluator.setReturnType()".
