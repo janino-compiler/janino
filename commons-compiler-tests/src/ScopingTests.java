@@ -94,16 +94,16 @@ class ScopingTests {
             + "}"
         );
 
-        Class<?> topClass    = sc.getClassLoader().loadClass("for_sandbox_tests.Top");
-        Method   createInner = topClass.getDeclaredMethod("createInner", new Class[0]);
-        Object   t           = topClass.newInstance();
-        Object   i           = createInner.invoke(t, new Object[0]);
+        final Class<?> topClass    = sc.getClassLoader().loadClass("for_sandbox_tests.Top");
+        final Method   createInner = topClass.getDeclaredMethod("createInner", new Class[0]);
+        final Object   t           = topClass.newInstance();
+        final Object   i           = createInner.invoke(t, new Object[0]);
 
-        Class<?> innerClass = sc.getClassLoader().loadClass("for_sandbox_tests.Top$Inner");
-        Method   get        = innerClass.getDeclaredMethod("get", new Class[0]);
-        Method   getS       = innerClass.getDeclaredMethod("getS", new Class[0]);
-        Method   set        = innerClass.getDeclaredMethod("set", new Class[0]);
-        Method   setS       = innerClass.getDeclaredMethod("setS", new Class[0]);
+        final Class<?> innerClass = sc.getClassLoader().loadClass("for_sandbox_tests.Top$Inner");
+        final Method   get        = innerClass.getDeclaredMethod("get", new Class[0]);
+        final Method   getS       = innerClass.getDeclaredMethod("getS", new Class[0]);
+        final Method   set        = innerClass.getDeclaredMethod("set", new Class[0]);
+        final Method   setS       = innerClass.getDeclaredMethod("setS", new Class[0]);
 
         Object res;
         {   // non-static

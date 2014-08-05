@@ -407,10 +407,10 @@ class EvaluatorTests extends JaninoTestSuite {
         ISimpleCompiler sc = this.compilerFactory.newSimpleCompiler();
         sc.cook(prog);
 
-        Class<?>   c     = sc.getClassLoader().loadClass("test.Test");
-        Method     dm    = c.getMethod("compare", new Class[] { double.class, double.class, String.class });
-        Method     fm    = c.getMethod("compare", new Class[] { float.class, float.class, String.class });
-        Double[][] argss = new Double[][] {
+        final Class<?>   c     = sc.getClassLoader().loadClass("test.Test");
+        final Method     dm    = c.getMethod("compare", new Class[] { double.class, double.class, String.class });
+        final Method     fm    = c.getMethod("compare", new Class[] { float.class, float.class, String.class });
+        final Double[][] argss = new Double[][] {
             { new Double(Double.NaN), new Double(Double.NaN) },
             { new Double(Double.NaN), new Double(1.0) },
             { new Double(1.0), new Double(Double.NaN) },
@@ -466,7 +466,7 @@ class EvaluatorTests extends JaninoTestSuite {
             ""
             + "            ++res;\n"
         );
-        String postamble = (
+        final String postamble = (
             ""
             + "        }\n"
             + "        return res;\n"
@@ -501,7 +501,7 @@ class EvaluatorTests extends JaninoTestSuite {
             + "package test;\n"
             + "public class Test {\n"
         );
-        String postamble = (
+        final String postamble = (
             "}"
         );
 
@@ -537,7 +537,7 @@ class EvaluatorTests extends JaninoTestSuite {
             ""
             + "            123,"
         );
-        String postamble = (
+        final String postamble = (
             ""
             + "        };\n"
             + "    }\n"
@@ -590,7 +590,7 @@ class EvaluatorTests extends JaninoTestSuite {
             ""
             + "        Object o_{0,number,#}; int i_{0,number,#};\n"
         );
-        String postamble = (
+        final String postamble = (
             ""
             + "        int i = (int)0; ++i; i = (int)(i*i);\n"
             + "        double d = (double)0.0; ++d; d = (double)(d*d);\n"
