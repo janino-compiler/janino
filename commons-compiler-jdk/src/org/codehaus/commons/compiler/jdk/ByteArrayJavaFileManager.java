@@ -138,12 +138,6 @@ class ByteArrayJavaFileManager<M extends JavaFileManager> extends ForwardingJava
             }
         }
 
-        JavaFileObject fileObject = (
-            kind == Kind.SOURCE
-            ? new StringWriterJavaFileObject(kind)
-            : new ByteArrayJavaFileObject(className, kind)
-        );
-
         Map<Kind, Map<String, JavaFileObject>> locationJavaFiles = this.javaFiles.get(location);
         if (locationJavaFiles == null) {
             locationJavaFiles = new HashMap<Kind, Map<String, JavaFileObject>>();
@@ -154,6 +148,12 @@ class ByteArrayJavaFileManager<M extends JavaFileManager> extends ForwardingJava
             kindJavaFiles = new HashMap<String, JavaFileObject>();
             locationJavaFiles.put(kind, kindJavaFiles);
         }
+
+        JavaFileObject fileObject = (
+            kind == Kind.SOURCE
+            ? new StringWriterJavaFileObject(kind)
+            : new ByteArrayJavaFileObject(className, kind)
+        );
 
         kindJavaFiles.put(className, fileObject);
         return fileObject;
