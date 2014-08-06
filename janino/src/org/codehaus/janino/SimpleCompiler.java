@@ -309,12 +309,37 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
                             + "' through the parent loader"
                         );
                     }
-                    if (!clazz.isPrimitive() && ((ReflectionIClass) iClass).getClazz() != clazz) {
-                        throw new JaninoRuntimeException(
-                            "Class '"
-                            + clazz.getName()
-                            + "' was loaded through a different loader"
-                        );
+
+                    // Verify that the class loaders match.
+                    IClass iClass2 = iClass;
+                    Class  class2  = clazz;
+                    for (;;) {
+                        IClass ct = iClass2.getComponentType();
+                        if (ct == null) {
+                            if (class2.getComponentType() != null) {
+                                throw new JaninoRuntimeException("Array type/class inconsistency");
+                            }
+                            break;
+                        }
+                        iClass2 = ct;
+                        class2  = class2.getComponentType();
+                        if (class2 == null) throw new JaninoRuntimeException("Array type/class inconsistency");
+                    }
+                    if (class2.isPrimitive()) {
+                        if (!iClass2.isPrimitive()) {
+                            throw new JaninoRuntimeException("Primitive type/class inconsistency");
+                        }
+                    } else {
+                        if (iClass2.isPrimitive()) {
+                            throw new JaninoRuntimeException("Primitive type/class inconsistency");
+                        }
+                        if (((ReflectionIClass) iClass2).getClazz() != class2) {
+                            throw new JaninoRuntimeException(
+                                "Class '"
+                                + class2.getName()
+                                + "' was loaded through a different loader"
+                            );
+                        }
                     }
                     this.delegate = new Java.SimpleType(location, iClass);
                 }
