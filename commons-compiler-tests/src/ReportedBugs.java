@@ -26,14 +26,12 @@
 
 import java.io.File;
 import java.io.StringReader;
-import java.security.Permissions;
-import java.security.ProtectionDomain;
-import java.security.SecureClassLoader;
 import java.util.Collection;
 
 import org.codehaus.commons.compiler.ICompilerFactory;
 import org.codehaus.commons.compiler.IExpressionEvaluator;
 import org.codehaus.commons.compiler.ISimpleCompiler;
+import org.codehaus.commons.compiler.tests.bug180.UnaryDoubleFunction;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -728,34 +726,19 @@ class ReportedBugs extends JaninoTestSuite {
     @Test public void
     testBug180() throws Exception {
 
-        class JaninoRestrictedClassLoader extends SecureClassLoader {
-
-            Class<?>
-            defineClass(String name, byte[] b) {
-                return this.defineClass(
-                    name,
-                    b,
-                    0,
-                    b.length,
-                    new ProtectionDomain(null, new Permissions(), this, null)
-                );
-            }
-        }
-
-        System.out.println(System.getProperty("java.version"));
-        String script = (
+//        System.out.println(System.getProperty("java.version"));
+        String interfaceName = UnaryDoubleFunction.class.getCanonicalName();
+        String script        = (
             ""
             + "package test.compiled;\n"
             + "import static java.lang.Math.*;\n"
-            + "public final class JaninoCompiledFastexpr1 implements " + UnaryDoubleFunction.class.getCanonicalName() + " {\n"
+            + "public final class JaninoCompiledFastexpr1 implements " + interfaceName + " {\n"
             + "    public double evaluate(double x) {\n"
             + "        return (2 + (7-5) * 3.14159 * x + sin(0));\n"
             + "    }\n"
             + "}"
         );
         ISimpleCompiler sc = this.compilerFactory.newSimpleCompiler();
-        sc.setParentClassLoader(new JaninoRestrictedClassLoader());
         sc.cook(script);
     }
-    public interface UnaryDoubleFunction { double evaluate(double x); }
 }

@@ -24,13 +24,5 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package foo.bar;
-
-/**
- * For {@link ReportedBugs#testBug172()}.
- */
-public
-class First {
-    /** Purpose is fictitious. */
-    public int field1;
-}
+/** Declares a helper class for {@link ReportedBugs#testBug172()}. */
+package org.codehaus.commons.compiler.tests.bug180;

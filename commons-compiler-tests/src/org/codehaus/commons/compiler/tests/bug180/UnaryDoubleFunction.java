@@ -24,13 +24,12 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package foo.bar;
+package org.codehaus.commons.compiler.tests.bug180;
 
-/**
- * For {@link ReportedBugs#testBug172()}.
- */
+/** Interface needed for {@link ReportedBugs#testBug180()}. */
 public
-class First {
-    /** Purpose is fictitious. */
-    public int field1;
+interface UnaryDoubleFunction {
+
+    /** Purpose is ficticious. */
+    double evaluate(double x);
 }
