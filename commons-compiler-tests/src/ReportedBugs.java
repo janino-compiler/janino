@@ -31,7 +31,10 @@ import java.util.Collection;
 import org.codehaus.commons.compiler.ICompilerFactory;
 import org.codehaus.commons.compiler.IExpressionEvaluator;
 import org.codehaus.commons.compiler.ISimpleCompiler;
+import org.codehaus.commons.compiler.tests.bug172.First;
 import org.codehaus.commons.compiler.tests.bug180.UnaryDoubleFunction;
+import org.codehaus.commons.compiler.tests.bug63.IPred;
+import org.codehaus.commons.compiler.tests.bug63.Pred;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -247,17 +250,19 @@ class ReportedBugs extends JaninoTestSuite {
 
     @Test public void
     testBug63() throws Exception {
+        String cnIPred = IPred.class.getCanonicalName();
+        String cnPred  = Pred.class.getCanonicalName();
         this.assertClassBodyUncookable(
             ""
             + "public static boolean main() {\n"
-            + "    IPred p = new Pred();\n"
+            + "    " + cnIPred + " p = new " + cnPred + "();\n"
             + "    return !p.filter();\n" // Comile error, because 'IPred.filter()' throws 'Exception'
             + "}\n"
         );
         this.assertClassBodyMainReturnsTrue(
             ""
             + "public static boolean main() {\n"
-            + "    Pred p = new Pred();\n"
+            + "    " + cnPred + " p = new " + cnPred + "();\n"
             + "    return !p.filter();\n"
             + "}\n"
         );
@@ -704,14 +709,15 @@ class ReportedBugs extends JaninoTestSuite {
 
     @Test public void
     testBug172() throws Exception {
+        String cnFirst = First.class.getCanonicalName();
         this.assertCompilationUnitCookable(
             ""
             + "public class Base {\n"
             + "\n"
             + "    public String foo = \"foo_field\";\n"
             + "\n"
-            + "    static Object obj = new foo.bar.First();\n"
-            + "    static int ref = ((foo.bar.First) obj).field1;\n"
+            + "    static Object obj = new " + cnFirst + "();\n"
+            + "    static int ref = ((" + cnFirst + ") obj).field1;\n"
             + "}\n"
         );
     }

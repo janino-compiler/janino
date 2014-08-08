@@ -1,8 +1,9 @@
+package org.codehaus.commons.compiler.tests.bug63;
 
 /*
  * Janino - An embedded Java[TM] compiler
  *
- * Copyright (c) 2014, Arno Unkrig
+ * Copyright (c) 2001-2010, Arno Unkrig
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
@@ -24,5 +25,11 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-/** Declares a helper class for {@link ReportedBugs#testBug172()}. */
-package foo.bar;
+// CHECKSTYLE Javadoc:OFF
+
+public
+class Pred implements IPred {
+
+    @Override public boolean
+    filter() { return false; }
+}

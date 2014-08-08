@@ -1,8 +1,9 @@
+package org.codehaus.commons.compiler.tests.bug63;
 
 /*
  * Janino - An embedded Java[TM] compiler
  *
- * Copyright (c) 2014, Arno Unkrig
+ * Copyright (c) 2001-2010, Arno Unkrig
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
@@ -24,13 +25,9 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package foo.bar;
+// CHECKSTYLE Javadoc:OFF
 
-/**
- * For {@link ReportedBugs#testBug172()}.
- */
 public
-class First {
-    /** Purpose is fictitious. */
-    public int field1;
+interface IPred {
+    boolean filter() throws Exception;
 }
