@@ -31,7 +31,6 @@ import java.security.ProtectionDomain;
 import java.security.SecureClassLoader;
 import java.util.Collection;
 
-import org.codehaus.commons.compiler.CompilerFactoryFactory;
 import org.codehaus.commons.compiler.ICompilerFactory;
 import org.codehaus.commons.compiler.IExpressionEvaluator;
 import org.codehaus.commons.compiler.ISimpleCompiler;
@@ -404,7 +403,7 @@ class ReportedBugs extends JaninoTestSuite {
             + "}"
         ), "Test");
 
-        ISimpleCompiler compiler = CompilerFactoryFactory.getDefaultCompilerFactory().newSimpleCompiler();
+        ISimpleCompiler compiler = this.compilerFactory.newSimpleCompiler();
         compiler.cook(new StringReader("public class Test{static{System.setProperty(\"foo\", \"bar\");}}"));
         Class<?> testClass = compiler.getClassLoader().loadClass("Test"); // Only loads the class (JLS7 12.2).
         Assert.assertNull(System.getProperty("foo"));
@@ -490,7 +489,7 @@ class ReportedBugs extends JaninoTestSuite {
 
     @SuppressWarnings("deprecation") @Test(expected = AssertionError.class) public void
     testBug157() throws Exception {
-        IExpressionEvaluator evaluator = CompilerFactoryFactory.getDefaultCompilerFactory().newExpressionEvaluator();
+        IExpressionEvaluator evaluator = this.compilerFactory.newExpressionEvaluator();
         evaluator.setReturnType(Long.class);
     }
 
@@ -707,6 +706,27 @@ class ReportedBugs extends JaninoTestSuite {
     }
 
     @Test public void
+    testBug172() throws Exception {
+        this.assertCompilationUnitCookable(
+            ""
+            + "public class Base {\n"
+            + "\n"
+            + "    public String foo = \"foo_field\";\n"
+            + "\n"
+            + "    static Object obj = new foo.bar.First();\n"
+            + "    static int ref = ((foo.bar.First) obj).field1;\n"
+            + "}\n"
+        );
+    }
+
+    @Test public void
+    testBug179() throws Exception {
+        IExpressionEvaluator ee = this.compilerFactory.newExpressionEvaluator();
+        ee.setExpressionType(Object[].class);
+        ee.cook("new Object[] {1, \"foo\", 3, 4 }");
+    }
+
+    @Test public void
     testBug180() throws Exception {
 
         class JaninoRestrictedClassLoader extends SecureClassLoader {
@@ -734,7 +754,7 @@ class ReportedBugs extends JaninoTestSuite {
             + "    }\n"
             + "}"
         );
-        ISimpleCompiler sc = CompilerFactoryFactory.getDefaultCompilerFactory().newSimpleCompiler();
+        ISimpleCompiler sc = this.compilerFactory.newSimpleCompiler();
         sc.setParentClassLoader(new JaninoRestrictedClassLoader());
         sc.cook(script);
     }
