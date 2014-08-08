@@ -407,7 +407,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
                 if (overrideMethod) pw.print("@Override ");
                 pw.print("public ");
                 if (staticMethod) pw.print("static ");
-                pw.print(returnType.getName());
+                pw.print(returnType.getCanonicalName());
                 pw.print(" ");
                 pw.print(methodNames[i]);
                 pw.print("(");
