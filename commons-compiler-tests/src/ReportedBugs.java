@@ -622,7 +622,7 @@ class ReportedBugs extends JaninoTestSuite {
             + "                fld1.hashCode();\n"
             + "                param2.hashCode();\n"
             + "            }\n"
-            + "            final Object fld4 = fld1.hashCode() + param2.hashCode() + lvar3.hashCode() + fld4.hashCode();\n"
+            + "            final Object fld4 = fld1.hashCode() + param2.hashCode() + lvar3.hashCode();\n"
             + "            public void meth(final Object parm5) {\n"
             + "                fld1.hashCode();\n"
             + "                param2.hashCode();\n"
@@ -637,9 +637,8 @@ class ReportedBugs extends JaninoTestSuite {
             + "                        lvar3.hashCode();\n"
             + "                        fld4.hashCode();\n"
             + "                        parm5.hashCode();\n"
-            + "       //SNO            lvar6.hashCode();\n"
             + "                    }\n"
-            + "                    final Object fld7 = fld1.hashCode() + param2.hashCode() + lvar3.hashCode() + fld4.hashCode() + parm5.hashCode() + lvar5a.hashCode() + /*SNO lvar6.hashCode() +*/ fld7.hashCode();\n"
+            + "                    final Object fld7 = fld1.hashCode() + param2.hashCode() + lvar3.hashCode() + fld4.hashCode() + parm5.hashCode() + lvar5a.hashCode() /*+ SNO lvar6.hashCode()*/;\n"
             + "                    private void dummy() { throw new AssertionError(lvar5a); }\n"
             + "                    Object fld8 = new Object() {\n"
             + "                        final Object fld9 = fld1.hashCode() + /*param2.hashCode() + lvar3.hashCode() +*/ fld4.hashCode() + /*parm5.hashCode() + lvar5a.hashCode() + lvar6.hashCode()*/ + fld7.hashCode() + fld8.hashCode();\n"
@@ -723,7 +722,7 @@ class ReportedBugs extends JaninoTestSuite {
     testBug179() throws Exception {
         IExpressionEvaluator ee = this.compilerFactory.newExpressionEvaluator();
         ee.setExpressionType(Object[].class);
-        ee.cook("new Object[] {1, \"foo\", 3, 4 }");
+        ee.cook("new Object[] { 1, \"foo\", 3, 4 }");
     }
 
     @Test public void
