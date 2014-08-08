@@ -1785,6 +1785,7 @@ class UnitCompiler {
     /** Finds a local class declared in any block enclosing the given block statement. */
     private static LocalClassDeclaration
     findLocalClassDeclaration(Scope s, String name) {
+        if (s instanceof CompilationUnit) return null;
         for (;;) {
             Scope es = s.getEnclosingScope();
             if (es instanceof CompilationUnit) break;
@@ -4074,7 +4075,8 @@ class UnitCompiler {
                     );
                 }
                 optionalEnclosingInstance = null;
-            } else {
+            } else
+            {
 
                 // Determine the type of the enclosing instance for the new object.
                 IClass optionalOuterIClass = nci.iClass.getDeclaringIClass();
@@ -5158,10 +5160,69 @@ class UnitCompiler {
     }
     private IClass
     getType2(ReferenceType rt) throws CompileException {
+        String[] identifiers = rt.identifiers;
+
+        IClass result = this.getReferenceType(
+            rt.getLocation(),
+            rt.getEnclosingScope(),
+            identifiers,
+            identifiers.length
+        );
+        if (result == null) {
+            this.compileError("Reference type '" + rt + "' not found", rt.getLocation());
+            return this.iClassLoader.TYPE_java_lang_Object;
+        }
+
+        return result;
+    }
+
+    /** @return The resolved {@link IClass}, or {@code null} */
+    private IClass
+    getReferenceType(Location location, Scope scope, String[] identifiers, int n) throws CompileException {
+
+        if (n == 1) {
+            return this.getReferenceType(location, identifiers[0], scope);
+        }
+
+        // JLS7 6.5.5.1   Unnamed package member type name (one identifier).
+        // JLS7 6.5.5.2.1 Qualified type name (two or more identifiers).
+        {
+            String className = Java.join(identifiers, ".", 0, n);
+            IClass result    = this.findTypeByName(location, className);
+            if (result != null) return result;
+        }
+
+        // JLS7 6.5.5.2.2 referenceType '.' memberTypeName
+        if (n >= 2) {
+            IClass enclosingType = this.getReferenceType(location, scope, identifiers, n - 1);
+            if (enclosingType != null) {
+                String memberTypeName = identifiers[n - 1];
+                IClass memberType     = this.findMemberType(enclosingType, memberTypeName, location);
+                if (memberType == null) {
+                    this.compileError(
+                        "'" + enclosingType + "' declares no member type '" + memberTypeName + "'",
+                        location
+                    );
+                    return this.iClassLoader.TYPE_java_lang_Object;
+                }
+                return memberType;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * JLS7 6.5.5.1 Simple type name (single identifier)
+     *
+     * @return The resolved {@link IClass}, or {@code null}
+     */
+    private IClass
+    getReferenceType(Location location, String simpleTypeName, Scope scope) throws CompileException {
         BlockStatement  scopeBlockStatement  = null;
         TypeDeclaration scopeTypeDeclaration = null;
         CompilationUnit scopeCompilationUnit;
-        for (Scope s = rt.getEnclosingScope();; s = s.getEnclosingScope()) {
+        for (Scope s = scope.getEnclosingScope();; s = s.getEnclosingScope()) {
             if (s instanceof BlockStatement && scopeBlockStatement == null) {
                 scopeBlockStatement = (BlockStatement) s;
             }
@@ -5174,178 +5235,145 @@ class UnitCompiler {
             }
         }
 
-        if (rt.identifiers.length == 1) {
-            // 6.5.5.1 Simple type name (single identifier).
-            String simpleTypeName = rt.identifiers[0];
-
-            // JLS7 ??? Type variable.
-            if (scopeTypeDeclaration instanceof NamedTypeDeclaration) {
-                TypeParameter[]
-                optionalTypeParameters = ((NamedTypeDeclaration) scopeTypeDeclaration).getOptionalTypeParameters();
-                if (optionalTypeParameters != null) {
-                    for (TypeParameter tp : optionalTypeParameters) {
-                        if (tp.name.equals(simpleTypeName)) {
-                            IClass[] boundTypes;
-                            if (tp.optionalBound == null) {
-                                boundTypes = new IClass[] { this.iClassLoader.TYPE_java_lang_Object };
-                            } else {
-                                boundTypes = new IClass[tp.optionalBound.length];
-                                for (int i = 0; i < boundTypes.length; i++) {
-                                    boundTypes[i] = this.getType(tp.optionalBound[i]);
-                                }
+        // JLS7 ??? Type variable.
+        if (scopeTypeDeclaration instanceof NamedTypeDeclaration) {
+            TypeParameter[]
+            optionalTypeParameters = ((NamedTypeDeclaration) scopeTypeDeclaration).getOptionalTypeParameters();
+            if (optionalTypeParameters != null) {
+                for (TypeParameter tp : optionalTypeParameters) {
+                    if (tp.name.equals(simpleTypeName)) {
+                        IClass[] boundTypes;
+                        if (tp.optionalBound == null) {
+                            boundTypes = new IClass[] { this.iClassLoader.TYPE_java_lang_Object };
+                        } else {
+                            boundTypes = new IClass[tp.optionalBound.length];
+                            for (int i = 0; i < boundTypes.length; i++) {
+                                boundTypes[i] = this.getType(tp.optionalBound[i]);
                             }
-                            return boundTypes[0];
                         }
+                        return boundTypes[0];
                     }
                 }
             }
+        }
 
-            // 6.5.5.1.1 Local class.
-            {
-                LocalClassDeclaration lcd = UnitCompiler.findLocalClassDeclaration(
-                    rt.getEnclosingScope(),
-                    simpleTypeName
-                );
-                if (lcd != null) return this.resolve(lcd);
-            }
+        // 6.5.5.1.1 Local class.
+        {
+            LocalClassDeclaration lcd = UnitCompiler.findLocalClassDeclaration(
+                scope,
+                simpleTypeName
+            );
+            if (lcd != null) return this.resolve(lcd);
+        }
 
-            // 6.5.5.1.2 Member type.
-            if (scopeTypeDeclaration != null) { // If enclosed by another type declaration...
-                for (
-                    Scope s = scopeTypeDeclaration;
-                    !(s instanceof CompilationUnit);
-                    s = s.getEnclosingScope()
-                ) {
-                    if (s instanceof TypeDeclaration) {
-                        IClass mt = this.findMemberType(
-                            this.resolve((AbstractTypeDeclaration) s),
-                            simpleTypeName,
-                            rt.getLocation()
-                        );
-                        if (mt != null) return mt;
-                    }
+        // 6.5.5.1.2 Member type.
+        if (scopeTypeDeclaration != null) { // If enclosed by another type declaration...
+            for (
+                Scope s = scopeTypeDeclaration;
+                !(s instanceof CompilationUnit);
+                s = s.getEnclosingScope()
+            ) {
+                if (s instanceof TypeDeclaration) {
+                    IClass mt = this.findMemberType(
+                        this.resolve((AbstractTypeDeclaration) s),
+                        simpleTypeName,
+                        location
+                    );
+                    if (mt != null) return mt;
                 }
             }
+        }
 
-            // 6.5.5.1.4a Single-type import.
-            {
-                IClass importedClass = this.importSingleType(simpleTypeName, rt.getLocation());
-                if (importedClass != null) return importedClass;
-            }
+        // 6.5.5.1.4a Single-type import.
+        {
+            IClass importedClass = this.importSingleType(simpleTypeName, location);
+            if (importedClass != null) return importedClass;
+        }
 
-            // 6.5.5.1.4b Type declared in same compilation unit.
-            {
-                PackageMemberTypeDeclaration pmtd = (
-                    scopeCompilationUnit.getPackageMemberTypeDeclaration(simpleTypeName)
-                );
-                if (pmtd != null) return this.resolve(pmtd);
-            }
+        // 6.5.5.1.4b Type declared in same compilation unit.
+        {
+            PackageMemberTypeDeclaration pmtd = (
+                scopeCompilationUnit.getPackageMemberTypeDeclaration(simpleTypeName)
+            );
+            if (pmtd != null) return this.resolve(pmtd);
+        }
 
-            // 6.5.5.1.5 Type declared in other compilation unit of same package.
-            {
-                String pkg = (
-                    scopeCompilationUnit.optionalPackageDeclaration == null ? null :
-                    scopeCompilationUnit.optionalPackageDeclaration.packageName
-                );
-                String className = pkg == null ? simpleTypeName : pkg + "." + simpleTypeName;
-                IClass result    = this.findTypeByName(rt.getLocation(), className);
-                if (result != null) return result;
-            }
+        // 6.5.5.1.5 Type declared in other compilation unit of same package.
+        {
+            String pkg = (
+                scopeCompilationUnit.optionalPackageDeclaration == null ? null :
+                scopeCompilationUnit.optionalPackageDeclaration.packageName
+            );
+            String className = pkg == null ? simpleTypeName : pkg + "." + simpleTypeName;
+            IClass result    = this.findTypeByName(location, className);
+            if (result != null) return result;
+        }
 
-            // 6.5.5.1.6 Type-import-on-demand declaration.
-            {
-                IClass importedClass = this.importTypeOnDemand(simpleTypeName, rt.getLocation());
-                if (importedClass != null) return importedClass;
-            }
+        // 6.5.5.1.6 Type-import-on-demand declaration.
+        {
+            IClass importedClass = this.importTypeOnDemand(simpleTypeName, location);
+            if (importedClass != null) return importedClass;
+        }
 
-            // JLS7 6.5.2.BL1.B2: Type imported through single static import.
-            {
-                List<Object/*IField+IMethod+IClass*/> l = (List) this.singleStaticImports.get(simpleTypeName);
-                if (l != null) {
-                    IClass importedMemberType = null;
-                    for (Iterator<Object/*IField+IMethod+IClass*/> it = l.iterator(); it.hasNext();) {
-                        Object o = it.next();
-                        if (o instanceof IClass) {
-                            IClass mt = (IClass) o;
-                            if (!this.isAccessible(mt, scopeBlockStatement)) continue;
-                            if (importedMemberType != null && importedMemberType != mt) {
-                                this.compileError(
-                                    "Ambiguous static imports: \""
-                                    + importedMemberType.toString()
-                                    + "\" vs. \""
-                                    + mt.toString()
-                                    + "\""
-                                );
-                            }
-                            importedMemberType = mt;
-                        }
-                    }
-                    if (importedMemberType != null) return importedMemberType;
-                }
-            }
-
-            // JLS7 6.5.2.BL1.B2: Type imported through static-import-on-demand.
-            {
+        // JLS7 6.5.2.BL1.B2: Type imported through single static import.
+        {
+            List<Object/*IField+IMethod+IClass*/> l = (List) this.singleStaticImports.get(simpleTypeName);
+            if (l != null) {
                 IClass importedMemberType = null;
-                for (IClass ic : this.staticImportsOnDemand) {
-                    IClass[] memberTypes = ic.getDeclaredIClasses();
-                    for (IClass mt : memberTypes) {
+                for (Iterator<Object/*IField+IMethod+IClass*/> it = l.iterator(); it.hasNext();) {
+                    Object o = it.next();
+                    if (o instanceof IClass) {
+                        IClass mt = (IClass) o;
                         if (!this.isAccessible(mt, scopeBlockStatement)) continue;
-                        if (mt.getDescriptor().endsWith('$' + simpleTypeName + ';')) {
-                            if (importedMemberType != null) {
-                                this.compileError(
-                                    "Ambiguous static imports: \""
-                                    + importedMemberType.toString()
-                                    + "\" vs. \""
-                                    + mt.toString()
-                                    + "\""
-                                );
-                            }
-                            importedMemberType = mt;
+                        if (importedMemberType != null && importedMemberType != mt) {
+                            this.compileError(
+                                "Ambiguous static imports: \""
+                                + importedMemberType.toString()
+                                + "\" vs. \""
+                                + mt.toString()
+                                + "\""
+                            );
                         }
+                        importedMemberType = mt;
                     }
                 }
                 if (importedMemberType != null) return importedMemberType;
             }
-
-            // 6.5.5.1.8 Give up.
-            this.compileError("Cannot determine simple type name \"" + simpleTypeName + "\"", rt.getLocation());
-            return this.iClassLoader.TYPE_java_lang_Object;
-        } else {
-
-            // 6.5.5.2 Qualified type name (two or more identifiers).
-            Atom q = this.reclassifyName(
-                rt.getLocation(),
-                rt.getEnclosingScope(),
-                rt.identifiers,
-                rt.identifiers.length - 1
-            );
-
-            // 6.5.5.2.1 PACKAGE.CLASS
-            if (q instanceof Package) {
-                String className = Java.join(rt.identifiers, ".");
-                IClass result    = this.findTypeByName(rt.getLocation(), className);
-                if (result != null) return result;
-
-                this.compileError("Class \"" + className + "\" not found", rt.getLocation());
-                return this.iClassLoader.TYPE_java_lang_Object;
-            }
-
-            // 6.5.5.2.2 CLASS.CLASS (member type)
-            String   memberTypeName = rt.identifiers[rt.identifiers.length - 1];
-            IClass[] types          = this.getType(this.toTypeOrCompileException(q)).findMemberType(memberTypeName);
-            if (types.length == 1) return types[0];
-            if (types.length == 0) {
-                this.compileError("\"" + q + "\" declares no member type \"" + memberTypeName + "\"", rt.getLocation());
-            } else
-            {
-                this.compileError(
-                    "\"" + q + "\" and its supertypes declare more than one member type \"" + memberTypeName + "\"",
-                    rt.getLocation()
-                );
-            }
-            return this.iClassLoader.TYPE_java_lang_Object;
         }
+
+        // JLS7 6.5.2.BL1.B2: Type imported through static-import-on-demand.
+        {
+            IClass importedMemberType = null;
+            for (IClass ic : this.staticImportsOnDemand) {
+                IClass[] memberTypes = ic.getDeclaredIClasses();
+                for (IClass mt : memberTypes) {
+                    if (!this.isAccessible(mt, scopeBlockStatement)) continue;
+                    if (mt.getDescriptor().endsWith('$' + simpleTypeName + ';')) {
+                        if (importedMemberType != null) {
+                            this.compileError(
+                                "Ambiguous static imports: \""
+                                + importedMemberType.toString()
+                                + "\" vs. \""
+                                + mt.toString()
+                                + "\""
+                            );
+                        }
+                        importedMemberType = mt;
+                    }
+                }
+            }
+            if (importedMemberType != null) return importedMemberType;
+        }
+
+        // Unnamed package member type.
+        {
+            IClass result = this.findTypeByName(location, simpleTypeName);
+            if (result != null) return result;
+        }
+
+        // 6.5.5.1.8 Give up.
+        this.compileError("Cannot determine simple type name \"" + simpleTypeName + "\"", location);
+        return this.iClassLoader.TYPE_java_lang_Object;
     }
 
     private IClass
