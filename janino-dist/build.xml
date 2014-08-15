@@ -51,7 +51,15 @@
 		</copy>
 		<jar jarfile="build/commons-compiler.jar" filesonly="true">
 			<manifest>
-				<attribute name="Specification-Version" value="${version}"/>
+				<attribute name="Specification-Version"  value="${version}"/>
+				<!-- OSGI info, see JANINO-181. -->
+				<attribute name="Bundle-Name"            value="Commons-Compiler"/>
+				<attribute name="Bundle-SymbolicName"    value="org.codehaus.janino.commons-compiler;singleton:=true"/>
+				<attribute name="Bundle-Version"         value="${version}"/>
+				<attribute name="Bundle-ManifestVersion" value="2"/>
+				<attribute name="Bundle-License"         value="http://dist.codehaus.org/janino/new_bsd_license.txt"/>
+				<attribute name="Bundle-Description"     value="Janino is a super-small, super-fast Java compiler."/>
+				<attribute name="Export-Package"         value="org.codehaus.commons.compiler, org.codehaus.commons.compiler.samples"/>
 			</manifest>
 			<fileset dir="build/bin-commons-compiler"/>
 		</jar>
@@ -87,6 +95,15 @@
 			<manifest>
 				<attribute name="Implementation-Version" value="${version}"/>
 				<attribute name="Implementation-URL"     value="http://janino.net"/>
+				<!-- OSGI info, see JANINO-181. -->
+				<attribute name="Bundle-Name"            value="Janino"/>
+				<attribute name="Bundle-SymbolicName"    value="org.cohehaus.janino;singleton:=true"/>
+				<attribute name="Bundle-Version"         value="${version}"/>
+				<attribute name="Bundle-ManifestVersion" value="2"/>
+				<attribute name="Bundle-License"         value="http://dist.codehaus.org/janino/new_bsd_license.txt"/>
+				<attribute name="Bundle-Description"     value="Janino is a super-small, super-fast Java compiler."/>
+				<attribute name="Export-Package"         value="org.codehaus.janino, org.codehaus.janino.samples, org.codehaus.janino.tools, org.codehaus.janino.util"/>
+				<attribute name="Require-Bundle"         value="org.codehaus.janino.commons-compiler"/>
 			</manifest>
 			<fileset dir="build/bin-janino"/>
 		</jar>
@@ -137,6 +154,15 @@
 			<manifest>
 				<attribute name="Implementation-Version" value="${version}"/>
 				<attribute name="Implementation-URL"     value="http://janino.net"/>
+				<!-- OSGI info, see JANINO-181. -->
+				<attribute name="Bundle-Name"            value="Commons-Compiler-Jdk"/>
+				<attribute name="Bundle-SymbolicName"    value="org.codehaus.janino.commons-compiler-jdk;singleton:=true"/>
+				<attribute name="Bundle-Version"         value="${version}"/>
+				<attribute name="Bundle-ManifestVersion" value="2"/>
+				<attribute name="Bundle-License"         value="http://dist.codehaus.org/janino/new_bsd_license.txt"/>
+				<attribute name="Bundle-Description"     value="Janino is a super-small, super-fast Java compiler."/>
+				<attribute name="Export-Package"         value="org.codehaus.commons.compiler.jdk, org.codehaus.commons.io"/>
+				<attribute name="Require-Bundle"         value="org.codehaus.janino.commons-compiler"/>
 			</manifest>
 			<fileset dir="build/bin-commons-compiler-jdk"/>
 			<fileset dir="build/bin-de.unkrig.commons.nullanalysis"/>
