@@ -408,6 +408,6 @@
 
 		<echo message="*** The next step is to officially release the new version on" />
 		<echo message="***    https://jira.codehaus.org/plugins/servlet/project-config/JANINO/versions" />
-		<echo message="*** Then execute target 'stage', to stage the release on codehaus's NEXUS." />
+		<echo message="*** Execute target 'stage' to stage the release on codehaus's NEXUS." />
 	</target>
 </project>
