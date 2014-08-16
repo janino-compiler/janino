@@ -47,5 +47,5 @@ interface Producer<T> {
      *
      * @return the next object or <code>null</code> to indicate that no more objects can be produced
      */
-    Object produce();
+    T produce();
 }
