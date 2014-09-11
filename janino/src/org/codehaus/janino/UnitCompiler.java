@@ -47,6 +47,7 @@ import org.codehaus.commons.compiler.ErrorHandler;
 import org.codehaus.commons.compiler.Location;
 import org.codehaus.commons.compiler.UncheckedCompileException;
 import org.codehaus.commons.compiler.WarningHandler;
+import org.codehaus.janino.CodeContext.Inserter;
 import org.codehaus.janino.IClass.IConstructor;
 import org.codehaus.janino.IClass.IField;
 import org.codehaus.janino.IClass.IInvocable;
@@ -3563,18 +3564,36 @@ class UnitCompiler {
         IClass expressionType;
         if (mhsType == rhsType) {
 
-            // JLS7 15.25.1.1
+            // JLS7 15.25, list 1, bullet 1: "b ? T : T => T"
             expressionType = mhsType;
         } else
-        if (mhsType.isPrimitiveNumeric() && rhsType.isPrimitiveNumeric()) {
+        if (this.tryUnboxingConversion(ce.mhs, mhsType, rhsType, mhsConvertInserter)) {
 
-            // JLS7 15.25.1.2
+            // JLS7 15.25, list 1, bullet 2: "b ? Integer : int => int"
+            expressionType = rhsType;
+        } else
+        if (this.tryUnboxingConversion(ce.rhs, rhsType, mhsType, rhsConvertInserter)) {
 
-            // TODO JLS7 15.25.1.2.1
+            // JLS7 15.25, list 1, bullet 2: "b ? int : Integer => int"
+            expressionType = mhsType;
+        } else
+        if (this.getConstantValue(ce.mhs) == null && !rhsType.isPrimitive()) {
 
-            // TODO JLS7 15.25.1.2.2
+            // JLS7 15.25, list 1, bullet 3: "b ? null : ReferenceType => ReferenceType"
+            expressionType = rhsType;
+        } else
+        if (!mhsType.isPrimitive() && this.getConstantValue(ce.rhs) == null) {
 
-            // JLS7 15.25.1.2.3
+            // JLS7 15.25, list 1, bullet 3: "b ? ReferenceType : null => ReferenceType"
+            expressionType = mhsType;
+        } else
+        if (this.isConvertibleToPrimitiveNumeric(mhsType) && this.isConvertibleToPrimitiveNumeric(rhsType)) {
+
+            // TODO JLS7 15.25, list 1, bullet 4, bullet 1: "b ? Byte : Short => short"
+            // TODO JLS7 15.25, list 1, bullet 4, bullet 2: "b ? 127 : byte => byte"
+            // TODO JLS7 15.25, list 1, bullet 4, bullet 3: "b ? 127 : byte => byte"
+
+            // JLS7 15.25, list 1, bullet 4, bullet 4: "b ? Integer : Double => double"
             expressionType = this.binaryNumericPromotion(
                 ce,                 // locatable
                 mhsType,            // type1
@@ -3583,23 +3602,16 @@ class UnitCompiler {
                 rhsConvertInserter  // convertInserter2
             );
         } else
-        if (this.getConstantValue(ce.mhs) == null && !rhsType.isPrimitive()) {
-
-            // JLS7 15.25.1.3 (null : reference)
-            expressionType = rhsType;
-        } else
-        if (!mhsType.isPrimitive() && this.getConstantValue(ce.rhs) == null) {
-
-            // JLS7 15.25.1.3 (reference : null)
-            expressionType = mhsType;
-        } else
         if (!mhsType.isPrimitive() && !rhsType.isPrimitive()) {
+
+            // JLS7 15.25, list 1, bullet 5: "b ? Base : Derived => Base"
             if (mhsType.isAssignableFrom(rhsType)) {
                 expressionType = mhsType;
             } else
             if (rhsType.isAssignableFrom(mhsType)) {
                 expressionType = rhsType;
-            } else {
+            } else
+            {
                 this.compileError(
                     "Reference types \"" + mhsType + "\" and \"" + rhsType + "\" don't match",
                     ce.getLocation()
@@ -3814,7 +3826,7 @@ class UnitCompiler {
             || this.tryWideningReferenceConversion(vt, tt)
             || this.tryNarrowingReferenceConversion(c, vt, tt)
             || this.tryBoxingConversion(c, vt, tt)
-            || this.tryUnboxingConversion(c, vt, tt)
+            || this.tryUnboxingConversion(c, vt, tt, null)
         ) return tt;
 
         // JAVAC obviously also permits 'boxing conversion followed by widening reference conversion' and 'unboxing
@@ -5444,32 +5456,41 @@ class UnitCompiler {
 
         if (mhsType == rhsType) {
 
-            // JLS7 15.25.1.1
+            // JLS7 15.25, list 1, bullet 1: "b ? T : T => T"
             return mhsType;
         } else
-        if (mhsType.isPrimitiveNumeric() && rhsType.isPrimitiveNumeric()) {
+        if (this.isUnboxingConvertible(mhsType) == rhsType) {
 
-            // JLS7 15.25.1.2
+            // JLS7 15.25, list 1, bullet 2: "b ? Integer : int => int"
+            return rhsType;
+        } else
+        if (this.isUnboxingConvertible(rhsType) == mhsType) {
 
-            // TODO JLS7 15.25.1.2.1
-
-            // TODO JLS7 15.25.1.2.2
-
-            // JLS7 15.25.1.2.3
-
-            return this.binaryNumericPromotionType(ce, mhsType, rhsType);
+            // JLS7 15.25, list 1, bullet 2: "b ? int : Integer => int"
+            return mhsType;
         } else
         if (this.getConstantValue(ce.mhs) == null && !rhsType.isPrimitive()) {
 
-            // JLS7 15.25.1.3 (null : reference)
+            // JLS7 15.25, list 1, bullet 3: "b ? null : ReferenceType => ReferenceType"
             return rhsType;
         } else
         if (!mhsType.isPrimitive() && this.getConstantValue(ce.rhs) == null) {
 
-            // JLS7 15.25.1.3 (reference : null)
+            // JLS7 15.25, list 1, bullet 3: "b ? ReferenceType : null => ReferenceType"
             return mhsType;
         } else
+        if (this.isConvertibleToPrimitiveNumeric(mhsType) && this.isConvertibleToPrimitiveNumeric(rhsType)) {
+
+            // TODO JLS7 15.25, list 1, bullet 4, bullet 1: "b ? Byte : Short => short"
+            // TODO JLS7 15.25, list 1, bullet 4, bullet 2: "b ? 127 : byte => byte"
+            // TODO JLS7 15.25, list 1, bullet 4, bullet 3: "b ? 127 : byte => byte"
+
+            // JLS7 15.25, list 1, bullet 4, bullet 4: "b ? Integer : Double => double"
+            return this.binaryNumericPromotionType(ce, this.getUnboxedType(mhsType), this.getUnboxedType(rhsType));
+        } else
         if (!mhsType.isPrimitive() && !rhsType.isPrimitive()) {
+
+            // JLS7 15.25, list 1, bullet 5: "b ? Base : Derived => Base"
             if (mhsType.isAssignableFrom(rhsType)) {
                 return mhsType;
             } else
@@ -5587,6 +5608,7 @@ class UnitCompiler {
         return this.iClassLoader.TYPE_java_lang_Object;
     }
 
+    /** @return Iff {@code type} is a primitive wrapper type, the unwrapped {@code type}, otherwise {@code type} */
     private IClass
     getUnboxedType(IClass type) {
         IClass c = this.isUnboxingConvertible(type);
@@ -9313,7 +9335,7 @@ class UnitCompiler {
     }
 
     /**
-     * Implements "binary numeric promotion" (5.6.2)
+     * Implements "binary numeric promotion" (5.6.2), which may perform unboxing conversion.
      *
      * @return The promoted type.
      */
@@ -9744,7 +9766,7 @@ class UnitCompiler {
         );
     }
 
-    /** @return The unboxed type or {@code null} */
+    /** @return Iff {@code sourceType} is a primitive wrapper type, the unboxed type, otherwise {@code null} */
     private IClass
     isUnboxingConvertible(IClass sourceType) {
         IClassLoader icl = this.iClassLoader;
@@ -9759,13 +9781,42 @@ class UnitCompiler {
         return null;
     }
 
+    /**
+     * @return Whether the {@code sourceType} is a primitive numeric type, or a wrapper type of a primitive numeric
+     *         type
+     */
     private boolean
-    tryUnboxingConversion(Locatable locatable, IClass sourceType, IClass targetType) {
+    isConvertibleToPrimitiveNumeric(IClass sourceType) {
+        if (sourceType.isPrimitiveNumeric()) return true;
+        IClass unboxedType = this.isUnboxingConvertible(sourceType);
+        return unboxedType != null && unboxedType.isPrimitiveNumeric();
+    }
+
+    private boolean
+    tryUnboxingConversion(Locatable locatable, IClass sourceType, IClass targetType, Inserter optionalInserter) {
         if (this.isUnboxingConvertible(sourceType) == targetType) {
-            this.unboxingConversion(locatable, sourceType, targetType);
+            this.unboxingConversion(locatable, sourceType, targetType, optionalInserter);
             return true;
         }
         return false;
+    }
+
+    /**
+     * @param targetType a primitive type (except VOID)
+     * @param sourceType the corresponding wrapper type
+     */
+    private void
+    unboxingConversion(Locatable locatable, IClass sourceType, IClass targetType, Inserter optionalInserter) {
+        if (optionalInserter == null) {
+            this.unboxingConversion(locatable, sourceType, targetType);
+        } else {
+            this.codeContext.pushInserter(optionalInserter);
+            try {
+                this.unboxingConversion(locatable, sourceType, targetType);
+            } finally {
+                this.codeContext.popInserter();
+            }
+        }
     }
 
     /**
