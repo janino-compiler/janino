@@ -747,4 +747,9 @@ class ReportedBugs extends JaninoTestSuite {
         ISimpleCompiler sc = this.compilerFactory.newSimpleCompiler();
         sc.cook(script);
     }
+
+    @Test public void
+    testBug182() throws Exception {
+        this.assertExpressionCookable("System.currentTimeMillis() == 7 ? Double.valueOf(1) : Float.valueOf(2)");
+    }
 }
