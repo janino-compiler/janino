@@ -27,16 +27,12 @@
 package org.codehaus.commons.compiler.jdk;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.Reader;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Collections;
-import java.util.Set;
 
 import javax.tools.Diagnostic;
 import javax.tools.DiagnosticListener;
@@ -119,63 +115,6 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
         final JavaFileManager fileManager = new ForwardingJavaFileManager<JavaFileManager>(
             new ByteArrayJavaFileManager<JavaFileManager>(fm)
         ) {
-
-            @Override public String
-            inferBinaryName(Location location, JavaFileObject file) {
-                String name = file.getName();
-                if (name.contains("Class2")) {
-                    System.currentTimeMillis();
-                }
-                String res = super.inferBinaryName(location, file);
-                return res;
-            }
-
-            @Override public Iterable<JavaFileObject>
-            list(final Location location, final String packageName, final Set<Kind> kinds, final boolean recurse)
-            throws IOException {
-                if ("pkg2".equals(packageName)) {
-                    final URL url = SimpleCompiler.this.parentClassLoader.getResource("pkg2/Class2.class");
-                    URI       uri;
-                    try {
-                        uri = url.toURI();
-                    } catch (URISyntaxException use) {
-                        throw new IOException(use);
-                    }
-                    return Collections.<JavaFileObject>singletonList(new SimpleJavaFileObject(uri, Kind.CLASS) {
-
-                        @Override public boolean
-                        isNameCompatible(String simpleName, Kind kind) { return true; }
-
-                        @Override public InputStream
-                        openInputStream() throws IOException {
-                            return url.openStream();
-                        }
-
-                        @Override public OutputStream
-                        openOutputStream() throws IOException {
-                            throw new UnsupportedOperationException();
-                        }
-
-                        @Override public Reader
-                        openReader(boolean ignoreEncodingErrors)
-                        throws IOException { throw new UnsupportedOperationException(); }
-
-                        @Override public CharSequence
-                        getCharContent(boolean ignoreEncodingErrors) throws IOException {
-                            throw new UnsupportedOperationException();
-                        }
-
-                        @Override public String
-                        getName() {
-                            return "pkg2/Class2";
-                        }
-
-                        @Override public String
-                        toString() { return String.valueOf(this.uri); }
-                    });
-                }
-                return super.list(location, packageName, kinds, recurse);
-            }
 
             @Override public ClassLoader
             getClassLoader(javax.tools.JavaFileManager.Location location) {
