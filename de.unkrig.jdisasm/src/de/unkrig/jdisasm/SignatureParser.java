@@ -33,8 +33,8 @@ import java.util.Iterator;
 import java.util.List;
 
 import de.unkrig.commons.nullanalysis.Nullable;
-import de.unkrig.io.charstream.StringCharStream;
-import de.unkrig.io.charstream.UnexpectedCharacterException;
+import de.unkrig.jdisasm.io.charstream.StringCharStream;
+import de.unkrig.jdisasm.io.charstream.UnexpectedCharacterException;
 
 /**
  * Helper class for parsing signatures and descriptors. See

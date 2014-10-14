@@ -24,8 +24,22 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-/**
- * A {@link CharStream} is useful for implementing scanners: It provides a one-character lookahead and convenience
- * methods for handling characters.
- */
-@de.unkrig.commons.nullanalysis.NotNullByDefault package de.unkrig.io.charstream;
+package de.unkrig.jdisasm.io.charstream;
+
+import java.io.IOException;
+
+/** Indicates that {@link CharStream#read} did not find the character(s) it expected. */
+public // SUPPRESS CHECKSTYLE CauseParameterInExceptionCheck
+class UnexpectedCharacterException extends IOException {
+
+    private static final long serialVersionUID = 1L;
+
+    public
+    UnexpectedCharacterException() {
+    }
+
+    public
+    UnexpectedCharacterException(String message) {
+        super(message);
+    }
+}

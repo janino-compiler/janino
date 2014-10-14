@@ -24,7 +24,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package de.unkrig.io.charstream;
+package de.unkrig.jdisasm.io.charstream;
 
 import java.io.EOFException;
 import java.io.IOException;
