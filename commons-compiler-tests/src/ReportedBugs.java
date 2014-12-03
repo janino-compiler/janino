@@ -651,7 +651,7 @@ class ReportedBugs extends JaninoTestSuite {
             + "    // Unknown var or type  lvar3.hashCode();\n"
             + "                            fld4.hashCode();\n"
             + "    // Unknown var or type  parm5.hashCode();\n"
-            + "    /* Unknown var or type*/  lvar5a.hashCode();\n"
+            + "    // Unknown var or type  lvar5a.hashCode();\n"
             + "    // Unknown var or type  lvar6.hashCode();\n"
             + "                            fld7.hashCode();\n"
             + "                            fld8.hashCode();\n"
@@ -751,5 +751,27 @@ class ReportedBugs extends JaninoTestSuite {
     @Test public void
     testBug182() throws Exception {
         this.assertExpressionCookable("System.currentTimeMillis() == 7 ? Double.valueOf(1) : Float.valueOf(2)");
+    }
+
+    @Test public void
+    testBug184() throws Exception {
+        this.assertCompilationUnitCookable(
+            ""
+            + "public class Test {\n"
+            + "    public void foo() {\n"
+//            + "        byte a = 1;\n"
+//            + "        if (true) {\n"
+            + "            Label: {\n"
+            + "                if (false) {\n"
+            + "                    break Label;\n"
+            + "                }\n"
+            + "                if (true) {\n"
+            + "                    break Label;\n"
+            + "                }\n"
+            + "            }\n"
+//            + "        }\n"
+            + "    }\n"
+            + "}\n"
+        );
     }
 }
