@@ -383,8 +383,8 @@ class UnparseTests {
             { new FloatingPointLiteral(null, "-0.0F"), "-0.0F" },
         };
         for (Object[] test : tests) {
-            Atom   expr     = (Atom)   test[0];
-            String expected = (String) test[1];
+            final Atom   expr     = (Atom)   test[0];
+            final String expected = (String) test[1];
 
             StringWriter   sw = new StringWriter();
             UnparseVisitor uv = new UnparseVisitor(sw);
