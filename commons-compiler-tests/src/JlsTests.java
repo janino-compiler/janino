@@ -1092,8 +1092,74 @@ class JlsTests extends JaninoTestSuite {
         this.assertExpressionEvaluatesTrue("true || new Boolean(true)");
     }
 
+    /** 15.25 Conditional Operator ? : */
+    @Test public void
+    test_15_25__ConditionalOperator() throws Exception {
+
+        this.assertExpressionEvaluatesTrue("7 == (true ? 7 : 9)");
+        this.assertExpressionEvaluatesTrue("9 == (Boolean.FALSE ? 7 : 9)");
+        this.assertExpressionUncookable("1 ? 2 : 3)");
+        this.assertExpressionUncookable("true ? 2 : System.currentTimeMillis())");
+
+        // List 1, bullet 1
+        this.assertExpressionEvaluatesTrue("(true ? 2 : 3) == 2");
+        this.assertExpressionEvaluatesTrue("(true ? null : null) == null");
+
+        // List 1, bullet 2
+        this.assertExpressionEvaluatesTrue("(true ? 'a' : Character.valueOf('b')) == 'a'");
+
+        // List 1, bullet 3
+        this.assertExpressionEvaluatesTrue("(true ? \"\" : null).getClass() == String.class");
+
+        // List 1, bullet 4, bullet 1
+        this.assertScriptExecutable("short s = true ? (byte) 1 : (short) 2;");
+
+        // List 1, bullet 4, bullet 2
+        this.assertScriptUncookable("byte b = false ? (byte) 1 : -129;");
+        this.assertScriptExecutable("byte b = false ? (byte) 1 : -128;");
+        this.assertScriptExecutable("byte b = false ? (byte) 1 : 127;");
+        this.assertScriptUncookable("byte b = false ? (byte) 1 : 128;");
+        this.assertScriptUncookable("short s = false ? (short) 1 : -32769;");
+        this.assertScriptExecutable("short s = false ? (short) 1 : -32768;");
+        this.assertScriptExecutable("short s = false ? (short) 1 : 32767;");
+        this.assertScriptUncookable("short s = false ? (short) 1 : 32768;");
+        this.assertScriptUncookable("char c = false ? 'A' : -1;");
+        this.assertScriptExecutable("char c = false ? 'A' : 0;");
+        this.assertScriptExecutable("char c = false ? 'A' : 65535;");
+        this.assertScriptUncookable("char c = false ? 'A' : 65536;");
+
+        // List 1, bullet 4, bullet 3
+        this.assertScriptUncookable("byte b = false ? Byte.valueOf((byte) 1) : -129;");
+        this.assertScriptExecutable("byte b = false ? Byte.valueOf((byte) 1) : -128;");
+        this.assertScriptExecutable("byte b = false ? Byte.valueOf((byte) 1) : 127;");
+        this.assertScriptUncookable("byte b = false ? Byte.valueOf((byte) 1) : 128;");
+        this.assertScriptUncookable("short s = false ? Short.valueOf((short) 1) : -32769;");
+        this.assertScriptExecutable("short s = false ? Short.valueOf((short) 1) : -32768;");
+        this.assertScriptExecutable("short s = false ? Short.valueOf((short) 1) : 32767;");
+        this.assertScriptUncookable("short s = false ? Short.valueOf((short) 1) : 32768;");
+        this.assertScriptUncookable("char c = false ? Character.valueOf('A') : -1;");
+        this.assertScriptExecutable("char c = false ? Character.valueOf('A') : 0;");
+        this.assertScriptExecutable("char c = false ? Character.valueOf('A') : 65535;");
+        this.assertScriptUncookable("char c = false ? Character.valueOf('A') : 65536;");
+
+        // List 1, bullet 4, bullet 4
+        this.assertScriptExecutable("long l = false ? 1 : 1L;");
+        this.assertScriptUncookable("int i = false ? 1 : 1L;");
+
+        // List 1, bullet 5
+        this.assertExpressionEvaluatesTrue("(true ? new Object() : \"\") != null");
+
+        // List 2, bullet 1
+        this.assertScriptReturnsTrue("int a = 3; return (a == 0 ? ++a : a + a) == 6;");
+
+        // List 2, bullet 2
+        this.assertScriptReturnsTrue("int a = 3; return (a != 0 ? ++a : a + a) == 4;");
+    }
+
+    /** 15.26 Assignment Operators */
     @Test public void
     test_15_26__AssignmentOperators() throws Exception {
+
         // 15.26.2 Compound Assignment Operators
         this.assertScriptReturnsTrue("int a = 7; a += 3; return a == 10;");
         this.assertScriptReturnsTrue("int a = 7; a %= 3; return a == 1;");
