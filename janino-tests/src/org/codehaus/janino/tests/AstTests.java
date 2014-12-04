@@ -26,10 +26,6 @@
 
 package org.codehaus.janino.tests;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.io.StringWriter;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -56,6 +52,7 @@ import org.codehaus.janino.Java.Type;
 import org.codehaus.janino.Mod;
 import org.codehaus.janino.SimpleCompiler;
 import org.codehaus.janino.UnparseVisitor;
+import org.junit.Assert;
 import org.junit.Test;
 
 // CHECKSTYLE JavadocMethod:OFF
@@ -83,13 +80,13 @@ class AstTests {
 
     private static ArrayType
     createByteArrayType() {
-        return new Java.ArrayType(new Java.BasicType(getLocation(), Java.BasicType.BYTE));
+        return new Java.ArrayType(new Java.BasicType(AstTests.getLocation(), Java.BasicType.BYTE));
     }
 
     private static PackageMemberClassDeclaration
     createClass(CompilationUnit cu) throws CompileException {
         PackageMemberClassDeclaration clazz = new PackageMemberClassDeclaration(
-            getLocation(),
+            AstTests.getLocation(),
             null,
             new Java.Modifiers(Mod.PUBLIC),
             "HandMade",
@@ -102,21 +99,21 @@ class AstTests {
     }
 
     private static Type
-    createDoubleType() { return new BasicType(getLocation(), BasicType.DOUBLE); }
+    createDoubleType() { return new BasicType(AstTests.getLocation(), BasicType.DOUBLE); }
 
     private static Java.BinaryOperation
-    createOp(Rvalue l1, String op, Rvalue l2) { return new Java.BinaryOperation(getLocation(), l1, op, l2); }
+    createOp(Rvalue l1, String op, Rvalue l2) { return new Java.BinaryOperation(AstTests.getLocation(), l1, op, l2); }
 
     private static IntegerLiteral
-    createIntegerLiteral(String value) { return new IntegerLiteral(getLocation(), value); }
+    createIntegerLiteral(String value) { return new IntegerLiteral(AstTests.getLocation(), value); }
 
     private static FloatingPointLiteral
-    createFloatingPointLiteral(String value) { return new FloatingPointLiteral(getLocation(), value); }
+    createFloatingPointLiteral(String value) { return new FloatingPointLiteral(AstTests.getLocation(), value); }
 
     private static void
     createMethod(PackageMemberClassDeclaration clazz, List<? extends Java.BlockStatement> statements, Type returnType) {
         MethodDeclarator method = new MethodDeclarator(
-            getLocation(),
+            AstTests.getLocation(),
             null,
             new Java.Modifiers(Mod.PUBLIC),
             returnType,
@@ -132,15 +129,15 @@ class AstTests {
     private static LocalVariableDeclarationStatement
     createVarDecl(String name, String fPValue) {
         return new Java.LocalVariableDeclarationStatement(
-            getLocation(),
+            AstTests.getLocation(),
             new Java.Modifiers(Mod.NONE),
-            createDoubleType(),
+            AstTests.createDoubleType(),
             new Java.VariableDeclarator[] {
                 new Java.VariableDeclarator(
-                    getLocation(),
+                    AstTests.getLocation(),
                     name,
                     0,
-                    createFloatingPointLiteral(fPValue)
+                    AstTests.createFloatingPointLiteral(fPValue)
                 )
             }
         );
@@ -148,7 +145,7 @@ class AstTests {
 
     private static AmbiguousName
     createVariableRef(String name) {
-        return new Java.AmbiguousName(getLocation(), new String[] { name });
+        return new Java.AmbiguousName(AstTests.getLocation(), new String[] { name });
     }
 
     /** A "Clever" method to get a location from a stack trace. */
@@ -167,33 +164,33 @@ class AstTests {
     testBlock() throws Exception {
         CompilationUnit cu = new CompilationUnit("AstTests.java");
 
-        PackageMemberClassDeclaration clazz = createClass(cu);
+        final PackageMemberClassDeclaration clazz = AstTests.createClass(cu);
 
         List<Java.Statement> body = new ArrayList();
 
-        Block sub = new Block(getLocation());
-        sub.addStatement(createVarDecl("x", "2.0"));
+        Block sub = new Block(AstTests.getLocation());
+        sub.addStatement(AstTests.createVarDecl("x", "2.0"));
 
         body.add(sub);
         body.add(
             new ReturnStatement(
-                getLocation(),
+                AstTests.getLocation(),
                 new Java.BinaryOperation(
-                    getLocation(),
-                    createVariableRef("x"),
+                    AstTests.getLocation(),
+                    AstTests.createVariableRef("x"),
                     "*",
-                    createIntegerLiteral("3")
+                    AstTests.createIntegerLiteral("3")
                 )
             )
         );
 
-        createMethod(clazz, body, createDoubleType());
+        AstTests.createMethod(clazz, body, AstTests.createDoubleType());
 
         try {
-            compileAndEval(cu);
-            fail("Block must limit the scope of variables in it");
+            AstTests.compileAndEval(cu);
+            Assert.fail("Block must limit the scope of variables in it");
         } catch (CompileException ex) {
-            assertTrue(ex.getMessage().endsWith("Expression \"x\" is not an rvalue"));
+            Assert.assertTrue(ex.getMessage().endsWith("Expression \"x\" is not an rvalue"));
         }
     }
 
@@ -201,94 +198,94 @@ class AstTests {
     testByteArrayLiteral() throws Exception {
         CompilationUnit cu = new CompilationUnit("AstTests.java");
 
-        PackageMemberClassDeclaration clazz = createClass(cu);
+        PackageMemberClassDeclaration clazz = AstTests.createClass(cu);
 
-        Byte                 exp  = Byte.valueOf((byte) 1);
+        final Byte           exp  = Byte.valueOf((byte) 1);
         List<Java.Statement> body = new ArrayList();
         body.add(
             new ReturnStatement(
-                getLocation(),
+                AstTests.getLocation(),
                 new Java.NewInitializedArray(
-                    getLocation(),
-                    createByteArrayType(),
+                    AstTests.getLocation(),
+                    AstTests.createByteArrayType(),
                     new Java.ArrayInitializer(
-                        getLocation(),
+                        AstTests.getLocation(),
                         new Java.Rvalue[] {
-                            createIntegerLiteral("1")
+                            AstTests.createIntegerLiteral("1")
                         }
                     )
                 )
             )
         );
 
-        createMethod(clazz, body, createByteArrayType());
+        AstTests.createMethod(clazz, body, AstTests.createByteArrayType());
 
-        Object res = compileAndEval(cu);
-        assertEquals(exp.byteValue(), ((byte[]) res)[0]);
+        Object res = AstTests.compileAndEval(cu);
+        Assert.assertEquals(exp.byteValue(), ((byte[]) res)[0]);
     }
 
     @Test public void
     testLocalVariable() throws Exception {
         CompilationUnit cu = new CompilationUnit("AstTests.java");
 
-        PackageMemberClassDeclaration clazz = createClass(cu);
+        final PackageMemberClassDeclaration clazz = AstTests.createClass(cu);
 
         List<Java.Statement> body = new ArrayList();
-        body.add(createVarDecl("x", "2.0"));
+        body.add(AstTests.createVarDecl("x", "2.0"));
         body.add(
             new ReturnStatement(
-                getLocation(),
+                AstTests.getLocation(),
                 new Java.BinaryOperation(
-                    getLocation(),
-                    createVariableRef("x"),
+                    AstTests.getLocation(),
+                    AstTests.createVariableRef("x"),
                     "*",
-                    createIntegerLiteral("3")
+                    AstTests.createIntegerLiteral("3")
                 )
             )
         );
 
-        createMethod(clazz, body, createDoubleType());
+        AstTests.createMethod(clazz, body, AstTests.createDoubleType());
 
-        Object res = compileAndEval(cu);
-        assertTrue(res instanceof Double);
-        assertEquals(Double.valueOf(6.0), res);
+        Object res = AstTests.compileAndEval(cu);
+        Assert.assertTrue(res instanceof Double);
+        Assert.assertEquals(Double.valueOf(6.0), res);
     }
 
     @Test public void
     testSimpleAst() throws Exception {
         CompilationUnit cu = new CompilationUnit("AstTests.java");
 
-        PackageMemberClassDeclaration clazz = createClass(cu);
+        PackageMemberClassDeclaration clazz = AstTests.createClass(cu);
 
         List<Java.Statement> body = new ArrayList();
         body.add(
             new ReturnStatement(
-                getLocation(),
-                createFloatingPointLiteral("3.0")
+                AstTests.getLocation(),
+                AstTests.createFloatingPointLiteral("3.0")
             )
         );
 
-        createMethod(clazz, body, createDoubleType());
+        AstTests.createMethod(clazz, body, AstTests.createDoubleType());
 
-        Object res = compileAndEval(cu);
-        assertEquals(Double.valueOf(3.0), res);
+        Object res = AstTests.compileAndEval(cu);
+        Assert.assertEquals(Double.valueOf(3.0), res);
     }
 
     @Test public void
     testClassRef() throws Exception {
         CompilationUnit cu = new CompilationUnit("AstTests.java");
 
-        PackageMemberClassDeclaration clazz = createClass(cu);
+        PackageMemberClassDeclaration clazz = AstTests.createClass(cu);
 
         List<Java.Statement> body = new ArrayList();
 
         body.add(
             new ReturnStatement(
-                getLocation(),
+                AstTests.getLocation(),
                 new Java.ClassLiteral(
-                    getLocation(),
+                    AstTests.getLocation(),
                     new Java.ReferenceType(
-                        getLocation(),
+                        AstTests.getLocation(),
                         new String[] {
                             "HandMade"
                         },
@@ -298,8 +295,8 @@ class AstTests {
             )
         );
 
-        createMethod(clazz, body, new Java.ReferenceType(
-            getLocation(),
+        AstTests.createMethod(clazz, body, new Java.ReferenceType(
+            AstTests.getLocation(),
             new String[] { "java", "lang", "Class" },
             null // optionalTypeArguments
         ));
@@ -313,22 +310,22 @@ class AstTests {
 
         Object handMade = handMadeClass.newInstance();
         Object res      = calc.invoke(handMade, new Object[0]);
-        assertEquals(handMadeClass, res);
+        Assert.assertEquals(handMadeClass, res);
     }
 
     @Test public void
     testPrecedence() throws Exception {
         ExpressionStatement es = new Java.ExpressionStatement(
             new Java.Assignment(
-                getLocation(),
+                AstTests.getLocation(),
                 new Java.AmbiguousName(
-                    getLocation(),
+                    AstTests.getLocation(),
                     new String[] { "x" }
                 ),
                 "=",
-                createOp(
-                    createIntegerLiteral("1"), "*",
-                    createOp(createIntegerLiteral("2"), "+", createIntegerLiteral("3"))
+                AstTests.createOp(
+                    AstTests.createIntegerLiteral("1"), "*",
+                    AstTests.createOp(AstTests.createIntegerLiteral("2"), "+", AstTests.createIntegerLiteral("3"))
                 )
             )
         );
@@ -337,7 +334,7 @@ class AstTests {
         UnparseVisitor uv = new UnparseVisitor(sw);
         uv.visitExpressionStatement(es);
         uv.close();
-        assertEquals("x = 1 * ((( 2 + 3 )));", sw.toString());
+        Assert.assertEquals("x = 1 * ((( 2 + 3 )));", sw.toString());
     }
 
 
@@ -345,24 +342,24 @@ class AstTests {
     testFullyQualifiedFieldRef() throws Exception {
         CompilationUnit cu = new CompilationUnit("AstTests.java");
 
-        PackageMemberClassDeclaration clazz = createClass(cu);
+        PackageMemberClassDeclaration clazz = AstTests.createClass(cu);
 
         List<Java.Statement> body = new ArrayList();
         body.add(new Java.ReturnStatement(
-            getLocation(),
+            AstTests.getLocation(),
             new Java.FieldAccessExpression(
-                getLocation(),
+                AstTests.getLocation(),
                 new Java.AmbiguousName(
-                    getLocation(),
+                    AstTests.getLocation(),
                     new String[] { "other_package2", "ScopingRules" }
                 ),
                 "publicStaticDouble"
             )
         ));
 
-        createMethod(clazz, body, createDoubleType());
+        AstTests.createMethod(clazz, body, AstTests.createDoubleType());
 
-        Object res = compileAndEval(cu);
-        assertEquals(other_package2.ScopingRules.publicStaticDouble, res);
+        Object res = AstTests.compileAndEval(cu);
+        Assert.assertEquals(other_package2.ScopingRules.publicStaticDouble, res);
     }
 }
