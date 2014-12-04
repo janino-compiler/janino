@@ -1,4 +1,3 @@
-package org.codehaus.commons.compiler.tests.bug63;
 
 /*
  * Janino - An embedded Java[TM] compiler
@@ -24,6 +23,8 @@ package org.codehaus.commons.compiler.tests.bug63;
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+
+package org.codehaus.commons.compiler.tests.bug63;
 
 // CHECKSTYLE Javadoc:OFF
 

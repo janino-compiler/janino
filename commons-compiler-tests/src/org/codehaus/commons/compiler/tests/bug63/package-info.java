@@ -2,7 +2,7 @@
 /*
  * Janino - An embedded Java[TM] compiler
  *
- * Copyright (c) 2001-2010, Arno Unkrig
+ * Copyright (c) 2001-2013, Arno Unkrig
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
@@ -24,13 +24,5 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+/** Helper classes for bug #63. */
 package org.codehaus.commons.compiler.tests.bug63;
-
-// CHECKSTYLE Javadoc:OFF
-
-public
-class Pred implements IPred {
-
-    @Override public boolean
-    filter() { return false; }
-}
