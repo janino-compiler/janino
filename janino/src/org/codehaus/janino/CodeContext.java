@@ -32,8 +32,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.codehaus.janino.util.ClassFile;
 
@@ -1275,4 +1278,90 @@ class CodeContext {
     /** @return All the local variables that are allocated in any block in this {@link CodeContext} */
     public List<Java.LocalVariableSlot>
     getAllLocalVars() { return this.allLocalVars; }
+
+    /**
+     * Removes all code between {@code from} and {@code to}. Also removes any {@link Relocatable}s existing in that
+     * range.
+     */
+    public void
+    removeCode(Offset from, Offset to) {
+
+        if (from == to) return;
+
+        int size = to.offset - from.offset;
+        assert size >= 0;
+
+        if (size == 0) return; // Short circuit.
+
+        // Shift down the bytecode past 'to'.
+        System.arraycopy(this.code, to.offset, this.code, from.offset, this.end.offset - to.offset);
+
+        // Invalidate all offsets between 'from' and 'to'.
+        // Remove all relocatables that originate between 'from' and 'to'.
+        Set<Offset> invalidOffsets = new HashSet<Offset>();
+        {
+            Offset o = from.next;
+
+            for (; o != to;) {
+                if (o == null) {
+                    System.currentTimeMillis();
+                }
+                invalidOffsets.add(o);
+
+                // Invalidate the offset for fast failure.
+                o.offset    = -77;
+                o.prev      = null;
+                o           = o.next;
+                o.prev.next = null;
+            }
+
+            for (;; o = o.next) {
+                o.offset -= size;
+                if (o == this.end) break;
+            }
+        }
+
+        // Invalidate all relocatables which originate or target a removed offset.
+        for (Iterator<Relocatable> it = this.relocatables.iterator(); it.hasNext();) {
+            Relocatable r = (Relocatable) it.next();
+
+            if (r instanceof Branch) {
+                Branch b = (Branch) r;
+
+                if (invalidOffsets.contains(b.source)) {
+                    it.remove();
+                } else {
+                    assert !invalidOffsets.contains(b.destination);
+                }
+            }
+
+            if (r instanceof OffsetBranch) {
+                OffsetBranch ob = (OffsetBranch) r;
+
+                if (invalidOffsets.contains(ob.source)) {
+                    it.remove();
+                } else {
+                    assert !invalidOffsets.contains(ob.destination);
+                }
+            }
+        }
+
+        for (Iterator<ExceptionTableEntry> it = this.exceptionTableEntries.iterator(); it.hasNext();) {
+            ExceptionTableEntry ete = (ExceptionTableEntry) it.next();
+
+            // Start, end and handler must either ALL lie IN the range to remove or ALL lie outside.
+
+            if (invalidOffsets.contains(ete.startPC)) {
+                assert invalidOffsets.contains(ete.endPC);
+                assert invalidOffsets.contains(ete.handlerPC);
+                it.remove();
+            } else {
+                assert !invalidOffsets.contains(ete.endPC);
+                assert !invalidOffsets.contains(ete.handlerPC);
+            }
+        }
+
+        from.next = to;
+        to.prev   = from;
+    }
 }
