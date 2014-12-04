@@ -48,6 +48,7 @@ import org.codehaus.commons.compiler.Location;
 import org.codehaus.commons.compiler.UncheckedCompileException;
 import org.codehaus.commons.compiler.WarningHandler;
 import org.codehaus.janino.CodeContext.Inserter;
+import org.codehaus.janino.CodeContext.Offset;
 import org.codehaus.janino.IClass.IConstructor;
 import org.codehaus.janino.IClass.IField;
 import org.codehaus.janino.IClass.IInvocable;
@@ -961,15 +962,23 @@ class UnitCompiler {
         }
     }
 
-    /** Called to check whether the given {@link Rvalue} compiles or not. */
+    /**
+     * Called to check whether the given {@link Rvalue} compiles or not.
+     *
+     * @return Whether the block statement can complete normally
+     */
     private boolean
     fakeCompile(BlockStatement bs) throws CompileException {
-        CodeContext savedCodeContext = this.replaceCodeContext(this.createDummyCodeContext());
-        try {
-            return this.compile(bs);
-        } finally {
-            this.replaceCodeContext(savedCodeContext);
-        }
+
+        Offset from = this.codeContext.newOffset();
+
+        boolean ccn = this.compile(bs);
+
+        Offset to = this.codeContext.newOffset();
+
+        this.codeContext.removeCode(from, to);
+
+        return ccn;
     }
 
     private boolean
@@ -2589,13 +2598,15 @@ class UnitCompiler {
     /** Called to check whether the given {@link Rvalue} compiles or not. */
     private void
     fakeCompile(Rvalue rv) throws CompileException {
-        CodeContext savedCodeContext = this.replaceCodeContext(this.createDummyCodeContext());
-        try {
-            this.compileContext(rv);
-            this.compileGet(rv);
-        } finally {
-            this.replaceCodeContext(savedCodeContext);
-        }
+
+        final Offset from = this.codeContext.newOffset();
+
+        this.compileContext(rv);
+        this.compileGet(rv);
+
+        Offset to = this.codeContext.newOffset();
+
+        this.codeContext.removeCode(from, to);
     }
 
     /** Some {@link Rvalue}s compile more efficiently when their value is not needed, e.g. "i++". */
@@ -5481,8 +5492,28 @@ class UnitCompiler {
         } else
         if (this.isConvertibleToPrimitiveNumeric(mhsType) && this.isConvertibleToPrimitiveNumeric(rhsType)) {
 
-            // TODO JLS7 15.25, list 1, bullet 4, bullet 1: "b ? Byte : Short => short"
-            // TODO JLS7 15.25, list 1, bullet 4, bullet 2: "b ? 127 : byte => byte"
+            // JLS7 15.25, list 1, bullet 4, bullet 1: "b ? Byte : Short => short"
+            if (
+                (mhsType == IClass.BYTE || mhsType == this.iClassLoader.TYPE_java_lang_Byte)
+                && (rhsType == IClass.SHORT || rhsType == this.iClassLoader.TYPE_java_lang_Short)
+            ) return IClass.SHORT;
+            if (
+                (rhsType == IClass.BYTE || rhsType == this.iClassLoader.TYPE_java_lang_Byte)
+                && (mhsType == IClass.SHORT || mhsType == this.iClassLoader.TYPE_java_lang_Short)
+            ) return IClass.SHORT;
+
+            // JLS7 15.25, list 1, bullet 4, bullet 2: "b ? 127 : byte => byte"
+            if (
+                (mhsType == IClass.BYTE || mhsType == IClass.SHORT || mhsType == IClass.CHAR)
+                && ce.rhs.constantValue != null
+                && this.assignmentConversion(ce.rhs, ce.rhs.constantValue, mhsType) != null
+            ) return mhsType;
+            if (
+                (rhsType == IClass.BYTE || rhsType == IClass.SHORT || rhsType == IClass.CHAR)
+                && ce.mhs.constantValue != null
+                && this.assignmentConversion(ce.mhs, ce.mhs.constantValue, rhsType) != null
+            ) return rhsType;
+
             // TODO JLS7 15.25, list 1, bullet 4, bullet 3: "b ? 127 : byte => byte"
 
             // JLS7 15.25, list 1, bullet 4, bullet 4: "b ? Integer : Double => double"
@@ -10190,21 +10221,11 @@ class UnitCompiler {
     }
 
     private CodeContext
-    getCodeContext() {
-        CodeContext res = this.codeContext;
-        if (res == null) throw new JaninoRuntimeException("S.N.O.: Null CodeContext");
-        return res;
-    }
-
-    private CodeContext
     replaceCodeContext(CodeContext newCodeContext) {
         CodeContext oldCodeContext = this.codeContext;
         this.codeContext = newCodeContext;
         return oldCodeContext;
     }
-
-    private CodeContext
-    createDummyCodeContext() { return new CodeContext(this.getCodeContext().getClassFile()); }
 
     private void
     writeByte(int v) {
