@@ -1280,8 +1280,8 @@ class CodeContext {
     getAllLocalVars() { return this.allLocalVars; }
 
     /**
-     * Removes all code between {@code from} and {@code to}. Also removes any {@link Relocatable}s existing in that
-     * range.
+     * Removes all code between {@code from} and {@code to}. Also removes any {@link CodeContext.Relocatable}s existing
+     * in that range.
      */
     public void
     removeCode(Offset from, Offset to) {
