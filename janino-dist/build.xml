@@ -248,7 +248,7 @@
 			<label text="Server:"                   /><text property="ftp.server"         defaultvalue="${ftp.server}"/>
 			<label text="Port (optional):"          /><text property="ftp.port"           defaultvalue="${ftp.port}"/>
 			<label text="User ID:"                  /><text property="ftp.userid"         defaultvalue="${ftp.userid}"/>
-			<label text="Password:"                 /><text property="ftp.password"       defaultvalue="${ftp.password}" secure="true"/>
+			<label text="Password:"                 /><text property="ftp.password"       defaultvalue="${ftp.password}" secure="true" focus="true" />
 			<label text="Proxy server (optional):"  /><text property="ftp.proxy.server"   defaultvalue="${ftp.proxy.server}"/>
 			<label text="Proxy port (optional):"    /><text property="ftp.proxy.port"     defaultvalue="${ftp.proxy.port}"/>
 			<label text="Proxy user ID (optional):" /><text property="ftp.proxy.userid"   defaultvalue="${ftp.proxy.userid}"/>
@@ -257,6 +257,41 @@
 			<checkbox text="Use passive FTP"   property="ftp.passive" preselected="true"/>
 			<checkbox text="Verbose reporting" property="ftp.verbose" preselected="true"/>
 		</swingDialog>
+
+		<!--
+			Check if that version has been published before.
+		-->
+		<fileset dir="mirror/download" includes="janino-*.zip" id="jz" />
+		<property name="janino.zip" refid="jz" />
+		<echo message="${janino.zip}" />
+		<ftp2
+			server        ="${ftp.server}"
+			port          ="${ftp.port}"
+			userid        ="${ftp.userid}"
+			password      ="${ftp.password}"
+			proxyServer   ="${ftp.proxy.server}"
+			proxyPort     ="${ftp.proxy.port}"
+			proxyUserid   ="${ftp.proxy.userid}"
+			proxyPassword ="${ftp.proxy.password}"
+			remotedir     ="${ftp.remotedir}"
+			passive       ="${ftp.passive}"
+			verbose       ="${ftp.verbose}"
+			action        ="list"
+			listing       ="listing.txt"
+		>
+			<fileset dir="mirror" includes="download/${janino.zip}" />
+		</ftp2>
+		<if>
+			<length file="listing.txt" when="greater" length="0" />
+			<then>
+				<swingDialog messageType="WARNING">
+					<label text="'${janino.zip}' already exists" />
+					<label text="on the remote server!" />
+					<label text="Are you sure you want to continue?" />
+				</swingDialog>
+			</then>
+		</if>
+		<delete file="listing.txt" />
 
 		<!--
 			If there are problems with the FTP upload, add argument '-debug' to the ANT external tool configuration.
