@@ -25,5 +25,8 @@
  */
 
 /** Main package of the plugin. */
-@de.unkrig.commons.nullanalysis.NotNullByDefault package org.codehaus.commons.compiler.jdk;
+@NotNullByDefault
+package org.codehaus.commons.compiler.jdk;
+
+import de.unkrig.commons.nullanalysis.NotNullByDefault;
 

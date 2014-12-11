@@ -25,5 +25,8 @@
  */
 
 /** I/O utilities. */
-@de.unkrig.commons.nullanalysis.NotNullByDefault package org.codehaus.commons.io;
+@NotNullByDefault
+package org.codehaus.commons.io;
+
+import de.unkrig.commons.nullanalysis.NotNullByDefault;
 
