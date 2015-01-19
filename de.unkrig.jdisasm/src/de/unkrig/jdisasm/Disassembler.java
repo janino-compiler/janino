@@ -146,6 +146,11 @@ class Disassembler {
     /**/
     public static void
     main(String[] args) throws IOException {
+
+        // To disassemble .class files in zip (.jar, .ear, ...) archives, register a stream handler for the 'zip'
+        // scheme.
+        de.unkrig.jdisasm.protocol.zip.Handler.registerMe();
+
         Disassembler d = new Disassembler();
         int          i;
         for (i = 0; i < args.length; ++i) {
