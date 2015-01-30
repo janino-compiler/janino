@@ -890,7 +890,7 @@ class UnitCompiler {
             mi.addAttribute(new ClassFile.ExceptionsAttribute(eani, tecciis));
         }
 
-        final CodeContext codeContext      = new CodeContext(mi.getClassFile());
+        final CodeContext codeContext      = new CodeContext(mi.getClassFile(), base.toString());
         final CodeContext savedCodeContext = this.replaceCodeContext(codeContext);
 
         // Allocate all our local variables.
@@ -2224,7 +2224,7 @@ class UnitCompiler {
         if (Mod.isAbstract(fd.modifiers.flags) || Mod.isNative(fd.modifiers.flags)) return;
 
         // Create CodeContext.
-        final CodeContext codeContext = new CodeContext(mi.getClassFile());
+        final CodeContext codeContext = new CodeContext(mi.getClassFile(), mi.getDescriptor());
 
         CodeContext savedCodeContext = this.replaceCodeContext(codeContext);
         try {

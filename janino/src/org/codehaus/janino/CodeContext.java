@@ -54,7 +54,9 @@ class CodeContext {
     private static final byte    INVALID_OFFSET = -2;
     private static final int     MAX_STACK_SIZE = 254;
 
-    private final ClassFile                 classFile;
+    private final ClassFile classFile;
+    private final String    functionName;
+
     private short                           maxStack;
     private short                           maxLocals;
     private byte[]                          code;
@@ -78,8 +80,9 @@ class CodeContext {
 
     /** Creates an empty "Code" attribute. */
     public
-    CodeContext(ClassFile classFile) {
-        this.classFile             = classFile;
+    CodeContext(ClassFile classFile, String functionName) {
+        this.classFile    = classFile;
+        this.functionName = functionName;
 
         this.maxStack              = 0;
         this.maxLocals             = 0;
@@ -898,8 +901,7 @@ class CodeContext {
     }
 
     /**
-     * Add space for size bytes at current offset. Creates
-     * {@link LineNumberOffset}s as necessary.
+     * Add space for {@code size} bytes at current offset. Creates {@link LineNumberOffset}s as necessary.
      *
      * @param lineNumber The line number that corresponds to the byte code, or -1
      * @param size       The size in bytes to inject
@@ -937,7 +939,9 @@ class CodeContext {
             int newSize = Math.max(Math.min(oldCode.length * 2, 0xffff), oldCode.length + size);
             if (newSize > 0xffff) {
                 throw new JaninoRuntimeException(
-                    "Code attribute in class \""
+                    "Code of method \""
+                    + this.functionName
+                    + "\" of class \""
                     + this.classFile.getThisClassName()
                     + "\" grows beyond 64 KB"
                 );
