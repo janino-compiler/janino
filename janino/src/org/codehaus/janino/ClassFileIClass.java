@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.janino.util.ClassFile;
@@ -38,7 +39,8 @@ import org.codehaus.janino.util.ClassFile.ConstantClassInfo;
 /** A wrapper object that turns a {@link ClassFile} object into an {@link IClass}. */
 @SuppressWarnings({ "rawtypes", "unchecked" }) public
 class ClassFileIClass extends IClass {
-    private static final boolean DEBUG = false;
+
+    private static final Logger LOGGER = Logger.getLogger(ClassFileIClass.class.getName());
 
     private final ClassFile    classFile;
     private final IClassLoader iClassLoader;
@@ -241,14 +243,15 @@ class ClassFileIClass extends IClass {
     /** @param index Index of the CONSTANT_Class_info to resolve (JVMS 4.4.1) */
     private IClass
     resolveClass(short index) throws ClassNotFoundException {
-        if (ClassFileIClass.DEBUG) System.out.println("index=" + index);
+        ClassFileIClass.LOGGER.entering(null, "resolveClass", index);
+
         ConstantClassInfo cci = (ConstantClassInfo) this.classFile.getConstantPoolInfo(index);
         return this.resolveClass(Descriptor.fromInternalForm(cci.getName(this.classFile)));
     }
 
     private IClass
     resolveClass(String descriptor) throws ClassNotFoundException {
-        if (ClassFileIClass.DEBUG) System.out.println("descriptor=" + descriptor);
+        ClassFileIClass.LOGGER.entering(null, "resolveIClass", descriptor);
 
         IClass result = (IClass) this.resolvedClasses.get(descriptor);
         if (result != null) return result;

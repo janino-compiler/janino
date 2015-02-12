@@ -34,6 +34,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.janino.Java.Annotation;
@@ -46,7 +47,8 @@ import org.codehaus.janino.Java.Annotation;
  */
 @SuppressWarnings({ "rawtypes", "unchecked" }) public abstract
 class IClass {
-    private static final boolean DEBUG = false;
+
+    private static final Logger LOGGER = Logger.getLogger(IClass.class.getName());
 
     /**
      * Special return value for {@link IField#getConstantValue()} indicating that the field does <i>not</i> have a
@@ -875,7 +877,7 @@ class IClass {
          */
         public boolean
         isMoreSpecificThan(IInvocable that) throws CompileException {
-            if (IClass.DEBUG) System.out.print("\"" + this + "\".isMoreSpecificThan(\"" + that + "\") => ");
+            IClass.LOGGER.entering(null, "isMoreSpecificThan", that);
 
             // a variable-length argument is always less specific than a fixed arity.
             final boolean thatIsVararg;
@@ -976,12 +978,14 @@ class IClass {
             IClass[] thatParameterTypes = that.getParameterTypes();
             for (int i = 0; i < thisParameterTypes.length; ++i) {
                 if (!thatParameterTypes[i].isAssignableFrom(thisParameterTypes[i])) {
-                    if (IClass.DEBUG) System.out.println("false");
+                    IClass.LOGGER.exiting(null, "isMoreSpecificThan", false);
                     return false;
                 }
             }
-            if (IClass.DEBUG) System.out.println("true");
-            return !Arrays.equals(thisParameterTypes, thatParameterTypes);
+
+            boolean result = !Arrays.equals(thisParameterTypes, thatParameterTypes);
+            IClass.LOGGER.exiting(null, "isMoreSpecificThan", result);
+            return result;
         }
 
         /**

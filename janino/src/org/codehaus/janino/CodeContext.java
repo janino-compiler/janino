@@ -37,6 +37,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.codehaus.janino.util.ClassFile;
 
@@ -47,7 +49,8 @@ import org.codehaus.janino.util.ClassFile;
  */
 @SuppressWarnings({ "rawtypes", "unchecked" }) public
 class CodeContext {
-    private static final boolean DEBUG = false;
+
+    private static final Logger LOGGER = Logger.getLogger(CodeContext.class.getName());
 
     private static final int     INITIAL_SIZE   = 128;
     private static final byte    UNEXAMINED     = -1;
@@ -294,9 +297,7 @@ class CodeContext {
      */
     public void
     flowAnalysis(String functionName) {
-        if (CodeContext.DEBUG) {
-            System.err.println("flowAnalysis(" + functionName + ")");
-        }
+        CodeContext.LOGGER.entering(null, "flowAnalysis", functionName);
 
         short[] stackSizes = new short[this.end.offset];
         Arrays.fill(stackSizes, CodeContext.UNEXAMINED);
@@ -333,14 +334,18 @@ class CodeContext {
         this.maxStack = 0;
         for (int i = 0; i < stackSizes.length; ++i) {
             short ss = stackSizes[i];
+
             if (ss == CodeContext.UNEXAMINED) {
-                if (CodeContext.DEBUG) {
-                    System.out.println(functionName + ": Unexamined code at offset " + i);
+                String message = functionName + ": Unexamined code at offset " + i;
+                if (CodeContext.LOGGER.isLoggable(Level.FINE)) {
+                    CodeContext.LOGGER.fine(message);
+
+                    // Complete normally, so the .class file is created and can be examined.
                     return;
-                } else {
-                    throw new JaninoRuntimeException(functionName + ": Unexamined code at offset " + i);
                 }
+                throw new JaninoRuntimeException(message);
             }
+
             if (ss > this.maxStack) this.maxStack = ss;
         }
     }
@@ -355,7 +360,11 @@ class CodeContext {
         short[] stackSizes // Stack sizes in code
     ) {
         for (;;) {
-            if (CodeContext.DEBUG) System.out.println("Offset = " + offset + ", stack size = " + stackSize);
+            CodeContext.LOGGER.entering(
+                null,
+                "flowAnalysis",
+                new Object[] { functionName, code, codeSize, offset, stackSize, stackSizes }
+            );
 
             // Check current bytecode offset.
             if (offset < 0 || offset >= codeSize) {
@@ -365,30 +374,33 @@ class CodeContext {
             // Have we hit an area that has already been analyzed?
             int css = stackSizes[offset];
             if (css == stackSize) return; // OK.
-            if (css == CodeContext.INVALID_OFFSET) throw new JaninoRuntimeException(functionName + ": Invalid offset");
-            if (css != CodeContext.UNEXAMINED) {
-                if (CodeContext.DEBUG) {
-                    System.err.println(
-                        functionName
-                        + ": Operand stack inconsistent at offset "
-                        + offset
-                        + ": Previous size "
-                        + css
-                        + ", now "
-                        + stackSize
-                    );
+            if (css == CodeContext.INVALID_OFFSET) {
+                String message = functionName + ": Invalid offset";
+                if (CodeContext.LOGGER.isLoggable(Level.FINE)) {
+                    CodeContext.LOGGER.fine(message);
+
+                    // Complete normally, so the .class file is created and can be examined.
                     return;
-                } else {
-                    throw new JaninoRuntimeException(
-                        functionName
-                        + ": Operand stack inconsistent at offset "
-                        + offset
-                        + ": Previous size "
-                        + css
-                        + ", now "
-                        + stackSize
-                    );
                 }
+                throw new JaninoRuntimeException(message);
+            }
+            if (css != CodeContext.UNEXAMINED) {
+                String message = (
+                    functionName
+                    + ": Operand stack inconsistent at offset "
+                    + offset
+                    + ": Previous size "
+                    + css
+                    + ", now "
+                    + stackSize
+                );
+                if (CodeContext.LOGGER.isLoggable(Level.FINE)) {
+                    CodeContext.LOGGER.fine(message);
+
+                    // Complete normally, so the .class file is created and can be examined.
+                    return;
+                }
+                throw new JaninoRuntimeException(message);
             }
             stackSizes[offset] = stackSize;
 
@@ -466,35 +478,37 @@ class CodeContext {
             }
 
             if (stackSize < 0) {
-                String msg = (
+                String message = (
                     this.classFile.getThisClassName()
                     + '.'
                     + functionName
                     + ": Operand stack underrun at offset "
                     + offset
                 );
-                if (CodeContext.DEBUG) {
-                    System.err.println(msg);
+                if (CodeContext.LOGGER.isLoggable(Level.FINE)) {
+                    CodeContext.LOGGER.fine(message);
+
+                    // Complete normally, so the .class file is created and can be examined.
                     return;
-                } else {
-                    throw new JaninoRuntimeException(msg);
                 }
+                throw new JaninoRuntimeException(message);
             }
 
             if (stackSize > CodeContext.MAX_STACK_SIZE) {
-                String msg = (
+                String message = (
                     this.classFile.getThisClassName()
                     + '.'
                     + functionName
                     + ": Operand stack overflow at offset "
                     + offset
                 );
-                if (CodeContext.DEBUG) {
-                    System.err.println(msg);
+                if (CodeContext.LOGGER.isLoggable(Level.FINE)) {
+                    CodeContext.LOGGER.fine(message);
+
+                    // Complete normally, so the .class file is created and can be examined.
                     return;
-                } else {
-                    throw new JaninoRuntimeException(msg);
                 }
+                throw new JaninoRuntimeException(message);
             }
 
             switch (props & Opcode.OP1_MASK) {
@@ -517,15 +531,10 @@ class CodeContext {
                 break;
 
             case Opcode.OP1_BO2:
-                if (CodeContext.DEBUG) {
-                    System.out.println("Offset = " + offset);
-                    System.out.println("Operand offset = " + operandOffset);
-                    System.out.println(code[operandOffset]);
-                    System.out.println(code[operandOffset + 1]);
-                }
                 this.flowAnalysis(
                     functionName,
-                    code, codeSize,
+                    code,
+                    codeSize,
                     CodeContext.extract16BitValue(offset, operandOffset, code),
                     stackSize,
                     stackSizes
@@ -534,12 +543,6 @@ class CodeContext {
                 break;
 
             case Opcode.OP1_JSR:
-                if (CodeContext.DEBUG) {
-                    System.out.println("Offset = " + offset);
-                    System.out.println("Operand offset = " + operandOffset);
-                    System.out.println(code[operandOffset]);
-                    System.out.println(code[operandOffset + 1]);
-                }
                 int targetOffset = CodeContext.extract16BitValue(offset, operandOffset, code);
                 operandOffset += 2;
                 if (stackSizes[targetOffset] == CodeContext.UNEXAMINED) {
@@ -665,16 +668,16 @@ class CodeContext {
      */
     private static int
     extract16BitValue(int bias, int offset, byte[] code) {
-        int res = bias + (
-            ((code[offset]) << 8)
-            + (code[offset + 1] & 0xff)
+        CodeContext.LOGGER.entering(
+            null,
+            "extract16BitValue",
+            new Object[] { bias, offset, code[offset], code[offset + 1] }
         );
-        if (CodeContext.DEBUG) {
-            System.out.println("extract16BitValue(bias, offset) = (" + bias + ", " + offset + ")");
-            System.out.println("bytes = {" + code[offset] + ", " + code[offset + 1] + "}");
-            System.out.println("result = " + res);
-        }
-        return res;
+
+        int result = bias + ((code[offset]) << 8) + (code[offset + 1] & 0xff);
+
+        CodeContext.LOGGER.exiting(null,  "extract16BitValue", result);
+        return result;
     }
 
     /**
@@ -687,29 +690,21 @@ class CodeContext {
      */
     private static int
     extract32BitValue(int bias, int offset, byte[] code) {
-        int res = bias + (
+        CodeContext.LOGGER.entering(
+            null,
+            "extract32BitValue",
+            new Object[] { bias, offset, code[offset], code[offset + 1], code[offset + 2], code[offset + 3] }
+        );
+
+        int result = bias + (
             (code[offset] << 24)
             + ((0xff & code[offset + 1]) << 16)
             + ((0xff & code[offset + 2]) << 8)
             + (0xff & code[offset + 3])
         );
-        if (CodeContext.DEBUG) {
-            System.out.println("extract32BitValue(bias, offset) = (" + bias + ", " + offset + ")");
-            System.out.println(
-                ""
-                + "bytes = {"
-                + code[offset]
-                + ", "
-                + code[offset + 1]
-                + ", "
-                + code[offset + 2]
-                + ", "
-                + code[offset + 3]
-                + "}"
-            );
-            System.out.println("result = " + res);
-        }
-        return res;
+
+        CodeContext.LOGGER.exiting(null, "extract32BitValue", result);
+        return result;
     }
 
     /** Fixes up all of the offsets and relocate() all relocatables. */

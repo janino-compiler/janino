@@ -30,6 +30,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.ErrorHandler;
@@ -48,7 +50,8 @@ import org.codehaus.janino.util.resource.ResourceFinder;
  */
 public
 class JavaSourceIClassLoader extends IClassLoader {
-    private static final boolean DEBUG = false;
+
+    private static final Logger LOGGER = Logger.getLogger(JavaSourceIClassLoader.class.getName());
 
     private ResourceFinder          sourceFinder;
     private String                  optionalCharacterEncoding;
@@ -113,11 +116,11 @@ class JavaSourceIClassLoader extends IClassLoader {
      */
     @Override public IClass
     findIClass(final String fieldDescriptor) throws ClassNotFoundException {
-        if (JavaSourceIClassLoader.DEBUG) System.out.println("type = " + fieldDescriptor);
+        JavaSourceIClassLoader.LOGGER.entering(null, "findIClass", fieldDescriptor);
 
         // Class type.
         String className = Descriptor.toClassName(fieldDescriptor); // E.g. "pkg1.pkg2.Outer$Inner"
-        if (JavaSourceIClassLoader.DEBUG) System.out.println("2 className = \"" + className + "\"");
+        JavaSourceIClassLoader.LOGGER.log(Level.FINE, "className={0}", className);
 
         // Do not attempt to load classes from package "java".
         if (className.startsWith("java.")) return null;
@@ -184,8 +187,8 @@ class JavaSourceIClassLoader extends IClassLoader {
 
         // Find source file.
         Resource sourceResource = this.sourceFinder.findResource(ClassFile.getSourceResourceName(className));
+        JavaSourceIClassLoader.LOGGER.log(Level.FINE, "sourceResource={0}", sourceResource);
         if (sourceResource == null) return null;
-        if (JavaSourceIClassLoader.DEBUG) System.out.println("sourceResource=" + sourceResource);
 
         // Scan and parse the source file.
         InputStream inputStream = sourceResource.open();

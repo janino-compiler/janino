@@ -26,10 +26,14 @@
 
 package org.codehaus.janino;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /** An {@link IClassLoader} that loads {@link IClass}es through a reflection {@link ClassLoader}. */
 @SuppressWarnings("rawtypes") public
 class ClassLoaderIClassLoader extends IClassLoader {
-    private static final boolean DEBUG = false;
+
+    private static final Logger LOGGER = Logger.getLogger(ClassLoaderIClassLoader.class.getName());
 
     /** @param classLoader The delegate that loads the classes. */
     public
@@ -59,6 +63,7 @@ class ClassLoaderIClassLoader extends IClassLoader {
 
     @Override protected IClass
     findIClass(String descriptor) throws ClassNotFoundException {
+        ClassLoaderIClassLoader.LOGGER.entering(null, "findIClass", descriptor);
 
         Class clazz;
         try {
@@ -84,7 +89,7 @@ class ClassLoaderIClassLoader extends IClassLoader {
                 throw e;
             }
         }
-        if (ClassLoaderIClassLoader.DEBUG) System.out.println("clazz = " + clazz);
+        ClassLoaderIClassLoader.LOGGER.log(Level.FINE, "clazz={0}", clazz);
 
         IClass result = new ReflectionIClass(clazz, this);
         this.defineIClass(result);

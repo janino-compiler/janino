@@ -41,6 +41,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.ErrorHandler;
@@ -183,7 +185,8 @@ import org.codehaus.janino.util.ClassFile;
  */
 @SuppressWarnings({ "rawtypes", "unchecked" }) public
 class UnitCompiler {
-    private static final boolean DEBUG = false;
+
+    private static final Logger LOGGER = Logger.getLogger(UnitCompiler.class.getName());
 
     /**
      * This constant determines the number of operands up to which the
@@ -2308,11 +2311,13 @@ class UnitCompiler {
         codeContext.fixUpAndRelocate();
 
         // Do flow analysis.
-        if (UnitCompiler.DEBUG) {
+        if (UnitCompiler.LOGGER.isLoggable(Level.FINE)) {
             try {
                 codeContext.flowAnalysis(fd.toString());
-            } catch (RuntimeException ex) {
-                ex.printStackTrace();
+            } catch (RuntimeException re) {
+                UnitCompiler.LOGGER.log(Level.FINE, null, re);
+
+                // Continue, so that the .class file is generated and can be examined.
                 ;
             }
         } else {
@@ -6813,7 +6818,7 @@ class UnitCompiler {
         String rhs = identifiers[n - 1];
 
         // 6.5.2.2.1
-        if (UnitCompiler.DEBUG) System.out.println("lhs = " + lhs);
+        UnitCompiler.LOGGER.log(Level.FINE, "lhs={0}", lhs);
         if (lhs instanceof Package) {
             String className = ((Package) lhs).name + '.' + rhs;
             IClass result    = this.findTypeByName(location, className);
@@ -7601,10 +7606,10 @@ class UnitCompiler {
         boolean            boxingPermitted,
         Scope              contextScope
     ) throws CompileException {
-
-        if (UnitCompiler.DEBUG) {
-            System.out.println("Argument types:");
-            for (IClass argumentType : argumentTypes) System.out.println(argumentType);
+        if (UnitCompiler.LOGGER.isLoggable(Level.FINER)) {
+            UnitCompiler.LOGGER.entering(null, "findMostSpecificIInvocable", new Object[] {
+                locatable, Arrays.toString(iInvocables), Arrays.toString(argumentTypes), boxingPermitted, contextScope
+            });
         }
 
         // Select applicable methods (15.12.2.1).
@@ -7649,7 +7654,11 @@ class UnitCompiler {
                     for (int idx = lastActualArg; idx >= formalParamCount; --idx) {
 
                         // Is method invocation conversion possible (5.3)?
-                        // if (UnitCompiler.DEBUG) System.out.println(lastParamType + " <=> " + argumentTypes[idx]);
+                        UnitCompiler.LOGGER.log(
+                            Level.FINE,
+                            "{0} <=> {1}",
+                            new Object[] { lastParamType, argumentTypes[idx] }
+                        );
                         if (!this.isMethodInvocationConvertible(argumentTypes[idx], lastParamType, boxingPermitted)) {
                             formalParamCount++;
                             break VARARGS;
@@ -7663,16 +7672,20 @@ class UnitCompiler {
 
             if (formalParamCount == nUncheckedArg) {
                 for (int j = 0; j < nUncheckedArg; ++j) {
+                    UnitCompiler.LOGGER.log(
+                        Level.FINE,
+                        "{0}: {1} <=> {2}",
+                        new Object[] { j, parameterTypes[j], argumentTypes[j] }
+                    );
 
                     // Is method invocation conversion possible (5.3)?
-                    if (UnitCompiler.DEBUG) System.out.println(parameterTypes[j] + " <=> " + argumentTypes[j]);
                     if (!this.isMethodInvocationConvertible(argumentTypes[j], parameterTypes[j], boxingPermitted)) {
                         continue NEXT_METHOD;
                     }
                 }
 
                 // Applicable!
-                if (UnitCompiler.DEBUG) System.out.println("Applicable!");
+                UnitCompiler.LOGGER.fine("Applicable!");
 
                 // Varargs has lower priority.
                 if (isVarargs) {
@@ -7724,7 +7737,7 @@ class UnitCompiler {
             {
                 ;
             }
-            if (UnitCompiler.DEBUG) System.out.println("maximallySpecificIInvocables=" + maximallySpecificIInvocables);
+            UnitCompiler.LOGGER.log(Level.FINE, "maximallySpecificIInvocables={0}", maximallySpecificIInvocables);
         }
 
         if (maximallySpecificIInvocables.size() == 1) return (IClass.IInvocable) maximallySpecificIInvocables.get(0);
@@ -9082,17 +9095,11 @@ class UnitCompiler {
         IClass    targetType,
         Object    optionalConstantValue
     ) throws CompileException {
-        if (UnitCompiler.DEBUG) {
-            System.out.println(
-                "assignmentConversion("
-                + sourceType
-                + ", "
-                + targetType
-                + ", "
-                + optionalConstantValue
-                + ")"
-            );
-        }
+        UnitCompiler.LOGGER.entering(
+            null,
+            "tryAssignmentConversion",
+            new Object[] { locatable, sourceType, targetType, optionalConstantValue }
+        );
 
         // JLS7 5.1.1 Identity conversion.
         if (this.tryIdentityConversion(sourceType, targetType)) return true;
@@ -9628,9 +9635,11 @@ class UnitCompiler {
     private boolean
     tryConstantAssignmentConversion(Locatable locatable, Object constantValue, IClass targetType)
     throws CompileException {
-        if (UnitCompiler.DEBUG) {
-            System.out.println("isConstantPrimitiveAssignmentConvertible(" + constantValue + ", " + targetType + ")");
-        }
+        UnitCompiler.LOGGER.entering(
+            null,
+            "tryConstantAssignmentConversion",
+            new Object[] { locatable, constantValue, targetType }
+        );
 
         int cv;
         if (constantValue instanceof Byte) {

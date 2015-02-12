@@ -36,6 +36,8 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.CompilerFactoryFactory;
@@ -85,7 +87,7 @@ import org.codehaus.janino.util.resource.PathResourceFinder;
 @SuppressWarnings({ "rawtypes", "unchecked" }) public // SUPPRESS CHECKSTYLE HideUtilityClassConstructor
 class JGrep {
 
-    private static final boolean DEBUG = false;
+    private static final Logger LOGGER = Logger.getLogger(JGrep.class.getName());
 
     private final List<UnitCompiler> parsedCompilationUnits = new ArrayList();
 
@@ -688,11 +690,11 @@ class JGrep {
         /** @param type Field descriptor of the {@IClass} to load, e.g. "Lpkg1/pkg2/Outer$Inner;" */
         @Override protected IClass
         findIClass(final String type) {
-            if (JGrep.DEBUG) System.out.println("type = " + type);
+            JGrep.LOGGER.entering(null, "findIClass", type);
 
             // Class type.
             String className = Descriptor.toClassName(type); // E.g. "pkg1.pkg2.Outer$Inner"
-            if (JGrep.DEBUG) System.out.println("2 className = \"" + className + "\"");
+            JGrep.LOGGER.log(Level.FINE, "className={0}", className);
 
             // Do not attempt to load classes from package "java".
             if (className.startsWith("java.")) return null;

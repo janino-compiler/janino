@@ -30,13 +30,14 @@ import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.lang.reflect.Method;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.Cookable;
@@ -57,7 +58,8 @@ import org.codehaus.janino.util.ClassFile;
  */
 @SuppressWarnings({ "rawtypes", "unchecked" }) public
 class SimpleCompiler extends Cookable implements ISimpleCompiler {
-    private static final boolean DEBUG = false;
+
+    private static final Logger LOGGER = Logger.getLogger(SimpleCompiler.class.getName());
 
     private ClassLoader parentClassLoader = Thread.currentThread().getContextClassLoader();
 
@@ -370,9 +372,7 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
      */
     protected final ClassLoader
     compileToClassLoader(Java.CompilationUnit compilationUnit) throws CompileException {
-        if (SimpleCompiler.DEBUG) {
-            UnparseVisitor.unparse(compilationUnit, new OutputStreamWriter(System.out));
-        }
+        SimpleCompiler.LOGGER.entering(null, "compileToClassLoader", compilationUnit);
 
         this.classLoaderIClassLoader = new ClassLoaderIClassLoader(this.parentClassLoader);
 
@@ -386,7 +386,7 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
         final Map<String /*className*/, byte[] /*bytecode*/> classes = new HashMap();
         for (ClassFile cf : classFiles) {
             byte[] contents = cf.toByteArray();
-            if (SimpleCompiler.DEBUG) {
+            if (SimpleCompiler.LOGGER.isLoggable(Level.FINEST)) {
                 try {
                     Class disassemblerClass = Class.forName("de.unkrig.jdisasm.Disassembler");
                     disassemblerClass.getMethod(

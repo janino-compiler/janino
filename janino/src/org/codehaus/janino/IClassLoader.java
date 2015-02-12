@@ -31,6 +31,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.codehaus.janino.IClass.IConstructor;
 import org.codehaus.janino.IClass.IMethod;
@@ -41,7 +43,8 @@ import org.codehaus.janino.util.resource.ResourceFinder;
 /** Loads an {@link IClass} by type name. */
 @SuppressWarnings({ "rawtypes", "unchecked" }) public abstract
 class IClassLoader {
-    private static final boolean DEBUG = false;
+
+    private static final Logger LOGGER = Logger.getLogger(IClassLoader.class.getName());
 
     // The following are constants, but cannot be declared FINAL, because they are only initialized by
     // "postConstruct()".
@@ -197,7 +200,7 @@ class IClassLoader {
      */
     public final IClass
     loadIClass(String fieldDescriptor) throws ClassNotFoundException {
-        if (IClassLoader.DEBUG) System.out.println(this + ": Load type \"" + fieldDescriptor + "\"");
+        IClassLoader.LOGGER.entering(null, "loadIClass", fieldDescriptor);
 
         if (Descriptor.isPrimitive(fieldDescriptor)) {
             return (
@@ -247,10 +250,9 @@ class IClassLoader {
                 return arrayIClass;
             }
 
-            if (IClassLoader.DEBUG) System.out.println("call IClassLoader.findIClass(\"" + fieldDescriptor + "\")");
-
             // Load the class through the {@link #findIClass(String)} method implemented by the
             // derived class.
+            IClassLoader.LOGGER.log(Level.FINE, "About to call \"findIClass({0})\"", fieldDescriptor);
             result = this.findIClass(fieldDescriptor);
             if (result == null) {
                 this.unloadableIClasses.add(fieldDescriptor);
@@ -268,8 +270,7 @@ class IClassLoader {
             );
         }
 
-        if (IClassLoader.DEBUG) System.out.println(this + ": Loaded type \"" + fieldDescriptor + "\" as " + result);
-
+        IClassLoader.LOGGER.exiting(null, "loadIClass", result);
         return result;
     }
 
@@ -325,8 +326,8 @@ class IClassLoader {
         }
 
         // Define.
+        IClassLoader.LOGGER.log(Level.FINE, "{0}: Defined type \"{0}\"", descriptor);
         this.loadedIClasses.put(descriptor, iClass);
-        if (IClassLoader.DEBUG) System.out.println(this + ": Defined type \"" + descriptor + "\"");
     }
 
     /**

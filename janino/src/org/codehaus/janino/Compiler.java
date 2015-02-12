@@ -34,6 +34,8 @@ import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.ErrorHandler;
@@ -75,7 +77,8 @@ import org.codehaus.janino.util.resource.ResourceFinder;
  */
 @SuppressWarnings({ "rawtypes", "unchecked" }) public
 class Compiler {
-    private static final boolean DEBUG = false;
+
+    private static final Logger LOGGER = Logger.getLogger(Compiler.class.getName());
 
     /** Command line interface. */
     public static void
@@ -500,7 +503,8 @@ class Compiler {
             // Parse all source files.
             this.parsedCompilationUnits.clear();
             for (Resource sourceResource : sourceResources) {
-                if (Compiler.DEBUG) System.out.println("Compiling \"" + sourceResource + "\"");
+                Compiler.LOGGER.log(Level.FINE, "Compiling \"{0}\"", sourceResource);
+
                 this.parsedCompilationUnits.add(new UnitCompiler(this.parseCompilationUnit(
                     sourceResource.getFileName(),                   // fileName
                     new BufferedInputStream(sourceResource.open()), // inputStream
@@ -695,11 +699,11 @@ class Compiler {
          */
         @Override protected IClass
         findIClass(final String type) throws ClassNotFoundException {
-            if (Compiler.DEBUG) System.out.println("type = " + type);
+            Compiler.LOGGER.entering(null, "findIClass", type);
 
             // Determine the class name.
             String className = Descriptor.toClassName(type); // E.g. "pkg1.pkg2.Outer$Inner"
-            if (Compiler.DEBUG) System.out.println("2 className = \"" + className + "\"");
+            Compiler.LOGGER.log(Level.FINE, "className={0}", className);
 
             // Do not attempt to load classes from package "java".
             if (className.startsWith("java.")) return null;
