@@ -349,9 +349,9 @@ class CompilerTests {
     }
 
     public static List<ClassFile> doCompile(boolean debugSource,
-    		                     			boolean debugLines,
-    		                     			boolean debugVars,
-    		                     			String...fileNames) throws Exception {
+                                            boolean debugLines,
+                                            boolean debugVars,
+                                            String...fileNames) throws Exception {
 
         // Parse each compilation unit.
     	final List<Java.CompilationUnit> cus = new LinkedList<>();
