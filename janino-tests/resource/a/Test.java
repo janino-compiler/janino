@@ -1,4 +1,5 @@
 package a;
+// ISSUE: https://github.com/codehaus/janino/issues/4
 public class Test {
     public class Parent {
         void foo () { System.out.println("from parent"); }
