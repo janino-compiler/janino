@@ -3603,20 +3603,40 @@ class UnitCompiler {
             // JLS7 15.25, list 1, bullet 3: "b ? ReferenceType : null => ReferenceType"
             expressionType = mhsType;
         } else
+        if (ce.mhs.constantValue == null && rhsType.isPrimitive()){
+            expressionType = this.isBoxingConvertible(rhsType);
+            assert expressionType != null : rhsType + " is not boxing convertible";
+        } else
+        if (ce.rhs.constantValue == null && mhsType.isPrimitive()) {
+            expressionType = this.isBoxingConvertible(mhsType);
+            assert expressionType != null : mhsType + " is not boxing convertible";
+        }else
         if (this.isConvertibleToPrimitiveNumeric(mhsType) && this.isConvertibleToPrimitiveNumeric(rhsType)) {
 
             // TODO JLS7 15.25, list 1, bullet 4, bullet 1: "b ? Byte : Short => short"
-            // TODO JLS7 15.25, list 1, bullet 4, bullet 2: "b ? 127 : byte => byte"
-            // TODO JLS7 15.25, list 1, bullet 4, bullet 3: "b ? 127 : byte => byte"
 
+            // JLS7 15.25, list 1, bullet 4, bullet 2: "b ? byte : 127 => byte"
+            if (mhsType == IClass.BYTE && rhsType == IClass.INT && this.isWithinByteRange(ce.rhs.constantValue)) {
+                expressionType = IClass.BYTE;
+                // fix up the constant to be a byte
+                ce.rhs.constantValue = ((Integer)ce.rhs.constantValue).byteValue();
+            }
+            // JLS7 15.25, list 1, bullet 4, bullet 3: "b ? 127 : byte => byte"
+            else if (mhsType == IClass.INT && rhsType == IClass.BYTE && this.isWithinByteRange(ce.mhs.constantValue)) {
+                expressionType = IClass.BYTE;
+                // fix up the constant to be a byte
+                ce.mhs.constantValue = ((Integer)ce.mhs.constantValue).byteValue();
+            }
             // JLS7 15.25, list 1, bullet 4, bullet 4: "b ? Integer : Double => double"
-            expressionType = this.binaryNumericPromotion(
-                ce,                 // locatable
-                mhsType,            // type1
-                mhsConvertInserter, // convertInserter1
-                rhsType,            // type2
-                rhsConvertInserter  // convertInserter2
-            );
+            else {
+                expressionType = this.binaryNumericPromotion(
+                  ce,                 // locatable
+                  mhsType,            // type1
+                  mhsConvertInserter, // convertInserter1
+                  rhsType,            // type2
+                  rhsConvertInserter  // convertInserter2
+                );
+            }
         } else
         if (!mhsType.isPrimitive() && !rhsType.isPrimitive()) {
 
@@ -3645,6 +3665,11 @@ class UnitCompiler {
         toEnd.set();
 
         return expressionType;
+    }
+
+    private boolean isWithinByteRange(Object o) {
+        int i = 0;
+        return o instanceof Integer && (i = ((Integer)o).intValue()) <= 127 && i >= -128;
     }
 
     private IClass
@@ -5511,12 +5536,12 @@ class UnitCompiler {
             if (
                 (mhsType == IClass.BYTE || mhsType == IClass.SHORT || mhsType == IClass.CHAR)
                 && ce.rhs.constantValue != null
-                && this.assignmentConversion(ce.rhs, ce.rhs.constantValue, mhsType) != null
+                && this.assignmentConversion(ce.rhs, this.getConstantValue(ce.rhs), mhsType) != null
             ) return mhsType;
             if (
                 (rhsType == IClass.BYTE || rhsType == IClass.SHORT || rhsType == IClass.CHAR)
                 && ce.mhs.constantValue != null
-                && this.assignmentConversion(ce.mhs, ce.mhs.constantValue, rhsType) != null
+                && this.assignmentConversion(ce.mhs, this.getConstantValue(ce.mhs), rhsType) != null
             ) return rhsType;
 
             // TODO JLS7 15.25, list 1, bullet 4, bullet 3: "b ? 127 : byte => byte"
