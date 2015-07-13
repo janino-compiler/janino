@@ -27,11 +27,14 @@
 package org.codehaus.janino.tests;
 
 import java.io.File;
+import java.io.FileReader;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 import org.codehaus.commons.compiler.CompileException;
@@ -42,8 +45,13 @@ import org.codehaus.commons.compiler.WarningHandler;
 import org.codehaus.janino.ClassLoaderIClassLoader;
 import org.codehaus.janino.Compiler;
 import org.codehaus.janino.IClassLoader;
+import org.codehaus.janino.Java;
+import org.codehaus.janino.Parser;
+import org.codehaus.janino.Scanner;
 import org.codehaus.janino.SimpleCompiler;
+import org.codehaus.janino.UnitCompiler;
 import org.codehaus.janino.util.Benchmark;
+import org.codehaus.janino.util.ClassFile;
 import org.codehaus.janino.util.ResourceFinderClassLoader;
 import org.codehaus.janino.util.resource.DirectoryResourceFinder;
 import org.codehaus.janino.util.resource.MapResourceCreator;
@@ -63,6 +71,7 @@ class CompilerTests {
 
     private static final String JANINO_SRC           = "../janino/src";
     private static final String COMMONS_COMPILER_SRC = "../commons-compiler/src";
+    private static final String RESOURCE_DIR         = "resource";
 
     @Test public void
     testSelfCompile() throws Exception {
@@ -292,8 +301,6 @@ class CompilerTests {
         Assert.assertEquals(new HashSet(Arrays.asList(new Object[] { "pkg/A.class", "pkg/B.class", })), classes.keySet());
     }
 
-
-
     @Test public void
     testImplicitCastTernaryOperator() throws Exception {
     	 Map<String, byte[]> sources = new HashMap();
@@ -331,5 +338,38 @@ class CompilerTests {
          );
          compiler.compile(new Resource[] { sourceFinder.findResource("pkg/A.java") });
          Assert.assertEquals(new HashSet(Arrays.asList(new Object[] { "pkg/A.class"})), classes.keySet());
+    }
+
+
+	// This is currently failing
+    // https://github.com/codehaus/janino/issues/4
+    @Test public void
+    testReferenceQualifiedSuper() throws Exception {
+    	List<ClassFile> cfs = CompilerTests.doCompile(true, true, false, CompilerTests.RESOURCE_DIR + "/a/Test.java");
+    }
+
+    public static List<ClassFile> doCompile(boolean debugSource,
+    		                     			boolean debugLines,
+    		                     			boolean debugVars,
+    		                     			String...fileNames) throws Exception {
+
+        // Parse each compilation unit.
+    	final List<Java.CompilationUnit> cus = new LinkedList<>();
+    	final IClassLoader cl = new ClassLoaderIClassLoader(CompilerTests.class.getClassLoader());
+    	List<ClassFile> cfs = new LinkedList<>();
+    	for (String fileName : fileNames) {
+
+	        try(FileReader r = new FileReader(fileName);) {
+	            Java.CompilationUnit cu = new Parser(new Scanner(fileName, r)).parseCompilationUnit();
+	            cus.add(cu);
+	           	// compile them
+	            ClassFile[] compiled = new UnitCompiler(cu, cl).compileUnit(debugSource, debugLines, debugVars);
+	            for (ClassFile cf : compiled) {
+	            	cfs.add(cf);
+	            }
+	        }
+    	}
+    	return cfs;
+
     }
 }
