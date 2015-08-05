@@ -27,6 +27,7 @@
 package org.codehaus.janino.tests;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
@@ -341,11 +342,20 @@ class CompilerTests {
     }
 
 
-	// This is currently failing
+    // This is currently failing
     // https://github.com/codehaus/janino/issues/4
     @Test public void
     testReferenceQualifiedSuper() throws Exception {
     	List<ClassFile> cfs = CompilerTests.doCompile(true, true, false, CompilerTests.RESOURCE_DIR + "/a/Test.java");
+    }
+
+    // https://github.com/codehaus/janino/issues/5
+    @Test public void
+    testLocalVarTableGeneration() throws Exception {
+	SimpleCompiler s = new SimpleCompiler();
+	s.setDebuggingInformation(true, true, true);
+	s.cook(new FileInputStream(CompilerTests.RESOURCE_DIR + "/a/TestLocalVarTable.java"));
+	s.getClassLoader().loadClass("a.TestLocalVarTable");
     }
 
     public static List<ClassFile> doCompile(boolean debugSource,
