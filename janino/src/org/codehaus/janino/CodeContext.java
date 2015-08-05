@@ -40,6 +40,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.codehaus.janino.Java.LocalVariableSlot;
 import org.codehaus.janino.util.ClassFile;
 
 /**
@@ -266,6 +267,7 @@ class CodeContext {
                 short  varNameSlot = cf.addConstantUtf8Info(slot.getName());
 
 //                System.out.println("slot: " + slot + ", typeSlot: " + classSlot + ", varSlot: " + varNameSlot);
+
 
                 ClassFile.LocalVariableTableAttribute.Entry entry = new ClassFile.LocalVariableTableAttribute.Entry(
                     (short) slot.getStart().offset,
@@ -1167,7 +1169,6 @@ class CodeContext {
      */
     public
     class Offset {
-
         /** The offset in the code attribute that this object represents. */
         int offset = Offset.UNSET;
 
@@ -1357,6 +1358,18 @@ class CodeContext {
             } else {
                 assert !invalidOffsets.contains(ete.endPC);
                 assert !invalidOffsets.contains(ete.handlerPC);
+            }
+        }
+
+        // remove local variables in dead-code block
+        for (Iterator<LocalVariableSlot> it = this.allLocalVars.iterator(); it.hasNext(); ) {
+            final LocalVariableSlot var = it.next();
+            if (invalidOffsets.contains(var.getStart())) {
+                assert invalidOffsets.contains(var.getEnd());
+                it.remove();
+            }
+            else {
+                assert !invalidOffsets.contains(var.getEnd());
             }
         }
 
