@@ -27,6 +27,9 @@
 	/>
 
 	<target name="build" description="Creates and populates a directory './mirror' for later upload to the web site.">
+
+		<fail unless="eclipse.running" message="Please run this ANT build configuration with 'Runtime JRE: Run in the same JRE as the workspace." />
+
 		<delete dir="mirror"/>
 		<mkdir dir="mirror/download"/>
 
@@ -118,11 +121,12 @@
 		<!-- Build 'build/commons-compiler-jdk.jar'. -->
 		<delete dir="build/bin-de.unkrig.commons.nullanalysis"/>
 		<mkdir dir="build/bin-de.unkrig.commons.nullanalysis"/>
+		<eclipse.convertPath resourcepath="/de.unkrig.commons.nullanalysis" property="de.unkrig.commons.nullanalysis" />
 		<javac
 			fork="yes"
 			source="1.6"
 			target="1.6"
-			srcdir="../de.unkrig.commons.nullanalysis/src"
+			srcdir="${de.unkrig.commons.nullanalysis}/src"
 			destdir="build/bin-de.unkrig.commons.nullanalysis"
 			debug="true"
 			debuglevel="lines,vars,source"
@@ -219,7 +223,7 @@
 			doctitle="Janino ${version}"
 			windowtitle="Janino ${version}"
 			overview="overview.html"
-			sourcepath="../commons-compiler/src;../janino/src;../commons-compiler-jdk/src;../de.unkrig.commons.nullanalysis/src"
+			sourcepath="../commons-compiler/src;../janino/src;../commons-compiler-jdk/src;${de.unkrig.commons.nullanalysis}/src"
 			classpath="${ant.jar}"
 			destdir="mirror/javadoc"
 			packagenames="${javadoc-packages}"
@@ -410,6 +414,8 @@
 
 	<target name="tag" description="Tags all projects as 'janino_${version}'">
 
+		<fail unless="eclipse.running" message="Please run this ANT build configuration with 'Runtime JRE: Run in the same JRE as the workspace." />
+
 		<!-- Compose the tag name from the feature name and the version. -->
 
 		<property name="tag" value="janino_${version}"/>
@@ -435,10 +441,12 @@
 			<copy srcpath="../janino-tests"           desturl="${d1}"/>
 		</de.unkrig.subclipse.svn>
 		<property name="d2" value="https://svn.code.sf.net/p/loggifier/code/tags/${tag}"/>
+		<eclipse.convertPath resourcepath="/de.unkrig.commons.nullanalysis"     property="de.unkrig.commons.nullanalysis"     />
+		<eclipse.convertPath resourcepath="/de.unkrig.checkstyle-configuration" property="de.unkrig.checkstyle-configuration" />
 		<de.unkrig.subclipse.svn>
 			<mkdir                                                url="${d2}"/>
-			<copy srcpath="../de.unkrig.checkstyle-configuration" desturl="${d2}"/>
-			<copy srcpath="../de.unkrig.commons.nullanalysis"     desturl="${d2}"/>
+			<copy srcpath="${de.unkrig.checkstyle-configuration}" desturl="${d2}"/>
+			<copy srcpath="${de.unkrig.commons.nullanalysis}"     desturl="${d2}"/>
 		</de.unkrig.subclipse.svn>
 
 		<echo message="*** The next step is to officially release the new version on" />
