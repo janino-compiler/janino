@@ -1468,7 +1468,7 @@ class Java {
         /** The return type of the function (VOID for constructors). */
         public final Type type;
 
-        /** The name of the function ("<init>" for constructors. */
+        /** The name of the function ({@code "<init>"} for constructors). */
         public final String name;
 
         /** The parameters of the function. */
@@ -3697,7 +3697,7 @@ class Java {
      *   <dd>JLS7 15.21 'equality operation'
      *   <dt>!=
      *   <dd>JLS7 15.22 'non-equality operation'
-     *   <dt>&lt; > &lt;= >=
+     *   <dt>&lt; &gt; &lt;= &gt;=
      *   <dd>JLS7 15.20.1 'numerical comparison operations'
      * </dl>
      * Operations with non-boolean result:
@@ -3712,7 +3712,7 @@ class Java {
      *   <dd>JLS7 15.17 'multiplicative operations'
      *   <dt>+ -
      *   <dd>JLS7 15.18 'additive operations'
-     *   <dt>&lt;&lt; >> >>>
+     *   <dt>&lt;&lt; &gt;&gt; &gt;&gt;&gt;
      *   <dd>JLS7 15.19 'shift operations'
      * </dl>
      */

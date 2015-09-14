@@ -35,7 +35,7 @@ class ByteArrayClassLoader extends ClassLoader {
     /**
      * The given {@link Map} of classes must not be modified afterwards.
      *
-     * @param classes String className => byte[] data
+     * @param classes String className =&gt; byte[] data
      */
     public
     ByteArrayClassLoader(Map<String /*className*/, byte[] /*data*/> classes) { this.classes = classes; }

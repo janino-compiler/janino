@@ -206,7 +206,7 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
      * bytecode. This may cause more compilation units being scanned and parsed. Continue until
      * all compilation units are compiled.
      *
-     * @return String name => byte[] bytecode, or <code>null</code> if no source code could be found
+     * @return String name =&gt; byte[] bytecode, or <code>null</code> if no source code could be found
      * @throws ClassNotFoundException on compilation problems
      */
     protected Map<String /*name*/, byte[] /*bytecode*/>

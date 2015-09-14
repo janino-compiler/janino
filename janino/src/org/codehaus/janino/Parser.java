@@ -1892,8 +1892,8 @@ class Parser {
      *     ConditionalExpression [ AssignmentOperator AssignmentExpression ]
      *
      *   AssignmentOperator :=
-     *     '=' | '*=' | '/=' | '%=' | '+=' | '-=' | '<<=' |
-     *     '>>=' | '>>>=' | '&=' | '^=' | '|='
+     *     '=' | '*=' | '/=' | '%=' | '+=' | '-=' | '&lt;&lt;=' |
+     *     '&gt;&gt;=' | '&gt;&gt;&gt;=' | '&amp;=' | '^=' | '|='
      * </pre>
      */
     public Atom
@@ -1954,7 +1954,7 @@ class Parser {
     /**
      * <pre>
      *   ConditionalAndExpression :=
-     *     InclusiveOrExpression { '&&' InclusiveOrExpression }
+     *     InclusiveOrExpression { '&amp;&amp;' InclusiveOrExpression }
      * </pre>
      */
     public Atom
@@ -2017,7 +2017,7 @@ class Parser {
     /**
      * <pre>
      *   AndExpression :=
-     *     EqualityExpression { '&' EqualityExpression }
+     *     EqualityExpression { '&amp;' EqualityExpression }
      * </pre>
      */
     public Atom
@@ -2061,9 +2061,9 @@ class Parser {
      *   RelationalExpression :=
      *     ShiftExpression {
      *       'instanceof' ReferenceType
-     *       | '<' ShiftExpression [ { ',' TypeArgument } '>' ]
-     *       | '<' TypeArgument [ { ',' TypeArgument } '>' ]
-     *       | ( '>' | '<=' | '>=' ) ShiftExpression
+     *       | '&lt;' ShiftExpression [ { ',' TypeArgument } '&gt;' ]
+     *       | '&lt;' TypeArgument [ { ',' TypeArgument } '&gt;' ]
+     *       | ( '&gt;' | '&lt;=' | '&gt;=' ) ShiftExpression
      *     }
      * </pre>
      */
@@ -2161,7 +2161,7 @@ class Parser {
     /**
      * <pre>
      *   ShiftExpression :=
-     *     AdditiveExpression { ( '<<' | '>>' | '>>>' ) AdditiveExpression }
+     *     AdditiveExpression { ( '&lt;&lt;' | '&gt;&gt;' | '&gt;&gt;&gt;' ) AdditiveExpression }
      * </pre>
      */
     public Atom
