@@ -100,7 +100,7 @@
 				<attribute name="Implementation-URL"     value="http://janino.net"/>
 				<!-- OSGI info, see JANINO-181. -->
 				<attribute name="Bundle-Name"            value="Janino"/>
-				<attribute name="Bundle-SymbolicName"    value="org.cohehaus.janino;singleton:=true"/>
+				<attribute name="Bundle-SymbolicName"    value="org.codehaus.janino;singleton:=true"/>
 				<attribute name="Bundle-Version"         value="${version}"/>
 				<attribute name="Bundle-ManifestVersion" value="2"/>
 				<attribute name="Bundle-License"         value="http://dist.codehaus.org/janino/new_bsd_license.txt"/>
