@@ -444,6 +444,9 @@ class Java {
         changeAccess(int newAccess) {
             return new Modifiers((short) (this.flags & ~Mod.PPP | newAccess), this.annotations);
         }
+
+        public boolean
+        isBlank() { return this.flags == 0 && this.annotations.length == 0; }
     }
 
     /** Representation of a 'name = value' element in a {@link NormalAnnotation}. */
