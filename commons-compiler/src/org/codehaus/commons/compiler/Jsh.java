@@ -30,6 +30,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.codehaus.commons.compiler.samples.DemoBase;
@@ -71,15 +72,19 @@ class Jsh extends DemoBase {
             } else
            if ("--help".equals(arg)) {
                System.err.println("Usage:");
-               System.err.println("  Jsh { <option> } <script-file> { <parameter-value> }");
-               System.err.println("Valid options are");
+               System.err.println("  Jsh { <option> } <script-file> { <argument> }");
+               System.err.println("Valid options are:");
                System.err.println(" --return-type <return-type>         (default: void)");
                System.err.println(" --parameter <type> <name>           (multiple allowed)");
                System.err.println(" --thrown-exception <exception-type> (multiple allowed)");
                System.err.println(" --default-import <imports>          (multiple allowed)");
                System.err.println(" --help");
-               System.err.println("If no parameters are specified, then a single parameter \"String[] args\" is");
-               System.err.println("assumed.");
+               System.err.println("If no \"--parameter\"s are specified, then the <argument>s are passed as a single");
+               System.err.println("parameter \"String[] args\".");
+               System.err.println("Otherwise, the number of <argument>s must exactly match the number of");
+               System.err.println("parameters, and each <argument> is converted to the respective parameter's");
+               System.err.println("type.");
+               System.err.println("Iff the return type is not \"void\", then the return value is printed to STDOUT.");
                System.exit(0);
            } else
            {
@@ -96,19 +101,24 @@ class Jsh extends DemoBase {
 
         Object[] arguments;
         if (parameterTypes.isEmpty()) {
+
             parameterTypes.add(String[].class);
             parameterNames.add("args");
 
-            String[] args2 = new String[args.length - i];
-            System.arraycopy(args, i, args2, 0, args2.length);
-            arguments = new Object[] { args2 };
+            arguments = new Object[] { Arrays.copyOfRange(args, i, args.length) };
 
             if (thrownExceptions.isEmpty()) thrownExceptions.add(Exception.class);
         } else {
 
             // One command line argument for each parameter.
             if (args.length - i != parameterTypes.size()) {
-                System.err.println("Argument and parameter count do not match; try \"--help\".");
+                System.err.println(
+                    "Argument count ("
+                    + (args.length - i)
+                    + ") and parameter count ("
+                    + parameterTypes.size()
+                    + ") do not match; try \"--help\"."
+                );
                 System.exit(1);
             }
 
@@ -119,13 +129,14 @@ class Jsh extends DemoBase {
             }
         }
 
-        // Create "ScriptEvaluator" object.
+        // Create and configure the "ScriptEvaluator" object.
         IScriptEvaluator se = CompilerFactoryFactory.getDefaultCompilerFactory().newScriptEvaluator();
         se.setReturnType(returnType);
         se.setDefaultImports(defaultImports.toArray(new String[0]));
         se.setParameters(parameterNames.toArray(new String[0]), parameterTypes.toArray(new Class[0]));
         se.setThrownExceptions(thrownExceptions.toArray(new Class[0]));
 
+        // Scan, parse and compile the script file.
         InputStream is = new FileInputStream(scriptFile);
         try {
 
