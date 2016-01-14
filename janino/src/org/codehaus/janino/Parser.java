@@ -288,6 +288,9 @@ class Parser {
      *   ModifiersAndAnnotations := { 'public' | 'protected' | 'private' | 'static' | 'abstract' | 'final' | 'native'
      *           | 'synchronized' | 'transient' | 'volatile' | 'strictfp' | Annotation }
      * </pre>
+     * <p>
+     *   Includes the case "no modifiers".
+     * </p>
      */
     public Java.Modifiers
     parseModifiers() throws CompileException, IOException {
@@ -1062,7 +1065,7 @@ class Parser {
 
     /**
      * <pre>
-     *   '{' BlockStatements '}'
+     *   Block := '{' BlockStatements '}'
      * </pre>
      */
     public Block
@@ -1088,17 +1091,19 @@ class Parser {
 
     /**
      * <pre>
-     *   BlockStatement := { Identifier ':' } (
-     *     ( Modifiers Type | ModifiersOpt BasicType ) VariableDeclarators ';' |
-     *     'class' ... |
-     *     Statement |
-     *     'final' Type VariableDeclarators ';' |
+     *   BlockStatement :=
+     *     Statement |                              (1)
+     *     'class' ... |                            (2)
+     *     Modifiers Type VariableDeclarators ';' |
      *     Expression ';' |
-     *     Expression VariableDeclarators ';'   (1)
-     *   )
+     *     Expression VariableDeclarators ';'       (3)
      * </pre>
      *
-     * (1) "Expression" must pose a type, and has optional trailing brackets.
+     * (1) Includes the "labeled statement".
+     * <br />
+     * (2) Local class declaration.
+     * <br />
+     * (3) Local variable declaration statement; "Expression" must pose a type, and has optional trailing brackets.
      */
     public BlockStatement
     parseBlockStatement() throws CompileException, IOException {
