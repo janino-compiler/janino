@@ -316,6 +316,8 @@ class Parser {
             mod |= x;
         }
 
+        if (as.isEmpty() && mod == 0) return Parser.NO_MODIFIERS;
+
         return new Modifiers(mod, (Annotation[]) as.toArray(new Java.Annotation[as.size()]));
     }
     private static final String[] MODIFIER_NAMES = {
@@ -330,6 +332,7 @@ class Parser {
         Mod.PUBLIC | Mod.PROTECTED | Mod.PRIVATE,
         Mod.ABSTRACT | Mod.FINAL,
     };
+    private static final Modifiers NO_MODIFIERS = new Modifiers();
 
     /**
      * <pre>
