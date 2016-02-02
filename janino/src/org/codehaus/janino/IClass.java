@@ -48,7 +48,7 @@ import org.codehaus.janino.Java.Annotation;
 @SuppressWarnings({ "rawtypes", "unchecked" }) public abstract
 class IClass {
 
-    private static final Logger LOGGER = Logger.getLogger(IClass.class.getName());
+    private static final Logger LOGGER = Aux.LOGGING ? Logger.getLogger(IClass.class.getName()) : null;
 
     /**
      * Special return value for {@link IField#getConstantValue()} indicating that the field does <i>not</i> have a
@@ -877,6 +877,7 @@ class IClass {
          */
         public boolean
         isMoreSpecificThan(IInvocable that) throws CompileException {
+            if (Aux.LOGGING)
             IClass.LOGGER.entering(null, "isMoreSpecificThan", that);
 
             // a variable-length argument is always less specific than a fixed arity.
@@ -978,12 +979,14 @@ class IClass {
             IClass[] thatParameterTypes = that.getParameterTypes();
             for (int i = 0; i < thisParameterTypes.length; ++i) {
                 if (!thatParameterTypes[i].isAssignableFrom(thisParameterTypes[i])) {
+                    if (Aux.LOGGING)
                     IClass.LOGGER.exiting(null, "isMoreSpecificThan", false);
                     return false;
                 }
             }
 
             boolean result = !Arrays.equals(thisParameterTypes, thatParameterTypes);
+            if (Aux.LOGGING)
             IClass.LOGGER.exiting(null, "isMoreSpecificThan", result);
             return result;
         }

@@ -40,7 +40,7 @@ import org.codehaus.janino.util.ClassFile.ConstantClassInfo;
 @SuppressWarnings({ "rawtypes", "unchecked" }) public
 class ClassFileIClass extends IClass {
 
-    private static final Logger LOGGER = Logger.getLogger(ClassFileIClass.class.getName());
+    private static final Logger LOGGER = Aux.LOGGING ? Logger.getLogger(ClassFileIClass.class.getName()) : null;
 
     private final ClassFile    classFile;
     private final IClassLoader iClassLoader;
@@ -243,6 +243,7 @@ class ClassFileIClass extends IClass {
     /** @param index Index of the CONSTANT_Class_info to resolve (JVMS 4.4.1) */
     private IClass
     resolveClass(short index) throws ClassNotFoundException {
+        if (Aux.LOGGING)
         ClassFileIClass.LOGGER.entering(null, "resolveClass", index);
 
         ConstantClassInfo cci = (ConstantClassInfo) this.classFile.getConstantPoolInfo(index);
@@ -251,6 +252,7 @@ class ClassFileIClass extends IClass {
 
     private IClass
     resolveClass(String descriptor) throws ClassNotFoundException {
+        if (Aux.LOGGING)
         ClassFileIClass.LOGGER.entering(null, "resolveIClass", descriptor);
 
         IClass result = (IClass) this.resolvedClasses.get(descriptor);

@@ -59,7 +59,7 @@ import org.codehaus.janino.util.ClassFile;
 @SuppressWarnings({ "rawtypes", "unchecked" }) public
 class SimpleCompiler extends Cookable implements ISimpleCompiler {
 
-    private static final Logger LOGGER = Logger.getLogger(SimpleCompiler.class.getName());
+    private static final Logger LOGGER = Aux.LOGGING ? Logger.getLogger(SimpleCompiler.class.getName()) : null;
 
     private ClassLoader parentClassLoader = Thread.currentThread().getContextClassLoader();
 
@@ -372,6 +372,7 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
      */
     protected final ClassLoader
     compileToClassLoader(Java.CompilationUnit compilationUnit) throws CompileException {
+        if (Aux.LOGGING)
         SimpleCompiler.LOGGER.entering(null, "compileToClassLoader", compilationUnit);
 
         this.classLoaderIClassLoader = new ClassLoaderIClassLoader(this.parentClassLoader);
@@ -386,6 +387,7 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
         final Map<String /*className*/, byte[] /*bytecode*/> classes = new HashMap();
         for (ClassFile cf : classFiles) {
             byte[] contents = cf.toByteArray();
+            if (Aux.LOGGING)
             if (SimpleCompiler.LOGGER.isLoggable(Level.FINEST)) {
                 try {
                     Class disassemblerClass = Class.forName("de.unkrig.jdisasm.Disassembler");

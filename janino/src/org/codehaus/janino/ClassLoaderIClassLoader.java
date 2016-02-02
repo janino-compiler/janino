@@ -33,7 +33,7 @@ import java.util.logging.Logger;
 @SuppressWarnings("rawtypes") public
 class ClassLoaderIClassLoader extends IClassLoader {
 
-    private static final Logger LOGGER = Logger.getLogger(ClassLoaderIClassLoader.class.getName());
+    private static final Logger LOGGER = Aux.LOGGING ? Logger.getLogger(ClassLoaderIClassLoader.class.getName()) : null;
 
     /** @param classLoader The delegate that loads the classes. */
     public
@@ -63,6 +63,7 @@ class ClassLoaderIClassLoader extends IClassLoader {
 
     @Override protected IClass
     findIClass(String descriptor) throws ClassNotFoundException {
+        if (Aux.LOGGING)
         ClassLoaderIClassLoader.LOGGER.entering(null, "findIClass", descriptor);
 
         Class clazz;
@@ -89,6 +90,7 @@ class ClassLoaderIClassLoader extends IClassLoader {
                 throw e;
             }
         }
+        if (Aux.LOGGING)
         ClassLoaderIClassLoader.LOGGER.log(Level.FINE, "clazz={0}", clazz);
 
         IClass result = new ReflectionIClass(clazz, this);
