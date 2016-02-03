@@ -399,7 +399,11 @@ class ClassFile {
 
         int res = this.constantPool.size();
         if (res > 0xFFFF) {
-            throw new JaninoRuntimeException("Constant pool has grown past JVM limit of 0xFFFF");
+            throw new JaninoRuntimeException(
+                "Constant pool for class "
+                + this.getThisClassName()
+                + " has grown past JVM limit of 0xFFFF"
+            );
         }
         this.constantPool.add(cpi);
         if (cpi.isWide()) this.constantPool.add(null);
