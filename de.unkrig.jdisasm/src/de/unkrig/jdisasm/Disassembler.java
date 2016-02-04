@@ -141,7 +141,7 @@ class Disassembler {
 
     @Nullable private Map<Integer /*offset*/, String /*label*/> branchTargets;
 
-    private static enum AttributeContext { CLASS, FIELD, METHOD }
+    private enum AttributeContext { CLASS, FIELD, METHOD }
 
     /**/
     public static void
@@ -2172,7 +2172,6 @@ class Disassembler {
         /** The name of this local variable. */
         final String name;
 
-        public
         LocalVariable(@Nullable TypeSignature typeSignature, String name) {
             this.typeSignature = typeSignature;
             this.name          = name;
@@ -2195,7 +2194,6 @@ class Disassembler {
     class Instruction {
 
         /** @param operands <code>null</code> is equivalent to "zero operands" */
-        public
         Instruction(String mnemonic, Operand[] operands) {
             this.mnemonic = mnemonic;
             this.operands = operands;
@@ -2230,7 +2228,6 @@ class Disassembler {
     @NotNullByDefault(false) private static
     class CountingInputStream extends FilterInputStream {
 
-        public
         CountingInputStream(InputStream is) {
             super(is);
         }
