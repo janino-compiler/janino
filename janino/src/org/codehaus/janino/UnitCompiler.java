@@ -2311,17 +2311,19 @@ class UnitCompiler {
         codeContext.fixUpAndRelocate();
 
         // Do flow analysis.
-        if (Aux.LOGGING)
-        if (UnitCompiler.LOGGER.isLoggable(Level.FINE)) {
-            try {
-                codeContext.flowAnalysis(fd.toString());
-            } catch (RuntimeException re) {
-                UnitCompiler.LOGGER.log(Level.FINE, null, re);
+        if (Aux.LOGGING) {
+            if (UnitCompiler.LOGGER.isLoggable(Level.FINE)) {
+                try {
+                    codeContext.flowAnalysis(fd.toString());
+                } catch (RuntimeException re) {
+                    UnitCompiler.LOGGER.log(Level.FINE, null, re);
 
-                // Continue, so that the .class file is generated and can be examined.
-                ;
+                    // Continue, so that the .class file is generated and can be examined.
+                    ;
+                }
             }
-        } else {
+        }
+        else {
             codeContext.flowAnalysis(fd.toString());
         }
 
