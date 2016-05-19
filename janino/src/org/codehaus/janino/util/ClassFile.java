@@ -69,8 +69,8 @@ class ClassFile {
      */
     public
     ClassFile(short accessFlags, String thisClassFd, String superclassFd, String[] interfaceFds) {
-        this.majorVersion  = ClassFile.MAJOR_VERSION_JDK_1_1;
-        this.minorVersion  = ClassFile.MINOR_VERSION_JDK_1_1;
+        this.majorVersion  = ClassFile.MAJOR_VERSION_JDK_1_5;
+        this.minorVersion  = ClassFile.MINOR_VERSION_JDK_1_5;
 
         this.constantPool  = new ArrayList();
         this.constantPool.add(null); // Add fake "0" index entry.
