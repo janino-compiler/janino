@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<psf version="2.0">
+<provider id="org.tigris.subversion.subclipse.core.svnnature">
+<project reference="0.9.3,https://svn.codehaus.org/janino/trunk/commons-compiler,commons-compiler"/>
+<project reference="0.9.3,https://svn.codehaus.org/janino/trunk/commons-compiler-jdk,commons-compiler-jdk"/>
+<project reference="0.9.3,https://svn.codehaus.org/janino/trunk/commons-compiler-tests,commons-compiler-tests"/>
+<project reference="0.9.3,https://svn.code.sf.net/p/loggifier/code/trunk/de.unkrig.checkstyle-configuration,de.unkrig.checkstyle-configuration"/>
+<project reference="0.9.3,https://svn.code.sf.net/p/loggifier/code/trunk/de.unkrig.commons.nullanalysis,de.unkrig.commons.nullanalysis"/>
+<project reference="0.9.3,https://svn.codehaus.org/janino/trunk/de.unkrig.jdisasm,de.unkrig.jdisasm"/>
+<project reference="0.9.3,https://svn.codehaus.org/janino/trunk/janino,janino"/>
+<project reference="0.9.3,https://svn.codehaus.org/janino/trunk/janino-tests,janino-tests"/>
+</provider>
+</psf>

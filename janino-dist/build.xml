@@ -1,0 +1,456 @@
+<project default="build">
+
+	<property file="local_build.properties"/>
+	<property file="build.properties"/>
+
+	<taskdef
+		classpath="lib/de.unkrig.ant-contrib.jar"
+		resource="de/unkrig/antcontrib/ant.xml"
+	/>
+
+	<taskdef
+		classpath="lib/ant-contrib-1.0b3.jar"
+		resource="net/sf/antcontrib/antlib.xml"
+	/>
+
+	<!-- Task 'ftp2' which adds supprt for FTP proxies. -->
+	<taskdef
+		classpath="lib/ant_issue_54883.jar"
+		resource="ant_issue_54883.properties"
+	/>
+
+	<!-- MAVEN ant tasks. -->
+	<taskdef
+		classpath="lib/maven-ant-tasks-2.1.3.jar"
+		resource="org/apache/maven/artifact/ant/antlib.xml"
+		uri=""
+	/>
+
+	<target name="build" description="Creates and populates a directory './mirror' for later upload to the web site.">
+
+		<fail unless="eclipse.running" message="Please run this ANT build configuration with 'Runtime JRE: Run in the same JRE as the workspace." />
+
+		<delete dir="mirror"/>
+		<mkdir dir="mirror/download"/>
+
+		<!-- Build 'build/commons-compiler.jar'. -->
+		<delete dir="build/bin-commons-compiler"/>
+		<mkdir dir="build/bin-commons-compiler"/>
+		<javac
+			fork="yes"
+			source="1.6"
+			target="1.6"
+			srcdir="../commons-compiler/src"
+			destdir="build/bin-commons-compiler"
+			debug="true"
+			debuglevel="lines,vars,source"
+			includeantruntime="false"
+		>
+			<compilerarg value="-Xlint:none"/>
+			<compilerarg value="-Xlint:deprecation"/>
+		</javac>
+		<copy todir="build/bin-commons-compiler">
+			<fileset dir="../commons-compiler/src" excludes="**/*.java,**/package.html"/>
+		</copy>
+		<jar jarfile="build/commons-compiler.jar" filesonly="true">
+			<manifest>
+				<attribute name="Specification-Version"  value="${version}"/>
+				<!-- OSGI info, see JANINO-181. -->
+				<attribute name="Bundle-Name"            value="Commons-Compiler"/>
+				<attribute name="Bundle-SymbolicName"    value="org.codehaus.janino.commons-compiler;singleton:=true"/>
+				<attribute name="Bundle-Version"         value="${version}"/>
+				<attribute name="Bundle-ManifestVersion" value="2"/>
+				<attribute name="Bundle-License"         value="http://dist.codehaus.org/janino/new_bsd_license.txt"/>
+				<attribute name="Bundle-Description"     value="Janino is a super-small, super-fast Java compiler."/>
+				<attribute name="Export-Package"         value="org.codehaus.commons.compiler, org.codehaus.commons.compiler.samples"/>
+			</manifest>
+			<fileset dir="build/bin-commons-compiler"/>
+		</jar>
+		<signjar
+			keystore="dummy-keystore"
+			storepass="storepass"
+			keypass="keypass"
+			jar="build/commons-compiler.jar"
+			alias="dummy"
+		/>
+
+		<!-- Build 'build/janino.jar'. -->
+		<delete dir="build/bin-janino"/>
+		<mkdir dir="build/bin-janino"/>
+		<javac
+			fork="yes"
+			source="1.6"
+			target="1.6"
+			srcdir="../janino/src"
+			destdir="build/bin-janino"
+			classpath="${ant.jar}:build/bin-commons-compiler:../de.unkrig.jdisasm/bin"
+			debug="true"
+			debuglevel="lines,vars,source"
+			includeantruntime="false"
+		>
+			<compilerarg value="-Xlint:none"/>
+			<compilerarg value="-Xlint:deprecation"/>
+		</javac>
+		<copy todir="build/bin-janino">
+			<fileset dir="../janino/src" excludes="**/*.java,**/package.html"/>
+		</copy>
+		<jar jarfile="build/janino.jar" filesonly="true">
+			<manifest>
+				<attribute name="Implementation-Version" value="${version}"/>
+				<attribute name="Implementation-URL"     value="http://janino.net"/>
+				<!-- OSGI info, see JANINO-181. -->
+				<attribute name="Bundle-Name"            value="Janino"/>
+				<attribute name="Bundle-SymbolicName"    value="org.codehaus.janino;singleton:=true"/>
+				<attribute name="Bundle-Version"         value="${version}"/>
+				<attribute name="Bundle-ManifestVersion" value="2"/>
+				<attribute name="Bundle-License"         value="http://dist.codehaus.org/janino/new_bsd_license.txt"/>
+				<attribute name="Bundle-Description"     value="Janino is a super-small, super-fast Java compiler."/>
+				<attribute name="Export-Package"         value="org.codehaus.janino, org.codehaus.janino.samples, org.codehaus.janino.tools, org.codehaus.janino.util"/>
+				<attribute name="Require-Bundle"         value="org.codehaus.janino.commons-compiler"/>
+			</manifest>
+			<fileset dir="build/bin-janino"/>
+		</jar>
+		<signjar
+			keystore="dummy-keystore"
+			storepass="storepass"
+			keypass="keypass"
+			jar="build/janino.jar"
+			alias="dummy"
+		/>
+
+		<!-- Build 'build/commons-compiler-jdk.jar'. -->
+		<delete dir="build/bin-de.unkrig.commons.nullanalysis"/>
+		<mkdir dir="build/bin-de.unkrig.commons.nullanalysis"/>
+		<eclipse.convertPath resourcepath="/de.unkrig.commons.nullanalysis" property="de.unkrig.commons.nullanalysis" />
+		<javac
+			fork="yes"
+			source="1.6"
+			target="1.6"
+			srcdir="${de.unkrig.commons.nullanalysis}/src"
+			destdir="build/bin-de.unkrig.commons.nullanalysis"
+			debug="true"
+			debuglevel="lines,vars,source"
+			includeantruntime="false"
+		>
+			<compilerarg value="-Xlint:none"/>
+			<compilerarg value="-Xlint:deprecation"/>
+		</javac>
+		<delete dir="build/bin-commons-compiler-jdk"/>
+		<mkdir dir="build/bin-commons-compiler-jdk"/>
+		<javac
+			fork="yes"
+			source="1.6"
+			target="1.6"
+			srcdir="../commons-compiler-jdk/src"
+			destdir="build/bin-commons-compiler-jdk"
+			classpath="build/bin-commons-compiler:build/bin-de.unkrig.commons.nullanalysis"
+			debug="true"
+			debuglevel="lines,vars,source"
+			includeantruntime="false"
+		>
+			<compilerarg value="-Xlint:none"/>
+			<compilerarg value="-Xlint:deprecation"/>
+		</javac>
+		<copy todir="build/bin-commons-compiler-jdk">
+			<fileset dir="../commons-compiler-jdk/src" excludes="**/*.java,**/package.html"/>
+		</copy>
+		<jar jarfile="build/commons-compiler-jdk.jar" filesonly="true">
+			<manifest>
+				<attribute name="Implementation-Version" value="${version}"/>
+				<attribute name="Implementation-URL"     value="http://janino.net"/>
+				<!-- OSGI info, see JANINO-181. -->
+				<attribute name="Bundle-Name"            value="Commons-Compiler-Jdk"/>
+				<attribute name="Bundle-SymbolicName"    value="org.codehaus.janino.commons-compiler-jdk;singleton:=true"/>
+				<attribute name="Bundle-Version"         value="${version}"/>
+				<attribute name="Bundle-ManifestVersion" value="2"/>
+				<attribute name="Bundle-License"         value="http://dist.codehaus.org/janino/new_bsd_license.txt"/>
+				<attribute name="Bundle-Description"     value="Janino is a super-small, super-fast Java compiler."/>
+				<attribute name="Export-Package"         value="org.codehaus.commons.compiler.jdk, org.codehaus.commons.io"/>
+				<attribute name="Require-Bundle"         value="org.codehaus.janino.commons-compiler"/>
+			</manifest>
+			<fileset dir="build/bin-commons-compiler-jdk"/>
+			<fileset dir="build/bin-de.unkrig.commons.nullanalysis"/>
+		</jar>
+		<signjar
+			keystore="dummy-keystore"
+			storepass="storepass"
+			keypass="keypass"
+			jar="build/commons-compiler-jdk.jar"
+			alias="dummy"
+		/>
+
+		<!-- Build source ZIP files. -->
+		<zip destfile="build/commons-compiler-src.zip" filesonly="true">
+			<zipfileset dir="../commons-compiler/src"/>
+		</zip>
+		<zip destfile="build/janino-src.zip" filesonly="true">
+			<zipfileset dir="../janino/src"/>
+		</zip>
+		<zip destfile="build/commons-compiler-jdk-src.zip" filesonly="true">
+			<zipfileset dir="../commons-compiler-jdk/src"/>
+		</zip>
+
+		<!-- Build 'mirror/download/janino-VERSION.zip' file. -->
+		<zip destfile="mirror/download/janino-${version}.zip" filesonly="true">
+			<zipfileset file="build/commons-compiler.jar"         prefix="janino-${version}"/>
+			<zipfileset file="build/commons-compiler-src.zip"     prefix="janino-${version}"/>
+
+			<zipfileset file="build/janino.jar"                   prefix="janino-${version}"/>
+			<zipfileset file="build/janino-src.zip"               prefix="janino-${version}"/>
+
+			<zipfileset file="build/commons-compiler-jdk.jar"     prefix="janino-${version}"/>
+			<zipfileset file="build/commons-compiler-jdk-src.zip" prefix="janino-${version}"/>
+
+			<zipfileset file="README.txt"                         prefix="janino-${version}"/>
+			<zipfileset file="new_bsd_license.txt"                prefix="janino-${version}"/>
+		</zip>
+
+		<!-- Build 'mirror/pad_file.xml'. -->
+		<length file="mirror/download/janino-${version}.zip" property="janino-zip-size"/>
+		<copy file="pad_file-template.xml" tofile="mirror/pad_file.xml" encoding="ISO-8859-1">
+			<filterchain>
+				<replacestring from="@VERSION@" to="${version}"/>
+				<replacestring from="@SIZE@"    to="${janino-zip-size}"/>
+			</filterchain>
+		</copy>
+
+		<!-- Build 'mirror/javadoc/'. -->
+		<delete dir="mirror/javadoc"/>
+		<mkdir dir="mirror/javadoc"/>
+		<javadoc
+			header="&lt;a href=&quot;http://janino.net/&quot; target=&quot;_top&quot;&gt;janino.net&lt;/a&gt;"
+			splitindex="true"
+			doctitle="Janino ${version}"
+			windowtitle="Janino ${version}"
+			overview="overview.html"
+			sourcepath="../commons-compiler/src;../janino/src;../commons-compiler-jdk/src;${de.unkrig.commons.nullanalysis}/src"
+			classpath="${ant.jar}"
+			destdir="mirror/javadoc"
+			packagenames="${javadoc-packages}"
+		>
+			<link offline="true" href="${javadoc-jdk-href}" packagelistloc="${javadoc-jdk-packagelistloc}"/>
+			<link offline="true" href="${javadoc-ant-href}" packagelistloc="${javadoc-ant-packagelistloc}"/>
+		</javadoc>
+
+		<!-- Copy auxiliary files to 'mirror/'. -->
+		<copy todir="mirror">
+			<fileset file="favicon.ico"/>
+			<fileset file="new_bsd_license.txt"/>
+			<fileset file="changelog.html"/>
+			<fileset file="README.txt"/>
+			<fileset dir="../janino/src/org/codehaus/janino" includes="samples/*.java"/>
+			<fileset dir="../commons-compiler/src/org/codehaus/commons/compiler" includes="samples/*.java"/>
+		</copy>
+
+		<echo message="*** The next step is to execute target 'publish', which uploads the artefacts to the JANINO web site." />
+	</target>
+
+	<target name="publish" description="Uploads './mirror' to 'unkrig.de/janino'">
+
+		<!-- Have the FTP parameters entered/confirmed by the user. -->
+		<swingDialog title="FTP upload of update site">
+			<label text="Server:"                   /><text property="ftp.server"         defaultvalue="${ftp.server}"/>
+			<label text="Port (optional):"          /><text property="ftp.port"           defaultvalue="${ftp.port}"/>
+			<label text="User ID:"                  /><text property="ftp.userid"         defaultvalue="${ftp.userid}"/>
+			<label text="Password:"                 /><text property="ftp.password"       defaultvalue="${ftp.password}" secure="true" focus="true" />
+			<label text="Proxy server (optional):"  /><text property="ftp.proxy.server"   defaultvalue="${ftp.proxy.server}"/>
+			<label text="Proxy port (optional):"    /><text property="ftp.proxy.port"     defaultvalue="${ftp.proxy.port}"/>
+			<label text="Proxy user ID (optional):" /><text property="ftp.proxy.userid"   defaultvalue="${ftp.proxy.userid}"/>
+			<label text="Proxy password (optional):"/><text property="ftp.proxy.password" defaultvalue="${ftp.proxy.password}" secure="true"/>
+			<label text="Remote directory:"         /><text property="ftp.remotedir"      defaultvalue="${ftp.remotedir}"/>
+			<checkbox text="Use passive FTP"   property="ftp.passive" preselected="true"/>
+			<checkbox text="Verbose reporting" property="ftp.verbose" preselected="true"/>
+		</swingDialog>
+
+		<!--
+			Check if that version has been published before.
+		-->
+		<fileset dir="mirror/download" includes="janino-*.zip" id="jz" />
+		<property name="janino.zip" refid="jz" />
+		<echo message="${janino.zip}" />
+		<ftp2
+			server        ="${ftp.server}"
+			port          ="${ftp.port}"
+			userid        ="${ftp.userid}"
+			password      ="${ftp.password}"
+			proxyServer   ="${ftp.proxy.server}"
+			proxyPort     ="${ftp.proxy.port}"
+			proxyUserid   ="${ftp.proxy.userid}"
+			proxyPassword ="${ftp.proxy.password}"
+			remotedir     ="${ftp.remotedir}"
+			passive       ="${ftp.passive}"
+			verbose       ="${ftp.verbose}"
+			action        ="list"
+			listing       ="listing.txt"
+		>
+			<fileset dir="mirror" includes="download/${janino.zip}" />
+		</ftp2>
+		<if>
+			<length file="listing.txt" when="greater" length="0" />
+			<then>
+				<swingDialog messageType="WARNING">
+					<label text="'${janino.zip}' already exists" />
+					<label text="on the remote server!" />
+					<label text="Are you sure you want to continue?" />
+				</swingDialog>
+			</then>
+		</if>
+		<delete file="listing.txt" />
+
+		<!--
+			If there are problems with the FTP upload, add argument '-debug' to the ANT external tool configuration.
+
+			An attribute 'depends="yes"' could speed up the upload, because it uploads only the files that have
+			changed since the last successful upload.
+
+			An attribute 'retriesAllowed="x"', however, is a bad idea, because it does not RECONNECT to the FTP server,
+			but simply retries the FTP command, which is 99.9% prone to fail (how braindead is that?).
+		-->
+		<ftp2
+			server        ="${ftp.server}"
+			port          ="${ftp.port}"
+			userid        ="${ftp.userid}"
+			password      ="${ftp.password}"
+			proxyServer   ="${ftp.proxy.server}"
+			proxyPort     ="${ftp.proxy.port}"
+			proxyUserid   ="${ftp.proxy.userid}"
+			proxyPassword ="${ftp.proxy.password}"
+			remotedir     ="${ftp.remotedir}"
+			passive       ="${ftp.passive}"
+			verbose       ="${ftp.verbose}"
+			action        ="put"
+		>
+			<fileset dir="mirror"/>
+		</ftp2>
+
+		<echo message="*** The next step is to execute target 'tag', which creates a tag for the new version in SVN." />
+	</target>
+
+	<target name="stage" description="Deploy release version to Maven staging repository.">
+
+		<!-- Enter the GPG passphrase. -->
+		<var name="gpg.passphrase" unset="true" />
+		<swingDialog title="Deploying to staging repository">
+			<label text="GPG passphrase" />
+			<text property="gpg.passphrase" secure="true" focus="true" />
+		</swingDialog>
+
+		<!-- All artifacts get this same JAVADOC jar file. -->
+		<jar jarfile="build/janino-javadoc.jar"><fileset dir="mirror/javadoc" /></jar>
+
+		<forEach2 list="commons-compiler,commons-compiler-jdk,janino" param="artifactId">
+			<sequential>
+
+				<var name="versioned.pom.file" unset="true" />
+				<tempfile property="versioned.pom.file" suffix=".pom"/>
+				<copy file="poms/@{artifactId}.pom" tofile="${versioned.pom.file}">
+					<filterchain><replacestring from="@VERSION@" to="${version}" /></filterchain>
+				</copy>
+
+				<!-- Sign and deploy the main artifact. -->
+				<mvn>
+					<arg value="org.apache.maven.plugins:maven-gpg-plugin:1.3:sign-and-deploy-file" />
+					<arg value="-Durl=${maven-staging-repository-url}" />
+					<arg value="-DrepositoryId=${maven-staging-repository-id}" />
+					<arg value="-DpomFile=${versioned.pom.file}" />
+					<arg value="-Dfile=build/@{artifactId}.jar" />
+					<arg value="-Dgpg.passphrase=${gpg.passphrase}" />
+					<arg value="-Dgpg.executable=${gpg.executable}" />
+					<arg value="-Pgpg" />
+				</mvn>
+
+				<!-- Sign and deploy the sources artifact. -->
+				<mvn>
+					<arg value="org.apache.maven.plugins:maven-gpg-plugin:1.3:sign-and-deploy-file" />
+					<arg value="-Durl=${maven-staging-repository-url}" />
+					<arg value="-DrepositoryId=${maven-staging-repository-id}" />
+					<arg value="-DpomFile=${versioned.pom.file}" />
+					<arg value="-Dfile=build/@{artifactId}-src.zip" />
+					<arg value="-Dclassifier=sources" />
+					<arg value="-Dgpg.passphrase=${gpg.passphrase}" />
+					<arg value="-Dgpg.executable=${gpg.executable}" />
+					<arg value="-Pgpg" />
+				</mvn>
+
+				<!-- Sign and deploy the javadoc artifact. -->
+				<mvn>
+					<arg value="org.apache.maven.plugins:maven-gpg-plugin:1.3:sign-and-deploy-file" />
+					<arg value="-Durl=${maven-staging-repository-url}" />
+					<arg value="-DrepositoryId=${maven-staging-repository-id}" />
+					<arg value="-DpomFile=${versioned.pom.file}" />
+					<arg value="-Dfile=build/janino-javadoc.jar" />
+					<arg value="-Dclassifier=javadoc" />
+					<arg value="-Dgpg.passphrase=${gpg.passphrase}" />
+					<arg value="-Dgpg.executable=${gpg.executable}" />
+					<arg value="-Pgpg" />
+				</mvn>
+
+				<delete file="${versioned.pom.file}" />
+			</sequential>
+		</forEach2>
+
+		<!-- Sign and deploy the 'janino-parent' artifact. -->
+
+		<var name="versioned.pom.file" unset="true" />
+		<tempfile property="versioned.pom.file" suffix=".pom"/>
+		<copy file="poms/janino-parent.pom" tofile="${versioned.pom.file}">
+			<filterchain><replacestring from="@VERSION@" to="${version}" /></filterchain>
+		</copy>
+		<mvn>
+			<arg value="org.apache.maven.plugins:maven-gpg-plugin:1.3:sign-and-deploy-file" />
+			<arg value="-Durl=${maven-staging-repository-url}" />
+			<arg value="-DrepositoryId=${maven-staging-repository-id}" />
+			<arg value="-DpomFile=${versioned.pom.file}" />
+			<arg value="-Dfile=${versioned.pom.file}" />
+			<arg value="-Dgpg.passphrase=${gpg.passphrase}" />
+			<arg value="-Dgpg.executable=${gpg.executable}" />
+			<arg value="-Pgpg" />
+		</mvn>
+		<delete file="${versioned.pom.file}" />
+
+		<echo message="*** Now open 'https://nexus.codehaus.org/#stagingRepositories', select repository 'orgcodehausjanino-*', check its" />
+		<echo message="*** content, then hit 'Close' and afterwards 'Release'." />
+	</target>
+
+	<target name="tag" description="Tags all projects as 'janino_${version}'">
+
+		<fail unless="eclipse.running" message="Please run this ANT build configuration with 'Runtime JRE: Run in the same JRE as the workspace." />
+
+		<!-- Compose the tag name from the feature name and the version. -->
+
+		<property name="tag" value="janino_${version}"/>
+		<echo message="Tagging relevant projects as '${tag}'..."/>
+
+		<fail unless="eclipse.running" message="Please select the ECLIPSE external tool configuration option 'Run in the same JRE as the workspace'."/>
+		<condition property="de.unkrig.subclipse.svn.exists"><typefound name="de.unkrig.subclipse.svn"/></condition>
+		<fail unless="de.unkrig.subclipse.svn.exists" message="Please install the 'de.unkrig.subclipse' feature from 'http://subclipse.unkrig.de/update'."/>
+
+		<!--
+			Currently it is only possible to copy the WORKING COPY, and not the BASE version - due to a limitation in
+			svnClientAdapter. See http://subclipse.tigris.org/issues/show_bug.cgi?id=1505
+		-->
+		<property name="d1" value="https://svn.codehaus.org/janino/tags/${tag}"/>
+		<de.unkrig.subclipse.svn>
+			<mkdir                                    url="${d1}"/>
+			<copy srcpath="../commons-compiler"       desturl="${d1}"/>
+			<copy srcpath="../commons-compiler-jdk"   desturl="${d1}"/>
+			<copy srcpath="../commons-compiler-tests" desturl="${d1}"/>
+			<copy srcpath="../de.unkrig.jdisasm"      desturl="${d1}"/>
+			<copy srcpath="../janino"                 desturl="${d1}"/>
+			<copy srcpath="../janino-dist"            desturl="${d1}"/>
+			<copy srcpath="../janino-tests"           desturl="${d1}"/>
+		</de.unkrig.subclipse.svn>
+		<property name="d2" value="https://svn.code.sf.net/p/loggifier/code/tags/${tag}"/>
+		<eclipse.convertPath resourcepath="/de.unkrig.commons.nullanalysis"     property="de.unkrig.commons.nullanalysis"     />
+		<eclipse.convertPath resourcepath="/de.unkrig.checkstyle-configuration" property="de.unkrig.checkstyle-configuration" />
+		<de.unkrig.subclipse.svn>
+			<mkdir                                                url="${d2}"/>
+			<copy srcpath="${de.unkrig.checkstyle-configuration}" desturl="${d2}"/>
+			<copy srcpath="${de.unkrig.commons.nullanalysis}"     desturl="${d2}"/>
+		</de.unkrig.subclipse.svn>
+
+		<echo message="*** The next step is to officially release the new version on" />
+		<echo message="***    https://jira.codehaus.org/plugins/servlet/project-config/JANINO/versions" />
+		<echo message="*** Execute target 'stage' to stage the release on codehaus's NEXUS." />
+	</target>
+</project>

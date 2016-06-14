@@ -1,0 +1,1178 @@
+<html>
+  <head>
+    <title>Janino download page</title>
+    <link rel="SHORTCUT ICON" href="favicon.ico">
+    <style type="text/css">
+<!--
+body {
+    font-family: Lucida,Verdana;
+    font-size: 12px;
+    margin: 10px;
+}
+/* Need to set these again, although already defined for BODY... only W3C knows why */
+td {
+    font-family: Lucida,Verdana;
+    font-size: 12px;
+}
+.nav1 {
+    padding: 2px;
+    padding-top: 10px;
+    font-weight: bold;
+}
+.nav2 {
+    padding: 2px;
+    padding-left: 10px;
+    font-size: 10px;
+}
+code {
+    font-family: Lucida Console,Courier;
+}
+pre {
+    font-family: Lucida Console,Courier;
+    color: #666666;
+}
+h3 {
+    font-size: 18px;
+    font-weight: bold;
+}
+h4 {
+    font-size: 14px;
+    font-weight: bold;
+}
+h5 {
+    font-size: 12px;
+    font-weight: bold;
+}
+//-->
+    </style>
+  </head>
+  <body marginheight="0" marginwidth="0">
+    <h3>Downloads and change log</h3>
+
+    <a href="http://docs.codehaus.org/display/JANINO/Home">Back to JANINO home page</a>
+
+    <h4>Version ?, ? - <a href="download/janino-?.zip">Download</a></h4>
+    <ul>
+      <li>
+        JANINO-186 <a href="http://jira.codehaus.org/browse/JANINO-186">Code size error message should include method
+        name</a>: Also report when the constant pool size limit is exceeded.
+      </li>
+      <li>
+        JANINO-185 <a href="http://jira.codehaus.org/browse/JANINO-185">Improve logging</a>: Replaced good ol' "if
+        (DEBUG) System.err.println(...)" with "java.util.logging".
+      </li>
+      <li>
+        "org.codehaus.janino.ScriptEvaluator" now supports the concept of "local methods".
+      </li>
+    </ul>
+
+    <h4>Version 2.7.8, January 30, 2015 - <a href="download/janino-2.7.8.zip">Download</a></h4>
+    <ul>
+      <li>
+        JANINO-186 <a href="http://jira.codehaus.org/browse/JANINO-186">Code size error message should include method
+        name</a>
+      </li>
+    </ul>
+
+    <h4>Version 2.7.7, December 6, 2014 - <a href="download/janino-2.7.7.zip">Download</a></h4>
+    <ul>
+      <li>
+        JANINO-182 <a href="http://jira.codehaus.org/browse/JANINO-182">Reference types "java.lang.Double" and
+        "java.lang.Float" don't match</a>
+      </li>
+      <li>
+        JANINO-184 <a href="http://jira.codehaus.org/browse/JANINO-184">"Operand stack incosistent..." exception while
+        compiling legal (but dead) code</a>
+      </li>
+    </ul>
+
+    <h4>Version 2.7.6, August 16, 2014 - <a href="download/janino-2.7.6.zip">Download</a></h4>
+    <ul>
+      <li>
+        'IClass.findIMethod(name, parameterTypes)' now ignores synthetic bridge methods by picking the method with the
+        most significant return type.
+      </li>
+      <li>
+        JANINO-180 <a href="http://jira.codehaus.org/browse/JANINO-180">NullPointerException with JDK8</a>
+      </li>
+      <li>
+        Reclassification of 'empty package types' was forgotten (JLS7: 6.5.2.BL1.B3.1 and .2). This caused
+        'EvaluatorTests.testWideInstructions()' to fail.
+      </li>
+      <li>
+        JANINO-178 <a href="http://jira.codehaus.org/browse/JANINO-178">ConcurrentModificationException while compiling
+        anonymous class</a>
+      </li>
+      <li>
+        JANINO-179 <a href="http://jira.codehaus.org/browse/JANINO-179">ClassCastException: ReflectionIClass</a>
+      </li>
+      <li>
+        JANINO-174 <a href="http://jira.codehaus.org/browse/JANINO-174">MethodDescriptors should be cached in
+        IMethod.getDescriptor</a>
+      </li>
+      <li>
+        JANINO-172 <a href="http://jira.codehaus.org/browse/JANINO-172">qualified-name reclassifcations broken</a>
+      </li>
+      <li>
+        JANINO-181 <a href="http://jira.codehaus.org/browse/JANINO-181">Add OSGi info in manifest.</a>
+      </li>
+    </ul>
+
+    <h4>Version 2.7.5, Jul 13, 2014 - <a href="download/janino-2.7.5.zip">Download</a></h4>
+    <ul>
+      <li>
+        JANINO-173 <a href="http://jira.codehaus.org/browse/JANINO-173">[janino-user] Dynamically loading from source
+        + AST walk & transforms</a>
+      </li>
+      <li>
+        JANINO-176 <a href="http://jira.codehaus.org/browse/JANINO-176">push latest version to maven central</a>
+      </li>
+      <li>
+        JANINO-156 <a href="http://jira.codehaus.org/browse/JANINO-156">Tagged releases should contain parent pom and
+        correct versions</a>
+      </li>
+      <li>Made JANINO available on MAVEN CENTRAL.
+    </ul>
+
+    <h4>Version 2.7.4, Feb 3, 2014 - <a href="download/janino-2.7.4.zip">Download</a></h4>
+    <ul>
+      <li>Simple implementation of type variables.
+      <li>JANINO-170 <a href="http://jira.codehaus.org/browse/JANINO-170">NullPointerExceptions on Google AppEngine</a>
+    </ul>
+
+    <h4>Version 2.7.3, Jan 19, 2014 - <a href="download/janino-2.7.3.zip">Download</a></h4>
+    <ul>
+      <li>Implemented 'enhanced FOR statement on Iterable' (with type inference).
+      <li>Added parsing of type parameters.
+    </ul>
+
+    <h4>Version 2.7.2, Jan 13, 2014 - <a href="download/janino-2.7.2.zip">Download</a></h4>
+    <ul>
+      <li>JANINO-167 <a href="http://jira.codehaus.org/browse/JANINO-167">include Mod.is*() convenience methods</a>
+      <li>Allow an 'ArrayType' as a 'TypeArgument'.
+      <li>Local variable declaration statement with parameterized type didn't work.
+      <li>Added the 'enhanced FOR statement' (except for Iterable, which doesn't make much sense without generics).
+    </ul>
+
+    <h4>Version 2.7.1, Nov 13, 2013 - <a href="download/janino-2.7.1.zip">Download</a></h4>
+    <ul>
+      <li>"Missing @Override" is no longer an error, just a warning
+      <li>
+        'ErrorHandler' and 'WarningHandler' moved from JANINO to COMMONS-COMPILER and can now be installed on
+        ICookable - useful for testing.
+      <li>JANINO-161 <a href="http://jira.codehaus.org/browse/JANINO-161">Operand stack underrun</a>
+      <li>Added 'SimpleConstant'.
+      <li>JANINO-163 <a href="http://jira.codehaus.org/browse/JANINO-161">JANINO complains about "unreachable code"</a>
+      <li>JANINO-164 <a href="http://jira.codehaus.org/browse/JANINO-164">Add VARARGS support</a>
+      <li>Added tons of JAVADOC (thanks CheckStyle)
+      <li>Last CheckStyle clean-up corrections -- all clean now!!
+      <li>JANINO-165 <a href="http://jira.codehaus.org/browse/JANINO-165">Please expose Unparser's states to its subclasses</a>
+    </ul>
+
+    <h4>Version 2.7.0, Aug 10, 2013 - <a href="download/janino-2.7.0.zip">Download</a></h4>
+    <ul>
+      <li>Added he 'assert' statement (simplified, ASSERTions are ALWAYS enabled, as if '-ea' were given)
+      <li>Added annotations (but not yet annotation declarations)
+      <li>Implemented '@Override'
+      <li>Dropped support for Java 1.4 and 5
+    </ul>
+
+    <h4>Version 2.6.2, May 30, 2013 - <a href="download/janino-2.6.2.zip">Download</a></h4>
+    <ul>
+      <li>JANINO-148 <a href="http://jira.codehaus.org/browse/JANINO-148">Support Java 6 class file format</a>
+      <li>JANINO-147 <a href="http://jira.codehaus.org/browse/JANINO-147">JaninoRuntimeException: Cannot "set()" Offset more than once</a>
+      <li>JANINO-149 <a href="http://jira.codehaus.org/browse/JANINO-149">Janino incorrectly accepts String literals with invalid escape characters</a>
+      <li>JANINO-150 <a href="http://jira.codehaus.org/browse/JANINO-150">Special-value Float and Double literals don't unparse correctly</a>
+      <li>JANINO-152 <a href="http://jira.codehaus.org/browse/JANINO-152">Janino does not throw exception when compiling code with exceptions listed in wrong order</a>
+      <li>JANINO-155 <a href="http://jira.codehaus.org/browse/JANINO-155">Compound assignment does not implement boxing conversion</a>
+      <li>JANINO-157 <a href="http://jira.codehaus.org/browse/JANINO-157">Fail to "return x": Assignment conversion not possible from type "java.lang.Object" to type "java.lang.Long"</a>
+      <li>JANINO-153 <a href="http://jira.codehaus.org/browse/JANINO-153">Unable to cast from primitives to classes like Comparable</a>
+      <li>Various enhancements to JDISASM
+    </ul>
+
+    <h4>Version 2.6.1, June 24, 2010 - <a href="download/janino-2.6.1.zip">Download</a></h4>
+    <ul>
+      <li>Added version information to the <code>META-INF/MANIFEST.MF</code> file of the JANINO JARs.
+      <li>
+        Added <code>CompilerFactoryFactory.getSpecificationVersion()</code> and
+        <code>ICompilerFactory.getImplementationVersion()</code>.
+      </li>
+      <li>Fixed up the handling of debug options - added "ICookable.setDebuggingInfo(source, lines, vars)".
+      <li>Gave up on "EnumeratorSet" and "DebuggingInfo" - these mimic Java 5 ENUMs and were ugly.
+    </ul>
+
+    <h4>Version 2.6.0, May 30, 2010 - <a href="download/janino-2.6.0.zip">Download</a></h4>
+    This version implements a number of incompatible changes:
+    <ul>
+      <li>
+        <code>CompileException</code> was moved from package <code>org.codehaus.janino</code> to package
+        <code>org.codehaus.commons.compiler</code> (and so were its buddies <code>Location</code>,
+        <code>LocatedException</code> and <code>CausedException</code>).
+      </li>
+      <li>
+        <code>ParseException</code> and <code>ScanException</code> were removed; all methods that previously threw
+        one or more of <code>CompileException</code>, <code>ParseException</code> and <code>ScanException</code> now
+        throw only <code>CompileException</code>. (This is an API simplification honoring the fact that applications
+        rarely want to differentiate between scan, parse and compilation problems).
+      </li>
+    </ul>
+    The core functionality of JANINO (expression evaluator, script evaluator, class body evaluator, simple compiler and
+    Java source class loader) was extracted to new interfaces declared in the new package
+    <code>org.codehaus.commons.compiler</code>, while the original API remains unchanged.
+    <p>
+    A second implementation of the <code>org.codehaus.commons.compiler</code> interfaces was added, based on the
+    <code>javax.tools.JavaCompiler</code> API that exists since JDK 1.6. This implementation is available in the
+    <code>commons-compiler-jdk.jar</code> file.
+    <p>
+    Rather than instantiating e.g. <code>org.codehaus.janino.ExpressionEvaluator</code> directly, applications can now
+    alternatively call
+    <code>org.codehaus.commons.compiler.CompilerFactoryFactory.getDefaultCompilerFactory().newExpressionEvaluator()</code>,
+    which will use the first implementation of <code>IExpressionEvaluator</code> on the class path (be it
+    <code>janino.jar</code> or <code>commons-compiler-jdk.jar</code>, or yet another implementation).
+    <p>
+    The JUNIT regression test suite was restructured so that if differentiates between implementation-independent tests,
+    which are automatically executed against every implementation on the class path, and implementation-specific tests.
+    <p>
+    Also, the following bugs were fixed:
+    <ul>
+      <li>JANINO-143 <a href="http://jira.codehaus.org/browse/JANINO-143">java.lang.ClassFormatError: Duplicate method name&signature in class file Transformer1$1$1</a>
+      <li>JANINO-146 <a href="http://jira.codehaus.org/browse/JANINO-146">Cannot compile on Java 1.6/6 if extended class does not implement an existing bridge method</a>
+    </ul>
+
+    <h4>Version 2.5.16, January 26, 2010 - <a href="download/janino-2.5.16.zip">Download</a></h4>
+    <ul>
+      <li>JANINO-128 <a href="http://jira.codehaus.org/browse/JANINO-128">java.lang.IllegalAccessError when trying to use function from package-protected superclass.</a>
+      <li>JANINO-139 <a href="http://jira.codehaus.org/browse/JANINO-139">Importing non-existent class does not cause an error</a>
+      <li>JANINO-122 <a href="http://jira.codehaus.org/browse/JANINO-122">static field access through instance variables fails</a>
+      <li>JANINO-140 <a href="http://jira.codehaus.org/browse/JANINO-140">LocatedException (and subclasses such as CompileException) is not serializable</a>
+      <li>JANINO-117 <a href="http://jira.codehaus.org/browse/JANINO-117">UnparseVisitor does not handle Byte or Short Literals</a>
+      <li>JANINO-132 <a href="http://jira.codehaus.org/browse/JANINO-132">Inaccessible methods should be ignored for method resolution</a>
+      <li>JANINO-133 <a href="http://jira.codehaus.org/browse/JANINO-133">Janino failed compiling with ClassCastException when the source code's size is too large</a>
+      <li>JANINO-136 <a href="http://jira.codehaus.org/browse/JANINO-136">Covariant return types for abstract methods fail to compile</a>
+      <li>JANINO-127 <a href="http://jira.codehaus.org/browse/JANINO-127">LocalVariableTable code attribute not created, giving debuggers problems with classfiles</a>
+      <li>JANINO-126 <a href="http://jira.codehaus.org/browse/JANINO-126">ExpressionEvaluator isn't handling NaN correctly</a>
+      <li>JANINO-31 <a href="http://jira.codehaus.org/browse/JANINO-31">IncompatibleClassChangeError when loading nested classes</a>
+      <li>JANINO-131 <a href="http://jira.codehaus.org/browse/JANINO-131">instanceof returns true for null values, instead of false</a>
+      <li>JANINO-137 <a href="http://jira.codehaus.org/browse/JANINO-137">Assignment conversion not possible from type "double[]" to type "double[]"</a>
+      <li>JANINO-130 <a href="http://jira.codehaus.org/browse/JANINO-130">wide versions of IINC and RET are broken</a>
+      <li>JANINO-129 <a href="http://jira.codehaus.org/browse/JANINO-129">incorrect max stack size</a>
+      <li>JANINO-62 <a href="http://jira.codehaus.org/browse/JANINO-62">Support JSR-223 when it is finalized</a>
+      <li>JANINO-123 <a href="http://jira.codehaus.org/browse/JANINO-123">SimpleCompiler throws Exception when using full-qualified Type in Signature</a>
+    </ul>
+
+    <h4>Version 2.5.15, June 18, 2008 - <a href="download/janino-2.5.15.zip">Download</a></h4>
+    <ul>
+      <li>JANINO-110 <a href="http://jira.codehaus.org/browse/JANINO-110">Fully Qualified .class access fails to compile</a>
+      <li>JANINO-111 <a href="http://jira.codehaus.org/browse/JANINO-111">UnparseVisitor does not handle precedence of operators</a>
+      <li>JANINO-112 <a href="http://jira.codehaus.org/browse/JANINO-112">Access to protected members can fail across package boundaries</a>
+      <li>JANINO-114 <a href="http://jira.codehaus.org/browse/JANINO-114">ArithmeticException in UnitCompiler.getConstantValue</a>
+      <li>JANINO-115 <a href="http://jira.codehaus.org/browse/JANINO-115">Methods that compile to more than 32 KB of bytecode cannot be compiled</a>
+      <li>JANINO-117 <a href="http://jira.codehaus.org/browse/JANINO-117">UnparseVisitor does not handle Byte or Short Literals</a>
+      <li>JANINO-118 <a href="http://jira.codehaus.org/browse/JANINO-118">Contant Pool does not support >32K entries</a>
+      <li>JANINO-119 <a href="http://jira.codehaus.org/browse/JANINO-119">flowAnalysis fails with GOTO_W</a>
+      <li>JANINO-120 <a href="http://jira.codehaus.org/browse/JANINO-120">Janino Compiler Needs Optimizing</a>
+      <li>JANINO-121 <a href="http://jira.codehaus.org/browse/JANINO-121">Some performance optimizations</a>
+    </ul>
+
+    <h4>Version 2.5.14, April 27, 2008 - <a href="download/janino-2.5.14.zip">Download</a></h4>
+    <ul>
+      <li>Switched from CVS to svn (http://svn.codehaus.org/janino).
+    </ul>
+
+    <h4>Version 2.5.13, March 9, 2008 - <a href="download/janino-2.5.13.zip">Download</a></h4>
+    <ul>
+      <li>JANINO-106 <a href="http://jira.codehaus.org/browse/JANINO-106">Static imports of private fields can cause compiler to throw NPE</a>
+    </ul>
+
+    <h4>Version 2.5.12, December 20, 2007 - <a href="download/janino-2.5.12.zip">Download</a></h4>
+    <ul>
+      <li>JANINO-104 <a href="http://jira.codehaus.org/browse/JANINO-104">AccessControlException thrown with Janino compiled code under Java Webstart</a>
+      <li>JANINO-105 <a href="http://jira.codehaus.org/browse/JANINO-105">Possible to call a method of an enclosing class as if it was a member of an inner class</a>
+      <li>JANINO-96 <a href="http://jira.codehaus.org/browse/JANINO-96">Feature Request: Obtain parameter information for an evaluated expression</a>
+    </ul>
+
+    <h4>Version 2.5.11, September 30, 2007 - <a href="download/janino-2.5.11.zip">Download</a></h4>
+    <ul>
+      <li>"CompileException" now extends "LocatedException", which extends "CausedException". This
+          eliminates an asymmetry between "ScanException", "ParseException" and "CompileException".
+    </ul>
+
+    <h4>Version 2.5.10, September 4, 2007 - <a href="download/janino-2.5.10.zip">Download</a></h4>
+    <ul>
+      <li>JANINO-98 <a href="http://jira.codehaus.org/browse/JANINO-98">compilation of overridden static methods done as invokevirtual</a>
+      <li>JANINO-101 <a href="http://jira.codehaus.org/browse/JANINO-101">JCI-53: Stack overflow on cross imports in commons-jci-janino</a>
+      <li>JANINO-99 <a href="http://jira.codehaus.org/browse/JANINO-99">ConcurrentModificationException due to instance variable of Class type initialized using a class literal</a>
+    </ul>
+
+    <h4>Version 2.5.9, July 22, 2007 - <a href="download/janino-2.5.9.zip">Download</a></h4>
+    <ul>
+      <li>JANINO-95 <a href="http://jira.codehaus.org/browse/JANINO-95">ClassBodyEvaluator base class can be abstract and compile fine although it shouldn't compile</a>
+      <li>JANINO-97 <a href="http://jira.codehaus.org/browse/JANINO-97">ExpressionEvaluator.createFastExpressionEvaluator calls setReturnType</a>
+    </ul>
+
+    <h4>Version 2.5.8, June 12, 2007 - <a href="download/janino-2.5.8.zip">Download</a></h4>
+    <ul>
+      <li>JANINO-79 <a href="http://jira.codehaus.org/browse/JANINO-79">Overridden method resolution thru the inheritance chain is not correct</a>
+      <li>Throw a <code>RuntimeException</code> if <code>cook()</code> is called more than once.
+    </ul>
+
+    <h4>Version 2.5.7, May 19, 2007 - <a href="download/janino-2.5.7.zip">Download</a></h4>
+    <ul>
+      <li><code>janino.jar</code> is now signed with a dummy certificate.
+      <li><code>janino.jar</code> is now published as
+          <a href="lib/janino.jar">http://www.janino.net/lib/janino.jar</a>, so remote systems can always
+          download the latest version from a fixed URL.
+      <li>JANINO-78 <a href="http://jira.codehaus.org/browse/JANINO-78">Implement Superclass field access</a>
+      <li>JANINO-81 <a href="http://jira.codehaus.org/browse/JANINO-81">IncompatibleClassChangeError when invoking getClass() on interface references</a>
+      <li>JANINO-82 <a href="http://jira.codehaus.org/browse/JANINO-82">Make Compiler.storeClassFile public</a>
+      <li>JANINO-83 <a href="http://jira.codehaus.org/browse/JANINO-83">Code reuse in PathResourceFinder</a>
+      <li>JANINO-84 <a href="http://jira.codehaus.org/browse/JANINO-84">Filter out non-existant directories in JarDirectoriesResourceFinder</a>
+      <li>JANINO-85 <a href="http://jira.codehaus.org/browse/JANINO-85">Build system improvements</a>
+      <li>JANINO-86 <a href="http://jira.codehaus.org/browse/JANINO-86">Make more classes/constructors public</a>
+      <li>JANINO-92 <a href="http://jira.codehaus.org/browse/JANINO-92">Make(Class,Interface)DeclarationContext public</a>
+    </ul>
+
+    <h4>Version 2.5.6, February 26, 2007 - <a href="download/janino-2.5.6.zip">Download</a></h4>
+    <ul>
+      <li>JANINO-72 <a href="http://jira.codehaus.org/browse/JANINO-72">Add Autoboxing</a>
+    </ul>
+
+    <h4>Version 2.5.5, February 3, 2007 - <a href="download/janino-2.5.5.zip">Download</a></h4>
+    <ul>
+      <li>JANINO-76 <a href="http://jira.codehaus.org/browse/JANINO-76">Suboptimal compilation strategy for the string concatenation operator</a>
+      <li>
+        Optimized the handling of string concatenation: For sequences of 4 and more operands,
+        the "new StringBuffer(a).append(b).append(c).append(d).toString()" is now used. (For
+        two or three operands, "a.concat(b).concat(c)" is used as before.) Also, if
+        "java.lang.StringBuilder" (the unsynchronized brother of "StringBuffer") is available
+        (since JDK 1.5), it is used. See Tom Gibara's excellent
+        <a href="http://today.java.net/pub/a/today/2007/02/15/tackling-performance-problems-with-janino.html">article
+        on his "String Concatenation Benchmark"</a>.
+      </li>
+    </ul>
+
+    <h4>Version 2.5.4, January 28, 2007 - <a href="download/janino-2.5.4.zip">Download</a></h4>
+    <ul>
+      <li>JANINO-75 <a href="http://jira.codehaus.org/browse/JANINO-75">Duplicate Single-Type-Imports and Single-Static-Imports cause compilation errors</a>
+    </ul>
+
+    <h4>Version 2.5.3, January 17, 2007 - <a href="download/janino-2.5.3.zip">Download</a></h4>
+    <ul>
+      <li>Added single static import declarations for
+          fields (e.g. <code>import static java.util.Collections.EMPTY_MAP</code>),
+          types (e.g. <code>import static java.util.Map.Entry</code>)
+          and methods (e.g. <code>import static  java.util.Arrays.asList</code>)
+      <li>Added static-import-on-demand declarations for
+          fields (e.g. <code>import static java.util.Collections.*</code>),
+          types (e.g. <code>import static java.util.Map.*</code>)
+          and methods (e.g. <code>import static  java.util.Arrays.*</code>)
+    </ul>
+
+    <h4>Version 2.5.2, January 14, 2007 - <a href="download/janino-2.5.2.zip">Download</a></h4>
+    <ul>
+      <li>JANINO-71 <a href="http://jira.codehaus.org/browse/JANINO-71">Explicit constructor invocation in inner classes leads to compilation error</a>
+      <li>JANINO-73 <a href="http://jira.codehaus.org/browse/JANINO-73">Compiler can't find classes anymore (since 2.5.0)</a>
+    </ul>
+
+    <h4>Version 2.5.1, November 6, 2006 - <a href="download/janino-2.5.1.zip">Download</a></h4>
+    <ul>
+      <li>JANINO-68 <a href="http://jira.codehaus.org/browse/JANINO-68">SimpleCompiler.main run with -help isn't very helpful</a>
+      <li>JANINO-69 <a href="http://jira.codehaus.org/browse/JANINO-69">Unable to resolve reference to var name from within catch block of anon inner class</a>
+      <li>JANINO-70 <a href="http://jira.codehaus.org/browse/JANINO-70">Setting attributes in catch() block causes NullPointerException in UnitCompiler.reclassifyName</a>
+    </ul>
+
+    <h4>Version 2.5.0, September 19, 2006 - <a href="download/janino-2.5.0.zip">Download</a></h4>
+    <ul>
+      <li>Extended <code>ExpressionEvaluator</code> and <code>ScriptEvaluator</code> with the capability
+          to compile more than one expression/script in one evaluator. This greatly improves the runtime
+          performance and reduces the JVM resource usage if you need to compile many expressions/scripts at
+          the same time.
+      <li>Introduced the concept of "auxiliary classes". This allows you to specify individual classes
+          that the expression/script/class body/compilation unit may access although they are not
+          loadable through the <code>ClassLoader</code> that was set with
+          <code>setParentClassLoader()</code>. In other words: The expression/script/class body/compilation
+          unit executes in a "sandbox", restricted by a <code>ClassLoader</code> with minimal peepholes
+          to the classes you specify. This also resolves issue
+          JANINO-66 <a href="http://jira.codehaus.org/browse/JANINO-66">Security: restrict package access</a>
+    </ul>
+
+    <h4>Version 2.4.7, September 11, 2006 - <a href="download/janino-2.4.7.zip">Download</a></h4>
+    <ul>
+      <li>JANINO-67 <a href="http://jira.codehaus.org/browse/JANINO-67">classes that cause a LinkageError (duplicate class definition) when loaded</a>
+    </ul>
+
+    <h4>Version 2.4.6, August 20, 2006 - <a href="download/janino-2.4.6.zip">Download</a></h4>
+    <ul>
+      <li>Added some very picky checks on character literals.
+      <li>Check for float literal overflow and underflow.
+      <li>ExpressionDemo was broken since the *Evaluator refactoring.
+      <li>Some minor refactoring.
+      <li>Added more tests on float literals.
+      <li>Refactoring of ClassBodyDemo and friends (more user friendly command line interface).
+      <li>JANINO-64 <a href="http://jira.codehaus.org/browse/JANINO-64">continue statement not enclosed bug</a>
+      <li>JANINO-65 <a href="http://jira.codehaus.org/browse/JANINO-65">Janino 2.4.5 does not compile with JDK 1.5</a>
+    </ul>
+
+    <h4>Version 2.4.5, June 26, 2006 - <a href="download/janino-2.4.5.zip">Download</a></h4>
+    <ul>
+      <li>Removed the misspelled "ResourceFinder.NO_RESOURCE_FINDER" (use
+          "EMPTY_RESOURCE_FINDER" instead).
+      <li>Simplified the self-compile test.
+      <li>Cleaned up and simplified the local variables used by the TRY statement.
+      <li>JANINO-56 <a href="http://jira.codehaus.org/browse/JANINO-56">VerifyError in the context of a
+          FINALLY caluse</a>
+    </ul>
+
+    <h4>Version 2.4.4, June 18, 2006 - <a href="download/janino-2.4.4.zip">Download</a></h4>
+    <ul>
+      <li>Replaced <code>TunnelException</code> with <code>ClassNotFoundException(Throwable ex)</code>,
+          which makes exception handling much clearer. In retrospect,
+          <code>TunnelExeption</code> has proven to be a bad concept.
+      <li>Made the last missing fields of <code>Java.Xxx</code> PUBLIC for AST manipulation.
+      <li>JANINO-57 <a href="http://jira.codehaus.org/browse/JANINO-57">Switch statment compiles space inefficiently for a large case span.</a>
+      <li>JANINO-58 <a href="http://jira.codehaus.org/browse/JANINO-58">Janino issues "Error: For update is unreachable" where JAVAC keeps compiling</a>
+      <li>JANINO-59 <a href="http://jira.codehaus.org/browse/JANINO-59">Patch to stop reporting extra errors</a>
+      <li>JANINO-60 <a href="http://jira.codehaus.org/browse/JANINO-60">StackOverflowError when a local class is used</a>
+      <li>JANINO-63 <a href="http://jira.codehaus.org/browse/JANINO-63">Combination of interface declaration with method that declares a thrown exception cannot be parsed</a>
+    </ul>
+
+    <h4>Version 2.4.3, May 11, 2006 - <a href="download/janino-2.4.3.zip">Download</a></h4>
+    <ul>
+      <li>Added the "default imports" feature to all <code>*Evaluator</code>s.
+      <li><code>Scanner.close()</code> and all file-related <code>Scanner</code>
+          constructors are now deprecated, because (A) they sometimes left
+          input files open and (B) the logic was confusing - it is now strictly
+          the caller's responsibility to open and close input files.
+      <li>Complete refactoring of the <code>*Evaluator</code> and the <code>SimpleCompiler</code>
+          classes. <b>Important notice:</b> <code>ScriptEvaluator.evaluate()</code> had to be renamed to
+          <code>ScriptEvaluator.getClazz()</code> due to a method signature clash with
+          <code>ExpressionEvaluator.evaluate()</code>.
+      <li>Improved the JAVADOC of the <code>*Evaluator</code> and the <code>SimpleComplier</code>
+          classes.
+      <li>JANINO-53 <a href="http://jira.codehaus.org/browse/JANINO-53">Java.NewClassInstance.toString() does not include arguments</a>
+      <li>JANINO-54 <a href="http://jira.codehaus.org/browse/JANINO-54">Code missed out after "if (true) return;"</a>
+      <li>JANINO-55 <a href="http://jira.codehaus.org/browse/JANINO-55">Nested array initializers no longer work in 2.4.2</a>
+    </ul>
+
+    <h4>Version 2.4.2, April 24, 2006 - <a href="download/janino-2.4.2.zip">Download</a></h4>
+    <ul>
+      <li>Fixed some bugs in the access checking (PUBLIC, PROTECTED, PRIVATE).
+      <li>Added some tests to <code>JaninoTests</code> for class instance
+          creation (basically JLS2 section 15.9.1).
+      <li>The <code>Scanner</code> now warns about misplaced DOC comments -- hence we need
+          to have a <code>WarningHandler</code> installed also on the <code>Scanner</code>.
+      <li>Inner classes loaded from <code>.class</code> files could not be
+          instantiated.
+      <li>JANINO-45 <a href="http://jira.codehaus.org/browse/JANINO-45">Add Parser.getScanner()</a>
+      <li>JANINO-48 <a href="http://jira.codehaus.org/browse/JANINO-48">can't use arrays of inner classes, or secondary type declarations</a>
+      <li>JANINO-50 <a href="http://jira.codehaus.org/browse/JANINO-50">Branch offset out of range exception</a>
+    </ul>
+
+    <h4>Version 2.4.1, April 12, 2006 - <a href="download/janino-2.4.1.zip">Download</a></h4>
+    <ul>
+      <li>JANINO eventually supports access to PRIVATE methods of enclosing/enclosed
+          instances.
+      <li>JANINO-46 <a href="http://jira.codehaus.org/browse/JANINO-46">Add support for setting the warning and error handlings to the ClassLoaders</a>
+      <li>JANINO-49 <a href="http://jira.codehaus.org/browse/JANINO-49">access to public inner class no longer works with 2.3.17+(does with 2.3.16)</a>
+      <li>JANINO-50 <a href="http://jira.codehaus.org/browse/JANINO-50">Branch offset out of range exception</a>
+      <li>JANINO-51 <a href="http://jira.codehaus.org/browse/JANINO-51">Janino cannot handle array types in combination with the Java .class function</a>
+    </ul>
+
+    <h4>Version 2.4.0, March 13, 2006 - <a href="download/janino-2.4.0.zip">Download</a></h4>
+    <ul>
+      <li>Major redesign of the <code>Java</code> class hierarchy -- basically the
+          "uplink" of the AST objects is no longer set by a constructor parameter, but by the
+          constructor of the <i>superordinate</i> AST object. As a consequence, the creation order
+          of AST objects is no longer top-down, but bottom-up. This makes code that creates an AST
+          significantly shorter.
+      <li>The <code>UnitCompiler</code> is now context-free, i.e. it can resolve types, constant
+          values etc. <i>without</i> compiling the unit. This is necessary for the upcoming
+          <code>JGrep</code> utility (see below).
+      <li>Started work on the new <code>JGrep</code> utility -- a command line tool that analyses
+          a set of source files in a highly configurable way.
+      <li>JANINO-43 <a href="http://jira.codehaus.org/browse/JANINO-43">RuntimeException "Cannot relocate branch to unset destination offset" during compilation</a>
+      <li>JANINO-50 <a href="http://jira.codehaus.org/browse/JANINO-50">Branch offset out of range exception</a>
+    </ul>
+
+    <h4>Version 2.3.18, February 23, 2006 - <a href="download/janino-2.3.18.zip">Download</a></h4>
+    <ul>
+      <li>Made the members of <code>FormalParameter</code> PUBLIC.
+      <li>Empty TRY body generated invalid bytecode.
+      <li>Made "throwParseException()" PROTECTED.
+      <li>JANINO-41 <a href="http://jira.codehaus.org/browse/JANINO-41">Janino unreachable error with block statements</a>
+      <li>JANINO-42 <a href="http://jira.codehaus.org/browse/JANINO-42">Invalid bytecode generated when invoking public method of inaccessible base class</a>
+    </ul>
+
+    <h4>Version 2.3.17, January 18, 2006 - <a href="download/janino-2.3.17.zip">Download</a></h4>
+    <ul>
+      <li>Modified the <code>Enumerator</code> and <code>EnumeratorSet</code> classes,
+          inspired by "Effective Java".
+      <li>Implemented access checking (PUBLIC, PROTECTED, PRIVATE).
+      <li>JANINO-38 <a href="http://jira.codehaus.org/browse/JANINO-38">Compiled Code Produces "java.lang.VerifyError: ... Illegal use of nonvirtual function call" At Run Time</a>
+    </ul>
+
+    <h4>Version 2.3.16, December 25, 2005 - <a href="download/janino-2.3.16.zip">Download</a></h4>
+    <ul>
+      <li>JANINO-37 <a href="http://jira.codehaus.org/browse/JANINO-37"> NullPointerException Thrown While Compiling Code w/ inner Class</a>
+    </ul>
+
+    <h4>Version 2.3.15, November 9, 2005 - <a href="download/janino-2.3.15.zip">Download</a></h4>
+    <ul>
+      <li>JANINO-36 <a href="http://jira.codehaus.org/browse/JANINO-36"> RuntimeException in CodeContext.flowAnalysis</a>
+    </ul>
+
+    <h4>Version 2.3.14, November 2, 2005 - <a href="download/janino-2.3.14.zip">Download</a></h4>
+    <ul>
+      <li>Added the <code>CachingJavaSourceClassLoader</code>.
+    </ul>
+
+    <h4>Version 2.3.13, October 28, 2005 - <a href="download/janino-2.3.13.zip">Download</a></h4>
+    <ul>
+      <li>Added the missing <code>Compiler.compile(Resource[])</code>.
+    </ul>
+
+    <h4>Version 2.3.12, October 25, 2005 - <a href="download/janino-2.3.12.zip">Download</a></h4>
+    <ul>
+      <li>The creation of class files by <code>org.codehaus.janino.Compiler</code>
+          is now based on the new <code>ResourceCreator</code> class, so they
+          can not only be stored in files but anywhere (e.g. in a database).
+          (Requested by Andreas Schmidt 2005-10-19.)
+    </ul>
+
+    <h4>Version 2.3.11, October 19, 2005 - <a href="download/janino-2.3.11.zip">Download</a></h4>
+    <ul>
+      <li>Added <code>Traverser</code> for static code analysis.
+      <li>Removed some superfluous getters.
+      <li>Renamed some productions from "*Declarator" to "*Declaration".
+          (It is sometimes difficult to understand the difference between the two.)
+      <li>Renamed <code>visit(...)</code> methods to <code>accept(...)</code> for
+          conformance with GoF "Design Patterns".
+      <li>JANINO-34 <a href="http://jira.codehaus.org/browse/JANINO-34"> Propose changes to visitor to make it easier to implement</a>
+    </ul>
+
+    <h4>Version 2.3.10, October 18, 2005 - <a href="download/janino-2.3.10.zip">Download</a></h4>
+    <ul>
+      <li>JANINO now works in a JDK 1.5 environment.
+      <li>JANINO-28 <a href="http://jira.codehaus.org/browse/JANINO-28"> extending a base method that throws an exception can lead to a compile error</a>
+    </ul>
+
+    <h4>Version 2.3.9, October 11, 2005 - <a href="download/janino-2.3.9.zip">Download</a></h4>
+    <ul>
+      <li>JANINO-29 <a href="http://jira.codehaus.org/browse/JANINO-29"> Non-statement allowed by ScriptEvaluator</a>
+      <li>JANINO-31 <a href="http://jira.codehaus.org/browse/JANINO-31"> IncompatibleClassChangeError when loading nested classes</a>
+      <li>JANINO-32 <a href="http://jira.codehaus.org/browse/JANINO-32"> Multiplication error</a>
+    </ul>
+
+    <h4>Version 2.3.8, August 9, 2005 - <a href="download/janino-2.3.8.zip">Download</a></h4>
+    <ul>
+      <li>JANINO-27 <a href="http://jira.codehaus.org/browse/JANINO-27">duplicate variable definitions are allowed</a>
+      <li>JANINO-30 <a href="http://jira.codehaus.org/browse/JANINO-30">Excessive exception declared in some ExpressionEvaluator expressions</a>
+    </ul>
+
+    <h4>Version 2.3.7, July 24, 2005 - <a href="download/janino-2.3.7.zip">Download</a></h4>
+    <ul>
+      <li>Added "build.xml" to "build.properties" to "janino.jar" (requested by Mark Proctor
+          2005-07-15).
+      <li>"janino.jar" is now uploaded to IBIBLIO (requested by Mark Proctor 2005-07-10).
+      <li>JANINO-21 <a href="http://jira.codehaus.org/browse/JANINO-21">Incorrect evaluation of an "if" statement</a>
+      <li>JANINO-18 <a href="http://jira.codehaus.org/browse/JANINO-18">difference in generated classfiles</a>
+      <li>JANINO-3 <a href="http://jira.codehaus.org/browse/JANINO-3">Split janino jar into runtime and utilities; put to ibiblio</a>
+    </ul>
+
+    <h4>Version 2.3.6, July 15, 2005 - <a href="download/janino-2.3.6.zip">Download</a></h4>
+    <ul>
+      <li>Implemented <code>@deprecated</code>.
+      <li>Implemented warnings on impliclit method invocations.
+      <li>Implemented warnings on missing doc (a.k.a. JAVADOC) comments.
+      <li>JANINO-20 <a href="http://jira.codehaus.org/browse/JANINO-20">Add AST nodes for JavaDoc comments</a>
+      <li>JANINO-26 <a href="http://jira.codehaus.org/browse/JANINO-26">exception on interface methods are not returned thru reflection</a>
+    </ul>
+
+    <h4>Version 2.3.5, July 06, 2005 - <a href="download/janino-2.3.5.zip">Download</a></h4>
+    <ul>
+      <li>Added the "AstGenerator", contributed by Eugene Kuleshov.
+      <li>JANINO-24 <a href="http://jira.codehaus.org/browse/JANINO-24">Add support for setting ProtectionDomain on defined classes</a>
+      <li>JANINO-22 <a href="http://jira.codehaus.org/browse/JANINO-22">implicit invocation thru 'this' does not work</a>
+      <li>JANINO-23 <a href="http://jira.codehaus.org/browse/JANINO-23">constant propagation with final not accurate</a>
+      <li>JANINO-25 <a href="http://jira.codehaus.org/browse/JANINO-25">UnitCompile.compile() calls flowAnalysis with wrong string</a>
+    </ul>
+
+    <h4>Version 2.3.4, May 25, 2005 - <a href="download/janino-2.3.4.zip">Download</a></h4>
+    <ul>
+      <li>
+        Extracted the compilation functionality from <code>Java</code> to <code>UnitCompiler</code>.
+        This involved some minor incompatible changes:
+        <ul>
+          <li>Renamed <code>Java.CompileException</code> to <code>CompileException</code>.
+          <li>Renamed <code>Visitor</code> to <code>Visitor.ComprehensiveVisitor</code>.
+          <li>Removed <code>CompilationUnit</code>, <code>VariableDeclarator</code> and
+              <code>FormalParameter</code> from the visitors, because they are not virtual.
+        </ul>
+      </li>
+      <li>JANINO-16 <a href="http://jira.codehaus.org/browse/JANINO-16">Invalid float/double constants</a>
+      <li>JANINO-2 <a href="http://jira.codehaus.org/browse/JANINO-2">SF [ 1032563 ] "Invalid opcode 196" exception</a>
+      <li>JANINO-17 <a href="http://jira.codehaus.org/browse/JANINO-17">Class Variables defined without trailing ; compile fine, probably shouldn't</a>
+    </ul>
+
+    <h4>Version 2.3.3, May 05, 2005 - <a href="download/janino-2.3.3.zip">Download</a></h4>
+    <ul>
+      <li>JANINO-11 <a href="http://jira.codehaus.org/browse/JANINO-11">ExtendsType using ClassBodyEvaluator throws java.lang.NullPointerException</a>
+      <li>JANINO-15 <a href="http://jira.codehaus.org/browse/JANINO-15">Huge performance issues on compiling large classes</a>
+      <li>JANINO-14 <a href="http://jira.codehaus.org/browse/JANINO-14">org.codehaus.janino.util.enum is conflicting with Java 5 compiler</a>
+    </ul>
+
+    <h4>Version 2.3.2, March 22, 2005 - <a href="download/janino-2.3.2.zip">Download</a></h4>
+    <ul>
+      <li>Made <code>Scanner.Location</code> a top-level class.
+      <li><code>PackageDeclaration</code> and <code>ImportDeclaration</code> are now
+          AST objects.
+      <li><code>ResourceFinder.findResource()</code> no longer returns a
+          <code>URL</code> object, but a more abstract <code>ResourceFinder.Resource</code>
+          object (requested by Michael Orth 2005-03-22).
+    </ul>
+
+    <h4>Version 2.3.1, February 20, 2005 - <a href="download/janino-2.3.1.zip">Download</a></h4>
+    <ul>
+      <li>JANINO-5 <a href="http://jira.codehaus.org/browse/JANINO-5">cannot compile try-catch blocks that reference local classes</a>
+      <li>JANINO-8 <a href="http://jira.codehaus.org/browse/JANINO-8">Source-level debugging of JANINO scripts doesn't work</a>
+      <li>JANINO-9 <a href="http://jira.codehaus.org/browse/JANINO-9">Ancient syntax for array return type</a>
+      <li>#1105688 <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1105688&group_id=90164&atid=592671">undetected uninitialized variable</a>
+    </ul>
+
+    <h4>Version 2.3.0, January 31, 2005 - <a href="download/janino-2.3.0.zip">Download</a></h4>
+    <ul>
+      <li>Switched from "Apache License 2.0" to "New BSD License".
+      <li>#1098573 <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1098573&group_id=90164&atid=592671">Methods inherited by java.lang.Object ignored for Interfaces</a>
+      <li>JANINO-7 <a href="http://jira.codehaus.org/browse/JANINO-7">ParentClassloader not propagated to ByteArrayClassloader</a>
+      <li>JANINO-4 <a href="http://jira.codehaus.org/browse/JANINO-4">No net.janino.util.PrimitiveWrapper.wrap(boolean v) available ...</a>
+    </ul>
+
+    <h4>Version 2.2.0, January 02, 2005 - <a href="download/janino-2.2.0.zip">Download</a></h4>
+    <ul>
+      <li>Moved CVS and bug tracking to "codehaus.org" (web site still to be done).
+      <li>Renamed all packages from "net.janino..." to "org.codehaus.janino...".
+      <li>Refactored the <code>ByteArrayClassLoader</code> for thread safety.
+      <li>Introduced a slight semantic change in the meaning of the
+          <code>optionalParentClassLoader</code> parameter of all <code>*Evaluator</code>
+          classes (see JAVADOC of <code>EvaluatorBase(ClassLoader)</code>).
+      <li>#1092344 <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1092344&group_id=90164&atid=592671">implied constant promotion aborts compilation</a>
+      <li>#1093015 <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1093015&group_id=90164&atid=592671">Compiler throws ArrayOutOfBoundsException during Compilation</a>
+    </ul>
+
+    <h4>Version 2.1.0, December 09, 2004 - <a href="download/janino-2.1.0.zip">Download</a></h4>
+    <ul>
+      <li>Switched from GNU "Lesser General Public License" (LGPL) to Apache License 2.0.
+      <li>Added <code>equals()</code>code> methods to <code>ByteArrayClassLoader</code>
+          and <code>EvaluatorBase</code>.
+    </ul>
+
+    <h4>Version 2.0.17, December 06, 2004 - <a href="download/janino-2.0.17.zip">Download</a></h4>
+    <ul>
+      <li>#1065416 <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1065416&group_id=90164&atid=592671">circularly dependent local class hangs compilation</a>
+      <li>#1062519 <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1062519&group_id=90164&atid=592671">Janino 2.0.14 miscompiles local classes</a>
+    </ul>
+
+    <h4>Version 2.0.16, November 19, 2004 - <a href="download/janino-2.0.16.zip">Download</a></h4>
+    <ul>
+      <li>#1032563 <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1032563&group_id=90164&atid=592671">"Invalid opcode 196" exception</a>
+    </ul>
+
+    <h4>Version 2.0.15, November 9, 2004 - <a href="download/janino-2.0.15.zip">Download</a></h4>
+    <ul>
+      <li>#1057432 <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1057432&group_id=90164&atid=592671">int x=2; someMethod(x*=2); doesn't work</a>
+      <li>#1061120 <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1061120&group_id=90164&atid=592671">SomeClass s=new SomeClass; gets compiled</a>
+      <li>Retyped "debuggingInformation" from INT to "DebuggingInformation", which inherits from
+          "EnumeratorSet".
+      <li><code>Scanner</code> now allows for explicit initialization of line number and column
+          number (useful if the Java code begins only in the middle of a file.)
+    </ul>
+
+    <h4>Version 2.0.14, November 1, 2004 - <a href="download/janino-2.0.14.zip">Download</a></h4>
+    <ul>
+      <li>#1057380 <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1057380&group_id=90164&atid=592671">current build misses class files</a>
+    </ul>
+
+    <h4>Version 2.0.13, October 27, 2004 - <a href="download/janino-2.0.13.zip">Download</a></h4>
+    <ul>
+      <li>More refactoring of the "IClassLoader" hierarchy. Added some nifty <code>Iterator</code>s
+          like <code>NestedIterator</code>, <code>TransformingIterator</code>, and the
+          <code>IteratorCollection</code> (a <code>Collection</code> that reads its elements from
+          a delegate <code>Iterator</code> while it is being iterated for the first time).
+      <li>The <code>net.janino.tools.Disassembler</code> now has a verbose mode.
+    </ul>
+
+    <h4>Version 2.0.12, October 17, 2004 - <a href="download/janino-2.0.12.zip">Download</a></h4>
+    <ul>
+      <li>Total rewrite of the "IClassLoader" hierarchy. This simplifies the lookup of
+          <code>IClass</code>es.
+      <li>Cache the return values of <code>getConstantValue()</code>.
+      <li>Eliminated a lot of compilation warnings.
+    </ul>
+
+    <h4>Version 2.0.11, September 27, 2004 - <a href="download/janino-2.0.11.zip">Download</a></h4>
+    <ul>
+      <li>#1029662 <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1029662&group_id=90164&atid=592671">Can't set static final vars to 'null'</a>
+      <li>#1029661 <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1029661&group_id=90164&atid=592671">Using expressions to set static final variable can fail</a>
+      <li>#1029660 <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1029660&group_id=90164&atid=592671">Exceptions attribute attached to Code attribute, not Method</a>
+      <li>#1035262 <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1035262&group_id=90164&atid=592671">x/=y doesn't work</a>
+      <li>Performance tuning as proposed by Chris Thiessen 2004-09-15.
+      <li>Inserted <code>BufferedReader</code>s when reading from files.
+      <li><code>IClass</code> now caches the results of its abstract methods.
+      <li><code>IClassLoader.loadIClass</code> no longer throws <code>ClassNotFoundException</code>s,
+          but returns <code>null</code> (save creation of a lot of objects).
+    </ul>
+
+    <h4>Version 2.0.10, September 14, 2004 - <a href="download/janino-2.0.10.zip">Download</a></h4>
+    <ul>
+      <li><code>SimpleCompiler</code>, <code>ClassBodyEvaluator</code> and <code>ScriptEvaluator</code>
+          now add SOURCE and LINES debugging info, so file name and line number appear in exceptions
+          thrown by generated code. (Requested by Mike Hebert 2004-09-11.)
+      <li>
+          Allow for source code level debugging of the same by writing a temporary source code file
+          if the <code>optionalFileName</code> parameter of <code>net.janino.Scanner</code>'s
+          constructors is <code>null</code> and system property
+          <code>net.janino.source_debugging.enable</code> is "true". The source code file is written
+          to <code>net.janino.source_debugging.dir</code> or the system's default temp directory.
+          (You need to add that directory to your debugger's "source lookup path".)
+    </ul>
+
+    <h4>Version 2.0.9, September 5, 2004 - <a href="download/janino-2.0.9.zip">Download</a></h4>
+    <ul>
+      <li>Unparsing classes generated by <code>EvaluatorBase</code> generated no output.
+      <li>Optimized compilation of constantly-false IF statements.
+      <li>#1001362 <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1001362&group_id=90164&atid=592671">null in expression with conditional</a>
+      <li>Fixed up JLS2 15.12.2.2.BL2.
+    </ul>
+
+    <h4>Version 2.0.8, August 29, 2004 - <a href="download/janino-2.0.8.zip">Download</a></h4>
+    <ul>
+      <li>Fixed several bugs in the <code>net.janino.UnparseVisitor</code>.
+      <li>Decimal long literal tokens were misinterpreted as octal.
+    </ul>
+
+    <h4>Version 2.0.7, August 25, 2004 - <a href="download/janino-2.0.7.zip">Download</a></h4>
+    <ul>
+      <li>Implemented the <code>net.janino.UnparseVisitor</code> that unparses a
+          parsed construct, e.g. a compilation unit (requested by Mark Proctor).
+      <li>Made all nested classes of <code>net.janino.Java</code> public to allow for
+          generation of "synthetic" constructs (requested by Mark Proctor).
+    </ul>
+
+    <h4>Version 2.0.6, July 23, 2004 - <a href="download/janino-2.0.6.zip">Download</a></h4>
+    <ul>
+      <li>#995198 <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=995198&group_id=90164&atid=592671">Make info public in exceptions</a>
+      <li>Introduced base class <code>net.janino.Scanner.LocatedException</code> for all
+          JANINO-related exceptions.
+      <li>Fixed some JDK 1.2.2 compatibility problems.
+    </ul>
+
+    <h4>Version 2.0.5, July 12, 2004 - <a href="download/janino-2.0.5.zip">Download</a></h4>
+    <ul>
+      <li>#988796 <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=988796&group_id=90164&atid=592671">compilation error from short-circuiting</a>
+      <li>Implemented the concept of "fast" expression evaluators and script
+          evaluators, as proposed by Volker Augustin 2004-06-14.
+    </ul>
+
+    <h4>Version 2.0.4, June 29, 2004 - <a href="download/janino-2.0.4.zip">Download</a></h4>
+    <ul>
+      <li>#913174 <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=913174&group_id=90164&atid=592671">String concat operation throws NullPointerException</a>
+      <li>#981586 <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=981586&group_id=90164&atid=592671">ClassCastException during compilation</a>
+      <li>#981711 <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=981711&group_id=90164&atid=592671">call to static method via object causes compilation failure</a>
+    </ul>
+
+    <h4>Version 2.0.3, May 31, 2004 - <a href="download/janino-2.0.3.zip">Download</a></h4>
+    <ul>
+      <li><code>net.janino.ExpressionEvaluator</code> now supports <code>null</code>
+          expression types; this auto-wraps primitive values as necessary. (Requested by
+          Amir Bar-Or 2004-05-31).
+    </ul>
+
+    <h4>Version 2.0.2, April 15, 2004 - <a href="download/janino-2.0.2.zip">Download</a></h4>
+    <ul>
+      <li>Janino now optionally creates warnings.
+      <li>Added warnings about implicit access to fields
+      <li>Added warnings about violations of SUN's naming conventions (JLS2 6.8)
+    </ul>
+
+    <h4>Version 2.0.1, April 11, 2004 - <a href="download/janino-2.0.1.zip">Download</a></h4>
+    <ul>
+      <li>#931385 <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=931385&group_id=90164&atid=592671">Janino 2.0 throwing exception on arrays of java.io.File</a>
+    </ul>
+
+    <h4>Version 2.0, April 4, 2004 - <a href="download/janino-2.0.zip">Download</a></h4>
+    <p>
+      A major milestone... Janino now supports member types, local classes and anonymous classes.
+      Therefore you can legitimally call a fully implemented Java<sup>TM</sup> compiler!
+    </p>
+
+    <p>
+      A good time to open a bottle of champagne...
+    </p>
+
+    <h4>Version 1.0.22, February 16, 2004</h4>
+    <ul>
+      <li><code>net.janino.Compiler</code> now reports up to 20 compile errors before it gives up.
+          (Notice that scanning, parsing and I/O exceptions are still fatal and terminate compilation.)
+    </ul>
+
+    <h4>Version 1.0.21, February 03, 2004</h4>
+    <ul>
+      <li>Complicated array instantiations did not work.
+      <li>Replaced Java's URLClassLoader with the custom PathClassLoader. This solves the problems with case-insensitive file names.
+      <li>#885938 <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=885938&group_id=90164&atid=592671">static references to "this"</a>
+      <li>#885930 <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=885930&group_id=90164&atid=592671">label not breakable error</a>
+    </ul>
+
+    <h4>Version 1.0.20, January 27, 2004</h4>
+    <ul>
+      <li>Implemented line number tables ("-g:lines") and source file information ("-g:source").
+    </ul>
+
+    <h4>Version 1.0.19, January 24, 2004</h4>
+    <ul>
+      <li>Fixed one very stupid <code>NullPointerException</code> in the <code>AntCompilerAdapter</code>.
+      <li>Improved the JAVADOC of the <a href="javadoc/net/janino/ExpressionEvaluator.html"><CODE>ExpressionEvaluator</CODE></A> and the
+          <a href="javadoc/net/janino/ScriptEvaluator.html"><CODE>ScriptEvaluator</CODE></A>.
+    </ul>
+
+    <h4>Version 1.0.18, January 24, 2004</h4>
+    <ul>
+      <li>Fixed up resolution of class names (JLS 6.5.5.2).
+    </ul>
+
+    <h4>Version 1.0.17, January 21, 2004</h4>
+    <ul>
+      <li>Implemented non-primitive class literals.
+      <li>Fixed up the "if statements and reachability" issue.
+      <li>#864241 <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=864241&group_id=90164&atid=592671">Destination for AntCompiler</a>
+    </ul>
+
+    <h4>Version 1.0.16, January 17, 2004</h4>
+    <ul>
+      <li>Fixed one "Invocation of constructor/method ... is ambiguous" bug reported by Chris Cleveland 2004-01-14 03:26.
+      <li>#879380 <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=879380&group_id=90164&atid=592671">Missing class</a>
+    </ul>
+
+    <h4>Version 1.0.15, January 17, 2004</h4>
+
+    <ul>
+      <li>#875632 <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=875632&group_id=90164&atid=592671">net.Janino.Compiler throws NoClassFoundError</a>
+      <li>#876568 <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=876568&group_id=90164&atid=592671">Incorrect switch statement parsing</a>
+      <li>#876583 <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=876583&group_id=90164&atid=592671">Sourcepath not searched for interface files</a>
+    </ul>
+
+    <h4>Version 1.0.14, January 12, 2004</h4>
+    <ul>
+      <li>#875624 <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=875624&group_id=90164&atid=592671">Operators |^&*/%+- kill const'ness</a>
+      <li>#875625 <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=875625&group_id=90164&atid=592671">Shift operators throw Exceptions during compilation</a>
+      <li>#875626 <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=875626&group_id=90164&atid=592671">Instanceof does not work for interface types</a>
+      <li>#875627 <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=875627&group_id=90164&atid=592671">Instanceof does not work for array types</a>
+      <li>#875628 <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=875628&group_id=90164&atid=592671">Superclass fields inaccessible</a>
+      <li>#875629 <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=875629&group_id=90164&atid=592671">Non-CCN try statement causes RuntimeException</a>
+      <li>#875631 <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=875631&group_id=90164&atid=592671">Return in try statement causes RuntimeException</a>
+      <li>#875636 <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=875636&group_id=90164&atid=592671">Zero constants cause ScanExceptions</a>
+      <li>#875639 <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=875639&group_id=90164&atid=592671">Reading access to local FLOAT variable causes RuntimeExcepti</a>
+      <li>#875640 <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=875640&group_id=90164&atid=592671">Cast kills const'ness</a>
+    </ul>
+
+    <h4>Version 1.0.13, January 8, 2004</h4>
+    <ul>
+      <li><a href="javadoc/net/janino/Compiler.html"><CODE>Compiler</CODE></A> and <a href="javadoc/net/janino/AntCompilerAdapter.html"><CODE>AntCompilerAdapter</CODE></A> now
+          provide for the "extdirs" and "bootclasspath" features.
+      <li>#873297 <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=873297&group_id=90164&atid=592671">"Unknown variable or type X" if class X is already compiled</a>
+      <li>#872637 <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=872637&group_id=90164&atid=592671">Calling methods on super()</a>
+    </ul>
+
+    <h4>Version 1.0.12, January 7, 2004</h4>
+    <ul>
+      <li>The <a href="javadoc/net/janino/AntCompilerAdapter.html"><CODE>AntCompilerAdapter</CODE></A>
+          now honors most of the options that ANT passes to it.
+    </ul>
+
+    <h4>Version 1.0.11, January 6, 2004</h4>
+    <ul>
+      <li>#871317 <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=871317&group_id=90164&atid=592671">Compiler: Classpath broken</a>
+    </ul>
+
+    <h4>Version 1.0.10, January 4, 2004</h4>
+    <ul>
+      <li>#869750 <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=869750&group_id=90164&atid=592671">(1) IllegalAccessError</a>
+      <li>#869750 <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=869750&group_id=90164&atid=592671">(2) Native method must (not) have a body</a>
+      <li>#869750 <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=869750&group_id=90164&atid=592671">(3) Duplicate imports lead to CompileExceptions</a>
+      <li>#869750 <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=869750&group_id=90164&atid=592671">(4) Initializer of non-static field cannot access non-static fields of same class</a>
+      <li>#869750 <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=869750&group_id=90164&atid=592671">(5) continue with label NYI</a>
+      <li>#869750 <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=869750&group_id=90164&atid=592671">(6) Inconsistent expression types</a>
+      <li>#869750 <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=869750&group_id=90164&atid=592671">(7) If statement with constant condition leads to unexamined code</a>
+      <li>#869750 <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=869750&group_id=90164&atid=592671">(8) Narrowing reference conversion from Array to base array broken</a>
+    </ul>
+
+    <h4>Version 1.0.9, January 3, 2004</h4>
+    <ul>
+      <li>#868686 <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=868686&group_id=90164&atid=592671">Errors when method and variable have same name</a>
+      <li>#868688 <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=868688&group_id=90164&atid=592671">Can't find correct method</a>
+      <li>#868691 <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=868691&group_id=90164&atid=592671">Can't return constant defined in interface</a>
+      <li>#868692 <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=868692&group_id=90164&atid=592671">Can't return constant defined in interface, second error</a>
+    </ul>
+
+    <h4>Version 1.0.8, January 2, 2004</h4>
+    <ul>
+      <li>Moved the "janino" script to directory "bin".
+      <li>Moved "janino.jar" to directory "lib".
+      <li>#868689 <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=868689&group_id=90164&atid=592671">Switch doesn't support char arguments</a>
+      <li>#868967 <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=868967&group_id=90164&atid=592671">Class file broken if class implements interfaces</a>
+      <li>#868690 <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=868690&group_id=90164&atid=592671">Cast doesn't look at all interfaces supported by object</a>
+    </ul>
+
+    <h4>Version 1.0.7, December 25, 2003</h4>
+    <ul>
+      <li>#842362 <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=842362&group_id=90164&atid=592671">If/else with return statements results in RuntimeException</a>
+      <li>#864232 <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=864232&group_id=90164&atid=592671">Doesn't like .001</a>
+      <li>#864234 <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=864234&group_id=90164&atid=592671">Problem with super()</a>
+      <li>#864236 <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=864236&group_id=90164&atid=592671">Doesn't like hex</a>
+      <li>#864238 <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=864238&group_id=90164&atid=592671">Problem with this()</a>
+      <li>#864246 <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=864246&group_id=90164&atid=592671">Chokes on odd chars</a>
+    </ul>
+
+    <h4>Version 1.0.6, December 15, 2003</h4>
+    <ul>
+      <li>Added the "JavaSourceClassLoader" (requested by Richard Lewis 2003-11-14) and the "janino"
+      utility that scans, parses, compiles, loads and executes classes on-the-fly.
+    </ul>
+
+    <h4>Version 1.0.5, November 26, 2003</h4>
+    <ul>
+      <li>#845459 <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=845459&group_id=90164&atid=592671">Use Janino with Jasper</a>
+    </ul>
+
+    <h4>Version 1.0.4, November 18, 2003</h4>
+    <ul>
+      <li>#842362 <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=842362&group_id=90164&atid=592671">SimpleCompiler.class not in jar lib</a>
+      <li>#844641 <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=844641&group_id=90164&atid=592671">Declaration of "final" local variables broken</a>
+      <li>#844642 <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=844642&group_id=90164&atid=592671">"default:" label in "switch" statement sometimes broken</a>
+      <li>#844645 <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=844645&group_id=90164&atid=592671">"case Integer.MAX_VALUE" broken</a>
+      <li>Started work on an ANT compiler adapter... still very experimental.
+    </ul>
+
+    <h4>Version 1.0.3, November 12, 2003</h4>
+    <ul>
+      <li>#837537 <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=837537&group_id=90164&atid=592671">else without if</a>
+    </ul>
+
+    <h4>Version 1.0.2, October 30, 2003</h4>
+    <ul>
+      <li>#831370 <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=831370&group_id=90164&atid=592671">Unicode escapes broken</a>
+      <li>#831374 <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=831374&group_id=90164&atid=592671">Smallest value for numeric literals not possible</a>
+      <li>Added a JUnit test suite (still very incomplete).
+    </ul>
+
+    <h4>Version 1.0.1, October 23, 2003</h4>
+    <ul>
+      <li>#828880 <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=828880&group_id=90164&atid=592671">Assignment of primitive constants with certain types broken</a>
+      <li>#829186 <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=829186&group_id=90164&atid=592671">Access to elements of arrays of byte/char/short/boolean broken</a>
+    </ul>
+
+    <h4>Version 1.0, October 20, 2003</h4>
+    <ul>
+      <li>Wow, version 1.0 finally made it. If you also feel that Janino 1.0 were
+          a good reason to drink a glass of champagne, do not hesitate. (Maybe, as
+          a sign of recognition, you could send me the open bottle and I'll drink
+          it up ;-) My postal address is on janino.net)
+    </ul>
+
+    <h4>Version 0.3.17, October 09, 2003 (not released)</h4>
+    <ul>
+      <li>Methods declared in interfaces of object were not found when invoked
+          (reported by Fabrice Carnet 2003-10-07).
+      <li>java.lang.VerifyError when loading a class compiled by Janino which
+          invokes a method of an interface with more than zero parameters
+          (reported by Fabrice Carnet 2003-10-07).
+      <li>ExpressionEvaluator, ScriptEvaluator and ClassBodyEvaluator now have
+          constructors that allow for the specification of class and/or method
+          name (requested by Fabrice Carnet 2003-10-07).
+    </ul>
+
+    <h4>Version 0.3.16, October 06, 2003 (not released)</h4>
+    <ul>
+      <li>Basically a complete rewrite of the IClass loading mechanism. This solves
+          many problems related to using Janino with custom ClassLoaders (e.g. in
+          J2EE environments). (Reported by Laurent Millet 2003-09-24.)
+    </ul>
+
+    <h4>Version 0.3.15, September 12, 2003</h4>
+    <ul>
+      <li>"net.janino.*Evaluator" now have constructor variants that allow the
+          specification of extended / implemented types. This allows for providing
+          a base class that supplies static "helper functions" (e.g. "println()").
+          (Requested by Till Brychcy 2003-09-10.)
+    </ul>
+
+    <h4>Version 0.3.14, July 27, 2003</h4>
+    <ul>
+      <li>"net.janino.Compiler" can now compile a set of source files with forward
+          references (requested by Richard Lewis 2003-07-24).
+      <li>Documented the "import" feature of ScriptEvaluator and ExpressionEvaluator.
+      <li>"Outer.Inner" was not properly resolved within ambiguous names.
+    </ul>
+
+    <h4>Version 0.3.13, July 6, 2003</h4>
+
+    <ul>
+      <li>Rewrote the "ClassBodyEvaluator"; can now be instantiated.
+      <li>"ClassBodyEvaluator" can now generate a class that extends / implements
+          classes / interfaces (Requested by Richard Lewis 2003-06-28).
+      <li>Cleaned up "EvaluatorBase"; eliminating code duplicated between the various
+          "*Evaluator" classes.
+    </ul>
+
+    <h4>Version 0.3.12, June 4, 2003</h4>
+    <ul>
+      <li>Fixed up method invocation conversion (reported by Antony Miguel
+          2003-06-02).
+      <li>Fixed a problem with for/while/do loops with constant true conditions.
+          (Reported by Antony Miguel 2003-06-02).
+      <li>Made tons of methods and classes PUBLIC, as proposed by Antony Miguel
+          2003-06-03.
+    </ul>
+
+    <h4>Version 0.3.11, June 1, 2003</h4>
+    <ul>
+      <li>Implemented "synchronized" statement (requested by Antony Miguel 2003-05-22).
+      <li>Moved common functionality from "ExpressionEvaluator", "ScriptEvaluator"
+          and "ClassBodyEvaluator" into a common base class "EvaluatorBase".
+      <li>The generated class files and the <a href="javadoc/net/janino/IClassLoader.html"><CODE>IClassLoader</CODE></A> used to load
+          classes defined outside the current compilation unit are now stored in
+          thread-local globals. The <a href="javadoc/net/janino/IClassLoader.html"><CODE>IClassLoader</CODE></A> also holds the formerly
+          global <a href="javadoc/net/janino/IClass.html"><CODE>IClass</CODE></A> cache, which caused a memory leak (reported by
+          Fabrice Carnet 2003-05-20).
+      <li><a href="javadoc/net/janino/IClass.html#isAssignableFrom(net.janino.IClass)"><CODE>IClass.isAssignableFrom(net.janino.IClass)</CODE></A> did not handle primitive types (reported
+          by Fabrice Carnet 2003-05-20).
+      <li>Multiple expressions, scripts and class bodies can now be loaded into the
+          same <CODE>ClassLoader</CODE>, if that is a
+          <a href="javadoc/net/janino/ByteArrayClassLoader.html"><CODE>ByteArrayClassLoader</CODE></A>.
+          This is necessary if the expressions, scripts and classes need to refer to each other.
+          (Requested by Fabirce Carnet 2003-05-20.)
+      <li>A "for" statement with an empty condition (e.g. "for(;;)") caused a
+          <code>java.lang.NullPointerException</code>.
+      <li>The <code>net.janino.ClassLoaderIClassLoader.ReflectionIClass</code> holds a map
+          that guarantees that <code>java.lang.Class</code>es and <a href="javadoc/net/janino/IClass.html"><CODE>IClass</CODE></A>es
+          map one-to-one. This posed a memory leak. (Reported by Fabrice Carnet 2003-05-20.)
+      <li>Documented the <a href="javadoc/net/janino/ClassBodyEvaluator.html"><CODE>ClassBodyEvaluator</CODE></A>.
+    </ul>
+
+    <h4>Version 0.3.10, April 22, 2003</h4>
+    <ul>
+      <li>Fixed up invocation of interface methods (reported by Reimond Bernstein
+          2003-04-14).
+      <li>Added references to types in same package, but different compilation unit.
+      <li>Fixed up C-style array variable declaration ("int a[] = ...") (reported
+          by Reimond Bernstein 2003-04-14).
+    </ul>
+
+    <h4>Version 0.3.9, April 02, 2003</h4>
+    <ul>
+      <li>Added the "ClassBodyEvaluator" and the "ClassBodyDemo" class. These allow
+          you to compile a "class body", i.e. a series of methods, variable
+          declarations etc. (requested by Fabrice Carnet 2003-03-18).
+      <li>Fixed up "IClass.getArrayType()" which only worked for loaded classes, but
+          not for classes in the current compilation unit.
+      <li>The <code>java.lang.ClassLoader</code> used to load the just-compiled
+          class now uses as its parent the current thread's context class loader
+          (reported by Fabrice Carnet 2003-03-26).
+    </ul>
+
+    <h4>Version 0.3.8, March 05, 2003</h4>
+    <ul>
+      <li>Fixed a bug in the flow analysis code (caused a compile-time error)
+          (reported by Fu Li Chen 2003-02-21).
+      <li>"IClass" now uses
+          "Thread.currentThread().getContextClassLoader().loadClass()" instead
+          of "Class.forName()" (feature requested by Dain Sundtrom 2002-02-16).
+    </ul>
+
+    <h4>Version 0.3.7, November 26, 2002</h4>
+    <ul>
+      <li>Added "this" (reference to current instance). Added primitive class
+          literals (e.g. "int.class"). Fixed several showstopper bugs. Added
+          limited support for member classes.
+    </ul>
+
+    <h4>Version 0.3.6, November 22, 2002</h4>
+    <ul>
+      <li>Added reference comparison. Added ScriptEvaluator constructors that read
+          from InputStream, Reader or Scanner.
+    </ul>
+
+    <h4>Version 0.3.5, November 14, 2002</h4>
+
+    <ul>
+      <li>Only the last import-on-demand directive in a compilation unit did work;
+          using a class imported by an amport-on-demand directive other than the
+          last one caused a compilation error. (Reported by Audrius Meskauskas
+          2002-11-14.)
+    </ul>
+
+    <h4>Version 0.3.4, November 9, 2002</h4>
+    <ul>
+      <li>Updated the overview page.
+    </ul>
+
+    <h4>Version 0.3.3, October 26, 2002</h4>
+
+    <ul>
+      <li>Renamed "ExpressionTest" and "ScriptTest" to "...Demo". Fixed up several
+          JAVADOC bugs. "ExpressionEvaluator" now has a "thrownExceptions"
+          parameter. Added support for "void" type expressions to
+          "ExpressionEvaluator". Added JAVADOC comments. Clean up. Fixed a bug in
+          "AmbiguousName.reclassify()".
+    </ul>
+
+    <h4>Version 0.3.2, October 21, 2002</h4>
+    <ul>
+      <li>Fixed a few more bugs reported by Jimmy.
+    </ul>
+
+    <h4>Version 0.3.1, October 13, 2002</h4>
+
+    <ul>
+      <li>Fixed an ArrayStoreException in ScriptEvaluator that was reported by
+          Russell White 2002-06-25.
+      <li>Added reclassification of fully qualified type names: E.g. cast operation
+          "(HashMap) xyz" did work, but "(java.util.HashMap) xyz" didn't. Reported
+          by Jimmy 2002-10-13.
+    </ul>
+
+    <h4>Version 0.3, May 25, 2002</h4>
+    <ul>
+      <li>Added most missing language elements that I planned to add. The JLS is
+          now almost completely implemented, except for nested classes and
+          interfaces.
+      <li>This is the first version of JANINO that I will "advertise". Let's see
+          if anybody wants to use the tool... After all it's a 80 percent complete
+          Java<sup>TM</sup> compiler in only 11000+ (well-documented) lines of
+          code!
+    </ul>
+
+    <h4>Version 0.2, April 28, 2002</h4>
+    <ul>
+      <li>Almost a rewrite. Added several painfully missing language elements.
+      <li>Added more JAVADOC.
+    </ul>
+
+    <h4>Version 0.1.1, November 09, 2001</h4>
+    <ul>
+      <li>Added missing sample source files to the runtime package.
+      <li>Added <code>break</code> and <code>continue</code>.
+      <li>Added lots of JAVADOC comments.
+    </ul>
+
+    <h4>Version 0.1, October 30, 2001</h4>
+    <ul>
+      <li>Initial release
+    </ul>
+
+    <p>
+
+    Signed JAR files of the latest version: <a href="commons-compiler.jar">commons-compiler.jar</a>
+    <a href="janino.jar">janino.jar</a> <a href="commons-compiler-jdk.jar">commons-compiler-jdk.jar</a>
+  </body>
+</html>

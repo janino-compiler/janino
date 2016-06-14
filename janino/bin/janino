@@ -1,0 +1,74 @@
+#!/bin/bash
+
+declare -a jcl_args;
+declare -a java_args;
+declare -a main_args;
+do_nothing=0;
+
+lib="`dirname $0`/../../janino-dist/build";
+
+while (( $# > 0 )); do
+    arg=$1; shift;
+    case $arg in
+
+    -sourcepath | -encoding)
+        jcl_args[${#jcl_args[*]}]="$arg";
+        jcl_args[${#jcl_args[*]}]="$1"; shift;
+        ;;
+
+    -g*)
+        jcl_args[${#jcl_args[*]}]="$arg";
+        ;;
+
+    -n)
+        do_nothing=1;
+        ;;
+
+    -classpath | -cp)
+        java_args[${#java_args[*]}]="$arg";
+        java_args[${#java_args[*]}]="$1"; shift;
+        ;;
+
+    -D* | -verbose | -version | -X*)
+        java_args[${#java_args[*]}]="$arg";
+        ;;
+
+    -help)
+        cat <<EOF;
+Usage:";
+  $0 [ <option> ] ... <class-name> [ <argument> ] ...
+Options:
+  -sourcepath <dir-list> Where to look for source files
+  -encoding <encoding>   Encoding of source files, default is platform-dependent
+  -g                     Generate all debugging info
+  -g:none                Generate no debugging info
+  -g:{lines,vars,source} Generate only some debugging info
+  -n                     Print subcommands to STDOUT instead of running them
+  (any valid command-line optipon for the JAVA tool, see "java -help")
+EOF
+        exit 0;
+        ;;
+
+    -*)
+        echo >&2 "Unrecognized command line option \"$arg\"; try \"-help\".";
+        exit 1;
+        ;;
+
+    *)
+        class_name="$arg";
+        main_args=($*);
+        break;
+        ;;
+    esac;
+done;
+
+java=java;
+
+cmd="$java -classpath $lib/janino.jar;$lib/commons-compiler.jar ${java_args[@]} org.codehaus.janino.JavaSourceClassLoader ${jcl_args[@]} $class_name ${main_args[@]}";
+
+if (( $do_nothing )); then
+    echo $cmd;
+else
+    $cmd;
+fi;
+

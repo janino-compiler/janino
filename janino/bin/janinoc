@@ -1,0 +1,85 @@
+#!/bin/bash
+
+declare -a compiler_args;
+declare -a java_args;
+declare -a main_args;
+do_nothing=0;
+
+lib="`dirname $0`/../../janino-dist/build";
+
+while (( $# > 0 )); do
+    arg=$1; shift;
+    case $arg in
+
+    -d | -sourcepath | -classpath | -cp | -extdirs | -bootclasspath | -encoding)
+        compiler_args[${#compiler_args[*]}]="$arg";
+        compiler_args[${#compiler_args[*]}]="$1"; shift;
+        ;;
+
+    -verbose | -g* | -warn* | -rebuild)
+        compiler_args[${#compiler_args[*]}]="$arg";
+        ;;
+
+    -n)
+        do_nothing=1;
+        ;;
+
+    -D* | -version | -X*)
+        java_args[${#java_args[*]}]="$arg";
+        ;;
+
+    -help)
+        cat <<EOF;
+A drop-in replacement for the JAVAC compiler, see the documentation for JAVAC
+Usage:
+  $0 [ <option> ] ... <class-name> [ <argument> ] ...
+Options:
+  -sourcepath <dir-list>    Where to look for source files
+  -classpath <dir-list>     Where to look for class files
+  -cp <dir-list>            Synonym for "-classpath"
+  -extdirs <dir-list>       Where to look for extension class files
+  -bootclasspath <dir-list> Where to look for boot class files
+  -encoding <encoding>      Encoding of source files, default is platform-dependent
+  -verbose                  Report about opening, parsing, compiling of files
+  -g                        Generate all debugging info
+  -g:none                   Generate no debugging info
+  -g:{lines,vars,source}    Generate only some debugging info
+  -warn:<pattern-list>      Issue certain warnings, examples:
+    -warn:*                 Enables all warnings
+    -warn:IASF              Only warn against implicit access to static fields
+    -warn:*-IASF            Enables all warnings, except those against implicit
+                            access to static fields
+    -warn:*-IA*+IASF        Enables all warnings, except those against implicit
+                            accesses, but do warn against implicit access to
+                            static fields
+  -rebuild                  Compile all source files, even if the class files
+                            seems up-to-date
+  -n                        Print subcommands to STDOUT instead of running them
+  (any valid command-line optipon for the JAVA tool, see "java -help")
+EOF
+        exit 0;
+        ;;
+
+    -*)
+        echo >&2 "Unrecognized command line option \"$arg\"; try \"-help\".";
+        exit 1;
+        ;;
+
+    *)
+        class_name="$arg";
+        main_args=($*);
+        break;
+        ;;
+    esac;
+done;
+
+java=java;
+
+cmd="$java -classpath $lib/janino.jar;$lib/commons-compiler.jar ${java_args[@]} org.codehaus.janino.Compiler ${compiler_args[@]} $class_name ${main_args[@]}";
+
+if (( $do_nothing )); then
+    echo $cmd;
+else
+    $cmd;
+fi;
+

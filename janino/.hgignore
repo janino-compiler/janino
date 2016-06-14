@@ -1,0 +1,4 @@
+syntax: glob
+
+eclipse-classes
+build/**
