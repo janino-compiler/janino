@@ -34,11 +34,18 @@ import java.lang.reflect.Method;
 /**
  * An engine that executes a script in Java&trade; bytecode.
  * <p>
- * The syntax of the script to compile is a sequence of import declarations (not allowed if you compile many scripts at
- * a time, see below) followed by a sequence of statements, as defined in the <a
- * href="http://docs.oracle.com/javase/specs/">Java Language Specification, Java SE 7 Edition</a>, sections 7.5 and 14.
+ *   The syntax of the script to compile is a sequence of import declarations (not allowed if you compile many scripts
+ *   at a time, see below) followed by a sequence of statements, as defined in the <a
+ *   href="http://docs.oracle.com/javase/specs/">Java Language Specification, Java SE 7 Edition</a>, sections 7.5 and
+ *   14.
+ * </p>
  * <p>
- * Example:
+ *   An implementation may or may not implement the concept of "local methods", i.e. method declarations being freely
+ *   intermixed with statements.
+ * </p>
+ * <p>
+ *   Example:
+ * </p>
  * <pre>
  *   import java.text.*;
  *

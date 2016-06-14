@@ -238,7 +238,7 @@ class Scanner {
      * of future calls to {@link #produce()} are undefined.
      *
      * @deprecated This method is deprecated, because the concept described above is confusing. An application should
-     *             close the underlying {@link InputStream} or {@link Reader} itself.</b>
+     *             close the underlying {@link InputStream} or {@link Reader} itself
      */
     @Deprecated public void
     close() throws IOException { this.in.close(); }
@@ -311,7 +311,10 @@ class Scanner {
         /** The token represents the {@code null} literal; its {@link #value} is 'null'. */
         public static final int NULL_LITERAL = 8;
 
-        /** The token represents an operator; its {@link #value} is exactly the particular operator (e.g. "<<<="). */
+        /**
+         * The token represents an operator; its {@link #value} is exactly the particular operator (e.g.
+         * "&lt;&lt;&lt;=").
+         */
         public static final int OPERATOR = 9;
 
         /** The text of the token exactly as it appears in the source code. */

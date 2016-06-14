@@ -1,0 +1,9 @@
+#!/bin/bash
+
+java="$JAVA_HOME/jre/bin/java";
+
+build_dir="C:/git/aunkrig-janino/janino-dist/build";
+
+cp="$build_dir/janino.jar;$build_dir/commons-compiler.jar";
+
+"$java" -cp "$cp" org.codehaus.commons.compiler.Jsh "$@";
