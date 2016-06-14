@@ -126,7 +126,7 @@ class CachingJavaSourceClassLoader extends JavaSourceClassLoader {
     /**
      * Override {@link JavaSourceClassLoader#generateBytecodes(String)} to implement class file caching.
      *
-     * @return                        String name => byte[] bytecode, or {@code null} if no source code could be found
+     * @return                        String name =&gt; byte[] bytecode, or {@code null} if no source code could be found
      * @throws ClassNotFoundException Compilation problems or class file cache I/O problems
      */
     @Override protected Map<String /*name*/, byte[] /*bytecode*/>

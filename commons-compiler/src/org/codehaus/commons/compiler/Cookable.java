@@ -50,7 +50,11 @@ class Cookable implements ICookable {
     @Override public final void
     cook(InputStream is) throws CompileException, IOException { this.cook(null, is); }
 
-    /** @see ICookable#cook(String, InputStream) */
+    /**
+     * Reads the script with the default charset.
+     *
+     * @see ICookable#cook(String, InputStream)
+     */
     @Override public final void
     cook(String optionalFileName, InputStream is) throws CompileException, IOException {
         this.cook(optionalFileName, is, null);

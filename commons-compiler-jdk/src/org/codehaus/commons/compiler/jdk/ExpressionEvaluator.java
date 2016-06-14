@@ -68,7 +68,7 @@ import org.codehaus.commons.compiler.IExpressionEvaluator;
  * On my system (Intel P4, 2 GHz, MS Windows XP, JDK 1.4.1), expression "x + 1"
  * evaluates as follows:
  * <table>
- *   <tr><td></td><th>Server JVM</th><th>Client JVM</th></td></tr>
+ *   <tr><td></td><th>Server JVM</th><th>Client JVM</th></tr>
  *   <tr><td>Normal EE</td><td>23.7 ns</td><td>64.0 ns</td></tr>
  *   <tr><td>Fast EE</td><td>31.2 ns</td><td>42.2 ns</td></tr>
  * </table>

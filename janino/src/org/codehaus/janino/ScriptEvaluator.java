@@ -44,10 +44,35 @@ import org.codehaus.commons.compiler.Cookable;
 import org.codehaus.commons.compiler.IExpressionEvaluator;
 import org.codehaus.commons.compiler.IScriptEvaluator;
 import org.codehaus.commons.compiler.Location;
+import org.codehaus.janino.Java.Atom;
+import org.codehaus.janino.Java.BasicType;
+import org.codehaus.janino.Java.BlockStatement;
+import org.codehaus.janino.Java.ExpressionStatement;
+import org.codehaus.janino.Java.LocalClassDeclaration;
+import org.codehaus.janino.Java.LocalClassDeclarationStatement;
+import org.codehaus.janino.Java.LocalVariableDeclarationStatement;
+import org.codehaus.janino.Java.MethodDeclarator;
+import org.codehaus.janino.Java.Modifiers;
+import org.codehaus.janino.Java.Type;
 import org.codehaus.janino.Java.VariableDeclarator;
+import org.codehaus.janino.Parser.ClassDeclarationContext;
+import org.codehaus.janino.Scanner.Token;
 import org.codehaus.janino.util.Traverser;
 
-/** A number of "convenience constructors" exist that execute the setup steps instantly. Their use is discouraged. */
+/**
+ * An implementation of {@link IScriptEvaluator} that utilizes the JANINO Java compiler.
+ * <p>
+ *   This implementation implements the concept of "Local methods", i.e. statements may be freely intermixed with
+ *   method declarations. These methods are typically called by the "main code" of the script evaluator. One limitation
+ *   exists: When cooking <em>multiple</em> scripts in one {@link ScriptEvaluator}, then local method signatures
+ *   (names and parameter types) must not collide between scripts.
+ * </p>
+ * <p>
+ *   A plethora of "convenience constructors" exist that execute the setup steps instantly. Their use is discouraged,
+ *   in favor of using the default constructor, plus calling a number of setters, and then one of the {@code cook()}
+ *   methods.
+ * </p>
+ */
 @SuppressWarnings({ "rawtypes", "unchecked" }) public
 class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
 
@@ -522,7 +547,15 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
         for (int i = 0; i < count; ++i) {
             Parser parser = parsers[i];
 
-            List<Java.BlockStatement> statements = this.makeStatements(i, parser);
+            List<Java.BlockStatement> statements;
+            List<MethodDeclarator>    localMethods = new ArrayList<Java.MethodDeclarator>();
+
+            // Try "makeStatements()" first, iff that returns NULL, call "parseScript()".
+            statements = this.makeStatements(i, parser);
+            if (statements == null) {
+                statements = new ArrayList<Java.BlockStatement>();
+                this.parseScript(parser, statements, localMethods);
+            }
 
             // Determine the following script properties AFTER the call to "makeBlock()",
             // because "makeBlock()" may modify these script properties on-the-fly.
@@ -567,6 +600,10 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
                 thrownExceptions, // thrownExceptions
                 statements        // statements
             ));
+
+            for (MethodDeclarator method : localMethods) {
+                cd.addDeclaredMethod(method);
+            }
         }
 
         // Compile and load the compilation unit.
@@ -687,15 +724,150 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
     protected Class
     getDefaultReturnType() { return void.class; }
 
-    /** Fills the given <code>block</code> by parsing statements until EOF and adding them to the block. */
-    protected List<Java.BlockStatement>
+    /**
+     * @throws CompileException
+     * @throws IOException
+     */
+    protected List<BlockStatement>
     makeStatements(int idx, Parser parser) throws CompileException, IOException {
-        List<Java.BlockStatement> statements = new ArrayList();
+        return null;
+    }
+
+    /** Fills the given <code>block</code> by parsing statements until EOF and adding them to the block. */
+    protected void
+    parseScript(Parser parser, List<Java.BlockStatement> mainStatements, List<Java.MethodDeclarator> localMethods)
+    throws CompileException, IOException {
+
         while (!parser.peekEof()) {
-            statements.add(parser.parseBlockStatement());
+            ScriptEvaluator.parseScriptStatement(parser, mainStatements, localMethods);
+        }
+    }
+
+    /**
+     * <pre>
+     *   ScriptStatement :=
+     *     Statement |                                             (1)
+     *     'class' ... |                                           (2)
+     *     [ Modifiers ] 'void' Identifier MethodDeclarationRest |
+     *     Modifiers Type Identifier MethodDeclarationRest ';' |
+     *     Modifiers Type VariableDeclarators ';' |
+     *     Expression ';' |
+     *     Expression Identifier MethodDeclarationRest             (3)
+     *     Expression VariableDeclarators ';' |                    (4)
+     * </pre>
+     *
+     * (1) Includes the "labeled statement".
+     * <br />
+     * (2) Local class declaration.
+     * <br />
+     * (3) Local method declaration statement; "Expression" must pose a type.
+     * <br />
+     * (4) Local variable declaration statement; "Expression" must pose a type.
+     */
+    private static void
+    parseScriptStatement(
+        Parser                      parser,
+        List<Java.BlockStatement>   mainStatements,
+        List<Java.MethodDeclarator> localMethods
+    ) throws CompileException, IOException {
+
+        // Statement?
+        if (
+            (parser.peekIdentifier() != null && parser.peekNextButOne(":"))
+            || parser.peek(new String[] {
+                "if", "for", "while", "do", "try", "switch", "synchronized",
+                "return", "throw", "break", "continue", "assert"
+            }) != -1
+            || parser.peek(new String[] { "{", ";" }) != -1
+        ) {
+            mainStatements.add(parser.parseStatement());
+            return;
         }
 
-        return statements;
+        // Local class declaration?
+        if (parser.peekRead("class")) {
+
+            final LocalClassDeclaration lcd = (LocalClassDeclaration) parser.parseClassDeclarationRest(
+                null,                         // optionalDocComment
+                new Modifiers(),              // modifiers
+                ClassDeclarationContext.BLOCK // context
+            );
+            mainStatements.add(new LocalClassDeclarationStatement(lcd));
+            return;
+        }
+
+        Modifiers modifiers = parser.parseModifiers();
+
+        // "void" method declaration.
+        if (parser.peekRead("void")) {
+            String name = parser.readIdentifier();
+            localMethods.add(parser.parseMethodDeclarationRest(
+                null,                                             // optionalDocComment
+                modifiers,                                        // modifiers
+                new BasicType(parser.location(), BasicType.VOID), // type
+                name                                              // name
+            ));
+            return;
+        }
+
+        if (!modifiers.isBlank()) {
+
+            Type methodOrVariableType = parser.parseType();
+
+            // Modifiers Type Identifier MethodDeclarationRest ';'
+            if (parser.peek().type == Token.IDENTIFIER && parser.peekNextButOne("(")) {
+                localMethods.add(parser.parseMethodDeclarationRest(
+                    null,                   // optionalDocComment
+                    modifiers,              // modifiers
+                    methodOrVariableType,   // type
+                    parser.readIdentifier() // name
+                ));
+                return;
+            }
+
+            // Modifiers Type VariableDeclarators ';'
+            mainStatements.add(new LocalVariableDeclarationStatement(
+                parser.location(),                // location
+                modifiers,                        // modifiers
+                methodOrVariableType,             // type
+                parser.parseVariableDeclarators() // variableDeclarators
+            ));
+            parser.read(";");
+            return;
+        }
+
+        // It's either a non-final local variable declaration or an expression statement, or a non-void method
+        // declaration. We can only tell after parsing an expression.
+
+        Atom a = parser.parseExpression();
+
+        // Expression ';'
+        if (parser.peekRead(";")) {
+            mainStatements.add(new ExpressionStatement(a.toRvalueOrCompileException()));
+            return;
+        }
+
+        Type methodOrVariableType = a.toTypeOrCompileException();
+
+        // [ Modifiers ] Expression identifier MethodDeclarationRest
+        if (parser.peek().type == Token.IDENTIFIER && parser.peekNextButOne("(")) {
+            localMethods.add(parser.parseMethodDeclarationRest(
+                null,                   // optionalDocComment
+                modifiers,              // modifiers
+                methodOrVariableType,   // type
+                parser.readIdentifier() // name
+            ));
+            return;
+        }
+
+        // [ Modifiers ] Expression VariableDeclarators ';'
+        mainStatements.add(new LocalVariableDeclarationStatement(
+            a.getLocation(),                  // location
+            modifiers,                        // modifiers
+            methodOrVariableType,             // type
+            parser.parseVariableDeclarators() // variableDeclarators
+        ));
+        parser.read(";");
     }
 
     /**

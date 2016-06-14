@@ -288,6 +288,9 @@ class Parser {
      *   ModifiersAndAnnotations := { 'public' | 'protected' | 'private' | 'static' | 'abstract' | 'final' | 'native'
      *           | 'synchronized' | 'transient' | 'volatile' | 'strictfp' | Annotation }
      * </pre>
+     * <p>
+     *   Includes the case "no modifiers".
+     * </p>
      */
     public Java.Modifiers
     parseModifiers() throws CompileException, IOException {
@@ -313,6 +316,8 @@ class Parser {
             mod |= x;
         }
 
+        if (as.isEmpty() && mod == 0) return Parser.NO_MODIFIERS;
+
         return new Modifiers(mod, (Annotation[]) as.toArray(new Java.Annotation[as.size()]));
     }
     private static final String[] MODIFIER_NAMES = {
@@ -327,6 +332,7 @@ class Parser {
         Mod.PUBLIC | Mod.PROTECTED | Mod.PRIVATE,
         Mod.ABSTRACT | Mod.FINAL,
     };
+    private static final Modifiers NO_MODIFIERS = new Modifiers();
 
     /**
      * <pre>
@@ -1062,7 +1068,7 @@ class Parser {
 
     /**
      * <pre>
-     *   '{' BlockStatements '}'
+     *   Block := '{' BlockStatements '}'
      * </pre>
      */
     public Block
@@ -1088,17 +1094,19 @@ class Parser {
 
     /**
      * <pre>
-     *   BlockStatement := { Identifier ':' } (
-     *     ( Modifiers Type | ModifiersOpt BasicType ) VariableDeclarators ';' |
-     *     'class' ... |
-     *     Statement |
-     *     'final' Type VariableDeclarators ';' |
+     *   BlockStatement :=
+     *     Statement |                              (1)
+     *     'class' ... |                            (2)
+     *     Modifiers Type VariableDeclarators ';' |
      *     Expression ';' |
-     *     Expression VariableDeclarators ';'   (1)
-     *   )
+     *     Expression VariableDeclarators ';'       (3)
      * </pre>
      *
-     * (1) "Expression" must pose a type, and has optional trailing brackets.
+     * (1) Includes the "labeled statement".
+     * <br />
+     * (2) Local class declaration.
+     * <br />
+     * (3) Local variable declaration statement; "Expression" must pose a type, and has optional trailing brackets.
      */
     public BlockStatement
     parseBlockStatement() throws CompileException, IOException {
@@ -1892,8 +1900,8 @@ class Parser {
      *     ConditionalExpression [ AssignmentOperator AssignmentExpression ]
      *
      *   AssignmentOperator :=
-     *     '=' | '*=' | '/=' | '%=' | '+=' | '-=' | '<<=' |
-     *     '>>=' | '>>>=' | '&=' | '^=' | '|='
+     *     '=' | '*=' | '/=' | '%=' | '+=' | '-=' | '&lt;&lt;=' |
+     *     '&gt;&gt;=' | '&gt;&gt;&gt;=' | '&amp;=' | '^=' | '|='
      * </pre>
      */
     public Atom
@@ -1954,7 +1962,7 @@ class Parser {
     /**
      * <pre>
      *   ConditionalAndExpression :=
-     *     InclusiveOrExpression { '&&' InclusiveOrExpression }
+     *     InclusiveOrExpression { '&amp;&amp;' InclusiveOrExpression }
      * </pre>
      */
     public Atom
@@ -2017,7 +2025,7 @@ class Parser {
     /**
      * <pre>
      *   AndExpression :=
-     *     EqualityExpression { '&' EqualityExpression }
+     *     EqualityExpression { '&amp;' EqualityExpression }
      * </pre>
      */
     public Atom
@@ -2061,9 +2069,9 @@ class Parser {
      *   RelationalExpression :=
      *     ShiftExpression {
      *       'instanceof' ReferenceType
-     *       | '<' ShiftExpression [ { ',' TypeArgument } '>' ]
-     *       | '<' TypeArgument [ { ',' TypeArgument } '>' ]
-     *       | ( '>' | '<=' | '>=' ) ShiftExpression
+     *       | '&lt;' ShiftExpression [ { ',' TypeArgument } '&gt;' ]
+     *       | '&lt;' TypeArgument [ { ',' TypeArgument } '&gt;' ]
+     *       | ( '&gt;' | '&lt;=' | '&gt;=' ) ShiftExpression
      *     }
      * </pre>
      */
@@ -2161,7 +2169,7 @@ class Parser {
     /**
      * <pre>
      *   ShiftExpression :=
-     *     AdditiveExpression { ( '<<' | '>>' | '>>>' ) AdditiveExpression }
+     *     AdditiveExpression { ( '&lt;&lt;' | '&gt;&gt;' | '&gt;&gt;&gt;' ) AdditiveExpression }
      * </pre>
      */
     public Atom

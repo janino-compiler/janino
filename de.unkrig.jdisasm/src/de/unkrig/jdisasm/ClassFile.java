@@ -186,7 +186,7 @@ class ClassFile {
                 } catch (IOException ioe) {
                     IOException ioe2 = new IOException("Reading field #" + i + " of " + n + ": " + ioe.getMessage());
                     ioe2.initCause(ioe);
-                    throw ioe2; // SUPPRESS CHECKSTYLE Avoid Hiding Cause of the Exception
+                    throw ioe2; // SUPPRESS CHECKSTYLE AvoidHidingCause
                 } catch (RuntimeException re) {
                     throw new RuntimeException("Reading field #" + i + " of " + n + ": " + re.getMessage(), re);
                 }
@@ -202,7 +202,7 @@ class ClassFile {
                 } catch (IOException ioe) {
                     IOException ioe2 = new IOException("Reading method #" + i + " of " + n + ": " + ioe.getMessage());
                     ioe2.initCause(ioe);
-                    throw ioe2; // SUPPRESS CHECKSTYLE Avoid Hiding Cause of the Exception
+                    throw ioe2; // SUPPRESS CHECKSTYLE AvoidHidingCause
                 } catch (RuntimeException re) {
                     throw new RuntimeException("Reading method #" + i + " of " + n + ": " + re.getMessage(), re);
                 }
