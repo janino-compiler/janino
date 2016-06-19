@@ -78,7 +78,7 @@ import org.codehaus.janino.util.resource.ResourceFinder;
 @SuppressWarnings({ "rawtypes", "unchecked" }) public
 class Compiler {
 
-    private static final Logger LOGGER = Aux.LOGGING ? Logger.getLogger(Compiler.class.getName()) : null;
+    private static final Logger LOGGER = Auxx.LOGGING ? Logger.getLogger(Compiler.class.getName()) : null;
 
     /** Command line interface. */
     public static void
@@ -503,7 +503,7 @@ class Compiler {
             // Parse all source files.
             this.parsedCompilationUnits.clear();
             for (Resource sourceResource : sourceResources) {
-                if (Aux.LOGGING)
+                if (Auxx.LOGGING)
                 Compiler.LOGGER.log(Level.FINE, "Compiling \"{0}\"", sourceResource);
 
                 this.parsedCompilationUnits.add(new UnitCompiler(this.parseCompilationUnit(
@@ -700,12 +700,12 @@ class Compiler {
          */
         @Override protected IClass
         findIClass(final String type) throws ClassNotFoundException {
-            if (Aux.LOGGING)
+            if (Auxx.LOGGING)
             Compiler.LOGGER.entering(null, "findIClass", type);
 
             // Determine the class name.
             String className = Descriptor.toClassName(type); // E.g. "pkg1.pkg2.Outer$Inner"
-            if (Aux.LOGGING)
+            if (Auxx.LOGGING)
             Compiler.LOGGER.log(Level.FINE, "className={0}", className);
 
             // Do not attempt to load classes from package "java".

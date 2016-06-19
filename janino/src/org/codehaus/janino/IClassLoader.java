@@ -44,7 +44,7 @@ import org.codehaus.janino.util.resource.ResourceFinder;
 @SuppressWarnings({ "rawtypes", "unchecked" }) public abstract
 class IClassLoader {
 
-    private static final Logger LOGGER = Aux.LOGGING ? Logger.getLogger(IClassLoader.class.getName()) : null;
+    private static final Logger LOGGER = Auxx.LOGGING ? Logger.getLogger(IClassLoader.class.getName()) : null;
 
     // The following are constants, but cannot be declared FINAL, because they are only initialized by
     // "postConstruct()".
@@ -200,7 +200,7 @@ class IClassLoader {
      */
     public final IClass
     loadIClass(String fieldDescriptor) throws ClassNotFoundException {
-        if (Aux.LOGGING)
+        if (Auxx.LOGGING)
         IClassLoader.LOGGER.entering(null, "loadIClass", fieldDescriptor);
 
         if (Descriptor.isPrimitive(fieldDescriptor)) {
@@ -253,7 +253,7 @@ class IClassLoader {
 
             // Load the class through the {@link #findIClass(String)} method implemented by the
             // derived class.
-            if (Aux.LOGGING)
+            if (Auxx.LOGGING)
             IClassLoader.LOGGER.log(Level.FINE, "About to call \"findIClass({0})\"", fieldDescriptor);
             result = this.findIClass(fieldDescriptor);
             if (result == null) {
@@ -272,7 +272,7 @@ class IClassLoader {
             );
         }
 
-        if (Aux.LOGGING)
+        if (Auxx.LOGGING)
         IClassLoader.LOGGER.exiting(null, "loadIClass", result);
         return result;
     }
@@ -329,7 +329,7 @@ class IClassLoader {
         }
 
         // Define.
-        if (Aux.LOGGING)
+        if (Auxx.LOGGING)
         IClassLoader.LOGGER.log(Level.FINE, "{0}: Defined type \"{0}\"", descriptor);
         this.loadedIClasses.put(descriptor, iClass);
     }

@@ -185,7 +185,7 @@ import org.codehaus.janino.util.ClassFile;
  */
 @SuppressWarnings({ "rawtypes", "unchecked" }) public
 class UnitCompiler {
-    private static final Logger LOGGER = Aux.LOGGING ? Logger.getLogger(UnitCompiler.class.getName()) : null;
+    private static final Logger LOGGER = Auxx.LOGGING ? Logger.getLogger(UnitCompiler.class.getName()) : null;
 
     /**
      * This constant determines the number of operands up to which the
@@ -2311,7 +2311,7 @@ class UnitCompiler {
         codeContext.fixUpAndRelocate();
 
         // Do flow analysis.
-        if (Aux.LOGGING) {
+        if (Auxx.LOGGING) {
             if (UnitCompiler.LOGGER.isLoggable(Level.FINE)) {
                 try {
                     codeContext.flowAnalysis(fd.toString());
@@ -6846,7 +6846,7 @@ class UnitCompiler {
         String rhs = identifiers[n - 1];
 
         // 6.5.2.2.1
-        if (Aux.LOGGING)
+        if (Auxx.LOGGING)
         UnitCompiler.LOGGER.log(Level.FINE, "lhs={0}", lhs);
         if (lhs instanceof Package) {
             String className = ((Package) lhs).name + '.' + rhs;
@@ -7635,7 +7635,7 @@ class UnitCompiler {
         boolean            boxingPermitted,
         Scope              contextScope
     ) throws CompileException {
-        if (Aux.LOGGING)
+        if (Auxx.LOGGING)
         if (UnitCompiler.LOGGER.isLoggable(Level.FINER)) {
             UnitCompiler.LOGGER.entering(null, "findMostSpecificIInvocable", new Object[] {
                 locatable, Arrays.toString(iInvocables), Arrays.toString(argumentTypes), boxingPermitted, contextScope
@@ -7684,7 +7684,7 @@ class UnitCompiler {
                     for (int idx = lastActualArg; idx >= formalParamCount; --idx) {
 
                         // Is method invocation conversion possible (5.3)?
-                        if (Aux.LOGGING)
+                        if (Auxx.LOGGING)
                         UnitCompiler.LOGGER.log(
                             Level.FINE,
                             "{0} <=> {1}",
@@ -7703,7 +7703,7 @@ class UnitCompiler {
 
             if (formalParamCount == nUncheckedArg) {
                 for (int j = 0; j < nUncheckedArg; ++j) {
-                    if (Aux.LOGGING)
+                    if (Auxx.LOGGING)
                     UnitCompiler.LOGGER.log(
                         Level.FINE,
                         "{0}: {1} <=> {2}",
@@ -7717,7 +7717,7 @@ class UnitCompiler {
                 }
 
                 // Applicable!
-                if (Aux.LOGGING)
+                if (Auxx.LOGGING)
                 UnitCompiler.LOGGER.fine("Applicable!");
 
                 // Varargs has lower priority.
@@ -7770,7 +7770,7 @@ class UnitCompiler {
             {
                 ;
             }
-            if (Aux.LOGGING)
+            if (Auxx.LOGGING)
             UnitCompiler.LOGGER.log(Level.FINE, "maximallySpecificIInvocables={0}", maximallySpecificIInvocables);
         }
 
@@ -9129,7 +9129,7 @@ class UnitCompiler {
         IClass    targetType,
         Object    optionalConstantValue
     ) throws CompileException {
-        if (Aux.LOGGING)
+        if (Auxx.LOGGING)
         UnitCompiler.LOGGER.entering(
             null,
             "tryAssignmentConversion",
@@ -9670,7 +9670,7 @@ class UnitCompiler {
     private boolean
     tryConstantAssignmentConversion(Locatable locatable, Object constantValue, IClass targetType)
     throws CompileException {
-        if (Aux.LOGGING)
+        if (Auxx.LOGGING)
         UnitCompiler.LOGGER.entering(
             null,
             "tryConstantAssignmentConversion",
