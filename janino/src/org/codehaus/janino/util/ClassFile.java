@@ -73,8 +73,8 @@ class ClassFile {
         // Must not set these to "..._1_5", for otherwise "EvaluatorTests.testCovariantClone()" and
         // "JlsTests.test_8_4_8_3__Requirements_in_Overriding_and_Hiding()" choke.
         // Further investigation required.
-        this.majorVersion  = ClassFile.MAJOR_VERSION_JDK_1_1;
-        this.minorVersion  = ClassFile.MINOR_VERSION_JDK_1_1;
+        this.majorVersion  = ClassFile.MAJOR_VERSION_JDK_1_4;
+        this.minorVersion  = ClassFile.MINOR_VERSION_JDK_1_4;
 
         this.constantPool  = new ArrayList();
         this.constantPool.add(null); // Add fake "0" index entry.
