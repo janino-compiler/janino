@@ -1,4 +1,0 @@
-2.7.9 fixes
-- iusse#1 classcast exception
-- issue #5: invalid start_pc
-- conditionalise usage of logger
