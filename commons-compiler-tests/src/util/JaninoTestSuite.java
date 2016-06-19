@@ -28,6 +28,7 @@ package util;
 
 import java.io.File;
 import java.lang.reflect.Method;
+import java.util.regex.Pattern;
 
 import org.codehaus.commons.compiler.AbstractJavaSourceClassLoader;
 import org.codehaus.commons.compiler.CompileException;
@@ -120,6 +121,15 @@ class JaninoTestSuite {
     protected void
     assertScriptUncookable(String script, String messageInfix) throws Exception {
         new ScriptTest(script).assertUncookable(messageInfix);
+    }
+
+    /**
+     * Asserts that cooking the given {@code script} issues an error, and the error message contains a match for
+     * {@code messageRegex}.
+     */
+    protected void
+    assertScriptUncookable(String script, Pattern messageRegex) throws Exception {
+        new ScriptTest(script).assertUncookable(messageRegex);
     }
 
     /**
@@ -347,6 +357,22 @@ class JaninoTestSuite {
             } catch (CompileException ce) {
                 if (!ce.getMessage().contains(messageInfix)) {
                     Assert.fail("Error message '" + ce.getMessage() + "' does not contain'" + messageInfix + "'");
+                }
+                return;
+            }
+            Assert.fail("Should have issued an error, but compiled successfully");
+        }
+
+        /**
+         * Assert that cooking issues an error, and the error message contains the a match of {@code messageRegex}.
+         */
+        protected void
+        assertUncookable(Pattern messageRegex) throws Exception {
+            try {
+                this.compile();
+            } catch (CompileException ce) {
+                if (!messageRegex.matcher(ce.getMessage()).find()) {
+                    Assert.fail("Error message '" + ce.getMessage() + "' does not contain'" + messageRegex + "'");
                 }
                 return;
             }

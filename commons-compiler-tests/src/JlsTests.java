@@ -26,6 +26,7 @@
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import org.codehaus.commons.compiler.ICompilerFactory;
 import org.junit.Test;
@@ -205,7 +206,7 @@ class JlsTests extends JaninoTestSuite {
             + "import java.util.*;\n"
             + "final List<String> l = new ArrayList();\n"
             + "l.add(\"x\");\n"
-            + "final Iterator<Integer> it = l.iterator();\n"
+            + "final Iterator<String> it = l.iterator();\n"
             + "return it.hasNext() && \"x\".equals(it.next()) && !it.hasNext();"
         );
     }
@@ -483,7 +484,11 @@ class JlsTests extends JaninoTestSuite {
         );
         this.assertScriptUncookable(
             "int x = 1; for (short y : new int[] { 1, 2, 3 }) x += x * y;",
-            "Assignment conversion not possible from type \"int\" to type \"short\""
+            Pattern.compile(
+                "Assignment conversion not possible from type \"int\" to type \"short\""
+                + "|"
+                + "possible loss of precision"
+            )
         );
 
         // Object array.
@@ -495,7 +500,11 @@ class JlsTests extends JaninoTestSuite {
         );
         this.assertScriptUncookable(
             "String x = \"A\"; for (Number y : new String[] { \"B\", \"C\" }) x += y; return x.equals(\"ABC\");",
-            "Assignment conversion not possible from type \"java.lang.String\" to type \"java.lang.Number\""
+            Pattern.compile(
+                "Assignment conversion not possible from type \"java.lang.String\" to type \"java.lang.Number\""
+                + "|"
+                + "incompatible types"
+            )
         );
         this.assertScriptReturnsTrue(
             "String x = \"A\"; String[] sa = { \"B\",\"C\" }; for (String y : sa) x += y; return x.equals(\"ABC\");"
