@@ -725,15 +725,15 @@ When JANINO scans an expression, script, class body or compilation unit, it stor
 
 Then when you debug your program
 
-[[File:janino-debugging.jpg]]
+![Debugging](janino-debugging.jpg)
 
 , you can step right into the generated code
 
-[[File:janino-debugging2.jpg]]
+![Debugging](janino-debugging2.jpg)
 
 , and debug it:
 
-[[File:janino-debugging3.jpg]]
+![Debugging](janino-debugging3.jpg)
 
 As you can see, you can even inspect and modify fields and variables - everything your debugger supports.
 
@@ -755,7 +755,7 @@ If you require support, [this](https://sourceforge.net/p/janino/support-requests
 
 ### Requesting new features
 
-Feel free to submit feature requests [here]https://sourceforge.net/p/janino/feature-requests/).
+Feel free to submit feature requests [here](https://sourceforge.net/p/janino/feature-requests/).
 
 ### Feedback
 
@@ -771,11 +771,11 @@ IMPORTANT: For bug reports, support requests and feature requests, please use th
 
 ### Source Code Repository
 
-The JANINO code repository is [here](https://github.com/aunkrig/janino). You have to check out the following ECLIPSE projects:
+The JANINO code repository is [here](https://github.com/janino-compiler/janino). You have to check out the following ECLIPSE projects:
 
-* [commons-compiler](https://github.com/aunkrig/janino/tree/master/commons-compiler)
-* [commons-compiler-jdk](https://github.com/aunkrig/janino/tree/master/commons-compiler-jdk)
-* [janino](https://github.com/aunkrig/janino/tree/master/janino)
+* [commons-compiler](https://github.com/janino-compiler/janino/tree/master/commons-compiler)
+* [commons-compiler-jdk](https://github.com/janino-compiler/janino/tree/master/commons-compiler-jdk)
+* [janino](https://github.com/janino-compiler/janino/tree/master/janino)
 
 And also from SOURCEFORGE SVN:
 
@@ -783,11 +783,11 @@ And also from SOURCEFORGE SVN:
 
 Optional:
 
-* [commons-compiler-tests](https://github.com/aunkrig/janino/tree/master/commons-compiler-tests)
-* [de.unkrig.jdisasm](https://github.com/aunkrig/janino/tree/master/de.unkrig.jdisasm)
-* [de.unkrig.jdisasm_test](https://github.com/aunkrig/janino/tree/master/de.unkrig.jdisasm_test)
-* [janino-dist](https://github.com/aunkrig/janino/tree/master/janino-dist)
-* [janino-tests](https://github.com/aunkrig/janino/tree/master/janino-tests)
+* [commons-compiler-tests](https://github.com/janino-compiler/janino/tree/master/commons-compiler-tests)
+* [de.unkrig.jdisasm](https://github.com/janino-compiler/janino/tree/master/de.unkrig.jdisasm)
+* [de.unkrig.jdisasm_test](https://github.com/janino-compiler/janino/tree/master/de.unkrig.jdisasm_test)
+* [janino-dist](https://github.com/janino-compiler/janino/tree/master/janino-dist)
+* [janino-tests](https://github.com/janino-compiler/janino/tree/master/janino-tests)
 
 If these ECLIPSE projects appear without any errors, then you can build the JAR files, the source ZIP files and the JAVADOC by executing the "janino-dist build.xml build" external tool configuration.
 
