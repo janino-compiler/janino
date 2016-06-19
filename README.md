@@ -1,10 +1,14 @@
 ![Janino Swoosh](https://github.com/janino-compiler/janino/blob/master/janino-dist/logo/logo_167x134.gif)
 
 Janino is a super-small, super-fast Java™ compiler. Not only can it
-[compile a set of source files to a set of class files like JAVAC](#user-content-janino-as-a-command-line-java-compiler),
-but also can it [compile a Java™ expression](#user-content-janino-as-an-expression-evaluator),
-[[#Janino_as_a_Script_Evaluator|block]], [[#Janino_as_a_Class_Body_Evaluator|class body]] or
-[[#Janino_as_a_Simple_Compiler|source file]] in memory, load the bytecode and execute it directly in the same JVM.
+[compile a set of source files to a set of class files like JAVAC](#janino-as-a-command-line-java-compiler),
+but also can it
+[compile a Java™ expression](#janino-as-an-expression-evaluator),
+[block](#janino-as-a-script-evaluator),
+[class body](#janino-as-a-class-body-evaluator)
+or
+[source file](#janino-as-a-simple-compiler)
+in memory, load the bytecode and execute it directly in the same JVM.
 
 JANINO is integrated with Apache Commons JCI ("Java Compiler Interface") and JBoss Rules / Drools.
 
