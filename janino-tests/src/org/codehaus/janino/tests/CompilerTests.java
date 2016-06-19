@@ -304,7 +304,7 @@ class CompilerTests {
 
     @Test public void
     testImplicitCastTernaryOperator() throws Exception {
-    	 Map<String, byte[]> sources = new HashMap();
+         Map<String, byte[]> sources = new HashMap();
          sources.put("pkg/A.java", ( // Class A uses class B, C, D.
              ""
              + "package pkg;\n"
@@ -346,16 +346,16 @@ class CompilerTests {
     // https://github.com/codehaus/janino/issues/4
     @Test public void
     testReferenceQualifiedSuper() throws Exception {
-    	List<ClassFile> cfs = CompilerTests.doCompile(true, true, false, CompilerTests.RESOURCE_DIR + "/a/Test.java");
+        List<ClassFile> cfs = CompilerTests.doCompile(true, true, false, CompilerTests.RESOURCE_DIR + "/a/Test.java");
     }
 
     // https://github.com/codehaus/janino/issues/5
     @Test public void
     testLocalVarTableGeneration() throws Exception {
-	SimpleCompiler s = new SimpleCompiler();
-	s.setDebuggingInformation(true, true, true);
-	s.cook(new FileInputStream(CompilerTests.RESOURCE_DIR + "/a/TestLocalVarTable.java"));
-	s.getClassLoader().loadClass("a.TestLocalVarTable");
+    SimpleCompiler s = new SimpleCompiler();
+    s.setDebuggingInformation(true, true, true);
+    s.cook(new FileInputStream(CompilerTests.RESOURCE_DIR + "/a/TestLocalVarTable.java"));
+    s.getClassLoader().loadClass("a.TestLocalVarTable");
     }
 
     public static List<ClassFile> doCompile(boolean debugSource,
@@ -364,22 +364,22 @@ class CompilerTests {
                                             String...fileNames) throws Exception {
 
         // Parse each compilation unit.
-    	final List<Java.CompilationUnit> cus = new LinkedList<>();
-    	final IClassLoader cl = new ClassLoaderIClassLoader(CompilerTests.class.getClassLoader());
-    	List<ClassFile> cfs = new LinkedList<>();
-    	for (String fileName : fileNames) {
+        final List<Java.CompilationUnit> cus = new LinkedList<>();
+        final IClassLoader cl = new ClassLoaderIClassLoader(CompilerTests.class.getClassLoader());
+        List<ClassFile> cfs = new LinkedList<>();
+        for (String fileName : fileNames) {
 
-	        try(FileReader r = new FileReader(fileName);) {
-	            Java.CompilationUnit cu = new Parser(new Scanner(fileName, r)).parseCompilationUnit();
-	            cus.add(cu);
-	           	// compile them
-	            ClassFile[] compiled = new UnitCompiler(cu, cl).compileUnit(debugSource, debugLines, debugVars);
-	            for (ClassFile cf : compiled) {
-	            	cfs.add(cf);
-	            }
-	        }
-    	}
-    	return cfs;
+            try(FileReader r = new FileReader(fileName);) {
+                Java.CompilationUnit cu = new Parser(new Scanner(fileName, r)).parseCompilationUnit();
+                cus.add(cu);
+                   // compile them
+                ClassFile[] compiled = new UnitCompiler(cu, cl).compileUnit(debugSource, debugLines, debugVars);
+                for (ClassFile cf : compiled) {
+                    cfs.add(cf);
+                }
+            }
+        }
+        return cfs;
 
     }
 }
