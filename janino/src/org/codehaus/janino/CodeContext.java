@@ -1371,14 +1371,13 @@ class CodeContext {
             }
         }
 
-        // remove local variables in dead-code block
-        for (Iterator<LocalVariableSlot> it = this.allLocalVars.iterator(); it.hasNext(); ) {
-            final LocalVariableSlot var = it.next();
+        // Remove local variables in dead-code block.
+        for (Iterator<LocalVariableSlot> it = this.allLocalVars.iterator(); it.hasNext();) {
+            final LocalVariableSlot var = (LocalVariableSlot) it.next();
             if (invalidOffsets.contains(var.getStart())) {
                 assert invalidOffsets.contains(var.getEnd());
                 it.remove();
-            }
-            else {
+            } else {
                 assert !invalidOffsets.contains(var.getEnd());
             }
         }
