@@ -69,8 +69,12 @@ class ClassFile {
      */
     public
     ClassFile(short accessFlags, String thisClassFd, String superclassFd, String[] interfaceFds) {
-        this.majorVersion  = ClassFile.MAJOR_VERSION_JDK_1_5;
-        this.minorVersion  = ClassFile.MINOR_VERSION_JDK_1_5;
+
+        // Must not set these to "..._1_5", for otherwise "EvaluatorTests.testCovariantClone()" and
+        // "JlsTests.test_8_4_8_3__Requirements_in_Overriding_and_Hiding()" choke.
+        // Further investigation required.
+        this.majorVersion  = ClassFile.MAJOR_VERSION_JDK_1_1;
+        this.minorVersion  = ClassFile.MINOR_VERSION_JDK_1_1;
 
         this.constantPool  = new ArrayList();
         this.constantPool.add(null); // Add fake "0" index entry.
