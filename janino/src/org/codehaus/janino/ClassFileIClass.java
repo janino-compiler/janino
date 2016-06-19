@@ -416,7 +416,12 @@ class ClassFileIClass extends IClass {
             }
         }
 
-        final Object optionalConstantValue = cva == null ? IClass.NOT_CONSTANT : cva.getConstantValue(this.classFile);
+        final Object optionalConstantValue = (
+            cva == null
+            ? IClass.NOT_CONSTANT
+            : cva.getConstantValue(this.classFile).getValue(this.classFile)
+        );
+
         final Access access                = ClassFileIClass.accessFlags2Access(fieldInfo.getModifierFlags());
 
         result = new IField() {
