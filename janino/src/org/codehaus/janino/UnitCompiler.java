@@ -3622,13 +3622,13 @@ class UnitCompiler {
             if (mhsType == IClass.BYTE && rhsType == IClass.INT && this.isWithinByteRange(ce.rhs.constantValue)) {
                 expressionType = IClass.BYTE;
                 // fix up the constant to be a byte
-                ce.rhs.constantValue = ((Integer)ce.rhs.constantValue).byteValue();
+                ce.rhs.constantValue = ((Integer) ce.rhs.constantValue).byteValue();
             }
             // JLS7 15.25, list 1, bullet 4, bullet 3: "b ? 127 : byte => byte"
             else if (mhsType == IClass.INT && rhsType == IClass.BYTE && this.isWithinByteRange(ce.mhs.constantValue)) {
                 expressionType = IClass.BYTE;
                 // fix up the constant to be a byte
-                ce.mhs.constantValue = ((Integer)ce.mhs.constantValue).byteValue();
+                ce.mhs.constantValue = ((Integer) ce.mhs.constantValue).byteValue();
             }
             // JLS7 15.25, list 1, bullet 4, bullet 4: "b ? Integer : Double => double"
             else {
@@ -9188,7 +9188,14 @@ class UnitCompiler {
         return false;
     }
 
-    /** Implements "assignment conversion" (JLS7 5.2) on a constant value. */
+    /**
+     * Implements "assignment conversion" (JLS7 5.2) on a constant value.
+     *
+     * @param value Must be a {@link Boolean}, {@link String}, {@link Byte}, {@link Short}, {@link Integer}, {@link
+     *              Character}, {@link Long}, {@link Float}, {@link Double} or {@code null}
+     * @return      A {@link Boolean}, {@link String}, {@link Byte}, {@link Short}, {@link Integer}, {@link Character},
+     *              {@link Long}, {@link Float}, {@link Double} or {@code null}
+     */
     private Object
     assignmentConversion(Locatable locatable, Object value, IClass targetType) throws CompileException {
         if (targetType == IClass.BOOLEAN) {
