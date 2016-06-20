@@ -186,7 +186,10 @@ class ReflectionIClass extends IClass {
                     try {
                         return a.getClass().getMethod(name).invoke(a);
                     } catch (NoSuchMethodException e) {
-                        throw new CompileException("Annotation \"" + annotationType.getName() + "\" has no element \"" + name + "\"", null);
+                        throw new CompileException(
+                            "Annotation \"" + annotationType.getName() + "\" has no element \"" + name + "\"",
+                            null
+                        );
                     } catch (Exception e) {
                         throw new AssertionError(e);
                     }
