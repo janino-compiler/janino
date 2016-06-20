@@ -26,6 +26,9 @@
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 import org.codehaus.commons.compiler.ICompilerFactory;
@@ -387,8 +390,19 @@ class JlsTests extends JaninoTestSuite {
         ), "Bag");
     }
 
+    @SuppressWarnings("unused")
     @Test public void
     test_8_4_8_3__Requirements_in_Overriding_and_Hiding() throws Exception {
+
+        // Enable this code snippet to print class file disassemblies to the console.
+        if (false) {
+            Logger scl = Logger.getLogger("org.codehaus.janino.SimpleCompiler");
+            for (Handler h : scl.getHandlers()) {
+                h.setLevel(Level.FINEST);
+            }
+            scl.setLevel(Level.FINEST);
+        }
+
         this.assertClassBodyExecutable(
             ""
             + "public static interface FirstCloneable extends Cloneable {\n"
