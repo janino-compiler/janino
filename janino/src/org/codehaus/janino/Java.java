@@ -299,15 +299,31 @@ class Java {
         Type getType();
     }
 
-    /** Repreentation of a 'marker annotation', i.e. an annotation without any elements in parentheses. */
-    public static final
-    class MarkerAnnotation implements Annotation {
+    /** Convenience class. */
+    public abstract static
+    class AbstractAnnotation implements Annotation {
 
-        /** The type of this marker annotation. */
+        /** The type of this annotation. */
         public final Type type;
 
         public
-        MarkerAnnotation(Type type) { this.type = type; }
+        AbstractAnnotation(Type type) { this.type = type; }
+
+        @Override public Location
+        getLocation() { return this.type.getLocation(); }
+
+        @Override public void
+        throwCompileException(String message) throws CompileException {
+            throw new CompileException(message, this.getLocation());
+        }
+    }
+
+    /** Representation of a 'marker annotation', i.e. an annotation without any elements in parentheses. */
+    public static final
+    class MarkerAnnotation extends AbstractAnnotation {
+
+        public
+        MarkerAnnotation(Type type) { super(type); }
 
         @Override public void
         setEnclosingScope(Scope enclosingScope) { this.type.setEnclosingScope(enclosingScope); }
@@ -328,17 +344,14 @@ class Java {
      * Representation of a 'single-element annotation', i.e. an annotation followed by a single element in parentheses.
      */
     public static final
-    class SingleElementAnnotation implements Annotation {
-
-        /** The type of this single-element annotation. */
-        public final ReferenceType type;
+    class SingleElementAnnotation extends AbstractAnnotation {
 
         /** The element value associated with this single-element annotation. */
         public final ElementValue elementValue;
 
         public
         SingleElementAnnotation(ReferenceType type, ElementValue elementValue) {
-            this.type         = type;
+            super(type);
             this.elementValue = elementValue;
         }
 
@@ -359,17 +372,14 @@ class Java {
 
     /** A 'normal annotation', i.e. an annotation with multiple elements in parentheses and curly braces. */
     public static final
-    class NormalAnnotation implements Annotation {
-
-        /** The type of this normal annotation. */
-        public final ReferenceType type;
+    class NormalAnnotation extends AbstractAnnotation {
 
         /** The element-value-pairs associated with this annotation. */
         public final ElementValuePair[] elementValuePairs;
 
         public
         NormalAnnotation(ReferenceType type, ElementValuePair[] elementValuePairs) {
-            this.type              = type;
+            super(type);
             this.elementValuePairs = elementValuePairs;
         }
 
@@ -386,7 +396,7 @@ class Java {
         }
 
         @Override public void
-        setEnclosingScope(Scope enclosingScope) { this.setEnclosingScope(enclosingScope); }
+        setEnclosingScope(Scope enclosingScope) { this.type.setEnclosingScope(enclosingScope); }
 
         @Override public void
         accept(Visitor.AnnotationVisitor visitor) { visitor.visitNormalAnnotation(this); }
@@ -478,7 +488,7 @@ class Java {
 
     /** Base of the possible element values in a {@link NormalAnnotation}. */
     public
-    interface ElementValue {
+    interface ElementValue extends Locatable {
 
         /**
          * Invokes the '{@code visit...()}' method of {@link Visitor.ElementValueVisitor} for the concrete {@link
@@ -492,13 +502,14 @@ class Java {
      * })</code>'.
      */
     public static
-    class ElementValueArrayInitializer implements ElementValue {
+    class ElementValueArrayInitializer extends Located implements ElementValue {
 
         /** The element values in the body of the array initializer. */
         public final ElementValue[] elementValues;
 
         public
         ElementValueArrayInitializer(ElementValue[] elementValues) {
+            super(elementValues.length == 0 ? null : elementValues[0].getLocation());
             this.elementValues = elementValues;
         }
 

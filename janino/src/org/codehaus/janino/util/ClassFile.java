@@ -179,7 +179,7 @@ class ClassFile {
     }
 
     /**
-     * @param elementValuePairs Maps element-name constant-pool-index to element value
+     * @param elementValuePairs Maps element-name constant-pool-index ({@link ConstantUtf8Info}) to element value
      */
     public void
     addAnnotationsAttributeEntry(
@@ -634,17 +634,16 @@ class ClassFile {
     store(OutputStream os) throws IOException {
         DataOutputStream dos = os instanceof DataOutputStream ? (DataOutputStream) os : new DataOutputStream(os);
 
-        dos.writeInt(ClassFile.CLASS_FILE_MAGIC);            // magic
-        dos.writeShort(this.minorVersion);                   // minor_version
-        dos.writeShort(this.majorVersion);                   // major_version
-        ClassFile.storeConstantPool(dos, this.constantPool); // constant_pool_count, constant_pool
-        dos.writeShort(this.accessFlags);                    // access_flags
-        dos.writeShort(this.thisClass);                      // this_class
-        dos.writeShort(this.superclass);                     // super_class
-        ClassFile.storeShortArray(dos, this.interfaces);     // interfaces_count, interfaces
-        ClassFile.storeFields(dos, this.fieldInfos);         // fields_count, fields
-        ClassFile.storeMethods(dos, this.methodInfos);       // methods_count, methods
-        //TODO: need annotation(s) for classes?
+        dos.writeInt(ClassFile.CLASS_FILE_MAGIC);              // magic
+        dos.writeShort(this.minorVersion);                     // minor_version
+        dos.writeShort(this.majorVersion);                     // major_version
+        ClassFile.storeConstantPool(dos, this.constantPool);   // constant_pool_count, constant_pool
+        dos.writeShort(this.accessFlags);                      // access_flags
+        dos.writeShort(this.thisClass);                        // this_class
+        dos.writeShort(this.superclass);                       // super_class
+        ClassFile.storeShortArray(dos, this.interfaces);       // interfaces_count, interfaces
+        ClassFile.storeFields(dos, this.fieldInfos);           // fields_count, fields
+        ClassFile.storeMethods(dos, this.methodInfos);         // methods_count, methods
         ClassFile.storeAttributes(dos, this.attributes, null); // attributes_count, attributes
     }
 
@@ -1720,7 +1719,7 @@ class ClassFile {
             case '@': return AnnotationsAttribute.loadAnnotation(dis);
 
             case '[':
-                short    numValues = dis.readShort(); // num_values
+                short          numValues = dis.readShort(); // num_values
                 ElementValue[] values    = new ElementValue[numValues & 0xffff];
                 for (int i = 0; i < numValues; i++) values[i] = AnnotationsAttribute.loadElementValue(dis);
                 return new ArrayElementValue(values);
@@ -1730,11 +1729,19 @@ class ClassFile {
             }
         }
 
-        public interface ElementValue {
+        /** Representation of the "element_value" structure (see JVMS8 4.7.16.1). */
+        public
+        interface ElementValue {
+
+            /** Writes this element value in an element-value-type dependent way; see JVMS8 4.7.16.1. */
             void store(DataOutputStream dos) throws IOException;
         }
 
-        public static abstract
+        /**
+         * Convenience class for element values that are constants (as opposed to annotations, enum constants and
+         * arrays).
+         */
+        public abstract static
         class ConstantElementValue implements ElementValue {
 
             public final byte  tag;
@@ -1787,6 +1794,7 @@ class ClassFile {
             }
         }
 
+        /** Representation of the "array_value" structure. */
         public static final
         class ArrayElementValue implements ElementValue {
 
@@ -1822,6 +1830,9 @@ class ClassFile {
             /** The "element_value_pairs" field of the {@code annotation} type as described in JVMS8 4.7.16. */
             public final Map<Short, ElementValue> elementValuePairs;
 
+            /**
+             * @param elementValuePairs Maps element name index ({@link ConstantUtf8Info}) to {@link ElementValue}s
+             */
             public
             Annotation(short typeIndex, Map<Short, ElementValue> elementValuePairs) {
                 this.typeIndex         = typeIndex;
@@ -1833,8 +1844,8 @@ class ClassFile {
                 dos.writeShort(this.typeIndex);                // type_index
                 dos.writeShort(this.elementValuePairs.size()); // num_element_value_pairs
                 for (Map.Entry<Short, ElementValue> evps : this.elementValuePairs.entrySet()) {
-                    dos.writeShort(evps.getKey()); // element_name_index
-                    evps.getValue().store(dos);    // value
+                    dos.writeShort((Short) evps.getKey());       // element_name_index
+                    ((ElementValue) evps.getValue()).store(dos); // value
                 }
             }
         }
@@ -1949,9 +1960,8 @@ class ClassFile {
 
         private static AttributeInfo
         loadBody(short attributeNameIndex, DataInputStream dis) throws IOException {
-            short   localVariableTableLength = dis.readShort(); // local_variable_table_length
-            Entry[] lvtes                    = new Entry[localVariableTableLength];
-            for (short i = 0; i < localVariableTableLength; ++i) { // local_variable_table
+            Entry[] lvtes = new Entry[dis.readShort()]; // local_variable_table_length
+            for (short i = 0; i < lvtes.length; ++i) {  // local_variable_table
                 lvtes[i] = new LocalVariableTableAttribute.Entry(
                     dis.readShort(), // startPC
                     dis.readShort(), // length
@@ -2042,9 +2052,10 @@ class ClassFile {
 
         public static AttributeInfo
         loadBody(short attributeNameIndex, ClassFile classFile, DataInputStream dis) throws IOException {
-            final short  maxStack  = dis.readShort();                   // max_stack
-            final short  maxLocals = dis.readShort();                   // max_locals
-            final byte[] code      = ClassFile.readLengthAndBytes(dis); // code_length, code
+
+            final short  maxStack  = dis.readShort();                              // max_stack
+            final short  maxLocals = dis.readShort();                              // max_locals
+            final byte[] code      = ClassFile.readLengthAndBytes(dis);            // code_length, code
 
             ExceptionTableEntry[] etes = new ExceptionTableEntry[dis.readShort()]; // exception_table_length
             for (int i = 0; i < etes.length; ++i) {                                // exception_table

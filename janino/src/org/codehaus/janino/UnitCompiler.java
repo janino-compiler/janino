@@ -98,6 +98,7 @@ import org.codehaus.janino.Java.Crement;
 import org.codehaus.janino.Java.DoStatement;
 import org.codehaus.janino.Java.DocCommentable;
 import org.codehaus.janino.Java.ElementValueArrayInitializer;
+import org.codehaus.janino.Java.ElementValuePair;
 import org.codehaus.janino.Java.EmptyStatement;
 import org.codehaus.janino.Java.EnclosingScopeOfTypeDeclaration;
 import org.codehaus.janino.Java.ExpressionStatement;
@@ -729,7 +730,7 @@ class UnitCompiler {
     private void
     addAnnotations(Java.Annotation[] annotations, final ClassFile cf) throws CompileException {
 
-        ANNOTATIONS: for (Java.Annotation a : annotations) {
+        ANNOTATIONS: for (final Java.Annotation a : annotations) {
             Type          annotationType        = a.getType();
             IClass        annotationIClass      = this.getType(annotationType);
             IAnnotation[] annotationAnnotations = annotationIClass.getIAnnotations();
@@ -737,17 +738,26 @@ class UnitCompiler {
             // Determine the attribute name.
             String attributeName = "RuntimeInvisibleAnnotations";
             for (IAnnotation aa : annotationAnnotations) {
+
                 if (aa.getAnnotationType() != this.iClassLoader.ANNO_java_lang_annotation_Retention) continue;
 
                 RetentionPolicy retention = (RetentionPolicy) aa.getElementValue("value");
 
-                switch (retention) {
-                case SOURCE:  continue ANNOTATIONS;
-                case CLASS:   attributeName = "RuntimeInvisibleAnnotations"; break;
-                case RUNTIME: attributeName = "RuntimeVisibleAnnotations";   break;
-                default:      throw new AssertionError(retention);
+                int o = retention.ordinal();
+                if (o == RetentionPolicy.SOURCE.ordinal()) {
+                    continue ANNOTATIONS;
+                } else
+                if (o == RetentionPolicy.CLASS.ordinal()) {
+                    attributeName = "RuntimeInvisibleAnnotations";
+                    break;
+                } else
+                if (o == RetentionPolicy.RUNTIME.ordinal()) {
+                    attributeName = "RuntimeVisibleAnnotations";
+                    break;
+                } else
+                {
+                    throw new AssertionError(retention);
                 }
-                break;
             }
 
             // Compile the annotation's element-value-pairs.
@@ -756,232 +766,28 @@ class UnitCompiler {
 
                 @Override public void
                 visitSingleElementAnnotation(SingleElementAnnotation sea) {
-                    final ClassFile.AnnotationsAttribute.ElementValue[] ev = new ClassFile.AnnotationsAttribute.ElementValue[1];
-                    sea.elementValue.accept(new ElementValueVisitor() {
-
-                        @Override public void
-                        visitSingleElementAnnotation(SingleElementAnnotation sea) {
-                            // TODO
-                        }
-
-                        @Override public void visitNormalAnnotation(NormalAnnotation na) {
-                            // TODO Auto-generated method stub
-
-                        }
-
-                        @Override
-                        public void visitMarkerAnnotation(MarkerAnnotation ma) {
-                            // TODO Auto-generated method stub
-
-                        }
-
-                        @Override
-                        public void visitSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae) {
-                            // TODO Auto-generated method stub
-
-                        }
-
-                        @Override
-                        public void visitParenthesizedExpression(ParenthesizedExpression pe) {
-                            // TODO Auto-generated method stub
-
-                        }
-
-                        @Override
-                        public void visitLocalVariableAccess(LocalVariableAccess lva) {
-                            // TODO Auto-generated method stub
-
-                        }
-
-                        @Override
-                        public void visitFieldAccessExpression(FieldAccessExpression fae) {
-                            // TODO Auto-generated method stub
-
-                        }
-
-                        @Override
-                        public void visitFieldAccess(FieldAccess fa) {
-                            // TODO Auto-generated method stub
-
-                        }
-
-                        @Override
-                        public void visitArrayAccessExpression(ArrayAccessExpression aae) {
-                            // TODO Auto-generated method stub
-
-                        }
-
-                        @Override
-                        public void visitAmbiguousName(AmbiguousName an) {
-                            // TODO Auto-generated method stub
-
-                        }
-
-                        @Override
-                        public void visitUnaryOperation(UnaryOperation uo) {
-                            // TODO Auto-generated method stub
-
-                        }
-
-                        @Override
-                        public void visitThisReference(ThisReference tr) {
-                            // TODO Auto-generated method stub
-
-                        }
-
-                        @Override
-                        public void visitSuperclassMethodInvocation(SuperclassMethodInvocation smi) {
-                            // TODO Auto-generated method stub
-
-                        }
-
-                        @Override
-                        public void visitStringLiteral(StringLiteral sl) {
-                            String v = sl.value;
-                            ev[0] = new ClassFile.AnnotationsAttribute.StringElementValue(
-                                cf.addConstantUtf8Info(UnitCompiler.unescape(v.substring(1, v.length() - 1)))
-                            );
-
-                        }
-
-                        @Override
-                        public void visitSimpleConstant(SimpleConstant sl) {
-                            // TODO Auto-generated method stub
-
-                        }
-
-                        @Override
-                        public void visitQualifiedThisReference(QualifiedThisReference qtr) {
-                            // TODO Auto-generated method stub
-
-                        }
-
-                        @Override
-                        public void visitParameterAccess(ParameterAccess pa) {
-                            // TODO Auto-generated method stub
-
-                        }
-
-                        @Override
-                        public void visitNullLiteral(NullLiteral nl) {
-                            // TODO Auto-generated method stub
-
-                        }
-
-                        @Override
-                        public void visitNewInitializedArray(NewInitializedArray nia) {
-                            // TODO Auto-generated method stub
-
-                        }
-
-                        @Override
-                        public void visitNewClassInstance(NewClassInstance nci) {
-                            // TODO Auto-generated method stub
-
-                        }
-
-                        @Override
-                        public void visitNewArray(NewArray na) {
-                            // TODO Auto-generated method stub
-
-                        }
-
-                        @Override
-                        public void visitNewAnonymousClassInstance(NewAnonymousClassInstance naci) {
-                            // TODO Auto-generated method stub
-
-                        }
-
-                        @Override
-                        public void visitMethodInvocation(MethodInvocation mi) {
-                            // TODO Auto-generated method stub
-
-                        }
-
-                        @Override
-                        public void visitIntegerLiteral(IntegerLiteral il) {
-                            // TODO Auto-generated method stub
-
-                        }
-
-                        @Override
-                        public void visitInstanceof(Instanceof io) {
-                            // TODO Auto-generated method stub
-
-                        }
-
-                        @Override
-                        public void visitFloatingPointLiteral(FloatingPointLiteral fpl) {
-                            // TODO Auto-generated method stub
-
-                        }
-
-                        @Override
-                        public void visitCrement(Crement c) {
-                            // TODO Auto-generated method stub
-
-                        }
-
-                        @Override
-                        public void visitConditionalExpression(ConditionalExpression ce) {
-                            // TODO Auto-generated method stub
-
-                        }
-
-                        @Override
-                        public void visitClassLiteral(ClassLiteral cl) {
-                            // TODO Auto-generated method stub
-
-                        }
-
-                        @Override
-                        public void visitCharacterLiteral(CharacterLiteral cl) {
-                            // TODO Auto-generated method stub
-
-                        }
-
-                        @Override
-                        public void visitCast(Cast c) {
-                            // TODO Auto-generated method stub
-
-                        }
-
-                        @Override
-                        public void visitBooleanLiteral(BooleanLiteral bl) {
-                            // TODO Auto-generated method stub
-
-                        }
-
-                        @Override
-                        public void visitBinaryOperation(BinaryOperation bo) {
-                            // TODO Auto-generated method stub
-
-                        }
-
-                        @Override
-                        public void visitAssignment(Assignment a) {
-                            // TODO Auto-generated method stub
-
-                        }
-
-                        @Override
-                        public void visitArrayLength(ArrayLength al) {
-                            // TODO Auto-generated method stub
-
-                        }
-
-                        @Override
-                        public void visitElementValueArrayInitializer(ElementValueArrayInitializer evai) {
-                            // TODO Auto-generated method stub
-
-                        }
-                    });
-                    evps.put(cf.addConstantUtf8Info("value"), ev[0]);
+                    try {
+                        evps.put(
+                            cf.addConstantUtf8Info("value"),
+                            UnitCompiler.this.compileElementValue(sea.elementValue, cf)
+                        );
+                    } catch (CompileException ce) {
+                        throw new UncheckedCompileException(ce);
+                    }
                 }
 
                 @Override public void
                 visitNormalAnnotation(NormalAnnotation na) {
-                    // TODO
+                    try {
+                        for (ElementValuePair evp : na.elementValuePairs) {
+                            evps.put(
+                                cf.addConstantUtf8Info(evp.identifier),
+                                UnitCompiler.this.compileElementValue(evp.elementValue, cf)
+                            );
+                        }
+                    } catch (CompileException ce) {
+                        throw new UncheckedCompileException(ce);
+                    }
                 }
 
                 @Override public void
@@ -992,6 +798,143 @@ class UnitCompiler {
 
             // Add the annotation to the class.
             cf.addAnnotationsAttributeEntry(attributeName, annotationIClass.getDescriptor(), evps);
+        }
+    }
+
+    private ElementValue
+    compileElementValue(org.codehaus.janino.Java.ElementValue elementValue, final ClassFile cf)
+    throws CompileException {
+
+        try {
+
+            final ClassFile.AnnotationsAttribute.ElementValue[] ev = new ClassFile.AnnotationsAttribute.ElementValue[1];
+            elementValue.accept(new ElementValueVisitor() {
+
+                // Implement ElementValueVisitor.
+
+                @Override public void
+                visitElementValueArrayInitializer(ElementValueArrayInitializer evai) {
+                    try {
+                        ClassFile.AnnotationsAttribute.ElementValue[]
+                        evs = new ClassFile.AnnotationsAttribute.ElementValue[evai.elementValues.length];
+
+                        for (int i = 0; i < evai.elementValues.length; i++) {
+                            evs[i] = UnitCompiler.this.compileElementValue(evai.elementValues[i], cf);
+                        }
+                        ev[0] = new ClassFile.AnnotationsAttribute.ArrayElementValue(evs);
+                    } catch (CompileException ce) {
+                        throw new UncheckedCompileException(ce);
+                    }
+                }
+
+                // Implement AnnotationVisitor.
+
+                @Override public void
+                visitSingleElementAnnotation(SingleElementAnnotation sea) {
+                    this.visitAnnotation(
+                        sea.type,
+                        new Java.ElementValuePair[] { new Java.ElementValuePair("value", sea.elementValue) }
+                    );
+                }
+
+                @Override public void
+                visitNormalAnnotation(NormalAnnotation na) {
+                    this.visitAnnotation(na.type, na.elementValuePairs);
+                }
+
+                @Override public void
+                visitMarkerAnnotation(MarkerAnnotation ma) {
+                    this.visitAnnotation(ma.type, new Java.ElementValuePair[0]);
+                }
+
+                private void
+                visitAnnotation(Type type, ElementValuePair[] elementValuePairs) {
+
+                    try {
+                        short
+                        annotationTypeIndex = cf.addConstantClassInfo(UnitCompiler.this.getType(type).getDescriptor());
+
+                        Map<Short, ClassFile.AnnotationsAttribute.ElementValue>
+                        evps = new HashMap<Short, ClassFile.AnnotationsAttribute.ElementValue>();
+                        for (ElementValuePair evp : elementValuePairs) {
+                            evps.put(
+                                cf.addConstantUtf8Info(evp.identifier),
+                                UnitCompiler.this.compileElementValue(evp.elementValue, cf)
+                            );
+                        }
+                        ev[0] = new ClassFile.AnnotationsAttribute.Annotation(annotationTypeIndex, evps);
+                    } catch (CompileException ce) {
+                        throw new UncheckedCompileException(ce);
+                    }
+                }
+
+                // Implement RvalueVisitor.
+
+                // SUPPRESS CHECKSTYLE LineLength:32
+                @Override public void visitSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae) { this.visitRvalue(scfae); }
+                @Override public void visitParenthesizedExpression(ParenthesizedExpression pe)                    { this.visitRvalue(pe);    }
+                @Override public void visitLocalVariableAccess(LocalVariableAccess lva)                           { this.visitRvalue(lva);   }
+                @Override public void visitFieldAccessExpression(FieldAccessExpression fae)                       { this.visitRvalue(fae);   }
+                @Override public void visitFieldAccess(FieldAccess fa)                                            { this.visitRvalue(fa);    }
+                @Override public void visitArrayAccessExpression(ArrayAccessExpression aae)                       { this.visitRvalue(aae);   }
+                @Override public void visitAmbiguousName(AmbiguousName an)                                        { this.visitRvalue(an);    }
+                @Override public void visitUnaryOperation(UnaryOperation uo)                                      { this.visitRvalue(uo);    }
+                @Override public void visitThisReference(ThisReference tr)                                        { this.visitRvalue(tr);    }
+                @Override public void visitSuperclassMethodInvocation(SuperclassMethodInvocation smi)             { this.visitRvalue(smi);   }
+                @Override public void visitIntegerLiteral(IntegerLiteral il)                                      { this.visitRvalue(il);    }
+                @Override public void visitFloatingPointLiteral(FloatingPointLiteral fpl)                         { this.visitRvalue(fpl);   }
+                @Override public void visitStringLiteral(StringLiteral sl)                                        { this.visitRvalue(sl);    }
+                @Override public void visitSimpleConstant(SimpleConstant sl)                                      { this.visitRvalue(sl);    }
+                @Override public void visitQualifiedThisReference(QualifiedThisReference qtr)                     { this.visitRvalue(qtr);   }
+                @Override public void visitParameterAccess(ParameterAccess pa)                                    { this.visitRvalue(pa);    }
+                @Override public void visitNullLiteral(NullLiteral nl)                                            { this.visitRvalue(nl);    }
+                @Override public void visitNewInitializedArray(NewInitializedArray nia)                           { this.visitRvalue(nia);   }
+                @Override public void visitNewClassInstance(NewClassInstance nci)                                 { this.visitRvalue(nci);   }
+                @Override public void visitNewArray(NewArray na)                                                  { this.visitRvalue(na);    }
+                @Override public void visitNewAnonymousClassInstance(NewAnonymousClassInstance naci)              { this.visitRvalue(naci);  }
+                @Override public void visitMethodInvocation(MethodInvocation mi)                                  { this.visitRvalue(mi);    }
+                @Override public void visitCrement(Crement c)                                                     { this.visitRvalue(c);     }
+                @Override public void visitInstanceof(Instanceof io)                                              { this.visitRvalue(io);    }
+                @Override public void visitClassLiteral(ClassLiteral cl)                                          { this.visitRvalue(cl);    }
+                @Override public void visitConditionalExpression(ConditionalExpression ce)                        { this.visitRvalue(ce);    }
+                @Override public void visitCharacterLiteral(CharacterLiteral cl)                                  { this.visitRvalue(cl);    }
+                @Override public void visitCast(Cast c)                                                           { this.visitRvalue(c);     }
+                @Override public void visitBooleanLiteral(BooleanLiteral bl)                                      { this.visitRvalue(bl);    }
+                @Override public void visitBinaryOperation(BinaryOperation bo)                                    { this.visitRvalue(bo);    }
+                @Override public void visitAssignment(Assignment a)                                               { this.visitRvalue(a);     }
+                @Override public void visitArrayLength(ArrayLength al)                                            { this.visitRvalue(al);    }
+
+                private void
+                visitRvalue(Rvalue rv) {
+
+                    try {
+                        Object cv = UnitCompiler.this.getConstantValue(rv);
+
+                        if (cv == Rvalue.CONSTANT_VALUE_UNKNOWN) {
+                            throw new CompileException(
+                                "\"" + rv + "\" is not a constant expression",
+                                rv.getLocation()
+                            );
+                        }
+
+                        if (cv instanceof String) {
+                            ev[0] = new ClassFile.AnnotationsAttribute.StringElementValue(
+                                cf.addConstantUtf8Info((String) cv)
+                            );
+                        } else
+                        {
+                            throw new AssertionError(cv);
+                        }
+                    } catch (CompileException ce) {
+                        throw new UncheckedCompileException(ce);
+                    }
+                }
+            });
+
+            assert ev[0] != null;
+            return ev[0];
+        } catch (UncheckedCompileException uce) {
+            throw uce.compileException;
         }
     }
 
@@ -3873,14 +3816,14 @@ class UnitCompiler {
             // JLS7 15.25, list 1, bullet 3: "b ? ReferenceType : null => ReferenceType"
             expressionType = mhsType;
         } else
-        if (ce.mhs.constantValue == null && rhsType.isPrimitive()){
+        if (ce.mhs.constantValue == null && rhsType.isPrimitive()) {
             expressionType = this.isBoxingConvertible(rhsType);
             assert expressionType != null : rhsType + " is not boxing convertible";
         } else
         if (ce.rhs.constantValue == null && mhsType.isPrimitive()) {
             expressionType = this.isBoxingConvertible(mhsType);
             assert expressionType != null : mhsType + " is not boxing convertible";
-        }else
+        } else
         if (this.isConvertibleToPrimitiveNumeric(mhsType) && this.isConvertibleToPrimitiveNumeric(rhsType)) {
 
             // TODO JLS7 15.25, list 1, bullet 4, bullet 1: "b ? Byte : Short => short"
@@ -3911,11 +3854,11 @@ class UnitCompiler {
 
                 // JLS7 15.25, list 1, bullet 4, bullet 4: "b ? Integer : Double => double"
                 expressionType = this.binaryNumericPromotion(
-                  ce,                 // locatable
-                  mhsType,            // type1
-                  mhsConvertInserter, // convertInserter1
-                  rhsType,            // type2
-                  rhsConvertInserter  // convertInserter2
+                    ce,                 // locatable
+                    mhsType,            // type1
+                    mhsConvertInserter, // convertInserter1
+                    rhsType,            // type2
+                    rhsConvertInserter  // convertInserter2
                 );
             }
         } else
@@ -3951,7 +3894,7 @@ class UnitCompiler {
     private static boolean
     isWithinByteRange(Object o) {
         int i = 0;
-        return o instanceof Integer && (i = ((Integer)o).intValue()) <= 127 && i >= -128;
+        return o instanceof Integer && (i = ((Integer) o).intValue()) <= 127 && i >= -128;
     }
 
     private IClass
@@ -7100,7 +7043,8 @@ class UnitCompiler {
             an.reclassified = this.reclassifyName(
                 an.getLocation(),
                 an.getEnclosingBlockStatement(),
-                an.identifiers, an.n
+                an.identifiers,
+                an.n
             );
         }
         return an.reclassified;
@@ -7110,18 +7054,10 @@ class UnitCompiler {
     private Atom
     reclassifyName(Location location, Scope scope, final String[] identifiers, int n) throws CompileException {
 
-        if (n == 1) return this.reclassifyName(
-            location,
-            scope,
-            identifiers[0]
-        );
+        if (n == 1) return this.reclassifyName(location, scope, identifiers[0]);
 
         // 6.5.2.2
-        Atom lhs = this.reclassifyName(
-            location,
-            scope,
-            identifiers, n - 1
-        );
+        Atom   lhs = this.reclassifyName(location, scope, identifiers, n - 1);
         String rhs = identifiers[n - 1];
 
         // 6.5.2.2.1
@@ -8140,15 +8076,17 @@ class UnitCompiler {
             final IClass.IMethod im  = (IClass.IMethod) maximallySpecificIInvocables.get(0);
             final IClass[]       tes = (IClass[]) s.toArray(new IClass[s.size()]);
             return im.getDeclaringIClass().new IMethod() {
-                @Override public String       getName()                                    { return im.getName(); }
-                @Override public IClass       getReturnType() throws CompileException      { return im.getReturnType(); } // SUPPRESS CHECKSTYLE LineLength
-                @Override public boolean      isAbstract()                                 { return im.isAbstract(); }
-                @Override public boolean      isStatic()                                   { return im.isStatic(); }
-                @Override public Access       getAccess()                                  { return im.getAccess(); }
-                @Override public boolean      isVarargs()                                  { return im.isVarargs(); }
-                @Override public IClass[]     getParameterTypes2() throws CompileException { return im.getParameterTypes(); } // SUPPRESS CHECKSTYLE LineLength
-                @Override public IClass[]     getThrownExceptions2()                       { return tes; }
-                @Override public Annotation[] getAnnotations()                             { return im.getAnnotations(); } // SUPPRESS CHECKSTYLE LineLength
+
+                // SUPPRESS CHECKSTYLE LineLength:9
+                @Override public String       getName()                                    { return im.getName();           }
+                @Override public IClass       getReturnType() throws CompileException      { return im.getReturnType();     }
+                @Override public boolean      isAbstract()                                 { return im.isAbstract();        }
+                @Override public boolean      isStatic()                                   { return im.isStatic();          }
+                @Override public Access       getAccess()                                  { return im.getAccess();         }
+                @Override public boolean      isVarargs()                                  { return im.isVarargs();         }
+                @Override public IClass[]     getParameterTypes2() throws CompileException { return im.getParameterTypes(); }
+                @Override public IClass[]     getThrownExceptions2()                       { return tes;                    }
+                @Override public Annotation[] getAnnotations()                             { return im.getAnnotations();    }
             };
         }
 

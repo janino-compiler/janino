@@ -431,7 +431,7 @@ class JlsTests extends JaninoTestSuite {
     test_9_7_2_Marker_Annotations() throws Exception {
 
         // Enable this code snippet to print class file disassemblies to the console.
-        if (true) {
+        if (false) {
             Logger scl = Logger.getLogger("org.codehaus.janino.SimpleCompiler");
             for (Handler h : scl.getHandlers()) {
                 h.setLevel(Level.FINEST);
@@ -452,12 +452,14 @@ class JlsTests extends JaninoTestSuite {
             + "        RuntimeRetainedAnnotation1 anno = (\n"
             + "            (RuntimeRetainedAnnotation1) Main.class.getAnnotation(RuntimeRetainedAnnotation1.class)\n"
             + "        );\n"
-            + "        if (anno == null) throw new AssertionError(\"anno == null\");\n"
-            + "//        if (anno.value() != null) throw new AssertionError(\"anno.value() != null\");\n"
-            + "        return true;\n"
+            + "        return anno != null;\n"
             + "    }\n"
             + "}"
         ), "Main");
+    }
+
+    @Test public void
+    test_9_7_3_Single_Element_Annotations() throws Exception {
 
         this.assertCompilationUnitMainReturnsTrue((
             ""
@@ -474,6 +476,30 @@ class JlsTests extends JaninoTestSuite {
             + "        );\n"
             + "        if (anno == null) throw new AssertionError(\"anno == null\");\n"
             + "        if (!anno.value().equals(\"Foo\")) throw new AssertionError(\"anno.value() != null\");\n"
+            + "        return true;\n"
+            + "    }\n"
+            + "}"
+        ), "Main");
+    }
+
+    @Test public void
+    test_9_7_1_Normal_Annotations() throws Exception {
+
+        this.assertCompilationUnitMainReturnsTrue((
+            ""
+            + "import org.codehaus.commons.compiler.tests.annotation.RuntimeRetainedAnnotation2;\n"
+            + "\n"
+            + "@RuntimeRetainedAnnotation2(value = \"Bar\")\n"
+            + "public\n"
+            + "class Main {\n"
+            + "\n"
+            + "    public static boolean\n"
+            + "    main() {\n"
+            + "        RuntimeRetainedAnnotation2 anno = (\n"
+            + "            (RuntimeRetainedAnnotation2) Main.class.getAnnotation(RuntimeRetainedAnnotation2.class)\n"
+            + "        );\n"
+            + "        if (anno == null) throw new AssertionError(\"anno == null\");\n"
+            + "        if (!anno.value().equals(\"Bar\")) throw new AssertionError(\"anno.value() != null\");\n"
             + "        return true;\n"
             + "    }\n"
             + "}"
