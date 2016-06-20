@@ -29,6 +29,7 @@ package org.codehaus.janino;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -51,6 +52,7 @@ import org.codehaus.commons.compiler.UncheckedCompileException;
 import org.codehaus.commons.compiler.WarningHandler;
 import org.codehaus.janino.CodeContext.Inserter;
 import org.codehaus.janino.CodeContext.Offset;
+import org.codehaus.janino.IClass.IAnnotation;
 import org.codehaus.janino.IClass.IConstructor;
 import org.codehaus.janino.IClass.IField;
 import org.codehaus.janino.IClass.IInvocable;
@@ -95,6 +97,7 @@ import org.codehaus.janino.Java.ContinueStatement;
 import org.codehaus.janino.Java.Crement;
 import org.codehaus.janino.Java.DoStatement;
 import org.codehaus.janino.Java.DocCommentable;
+import org.codehaus.janino.Java.ElementValueArrayInitializer;
 import org.codehaus.janino.Java.EmptyStatement;
 import org.codehaus.janino.Java.EnclosingScopeOfTypeDeclaration;
 import org.codehaus.janino.Java.ExpressionStatement;
@@ -125,6 +128,7 @@ import org.codehaus.janino.Java.LocalVariableSlot;
 import org.codehaus.janino.Java.Locatable;
 import org.codehaus.janino.Java.Located;
 import org.codehaus.janino.Java.Lvalue;
+import org.codehaus.janino.Java.MarkerAnnotation;
 import org.codehaus.janino.Java.MemberClassDeclaration;
 import org.codehaus.janino.Java.MemberInterfaceDeclaration;
 import org.codehaus.janino.Java.MemberTypeDeclaration;
@@ -137,6 +141,7 @@ import org.codehaus.janino.Java.NewAnonymousClassInstance;
 import org.codehaus.janino.Java.NewArray;
 import org.codehaus.janino.Java.NewClassInstance;
 import org.codehaus.janino.Java.NewInitializedArray;
+import org.codehaus.janino.Java.NormalAnnotation;
 import org.codehaus.janino.Java.NullLiteral;
 import org.codehaus.janino.Java.Package;
 import org.codehaus.janino.Java.PackageMemberClassDeclaration;
@@ -153,6 +158,7 @@ import org.codehaus.janino.Java.RvalueMemberType;
 import org.codehaus.janino.Java.Scope;
 import org.codehaus.janino.Java.SimpleConstant;
 import org.codehaus.janino.Java.SimpleType;
+import org.codehaus.janino.Java.SingleElementAnnotation;
 import org.codehaus.janino.Java.Statement;
 import org.codehaus.janino.Java.StringLiteral;
 import org.codehaus.janino.Java.SuperConstructorInvocation;
@@ -178,6 +184,7 @@ import org.codehaus.janino.Visitor.LvalueVisitor;
 import org.codehaus.janino.Visitor.RvalueVisitor;
 import org.codehaus.janino.Visitor.TypeDeclarationVisitor;
 import org.codehaus.janino.util.ClassFile;
+import org.codehaus.janino.util.ClassFile.AnnotationsAttribute.ElementValue;
 
 /**
  * This class actually implements the Java&trade; compiler. It is associated with exactly one compilation unit which it
@@ -435,11 +442,8 @@ class UnitCompiler {
             IClass.getDescriptors(iClass.getInterfaces()) // interfaceFDs
         );
 
-        // TODO: Add annotations with retention != SOURCE.
-
-//        for (Annotation a : cd.getAnnotations()) {
-//            assert false : "Class '" + iClass + "' has annotation '" + a + "'";
-//        }
+        // Add annotations with retention != SOURCE.
+        this.addAnnotations(cd.getAnnotations(), cf);
 
         // Add InnerClasses attribute entry for this class declaration.
         if (cd.getEnclosingScope() instanceof CompilationUnit) {
@@ -683,11 +687,8 @@ class UnitCompiler {
             interfaceDescriptors                                            // interfaceFDs
         );
 
-        // TODO: Add annotations with retention != SOURCE.
-
-//        for (Annotation a : id.getAnnotations()) {
-//            assert false : "Interface '" + iClass + "' has annotation '" + a + "'";
-//        }
+        // Add annotations with retention != SOURCE.
+        this.addAnnotations(id.getAnnotations(), cf);
 
         // Set "SourceFile" attribute.
         if (this.debugSource) {
@@ -723,6 +724,275 @@ class UnitCompiler {
 
         // Add the generated class file to a thread-local store.
         this.generatedClassFiles.add(cf);
+    }
+
+    private void
+    addAnnotations(Java.Annotation[] annotations, final ClassFile cf) throws CompileException {
+
+        ANNOTATIONS: for (Java.Annotation a : annotations) {
+            Type          annotationType        = a.getType();
+            IClass        annotationIClass      = this.getType(annotationType);
+            IAnnotation[] annotationAnnotations = annotationIClass.getIAnnotations();
+
+            // Determine the attribute name.
+            String attributeName = "RuntimeInvisibleAnnotations";
+            for (IAnnotation aa : annotationAnnotations) {
+                if (aa.getAnnotationType() != this.iClassLoader.ANNO_java_lang_annotation_Retention) continue;
+
+                RetentionPolicy retention = (RetentionPolicy) aa.getElementValue("value");
+
+                switch (retention) {
+                case SOURCE:  continue ANNOTATIONS;
+                case CLASS:   attributeName = "RuntimeInvisibleAnnotations"; break;
+                case RUNTIME: attributeName = "RuntimeVisibleAnnotations";   break;
+                default:      throw new AssertionError(retention);
+                }
+                break;
+            }
+
+            // Compile the annotation's element-value-pairs.
+            final Map<Short, ElementValue> evps = new HashMap<Short, ClassFile.AnnotationsAttribute.ElementValue>();
+            a.accept(new Visitor.AnnotationVisitor() {
+
+                @Override public void
+                visitSingleElementAnnotation(SingleElementAnnotation sea) {
+                    final ClassFile.AnnotationsAttribute.ElementValue[] ev = new ClassFile.AnnotationsAttribute.ElementValue[1];
+                    sea.elementValue.accept(new ElementValueVisitor() {
+
+                        @Override public void
+                        visitSingleElementAnnotation(SingleElementAnnotation sea) {
+                            // TODO
+                        }
+
+                        @Override public void visitNormalAnnotation(NormalAnnotation na) {
+                            // TODO Auto-generated method stub
+
+                        }
+
+                        @Override
+                        public void visitMarkerAnnotation(MarkerAnnotation ma) {
+                            // TODO Auto-generated method stub
+
+                        }
+
+                        @Override
+                        public void visitSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae) {
+                            // TODO Auto-generated method stub
+
+                        }
+
+                        @Override
+                        public void visitParenthesizedExpression(ParenthesizedExpression pe) {
+                            // TODO Auto-generated method stub
+
+                        }
+
+                        @Override
+                        public void visitLocalVariableAccess(LocalVariableAccess lva) {
+                            // TODO Auto-generated method stub
+
+                        }
+
+                        @Override
+                        public void visitFieldAccessExpression(FieldAccessExpression fae) {
+                            // TODO Auto-generated method stub
+
+                        }
+
+                        @Override
+                        public void visitFieldAccess(FieldAccess fa) {
+                            // TODO Auto-generated method stub
+
+                        }
+
+                        @Override
+                        public void visitArrayAccessExpression(ArrayAccessExpression aae) {
+                            // TODO Auto-generated method stub
+
+                        }
+
+                        @Override
+                        public void visitAmbiguousName(AmbiguousName an) {
+                            // TODO Auto-generated method stub
+
+                        }
+
+                        @Override
+                        public void visitUnaryOperation(UnaryOperation uo) {
+                            // TODO Auto-generated method stub
+
+                        }
+
+                        @Override
+                        public void visitThisReference(ThisReference tr) {
+                            // TODO Auto-generated method stub
+
+                        }
+
+                        @Override
+                        public void visitSuperclassMethodInvocation(SuperclassMethodInvocation smi) {
+                            // TODO Auto-generated method stub
+
+                        }
+
+                        @Override
+                        public void visitStringLiteral(StringLiteral sl) {
+                            String v = sl.value;
+                            ev[0] = new ClassFile.AnnotationsAttribute.StringElementValue(
+                                cf.addConstantUtf8Info(UnitCompiler.unescape(v.substring(1, v.length() - 1)))
+                            );
+
+                        }
+
+                        @Override
+                        public void visitSimpleConstant(SimpleConstant sl) {
+                            // TODO Auto-generated method stub
+
+                        }
+
+                        @Override
+                        public void visitQualifiedThisReference(QualifiedThisReference qtr) {
+                            // TODO Auto-generated method stub
+
+                        }
+
+                        @Override
+                        public void visitParameterAccess(ParameterAccess pa) {
+                            // TODO Auto-generated method stub
+
+                        }
+
+                        @Override
+                        public void visitNullLiteral(NullLiteral nl) {
+                            // TODO Auto-generated method stub
+
+                        }
+
+                        @Override
+                        public void visitNewInitializedArray(NewInitializedArray nia) {
+                            // TODO Auto-generated method stub
+
+                        }
+
+                        @Override
+                        public void visitNewClassInstance(NewClassInstance nci) {
+                            // TODO Auto-generated method stub
+
+                        }
+
+                        @Override
+                        public void visitNewArray(NewArray na) {
+                            // TODO Auto-generated method stub
+
+                        }
+
+                        @Override
+                        public void visitNewAnonymousClassInstance(NewAnonymousClassInstance naci) {
+                            // TODO Auto-generated method stub
+
+                        }
+
+                        @Override
+                        public void visitMethodInvocation(MethodInvocation mi) {
+                            // TODO Auto-generated method stub
+
+                        }
+
+                        @Override
+                        public void visitIntegerLiteral(IntegerLiteral il) {
+                            // TODO Auto-generated method stub
+
+                        }
+
+                        @Override
+                        public void visitInstanceof(Instanceof io) {
+                            // TODO Auto-generated method stub
+
+                        }
+
+                        @Override
+                        public void visitFloatingPointLiteral(FloatingPointLiteral fpl) {
+                            // TODO Auto-generated method stub
+
+                        }
+
+                        @Override
+                        public void visitCrement(Crement c) {
+                            // TODO Auto-generated method stub
+
+                        }
+
+                        @Override
+                        public void visitConditionalExpression(ConditionalExpression ce) {
+                            // TODO Auto-generated method stub
+
+                        }
+
+                        @Override
+                        public void visitClassLiteral(ClassLiteral cl) {
+                            // TODO Auto-generated method stub
+
+                        }
+
+                        @Override
+                        public void visitCharacterLiteral(CharacterLiteral cl) {
+                            // TODO Auto-generated method stub
+
+                        }
+
+                        @Override
+                        public void visitCast(Cast c) {
+                            // TODO Auto-generated method stub
+
+                        }
+
+                        @Override
+                        public void visitBooleanLiteral(BooleanLiteral bl) {
+                            // TODO Auto-generated method stub
+
+                        }
+
+                        @Override
+                        public void visitBinaryOperation(BinaryOperation bo) {
+                            // TODO Auto-generated method stub
+
+                        }
+
+                        @Override
+                        public void visitAssignment(Assignment a) {
+                            // TODO Auto-generated method stub
+
+                        }
+
+                        @Override
+                        public void visitArrayLength(ArrayLength al) {
+                            // TODO Auto-generated method stub
+
+                        }
+
+                        @Override
+                        public void visitElementValueArrayInitializer(ElementValueArrayInitializer evai) {
+                            // TODO Auto-generated method stub
+
+                        }
+                    });
+                    evps.put(cf.addConstantUtf8Info("value"), ev[0]);
+                }
+
+                @Override public void
+                visitNormalAnnotation(NormalAnnotation na) {
+                    // TODO
+                }
+
+                @Override public void
+                visitMarkerAnnotation(MarkerAnnotation ma) {
+                    ;
+                }
+            });
+
+            // Add the annotation to the class.
+            cf.addAnnotationsAttributeEntry(attributeName, annotationIClass.getDescriptor(), evps);
+        }
     }
 
     /**
@@ -5220,7 +5490,7 @@ class UnitCompiler {
         case BasicType.FLOAT:   return IClass.FLOAT;
         case BasicType.DOUBLE:  return IClass.DOUBLE;
         case BasicType.BOOLEAN: return IClass.BOOLEAN;
-        default: throw new JaninoRuntimeException("Invalid index " + bt.index);
+        default:                throw new JaninoRuntimeException("Invalid index " + bt.index);
         }
     }
     private IClass
@@ -5287,7 +5557,7 @@ class UnitCompiler {
         BlockStatement  scopeBlockStatement  = null;
         TypeDeclaration scopeTypeDeclaration = null;
         CompilationUnit scopeCompilationUnit;
-        for (Scope s = scope.getEnclosingScope();; s = s.getEnclosingScope()) {
+        for (Scope s = scope;; s = s.getEnclosingScope()) {
             if (s instanceof BlockStatement && scopeBlockStatement == null) {
                 scopeBlockStatement = (BlockStatement) s;
             }

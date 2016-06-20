@@ -46,6 +46,7 @@ import org.codehaus.janino.Descriptor;
 import org.codehaus.janino.JaninoRuntimeException;
 import org.codehaus.janino.Java;
 import org.codehaus.janino.Mod;
+import org.codehaus.janino.util.ClassFile.AnnotationsAttribute.ElementValue;
 
 /**
  * An object that represents the Java&trade; "class file" format.
@@ -156,7 +157,48 @@ class ClassFile {
             this.attributes.add(ica);
         }
         ica.getEntries().add(e);
-        return;
+    }
+
+    /**
+     * Find the "InnerClasses" attribute of this class file
+     * @return <code>null</code> if this class has no "InnerClasses" attribute
+     */
+    public AnnotationsAttribute
+    getAnnotationsAttribute(String attributeName) {
+        assert "RuntimeVisibleAnnotations".equals(attributeName) || "RuntimeInvisibleAnnotations".equals(attributeName);
+        Short ni = (Short) this.constantPoolMap.get(new ConstantUtf8Info(attributeName));
+        if (ni == null) return null;
+
+        for (Iterator<AttributeInfo> it = this.attributes.iterator(); it.hasNext();) {
+            AttributeInfo ai = (AttributeInfo) it.next();
+            if (ai.nameIndex == ni.shortValue() && ai instanceof AnnotationsAttribute) {
+                return (AnnotationsAttribute) ai;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * @param elementValuePairs Maps element-name constant-pool-index to element value
+     */
+    public void
+    addAnnotationsAttributeEntry(
+        String                   attributeName,
+        String                   fieldDescriptor,
+        Map<Short, ElementValue> elementValuePairs
+    ) {
+
+        // Find or create the "Runtime[In]visibleAnnotations" attribute.
+        AnnotationsAttribute aa = this.getAnnotationsAttribute(attributeName);
+        if (aa == null) {
+            aa = new AnnotationsAttribute(this.addConstantUtf8Info(attributeName));
+            this.attributes.add(aa);
+        }
+
+        // Add the new annotation
+        aa.getAnnotations().add(
+            new AnnotationsAttribute.Annotation(this.addConstantUtf8Info(fieldDescriptor), elementValuePairs)
+        );
     }
 
     /**
@@ -173,11 +215,11 @@ class ClassFile {
             new DataInputStream(inputStream)
         );
 
-        int magic = dis.readInt();                           // magic
+        int magic = dis.readInt();                                                 // magic
         if (magic != ClassFile.CLASS_FILE_MAGIC) throw new ClassFormatError("Invalid magic number");
 
-        this.minorVersion = dis.readShort();                 // minor_version
-        this.majorVersion = dis.readShort();                 // major_version
+        this.minorVersion = dis.readShort();                                       // minor_version
+        this.majorVersion = dis.readShort();                                       // major_version
 
         // Explicitly DO NOT CHECK the major and minor version of the CLASS file, because SUN increase them with each
         // platform update while keeping them backwards compatible.
@@ -193,12 +235,12 @@ class ClassFile {
 
         this.constantPool    = new ArrayList();
         this.constantPoolMap = new HashMap();
-        this.loadConstantPool(dis);                          // constant_pool_count, constant_pool
+        this.loadConstantPool(dis);                                                // constant_pool_count, constant_pool
 
-        this.accessFlags  = dis.readShort();                 // access_flags
-        this.thisClass    = dis.readShort();                 // this_class
-        this.superclass   = dis.readShort();                 // super_class
-        this.interfaces   = ClassFile.readShortArray(dis);   // interfaces_count, interfaces
+        this.accessFlags  = dis.readShort();                                       // access_flags
+        this.thisClass    = dis.readShort();                                       // this_class
+        this.superclass   = dis.readShort();                                       // super_class
+        this.interfaces   = ClassFile.readShortArray(dis);                         // interfaces_count, interfaces
 
         this.fieldInfos  = Collections.unmodifiableList(this.loadFields(dis));     // fields_count, fields
         this.methodInfos = Collections.unmodifiableList(this.loadMethods(dis));    // methods_count, methods
@@ -1435,6 +1477,12 @@ class ClassFile {
         if ("Deprecated".equals(attributeName)) {
             result = DeprecatedAttribute.loadBody(attributeNameIndex, bdis);
         } else
+        if ("RuntimeVisibleAnnotations".equals(attributeName)) {
+            result = AnnotationsAttribute.loadBody(attributeNameIndex, bdis);
+        } else
+        if ("RuntimeInvisibleAnnotations".equals(attributeName)) {
+            result = AnnotationsAttribute.loadBody(attributeNameIndex, bdis);
+        } else
         {
             return new AttributeInfo(attributeNameIndex) {
                 @Override protected void storeBody(DataOutputStream dos) throws IOException { dos.write(ba); }
@@ -1590,6 +1638,204 @@ class ClassFile {
                 this.outerClassInfoIndex   = outerClassInfoIndex;
                 this.innerNameIndex        = innerNameIndex;
                 this.innerClassAccessFlags = innerClassAccessFlags;
+            }
+        }
+    }
+
+    /** Representation of an "Runtime[In]visibleAnnotations" attribute (see JVMS8 4.7.16/17). */
+    public static
+    class AnnotationsAttribute extends AttributeInfo {
+
+        private final List<AnnotationsAttribute.Annotation> annotations;
+
+        AnnotationsAttribute(short attributeNameIndex) {
+            super(attributeNameIndex);
+            this.annotations = new ArrayList();
+        }
+        AnnotationsAttribute(short attributeNameIndex, Annotation[] annotations) {
+            super(attributeNameIndex);
+            this.annotations = new ArrayList(Arrays.asList(annotations));
+        }
+
+        /**
+         * @return A {@code List<AnnotationsAttribute.Entry>}: The {@link Annotation}s contained in this {@link
+         *         AnnotationsAttribute}, see JVMS8 4.7.16/17
+         */
+        public List<AnnotationsAttribute.Annotation>
+        getAnnotations() { return this.annotations; }
+
+        private static AttributeInfo
+        loadBody(short attributeNameIndex, DataInputStream dis) throws IOException {
+
+            Annotation[] as = new Annotation[dis.readShort()]; // num_annotations
+            for (short i = 0; i < as.length; ++i) {            // annotations
+                as[i] = AnnotationsAttribute.loadAnnotation(dis);
+            }
+
+            return new AnnotationsAttribute(attributeNameIndex, as);
+        }
+
+        private static Annotation
+        loadAnnotation(DataInputStream dis) throws IOException {
+            return new AnnotationsAttribute.Annotation(
+                dis.readShort(),                                // type_index
+                AnnotationsAttribute.loadElementValuePairs(dis) // num_element_value_pairs, element_value_pairs
+            );
+        }
+
+        private static Map<Short, ElementValue>
+        loadElementValuePairs(DataInputStream dis) throws IOException {
+
+            short numElementaluePairs = dis.readShort(); // nul_element_value_pairs
+            if (numElementaluePairs == 0) return Collections.emptyMap();
+
+            Map<Short, ElementValue> result = new HashMap<Short, ElementValue>();
+            for (int i = 0; i < numElementaluePairs; i++) {
+                result.put(
+                    dis.readShort(),                           // element_name_index
+                    AnnotationsAttribute.loadElementValue(dis) // value
+                );
+            }
+
+            return result;
+        }
+
+        private static ElementValue
+        loadElementValue(DataInputStream dis) throws IOException {
+
+            byte tag = dis.readByte(); // tag
+            switch (tag) {
+
+            case 'B': return new ByteElementValue(dis.readShort());
+            case 'C': return new CharElementValue(dis.readShort());
+            case 'D': return new DoubleElementValue(dis.readShort());
+            case 'F': return new FloatElementValue(dis.readShort());
+            case 'I': return new IntElementValue(dis.readShort());
+            case 'J': return new LongElementValue(dis.readShort());
+            case 'S': return new ShortElementValue(dis.readShort());
+            case 'Z': return new BooleanElementValue(dis.readShort());
+            case 's': return new StringElementValue(dis.readShort());
+            case 'e': return new EnumConstValue(dis.readShort(), dis.readShort());
+            case 'c': return new ClassElementValue(dis.readShort());
+            case '@': return AnnotationsAttribute.loadAnnotation(dis);
+
+            case '[':
+                short    numValues = dis.readShort(); // num_values
+                ElementValue[] values    = new ElementValue[numValues & 0xffff];
+                for (int i = 0; i < numValues; i++) values[i] = AnnotationsAttribute.loadElementValue(dis);
+                return new ArrayElementValue(values);
+
+            default:
+                throw new ClassFormatError("Invalid element-value-pair tag '" + (char) tag + "'");
+            }
+        }
+
+        public interface ElementValue {
+            void store(DataOutputStream dos) throws IOException;
+        }
+
+        public static abstract
+        class ConstantElementValue implements ElementValue {
+
+            public final byte  tag;
+            public final short constantValueIndex;
+
+            public
+            ConstantElementValue(byte tag, short constantValueIndex) {
+                this.tag                = tag;
+                this.constantValueIndex = constantValueIndex;
+            }
+
+            @Override public void
+            store(DataOutputStream dos) throws IOException {
+                dos.writeByte(this.tag);                 // tag
+                dos.writeShort(this.constantValueIndex); // const_value_index
+            }
+        }
+
+        // SUPPRESS CHECKSTYLE LineLength|JavadocType:10
+        public static final class ByteElementValue    extends ConstantElementValue { public ByteElementValue(short constantValueIndex)    { super((byte) 'B', constantValueIndex); } }
+        public static final class CharElementValue    extends ConstantElementValue { public CharElementValue(short constantValueIndex)    { super((byte) 'C', constantValueIndex); } }
+        public static final class DoubleElementValue  extends ConstantElementValue { public DoubleElementValue(short constantValueIndex)  { super((byte) 'D', constantValueIndex); } }
+        public static final class FloatElementValue   extends ConstantElementValue { public FloatElementValue(short constantValueIndex)   { super((byte) 'F', constantValueIndex); } }
+        public static final class IntElementValue     extends ConstantElementValue { public IntElementValue(short constantValueIndex)     { super((byte) 'I', constantValueIndex); } }
+        public static final class LongElementValue    extends ConstantElementValue { public LongElementValue(short constantValueIndex)    { super((byte) 'J', constantValueIndex); } }
+        public static final class ShortElementValue   extends ConstantElementValue { public ShortElementValue(short constantValueIndex)   { super((byte) 'S', constantValueIndex); } }
+        public static final class BooleanElementValue extends ConstantElementValue { public BooleanElementValue(short constantValueIndex) { super((byte) 'Z', constantValueIndex); } }
+        public static final class StringElementValue  extends ConstantElementValue { public StringElementValue(short constantValueIndex)  { super((byte) 's', constantValueIndex); } }
+        public static final class ClassElementValue   extends ConstantElementValue { public ClassElementValue(short constantValueIndex)   { super((byte) 'c', constantValueIndex); } }
+
+        /**
+         * Representation of the "enum_const_value" element in the "element_value" structure.
+         */
+        public static final
+        class EnumConstValue implements ElementValue {
+
+            public final short typeNameIndex, constNameIndex;
+
+            public
+            EnumConstValue(short typeNameIndex, short constNameIndex) {
+                this.typeNameIndex  = typeNameIndex;
+                this.constNameIndex = constNameIndex;
+            }
+
+            @Override public void
+            store(DataOutputStream dos) throws IOException {
+                dos.writeByte('e');                  // tag
+                dos.writeShort(this.typeNameIndex);  // type_name_index
+                dos.writeShort(this.constNameIndex); // const_name_index
+            }
+        }
+
+        public static final
+        class ArrayElementValue implements ElementValue {
+
+            public final ElementValue[] values;
+
+            public
+            ArrayElementValue(ElementValue[] values) { this.values = values; }
+
+            @Override public void
+            store(DataOutputStream dos) throws IOException {
+                dos.writeShort(this.values.length);
+                for (ElementValue ev : this.values) ev.store(dos);
+            }
+        }
+
+        // Implement "AttributeInfo".
+        @Override protected void
+        storeBody(DataOutputStream dos) throws IOException {
+
+            dos.writeShort(this.annotations.size()); // num_annotations
+            for (AnnotationsAttribute.Annotation a : this.annotations) {
+                a.store(dos);
+            }
+        }
+
+        /** The structure of the {@code classes} array as described in JVMS7 4.7.6. */
+        public static
+        class Annotation implements ElementValue {
+
+            /** The "type_index" field of the {@code annotation} type as described in JVMS8 4.7.16. */
+            public final short              typeIndex;
+
+            /** The "element_value_pairs" field of the {@code annotation} type as described in JVMS8 4.7.16. */
+            public final Map<Short, ElementValue> elementValuePairs;
+
+            public
+            Annotation(short typeIndex, Map<Short, ElementValue> elementValuePairs) {
+                this.typeIndex         = typeIndex;
+                this.elementValuePairs = elementValuePairs;
+            }
+
+            @Override public void
+            store(DataOutputStream dos) throws IOException {
+                dos.writeShort(this.typeIndex);                // type_index
+                dos.writeShort(this.elementValuePairs.size()); // num_element_value_pairs
+                for (Map.Entry<Short, ElementValue> evps : this.elementValuePairs.entrySet()) {
+                    dos.writeShort(evps.getKey()); // element_name_index
+                    evps.getValue().store(dos);    // value
+                }
             }
         }
     }

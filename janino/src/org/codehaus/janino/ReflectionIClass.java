@@ -26,6 +26,7 @@
 
 package org.codehaus.janino;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -148,6 +149,54 @@ class ReflectionIClass extends IClass {
             || this.clazz == float.class
             || this.clazz == double.class
         );
+    }
+
+    @Override public IAnnotation[]
+    getIAnnotations2() throws CompileException {
+
+        Annotation[] as = this.clazz.getAnnotations();
+        if (as.length == 0) return IClass.NO_ANNOTATIONS;
+
+        IAnnotation[] result = new IAnnotation[as.length];
+        for (int i = 0; i < as.length; i++) {
+            final Annotation a = as[i];
+
+            // Get annotation type IClass.
+            final Class<? extends Annotation> annotationType = a.annotationType();
+            final IClass                      annotationTypeIClass;
+            try {
+                annotationTypeIClass = ReflectionIClass.this.iClassLoader.loadIClass(
+                    Descriptor.fromClassName(annotationType.getName())
+                );
+            } catch (ClassNotFoundException cnfe) {
+                throw new CompileException(
+                    "Loading annotation type",
+                    null, // optionalLocation
+                    cnfe
+                );
+            }
+
+            result[i] = new IAnnotation() {
+
+                @Override public IClass
+                getAnnotationType() { return annotationTypeIClass; }
+
+                @Override public Object
+                getElementValue(String name) throws CompileException {
+                    try {
+                        return a.getClass().getMethod(name).invoke(a);
+                    } catch (NoSuchMethodException e) {
+                        throw new CompileException("Annotation \"" + annotationType.getName() + "\" has no element \"" + name + "\"", null);
+                    } catch (Exception e) {
+                        throw new AssertionError(e);
+                    }
+                }
+
+                @Override public String
+                toString() { return '@' + annotationTypeIClass.toString(); }
+            };
+        }
+        return result;
     }
 
     /** @return The underlying {@link Class java.lang.Class} */

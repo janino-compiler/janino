@@ -428,6 +428,59 @@ class JlsTests extends JaninoTestSuite {
     }
 
     @Test public void
+    test_9_7_2_Marker_Annotations() throws Exception {
+
+        // Enable this code snippet to print class file disassemblies to the console.
+        if (true) {
+            Logger scl = Logger.getLogger("org.codehaus.janino.SimpleCompiler");
+            for (Handler h : scl.getHandlers()) {
+                h.setLevel(Level.FINEST);
+            }
+            scl.setLevel(Level.FINEST);
+        }
+
+        this.assertCompilationUnitMainReturnsTrue((
+            ""
+            + "import org.codehaus.commons.compiler.tests.annotation.RuntimeRetainedAnnotation1;\n"
+            + "\n"
+            + "@RuntimeRetainedAnnotation1\n"
+            + "public\n"
+            + "class Main {\n"
+            + "\n"
+            + "    public static boolean\n"
+            + "    main() {\n"
+            + "        RuntimeRetainedAnnotation1 anno = (\n"
+            + "            (RuntimeRetainedAnnotation1) Main.class.getAnnotation(RuntimeRetainedAnnotation1.class)\n"
+            + "        );\n"
+            + "        if (anno == null) throw new AssertionError(\"anno == null\");\n"
+            + "//        if (anno.value() != null) throw new AssertionError(\"anno.value() != null\");\n"
+            + "        return true;\n"
+            + "    }\n"
+            + "}"
+        ), "Main");
+
+        this.assertCompilationUnitMainReturnsTrue((
+            ""
+            + "import org.codehaus.commons.compiler.tests.annotation.RuntimeRetainedAnnotation2;\n"
+            + "\n"
+            + "@RuntimeRetainedAnnotation2(\"Foo\")\n"
+            + "public\n"
+            + "class Main {\n"
+            + "\n"
+            + "    public static boolean\n"
+            + "    main() {\n"
+            + "        RuntimeRetainedAnnotation2 anno = (\n"
+            + "            (RuntimeRetainedAnnotation2) Main.class.getAnnotation(RuntimeRetainedAnnotation2.class)\n"
+            + "        );\n"
+            + "        if (anno == null) throw new AssertionError(\"anno == null\");\n"
+            + "        if (!anno.value().equals(\"Foo\")) throw new AssertionError(\"anno.value() != null\");\n"
+            + "        return true;\n"
+            + "    }\n"
+            + "}"
+        ), "Main");
+    }
+
+    @Test public void
     test_14_3__LocalClassDeclarations() throws Exception {
         this.assertScriptReturnsTrue(
             "class S2 extends SC { public int foo() { return 37; } }; return new S2().foo() == 37;"

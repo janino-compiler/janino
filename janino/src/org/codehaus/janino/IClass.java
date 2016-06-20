@@ -786,6 +786,23 @@ class IClass {
     }
 
     /**
+     * @return The annotations of this type (possibly the empty array)
+     */
+    public final IAnnotation[]
+    getIAnnotations() throws CompileException {
+        if (this.iAnnotationsCache == null) {
+            this.iAnnotationsCache = this.getIAnnotations2();
+        }
+        return this.iAnnotationsCache;
+    }
+    private IAnnotation[] iAnnotationsCache;
+
+    protected IAnnotation[]
+    getIAnnotations2() throws CompileException { return IClass.NO_ANNOTATIONS; }
+
+    public static final IAnnotation[] NO_ANNOTATIONS = new IAnnotation[0];
+
+    /**
      * Base for the members of an {@link IClass}. {@link IMember} are expected to be immutable, i.e. all getter methods
      * return constant values.
      */
@@ -1137,6 +1154,16 @@ class IClass {
 
         @Override public String
         toString() { return this.getDeclaringIClass().toString() + "." + this.getName(); }
+    }
+
+    public
+    interface IAnnotation {
+        public IClass getAnnotationType();
+
+        /**
+         * @return
+         */
+        public Object getElementValue(String name) throws CompileException;
     }
 
     /**

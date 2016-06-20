@@ -331,13 +331,13 @@ class Java {
     class SingleElementAnnotation implements Annotation {
 
         /** The type of this single-element annotation. */
-        public final Type type;
+        public final ReferenceType type;
 
         /** The element value associated with this single-element annotation. */
         public final ElementValue elementValue;
 
         public
-        SingleElementAnnotation(Type type, ElementValue elementValue) {
+        SingleElementAnnotation(ReferenceType type, ElementValue elementValue) {
             this.type         = type;
             this.elementValue = elementValue;
         }
@@ -362,13 +362,13 @@ class Java {
     class NormalAnnotation implements Annotation {
 
         /** The type of this normal annotation. */
-        public final Type type;
+        public final ReferenceType type;
 
         /** The element-value-pairs associated with this annotation. */
         public final ElementValuePair[] elementValuePairs;
 
         public
-        NormalAnnotation(Type type, ElementValuePair[] elementValuePairs) {
+        NormalAnnotation(ReferenceType type, ElementValuePair[] elementValuePairs) {
             this.type              = type;
             this.elementValuePairs = elementValuePairs;
         }
@@ -412,6 +412,7 @@ class Java {
             this.annotations = new Annotation[0];
         }
 
+        /** A 'simple' {@link Modifiers} object: Flags, but no annotations. */
         public
         Modifiers(short modifiers) {
             this.flags       = modifiers;
@@ -422,6 +423,12 @@ class Java {
         Modifiers(short modifiers, Annotation[] annotations) {
             this.flags       = modifiers;
             this.annotations = annotations;
+        }
+
+        /** Sets the enclosing scope of the annotations. */
+        public void
+        setEnclosingScope(Scope enclosingScope) {
+            for (Annotation a : this.annotations) a.setEnclosingScope(enclosingScope);
         }
 
         /** @return This object, with the given {@code modifiersToAdd} added. */
@@ -695,6 +702,7 @@ class Java {
                 );
             }
             this.enclosingScope = enclosingScope;
+            this.modifiers.setEnclosingScope(enclosingScope);
         }
 
         @Override public Scope
@@ -2407,7 +2415,6 @@ class Java {
     static
     class Padder extends CodeContext.Inserter implements CodeContext.FixUp {
 
-        public
         Padder(CodeContext codeContext) { codeContext.super(); }
 
         @Override public void
