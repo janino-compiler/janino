@@ -286,7 +286,7 @@ class ClassFile {
         case 45:
             return "JDK 1.1";
         default:
-            return "Version " + this.majorVersion + "/" + this.minorVersion + " does not match any known JDK";
+            return "Java " + (this.majorVersion - 44);
         }
     }
 
