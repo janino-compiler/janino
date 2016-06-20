@@ -185,7 +185,7 @@ import org.codehaus.janino.util.ClassFile;
  */
 @SuppressWarnings({ "rawtypes", "unchecked" }) public
 class UnitCompiler {
-    private static final Logger LOGGER = Auxx.LOGGING ? Logger.getLogger(UnitCompiler.class.getName()) : null;
+    private static final Logger LOGGER = Logger.getLogger(UnitCompiler.class.getName());
 
     /**
      * This constant determines the number of operands up to which the
@@ -677,10 +677,10 @@ class UnitCompiler {
 
         // Create "ClassFile" object.
         ClassFile cf = new ClassFile(
-            (short) (id.getModifierFlags() | Mod.SUPER | Mod.INTERFACE | Mod.ABSTRACT), // accessFlags
-            iClass.getDescriptor(),                                                     // thisClassFD
-            Descriptor.JAVA_LANG_OBJECT,                                                // superclassFD
-            interfaceDescriptors                                                        // interfaceFDs
+            (short) (id.getModifierFlags() | Mod.INTERFACE | Mod.ABSTRACT), // accessFlags
+            iClass.getDescriptor(),                                         // thisClassFD
+            Descriptor.JAVA_LANG_OBJECT,                                    // superclassFD
+            interfaceDescriptors                                            // interfaceFDs
         );
 
         // TODO: Add annotations with retention != SOURCE.
@@ -2311,19 +2311,16 @@ class UnitCompiler {
         codeContext.fixUpAndRelocate();
 
         // Do flow analysis.
-        if (Auxx.LOGGING) {
-            if (UnitCompiler.LOGGER.isLoggable(Level.FINE)) {
-                try {
-                    codeContext.flowAnalysis(fd.toString());
-                } catch (RuntimeException re) {
-                    UnitCompiler.LOGGER.log(Level.FINE, null, re);
+        if (UnitCompiler.LOGGER.isLoggable(Level.FINE)) {
+            try {
+                codeContext.flowAnalysis(fd.toString());
+            } catch (RuntimeException re) {
+                UnitCompiler.LOGGER.log(Level.FINE, null, re);
 
-                    // Continue, so that the .class file is generated and can be examined.
-                    ;
-                }
+                // Continue, so that the .class file is generated and can be examined.
+                ;
             }
-        }
-        else {
+        } else {
             codeContext.flowAnalysis(fd.toString());
         }
 
@@ -3618,20 +3615,31 @@ class UnitCompiler {
 
             // TODO JLS7 15.25, list 1, bullet 4, bullet 1: "b ? Byte : Short => short"
 
-            // JLS7 15.25, list 1, bullet 4, bullet 2: "b ? byte : 127 => byte"
-            if (mhsType == IClass.BYTE && rhsType == IClass.INT && this.isWithinByteRange(ce.rhs.constantValue)) {
+            if (
+                mhsType == IClass.BYTE
+                && rhsType == IClass.INT
+                && UnitCompiler.isWithinByteRange(ce.rhs.constantValue)
+            ) {
+
+                // JLS7 15.25, list 1, bullet 4, bullet 2: "b ? byte : 127 => byte"
                 expressionType = IClass.BYTE;
                 // fix up the constant to be a byte
                 ce.rhs.constantValue = ((Integer) ce.rhs.constantValue).byteValue();
-            }
-            // JLS7 15.25, list 1, bullet 4, bullet 3: "b ? 127 : byte => byte"
-            else if (mhsType == IClass.INT && rhsType == IClass.BYTE && this.isWithinByteRange(ce.mhs.constantValue)) {
+            } else
+            if (
+                mhsType == IClass.INT
+                && rhsType == IClass.BYTE
+                && UnitCompiler.isWithinByteRange(ce.mhs.constantValue)
+            ) {
+
+                // JLS7 15.25, list 1, bullet 4, bullet 3: "b ? 127 : byte => byte"
                 expressionType = IClass.BYTE;
                 // fix up the constant to be a byte
                 ce.mhs.constantValue = ((Integer) ce.mhs.constantValue).byteValue();
-            }
-            // JLS7 15.25, list 1, bullet 4, bullet 4: "b ? Integer : Double => double"
-            else {
+            } else
+            {
+
+                // JLS7 15.25, list 1, bullet 4, bullet 4: "b ? Integer : Double => double"
                 expressionType = this.binaryNumericPromotion(
                   ce,                 // locatable
                   mhsType,            // type1
@@ -3670,7 +3678,8 @@ class UnitCompiler {
         return expressionType;
     }
 
-    private boolean isWithinByteRange(Object o) {
+    private static boolean
+    isWithinByteRange(Object o) {
         int i = 0;
         return o instanceof Integer && (i = ((Integer)o).intValue()) <= 127 && i >= -128;
     }
@@ -6846,7 +6855,6 @@ class UnitCompiler {
         String rhs = identifiers[n - 1];
 
         // 6.5.2.2.1
-        if (Auxx.LOGGING)
         UnitCompiler.LOGGER.log(Level.FINE, "lhs={0}", lhs);
         if (lhs instanceof Package) {
             String className = ((Package) lhs).name + '.' + rhs;
@@ -7635,7 +7643,6 @@ class UnitCompiler {
         boolean            boxingPermitted,
         Scope              contextScope
     ) throws CompileException {
-        if (Auxx.LOGGING)
         if (UnitCompiler.LOGGER.isLoggable(Level.FINER)) {
             UnitCompiler.LOGGER.entering(null, "findMostSpecificIInvocable", new Object[] {
                 locatable, Arrays.toString(iInvocables), Arrays.toString(argumentTypes), boxingPermitted, contextScope
@@ -7684,7 +7691,6 @@ class UnitCompiler {
                     for (int idx = lastActualArg; idx >= formalParamCount; --idx) {
 
                         // Is method invocation conversion possible (5.3)?
-                        if (Auxx.LOGGING)
                         UnitCompiler.LOGGER.log(
                             Level.FINE,
                             "{0} <=> {1}",
@@ -7703,7 +7709,6 @@ class UnitCompiler {
 
             if (formalParamCount == nUncheckedArg) {
                 for (int j = 0; j < nUncheckedArg; ++j) {
-                    if (Auxx.LOGGING)
                     UnitCompiler.LOGGER.log(
                         Level.FINE,
                         "{0}: {1} <=> {2}",
@@ -7717,7 +7722,6 @@ class UnitCompiler {
                 }
 
                 // Applicable!
-                if (Auxx.LOGGING)
                 UnitCompiler.LOGGER.fine("Applicable!");
 
                 // Varargs has lower priority.
@@ -7770,7 +7774,6 @@ class UnitCompiler {
             {
                 ;
             }
-            if (Auxx.LOGGING)
             UnitCompiler.LOGGER.log(Level.FINE, "maximallySpecificIInvocables={0}", maximallySpecificIInvocables);
         }
 
@@ -9129,7 +9132,6 @@ class UnitCompiler {
         IClass    targetType,
         Object    optionalConstantValue
     ) throws CompileException {
-        if (Auxx.LOGGING)
         UnitCompiler.LOGGER.entering(
             null,
             "tryAssignmentConversion",
@@ -9677,7 +9679,6 @@ class UnitCompiler {
     private boolean
     tryConstantAssignmentConversion(Locatable locatable, Object constantValue, IClass targetType)
     throws CompileException {
-        if (Auxx.LOGGING)
         UnitCompiler.LOGGER.entering(
             null,
             "tryConstantAssignmentConversion",
