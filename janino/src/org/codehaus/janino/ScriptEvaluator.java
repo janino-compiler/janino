@@ -531,7 +531,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
         Java.CompilationUnit compilationUnit = this.makeCompilationUnit(count == 1 ? parsers[0] : null);
 
         // Create class declaration.
-        Java.ClassDeclaration cd = this.addPackageMemberClassDeclaration(parsers[0].location(), compilationUnit);
+        final Java.ClassDeclaration cd = this.addPackageMemberClassDeclaration(parsers[0].location(), compilationUnit);
 
         // Determine method names.
         String[] methodNames;
