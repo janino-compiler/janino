@@ -51,6 +51,8 @@ class IClassLoader {
 
     // CHECKSTYLE MemberName:OFF
     // CHECKSTYLE AbbreviationAsWordInName:OFF
+    /** Representation of the {@link java.lang.annotation.Retention} annotation. */
+    public IClass ANNO_java_lang_annotation_Retention;
     /** Representation of the {@link java.lang.Override} annotation. */
     public IClass ANNO_java_lang_Override;
 
@@ -143,7 +145,8 @@ class IClassLoader {
     protected final void
     postConstruct() {
         try {
-            this.ANNO_java_lang_Override = this.loadIClass(Descriptor.JAVA_LANG_OVERRIDE);
+            this.ANNO_java_lang_annotation_Retention = this.loadIClass(Descriptor.JAVA_LANG_ANNOTATION_RETENTION);
+            this.ANNO_java_lang_Override             = this.loadIClass(Descriptor.JAVA_LANG_OVERRIDE);
 
             this.TYPE_java_lang_AssertionError   = this.loadIClass(Descriptor.JAVA_LANG_ASSERTIONERROR);
             this.TYPE_java_lang_Boolean          = this.loadIClass(Descriptor.JAVA_LANG_BOOLEAN);
