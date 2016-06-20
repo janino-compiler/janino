@@ -279,6 +279,8 @@ class Descriptor {
 
     // Annotations.
 
+    /** The field descriptor for the annotation {@link java.lang.annotation.Retention}. */
+    public static final String JAVA_LANG_ANNOTATION_RETENTION = "Ljava/lang/annotation/Retention;";
     /** The field descriptor for the annotation {@link java.lang.Override}. */
     public static final String JAVA_LANG_OVERRIDE = "Ljava/lang/Override;";
 
