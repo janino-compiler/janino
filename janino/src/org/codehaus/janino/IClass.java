@@ -797,9 +797,13 @@ class IClass {
     }
     private IAnnotation[] iAnnotationsCache;
 
+    /**
+     * @throws CompileException
+     */
     protected IAnnotation[]
     getIAnnotations2() throws CompileException { return IClass.NO_ANNOTATIONS; }
 
+    /** Array of zero {@link IAnnotation}s. */
     public static final IAnnotation[] NO_ANNOTATIONS = new IAnnotation[0];
 
     /**
@@ -1156,14 +1160,21 @@ class IClass {
         toString() { return this.getDeclaringIClass().toString() + "." + this.getName(); }
     }
 
+    /**
+     * Representation of a Java "annotation".
+     */
     public
     interface IAnnotation {
-        public IClass getAnnotationType();
 
         /**
-         * @return
+         * @return The type of the annotation
          */
-        public Object getElementValue(String name) throws CompileException;
+        IClass getAnnotationType();
+
+        /**
+         * @return {@link String}, {@link Integer}, {@link Short} etc.
+         */
+        Object getElementValue(String name) throws CompileException;
     }
 
     /**
