@@ -51,7 +51,7 @@ import org.codehaus.janino.util.ClassFile;
 @SuppressWarnings({ "rawtypes", "unchecked" }) public
 class CodeContext {
 
-    private  static final Logger LOGGER = Auxx.LOGGING ? Logger.getLogger(CodeContext.class.getName()) : null;
+    private  static final Logger LOGGER = Logger.getLogger(CodeContext.class.getName());
 
     private static final int     INITIAL_SIZE   = 128;
     private static final byte    UNEXAMINED     = -1;
@@ -299,7 +299,6 @@ class CodeContext {
      */
     public void
     flowAnalysis(String functionName) {
-        if (Auxx.LOGGING)
         CodeContext.LOGGER.entering(null, "flowAnalysis", functionName);
 
         short[] stackSizes = new short[this.end.offset];
@@ -340,7 +339,6 @@ class CodeContext {
 
             if (ss == CodeContext.UNEXAMINED) {
                 String message = functionName + ": Unexamined code at offset " + i;
-                if (Auxx.LOGGING)
                 if (CodeContext.LOGGER.isLoggable(Level.FINE)) {
                     CodeContext.LOGGER.fine(message);
 
@@ -364,7 +362,6 @@ class CodeContext {
         short[] stackSizes // Stack sizes in code
     ) {
         for (;;) {
-            if (Auxx.LOGGING)
             CodeContext.LOGGER.entering(
                 null,
                 "flowAnalysis",
@@ -381,7 +378,6 @@ class CodeContext {
             if (css == stackSize) return; // OK.
             if (css == CodeContext.INVALID_OFFSET) {
                 String message = functionName + ": Invalid offset";
-                if (Auxx.LOGGING)
                 if (CodeContext.LOGGER.isLoggable(Level.FINE)) {
                     CodeContext.LOGGER.fine(message);
 
@@ -400,7 +396,6 @@ class CodeContext {
                     + ", now "
                     + stackSize
                 );
-                if (Auxx.LOGGING)
                 if (CodeContext.LOGGER.isLoggable(Level.FINE)) {
                     CodeContext.LOGGER.fine(message);
 
@@ -492,7 +487,6 @@ class CodeContext {
                     + ": Operand stack underrun at offset "
                     + offset
                 );
-                if (Auxx.LOGGING)
                 if (CodeContext.LOGGER.isLoggable(Level.FINE)) {
                     CodeContext.LOGGER.fine(message);
 
@@ -510,7 +504,6 @@ class CodeContext {
                     + ": Operand stack overflow at offset "
                     + offset
                 );
-                if (Auxx.LOGGING)
                 if (CodeContext.LOGGER.isLoggable(Level.FINE)) {
                     CodeContext.LOGGER.fine(message);
 
@@ -677,7 +670,6 @@ class CodeContext {
      */
     private static int
     extract16BitValue(int bias, int offset, byte[] code) {
-        if (Auxx.LOGGING)
         CodeContext.LOGGER.entering(
             null,
             "extract16BitValue",
@@ -685,7 +677,6 @@ class CodeContext {
         );
 
         int result = bias + ((code[offset]) << 8) + (code[offset + 1] & 0xff);
-        if (Auxx.LOGGING)
         CodeContext.LOGGER.exiting(null,  "extract16BitValue", result);
         return result;
     }
@@ -700,7 +691,6 @@ class CodeContext {
      */
     private static int
     extract32BitValue(int bias, int offset, byte[] code) {
-        if (Auxx.LOGGING)
         CodeContext.LOGGER.entering(
             null,
             "extract32BitValue",
@@ -714,7 +704,6 @@ class CodeContext {
             + (0xff & code[offset + 3])
         );
 
-        if (Auxx.LOGGING)
         CodeContext.LOGGER.exiting(null, "extract32BitValue", result);
         return result;
     }

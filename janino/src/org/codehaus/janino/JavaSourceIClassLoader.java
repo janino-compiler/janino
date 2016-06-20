@@ -51,7 +51,7 @@ import org.codehaus.janino.util.resource.ResourceFinder;
 public
 class JavaSourceIClassLoader extends IClassLoader {
 
-    private static final Logger LOGGER = Auxx.LOGGING ? Logger.getLogger(JavaSourceIClassLoader.class.getName()) : null;
+    private static final Logger LOGGER = Logger.getLogger(JavaSourceIClassLoader.class.getName());
 
     private ResourceFinder          sourceFinder;
     private String                  optionalCharacterEncoding;
@@ -116,12 +116,10 @@ class JavaSourceIClassLoader extends IClassLoader {
      */
     @Override public IClass
     findIClass(final String fieldDescriptor) throws ClassNotFoundException {
-        if (Auxx.LOGGING)
         JavaSourceIClassLoader.LOGGER.entering(null, "findIClass", fieldDescriptor);
 
         // Class type.
         String className = Descriptor.toClassName(fieldDescriptor); // E.g. "pkg1.pkg2.Outer$Inner"
-        if (Auxx.LOGGING)
         JavaSourceIClassLoader.LOGGER.log(Level.FINE, "className={0}", className);
 
         // Do not attempt to load classes from package "java".
@@ -189,7 +187,6 @@ class JavaSourceIClassLoader extends IClassLoader {
 
         // Find source file.
         Resource sourceResource = this.sourceFinder.findResource(ClassFile.getSourceResourceName(className));
-        if (Auxx.LOGGING)
         JavaSourceIClassLoader.LOGGER.log(Level.FINE, "sourceResource={0}", sourceResource);
         if (sourceResource == null) return null;
 
