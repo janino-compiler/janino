@@ -73,12 +73,26 @@ class ClassFile {
         // Must not set these to "..._1_5", for otherwise "EvaluatorTests.testCovariantClone()" and
         // "JlsTests.test_8_4_8_3__Requirements_in_Overriding_and_Hiding()" choke.
         // Further investigation required.
-        this.majorVersion  = ClassFile.MAJOR_VERSION_JDK_1_4;
-        this.minorVersion  = ClassFile.MINOR_VERSION_JDK_1_4;
+        this.majorVersion  = ClassFile.MAJOR_VERSION_JDK_1_5;
+        this.minorVersion  = ClassFile.MINOR_VERSION_JDK_1_5;
 
         this.constantPool  = new ArrayList();
         this.constantPool.add(null); // Add fake "0" index entry.
         this.constantPoolMap = new HashMap();
+
+        // Some sanity checks on the access flags, according to JVMS8 4.1.
+        if ((accessFlags & Mod.INTERFACE) != 0) {
+            assert (
+                accessFlags
+                & (Mod.ABSTRACT | Mod.FINAL | Mod.SUPER | Mod.ENUM)
+            ) == Mod.ABSTRACT : Integer.toString(accessFlags & 0xffff, 16);
+        }
+        if ((accessFlags & Mod.INTERFACE) == 0) {
+            assert (
+                (accessFlags & Mod.ANNOTATION) == 0
+                && (accessFlags & (Mod.FINAL | Mod.ABSTRACT)) != (Mod.FINAL | Mod.ABSTRACT)
+            ) : Integer.toString(accessFlags & 0xffff, 16);
+        }
 
         this.accessFlags   = accessFlags;
         this.thisClass     = this.addConstantClassInfo(thisClassFd);
