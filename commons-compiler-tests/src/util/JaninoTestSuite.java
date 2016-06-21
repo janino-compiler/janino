@@ -89,7 +89,6 @@ class JaninoTestSuite {
         private final String               expression;
         private final IExpressionEvaluator expressionEvaluator;
 
-        public
         ExpressionTest(String expression) throws Exception {
             this.expression          = expression;
             this.expressionEvaluator = JaninoTestSuite.this.compilerFactory.newExpressionEvaluator();
@@ -162,7 +161,6 @@ class JaninoTestSuite {
         private final String           script;
         private final IScriptEvaluator scriptEvaluator;
 
-        public
         ScriptTest(String script) throws Exception {
             this.script          = script;
             this.scriptEvaluator = JaninoTestSuite.this.compilerFactory.newScriptEvaluator();
@@ -224,7 +222,6 @@ class JaninoTestSuite {
         private final String              classBody;
         private final IClassBodyEvaluator classBodyEvaluator;
 
-        public
         ClassBodyTest(String classBody) throws Exception {
             this.classBody          = classBody;
             this.classBodyEvaluator = JaninoTestSuite.this.compilerFactory.newClassBodyEvaluator();
@@ -288,7 +285,6 @@ class JaninoTestSuite {
         private final String          className;
         private final ISimpleCompiler simpleCompiler;
 
-        public
         SimpleCompilerTest(String compilationUnit, String className) throws Exception {
             this.compilationUnit = compilationUnit;
             this.className       = className;
