@@ -36,7 +36,7 @@ import org.codehaus.commons.compiler.IExpressionEvaluator;
 @SuppressWarnings("rawtypes") public final
 class ExpressionDemo extends DemoBase {
 
-    /**/
+    /***/
     public static void
     main(String[] args) throws Exception {
 

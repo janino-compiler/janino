@@ -36,7 +36,7 @@ import org.codehaus.commons.compiler.IScriptEvaluator;
 @SuppressWarnings("rawtypes") public final
 class ScriptDemo extends DemoBase {
 
-    /**/
+    /***/
     public static void
     main(String[] args) throws Exception {
 

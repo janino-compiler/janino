@@ -42,7 +42,7 @@ import org.codehaus.commons.compiler.samples.DemoBase;
 @SuppressWarnings("rawtypes") public final
 class Jsh extends DemoBase {
 
-    /**/
+    /***/
     public static void
     main(String[] args) throws Exception {
 
