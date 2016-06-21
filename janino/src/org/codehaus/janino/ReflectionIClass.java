@@ -42,7 +42,6 @@ class ReflectionIClass extends IClass {
     private final IClassLoader iClassLoader;
 
     /** @param iClassLoader Required to load other {@link IClass}es on {@code get...()} */
-    public
     ReflectionIClass(Class clazz, IClassLoader iClassLoader) {
         this.clazz        = clazz;
         this.iClassLoader = iClassLoader;
@@ -223,7 +222,6 @@ class ReflectionIClass extends IClass {
     private
     class ReflectionIConstructor extends IConstructor {
 
-        public
         ReflectionIConstructor(Constructor constructor) { this.constructor = constructor; }
 
         // Implement IMember.
@@ -296,7 +294,6 @@ class ReflectionIClass extends IClass {
     public
     class ReflectionIMethod extends IMethod {
 
-        public
         ReflectionIMethod(Method method) { this.method = method; }
 
         // Implement IMember.
@@ -338,7 +335,6 @@ class ReflectionIClass extends IClass {
     private
     class ReflectionIField extends IField {
 
-        public
         ReflectionIField(Field field) { this.field = field; }
 
         // Implement IMember.
