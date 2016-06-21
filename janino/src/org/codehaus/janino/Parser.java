@@ -355,20 +355,31 @@ class Parser {
         this.read("@");
         ReferenceType type = this.parseReferenceType();
 
+        // Marker annotation?
         if (!this.peekRead("(")) return new Java.MarkerAnnotation(type);
 
+        // Single-element annotation?
         if (this.peekIdentifier() == null || !this.peekNextButOne("=")) {
             Java.ElementValue elementValue = this.parseElementValue();
             this.read(")");
             return new Java.SingleElementAnnotation(type, elementValue);
         }
 
-        List<Java.ElementValuePair> evps = new ArrayList();
-        while (!this.peekRead(")")) evps.add(this.parseElementValuePair());
+        // Normal annotation.
+        ElementValuePair[] elementValuePairs;
+        if (this.peekRead(")")) {
+            elementValuePairs = new ElementValuePair[0];
+        } else {
+            List<Java.ElementValuePair> evps = new ArrayList();
+            do {
+                evps.add(this.parseElementValuePair());
+            } while (this.read(new String[] { ",", ")" }) == 0);
+            elementValuePairs = (ElementValuePair[]) evps.toArray(new Java.ElementValuePair[evps.size()]);
+        }
 
         return new Java.NormalAnnotation(
             type,
-            (ElementValuePair[]) evps.toArray(new Java.ElementValuePair[evps.size()])
+            elementValuePairs
         );
     }
 
