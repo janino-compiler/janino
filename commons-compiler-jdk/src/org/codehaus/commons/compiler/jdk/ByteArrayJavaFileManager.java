@@ -114,7 +114,6 @@ class ByteArrayJavaFileManager<M extends JavaFileManager> extends ForwardingJava
         class StringWriterJavaFileObject extends SimpleJavaFileObject {
             final StringWriter buffer = new StringWriter();
 
-            public
             StringWriterJavaFileObject(Kind kind) {
                 super(
                     URI.create("stringbuffer:///" + className.replace('.', '/') + kind.extension),

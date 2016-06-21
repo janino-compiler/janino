@@ -160,14 +160,13 @@ class FileInputJavaFileManager extends ForwardingJavaFileManager<JavaFileManager
         private final File   file;
         private final String binaryName;
 
-        public
         InputFileJavaFileObject(File file, String binaryName) {
             super(file.toURI(), FileInputJavaFileManager.this.kind);
             this.file       = file;
             this.binaryName = binaryName;
         }
 
-        @SuppressWarnings("resource") @Override public Reader
+        @Override public Reader
         openReader(boolean ignoreEncodingErrors) throws IOException {
             return (
                 FileInputJavaFileManager.this.optionalCharacterEncoding == null

@@ -283,13 +283,10 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 
         private static final long serialVersionUID = 5589635876875819926L;
 
-        public
         DiagnosticException(String message) { super(message); }
 
-        public
         DiagnosticException(Throwable cause) { super(cause); }
 
-        public
         DiagnosticException(Diagnostic<? extends JavaFileObject> diagnostic) { super(diagnostic.toString()); }
     }
 }
