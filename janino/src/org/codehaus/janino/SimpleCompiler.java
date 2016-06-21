@@ -289,9 +289,11 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
 
             private Java.SimpleType delegate;
 
-            @Override public String toString()                  { return this.getDelegate().toString(); }
-            @Override public void   accept(AtomVisitor visitor) { this.getDelegate().accept((TypeVisitor) visitor); }
-            @Override public void   accept(TypeVisitor visitor) { this.getDelegate().accept(visitor); }
+            // SUPPRESS CHECKSTYLE LineLength:2
+            @Override public <R> R accept(AtomVisitor<R> visitor) { return this.getDelegate().accept((TypeVisitor<R>) visitor); }
+            @Override public <R> R accept(TypeVisitor<R> visitor) { return this.getDelegate().accept(visitor);                  }
+
+            @Override public String toString() { return this.getDelegate().toString(); }
 
             private Type
             getDelegate() {
