@@ -55,7 +55,6 @@ class HprofScrubber {
         public final int    traceNumber;
         public final String className;
 
-        public
         Site(int allocatedBytes, int allocatedObjects, int traceNumber, String className) {
             this.allocatedBytes   = allocatedBytes;
             this.allocatedObjects = allocatedObjects;
@@ -69,7 +68,6 @@ class HprofScrubber {
         public final int count;
         public final int traceNumber;
 
-        public
         Sample(int count, int traceNumber) {
             this.count       = count;
             this.traceNumber = traceNumber;
