@@ -57,12 +57,12 @@ class CodeContext {
     private static final int     INITIAL_SIZE   = 128;
     private static final byte    UNEXAMINED     = -1;
     private static final byte    INVALID_OFFSET = -2;
-    private static final int     MAX_STACK_SIZE = 254;
+    private static final int     MAX_STACK_SIZE = 65535;
 
     private final ClassFile classFile;
     private final String    functionName;
 
-    private short                           maxStack;
+    private int                             maxStack;
     private short                           maxLocals;
     private byte[]                          code;
     private final Offset                    beginning;
@@ -208,7 +208,7 @@ class CodeContext {
         short            lineNumberTableAttributeNameIndex,
         short            localVariableTableAttributeNameIndex
     ) throws IOException {
-        dos.writeShort(this.maxStack);                                               // max_stack
+        dos.writeShort((short)(this.maxStack & 0xffff));                             // max_stack
         dos.writeShort(this.maxLocals);                                              // max_locals
         dos.writeInt(this.end.offset);                                               // code_length
         dos.write(this.code, 0, this.end.offset);                                    // code
@@ -302,7 +302,7 @@ class CodeContext {
     flowAnalysis(String functionName) {
         CodeContext.LOGGER.entering(null, "flowAnalysis", functionName);
 
-        short[] stackSizes = new short[this.end.offset];
+        int[] stackSizes = new int[this.end.offset];
         Arrays.fill(stackSizes, CodeContext.UNEXAMINED);
 
         // Analyze flow from offset zero.
@@ -311,7 +311,7 @@ class CodeContext {
             this.code,       // code
             this.end.offset, // codeSize
             0,               // offset
-            (short) 0,       // stackSize
+            (int) 0,         // stackSize
             stackSizes       // stackSizes
         );
 
@@ -325,7 +325,7 @@ class CodeContext {
                         this.code,                                                    // code
                         this.end.offset,                                              // codeSize
                         exceptionTableEntry.handlerPC.offset,                         // offset
-                        (short) (stackSizes[exceptionTableEntry.startPC.offset] + 1), // stackSize
+                        (int) (stackSizes[exceptionTableEntry.startPC.offset] + 1),   // stackSize
                         stackSizes                                                    // stackSizes
                     );
                     ++analyzedExceptionHandlers;
@@ -336,7 +336,7 @@ class CodeContext {
         // Check results and determine maximum stack size.
         this.maxStack = 0;
         for (int i = 0; i < stackSizes.length; ++i) {
-            short ss = stackSizes[i];
+            int ss = stackSizes[i];
 
             if (ss == CodeContext.UNEXAMINED) {
                 String message = functionName + ": Unexamined code at offset " + i;
@@ -359,8 +359,8 @@ class CodeContext {
         byte[]  code,      // Bytecode
         int     codeSize,  // Size
         int     offset,    // Current PC
-        short   stackSize, // Stack size on entry
-        short[] stackSizes // Stack sizes in code
+        int     stackSize, // Stack size on entry
+        int[]   stackSizes // Stack sizes in code
     ) {
         for (;;) {
             CodeContext.LOGGER.entering(
@@ -553,7 +553,7 @@ class CodeContext {
                         functionName,
                         code, codeSize,
                         targetOffset,
-                        (short) (stackSize + 1),
+                        (int) (stackSize + 1),
                         stackSizes
                     );
                 }

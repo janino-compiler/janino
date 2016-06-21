@@ -524,7 +524,94 @@ class EvaluatorTests extends JaninoTestSuite {
             Assert.assertNotNull(o);
         }
     }
+    @Test public void
+    testManyArgumentsCall() throws Exception {
+        String preamble = (
+            ""
+            + "package test;\n"
+            + "public class Test {\n"
+            + "    double test(\n"
+        );
+        String middle1 = (
+            ""
+            + "      double d_{0,number,#},\n"
+        );
+        String middle2 = (
+            ""
+            + "    public double run() {\n"
+            + "      boolean b = false;\n"
+            + "      double d = b ? 2.3D : test(\n"
+        );
+        final String postamble = (
+            ""
+            + "      );\n"
+            + "      return d;\n"
+            + "    }\n"
+            + "}"
+        );
 
+        int[] repetitionss = new int[] { 1, 16, 127 };
+        for (int repetitions : repetitionss) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(preamble);
+            for (int j = 0; j < repetitions-1; ++j) {
+                sb.append(MessageFormat.format(middle1, new Object[] { j }));
+            }
+            sb.append("double d_"+(repetitions-1)+") { return 1.2D; }\n");
+            sb.append(middle2);
+            for (int j = 0; j < repetitions-1; ++j) {
+                sb.append("0, ");
+            }
+            sb.append("0");
+            sb.append(postamble);
+
+            ISimpleCompiler sc = this.compilerFactory.newSimpleCompiler();
+            sc.cook(sb.toString());
+
+            Class<?> c = sc.getClassLoader().loadClass("test.Test");
+            Method   m   = c.getDeclaredMethod("run", new Class[0]);
+            Object   o   = c.newInstance();
+            Object   res = m.invoke(o, new Object[0]);
+            Assert.assertEquals(1.2D, res);
+        }
+    }
+    @Test public void
+    test64kOperandStackHeight() throws Exception {
+        String preamble = (
+            ""
+            + "package test;\n"
+            + "public class Test {\n"
+            + "    public double run() {\n"
+            + "      double d = 1;\n"
+            + "      double r = 0 \n"
+        );
+        final String postamble = (
+            ""
+            + "      ;\n"
+            + "      return r;\n"
+            + "    }\n"
+            + "}"
+        );
+
+        int[] repetitionss = new int[] { 1, 256, 32700 };  // 32767 make a method more than 64KB
+        for (int repetitions : repetitionss) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(preamble);
+            for (int j = 0; j < repetitions; ++j) {
+                sb.append("+ d");
+            }
+            sb.append(postamble);
+
+            ISimpleCompiler sc = this.compilerFactory.newSimpleCompiler();
+            sc.cook(sb.toString());
+
+            Class<?> c = sc.getClassLoader().loadClass("test.Test");
+            Method   m   = c.getDeclaredMethod("run", new Class[0]);
+            Object   o   = c.newInstance();
+            Object   res = m.invoke(o, new Object[0]);
+            Assert.assertEquals((double)repetitions, res);
+        }
+    }
 
     @Test public void
     testHugeIntArray() throws Exception {
