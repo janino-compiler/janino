@@ -113,14 +113,15 @@ class AstTests {
     private static void
     createMethod(PackageMemberClassDeclaration clazz, List<? extends Java.BlockStatement> statements, Type returnType) {
         MethodDeclarator method = new MethodDeclarator(
-            AstTests.getLocation(),
-            null,
-            new Java.Modifiers(Mod.PUBLIC),
-            returnType,
-            "calculate",
-            new FormalParameters(),
-            new Type[0],
-            statements
+            AstTests.getLocation(),         // location
+            null,                           // optionalDocComment
+            new Java.Modifiers(Mod.PUBLIC), // modifiers
+            null,                           // optionalTypeParameters
+            returnType,                     // type
+            "calculate",                    // name
+            new FormalParameters(),         // parameters
+            new Type[0],                    // thrownExceptions
+            statements                      // optionalStatements
         );
         clazz.addDeclaredMethod(method);
     }
