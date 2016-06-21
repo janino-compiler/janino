@@ -681,7 +681,6 @@ class JGrep {
         /**
          * @param optionalParentIClassLoader The {@link IClassLoader} through which {@link IClass}es are to be loaded
          */
-        public
         JGrepIClassLoader(IClassLoader optionalParentIClassLoader) {
             super(optionalParentIClassLoader);
             super.postConstruct();
