@@ -314,20 +314,19 @@ class UnitCompiler {
         // processed in 'getSingleTypeImport()' and 'importOnDemand()'.
         for (ImportDeclaration id : this.compilationUnit.importDeclarations) {
             try {
-                id.accept(new ImportVisitor() {
-                    // CHECKSTYLE LineLengthCheck:OFF
-                    @Override public void visitSingleTypeImportDeclaration(SingleTypeImportDeclaration stid)          {}
-                    @Override public void visitTypeImportOnDemandDeclaration(TypeImportOnDemandDeclaration tiodd)     {}
-                    @Override public void visitSingleStaticImportDeclaration(SingleStaticImportDeclaration ssid)      { try { UnitCompiler.this.import2(ssid);  } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-                    @Override public void visitStaticImportOnDemandDeclaration(StaticImportOnDemandDeclaration siodd) { try { UnitCompiler.this.import2(siodd); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-                    // CHECKSTYLE LineLengthCheck:ON
+                id.accept(new ImportVisitor<Void>() {
+                    // SUPPRESS CHECKSTYLE LineLengthCheck:4
+                    @Override public Void visitSingleTypeImportDeclaration(SingleTypeImportDeclaration stid)          { return null; }
+                    @Override public Void visitTypeImportOnDemandDeclaration(TypeImportOnDemandDeclaration tiodd)     { return null; }
+                    @Override public Void visitSingleStaticImportDeclaration(SingleStaticImportDeclaration ssid)      { try { UnitCompiler.this.import2(ssid);  return null; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+                    @Override public Void visitStaticImportOnDemandDeclaration(StaticImportOnDemandDeclaration siodd) { try { UnitCompiler.this.import2(siodd); return null; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
                 });
             } catch (UncheckedCompileException uce) {
                 throw uce.compileException; // SUPPRESS CHECKSTYLE AvoidHidingCause
             }
         }
 
-        this.generatedClassFiles  = new ArrayList();
+        this.generatedClassFiles = new ArrayList();
 
         for (PackageMemberTypeDeclaration pmtd : this.compilationUnit.packageMemberTypeDeclarations) {
             this.compile(pmtd);
@@ -351,14 +350,14 @@ class UnitCompiler {
     private void
     compile(TypeDeclaration td) throws CompileException {
 
-        TypeDeclarationVisitor tdv = new TypeDeclarationVisitor() {
+        TypeDeclarationVisitor<Void> tdv = new TypeDeclarationVisitor<Void>() {
             // CHECKSTYLE LineLengthCheck:OFF
-            @Override public void visitAnonymousClassDeclaration(AnonymousClassDeclaration acd)                  { try { UnitCompiler.this.compile2(acd);                                 } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitLocalClassDeclaration(LocalClassDeclaration lcd)                          { try { UnitCompiler.this.compile2(lcd);                                 } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitPackageMemberClassDeclaration(PackageMemberClassDeclaration pmcd)         { try { UnitCompiler.this.compile2((PackageMemberTypeDeclaration) pmcd); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitMemberInterfaceDeclaration(MemberInterfaceDeclaration mid)                { try { UnitCompiler.this.compile2(mid);                                 } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitPackageMemberInterfaceDeclaration(PackageMemberInterfaceDeclaration pmid) { try { UnitCompiler.this.compile2((PackageMemberTypeDeclaration) pmid); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitMemberClassDeclaration(MemberClassDeclaration mcd)                        { try { UnitCompiler.this.compile2(mcd);                                 } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Void visitAnonymousClassDeclaration(AnonymousClassDeclaration acd)                  { try { UnitCompiler.this.compile2(acd);                                 return null; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Void visitLocalClassDeclaration(LocalClassDeclaration lcd)                          { try { UnitCompiler.this.compile2(lcd);                                 return null; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Void visitPackageMemberClassDeclaration(PackageMemberClassDeclaration pmcd)         { try { UnitCompiler.this.compile2((PackageMemberTypeDeclaration) pmcd); return null; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Void visitMemberInterfaceDeclaration(MemberInterfaceDeclaration mid)                { try { UnitCompiler.this.compile2(mid);                                 return null; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Void visitPackageMemberInterfaceDeclaration(PackageMemberInterfaceDeclaration pmid) { try { UnitCompiler.this.compile2((PackageMemberTypeDeclaration) pmid); return null; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Void visitMemberClassDeclaration(MemberClassDeclaration mcd)                        { try { UnitCompiler.this.compile2(mcd);                                 return null; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
             // CHECKSTYLE LineLengthCheck:ON
         };
         try {
@@ -765,21 +764,22 @@ class UnitCompiler {
 
             // Compile the annotation's element-value-pairs.
             final Map<Short, ElementValue> evps = new HashMap<Short, ClassFile.AnnotationsAttribute.ElementValue>();
-            a.accept(new Visitor.AnnotationVisitor() {
+            a.accept(new Visitor.AnnotationVisitor<Void>() {
 
-                @Override public void
+                @Override public Void
                 visitSingleElementAnnotation(SingleElementAnnotation sea) {
                     try {
                         evps.put(
                             cf.addConstantUtf8Info("value"),
                             UnitCompiler.this.compileElementValue(sea.elementValue, cf)
                         );
+                        return null;
                     } catch (CompileException ce) {
                         throw new UncheckedCompileException(ce);
                     }
                 }
 
-                @Override public void
+                @Override public Void
                 visitNormalAnnotation(NormalAnnotation na) {
                     try {
                         for (ElementValuePair evp : na.elementValuePairs) {
@@ -788,14 +788,16 @@ class UnitCompiler {
                                 UnitCompiler.this.compileElementValue(evp.elementValue, cf)
                             );
                         }
+                        return null;
                     } catch (CompileException ce) {
                         throw new UncheckedCompileException(ce);
                     }
                 }
 
-                @Override public void
+                @Override public Void
                 visitMarkerAnnotation(MarkerAnnotation ma) {
                     ;
+                    return null;
                 }
             });
 
@@ -804,157 +806,160 @@ class UnitCompiler {
         }
     }
 
-    private ElementValue
+    private ClassFile.AnnotationsAttribute.ElementValue
     compileElementValue(org.codehaus.janino.Java.ElementValue elementValue, final ClassFile cf)
     throws CompileException {
 
         try {
 
-            final ClassFile.AnnotationsAttribute.ElementValue[] ev = new ClassFile.AnnotationsAttribute.ElementValue[1];
-            elementValue.accept(new ElementValueVisitor() {
+            return (ClassFile.AnnotationsAttribute.ElementValue) elementValue.accept(
+                new ElementValueVisitor<ClassFile.AnnotationsAttribute.ElementValue>() {
 
-                // Implement ElementValueVisitor.
+                    // Implement ElementValueVisitor.
 
-                @Override public void
-                visitElementValueArrayInitializer(ElementValueArrayInitializer evai) {
-                    try {
-                        ClassFile.AnnotationsAttribute.ElementValue[]
-                        evs = new ClassFile.AnnotationsAttribute.ElementValue[evai.elementValues.length];
+                    @Override public ElementValue
+                    visitElementValueArrayInitializer(ElementValueArrayInitializer evai) {
+                        try {
+                            ClassFile.AnnotationsAttribute.ElementValue[]
+                            evs = new ClassFile.AnnotationsAttribute.ElementValue[evai.elementValues.length];
 
-                        for (int i = 0; i < evai.elementValues.length; i++) {
-                            evs[i] = UnitCompiler.this.compileElementValue(evai.elementValues[i], cf);
+                            for (int i = 0; i < evai.elementValues.length; i++) {
+                                evs[i] = UnitCompiler.this.compileElementValue(evai.elementValues[i], cf);
+                            }
+                            return new ClassFile.AnnotationsAttribute.ArrayElementValue(evs);
+                        } catch (CompileException ce) {
+                            throw new UncheckedCompileException(ce);
                         }
-                        ev[0] = new ClassFile.AnnotationsAttribute.ArrayElementValue(evs);
-                    } catch (CompileException ce) {
-                        throw new UncheckedCompileException(ce);
                     }
-                }
 
-                // Implement AnnotationVisitor.
+                    // Implement AnnotationVisitor.
 
-                @Override public void
-                visitSingleElementAnnotation(SingleElementAnnotation sea) {
-                    this.visitAnnotation(
-                        sea.type,
-                        new Java.ElementValuePair[] { new Java.ElementValuePair("value", sea.elementValue) }
-                    );
-                }
-
-                @Override public void
-                visitNormalAnnotation(NormalAnnotation na) {
-                    this.visitAnnotation(na.type, na.elementValuePairs);
-                }
-
-                @Override public void
-                visitMarkerAnnotation(MarkerAnnotation ma) {
-                    this.visitAnnotation(ma.type, new Java.ElementValuePair[0]);
-                }
-
-                private void
-                visitAnnotation(Type type, ElementValuePair[] elementValuePairs) {
-
-                    try {
-                        short
-                        annotationTypeIndex = cf.addConstantClassInfo(UnitCompiler.this.getType(type).getDescriptor());
-
-                        Map<Short, ClassFile.AnnotationsAttribute.ElementValue>
-                        evps = new HashMap<Short, ClassFile.AnnotationsAttribute.ElementValue>();
-                        for (ElementValuePair evp : elementValuePairs) {
-                            evps.put(
-                                cf.addConstantUtf8Info(evp.identifier),
-                                UnitCompiler.this.compileElementValue(evp.elementValue, cf)
-                            );
-                        }
-                        ev[0] = new ClassFile.AnnotationsAttribute.Annotation(annotationTypeIndex, evps);
-                    } catch (CompileException ce) {
-                        throw new UncheckedCompileException(ce);
-                    }
-                }
-
-                // Implement RvalueVisitor.
-
-                @Override public void
-                visitClassLiteral(ClassLiteral cl) {
-                    try {
-                        IClass targetIClass = UnitCompiler.this.getType(cl.type);
-                        ev[0] = new ClassFile.AnnotationsAttribute.ClassElementValue(
-                            cf.addConstantUtf8Info(targetIClass.getDescriptor())
+                    @Override public ElementValue
+                    visitSingleElementAnnotation(SingleElementAnnotation sea) {
+                        return this.visitAnnotation(
+                            sea.type,
+                            new Java.ElementValuePair[] { new Java.ElementValuePair("value", sea.elementValue) }
                         );
-                    } catch (CompileException ce) {
-                        throw new UncheckedCompileException(ce);
                     }
-                }
 
-                // SUPPRESS CHECKSTYLE LineLength:31
-                @Override public void visitSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae) { this.visitRvalue(scfae); }
-                @Override public void visitParenthesizedExpression(ParenthesizedExpression pe)                    { this.visitRvalue(pe);    }
-                @Override public void visitLocalVariableAccess(LocalVariableAccess lva)                           { this.visitRvalue(lva);   }
-                @Override public void visitFieldAccessExpression(FieldAccessExpression fae)                       { this.visitRvalue(fae);   }
-                @Override public void visitFieldAccess(FieldAccess fa)                                            { this.visitRvalue(fa);    }
-                @Override public void visitArrayAccessExpression(ArrayAccessExpression aae)                       { this.visitRvalue(aae);   }
-                @Override public void visitAmbiguousName(AmbiguousName an)                                        { this.visitRvalue(an);    }
-                @Override public void visitUnaryOperation(UnaryOperation uo)                                      { this.visitRvalue(uo);    }
-                @Override public void visitThisReference(ThisReference tr)                                        { this.visitRvalue(tr);    }
-                @Override public void visitSuperclassMethodInvocation(SuperclassMethodInvocation smi)             { this.visitRvalue(smi);   }
-                @Override public void visitIntegerLiteral(IntegerLiteral il)                                      { this.visitRvalue(il);    }
-                @Override public void visitFloatingPointLiteral(FloatingPointLiteral fpl)                         { this.visitRvalue(fpl);   }
-                @Override public void visitStringLiteral(StringLiteral sl)                                        { this.visitRvalue(sl);    }
-                @Override public void visitSimpleConstant(SimpleConstant sl)                                      { this.visitRvalue(sl);    }
-                @Override public void visitQualifiedThisReference(QualifiedThisReference qtr)                     { this.visitRvalue(qtr);   }
-                @Override public void visitParameterAccess(ParameterAccess pa)                                    { this.visitRvalue(pa);    }
-                @Override public void visitNullLiteral(NullLiteral nl)                                            { this.visitRvalue(nl);    }
-                @Override public void visitNewInitializedArray(NewInitializedArray nia)                           { this.visitRvalue(nia);   }
-                @Override public void visitNewClassInstance(NewClassInstance nci)                                 { this.visitRvalue(nci);   }
-                @Override public void visitNewArray(NewArray na)                                                  { this.visitRvalue(na);    }
-                @Override public void visitNewAnonymousClassInstance(NewAnonymousClassInstance naci)              { this.visitRvalue(naci);  }
-                @Override public void visitMethodInvocation(MethodInvocation mi)                                  { this.visitRvalue(mi);    }
-                @Override public void visitCrement(Crement c)                                                     { this.visitRvalue(c);     }
-                @Override public void visitInstanceof(Instanceof io)                                              { this.visitRvalue(io);    }
-                @Override public void visitConditionalExpression(ConditionalExpression ce)                        { this.visitRvalue(ce);    }
-                @Override public void visitCharacterLiteral(CharacterLiteral cl)                                  { this.visitRvalue(cl);    }
-                @Override public void visitCast(Cast c)                                                           { this.visitRvalue(c);     }
-                @Override public void visitBooleanLiteral(BooleanLiteral bl)                                      { this.visitRvalue(bl);    }
-                @Override public void visitBinaryOperation(BinaryOperation bo)                                    { this.visitRvalue(bo);    }
-                @Override public void visitAssignment(Assignment a)                                               { this.visitRvalue(a);     }
-                @Override public void visitArrayLength(ArrayLength al)                                            { this.visitRvalue(al);    }
+                    @Override public ElementValue
+                    visitNormalAnnotation(NormalAnnotation na) {
+                        return this.visitAnnotation(na.type, na.elementValuePairs);
+                    }
 
-                private void
-                visitRvalue(Rvalue rv) {
+                    @Override public ElementValue
+                    visitMarkerAnnotation(MarkerAnnotation ma) {
+                        return this.visitAnnotation(ma.type, new Java.ElementValuePair[0]);
+                    }
 
-                    try {
-                        Object cv = UnitCompiler.this.getConstantValue(rv);
+                    private ElementValue
+                    visitAnnotation(Type type, ElementValuePair[] elementValuePairs) {
 
-                        if (cv == UnitCompiler.NOT_CONSTANT) {
-                            throw new CompileException(
-                                "\"" + rv + "\" is not a constant expression",
-                                rv.getLocation()
+                        try {
+                            short annotationTypeIndex = (
+                                cf.addConstantClassInfo(UnitCompiler.this.getType(type).getDescriptor())
                             );
-                        }
 
-                        // SUPPRESS CHECKSTYLE LineLength:9
-                        if (cv instanceof Boolean)   { ev[0] = new ClassFile.AnnotationsAttribute.BooleanElementValue(cf.addConstantIntegerInfo((Boolean) cv ? 1 : 0)); } else
-                        if (cv instanceof Byte)      { ev[0] = new ClassFile.AnnotationsAttribute.ByteElementValue(cf.addConstantIntegerInfo((Byte) cv));               } else
-                        if (cv instanceof Short)     { ev[0] = new ClassFile.AnnotationsAttribute.ShortElementValue(cf.addConstantIntegerInfo((Short) cv));             } else
-                        if (cv instanceof Integer)   { ev[0] = new ClassFile.AnnotationsAttribute.IntElementValue(cf.addConstantIntegerInfo((Integer) cv));             } else
-                        if (cv instanceof Long)      { ev[0] = new ClassFile.AnnotationsAttribute.LongElementValue(cf.addConstantLongInfo((Long) cv));                  } else
-                        if (cv instanceof Float)     { ev[0] = new ClassFile.AnnotationsAttribute.FloatElementValue(cf.addConstantFloatInfo((Float) cv));               } else
-                        if (cv instanceof Double)    { ev[0] = new ClassFile.AnnotationsAttribute.DoubleElementValue(cf.addConstantDoubleInfo((Double) cv));            } else
-                        if (cv instanceof Character) { ev[0] = new ClassFile.AnnotationsAttribute.CharElementValue(cf.addConstantIntegerInfo((Character) cv));          } else
-                        if (cv instanceof String)    { ev[0] = new ClassFile.AnnotationsAttribute.StringElementValue(cf.addConstantUtf8Info((String) cv));              } else
-                        if (cv == null) {
-                            throw new CompileException("Null literal not allowed as element value", rv.getLocation());
-                        } else
-                        {
-                            throw new AssertionError(cv);
+                            Map<Short, ClassFile.AnnotationsAttribute.ElementValue>
+                            evps = new HashMap<Short, ClassFile.AnnotationsAttribute.ElementValue>();
+                            for (ElementValuePair evp : elementValuePairs) {
+                                evps.put(
+                                    cf.addConstantUtf8Info(evp.identifier),
+                                    UnitCompiler.this.compileElementValue(evp.elementValue, cf)
+                                );
+                            }
+                            return new ClassFile.AnnotationsAttribute.Annotation(annotationTypeIndex, evps);
+                        } catch (CompileException ce) {
+                            throw new UncheckedCompileException(ce);
                         }
-                    } catch (CompileException ce) {
-                        throw new UncheckedCompileException(ce);
+                    }
+
+                    // Implement RvalueVisitor.
+
+                    @Override public ElementValue
+                    visitClassLiteral(ClassLiteral cl) {
+                        try {
+                            IClass targetIClass = UnitCompiler.this.getType(cl.type);
+                            return new ClassFile.AnnotationsAttribute.ClassElementValue(
+                                cf.addConstantUtf8Info(targetIClass.getDescriptor())
+                            );
+                        } catch (CompileException ce) {
+                            throw new UncheckedCompileException(ce);
+                        }
+                    }
+
+                    // SUPPRESS CHECKSTYLE LineLength:31
+                    @Override public ElementValue visitSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae) { return this.visitRvalue(scfae); }
+                    @Override public ElementValue visitParenthesizedExpression(ParenthesizedExpression pe)                    { return this.visitRvalue(pe);    }
+                    @Override public ElementValue visitLocalVariableAccess(LocalVariableAccess lva)                           { return this.visitRvalue(lva);   }
+                    @Override public ElementValue visitFieldAccessExpression(FieldAccessExpression fae)                       { return this.visitRvalue(fae);   }
+                    @Override public ElementValue visitFieldAccess(FieldAccess fa)                                            { return this.visitRvalue(fa);    }
+                    @Override public ElementValue visitArrayAccessExpression(ArrayAccessExpression aae)                       { return this.visitRvalue(aae);   }
+                    @Override public ElementValue visitAmbiguousName(AmbiguousName an)                                        { return this.visitRvalue(an);    }
+                    @Override public ElementValue visitUnaryOperation(UnaryOperation uo)                                      { return this.visitRvalue(uo);    }
+                    @Override public ElementValue visitThisReference(ThisReference tr)                                        { return this.visitRvalue(tr);    }
+                    @Override public ElementValue visitSuperclassMethodInvocation(SuperclassMethodInvocation smi)             { return this.visitRvalue(smi);   }
+                    @Override public ElementValue visitIntegerLiteral(IntegerLiteral il)                                      { return this.visitRvalue(il);    }
+                    @Override public ElementValue visitFloatingPointLiteral(FloatingPointLiteral fpl)                         { return this.visitRvalue(fpl);   }
+                    @Override public ElementValue visitStringLiteral(StringLiteral sl)                                        { return this.visitRvalue(sl);    }
+                    @Override public ElementValue visitSimpleConstant(SimpleConstant sl)                                      { return this.visitRvalue(sl);    }
+                    @Override public ElementValue visitQualifiedThisReference(QualifiedThisReference qtr)                     { return this.visitRvalue(qtr);   }
+                    @Override public ElementValue visitParameterAccess(ParameterAccess pa)                                    { return this.visitRvalue(pa);    }
+                    @Override public ElementValue visitNullLiteral(NullLiteral nl)                                            { return this.visitRvalue(nl);    }
+                    @Override public ElementValue visitNewInitializedArray(NewInitializedArray nia)                           { return this.visitRvalue(nia);   }
+                    @Override public ElementValue visitNewClassInstance(NewClassInstance nci)                                 { return this.visitRvalue(nci);   }
+                    @Override public ElementValue visitNewArray(NewArray na)                                                  { return this.visitRvalue(na);    }
+                    @Override public ElementValue visitNewAnonymousClassInstance(NewAnonymousClassInstance naci)              { return this.visitRvalue(naci);  }
+                    @Override public ElementValue visitMethodInvocation(MethodInvocation mi)                                  { return this.visitRvalue(mi);    }
+                    @Override public ElementValue visitCrement(Crement c)                                                     { return this.visitRvalue(c);     }
+                    @Override public ElementValue visitInstanceof(Instanceof io)                                              { return this.visitRvalue(io);    }
+                    @Override public ElementValue visitConditionalExpression(ConditionalExpression ce)                        { return this.visitRvalue(ce);    }
+                    @Override public ElementValue visitCharacterLiteral(CharacterLiteral cl)                                  { return this.visitRvalue(cl);    }
+                    @Override public ElementValue visitCast(Cast c)                                                           { return this.visitRvalue(c);     }
+                    @Override public ElementValue visitBooleanLiteral(BooleanLiteral bl)                                      { return this.visitRvalue(bl);    }
+                    @Override public ElementValue visitBinaryOperation(BinaryOperation bo)                                    { return this.visitRvalue(bo);    }
+                    @Override public ElementValue visitAssignment(Assignment a)                                               { return this.visitRvalue(a);     }
+                    @Override public ElementValue visitArrayLength(ArrayLength al)                                            { return this.visitRvalue(al);    }
+
+                    private ElementValue
+                    visitRvalue(Rvalue rv) {
+
+                        try {
+                            Object cv = UnitCompiler.this.getConstantValue(rv);
+
+                            if (cv == UnitCompiler.NOT_CONSTANT) {
+                                throw new CompileException(
+                                    "\"" + rv + "\" is not a constant expression",
+                                    rv.getLocation()
+                                );
+                            }
+
+                            // SUPPRESS CHECKSTYLE LineLength:9
+                            if (cv instanceof Boolean)   { return new ClassFile.AnnotationsAttribute.BooleanElementValue(cf.addConstantIntegerInfo((Boolean) cv ? 1 : 0)); } else
+                            if (cv instanceof Byte)      { return new ClassFile.AnnotationsAttribute.ByteElementValue(cf.addConstantIntegerInfo((Byte) cv));               } else
+                            if (cv instanceof Short)     { return new ClassFile.AnnotationsAttribute.ShortElementValue(cf.addConstantIntegerInfo((Short) cv));             } else
+                            if (cv instanceof Integer)   { return new ClassFile.AnnotationsAttribute.IntElementValue(cf.addConstantIntegerInfo((Integer) cv));             } else
+                            if (cv instanceof Long)      { return new ClassFile.AnnotationsAttribute.LongElementValue(cf.addConstantLongInfo((Long) cv));                  } else
+                            if (cv instanceof Float)     { return new ClassFile.AnnotationsAttribute.FloatElementValue(cf.addConstantFloatInfo((Float) cv));               } else
+                            if (cv instanceof Double)    { return new ClassFile.AnnotationsAttribute.DoubleElementValue(cf.addConstantDoubleInfo((Double) cv));            } else
+                            if (cv instanceof Character) { return new ClassFile.AnnotationsAttribute.CharElementValue(cf.addConstantIntegerInfo((Character) cv));          } else
+                            if (cv instanceof String)    { return new ClassFile.AnnotationsAttribute.StringElementValue(cf.addConstantUtf8Info((String) cv));              } else
+
+                                if (cv == null) {
+                                throw new CompileException(
+                                    "Null literal not allowed as element value",
+                                    rv.getLocation()
+                                );
+                            } else
+                            {
+                                throw new AssertionError(cv);
+                            }
+                        } catch (CompileException ce) {
+                            throw new UncheckedCompileException(ce);
+                        }
                     }
                 }
-            });
-
-            assert ev[0] != null;
-            return ev[0];
+            );
         } catch (UncheckedCompileException uce) {
             throw uce.compileException;
         }
@@ -978,17 +983,15 @@ class UnitCompiler {
         // Create interface initialization method iff there is any initialization code.
         if (this.generatesCode2(statements)) {
             MethodDeclarator md = new MethodDeclarator(
-                decl.getLocation(),                               // location
-                null,                                             // optionalDocComment
-                new Modifiers((short) (Mod.STATIC | Mod.PUBLIC)), // modifiers
-                new BasicType(                                    // type
-                    decl.getLocation(),
-                    BasicType.VOID
-                ),
-                "<clinit>",                                       // name
-                new FormalParameters(),                           // formalParameters
-                new ReferenceType[0],                             // thrownExceptions
-                statements                                        // optionalStatements
+                decl.getLocation(),                                // location
+                null,                                              // optionalDocComment
+                new Modifiers((short) (Mod.STATIC | Mod.PUBLIC)),  // modifiers
+                null,                                              // optionalTypeParameters
+                new BasicType(decl.getLocation(), BasicType.VOID), // type
+                "<clinit>",                                        // name
+                new FormalParameters(),                            // formalParameters
+                new ReferenceType[0],                              // thrownExceptions
+                statements                                         // optionalStatements
             );
             md.setDeclaringType(decl);
             this.compile(md, cf);
@@ -1163,37 +1166,35 @@ class UnitCompiler {
     /** @return Whether this statement can complete normally (JLS7 14.1) */
     private boolean
     compile(BlockStatement bs) throws CompileException {
-        final boolean[]       res = new boolean[1];
-        BlockStatementVisitor bsv = new BlockStatementVisitor() {
+        BlockStatementVisitor<Boolean> bsv = new BlockStatementVisitor<Boolean>() {
             // CHECKSTYLE LineLengthCheck:OFF
-            @Override public void visitInitializer(Initializer i)                                                { try { res[0] = UnitCompiler.this.compile2(i);    } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitFieldDeclaration(FieldDeclaration fd)                                     { try { res[0] = UnitCompiler.this.compile2(fd);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitLabeledStatement(LabeledStatement ls)                                     { try { res[0] = UnitCompiler.this.compile2(ls);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitBlock(Block b)                                                            { try { res[0] = UnitCompiler.this.compile2(b);    } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitExpressionStatement(ExpressionStatement es)                               { try { res[0] = UnitCompiler.this.compile2(es);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitIfStatement(IfStatement is)                                               { try { res[0] = UnitCompiler.this.compile2(is);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitForStatement(ForStatement fs)                                             { try { res[0] = UnitCompiler.this.compile2(fs);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitForEachStatement(ForEachStatement fes)                                    { try { res[0] = UnitCompiler.this.compile2(fes);  } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitWhileStatement(WhileStatement ws)                                         { try { res[0] = UnitCompiler.this.compile2(ws);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitTryStatement(TryStatement ts)                                             { try { res[0] = UnitCompiler.this.compile2(ts);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitSwitchStatement(SwitchStatement ss)                                       { try { res[0] = UnitCompiler.this.compile2(ss);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitSynchronizedStatement(SynchronizedStatement ss)                           { try { res[0] = UnitCompiler.this.compile2(ss);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitDoStatement(DoStatement ds)                                               { try { res[0] = UnitCompiler.this.compile2(ds);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitLocalVariableDeclarationStatement(LocalVariableDeclarationStatement lvds) { try { res[0] = UnitCompiler.this.compile2(lvds); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitReturnStatement(ReturnStatement rs)                                       { try { res[0] = UnitCompiler.this.compile2(rs);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitThrowStatement(ThrowStatement ts)                                         { try { res[0] = UnitCompiler.this.compile2(ts);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitBreakStatement(BreakStatement bs)                                         { try { res[0] = UnitCompiler.this.compile2(bs);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitContinueStatement(ContinueStatement cs)                                   { try { res[0] = UnitCompiler.this.compile2(cs);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitAssertStatement(AssertStatement as)                                       { try { res[0] = UnitCompiler.this.compile2(as);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitEmptyStatement(EmptyStatement es)                                         {       res[0] = UnitCompiler.this.compile2(es);                                                      }
-            @Override public void visitLocalClassDeclarationStatement(LocalClassDeclarationStatement lcds)       { try { res[0] = UnitCompiler.this.compile2(lcds); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitAlternateConstructorInvocation(AlternateConstructorInvocation aci)        { try { res[0] = UnitCompiler.this.compile2(aci);  } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitSuperConstructorInvocation(SuperConstructorInvocation sci)                { try { res[0] = UnitCompiler.this.compile2(sci);  } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Boolean visitInitializer(Initializer i)                                                { try { return UnitCompiler.this.compile2(i);    } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Boolean visitFieldDeclaration(FieldDeclaration fd)                                     { try { return UnitCompiler.this.compile2(fd);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Boolean visitLabeledStatement(LabeledStatement ls)                                     { try { return UnitCompiler.this.compile2(ls);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Boolean visitBlock(Block b)                                                            { try { return UnitCompiler.this.compile2(b);    } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Boolean visitExpressionStatement(ExpressionStatement es)                               { try { return UnitCompiler.this.compile2(es);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Boolean visitIfStatement(IfStatement is)                                               { try { return UnitCompiler.this.compile2(is);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Boolean visitForStatement(ForStatement fs)                                             { try { return UnitCompiler.this.compile2(fs);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Boolean visitForEachStatement(ForEachStatement fes)                                    { try { return UnitCompiler.this.compile2(fes);  } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Boolean visitWhileStatement(WhileStatement ws)                                         { try { return UnitCompiler.this.compile2(ws);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Boolean visitTryStatement(TryStatement ts)                                             { try { return UnitCompiler.this.compile2(ts);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Boolean visitSwitchStatement(SwitchStatement ss)                                       { try { return UnitCompiler.this.compile2(ss);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Boolean visitSynchronizedStatement(SynchronizedStatement ss)                           { try { return UnitCompiler.this.compile2(ss);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Boolean visitDoStatement(DoStatement ds)                                               { try { return UnitCompiler.this.compile2(ds);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Boolean visitLocalVariableDeclarationStatement(LocalVariableDeclarationStatement lvds) { try { return UnitCompiler.this.compile2(lvds); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Boolean visitReturnStatement(ReturnStatement rs)                                       { try { return UnitCompiler.this.compile2(rs);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Boolean visitThrowStatement(ThrowStatement ts)                                         { try { return UnitCompiler.this.compile2(ts);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Boolean visitBreakStatement(BreakStatement bs)                                         { try { return UnitCompiler.this.compile2(bs);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Boolean visitContinueStatement(ContinueStatement cs)                                   { try { return UnitCompiler.this.compile2(cs);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Boolean visitAssertStatement(AssertStatement as)                                       { try { return UnitCompiler.this.compile2(as);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Boolean visitEmptyStatement(EmptyStatement es)                                         {       return UnitCompiler.this.compile2(es);                                                      }
+            @Override public Boolean visitLocalClassDeclarationStatement(LocalClassDeclarationStatement lcds)       { try { return UnitCompiler.this.compile2(lcds); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Boolean visitAlternateConstructorInvocation(AlternateConstructorInvocation aci)        { try { return UnitCompiler.this.compile2(aci);  } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Boolean visitSuperConstructorInvocation(SuperConstructorInvocation sci)                { try { return UnitCompiler.this.compile2(sci);  } catch (CompileException e) { throw new UncheckedCompileException(e); } }
             // CHECKSTYLE LineLengthCheck:ON
         };
         try {
-            bs.accept(bsv);
-            return res[0];
+            return (Boolean) bs.accept(bsv);
         } catch (UncheckedCompileException uce) {
             throw uce.compileException; // SUPPRESS CHECKSTYLE AvoidHidingCause
         }
@@ -2643,44 +2644,47 @@ class UnitCompiler {
     private Map<String, LocalVariable>
     buildLocalVariableMap(BlockStatement blockStatement, final Map<String, LocalVariable> localVars)
     throws CompileException {
-        final Map<String, LocalVariable>[] resVars = new Map[] { localVars };
-        BlockStatementVisitor              bsv     = new BlockStatementVisitor() {
-            // CHECKSTYLE LineLengthCheck:OFF
 
-            // Basic statements that use the default handlers.
-            @Override public void visitAlternateConstructorInvocation(AlternateConstructorInvocation aci)  { UnitCompiler.buildLocalVariableMap(aci, localVars); }
-            @Override public void visitBreakStatement(BreakStatement bs)                                   { UnitCompiler.buildLocalVariableMap(bs, localVars); }
-            @Override public void visitContinueStatement(ContinueStatement cs)                             { UnitCompiler.buildLocalVariableMap(cs, localVars); }
-            @Override public void visitAssertStatement(AssertStatement as)                                 { UnitCompiler.buildLocalVariableMap(as, localVars); }
-            @Override public void visitEmptyStatement(EmptyStatement es)                                   { UnitCompiler.buildLocalVariableMap(es, localVars); }
-            @Override public void visitExpressionStatement(ExpressionStatement es)                         { UnitCompiler.buildLocalVariableMap(es, localVars); }
-            @Override public void visitFieldDeclaration(FieldDeclaration fd)                               { UnitCompiler.buildLocalVariableMap(fd, localVars); }
-            @Override public void visitReturnStatement(ReturnStatement rs)                                 { UnitCompiler.buildLocalVariableMap(rs, localVars); }
-            @Override public void visitSuperConstructorInvocation(SuperConstructorInvocation sci)          { UnitCompiler.buildLocalVariableMap(sci, localVars); }
-            @Override public void visitThrowStatement(ThrowStatement ts)                                   { UnitCompiler.buildLocalVariableMap(ts, localVars); }
-            @Override public void visitLocalClassDeclarationStatement(LocalClassDeclarationStatement lcds) { UnitCompiler.buildLocalVariableMap(lcds, localVars); }
+        try {
+            return (Map<String, LocalVariable>) blockStatement.accept(
+                new BlockStatementVisitor<Map<String, LocalVariable>>() {
 
-            // More complicated statements with specialized handlers, but don't add new variables in this scope.
-            @Override public void visitBlock(Block b)                                  { try { UnitCompiler.this.buildLocalVariableMap(b,   localVars); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitDoStatement(DoStatement ds)                     { try { UnitCompiler.this.buildLocalVariableMap(ds,  localVars); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitForStatement(ForStatement fs)                   { try { UnitCompiler.this.buildLocalVariableMap(fs,  localVars); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitForEachStatement(ForEachStatement fes)          { try { UnitCompiler.this.buildLocalVariableMap(fes, localVars); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitIfStatement(IfStatement is)                     { try { UnitCompiler.this.buildLocalVariableMap(is,  localVars); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitInitializer(Initializer i)                      { try { UnitCompiler.this.buildLocalVariableMap(i,   localVars); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitSwitchStatement(SwitchStatement ss)             { try { UnitCompiler.this.buildLocalVariableMap(ss,  localVars); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitSynchronizedStatement(SynchronizedStatement ss) { try { UnitCompiler.this.buildLocalVariableMap(ss,  localVars); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitTryStatement(TryStatement ts)                   { try { UnitCompiler.this.buildLocalVariableMap(ts,  localVars); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitWhileStatement(WhileStatement ws)               { try { UnitCompiler.this.buildLocalVariableMap(ws,  localVars); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+                    // Basic statements that use the default handlers.
+                    // SUPPRESS CHECKSTYLE LineLengthCheck:11
+                    @Override public Map<String, LocalVariable> visitAlternateConstructorInvocation(AlternateConstructorInvocation aci)  { UnitCompiler.buildLocalVariableMap(aci, localVars);  return localVars; }
+                    @Override public Map<String, LocalVariable> visitBreakStatement(BreakStatement bs)                                   { UnitCompiler.buildLocalVariableMap(bs, localVars);   return localVars; }
+                    @Override public Map<String, LocalVariable> visitContinueStatement(ContinueStatement cs)                             { UnitCompiler.buildLocalVariableMap(cs, localVars);   return localVars; }
+                    @Override public Map<String, LocalVariable> visitAssertStatement(AssertStatement as)                                 { UnitCompiler.buildLocalVariableMap(as, localVars);   return localVars; }
+                    @Override public Map<String, LocalVariable> visitEmptyStatement(EmptyStatement es)                                   { UnitCompiler.buildLocalVariableMap(es, localVars);   return localVars; }
+                    @Override public Map<String, LocalVariable> visitExpressionStatement(ExpressionStatement es)                         { UnitCompiler.buildLocalVariableMap(es, localVars);   return localVars; }
+                    @Override public Map<String, LocalVariable> visitFieldDeclaration(FieldDeclaration fd)                               { UnitCompiler.buildLocalVariableMap(fd, localVars);   return localVars; }
+                    @Override public Map<String, LocalVariable> visitReturnStatement(ReturnStatement rs)                                 { UnitCompiler.buildLocalVariableMap(rs, localVars);   return localVars; }
+                    @Override public Map<String, LocalVariable> visitSuperConstructorInvocation(SuperConstructorInvocation sci)          { UnitCompiler.buildLocalVariableMap(sci, localVars);  return localVars; }
+                    @Override public Map<String, LocalVariable> visitThrowStatement(ThrowStatement ts)                                   { UnitCompiler.buildLocalVariableMap(ts, localVars);   return localVars; }
+                    @Override public Map<String, LocalVariable> visitLocalClassDeclarationStatement(LocalClassDeclarationStatement lcds) { UnitCompiler.buildLocalVariableMap(lcds, localVars); return localVars; }
 
-            // More complicated statements with specialized handlers, that can add variables in this scope.
-            @Override public void visitLabeledStatement(LabeledStatement ls)                                     { try { resVars[0] = UnitCompiler.this.buildLocalVariableMap(ls,   localVars); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitLocalVariableDeclarationStatement(LocalVariableDeclarationStatement lvds) { try { resVars[0] = UnitCompiler.this.buildLocalVariableMap(lvds, localVars); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            // CHECKSTYLE LineLengthCheck:ON
-        };
-        try { blockStatement.accept(bsv); } catch (UncheckedCompileException uce) {
+                    // More complicated statements with specialized handlers, but don't add new variables in this scope.
+                    // SUPPRESS CHECKSTYLE LineLengthCheck:10
+                    @Override public Map<String, LocalVariable> visitBlock(Block b)                                  { try { UnitCompiler.this.buildLocalVariableMap(b,   localVars); return localVars; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+                    @Override public Map<String, LocalVariable> visitDoStatement(DoStatement ds)                     { try { UnitCompiler.this.buildLocalVariableMap(ds,  localVars); return localVars; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+                    @Override public Map<String, LocalVariable> visitForStatement(ForStatement fs)                   { try { UnitCompiler.this.buildLocalVariableMap(fs,  localVars); return localVars; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+                    @Override public Map<String, LocalVariable> visitForEachStatement(ForEachStatement fes)          { try { UnitCompiler.this.buildLocalVariableMap(fes, localVars); return localVars; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+                    @Override public Map<String, LocalVariable> visitIfStatement(IfStatement is)                     { try { UnitCompiler.this.buildLocalVariableMap(is,  localVars); return localVars; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+                    @Override public Map<String, LocalVariable> visitInitializer(Initializer i)                      { try { UnitCompiler.this.buildLocalVariableMap(i,   localVars); return localVars; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+                    @Override public Map<String, LocalVariable> visitSwitchStatement(SwitchStatement ss)             { try { UnitCompiler.this.buildLocalVariableMap(ss,  localVars); return localVars; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+                    @Override public Map<String, LocalVariable> visitSynchronizedStatement(SynchronizedStatement ss) { try { UnitCompiler.this.buildLocalVariableMap(ss,  localVars); return localVars; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+                    @Override public Map<String, LocalVariable> visitTryStatement(TryStatement ts)                   { try { UnitCompiler.this.buildLocalVariableMap(ts,  localVars); return localVars; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+                    @Override public Map<String, LocalVariable> visitWhileStatement(WhileStatement ws)               { try { UnitCompiler.this.buildLocalVariableMap(ws,  localVars); return localVars; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+
+                    // More complicated statements with specialized handlers, that can add variables in this scope.
+                    // SUPPRESS CHECKSTYLE LineLengthCheck:2
+                    @Override public Map<String, LocalVariable> visitLabeledStatement(LabeledStatement ls)                                     { try { return UnitCompiler.this.buildLocalVariableMap(ls,   localVars); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+                    @Override public Map<String, LocalVariable> visitLocalVariableDeclarationStatement(LocalVariableDeclarationStatement lvds) { try { return UnitCompiler.this.buildLocalVariableMap(lvds, localVars); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+                }
+            );
+        } catch (UncheckedCompileException uce) {
             throw uce.compileException; // SUPPRESS CHECKSTYLE AvoidHidingCause
         }
-        return resVars[0];
     }
 
     // Default handlers.
@@ -2856,41 +2860,41 @@ class UnitCompiler {
     private void
     compile(Rvalue rv) throws CompileException {
 
-        RvalueVisitor rvv = new RvalueVisitor() {
+        RvalueVisitor rvv = new RvalueVisitor<Void>() {
             // CHECKSTYLE LineLengthCheck:OFF
-            @Override public void visitArrayLength(ArrayLength al)                                            { try { UnitCompiler.this.compile2(al);    } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitAssignment(Assignment a)                                               { try { UnitCompiler.this.compile2(a);     } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitUnaryOperation(UnaryOperation uo)                                      { try { UnitCompiler.this.compile2(uo);    } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitBinaryOperation(BinaryOperation bo)                                    { try { UnitCompiler.this.compile2(bo);    } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitCast(Cast c)                                                           { try { UnitCompiler.this.compile2(c);     } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitClassLiteral(ClassLiteral cl)                                          { try { UnitCompiler.this.compile2(cl);    } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitConditionalExpression(ConditionalExpression ce)                        { try { UnitCompiler.this.compile2(ce);    } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitCrement(Crement c)                                                     { try { UnitCompiler.this.compile2(c);     } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitInstanceof(Instanceof io)                                              { try { UnitCompiler.this.compile2(io);    } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitMethodInvocation(MethodInvocation mi)                                  { try { UnitCompiler.this.compile2(mi);    } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitSuperclassMethodInvocation(SuperclassMethodInvocation smi)             { try { UnitCompiler.this.compile2(smi);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitIntegerLiteral(IntegerLiteral il)                                      { try { UnitCompiler.this.compile2(il);    } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitFloatingPointLiteral(FloatingPointLiteral fpl)                         { try { UnitCompiler.this.compile2(fpl);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitBooleanLiteral(BooleanLiteral bl)                                      { try { UnitCompiler.this.compile2(bl);    } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitCharacterLiteral(CharacterLiteral cl)                                  { try { UnitCompiler.this.compile2(cl);    } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitStringLiteral(StringLiteral sl)                                        { try { UnitCompiler.this.compile2(sl);    } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitNullLiteral(NullLiteral nl)                                            { try { UnitCompiler.this.compile2(nl);    } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitSimpleConstant(SimpleConstant sl)                                      { try { UnitCompiler.this.compile2(sl);    } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitNewAnonymousClassInstance(NewAnonymousClassInstance naci)              { try { UnitCompiler.this.compile2(naci);  } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitNewArray(NewArray na)                                                  { try { UnitCompiler.this.compile2(na);    } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitNewInitializedArray(NewInitializedArray nia)                           { try { UnitCompiler.this.compile2(nia);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitNewClassInstance(NewClassInstance nci)                                 { try { UnitCompiler.this.compile2(nci);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitParameterAccess(ParameterAccess pa)                                    { try { UnitCompiler.this.compile2(pa);    } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitQualifiedThisReference(QualifiedThisReference qtr)                     { try { UnitCompiler.this.compile2(qtr);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitThisReference(ThisReference tr)                                        { try { UnitCompiler.this.compile2(tr);    } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Void visitArrayLength(ArrayLength al)                                            { try { UnitCompiler.this.compile2(al);    return null; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Void visitAssignment(Assignment a)                                               { try { UnitCompiler.this.compile2(a);     return null; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Void visitUnaryOperation(UnaryOperation uo)                                      { try { UnitCompiler.this.compile2(uo);    return null; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Void visitBinaryOperation(BinaryOperation bo)                                    { try { UnitCompiler.this.compile2(bo);    return null; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Void visitCast(Cast c)                                                           { try { UnitCompiler.this.compile2(c);     return null; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Void visitClassLiteral(ClassLiteral cl)                                          { try { UnitCompiler.this.compile2(cl);    return null; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Void visitConditionalExpression(ConditionalExpression ce)                        { try { UnitCompiler.this.compile2(ce);    return null; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Void visitCrement(Crement c)                                                     { try { UnitCompiler.this.compile2(c);     return null; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Void visitInstanceof(Instanceof io)                                              { try { UnitCompiler.this.compile2(io);    return null; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Void visitMethodInvocation(MethodInvocation mi)                                  { try { UnitCompiler.this.compile2(mi);    return null; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Void visitSuperclassMethodInvocation(SuperclassMethodInvocation smi)             { try { UnitCompiler.this.compile2(smi);   return null; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Void visitIntegerLiteral(IntegerLiteral il)                                      { try { UnitCompiler.this.compile2(il);    return null; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Void visitFloatingPointLiteral(FloatingPointLiteral fpl)                         { try { UnitCompiler.this.compile2(fpl);   return null; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Void visitBooleanLiteral(BooleanLiteral bl)                                      { try { UnitCompiler.this.compile2(bl);    return null; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Void visitCharacterLiteral(CharacterLiteral cl)                                  { try { UnitCompiler.this.compile2(cl);    return null; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Void visitStringLiteral(StringLiteral sl)                                        { try { UnitCompiler.this.compile2(sl);    return null; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Void visitNullLiteral(NullLiteral nl)                                            { try { UnitCompiler.this.compile2(nl);    return null; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Void visitSimpleConstant(SimpleConstant sl)                                      { try { UnitCompiler.this.compile2(sl);    return null; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Void visitNewAnonymousClassInstance(NewAnonymousClassInstance naci)              { try { UnitCompiler.this.compile2(naci);  return null; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Void visitNewArray(NewArray na)                                                  { try { UnitCompiler.this.compile2(na);    return null; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Void visitNewInitializedArray(NewInitializedArray nia)                           { try { UnitCompiler.this.compile2(nia);   return null; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Void visitNewClassInstance(NewClassInstance nci)                                 { try { UnitCompiler.this.compile2(nci);   return null; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Void visitParameterAccess(ParameterAccess pa)                                    { try { UnitCompiler.this.compile2(pa);    return null; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Void visitQualifiedThisReference(QualifiedThisReference qtr)                     { try { UnitCompiler.this.compile2(qtr);   return null; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Void visitThisReference(ThisReference tr)                                        { try { UnitCompiler.this.compile2(tr);    return null; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
 
-            @Override public void visitAmbiguousName(AmbiguousName an)                                        { try { UnitCompiler.this.compile2(an);    } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitArrayAccessExpression(ArrayAccessExpression aae)                       { try { UnitCompiler.this.compile2(aae);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitFieldAccess(FieldAccess fa)                                            { try { UnitCompiler.this.compile2(fa);    } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitFieldAccessExpression(FieldAccessExpression fae)                       { try { UnitCompiler.this.compile2(fae);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae) { try { UnitCompiler.this.compile2(scfae); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitLocalVariableAccess(LocalVariableAccess lva)                           { try { UnitCompiler.this.compile2(lva);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitParenthesizedExpression(ParenthesizedExpression pe)                    { try { UnitCompiler.this.compile2(pe);    } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Void visitAmbiguousName(AmbiguousName an)                                        { try { UnitCompiler.this.compile2(an);    return null; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Void visitArrayAccessExpression(ArrayAccessExpression aae)                       { try { UnitCompiler.this.compile2(aae);   return null; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Void visitFieldAccess(FieldAccess fa)                                            { try { UnitCompiler.this.compile2(fa);    return null; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Void visitFieldAccessExpression(FieldAccessExpression fae)                       { try { UnitCompiler.this.compile2(fae);   return null; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Void visitSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae) { try { UnitCompiler.this.compile2(scfae); return null; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Void visitLocalVariableAccess(LocalVariableAccess lva)                           { try { UnitCompiler.this.compile2(lva);   return null; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Void visitParenthesizedExpression(ParenthesizedExpression pe)                    { try { UnitCompiler.this.compile2(pe);    return null; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
             // CHECKSTYLE LineLengthCheck:ON
         };
         try {
@@ -3044,41 +3048,41 @@ class UnitCompiler {
     private void
     compileBoolean(Rvalue rv, final CodeContext.Offset dst, final boolean orientation) throws CompileException {
 
-        RvalueVisitor rvv = new RvalueVisitor() {
+        RvalueVisitor rvv = new RvalueVisitor<Void>() {
             // CHECKSTYLE LineLengthCheck:OFF
-            @Override public void visitArrayLength(ArrayLength al)                                { try { UnitCompiler.this.compileBoolean2(al,   dst, orientation); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitAssignment(Assignment a)                                   { try { UnitCompiler.this.compileBoolean2(a,    dst, orientation); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitUnaryOperation(UnaryOperation uo)                          { try { UnitCompiler.this.compileBoolean2(uo,   dst, orientation); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitBinaryOperation(BinaryOperation bo)                        { try { UnitCompiler.this.compileBoolean2(bo,   dst, orientation); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitCast(Cast c)                                               { try { UnitCompiler.this.compileBoolean2(c,    dst, orientation); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitClassLiteral(ClassLiteral cl)                              { try { UnitCompiler.this.compileBoolean2(cl,   dst, orientation); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitConditionalExpression(ConditionalExpression ce)            { try { UnitCompiler.this.compileBoolean2(ce,   dst, orientation); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitCrement(Crement c)                                         { try { UnitCompiler.this.compileBoolean2(c,    dst, orientation); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitInstanceof(Instanceof io)                                  { try { UnitCompiler.this.compileBoolean2(io,   dst, orientation); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitMethodInvocation(MethodInvocation mi)                      { try { UnitCompiler.this.compileBoolean2(mi,   dst, orientation); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitSuperclassMethodInvocation(SuperclassMethodInvocation smi) { try { UnitCompiler.this.compileBoolean2(smi,  dst, orientation); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitIntegerLiteral(IntegerLiteral il)                          { try { UnitCompiler.this.compileBoolean2(il,   dst, orientation); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitFloatingPointLiteral(FloatingPointLiteral fpl)             { try { UnitCompiler.this.compileBoolean2(fpl,  dst, orientation); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitBooleanLiteral(BooleanLiteral bl)                          { try { UnitCompiler.this.compileBoolean2(bl,   dst, orientation); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitCharacterLiteral(CharacterLiteral cl)                      { try { UnitCompiler.this.compileBoolean2(cl,   dst, orientation); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitStringLiteral(StringLiteral sl)                            { try { UnitCompiler.this.compileBoolean2(sl,   dst, orientation); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitNullLiteral(NullLiteral nl)                                { try { UnitCompiler.this.compileBoolean2(nl,   dst, orientation); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitSimpleConstant(SimpleConstant sl)                          { try { UnitCompiler.this.compileBoolean2(sl,   dst, orientation); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitNewAnonymousClassInstance(NewAnonymousClassInstance naci)  { try { UnitCompiler.this.compileBoolean2(naci, dst, orientation); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitNewArray(NewArray na)                                      { try { UnitCompiler.this.compileBoolean2(na,   dst, orientation); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitNewInitializedArray(NewInitializedArray nia)               { try { UnitCompiler.this.compileBoolean2(nia,  dst, orientation); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitNewClassInstance(NewClassInstance nci)                     { try { UnitCompiler.this.compileBoolean2(nci,  dst, orientation); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitParameterAccess(ParameterAccess pa)                        { try { UnitCompiler.this.compileBoolean2(pa,   dst, orientation); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitQualifiedThisReference(QualifiedThisReference qtr)         { try { UnitCompiler.this.compileBoolean2(qtr,  dst, orientation); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitThisReference(ThisReference tr)                            { try { UnitCompiler.this.compileBoolean2(tr,   dst, orientation); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Void visitArrayLength(ArrayLength al)                                { try { UnitCompiler.this.compileBoolean2(al,   dst, orientation); return null; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Void visitAssignment(Assignment a)                                   { try { UnitCompiler.this.compileBoolean2(a,    dst, orientation); return null; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Void visitUnaryOperation(UnaryOperation uo)                          { try { UnitCompiler.this.compileBoolean2(uo,   dst, orientation); return null; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Void visitBinaryOperation(BinaryOperation bo)                        { try { UnitCompiler.this.compileBoolean2(bo,   dst, orientation); return null; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Void visitCast(Cast c)                                               { try { UnitCompiler.this.compileBoolean2(c,    dst, orientation); return null; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Void visitClassLiteral(ClassLiteral cl)                              { try { UnitCompiler.this.compileBoolean2(cl,   dst, orientation); return null; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Void visitConditionalExpression(ConditionalExpression ce)            { try { UnitCompiler.this.compileBoolean2(ce,   dst, orientation); return null; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Void visitCrement(Crement c)                                         { try { UnitCompiler.this.compileBoolean2(c,    dst, orientation); return null; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Void visitInstanceof(Instanceof io)                                  { try { UnitCompiler.this.compileBoolean2(io,   dst, orientation); return null; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Void visitMethodInvocation(MethodInvocation mi)                      { try { UnitCompiler.this.compileBoolean2(mi,   dst, orientation); return null; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Void visitSuperclassMethodInvocation(SuperclassMethodInvocation smi) { try { UnitCompiler.this.compileBoolean2(smi,  dst, orientation); return null; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Void visitIntegerLiteral(IntegerLiteral il)                          { try { UnitCompiler.this.compileBoolean2(il,   dst, orientation); return null; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Void visitFloatingPointLiteral(FloatingPointLiteral fpl)             { try { UnitCompiler.this.compileBoolean2(fpl,  dst, orientation); return null; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Void visitBooleanLiteral(BooleanLiteral bl)                          { try { UnitCompiler.this.compileBoolean2(bl,   dst, orientation); return null; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Void visitCharacterLiteral(CharacterLiteral cl)                      { try { UnitCompiler.this.compileBoolean2(cl,   dst, orientation); return null; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Void visitStringLiteral(StringLiteral sl)                            { try { UnitCompiler.this.compileBoolean2(sl,   dst, orientation); return null; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Void visitNullLiteral(NullLiteral nl)                                { try { UnitCompiler.this.compileBoolean2(nl,   dst, orientation); return null; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Void visitSimpleConstant(SimpleConstant sl)                          { try { UnitCompiler.this.compileBoolean2(sl,   dst, orientation); return null; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Void visitNewAnonymousClassInstance(NewAnonymousClassInstance naci)  { try { UnitCompiler.this.compileBoolean2(naci, dst, orientation); return null; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Void visitNewArray(NewArray na)                                      { try { UnitCompiler.this.compileBoolean2(na,   dst, orientation); return null; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Void visitNewInitializedArray(NewInitializedArray nia)               { try { UnitCompiler.this.compileBoolean2(nia,  dst, orientation); return null; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Void visitNewClassInstance(NewClassInstance nci)                     { try { UnitCompiler.this.compileBoolean2(nci,  dst, orientation); return null; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Void visitParameterAccess(ParameterAccess pa)                        { try { UnitCompiler.this.compileBoolean2(pa,   dst, orientation); return null; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Void visitQualifiedThisReference(QualifiedThisReference qtr)         { try { UnitCompiler.this.compileBoolean2(qtr,  dst, orientation); return null; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Void visitThisReference(ThisReference tr)                            { try { UnitCompiler.this.compileBoolean2(tr,   dst, orientation); return null; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
 
-            @Override public void visitAmbiguousName(AmbiguousName an)                                        { try { UnitCompiler.this.compileBoolean2(an,    dst, orientation); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitArrayAccessExpression(ArrayAccessExpression aae)                       { try { UnitCompiler.this.compileBoolean2(aae,   dst, orientation); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitFieldAccess(FieldAccess fa)                                            { try { UnitCompiler.this.compileBoolean2(fa,    dst, orientation); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitFieldAccessExpression(FieldAccessExpression fae)                       { try { UnitCompiler.this.compileBoolean2(fae,   dst, orientation); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae) { try { UnitCompiler.this.compileBoolean2(scfae, dst, orientation); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitLocalVariableAccess(LocalVariableAccess lva)                           { try { UnitCompiler.this.compileBoolean2(lva,   dst, orientation); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitParenthesizedExpression(ParenthesizedExpression pe)                    { try { UnitCompiler.this.compileBoolean2(pe,    dst, orientation); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Void visitAmbiguousName(AmbiguousName an)                                        { try { UnitCompiler.this.compileBoolean2(an,    dst, orientation); return null; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Void visitArrayAccessExpression(ArrayAccessExpression aae)                       { try { UnitCompiler.this.compileBoolean2(aae,   dst, orientation); return null; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Void visitFieldAccess(FieldAccess fa)                                            { try { UnitCompiler.this.compileBoolean2(fa,    dst, orientation); return null; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Void visitFieldAccessExpression(FieldAccessExpression fae)                       { try { UnitCompiler.this.compileBoolean2(fae,   dst, orientation); return null; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Void visitSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae) { try { UnitCompiler.this.compileBoolean2(scfae, dst, orientation); return null; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Void visitLocalVariableAccess(LocalVariableAccess lva)                           { try { UnitCompiler.this.compileBoolean2(lva,   dst, orientation); return null; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Void visitParenthesizedExpression(ParenthesizedExpression pe)                    { try { UnitCompiler.this.compileBoolean2(pe,    dst, orientation); return null; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
             // CHECKSTYLE LineLengthCheck:ON
         };
         try {
@@ -3361,47 +3365,45 @@ class UnitCompiler {
      */
     private int
     compileContext(Rvalue rv) throws CompileException {
-        final int[]   res = new int[1];
-        RvalueVisitor rvv = new RvalueVisitor() {
+        RvalueVisitor rvv = new RvalueVisitor<Integer>() {
             // CHECKSTYLE LineLengthCheck:OFF
-            @Override public void visitArrayLength(ArrayLength al)                                { try { res[0] = UnitCompiler.this.compileContext2(al);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitAssignment(Assignment a)                                   {       res[0] = UnitCompiler.this.compileContext2(a);    }
-            @Override public void visitUnaryOperation(UnaryOperation uo)                          {       res[0] = UnitCompiler.this.compileContext2(uo);   }
-            @Override public void visitBinaryOperation(BinaryOperation bo)                        {       res[0] = UnitCompiler.this.compileContext2(bo);   }
-            @Override public void visitCast(Cast c)                                               {       res[0] = UnitCompiler.this.compileContext2(c);    }
-            @Override public void visitClassLiteral(ClassLiteral cl)                              {       res[0] = UnitCompiler.this.compileContext2(cl);   }
-            @Override public void visitConditionalExpression(ConditionalExpression ce)            {       res[0] = UnitCompiler.this.compileContext2(ce);   }
-            @Override public void visitCrement(Crement c)                                         {       res[0] = UnitCompiler.this.compileContext2(c);    }
-            @Override public void visitInstanceof(Instanceof io)                                  {       res[0] = UnitCompiler.this.compileContext2(io);   }
-            @Override public void visitMethodInvocation(MethodInvocation mi)                      {       res[0] = UnitCompiler.this.compileContext2(mi);   }
-            @Override public void visitSuperclassMethodInvocation(SuperclassMethodInvocation smi) {       res[0] = UnitCompiler.this.compileContext2(smi);  }
-            @Override public void visitIntegerLiteral(IntegerLiteral il)                          {       res[0] = UnitCompiler.this.compileContext2(il);   }
-            @Override public void visitFloatingPointLiteral(FloatingPointLiteral fpl)             {       res[0] = UnitCompiler.this.compileContext2(fpl);  }
-            @Override public void visitBooleanLiteral(BooleanLiteral bl)                          {       res[0] = UnitCompiler.this.compileContext2(bl);   }
-            @Override public void visitCharacterLiteral(CharacterLiteral cl)                      {       res[0] = UnitCompiler.this.compileContext2(cl);   }
-            @Override public void visitStringLiteral(StringLiteral sl)                            {       res[0] = UnitCompiler.this.compileContext2(sl);   }
-            @Override public void visitNullLiteral(NullLiteral nl)                                {       res[0] = UnitCompiler.this.compileContext2(nl);   }
-            @Override public void visitSimpleConstant(SimpleConstant sl)                          {       res[0] = UnitCompiler.this.compileContext2(sl);   }
-            @Override public void visitNewAnonymousClassInstance(NewAnonymousClassInstance naci)  {       res[0] = UnitCompiler.this.compileContext2(naci); }
-            @Override public void visitNewArray(NewArray na)                                      {       res[0] = UnitCompiler.this.compileContext2(na);   }
-            @Override public void visitNewInitializedArray(NewInitializedArray nia)               {       res[0] = UnitCompiler.this.compileContext2(nia);  }
-            @Override public void visitNewClassInstance(NewClassInstance nci)                     {       res[0] = UnitCompiler.this.compileContext2(nci);  }
-            @Override public void visitParameterAccess(ParameterAccess pa)                        {       res[0] = UnitCompiler.this.compileContext2(pa);   }
-            @Override public void visitQualifiedThisReference(QualifiedThisReference qtr)         {       res[0] = UnitCompiler.this.compileContext2(qtr);  }
-            @Override public void visitThisReference(ThisReference tr)                            {       res[0] = UnitCompiler.this.compileContext2(tr);   }
+            @Override public Integer visitArrayLength(ArrayLength al)                                { try { return UnitCompiler.this.compileContext2(al);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Integer visitAssignment(Assignment a)                                   {       return UnitCompiler.this.compileContext2(a);    }
+            @Override public Integer visitUnaryOperation(UnaryOperation uo)                          {       return UnitCompiler.this.compileContext2(uo);   }
+            @Override public Integer visitBinaryOperation(BinaryOperation bo)                        {       return UnitCompiler.this.compileContext2(bo);   }
+            @Override public Integer visitCast(Cast c)                                               {       return UnitCompiler.this.compileContext2(c);    }
+            @Override public Integer visitClassLiteral(ClassLiteral cl)                              {       return UnitCompiler.this.compileContext2(cl);   }
+            @Override public Integer visitConditionalExpression(ConditionalExpression ce)            {       return UnitCompiler.this.compileContext2(ce);   }
+            @Override public Integer visitCrement(Crement c)                                         {       return UnitCompiler.this.compileContext2(c);    }
+            @Override public Integer visitInstanceof(Instanceof io)                                  {       return UnitCompiler.this.compileContext2(io);   }
+            @Override public Integer visitMethodInvocation(MethodInvocation mi)                      {       return UnitCompiler.this.compileContext2(mi);   }
+            @Override public Integer visitSuperclassMethodInvocation(SuperclassMethodInvocation smi) {       return UnitCompiler.this.compileContext2(smi);  }
+            @Override public Integer visitIntegerLiteral(IntegerLiteral il)                          {       return UnitCompiler.this.compileContext2(il);   }
+            @Override public Integer visitFloatingPointLiteral(FloatingPointLiteral fpl)             {       return UnitCompiler.this.compileContext2(fpl);  }
+            @Override public Integer visitBooleanLiteral(BooleanLiteral bl)                          {       return UnitCompiler.this.compileContext2(bl);   }
+            @Override public Integer visitCharacterLiteral(CharacterLiteral cl)                      {       return UnitCompiler.this.compileContext2(cl);   }
+            @Override public Integer visitStringLiteral(StringLiteral sl)                            {       return UnitCompiler.this.compileContext2(sl);   }
+            @Override public Integer visitNullLiteral(NullLiteral nl)                                {       return UnitCompiler.this.compileContext2(nl);   }
+            @Override public Integer visitSimpleConstant(SimpleConstant sl)                          {       return UnitCompiler.this.compileContext2(sl);   }
+            @Override public Integer visitNewAnonymousClassInstance(NewAnonymousClassInstance naci)  {       return UnitCompiler.this.compileContext2(naci); }
+            @Override public Integer visitNewArray(NewArray na)                                      {       return UnitCompiler.this.compileContext2(na);   }
+            @Override public Integer visitNewInitializedArray(NewInitializedArray nia)               {       return UnitCompiler.this.compileContext2(nia);  }
+            @Override public Integer visitNewClassInstance(NewClassInstance nci)                     {       return UnitCompiler.this.compileContext2(nci);  }
+            @Override public Integer visitParameterAccess(ParameterAccess pa)                        {       return UnitCompiler.this.compileContext2(pa);   }
+            @Override public Integer visitQualifiedThisReference(QualifiedThisReference qtr)         {       return UnitCompiler.this.compileContext2(qtr);  }
+            @Override public Integer visitThisReference(ThisReference tr)                            {       return UnitCompiler.this.compileContext2(tr);   }
 
-            @Override public void visitAmbiguousName(AmbiguousName an)                                        { try { res[0] = UnitCompiler.this.compileContext2(an);    } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitArrayAccessExpression(ArrayAccessExpression aae)                       { try { res[0] = UnitCompiler.this.compileContext2(aae);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitFieldAccess(FieldAccess fa)                                            { try { res[0] = UnitCompiler.this.compileContext2(fa);    } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitFieldAccessExpression(FieldAccessExpression fae)                       { try { res[0] = UnitCompiler.this.compileContext2(fae);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae) { try { res[0] = UnitCompiler.this.compileContext2(scfae); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitLocalVariableAccess(LocalVariableAccess lva)                           {       res[0] = UnitCompiler.this.compileContext2(lva);                                                      }
-            @Override public void visitParenthesizedExpression(ParenthesizedExpression pe)                    { try { res[0] = UnitCompiler.this.compileContext2(pe);    } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Integer visitAmbiguousName(AmbiguousName an)                                        { try { return UnitCompiler.this.compileContext2(an);    } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Integer visitArrayAccessExpression(ArrayAccessExpression aae)                       { try { return UnitCompiler.this.compileContext2(aae);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Integer visitFieldAccess(FieldAccess fa)                                            { try { return UnitCompiler.this.compileContext2(fa);    } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Integer visitFieldAccessExpression(FieldAccessExpression fae)                       { try { return UnitCompiler.this.compileContext2(fae);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Integer visitSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae) { try { return UnitCompiler.this.compileContext2(scfae); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Integer visitLocalVariableAccess(LocalVariableAccess lva)                           {       return UnitCompiler.this.compileContext2(lva);                                                      }
+            @Override public Integer visitParenthesizedExpression(ParenthesizedExpression pe)                    { try { return UnitCompiler.this.compileContext2(pe);    } catch (CompileException e) { throw new UncheckedCompileException(e); } }
             // CHECKSTYLE LineLengthCheck:ON
         };
         try {
-            rv.accept(rvv);
-            return res[0];
+            return (Integer) rv.accept(rvv);
         } catch (UncheckedCompileException uce) {
             throw uce.compileException; // SUPPRESS CHECKSTYLE AvoidHidingCause
         }
@@ -3491,47 +3493,45 @@ class UnitCompiler {
      */
     private IClass
     compileGet(Rvalue rv) throws CompileException {
-        final IClass[] res = new IClass[1];
-        RvalueVisitor  rvv = new RvalueVisitor() {
+        RvalueVisitor  rvv = new RvalueVisitor<IClass>() {
             // CHECKSTYLE LineLengthCheck:OFF
-            @Override public void visitArrayLength(ArrayLength al)                                {       res[0] = UnitCompiler.this.compileGet2(al);                                                      }
-            @Override public void visitAssignment(Assignment a)                                   { try { res[0] = UnitCompiler.this.compileGet2(a);    } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitUnaryOperation(UnaryOperation uo)                          { try { res[0] = UnitCompiler.this.compileGet2(uo);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitBinaryOperation(BinaryOperation bo)                        { try { res[0] = UnitCompiler.this.compileGet2(bo);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitCast(Cast c)                                               { try { res[0] = UnitCompiler.this.compileGet2(c);    } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitClassLiteral(ClassLiteral cl)                              { try { res[0] = UnitCompiler.this.compileGet2(cl);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitConditionalExpression(ConditionalExpression ce)            { try { res[0] = UnitCompiler.this.compileGet2(ce);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitCrement(Crement c)                                         { try { res[0] = UnitCompiler.this.compileGet2(c);    } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitInstanceof(Instanceof io)                                  { try { res[0] = UnitCompiler.this.compileGet2(io);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitMethodInvocation(MethodInvocation mi)                      { try { res[0] = UnitCompiler.this.compileGet2(mi);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitSuperclassMethodInvocation(SuperclassMethodInvocation smi) { try { res[0] = UnitCompiler.this.compileGet2(smi);  } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitIntegerLiteral(IntegerLiteral il)                          { try { res[0] = UnitCompiler.this.compileGet2(il);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitFloatingPointLiteral(FloatingPointLiteral fpl)             { try { res[0] = UnitCompiler.this.compileGet2(fpl);  } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitBooleanLiteral(BooleanLiteral bl)                          { try { res[0] = UnitCompiler.this.compileGet2(bl);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitCharacterLiteral(CharacterLiteral cl)                      { try { res[0] = UnitCompiler.this.compileGet2(cl);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitStringLiteral(StringLiteral sl)                            { try { res[0] = UnitCompiler.this.compileGet2(sl);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitNullLiteral(NullLiteral nl)                                { try { res[0] = UnitCompiler.this.compileGet2(nl);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitSimpleConstant(SimpleConstant sl)                          { try { res[0] = UnitCompiler.this.compileGet2(sl);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitNewAnonymousClassInstance(NewAnonymousClassInstance naci)  { try { res[0] = UnitCompiler.this.compileGet2(naci); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitNewArray(NewArray na)                                      { try { res[0] = UnitCompiler.this.compileGet2(na);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitNewInitializedArray(NewInitializedArray nia)               { try { res[0] = UnitCompiler.this.compileGet2(nia);  } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitNewClassInstance(NewClassInstance nci)                     { try { res[0] = UnitCompiler.this.compileGet2(nci);  } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitParameterAccess(ParameterAccess pa)                        { try { res[0] = UnitCompiler.this.compileGet2(pa);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitQualifiedThisReference(QualifiedThisReference qtr)         { try { res[0] = UnitCompiler.this.compileGet2(qtr);  } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitThisReference(ThisReference tr)                            { try { res[0] = UnitCompiler.this.compileGet2(tr);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public IClass visitArrayLength(ArrayLength al)                                {       return UnitCompiler.this.compileGet2(al);                                                      }
+            @Override public IClass visitAssignment(Assignment a)                                   { try { return UnitCompiler.this.compileGet2(a);    } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public IClass visitUnaryOperation(UnaryOperation uo)                          { try { return UnitCompiler.this.compileGet2(uo);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public IClass visitBinaryOperation(BinaryOperation bo)                        { try { return UnitCompiler.this.compileGet2(bo);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public IClass visitCast(Cast c)                                               { try { return UnitCompiler.this.compileGet2(c);    } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public IClass visitClassLiteral(ClassLiteral cl)                              { try { return UnitCompiler.this.compileGet2(cl);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public IClass visitConditionalExpression(ConditionalExpression ce)            { try { return UnitCompiler.this.compileGet2(ce);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public IClass visitCrement(Crement c)                                         { try { return UnitCompiler.this.compileGet2(c);    } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public IClass visitInstanceof(Instanceof io)                                  { try { return UnitCompiler.this.compileGet2(io);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public IClass visitMethodInvocation(MethodInvocation mi)                      { try { return UnitCompiler.this.compileGet2(mi);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public IClass visitSuperclassMethodInvocation(SuperclassMethodInvocation smi) { try { return UnitCompiler.this.compileGet2(smi);  } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public IClass visitIntegerLiteral(IntegerLiteral il)                          { try { return UnitCompiler.this.compileGet2(il);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public IClass visitFloatingPointLiteral(FloatingPointLiteral fpl)             { try { return UnitCompiler.this.compileGet2(fpl);  } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public IClass visitBooleanLiteral(BooleanLiteral bl)                          { try { return UnitCompiler.this.compileGet2(bl);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public IClass visitCharacterLiteral(CharacterLiteral cl)                      { try { return UnitCompiler.this.compileGet2(cl);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public IClass visitStringLiteral(StringLiteral sl)                            { try { return UnitCompiler.this.compileGet2(sl);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public IClass visitNullLiteral(NullLiteral nl)                                { try { return UnitCompiler.this.compileGet2(nl);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public IClass visitSimpleConstant(SimpleConstant sl)                          { try { return UnitCompiler.this.compileGet2(sl);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public IClass visitNewAnonymousClassInstance(NewAnonymousClassInstance naci)  { try { return UnitCompiler.this.compileGet2(naci); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public IClass visitNewArray(NewArray na)                                      { try { return UnitCompiler.this.compileGet2(na);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public IClass visitNewInitializedArray(NewInitializedArray nia)               { try { return UnitCompiler.this.compileGet2(nia);  } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public IClass visitNewClassInstance(NewClassInstance nci)                     { try { return UnitCompiler.this.compileGet2(nci);  } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public IClass visitParameterAccess(ParameterAccess pa)                        { try { return UnitCompiler.this.compileGet2(pa);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public IClass visitQualifiedThisReference(QualifiedThisReference qtr)         { try { return UnitCompiler.this.compileGet2(qtr);  } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public IClass visitThisReference(ThisReference tr)                            { try { return UnitCompiler.this.compileGet2(tr);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
 
-            @Override public void visitAmbiguousName(AmbiguousName an)                                        { try { res[0] = UnitCompiler.this.compileGet2(an);    } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitArrayAccessExpression(ArrayAccessExpression aae)                       { try { res[0] = UnitCompiler.this.compileGet2(aae);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitFieldAccess(FieldAccess fa)                                            { try { res[0] = UnitCompiler.this.compileGet2(fa);    } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitFieldAccessExpression(FieldAccessExpression fae)                       { try { res[0] = UnitCompiler.this.compileGet2(fae);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae) { try { res[0] = UnitCompiler.this.compileGet2(scfae); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitLocalVariableAccess(LocalVariableAccess lva)                           {       res[0] = UnitCompiler.this.compileGet2(lva);                                                      }
-            @Override public void visitParenthesizedExpression(ParenthesizedExpression pe)                    { try { res[0] = UnitCompiler.this.compileGet2(pe);    } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public IClass visitAmbiguousName(AmbiguousName an)                                        { try { return UnitCompiler.this.compileGet2(an);    } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public IClass visitArrayAccessExpression(ArrayAccessExpression aae)                       { try { return UnitCompiler.this.compileGet2(aae);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public IClass visitFieldAccess(FieldAccess fa)                                            { try { return UnitCompiler.this.compileGet2(fa);    } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public IClass visitFieldAccessExpression(FieldAccessExpression fae)                       { try { return UnitCompiler.this.compileGet2(fae);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public IClass visitSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae) { try { return UnitCompiler.this.compileGet2(scfae); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public IClass visitLocalVariableAccess(LocalVariableAccess lva)                           {       return UnitCompiler.this.compileGet2(lva);                                                      }
+            @Override public IClass visitParenthesizedExpression(ParenthesizedExpression pe)                    { try { return UnitCompiler.this.compileGet2(pe);    } catch (CompileException e) { throw new UncheckedCompileException(e); } }
             // CHECKSTYLE LineLengthCheck:ON
         };
         try {
-            rv.accept(rvv);
-            return res[0];
+            return (IClass) rv.accept(rvv);
         } catch (UncheckedCompileException uce) {
             throw uce.compileException; // SUPPRESS CHECKSTYLE AvoidHidingCause
         }
@@ -4663,47 +4663,45 @@ class UnitCompiler {
     getConstantValue(Rvalue rv) throws CompileException {
         if (rv.constantValue != Rvalue.CONSTANT_VALUE_UNKNOWN) return rv.constantValue;
 
-        final Object[] res = new Object[1];
-        RvalueVisitor  rvv = new RvalueVisitor() {
+        RvalueVisitor  rvv = new RvalueVisitor<Object>() {
             // CHECKSTYLE LineLengthCheck:OFF
-            @Override public void visitArrayLength(ArrayLength al)                                {       res[0] = UnitCompiler.this.getConstantValue2(al);                                                     }
-            @Override public void visitAssignment(Assignment a)                                   {       res[0] = UnitCompiler.this.getConstantValue2(a);                                                      }
-            @Override public void visitUnaryOperation(UnaryOperation uo)                          { try { res[0] = UnitCompiler.this.getConstantValue2(uo);  } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitBinaryOperation(BinaryOperation bo)                        { try { res[0] = UnitCompiler.this.getConstantValue2(bo);  } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitCast(Cast c)                                               { try { res[0] = UnitCompiler.this.getConstantValue2(c);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitClassLiteral(ClassLiteral cl)                              {       res[0] = UnitCompiler.this.getConstantValue2(cl);                                                     }
-            @Override public void visitConditionalExpression(ConditionalExpression ce)            { try { res[0] = UnitCompiler.this.getConstantValue2(ce);  } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitCrement(Crement c)                                         {       res[0] = UnitCompiler.this.getConstantValue2(c);                                                      }
-            @Override public void visitInstanceof(Instanceof io)                                  {       res[0] = UnitCompiler.this.getConstantValue2(io);                                                     }
-            @Override public void visitMethodInvocation(MethodInvocation mi)                      {       res[0] = UnitCompiler.this.getConstantValue2(mi);                                                     }
-            @Override public void visitSuperclassMethodInvocation(SuperclassMethodInvocation smi) {       res[0] = UnitCompiler.this.getConstantValue2(smi);                                                    }
-            @Override public void visitIntegerLiteral(IntegerLiteral il)                          { try { res[0] = UnitCompiler.this.getConstantValue2(il);  } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitFloatingPointLiteral(FloatingPointLiteral fpl)             { try { res[0] = UnitCompiler.this.getConstantValue2(fpl); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitBooleanLiteral(BooleanLiteral bl)                          {       res[0] = UnitCompiler.this.getConstantValue2(bl);                                                     }
-            @Override public void visitCharacterLiteral(CharacterLiteral cl)                      {       res[0] = UnitCompiler.this.getConstantValue2(cl);                                                     }
-            @Override public void visitStringLiteral(StringLiteral sl)                            {       res[0] = UnitCompiler.this.getConstantValue2(sl);                                                     }
-            @Override public void visitNullLiteral(NullLiteral nl)                                {       res[0] = UnitCompiler.this.getConstantValue2(nl);                                                     }
-            @Override public void visitSimpleConstant(SimpleConstant sl)                          {       res[0] = UnitCompiler.this.getConstantValue2(sl);                                                     }
-            @Override public void visitNewAnonymousClassInstance(NewAnonymousClassInstance naci)  {       res[0] = UnitCompiler.this.getConstantValue2(naci);                                                   }
-            @Override public void visitNewArray(NewArray na)                                      {       res[0] = UnitCompiler.this.getConstantValue2(na);                                                     }
-            @Override public void visitNewInitializedArray(NewInitializedArray nia)               {       res[0] = UnitCompiler.this.getConstantValue2(nia);                                                    }
-            @Override public void visitNewClassInstance(NewClassInstance nci)                     {       res[0] = UnitCompiler.this.getConstantValue2(nci);                                                    }
-            @Override public void visitParameterAccess(ParameterAccess pa)                        {       res[0] = UnitCompiler.this.getConstantValue2(pa);                                                     }
-            @Override public void visitQualifiedThisReference(QualifiedThisReference qtr)         {       res[0] = UnitCompiler.this.getConstantValue2(qtr);                                                    }
-            @Override public void visitThisReference(ThisReference tr)                            {       res[0] = UnitCompiler.this.getConstantValue2(tr);                                                     }
+            @Override public Object visitArrayLength(ArrayLength al)                                {       return UnitCompiler.this.getConstantValue2(al);                                                     }
+            @Override public Object visitAssignment(Assignment a)                                   {       return UnitCompiler.this.getConstantValue2(a);                                                      }
+            @Override public Object visitUnaryOperation(UnaryOperation uo)                          { try { return UnitCompiler.this.getConstantValue2(uo);  } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Object visitBinaryOperation(BinaryOperation bo)                        { try { return UnitCompiler.this.getConstantValue2(bo);  } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Object visitCast(Cast c)                                               { try { return UnitCompiler.this.getConstantValue2(c);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Object visitClassLiteral(ClassLiteral cl)                              {       return UnitCompiler.this.getConstantValue2(cl);                                                     }
+            @Override public Object visitConditionalExpression(ConditionalExpression ce)            { try { return UnitCompiler.this.getConstantValue2(ce);  } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Object visitCrement(Crement c)                                         {       return UnitCompiler.this.getConstantValue2(c);                                                      }
+            @Override public Object visitInstanceof(Instanceof io)                                  {       return UnitCompiler.this.getConstantValue2(io);                                                     }
+            @Override public Object visitMethodInvocation(MethodInvocation mi)                      {       return UnitCompiler.this.getConstantValue2(mi);                                                     }
+            @Override public Object visitSuperclassMethodInvocation(SuperclassMethodInvocation smi) {       return UnitCompiler.this.getConstantValue2(smi);                                                    }
+            @Override public Object visitIntegerLiteral(IntegerLiteral il)                          { try { return UnitCompiler.this.getConstantValue2(il);  } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Object visitFloatingPointLiteral(FloatingPointLiteral fpl)             { try { return UnitCompiler.this.getConstantValue2(fpl); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Object visitBooleanLiteral(BooleanLiteral bl)                          {       return UnitCompiler.this.getConstantValue2(bl);                                                     }
+            @Override public Object visitCharacterLiteral(CharacterLiteral cl)                      {       return UnitCompiler.this.getConstantValue2(cl);                                                     }
+            @Override public Object visitStringLiteral(StringLiteral sl)                            {       return UnitCompiler.this.getConstantValue2(sl);                                                     }
+            @Override public Object visitNullLiteral(NullLiteral nl)                                {       return UnitCompiler.this.getConstantValue2(nl);                                                     }
+            @Override public Object visitSimpleConstant(SimpleConstant sl)                          {       return UnitCompiler.this.getConstantValue2(sl);                                                     }
+            @Override public Object visitNewAnonymousClassInstance(NewAnonymousClassInstance naci)  {       return UnitCompiler.this.getConstantValue2(naci);                                                   }
+            @Override public Object visitNewArray(NewArray na)                                      {       return UnitCompiler.this.getConstantValue2(na);                                                     }
+            @Override public Object visitNewInitializedArray(NewInitializedArray nia)               {       return UnitCompiler.this.getConstantValue2(nia);                                                    }
+            @Override public Object visitNewClassInstance(NewClassInstance nci)                     {       return UnitCompiler.this.getConstantValue2(nci);                                                    }
+            @Override public Object visitParameterAccess(ParameterAccess pa)                        {       return UnitCompiler.this.getConstantValue2(pa);                                                     }
+            @Override public Object visitQualifiedThisReference(QualifiedThisReference qtr)         {       return UnitCompiler.this.getConstantValue2(qtr);                                                    }
+            @Override public Object visitThisReference(ThisReference tr)                            {       return UnitCompiler.this.getConstantValue2(tr);                                                     }
 
-            @Override public void visitAmbiguousName(AmbiguousName an)                                        { try { res[0] = UnitCompiler.this.getConstantValue2(an); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitArrayAccessExpression(ArrayAccessExpression aae)                       {       res[0] = UnitCompiler.this.getConstantValue2(aae);                                                   }
-            @Override public void visitFieldAccess(FieldAccess fa)                                            { try { res[0] = UnitCompiler.this.getConstantValue2(fa); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitFieldAccessExpression(FieldAccessExpression fae)                       {       res[0] = UnitCompiler.this.getConstantValue2(fae);                                                   }
-            @Override public void visitSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae) {       res[0] = UnitCompiler.this.getConstantValue2(scfae);                                                 }
-            @Override public void visitLocalVariableAccess(LocalVariableAccess lva)                           {       res[0] = UnitCompiler.this.getConstantValue2(lva);                                                   }
-            @Override public void visitParenthesizedExpression(ParenthesizedExpression pe)                    { try { res[0] = UnitCompiler.this.getConstantValue2(pe); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Object visitAmbiguousName(AmbiguousName an)                                        { try { return UnitCompiler.this.getConstantValue2(an); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Object visitArrayAccessExpression(ArrayAccessExpression aae)                       {       return UnitCompiler.this.getConstantValue2(aae);                                                   }
+            @Override public Object visitFieldAccess(FieldAccess fa)                                            { try { return UnitCompiler.this.getConstantValue2(fa); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Object visitFieldAccessExpression(FieldAccessExpression fae)                       {       return UnitCompiler.this.getConstantValue2(fae);                                                   }
+            @Override public Object visitSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae) {       return UnitCompiler.this.getConstantValue2(scfae);                                                 }
+            @Override public Object visitLocalVariableAccess(LocalVariableAccess lva)                           {       return UnitCompiler.this.getConstantValue2(lva);                                                   }
+            @Override public Object visitParenthesizedExpression(ParenthesizedExpression pe)                    { try { return UnitCompiler.this.getConstantValue2(pe); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
             // CHECKSTYLE LineLengthCheck:ON
         };
         try {
-            rv.accept(rvv);
-            rv.constantValue = res[0];
+            rv.constantValue = rv.accept(rvv);
             return rv.constantValue;
         } catch (UncheckedCompileException uce) {
             throw uce.compileException; // SUPPRESS CHECKSTYLE AvoidHidingCause
@@ -5084,47 +5082,45 @@ class UnitCompiler {
      */
     private Object
     getNegatedConstantValue(Rvalue rv) throws CompileException {
-        final Object[] res = new Object[1];
-        RvalueVisitor  rvv = new RvalueVisitor() {
+        RvalueVisitor  rvv = new RvalueVisitor<Object>() {
             // CHECKSTYLE LineLengthCheck:OFF
-            @Override public void visitArrayLength(ArrayLength al)                                { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(al);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitAssignment(Assignment a)                                   { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(a);    } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitUnaryOperation(UnaryOperation uo)                          { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(uo);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitBinaryOperation(BinaryOperation bo)                        { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(bo);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitCast(Cast c)                                               { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(c);    } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitClassLiteral(ClassLiteral cl)                              { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(cl);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitConditionalExpression(ConditionalExpression ce)            { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(ce);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitCrement(Crement c)                                         { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(c);    } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitInstanceof(Instanceof io)                                  { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(io);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitMethodInvocation(MethodInvocation mi)                      { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(mi);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitSuperclassMethodInvocation(SuperclassMethodInvocation smi) { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(smi);  } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitIntegerLiteral(IntegerLiteral il)                          { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(il);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitFloatingPointLiteral(FloatingPointLiteral fpl)             { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(fpl);  } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitBooleanLiteral(BooleanLiteral bl)                          { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(bl);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitCharacterLiteral(CharacterLiteral cl)                      { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(cl);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitStringLiteral(StringLiteral sl)                            { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(sl);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitNullLiteral(NullLiteral nl)                                { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(nl);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitSimpleConstant(SimpleConstant sl)                          { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(sl);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitNewAnonymousClassInstance(NewAnonymousClassInstance naci)  { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(naci); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitNewArray(NewArray na)                                      { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(na);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitNewInitializedArray(NewInitializedArray nia)               { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(nia);  } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitNewClassInstance(NewClassInstance nci)                     { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(nci);  } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitParameterAccess(ParameterAccess pa)                        { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(pa);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitQualifiedThisReference(QualifiedThisReference qtr)         { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(qtr);  } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitThisReference(ThisReference tr)                            { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(tr);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Object visitArrayLength(ArrayLength al)                                { try { return UnitCompiler.this.getNegatedConstantValue2(al);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Object visitAssignment(Assignment a)                                   { try { return UnitCompiler.this.getNegatedConstantValue2(a);    } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Object visitUnaryOperation(UnaryOperation uo)                          { try { return UnitCompiler.this.getNegatedConstantValue2(uo);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Object visitBinaryOperation(BinaryOperation bo)                        { try { return UnitCompiler.this.getNegatedConstantValue2(bo);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Object visitCast(Cast c)                                               { try { return UnitCompiler.this.getNegatedConstantValue2(c);    } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Object visitClassLiteral(ClassLiteral cl)                              { try { return UnitCompiler.this.getNegatedConstantValue2(cl);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Object visitConditionalExpression(ConditionalExpression ce)            { try { return UnitCompiler.this.getNegatedConstantValue2(ce);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Object visitCrement(Crement c)                                         { try { return UnitCompiler.this.getNegatedConstantValue2(c);    } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Object visitInstanceof(Instanceof io)                                  { try { return UnitCompiler.this.getNegatedConstantValue2(io);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Object visitMethodInvocation(MethodInvocation mi)                      { try { return UnitCompiler.this.getNegatedConstantValue2(mi);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Object visitSuperclassMethodInvocation(SuperclassMethodInvocation smi) { try { return UnitCompiler.this.getNegatedConstantValue2(smi);  } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Object visitIntegerLiteral(IntegerLiteral il)                          { try { return UnitCompiler.this.getNegatedConstantValue2(il);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Object visitFloatingPointLiteral(FloatingPointLiteral fpl)             { try { return UnitCompiler.this.getNegatedConstantValue2(fpl);  } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Object visitBooleanLiteral(BooleanLiteral bl)                          { try { return UnitCompiler.this.getNegatedConstantValue2(bl);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Object visitCharacterLiteral(CharacterLiteral cl)                      { try { return UnitCompiler.this.getNegatedConstantValue2(cl);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Object visitStringLiteral(StringLiteral sl)                            { try { return UnitCompiler.this.getNegatedConstantValue2(sl);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Object visitNullLiteral(NullLiteral nl)                                { try { return UnitCompiler.this.getNegatedConstantValue2(nl);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Object visitSimpleConstant(SimpleConstant sl)                          { try { return UnitCompiler.this.getNegatedConstantValue2(sl);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Object visitNewAnonymousClassInstance(NewAnonymousClassInstance naci)  { try { return UnitCompiler.this.getNegatedConstantValue2(naci); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Object visitNewArray(NewArray na)                                      { try { return UnitCompiler.this.getNegatedConstantValue2(na);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Object visitNewInitializedArray(NewInitializedArray nia)               { try { return UnitCompiler.this.getNegatedConstantValue2(nia);  } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Object visitNewClassInstance(NewClassInstance nci)                     { try { return UnitCompiler.this.getNegatedConstantValue2(nci);  } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Object visitParameterAccess(ParameterAccess pa)                        { try { return UnitCompiler.this.getNegatedConstantValue2(pa);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Object visitQualifiedThisReference(QualifiedThisReference qtr)         { try { return UnitCompiler.this.getNegatedConstantValue2(qtr);  } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Object visitThisReference(ThisReference tr)                            { try { return UnitCompiler.this.getNegatedConstantValue2(tr);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
 
-            @Override public void visitAmbiguousName(AmbiguousName an)                                        { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(an);    } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitArrayAccessExpression(ArrayAccessExpression aae)                       { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(aae);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitFieldAccess(FieldAccess fa)                                            { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(fa);    } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitFieldAccessExpression(FieldAccessExpression fae)                       { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(fae);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae) { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(scfae); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitLocalVariableAccess(LocalVariableAccess lva)                           { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(lva);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitParenthesizedExpression(ParenthesizedExpression pe)                    { try { res[0] = UnitCompiler.this.getNegatedConstantValue2(pe);    } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Object visitAmbiguousName(AmbiguousName an)                                        { try { return UnitCompiler.this.getNegatedConstantValue2(an);    } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Object visitArrayAccessExpression(ArrayAccessExpression aae)                       { try { return UnitCompiler.this.getNegatedConstantValue2(aae);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Object visitFieldAccess(FieldAccess fa)                                            { try { return UnitCompiler.this.getNegatedConstantValue2(fa);    } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Object visitFieldAccessExpression(FieldAccessExpression fae)                       { try { return UnitCompiler.this.getNegatedConstantValue2(fae);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Object visitSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae) { try { return UnitCompiler.this.getNegatedConstantValue2(scfae); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Object visitLocalVariableAccess(LocalVariableAccess lva)                           { try { return UnitCompiler.this.getNegatedConstantValue2(lva);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Object visitParenthesizedExpression(ParenthesizedExpression pe)                    { try { return UnitCompiler.this.getNegatedConstantValue2(pe);    } catch (CompileException e) { throw new UncheckedCompileException(e); } }
             // CHECKSTYLE LineLengthCheck:ON
         };
         try {
-            rv.accept(rvv);
-            return res[0];
+            return rv.accept(rvv);
         } catch (UncheckedCompileException uce) {
             throw uce.compileException; // SUPPRESS CHECKSTYLE AvoidHidingCause
         }
@@ -5173,37 +5169,34 @@ class UnitCompiler {
     /** Checks whether invocation of {@link #compile(BlockStatement)} would generate more than zero code bytes. */
     private boolean
     generatesCode(BlockStatement bs) throws CompileException {
-        final boolean[]       res = new boolean[1];
-        BlockStatementVisitor bsv = new BlockStatementVisitor() {
-            // CHECKSTYLE LineLengthCheck:OFF
-            @Override public void visitInitializer(Initializer i)                                                { try { res[0] = UnitCompiler.this.generatesCode2(i);  } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitFieldDeclaration(FieldDeclaration fd)                                     { try { res[0] = UnitCompiler.this.generatesCode2(fd); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitLabeledStatement(LabeledStatement ls)                                     {       res[0] = UnitCompiler.this.generatesCode2(ls);                                                                          }
-            @Override public void visitBlock(Block b)                                                            { try { res[0] = UnitCompiler.this.generatesCode2(b);  } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitExpressionStatement(ExpressionStatement es)                               {       res[0] = UnitCompiler.this.generatesCode2(es);                                                                          }
-            @Override public void visitIfStatement(IfStatement is)                                               {       res[0] = UnitCompiler.this.generatesCode2(is);                                                                          }
-            @Override public void visitForStatement(ForStatement fs)                                             {       res[0] = UnitCompiler.this.generatesCode2(fs);                                                                          }
-            @Override public void visitForEachStatement(ForEachStatement fes)                                    {       res[0] = UnitCompiler.this.generatesCode2(fes);                                                                         }
-            @Override public void visitWhileStatement(WhileStatement ws)                                         {       res[0] = UnitCompiler.this.generatesCode2(ws);                                                                          }
-            @Override public void visitTryStatement(TryStatement ts)                                             {       res[0] = UnitCompiler.this.generatesCode2(ts);                                                                          }
-            @Override public void visitSwitchStatement(SwitchStatement ss)                                       {       res[0] = UnitCompiler.this.generatesCode2(ss);                                                                          }
-            @Override public void visitSynchronizedStatement(SynchronizedStatement ss)                           {       res[0] = UnitCompiler.this.generatesCode2(ss);                                                                          }
-            @Override public void visitDoStatement(DoStatement ds)                                               {       res[0] = UnitCompiler.this.generatesCode2(ds);                                                                          }
-            @Override public void visitLocalVariableDeclarationStatement(LocalVariableDeclarationStatement lvds) {       res[0] = UnitCompiler.this.generatesCode2(lvds);                                                                        }
-            @Override public void visitReturnStatement(ReturnStatement rs)                                       {       res[0] = UnitCompiler.this.generatesCode2(rs);                                                                          }
-            @Override public void visitThrowStatement(ThrowStatement ts)                                         {       res[0] = UnitCompiler.this.generatesCode2(ts);                                                                          }
-            @Override public void visitBreakStatement(BreakStatement bs)                                         {       res[0] = UnitCompiler.this.generatesCode2(bs);                                                                          }
-            @Override public void visitContinueStatement(ContinueStatement cs)                                   {       res[0] = UnitCompiler.this.generatesCode2(cs);                                                                          }
-            @Override public void visitAssertStatement(AssertStatement as)                                       {       res[0] = UnitCompiler.this.generatesCode2(as);                                                                          }
-            @Override public void visitEmptyStatement(EmptyStatement es)                                         {       res[0] = UnitCompiler.this.generatesCode2(es);                                                                          }
-            @Override public void visitLocalClassDeclarationStatement(LocalClassDeclarationStatement lcds)       {       res[0] = UnitCompiler.this.generatesCode2(lcds);                                                                        }
-            @Override public void visitAlternateConstructorInvocation(AlternateConstructorInvocation aci)        {       res[0] = UnitCompiler.this.generatesCode2(aci);                                                                         }
-            @Override public void visitSuperConstructorInvocation(SuperConstructorInvocation sci)                {       res[0] = UnitCompiler.this.generatesCode2(sci);                                                                         }
-            // CHECKSTYLE LineLengthCheck:ON
+        BlockStatementVisitor<Boolean> bsv = new BlockStatementVisitor<Boolean>() {
+            // SUPPRESS CHECKSTYLE LineLengthCheck:23
+            @Override public Boolean visitInitializer(Initializer i)                                                { try { return UnitCompiler.this.generatesCode2(i);  } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Boolean visitFieldDeclaration(FieldDeclaration fd)                                     { try { return UnitCompiler.this.generatesCode2(fd); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Boolean visitLabeledStatement(LabeledStatement ls)                                     {       return UnitCompiler.this.generatesCode2(ls);                                                                          }
+            @Override public Boolean visitBlock(Block b)                                                            { try { return UnitCompiler.this.generatesCode2(b);  } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Boolean visitExpressionStatement(ExpressionStatement es)                               {       return UnitCompiler.this.generatesCode2(es);                                                                          }
+            @Override public Boolean visitIfStatement(IfStatement is)                                               {       return UnitCompiler.this.generatesCode2(is);                                                                          }
+            @Override public Boolean visitForStatement(ForStatement fs)                                             {       return UnitCompiler.this.generatesCode2(fs);                                                                          }
+            @Override public Boolean visitForEachStatement(ForEachStatement fes)                                    {       return UnitCompiler.this.generatesCode2(fes);                                                                         }
+            @Override public Boolean visitWhileStatement(WhileStatement ws)                                         {       return UnitCompiler.this.generatesCode2(ws);                                                                          }
+            @Override public Boolean visitTryStatement(TryStatement ts)                                             {       return UnitCompiler.this.generatesCode2(ts);                                                                          }
+            @Override public Boolean visitSwitchStatement(SwitchStatement ss)                                       {       return UnitCompiler.this.generatesCode2(ss);                                                                          }
+            @Override public Boolean visitSynchronizedStatement(SynchronizedStatement ss)                           {       return UnitCompiler.this.generatesCode2(ss);                                                                          }
+            @Override public Boolean visitDoStatement(DoStatement ds)                                               {       return UnitCompiler.this.generatesCode2(ds);                                                                          }
+            @Override public Boolean visitLocalVariableDeclarationStatement(LocalVariableDeclarationStatement lvds) {       return UnitCompiler.this.generatesCode2(lvds);                                                                        }
+            @Override public Boolean visitReturnStatement(ReturnStatement rs)                                       {       return UnitCompiler.this.generatesCode2(rs);                                                                          }
+            @Override public Boolean visitThrowStatement(ThrowStatement ts)                                         {       return UnitCompiler.this.generatesCode2(ts);                                                                          }
+            @Override public Boolean visitBreakStatement(BreakStatement bs)                                         {       return UnitCompiler.this.generatesCode2(bs);                                                                          }
+            @Override public Boolean visitContinueStatement(ContinueStatement cs)                                   {       return UnitCompiler.this.generatesCode2(cs);                                                                          }
+            @Override public Boolean visitAssertStatement(AssertStatement as)                                       {       return UnitCompiler.this.generatesCode2(as);                                                                          }
+            @Override public Boolean visitEmptyStatement(EmptyStatement es)                                         {       return UnitCompiler.this.generatesCode2(es);                                                                          }
+            @Override public Boolean visitLocalClassDeclarationStatement(LocalClassDeclarationStatement lcds)       {       return UnitCompiler.this.generatesCode2(lcds);                                                                        }
+            @Override public Boolean visitAlternateConstructorInvocation(AlternateConstructorInvocation aci)        {       return UnitCompiler.this.generatesCode2(aci);                                                                         }
+            @Override public Boolean visitSuperConstructorInvocation(SuperConstructorInvocation sci)                {       return UnitCompiler.this.generatesCode2(sci);                                                                         }
         };
         try {
-            bs.accept(bsv);
-            return res[0];
+            return (Boolean) bs.accept(bsv);
         } catch (UncheckedCompileException uce) {
             throw uce.compileException; // SUPPRESS CHECKSTYLE AvoidHidingCause
         }
@@ -5257,32 +5250,32 @@ class UnitCompiler {
      */
     private void
     leave(BlockStatement bs, final IClass optionalStackValueType) {
-        BlockStatementVisitor bsv = new BlockStatementVisitor() {
-            // CHECKSTYLE LineLengthCheck:OFF
-            @Override public void visitInitializer(Initializer i)                                                { UnitCompiler.this.leave2(i,    optionalStackValueType); }
-            @Override public void visitFieldDeclaration(FieldDeclaration fd)                                     { UnitCompiler.this.leave2(fd,   optionalStackValueType); }
-            @Override public void visitLabeledStatement(LabeledStatement ls)                                     { UnitCompiler.this.leave2(ls,   optionalStackValueType); }
-            @Override public void visitBlock(Block b)                                                            { UnitCompiler.this.leave2(b,    optionalStackValueType); }
-            @Override public void visitExpressionStatement(ExpressionStatement es)                               { UnitCompiler.this.leave2(es,   optionalStackValueType); }
-            @Override public void visitIfStatement(IfStatement is)                                               { UnitCompiler.this.leave2(is,   optionalStackValueType); }
-            @Override public void visitForStatement(ForStatement fs)                                             { UnitCompiler.this.leave2(fs,   optionalStackValueType); }
-            @Override public void visitForEachStatement(ForEachStatement fes)                                    { UnitCompiler.this.leave2(fes,  optionalStackValueType); }
-            @Override public void visitWhileStatement(WhileStatement ws)                                         { UnitCompiler.this.leave2(ws,   optionalStackValueType); }
-            @Override public void visitTryStatement(TryStatement ts)                                             { UnitCompiler.this.leave2(ts,   optionalStackValueType); }
-            @Override public void visitSwitchStatement(SwitchStatement ss)                                       { UnitCompiler.this.leave2(ss,   optionalStackValueType); }
-            @Override public void visitSynchronizedStatement(SynchronizedStatement ss)                           { UnitCompiler.this.leave2(ss,   optionalStackValueType); }
-            @Override public void visitDoStatement(DoStatement ds)                                               { UnitCompiler.this.leave2(ds,   optionalStackValueType); }
-            @Override public void visitLocalVariableDeclarationStatement(LocalVariableDeclarationStatement lvds) { UnitCompiler.this.leave2(lvds, optionalStackValueType); }
-            @Override public void visitReturnStatement(ReturnStatement rs)                                       { UnitCompiler.this.leave2(rs,   optionalStackValueType); }
-            @Override public void visitThrowStatement(ThrowStatement ts)                                         { UnitCompiler.this.leave2(ts,   optionalStackValueType); }
-            @Override public void visitBreakStatement(BreakStatement bs)                                         { UnitCompiler.this.leave2(bs,   optionalStackValueType); }
-            @Override public void visitContinueStatement(ContinueStatement cs)                                   { UnitCompiler.this.leave2(cs,   optionalStackValueType); }
-            @Override public void visitAssertStatement(AssertStatement as)                                       { UnitCompiler.this.leave2(as,   optionalStackValueType); }
-            @Override public void visitEmptyStatement(EmptyStatement es)                                         { UnitCompiler.this.leave2(es,   optionalStackValueType); }
-            @Override public void visitLocalClassDeclarationStatement(LocalClassDeclarationStatement lcds)       { UnitCompiler.this.leave2(lcds, optionalStackValueType); }
-            @Override public void visitAlternateConstructorInvocation(AlternateConstructorInvocation aci)        { UnitCompiler.this.leave2(aci,  optionalStackValueType); }
-            @Override public void visitSuperConstructorInvocation(SuperConstructorInvocation sci)                { UnitCompiler.this.leave2(sci,  optionalStackValueType); }
-            // CHECKSTYLE LineLengthCheck:ON
+        BlockStatementVisitor<Void> bsv = new BlockStatementVisitor<Void>() {
+
+            // SUPPRESS CHECKSTYLE LineLengthCheck:23
+            @Override public Void visitInitializer(Initializer i)                                                { UnitCompiler.this.leave2(i,    optionalStackValueType); return null; }
+            @Override public Void visitFieldDeclaration(FieldDeclaration fd)                                     { UnitCompiler.this.leave2(fd,   optionalStackValueType); return null; }
+            @Override public Void visitLabeledStatement(LabeledStatement ls)                                     { UnitCompiler.this.leave2(ls,   optionalStackValueType); return null; }
+            @Override public Void visitBlock(Block b)                                                            { UnitCompiler.this.leave2(b,    optionalStackValueType); return null; }
+            @Override public Void visitExpressionStatement(ExpressionStatement es)                               { UnitCompiler.this.leave2(es,   optionalStackValueType); return null; }
+            @Override public Void visitIfStatement(IfStatement is)                                               { UnitCompiler.this.leave2(is,   optionalStackValueType); return null; }
+            @Override public Void visitForStatement(ForStatement fs)                                             { UnitCompiler.this.leave2(fs,   optionalStackValueType); return null; }
+            @Override public Void visitForEachStatement(ForEachStatement fes)                                    { UnitCompiler.this.leave2(fes,  optionalStackValueType); return null; }
+            @Override public Void visitWhileStatement(WhileStatement ws)                                         { UnitCompiler.this.leave2(ws,   optionalStackValueType); return null; }
+            @Override public Void visitTryStatement(TryStatement ts)                                             { UnitCompiler.this.leave2(ts,   optionalStackValueType); return null; }
+            @Override public Void visitSwitchStatement(SwitchStatement ss)                                       { UnitCompiler.this.leave2(ss,   optionalStackValueType); return null; }
+            @Override public Void visitSynchronizedStatement(SynchronizedStatement ss)                           { UnitCompiler.this.leave2(ss,   optionalStackValueType); return null; }
+            @Override public Void visitDoStatement(DoStatement ds)                                               { UnitCompiler.this.leave2(ds,   optionalStackValueType); return null; }
+            @Override public Void visitLocalVariableDeclarationStatement(LocalVariableDeclarationStatement lvds) { UnitCompiler.this.leave2(lvds, optionalStackValueType); return null; }
+            @Override public Void visitReturnStatement(ReturnStatement rs)                                       { UnitCompiler.this.leave2(rs,   optionalStackValueType); return null; }
+            @Override public Void visitThrowStatement(ThrowStatement ts)                                         { UnitCompiler.this.leave2(ts,   optionalStackValueType); return null; }
+            @Override public Void visitBreakStatement(BreakStatement bs)                                         { UnitCompiler.this.leave2(bs,   optionalStackValueType); return null; }
+            @Override public Void visitContinueStatement(ContinueStatement cs)                                   { UnitCompiler.this.leave2(cs,   optionalStackValueType); return null; }
+            @Override public Void visitAssertStatement(AssertStatement as)                                       { UnitCompiler.this.leave2(as,   optionalStackValueType); return null; }
+            @Override public Void visitEmptyStatement(EmptyStatement es)                                         { UnitCompiler.this.leave2(es,   optionalStackValueType); return null; }
+            @Override public Void visitLocalClassDeclarationStatement(LocalClassDeclarationStatement lcds)       { UnitCompiler.this.leave2(lcds, optionalStackValueType); return null; }
+            @Override public Void visitAlternateConstructorInvocation(AlternateConstructorInvocation aci)        { UnitCompiler.this.leave2(aci,  optionalStackValueType); return null; }
+            @Override public Void visitSuperConstructorInvocation(SuperConstructorInvocation sci)                { UnitCompiler.this.leave2(sci,  optionalStackValueType); return null; }
         };
         bs.accept(bsv);
     }
@@ -5333,15 +5326,15 @@ class UnitCompiler {
     private void
     compileSet(Lvalue lv) throws CompileException {
 
-        LvalueVisitor lvv = new LvalueVisitor() {
+        LvalueVisitor lvv = new LvalueVisitor<Void>() {
             // CHECKSTYLE LineLengthCheck:OFF
-            @Override public void visitAmbiguousName(AmbiguousName an)                                        { try { UnitCompiler.this.compileSet2(an);    } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitArrayAccessExpression(ArrayAccessExpression aae)                       { try { UnitCompiler.this.compileSet2(aae);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitFieldAccess(FieldAccess fa)                                            { try { UnitCompiler.this.compileSet2(fa);    } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitFieldAccessExpression(FieldAccessExpression fae)                       { try { UnitCompiler.this.compileSet2(fae);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae) { try { UnitCompiler.this.compileSet2(scfae); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitLocalVariableAccess(LocalVariableAccess lva)                           {       UnitCompiler.this.compileSet2(lva);                                                      }
-            @Override public void visitParenthesizedExpression(ParenthesizedExpression pe)                    { try { UnitCompiler.this.compileSet2(pe);    } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Void visitAmbiguousName(AmbiguousName an)                                        { try { UnitCompiler.this.compileSet2(an);    return null; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Void visitArrayAccessExpression(ArrayAccessExpression aae)                       { try { UnitCompiler.this.compileSet2(aae);   return null; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Void visitFieldAccess(FieldAccess fa)                                            { try { UnitCompiler.this.compileSet2(fa);    return null; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Void visitFieldAccessExpression(FieldAccessExpression fae)                       { try { UnitCompiler.this.compileSet2(fae);   return null; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Void visitSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae) { try { UnitCompiler.this.compileSet2(scfae); return null; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Void visitLocalVariableAccess(LocalVariableAccess lva)                           {       UnitCompiler.this.compileSet2(lva);   return null;                                                                          }
+            @Override public Void visitParenthesizedExpression(ParenthesizedExpression pe)                    { try { UnitCompiler.this.compileSet2(pe);    return null; } catch (CompileException e) { throw new UncheckedCompileException(e); } }
             // CHECKSTYLE LineLengthCheck:ON
         };
         try {
@@ -5386,56 +5379,55 @@ class UnitCompiler {
 
     private IClass
     getType(Atom a) throws CompileException {
-        final IClass[] res = new IClass[1];
-        AtomVisitor    av  = new AtomVisitor() {
+        AtomVisitor av = new AtomVisitor<IClass>() {
             // CHECKSTYLE LineLengthCheck:OFF
             // AtomVisitor
-            @Override public void visitPackage(Package p) { try { res[0] = UnitCompiler.this.getType2(p); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public IClass visitPackage(Package p) { try { return UnitCompiler.this.getType2(p); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
             // TypeVisitor
-            @Override public void visitArrayType(ArrayType at)                { try { res[0] = UnitCompiler.this.getType2(at);  } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitBasicType(BasicType bt)                {       res[0] = UnitCompiler.this.getType2(bt);                                                     }
-            @Override public void visitReferenceType(ReferenceType rt)        { try { res[0] = UnitCompiler.this.getType2(rt);  } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitRvalueMemberType(RvalueMemberType rmt) { try { res[0] = UnitCompiler.this.getType2(rmt); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitSimpleType(SimpleType st)              {       res[0] = UnitCompiler.this.getType2(st);                                                     }
+            @Override public IClass visitArrayType(ArrayType at)                { try { return UnitCompiler.this.getType2(at);  } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public IClass visitBasicType(BasicType bt)                {       return UnitCompiler.this.getType2(bt);                                                                           }
+            @Override public IClass visitReferenceType(ReferenceType rt)        { try { return UnitCompiler.this.getType2(rt);  } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public IClass visitRvalueMemberType(RvalueMemberType rmt) { try { return UnitCompiler.this.getType2(rmt); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public IClass visitSimpleType(SimpleType st)              {       return UnitCompiler.this.getType2(st);                                                                           }
             // RvalueVisitor
-            @Override public void visitArrayLength(ArrayLength al)                                {       res[0] = UnitCompiler.this.getType2(al);                                                     }
-            @Override public void visitAssignment(Assignment a)                                   { try { res[0] = UnitCompiler.this.getType2(a);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitUnaryOperation(UnaryOperation uo)                          { try { res[0] = UnitCompiler.this.getType2(uo);  } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitBinaryOperation(BinaryOperation bo)                        { try { res[0] = UnitCompiler.this.getType2(bo);  } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitCast(Cast c)                                               { try { res[0] = UnitCompiler.this.getType2(c);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitClassLiteral(ClassLiteral cl)                              {       res[0] = UnitCompiler.this.getType2(cl);                                                     }
-            @Override public void visitConditionalExpression(ConditionalExpression ce)            { try { res[0] = UnitCompiler.this.getType2(ce);  } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitCrement(Crement c)                                         { try { res[0] = UnitCompiler.this.getType2(c);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitInstanceof(Instanceof io)                                  {       res[0] = UnitCompiler.this.getType2(io);                                                     }
-            @Override public void visitMethodInvocation(MethodInvocation mi)                      { try { res[0] = UnitCompiler.this.getType2(mi);  } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitSuperclassMethodInvocation(SuperclassMethodInvocation smi) { try { res[0] = UnitCompiler.this.getType2(smi); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitIntegerLiteral(IntegerLiteral il)                          {       res[0] = UnitCompiler.this.getType2(il);                                                   }
-            @Override public void visitFloatingPointLiteral(FloatingPointLiteral fpl)             {       res[0] = UnitCompiler.this.getType2(fpl);                                                  }
-            @Override public void visitBooleanLiteral(BooleanLiteral bl)                          {       res[0] = UnitCompiler.this.getType2(bl);                                                   }
-            @Override public void visitCharacterLiteral(CharacterLiteral cl)                      {       res[0] = UnitCompiler.this.getType2(cl);                                                   }
-            @Override public void visitStringLiteral(StringLiteral sl)                            {       res[0] = UnitCompiler.this.getType2(sl);                                                   }
-            @Override public void visitNullLiteral(NullLiteral nl)                                {       res[0] = UnitCompiler.this.getType2(nl);                                                   }
-            @Override public void visitSimpleConstant(SimpleConstant sl)                          {       res[0] = UnitCompiler.this.getType2(sl);                                                   }
-            @Override public void visitNewAnonymousClassInstance(NewAnonymousClassInstance naci)  {       res[0] = UnitCompiler.this.getType2(naci);                                                   }
-            @Override public void visitNewArray(NewArray na)                                      { try { res[0] = UnitCompiler.this.getType2(na);  } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitNewInitializedArray(NewInitializedArray nia)               { try { res[0] = UnitCompiler.this.getType2(nia); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitNewClassInstance(NewClassInstance nci)                     { try { res[0] = UnitCompiler.this.getType2(nci); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitParameterAccess(ParameterAccess pa)                        { try { res[0] = UnitCompiler.this.getType2(pa);  } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitQualifiedThisReference(QualifiedThisReference qtr)         { try { res[0] = UnitCompiler.this.getType2(qtr); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitThisReference(ThisReference tr)                            { try { res[0] = UnitCompiler.this.getType2(tr);  } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public IClass visitArrayLength(ArrayLength al)                                {       return UnitCompiler.this.getType2(al);                                                                           }
+            @Override public IClass visitAssignment(Assignment a)                                   { try { return UnitCompiler.this.getType2(a);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public IClass visitUnaryOperation(UnaryOperation uo)                          { try { return UnitCompiler.this.getType2(uo);  } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public IClass visitBinaryOperation(BinaryOperation bo)                        { try { return UnitCompiler.this.getType2(bo);  } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public IClass visitCast(Cast c)                                               { try { return UnitCompiler.this.getType2(c);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public IClass visitClassLiteral(ClassLiteral cl)                              {       return UnitCompiler.this.getType2(cl);                                                                           }
+            @Override public IClass visitConditionalExpression(ConditionalExpression ce)            { try { return UnitCompiler.this.getType2(ce);  } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public IClass visitCrement(Crement c)                                         { try { return UnitCompiler.this.getType2(c);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public IClass visitInstanceof(Instanceof io)                                  {       return UnitCompiler.this.getType2(io);                                                                           }
+            @Override public IClass visitMethodInvocation(MethodInvocation mi)                      { try { return UnitCompiler.this.getType2(mi);  } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public IClass visitSuperclassMethodInvocation(SuperclassMethodInvocation smi) { try { return UnitCompiler.this.getType2(smi); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public IClass visitIntegerLiteral(IntegerLiteral il)                          {       return UnitCompiler.this.getType2(il);                                                                           }
+            @Override public IClass visitFloatingPointLiteral(FloatingPointLiteral fpl)             {       return UnitCompiler.this.getType2(fpl);                                                                          }
+            @Override public IClass visitBooleanLiteral(BooleanLiteral bl)                          {       return UnitCompiler.this.getType2(bl);                                                                           }
+            @Override public IClass visitCharacterLiteral(CharacterLiteral cl)                      {       return UnitCompiler.this.getType2(cl);                                                                           }
+            @Override public IClass visitStringLiteral(StringLiteral sl)                            {       return UnitCompiler.this.getType2(sl);                                                                           }
+            @Override public IClass visitNullLiteral(NullLiteral nl)                                {       return UnitCompiler.this.getType2(nl);                                                                           }
+            @Override public IClass visitSimpleConstant(SimpleConstant sl)                          {       return UnitCompiler.this.getType2(sl);                                                                           }
+            @Override public IClass visitNewAnonymousClassInstance(NewAnonymousClassInstance naci)  {       return UnitCompiler.this.getType2(naci);                                                                         }
+            @Override public IClass visitNewArray(NewArray na)                                      { try { return UnitCompiler.this.getType2(na);  } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public IClass visitNewInitializedArray(NewInitializedArray nia)               { try { return UnitCompiler.this.getType2(nia); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public IClass visitNewClassInstance(NewClassInstance nci)                     { try { return UnitCompiler.this.getType2(nci); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public IClass visitParameterAccess(ParameterAccess pa)                        { try { return UnitCompiler.this.getType2(pa);  } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public IClass visitQualifiedThisReference(QualifiedThisReference qtr)         { try { return UnitCompiler.this.getType2(qtr); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public IClass visitThisReference(ThisReference tr)                            { try { return UnitCompiler.this.getType2(tr);  } catch (CompileException e) { throw new UncheckedCompileException(e); } }
             // LvalueVisitor
-            @Override public void visitAmbiguousName(AmbiguousName an)                                        { try { res[0] = UnitCompiler.this.getType2(an);    } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitArrayAccessExpression(ArrayAccessExpression aae)                       { try { res[0] = UnitCompiler.this.getType2(aae);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitFieldAccess(FieldAccess fa)                                            { try { res[0] = UnitCompiler.this.getType2(fa);    } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitFieldAccessExpression(FieldAccessExpression fae)                       { try { res[0] = UnitCompiler.this.getType2(fae);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae) { try { res[0] = UnitCompiler.this.getType2(scfae); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitLocalVariableAccess(LocalVariableAccess lva)                           {       res[0] = UnitCompiler.this.getType2(lva);                                                      }
-            @Override public void visitParenthesizedExpression(ParenthesizedExpression pe)                    { try { res[0] = UnitCompiler.this.getType2(pe);    } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public IClass visitAmbiguousName(AmbiguousName an)                                        { try { return UnitCompiler.this.getType2(an);    } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public IClass visitArrayAccessExpression(ArrayAccessExpression aae)                       { try { return UnitCompiler.this.getType2(aae);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public IClass visitFieldAccess(FieldAccess fa)                                            { try { return UnitCompiler.this.getType2(fa);    } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public IClass visitFieldAccessExpression(FieldAccessExpression fae)                       { try { return UnitCompiler.this.getType2(fae);   } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public IClass visitSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae) { try { return UnitCompiler.this.getType2(scfae); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public IClass visitLocalVariableAccess(LocalVariableAccess lva)                           {       return UnitCompiler.this.getType2(lva);                                                                            }
+            @Override public IClass visitParenthesizedExpression(ParenthesizedExpression pe)                    { try { return UnitCompiler.this.getType2(pe);    } catch (CompileException e) { throw new UncheckedCompileException(e); } }
             // CHECKSTYLE LineLengthCheck:ON
         };
         try {
-            a.accept(av);
-            return res[0] != null ? res[0] : this.iClassLoader.TYPE_java_lang_Object;
+            IClass result = (IClass) a.accept(av);
+            return result != null ? result : this.iClassLoader.TYPE_java_lang_Object;
         } catch (UncheckedCompileException uce) {
             throw uce.compileException; // SUPPRESS CHECKSTYLE AvoidHidingCause
         }
@@ -5520,9 +5512,10 @@ class UnitCompiler {
      */
     private IClass
     getReferenceType(Location location, String simpleTypeName, Scope scope) throws CompileException {
-        BlockStatement  scopeBlockStatement  = null;
-        TypeDeclaration scopeTypeDeclaration = null;
-        CompilationUnit scopeCompilationUnit;
+        BlockStatement   scopeBlockStatement   = null;
+        TypeDeclaration  scopeTypeDeclaration  = null;
+        MethodDeclarator scopeMethodDeclarator = null;
+        CompilationUnit  scopeCompilationUnit;
         for (Scope s = scope;; s = s.getEnclosingScope()) {
             if (s instanceof BlockStatement && scopeBlockStatement == null) {
                 scopeBlockStatement = (BlockStatement) s;
@@ -5530,13 +5523,38 @@ class UnitCompiler {
             if (s instanceof TypeDeclaration && scopeTypeDeclaration == null) {
                 scopeTypeDeclaration = (TypeDeclaration) s;
             }
+            if (s instanceof MethodDeclarator && scopeMethodDeclarator == null) {
+                scopeMethodDeclarator = (MethodDeclarator) s;
+            }
             if (s instanceof CompilationUnit) {
                 scopeCompilationUnit = (CompilationUnit) s;
                 break;
             }
         }
 
-        // JLS7 ??? Type variable.
+        // Method declaration type parameter?
+        if (scopeMethodDeclarator != null) {
+            TypeParameter[]
+            optionalTypeParameters = scopeMethodDeclarator.getOptionalTypeParameters();
+            if (optionalTypeParameters != null) {
+                for (TypeParameter tp : optionalTypeParameters) {
+                    if (tp.name.equals(simpleTypeName)) {
+                        IClass[] boundTypes;
+                        if (tp.optionalBound == null) {
+                            boundTypes = new IClass[] { this.iClassLoader.TYPE_java_lang_Object };
+                        } else {
+                            boundTypes = new IClass[tp.optionalBound.length];
+                            for (int i = 0; i < boundTypes.length; i++) {
+                                boundTypes[i] = this.getType(tp.optionalBound[i]);
+                            }
+                        }
+                        return boundTypes[0];
+                    }
+                }
+            }
+        }
+
+        // Type declaration type parameter?
         if (scopeTypeDeclaration instanceof NamedTypeDeclaration) {
             TypeParameter[]
             optionalTypeParameters = ((NamedTypeDeclaration) scopeTypeDeclaration).getOptionalTypeParameters();
@@ -6029,56 +6047,54 @@ class UnitCompiler {
 
     private boolean
     isType(Atom a) throws CompileException {
-        final boolean[] res = new boolean[1];
-        AtomVisitor     av  = new AtomVisitor() {
+        AtomVisitor av = new AtomVisitor<Boolean>() {
             // CHECKSTYLE LineLengthCheck:OFF
             // AtomVisitor
-            @Override public void visitPackage(Package p) { res[0] = UnitCompiler.this.isType2(p); }
+            @Override public Boolean visitPackage(Package p) { return UnitCompiler.this.isType2(p); }
             // TypeVisitor
-            @Override public void visitArrayType(ArrayType at)                { res[0] = UnitCompiler.this.isType2(at);  }
-            @Override public void visitBasicType(BasicType bt)                { res[0] = UnitCompiler.this.isType2(bt);  }
-            @Override public void visitReferenceType(ReferenceType rt)        { res[0] = UnitCompiler.this.isType2(rt);  }
-            @Override public void visitRvalueMemberType(RvalueMemberType rmt) { res[0] = UnitCompiler.this.isType2(rmt); }
-            @Override public void visitSimpleType(SimpleType st)              { res[0] = UnitCompiler.this.isType2(st);  }
+            @Override public Boolean visitArrayType(ArrayType at)                { return UnitCompiler.this.isType2(at);  }
+            @Override public Boolean visitBasicType(BasicType bt)                { return UnitCompiler.this.isType2(bt);  }
+            @Override public Boolean visitReferenceType(ReferenceType rt)        { return UnitCompiler.this.isType2(rt);  }
+            @Override public Boolean visitRvalueMemberType(RvalueMemberType rmt) { return UnitCompiler.this.isType2(rmt); }
+            @Override public Boolean visitSimpleType(SimpleType st)              { return UnitCompiler.this.isType2(st);  }
             // RvalueVisitor
-            @Override public void visitArrayLength(ArrayLength al)                                { res[0] = UnitCompiler.this.isType2(al);   }
-            @Override public void visitAssignment(Assignment a)                                   { res[0] = UnitCompiler.this.isType2(a);    }
-            @Override public void visitUnaryOperation(UnaryOperation uo)                          { res[0] = UnitCompiler.this.isType2(uo);   }
-            @Override public void visitBinaryOperation(BinaryOperation bo)                        { res[0] = UnitCompiler.this.isType2(bo);   }
-            @Override public void visitCast(Cast c)                                               { res[0] = UnitCompiler.this.isType2(c);    }
-            @Override public void visitClassLiteral(ClassLiteral cl)                              { res[0] = UnitCompiler.this.isType2(cl);   }
-            @Override public void visitConditionalExpression(ConditionalExpression ce)            { res[0] = UnitCompiler.this.isType2(ce);   }
-            @Override public void visitCrement(Crement c)                                         { res[0] = UnitCompiler.this.isType2(c);    }
-            @Override public void visitInstanceof(Instanceof io)                                  { res[0] = UnitCompiler.this.isType2(io);   }
-            @Override public void visitMethodInvocation(MethodInvocation mi)                      { res[0] = UnitCompiler.this.isType2(mi);   }
-            @Override public void visitSuperclassMethodInvocation(SuperclassMethodInvocation smi) { res[0] = UnitCompiler.this.isType2(smi);  }
-            @Override public void visitIntegerLiteral(IntegerLiteral il)                          { res[0] = UnitCompiler.this.isType2(il);   }
-            @Override public void visitFloatingPointLiteral(FloatingPointLiteral fpl)             { res[0] = UnitCompiler.this.isType2(fpl);  }
-            @Override public void visitBooleanLiteral(BooleanLiteral bl)                          { res[0] = UnitCompiler.this.isType2(bl);   }
-            @Override public void visitCharacterLiteral(CharacterLiteral cl)                      { res[0] = UnitCompiler.this.isType2(cl);   }
-            @Override public void visitStringLiteral(StringLiteral sl)                            { res[0] = UnitCompiler.this.isType2(sl);   }
-            @Override public void visitNullLiteral(NullLiteral nl)                                { res[0] = UnitCompiler.this.isType2(nl);   }
-            @Override public void visitSimpleConstant(SimpleConstant sl)                          { res[0] = UnitCompiler.this.isType2(sl);   }
-            @Override public void visitNewAnonymousClassInstance(NewAnonymousClassInstance naci)  { res[0] = UnitCompiler.this.isType2(naci); }
-            @Override public void visitNewArray(NewArray na)                                      { res[0] = UnitCompiler.this.isType2(na);   }
-            @Override public void visitNewInitializedArray(NewInitializedArray nia)               { res[0] = UnitCompiler.this.isType2(nia);  }
-            @Override public void visitNewClassInstance(NewClassInstance nci)                     { res[0] = UnitCompiler.this.isType2(nci);  }
-            @Override public void visitParameterAccess(ParameterAccess pa)                        { res[0] = UnitCompiler.this.isType2(pa);   }
-            @Override public void visitQualifiedThisReference(QualifiedThisReference qtr)         { res[0] = UnitCompiler.this.isType2(qtr);  }
-            @Override public void visitThisReference(ThisReference tr)                            { res[0] = UnitCompiler.this.isType2(tr);   }
+            @Override public Boolean visitArrayLength(ArrayLength al)                                { return UnitCompiler.this.isType2(al);   }
+            @Override public Boolean visitAssignment(Assignment a)                                   { return UnitCompiler.this.isType2(a);    }
+            @Override public Boolean visitUnaryOperation(UnaryOperation uo)                          { return UnitCompiler.this.isType2(uo);   }
+            @Override public Boolean visitBinaryOperation(BinaryOperation bo)                        { return UnitCompiler.this.isType2(bo);   }
+            @Override public Boolean visitCast(Cast c)                                               { return UnitCompiler.this.isType2(c);    }
+            @Override public Boolean visitClassLiteral(ClassLiteral cl)                              { return UnitCompiler.this.isType2(cl);   }
+            @Override public Boolean visitConditionalExpression(ConditionalExpression ce)            { return UnitCompiler.this.isType2(ce);   }
+            @Override public Boolean visitCrement(Crement c)                                         { return UnitCompiler.this.isType2(c);    }
+            @Override public Boolean visitInstanceof(Instanceof io)                                  { return UnitCompiler.this.isType2(io);   }
+            @Override public Boolean visitMethodInvocation(MethodInvocation mi)                      { return UnitCompiler.this.isType2(mi);   }
+            @Override public Boolean visitSuperclassMethodInvocation(SuperclassMethodInvocation smi) { return UnitCompiler.this.isType2(smi);  }
+            @Override public Boolean visitIntegerLiteral(IntegerLiteral il)                          { return UnitCompiler.this.isType2(il);   }
+            @Override public Boolean visitFloatingPointLiteral(FloatingPointLiteral fpl)             { return UnitCompiler.this.isType2(fpl);  }
+            @Override public Boolean visitBooleanLiteral(BooleanLiteral bl)                          { return UnitCompiler.this.isType2(bl);   }
+            @Override public Boolean visitCharacterLiteral(CharacterLiteral cl)                      { return UnitCompiler.this.isType2(cl);   }
+            @Override public Boolean visitStringLiteral(StringLiteral sl)                            { return UnitCompiler.this.isType2(sl);   }
+            @Override public Boolean visitNullLiteral(NullLiteral nl)                                { return UnitCompiler.this.isType2(nl);   }
+            @Override public Boolean visitSimpleConstant(SimpleConstant sl)                          { return UnitCompiler.this.isType2(sl);   }
+            @Override public Boolean visitNewAnonymousClassInstance(NewAnonymousClassInstance naci)  { return UnitCompiler.this.isType2(naci); }
+            @Override public Boolean visitNewArray(NewArray na)                                      { return UnitCompiler.this.isType2(na);   }
+            @Override public Boolean visitNewInitializedArray(NewInitializedArray nia)               { return UnitCompiler.this.isType2(nia);  }
+            @Override public Boolean visitNewClassInstance(NewClassInstance nci)                     { return UnitCompiler.this.isType2(nci);  }
+            @Override public Boolean visitParameterAccess(ParameterAccess pa)                        { return UnitCompiler.this.isType2(pa);   }
+            @Override public Boolean visitQualifiedThisReference(QualifiedThisReference qtr)         { return UnitCompiler.this.isType2(qtr);  }
+            @Override public Boolean visitThisReference(ThisReference tr)                            { return UnitCompiler.this.isType2(tr);   }
             // LvalueVisitor
-            @Override public void visitAmbiguousName(AmbiguousName an)                                        { try { res[0] = UnitCompiler.this.isType2(an); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
-            @Override public void visitArrayAccessExpression(ArrayAccessExpression aae)                       {       res[0] = UnitCompiler.this.isType2(aae);                                                   }
-            @Override public void visitFieldAccess(FieldAccess fa)                                            {       res[0] = UnitCompiler.this.isType2(fa);                                                    }
-            @Override public void visitFieldAccessExpression(FieldAccessExpression fae)                       {       res[0] = UnitCompiler.this.isType2(fae);                                                   }
-            @Override public void visitSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae) {       res[0] = UnitCompiler.this.isType2(scfae);                                                 }
-            @Override public void visitLocalVariableAccess(LocalVariableAccess lva)                           {       res[0] = UnitCompiler.this.isType2(lva);                                                   }
-            @Override public void visitParenthesizedExpression(ParenthesizedExpression pe)                    {       res[0] = UnitCompiler.this.isType2(pe);                                                    }
+            @Override public Boolean visitAmbiguousName(AmbiguousName an)                                        { try { return UnitCompiler.this.isType2(an); } catch (CompileException e) { throw new UncheckedCompileException(e); } }
+            @Override public Boolean visitArrayAccessExpression(ArrayAccessExpression aae)                       {       return UnitCompiler.this.isType2(aae);                                                                         }
+            @Override public Boolean visitFieldAccess(FieldAccess fa)                                            {       return UnitCompiler.this.isType2(fa);                                                                          }
+            @Override public Boolean visitFieldAccessExpression(FieldAccessExpression fae)                       {       return UnitCompiler.this.isType2(fae);                                                                         }
+            @Override public Boolean visitSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae) {       return UnitCompiler.this.isType2(scfae);                                                                       }
+            @Override public Boolean visitLocalVariableAccess(LocalVariableAccess lva)                           {       return UnitCompiler.this.isType2(lva);                                                                         }
+            @Override public Boolean visitParenthesizedExpression(ParenthesizedExpression pe)                    {       return UnitCompiler.this.isType2(pe);                                                                          }
             // CHECKSTYLE LineLengthCheck:ON
         };
         try {
-            a.accept(av);
-            return res[0];
+            return (Boolean) a.accept(av);
         } catch (UncheckedCompileException uce) {
             throw uce.compileException; // SUPPRESS CHECKSTYLE AvoidHidingCause
         }
@@ -6324,11 +6340,12 @@ class UnitCompiler {
         if (result == null) {
             this.compileError("Expression \"" + a.toString() + "\" is not an lvalue", a.getLocation());
             return new Lvalue(a.getLocation()) {
-                @Override public String toString()                          { return a.toString(); }
-                @Override public void   accept(AtomVisitor visitor)         {}
-                @Override public void   accept(RvalueVisitor visitor)       {}
-                @Override public void   accept(LvalueVisitor visitor)       {}
-                @Override public void   accept(ElementValueVisitor visitor) {}
+                @Override public <R> R  accept(AtomVisitor<R> visitor)         { return null; }
+                @Override public <R> R  accept(RvalueVisitor<R> visitor)       { return null; }
+                @Override public <R> R  accept(LvalueVisitor<R> visitor)       { return null; }
+                @Override public <R> R  accept(ElementValueVisitor<R> visitor) { return null; }
+
+                @Override public String toString() { return a.toString(); }
             };
         }
         return result;
@@ -7137,8 +7154,9 @@ class UnitCompiler {
             location
         );
         return new Atom(location) {
-            @Override public String toString()                  { return Java.join(identifiers, "."); }
-            @Override public void   accept(AtomVisitor visitor) {}
+            @Override public <R> R  accept(AtomVisitor<R> visitor) { return null; }
+
+            @Override public String toString() { return Java.join(identifiers, "."); }
         };
     }
 
@@ -7505,10 +7523,11 @@ class UnitCompiler {
                     fae.getLocation()
                 );
                 fae.value = new Rvalue(fae.getLocation()) {
-                    @Override public String toString()                          { return "???"; }
-                    @Override public void   accept(AtomVisitor visitor)         {}
-                    @Override public void   accept(RvalueVisitor visitor)       {}
-                    @Override public void   accept(ElementValueVisitor visitor) {}
+                    @Override public <R> R accept(AtomVisitor<R>         visitor) { return null; }
+                    @Override public <R> R accept(RvalueVisitor<R>       visitor) { return null; }
+                    @Override public <R> R accept(ElementValueVisitor<R> visitor) { return null; }
+
+                    @Override public String toString() { return "???"; }
                 };
                 return;
             }
@@ -7546,10 +7565,11 @@ class UnitCompiler {
         if (iField == null) {
             this.compileError("Class has no field \"" + scfae.fieldName + "\"", scfae.getLocation());
             scfae.value = new Rvalue(scfae.getLocation()) {
-                @Override public String toString()                          { return "???"; }
-                @Override public void   accept(AtomVisitor visitor)         {}
-                @Override public void   accept(RvalueVisitor visitor)       {}
-                @Override public void   accept(ElementValueVisitor visitor) {}
+                @Override public <R> R accept(AtomVisitor<R>         visitor) { return null; }
+                @Override public <R> R accept(RvalueVisitor<R>       visitor) { return null; }
+                @Override public <R> R accept(ElementValueVisitor<R> visitor) { return null; }
+
+                @Override public String toString() { return "???"; }
             };
             return;
         }
@@ -8852,14 +8872,11 @@ class UnitCompiler {
 
     private IClass.IInvocable
     toIInvocable(final FunctionDeclarator fd) {
-        final IClass.IInvocable[] result = new IClass.IInvocable[1];
-        fd.accept(new Visitor.FunctionDeclaratorVisitor() {
-            // CHECKSTYLE LineLength:OFF
-            @Override public void visitMethodDeclarator(MethodDeclarator md)           { result[0] = UnitCompiler.this.toIMethod((MethodDeclarator) fd);           }
-            @Override public void visitConstructorDeclarator(ConstructorDeclarator cd) { result[0] = UnitCompiler.this.toIConstructor((ConstructorDeclarator) fd); }
-            // CHECKSTYLE LineLength:ON
+        return (IInvocable) fd.accept(new Visitor.FunctionDeclaratorVisitor<IInvocable>() {
+            // SUPPRESS CHECKSTYLE LineLength:2
+            @Override public IInvocable visitMethodDeclarator(MethodDeclarator md)           { return UnitCompiler.this.toIMethod((MethodDeclarator) fd);           }
+            @Override public IInvocable visitConstructorDeclarator(ConstructorDeclarator cd) { return UnitCompiler.this.toIConstructor((ConstructorDeclarator) fd); }
         });
-        return result[0];
     }
 
     /** If the given name was declared in a simple type import, load that class. */
@@ -8891,14 +8908,15 @@ class UnitCompiler {
             // Collect all single type import declarations.
             final List<SingleTypeImportDeclaration> stids = new ArrayList();
             for (ImportDeclaration id : this.compilationUnit.importDeclarations) {
-                id.accept(new ImportVisitor() {
+                id.accept(new ImportVisitor<Void>() {
 
-                    @Override public void
-                    visitSingleTypeImportDeclaration(SingleTypeImportDeclaration stid) { stids.add(stid); }
+                    @Override public Void
+                    visitSingleTypeImportDeclaration(SingleTypeImportDeclaration stid) { stids.add(stid); return null; }
 
-                    @Override public void visitTypeImportOnDemandDeclaration(TypeImportOnDemandDeclaration tiodd)     {}
-                    @Override public void visitSingleStaticImportDeclaration(SingleStaticImportDeclaration ssid)      {}
-                    @Override public void visitStaticImportOnDemandDeclaration(StaticImportOnDemandDeclaration siodd) {}
+                    // SUPPRESS CHECKSTYLE LineLength:3
+                    @Override public Void visitTypeImportOnDemandDeclaration(TypeImportOnDemandDeclaration tiodd)     { return null; }
+                    @Override public Void visitSingleStaticImportDeclaration(SingleStaticImportDeclaration ssid)      { return null; }
+                    @Override public Void visitStaticImportOnDemandDeclaration(StaticImportOnDemandDeclaration siodd) { return null; }
                 });
             }
 
@@ -8954,16 +8972,18 @@ class UnitCompiler {
             this.typeImportsOnDemand = new ArrayList();
             this.typeImportsOnDemand.add(new String[] { "java", "lang" });
             for (ImportDeclaration id : this.compilationUnit.importDeclarations) {
-                id.accept(new ImportVisitor() {
-                    @Override public void visitSingleTypeImportDeclaration(SingleTypeImportDeclaration stid) {}
+                id.accept(new ImportVisitor<Void>() {
 
-                    @Override public void
+                    @Override public Void
                     visitTypeImportOnDemandDeclaration(TypeImportOnDemandDeclaration tiodd) {
                         UnitCompiler.this.typeImportsOnDemand.add(tiodd.identifiers);
+                        return null;
                     }
 
-                    @Override public void visitSingleStaticImportDeclaration(SingleStaticImportDeclaration ssid)      {}
-                    @Override public void visitStaticImportOnDemandDeclaration(StaticImportOnDemandDeclaration siodd) {}
+                    // SUPPRESS CHECKSTYLE LineLength:3
+                    @Override public Void visitSingleTypeImportDeclaration(SingleTypeImportDeclaration stid)          { return null; }
+                    @Override public Void visitSingleStaticImportDeclaration(SingleStaticImportDeclaration ssid)      { return null; }
+                    @Override public Void visitStaticImportOnDemandDeclaration(StaticImportOnDemandDeclaration siodd) { return null; }
                 });
             }
         }
@@ -9092,18 +9112,15 @@ class UnitCompiler {
             "className"                                                   // name
         );
         MethodDeclarator cdmd = new MethodDeclarator(
-            loc,                                                         // location
-            null,                                                        // optionalDocComment
-            new Modifiers(Mod.STATIC),                                   // modifiers
-            new SimpleType(loc, this.iClassLoader.TYPE_java_lang_Class), // type
-            "class$",                                                    // name
-            new FormalParameters(                                        // parameters
-                loc,
-                new FormalParameter[] { parameter },
-                false
-            ),
-            new Type[0],                                                 // thrownExceptions
-            statements                                                   // optionalStatements
+            loc,                                                                   // location
+            null,                                                                  // optionalDocComment
+            new Modifiers(Mod.STATIC),                                             // modifiers
+            null,                                                                  // optionalTypeParameters
+            new SimpleType(loc, this.iClassLoader.TYPE_java_lang_Class),           // type
+            "class$",                                                              // name
+            new FormalParameters(loc, new FormalParameter[] { parameter }, false), // parameters
+            new Type[0],                                                           // thrownExceptions
+            statements                                                             // optionalStatements
         );
 
         declaringType.addDeclaredMethod(cdmd);

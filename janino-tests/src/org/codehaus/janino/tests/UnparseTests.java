@@ -68,6 +68,7 @@ import org.codehaus.janino.Java.NullLiteral;
 import org.codehaus.janino.Java.ParameterAccess;
 import org.codehaus.janino.Java.ParenthesizedExpression;
 import org.codehaus.janino.Java.QualifiedThisReference;
+import org.codehaus.janino.Java.Rvalue;
 import org.codehaus.janino.Java.SimpleConstant;
 import org.codehaus.janino.Java.StringLiteral;
 import org.codehaus.janino.Java.SuperclassFieldAccessExpression;
@@ -146,20 +147,19 @@ class UnparseTests {
     private static Java.Rvalue
     stripUnnecessaryParenExprs(Java.Rvalue rvalue) {
         if (rvalue == null) { return null; }
-        final Java.Rvalue[]   res = new Java.Rvalue[1];
-        Visitor.RvalueVisitor rv  = new Visitor.RvalueVisitor() {
+        Visitor.RvalueVisitor rv  = new Visitor.RvalueVisitor<Rvalue>() {
 
-            @Override public void
+            @Override public Rvalue
             visitArrayLength(ArrayLength al) {
-                res[0] = new Java.ArrayLength(
+                return new Java.ArrayLength(
                     al.getLocation(),
                     UnparseTests.stripUnnecessaryParenExprs(al.lhs)
                 );
             }
 
-            @Override public void
+            @Override public Rvalue
             visitAssignment(Assignment a) {
-                res[0] = new Java.Assignment(
+                return new Java.Assignment(
                     a.getLocation(),
                     UnparseTests.stripUnnecessaryParenExprs(a.lhs),
                     a.operator,
@@ -167,9 +167,9 @@ class UnparseTests {
                 );
             }
 
-            @Override public void
+            @Override public Rvalue
             visitBinaryOperation(BinaryOperation bo) {
-                res[0] = new Java.BinaryOperation(
+                return new Java.BinaryOperation(
                     bo.getLocation(),
                     UnparseTests.stripUnnecessaryParenExprs(bo.lhs),
                     bo.op,
@@ -177,23 +177,23 @@ class UnparseTests {
                 );
             }
 
-            @Override public void
+            @Override public Rvalue
             visitCast(Cast c) {
-                res[0] = new Java.Cast(
+                return new Java.Cast(
                     c.getLocation(),
                     c.targetType,
                     UnparseTests.stripUnnecessaryParenExprs(c.value)
                 );
             }
 
-            @Override public void
+            @Override public Rvalue
             visitClassLiteral(ClassLiteral cl) {
-                res[0] = cl; //too much effort
+                return cl; //too much effort
             }
 
-            @Override public void
+            @Override public Rvalue
             visitConditionalExpression(ConditionalExpression ce) {
-                res[0] = new Java.ConditionalExpression(
+                return new Java.ConditionalExpression(
                     ce.getLocation(),
                     UnparseTests.stripUnnecessaryParenExprs(ce.lhs),
                     UnparseTests.stripUnnecessaryParenExprs(ce.mhs),
@@ -201,16 +201,16 @@ class UnparseTests {
                 );
             }
 
-            @Override public void
+            @Override public Rvalue
             visitCrement(Crement c) {
                 if (c.pre) {
-                    res[0] = new Java.Crement(
+                    return new Java.Crement(
                         c.getLocation(),
                         c.operator,
                         UnparseTests.stripUnnecessaryParenExprs(c.operand)
                     );
                 } else {
-                    res[0] = new Java.Crement(
+                    return new Java.Crement(
                         c.getLocation(),
                         UnparseTests.stripUnnecessaryParenExprs(c.operand),
                         c.operator
@@ -218,27 +218,27 @@ class UnparseTests {
                 }
             }
 
-            @Override public void
+            @Override public Rvalue
             visitInstanceof(Instanceof io) {
-                res[0] = new Java.Instanceof(
+                return new Java.Instanceof(
                     io.getLocation(),
                     UnparseTests.stripUnnecessaryParenExprs(io.lhs),
                     io.rhs
                 );
             }
 
-            @Override public void visitIntegerLiteral(IntegerLiteral il)              { res[0] = il; }
-            @Override public void visitFloatingPointLiteral(FloatingPointLiteral fpl) { res[0] = fpl; }
-            @Override public void visitBooleanLiteral(BooleanLiteral bl)              { res[0] = bl; }
-            @Override public void visitCharacterLiteral(CharacterLiteral cl)          { res[0] = cl; }
-            @Override public void visitStringLiteral(StringLiteral sl)                { res[0] = sl; }
-            @Override public void visitNullLiteral(NullLiteral nl)                    { res[0] = nl; }
+            @Override public Rvalue visitIntegerLiteral(IntegerLiteral il)              { return il; }
+            @Override public Rvalue visitFloatingPointLiteral(FloatingPointLiteral fpl) { return fpl; }
+            @Override public Rvalue visitBooleanLiteral(BooleanLiteral bl)              { return bl; }
+            @Override public Rvalue visitCharacterLiteral(CharacterLiteral cl)          { return cl; }
+            @Override public Rvalue visitStringLiteral(StringLiteral sl)                { return sl; }
+            @Override public Rvalue visitNullLiteral(NullLiteral nl)                    { return nl; }
 
-            @Override public void visitSimpleConstant(SimpleConstant sl) { res[0] = sl; }
+            @Override public Rvalue visitSimpleConstant(SimpleConstant sl) { return sl; }
 
-            @Override public void
+            @Override public Rvalue
             visitMethodInvocation(MethodInvocation mi) {
-                res[0] = new Java.MethodInvocation(
+                return new Java.MethodInvocation(
                     mi.getLocation(),
                     UnparseTests.stripUnnecessaryParenExprs(mi.optionalTarget),
                     mi.methodName,
@@ -246,14 +246,14 @@ class UnparseTests {
                 );
             }
 
-            @Override public void
+            @Override public Rvalue
             visitNewAnonymousClassInstance(NewAnonymousClassInstance naci) {
-                res[0] = naci; //too much effort
+                return naci; //too much effort
             }
 
-            @Override public void
+            @Override public Rvalue
             visitNewArray(NewArray na) {
-                res[0] = new Java.NewArray(
+                return new Java.NewArray(
                     na.getLocation(),
                     na.type,
                     UnparseTests.stripUnnecessaryParenExprs(na.dimExprs),
@@ -261,9 +261,9 @@ class UnparseTests {
                 );
             }
 
-            @Override public void
+            @Override public Rvalue
             visitNewClassInstance(NewClassInstance nci) {
-                res[0] = new Java.NewClassInstance(
+                return new Java.NewClassInstance(
                     nci.getLocation(),
                     UnparseTests.stripUnnecessaryParenExprs(nci.optionalQualification),
                     nci.type,
@@ -271,82 +271,81 @@ class UnparseTests {
                 );
             }
 
-            @Override public void
+            @Override public Rvalue
             visitNewInitializedArray(NewInitializedArray nia) {
-                res[0] = nia; //too much effort
+                return nia; //too much effort
             }
 
-            @Override public void
-            visitParameterAccess(ParameterAccess pa) { res[0] = pa; }
+            @Override public Rvalue
+            visitParameterAccess(ParameterAccess pa) { return pa; }
 
-            @Override public void
-            visitQualifiedThisReference(QualifiedThisReference qtr) { res[0] = qtr; }
+            @Override public Rvalue
+            visitQualifiedThisReference(QualifiedThisReference qtr) { return qtr; }
 
-            @Override public void
+            @Override public Rvalue
             visitSuperclassMethodInvocation(SuperclassMethodInvocation smi) {
-                res[0] = new Java.SuperclassMethodInvocation(
+                return new Java.SuperclassMethodInvocation(
                     smi.getLocation(),
                     smi.methodName,
                     UnparseTests.stripUnnecessaryParenExprs(smi.arguments)
                 );
             }
 
-            @Override public void
-            visitThisReference(ThisReference tr) { res[0] = tr; }
+            @Override public Rvalue
+            visitThisReference(ThisReference tr) { return tr; }
 
-            @Override public void
+            @Override public Rvalue
             visitUnaryOperation(UnaryOperation uo) {
-                res[0] = new Java.UnaryOperation(
+                return new Java.UnaryOperation(
                     uo.getLocation(),
                     uo.operator,
                     UnparseTests.stripUnnecessaryParenExprs(uo.operand)
                 );
             }
 
-            @Override public void
-            visitAmbiguousName(AmbiguousName an) { res[0] = an; }
+            @Override public Rvalue
+            visitAmbiguousName(AmbiguousName an) { return an; }
 
-            @Override public void
+            @Override public Rvalue
             visitArrayAccessExpression(ArrayAccessExpression aae) {
-                res[0] = new Java.ArrayAccessExpression(
+                return new Java.ArrayAccessExpression(
                     aae.getLocation(),
                     UnparseTests.stripUnnecessaryParenExprs(aae.lhs),
                     UnparseTests.stripUnnecessaryParenExprs(aae.index)
                 );
             }
 
-            @Override public void
+            @Override public Rvalue
             visitFieldAccess(FieldAccess fa) {
-                res[0] = new Java.FieldAccess(
+                return new Java.FieldAccess(
                     fa.getLocation(),
                     UnparseTests.stripUnnecessaryParenExprs(fa.lhs),
                     fa.field
                 );
             }
 
-            @Override public void
+            @Override public Rvalue
             visitFieldAccessExpression(FieldAccessExpression fae) {
-                res[0] = new Java.FieldAccessExpression(
+                return new Java.FieldAccessExpression(
                     fae.getLocation(),
                     UnparseTests.stripUnnecessaryParenExprs(fae.lhs),
                     fae.fieldName
                 );
             }
 
-            @Override public void
-            visitLocalVariableAccess(LocalVariableAccess lva) { res[0] = lva; }
+            @Override public Rvalue
+            visitLocalVariableAccess(LocalVariableAccess lva) { return lva; }
 
-            @Override public void
+            @Override public Rvalue
             visitParenthesizedExpression(ParenthesizedExpression pe) {
-                res[0] = UnparseTests.stripUnnecessaryParenExprs(pe.value);
+                return UnparseTests.stripUnnecessaryParenExprs(pe.value);
             }
 
-            @Override public void
-            visitSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae) { res[0] = scfae; }
+            @Override public Rvalue
+            visitSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae) { return scfae; }
 
         };
-        rvalue.accept(rv);
-        return res[0];
+        return rvalue.accept(rv);
     }
 
     @Test public void

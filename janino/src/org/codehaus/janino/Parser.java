@@ -1060,7 +1060,7 @@ class Parser {
         if (this.peekRead(")")) return new FormalParameters();
 
         List<FormalParameter> l           = new ArrayList();
-        boolean[]             hasEllipsis = new boolean[1];
+        final boolean[]       hasEllipsis = new boolean[1];
         do {
             if (hasEllipsis[0]) throw this.compileException("Only the last parameter may have an ellipsis");
             l.add(this.parseFormalParameter(hasEllipsis));
