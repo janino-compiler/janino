@@ -685,7 +685,6 @@ class Compiler {
          * @param sourceFinder Where to look for source files
          * @param optionalParentIClassLoader {@link IClassLoader} through which {@link IClass}es are to be loaded
          */
-        public
         CompilerIClassLoader(ResourceFinder sourceFinder, IClassLoader optionalParentIClassLoader) {
             super(optionalParentIClassLoader);
             this.sourceFinder = sourceFinder;
