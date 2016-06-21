@@ -38,7 +38,7 @@ import org.codehaus.commons.compiler.IClassBodyEvaluator;
 @SuppressWarnings({ "rawtypes", "unchecked" }) public final
 class ClassBodyDemo {
 
-    /**/
+    /***/
     public static void
     main(String[] args) throws Exception {
 

@@ -41,7 +41,7 @@ import org.codehaus.janino.util.Traverser;
  * several kinds of declarations.
  */
 public
-class DeclarationCounter extends Traverser {
+class DeclarationCounter extends Traverser<RuntimeException> {
 
     public static void // SUPPRESS CHECKSTYLE JavadocMethod
     main(String[] args) throws CompileException, IOException {

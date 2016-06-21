@@ -1123,7 +1123,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
         // Traverse the block for ambiguous names and guess which of them are parameter names.
         final Set<String> localVariableNames = new HashSet();
         final Set<String> parameterNames     = new HashSet();
-        new Traverser() {
+        new Traverser<RuntimeException>() {
 
             @Override public void
             traverseLocalVariableDeclarationStatement(Java.LocalVariableDeclarationStatement lvds) {

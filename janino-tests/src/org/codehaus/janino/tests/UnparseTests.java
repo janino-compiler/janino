@@ -146,8 +146,10 @@ class UnparseTests {
 
     private static Java.Rvalue
     stripUnnecessaryParenExprs(Java.Rvalue rvalue) {
-        if (rvalue == null) { return null; }
-        Visitor.RvalueVisitor rv  = new Visitor.RvalueVisitor<Rvalue>() {
+
+        if (rvalue == null) return null;
+
+        return rvalue.accept(new Visitor.RvalueVisitor<Rvalue, RuntimeException>() {
 
             @Override public Rvalue
             visitArrayLength(ArrayLength al) {
@@ -344,8 +346,7 @@ class UnparseTests {
             @Override public Rvalue
             visitSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae) { return scfae; }
 
-        };
-        return rvalue.accept(rv);
+        });
     }
 
     @Test public void
@@ -540,8 +541,9 @@ class UnparseTests {
              */
             private Locatable[]
             listSyntaxElements(CompilationUnit cu) {
+
                 final List<Locatable> locatables = new ArrayList();
-                new Traverser() {
+                new Traverser<RuntimeException>() {
 
                     // Two implementations of "Locatable": "Located" and "AbstractTypeDeclaration".
                     @Override public void
@@ -556,6 +558,7 @@ class UnparseTests {
                         super.traverseAbstractTypeDeclaration(atd);
                     }
                 }.traverseCompilationUnit(cu);
+
                 return locatables.toArray(new Java.Locatable[locatables.size()]);
             }
         });

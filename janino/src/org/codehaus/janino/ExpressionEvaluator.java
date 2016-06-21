@@ -429,7 +429,7 @@ class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluato
 
         // Traverse the expression for ambiguous names and guess which of them are parameter names.
         final Set<String> parameterNames = new HashSet();
-        rvalue.accept((RvalueVisitor) new Traverser() {
+        rvalue.accept((RvalueVisitor<Void, RuntimeException>) new Traverser<RuntimeException>() {
 
             @Override public void
             traverseAmbiguousName(AmbiguousName an) {

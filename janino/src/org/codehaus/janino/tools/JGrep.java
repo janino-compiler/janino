@@ -43,7 +43,6 @@ import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.CompilerFactoryFactory;
 import org.codehaus.commons.compiler.ICompilerFactory;
 import org.codehaus.commons.compiler.IExpressionEvaluator;
-import org.codehaus.commons.compiler.UncheckedCompileException;
 import org.codehaus.janino.Descriptor;
 import org.codehaus.janino.ExpressionEvaluator;
 import org.codehaus.janino.IClass;
@@ -548,47 +547,40 @@ class JGrep {
                 CompilationUnit compilationUnit = unitCompiler.getCompilationUnit();
                 this.benchmark.beginReporting("Grepping \"" + compilationUnit.optionalFileName + "\"");
                 try {
-                    new Traverser() {
+                    new Traverser<CompileException>() {
 
                         // "method(...)", "x.method(...)"
                         @Override public void
-                        traverseMethodInvocation(Java.MethodInvocation mi) {
-                            try {
-                                this.match(mi, unitCompiler.findIMethod(mi));
-                            } catch (CompileException ex) {
-                                throw new UncheckedCompileException(ex);
-                            }
+                        traverseMethodInvocation(Java.MethodInvocation mi) throws CompileException {
+                            this.match(mi, unitCompiler.findIMethod(mi));
                             super.traverseMethodInvocation(mi);
                         }
 
                         // "super.method(...)"
                         @Override public void
-                        traverseSuperclassMethodInvocation(Java.SuperclassMethodInvocation scmi) {
-                            try {
-                                this.match(scmi, unitCompiler.findIMethod(scmi));
-                            } catch (CompileException ex) {
-                                throw new UncheckedCompileException(ex);
-                            }
+                        traverseSuperclassMethodInvocation(Java.SuperclassMethodInvocation scmi)
+                        throws CompileException {
+                            this.match(scmi, unitCompiler.findIMethod(scmi));
                             super.traverseSuperclassMethodInvocation(scmi);
                         }
 
                         // new Xyz(...)
                         @Override public void
-                        traverseNewClassInstance(Java.NewClassInstance nci) {
+                        traverseNewClassInstance(Java.NewClassInstance nci) throws CompileException {
     //                        System.out.println(nci.getLocation() + ": " + nci);
                             super.traverseNewClassInstance(nci);
                         }
 
                         // new Xyz(...) {}
                         @Override public void
-                        traverseNewAnonymousClassInstance(Java.NewAnonymousClassInstance naci) {
+                        traverseNewAnonymousClassInstance(Java.NewAnonymousClassInstance naci) throws CompileException {
     //                        System.out.println(naci.getLocation() + ": " + naci);
                             super.traverseNewAnonymousClassInstance(naci);
                         }
 
                         // Explicit constructor invocation ("this(...)", "super(...)").
                         @Override public void
-                        traverseConstructorInvocation(Java.ConstructorInvocation ci) {
+                        traverseConstructorInvocation(Java.ConstructorInvocation ci) throws CompileException {
     //                        System.out.println(ci.getLocation() + ": " + ci);
                             super.traverseConstructorInvocation(ci);
                         }
@@ -600,8 +592,6 @@ class JGrep {
                             }
                         }
                     }.traverseCompilationUnit(compilationUnit);
-                } catch (UncheckedCompileException uce) {
-                    throw uce.compileException; // SUPPRESS CHECKSTYLE AvoidHidingCause
                 } finally {
                     this.benchmark.endReporting();
                 }

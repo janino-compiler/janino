@@ -42,7 +42,6 @@ import org.codehaus.janino.CodeContext.Offset;
 import org.codehaus.janino.IClass.IMethod;
 import org.codehaus.janino.Java.FunctionDeclarator.FormalParameter;
 import org.codehaus.janino.Java.FunctionDeclarator.FormalParameters;
-import org.codehaus.janino.Visitor.ElementValueVisitor;
 import org.codehaus.janino.Visitor.TypeArgumentVisitor;
 import org.codehaus.janino.util.Traverser;
 import org.codehaus.janino.util.iterator.ReverseListIterator;
@@ -190,8 +189,10 @@ class Java {
                 this.identifiers = identifiers;
             }
 
-            @Override public final <R> R
-            accept(Visitor.ImportVisitor<R> visitor) { return visitor.visitSingleTypeImportDeclaration(this); }
+            @Override public final <R, EX extends Throwable> R
+            accept(Visitor.ImportVisitor<R, EX> visitor) throws EX {
+                return visitor.visitSingleTypeImportDeclaration(this);
+            }
 
             @Override public String
             toString() { return "import " + Java.join(this.identifiers, ".") + ';'; }
@@ -210,8 +211,10 @@ class Java {
                 this.identifiers = identifiers;
             }
 
-            @Override public final <R> R
-            accept(Visitor.ImportVisitor<R> visitor) { return visitor.visitTypeImportOnDemandDeclaration(this); }
+            @Override public final <R, EX extends Throwable> R
+            accept(Visitor.ImportVisitor<R, EX> visitor) throws EX {
+                return visitor.visitTypeImportOnDemandDeclaration(this);
+            }
 
             @Override public String
             toString() { return "import " + Java.join(this.identifiers, ".") + ".*;"; }
@@ -236,8 +239,10 @@ class Java {
                 this.identifiers = identifiers;
             }
 
-            @Override public final <R> R
-            accept(Visitor.ImportVisitor<R> visitor) { return visitor.visitSingleStaticImportDeclaration(this); }
+            @Override public final <R, EX extends Throwable> R
+            accept(Visitor.ImportVisitor<R, EX> visitor) throws EX {
+                return visitor.visitSingleStaticImportDeclaration(this);
+            }
         }
 
         /**
@@ -256,8 +261,10 @@ class Java {
                 this.identifiers = identifiers;
             }
 
-            @Override public final <R> R
-            accept(Visitor.ImportVisitor<R> visitor) { return visitor.visitStaticImportOnDemandDeclaration(this); }
+            @Override public final <R, EX extends Throwable> R
+            accept(Visitor.ImportVisitor<R, EX> visitor) throws EX {
+                return visitor.visitStaticImportOnDemandDeclaration(this);
+            }
         }
 
         /** Base class for the various IMPORT declarations. */
@@ -271,8 +278,8 @@ class Java {
              * Invokes the '{@code visit...()}' method of {@link Visitor.ImportVisitor} for the concrete {@link
              * ImportDeclaration} type.
              */
-            public abstract <R> R
-            accept(Visitor.ImportVisitor<R> visitor);
+            public abstract <R, EX extends Throwable> R
+            accept(Visitor.ImportVisitor<R, EX> visitor) throws EX;
         }
     }
 
@@ -284,8 +291,8 @@ class Java {
          * Invokes the '{@code visit...()}' method of {@link Visitor.AnnotationVisitor} for the concrete {@link
          * Annotation} type.
          */
-        <R> R
-        accept(Visitor.AnnotationVisitor<R> visitor);
+        <R, EX extends Throwable> R
+        accept(Visitor.AnnotationVisitor<R, EX> visitor) throws EX;
 
         /** Sets the enclosing scope for this annotation. */
         @Override void
@@ -330,8 +337,8 @@ class Java {
         getType() { return this.type; }
 
         // SUPPRESS CHECKSTYLE LineLength:2
-        @Override public <R> R accept(Visitor.AnnotationVisitor<R> visitor)   { return visitor.visitMarkerAnnotation(this); }
-        @Override public <R> R accept(Visitor.ElementValueVisitor<R> visitor) { return visitor.visitMarkerAnnotation(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.AnnotationVisitor<R, EX> visitor) throws EX   { return visitor.visitMarkerAnnotation(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.ElementValueVisitor<R, EX> visitor) throws EX { return visitor.visitMarkerAnnotation(this); }
     }
 
     /**
@@ -361,8 +368,8 @@ class Java {
         getType() { return this.type; }
 
         // SUPPRESS CHECKSTYLE LineLength:2
-        @Override public <R> R accept(Visitor.AnnotationVisitor<R> visitor)   { return visitor.visitSingleElementAnnotation(this); }
-        @Override public <R> R accept(Visitor.ElementValueVisitor<R> visitor) { return visitor.visitSingleElementAnnotation(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.AnnotationVisitor<R, EX> visitor) throws EX   { return visitor.visitSingleElementAnnotation(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.ElementValueVisitor<R, EX> visitor) throws EX { return visitor.visitSingleElementAnnotation(this); }
     }
 
     /** A 'normal annotation', i.e. an annotation with multiple elements in parentheses and curly braces. */
@@ -399,8 +406,8 @@ class Java {
         }
 
         // SUPPRESS CHECKSTYLE LineLength:2
-        @Override public <R> R accept(Visitor.AnnotationVisitor<R> visitor)   { return visitor.visitNormalAnnotation(this); }
-        @Override public <R> R accept(Visitor.ElementValueVisitor<R> visitor) { return visitor.visitNormalAnnotation(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.AnnotationVisitor<R, EX> visitor) throws EX   { return visitor.visitNormalAnnotation(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.ElementValueVisitor<R, EX> visitor) throws EX { return visitor.visitNormalAnnotation(this); }
     }
 
     /** Representation of the modifier flags and annotations that are associated with a declaration. */
@@ -492,8 +499,8 @@ class Java {
          * Invokes the '{@code visit...()}' method of {@link Visitor.ElementValueVisitor} for the concrete {@link
          * ElementValue} type.
          */
-        <R> R
-        accept(Visitor.ElementValueVisitor<R> visitor);
+        <R, EX extends Throwable> R
+        accept(Visitor.ElementValueVisitor<R, EX> visitor) throws EX;
 
         /**
          * In most cases, the scope is the enclosing {@link BlockStatement}, except for top-level class/interface
@@ -533,8 +540,10 @@ class Java {
             }
         }
 
-        @Override public <R> R
-        accept(Visitor.ElementValueVisitor<R> visitor) { return visitor.visitElementValueArrayInitializer(this); }
+        @Override public <R, EX extends Throwable> R
+        accept(Visitor.ElementValueVisitor<R, EX> visitor) throws EX {
+            return visitor.visitElementValueArrayInitializer(this);
+        }
     }
 
     /** Representation of a package declaration like {@code package com.acme.tools;}. */
@@ -596,7 +605,7 @@ class Java {
          * Invokes the '{@code visit...()}' method of {@link Visitor.TypeDeclarationVisitor} for the concrete {@link
          * TypeDeclaration} type.
          */
-        void accept(Visitor.TypeDeclarationVisitor visitor);
+        <R, EX extends Throwable> R accept(Visitor.TypeDeclarationVisitor<R, EX> visitor) throws EX;
     }
 
     /**
@@ -693,6 +702,7 @@ class Java {
     class AbstractTypeDeclaration implements TypeDeclaration {
         private final Location                    location;
         private final Modifiers                   modifiers;
+        private final TypeParameter[]             optionalTypeParameters;
         private final List<MethodDeclarator>      declaredMethods              = new ArrayList();
         private final List<MemberTypeDeclaration> declaredClassesAndInterfaces = new ArrayList();
         private Scope                             enclosingScope;
@@ -701,9 +711,10 @@ class Java {
         IClass resolvedType;
 
         public
-        AbstractTypeDeclaration(Location location, Modifiers modifiers) {
-            this.location  = location;
-            this.modifiers = modifiers;
+        AbstractTypeDeclaration(Location location, Modifiers modifiers, TypeParameter[] optionalTypeParameters) {
+            this.location               = location;
+            this.modifiers              = modifiers;
+            this.optionalTypeParameters = optionalTypeParameters;
         }
 
         @Override public short
@@ -725,7 +736,19 @@ class Java {
             }
             this.enclosingScope = enclosingScope;
             this.modifiers.setEnclosingScope(enclosingScope);
+            if (this.optionalTypeParameters != null) {
+                for (TypeParameter tp : this.optionalTypeParameters) {
+                    if (tp.optionalBound != null) {
+                        for (ReferenceType boundType : tp.optionalBound) {
+                            boundType.setEnclosingScope(enclosingScope);
+                        }
+                    }
+                }
+            }
         }
+
+        public TypeParameter[]
+        getOptionalTypeParameters() { return this.optionalTypeParameters; }
 
         @Override public Scope
         getEnclosingScope() { return this.enclosingScope; }
@@ -833,8 +856,8 @@ class Java {
         public final List<BlockStatement> variableDeclaratorsAndInitializers = new ArrayList();
 
         public
-        ClassDeclaration(Location location, Modifiers modifiers) {
-            super(location, modifiers);
+        ClassDeclaration(Location location, Modifiers modifiers, TypeParameter[] optionalTypeParameters) {
+            super(location, modifiers, optionalTypeParameters);
         }
 
         /** Adds one {@link ConstructorDeclarator} to this class. */
@@ -917,14 +940,17 @@ class Java {
         public
         AnonymousClassDeclaration(Location location, Type baseType) {
             super(
-                location,                                        // location
-                new Modifiers((short) (Mod.PRIVATE | Mod.FINAL)) // modifiers
+                location,                                         // location
+                new Modifiers((short) (Mod.PRIVATE | Mod.FINAL)), // modifiers
+                null                                              // optionalTypeParameters
             );
             (this.baseType = baseType).setEnclosingScope(new EnclosingScopeOfTypeDeclaration(this));
         }
 
-        @Override public void
-        accept(Visitor.TypeDeclarationVisitor visitor) { visitor.visitAnonymousClassDeclaration(this); }
+        @Override public <R, EX extends Throwable> R
+        accept(Visitor.TypeDeclarationVisitor<R, EX> visitor) throws EX {
+            return visitor.visitAnonymousClassDeclaration(this);
+        }
 
         // Implement TypeDeclaration.
 
@@ -952,9 +978,6 @@ class Java {
         /** The simple name of this class. */
         public final String  name;
 
-        /** The optional type parameters of this interface. */
-        public final TypeParameter[] optionalTypeParameters;
-
         /** The type of the extended class. */
         public final Type optionalExtendedType;
 
@@ -971,10 +994,9 @@ class Java {
             Type            optionalExtendedType,
             Type[]          implementedTypes
         ) {
-            super(location, modifiers);
+            super(location, modifiers, optionalTypeParameters);
             this.optionalDocComment     = optionalDocComment;
             this.name                   = name;
-            this.optionalTypeParameters = optionalTypeParameters;
             this.optionalExtendedType   = optionalExtendedType;
             if (optionalExtendedType != null) {
                 optionalExtendedType.setEnclosingScope(new EnclosingScopeOfTypeDeclaration(this));
@@ -992,9 +1014,6 @@ class Java {
 
         @Override public String
         getName() { return this.name; }
-
-        @Override public TypeParameter[]
-        getOptionalTypeParameters() { return this.optionalTypeParameters; }
 
         // Implement DocCommentable.
 
@@ -1065,8 +1084,8 @@ class Java {
         getClassName() { return this.getDeclaringType().getClassName() + '$' + this.getName(); }
 
         // SUPPRESS CHECKSTYLE LineLength:2
-        @Override public void accept(Visitor.TypeDeclarationVisitor visitor)         { visitor.visitMemberClassDeclaration(this); }
-        @Override public <R> R accept(Visitor.TypeBodyDeclarationVisitor<R> visitor) { return visitor.visitMemberClassDeclaration(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.TypeDeclarationVisitor<R, EX> visitor) throws EX     { return visitor.visitMemberClassDeclaration(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.TypeBodyDeclarationVisitor<R, EX> visitor) throws EX { return visitor.visitMemberClassDeclaration(this); }
     }
 
     /** Representation of a 'local class declaration' i.e. a class declaration that appears inside a method body. */
@@ -1105,8 +1124,10 @@ class Java {
             }
         }
 
-        @Override public void
-        accept(Visitor.TypeDeclarationVisitor visitor) { visitor.visitLocalClassDeclaration(this); }
+        @Override public <R, EX extends Throwable> R
+        accept(Visitor.TypeDeclarationVisitor<R, EX> visitor) throws EX {
+            return visitor.visitLocalClassDeclaration(this);
+        }
     }
 
     /** Implementation of a 'package member class declaration', a.k.a. 'top-level class declaration'. */
@@ -1166,8 +1187,10 @@ class Java {
             return className;
         }
 
-        @Override public void
-        accept(Visitor.TypeDeclarationVisitor visitor) { visitor.visitPackageMemberClassDeclaration(this); }
+        @Override public <R, EX extends Throwable> R
+        accept(Visitor.TypeDeclarationVisitor<R, EX> visitor) throws EX {
+            return visitor.visitPackageMemberClassDeclaration(this);
+        }
     }
 
     /** Base for the various interface declaration kinds. */
@@ -1179,9 +1202,6 @@ class Java {
         /** The simple name of the interface. */
         public final String name;
 
-        /** The optional type parameters of this interface. */
-        public final TypeParameter[] optionalTypeParameters;
-
         protected
         InterfaceDeclaration(
             Location        location,
@@ -1191,11 +1211,10 @@ class Java {
             TypeParameter[] optionalTypeParameters,
             Type[]          extendedTypes
         ) {
-            super(location, modifiers);
-            this.optionalDocComment     = optionalDocComment;
-            this.name                   = name;
-            this.optionalTypeParameters = optionalTypeParameters;
-            this.extendedTypes          = extendedTypes;
+            super(location, modifiers, optionalTypeParameters);
+            this.optionalDocComment = optionalDocComment;
+            this.name               = name;
+            this.extendedTypes      = extendedTypes;
             for (Type extendedType : extendedTypes) {
                 extendedType.setEnclosingScope(new EnclosingScopeOfTypeDeclaration(this));
             }
@@ -1227,9 +1246,6 @@ class Java {
 
         @Override public String
         getName() { return this.name; }
-
-        @Override public TypeParameter[]
-        getOptionalTypeParameters() { return this.optionalTypeParameters; }
 
         // Implement DocCommentable.
 
@@ -1292,8 +1308,8 @@ class Java {
         isStatic() { return Mod.isStatic(this.getModifierFlags()); }
 
         // SUPPRESS CHECKSTYLE LineLength:2
-        @Override public void  accept(Visitor.TypeDeclarationVisitor visitor)        { visitor.visitMemberInterfaceDeclaration(this); }
-        @Override public <R> R accept(Visitor.TypeBodyDeclarationVisitor<R> visitor) { return visitor.visitMemberInterfaceDeclaration(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.TypeDeclarationVisitor<R, EX> visitor) throws EX     { return visitor.visitMemberInterfaceDeclaration(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.TypeBodyDeclarationVisitor<R, EX> visitor) throws EX { return visitor.visitMemberInterfaceDeclaration(this); }
     }
 
     /** Representation of a 'package member interface declaration', a.k.a. 'top-level interface declaration'. */
@@ -1351,8 +1367,10 @@ class Java {
             return className;
         }
 
-        @Override public void
-        accept(Visitor.TypeDeclarationVisitor visitor) { visitor.visitPackageMemberInterfaceDeclaration(this); }
+        @Override public <R, EX extends Throwable> R
+        accept(Visitor.TypeDeclarationVisitor<R, EX> visitor) throws EX {
+            return visitor.visitPackageMemberInterfaceDeclaration(this);
+        }
     }
 
     /** Representation of a type parameter (which declares a type variable). */
@@ -1406,9 +1424,10 @@ class Java {
         /**
          * Invokes the '{@code visit...()}' method of {@link Visitor.TypeBodyDeclarationVisitor} for the concrete
          * {@link TypeBodyDeclaration} type.
+         * @throws EX
          */
-        <R> R
-        accept(Visitor.TypeBodyDeclarationVisitor<R> visitor);
+        <R, EX extends Throwable> R
+        accept(Visitor.TypeBodyDeclarationVisitor<R, EX> visitor) throws EX;
     }
 
     /** Abstract implementation of {@link TypeBodyDeclaration}. */
@@ -1455,7 +1474,7 @@ class Java {
         // Implement 'Scope'.
 
         @Override public Scope
-        getEnclosingScope()                     { return this.declaringType; }
+        getEnclosingScope() { return this.declaringType; }
     }
 
     /** Representation of an 'instance initializer' (JLS7 8.6) or 'static initializer' (JLS7 8.7). */
@@ -1477,8 +1496,8 @@ class Java {
         // Implement BlockStatement.
 
         // SUPPRESS CHECKSTYLE LineLength:2
-        @Override public <R> R accept(Visitor.TypeBodyDeclarationVisitor<R> visitor) { return visitor.visitInitializer(this); }
-        @Override public <R> R accept(Visitor.BlockStatementVisitor<R> visitor)      { return visitor.visitInitializer(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.TypeBodyDeclarationVisitor<R, EX> visitor) throws EX { return visitor.visitInitializer(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.BlockStatementVisitor<R, EX> visitor) throws EX      { return visitor.visitInitializer(this); }
 
         @Override public Java.LocalVariable
         findLocalVariable(String name) { return this.block.findLocalVariable(name); }
@@ -1553,8 +1572,8 @@ class Java {
          * Invokes the '{@code visit...()}' method of {@link Visitor.FunctionDeclaratorVisitor} for the concrete
          * {@link FunctionDeclarator} type.
          */
-        public abstract <R> R
-        accept(Visitor.FunctionDeclaratorVisitor<R> visitor);
+        public abstract <R, EX extends Throwable> R
+        accept(Visitor.FunctionDeclaratorVisitor<R, EX> visitor) throws EX;
 
         // Override "AbstractTypeBodyDeclaration"
 
@@ -1726,8 +1745,8 @@ class Java {
         }
 
         // SUPPRESS CHECKSTYLE LineLength:2
-        @Override public <R> R accept(Visitor.TypeBodyDeclarationVisitor<R> visitor) { return visitor.visitConstructorDeclarator(this); }
-        @Override public <R> R accept(Visitor.FunctionDeclaratorVisitor<R> visitor)  { return visitor.visitConstructorDeclarator(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.TypeBodyDeclarationVisitor<R, EX> visitor) throws EX { return visitor.visitConstructorDeclarator(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.FunctionDeclaratorVisitor<R, EX> visitor) throws EX  { return visitor.visitConstructorDeclarator(this); }
     }
 
     /** Representation of a method declarator. */
@@ -1763,6 +1782,34 @@ class Java {
         TypeParameter[]
         getOptionalTypeParameters() { return this.optionalTypeParameters; }
 
+        @Override public void
+        setDeclaringType(TypeDeclaration declaringType) {
+            super.setDeclaringType(declaringType);
+            if (this.optionalTypeParameters != null) {
+                for (TypeParameter tp : this.optionalTypeParameters) {
+                    if (tp.optionalBound != null) {
+                        for (ReferenceType boundType : tp.optionalBound) {
+                            boundType.setEnclosingScope(declaringType);
+                        }
+                    }
+                }
+            }
+        }
+
+        @Override public void
+        setEnclosingScope(Scope enclosingScope) {
+            super.setEnclosingScope(enclosingScope);
+            if (this.optionalTypeParameters != null) {
+                for (TypeParameter tp : this.optionalTypeParameters) {
+                    if (tp.optionalBound != null) {
+                        for (ReferenceType boundType : tp.optionalBound) {
+                            boundType.setEnclosingScope(enclosingScope);
+                        }
+                    }
+                }
+            }
+        }
+
         @Override public String
         toString() {
             StringBuilder     sb  = new StringBuilder(this.name).append('(');
@@ -1776,8 +1823,8 @@ class Java {
         }
 
         // SUPPRESS CHECKSTYLE LineLength:2
-        @Override public <R> R accept(Visitor.TypeBodyDeclarationVisitor<R> visitor) { return visitor.visitMethodDeclarator(this); }
-        @Override public <R> R accept(Visitor.FunctionDeclaratorVisitor<R> visitor)  { return visitor.visitMethodDeclarator(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.TypeBodyDeclarationVisitor<R, EX> visitor) throws EX { return visitor.visitMethodDeclarator(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.FunctionDeclaratorVisitor<R, EX> visitor) throws EX  { return visitor.visitMethodDeclarator(this); }
 
         private final TypeParameter[] optionalTypeParameters;
 
@@ -1857,8 +1904,8 @@ class Java {
         }
 
         // SUPPRESS CHECKSTYLE LineLength:2
-        @Override public <R> R accept(Visitor.TypeBodyDeclarationVisitor<R> visitor) { return visitor.visitFieldDeclaration(this); }
-        @Override public <R> R accept(Visitor.BlockStatementVisitor<R> visitor)      { return visitor.visitFieldDeclaration(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.TypeBodyDeclarationVisitor<R, EX> visitor) throws EX { return visitor.visitFieldDeclaration(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.BlockStatementVisitor<R, EX> visitor) throws EX      { return visitor.visitFieldDeclaration(this); }
 
         // Implement DocCommentable.
 
@@ -1943,8 +1990,8 @@ class Java {
          * Invokes the '{@code visit...()}' method of {@link Visitor.BlockStatementVisitor} for the concrete
          * {@link BlockStatement} type.
          */
-        <R> R
-        accept(Visitor.BlockStatementVisitor<R> visitor);
+        <R, EX extends Throwable> R
+        accept(Visitor.BlockStatementVisitor<R, EX> visitor) throws EX;
 
         /** @return The local variable with the given {@code name} */
         Java.LocalVariable
@@ -2016,8 +2063,8 @@ class Java {
 
         // Compile time members:
 
-        @Override public <R> R
-        accept(Visitor.BlockStatementVisitor<R> visitor) { return visitor.visitLabeledStatement(this); }
+        @Override public <R, EX extends Throwable> R
+        accept(Visitor.BlockStatementVisitor<R, EX> visitor) throws EX { return visitor.visitLabeledStatement(this); }
     }
 
     /**
@@ -2055,8 +2102,8 @@ class Java {
         }
 
         // Compile time members.
-        @Override public <R> R
-        accept(Visitor.BlockStatementVisitor<R> visitor) { return visitor.visitBlock(this); }
+        @Override public <R, EX extends Throwable> R
+        accept(Visitor.BlockStatementVisitor<R, EX> visitor) throws EX { return visitor.visitBlock(this); }
 
         @Override public String
         toString() { return "{ ... }"; }
@@ -2140,8 +2187,10 @@ class Java {
 
         // Compile time members:
 
-        @Override public <R> R
-        accept(Visitor.BlockStatementVisitor<R> visitor) { return visitor.visitExpressionStatement(this); }
+        @Override public <R, EX extends Throwable> R
+        accept(Visitor.BlockStatementVisitor<R, EX> visitor) throws EX {
+            return visitor.visitExpressionStatement(this);
+        }
     }
 
     /** Representation of the JLS7 14.3 'local class declaration statement'. */
@@ -2160,8 +2209,10 @@ class Java {
         @Override public String
         toString() { return this.lcd.toString(); }
 
-        @Override public <R> R
-        accept(Visitor.BlockStatementVisitor<R> visitor) { return visitor.visitLocalClassDeclarationStatement(this); }
+        @Override public <R, EX extends Throwable> R
+        accept(Visitor.BlockStatementVisitor<R, EX> visitor) throws EX {
+            return visitor.visitLocalClassDeclarationStatement(this);
+        }
     }
 
     /** Representation of a JLS7 14.9 IF statement. */
@@ -2200,8 +2251,8 @@ class Java {
 
         // Compile time members:
 
-        @Override public <R> R
-        accept(Visitor.BlockStatementVisitor<R> visitor) { return visitor.visitIfStatement(this); }
+        @Override public <R, EX extends Throwable> R
+        accept(Visitor.BlockStatementVisitor<R, EX> visitor) throws EX { return visitor.visitIfStatement(this); }
     }
 
     /** Representation of a JLS7 14.14.1 'basic FOR statement'. */
@@ -2239,8 +2290,8 @@ class Java {
 
         // Compile time members:
 
-        @Override public <R> R
-        accept(Visitor.BlockStatementVisitor<R> visitor) { return visitor.visitForStatement(this); }
+        @Override public <R, EX extends Throwable> R
+        accept(Visitor.BlockStatementVisitor<R, EX> visitor) throws EX { return visitor.visitForStatement(this); }
     }
 
     /** Representation of a JLS7 14.14.2 'enhanced FOR statement'. */
@@ -2265,8 +2316,8 @@ class Java {
 
         // Compile time members:
 
-        @Override public <R> R
-        accept(Visitor.BlockStatementVisitor<R> visitor) { return visitor.visitForEachStatement(this); }
+        @Override public <R, EX extends Throwable> R
+        accept(Visitor.BlockStatementVisitor<R, EX> visitor) throws EX { return visitor.visitForEachStatement(this); }
     }
 
     /** Representation of the JLS7 14.2 WHILE statement. */
@@ -2287,8 +2338,8 @@ class Java {
 
         // Compile time members:
 
-        @Override public <R> R
-        accept(Visitor.BlockStatementVisitor<R> visitor) { return visitor.visitWhileStatement(this); }
+        @Override public <R, EX extends Throwable> R
+        accept(Visitor.BlockStatementVisitor<R, EX> visitor) throws EX { return visitor.visitWhileStatement(this); }
     }
 
     /** Representation of a JLS7 14.20 TRY statement. */
@@ -2329,8 +2380,8 @@ class Java {
 
         // Compile time members:
 
-        @Override public <R> R
-        accept(Visitor.BlockStatementVisitor<R> visitor) { return visitor.visitTryStatement(this); }
+        @Override public <R, EX extends Throwable> R
+        accept(Visitor.BlockStatementVisitor<R, EX> visitor) throws EX { return visitor.visitTryStatement(this); }
 
         /**
          * This one's created iff the TRY statement has a FINALLY clause when the compilation of the TRY statement
@@ -2445,8 +2496,8 @@ class Java {
 
         // Compile time members:
 
-        @Override public <R> R
-        accept(Visitor.BlockStatementVisitor<R> visitor) { return visitor.visitSwitchStatement(this); }
+        @Override public <R, EX extends Throwable> R
+        accept(Visitor.BlockStatementVisitor<R, EX> visitor) throws EX { return visitor.visitSwitchStatement(this); }
     }
     static
     class Padder extends CodeContext.Inserter implements CodeContext.FixUp {
@@ -2487,8 +2538,10 @@ class Java {
 
         // Compile time members:
 
-        @Override public <R> R
-        accept(Visitor.BlockStatementVisitor<R> visitor) { return visitor.visitSynchronizedStatement(this); }
+        @Override public <R, EX extends Throwable> R
+        accept(Visitor.BlockStatementVisitor<R, EX> visitor) throws EX {
+            return visitor.visitSynchronizedStatement(this);
+        }
 
         /** The index of the local variable for the monitor object. */
         short monitorLvIndex = -1;
@@ -2512,8 +2565,8 @@ class Java {
 
         // Compile time members:
 
-        @Override public <R> R
-        accept(Visitor.BlockStatementVisitor<R> visitor) { return visitor.visitDoStatement(this); }
+        @Override public <R, EX extends Throwable> R
+        accept(Visitor.BlockStatementVisitor<R, EX> visitor) throws EX { return visitor.visitDoStatement(this); }
     }
 
     /** Representation of a JLS7 14.4 'local variable declaration statement'. */
@@ -2550,8 +2603,8 @@ class Java {
 
         // Compile time members:
 
-        @Override public <R> R
-        accept(Visitor.BlockStatementVisitor<R> visitor) {
+        @Override public <R, EX extends Throwable> R
+        accept(Visitor.BlockStatementVisitor<R, EX> visitor) throws EX {
             return visitor.visitLocalVariableDeclarationStatement(this);
         }
 
@@ -2588,8 +2641,8 @@ class Java {
 
         // Compile time members:
 
-        @Override public <R> R
-        accept(Visitor.BlockStatementVisitor<R> visitor) { return visitor.visitReturnStatement(this); }
+        @Override public <R, EX extends Throwable> R
+        accept(Visitor.BlockStatementVisitor<R, EX> visitor) throws EX { return visitor.visitReturnStatement(this); }
     }
 
     /** Representation of a JLS7 14.18 THROW statement. */
@@ -2610,8 +2663,8 @@ class Java {
 
         // Compile time members:
 
-        @Override public <R> R
-        accept(Visitor.BlockStatementVisitor<R> visitor) { return visitor.visitThrowStatement(this); }
+        @Override public <R, EX extends Throwable> R
+        accept(Visitor.BlockStatementVisitor<R, EX> visitor) throws EX { return visitor.visitThrowStatement(this); }
     }
 
     /** Representation of the JLS7 14.15 BREAK statement. */
@@ -2632,8 +2685,8 @@ class Java {
 
         // Compile time members:
 
-        @Override public <R> R
-        accept(Visitor.BlockStatementVisitor<R> visitor) { return visitor.visitBreakStatement(this); }
+        @Override public <R, EX extends Throwable> R
+        accept(Visitor.BlockStatementVisitor<R, EX> visitor) throws EX { return visitor.visitBreakStatement(this); }
     }
 
     /** Representation of the JLS7 14.16 CONTINUE statement. */
@@ -2654,8 +2707,8 @@ class Java {
 
         // Compile time members:
 
-        @Override public <R> R
-        accept(Visitor.BlockStatementVisitor<R> visitor) { return visitor.visitContinueStatement(this); }
+        @Override public <R, EX extends Throwable> R
+        accept(Visitor.BlockStatementVisitor<R, EX> visitor) throws EX { return visitor.visitContinueStatement(this); }
     }
 
     /** Representation of the JLS7 14.10 ASSERT statement. */
@@ -2687,8 +2740,8 @@ class Java {
             );
         }
 
-        @Override public <R> R
-        accept(Visitor.BlockStatementVisitor<R> visitor) { return visitor.visitAssertStatement(this); }
+        @Override public <R, EX extends Throwable> R
+        accept(Visitor.BlockStatementVisitor<R, EX> visitor) throws EX { return visitor.visitAssertStatement(this); }
     }
 
     /** Representation of the "empty statement", i.e. the blank semicolon. */
@@ -2701,8 +2754,8 @@ class Java {
         @Override public String
         toString() { return ";"; }
 
-        @Override public <R> R
-        accept(Visitor.BlockStatementVisitor<R> visitor) { return visitor.visitEmptyStatement(this); }
+        @Override public <R, EX extends Throwable> R
+        accept(Visitor.BlockStatementVisitor<R, EX> visitor) throws EX { return visitor.visitEmptyStatement(this); }
     }
 
     /** Abstract base class for {@link Java.Type}, {@link Java.Rvalue} and {@link Java.Lvalue}. */
@@ -2762,8 +2815,8 @@ class Java {
         /**
          * Invokes the '{@code visit...()}' method of {@link Visitor.AtomVisitor} for the concrete {@link Atom} type.
          */
-        public abstract <R> R
-        accept(Visitor.AtomVisitor<R> visitor);
+        public abstract <R, EX extends Throwable> R
+        accept(Visitor.AtomVisitor<R, EX> visitor) throws EX;
     }
 
     /** Representation of a Java&trade; type. */
@@ -2800,8 +2853,8 @@ class Java {
         /**
          * Invokes the '{@code visit...()}' method of {@link Visitor.TypeVisitor} for the concrete {@link Type} type.
          */
-        public abstract <R> R
-        accept(Visitor.TypeVisitor<R> visitor);
+        public abstract <R, EX extends Throwable> R
+        accept(Visitor.TypeVisitor<R, EX> visitor) throws EX;
     }
 
     /** This class is not used when code is parsed; it is intended for "programmatic" types. */
@@ -2821,8 +2874,8 @@ class Java {
         toString() { return this.iClass.toString(); }
 
         // SUPPRESS CHECKSTYLE LineLength:2
-        @Override public <R> R accept(Visitor.AtomVisitor<R> visitor) { return visitor.visitSimpleType(this); }
-        @Override public <R> R accept(Visitor.TypeVisitor<R> visitor) { return visitor.visitSimpleType(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.AtomVisitor<R, EX> visitor) throws EX { return visitor.visitSimpleType(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.TypeVisitor<R, EX> visitor) throws EX { return visitor.visitSimpleType(this); }
     }
 
     /** Representation of a JLS7 18 "basic type" (obviously equivalent to a JLS7 4.2 "primitive type"). */
@@ -2865,8 +2918,8 @@ class Java {
         }
 
         // SUPPRESS CHECKSTYLE LineLength:2
-        @Override public <R> R accept(Visitor.TypeVisitor<R> visitor) { return visitor.visitBasicType(this); }
-        @Override public <R> R accept(Visitor.AtomVisitor<R> visitor) { return visitor.visitBasicType(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.TypeVisitor<R, EX> visitor) throws EX { return visitor.visitBasicType(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.AtomVisitor<R, EX> visitor) throws EX { return visitor.visitBasicType(this); }
 
         /** Value representing the VOID type. */
         public static final int VOID = 0;
@@ -2922,9 +2975,9 @@ class Java {
         }
 
         // SUPPRESS CHECKSTYLE LineLength:3
-        @Override public <R> R    accept(Visitor.AtomVisitor<R> visitor) { return visitor.visitReferenceType(this); }
-        @Override public <R> R    accept(Visitor.TypeVisitor<R> visitor) { return visitor.visitReferenceType(this); }
-        @Override public <R> void accept(TypeArgumentVisitor<R> visitor) { visitor.visitReferenceType(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.AtomVisitor<R, EX> visitor) throws EX { return visitor.visitReferenceType(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.TypeVisitor<R, EX> visitor) throws EX { return visitor.visitReferenceType(this); }
+        @Override public <R, EX extends Throwable> R accept(TypeArgumentVisitor<R, EX> visitor) throws EX { return visitor.visitReferenceType(this); }
     }
 
     /** Representation of a JLS7 4.5.1 type argument. */
@@ -2935,8 +2988,8 @@ class Java {
          * Invokes the '{@code visit...()}' method of {@link Visitor.TypeArgumentVisitor} for the concrete {@link
          * TypeArgument} type.
          */
-        <R> void
-        accept(Visitor.TypeArgumentVisitor<R> visitor);
+        <R, EX extends Throwable> R
+        accept(Visitor.TypeArgumentVisitor<R, EX> visitor) throws EX;
     }
 
     /**
@@ -2964,8 +3017,8 @@ class Java {
         toString() { return this.identifier; }
 
         // SUPPRESS CHECKSTYLE LineLength:2
-        @Override public <R> R accept(Visitor.AtomVisitor<R> visitor) { return visitor.visitRvalueMemberType(this); }
-        @Override public <R> R accept(Visitor.TypeVisitor<R> visitor) { return visitor.visitRvalueMemberType(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.AtomVisitor<R, EX> visitor) throws EX { return visitor.visitRvalueMemberType(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.TypeVisitor<R, EX> visitor) throws EX { return visitor.visitRvalueMemberType(this); }
     }
 
     /** Representation of a JLS7 10.1 'array type'. */
@@ -2991,9 +3044,9 @@ class Java {
         toString() { return this.componentType.toString() + "[]"; }
 
         // SUPPRESS CHECKSTYLE LineLength:3
-        @Override public <R> R    accept(Visitor.AtomVisitor<R> visitor) { return visitor.visitArrayType(this); }
-        @Override public <R> R    accept(Visitor.TypeVisitor<R> visitor) { return visitor.visitArrayType(this); }
-        @Override public <R> void accept(TypeArgumentVisitor<R> visitor) { visitor.visitArrayType(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.AtomVisitor<R, EX> visitor) throws EX { return visitor.visitArrayType(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.TypeVisitor<R, EX> visitor) throws EX { return visitor.visitArrayType(this); }
+        @Override public <R, EX extends Throwable> R accept(TypeArgumentVisitor<R, EX> visitor) throws EX { return visitor.visitArrayType(this); }
     }
 
     /**
@@ -3010,10 +3063,9 @@ class Java {
         Rvalue(Location location) { super(location); }
 
         /** Sets the enclosing scope for this object and all subordinate {@link Java.Rvalue} objects. */
-        @Override
-        public final void
+        @Override public final void
         setEnclosingScope(final Java.Scope enclosingScope) {
-            this.accept((Visitor.RvalueVisitor) new Traverser() {
+            this.accept((Visitor.RvalueVisitor<Void, RuntimeException>) new Traverser<RuntimeException>() {
 
                 @Override public void
                 traverseRvalue(Java.Rvalue rv) {
@@ -3080,8 +3132,8 @@ class Java {
          * Invokes the '{@code visit...()}' method of {@link Visitor.RvalueVisitor} for the concrete {@link Rvalue}
          * type.
          */
-        public abstract <R> R
-        accept(Visitor.RvalueVisitor<R> rvv);
+        public abstract <R, EX extends Throwable> R
+        accept(Visitor.RvalueVisitor<R, EX> rvv) throws EX;
     }
 
     /** Base class for {@link Java.Rvalue}s that compile better as conditional branches. */
@@ -3106,8 +3158,8 @@ class Java {
          * Invokes the '{@code visit...()}' method of {@link Visitor.LvalueVisitor} for the concrete {@link Lvalue}
          * type.
          */
-        public abstract <R> R
-        accept(Visitor.LvalueVisitor<R> lvv);
+        public abstract <R, EX extends Throwable> R
+        accept(Visitor.LvalueVisitor<R, EX> lvv) throws EX;
     }
 
     /**
@@ -3171,10 +3223,10 @@ class Java {
         Atom reclassified;
 
         // SUPPRESS CHECKSTYLE LineLength:4
-        @Override public <R> R accept(Visitor.AtomVisitor<R> visitor)         { return visitor.visitAmbiguousName(this); }
-        @Override public <R> R accept(Visitor.RvalueVisitor<R> visitor)       { return visitor.visitAmbiguousName(this); }
-        @Override public <R> R accept(Visitor.LvalueVisitor<R> visitor)       { return visitor.visitAmbiguousName(this); }
-        @Override public <R> R accept(Visitor.ElementValueVisitor<R> visitor) { return visitor.visitAmbiguousName(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.AtomVisitor<R, EX> visitor) throws EX         { return visitor.visitAmbiguousName(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.RvalueVisitor<R, EX> visitor) throws EX       { return visitor.visitAmbiguousName(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.LvalueVisitor<R, EX> visitor) throws EX       { return visitor.visitAmbiguousName(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.ElementValueVisitor<R, EX> visitor) throws EX { return visitor.visitAmbiguousName(this); }
     }
 
     /** Representation of a JLS7 6.5.2.1.5 'package name'. */
@@ -3193,8 +3245,8 @@ class Java {
         @Override public String
         toString() { return this.name; }
 
-        @Override public <R> R
-        accept(Visitor.AtomVisitor<R> visitor) { return visitor.visitPackage(this); }
+        @Override public <R, EX extends Throwable> R
+        accept(Visitor.AtomVisitor<R, EX> visitor) throws EX { return visitor.visitPackage(this); }
     }
 
     /** Representation of a local variable access -- used during compilation. */
@@ -3216,10 +3268,10 @@ class Java {
         toString() { return this.localVariable.toString(); }
 
         // SUPPRESS CHECKSTYLE LineLength:4
-        @Override public <R> R accept(Visitor.LvalueVisitor<R> visitor) { return visitor.visitLocalVariableAccess(this); }
-        @Override public <R> R accept(Visitor.RvalueVisitor<R> visitor) { return visitor.visitLocalVariableAccess(this); }
-        @Override public <R> R accept(Visitor.AtomVisitor<R> visitor)   { return visitor.visitLocalVariableAccess(this); }
-        @Override public <R> R accept(ElementValueVisitor<R> visitor)   { return visitor.visitLocalVariableAccess(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.LvalueVisitor<R, EX> visitor) throws EX       { return visitor.visitLocalVariableAccess(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.RvalueVisitor<R, EX> visitor) throws EX       { return visitor.visitLocalVariableAccess(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.AtomVisitor<R, EX> visitor) throws EX         { return visitor.visitLocalVariableAccess(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.ElementValueVisitor<R, EX> visitor) throws EX { return visitor.visitLocalVariableAccess(this); }
     }
 
     /**
@@ -3253,10 +3305,10 @@ class Java {
         toString() { return this.lhs.toString() + '.' + this.field.getName(); }
 
         // SUPPRESS CHECKSTYLE LineLength:4
-        @Override public <R> R accept(Visitor.AtomVisitor<R> visitor)   { return visitor.visitFieldAccess(this); }
-        @Override public <R> R accept(Visitor.RvalueVisitor<R> visitor) { return visitor.visitFieldAccess(this); }
-        @Override public <R> R accept(Visitor.LvalueVisitor<R> visitor) { return visitor.visitFieldAccess(this); }
-        @Override public <R> R accept(ElementValueVisitor<R> visitor)   { return visitor.visitFieldAccess(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.AtomVisitor<R, EX> visitor) throws EX         { return visitor.visitFieldAccess(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.RvalueVisitor<R, EX> visitor) throws EX       { return visitor.visitFieldAccess(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.LvalueVisitor<R, EX> visitor) throws EX       { return visitor.visitFieldAccess(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.ElementValueVisitor<R, EX> visitor) throws EX { return visitor.visitFieldAccess(this); }
     }
 
     /** Representation of the JLS7 10.7 array type 'length' pseudo-member. */
@@ -3280,9 +3332,9 @@ class Java {
         toString() { return this.lhs.toString() + ".length"; }
 
         // SUPPRESS CHECKSTYLE LineLength:3
-        @Override public <R> R accept(Visitor.AtomVisitor<R> visitor)   { return visitor.visitArrayLength(this); }
-        @Override public <R> R accept(Visitor.RvalueVisitor<R> visitor) { return visitor.visitArrayLength(this); }
-        @Override public <R> R accept(ElementValueVisitor<R> visitor)   { return visitor.visitArrayLength(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.AtomVisitor<R, EX> visitor) throws EX         { return visitor.visitArrayLength(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.RvalueVisitor<R, EX> visitor) throws EX       { return visitor.visitArrayLength(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.ElementValueVisitor<R, EX> visitor) throws EX { return visitor.visitArrayLength(this); }
     }
 
     /** Representation of an JLS7 15.8.3 access to the innermost enclosing instance. */
@@ -3303,9 +3355,9 @@ class Java {
         toString() { return "this"; }
 
         // SUPPRESS CHECKSTYLE LineLength:3
-        @Override public <R> R accept(Visitor.AtomVisitor<R> visitor)   { return visitor.visitThisReference(this); }
-        @Override public <R> R accept(Visitor.RvalueVisitor<R> visitor) { return visitor.visitThisReference(this); }
-        @Override public <R> R accept(ElementValueVisitor<R> visitor)   { return visitor.visitThisReference(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.AtomVisitor<R, EX> visitor) throws EX         { return visitor.visitThisReference(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.RvalueVisitor<R, EX> visitor) throws EX       { return visitor.visitThisReference(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.ElementValueVisitor<R, EX> visitor) throws EX { return visitor.visitThisReference(this); }
     }
 
     /** Representation of an JLS7 15.8.4 access to the current object or an enclosing instance. */
@@ -3342,10 +3394,10 @@ class Java {
         @Override public String
         toString() { return this.qualification.toString() + ".this"; }
 
-        // SUPPRESS CHECKSTYLE LineLength:2
-        @Override public <R> R accept(Visitor.AtomVisitor<R> visitor)   { return visitor.visitQualifiedThisReference(this); }
-        @Override public <R> R accept(Visitor.RvalueVisitor<R> visitor) { return visitor.visitQualifiedThisReference(this); }
-        @Override public <R> R accept(ElementValueVisitor<R> visitor)   { return visitor.visitQualifiedThisReference(this); }
+        // SUPPRESS CHECKSTYLE LineLength:3
+        @Override public <R, EX extends Throwable> R accept(Visitor.AtomVisitor<R, EX> visitor) throws EX         { return visitor.visitQualifiedThisReference(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.RvalueVisitor<R, EX> visitor) throws EX       { return visitor.visitQualifiedThisReference(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.ElementValueVisitor<R, EX> visitor) throws EX { return visitor.visitQualifiedThisReference(this); }
     }
 
     /** Representation of a JLS7 15.8.2 'class literal'. */
@@ -3367,9 +3419,9 @@ class Java {
         toString() { return this.type.toString() + ".class"; }
 
         // SUPPRESS CHECKSTYLE LineLength:3
-        @Override public <R> R accept(Visitor.AtomVisitor<R> visitor)   { return visitor.visitClassLiteral(this); }
-        @Override public <R> R accept(Visitor.RvalueVisitor<R> visitor) { return visitor.visitClassLiteral(this); }
-        @Override public <R> R accept(ElementValueVisitor<R> visitor)   { return visitor.visitClassLiteral(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.AtomVisitor<R, EX> visitor) throws EX         { return visitor.visitClassLiteral(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.RvalueVisitor<R, EX> visitor) throws EX       { return visitor.visitClassLiteral(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.ElementValueVisitor<R, EX> visitor) throws EX { return visitor.visitClassLiteral(this); }
     }
 
     /** Representation of all JLS7 15.26 assignments. */
@@ -3404,9 +3456,9 @@ class Java {
         toString() { return this.lhs.toString() + ' ' + this.operator + ' ' + this.rhs.toString(); }
 
         // SUPPRESS CHECKSTYLE LineLength:3
-        @Override public <R> R accept(Visitor.AtomVisitor<R> visitor)   { return visitor.visitAssignment(this); }
-        @Override public <R> R accept(Visitor.RvalueVisitor<R> visitor) { return visitor.visitAssignment(this); }
-        @Override public <R> R accept(ElementValueVisitor<R> visitor)   { return visitor.visitAssignment(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.AtomVisitor<R, EX> visitor) throws EX         { return visitor.visitAssignment(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.RvalueVisitor<R, EX> visitor) throws EX       { return visitor.visitAssignment(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.ElementValueVisitor<R, EX> visitor) throws EX { return visitor.visitAssignment(this); }
     }
 
     /** Representation of a JLS7 15.25 'conditional operation'. */
@@ -3436,9 +3488,9 @@ class Java {
         toString() { return this.lhs.toString() + " ? " + this.mhs.toString() + " : " + this.rhs.toString(); }
 
         // SUPPRESS CHECKSTYLE LineLength:3
-        @Override public <R> R accept(Visitor.AtomVisitor<R> visitor)   { return visitor.visitConditionalExpression(this); }
-        @Override public <R> R accept(Visitor.RvalueVisitor<R> visitor) { return visitor.visitConditionalExpression(this); }
-        @Override public <R> R accept(ElementValueVisitor<R> visitor)   { return visitor.visitConditionalExpression(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.AtomVisitor<R, EX> visitor) throws EX         { return visitor.visitConditionalExpression(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.RvalueVisitor<R, EX> visitor) throws EX       { return visitor.visitConditionalExpression(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.ElementValueVisitor<R, EX> visitor) throws EX { return visitor.visitConditionalExpression(this); }
     }
 
     /**
@@ -3480,9 +3532,9 @@ class Java {
         toString() { return this.pre ? this.operator + this.operand : this.operand + this.operator; }
 
         // SUPPRESS CHECKSTYLE LineLength:3
-        @Override public <R> R accept(Visitor.AtomVisitor<R> visitor)   { return visitor.visitCrement(this); }
-        @Override public <R> R accept(Visitor.RvalueVisitor<R> visitor) { return visitor.visitCrement(this); }
-        @Override public <R> R accept(ElementValueVisitor<R> visitor)   { return visitor.visitCrement(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.AtomVisitor<R, EX> visitor) throws EX         { return visitor.visitCrement(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.RvalueVisitor<R, EX> visitor) throws EX       { return visitor.visitCrement(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.ElementValueVisitor<R, EX> visitor) throws EX { return visitor.visitCrement(this); }
     }
 
     /** Representation of a JLS7 15.13 'array access expression'. */
@@ -3510,10 +3562,10 @@ class Java {
         toString() { return this.lhs.toString() + '[' + this.index + ']'; }
 
         // SUPPRESS CHECKSTYLE LineLength:4
-        @Override public <R> R accept(Visitor.AtomVisitor<R> visitor)   { return visitor.visitArrayAccessExpression(this); }
-        @Override public <R> R accept(Visitor.RvalueVisitor<R> visitor) { return visitor.visitArrayAccessExpression(this); }
-        @Override public <R> R accept(Visitor.LvalueVisitor<R> visitor) { return visitor.visitArrayAccessExpression(this); }
-        @Override public <R> R accept(ElementValueVisitor<R> visitor)   { return visitor.visitArrayAccessExpression(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.AtomVisitor<R, EX> visitor) throws EX         { return visitor.visitArrayAccessExpression(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.RvalueVisitor<R, EX> visitor) throws EX       { return visitor.visitArrayAccessExpression(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.LvalueVisitor<R, EX> visitor) throws EX       { return visitor.visitArrayAccessExpression(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.ElementValueVisitor<R, EX> visitor) throws EX { return visitor.visitArrayAccessExpression(this); }
     }
 
     /** Representation of a JLS7 15.11 'field access expression', including the "array length" pseudo field access. */
@@ -3541,10 +3593,10 @@ class Java {
         toString() { return this.lhs.toString() + '.' + this.fieldName; }
 
         // SUPPRESS CHECKSTYLE LineLength:4
-        @Override public <R> R accept(Visitor.AtomVisitor<R> visitor)   { return visitor.visitFieldAccessExpression(this); }
-        @Override public <R> R accept(Visitor.RvalueVisitor<R> visitor) { return visitor.visitFieldAccessExpression(this); }
-        @Override public <R> R accept(Visitor.LvalueVisitor<R> visitor) { return visitor.visitFieldAccessExpression(this); }
-        @Override public <R> R accept(ElementValueVisitor<R> visitor)   { return visitor.visitFieldAccessExpression(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.AtomVisitor<R, EX> visitor) throws EX         { return visitor.visitFieldAccessExpression(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.RvalueVisitor<R, EX> visitor) throws EX       { return visitor.visitFieldAccessExpression(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.LvalueVisitor<R, EX> visitor) throws EX       { return visitor.visitFieldAccessExpression(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.ElementValueVisitor<R, EX> visitor) throws EX { return visitor.visitFieldAccessExpression(this); }
 
         /** The {@link ArrayLength} or {@link FieldAccess} resulting from this 'field access expression'. */
         Rvalue value;
@@ -3581,10 +3633,10 @@ class Java {
         }
 
         // SUPPRESS CHECKSTYLE LineLength:4
-        @Override public <R> R accept(Visitor.AtomVisitor<R> visitor)   { return visitor.visitSuperclassFieldAccessExpression(this); }
-        @Override public <R> R accept(Visitor.RvalueVisitor<R> visitor) { return visitor.visitSuperclassFieldAccessExpression(this); }
-        @Override public <R> R accept(Visitor.LvalueVisitor<R> visitor) { return visitor.visitSuperclassFieldAccessExpression(this); }
-        @Override public <R> R accept(ElementValueVisitor<R> visitor)   { return visitor.visitSuperclassFieldAccessExpression(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.AtomVisitor<R, EX> visitor) throws EX         { return visitor.visitSuperclassFieldAccessExpression(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.RvalueVisitor<R, EX> visitor) throws EX       { return visitor.visitSuperclassFieldAccessExpression(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.LvalueVisitor<R, EX> visitor) throws EX       { return visitor.visitSuperclassFieldAccessExpression(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.ElementValueVisitor<R, EX> visitor) throws EX { return visitor.visitSuperclassFieldAccessExpression(this); }
 
         /** The {@link FieldAccess} that implements this {@link FieldAccessExpression}. */
         Rvalue value;
@@ -3616,9 +3668,9 @@ class Java {
         toString() { return this.operator + this.operand.toString(); }
 
         // SUPPRESS CHECKSTYLE LineLength:3
-        @Override public <R> R accept(Visitor.AtomVisitor<R> visitor)   { return visitor.visitUnaryOperation(this); }
-        @Override public <R> R accept(Visitor.RvalueVisitor<R> visitor) { return visitor.visitUnaryOperation(this); }
-        @Override public <R> R accept(ElementValueVisitor<R> visitor)   { return visitor.visitUnaryOperation(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.AtomVisitor<R, EX> visitor) throws EX         { return visitor.visitUnaryOperation(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.RvalueVisitor<R, EX> visitor) throws EX       { return visitor.visitUnaryOperation(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.ElementValueVisitor<R, EX> visitor) throws EX { return visitor.visitUnaryOperation(this); }
     }
 
     /** Representation of a JLS7 15.20.2 'type comparison operation'. */
@@ -3646,9 +3698,9 @@ class Java {
         toString() { return this.lhs.toString() + " instanceof " + this.rhs.toString(); }
 
         // SUPPRESS CHECKSTYLE LineLength:3
-        @Override public <R> R accept(Visitor.AtomVisitor<R> visitor)   { return visitor.visitInstanceof(this); }
-        @Override public <R> R accept(Visitor.RvalueVisitor<R> visitor) { return visitor.visitInstanceof(this); }
-        @Override public <R> R accept(ElementValueVisitor<R> visitor)   { return visitor.visitInstanceof(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.AtomVisitor<R, EX> visitor) throws EX         { return visitor.visitInstanceof(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.RvalueVisitor<R, EX> visitor) throws EX       { return visitor.visitInstanceof(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.ElementValueVisitor<R, EX> visitor) throws EX { return visitor.visitInstanceof(this); }
     }
 
     /**
@@ -3728,9 +3780,10 @@ class Java {
             return new ReverseListIterator(operands.listIterator(operands.size()));
         }
 
-        @Override public <R> R accept(Visitor.AtomVisitor<R> visitor)   { return visitor.visitBinaryOperation(this); }
-        @Override public <R> R accept(Visitor.RvalueVisitor<R> visitor) { return visitor.visitBinaryOperation(this); }
-        @Override public <R> R accept(ElementValueVisitor<R> visitor)   { return visitor.visitBinaryOperation(this); }
+        // SUPPRESS CHECKSTYLE LineLength:3
+        @Override public <R, EX extends Throwable> R accept(Visitor.AtomVisitor<R, EX> visitor) throws EX         { return visitor.visitBinaryOperation(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.RvalueVisitor<R, EX> visitor) throws EX       { return visitor.visitBinaryOperation(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.ElementValueVisitor<R, EX> visitor) throws EX { return visitor.visitBinaryOperation(this); }
     }
 
     /** Representation of a JLS7 15.16 'cast expression'. */
@@ -3757,9 +3810,10 @@ class Java {
         @Override public String
         toString() { return '(' + this.targetType.toString() + ") " + this.value.toString(); }
 
-        @Override public <R> R accept(Visitor.AtomVisitor<R> visitor)   { return visitor.visitCast(this); }
-        @Override public <R> R accept(Visitor.RvalueVisitor<R> visitor) { return visitor.visitCast(this); }
-        @Override public <R> R accept(ElementValueVisitor<R> visitor)   { return visitor.visitCast(this); }
+        // SUPPRESS CHECKSTYLE LineLength:3
+        @Override public <R, EX extends Throwable> R accept(Visitor.AtomVisitor<R, EX> visitor) throws EX         { return visitor.visitCast(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.RvalueVisitor<R, EX> visitor) throws EX       { return visitor.visitCast(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.ElementValueVisitor<R, EX> visitor) throws EX { return visitor.visitCast(this); }
     }
 
     /** Representation of a JLS7 15.8.5 'parenthesized expression'. */
@@ -3781,10 +3835,10 @@ class Java {
         toString() { return '(' + this.value.toString() + ')'; }
 
         // SUPPRESS CHECKSTYLE LineLength:4
-        @Override public <R> R accept(Visitor.AtomVisitor<R> visitor)   { return visitor.visitParenthesizedExpression(this); }
-        @Override public <R> R accept(Visitor.RvalueVisitor<R> visitor) { return visitor.visitParenthesizedExpression(this); }
-        @Override public <R> R accept(Visitor.LvalueVisitor<R> visitor) { return visitor.visitParenthesizedExpression(this); }
-        @Override public <R> R accept(ElementValueVisitor<R> visitor)   { return visitor.visitParenthesizedExpression(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.AtomVisitor<R, EX> visitor) throws EX         { return visitor.visitParenthesizedExpression(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.RvalueVisitor<R, EX> visitor) throws EX       { return visitor.visitParenthesizedExpression(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.LvalueVisitor<R, EX> visitor) throws EX       { return visitor.visitParenthesizedExpression(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.ElementValueVisitor<R, EX> visitor) throws EX { return visitor.visitParenthesizedExpression(this); }
     }
 
     /** Abstract bas class for {@link SuperConstructorInvocation} and {@link AlternateConstructorInvocation}. */
@@ -3844,8 +3898,8 @@ class Java {
         toString() { return "this()"; }
 
         // SUPPRESS CHECKSTYLE LineLength:2
-        @Override public <R> R accept(Visitor.AtomVisitor<R> visitor)           { return ((Visitor.BlockStatementVisitor<R>) visitor).visitAlternateConstructorInvocation(this); }
-        @Override public <R> R accept(Visitor.BlockStatementVisitor<R> visitor) { return visitor.visitAlternateConstructorInvocation(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.AtomVisitor<R, EX> visitor) throws EX           { return ((Visitor.BlockStatementVisitor<R, EX>) visitor).visitAlternateConstructorInvocation(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.BlockStatementVisitor<R, EX> visitor) throws EX { return visitor.visitAlternateConstructorInvocation(this); }
     }
 
     /** Representation of a JLS7 8.8.7.1. 'superclass constructor invocation'. */
@@ -3871,8 +3925,8 @@ class Java {
         toString() { return "super()"; }
 
         // SUPPRESS CHECKSTYLE LineLength:2
-        @Override public <R> R accept(Visitor.AtomVisitor<R> visitor)           { return ((Visitor.BlockStatementVisitor<R>) visitor).visitSuperConstructorInvocation(this); }
-        @Override public <R> R accept(Visitor.BlockStatementVisitor<R> visitor) { return visitor.visitSuperConstructorInvocation(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.AtomVisitor<R, EX> visitor) throws EX           { return ((Visitor.BlockStatementVisitor<R, EX>) visitor).visitSuperConstructorInvocation(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.BlockStatementVisitor<R, EX> visitor) throws EX { return visitor.visitSuperConstructorInvocation(this); }
     }
 
     /** Representation of a JLS7 15.12 'method invocation expression'. */
@@ -3906,9 +3960,10 @@ class Java {
             return sb.toString();
         }
 
-        @Override public <R> R accept(Visitor.AtomVisitor<R> visitor)   { return visitor.visitMethodInvocation(this); }
-        @Override public <R> R accept(Visitor.RvalueVisitor<R> visitor) { return visitor.visitMethodInvocation(this); }
-        @Override public <R> R accept(ElementValueVisitor<R> visitor)   { return visitor.visitMethodInvocation(this); }
+        // SUPPRESS CHECKSTYLE LineLength:3
+        @Override public <R, EX extends Throwable> R accept(Visitor.AtomVisitor<R, EX> visitor) throws EX         { return visitor.visitMethodInvocation(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.RvalueVisitor<R, EX> visitor) throws EX       { return visitor.visitMethodInvocation(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.ElementValueVisitor<R, EX> visitor) throws EX { return visitor.visitMethodInvocation(this); }
     }
 
     /** Representation of a JLS7 15.12.1.1.3 'superclass method invocation'. */
@@ -3926,9 +3981,9 @@ class Java {
         toString() { return "super." + this.methodName + "()"; }
 
         // SUPPRESS CHECKSTYLE LineLength:3
-        @Override public <R> R accept(Visitor.AtomVisitor<R> visitor)   { return visitor.visitSuperclassMethodInvocation(this); }
-        @Override public <R> R accept(Visitor.RvalueVisitor<R> visitor) { return visitor.visitSuperclassMethodInvocation(this); }
-        @Override public <R> R accept(ElementValueVisitor<R> visitor)   { return visitor.visitSuperclassMethodInvocation(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.AtomVisitor<R, EX> visitor) throws EX         { return visitor.visitSuperclassMethodInvocation(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.RvalueVisitor<R, EX> visitor) throws EX       { return visitor.visitSuperclassMethodInvocation(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.ElementValueVisitor<R, EX> visitor) throws EX { return visitor.visitSuperclassMethodInvocation(this); }
     }
 
     /** Abstract base class for {@link MethodInvocation} and {@link SuperclassMethodInvocation}. */
@@ -4008,9 +4063,10 @@ class Java {
             return sb.toString();
         }
 
-        @Override public <R> R accept(Visitor.AtomVisitor<R> visitor)   { return visitor.visitNewClassInstance(this); }
-        @Override public <R> R accept(Visitor.RvalueVisitor<R> visitor) { return visitor.visitNewClassInstance(this); }
-        @Override public <R> R accept(ElementValueVisitor<R> visitor)   { return visitor.visitNewClassInstance(this); }
+        // SUPPRESS CHECKSTYLE LineLength:3
+        @Override public <R, EX extends Throwable> R accept(Visitor.AtomVisitor<R, EX> visitor) throws EX         { return visitor.visitNewClassInstance(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.RvalueVisitor<R, EX> visitor) throws EX       { return visitor.visitNewClassInstance(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.ElementValueVisitor<R, EX> visitor) throws EX { return visitor.visitNewClassInstance(this); }
     }
 
     /** Representation of a JLS7 15.9 'anonymous class instance creation expression'. */
@@ -4050,9 +4106,9 @@ class Java {
         }
 
         // SUPPRESS CHECKSTYLE LineLength:3
-        @Override public <R> R accept(Visitor.AtomVisitor<R> visitor)   { return visitor.visitNewAnonymousClassInstance(this); }
-        @Override public <R> R accept(Visitor.RvalueVisitor<R> visitor) { return visitor.visitNewAnonymousClassInstance(this); }
-        @Override public <R> R accept(ElementValueVisitor<R> visitor)   { return visitor.visitNewAnonymousClassInstance(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.AtomVisitor<R, EX> visitor) throws EX         { return visitor.visitNewAnonymousClassInstance(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.RvalueVisitor<R, EX> visitor) throws EX       { return visitor.visitNewAnonymousClassInstance(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.ElementValueVisitor<R, EX> visitor) throws EX { return visitor.visitNewAnonymousClassInstance(this); }
     }
 
     /** 'Artificial' operation for accessing the parameters of the synthetic constructor of an anonymous class. */
@@ -4073,9 +4129,10 @@ class Java {
         @Override public String
         toString() { return this.formalParameter.name; }
 
-        @Override public <R> R accept(Visitor.AtomVisitor<R> visitor)   { return visitor.visitParameterAccess(this); }
-        @Override public <R> R accept(Visitor.RvalueVisitor<R> visitor) { return visitor.visitParameterAccess(this); }
-        @Override public <R> R accept(ElementValueVisitor<R> visitor)   { return visitor.visitParameterAccess(this); }
+        // SUPPRESS CHECKSTYLE LineLength:3
+        @Override public <R, EX extends Throwable> R accept(Visitor.AtomVisitor<R, EX> visitor) throws EX         { return visitor.visitParameterAccess(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.RvalueVisitor<R, EX> visitor) throws EX       { return visitor.visitParameterAccess(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.ElementValueVisitor<R, EX> visitor) throws EX { return visitor.visitParameterAccess(this); }
     }
 
     /** Representation of a JLS7 15.10 'array creation expression'. */
@@ -4125,9 +4182,10 @@ class Java {
         @Override public String
         toString()  { return "new " + this.type.toString() + "[]..."; }
 
-        @Override public <R> R accept(Visitor.AtomVisitor<R> visitor)   { return visitor.visitNewArray(this); }
-        @Override public <R> R accept(Visitor.RvalueVisitor<R> visitor) { return visitor.visitNewArray(this); }
-        @Override public <R> R accept(ElementValueVisitor<R> visitor)   { return visitor.visitNewArray(this); }
+        // SUPPRESS CHECKSTYLE LineLength:3
+        @Override public <R, EX extends Throwable> R accept(Visitor.AtomVisitor<R, EX> visitor) throws EX         { return visitor.visitNewArray(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.RvalueVisitor<R, EX> visitor) throws EX       { return visitor.visitNewArray(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.ElementValueVisitor<R, EX> visitor) throws EX { return visitor.visitNewArray(this); }
     }
 
     /** Representation of a JLS7 15.10 'array creation expression'. */
@@ -4163,9 +4221,10 @@ class Java {
         @Override public String
         toString() { return "new " + this.arrayType.toString() + " { ... }"; }
 
-        @Override public <R> R accept(Visitor.AtomVisitor<R> visitor)   { return visitor.visitNewInitializedArray(this); }
-        @Override public <R> R accept(Visitor.RvalueVisitor<R> visitor) { return visitor.visitNewInitializedArray(this); }
-        @Override public <R> R accept(ElementValueVisitor<R> visitor)   { return visitor.visitNewInitializedArray(this); }
+        // SUPPRESS CHECKSTYLE LineLength:3
+        @Override public <R, EX extends Throwable> R accept(Visitor.AtomVisitor<R, EX> visitor) throws EX         { return visitor.visitNewInitializedArray(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.RvalueVisitor<R, EX> visitor) throws EX       { return visitor.visitNewInitializedArray(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.ElementValueVisitor<R, EX> visitor) throws EX { return visitor.visitNewInitializedArray(this); }
     }
 
     /**
@@ -4216,9 +4275,10 @@ class Java {
     class IntegerLiteral extends Literal {
         public IntegerLiteral(Location location, String value) { super(location, value); }
 
-        @Override public <R> R accept(Visitor.AtomVisitor<R> visitor)   { return visitor.visitIntegerLiteral(this); }
-        @Override public <R> R accept(Visitor.RvalueVisitor<R> visitor) { return visitor.visitIntegerLiteral(this); }
-        @Override public <R> R accept(ElementValueVisitor<R> visitor)   { return visitor.visitIntegerLiteral(this); }
+        // SUPPRESS CHECKSTYLE LineLength:3
+        @Override public <R, EX extends Throwable> R accept(Visitor.AtomVisitor<R, EX> visitor) throws EX         { return visitor.visitIntegerLiteral(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.RvalueVisitor<R, EX> visitor) throws EX       { return visitor.visitIntegerLiteral(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.ElementValueVisitor<R, EX> visitor) throws EX { return visitor.visitIntegerLiteral(this); }
     }
 
     /** Representation of a "floating-point literal" (JLS7 3.10.2) (types {@code float} and {@code double}). */
@@ -4227,9 +4287,9 @@ class Java {
         public FloatingPointLiteral(Location location, String value) { super(location, value); }
 
         // SUPPRESS CHECKSTYLE LineLength:3
-        @Override public <R> R accept(Visitor.AtomVisitor<R> visitor)   { return visitor.visitFloatingPointLiteral(this); }
-        @Override public <R> R accept(Visitor.RvalueVisitor<R> visitor) { return visitor.visitFloatingPointLiteral(this); }
-        @Override public <R> R accept(ElementValueVisitor<R> visitor)   { return visitor.visitFloatingPointLiteral(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.AtomVisitor<R, EX> visitor) throws EX         { return visitor.visitFloatingPointLiteral(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.RvalueVisitor<R, EX> visitor) throws EX       { return visitor.visitFloatingPointLiteral(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.ElementValueVisitor<R, EX> visitor) throws EX { return visitor.visitFloatingPointLiteral(this); }
     }
 
     /** Representation of a "boolean literal" (JLS7 3.10.3) (type {@code boolean}). */
@@ -4237,9 +4297,10 @@ class Java {
     class BooleanLiteral extends Literal {
         public BooleanLiteral(Location location, String value) { super(location, value); }
 
-        @Override public <R> R accept(Visitor.AtomVisitor<R> visitor)   { return visitor.visitBooleanLiteral(this); }
-        @Override public <R> R accept(Visitor.RvalueVisitor<R> visitor) { return visitor.visitBooleanLiteral(this); }
-        @Override public <R> R accept(ElementValueVisitor<R> visitor)   { return visitor.visitBooleanLiteral(this); }
+        // SUPPRESS CHECKSTYLE LineLength:3
+        @Override public <R, EX extends Throwable> R accept(Visitor.AtomVisitor<R, EX> visitor) throws EX         { return visitor.visitBooleanLiteral(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.RvalueVisitor<R, EX> visitor) throws EX       { return visitor.visitBooleanLiteral(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.ElementValueVisitor<R, EX> visitor) throws EX { return visitor.visitBooleanLiteral(this); }
     }
 
     /** Representation of a "character literal" (JLS7 3.10.4) (type {@code char}). */
@@ -4247,9 +4308,10 @@ class Java {
     class CharacterLiteral extends Literal {
         public CharacterLiteral(Location location, String value) { super(location, value); }
 
-        @Override public <R> R accept(Visitor.AtomVisitor<R> visitor)   { return visitor.visitCharacterLiteral(this); }
-        @Override public <R> R accept(Visitor.RvalueVisitor<R> visitor) { return visitor.visitCharacterLiteral(this); }
-        @Override public <R> R accept(ElementValueVisitor<R> visitor)   { return visitor.visitCharacterLiteral(this); }
+        // SUPPRESS CHECKSTYLE LineLength:3
+        @Override public <R, EX extends Throwable> R accept(Visitor.AtomVisitor<R, EX> visitor) throws EX         { return visitor.visitCharacterLiteral(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.RvalueVisitor<R, EX> visitor) throws EX       { return visitor.visitCharacterLiteral(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.ElementValueVisitor<R, EX> visitor) throws EX { return visitor.visitCharacterLiteral(this); }
     }
 
     /** Representation of a "string literal" (JLS7 3.10.5) (type {@link String}). */
@@ -4257,9 +4319,10 @@ class Java {
     class StringLiteral extends Literal {
         public StringLiteral(Location location, String value) { super(location, value); }
 
-        @Override public <R> R accept(Visitor.AtomVisitor<R> visitor)   { return visitor.visitStringLiteral(this); }
-        @Override public <R> R accept(Visitor.RvalueVisitor<R> visitor) { return visitor.visitStringLiteral(this); }
-        @Override public <R> R accept(ElementValueVisitor<R> visitor)   { return visitor.visitStringLiteral(this); }
+        // SUPPRESS CHECKSTYLE LineLength:3
+        @Override public <R, EX extends Throwable> R accept(Visitor.AtomVisitor<R, EX> visitor) throws EX         { return visitor.visitStringLiteral(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.RvalueVisitor<R, EX> visitor) throws EX       { return visitor.visitStringLiteral(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.ElementValueVisitor<R, EX> visitor) throws EX { return visitor.visitStringLiteral(this); }
     }
 
     /** Representation of a "null literal" (JLS7 3.10.7). */
@@ -4267,9 +4330,10 @@ class Java {
     class NullLiteral extends Literal {
         public NullLiteral(Location location, String value) { super(location, value); }
 
-        @Override public <R> R accept(Visitor.AtomVisitor<R> visitor)   { return visitor.visitNullLiteral(this); }
-        @Override public <R> R accept(Visitor.RvalueVisitor<R> visitor) { return visitor.visitNullLiteral(this); }
-        @Override public <R> R accept(ElementValueVisitor<R> visitor)   { return visitor.visitNullLiteral(this); }
+        // SUPPRESS CHECKSTYLE LineLength:3
+        @Override public <R, EX extends Throwable> R accept(Visitor.AtomVisitor<R, EX> visitor) throws EX         { return visitor.visitNullLiteral(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.RvalueVisitor<R, EX> visitor) throws EX       { return visitor.visitNullLiteral(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.ElementValueVisitor<R, EX> visitor) throws EX { return visitor.visitNullLiteral(this); }
     }
 
     /** This class is not used when code is parsed; it is intended for "programmatic" literals. */
@@ -4335,9 +4399,10 @@ class Java {
          */
         public SimpleConstant(Location location, String value) { super(location); this.value = value; }
 
-        @Override public <R> R accept(Visitor.AtomVisitor<R> visitor)   { return visitor.visitSimpleConstant(this); }
-        @Override public <R> R accept(Visitor.RvalueVisitor<R> visitor) { return visitor.visitSimpleConstant(this); }
-        @Override public <R> R accept(ElementValueVisitor<R> visitor)   { return visitor.visitSimpleConstant(this); }
+        // SUPPRESS CHECKSTYLE LineLength:3
+        @Override public <R, EX extends Throwable> R accept(Visitor.AtomVisitor<R, EX> visitor) throws EX         { return visitor.visitSimpleConstant(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.RvalueVisitor<R, EX> visitor) throws EX       { return visitor.visitSimpleConstant(this); }
+        @Override public <R, EX extends Throwable> R accept(Visitor.ElementValueVisitor<R, EX> visitor) throws EX { return visitor.visitSimpleConstant(this); }
 
         @Override public String
         toString() { return "[" + this.value + ']'; }
@@ -4483,8 +4548,8 @@ class Java {
             this.referenceType = referenceType;
         }
 
-        @Override public <R> void
-        accept(TypeArgumentVisitor<R> visitor) { visitor.visitWildcard(this); }
+        @Override public <R, EX extends Throwable> R
+        accept(TypeArgumentVisitor<R, EX> visitor) throws EX { return visitor.visitWildcard(this); }
 
         @Override public String
         toString() {

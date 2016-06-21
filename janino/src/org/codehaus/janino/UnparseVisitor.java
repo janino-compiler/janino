@@ -48,7 +48,7 @@ import org.codehaus.janino.util.AutoIndentWriter;
  * A visitor that unparses (un-compiles) an AST to a {@link Writer}. See {@link #main(String[])} for a usage example.
  */
 @SuppressWarnings({ "rawtypes", "unchecked" }) public
-class UnparseVisitor implements Visitor.ComprehensiveVisitor {
+class UnparseVisitor implements Visitor.ComprehensiveVisitor<Void, RuntimeException> {
 
     /**
      * Where the {@code visit...()} methods print their text. Noice that this {@link PrintWriter} does not print to
