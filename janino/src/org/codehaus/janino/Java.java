@@ -293,6 +293,7 @@ class Java {
         void accept(Visitor.AnnotationVisitor visitor);
 
         /** Sets the enclosing scope for this annotation. */
+        @Override
         void setEnclosingScope(Scope enclosingScope);
 
         /** @return The type of this annotation */
@@ -309,6 +310,9 @@ class Java {
         public
         AbstractAnnotation(Type type) { this.type = type; }
 
+        @Override public void
+        setEnclosingScope(Scope enclosingScope) { this.type.setEnclosingScope(enclosingScope); }
+
         @Override public Location
         getLocation() { return this.type.getLocation(); }
 
@@ -324,9 +328,6 @@ class Java {
 
         public
         MarkerAnnotation(Type type) { super(type); }
-
-        @Override public void
-        setEnclosingScope(Scope enclosingScope) { this.type.setEnclosingScope(enclosingScope); }
 
         @Override public String toString() { return "@" + this.type; }
 
@@ -356,7 +357,10 @@ class Java {
         }
 
         @Override public void
-        setEnclosingScope(Scope enclosingScope) { this.type.setEnclosingScope(enclosingScope); }
+        setEnclosingScope(Scope enclosingScope) {
+            super.setEnclosingScope(enclosingScope);
+            this.elementValue.setEnclosingScope(enclosingScope);
+        }
 
         @Override public String toString() { return "@" + this.type + '(' + this.elementValue + ')'; }
 
@@ -383,6 +387,14 @@ class Java {
             this.elementValuePairs = elementValuePairs;
         }
 
+        @Override public void
+        setEnclosingScope(Scope enclosingScope) {
+            super.setEnclosingScope(enclosingScope);
+            for (ElementValuePair elementValuePair : this.elementValuePairs) {
+                elementValuePair.elementValue.setEnclosingScope(enclosingScope);
+            }
+        }
+
         @Override public Type
         getType() { return this.type; }
 
@@ -394,9 +406,6 @@ class Java {
             default: return "@" + this.type + "(" + this.elementValuePairs[0] + ", ...)";
             }
         }
-
-        @Override public void
-        setEnclosingScope(Scope enclosingScope) { this.type.setEnclosingScope(enclosingScope); }
 
         @Override public void
         accept(Visitor.AnnotationVisitor visitor) { visitor.visitNormalAnnotation(this); }
@@ -495,6 +504,12 @@ class Java {
          * ElementValue} type.
          */
         void accept(Visitor.ElementValueVisitor visitor);
+
+        /**
+         * In most cases, the scope is the enclosing {@link BlockStatement}, except for top-level class/interface
+         * annotation class-literal element-value-pairs, where the enclosing scope is the compilation unit.
+         */
+        void setEnclosingScope(Scope scope);
     }
 
     /**
@@ -511,6 +526,11 @@ class Java {
         ElementValueArrayInitializer(ElementValue[] elementValues) {
             super(elementValues.length == 0 ? null : elementValues[0].getLocation());
             this.elementValues = elementValues;
+        }
+
+        @Override public void
+        setEnclosingScope(Scope scope) {
+            for (ElementValue elementValue : this.elementValues) elementValue.setEnclosingScope(scope);
         }
 
         @Override public String
@@ -1849,10 +1869,11 @@ class Java {
             return this.optionalDocComment != null && this.optionalDocComment.indexOf("@deprecated") != -1;
         }
     }
+
     private static void
     setEnclosingBlockStatement(ArrayInitializerOrRvalue aiorv, BlockStatement enclosingBlockStatement) {
         if (aiorv instanceof Rvalue) {
-            ((Rvalue) aiorv).setEnclosingBlockStatement(enclosingBlockStatement);
+            ((Rvalue) aiorv).setEnclosingScope(enclosingBlockStatement);
         } else
         if (aiorv instanceof ArrayInitializer) {
             for (ArrayInitializerOrRvalue v : ((ArrayInitializer) aiorv).values) {
@@ -2107,7 +2128,7 @@ class Java {
                     + "Expressions statements must be one of assignments, method invocations, or object allocations."
                 );
             }
-            (this.rvalue = rvalue).setEnclosingBlockStatement(this);
+            (this.rvalue = rvalue).setEnclosingScope(this);
         }
 
         @Override public String
@@ -2164,7 +2185,7 @@ class Java {
             BlockStatement optionalElseStatement
         ) {
             super(location);
-            (this.condition             = condition).setEnclosingBlockStatement(this);
+            (this.condition             = condition).setEnclosingScope(this);
             (this.thenStatement         = thenStatement).setEnclosingScope(this);
             this.optionalElseStatement = optionalElseStatement;
             if (optionalElseStatement != null) optionalElseStatement.setEnclosingScope(this);
@@ -2204,9 +2225,9 @@ class Java {
             this.optionalInit = optionalInit;
             if (optionalInit != null) optionalInit.setEnclosingScope(this);
             this.optionalCondition = optionalCondition;
-            if (optionalCondition != null) optionalCondition.setEnclosingBlockStatement(this);
+            if (optionalCondition != null) optionalCondition.setEnclosingScope(this);
             this.optionalUpdate = optionalUpdate;
-            if (optionalUpdate != null) for (Rvalue rv : optionalUpdate) rv.setEnclosingBlockStatement(this);
+            if (optionalUpdate != null) for (Rvalue rv : optionalUpdate) rv.setEnclosingScope(this);
         }
 
         @Override public String
@@ -2232,7 +2253,7 @@ class Java {
         ForEachStatement(Location location, FormalParameter currentElement, Rvalue expression, BlockStatement body) {
             super(location, body);
             (this.currentElement = currentElement).type.setEnclosingScope(this);
-            (this.expression     = expression).setEnclosingBlockStatement(this);
+            (this.expression     = expression).setEnclosingScope(this);
         }
 
         @Override public String
@@ -2254,7 +2275,7 @@ class Java {
         public
         WhileStatement(Location location, Rvalue condition, BlockStatement body) {
             super(location, body);
-            (this.condition = condition).setEnclosingBlockStatement(this);
+            (this.condition = condition).setEnclosingScope(this);
         }
 
         @Override public String
@@ -2373,9 +2394,9 @@ class Java {
         public
         SwitchStatement(Location location, Rvalue condition, List<SwitchBlockStatementGroup> sbsgs) {
             super(location);
-            (this.condition = condition).setEnclosingBlockStatement(this);
+            (this.condition = condition).setEnclosingScope(this);
             for (SwitchBlockStatementGroup sbsg : (this.sbsgs = sbsgs)) {
-                for (Rvalue cl : sbsg.caseLabels) cl.setEnclosingBlockStatement(this);
+                for (Rvalue cl : sbsg.caseLabels) cl.setEnclosingScope(this);
                 for (BlockStatement bs : sbsg.blockStatements) bs.setEnclosingScope(this);
             }
         }
@@ -2453,7 +2474,7 @@ class Java {
         public
         SynchronizedStatement(Location location, Rvalue expression, BlockStatement body) {
             super(location);
-            (this.expression = expression).setEnclosingBlockStatement(this);
+            (this.expression = expression).setEnclosingScope(this);
             (this.body       = body).setEnclosingScope(this);
         }
 
@@ -2479,7 +2500,7 @@ class Java {
         public
         DoStatement(Location location, BlockStatement body, Rvalue condition) {
             super(location, body);
-            (this.condition = condition).setEnclosingBlockStatement(this);
+            (this.condition = condition).setEnclosingScope(this);
         }
 
         @Override public String
@@ -2553,7 +2574,7 @@ class Java {
         ReturnStatement(Location location, Rvalue optionalReturnValue) {
             super(location);
             this.optionalReturnValue = optionalReturnValue;
-            if (optionalReturnValue != null) optionalReturnValue.setEnclosingBlockStatement(this);
+            if (optionalReturnValue != null) optionalReturnValue.setEnclosingScope(this);
         }
 
         @Override public String
@@ -2575,7 +2596,7 @@ class Java {
         public
         ThrowStatement(Location location, Rvalue expression) {
             super(location);
-            (this.expression = expression).setEnclosingBlockStatement(this);
+            (this.expression = expression).setEnclosingScope(this);
         }
 
         @Override public String
@@ -2647,8 +2668,8 @@ class Java {
             this.expression1         = expression1;
             this.optionalExpression2 = optionalExpression2;
 
-            this.expression1.setEnclosingBlockStatement(this);
-            if (this.optionalExpression2 != null) this.optionalExpression2.setEnclosingBlockStatement(this);
+            this.expression1.setEnclosingScope(this);
+            if (this.optionalExpression2 != null) this.optionalExpression2.setEnclosingScope(this);
         }
 
         @Override public String
@@ -2988,19 +3009,21 @@ class Java {
      */
     public abstract static
     class Rvalue extends Atom implements ArrayInitializerOrRvalue, ElementValue {
-        private Java.BlockStatement enclosingBlockStatement;
+
+        private Java.Scope enclosingScope;
 
         protected
         Rvalue(Location location) { super(location); }
 
-        /** Sets enclosing block statement for this object and all subordinate {@link Java.Rvalue} objects. */
+        /** Sets the enclosing scope for this object and all subordinate {@link Java.Rvalue} objects. */
+        @Override
         public final void
-        setEnclosingBlockStatement(final Java.BlockStatement enclosingBlockStatement) {
+        setEnclosingScope(final Java.Scope enclosingScope) {
             this.accept((Visitor.RvalueVisitor) new Traverser() {
 
                 @Override public void
                 traverseRvalue(Java.Rvalue rv) {
-                    if (rv.enclosingBlockStatement != null && enclosingBlockStatement != rv.enclosingBlockStatement) {
+                    if (rv.enclosingScope != null && enclosingScope != rv.enclosingScope) {
                         throw new JaninoRuntimeException(
                             "Enclosing block statement for rvalue \""
                             + rv
@@ -3009,17 +3032,17 @@ class Java {
                             + " is already set"
                         );
                     }
-                    rv.enclosingBlockStatement = enclosingBlockStatement;
+                    rv.enclosingScope = enclosingScope;
                     super.traverseRvalue(rv);
                 }
                 @Override public void
                 traverseAnonymousClassDeclaration(Java.AnonymousClassDeclaration acd) {
-                    acd.setEnclosingScope(enclosingBlockStatement);
+                    acd.setEnclosingScope(enclosingScope);
                     ;
                 }
                 @Override public void
                 traverseType(Java.Type t) {
-                    if (t.enclosingScope != null && enclosingBlockStatement != t.enclosingScope) {
+                    if (t.enclosingScope != null && enclosingScope != t.enclosingScope) {
                         throw new JaninoRuntimeException(
                             "Enclosing scope already set for type \""
                             + this.toString()
@@ -3027,25 +3050,25 @@ class Java {
                             + t.getLocation()
                         );
                     }
-                    t.enclosingScope = enclosingBlockStatement;
-//                    t.setEnclosingScope(enclosingBlockStatement);
+                    t.enclosingScope = enclosingScope;
+//                    t.setEnclosingScope(enclosingScope);
                     super.traverseType(t);
                 }
             }.comprehensiveVisitor());
         }
 
         /**
-         * @return The enclosing block statement, as set with {@link #setEnclosingBlockStatement(Java.BlockStatement)}
+         * @return The enclosing scope, as set with {@link #setEnclosingScope(Scope)}
          */
-        public Java.BlockStatement
-        getEnclosingBlockStatement() { return this.enclosingBlockStatement; }
+        public Java.Scope
+        getEnclosingScope() { return this.enclosingScope; }
 
         @Override public Rvalue
         toRvalue() { return this; }
 
         /**
-         * The special value for the {@link #constantValue} field indicating that this rvalue does <b>not</b> have a
-         * constant value.
+         * The special value for the {@link #constantValue} field indicating that the constant value of this rvalue
+         * has not yet been determined.
          */
         static final Object CONSTANT_VALUE_UNKNOWN = new Object() {
 
@@ -3054,8 +3077,8 @@ class Java {
         };
 
         /**
-         * The constant value of this rvalue, or {@link #CONSTANT_VALUE_UNKNOWN} iff this rvalue does <b>not</b> have a
-         * constant value.
+         * The constant value of this rvalue, or {@link #CONSTANT_VALUE_UNKNOWN} iff the constant value of this rvalue
+         * has not yet been determined.
          */
         Object constantValue = Java.Rvalue.CONSTANT_VALUE_UNKNOWN;
 
@@ -3127,7 +3150,7 @@ class Java {
                 String[] is = new String[this.n];
                 System.arraycopy(this.identifiers, 0, is, 0, this.n);
                 this.type = new ReferenceType(this.getLocation(), is, null);
-                this.type.setEnclosingScope(this.getEnclosingBlockStatement());
+                this.type.setEnclosingScope(this.getEnclosingScope());
             }
             return this.type;
         }
@@ -3870,7 +3893,7 @@ class Java {
         ConstructorInvocation(Location location, Rvalue[] arguments) {
             super(location);
             this.arguments = arguments;
-            for (Rvalue a : arguments) a.setEnclosingBlockStatement(this);
+            for (Rvalue a : arguments) a.setEnclosingScope(this);
         }
 
         // Implement BlockStatement
@@ -3938,7 +3961,7 @@ class Java {
         SuperConstructorInvocation(Location location, Rvalue optionalQualification, Rvalue[] arguments) {
             super(location, arguments);
             this.optionalQualification = optionalQualification;
-            if (optionalQualification != null) optionalQualification.setEnclosingBlockStatement(this);
+            if (optionalQualification != null) optionalQualification.setEnclosingScope(this);
         }
 
         // Implement Atom.

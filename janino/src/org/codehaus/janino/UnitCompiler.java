@@ -870,7 +870,19 @@ class UnitCompiler {
 
                 // Implement RvalueVisitor.
 
-                // SUPPRESS CHECKSTYLE LineLength:32
+                @Override public void
+                visitClassLiteral(ClassLiteral cl) {
+                    try {
+                        IClass targetIClass = UnitCompiler.this.getType(cl.type);
+                        ev[0] = new ClassFile.AnnotationsAttribute.ClassElementValue(
+                            cf.addConstantUtf8Info(targetIClass.getDescriptor())
+                        );
+                    } catch (CompileException ce) {
+                        throw new UncheckedCompileException(ce);
+                    }
+                }
+
+                // SUPPRESS CHECKSTYLE LineLength:31
                 @Override public void visitSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae) { this.visitRvalue(scfae); }
                 @Override public void visitParenthesizedExpression(ParenthesizedExpression pe)                    { this.visitRvalue(pe);    }
                 @Override public void visitLocalVariableAccess(LocalVariableAccess lva)                           { this.visitRvalue(lva);   }
@@ -895,7 +907,6 @@ class UnitCompiler {
                 @Override public void visitMethodInvocation(MethodInvocation mi)                                  { this.visitRvalue(mi);    }
                 @Override public void visitCrement(Crement c)                                                     { this.visitRvalue(c);     }
                 @Override public void visitInstanceof(Instanceof io)                                              { this.visitRvalue(io);    }
-                @Override public void visitClassLiteral(ClassLiteral cl)                                          { this.visitRvalue(cl);    }
                 @Override public void visitConditionalExpression(ConditionalExpression ce)                        { this.visitRvalue(ce);    }
                 @Override public void visitCharacterLiteral(CharacterLiteral cl)                                  { this.visitRvalue(cl);    }
                 @Override public void visitCast(Cast c)                                                           { this.visitRvalue(c);     }
@@ -910,17 +921,25 @@ class UnitCompiler {
                     try {
                         Object cv = UnitCompiler.this.getConstantValue(rv);
 
-                        if (cv == Rvalue.CONSTANT_VALUE_UNKNOWN) {
+                        if (cv == UnitCompiler.NOT_CONSTANT) {
                             throw new CompileException(
                                 "\"" + rv + "\" is not a constant expression",
                                 rv.getLocation()
                             );
                         }
 
-                        if (cv instanceof String) {
-                            ev[0] = new ClassFile.AnnotationsAttribute.StringElementValue(
-                                cf.addConstantUtf8Info((String) cv)
-                            );
+                        // SUPPRESS CHECKSTYLE LineLength:9
+                        if (cv instanceof Boolean)   { ev[0] = new ClassFile.AnnotationsAttribute.BooleanElementValue(cf.addConstantIntegerInfo((Boolean) cv ? 1 : 0)); } else
+                        if (cv instanceof Byte)      { ev[0] = new ClassFile.AnnotationsAttribute.ByteElementValue(cf.addConstantIntegerInfo((Byte) cv));               } else
+                        if (cv instanceof Short)     { ev[0] = new ClassFile.AnnotationsAttribute.ShortElementValue(cf.addConstantIntegerInfo((Short) cv));             } else
+                        if (cv instanceof Integer)   { ev[0] = new ClassFile.AnnotationsAttribute.IntElementValue(cf.addConstantIntegerInfo((Integer) cv));             } else
+                        if (cv instanceof Long)      { ev[0] = new ClassFile.AnnotationsAttribute.LongElementValue(cf.addConstantLongInfo((Long) cv));                  } else
+                        if (cv instanceof Float)     { ev[0] = new ClassFile.AnnotationsAttribute.FloatElementValue(cf.addConstantFloatInfo((Float) cv));               } else
+                        if (cv instanceof Double)    { ev[0] = new ClassFile.AnnotationsAttribute.DoubleElementValue(cf.addConstantDoubleInfo((Double) cv));            } else
+                        if (cv instanceof Character) { ev[0] = new ClassFile.AnnotationsAttribute.CharElementValue(cf.addConstantIntegerInfo((Character) cv));          } else
+                        if (cv instanceof String)    { ev[0] = new ClassFile.AnnotationsAttribute.StringElementValue(cf.addConstantUtf8Info((String) cv));              } else
+                        if (cv == null) {
+                            throw new CompileException("Null literal not allowed as element value", rv.getLocation());
                         } else
                         {
                             throw new AssertionError(cv);
@@ -2994,7 +3013,7 @@ class UnitCompiler {
                     sci.getLocation(),                                         // location
                     new SimpleType(sci.getLocation(), outerIClassOfSuperclass) // qualification
                 );
-                optionalEnclosingInstance.setEnclosingBlockStatement(sci);
+                optionalEnclosingInstance.setEnclosingScope(sci);
             }
         }
         this.invokeConstructor(
@@ -3536,7 +3555,7 @@ class UnitCompiler {
 
     private IClass
     compileGet2(FieldAccess fa) throws CompileException {
-        this.checkAccessible(fa.field, fa.getEnclosingBlockStatement());
+        this.checkAccessible(fa.field, fa.getEnclosingScope(), fa.getLocation());
         this.getfield(fa, fa.field);
         return fa.field.getType();
     }
@@ -3601,7 +3620,7 @@ class UnitCompiler {
         // Non-primitive class literal.
 
         TypeDeclaration declaringType;
-        for (Scope s = cl.getEnclosingBlockStatement();; s = s.getEnclosingScope()) {
+        for (Scope s = cl.getEnclosingScope();; s = s.getEnclosingScope()) {
             if (s instanceof TypeDeclaration) {
                 declaringType = (AbstractTypeDeclaration) s;
                 break;
@@ -3720,7 +3739,7 @@ class UnitCompiler {
                 )
             )
         );
-        ce.setEnclosingBlockStatement(cl.getEnclosingBlockStatement());
+        ce.setEnclosingScope(cl.getEnclosingScope());
         return this.compileGet(ce);
     }
     private IClass
@@ -4135,7 +4154,7 @@ class UnitCompiler {
             {
                 Scope s;
                 for (
-                    s = mi.getEnclosingBlockStatement();
+                    s = mi.getEnclosingScope();
                     !(s instanceof TypeBodyDeclaration);
                     s = s.getEnclosingScope()
                 );
@@ -4236,7 +4255,7 @@ class UnitCompiler {
         }
 
         // Invoke!
-        this.checkAccessible(iMethod, mi.getEnclosingBlockStatement());
+        this.checkAccessible(iMethod, mi.getEnclosingScope(), mi.getLocation());
         if (iMethod.getDeclaringIClass().isInterface()) {
             this.invoke(mi, iMethod);
         } else {
@@ -4272,7 +4291,7 @@ class UnitCompiler {
 
         Scope s;
         for (
-            s = scmi.getEnclosingBlockStatement();
+            s = scmi.getEnclosingScope();
             s instanceof Statement || s instanceof CatchClause;
             s = s.getEnclosingScope()
         );
@@ -4317,7 +4336,7 @@ class UnitCompiler {
         this.writeOpcode(nci, Opcode.DUP);
 
         if (nci.iClass.isInterface()) this.compileError("Cannot instantiate \"" + nci.iClass + "\"", nci.getLocation());
-        this.checkAccessible(nci.iClass, nci.getEnclosingBlockStatement());
+        this.checkAccessible(nci.iClass, nci.getEnclosingScope(), nci.getLocation());
         if (nci.iClass.isAbstract()) {
             this.compileError("Cannot instantiate abstract \"" + nci.iClass + "\"", nci.getLocation());
         }
@@ -4332,7 +4351,7 @@ class UnitCompiler {
             // Enclosing instance defined by qualification (JLS7 15.9.2.BL1.B3.B2).
             optionalEnclosingInstance = nci.optionalQualification;
         } else {
-            Scope s = nci.getEnclosingBlockStatement();
+            Scope s = nci.getEnclosingScope();
             for (; !(s instanceof TypeBodyDeclaration); s = s.getEnclosingScope());
             TypeBodyDeclaration enclosingTypeBodyDeclaration = (TypeBodyDeclaration) s;
             TypeDeclaration     enclosingTypeDeclaration     = (TypeDeclaration) s.getEnclosingScope();
@@ -4373,17 +4392,17 @@ class UnitCompiler {
                             optionalOuterIClass
                         )
                     );
-                    optionalEnclosingInstance.setEnclosingBlockStatement(nci.getEnclosingBlockStatement());
+                    optionalEnclosingInstance.setEnclosingScope(nci.getEnclosingScope());
                 }
             }
         }
 
         this.invokeConstructor(
-            nci,                              // l
-            nci.getEnclosingBlockStatement(), // scope
-            optionalEnclosingInstance,        // optionalEnclosingInstance
-            nci.iClass,                       // targetClass
-            nci.arguments                     // arguments
+            nci,                       // l
+            nci.getEnclosingScope(),   // scope
+            optionalEnclosingInstance, // optionalEnclosingInstance
+            nci.iClass,                // targetClass
+            nci.arguments              // arguments
         );
         return nci.iClass;
     }
@@ -4499,22 +4518,18 @@ class UnitCompiler {
             // Notice: The enclosing instance of the anonymous class is "this", not the qualification of the
             // NewAnonymousClassInstance.
             Scope s;
-            for (
-                s = naci.getEnclosingBlockStatement();
-                !(s instanceof TypeBodyDeclaration);
-                s = s.getEnclosingScope()
-            );
+            for (s = naci.getEnclosingScope(); !(s instanceof TypeBodyDeclaration); s = s.getEnclosingScope());
             ThisReference oei;
             if (((TypeBodyDeclaration) s).isStatic()) {
                 oei = null;
             } else
             {
                 oei = new ThisReference(loc);
-                oei.setEnclosingBlockStatement(naci.getEnclosingBlockStatement());
+                oei.setEnclosingScope(naci.getEnclosingScope());
             }
             this.invokeConstructor(
                 naci,                                         // locatable
-                naci.getEnclosingBlockStatement(),            // scope
+                naci.getEnclosingScope(),                     // scope
                 oei,                                          // optionalEnclosingInstance
                 this.resolve(naci.anonymousClassDeclaration), // targetClass
                 arguments2                                    // arguments
@@ -4632,7 +4647,9 @@ class UnitCompiler {
     public static final Object NOT_CONSTANT = IClass.NOT_CONSTANT;
 
     /**
-     * Attempts to evaluate as a constant expression.
+     * Attempts to evaluate as a constant expression. The result is one of the following: {@link Boolean}, {@link
+     * Byte}, {@link Short}, {@link Integer}, {@link Long}, {@link Float}, {@link Double}, {@link Character}, {@link
+     * String}, {@code null} (representing the {@code null} literal.
      *
      * @return {@link #NOT_CONSTANT} iff the rvalue is not a constant value
      */
@@ -5337,7 +5354,7 @@ class UnitCompiler {
 
     private void
     compileSet2(FieldAccess fa) throws CompileException {
-        this.checkAccessible(fa.field, fa.getEnclosingBlockStatement());
+        this.checkAccessible(fa.field, fa.getEnclosingScope(), fa.getLocation());
         this.putfield(fa, fa.field);
     }
     private void
@@ -6086,12 +6103,12 @@ class UnitCompiler {
      * 6.6.1.BL1.B4. Issues a {@link #compileError(String)} if not.
      */
     private void
-    checkAccessible(IClass.IMember member, BlockStatement contextBlockStatement) throws CompileException {
+    checkAccessible(IClass.IMember member, Scope contextScope, Location location) throws CompileException {
 
         // You have to check that both the class and member are accessible in this scope.
         IClass declaringIClass = member.getDeclaringIClass();
-        this.checkAccessible(declaringIClass, contextBlockStatement);
-        this.checkAccessible(declaringIClass, member.getAccess(), contextBlockStatement);
+        this.checkAccessible(declaringIClass, contextScope, location);
+        this.checkAccessible(declaringIClass, member.getAccess(), contextScope, location);
     }
 
     /**
@@ -6109,12 +6126,13 @@ class UnitCompiler {
      */
     private void
     checkAccessible(
-        IClass         iClassDeclaringMember,
-        Access         memberAccess,
-        BlockStatement contextBlockStatement
+        IClass   iClassDeclaringMember,
+        Access   memberAccess,
+        Scope    contextScope,
+        Location location
     ) throws CompileException {
-        String message = this.internalCheckAccessible(iClassDeclaringMember, memberAccess, contextBlockStatement);
-        if (message != null) this.compileError(message, contextBlockStatement.getLocation());
+        String message = this.internalCheckAccessible(iClassDeclaringMember, memberAccess, contextScope);
+        if (message != null) this.compileError(message, location);
     }
 
     /**
@@ -6221,9 +6239,9 @@ class UnitCompiler {
      * 6.6.1.4. Issues a {@link #compileError(String)} if not.
      */
     private void
-    checkAccessible(IClass type, BlockStatement contextBlockStatement) throws CompileException {
-        String message = this.internalCheckAccessible(type, contextBlockStatement);
-        if (message != null) this.compileError(message, contextBlockStatement.getLocation());
+    checkAccessible(IClass type, Scope contextScope, Location location) throws CompileException {
+        String message = this.internalCheckAccessible(type, contextScope);
+        if (message != null) this.compileError(message, location);
     }
 
     private String
@@ -7040,12 +7058,7 @@ class UnitCompiler {
     private Atom
     reclassify(AmbiguousName an) throws CompileException {
         if (an.reclassified == null) {
-            an.reclassified = this.reclassifyName(
-                an.getLocation(),
-                an.getEnclosingBlockStatement(),
-                an.identifiers,
-                an.n
-            );
+            an.reclassified = this.reclassifyName(an.getLocation(), an.getEnclosingScope(), an.identifiers, an.n);
         }
         return an.reclassified;
     }
@@ -7077,7 +7090,7 @@ class UnitCompiler {
                 this.compileError("\".length\" only allowed in expression context");
                 return al;
             }
-            al.setEnclosingBlockStatement((BlockStatement) scope);
+            al.setEnclosingScope(scope);
             return al;
         }
 
@@ -7096,7 +7109,7 @@ class UnitCompiler {
                     lhs,
                     field
                 );
-                fa.setEnclosingBlockStatement((BlockStatement) scope);
+                fa.setEnclosingScope(scope);
                 return fa;
             }
         }
@@ -7183,7 +7196,7 @@ class UnitCompiler {
                 LocalVariable  lv = bs.findLocalVariable(identifier);
                 if (lv != null) {
                     LocalVariableAccess lva = new LocalVariableAccess(location, lv);
-                    lva.setEnclosingBlockStatement(bs);
+                    lva.setEnclosingScope(bs);
                     return lva;
                 }
                 s = s.getEnclosingScope();
@@ -7227,7 +7240,7 @@ class UnitCompiler {
                             ),
                             iField                                      // field
                         );
-                        fa.setEnclosingBlockStatement((BlockStatement) scope);
+                        fa.setEnclosingScope(scope);
                         return fa;
                     }
                     s = s.getEnclosingScope();
@@ -7308,7 +7321,7 @@ class UnitCompiler {
                         lhs,
                         f
                     );
-                    res.setEnclosingBlockStatement(enclosingBlockStatement);
+                    res.setEnclosingScope(enclosingBlockStatement);
                     return res;
                 }
             }
@@ -7325,7 +7338,7 @@ class UnitCompiler {
                             new SimpleType(location, ((IField) o).getDeclaringIClass()),
                             (IField) o
                         );
-                        fieldAccess.setEnclosingBlockStatement(enclosingBlockStatement);
+                        fieldAccess.setEnclosingScope(enclosingBlockStatement);
                         return fieldAccess;
                     }
                 }
@@ -7362,7 +7375,7 @@ class UnitCompiler {
                     new SimpleType(location, importedField.getDeclaringIClass()),
                     importedField
                 );
-                fieldAccess.setEnclosingBlockStatement(enclosingBlockStatement);
+                fieldAccess.setEnclosingScope(enclosingBlockStatement);
                 return fieldAccess;
             }
         }
@@ -7500,7 +7513,8 @@ class UnitCompiler {
                 iField
             );
         }
-        fae.value.setEnclosingBlockStatement(fae.getEnclosingBlockStatement());
+
+        fae.value.setEnclosingScope(fae.getEnclosingScope());
     }
 
     /** "super.fld", "Type.super.fld" */
@@ -7511,7 +7525,7 @@ class UnitCompiler {
         Rvalue lhs;
         {
             ThisReference tr = new ThisReference(scfae.getLocation());
-            tr.setEnclosingBlockStatement(scfae.getEnclosingBlockStatement());
+            tr.setEnclosingScope(scfae.getEnclosingScope());
             IClass type;
             if (scfae.optionalQualification != null) {
                 type = this.getType(scfae.optionalQualification);
@@ -7538,7 +7552,7 @@ class UnitCompiler {
             lhs,
             iField
         );
-        scfae.value.setEnclosingBlockStatement(scfae.getEnclosingBlockStatement());
+        scfae.value.setEnclosingScope(scfae.getEnclosingScope());
     }
 
     /**
@@ -7558,7 +7572,7 @@ class UnitCompiler {
 
                 // Method invocation by simple method name... method must be declared by an enclosing type declaration.
                 for (
-                    Scope s = mi.getEnclosingBlockStatement();
+                    Scope s = mi.getEnclosingScope();
                     !(s instanceof CompilationUnit);
                     s = s.getEnclosingScope()
                 ) {
@@ -7678,7 +7692,7 @@ class UnitCompiler {
             invocation,                                                   // locatable
             (IClass.IMethod[]) ms.toArray(new IClass.IMethod[ms.size()]), // iInvocables
             invocation.arguments,                                         // arguments
-            invocation.getEnclosingBlockStatement()                       // contextScope
+            invocation.getEnclosingScope()                                // contextScope
         );
     }
 
@@ -7725,7 +7739,7 @@ class UnitCompiler {
     public IClass.IMethod
     findIMethod(SuperclassMethodInvocation superclassMethodInvocation) throws CompileException {
         ClassDeclaration declaringClass;
-        for (Scope s = superclassMethodInvocation.getEnclosingBlockStatement();; s = s.getEnclosingScope()) {
+        for (Scope s = superclassMethodInvocation.getEnclosingScope();; s = s.getEnclosingScope()) {
             if (s instanceof FunctionDeclarator) {
                 FunctionDeclarator fd = (FunctionDeclarator) s;
                 if (Mod.isStatic(fd.modifiers.flags)) {
@@ -8160,9 +8174,9 @@ class UnitCompiler {
         IClass[] thrownExceptions = iMethod.getThrownExceptions();
         for (IClass thrownException : thrownExceptions) {
             this.checkThrownException(
-                in,                             // locatable
-                thrownException,                // type
-                in.getEnclosingBlockStatement() // scope
+                in,                    // locatable
+                thrownException,       // type
+                in.getEnclosingScope() // scope
             );
         }
     }
@@ -8608,7 +8622,7 @@ class UnitCompiler {
             // Compile error if in static function context.
             Scope s;
             for (
-                s = tr.getEnclosingBlockStatement();
+                s = tr.getEnclosingScope();
                 s instanceof Statement || s instanceof CatchClause;
                 s = s.getEnclosingScope()
             );
@@ -8988,7 +9002,7 @@ class UnitCompiler {
         //
         Location                loc = cl.getLocation();
         AbstractTypeDeclaration declaringType;
-        for (Scope s = cl.getEnclosingBlockStatement();; s = s.getEnclosingScope()) {
+        for (Scope s = cl.getEnclosingScope();; s = s.getEnclosingScope()) {
             if (s instanceof AbstractTypeDeclaration) {
                 declaringType = (AbstractTypeDeclaration) s;
                 break;
@@ -10602,7 +10616,7 @@ class UnitCompiler {
             // Compile error if in static function context.
             Scope s;
             for (
-                s = qtr.getEnclosingBlockStatement();
+                s = qtr.getEnclosingScope();
                 !(s instanceof TypeBodyDeclaration);
                 s = s.getEnclosingScope()
             );

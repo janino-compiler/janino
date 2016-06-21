@@ -32,6 +32,7 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 import org.codehaus.commons.compiler.ICompilerFactory;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -57,6 +58,20 @@ class JlsTests extends JaninoTestSuite {
     public
     JlsTests(ICompilerFactory compilerFactory) throws Exception {
         super(compilerFactory);
+    }
+
+    @Before
+    public void
+    setUp() throws Exception {
+
+        // Enable this code snippet to print class file disassemblies to the console.
+        if (false) {
+            Logger scl = Logger.getLogger("org.codehaus.janino.SimpleCompiler");
+            for (Handler h : scl.getHandlers()) {
+                h.setLevel(Level.FINEST);
+            }
+            scl.setLevel(Level.FINEST);
+        }
     }
 
     @Test public void
@@ -394,15 +409,6 @@ class JlsTests extends JaninoTestSuite {
     @Test public void
     test_8_4_8_3__Requirements_in_Overriding_and_Hiding() throws Exception {
 
-        // Enable this code snippet to print class file disassemblies to the console.
-        if (false) {
-            Logger scl = Logger.getLogger("org.codehaus.janino.SimpleCompiler");
-            for (Handler h : scl.getHandlers()) {
-                h.setLevel(Level.FINEST);
-            }
-            scl.setLevel(Level.FINEST);
-        }
-
         this.assertClassBodyExecutable(
             ""
             + "public static interface FirstCloneable extends Cloneable {\n"
@@ -429,15 +435,6 @@ class JlsTests extends JaninoTestSuite {
 
     @Test public void
     test_9_7_2_Marker_Annotations() throws Exception {
-
-        // Enable this code snippet to print class file disassemblies to the console.
-        if (false) {
-            Logger scl = Logger.getLogger("org.codehaus.janino.SimpleCompiler");
-            for (Handler h : scl.getHandlers()) {
-                h.setLevel(Level.FINEST);
-            }
-            scl.setLevel(Level.FINEST);
-        }
 
         this.assertCompilationUnitMainReturnsTrue((
             ""
@@ -483,7 +480,7 @@ class JlsTests extends JaninoTestSuite {
     }
 
     @Test public void
-    test_9_7_1_Normal_Annotations() throws Exception {
+    test_9_7_1_Normal_Annotations1() throws Exception {
 
         this.assertCompilationUnitMainReturnsTrue((
             ""
@@ -498,8 +495,61 @@ class JlsTests extends JaninoTestSuite {
             + "        RuntimeRetainedAnnotation2 anno = (\n"
             + "            (RuntimeRetainedAnnotation2) Main.class.getAnnotation(RuntimeRetainedAnnotation2.class)\n"
             + "        );\n"
-            + "        if (anno == null) throw new AssertionError(\"anno == null\");\n"
-            + "        if (!anno.value().equals(\"Bar\")) throw new AssertionError(\"anno.value() != null\");\n"
+            + "        if (anno == null) throw new AssertionError(1);\n"
+            + "        if (!anno.value().equals(\"Bar\")) throw new AssertionError(2);\n"
+            + "        return true;\n"
+            + "    }\n"
+            + "}"
+        ), "Main");
+    }
+
+    @Test public void
+    test_9_7_1_Normal_Annotations2() throws Exception {
+
+        this.assertCompilationUnitMainReturnsTrue((
+            ""
+            + "import java.util.Arrays;\n"
+            + "import org.codehaus.commons.compiler.tests.annotation.RuntimeRetainedAnnotation3;\n"
+            + "\n"
+            + "@RuntimeRetainedAnnotation3(\n"
+            + "    booleanValue     = true,\n"
+            + "    byteValue        = (byte) 127,\n"
+            + "    shortValue       = (short) 32767,\n"
+            + "    intValue         = 99999,\n"
+            + "    longValue        = 9999999999L,\n"
+            + "    floatValue       = 123.5F,\n"
+            + "    doubleValue      = 3.1415927,\n"
+            + "    charValue        = 'X',\n"
+            + "    stringValue      = \"Foo\",\n"
+            + "    classValue       = String.class,\n"
+            + "    annotationValue  = @Override,\n"
+            + "    stringArrayValue = { \"Foo\", \"Bar\" },\n"
+            + "    intArrayValue    = { 1, 2, 3 }\n"
+            + ")\n"
+            + "public\n"
+            + "class Main {\n"
+            + "\n"
+            + "    public static boolean\n"
+            + "    main() {\n"
+            + "        RuntimeRetainedAnnotation3 anno = (\n"
+            + "            (RuntimeRetainedAnnotation3) Main.class.getAnnotation(RuntimeRetainedAnnotation3.class)\n"
+            + "        );\n"
+            + "        if (anno == null) throw new AssertionError(1);\n"
+            + "\n"
+            // SUPPRESS CHECKSTYLE LineLength:13
+            + "        if (!anno.booleanValue())                                                       throw new AssertionError(2);\n"
+            + "        if (anno.byteValue() != 127)                                                    throw new AssertionError(3);\n"
+            + "        if (anno.shortValue() != 32767)                                                 throw new AssertionError(4);\n"
+            + "        if (anno.intValue() != 99999)                                                   throw new AssertionError(5);\n"
+            + "        if (anno.longValue() != 9999999999L)                                            throw new AssertionError(6);\n"
+            + "        if (anno.floatValue() != 123.5F)                                                throw new AssertionError(7);\n"
+            + "        if (anno.doubleValue() != 3.1415927)                                            throw new AssertionError(8);\n"
+            + "        if (anno.charValue() != 'X')                                                    throw new AssertionError(9);\n"
+            + "        if (!anno.stringValue().equals(\"Foo\"))                                        throw new AssertionError(10);\n"
+            + "        if (anno.classValue() != String.class)                                          throw new AssertionError(11);\n"
+            + "        if (!(anno.annotationValue() instanceof Override))                              throw new AssertionError(12);\n"
+            + "        if (!Arrays.equals(anno.stringArrayValue(), new String[] { \"Foo\", \"Bar\" })) throw new AssertionError(13);\n"
+            + "        if (!Arrays.equals(anno.intArrayValue(), new int[] { 1, 2, 3 }))                throw new AssertionError(14);\n"
             + "        return true;\n"
             + "    }\n"
             + "}"

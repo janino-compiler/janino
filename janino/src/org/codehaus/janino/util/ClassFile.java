@@ -1733,7 +1733,15 @@ class ClassFile {
         public
         interface ElementValue {
 
-            /** Writes this element value in an element-value-type dependent way; see JVMS8 4.7.16.1. */
+            /**
+             * @return The "tag" byte to use when storing this "value" in an "element_value" structure
+             */
+            byte getTag();
+
+            /**
+             * Writes this element value in an element-value-type dependent way; see JVMS8 4.7.16.1.
+             * The "tag" byte is <em>not</em> part of this writing!
+             */
             void store(DataOutputStream dos) throws IOException;
         }
 
@@ -1753,9 +1761,11 @@ class ClassFile {
                 this.constantValueIndex = constantValueIndex;
             }
 
+            @Override public byte
+            getTag() { return this.tag; }
+
             @Override public void
             store(DataOutputStream dos) throws IOException {
-                dos.writeByte(this.tag);                 // tag
                 dos.writeShort(this.constantValueIndex); // const_value_index
             }
         }
@@ -1786,9 +1796,11 @@ class ClassFile {
                 this.constNameIndex = constNameIndex;
             }
 
+            @Override public byte
+            getTag() { return 'e'; }
+
             @Override public void
             store(DataOutputStream dos) throws IOException {
-                dos.writeByte('e');                  // tag
                 dos.writeShort(this.typeNameIndex);  // type_name_index
                 dos.writeShort(this.constNameIndex); // const_name_index
             }
@@ -1803,10 +1815,16 @@ class ClassFile {
             public
             ArrayElementValue(ElementValue[] values) { this.values = values; }
 
+            @Override public byte
+            getTag() { return '['; }
+
             @Override public void
             store(DataOutputStream dos) throws IOException {
-                dos.writeShort(this.values.length);
-                for (ElementValue ev : this.values) ev.store(dos);
+                dos.writeShort(this.values.length);   // num_values
+                for (ElementValue ev : this.values) { // values[num_values]
+                    dos.writeByte(ev.getTag()); // tag
+                    ev.store(dos);              // value
+                }
             }
         }
 
@@ -1839,13 +1857,22 @@ class ClassFile {
                 this.elementValuePairs = elementValuePairs;
             }
 
+            @Override public byte
+            getTag() { return '@'; }
+
             @Override public void
             store(DataOutputStream dos) throws IOException {
-                dos.writeShort(this.typeIndex);                // type_index
-                dos.writeShort(this.elementValuePairs.size()); // num_element_value_pairs
-                for (Map.Entry<Short, ElementValue> evps : this.elementValuePairs.entrySet()) {
-                    dos.writeShort((Short) evps.getKey());       // element_name_index
-                    ((ElementValue) evps.getValue()).store(dos); // value
+
+                // SUPPRESS CHECKSTYLE LineLength:4
+                dos.writeShort(this.typeIndex);                                                 // type_index
+                dos.writeShort(this.elementValuePairs.size());                                  // num_element_value_pairs
+                for (Map.Entry<Short, ElementValue> evps : this.elementValuePairs.entrySet()) { // element_value_pairs[num_element_value_pairs]
+                    Short        elementNameIndex = (Short)        evps.getKey();
+                    ElementValue elementValue     = (ElementValue) evps.getValue();
+
+                    dos.writeShort(elementNameIndex);     // element_name_index
+                    dos.writeByte(elementValue.getTag()); // value.tag
+                    elementValue.store(dos);              // value.value
                 }
             }
         }
