@@ -798,12 +798,13 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
 
         Modifiers modifiers = parser.parseModifiers();
 
-        // "void" method declaration.
+        // "void" method declaration (without type parameters).
         if (parser.peekRead("void")) {
             String name = parser.readIdentifier();
             localMethods.add(parser.parseMethodDeclarationRest(
                 null,                                             // optionalDocComment
                 modifiers,                                        // modifiers
+                null,                                             // optionalTypeParameters
                 new BasicType(parser.location(), BasicType.VOID), // type
                 name                                              // name
             ));
@@ -819,6 +820,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
                 localMethods.add(parser.parseMethodDeclarationRest(
                     null,                   // optionalDocComment
                     modifiers,              // modifiers
+                    null,                   // optionalTypeParameters
                     methodOrVariableType,   // type
                     parser.readIdentifier() // name
                 ));
@@ -854,6 +856,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
             localMethods.add(parser.parseMethodDeclarationRest(
                 null,                   // optionalDocComment
                 modifiers,              // modifiers
+                null,                   // optionalTypeParameters
                 methodOrVariableType,   // type
                 parser.readIdentifier() // name
             ));
@@ -924,6 +927,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
                 staticMethod ? (short) (Mod.PUBLIC | Mod.STATIC) : (short) Mod.PUBLIC,
                 annotations
             ),
+            null,                                            // optionalTypeParameters
             this.classToType(location, returnType),          // type
             methodName,                                      // name
             fps,                                             // formalParameters
