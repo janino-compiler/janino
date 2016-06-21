@@ -543,12 +543,9 @@ class Parser {
      *       'class' ClassDeclarationRest |
      *       'interface' InterfaceDeclarationRest |
      *       ConstructorDeclarator |
-     *       Type Identifier (
-     *         MethodDeclarationRest |
-     *         FieldDeclarationRest ';'
-     *       )
+     *       [ TypeArguments ] Type Identifier MethodDeclarationRest |
+     *       Type Identifier FieldDeclarationRest ';'
      *     )
-     *
      * </pre>
      */
     public void
@@ -574,7 +571,7 @@ class Parser {
             return;
         }
 
-        // "void" method declaration.
+        // "void" method declaration (without type arguments).
         if (this.peekRead("void")) {
             Location location = this.location();
             if (optionalDocComment == null) this.warning("MDCM", "Method doc comment missing", location);
@@ -582,6 +579,7 @@ class Parser {
             classDeclaration.addDeclaredMethod(this.parseMethodDeclarationRest(
                 optionalDocComment,                      // optionalDocComment
                 modifiers,                               // modifiers
+                null,                                    // optionalTypeParameters
                 new BasicType(location, BasicType.VOID), // type
                 name                                     // name
             ));
@@ -627,23 +625,43 @@ class Parser {
         }
 
         // Member method or field.
-        Type     memberType = this.parseType();
-        Location location   = this.location();
-        String   memberName = this.readIdentifier();
+        TypeParameter[] optionalTypeParameters = this.parseTypeParametersOpt();
+
+        // VOID method declaration?
+        if (this.peekRead("void")) {
+            if (optionalDocComment == null) this.warning("MDCM", "Method doc comment missing", this.location());
+            String name = this.readIdentifier();
+            classDeclaration.addDeclaredMethod(this.parseMethodDeclarationRest(
+                optionalDocComment,                             // optionalDocComment
+                modifiers,                                      // modifiers
+                optionalTypeParameters,                         // optionalTypeParameters
+                new BasicType(this.location(), BasicType.VOID), // type
+                name                                            // name
+            ));
+            return;
+        }
+
+        Type           memberType    = this.parseType();
+        Location       location      = this.location();
+        String         memberName    = this.readIdentifier();
 
         // Method declarator.
         if (this.peek("(")) {
             if (optionalDocComment == null) this.warning("MDCM", "Method doc comment missing", this.location());
             classDeclaration.addDeclaredMethod(this.parseMethodDeclarationRest(
-                optionalDocComment, // optionalDocComment
-                modifiers,          // modifiers
-                memberType,         // type
-                memberName          // name
+                optionalDocComment,     // optionalDocComment
+                modifiers,              // modifiers
+                optionalTypeParameters, // optionalTypeParameters
+                memberType,             // type
+                memberName              // name
             ));
             return;
         }
 
         // Field declarator.
+        if (optionalTypeParameters != null) {
+            throw new CompileException("Type parameters not allowed on field declaration", this.location());
+        }
         if (optionalDocComment == null) this.warning("FDCM", "Field doc comment missing", this.location());
         FieldDeclaration fd = new FieldDeclaration(
             location,                                  // location
@@ -752,7 +770,7 @@ class Parser {
             String    optionalDocComment = this.scanner.doc();
             Modifiers modifiers          = this.parseModifiers();
 
-            // "void" method declaration.
+            // "void" method declaration (without type parameters).
             if (this.peekRead("void")) {
                 if (optionalDocComment == null) this.warning("MDCM", "Method doc comment missing", this.location());
                 Location location = this.location();
@@ -760,10 +778,12 @@ class Parser {
                 interfaceDeclaration.addDeclaredMethod(this.parseMethodDeclarationRest(
                     optionalDocComment,                       // optionalDocComment
                     modifiers.add(Mod.ABSTRACT | Mod.PUBLIC), // modifiers
+                    null,                                     // optionalTypeParameters
                     new BasicType(location, BasicType.VOID),  // type
                     name                                      // name
                 ));
-            } else
+                continue;
+            }
 
             // Member class.
             if (this.peekRead("class")) {
@@ -777,7 +797,8 @@ class Parser {
                         ClassDeclarationContext.TYPE_DECLARATION // context
                     )
                 );
-            } else
+                continue;
+            }
 
             // Member interface.
             if (this.peekRead("interface")) {
@@ -791,40 +812,58 @@ class Parser {
                         InterfaceDeclarationContext.NAMED_TYPE_DECLARATION // context
                     )
                 );
-            } else
+                continue;
+            }
 
             // Member method or field.
-            {
-                this.parseTypeArgumentsOpt();
 
-                Type     memberType = this.parseType();
-                String   memberName = this.readIdentifier();
-                Location location   = this.location();
+            TypeParameter[] optionalTypeParameters = this.parseTypeParametersOpt();
 
-                // Method declarator.
-                if (this.peek("(")) {
-                    if (optionalDocComment == null) this.warning("MDCM", "Method doc comment missing", this.location());
-                    interfaceDeclaration.addDeclaredMethod(this.parseMethodDeclarationRest(
-                        optionalDocComment,                       // optionalDocComment
-                        modifiers.add(Mod.ABSTRACT | Mod.PUBLIC), // modifiers
-                        memberType,                               // type
-                        memberName                                // name
-                    ));
-                } else
-
-                // Field declarator.
-                {
-                    if (optionalDocComment == null) this.warning("FDCM", "Field doc comment missing", this.location());
-                    FieldDeclaration fd = new FieldDeclaration(
-                        location,                                           // location
-                        optionalDocComment,                                 // optionalDocComment
-                        modifiers.add(Mod.PUBLIC | Mod.STATIC | Mod.FINAL), // modifiers
-                        memberType,                                         // type
-                        this.parseFieldDeclarationRest(memberName)          // variableDeclarators
-                    );
-                    interfaceDeclaration.addConstantDeclaration(fd);
-                }
+            // "void" method declaration?
+            if (this.peekRead("void")) {
+                if (optionalDocComment == null) this.warning("MDCM", "Method doc comment missing", this.location());
+                Location location = this.location();
+                String   name     = this.readIdentifier();
+                interfaceDeclaration.addDeclaredMethod(this.parseMethodDeclarationRest(
+                    optionalDocComment,                       // optionalDocComment
+                    modifiers.add(Mod.ABSTRACT | Mod.PUBLIC), // modifiers
+                    optionalTypeParameters,                   // optionalTypeParameters
+                    new BasicType(location, BasicType.VOID),  // type
+                    name                                      // name
+                ));
+                continue;
             }
+
+            Type     memberType = this.parseType();
+            String   memberName = this.readIdentifier();
+            Location location   = this.location();
+
+            // Method declarator?
+            if (this.peek("(")) {
+                if (optionalDocComment == null) this.warning("MDCM", "Method doc comment missing", this.location());
+                interfaceDeclaration.addDeclaredMethod(this.parseMethodDeclarationRest(
+                    optionalDocComment,                       // optionalDocComment
+                    modifiers.add(Mod.ABSTRACT | Mod.PUBLIC), // modifiers
+                    optionalTypeParameters,                   // optionalTypeParameters
+                    memberType,                               // type
+                    memberName                                // name
+                ));
+                continue;
+            }
+
+            // Must be a field declarator.
+            if (optionalTypeParameters != null) {
+                throw new CompileException("Type parameters not allowed with field declaration", this.location());
+            }
+            if (optionalDocComment == null) this.warning("FDCM", "Field doc comment missing", this.location());
+            FieldDeclaration fd = new FieldDeclaration(
+                location,                                           // location
+                optionalDocComment,                                 // optionalDocComment
+                modifiers.add(Mod.PUBLIC | Mod.STATIC | Mod.FINAL), // modifiers
+                memberType,                                         // type
+                this.parseFieldDeclarationRest(memberName)          // variableDeclarators
+            );
+            interfaceDeclaration.addConstantDeclaration(fd);
         }
     }
 
@@ -918,13 +957,15 @@ class Parser {
      *     [ 'throws' ReferenceTypeList ]
      *     ( ';' | MethodBody )
      * </pre>
+     * @param optionalTypeParameters TODO
      */
     public MethodDeclarator
     parseMethodDeclarationRest(
-        String    optionalDocComment,
-        Modifiers modifiers,
-        Type      type,
-        String    name
+        String          optionalDocComment,
+        Modifiers       modifiers,
+        TypeParameter[] optionalTypeParameters,
+        Type            type,
+        String          name
     ) throws CompileException, IOException {
         Location location = this.location();
 
@@ -955,15 +996,17 @@ class Parser {
             optionalStatements = this.parseBlockStatements();
             this.read("}");
         }
+
         return new MethodDeclarator(
-            location,           // location
-            optionalDocComment, // optionalDocComment
-            modifiers,          // modifiers
-            type,               // type
-            name,               // name
-            formalParameters,   // formalParameters
-            thrownExceptions,   // thrownExceptions
-            optionalStatements  // optionalStatements
+            location,               // location
+            optionalDocComment,     // optionalDocComment
+            modifiers,              // modifiers
+            optionalTypeParameters, // optionalTypeParameters
+            type,                   // type
+            name,                   // name
+            formalParameters,       // formalParameters
+            thrownExceptions,       // thrownExceptions
+            optionalStatements      // optionalStatements
         );
     }
 
@@ -1832,6 +1875,8 @@ class Parser {
      * <pre>
      *   TypeArguments := '<' TypeArgument { ',' TypeArgument } '>'
      * </pre>
+     *
+     * @return {@code null} iff there are no type arguments
      */
     private TypeArgument[]
     parseTypeArgumentsOpt() throws CompileException, IOException {
