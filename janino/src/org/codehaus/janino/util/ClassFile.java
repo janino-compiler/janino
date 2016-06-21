@@ -59,7 +59,7 @@ import org.codehaus.janino.util.ClassFile.AnnotationsAttribute.ElementValue;
  * machine.
  */
 @SuppressWarnings({ "rawtypes", "unchecked" }) public
-class ClassFile {
+class ClassFile implements Annotatable {
 
     /**
      * Construct from parsed components.
@@ -160,16 +160,17 @@ class ClassFile {
     }
 
     /**
-     * Find the "InnerClasses" attribute of this class file
-     * @return <code>null</code> if this class has no "InnerClasses" attribute
+     * Finds the "Runtime[In]visibleAnnotations" attribute of this class file.
+     *
+     * @return <code>null</code> if this class has no such attribute
      */
     public AnnotationsAttribute
-    getAnnotationsAttribute(String attributeName) {
+    getAnnotationsAttribute(String attributeName, List<AttributeInfo> attributes) {
         assert "RuntimeVisibleAnnotations".equals(attributeName) || "RuntimeInvisibleAnnotations".equals(attributeName);
         Short ni = (Short) this.constantPoolMap.get(new ConstantUtf8Info(attributeName));
         if (ni == null) return null;
 
-        for (Iterator<AttributeInfo> it = this.attributes.iterator(); it.hasNext();) {
+        for (Iterator<AttributeInfo> it = attributes.iterator(); it.hasNext();) {
             AttributeInfo ai = (AttributeInfo) it.next();
             if (ai.nameIndex == ni.shortValue() && ai instanceof AnnotationsAttribute) {
                 return (AnnotationsAttribute) ai;
@@ -179,21 +180,40 @@ class ClassFile {
     }
 
     /**
+     * Creates a "Runtime[In]visibleAnnotations" attribute on the class (if it does not yet exist) and adds an entry.
+     *
      * @param elementValuePairs Maps element-name constant-pool-index ({@link ConstantUtf8Info}) to element value
      */
-    public void
+    @Override public void
     addAnnotationsAttributeEntry(
         boolean                  runtimeVisible,
         String                   fieldDescriptor,
         Map<Short, ElementValue> elementValuePairs
     ) {
+        this.addAnnotationsAttributeEntry(runtimeVisible, fieldDescriptor, elementValuePairs, this.attributes);
+    }
+
+    /**
+     * Adds a "Runtime[In]visibleAnnotations" attribute to the <var>target</var> (if it does not yet exist) and adds an
+     * entry.
+     *
+     * @param elementValuePairs Maps "elemant_name_index" ({@link ConstantUtf8Info}) to "element_value", see JVMS8
+     *                          4.7.16
+     */
+    private void
+    addAnnotationsAttributeEntry(
+        boolean                  runtimeVisible,
+        String                   fieldDescriptor,
+        Map<Short, ElementValue> elementValuePairs,
+        List<AttributeInfo>      target
+    ) {
         String attributeName = runtimeVisible ? "RuntimeVisibleAnnotations" : "RuntimeInvisibleAnnotations";
 
         // Find or create the "Runtime[In]visibleAnnotations" attribute.
-        AnnotationsAttribute aa = this.getAnnotationsAttribute(attributeName);
+        AnnotationsAttribute aa = this.getAnnotationsAttribute(attributeName, target);
         if (aa == null) {
             aa = new AnnotationsAttribute(this.addConstantUtf8Info(attributeName));
-            this.attributes.add(aa);
+            target.add(aa);
         }
 
         // Add the new annotation
@@ -1268,7 +1288,7 @@ class ClassFile {
 
     /** Representation of a "method_info" structure, as defined by JVMS7 4.6. */
     public
-    class MethodInfo {
+    class MethodInfo implements Annotatable {
 
         private final Java.Modifiers      modifiers;
         private final short               nameIndex;
@@ -1317,6 +1337,20 @@ class ClassFile {
         public void
         addAttribute(AttributeInfo attribute) { this.attributes.add(attribute); }
 
+        @Override public void
+        addAnnotationsAttributeEntry(
+            boolean                  runtimeVisible,
+            String                   fieldDescriptor,
+            Map<Short, ElementValue> elementValuePairs
+        ) {
+            ClassFile.this.addAnnotationsAttributeEntry(
+                runtimeVisible,
+                fieldDescriptor,
+                elementValuePairs,
+                this.attributes
+            );
+        }
+
         /** Writes this object to a {@link DataOutputStream}, in the format described inJVMS7 4.6. */
         public void
         store(DataOutputStream dos) throws IOException {
@@ -1346,8 +1380,8 @@ class ClassFile {
     }
 
     /** Representation of a "method_info" structure, as defined by JVMS7 4.5. */
-    public static
-    class FieldInfo {
+    public
+    class FieldInfo implements Annotatable {
 
         public
         FieldInfo(
@@ -1385,6 +1419,20 @@ class ClassFile {
         /** Adds the given {@code attribute} to this field. */
         public void
         addAttribute(AttributeInfo attribute) { this.attributes.add(attribute); }
+
+        @Override public void
+        addAnnotationsAttributeEntry(
+            boolean                  runtimeVisible,
+            String                   fieldDescriptor,
+            Map<Short, ElementValue> elementValuePairs
+        ) {
+            ClassFile.this.addAnnotationsAttributeEntry(
+                runtimeVisible,
+                fieldDescriptor,
+                elementValuePairs,
+                this.attributes
+            );
+        }
 
         /** Writes this object to a {@link DataOutputStream}, in the format described inJVMS7 4.5. */
         public void

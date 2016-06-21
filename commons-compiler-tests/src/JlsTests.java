@@ -65,7 +65,7 @@ class JlsTests extends JaninoTestSuite {
     setUp() throws Exception {
 
         // Enable this code snippet to print class file disassemblies to the console.
-        if (false) {
+        if (true) {
             Logger scl = Logger.getLogger("org.codehaus.janino.SimpleCompiler");
             for (Handler h : scl.getHandlers()) {
                 h.setLevel(Level.FINEST);
@@ -471,8 +471,8 @@ class JlsTests extends JaninoTestSuite {
             + "        RuntimeRetainedAnnotation2 anno = (\n"
             + "            (RuntimeRetainedAnnotation2) Main.class.getAnnotation(RuntimeRetainedAnnotation2.class)\n"
             + "        );\n"
-            + "        if (anno == null) throw new AssertionError(\"anno == null\");\n"
-            + "        if (!anno.value().equals(\"Foo\")) throw new AssertionError(\"anno.value() != null\");\n"
+            + "        if (anno == null) throw new AssertionError(1);\n"
+            + "        if (!anno.value().equals(\"Foo\")) throw new AssertionError(2);\n"
             + "        return true;\n"
             + "    }\n"
             + "}"
@@ -550,6 +550,56 @@ class JlsTests extends JaninoTestSuite {
             + "        if (!(anno.annotationValue() instanceof Override))                              throw new AssertionError(12);\n"
             + "        if (!Arrays.equals(anno.stringArrayValue(), new String[] { \"Foo\", \"Bar\" })) throw new AssertionError(13);\n"
             + "        if (!Arrays.equals(anno.intArrayValue(), new int[] { 1, 2, 3 }))                throw new AssertionError(14);\n"
+            + "        return true;\n"
+            + "    }\n"
+            + "}"
+        ), "Main");
+    }
+
+    @Test public void
+    test_9_7_4_Where_Annotations_May_Appear_field() throws Exception {
+
+        this.assertCompilationUnitMainReturnsTrue((
+            ""
+            + "import org.codehaus.commons.compiler.tests.annotation.RuntimeRetainedAnnotation2;\n"
+            + "\n"
+            + "public\n"
+            + "class Main {\n"
+            + "\n"
+            + "    @RuntimeRetainedAnnotation2(\"Foo\") public int field;\n"
+            + "\n"
+            + "    public static boolean\n"
+            + "    main() throws Exception {\n"
+            + "        RuntimeRetainedAnnotation2 anno = ((RuntimeRetainedAnnotation2) Main.class.getField(\n"
+            + "            \"field\"\n"
+            + "        ).getAnnotation(RuntimeRetainedAnnotation2.class));\n"
+            + "        if (anno == null) throw new AssertionError(1);\n"
+            + "        if (!anno.value().equals(\"Foo\")) throw new AssertionError(2);\n"
+            + "        return true;\n"
+            + "    }\n"
+            + "}"
+        ), "Main");
+    }
+
+    @Test public void
+    test_9_7_4_Where_Annotations_May_Appear_method() throws Exception {
+
+        this.assertCompilationUnitMainReturnsTrue((
+            ""
+            + "import org.codehaus.commons.compiler.tests.annotation.RuntimeRetainedAnnotation2;\n"
+            + "\n"
+            + "public\n"
+            + "class Main {\n"
+            + "\n"
+            + "    @RuntimeRetainedAnnotation2(\"Foo\") public void method() {}\n"
+            + "\n"
+            + "    public static boolean\n"
+            + "    main() throws Exception {\n"
+            + "        RuntimeRetainedAnnotation2 anno = ((RuntimeRetainedAnnotation2) Main.class.getMethod(\n"
+            + "            \"method\"\n"
+            + "        ).getAnnotation(RuntimeRetainedAnnotation2.class));\n"
+            + "        if (anno == null) throw new AssertionError(1);\n"
+            + "        if (!anno.value().equals(\"Foo\")) throw new AssertionError(2);\n"
             + "        return true;\n"
             + "    }\n"
             + "}"

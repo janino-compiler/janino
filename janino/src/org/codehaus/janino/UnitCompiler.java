@@ -184,6 +184,7 @@ import org.codehaus.janino.Visitor.ImportVisitor;
 import org.codehaus.janino.Visitor.LvalueVisitor;
 import org.codehaus.janino.Visitor.RvalueVisitor;
 import org.codehaus.janino.Visitor.TypeDeclarationVisitor;
+import org.codehaus.janino.util.Annotatable;
 import org.codehaus.janino.util.ClassFile;
 import org.codehaus.janino.util.ClassFile.AnnotationsAttribute.ElementValue;
 
@@ -443,8 +444,8 @@ class UnitCompiler {
             IClass.getDescriptors(iClass.getInterfaces()) // interfaceFDs
         );
 
-        // Add annotations with retention != SOURCE.
-        this.addAnnotations(cd.getAnnotations(), cf);
+        // Add class annotations with retention != SOURCE.
+        this.compileAnnotations(cd.getAnnotations(), cf, cf);
 
         // Add InnerClasses attribute entry for this class declaration.
         if (cd.getEnclosingScope() instanceof CompilationUnit) {
@@ -615,8 +616,8 @@ class UnitCompiler {
                     ocv == UnitCompiler.NOT_CONSTANT ? null : ocv // optionalConstantValue
                 );
 
-                // Add annotations with retention != SOURCE.
-                this.addAnnotations(fd.getAnnotations(), cf);
+                // Add field annotations with retention != SOURCE.
+                UnitCompiler.this.compileAnnotations(fd.getAnnotations(), fi, cf);
             }
 
             // Add "Deprecated" attribute (JVMS 4.7.10).
@@ -690,8 +691,8 @@ class UnitCompiler {
             interfaceDescriptors                                            // interfaceFDs
         );
 
-        // Add annotations with retention != SOURCE.
-        this.addAnnotations(id.getAnnotations(), cf);
+        // Add interface annotations with retention != SOURCE.
+        this.compileAnnotations(id.getAnnotations(), cf, cf);
 
         // Set "SourceFile" attribute.
         if (this.debugSource) {
@@ -730,7 +731,7 @@ class UnitCompiler {
     }
 
     private void
-    addAnnotations(Java.Annotation[] annotations, final ClassFile cf) throws CompileException {
+    compileAnnotations(Java.Annotation[] annotations, Annotatable target, final ClassFile cf) throws CompileException {
 
         ANNOTATIONS: for (final Java.Annotation a : annotations) {
             Type          annotationType        = a.getType();
@@ -798,8 +799,8 @@ class UnitCompiler {
                 }
             });
 
-            // Add the annotation to the class.
-            cf.addAnnotationsAttributeEntry(runtimeVisible, annotationIClass.getDescriptor(), evps);
+            // Add the annotation to the target (class/interface, method or field).
+            target.addAnnotationsAttributeEntry(runtimeVisible, annotationIClass.getDescriptor(), evps);
         }
     }
 
@@ -2440,6 +2441,9 @@ class UnitCompiler {
                 this.toIInvocable(fd).getDescriptor() // methodMD
             );
         }
+
+        // Add method annotations with retention != SOURCE.
+        this.compileAnnotations(mi.getAnnotations(), mi, classFile);
 
         // Add "Exceptions" attribute (JVMS 4.7.4).
         {
@@ -7133,8 +7137,8 @@ class UnitCompiler {
             location
         );
         return new Atom(location) {
-            @Override public String     toString()                  { return Java.join(identifiers, "."); }
-            @Override public final void accept(AtomVisitor visitor) {}
+            @Override public String toString()                  { return Java.join(identifiers, "."); }
+            @Override public void   accept(AtomVisitor visitor) {}
         };
     }
 
@@ -8344,7 +8348,7 @@ class UnitCompiler {
                 return UnitCompiler.this.resolve(oc);
             }
 
-            @Override protected final String
+            @Override protected String
             getDescriptor2() { return Descriptor.fromClassName(atd.getClassName()); }
 
             @Override public boolean

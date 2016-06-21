@@ -1578,6 +1578,12 @@ class Java {
             for (Annotation a : this.modifiers.annotations) a.setEnclosingScope(declaringType);
         }
 
+        @Override public void
+        setEnclosingScope(Scope enclosingScope) {
+            super.setEnclosingScope(enclosingScope);
+            this.modifiers.setEnclosingScope(enclosingScope);
+        }
+
         // Implement "Scope".
 
         @Override public Scope
@@ -1838,6 +1844,12 @@ class Java {
 
         @Override public TypeDeclaration
         getDeclaringType() { return (TypeDeclaration) this.getEnclosingScope(); }
+
+        @Override public void
+        setEnclosingScope(Scope enclosingScope) {
+            super.setEnclosingScope(enclosingScope);
+            this.modifiers.setEnclosingScope(enclosingScope);
+        }
 
         @Override public boolean
         isStatic() { return Mod.isStatic(this.modifiers.flags); }
