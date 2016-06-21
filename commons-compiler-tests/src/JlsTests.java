@@ -405,7 +405,6 @@ class JlsTests extends JaninoTestSuite {
         ), "Bag");
     }
 
-    @SuppressWarnings("unused")
     @Test public void
     test_8_4_8_3__Requirements_in_Overriding_and_Hiding() throws Exception {
 
