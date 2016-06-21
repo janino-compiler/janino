@@ -183,10 +183,11 @@ class ClassFile {
      */
     public void
     addAnnotationsAttributeEntry(
-        String                   attributeName,
+        boolean                  runtimeVisible,
         String                   fieldDescriptor,
         Map<Short, ElementValue> elementValuePairs
     ) {
+        String attributeName = runtimeVisible ? "RuntimeVisibleAnnotations" : "RuntimeInvisibleAnnotations";
 
         // Find or create the "Runtime[In]visibleAnnotations" attribute.
         AnnotationsAttribute aa = this.getAnnotationsAttribute(attributeName);

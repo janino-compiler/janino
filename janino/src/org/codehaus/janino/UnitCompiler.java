@@ -608,13 +608,15 @@ class UnitCompiler {
                 );
             } else
             {
-                assert fd.modifiers.annotations.length == 0 : "NYI";
                 fi = cf.addFieldInfo(
                     fd.modifiers,                                 // modifiers
                     vd.name,                                      // fieldName
                     this.getType(type).getDescriptor(),           // fieldTypeFD
                     ocv == UnitCompiler.NOT_CONSTANT ? null : ocv // optionalConstantValue
                 );
+
+                // Add annotations with retention != SOURCE.
+                this.addAnnotations(fd.getAnnotations(), cf);
             }
 
             // Add "Deprecated" attribute (JVMS 4.7.10).
@@ -736,7 +738,7 @@ class UnitCompiler {
             IAnnotation[] annotationAnnotations = annotationIClass.getIAnnotations();
 
             // Determine the attribute name.
-            String attributeName = "RuntimeInvisibleAnnotations";
+            boolean runtimeVisible = false;
             for (IAnnotation aa : annotationAnnotations) {
 
                 if (aa.getAnnotationType() != this.iClassLoader.ANNO_java_lang_annotation_Retention) continue;
@@ -748,11 +750,11 @@ class UnitCompiler {
                     continue ANNOTATIONS;
                 } else
                 if (o == RetentionPolicy.CLASS.ordinal()) {
-                    attributeName = "RuntimeInvisibleAnnotations";
+                    runtimeVisible = false;
                     break;
                 } else
                 if (o == RetentionPolicy.RUNTIME.ordinal()) {
-                    attributeName = "RuntimeVisibleAnnotations";
+                    runtimeVisible = true;
                     break;
                 } else
                 {
@@ -797,7 +799,7 @@ class UnitCompiler {
             });
 
             // Add the annotation to the class.
-            cf.addAnnotationsAttributeEntry(attributeName, annotationIClass.getDescriptor(), evps);
+            cf.addAnnotationsAttributeEntry(runtimeVisible, annotationIClass.getDescriptor(), evps);
         }
     }
 
