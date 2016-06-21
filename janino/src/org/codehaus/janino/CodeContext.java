@@ -964,7 +964,6 @@ class CodeContext {
     private
     class Branch extends Relocatable {
 
-        public
         Branch(int opcode, Offset destination) {
             this.opcode      = opcode;
             this.source      = CodeContext.this.newInserter();
@@ -1089,7 +1088,6 @@ class CodeContext {
     private
     class OffsetBranch extends Relocatable {
 
-        public
         OffsetBranch(Offset where, Offset source, Offset destination) {
             this.where       = where;
             this.source      = source;
