@@ -81,7 +81,6 @@ class IClass {
     class PrimitiveIClass extends IClass {
         private final String fieldDescriptor;
 
-        public
         PrimitiveIClass(String fieldDescriptor) { this.fieldDescriptor = fieldDescriptor; }
 
         @Override protected IClass         getComponentType2()         { return null; }
