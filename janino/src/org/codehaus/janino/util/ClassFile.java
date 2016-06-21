@@ -1049,7 +1049,6 @@ class ClassFile implements Annotatable {
     class ConstantStringInfo extends ConstantValuePoolInfo {
         private final short stringIndex;
 
-        public
         ConstantStringInfo(short stringIndex) { this.stringIndex = stringIndex; }
 
         // Implement ConstantValuePoolInfo.
@@ -1081,7 +1080,6 @@ class ClassFile implements Annotatable {
     class ConstantIntegerInfo extends ConstantValuePoolInfo {
         private final int value;
 
-        public
         ConstantIntegerInfo(int value) { this.value = value; }
 
         // Implement ConstantValuePoolInfo.
@@ -1112,7 +1110,6 @@ class ClassFile implements Annotatable {
 
         private final float value;
 
-        public
         ConstantFloatInfo(float value) { this.value = value; }
 
         // Implement ConstantValuePoolInfo.
@@ -1144,7 +1141,6 @@ class ClassFile implements Annotatable {
 
         private final long value;
 
-        public
         ConstantLongInfo(long value) { this.value = value; }
 
         // Implement ConstantValuePoolInfo.
@@ -1175,7 +1171,6 @@ class ClassFile implements Annotatable {
     class ConstantDoubleInfo extends ConstantValuePoolInfo {
         private final double value;
 
-        public
         ConstantDoubleInfo(double value) { this.value = value; }
 
         // Implement ConstantValuePoolInfo.
@@ -2181,7 +2176,6 @@ class ClassFile implements Annotatable {
 
             final short startPc, endPc, handlerPc, catchType;
 
-            public
             ExceptionTableEntry(short startPc, short endPc, short handlerPc, short catchType) {
                 this.startPc   = startPc;
                 this.endPc     = endPc;
