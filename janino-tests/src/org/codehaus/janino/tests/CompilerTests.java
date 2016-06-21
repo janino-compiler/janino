@@ -301,7 +301,10 @@ class CompilerTests {
             Assert.fail("CompileException expected");
         }
 
-        Assert.assertEquals(new HashSet(Arrays.asList(new Object[] { "pkg/A.class", "pkg/B.class", })), classes.keySet());
+        Assert.assertEquals(
+            new HashSet(Arrays.asList(new Object[] { "pkg/A.class", "pkg/B.class", })),
+            classes.keySet()
+        );
     }
 
     @Test public void
